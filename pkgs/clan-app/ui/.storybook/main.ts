@@ -3,7 +3,7 @@ import type { StorybookConfig } from "@kachurun/storybook-solid-vite";
 
 const config: StorybookConfig = {
   framework: "@kachurun/storybook-solid-vite",
-  stories: ["../src/components/**/*.mdx", "../src/components/**/*.stories.tsx"],
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.tsx"],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-docs",

@@ -1,18 +1,56 @@
-// Working SolidJS + Three.js cube scene with reactive positioning
 import {
   createSignal,
   createEffect,
   onCleanup,
   onMount,
   createMemo,
+  on,
 } from "solid-js";
+import "./cubes.css";
+
 import * as THREE from "three";
 
-// Cube Data Model
-interface CubeData {
-  id: string;
-  position: [number, number, number];
-  color: string;
+import { Toolbar } from "../components/Toolbar/Toolbar";
+import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
+import { Divider } from "../components/Divider/Divider";
+
+function garbageCollectGroup(group: THREE.Group) {
+  for (const child of group.children) {
+    if (child instanceof THREE.Mesh) {
+      child.geometry.dispose();
+      if (Array.isArray(child.material)) {
+        child.material.forEach((material) => material.dispose());
+      } else {
+        child.material.dispose();
+      }
+    } else {
+      console.warn("Unknown child type in group:", child);
+    }
+  }
+  group.clear(); // Clear the group
+}
+
+function getFloorPosition(
+  camera: THREE.PerspectiveCamera,
+  floor: THREE.Object3D,
+): [number, number, number] {
+  const cameraPosition = camera.position.clone();
+
+  // Get camera's direction
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+
+  // Define floor plane (XZ-plane at y=0)
+  const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Normal = up, constant = 0
+
+  // Create ray from camera
+  const ray = new THREE.Ray(cameraPosition, direction);
+
+  // Get intersection point
+  const intersection = new THREE.Vector3();
+  ray.intersectPlane(floorPlane, intersection);
+
+  return intersection.toArray() as [number, number, number];
 }
 
 export function CubeScene() {
@@ -20,10 +58,16 @@ export function CubeScene() {
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
   let renderer: THREE.WebGLRenderer;
+  let floor: THREE.Mesh;
+
+  // Create background scene
+  const bgScene = new THREE.Scene();
+  const bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
   let raycaster: THREE.Raycaster;
 
-  const meshMap = new Map<string, THREE.Mesh>();
-  const baseMap = new Map<string, THREE.Mesh>(); // Map for cube bases
+  const groupMap = new Map<string, THREE.Group>();
+  const positionMap = new Map<string, THREE.Vector3>();
 
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
@@ -36,6 +80,19 @@ export function CubeScene() {
   let frameCount = 0;
 
   const [ids, setIds] = createSignal<string[]>([]);
+  const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
+    "grid",
+  );
+  const [nextBasePosition, setNextPosition] =
+    createSignal<THREE.Vector3 | null>(null);
+  const [worldMode, setWorldMode] = createSignal<"view" | "create">("view");
+
+  // Backed camera position for restoring after switching mode
+  const [backedCameraPosition, setBackedCameraPosition] = createSignal<{
+    pos: THREE.Vector3;
+    dir: THREE.Vector3;
+  }>();
+
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = createSignal<Set<string>>(new Set());
   const [creatingIds, setCreatingIds] = createSignal<Set<string>>(new Set());
@@ -53,66 +110,59 @@ export function CubeScene() {
   const GRID_SIZE = 2;
   const CUBE_SPACING = 2;
 
-  // Calculate grid position for a cube index with floating effect
-  // function getGridPosition(index: number): [number, number, number] {
-  //   const x =
-  //     (index % GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
-  //   const z =
-  //     Math.floor(index / GRID_SIZE) * CUBE_SPACING -
-  //     (GRID_SIZE * CUBE_SPACING) / 2;
-  //   return [x, 0.5, z];
-  // }
-  // function getGridPosition(index: number): [number, number, number] {
-  //   if (index === 0) return [0, 0.5, 0];
+  const BASE_SIZE = 0.9; // Height of the cube above the ground
+  const CUBE_SIZE = BASE_SIZE / 1.5; //
+  const BASE_HEIGHT = 0.05; // Height of the cube above the ground
+  const CUBE_Y = 0 + CUBE_SIZE / 2 + BASE_HEIGHT / 2; // Y position of the cube above the ground
+  const CUBE_SEGMENT_HEIGHT = CUBE_SIZE / 1;
 
-  //   let x = 0, z = 0;
-  //   let layer = 1;
-  //   let value = 1;
+  const FLOOR_COLOR = 0xcdd8d9;
 
-  //   while (true) {
-  //     // right
-  //     for (let i = 0; i < layer; i++) {
-  //       x += 1;
-  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
-  //     }
-  //     // down
-  //     for (let i = 0; i < layer; i++) {
-  //       z += 1;
-  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
-  //     }
-  //     layer++;
-  //     // left
-  //     for (let i = 0; i < layer; i++) {
-  //       x -= 1;
-  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
-  //     }
-  //     // up
-  //     for (let i = 0; i < layer; i++) {
-  //       z -= 1;
-  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
-  //     }
-  //     layer++;
+  const CUBE_COLOR = 0xd7e0e1;
+  const CUBE_EMISSIVE = 0x303030; // Emissive color for cubes
 
-  //     if (layer > 100) {
-  //       console.warn("Exceeded grid size, returning last position");
-  //       // If we exceed the index, return the last position
-  //       return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
-  //     }
-  //   }
-  // }
+  const CUBE_SELECTED_COLOR = 0x4b6767;
 
-  // Circle IDEA:
-  // Need to talk with timo and W about this
-  function getCirclePosition(
+  const BASE_COLOR = 0xecfdff;
+  const BASE_EMISSIVE = 0x0c0c0c;
+  const BASE_SELECTED_COLOR = 0x69b0e3;
+  const BASE_SELECTED_EMISSIVE = 0x666666; // Emissive color for selected bases
+
+  const CREATE_BASE_COLOR = 0x636363;
+  const CREATE_BASE_EMISSIVE = 0xc5fad7;
+
+  function getGridPosition(
+    id: string,
     index: number,
     total: number,
   ): [number, number, number] {
-    const r = Math.sqrt(total) * CUBE_SPACING; // Radius based on total cubes
-    const x = Math.cos((index / total) * 2 * Math.PI) * r;
-    const z = Math.sin((index / total) * 2 * Math.PI) * r;
-    // Position cubes at y = 0.5 to float above the ground
-    return [x, 0.5, z];
+    // TODO: Detect collision with other cubes
+    const pos = positionMap.get(id);
+    if (pos) {
+      return pos.toArray() as [number, number, number];
+    }
+    const nextPos = nextBasePosition();
+    if (!nextPos) {
+      // Use next position if available
+      throw new Error("Next position is not set");
+    }
+
+    const next = nextPos.toArray() as [number, number, number];
+    positionMap.set(id, new THREE.Vector3(...next));
+    return next;
   }
+
+  // Circle IDEA:
+  // Need to talk with timo and W about this
+  const getCirclePosition =
+    (center: [number, number, number]) =>
+    (_id: string, index: number, total: number): [number, number, number] => {
+      const r = total === 1 ? 0 : Math.sqrt(total) * CUBE_SPACING; // Radius based on total cubes
+      const x = Math.cos((index / total) * 2 * Math.PI) * r + center[0];
+      const z = Math.sin((index / total) * 2 * Math.PI) * r + center[2];
+      // Position cubes at y = 0.5 to float above the ground
+      return [x, CUBE_Y, z];
+    };
 
   // Reactive cubes memo - this recalculates whenever ids() changes
   const cubes = createMemo(() => {
@@ -123,61 +173,48 @@ export function CubeScene() {
     // Include both active and deleting cubes for smooth transitions
     const allIds = [...new Set([...currentIds, ...Array.from(deleting)])];
 
+    let cameraTarget = [0, 0, 0] as [number, number, number];
+    if (camera && floor) {
+      cameraTarget = getFloorPosition(camera, floor);
+    }
+    const getCubePosition =
+      positionMode() === "grid"
+        ? getGridPosition
+        : getCirclePosition(cameraTarget);
+
     return allIds.map((id, index) => {
       const isDeleting = deleting.has(id);
       const isCreating = creating.has(id);
       const activeIndex = currentIds.indexOf(id);
 
+      const position = getCubePosition(
+        id,
+        isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index,
+        currentIds.length,
+      );
+
+      const targetPosition =
+        activeIndex >= 0
+          ? getCubePosition(id, activeIndex, currentIds.length)
+          : getCubePosition(id, index, currentIds.length);
+
       return {
         id,
-        position: getCirclePosition(
-          isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index,
-          currentIds.length,
-        ),
-        // position: getGridPosition(isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index),
+        position,
         isDeleting,
         isCreating,
-        // targetPosition: activeIndex >= 0 ? getGridPosition(activeIndex) : getGridPosition(index),
-        targetPosition:
-          activeIndex >= 0
-            ? getCirclePosition(activeIndex, currentIds.length)
-            : getCirclePosition(index, currentIds.length),
+        targetPosition,
       };
     });
   });
 
-  // Create multi-colored cube materials for different faces
-  function createCubeMaterials() {
-    const materials = [
-      new THREE.MeshBasicMaterial({ color: 0xb0c0c2 }), // Right face - medium
-      new THREE.MeshBasicMaterial({ color: 0x4d6a6b }), // Left face - dark shadow
-      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Top face - light
-      new THREE.MeshBasicMaterial({ color: 0x4d6a6b }), // Bottom face - dark shadow
-      new THREE.MeshBasicMaterial({ color: 0xb0c0c2 }), // Front face - medium
-      new THREE.MeshBasicMaterial({ color: 0x4d6a6b }), // Back face - dark shadow
-    ];
-    return materials;
-  }
-
-  function createBaseMaterials() {
-    const materials = [
-      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Right face - medium
-      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Left face - dark shadow
-      new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x303030 }), // Top face - light
-      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Bottom face - dark shadow
-      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Front face - medium
-      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Back face - dark shadow
-    ];
-    return materials;
-  }
-
   // Animation helper function
   function animateToPosition(
-    mesh: THREE.Mesh,
+    thing: THREE.Object3D,
     targetPosition: [number, number, number],
     duration: number = ANIMATION_DURATION,
   ) {
-    const startPosition = mesh.position.clone();
+    const startPosition = thing.position.clone();
     const endPosition = new THREE.Vector3(...targetPosition);
     const startTime = Date.now();
 
@@ -188,7 +225,7 @@ export function CubeScene() {
       // Smooth easing function
       const easeProgress = 1 - Math.pow(1 - progress, 3);
 
-      mesh.position.lerpVectors(startPosition, endPosition, easeProgress);
+      thing.position.lerpVectors(startPosition, endPosition, easeProgress);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -211,25 +248,25 @@ export function CubeScene() {
     baseMesh.scale.setScalar(0);
 
     // Ensure materials are fully opaque
-    if (Array.isArray(mesh.material)) {
-      mesh.material.forEach((material) => {
-        (material as THREE.MeshBasicMaterial).opacity = 1;
-        material.transparent = false;
-      });
-    } else {
-      (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
-      mesh.material.transparent = false;
-    }
+    // if (Array.isArray(mesh.material)) {
+    //   mesh.material.forEach((material) => {
+    //     (material as THREE.MeshBasicMaterial).opacity = 1;
+    //     material.transparent = false;
+    //   });
+    // } else {
+    //   (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
+    //   mesh.material.transparent = false;
+    // }
 
-    if (Array.isArray(baseMesh.material)) {
-      baseMesh.material.forEach((material) => {
-        (material as THREE.MeshBasicMaterial).opacity = 1;
-        material.transparent = false;
-      });
-    } else {
-      (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
-      baseMesh.material.transparent = false;
-    }
+    // if (Array.isArray(baseMesh.material)) {
+    //   baseMesh.material.forEach((material) => {
+    //     (material as THREE.MeshBasicMaterial).opacity = 1;
+    //     material.transparent = false;
+    //   });
+    // } else {
+    //   (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
+    //   baseMesh.material.transparent = false;
+    // }
 
     function animate() {
       const elapsed = Date.now() - startTime;
@@ -265,16 +302,10 @@ export function CubeScene() {
   }
 
   // Delete animation helper
-  function animateDelete(
-    mesh: THREE.Mesh,
-    baseMesh: THREE.Mesh,
-    onComplete: () => void,
-  ) {
+  function animateDelete(group: THREE.Group, onComplete: () => void) {
     const startTime = Date.now();
-    const startScale = mesh.scale.clone();
-    const startOpacity = Array.isArray(mesh.material)
-      ? (mesh.material[0] as THREE.MeshBasicMaterial).opacity
-      : (mesh.material as THREE.MeshBasicMaterial).opacity;
+    // const startScale = group.scale.clone();
+    // const startOpacity = 1;
 
     function animate() {
       const elapsed = Date.now() - startTime;
@@ -283,31 +314,9 @@ export function CubeScene() {
       // Smooth easing function
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       const scale = 1 - easeProgress;
-      const opacity = startOpacity * (1 - easeProgress);
+      // const opacity = startOpacity * (1 - easeProgress);
 
-      mesh.scale.setScalar(scale);
-      baseMesh.scale.setScalar(scale);
-
-      // Update opacity for all materials
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => {
-          (material as THREE.MeshBasicMaterial).opacity = opacity;
-          material.transparent = true;
-        });
-      } else {
-        (mesh.material as THREE.MeshBasicMaterial).opacity = opacity;
-        mesh.material.transparent = true;
-      }
-
-      if (Array.isArray(baseMesh.material)) {
-        baseMesh.material.forEach((material) => {
-          (material as THREE.MeshBasicMaterial).opacity = opacity;
-          material.transparent = true;
-        });
-      } else {
-        (baseMesh.material as THREE.MeshBasicMaterial).opacity = opacity;
-        baseMesh.material.transparent = true;
-      }
+      group.scale.setScalar(scale);
 
       if (progress >= 1) {
         onComplete();
@@ -319,11 +328,21 @@ export function CubeScene() {
     animate();
   }
 
-  function createCubeBase(cube_pos: [number, number, number]) {
-    const baseMaterials = createBaseMaterials();
-    const base = new THREE.Mesh(sharedBaseGeometry, baseMaterials);
-    // tranlate_y = - cube_height / 2 - base_height / 2
-    base.position.set(cube_pos[0], cube_pos[1] - 0.5 - 0.025, cube_pos[2]); // Position below cube
+  function createCubeBase(
+    cube_pos: [number, number, number],
+    opacity = 1,
+    color: THREE.ColorRepresentation = BASE_COLOR,
+    emissive: THREE.ColorRepresentation = BASE_EMISSIVE,
+  ) {
+    const baseMaterial = new THREE.MeshPhongMaterial({
+      opacity,
+      color,
+      emissive,
+      // flatShading: true,
+      transparent: true,
+    });
+    const base = new THREE.Mesh(sharedBaseGeometry, baseMaterial);
+    base.position.set(cube_pos[0], BASE_HEIGHT / 2, cube_pos[2]);
     base.receiveShadow = true;
     return base;
   }
@@ -353,33 +372,40 @@ export function CubeScene() {
 
     // Add to deleting set to start animation
     setDeletingIds(selectedSet);
+    console.log("Deleting cubes:", selectedSet);
 
     // Start delete animations
     selectedSet.forEach((id) => {
-      const mesh = meshMap.get(id);
-      const base = baseMap.get(id);
+      const group = groupMap.get(id);
 
-      if (mesh && base) {
-        animateDelete(mesh, base, () => {
+      if (group) {
+        groupMap.delete(id); // Remove from group map
+
+        const base = group.children.find((child) => child.name === "base");
+        const cube = group.children.find((child) => child.name === "cube");
+
+        if (!base || !cube) {
+          console.warn(`DELETE: Base mesh not found for id: ${id}`);
+          return;
+        }
+
+        animateDelete(group, () => {
           // Remove from deleting set when animation completes
           setDeletingIds((prev) => {
             const next = new Set(prev);
             next.delete(id);
             return next;
           });
+          setSelectedIds(new Set<string>()); // Clear selection after deletion
+          garbageCollectGroup(group); // Clean up geometries and materials
+          setIds((prev) => prev.filter((existingId) => existingId !== id));
+
+          console.log("Done deleting", id, ids());
         });
+      } else {
+        console.warn(`DELETE: Group not found for id: ${id}`);
       }
     });
-
-    // Remove from ids after a short delay to allow animation to start
-    setTimeout(() => {
-      setIds((prev) => prev.filter((id) => !selectedSet.has(id)));
-      setSelectedIds(new Set<string>()); // Clear selection after deletion
-    }, 50);
-  }
-
-  function deleteCube(id: string) {
-    deleteSelectedCubes(new Set([id]));
   }
 
   function toggleSelection(id: string) {
@@ -394,26 +420,62 @@ export function CubeScene() {
     });
   }
 
-  function updateMeshColors() {
-    for (const [id, base] of baseMap.entries()) {
-      const selected = selectedIds().has(id);
-      const materials = base.material as THREE.Material[];
-
-      if (selected) {
-        // When selected, make all faces red-ish but maintain the lighting difference
-        materials.forEach((material, index) => {
-          if (index === 2) {
-            (material as THREE.MeshBasicMaterial).color.set(0xff6666);
-          }
-        });
-      } else {
-        // Normal colors - restore original face colors
-        materials.forEach((material, index) => {
-          if (index === 2) {
-            (material as THREE.MeshBasicMaterial).color.set(0xffffff);
-          }
-        });
+  function updateMeshColors(
+    selected: Set<string>,
+    prev: Set<string> | undefined,
+  ) {
+    for (const id of selected) {
+      const group = groupMap.get(id);
+      if (!group) {
+        console.warn(`UPDATE COLORS: Group not found for id: ${id}`);
+        continue;
       }
+      const base = group.children.find((child) => child.name === "base");
+      if (!base || !(base instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Base mesh not found for id: ${id}`);
+        continue;
+      }
+      const cube = group.children.find((child) => child.name === "cube");
+      if (!cube || !(cube instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Cube mesh not found for id: ${id}`);
+        continue;
+      }
+
+      const baseMaterial = base.material as THREE.MeshPhongMaterial;
+      const cubeMaterial = cube.material as THREE.MeshPhongMaterial;
+
+      baseMaterial.color.set(BASE_SELECTED_COLOR);
+      baseMaterial.emissive.set(BASE_SELECTED_EMISSIVE);
+
+      cubeMaterial.color.set(CUBE_SELECTED_COLOR);
+    }
+
+    const deselected = Array.from(prev || []).filter((s) => !selected.has(s));
+
+    for (const id of deselected) {
+      const group = groupMap.get(id);
+      if (!group) {
+        console.warn(`UPDATE COLORS: Group not found for id: ${id}`);
+        continue;
+      }
+      const base = group.children.find((child) => child.name === "base");
+      if (!base || !(base instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Base mesh not found for id: ${id}`);
+        continue;
+      }
+      const cube = group.children.find((child) => child.name === "cube");
+      if (!cube || !(cube instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Cube mesh not found for id: ${id}`);
+        continue;
+      }
+
+      const baseMaterial = base.material as THREE.MeshPhongMaterial;
+      const cubeMaterial = cube.material as THREE.MeshPhongMaterial;
+
+      baseMaterial.color.set(BASE_COLOR);
+      baseMaterial.emissive.set(BASE_EMISSIVE);
+
+      cubeMaterial.color.set(CUBE_COLOR);
     }
   }
 
@@ -429,11 +491,62 @@ export function CubeScene() {
     }
   }
 
+  const initialCameraPosition = { x: 2.8, y: 4, z: -2 };
+  const initialSphericalCameraPosition = new THREE.Spherical();
+  initialSphericalCameraPosition.setFromVector3(
+    new THREE.Vector3(
+      initialCameraPosition.x,
+      initialCameraPosition.y,
+      initialCameraPosition.z,
+    ),
+  );
+
+  let initBase: THREE.Mesh;
+
+  const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
+
   onMount(() => {
     // Scene setup
     scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xffffff, 10, 50); //
     // Transparent background
     scene.background = null;
+
+    // Create a fullscreen quad with a gradient shader
+    // TODO: Recalculate gradient depending on container size
+    const uniforms = {
+      colorTop: { value: new THREE.Color("#edf1f1") }, // Top color
+      colorBottom: { value: new THREE.Color("#e3e7e7") }, // Bottom color
+      resolution: {
+        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+      },
+    };
+
+    const bgMaterial = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: `
+        void main() {
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 colorTop;
+        uniform vec3 colorBottom;
+        uniform vec2 resolution;
+
+        void main() {
+          float y = gl_FragCoord.y / resolution.y;
+          gl_FragColor = vec4(mix(colorBottom, colorTop, y), 1.0);
+        }
+      `,
+      depthTest: false,
+      depthWrite: false,
+    });
+
+    // Create fullscreen quad geometry
+    const bgGeometry = new THREE.PlaneGeometry(2, 2);
+    const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+    bgScene.add(bgMesh);
 
     // Camera setup
     camera = new THREE.PerspectiveCamera(
@@ -442,7 +555,7 @@ export function CubeScene() {
       0.1,
       1000,
     );
-    camera.position.set(11, 8, -11);
+    camera.position.setFromSpherical(initialSphericalCameraPosition);
     camera.lookAt(0, 0, 0);
 
     // Renderer setup
@@ -453,14 +566,23 @@ export function CubeScene() {
     container.appendChild(renderer.domElement);
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Bright
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    // Position light at 30 degree angle (30 degrees from vertical)
-    // For 30 degree angle: tan(30°) = opposite/adjacent = x/y
-    // If y = 100, then x = 100 * tan(30°) = 100 * 0.577 = 57.7
-    directionalLight.position.set(57.7, 100, 57.7);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+
+    // scene.add(new THREE.DirectionalLightHelper(directionalLight));
+    // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
+    // scene.add(new THREE.CameraHelper(camera));
+    const lightPos = new THREE.Spherical(
+      100,
+      initialSphericalCameraPosition.phi,
+      initialSphericalCameraPosition.theta - Math.PI / 2,
+    );
+    directionalLight.position.setFromSpherical(lightPos);
+    directionalLight.target.position.set(0, 0, 0); // Point light at the center
+
+    // initialSphericalCameraPosition
     directionalLight.castShadow = true;
 
     // Configure shadow camera for hard, crisp shadows
@@ -475,33 +597,51 @@ export function CubeScene() {
     directionalLight.shadow.radius = 1; // Hard shadows (low radius)
     directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
+    scene.add(directionalLight.target);
 
     // Floor/Ground - Make it invisible but keep it for reference
-    const floorGeometry = new THREE.PlaneGeometry(50, 50);
+    const floorGeometry = new THREE.PlaneGeometry(1000, 1000);
     const floorMaterial = new THREE.MeshBasicMaterial({
-      color: 0xcccccc,
+      color: FLOOR_COLOR,
       transparent: true,
-      opacity: 0, // Make completely invisible
-      visible: false, // Also hide it completely
+      opacity: 0.0, // Make completely invisible
     });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0; // Keep at ground level for reference
     scene.add(floor);
 
+    // grid.material.opacity = 0.2;
+    // grid.material.transparent = true;
+    grid.position.y = 0.001; // Slightly above the floor to avoid z-fighting
+    // grid.rotation.x = -Math.PI / 2;
+    grid.position.x = 0.5;
+    grid.position.z = 0.5;
+    scene.add(grid);
+
     // Shared geometries for cubes and bases
     // This allows us to reuse the same geometry for all cubes and bases
-    sharedCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    sharedBaseGeometry = new THREE.BoxGeometry(1.2, 0.05, 1.2);
+    sharedCubeGeometry = new THREE.BoxGeometry(
+      CUBE_SIZE,
+      CUBE_SEGMENT_HEIGHT,
+      CUBE_SIZE,
+    );
+    sharedBaseGeometry = new THREE.BoxGeometry(
+      BASE_SIZE,
+      BASE_HEIGHT,
+      BASE_SIZE,
+    );
 
     // Basic OrbitControls implementation (simplified)
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    const spherical = new THREE.Spherical();
-    spherical.setFromVector3(camera.position);
+    // const spherical = new THREE.Spherical();
+    // spherical.setFromVector3(camera.position);
 
     // Function to update camera info
     const updateCameraInfo = () => {
+      const spherical = new THREE.Spherical();
+      spherical.setFromVector3(camera.position);
       setCameraInfo({
         position: {
           x: Math.round(camera.position.x * 100) / 100,
@@ -529,28 +669,103 @@ export function CubeScene() {
     };
 
     const onMouseMove = (event: MouseEvent) => {
+      if (worldMode() === "create") {
+        if (isDragging) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((event.clientX - rect.left) / rect.width) * 2 - 1,
+          -((event.clientY - rect.top) / rect.height) * 2 + 1,
+        );
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObject(floor);
+        if (intersects.length > 0) {
+          const point = intersects[0].point;
+
+          // Snap to grid
+          const snapped = new THREE.Vector3(
+            Math.round(point.x / GRID_SIZE) * GRID_SIZE,
+            BASE_HEIGHT / 2,
+            Math.round(point.z / GRID_SIZE) * GRID_SIZE,
+          );
+          if (!initBase) {
+            // Create initial base mesh if it doesn't exist
+            initBase = createCubeBase(
+              [snapped.x, BASE_HEIGHT / 2, snapped.z],
+              1,
+              CREATE_BASE_COLOR,
+              CREATE_BASE_EMISSIVE, // Emissive color
+            );
+          } else {
+            initBase.position.set(snapped.x, BASE_HEIGHT / 2, snapped.z);
+          }
+          scene.remove(initBase); // Remove any existing base mesh
+          scene.add(initBase);
+          setNextPosition(snapped); // Update next position for cube creation
+        }
+        // If in create mode, don't allow camera movement
+        return;
+      }
+
       if (!isDragging) return;
 
       const deltaX = event.clientX - previousMousePosition.x;
       const deltaY = event.clientY - previousMousePosition.y;
+      // const deltaY = event.clientY - previousMousePosition.y;
+      if (positionMode() === "circle") {
+        const spherical = new THREE.Spherical();
+        spherical.setFromVector3(camera.position);
+        spherical.theta -= deltaX * 0.01;
+        // spherical.phi += deltaY * 0.01;
+        // spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
 
-      spherical.theta -= deltaX * 0.01;
-      spherical.phi += deltaY * 0.01;
-      spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+        // const lightPos = new THREE.Spherical();
+        // lightPos.setFromVector3(directionalLight.position);
+        // lightPos.theta = spherical.theta - Math.PI / 2; // 90 degrees offset
+        // directionalLight.position.setFromSpherical(lightPos);
 
-      camera.position.setFromSpherical(spherical);
-      camera.lookAt(0, 0, 0);
+        // directionalLight.lookAt(0, 0, 0);
+
+        camera.position.setFromSpherical(spherical);
+        camera.lookAt(0, 0, 0);
+      } else {
+        const movementSpeed = 0.015;
+
+        // Get camera direction vectors
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+        cameraDirection.y = 0; // Ignore vertical direction
+
+        const cameraRight = new THREE.Vector3();
+        cameraRight.crossVectors(camera.up, cameraDirection).normalize(); // Get right vector
+
+        // Move camera based on mouse deltas
+        camera.position.addScaledVector(cameraRight, deltaX * movementSpeed); // horizontal drag
+        camera.position.addScaledVector(
+          cameraDirection,
+          deltaY * movementSpeed,
+        ); // vertical drag (forward/back)
+
+        setBackedCameraPosition({
+          pos: camera.position.clone(),
+          dir: camera.getWorldDirection(new THREE.Vector3()).clone(),
+        });
+      }
       updateCameraInfo();
 
       previousMousePosition = { x: event.clientX, y: event.clientY };
     };
 
     const onWheel = (event: WheelEvent) => {
+      const spherical = new THREE.Spherical();
+      spherical.setFromVector3(camera.position);
       event.preventDefault();
       spherical.radius += event.deltaY * 0.01;
-      spherical.radius = Math.max(5, Math.min(50, spherical.radius));
+      spherical.radius = Math.max(3, Math.min(10, spherical.radius)); // Clamp radius between 5 and 50
       camera.position.setFromSpherical(spherical);
-      camera.lookAt(0, 0, 0);
+      // camera.lookAt(0, 0, 0);
       updateCameraInfo();
     };
 
@@ -563,9 +778,18 @@ export function CubeScene() {
     // Raycaster for clicking
     raycaster = new THREE.Raycaster();
 
-    // Click handler for cube selection
+    // Click handler:
+    // - Select/deselects a cube in "view" mode
+    // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
-      if (isDragging) return; // Don't select if we were dragging
+      if (worldMode() === "create") {
+        if (initBase) {
+          scene.remove(initBase); // Remove the base mesh after adding cube
+          setWorldMode("view");
+          addCube();
+        }
+        return;
+      }
 
       const rect = renderer.domElement.getBoundingClientRect();
       const mouse = new THREE.Vector2(
@@ -575,12 +799,14 @@ export function CubeScene() {
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(
-        Array.from(meshMap.values()),
+        Array.from(groupMap.values()),
       );
-
+      console.log("Intersects:", intersects);
       if (intersects.length > 0) {
         const id = intersects[0].object.userData.id;
         toggleSelection(id);
+      } else {
+        setSelectedIds(new Set<string>()); // Clear selection if clicked outside cubes
       }
     };
 
@@ -592,10 +818,13 @@ export function CubeScene() {
       requestAnimationFrame(animate);
 
       frameCount++;
+      renderer.autoClear = false;
+      renderer.render(bgScene, bgCamera); // Render background scene
+
       renderer.render(scene, camera);
 
       // Uncomment for memory debugging:
-      if (frameCount % 60 === 0) logMemoryUsage(); // Log every 60 frames
+      if (frameCount % 300 === 0) logMemoryUsage(); // Log every 60 frames
     };
     isAnimating = true;
     animate();
@@ -619,43 +848,97 @@ export function CubeScene() {
       renderer.domElement.removeEventListener("click", onClick);
       window.removeEventListener("resize", handleResize);
 
+      if (initBase) {
+        initBase.geometry.dispose();
+        if (Array.isArray(initBase.material)) {
+          initBase.material.forEach((material) => material.dispose());
+        } else {
+          initBase.material.dispose();
+        }
+      }
+
       if (container) {
         container.innerHTML = "";
       }
     });
   });
 
+  createEffect(() => {
+    if (!container) return;
+    if (worldMode() === "create") {
+      // Show the plus button when in create mode
+      container.style.cursor = "crosshair";
+    } else {
+      container.style.cursor = "pointer";
+    }
+  });
+  createEffect(
+    // Fly back and forth between circle and grid positions
+    // ? Do we want to do this.
+    // We could shift the center of the circle to the camera look at position
+    on(positionMode, (mode) => {
+      if (mode === "circle") {
+        grid.visible = false; // Hide grid when in circle mode
+      } else if (mode === "grid") {
+        grid.visible = true; // Show grid when in grid mode
+      }
+    }),
+  );
+
+  function createCube(
+    gridPosition: [number, number],
+    userData: { id: string },
+  ) {
+    // Creates a cube, base, and other visuals
+    // Groups them together in the scene
+    const cubeMaterial = new THREE.MeshPhongMaterial({
+      color: CUBE_COLOR,
+      emissive: CUBE_EMISSIVE,
+      // specular: 0xffffff,
+      shininess: 100,
+    });
+    const cubeMesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterial);
+    cubeMesh.castShadow = true;
+    cubeMesh.receiveShadow = true;
+    cubeMesh.userData = userData;
+    cubeMesh.name = "cube"; // Name for easy identification
+    cubeMesh.position.set(0, CUBE_Y, 0);
+
+    const baseMesh = createCubeBase([0, BASE_HEIGHT / 2, 0]);
+    baseMesh.name = "base"; // Name for easy identification
+
+    // TODO: Destroy Group in onCleanup
+    const group = new THREE.Group();
+    group.add(cubeMesh);
+    group.add(baseMesh);
+    group.position.set(gridPosition[0], 0, gridPosition[1]); // Position on the grid
+
+    group.userData.id = userData.id;
+    return group;
+  }
+
   // Effect to manage cube meshes - this runs whenever cubes() changes
   createEffect(() => {
     const currentCubes = cubes();
-    const existing = new Set(meshMap.keys());
+    const existing = new Set(groupMap.keys());
     const deleting = deletingIds();
     const creating = creatingIds();
 
     // Update existing cubes and create new ones
     currentCubes.forEach((cube) => {
-      const existingMesh = meshMap.get(cube.id);
-      const existingBase = baseMap.get(cube.id);
+      const existingGroup = groupMap.get(cube.id);
 
-      if (!existingMesh) {
-        // Create new cube mesh
-        const cubeMaterials = createCubeMaterials();
-        const mesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterials);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.position.set(...cube.position);
-        mesh.userData.id = cube.id;
-        scene.add(mesh);
-        meshMap.set(cube.id, mesh);
-
-        // Create new base mesh
-        const base = createCubeBase(cube.position);
-        base.userData.id = cube.id;
-        scene.add(base);
-        baseMap.set(cube.id, base);
+      if (!existingGroup) {
+        const group = createCube([cube.position[0], cube.position[2]], {
+          id: cube.id,
+        });
+        scene.add(group);
+        groupMap.set(cube.id, group);
 
         // Start create animation if this cube is being created
         if (creating.has(cube.id)) {
+          const mesh = group.children[0] as THREE.Mesh;
+          const base = group.children[1] as THREE.Mesh;
           animateCreate(mesh, base, () => {
             // Animation complete callback - could add additional logic here
           });
@@ -663,28 +946,19 @@ export function CubeScene() {
       } else if (!deleting.has(cube.id)) {
         // Only animate position if not being deleted
         const targetPosition = cube.targetPosition || cube.position;
-        const currentPosition = existingMesh.position.toArray() as [
+        const currentPosition = existingGroup.position.toArray() as [
           number,
           number,
           number,
         ];
         const target = targetPosition;
-
         // Check if position actually changed
         if (
           Math.abs(currentPosition[0] - target[0]) > 0.01 ||
           Math.abs(currentPosition[1] - target[1]) > 0.01 ||
           Math.abs(currentPosition[2] - target[2]) > 0.01
         ) {
-          animateToPosition(existingMesh, target);
-
-          if (existingBase) {
-            animateToPosition(existingBase, [
-              target[0],
-              target[1] - 0.5 - 0.025,
-              target[2],
-            ]);
-          }
+          animateToPosition(existingGroup, target);
         }
       }
 
@@ -694,38 +968,21 @@ export function CubeScene() {
     // Remove cubes that are no longer in the state and not being deleted
     existing.forEach((id) => {
       if (!deleting.has(id)) {
-        // Remove cube mesh
-        const mesh = meshMap.get(id);
-        if (mesh) {
-          scene.remove(mesh);
-          mesh.geometry.dispose();
-          // Dispose materials properly
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((material) => material.dispose());
-          } else {
-            mesh.material.dispose();
-          }
-          meshMap.delete(id);
-        }
-
-        // Remove base mesh
-        const base = baseMap.get(id);
-        if (base) {
-          scene.remove(base);
-          base.geometry.dispose();
-          // Dispose base materials properly
-          if (Array.isArray(base.material)) {
-            base.material.forEach((material) => material.dispose());
-          } else {
-            base.material.dispose();
-          }
-          baseMap.delete(id);
+        const group = groupMap.get(id);
+        if (group) {
+          garbageCollectGroup(group);
         }
       }
     });
-
-    updateMeshColors();
   });
+
+  createEffect(
+    on(selectedIds, (curr, prev) => {
+      console.log("Selected cubes:", curr);
+      // Update colors of selected cubes
+      updateMeshColors(curr, prev);
+    }),
+  );
 
   // Effect to clean up deleted cubes after animation
   createEffect(() => {
@@ -735,31 +992,21 @@ export function CubeScene() {
     // Clean up cubes that finished their delete animation
     deleting.forEach((id) => {
       if (!currentIds.includes(id)) {
-        // Check if this cube has finished its animation
-        const mesh = meshMap.get(id);
-        if (mesh && mesh.scale.x <= 0.01) {
-          // Remove cube mesh
-          scene.remove(mesh);
-          mesh.geometry.dispose();
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((material) => material.dispose());
-          } else {
-            mesh.material.dispose();
-          }
-          meshMap.delete(id);
-
-          // Remove base mesh
-          const base = baseMap.get(id);
-          if (base) {
-            scene.remove(base);
-            base.geometry.dispose();
-            if (Array.isArray(base.material)) {
-              base.material.forEach((material) => material.dispose());
-            } else {
-              base.material.dispose();
+        const group = groupMap.get(id);
+        if (group) {
+          scene.remove(group);
+          group.children.forEach((child) => {
+            // Child is finished with its destroy animation
+            if (child instanceof THREE.Mesh && child.scale.x <= 0.01) {
+              child.geometry.dispose();
+              if (Array.isArray(child.material)) {
+                child.material.forEach((material) => material.dispose());
+              } else {
+                child.material.dispose();
+              }
             }
-            baseMap.delete(id);
-          }
+          });
+          groupMap.delete(id);
         }
       }
     });
@@ -767,29 +1014,15 @@ export function CubeScene() {
 
   createEffect(() => {
     selectedIds(); // Track the signal
-    updateMeshColors();
+    // updateMeshColors();
   });
 
   onCleanup(() => {
-    for (const mesh of meshMap.values()) {
-      // Handle both single material and material array
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      } else {
-        mesh.material.dispose();
-      }
+    for (const group of groupMap.values()) {
+      garbageCollectGroup(group);
+      scene.remove(group);
     }
-    meshMap.clear();
-
-    for (const mesh of baseMap.values()) {
-      // Handle both single material and material array
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      } else {
-        mesh.material.dispose();
-      }
-    }
-    baseMap.clear();
+    groupMap.clear();
 
     // Dispose shared geometries
     sharedCubeGeometry?.dispose();
@@ -798,52 +1031,66 @@ export function CubeScene() {
     renderer?.dispose();
   });
 
+  const onHover = (inside: boolean) => (event: MouseEvent) => {
+    // Hover over the plus button, shows a preview of the base mesh
+    const currentCubes = cubes();
+    if (currentCubes.length > 0) {
+      return;
+    }
+
+    if (!initBase) {
+      // Create initial base mesh if it doesn't exist
+      initBase = createCubeBase(
+        [0, BASE_HEIGHT / 2, 0],
+        1,
+        CREATE_BASE_COLOR,
+        CREATE_BASE_EMISSIVE,
+      ); // Emissive color
+    }
+    if (inside) {
+      scene.add(initBase);
+    } else {
+      scene.remove(initBase);
+    }
+  };
+
+  const onAddClick = (event: MouseEvent) => {
+    setPositionMode("grid");
+    setWorldMode("create");
+  };
+
   return (
-    <div>
-      <div style={{ "margin-bottom": "10px" }}>
-        <button onClick={addCube}>Add Cube</button>
-        <button onClick={() => deleteSelectedCubes(selectedIds())}>
-          Delete Selected
-        </button>
-        <span style={{ "margin-left": "10px" }}>
-          Selected: {selectedIds().size} cubes | Total: {ids().length} cubes
-        </span>
+    <>
+      <div class="cubes-scene-container" ref={(el) => (container = el)} />
+      <div class="toolbar-container">
+        <Toolbar>
+          <ToolbarButton
+            name="new-machine"
+            icon="NewMachine"
+            onMouseEnter={onHover(true)}
+            onMouseLeave={onHover(false)}
+            onClick={onAddClick}
+            selected={worldMode() === "create"}
+          />
+          <Divider orientation="vertical" />
+          <ToolbarButton
+            name="modules"
+            icon="Modules"
+            onClick={() => {
+              if (positionMode() === "grid") {
+                setPositionMode("circle");
+              } else {
+                setPositionMode("grid");
+              }
+            }}
+          />
+          <ToolbarButton
+            name="delete"
+            icon="Trash"
+            onClick={() => deleteSelectedCubes(selectedIds())}
+          />
+        </Toolbar>
       </div>
-
-      {/* Camera Information Display */}
-      <div
-        style={{
-          "margin-bottom": "10px",
-          "font-family": "monospace",
-          "font-size": "12px",
-          "background-color": "#f5f5f5",
-          padding: "8px",
-          "border-radius": "4px",
-          border: "1px solid #ddd",
-        }}
-      >
-        <div>
-          <strong>Camera Info:</strong>
-        </div>
-        <div>
-          Position: ({cameraInfo().position.x}, {cameraInfo().position.y},{" "}
-          {cameraInfo().position.z})
-        </div>
-        <div>
-          Spherical: radius={cameraInfo().spherical.radius}, θ=
-          {cameraInfo().spherical.theta}, φ={cameraInfo().spherical.phi}
-        </div>
-      </div>
-
-      <div
-        ref={(el) => (container = el)}
-        style={{
-          width: "100%",
-          height: "1000px",
-          border: "1px solid #ccc",
-          cursor: "grab",
-        }}
-      />
-    </div>
+    </>
   );
 }
