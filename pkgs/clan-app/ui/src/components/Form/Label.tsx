@@ -1,12 +1,11 @@
 import { Show } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
-import { Tooltip as KTooltip } from "@kobalte/core/tooltip";
+import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import Icon from "@/src/components/Icon/Icon";
 import { TextField } from "@kobalte/core/text-field";
 import { Checkbox } from "@kobalte/core/checkbox";
 import { Combobox } from "@kobalte/core/combobox";
 import "./Label.css";
-import cx from "classnames";
 
 export type Size = "default" | "s";
 
@@ -49,31 +48,27 @@ export const Label = (props: LabelProps) => {
             {props.label}
           </Typography>
           {props.tooltip && (
-            <KTooltip placement="top">
-              <KTooltip.Trigger>
+            <Tooltip
+              placement="top"
+              inverted={props.inverted}
+              trigger={
                 <Icon
                   icon="Info"
                   color="tertiary"
                   inverted={props.inverted}
                   size={props.size == "default" ? "0.85em" : "0.75rem"}
                 />
-                <KTooltip.Portal>
-                  <KTooltip.Content
-                    class={cx("tooltip-content", { inverted: props.inverted })}
-                  >
-                    <Typography
-                      hierarchy="body"
-                      size="xs"
-                      weight="medium"
-                      inverted={!props.inverted}
-                    >
-                      {props.tooltip}
-                    </Typography>
-                    <KTooltip.Arrow />
-                  </KTooltip.Content>
-                </KTooltip.Portal>
-              </KTooltip.Trigger>
-            </KTooltip>
+              }
+            >
+              <Typography
+                hierarchy="body"
+                size="xs"
+                weight="medium"
+                inverted={!props.inverted}
+              >
+                {props.tooltip}
+              </Typography>
+            </Tooltip>
           )}
         </props.labelComponent>
         {props.description && (

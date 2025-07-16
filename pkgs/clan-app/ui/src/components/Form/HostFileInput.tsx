@@ -12,6 +12,8 @@ import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
 import { createSignal } from "solid-js";
+import { Tooltip } from "@kobalte/core/tooltip";
+import { Typography } from "@/src/components/Typography/Typography";
 
 export type HostFileInputProps = FieldProps &
   TextFieldRootProps & {
@@ -20,10 +22,21 @@ export type HostFileInputProps = FieldProps &
   };
 
 export const HostFileInput = (props: HostFileInputProps) => {
-  const [value, setValue] = createSignal<string | undefined>(undefined);
+  const [value, setValue] = createSignal<string>(props.value || "");
+
+  let actualInputElement: HTMLInputElement | undefined;
 
   const selectFile = async () => {
-    setValue(await props.onSelectFile());
+    try {
+      console.log("selecting file", props.onSelectFile);
+      setValue(await props.onSelectFile());
+      actualInputElement?.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
+    } catch (error) {
+      console.log("Error selecting file", error);
+      // todo work out how to display the error
+    }
   };
 
   return (
@@ -33,8 +46,6 @@ export const HostFileInput = (props: HostFileInputProps) => {
         ghost: props.ghost,
       })}
       {...props}
-      value={value()}
-      onChange={setValue}
     >
       <Orienter orientation={props.orientation} align={"start"}>
         <Label
@@ -43,16 +54,54 @@ export const HostFileInput = (props: HostFileInputProps) => {
           {...props}
         />
 
-        <TextField.Input {...props.input} hidden={true} />
+        <TextField.Input
+          {...props.input}
+          hidden={true}
+          value={value()}
+          ref={(el: HTMLInputElement) => {
+            actualInputElement = el; // Capture for local use
+          }}
+        />
 
-        <Button
-          hierarchy="secondary"
-          size={props.size}
-          startIcon="Folder"
-          onClick={selectFile}
-        >
-          {value() ? value() : "No Selection"}
-        </Button>
+        {!value() && (
+          <Button
+            hierarchy="secondary"
+            size={props.size}
+            startIcon="Folder"
+            onClick={selectFile}
+            disabled={props.disabled || props.readOnly}
+          >
+            No Selection
+          </Button>
+        )}
+
+        {value() && (
+          <Tooltip placement="top">
+            <Tooltip.Portal>
+              <Tooltip.Content class="tooltip-content">
+                <Typography
+                  hierarchy="body"
+                  size="xs"
+                  weight="medium"
+                  inverted={!props.inverted}
+                >
+                  {value()}
+                </Typography>
+                <Tooltip.Arrow />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+            <Tooltip.Trigger
+              as={Button}
+              hierarchy="secondary"
+              size={props.size}
+              startIcon="Folder"
+              onClick={selectFile}
+              disabled={props.disabled || props.readOnly}
+            >
+              {value()}
+            </Tooltip.Trigger>
+          </Tooltip>
+        )}
       </Orienter>
     </TextField>
   );
