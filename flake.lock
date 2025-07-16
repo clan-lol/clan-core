@@ -8,19 +8,16 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": [
-          "systems"
-        ],
         "treefmt-nix": [
           "treefmt-nix"
         ]
       },
       "locked": {
-        "lastModified": 1752451292,
-        "narHash": "sha256-jvLbfYFvcS5f0AEpUlFS2xZRnK770r9TRM2smpUFFaU=",
-        "rev": "309e06fbc9a6d133ab6dd1c7d8e4876526e058bb",
+        "lastModified": 1752589312,
+        "narHash": "sha256-BafZOenlzMYdumG12AzgVLhEVu+GcEa8nYNDSIYe1U0=",
+        "rev": "496bbf05a2aa7b061ef464254db5804d1c6f45b4",
         "type": "tarball",
-        "url": "https://git.clan.lol/api/v1/repos/clan/data-mesher/archive/309e06fbc9a6d133ab6dd1c7d8e4876526e058bb.tar.gz"
+        "url": "https://git.clan.lol/api/v1/repos/clan/data-mesher/archive/496bbf05a2aa7b061ef464254db5804d1c6f45b4.tar.gz"
       },
       "original": {
         "type": "tarball",
