@@ -42,7 +42,7 @@ interface BackendReturnType<K extends OperationNames> {
  * @property {Promise<BackendReturnType<K>>} result - A promise that resolves to the return type of the backend operation.
  * @property {() => Promise<void>} cancel - A function to cancel the API call, returning a promise that resolves when cancellation is completed.
  */
-interface ApiCall<K extends OperationNames> {
+export interface ApiCall<K extends OperationNames> {
   uuid: string;
   result: Promise<OperationResponse<K>>;
   cancel: () => Promise<void>;

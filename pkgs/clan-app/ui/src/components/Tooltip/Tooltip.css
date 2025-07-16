@@ -1,0 +1,9 @@
+div.tooltip-content {
+  @apply z-50 px-2 py-0.5 bg-inv-4 rounded-[0.125rem] leading-none;
+
+  max-width: min(calc(100vw - 16px), 380px);
+
+  &.inverted {
+    @apply bg-def-2;
+  }
+}
