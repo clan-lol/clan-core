@@ -7,11 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from clan_lib.flake import Flake
+from clan_lib.flash.flash import Disk, SystemConfig, run_machine_flash
 from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-
-from .flash import Disk, SystemConfig, run_machine_flash
 
 log = logging.getLogger(__name__)
 
