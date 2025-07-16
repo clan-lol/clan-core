@@ -66,6 +66,15 @@ def install_command(args: argparse.Namespace) -> None:
             if ask != "y":
                 return None
 
+        if args.identity_file:
+            target_host = target_host.override(private_key=args.identity_file)
+
+        if password:
+            target_host = target_host.override(password=password)
+
+        if use_tor:
+            target_host = target_host.override(tor_socks=True)
+
         return run_machine_install(
             InstallOptions(
                 machine=machine,
@@ -75,9 +84,6 @@ def install_command(args: argparse.Namespace) -> None:
                 no_reboot=args.no_reboot,
                 build_on=args.build_on if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
-                password=password,
-                identity_file=args.identity_file,
-                use_tor=use_tor,
             ),
             target_host=target_host,
         )
