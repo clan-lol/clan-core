@@ -465,6 +465,10 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
         service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
 
     for module_name, module_info in service_links.items():
+        # Skip specific modules that are not ready for documentation
+        if module_name in ["internet", "tor"]:
+            continue
+
         output = f"# {module_name}\n\n"
         # output += f"`clan.modules.{module_name}`\n"
         output += f"*{module_info['manifest']['description']}*\n"
