@@ -38,7 +38,7 @@ const SceneDataProvider = (props: {
   children: (sceneData: { query: UseQueryResult<ListMachines> }) => JSX.Element;
 }) => {
   const machinesQuery = useQuery<ListMachines>(() => ({
-    queryKey: ["machines"],
+    queryKey: ["clans", props.clanURI, "machines"],
     enabled: !!props.clanURI,
     queryFn: async () => {
       if (!props.clanURI) {
