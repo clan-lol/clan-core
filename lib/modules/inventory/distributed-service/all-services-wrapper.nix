@@ -48,6 +48,7 @@ in
           {
             options = {
               instances = lib.mkOption {
+                default = { };
                 # instances.<instanceName>...
                 type = types.attrsOf (submoduleWith {
                   modules = [
@@ -57,6 +58,7 @@ in
               };
               # instances.<machineName>...
               machines = lib.mkOption {
+                default = { };
                 type = types.attrsOf (submoduleWith {
                   modules = [
                     config.exportsModule
