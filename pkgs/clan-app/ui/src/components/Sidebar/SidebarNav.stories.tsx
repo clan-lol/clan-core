@@ -14,35 +14,35 @@ import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const sidebarNavProps: SidebarNavProps = {
   clanLinks: [
-    { label: "Brian's Clan", path: "/clan/1" },
-    { label: "Dave's Clan", path: "/clan/2" },
-    { label: "Mic92's Clan", path: "/clan/3" },
+    { label: "Brian's Clan", path: "/clans/1" },
+    { label: "Dave's Clan", path: "/clans/2" },
+    { label: "Mic92's Clan", path: "/clans/3" },
   ],
   clanDetail: {
     label: "Brian's Clan",
-    settingsPath: "/clan/1/settings",
+    settingsPath: "/clans/1/settings",
     machines: [
       {
         label: "Backup & Home",
-        path: "/clan/1/machine/backup",
+        path: "/clans/1/machine/backup",
         serviceCount: 3,
         status: "Online",
       },
       {
         label: "Raspberry Pi",
-        path: "/clan/1/machine/pi",
+        path: "/clans/1/machine/pi",
         serviceCount: 1,
         status: "Offline",
       },
       {
         label: "Mom's Laptop",
-        path: "/clan/1/machine/moms-laptop",
+        path: "/clans/1/machine/moms-laptop",
         serviceCount: 2,
         status: "Installed",
       },
       {
         label: "Dad's Laptop",
-        path: "/clan/1/machine/dads-laptop",
+        path: "/clans/1/machine/dads-laptop",
         serviceCount: 4,
         status: "Not Installed",
       },
@@ -52,10 +52,10 @@ const sidebarNavProps: SidebarNavProps = {
     {
       label: "Tools",
       links: [
-        { label: "Borgbackup", path: "/clan/1/service/borgbackup" },
-        { label: "Syncthing", path: "/clan/1/service/syncthing" },
-        { label: "Mumble", path: "/clan/1/service/mumble" },
-        { label: "Minecraft", path: "/clan/1/service/minecraft" },
+        { label: "Borgbackup", path: "/clans/1/service/borgbackup" },
+        { label: "Syncthing", path: "/clans/1/service/syncthing" },
+        { label: "Mumble", path: "/clans/1/service/mumble" },
+        { label: "Minecraft", path: "/clans/1/service/minecraft" },
       ],
     },
     {
@@ -81,7 +81,7 @@ const meta: Meta<RouteSectionProps> = {
   component: SidebarNav,
   render: (_: never, context: StoryContext<SidebarNavProps>) => {
     const history = createMemoryHistory();
-    history.set({ value: "/clan/1/machine/backup" });
+    history.set({ value: "/clans/1/machine/backup" });
 
     return (
       <div style="height: 670px;">
@@ -93,7 +93,7 @@ const meta: Meta<RouteSectionProps> = {
             </Suspense>
           )}
         >
-          <Route path="/clan/1/machine/backup" component={(props) => <></>} />
+          <Route path="/clans/1/machine/backup" component={(props) => <></>} />
         </MemoryRouter>
       </div>
     );

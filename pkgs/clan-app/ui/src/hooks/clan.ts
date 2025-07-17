@@ -21,7 +21,7 @@ export const selectClanFolder = async () => {
 };
 
 export const navigateToClan = (navigate: Navigator, uri: string) => {
-  navigate("/clan/" + window.btoa(uri));
+  navigate("/clans/" + window.btoa(uri));
 };
 
 export const clanURIParam = (params: Params) => {

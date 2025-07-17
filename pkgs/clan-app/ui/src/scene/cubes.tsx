@@ -13,6 +13,9 @@ import * as THREE from "three";
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
 import { Divider } from "../components/Divider/Divider";
+import { UseQueryResult } from "@tanstack/solid-query";
+import { ListMachines } from "../routes/Clan/Clan";
+import { callApi } from "../hooks/api";
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -53,7 +56,8 @@ function getFloorPosition(
   return intersection.toArray() as [number, number, number];
 }
 
-export function CubeScene() {
+export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
+  // sceneData.cubesQuer
   let container: HTMLDivElement;
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
@@ -130,6 +134,10 @@ export function CubeScene() {
 
   const CREATE_BASE_COLOR = 0x636363;
   const CREATE_BASE_EMISSIVE = 0xc5fad7;
+
+  function getDefaultPosition(): [number, number, number] {
+    return [0, 0, 0];
+  }
 
   function getGridPosition(
     id: string,
@@ -348,8 +356,10 @@ export function CubeScene() {
   }
 
   // === Add/Delete Cube API ===
-  function addCube() {
-    const id = crypto.randomUUID();
+  function addCube(id: string | undefined = undefined) {
+    if (!id) {
+      id = crypto.randomUUID();
+    }
 
     // Add to creating set first
     setCreatingIds((prev) => new Set([...prev, id]));
@@ -504,6 +514,16 @@ export function CubeScene() {
   let initBase: THREE.Mesh;
 
   const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
+
+  createEffect(() => {
+    if (props.cubesQuery.data) {
+      for (const machineId of Object.keys(props.cubesQuery.data)) {
+        console.log("Received: ", machineId);
+        setNextPosition(new THREE.Vector3(...getDefaultPosition()));
+        addCube(machineId);
+      }
+    }
+  });
 
   onMount(() => {
     // Scene setup
@@ -687,19 +707,19 @@ export function CubeScene() {
           // Snap to grid
           const snapped = new THREE.Vector3(
             Math.round(point.x / GRID_SIZE) * GRID_SIZE,
-            BASE_HEIGHT / 2,
+            0,
             Math.round(point.z / GRID_SIZE) * GRID_SIZE,
           );
           if (!initBase) {
             // Create initial base mesh if it doesn't exist
             initBase = createCubeBase(
-              [snapped.x, BASE_HEIGHT / 2, snapped.z],
+              [snapped.x, 0, snapped.z],
               1,
               CREATE_BASE_COLOR,
               CREATE_BASE_EMISSIVE, // Emissive color
             );
           } else {
-            initBase.position.set(snapped.x, BASE_HEIGHT / 2, snapped.z);
+            initBase.position.set(snapped.x, 0, snapped.z);
           }
           scene.remove(initBase); // Remove any existing base mesh
           scene.add(initBase);
@@ -786,7 +806,28 @@ export function CubeScene() {
         if (initBase) {
           scene.remove(initBase); // Remove the base mesh after adding cube
           setWorldMode("view");
-          addCube();
+          const res = callApi("create_machine", {
+            opts: {
+              clan_dir: {
+                identifier: "/home/johannes/git/tmp/my-clan",
+              },
+              machine: {
+                name: "sara",
+              },
+            },
+          });
+          res.result.then(() => {
+            props.cubesQuery.refetch();
+            const pos = nextBasePosition();
+
+            if (!pos) {
+              console.error("No next position set for new cube");
+              return;
+            }
+
+            positionMap.set("sara", pos);
+            addCube("sara");
+          });
         }
         return;
       }

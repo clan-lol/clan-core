@@ -4,6 +4,11 @@ import { makePersisted } from "@solid-primitives/storage";
 interface ClanStoreType {
   clanURIs: string[];
   activeClanURI?: string;
+  sceneData?: {
+    [clanURI: string]: {
+      [machineId: string]: { position: [number, number] };
+    };
+  };
 }
 
 const [store, setStore] = makePersisted(

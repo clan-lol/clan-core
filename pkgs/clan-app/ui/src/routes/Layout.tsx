@@ -8,7 +8,7 @@ export const Layout: Component<RouteSectionProps> = (props) => {
 
   // check for an active clan uri and redirect to it on first load
   const activeURI = activeClanURI();
-  if (!props.location.pathname.startsWith("/clan/") && activeURI) {
+  if (!props.location.pathname.startsWith("/clans/") && activeURI) {
     navigateToClan(navigate, activeURI);
   } else {
     navigate("/");
