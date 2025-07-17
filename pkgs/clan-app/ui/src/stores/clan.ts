@@ -22,7 +22,7 @@ const [store, setStore] = makePersisted(
  * @function
  * @returns {string} The URI of the active clan.
  */
-const activeClanURI = (): string | undefined => store.activeClanURI;
+const activeClanURI = () => store.activeClanURI;
 
 /**
  * Updates the active Clan URI in the store.
