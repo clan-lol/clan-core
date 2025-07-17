@@ -4,6 +4,11 @@ import { makePersisted } from "@solid-primitives/storage";
 interface ClanStoreType {
   clanURIs: string[];
   activeClanURI?: string;
+  sceneData?: {
+    [clanURI: string]: {
+      [machineId: string]: { position: [number, number] };
+    };
+  };
 }
 
 const [store, setStore] = makePersisted(
@@ -22,7 +27,7 @@ const [store, setStore] = makePersisted(
  * @function
  * @returns {string} The URI of the active clan.
  */
-const activeClanURI = (): string | undefined => store.activeClanURI;
+const activeClanURI = () => store.activeClanURI;
 
 /**
  * Updates the active Clan URI in the store.

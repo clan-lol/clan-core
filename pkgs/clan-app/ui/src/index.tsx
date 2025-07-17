@@ -2,7 +2,7 @@
 import { render } from "solid-js/web";
 
 import "./index.css";
-import { QueryClient } from "@tanstack/solid-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { Routes } from "@/src/routes";
 import { Router } from "@solidjs/router";
 import { Layout } from "@/src/routes/Layout";
@@ -22,4 +22,11 @@ if (import.meta.env.DEV) {
   await import("solid-devtools");
 }
 
-render(() => <Router root={Layout}>{Routes}</Router>, root!);
+render(
+  () => (
+    <QueryClientProvider client={client}>
+      <Router root={Layout}>{Routes}</Router>
+    </QueryClientProvider>
+  ),
+  root!,
+);
