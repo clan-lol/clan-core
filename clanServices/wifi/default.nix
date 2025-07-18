@@ -39,7 +39,7 @@ in
     };
 
     perInstance =
-      { settings, ... }:
+      { instanceName, settings, ... }:
       {
         nixosModule =
           { pkgs, config, ... }:
@@ -86,7 +86,7 @@ in
 
             # service to generate the environment file containing all secrets, as
             #   expected by the nixos NetworkManager-ensure-profile service
-            systemd.services.NetworkManager-setup-secrets = {
+            systemd.services."NetworkManager-setup-secrets-${instanceName}" = {
               description = "Generate wifi secrets for NetworkManager";
               requiredBy = [ "NetworkManager-ensure-profiles.service" ];
               partOf = [ "NetworkManager-ensure-profiles.service" ];
