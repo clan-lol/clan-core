@@ -54,6 +54,8 @@
             config = {
               services.tor = {
                 enable = true;
+                torsocks.enable = true;
+                client.enable = true;
                 relay.onionServices."clan_${instanceName}" = {
                   version = 3;
                   # TODO get ports from instance machine config
