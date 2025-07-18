@@ -1,0 +1,45 @@
+#splash {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to top, #e3e7e7, #edf1f1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+#splash .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  @apply h-8 mb-8;
+}
+
+.loader {
+  @apply h-3 w-60 mb-3;
+  width: 18rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    #bfd0d2 0px,
+    #bfd0d2 10px,
+    #f7f9fa 10px,
+    #f7f9fa 20px
+  );
+  animation: stripe-move 1s linear infinite;
+  background-size: 28px 28px; /* Sqrt(20^2 + 20^2) ~= 28 */
+
+  @apply border-2 border-solid rounded-[3px] border-bg-def-1;
+}
+
+@keyframes stripe-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}
