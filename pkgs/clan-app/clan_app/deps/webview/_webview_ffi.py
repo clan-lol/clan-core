@@ -29,10 +29,7 @@ def _get_lib_names() -> list[str]:
         msg = f"Unsupported architecture: {machine}"
         raise RuntimeError(msg)
     if system == "darwin":
-        if machine == "arm64":
-            return ["libwebview.dylib"]
-        msg = "Not supported"
-        raise RuntimeError(msg)
+        return ["libwebview.dylib"]
     # linux
     return ["libwebview.so"]
 

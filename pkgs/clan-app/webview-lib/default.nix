@@ -1,6 +1,18 @@
-{ pkgs, ... }:
+{
+  gtk4,
+  webkitgtk_6_0,
+  lib,
+  clangStdenv,
+  fetchFromGitea,
+  gnumake,
+  cmake,
+  clang-tools,
+  pkg-config,
+  stdenv,
+  ...
+}:
 
-pkgs.clangStdenv.mkDerivation {
+clangStdenv.mkDerivation {
   pname = "webview";
   version = "nightly";
 
@@ -8,7 +20,7 @@ pkgs.clangStdenv.mkDerivation {
   # We disallow remote connections from the UI on Linux
   # TODO: Disallow remote connections on MacOS
 
-  src = pkgs.fetchFromGitea {
+  src = fetchFromGitea {
     domain = "git.clan.lol";
     owner = "clan";
     repo = "webview";
@@ -37,23 +49,19 @@ pkgs.clangStdenv.mkDerivation {
   ];
 
   # Dependencies used during the build process, if any
-  nativeBuildInputs = with pkgs; [
+  nativeBuildInputs = [
     gnumake
     cmake
     clang-tools
     pkg-config
   ];
 
-  buildInputs =
-    with pkgs;
-    [
-    ]
-    ++ pkgs.lib.optionals stdenv.isLinux [
-      webkitgtk_6_0
-      gtk4
-    ];
+  buildInputs = lib.optionals stdenv.isLinux [
+    webkitgtk_6_0
+    gtk4
+  ];
 
-  meta = with pkgs.lib; {
+  meta = with lib; {
     description = "Tiny cross-platform webview library for C/C++. Uses WebKit (GTK/Cocoa) and Edge WebView2 (Windows)";
     homepage = "https://github.com/webview/webview";
     license = licenses.mit;
