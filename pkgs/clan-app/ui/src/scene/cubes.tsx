@@ -9,6 +9,7 @@ import {
 import "./cubes.css";
 
 import * as THREE from "three";
+import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
@@ -75,6 +76,7 @@ export function CubeScene(props: {
   let camera: THREE.PerspectiveCamera;
   let renderer: THREE.WebGLRenderer;
   let floor: THREE.Mesh;
+  let controls: MapControls;
 
   // Create background scene
   const bgScene = new THREE.Scene();
@@ -486,6 +488,12 @@ export function CubeScene(props: {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
+    controls = new MapControls(camera, renderer.domElement);
+    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    // Enable the context menu,
+    // TODO: disable in production
+    controls.mouseButtons.RIGHT = null;
+
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
@@ -686,10 +694,10 @@ export function CubeScene(props: {
     };
 
     // Event listeners
-    renderer.domElement.addEventListener("mousedown", onMouseDown);
-    renderer.domElement.addEventListener("mouseup", onMouseUp);
-    renderer.domElement.addEventListener("mousemove", onMouseMove);
-    renderer.domElement.addEventListener("wheel", onWheel);
+    // renderer.domElement.addEventListener("mousedown", onMouseDown);
+    // renderer.domElement.addEventListener("mouseup", onMouseUp);
+    // renderer.domElement.addEventListener("mousemove", onMouseMove);
+    // renderer.domElement.addEventListener("wheel", onWheel);
 
     // Raycaster for clicking
     raycaster = new THREE.Raycaster();
@@ -742,6 +750,8 @@ export function CubeScene(props: {
       frameCount++;
       renderer.autoClear = false;
       renderer.render(bgScene, bgCamera); // Render background scene
+
+      controls.update();
       renderer.render(scene, camera);
 
       // Uncomment for memory debugging:
@@ -758,16 +768,25 @@ export function CubeScene(props: {
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
     window.addEventListener("resize", handleResize);
+    // For debugging,
+    // TODO: Remove in production
+    window.addEventListener(
+      "contextmenu",
+      (e) => {
+        e.stopPropagation();
+      },
+      { capture: true },
+    );
 
     // Cleanup function
     onCleanup(() => {
       // Stop animation loop
       isAnimating = false;
 
-      renderer.domElement.removeEventListener("mousedown", onMouseDown);
-      renderer.domElement.removeEventListener("mouseup", onMouseUp);
-      renderer.domElement.removeEventListener("mousemove", onMouseMove);
-      renderer.domElement.removeEventListener("wheel", onWheel);
+      // renderer.domElement.removeEventListener("mousedown", onMouseDown);
+      // renderer.domElement.removeEventListener("mouseup", onMouseUp);
+      // renderer.domElement.removeEventListener("mousemove", onMouseMove);
+      // renderer.domElement.removeEventListener("wheel", onWheel);
       renderer.domElement.removeEventListener("click", onClick);
       window.removeEventListener("resize", handleResize);
 
