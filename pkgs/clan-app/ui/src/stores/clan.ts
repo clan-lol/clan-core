@@ -1,19 +1,18 @@
 import { createStore, produce } from "solid-js/store";
 import { makePersisted } from "@solid-primitives/storage";
 
-interface ClanStoreType {
+export type SceneData = Record<string, { position: [number, number] }>;
+
+export interface ClanStoreType {
   clanURIs: string[];
   activeClanURI?: string;
-  sceneData?: {
-    [clanURI: string]: {
-      [machineId: string]: { position: [number, number] };
-    };
-  };
+  sceneData: Record<string, SceneData>;
 }
 
 const [store, setStore] = makePersisted(
   createStore<ClanStoreType>({
     clanURIs: [],
+    sceneData: {},
   }),
   {
     name: "clanStore",
@@ -50,8 +49,10 @@ const clanURIs = (): string[] => store.clanURIs;
  * @param {string} uri - The URI of the clan to be added.
  *
  */
-const addClanURI = (uri: string) =>
+const addClanURI = (uri: string) => {
   setStore("clanURIs", store.clanURIs.length, uri);
+  setStore("sceneData", uri, {}); // Initialize empty scene data for every new clan URI
+};
 
 /**
  * Removes a specified URI from the clan URI list and updates the active clan URI.
@@ -85,6 +86,7 @@ const removeClanURI = (uri: string) => {
 
 export {
   store,
+  setStore,
   activeClanURI,
   setActiveClanURI,
   clanURIs,

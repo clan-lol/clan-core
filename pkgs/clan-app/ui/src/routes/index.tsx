@@ -1,6 +1,6 @@
 import type { RouteDefinition } from "@solidjs/router/dist/types";
 import { Onboarding } from "@/src/routes/Onboarding/Onboarding";
-import { Clans } from "@/src/routes/Clan/Clan";
+import { Clan } from "@/src/routes/Clan/Clan";
 
 export const Routes: RouteDefinition[] = [
   {
@@ -9,7 +9,6 @@ export const Routes: RouteDefinition[] = [
   },
   {
     path: "/clans",
-    component: Clans,
     children: [
       {
         path: "/",
@@ -25,7 +24,7 @@ export const Routes: RouteDefinition[] = [
         children: [
           {
             path: "/",
-            component: (props) => <h1>ClanID: {props.params.clanURI}</h1>,
+            component: Clan,
           },
           {
             path: "/machines",
