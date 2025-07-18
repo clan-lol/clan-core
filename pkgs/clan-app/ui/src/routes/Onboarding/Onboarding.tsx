@@ -11,7 +11,6 @@ import { RouteSectionProps, useNavigate } from "@solidjs/router";
 import "./Onboarding.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
-import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { Alert } from "@/src/components/Alert/Alert";
 
 import { Divider } from "@/src/components/Divider/Divider";
@@ -33,6 +32,7 @@ import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { callApi } from "@/src/hooks/api";
+import { Creating } from "./Creating";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -153,21 +153,6 @@ const welcome = (props: {
     </div>
   );
 };
-
-const creating = () => (
-  <div class="animate-pulse">
-    <Tooltip
-      open={true}
-      placement="top"
-      animation="bounce"
-      trigger={<div class="creating" />}
-    >
-      <Typography hierarchy="body" size="xs" weight="medium" inverted={true}>
-        Your Clan is being created
-      </Typography>
-    </Tooltip>
-  </div>
-);
 
 export const Onboarding: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();
@@ -372,7 +357,9 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
             </div>
           </Match>
 
-          <Match when={state() === "creating"}>{creating()}</Match>
+          <Match when={state() === "creating"}>
+            <Creating />
+          </Match>
         </Switch>
       </div>
     </main>
