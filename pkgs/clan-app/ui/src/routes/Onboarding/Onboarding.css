@@ -81,10 +81,5 @@ main#welcome {
         }
       }
     }
-
-    div.creating {
-      @apply w-[17.0625rem] h-[20.4375rem];
-      background: url(./cube.svg) center / cover no-repeat;
-    }
   }
 }

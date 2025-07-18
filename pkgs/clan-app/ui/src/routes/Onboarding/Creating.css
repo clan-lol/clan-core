@@ -1,0 +1,663 @@
+div.creating {
+  @apply flex flex-col items-center justify-center;
+
+  div.scene {
+    width: 400px;
+    height: 400px;
+    perspective: 1000px;
+    /*background: red;*/
+
+    & > .frame {
+      position: relative;
+      top: 100px;
+      left: 65px;
+      width: 200px;
+      height: 200px;
+      /*background: green;*/
+
+      /*transform: rotate3d(-2, -2, 1, 45deg);*/
+      transform: rotate3d(-1.5, -2, 0.5, 45deg);
+      transform-style: preserve-3d;
+
+      & > .cube {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200px;
+        height: 200px;
+        transform-style: preserve-3d;
+
+        .cube-face {
+          position: absolute;
+          width: 100px;
+          height: 100px;
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.56) 0%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          border: 1px #10191a solid;
+
+          opacity: 1;
+
+          &.front {
+            transform: rotateY(0deg) translateZ(50px);
+          }
+
+          &.right {
+            transform: rotateY(90deg) translateZ(50px);
+          }
+
+          &.back {
+            transform: rotateY(180deg) translateZ(50px);
+          }
+
+          &.left {
+            transform: rotateY(-90deg) translateZ(50px);
+          }
+
+          &.top {
+            transform: rotateX(90deg) translateZ(50px);
+          }
+
+          &.bottom {
+            transform: rotateX(-90deg) translateZ(50px);
+          }
+        }
+
+        &.state-1 {
+          animation: anim-cube-1-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-1-1 {
+          transform: translateZ(-120px);
+          animation: anim-cube-1-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-2 {
+          left: 120px;
+          animation: anim-cube-2-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-2-2 {
+          left: 120px;
+          transform: translateZ(-120px);
+          animation: anim-cube-2-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-3 {
+          top: 120px;
+          animation: anim-cube-3-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-3-3 {
+          top: 120px;
+          transform: translateZ(-120px);
+          animation: anim-cube-3-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-4 {
+          top: 120px;
+          left: 120px;
+          animation: anim-cube-4-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+
+        &.state-4-4 {
+          top: 120px;
+          left: 120px;
+          transform: translateZ(-120px);
+          animation: anim-cube-4-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
+            infinite;
+        }
+      }
+    }
+  }
+}
+
+@keyframes anim-cube-1-1 {
+  /* STEP 1 */
+  0% {
+    left: 0px;
+    transform: translateZ(0px);
+  }
+  2.083% {
+    left: -40px;
+    transform: translateZ(0px);
+  }
+
+  16.666% {
+    left: -40px;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 2 */
+  18.749% {
+    left: 0;
+    transform: translateZ(0px);
+  }
+
+  33.332% {
+    left: 0;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 3 */
+  35.415% {
+    left: 0;
+    transform: translateZ(40px);
+  }
+
+  49.998% {
+    left: 0;
+    transform: translateZ(40px);
+  }
+
+  /* STEP 4 */
+  52.081% {
+    left: 0;
+    transform: translateZ(0);
+  }
+
+  66.664% {
+    left: 0;
+    transform: translateZ(0);
+  }
+
+  /* Step 5 */
+  68.747% {
+    left: -60px;
+    transform: translateZ(60px);
+  }
+  83.33% {
+    left: -60px;
+    transform: translateZ(60px);
+  }
+
+  /* Step 6 */
+  85.413% {
+    left: 0px;
+    transform: translateZ(0px);
+  }
+  100% {
+    left: 0px;
+    transform: translateZ(0px);
+  }
+}
+
+@keyframes anim-cube-2-1 {
+  /* STEP 1 */
+  0% {
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  2.083% {
+    left: 180px;
+    transform: translateZ(0px);
+  }
+
+  16.666% {
+    left: 180px;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 2 */
+  18.749% {
+    left: 120px;
+    transform: translateZ(0px);
+  }
+
+  33.332% {
+    left: 120px;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 3 */
+  35.415% {
+    left: 240px;
+    transform: translateZ(120px);
+  }
+
+  49.998% {
+    left: 240px;
+    transform: translateZ(120px);
+  }
+
+  /* STEP 4 */
+  52.081% {
+    left: 120px;
+    transform: translateZ(0);
+  }
+
+  66.664% {
+    left: 120px;
+    transform: translateZ(0);
+  }
+
+  /* Step 5 */
+  68.747% {
+    left: 60px;
+    transform: translateZ(60px);
+  }
+  83.33% {
+    left: 60px;
+    transform: translateZ(60px);
+  }
+
+  /* Step 6 */
+  85.413% {
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  100% {
+    left: 120px;
+    transform: translateZ(0px);
+  }
+}
+
+@keyframes anim-cube-3-1 {
+  /* STEP 1 */
+  0% {
+    top: 120px;
+    transform: translateZ(0px);
+  }
+  2.083% {
+    top: 220px;
+    transform: translateZ(0px);
+  }
+
+  16.666% {
+    top: 220px;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 2 */
+  18.749% {
+    top: 120px;
+    transform: translateZ(0px);
+  }
+
+  33.332% {
+    top: 120px;
+    transform: translateZ(0px);
+  }
+
+  /* STEP 3 */
+  35.415% {
+    top: 120px;
+    transform: translateZ(40px);
+  }
+
+  49.998% {
+    top: 120px;
+    transform: translateZ(40px);
+  }
+
+  /* STEP 4 */
+  52.081% {
+    top: 120px;
+    transform: translateZ(0);
+  }
+
+  66.664% {
+    top: 120px;
+    transform: translateZ(0);
+  }
+
+  /* Step 5 */
+  68.747% {
+    top: 180px;
+    transform: translateZ(80px);
+  }
+  83.33% {
+    top: 180px;
+    transform: translateZ(80px);
+  }
+
+  /* Step 6 */
+  85.413% {
+    top: 120px;
+    transform: translateZ(0px);
+  }
+  100% {
+    top: 120px;
+    transform: translateZ(0px);
+  }
+}
+
+@keyframes anim-cube-4-1 {
+  /* STEP 1 */
+  0% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  2.083% {
+    top: 220px;
+    left: 180px;
+    transform: translateZ(0px);
+  }
+  16.666% {
+    top: 220px;
+    left: 180px;
+    transform: translateZ(0px);
+  }
+  /* STEP 2 */
+  18.749% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  33.332% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  /* STEP 3 */
+  35.415% {
+    top: 120px;
+    left: 240px;
+    transform: translateZ(120px);
+  }
+  49.998% {
+    top: 120px;
+    left: 240px;
+    transform: translateZ(120px);
+  }
+  /* STEP 4 */
+  52.081% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0);
+  }
+  66.664% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0);
+  }
+  /* Step 5 */
+  68.747% {
+    top: 180px;
+    left: 260px;
+    transform: translateZ(80px);
+  }
+  83.33% {
+    top: 180px;
+    left: 260px;
+    transform: translateZ(80px);
+  }
+  /* Step 6 */
+  85.413% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0px);
+  }
+  100% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(0px);
+  }
+}
+
+@keyframes anim-cube-1-2 {
+  /* STEP 1 */
+  0% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  2.083% {
+    left: -40px;
+    transform: translateZ(-120px);
+  }
+  16.666% {
+    left: -40px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 2 */
+  18.749% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  33.332% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 3 */
+  35.415% {
+    left: 0px;
+    transform: translateZ(-200px);
+  }
+  49.998% {
+    left: 0px;
+    transform: translateZ(-200px);
+  }
+  /* STEP 4 */
+  52.081% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  66.664% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  /* Step 5 */
+  68.747% {
+    left: -60px;
+    transform: translateZ(-180px);
+  }
+  83.33% {
+    left: -60px;
+    transform: translateZ(-180px);
+  }
+  /* Step 6 */
+  85.413% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  100% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+}
+
+@keyframes anim-cube-2-2 {
+  /* STEP 1 */
+  0% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  2.083% {
+    left: 180px;
+    transform: translateZ(-120px);
+  }
+  16.666% {
+    left: 180px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 2 */
+  18.749% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  33.332% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 3 */
+  35.415% {
+    left: 240px;
+    transform: translateZ(-200px);
+  }
+  49.998% {
+    left: 240px;
+    transform: translateZ(-200px);
+  }
+  /* STEP 4 */
+  52.081% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  66.664% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  /* Step 5 */
+  68.747% {
+    left: 60px;
+    transform: translateZ(-180px);
+  }
+  83.33% {
+    left: 60px;
+    transform: translateZ(-180px);
+  }
+  /* Step 6 */
+  85.413% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  100% {
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+}
+
+@keyframes anim-cube-3-2 {
+  /* STEP 1 */
+  0% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  2.083% {
+    top: 220px;
+    transform: translateZ(-120px);
+  }
+  16.666% {
+    top: 220px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 2 */
+  18.749% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  33.332% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 3 */
+  35.415% {
+    top: 120px;
+    transform: translateZ(-200px);
+  }
+  49.998% {
+    top: 120px;
+    transform: translateZ(-200px);
+  }
+  /* STEP 4 */
+  52.081% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  66.664% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  /* Step 5 */
+  68.747% {
+    top: 180px;
+    transform: translateZ(-180px);
+  }
+  83.33% {
+    top: 180px;
+    transform: translateZ(-180px);
+  }
+  /* Step 6 */
+  85.413% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+  100% {
+    top: 120px;
+    transform: translateZ(-120px);
+  }
+}
+
+@keyframes anim-cube-4-2 {
+  /* STEP 1 */
+  0% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  2.083% {
+    top: 220px;
+    left: 180px;
+    transform: translateZ(-120px);
+  }
+  16.666% {
+    top: 220px;
+    left: 180px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 2 */
+  18.749% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  33.332% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 3 */
+  35.415% {
+    top: 120px;
+    left: 240px;
+    transform: translateZ(-200px);
+  }
+  49.998% {
+    top: 120px;
+    left: 240px;
+    transform: translateZ(-200px);
+  }
+  /* STEP 4 */
+  52.081% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  66.664% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  /* Step 5 */
+  68.747% {
+    top: 180px;
+    left: 260px;
+    transform: translateZ(-180px);
+  }
+  83.33% {
+    top: 180px;
+    left: 260px;
+    transform: translateZ(-180px);
+  }
+  /* Step 6 */
+  85.413% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+  100% {
+    top: 120px;
+    left: 120px;
+    transform: translateZ(-120px);
+  }
+}
