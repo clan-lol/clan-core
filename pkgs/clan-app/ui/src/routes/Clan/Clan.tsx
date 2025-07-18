@@ -1,5 +1,5 @@
 import { RouteSectionProps } from "@solidjs/router";
-import { Component, createEffect, JSX } from "solid-js";
+import { Component, JSX } from "solid-js";
 import { useClanURI } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import { MachinesQueryResult, useMachinesQuery } from "@/src/queries/queries";
@@ -7,6 +7,9 @@ import { callApi } from "@/src/hooks/api";
 import { store, setStore } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
 import { Button } from "@/src/components/Button/Button";
+import { Splash } from "@/src/scene/splash";
+import cx from "classnames";
+import "./Clan.css";
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   return (
@@ -49,10 +52,6 @@ const ClanSceneController = () => {
     return;
   };
 
-  createEffect(() => {
-    console.log("sceneData changed:", store.sceneData);
-  });
-
   return (
     <SceneDataProvider clanURI={clanURI}>
       {({ query }) => {
@@ -87,7 +86,12 @@ const ClanSceneController = () => {
                 Refetch API
               </Button>
             </div>
+            {/* TODO: Add minimal display time */}
+            <div class={cx({ "fade-out": !query.isLoading })}>
+              <Splash />
+            </div>
             <CubeScene
+              isLoading={query.isLoading}
               cubesQuery={query}
               onCreate={onCreate}
               sceneStore={() => {

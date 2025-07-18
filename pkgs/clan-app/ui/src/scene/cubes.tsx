@@ -69,6 +69,7 @@ export function CubeScene(props: {
   onCreate?: (id: string) => Promise<void>;
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number]) => void;
+  isLoading: boolean;
 }) {
   // sceneData.cubesQuer
   let container: HTMLDivElement;
@@ -78,7 +79,7 @@ export function CubeScene(props: {
   let floor: THREE.Mesh;
   let controls: MapControls;
   // Raycaster for clicking
-  let raycaster = new THREE.Raycaster();
+  const raycaster = new THREE.Raycaster();
 
   let needsRender = false; // Flag to control rendering
 
@@ -181,6 +182,7 @@ export function CubeScene(props: {
       requestAnimationFrame(renderScene);
     }
   }
+
   function renderScene() {
     if (!isAnimating) return;
     needsRender = false;
@@ -587,9 +589,6 @@ export function CubeScene(props: {
       BASE_SIZE,
     );
 
-    // Basic OrbitControls implementation (simplified)
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
     // const spherical = new THREE.Spherical();
     // spherical.setFromVector3(camera.position);
 
