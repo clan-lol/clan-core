@@ -1,4 +1,3 @@
-import importlib
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -6,9 +5,11 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
 
+from clan_cli.vars.generate import run_generators
 from clan_cli.vars.get import get_machine_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.import_utils import ClassSource, import_with_source
 from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.remote import Remote, check_machine_ssh_reachable
 
@@ -26,17 +27,32 @@ class Peer:
             return self._host["plain"]
         if "var" in self._host and isinstance(self._host["var"], dict):
             _var: dict[str, str] = self._host["var"]
+            machine_name = _var["machine"]
+            generator = _var["generator"]
             var = get_machine_var(
                 str(self.flake),
-                _var["machine"],
-                f"{_var['generator']}/{_var['file']}",
+                machine_name,
+                f"{generator}/{_var['file']}",
             )
+            if not var.exists:
+                for _ in range(3):
+                    res = run_generators(
+                        machine_name=machine_name,
+                        generators=[generator],
+                        all_prompt_values={},
+                        base_dir=self.flake.path,
+                    )
+                    if res:
+                        break
             return var.value.decode()
         msg = f"Unknown Var Type {self._host}"
         raise ClanError(msg)
 
 
+@dataclass
 class NetworkTechnologyBase(ABC):
+    source: ClassSource
+
     @abstractmethod
     def is_running(self) -> bool:
         pass
@@ -61,6 +77,14 @@ class NetworkTechnologyBase(ABC):
                 return None
         return None
 
+    def __str__(self) -> str:
+        """Return a VSCode-clickable string representation."""
+        return f"{self.source.file_path}:{self.source.line_number}"
+
+    def __repr__(self) -> str:
+        """Return a detailed representation with VSCode-clickable path."""
+        return f"<{self.__class__.__name__} at {self.source.file_path}:{self.source.line_number}>"
+
 
 @dataclass(frozen=True)
 class Network:
@@ -70,8 +94,12 @@ class Network:
 
     @cached_property
     def module(self) -> NetworkTechnologyBase:
-        module = importlib.import_module(self.module_name)
-        return module.NetworkTechnology()
+        res = import_with_source(
+            self.module_name,
+            "NetworkTechnology",
+            NetworkTechnologyBase,  # type: ignore[type-abstract]
+        )
+        return res
 
     def is_running(self) -> bool:
         return self.module.is_running()
@@ -117,6 +145,7 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         result[network_name]["status"] = None
         result[network_name]["peers"] = {}
         network_online = False
+        log.debug(f"Using network module: {network.module}")
         if network.module.is_running():
             result[network_name]["status"] = True
             network_online = True
