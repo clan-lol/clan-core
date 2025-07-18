@@ -77,12 +77,14 @@ export function CubeScene(props: {
   let renderer: THREE.WebGLRenderer;
   let floor: THREE.Mesh;
   let controls: MapControls;
+  // Raycaster for clicking
+  let raycaster = new THREE.Raycaster();
+
+  let needsRender = false; // Flag to control rendering
 
   // Create background scene
   const bgScene = new THREE.Scene();
   const bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-  let raycaster: THREE.Raycaster;
 
   const groupMap = new Map<string, THREE.Group>();
 
@@ -172,6 +174,26 @@ export function CubeScene(props: {
       }
     }
   });
+
+  function requestRenderIfNotRequested() {
+    if (!needsRender) {
+      needsRender = true;
+      requestAnimationFrame(renderScene);
+    }
+  }
+  function renderScene() {
+    if (!isAnimating) return;
+    needsRender = false;
+
+    frameCount++;
+
+    renderer.autoClear = false;
+    renderer.render(bgScene, bgCamera);
+    controls.update(); // optional; see note below
+    renderer.render(scene, camera);
+
+    if (frameCount % 30 === 0) logMemoryUsage();
+  }
 
   function getGridPosition(id: string): [number, number, number] {
     // TODO: Detect collision with other cubes
@@ -400,15 +422,18 @@ export function CubeScene(props: {
 
       cubeMaterial.color.set(CUBE_COLOR);
     }
+
+    requestRenderIfNotRequested();
   }
 
   function logMemoryUsage() {
     if (renderer && renderer.info) {
-      console.log("Three.js Memory:", {
+      console.debug("Three.js Memory:", {
+        frame: renderer.info.render.frame,
+        calls: renderer.info.render.calls,
         geometries: renderer.info.memory.geometries,
         textures: renderer.info.memory.textures,
         programs: renderer.info.programs?.length || 0,
-        calls: renderer.info.render.calls,
         triangles: renderer.info.render.triangles,
       });
     }
@@ -493,6 +518,7 @@ export function CubeScene(props: {
     // Enable the context menu,
     // TODO: disable in production
     controls.mouseButtons.RIGHT = null;
+    controls.addEventListener("change", requestRenderIfNotRequested);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
@@ -588,120 +614,6 @@ export function CubeScene(props: {
     // Initial camera info update
     updateCameraInfo();
 
-    const onMouseDown = (event: MouseEvent) => {
-      isDragging = true;
-      previousMousePosition = { x: event.clientX, y: event.clientY };
-    };
-
-    const onMouseUp = () => {
-      isDragging = false;
-    };
-
-    const onMouseMove = (event: MouseEvent) => {
-      if (worldMode() === "create") {
-        if (isDragging) return;
-
-        const rect = renderer.domElement.getBoundingClientRect();
-        const mouse = new THREE.Vector2(
-          ((event.clientX - rect.left) / rect.width) * 2 - 1,
-          -((event.clientY - rect.top) / rect.height) * 2 + 1,
-        );
-
-        raycaster.setFromCamera(mouse, camera);
-
-        const intersects = raycaster.intersectObject(floor);
-        if (intersects.length > 0) {
-          const point = intersects[0].point;
-
-          // Snap to grid
-          const snapped = new THREE.Vector3(
-            Math.round(point.x / GRID_SIZE) * GRID_SIZE,
-            0,
-            Math.round(point.z / GRID_SIZE) * GRID_SIZE,
-          );
-          if (!initBase) {
-            // Create initial base mesh if it doesn't exist
-            initBase = createCubeBase(
-              [snapped.x, 0, snapped.z],
-              1,
-              CREATE_BASE_COLOR,
-              CREATE_BASE_EMISSIVE, // Emissive color
-            );
-          } else {
-            initBase.position.set(snapped.x, 0, snapped.z);
-          }
-          scene.remove(initBase); // Remove any existing base mesh
-          scene.add(initBase);
-          setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
-        }
-        // If in create mode, don't allow camera movement
-        return;
-      }
-
-      if (!isDragging) return;
-
-      const deltaX = event.clientX - previousMousePosition.x;
-      const deltaY = event.clientY - previousMousePosition.y;
-      // const deltaY = event.clientY - previousMousePosition.y;
-      if (positionMode() === "circle") {
-        const spherical = new THREE.Spherical();
-        spherical.setFromVector3(camera.position);
-        spherical.theta -= deltaX * 0.01;
-        // spherical.phi += deltaY * 0.01;
-        // spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
-
-        // const lightPos = new THREE.Spherical();
-        // lightPos.setFromVector3(directionalLight.position);
-        // lightPos.theta = spherical.theta - Math.PI / 2; // 90 degrees offset
-        // directionalLight.position.setFromSpherical(lightPos);
-
-        // directionalLight.lookAt(0, 0, 0);
-
-        camera.position.setFromSpherical(spherical);
-        camera.lookAt(0, 0, 0);
-      } else {
-        const movementSpeed = 0.015;
-
-        // Get camera direction vectors
-        const cameraDirection = new THREE.Vector3();
-        camera.getWorldDirection(cameraDirection);
-        cameraDirection.y = 0; // Ignore vertical direction
-
-        const cameraRight = new THREE.Vector3();
-        cameraRight.crossVectors(camera.up, cameraDirection).normalize(); // Get right vector
-
-        // Move camera based on mouse deltas
-        camera.position.addScaledVector(cameraRight, deltaX * movementSpeed); // horizontal drag
-        camera.position.addScaledVector(
-          cameraDirection,
-          deltaY * movementSpeed,
-        ); // vertical drag (forward/back)
-      }
-      updateCameraInfo();
-
-      previousMousePosition = { x: event.clientX, y: event.clientY };
-    };
-
-    const onWheel = (event: WheelEvent) => {
-      const spherical = new THREE.Spherical();
-      spherical.setFromVector3(camera.position);
-      event.preventDefault();
-      spherical.radius += event.deltaY * 0.01;
-      spherical.radius = Math.max(3, Math.min(10, spherical.radius)); // Clamp radius between 5 and 50
-      camera.position.setFromSpherical(spherical);
-      // camera.lookAt(0, 0, 0);
-      updateCameraInfo();
-    };
-
-    // Event listeners
-    // renderer.domElement.addEventListener("mousedown", onMouseDown);
-    // renderer.domElement.addEventListener("mouseup", onMouseUp);
-    // renderer.domElement.addEventListener("mousemove", onMouseMove);
-    // renderer.domElement.addEventListener("wheel", onWheel);
-
-    // Raycaster for clicking
-    raycaster = new THREE.Raycaster();
-
     // Click handler:
     // - Select/deselects a cube in "view" mode
     // - Creates a new cube in "create" mode
@@ -742,31 +654,26 @@ export function CubeScene(props: {
 
     renderer.domElement.addEventListener("click", onClick);
 
-    const animate = () => {
-      if (!isAnimating) return; // Exit if component is unmounted
-
-      requestAnimationFrame(animate);
-
-      frameCount++;
-      renderer.autoClear = false;
-      renderer.render(bgScene, bgCamera); // Render background scene
-
-      controls.update();
-      renderer.render(scene, camera);
-
-      // Uncomment for memory debugging:
-      if (frameCount % 300 === 0) logMemoryUsage(); // Log every 60 frames
-    };
-
     isAnimating = true;
-    animate();
+
+    requestRenderIfNotRequested();
 
     // Handle window resize
     const handleResize = () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
+
+      // Update background shader resolution
+      uniforms.resolution.value.set(
+        container.clientWidth,
+        container.clientHeight,
+      );
+
+      renderer.render(bgScene, bgCamera);
+      requestRenderIfNotRequested();
     };
+
     window.addEventListener("resize", handleResize);
     // For debugging,
     // TODO: Remove in production
@@ -782,11 +689,6 @@ export function CubeScene(props: {
     onCleanup(() => {
       // Stop animation loop
       isAnimating = false;
-
-      // renderer.domElement.removeEventListener("mousedown", onMouseDown);
-      // renderer.domElement.removeEventListener("mouseup", onMouseUp);
-      // renderer.domElement.removeEventListener("mousemove", onMouseMove);
-      // renderer.domElement.removeEventListener("wheel", onWheel);
       renderer.domElement.removeEventListener("click", onClick);
       window.removeEventListener("resize", handleResize);
 
