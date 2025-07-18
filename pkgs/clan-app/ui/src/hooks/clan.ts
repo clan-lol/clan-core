@@ -28,18 +28,30 @@ export const clanURIParam = (params: Params) => {
   return window.atob(params.clanURI);
 };
 
-export const useMaybeClanURI = () => {
-  const params = useParams();
+export function useClanURI(opts: { force: true }): string;
+export function useClanURI(opts: { force: boolean }): string | null;
+export function useClanURI(
+  opts: { force: boolean } = { force: false },
+): string | null {
+  const maybe = () => {
+    const params = useParams();
+    if (!params.clanURI) {
+      return null;
+    }
+    const clanURI = clanURIParam(params);
+    if (!clanURI) {
+      throw new Error(
+        "Could not decode clan URI from params: " + params.clanURI,
+      );
+    }
+    return clanURI;
+  };
 
-  if (!params.clanURI) {
-    return null;
+  const uri = maybe();
+  if (!uri && opts.force) {
+    throw new Error(
+      "ClanURI is not set. Use this function only within contexts, where clanURI is guaranteed to have been set.",
+    );
   }
-
-  const clanURI = clanURIParam(params);
-
-  if (!clanURI) {
-    throw new Error("Could not decode clan URI from params: " + params.clanURI);
-  }
-
-  return clanURI;
-};
+  return uri;
+}
