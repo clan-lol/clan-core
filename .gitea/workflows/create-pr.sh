@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
 # Shared script for creating pull requests in Gitea workflows
-set -euo pipefail
+set -eu
 
 # Required environment variables:
 # - CI_BOT_TOKEN: Gitea bot token for authentication
@@ -8,22 +9,22 @@ set -euo pipefail
 # - PR_TITLE: Title of the pull request
 # - PR_BODY: Body/description of the pull request
 
-if [[ -z "${CI_BOT_TOKEN:-}" ]]; then
+if [ -z "${CI_BOT_TOKEN:-}" ]; then
   echo "Error: CI_BOT_TOKEN is not set" >&2
   exit 1
 fi
 
-if [[ -z "${PR_BRANCH:-}" ]]; then
+if [ -z "${PR_BRANCH:-}" ]; then
   echo "Error: PR_BRANCH is not set" >&2
   exit 1
 fi
 
-if [[ -z "${PR_TITLE:-}" ]]; then
+if [ -z "${PR_TITLE:-}" ]; then
   echo "Error: PR_TITLE is not set" >&2
   exit 1
 fi
 
-if [[ -z "${PR_BODY:-}" ]]; then
+if [ -z "${PR_BODY:-}" ]; then
   echo "Error: PR_BODY is not set" >&2
   exit 1
 fi
@@ -43,9 +44,12 @@ resp=$(nix run --inputs-from . nixpkgs#curl -- -X POST \
   }" \
   "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls")
 
-pr_number=$(echo "$resp" | jq -r '.number')
+if ! pr_number=$(echo "$resp" | jq -r '.number'); then
+  echo "Error parsing response from pull request creation" >&2
+  exit 1
+fi
 
-if [[ "$pr_number" == "null" ]]; then
+if [ "$pr_number" = "null" ]; then
   echo "Error creating pull request:" >&2
   echo "$resp" | jq . >&2
   exit 1
@@ -64,8 +68,11 @@ while true; do
       "delete_branch_after_merge": true
     }' \
     "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_number/merge")
-  msg=$(echo "$resp" | jq -r '.message')
-  if [[ "$msg" != "Please try again later" ]]; then
+  if ! msg=$(echo "$resp" | jq -r '.message'); then
+    echo "Error parsing merge response" >&2
+    exit 1
+  fi
+  if [ "$msg" != "Please try again later" ]; then
     break
   fi
   echo "Retrying in 2 seconds..."
