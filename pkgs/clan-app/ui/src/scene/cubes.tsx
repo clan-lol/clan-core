@@ -13,9 +13,10 @@ import * as THREE from "three";
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
 import { Divider } from "../components/Divider/Divider";
-import { UseQueryResult } from "@tanstack/solid-query";
-import { ListMachines } from "../routes/Clan/Clan";
-import { callApi } from "../hooks/api";
+import { MachinesQueryResult } from "../queries/queries";
+import { SceneData } from "../stores/clan";
+import { unwrap } from "solid-js/store";
+import { Accessor } from "solid-js";
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -56,7 +57,18 @@ function getFloorPosition(
   return intersection.toArray() as [number, number, number];
 }
 
-export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
+function keyFromPos(pos: [number, number]): string {
+  return `${pos[0]},${pos[1]}`;
+}
+
+// type SceneDataUpdater = (sceneData: SceneData) => void;
+
+export function CubeScene(props: {
+  cubesQuery: MachinesQueryResult;
+  onCreate?: (id: string) => Promise<void>;
+  sceneStore: Accessor<SceneData>;
+  setMachinePos: (machineId: string, pos: [number, number]) => void;
+}) {
   // sceneData.cubesQuer
   let container: HTMLDivElement;
   let scene: THREE.Scene;
@@ -71,7 +83,8 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
   let raycaster: THREE.Raycaster;
 
   const groupMap = new Map<string, THREE.Group>();
-  const positionMap = new Map<string, THREE.Vector3>();
+
+  const occupiedPositions = new Set<string>();
 
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
@@ -83,23 +96,15 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
   let isAnimating = false; // Flag to prevent multiple loops
   let frameCount = 0;
 
-  const [ids, setIds] = createSignal<string[]>([]);
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
     "grid",
   );
-  const [nextBasePosition, setNextPosition] =
-    createSignal<THREE.Vector3 | null>(null);
+
   const [worldMode, setWorldMode] = createSignal<"view" | "create">("view");
 
-  // Backed camera position for restoring after switching mode
-  const [backedCameraPosition, setBackedCameraPosition] = createSignal<{
-    pos: THREE.Vector3;
-    dir: THREE.Vector3;
-  }>();
-
+  const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
-  const [deletingIds, setDeletingIds] = createSignal<Set<string>>(new Set());
-  const [creatingIds, setCreatingIds] = createSignal<Set<string>>(new Set());
+
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
     spherical: { radius: 0, theta: 0, phi: 0 },
@@ -135,29 +140,69 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
   const CREATE_BASE_COLOR = 0x636363;
   const CREATE_BASE_EMISSIVE = 0xc5fad7;
 
-  function getDefaultPosition(): [number, number, number] {
+  createEffect(() => {
+    console.log("Direct query data hook");
+    // Update when API updates.
+    if (props.cubesQuery.data) {
+      const actualMachines = Object.keys(props.cubesQuery.data);
+      const rawStored = unwrap(props.sceneStore());
+      const placed: Set<string> = rawStored
+        ? new Set(Object.keys(rawStored))
+        : new Set();
+      const nonPlaced = actualMachines.filter((m) => !placed.has(m));
+
+      // Initialize occupied positions from previously placed cubes
+      for (const id of placed) {
+        occupiedPositions.add(keyFromPos(rawStored[id].position));
+      }
+
+      // Push not explizitly placed machines to the scene
+      // TODO: Make the user place them manually
+      // We just calculate some next free position
+      for (const id of nonPlaced) {
+        console.log("adding", id);
+        const position = nextGridPos();
+        console.log("Got pos", position);
+
+        // Add the machine to the store
+        // Adding it triggers a reactive update
+        props.setMachinePos(id, position);
+      }
+    }
+  });
+
+  function getGridPosition(id: string): [number, number, number] {
+    // TODO: Detect collision with other cubes
+    const machine = props.sceneStore()[id];
+    console.log("getGridPosition", id, machine);
+    if (machine) {
+      return [machine.position[0], 0, machine.position[1]];
+    }
+    // Some fallback to get the next free position
+    // If the position wasn't avilable in the store
+    console.warn(`Position for ${id} not set`);
     return [0, 0, 0];
   }
 
-  function getGridPosition(
-    id: string,
-    index: number,
-    total: number,
-  ): [number, number, number] {
-    // TODO: Detect collision with other cubes
-    const pos = positionMap.get(id);
-    if (pos) {
-      return pos.toArray() as [number, number, number];
-    }
-    const nextPos = nextBasePosition();
-    if (!nextPos) {
-      // Use next position if available
-      throw new Error("Next position is not set");
+  function nextGridPos(): [number, number] {
+    // Scales up to 10*10 grid = 100 positions
+    // TODO: Make this more scalable and nicer
+    const maxRows = 10; // or dynamic limit if needed
+    const maxCols = 10;
+
+    for (let y = 0; y < maxRows; y++) {
+      for (let x = 0; x < maxCols; x++) {
+        const pos = [x * CUBE_SPACING, y * CUBE_SPACING] as [number, number];
+        const key = keyFromPos(pos);
+
+        if (!occupiedPositions.has(key)) {
+          occupiedPositions.add(key);
+          return pos;
+        }
+      }
     }
 
-    const next = nextPos.toArray() as [number, number, number];
-    positionMap.set(id, new THREE.Vector3(...next));
-    return next;
+    throw new Error("No free grid positions available.");
   }
 
   // Circle IDEA:
@@ -172,14 +217,11 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
       return [x, CUBE_Y, z];
     };
 
-  // Reactive cubes memo - this recalculates whenever ids() changes
+  // Reactive cubes memo - this recalculates whenever data changes
   const cubes = createMemo(() => {
-    const currentIds = ids();
-    const deleting = deletingIds();
-    const creating = creatingIds();
-
-    // Include both active and deleting cubes for smooth transitions
-    const allIds = [...new Set([...currentIds, ...Array.from(deleting)])];
+    console.log("Calculating cubes...");
+    const currentIds = Object.keys(unwrap(props.sceneStore()));
+    console.log("Current IDs:", currentIds);
 
     let cameraTarget = [0, 0, 0] as [number, number, number];
     if (camera && floor) {
@@ -190,16 +232,10 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
         ? getGridPosition
         : getCirclePosition(cameraTarget);
 
-    return allIds.map((id, index) => {
-      const isDeleting = deleting.has(id);
-      const isCreating = creating.has(id);
+    return currentIds.map((id, index) => {
       const activeIndex = currentIds.indexOf(id);
 
-      const position = getCubePosition(
-        id,
-        isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index,
-        currentIds.length,
-      );
+      const position = getCubePosition(id, index, currentIds.length);
 
       const targetPosition =
         activeIndex >= 0
@@ -209,8 +245,6 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
       return {
         id,
         position,
-        isDeleting,
-        isCreating,
         targetPosition,
       };
     });
@@ -243,99 +277,6 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
     animate();
   }
 
-  // Create animation helper
-  function animateCreate(
-    mesh: THREE.Mesh,
-    baseMesh: THREE.Mesh,
-    onComplete: () => void,
-  ) {
-    const startTime = Date.now();
-
-    // Start with zero scale and full opacity
-    mesh.scale.setScalar(0);
-    baseMesh.scale.setScalar(0);
-
-    // Ensure materials are fully opaque
-    // if (Array.isArray(mesh.material)) {
-    //   mesh.material.forEach((material) => {
-    //     (material as THREE.MeshBasicMaterial).opacity = 1;
-    //     material.transparent = false;
-    //   });
-    // } else {
-    //   (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
-    //   mesh.material.transparent = false;
-    // }
-
-    // if (Array.isArray(baseMesh.material)) {
-    //   baseMesh.material.forEach((material) => {
-    //     (material as THREE.MeshBasicMaterial).opacity = 1;
-    //     material.transparent = false;
-    //   });
-    // } else {
-    //   (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
-    //   baseMesh.material.transparent = false;
-    // }
-
-    function animate() {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / CREATE_ANIMATION_DURATION, 1);
-
-      // Smooth easing function with slight overshoot effect
-      let easeProgress;
-      if (progress < 0.8) {
-        // First 80% - smooth scale up
-        easeProgress = 1 - Math.pow(1 - progress / 0.8, 3);
-      } else {
-        // Last 20% - slight overshoot and settle
-        const overshootProgress = (progress - 0.8) / 0.2;
-        const overshoot = Math.sin(overshootProgress * Math.PI) * 0.1;
-        easeProgress = 1 + overshoot;
-      }
-
-      const scale = easeProgress;
-      mesh.scale.setScalar(scale);
-      baseMesh.scale.setScalar(scale);
-
-      if (progress >= 1) {
-        // Ensure final scale is exactly 1
-        mesh.scale.setScalar(1);
-        baseMesh.scale.setScalar(1);
-        onComplete();
-      } else {
-        requestAnimationFrame(animate);
-      }
-    }
-
-    animate();
-  }
-
-  // Delete animation helper
-  function animateDelete(group: THREE.Group, onComplete: () => void) {
-    const startTime = Date.now();
-    // const startScale = group.scale.clone();
-    // const startOpacity = 1;
-
-    function animate() {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / DELETE_ANIMATION_DURATION, 1);
-
-      // Smooth easing function
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      const scale = 1 - easeProgress;
-      // const opacity = startOpacity * (1 - easeProgress);
-
-      group.scale.setScalar(scale);
-
-      if (progress >= 1) {
-        onComplete();
-      } else {
-        requestAnimationFrame(animate);
-      }
-    }
-
-    animate();
-  }
-
   function createCubeBase(
     cube_pos: [number, number, number],
     opacity = 1,
@@ -355,33 +296,9 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
     return base;
   }
 
-  // === Add/Delete Cube API ===
-  function addCube(id: string | undefined = undefined) {
-    if (!id) {
-      id = crypto.randomUUID();
-    }
-
-    // Add to creating set first
-    setCreatingIds((prev) => new Set([...prev, id]));
-
-    // Add to ids
-    setIds((prev) => [...prev, id]);
-
-    // Remove from creating set after animation completes
-    setTimeout(() => {
-      setCreatingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }, CREATE_ANIMATION_DURATION);
-  }
-
   function deleteSelectedCubes(selectedSet: Set<string>) {
     if (selectedSet.size === 0) return;
 
-    // Add to deleting set to start animation
-    setDeletingIds(selectedSet);
     console.log("Deleting cubes:", selectedSet);
 
     // Start delete animations
@@ -399,19 +316,13 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
           return;
         }
 
-        animateDelete(group, () => {
-          // Remove from deleting set when animation completes
-          setDeletingIds((prev) => {
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          });
+        {
           setSelectedIds(new Set<string>()); // Clear selection after deletion
-          garbageCollectGroup(group); // Clean up geometries and materials
-          setIds((prev) => prev.filter((existingId) => existingId !== id));
 
-          console.log("Done deleting", id, ids());
-        });
+          garbageCollectGroup(group); // Clean up geometries and materials
+          scene.remove(group); // Remove from scene
+          groupMap.delete(id); // Remove from group map
+        }
       } else {
         console.warn(`DELETE: Group not found for id: ${id}`);
       }
@@ -514,16 +425,6 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
   let initBase: THREE.Mesh;
 
   const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
-
-  createEffect(() => {
-    if (props.cubesQuery.data) {
-      for (const machineId of Object.keys(props.cubesQuery.data)) {
-        console.log("Received: ", machineId);
-        setNextPosition(new THREE.Vector3(...getDefaultPosition()));
-        addCube(machineId);
-      }
-    }
-  });
 
   onMount(() => {
     // Scene setup
@@ -723,7 +624,7 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
           }
           scene.remove(initBase); // Remove any existing base mesh
           scene.add(initBase);
-          setNextPosition(snapped); // Update next position for cube creation
+          setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
         }
         // If in create mode, don't allow camera movement
         return;
@@ -767,11 +668,6 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
           cameraDirection,
           deltaY * movementSpeed,
         ); // vertical drag (forward/back)
-
-        setBackedCameraPosition({
-          pos: camera.position.clone(),
-          dir: camera.getWorldDirection(new THREE.Vector3()).clone(),
-        });
       }
       updateCameraInfo();
 
@@ -806,28 +702,13 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
         if (initBase) {
           scene.remove(initBase); // Remove the base mesh after adding cube
           setWorldMode("view");
-          const res = callApi("create_machine", {
-            opts: {
-              clan_dir: {
-                identifier: "/home/johannes/git/tmp/my-clan",
-              },
-              machine: {
-                name: "sara",
-              },
-            },
-          });
-          res.result.then(() => {
-            props.cubesQuery.refetch();
-            const pos = nextBasePosition();
 
-            if (!pos) {
-              console.error("No next position set for new cube");
-              return;
-            }
+          // res.result.then(() => {
+          //   props.cubesQuery.refetch();
 
-            positionMap.set("sara", pos);
-            addCube("sara");
-          });
+          //   positionMap.set("sara", pos);
+          //   addCube("sara");
+          // });
         }
         return;
       }
@@ -861,12 +742,12 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
       frameCount++;
       renderer.autoClear = false;
       renderer.render(bgScene, bgCamera); // Render background scene
-
       renderer.render(scene, camera);
 
       // Uncomment for memory debugging:
       if (frameCount % 300 === 0) logMemoryUsage(); // Log every 60 frames
     };
+
     isAnimating = true;
     animate();
 
@@ -882,6 +763,7 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
     onCleanup(() => {
       // Stop animation loop
       isAnimating = false;
+
       renderer.domElement.removeEventListener("mousedown", onMouseDown);
       renderer.domElement.removeEventListener("mouseup", onMouseUp);
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
@@ -901,30 +783,26 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
       if (container) {
         container.innerHTML = "";
       }
+
+      groupMap.forEach((group) => {
+        garbageCollectGroup(group);
+        scene.remove(group);
+      });
+      groupMap.clear();
     });
   });
 
-  createEffect(() => {
-    if (!container) return;
-    if (worldMode() === "create") {
-      // Show the plus button when in create mode
-      container.style.cursor = "crosshair";
-    } else {
-      container.style.cursor = "pointer";
-    }
-  });
-  createEffect(
-    // Fly back and forth between circle and grid positions
-    // ? Do we want to do this.
-    // We could shift the center of the circle to the camera look at position
-    on(positionMode, (mode) => {
-      if (mode === "circle") {
-        grid.visible = false; // Hide grid when in circle mode
-      } else if (mode === "grid") {
-        grid.visible = true; // Show grid when in grid mode
-      }
-    }),
-  );
+  // TODO: Move into css
+  // createEffect(
+  //   on(positionMode, (mode) => {
+  //     console.log("Position mode changed:", mode);
+  //     if (mode === "circle") {
+  //       grid.visible = false; // Hide grid when in circle mode
+  //     } else if (mode === "grid") {
+  //       grid.visible = true; // Show grid when in grid mode
+  //     }
+  //   }),
+  // );
 
   function createCube(
     gridPosition: [number, number],
@@ -961,30 +839,28 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
   // Effect to manage cube meshes - this runs whenever cubes() changes
   createEffect(() => {
     const currentCubes = cubes();
+    console.log("Current cubes:", currentCubes);
+
     const existing = new Set(groupMap.keys());
-    const deleting = deletingIds();
-    const creating = creatingIds();
 
     // Update existing cubes and create new ones
     currentCubes.forEach((cube) => {
       const existingGroup = groupMap.get(cube.id);
 
+      console.log(
+        "Processing cube:",
+        cube.id,
+        "Existing group:",
+        existingGroup,
+      );
       if (!existingGroup) {
         const group = createCube([cube.position[0], cube.position[2]], {
           id: cube.id,
         });
         scene.add(group);
         groupMap.set(cube.id, group);
-
-        // Start create animation if this cube is being created
-        if (creating.has(cube.id)) {
-          const mesh = group.children[0] as THREE.Mesh;
-          const base = group.children[1] as THREE.Mesh;
-          animateCreate(mesh, base, () => {
-            // Animation complete callback - could add additional logic here
-          });
-        }
-      } else if (!deleting.has(cube.id)) {
+      } else {
+        console.log("Updating existing cube:", cube.id);
         // Only animate position if not being deleted
         const targetPosition = cube.targetPosition || cube.position;
         const currentPosition = existingGroup.position.toArray() as [
@@ -1008,10 +884,15 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
 
     // Remove cubes that are no longer in the state and not being deleted
     existing.forEach((id) => {
-      if (!deleting.has(id)) {
+      if (!currentCubes.find((d) => d.id == id)) {
         const group = groupMap.get(id);
         if (group) {
+          console.log("Cleaning...", id);
           garbageCollectGroup(group);
+          scene.remove(group);
+          groupMap.delete(id);
+          const pos = group.position.toArray() as [number, number, number];
+          occupiedPositions.delete(keyFromPos([pos[0], pos[2]]));
         }
       }
     });
@@ -1024,39 +905,6 @@ export function CubeScene(props: { cubesQuery: UseQueryResult<ListMachines> }) {
       updateMeshColors(curr, prev);
     }),
   );
-
-  // Effect to clean up deleted cubes after animation
-  createEffect(() => {
-    const deleting = deletingIds();
-    const currentIds = ids();
-
-    // Clean up cubes that finished their delete animation
-    deleting.forEach((id) => {
-      if (!currentIds.includes(id)) {
-        const group = groupMap.get(id);
-        if (group) {
-          scene.remove(group);
-          group.children.forEach((child) => {
-            // Child is finished with its destroy animation
-            if (child instanceof THREE.Mesh && child.scale.x <= 0.01) {
-              child.geometry.dispose();
-              if (Array.isArray(child.material)) {
-                child.material.forEach((material) => material.dispose());
-              } else {
-                child.material.dispose();
-              }
-            }
-          });
-          groupMap.delete(id);
-        }
-      }
-    });
-  });
-
-  createEffect(() => {
-    selectedIds(); // Track the signal
-    // updateMeshColors();
-  });
 
   onCleanup(() => {
     for (const group of groupMap.values()) {
