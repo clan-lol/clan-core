@@ -1,0 +1,20 @@
+name: Build Clan App (Darwin)
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-clan-app-darwin:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build clan-app for x86_64-darwin
+        run: |
+          nix build .#packages.x86_64-darwin.clan-app --system x86_64-darwin --log-format bar-with-logs
