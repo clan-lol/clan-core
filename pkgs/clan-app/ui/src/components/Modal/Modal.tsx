@@ -29,12 +29,22 @@ export const Modal = (props: ModalProps) => {
             <Typography class="title" hierarchy="label" family="mono" size="xs">
               {props.title}
             </Typography>
-            <KDialog.CloseButton onClick={() => setOpen(false)}>
+            <KDialog.CloseButton
+              onClick={() => {
+                setOpen(false);
+                props.onClose();
+              }}
+            >
               <Icon icon="Close" size="0.75rem" />
             </KDialog.CloseButton>
           </div>
           <div class="body">
-            {props.children({ close: () => setOpen(false) })}
+            {props.children({
+              close: () => {
+                setOpen(false);
+                props.onClose();
+              },
+            })}
           </div>
         </KDialog.Content>
       </KDialog.Portal>
