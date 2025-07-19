@@ -71,7 +71,6 @@ export function CubeScene(props: {
   setMachinePos: (machineId: string, pos: [number, number]) => void;
   isLoading: boolean;
 }) {
-  // sceneData.cubesQuer
   let container: HTMLDivElement;
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
@@ -80,6 +79,7 @@ export function CubeScene(props: {
   let controls: MapControls;
   // Raycaster for clicking
   const raycaster = new THREE.Raycaster();
+  let initBase: THREE.Mesh | undefined;
 
   let needsRender = false; // Flag to control rendering
 
@@ -172,6 +172,7 @@ export function CubeScene(props: {
         // Add the machine to the store
         // Adding it triggers a reactive update
         props.setMachinePos(id, position);
+        occupiedPositions.add(keyFromPos(position));
       }
     }
   });
@@ -184,7 +185,12 @@ export function CubeScene(props: {
   }
 
   function renderScene() {
-    if (!isAnimating) return;
+    if (!isAnimating) {
+      console.warn("Not animating!");
+      return;
+    }
+    console.log("Rendering scene...", initBase?.position);
+
     needsRender = false;
 
     frameCount++;
@@ -222,7 +228,6 @@ export function CubeScene(props: {
         const key = keyFromPos(pos);
 
         if (!occupiedPositions.has(key)) {
-          occupiedPositions.add(key);
           return pos;
         }
       }
@@ -451,8 +456,6 @@ export function CubeScene(props: {
     ),
   );
 
-  let initBase: THREE.Mesh;
-
   const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
 
   onMount(() => {
@@ -589,6 +592,16 @@ export function CubeScene(props: {
       BASE_SIZE,
     );
 
+    // Important create CubeBase depends on sharedBaseGeometry
+    initBase = createCubeBase(
+      [1, BASE_HEIGHT / 2, 1],
+      1,
+      CREATE_BASE_COLOR,
+      CREATE_BASE_EMISSIVE,
+    );
+
+    scene.add(initBase);
+
     // const spherical = new THREE.Spherical();
     // spherical.setFromVector3(camera.position);
 
@@ -618,18 +631,14 @@ export function CubeScene(props: {
     // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
       if (worldMode() === "create") {
-        if (initBase) {
-          scene.remove(initBase); // Remove the base mesh after adding cube
-          setWorldMode("view");
+        setWorldMode("view");
 
-          // res.result.then(() => {
-          //   props.cubesQuery.refetch();
+        // res.result.then(() => {
+        //   props.cubesQuery.refetch();
 
-          //   positionMap.set("sara", pos);
-          //   addCube("sara");
-          // });
-        }
-        return;
+        //   positionMap.set("sara", pos);
+        //   addCube("sara");
+        // });
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
@@ -673,6 +682,8 @@ export function CubeScene(props: {
       requestRenderIfNotRequested();
     };
 
+    renderer.domElement.addEventListener("mousemove", onMouseMove);
+
     window.addEventListener("resize", handleResize);
     // For debugging,
     // TODO: Remove in production
@@ -689,6 +700,7 @@ export function CubeScene(props: {
       // Stop animation loop
       isAnimating = false;
       renderer.domElement.removeEventListener("click", onClick);
+      renderer.domElement.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", handleResize);
 
       if (initBase) {
@@ -841,31 +853,48 @@ export function CubeScene(props: {
   });
 
   const onHover = (inside: boolean) => (event: MouseEvent) => {
-    // Hover over the plus button, shows a preview of the base mesh
-    const currentCubes = cubes();
-    if (currentCubes.length > 0) {
-      return;
-    }
+    const pos = nextGridPos();
+    if (!initBase) return;
 
-    if (!initBase) {
-      // Create initial base mesh if it doesn't exist
-      initBase = createCubeBase(
-        [0, BASE_HEIGHT / 2, 0],
-        1,
-        CREATE_BASE_COLOR,
-        CREATE_BASE_EMISSIVE,
-      ); // Emissive color
-    }
-    if (inside) {
-      scene.add(initBase);
-    } else {
-      scene.remove(initBase);
-    }
+    initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
+
+    requestRenderIfNotRequested();
   };
 
   const onAddClick = (event: MouseEvent) => {
     setPositionMode("grid");
     setWorldMode("create");
+  };
+  const onMouseMove = (event: MouseEvent) => {
+    if (worldMode() !== "create") return;
+    if (!initBase) return;
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(floor);
+    if (intersects.length > 0) {
+      const point = intersects[0].point;
+      // Snap to grid
+      const snapped = new THREE.Vector3(
+        Math.round(point.x / GRID_SIZE) * GRID_SIZE,
+        0,
+        Math.round(point.z / GRID_SIZE) * GRID_SIZE,
+      );
+
+      if (
+        Math.abs(initBase.position.x - snapped.x) > 0.01 ||
+        Math.abs(initBase.position.z - snapped.z) > 0.01
+      ) {
+        // Only request render if the position actually changed
+        initBase.position.set(snapped.x, 0, snapped.z);
+        setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
+        requestRenderIfNotRequested();
+      }
+    }
   };
 
   return (
@@ -873,6 +902,12 @@ export function CubeScene(props: {
       <div class="cubes-scene-container" ref={(el) => (container = el)} />
       <div class="toolbar-container">
         <Toolbar>
+          <ToolbarButton
+            name="Select"
+            icon="Cursor"
+            onClick={() => setWorldMode("view")}
+            selected={worldMode() === "view"}
+          />
           <ToolbarButton
             name="new-machine"
             icon="NewMachine"
