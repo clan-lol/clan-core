@@ -603,6 +603,7 @@ export function CubeScene(props: {
       CREATE_BASE_COLOR,
       CREATE_BASE_EMISSIVE,
     );
+    initBase.visible = false;
 
     scene.add(initBase);
 
@@ -843,6 +844,8 @@ export function CubeScene(props: {
         }
       }
     });
+
+    requestRenderIfNotRequested();
   });
 
   createEffect(
@@ -871,8 +874,10 @@ export function CubeScene(props: {
     const pos = nextGridPos();
     if (!initBase) return;
 
-    initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
-
+    if (initBase.visible === false && inside) {
+      initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
+      initBase.visible = true;
+    }
     requestRenderIfNotRequested();
   };
 
@@ -883,6 +888,8 @@ export function CubeScene(props: {
   const onMouseMove = (event: MouseEvent) => {
     if (worldMode() !== "create") return;
     if (!initBase) return;
+
+    initBase.visible = true;
 
     const rect = renderer.domElement.getBoundingClientRect();
     const mouse = new THREE.Vector2(
