@@ -66,7 +66,7 @@ function keyFromPos(pos: [number, number]): string {
 
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
-  onCreate?: (id: string) => Promise<void>;
+  onCreate: () => Promise<{ id: string }>;
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number]) => void;
   isLoading: boolean;
@@ -635,14 +635,25 @@ export function CubeScene(props: {
     // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
       if (worldMode() === "create") {
-        setWorldMode("view");
+        props
+          .onCreate()
+          .then(({ id }) => {
+            //Successfully created machine
+            const pos = cursorPosition();
+            if (!pos) {
+              console.warn("No position set for new cube");
+              return;
+            }
+            props.setMachinePos(id, pos);
+          })
+          .catch((error) => {
+            console.error("Error creating cube:", error);
+          })
+          .finally(() => {
+            if (initBase) initBase.visible = false;
 
-        // res.result.then(() => {
-        //   props.cubesQuery.refetch();
-
-        //   positionMap.set("sara", pos);
-        //   addCube("sara");
-        // });
+            setWorldMode("view");
+          });
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
