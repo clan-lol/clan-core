@@ -3,6 +3,7 @@ import { Dialog as KDialog } from "@kobalte/core/dialog";
 import "./Modal.css";
 import { Typography } from "../Typography/Typography";
 import Icon from "../Icon/Icon";
+import cx from "classnames";
 
 export interface ModalContext {
   close(): void;
@@ -13,6 +14,8 @@ export interface ModalProps {
   title: string;
   onClose: () => void;
   children: (ctx: ModalContext) => JSX.Element;
+  mount?: Node;
+  class?: string;
 }
 
 export const Modal = (props: ModalProps) => {
@@ -20,8 +23,8 @@ export const Modal = (props: ModalProps) => {
 
   return (
     <KDialog id={props.id} open={open()} modal={true}>
-      <KDialog.Portal>
-        <KDialog.Content class="modal-content">
+      <KDialog.Portal mount={props.mount}>
+        <KDialog.Content class={cx("modal-content", props.class)}>
           <div class="header">
             <Typography class="title" hierarchy="label" family="mono" size="xs">
               {props.title}
