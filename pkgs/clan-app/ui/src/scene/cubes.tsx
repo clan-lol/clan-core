@@ -189,7 +189,7 @@ export function CubeScene(props: {
       console.warn("Not animating!");
       return;
     }
-    console.log("Rendering scene...", initBase.position);
+    console.log("Rendering scene...", initBase?.position);
 
     needsRender = false;
 
@@ -867,6 +867,7 @@ export function CubeScene(props: {
   };
   const onMouseMove = (event: MouseEvent) => {
     if (worldMode() !== "create") return;
+    if (!initBase) return;
 
     const rect = renderer.domElement.getBoundingClientRect();
     const mouse = new THREE.Vector2(
