@@ -251,7 +251,10 @@ export function CubeScene(props: {
   // Reactive cubes memo - this recalculates whenever data changes
   const cubes = createMemo(() => {
     console.log("Calculating cubes...");
-    const currentIds = Object.keys(unwrap(props.sceneStore()));
+    const sceneData = props.sceneStore(); // keep it reactive
+    if (!sceneData) return [];
+
+    const currentIds = Object.keys(sceneData);
     console.log("Current IDs:", currentIds);
 
     let cameraTarget = [0, 0, 0] as [number, number, number];
@@ -302,6 +305,7 @@ export function CubeScene(props: {
 
       if (progress < 1) {
         requestAnimationFrame(animate);
+        requestRenderIfNotRequested();
       }
     }
 
@@ -923,8 +927,10 @@ export function CubeScene(props: {
             onClick={() => {
               if (positionMode() === "grid") {
                 setPositionMode("circle");
+                grid.visible = false;
               } else {
                 setPositionMode("grid");
+                grid.visible = true;
               }
             }}
           />
