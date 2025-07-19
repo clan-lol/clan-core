@@ -1,5 +1,5 @@
 import { RouteSectionProps } from "@solidjs/router";
-import { Component, JSX } from "solid-js";
+import { Component, JSX, Show, createSignal } from "solid-js";
 import { useClanURI } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import { MachinesQueryResult, useMachinesQuery } from "@/src/queries/queries";
@@ -10,6 +10,9 @@ import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
 import cx from "classnames";
 import "./Clan.css";
+import { Modal } from "@/src/components/Modal/Modal";
+import { TextInput } from "@/src/components/Form/TextInput";
+import { createForm, FieldValues, reset } from "@modular-forms/solid";
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   return (
@@ -27,17 +30,88 @@ export const Clan: Component<RouteSectionProps> = (props) => {
   );
 };
 
+interface CreateFormValues extends FieldValues {
+  name: string;
+}
+interface MockProps {
+  onClose: () => void;
+  onSubmit: (formValues: CreateFormValues) => void;
+}
+const MockCreateMachine = (props: MockProps) => {
+  let container: Node;
+
+  const [form, { Form, Field, FieldArray }] = createForm<CreateFormValues>();
+
+  return (
+    <div ref={(el) => (container = el)} class="create-backdrop">
+      <Modal
+        mount={container!}
+        onClose={() => {
+          reset(form);
+          props.onClose();
+        }}
+        class="create-modal"
+        title="Create Machine"
+      >
+        {() => (
+          <Form class="flex flex-col" onSubmit={props.onSubmit}>
+            <Field name="name">
+              {(field, props) => (
+                <>
+                  <TextInput
+                    {...field}
+                    label="Name"
+                    size="s"
+                    required={true}
+                    input={{ ...props, placeholder: "name" }}
+                  />
+                </>
+              )}
+            </Field>
+
+            <div class="flex w-full items-center justify-end gap-4">
+              <Button size="s" hierarchy="secondary" onClick={props.onClose}>
+                Cancel
+              </Button>
+              <Button
+                size="s"
+                type="submit"
+                hierarchy="primary"
+                onClick={close}
+              >
+                Create
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
 const ClanSceneController = () => {
   const clanURI = useClanURI({ force: true });
 
-  const onCreate = async (id: string) => {
+  const [dialogHandlers, setDialogHandlers] = createSignal<{
+    resolve: ({ id }: { id: string }) => void;
+    reject: (err: unknown) => void;
+  } | null>(null);
+
+  const onCreate = async (): Promise<{ id: string }> => {
+    return new Promise((resolve, reject) => {
+      setShowModal(true);
+      setDialogHandlers({ resolve, reject });
+    });
+  };
+
+  const sendCreate = async (values: CreateFormValues) => {
     const api = callApi("create_machine", {
       opts: {
         clan_dir: {
           identifier: clanURI,
         },
         machine: {
-          name: id,
+          name: values.name,
         },
       },
     });
@@ -49,14 +123,34 @@ const ClanSceneController = () => {
       // Important: rejects the promise
       throw new Error(res.errors[0].message);
     }
-    return;
+    return { id: values.name };
   };
+
+  const [showModal, setShowModal] = createSignal(false);
 
   return (
     <SceneDataProvider clanURI={clanURI}>
       {({ query }) => {
         return (
           <>
+            <Show when={showModal()}>
+              <MockCreateMachine
+                onClose={() => {
+                  setShowModal(false);
+                  dialogHandlers()?.reject(new Error("User cancelled"));
+                }}
+                onSubmit={async (values) => {
+                  try {
+                    const result = await sendCreate(values);
+                    dialogHandlers()?.resolve(result);
+                    setShowModal(false);
+                  } catch (err) {
+                    dialogHandlers()?.reject(err);
+                    setShowModal(false);
+                  }
+                }}
+              />
+            </Show>
             <div
               class="flex flex-row"
               style={{ position: "absolute", top: "10px", left: "10px" }}
@@ -68,6 +162,7 @@ const ClanSceneController = () => {
                     produce((s) => {
                       for (const machineId in s.sceneData[clanURI]) {
                         // Reset the position of each machine to [0, 0]
+                        s.sceneData[clanURI] = {}; // Clear the entire object
                         // delete s.sceneData[clanURI][machineId];
                       }
                     }),
@@ -90,6 +185,7 @@ const ClanSceneController = () => {
             <div class={cx({ "fade-out": !query.isLoading })}>
               <Splash />
             </div>
+
             <CubeScene
               isLoading={query.isLoading}
               cubesQuery={query}

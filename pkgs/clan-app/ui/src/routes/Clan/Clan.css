@@ -2,3 +2,12 @@
   opacity: 0;
   transition: opacity 0.5s ease;
 }
+
+.create-backdrop {
+  @apply absolute top-0 left-0 w-full h-svh flex justify-center items-center backdrop-blur-0 z-50;
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.create-modal {
+  @apply min-w-96;
+}
