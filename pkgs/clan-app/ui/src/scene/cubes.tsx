@@ -66,7 +66,7 @@ function keyFromPos(pos: [number, number]): string {
 
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
-  onCreate?: (id: string) => Promise<void>;
+  onCreate: () => Promise<{ id: string }>;
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number]) => void;
   isLoading: boolean;
@@ -251,7 +251,10 @@ export function CubeScene(props: {
   // Reactive cubes memo - this recalculates whenever data changes
   const cubes = createMemo(() => {
     console.log("Calculating cubes...");
-    const currentIds = Object.keys(unwrap(props.sceneStore()));
+    const sceneData = props.sceneStore(); // keep it reactive
+    if (!sceneData) return [];
+
+    const currentIds = Object.keys(sceneData);
     console.log("Current IDs:", currentIds);
 
     let cameraTarget = [0, 0, 0] as [number, number, number];
@@ -302,6 +305,7 @@ export function CubeScene(props: {
 
       if (progress < 1) {
         requestAnimationFrame(animate);
+        requestRenderIfNotRequested();
       }
     }
 
@@ -599,6 +603,7 @@ export function CubeScene(props: {
       CREATE_BASE_COLOR,
       CREATE_BASE_EMISSIVE,
     );
+    initBase.visible = false;
 
     scene.add(initBase);
 
@@ -631,14 +636,25 @@ export function CubeScene(props: {
     // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
       if (worldMode() === "create") {
-        setWorldMode("view");
+        props
+          .onCreate()
+          .then(({ id }) => {
+            //Successfully created machine
+            const pos = cursorPosition();
+            if (!pos) {
+              console.warn("No position set for new cube");
+              return;
+            }
+            props.setMachinePos(id, pos);
+          })
+          .catch((error) => {
+            console.error("Error creating cube:", error);
+          })
+          .finally(() => {
+            if (initBase) initBase.visible = false;
 
-        // res.result.then(() => {
-        //   props.cubesQuery.refetch();
-
-        //   positionMap.set("sara", pos);
-        //   addCube("sara");
-        // });
+            setWorldMode("view");
+          });
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
@@ -828,6 +844,8 @@ export function CubeScene(props: {
         }
       }
     });
+
+    requestRenderIfNotRequested();
   });
 
   createEffect(
@@ -856,8 +874,10 @@ export function CubeScene(props: {
     const pos = nextGridPos();
     if (!initBase) return;
 
-    initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
-
+    if (initBase.visible === false && inside) {
+      initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
+      initBase.visible = true;
+    }
     requestRenderIfNotRequested();
   };
 
@@ -868,6 +888,8 @@ export function CubeScene(props: {
   const onMouseMove = (event: MouseEvent) => {
     if (worldMode() !== "create") return;
     if (!initBase) return;
+
+    initBase.visible = true;
 
     const rect = renderer.domElement.getBoundingClientRect();
     const mouse = new THREE.Vector2(
@@ -923,8 +945,10 @@ export function CubeScene(props: {
             onClick={() => {
               if (positionMode() === "grid") {
                 setPositionMode("circle");
+                grid.visible = false;
               } else {
                 setPositionMode("grid");
+                grid.visible = true;
               }
             }}
           />
