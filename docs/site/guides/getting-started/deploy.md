@@ -18,7 +18,7 @@ Steps:
 
 - Create a NixOS installer image and transfer it to a bootable USB drive as described in the [installer](./installer.md).
 - Boot the target machine and connect it to a network that makes it reachable from your setup computer.
-- Note down a reachable ip adress (*ipv4*, *ipv6* or *tor*)
+- Note down a reachable ip address (*ipv4*, *ipv6* or *tor*)
 
 ---
 
@@ -169,7 +169,7 @@ Re-run the command with the correct disk:
 clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
-Should now be succesfull
+Should now be successful
 
 ```shellSession
 Applied disk template 'single-disk' to machine 'jon'

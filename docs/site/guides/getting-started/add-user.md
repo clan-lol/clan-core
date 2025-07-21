@@ -57,7 +57,7 @@ For more information see [clanService/users](../../reference/clanServices/users.
 
 Some people like to define a `users` folder in their repository root.
 That allows to bind all user specific logic to a single place (`default.nix`)
-Which can be imported into individual machines to make the user avilable on that machine.
+Which can be imported into individual machines to make the user available on that machine.
 
 ```bash
 .
@@ -107,7 +107,7 @@ We can use this property of clan services to bind a nixosModule to the user, whi
 }
 ```
 
-1. Type `path` or `string`: Must point to a seperate file. Inlining a module is not possible
+1. Type `path` or `string`: Must point to a separate file. Inlining a module is not possible
 
 !!! Note "This is inspiration"
     Our community might come up with better solutions soon.
