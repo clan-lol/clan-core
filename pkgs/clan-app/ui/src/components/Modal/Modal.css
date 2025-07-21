@@ -1,5 +1,5 @@
 div.modal-content {
-  @apply max-w-[512px];
+  @apply min-w-[320px] max-w-[512px];
   @apply rounded-md;
 
   /* todo replace with a theme() color */
@@ -12,7 +12,7 @@ div.modal-content {
     @apply border border-def-2 rounded-tl-md rounded-tr-md;
     @apply border-b-def-3;
 
-    & > .title {
+    & > .modal-title {
       @apply mx-auto;
     }
   }
