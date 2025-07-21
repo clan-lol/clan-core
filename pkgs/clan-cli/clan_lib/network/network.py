@@ -1,5 +1,5 @@
-import importlib
 import logging
+import textwrap
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -9,6 +9,7 @@ from typing import Any
 from clan_cli.vars.get import get_machine_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.import_utils import ClassSource, import_with_source
 from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.remote import Remote, check_machine_ssh_reachable
 
@@ -26,17 +27,33 @@ class Peer:
             return self._host["plain"]
         if "var" in self._host and isinstance(self._host["var"], dict):
             _var: dict[str, str] = self._host["var"]
+            machine_name = _var["machine"]
+            generator = _var["generator"]
             var = get_machine_var(
                 str(self.flake),
-                _var["machine"],
-                f"{_var['generator']}/{_var['file']}",
+                machine_name,
+                f"{generator}/{_var['file']}",
             )
+            if not var.exists:
+                msg = (
+                    textwrap.dedent(f"""
+                It looks like you added a networking module to your machine, but forgot
+                to deploy your changes. Please run "clan machines update {machine_name}"
+                so that the appropriate vars are generated and deployed properly.
+                """)
+                    .rstrip("\n")
+                    .lstrip("\n")
+                )
+                raise ClanError(msg)
             return var.value.decode()
         msg = f"Unknown Var Type {self._host}"
         raise ClanError(msg)
 
 
+@dataclass
 class NetworkTechnologyBase(ABC):
+    source: ClassSource
+
     @abstractmethod
     def is_running(self) -> bool:
         pass
@@ -70,8 +87,12 @@ class Network:
 
     @cached_property
     def module(self) -> NetworkTechnologyBase:
-        module = importlib.import_module(self.module_name)
-        return module.NetworkTechnology()
+        res = import_with_source(
+            self.module_name,
+            "NetworkTechnology",
+            NetworkTechnologyBase,  # type: ignore[type-abstract]
+        )
+        return res
 
     def is_running(self) -> bool:
         return self.module.is_running()
@@ -117,7 +138,9 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         result[network_name]["status"] = None
         result[network_name]["peers"] = {}
         network_online = False
-        if network.module.is_running():
+        module = network.module
+        log.debug(f"Using network module: {module}")
+        if module.is_running():
             result[network_name]["status"] = True
             network_online = True
         for peer_name in network.peers:

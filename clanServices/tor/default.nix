@@ -8,7 +8,29 @@
     "Network"
   ];
 
-  roles.default = {
+  roles.client = {
+    perInstance =
+      {
+        ...
+      }:
+      {
+        nixosModule =
+          {
+            ...
+          }:
+          {
+            config = {
+              services.tor = {
+                enable = true;
+                torsocks.enable = true;
+                client.enable = true;
+              };
+            };
+          };
+      };
+  };
+
+  roles.server = {
     # interface =
     #   { lib, ... }:
     #   {
@@ -42,7 +64,7 @@
               generator = "tor_${instanceName}";
               file = "hostname";
             };
-          }) roles.default.machines;
+          }) roles.server.machines;
         };
         nixosModule =
           {
