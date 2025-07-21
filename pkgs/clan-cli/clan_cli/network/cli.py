@@ -57,7 +57,7 @@ Examples:
 
     overview_parser = subparser.add_parser(
         "overview",
-        help="show the overview of all network and hosts",
+        help="show the overview of all networks and hosts",
         epilog=(
             """
 This command shows the complete state of all networks
