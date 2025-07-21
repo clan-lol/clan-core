@@ -23,7 +23,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 This subcommand allows listing all networks
 ```
 [NETWORK1] [PRIORITY] [MODULE] [PEER1, PEER2]
-[NETOWKR2] [PRIORITY] [MODULE] [PEER1, PEER2]
+[NETWORK2] [PRIORITY] [MODULE] [PEER1, PEER2]
 ```
 
 Examples:
