@@ -134,9 +134,9 @@
               systemd.services.zerotier-inventory-autoaccept =
                 let
                   machines = uniqueStrings (
-                    (lib.attrNames roles.moon.machines)
-                    ++ (lib.attrNames roles.controller.machines)
-                    ++ (lib.attrNames roles.peer.machines)
+                    (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
+                    ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
+                    ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
                   );
                   networkIps = builtins.foldl' (
                     ips: name:
