@@ -45,6 +45,7 @@ let
       };
     in
     clanLib.inventory.mapInstances {
+      directory = ./.;
       clanCoreModules = { };
       flakeInputs = flakeInputsFixture;
       inherit inventory;
@@ -52,6 +53,7 @@ let
     };
 in
 {
+  extraModules = import ./extraModules.nix { inherit clanLib; };
   exports = import ./exports.nix { inherit lib clanLib; };
   resolve_module_spec = import ./import_module_spec.nix { inherit lib callInventoryAdapter; };
   test_simple =

@@ -24,6 +24,7 @@ in
       flakeInputs,
       # The clan inventory
       inventory,
+      directory,
       clanCoreModules,
       prefix ? [ ],
       exportsModule,
@@ -128,7 +129,7 @@ in
             _ctx = prefix;
           };
           modules = [
-            ./all-services-wrapper.nix
+            (import ./all-services-wrapper.nix { inherit directory; })
           ] ++ modules;
         };
 

@@ -2,6 +2,7 @@
   lib,
   config,
   _ctx,
+  directory,
   ...
 }:
 let
@@ -212,7 +213,7 @@ in
 
                           options.extraModules = lib.mkOption {
                             default = [ ];
-                            type = types.listOf (types.deferredModule);
+                            type = types.listOf (types.either types.deferredModule types.str);
                           };
                         })
                       ];
@@ -755,10 +756,14 @@ in
             instanceRes
             // {
               nixosModule = {
-                imports = [
-                  # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
-                  instanceRes.nixosModule
-                ] ++ instanceCfg.roles.${roleName}.extraModules;
+                imports =
+                  [
+                    # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
+                    instanceRes.nixosModule
+                  ]
+                  ++ (map (
+                    s: if builtins.typeOf s == "string" then "${directory}/${s}" else s
+                  ) instanceCfg.roles.${roleName}.extraModules);
               };
             }
 
