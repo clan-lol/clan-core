@@ -26,7 +26,12 @@ export const Modal = (props: ModalProps) => {
       <KDialog.Portal mount={props.mount}>
         <KDialog.Content class={cx("modal-content", props.class)}>
           <div class="header">
-            <Typography class="title" hierarchy="label" family="mono" size="xs">
+            <Typography
+              class="modal-title"
+              hierarchy="label"
+              family="mono"
+              size="xs"
+            >
               {props.title}
             </Typography>
             <KDialog.CloseButton
