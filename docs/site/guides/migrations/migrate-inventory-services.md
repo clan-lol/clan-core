@@ -35,6 +35,37 @@ services = {
 };
 ```
 
+### Complex Example: Multi-service Setup
+
+```nix
+# Old format
+services = {
+    borgbackup.production = {
+        roles.server.machines = [ "backup-server" ];
+        roles.server.config = {
+            directory = "/var/backup/borg";
+        };
+        roles.client.tags = [ "backup" ];
+        roles.client.extraModules = [ "nixosModules/borgbackup.nix" ];
+    };
+
+    zerotier.company-network = {
+        roles.controller.machines = [ "network-controller" ];
+        roles.moon.machines = [ "moon-1" "moon-2" ];
+        roles.peer.tags = [ "nixos" ];
+    };
+
+    sshd.internal = {
+        roles.server.tags = [ "nixos" ];
+        roles.client.tags = [ "nixos" ];
+        config.certificate.searchDomains = [
+            "internal.example.com"
+            "vpn.example.com"
+        ];
+    };
+};
+```
+
 ---
 
 ## ✅ After: New `instances` Definition with `clanServices`
@@ -65,6 +96,58 @@ instances = {
             allowedKeys = {
                 "key-1" = "ssh-ed25519 AAAA...0J jon@jon-os";
             };
+        };
+    };
+};
+```
+
+### Complex Example Migrated
+
+```nix
+# New format
+instances = {
+    borgbackup-production = {
+        module = {
+            name = "borgbackup";
+            input = "clan-core";
+        };
+        roles.server.machines."backup-server" = { };
+        roles.server.settings = {
+            directory = "/var/backup/borg";
+        };
+        roles.client.tags.backup = { };
+        roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];
+    };
+
+    zerotier-company-network = {
+        module = {
+            name = "zerotier";
+            input = "clan-core";
+        };
+        roles.controller.machines."network-controller" = { };
+        roles.moon.machines."moon-1" = { };
+        roles.moon.machines."moon-2" = { };
+        roles.moon.settings = {
+            stableEndpoints = {
+                "moon-1" = [ "10.0.0.1" "2001:db8::1" ];
+                "moon-2" = [ "10.0.0.2" "2001:db8::2" ];
+            };
+        };
+        roles.peer.tags.nixos = { };
+    };
+
+    sshd-internal = {
+        module = {
+            name = "sshd";
+            input = "clan-core";
+        };
+        roles.server.tags.nixos = { };
+        roles.client.tags.nixos = { };
+        roles.client.settings = {
+            certificate.searchDomains = [
+                "internal.example.com"
+                "vpn.example.com"
+            ];
         };
     };
 };
@@ -131,12 +214,120 @@ roles.default.machines."test-inventory-machine".settings = {
 };
 ```
 
+### Important Type Changes
+
+The new `instances` format uses **attribute sets** instead of **lists** for tags and machines:
+
+```nix
+# ❌ Old format (lists)
+roles.client.tags = [ "backup" ];
+roles.server.machines = [ "blob64" ];
+
+# ✅ New format (attribute sets)
+roles.client.tags.backup = { };
+roles.server.machines.blob64 = { };
+```
+
+### Handling Multiple Machines/Tags
+
+When you need to assign multiple machines or tags to a role:
+
+```nix
+# ❌ Old format
+roles.moon.machines = [ "eva" "eve" ];
+
+# ✅ New format - each machine gets its own attribute
+roles.moon.machines.eva = { };
+roles.moon.machines.eve = { };
+```
+
 ---
 
 !!! Warning
     * Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
     * `inventory.services` is no longer recommended; use `inventory.instances` instead.
     * Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
+
+## Troubleshooting Common Migration Errors
+
+### Error: "not of type `attribute set of (submodule)`"
+
+This error occurs when using lists instead of attribute sets for tags or machines:
+
+```
+error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64.roles.client.tags' is not of type `attribute set of (submodule)'.
+```
+
+**Solution**: Convert lists to attribute sets as shown in the "Important Type Changes" section above.
+
+### Error: "unsupported attribute `module`"
+
+This error indicates the module structure is incorrect:
+
+```
+error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
+```
+
+**Solution**: Ensure the `module` attribute has exactly two fields: `name` and `input`.
+
+### Error: "attribute 'pkgs' missing"
+
+This suggests the instance configuration is trying to use imports incorrectly:
+
+```
+error: attribute 'pkgs' missing
+```
+
+**Solution**: Use the `module = { name = "..."; input = "..."; }` format instead of `imports`.
+
+### Removed Features
+
+The following features from the old `services` format are no longer supported in `instances`:
+
+- Top-level `config` attribute (use `roles.<role>.settings` instead)
+- Direct module imports (use the `module` declaration instead)
+
+### extraModules Support
+
+The `extraModules` attribute is still supported in the new instances format! The key change is how modules are specified:
+
+**Old format (string paths relative to clan root):**
+```nix
+roles.client.extraModules = [ "nixosModules/borgbackup.nix" ];
+```
+
+**New format (NixOS modules):**
+```nix
+# Direct module reference
+roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];
+
+# Or using self
+roles.client.extraModules = [ self.nixosModules.borgbackup ];
+
+# Or inline module definition
+roles.client.extraModules = [
+  { config, ... }: {
+    # Your module configuration here
+  }
+];
+```
+
+The `extraModules` now expects actual **NixOS modules** rather than string paths. This provides better type checking and more flexibility in how modules are specified.
+
+**Alternative: Using @clan/importer**
+
+For scenarios where you need to import modules with specific tag-based targeting, you can also use the dedicated `@clan/importer` service:
+
+```nix
+instances = {
+  my-importer = {
+    module.name = "@clan/importer";
+    module.input = "clan-core";
+    roles.default.tags.my-tag = { };
+    roles.default.extraModules = [ self.nixosModules.myModule ];
+  };
+};
+```
 
 ## Further reference
 
