@@ -12,7 +12,22 @@ T = TypeVar("T")
 class ClassSource:
     module_name: str
     file_path: Path
+    object_name: str
     line_number: int | None = None
+
+    def vscode_clickable_path(self) -> str:
+        """Return a VSCode-clickable path for the class source."""
+        return (
+            f"{self.module_name}.{self.object_name}: {self.file_path}:{self.line_number}"
+            if self.line_number is not None
+            else f"{self.module_name}.{self.object_name}: {self.file_path}"
+        )
+
+    def __repr__(self) -> str:
+        return self.vscode_clickable_path()
+
+    def __str__(self) -> str:
+        return self.vscode_clickable_path()
 
 
 def import_with_source[T](
@@ -75,6 +90,7 @@ def import_with_source[T](
     source = ClassSource(
         module_name=module_name,
         file_path=file_path,
+        object_name=class_name,
         line_number=line_number,
     )
 

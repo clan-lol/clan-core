@@ -56,16 +56,19 @@ def test_import_with_source(tmp_path: Path) -> None:
         # Verify source information
         assert instance.source.module_name == "test_module.test_tech"
         assert instance.source.file_path.name == "test_tech.py"
+        assert instance.source.object_name == "NetworkTechnology"
         assert instance.source.line_number == 4  # Line where class is defined
 
         # Test string representations
         str_repr = str(instance)
         assert "test_tech.py:" in str_repr
+        assert "NetworkTechnology" in str_repr
         assert str(instance.source.line_number) in str_repr
 
         repr_repr = repr(instance)
         assert "NetworkTechnology" in repr_repr
         assert "test_tech.py:" in repr_repr
+        assert "test_module.test_tech.NetworkTechnology" in repr_repr
 
     finally:
         # Clean up sys.path
@@ -116,6 +119,7 @@ def test_import_with_source_with_args() -> None:
         # Verify arguments were passed correctly
         assert instance.extra_arg == "extra_value"  # type: ignore[attr-defined]
         assert instance.keyword_arg == "keyword_value"  # type: ignore[attr-defined]
+        assert instance.source.object_name == "NetworkTechnology"
 
     finally:
         # Clean up
