@@ -47,7 +47,10 @@ export const HostFileInput = (props: HostFileInputProps) => {
       })}
       {...props}
     >
-      <Orienter orientation={props.orientation} align={"start"}>
+      <Orienter
+        orientation={props.orientation}
+        align={props.orientation == "horizontal" ? "center" : "start"}
+      >
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}

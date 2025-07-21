@@ -54,8 +54,7 @@ main#welcome {
   }
 
   & > div.container {
-    @apply flex flex-col items-center justify-evenly gap-y-20;
-    @apply size-fit;
+    @apply flex flex-col items-center justify-evenly gap-y-20 size-fit;
 
     & > div.welcome {
       @apply flex flex-col min-w-80 gap-y-6;
@@ -66,7 +65,7 @@ main#welcome {
     }
 
     & > div.setup {
-      @apply flex flex-col min-w-[520px] gap-y-5;
+      @apply flex flex-col w-[33rem] gap-y-5;
       @apply pt-10 px-8 pb-8 bg-def-1 rounded-lg;
 
       & > div.header {

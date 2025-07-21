@@ -9,6 +9,7 @@ import { TextInput } from "@/src/components/Form/TextInput";
 import { TextArea } from "@/src/components/Form/TextArea";
 import { Checkbox } from "@/src/components/Form/Checkbox";
 import { FieldProps } from "./Field";
+import { HostFileInput } from "@/src/components/Form/HostFileInput";
 
 const FieldsetExamples = (props: FieldsetProps) => (
   <div class="flex flex-col gap-8">
@@ -26,7 +27,7 @@ const meta = {
         <div
           class={cx({
             "w-[600px]": (context.args.orientation || "vertical") == "vertical",
-            "w-[1024px]": context.args.orientation == "horizontal",
+            "w-[512px]": context.args.orientation == "horizontal",
             "bg-inv-acc-3": context.args.inverted,
           })}
         >
@@ -62,6 +63,11 @@ export const Default: Story = {
           {...props}
           label="Bio"
           input={{ placeholder: "Tell us a bit about yourself", rows: 8 }}
+        />
+        <HostFileInput
+          {...props}
+          label="Profile pic"
+          onSelectFile={async () => "/home/foo/bar/baz/fizz/buzz/bla/bizz"}
         />
         <Checkbox {...props} label="Accept Terms" required={true} />
       </>
