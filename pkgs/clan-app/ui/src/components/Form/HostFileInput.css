@@ -1,5 +1,11 @@
 div.form-field.host-file {
   button {
-    @apply w-1/2;
+    @apply w-fit;
+  }
+
+  &.horizontal {
+    button {
+      @apply grow max-w-[18rem];
+    }
   }
 }
