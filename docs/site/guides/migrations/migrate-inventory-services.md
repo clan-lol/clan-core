@@ -125,13 +125,11 @@ instances = {
             input = "clan-core";
         };
         roles.controller.machines."network-controller" = { };
-        roles.moon.machines."moon-1" = { };
-        roles.moon.machines."moon-2" = { };
-        roles.moon.settings = {
-            stableEndpoints = {
-                "moon-1" = [ "10.0.0.1" "2001:db8::1" ];
-                "moon-2" = [ "10.0.0.2" "2001:db8::2" ];
-            };
+        roles.moon.machines."moon-1".settings = {
+            stableEndpoints = [ "10.0.0.1" "2001:db8::1" ];
+        };
+        roles.moon.machines."moon-2".settings = {
+            stableEndpoints = [ "10.0.0.2" "2001:db8::2" ];
         };
         roles.peer.tags.nixos = { };
     };
