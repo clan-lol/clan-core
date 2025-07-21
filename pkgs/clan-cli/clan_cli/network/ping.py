@@ -2,14 +2,14 @@ import argparse
 import logging
 
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+from clan_lib.flake import require_flake
 from clan_lib.network.network import networks_from_flake
 
 log = logging.getLogger(__name__)
 
 
 def ping_command(args: argparse.Namespace) -> None:
-    flake: Flake = args.flake
+    flake = require_flake(args.flake)
     machine = args.machine
     network_name = args.network
 

@@ -1,14 +1,14 @@
 import argparse
 import logging
 
-from clan_lib.flake import Flake
+from clan_lib.flake import require_flake
 from clan_lib.network.network import get_network_overview, networks_from_flake
 
 log = logging.getLogger(__name__)
 
 
 def overview_command(args: argparse.Namespace) -> None:
-    flake: Flake = args.flake
+    flake = require_flake(args.flake)
     networks = networks_from_flake(flake)
     overview = get_network_overview(networks)
     for network_name, network in overview.items():
