@@ -1,11 +1,11 @@
 import logging
+import textwrap
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
 
-from clan_cli.vars.generate import run_generators
 from clan_cli.vars.get import get_machine_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
@@ -35,15 +35,16 @@ class Peer:
                 f"{generator}/{_var['file']}",
             )
             if not var.exists:
-                for _ in range(3):
-                    res = run_generators(
-                        machine_name=machine_name,
-                        generators=[generator],
-                        all_prompt_values={},
-                        base_dir=self.flake.path,
-                    )
-                    if res:
-                        break
+                msg = (
+                    textwrap.dedent(f"""
+                It looks like you added a networking module to your machine, but forgot
+                to deploy your changes. Please run "clan machines update {machine_name}"
+                so that the appropriate vars are generated and deployed properly.
+                """)
+                    .rstrip("\n")
+                    .lstrip("\n")
+                )
+                raise ClanError(msg)
             return var.value.decode()
         msg = f"Unknown Var Type {self._host}"
         raise ClanError(msg)
@@ -76,14 +77,6 @@ class NetworkTechnologyBase(ABC):
                 log.debug(f"Error checking peer {peer.host}: {e}")
                 return None
         return None
-
-    def __str__(self) -> str:
-        """Return a VSCode-clickable string representation."""
-        return f"{self.source.file_path}:{self.source.line_number}"
-
-    def __repr__(self) -> str:
-        """Return a detailed representation with VSCode-clickable path."""
-        return f"<{self.__class__.__name__} at {self.source.file_path}:{self.source.line_number}>"
 
 
 @dataclass(frozen=True)
@@ -145,8 +138,9 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         result[network_name]["status"] = None
         result[network_name]["peers"] = {}
         network_online = False
-        log.debug(f"Using network module: {network.module}")
-        if network.module.is_running():
+        module = network.module
+        log.debug(f"Using network module: {module}")
+        if module.is_running():
             result[network_name]["status"] = True
             network_online = True
         for peer_name in network.peers:
