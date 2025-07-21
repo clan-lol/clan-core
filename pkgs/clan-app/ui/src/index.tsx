@@ -17,11 +17,14 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
     "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got misspelled?",
   );
 }
+if (import.meta.env.DEV) {
+  console.log("Development mode");
+}
 
 render(
   () => (
     <QueryClientProvider client={client}>
-      {import.meta.env.DEV && <SolidQueryDevtools />}
+      {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
       <Router root={Layout}>{Routes}</Router>
     </QueryClientProvider>
   ),

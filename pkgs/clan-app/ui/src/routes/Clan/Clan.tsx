@@ -13,19 +13,14 @@ import "./Clan.css";
 import { Modal } from "@/src/components/Modal/Modal";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
+import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   return (
     <>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-        }}
-      >
-        {props.children}
-      </div>
-      <ClanSceneController />
+      <Sidebar />
+      {props.children}
+      <ClanSceneController {...props} />
     </>
   );
 };
@@ -89,7 +84,7 @@ const MockCreateMachine = (props: MockProps) => {
   );
 };
 
-const ClanSceneController = () => {
+const ClanSceneController = (props: RouteSectionProps) => {
   const clanURI = useClanURI();
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
@@ -232,7 +227,7 @@ const SceneDataProvider = (props: {
   clanURI: string;
   children: (sceneData: { query: MachinesQueryResult }) => JSX.Element;
 }) => {
-  const machinesQuery = useMachinesQuery({ clanURI: props.clanURI });
+  const machinesQuery = useMachinesQuery(props.clanURI);
 
   // This component can be used to provide scene data or context if needed
   return props.children({ query: machinesQuery });

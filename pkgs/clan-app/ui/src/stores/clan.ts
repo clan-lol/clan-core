@@ -20,6 +20,14 @@ const [store, setStore] = makePersisted(
   },
 );
 
+const resetStore = () => {
+  setStore({
+    clanURIs: [],
+    activeClanURI: undefined,
+    sceneData: {},
+  });
+};
+
 /**
  * Retrieves the active clan URI from the store.
  *
@@ -92,4 +100,5 @@ export {
   clanURIs,
   addClanURI,
   removeClanURI,
+  resetStore,
 };

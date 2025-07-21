@@ -11,3 +11,14 @@
 .create-modal {
   @apply min-w-96;
 }
+
+.sidebar-container {
+}
+
+div.sidebar {
+  @apply absolute top-10 bottom-20 left-4 w-60;
+}
+
+div.sidebar-pane {
+  @apply absolute top-12 bottom-20 left-[16.5rem] w-64;
+}

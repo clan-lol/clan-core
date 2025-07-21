@@ -1,46 +1,60 @@
-import "./SidebarNavBody.css";
+import "./SidebarBody.css";
 import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import {
-  MachineProps,
-  SidebarNavProps,
-} from "@/src/components/Sidebar/SidebarNav";
-import { For } from "solid-js";
+import { For, Suspense } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
+import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
+import { useMachinesQuery } from "@/src/queries/queries";
+import { SidebarProps } from "./Sidebar";
+
+interface MachineProps {
+  clanURI: string;
+  machineID: string;
+  name: string;
+  status: MachineStatus;
+  serviceCount: number;
+}
 
 const MachineRoute = (props: MachineProps) => (
-  <div class="flex w-full flex-col gap-2">
-    <div class="flex flex-row items-center justify-between">
-      <Typography
-        hierarchy="label"
-        size="xs"
-        weight="bold"
-        color="primary"
-        inverted={true}
-      >
-        {props.label}
-      </Typography>
-      <MachineStatus status={props.status} />
+  <A href={buildMachinePath(props.clanURI, props.machineID)}>
+    <div class="flex w-full flex-col gap-2">
+      <div class="flex flex-row items-center justify-between">
+        <Typography
+          hierarchy="label"
+          size="xs"
+          weight="bold"
+          color="primary"
+          inverted={true}
+        >
+          {props.name}
+        </Typography>
+        <MachineStatus status={props.status} />
+      </div>
+      <div class="flex w-full flex-row items-center gap-1">
+        <Icon icon="Flash" size="0.75rem" inverted={true} color="tertiary" />
+        <Typography
+          hierarchy="label"
+          family="mono"
+          size="s"
+          inverted={true}
+          color="primary"
+        >
+          {props.serviceCount}
+        </Typography>
+      </div>
     </div>
-    <div class="flex w-full flex-row items-center gap-1">
-      <Icon icon="Flash" size="0.75rem" inverted={true} color="tertiary" />
-      <Typography
-        hierarchy="label"
-        family="mono"
-        size="s"
-        inverted={true}
-        color="primary"
-      >
-        {props.serviceCount}
-      </Typography>
-    </div>
-  </div>
+  </A>
 );
 
-export const SidebarNavBody = (props: SidebarNavProps) => {
-  const sectionLabels = props.extraSections.map((section) => section.label);
+export const SidebarBody = (props: SidebarProps) => {
+  const clanURI = useClanURI();
+  const machineList = useMachinesQuery(clanURI);
+
+  const sectionLabels = (props.staticSections || []).map(
+    (section) => section.title,
+  );
 
   // controls which sections are open by default
   // we want them all to be open by default
@@ -75,21 +89,27 @@ export const SidebarNavBody = (props: SidebarNavProps) => {
             </Accordion.Trigger>
           </Accordion.Header>
           <Accordion.Content class="content">
-            <nav>
-              <For each={props.clanDetail.machines}>
-                {(machine) => (
-                  <A href={machine.path}>
-                    <MachineRoute {...machine} />
-                  </A>
-                )}
-              </For>
-            </nav>
+            <Suspense fallback={"Loading..."}>
+              <nav>
+                <For each={Object.entries(machineList.data || {})}>
+                  {([id, machine]) => (
+                    <MachineRoute
+                      clanURI={clanURI}
+                      machineID={id}
+                      name={machine.name || id}
+                      status="Not Installed"
+                      serviceCount={0}
+                    />
+                  )}
+                </For>
+              </nav>
+            </Suspense>
           </Accordion.Content>
         </Accordion.Item>
 
-        <For each={props.extraSections}>
+        <For each={props.staticSections}>
           {(section) => (
-            <Accordion.Item class="item" value={section.label}>
+            <Accordion.Item class="item" value={section.title}>
               <Accordion.Header class="header">
                 <Accordion.Trigger class="trigger">
                   <Typography
@@ -100,7 +120,7 @@ export const SidebarNavBody = (props: SidebarNavProps) => {
                     inverted={true}
                     color="tertiary"
                   >
-                    {section.label}
+                    {section.title}
                   </Typography>
                   <Icon
                     icon="CaretDown"
