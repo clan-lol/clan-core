@@ -247,7 +247,7 @@ in
               {
                 distributedServices = clanLib.inventory.mapInstances {
                   inherit (clanConfig) inventory exportsModule;
-                  inherit flakeInputs;
+                  inherit flakeInputs directory;
                   clanCoreModules = clan-core.clan.modules;
                   prefix = [ "distributedServices" ];
                 };

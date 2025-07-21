@@ -1,5 +1,9 @@
 # Wraps all services in one fixed point module
 {
+  # TODO: consume directly from clan.config
+  directory,
+}:
+{
   lib,
   config,
   specialArgs,
@@ -29,6 +33,8 @@ in
               {
                 _module.args._ctx = [ name ];
                 _module.args.exports' = config.exports;
+                _module.args.directory = directory;
+
               }
             )
             ./service-module.nix
@@ -70,9 +76,6 @@ in
         ] ++ lib.mapAttrsToList (_: service: service.exports) config.mappedServices;
       };
       default = { };
-    };
-    debug = mkOption {
-      default = lib.mapAttrsToList (_: service: service.exports) config.mappedServices;
     };
   };
 }
