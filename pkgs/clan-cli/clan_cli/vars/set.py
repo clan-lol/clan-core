@@ -2,7 +2,11 @@ import argparse
 import logging
 import sys
 
-from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.completions import (
+    add_dynamic_completer,
+    complete_machines,
+    complete_vars_for_machine,
+)
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.prompt import PromptType
 from clan_lib.flake import Flake
@@ -59,9 +63,10 @@ def register_set_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(machines_arg, complete_machines)
 
-    parser.add_argument(
+    var_id_arg = parser.add_argument(
         "var_id",
         help="The var id for which to set the value. Example: ssh-keys/pubkey",
     )
+    add_dynamic_completer(var_id_arg, complete_vars_for_machine)
 
     parser.set_defaults(func=_set_command)

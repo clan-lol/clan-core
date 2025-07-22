@@ -2,7 +2,11 @@ import argparse
 import logging
 import sys
 
-from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.completions import (
+    add_dynamic_completer,
+    complete_machines,
+    complete_vars_for_machine,
+)
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
 
@@ -67,9 +71,10 @@ def register_get_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(machines_arg, complete_machines)
 
-    parser.add_argument(
+    var_id_arg = parser.add_argument(
         "var_id",
         help="The var id to get the value for. Example: ssh-keys/pubkey",
     )
+    add_dynamic_completer(var_id_arg, complete_vars_for_machine)
 
     parser.set_defaults(func=_get_command)
