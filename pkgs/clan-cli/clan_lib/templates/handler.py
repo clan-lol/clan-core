@@ -1,6 +1,6 @@
 import logging
 import shutil
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -102,7 +102,12 @@ def machine_template(
 
 
 @contextmanager
-def clan_template(flake: Flake, template_ident: str, dst_dir: Path) -> Iterator[Path]:
+def clan_template(
+    flake: Flake,
+    template_ident: str,
+    dst_dir: Path,
+    post_process: Callable[[Path], None] | None = None,
+) -> Iterator[Path]:
     """
     Create a clan from a template.
     This function will copy the template files to a new clan directory
@@ -159,6 +164,17 @@ def clan_template(flake: Flake, template_ident: str, dst_dir: Path) -> Iterator[
 
     copy_from_nixstore(src_path, dst_dir)
 
+    if post_process:
+        try:
+            post_process(dst_dir)
+        except Exception as e:
+            log.error(f"Error during post-processing of clan template: {e}")
+            log.info(f"Removing left-over directory: {dst_dir}")
+            shutil.rmtree(dst_dir, ignore_errors=True)
+            msg = (
+                f"Post-processing of clan template {printable_template_ref} failed: {e}"
+            )
+            raise ClanError(msg) from e
     try:
         yield dst_dir
     except Exception as e:
