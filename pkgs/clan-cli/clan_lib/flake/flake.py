@@ -1,9 +1,11 @@
 import json
 import logging
 import os
+import re
 import textwrap
 from dataclasses import asdict, dataclass, field
 from enum import Enum
+from functools import cache
 from hashlib import sha1
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -12,6 +14,62 @@ from typing import Any
 from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
+
+
+def get_nix_store_dir() -> str:
+    """Get the Nix store directory path pattern for regex matching.
+
+    This always returns the pattern that Nix uses in its output,
+    which is typically /nix/store regardless of chroot.
+    """
+    return os.environ.get("NIX_STORE_DIR", "/nix/store")
+
+
+def get_physical_store_path(store_path: str) -> Path:
+    """Convert a store path to its physical location, handling chroot environments.
+
+    When CLAN_TEST_STORE is set, paths like /nix/store/hash-name are
+    actually located at CLAN_TEST_STORE/nix/store/hash-name.
+    """
+    test_store = os.environ.get("CLAN_TEST_STORE")
+    if test_store and store_path.startswith("/nix/store/"):
+        # Remove leading / to join properly
+        relative_path = store_path.lstrip("/")
+        return Path(test_store) / relative_path
+    return Path(store_path)
+
+
+@cache
+def get_store_path_regex(store_dir: str) -> re.Pattern[str]:
+    """Get compiled regex for a specific store directory.
+
+    Matches store paths: store_dir/hash-name
+    The hash is base32 lowercase, name can contain [0-9a-zA-Z+-.?=_]
+    """
+    # Pattern: store_dir/hash-name
+    pattern = (
+        re.escape(store_dir) + r"/[0-9a-z]+-[0-9a-zA-Z\+\-\._\?=]*"  # hash-name
+    )
+    return re.compile(pattern)
+
+
+def find_store_references(text: str) -> list[str]:
+    """Find all store path references in a string."""
+    store_dir = get_nix_store_dir()
+    return get_store_path_regex(store_dir).findall(text)
+
+
+def is_pure_store_path(path: str) -> bool:
+    """Check if a path is a pure Nix store path without file references or metadata.
+
+    Pure store paths have the format: /nix/store/hash-name
+    They should NOT contain:
+    - Additional path components (/nix/store/hash-name/subdir/file.nix)
+    - Line numbers or metadata (/nix/store/hash-name:42)
+    """
+    store_dir = get_nix_store_dir()
+    regex = get_store_path_regex(store_dir)
+    return bool(regex.fullmatch(path))
 
 
 class SetSelectorType(str, Enum):
@@ -327,12 +385,10 @@ class FlakeCacheEntry:
                     self.value[requested_index] = FlakeCacheEntry()
                 self.value[requested_index].insert(value[i], selectors[1:])
 
-        # strings need to be checked if they are store paths
+        # strings need to be checked if they are pure store paths
         # if they are, we store them as a dict with the outPath key
         # this is to mirror nix behavior, where the outPath of an attrset is used if no further key is specified
-        elif isinstance(value, str) and value.startswith(
-            os.environ.get("NIX_STORE_DIR", "/nix/store")
-        ):
+        elif isinstance(value, str) and is_pure_store_path(value):
             assert selectors == []
             self.value = {"outPath": FlakeCacheEntry(value)}
 
@@ -342,41 +398,32 @@ class FlakeCacheEntry:
             assert selectors == []
             if self.value == {}:
                 self.value = value
+            # Only check for outPath wrapping conflicts for strings (store paths)
+            elif isinstance(value, str) and (
+                isinstance(self.value, dict)
+                and "outPath" in self.value
+                and isinstance(self.value["outPath"], FlakeCacheEntry)
+            ):
+                # If the same value is already wrapped in outPath, it's not a conflict
+                if self.value["outPath"].value == value:
+                    # Value already cached as outPath, no need to change
+                    pass
+                else:
+                    msg = f"Cannot insert {value} into cache, already have {self.value}"
+                    raise TypeError(msg)
             elif self.value != value:
                 msg = f"Cannot insert {value} into cache, already have {self.value}"
                 raise TypeError(msg)
-
-    def _check_path_exists(self, path_str: str) -> bool:
-        """Check if a path exists, handling potential line number suffixes."""
-        path = Path(path_str)
-        if path.exists():
-            return True
-
-        # Try stripping line numbers if the path doesn't exist
-        # Handle format: /path/to/file:123 or /path/to/file:123:456
-        if ":" in path_str:
-            parts = path_str.split(":")
-            if len(parts) >= 2:
-                # Check if all parts after the first colon are numbers
-                if all(part.isdigit() for part in parts[1:]):
-                    base_path = parts[0]
-                    return Path(base_path).exists()
-        return False
 
     def is_cached(self, selectors: list[Selector]) -> bool:
         selector: Selector
 
         # for store paths we have to check if they still exist, otherwise they have to be rebuild and are thus not cached
         if isinstance(self.value, str):
-            # Check if it's a regular nix store path
-            nix_store_dir = os.environ.get("NIX_STORE_DIR", "/nix/store")
-            if self.value.startswith(nix_store_dir):
-                return self._check_path_exists(self.value)
-
-            # Check if it's a test store path
-            test_store = os.environ.get("CLAN_TEST_STORE")
-            if test_store and self.value.startswith(test_store):
-                return self._check_path_exists(self.value)
+            store_refs = find_store_references(self.value)
+            if store_refs:
+                # Check if all store references exist at their physical location
+                return all(get_physical_store_path(ref).exists() for ref in store_refs)
 
         # if self.value is not dict but we request more selectors, we assume we are cached and an error will be thrown in the select function
         if isinstance(self.value, str | float | int | None):
