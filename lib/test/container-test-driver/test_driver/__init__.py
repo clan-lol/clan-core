@@ -313,6 +313,18 @@ class Machine:
         command = f"nc -z {shlex.quote(addr)} {port}"
         self.wait_until_succeeds(command, timeout=timeout)
 
+    def wait_for_file(self, filename: str, timeout: int = 30) -> None:
+        """
+        Waits until the file exists in the machine's file system.
+        """
+
+        def check_file(_last_try: bool) -> bool:
+            result = self.execute(f"test -e {filename}")
+            return result.returncode == 0
+
+        with self.nested(f"waiting for file '{filename}'"):
+            retry(check_file, timeout)
+
     def wait_for_unit(self, unit: str, timeout: int = 900) -> None:
         """
         Wait for a systemd unit to get into "active" state.
