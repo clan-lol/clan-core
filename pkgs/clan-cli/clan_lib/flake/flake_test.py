@@ -159,13 +159,13 @@ def test_select() -> None:
 
 
 def test_out_path() -> None:
-    testdict = {"x": {"y": [123, 345, 456], "z": "/nix/store/bla"}}
+    testdict = {"x": {"y": [123, 345, 456], "z": "/nix/store/abc-bla"}}
     test_cache = FlakeCacheEntry()
     test_cache.insert(testdict, [])
     selectors = parse_selector("x.z")
-    assert test_cache.select(selectors) == "/nix/store/bla"
+    assert test_cache.select(selectors) == "/nix/store/abc-bla"
     selectors = parse_selector("x.z.outPath")
-    assert test_cache.select(selectors) == "/nix/store/bla"
+    assert test_cache.select(selectors) == "/nix/store/abc-bla"
 
 
 def test_out_path_in_multiselect_raises_exception() -> None:
