@@ -269,6 +269,26 @@ def complete_templates_disko(
     return []
 
 
+def complete_templates_clan(
+    prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
+) -> Iterable[str]:
+    """
+    Provides completion functionality for clan templates
+    """
+
+    from clan_lib.templates import list_templates
+
+    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+
+    list_all_templates = list_templates(Flake(flake))
+    clan_template_list = list_all_templates.builtins.get("clan")
+    if clan_template_list:
+        clan_templates = list(clan_template_list)
+        clan_dict = dict.fromkeys(clan_templates, "clan")
+        return clan_dict
+    return []
+
+
 def complete_target_host(
     prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
 ) -> Iterable[str]:
