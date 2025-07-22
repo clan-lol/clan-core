@@ -221,7 +221,7 @@ const ClanSceneController = () => {
 };
 
 const SceneDataProvider = (props: {
-  clanURI: string | null;
+  clanURI: string;
   children: (sceneData: { query: MachinesQueryResult }) => JSX.Element;
 }) => {
   const machinesQuery = useMachinesQuery({ clanURI: props.clanURI });
