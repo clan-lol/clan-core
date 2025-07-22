@@ -220,16 +220,8 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
         // todo allow users to select a template
         template: "minimal",
         initial: {
-          meta: {
-            name: name,
-            description: description,
-            // todo it tries to 'delete' icon if it's not provided
-            // this logic is unexpected, and needs reviewed.
-            icon: null,
-          },
-          machines: {},
-          instances: {},
-          services: {},
+          name,
+          description,
         },
       },
     });

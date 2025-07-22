@@ -8,7 +8,9 @@ from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
-from clan_lib.persist.inventory_store import InventorySnapshot, InventoryStore
+from clan_lib.nix_models.clan import InventoryMeta
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import merge_objects, set_value_by_path
 from clan_lib.templates.handler import clan_template
 
 log = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class CreateOptions:
 
     src_flake: Flake | None = None
     setup_git: bool = True
-    initial: InventorySnapshot | None = None
+    initial: InventoryMeta | None = None
     update_clan: bool = True
 
 
@@ -58,6 +60,8 @@ def create_clan(opts: CreateOptions) -> None:
     with clan_template(
         opts.src_flake, template_ident=opts.template, dst_dir=opts.dest
     ) as _clan_dir:
+        flake = Flake(str(opts.dest))
+
         if opts.setup_git:
             run(git_command(dest, "init"))
             run(git_command(dest, "add", "."))
@@ -77,13 +81,18 @@ def create_clan(opts: CreateOptions) -> None:
 
         if opts.update_clan:
             run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
+            flake.invalidate_cache()
 
         if opts.setup_git:
             run(git_command(dest, "add", "."))
             run(git_command(dest, "commit", "-m", "Initial commit"))
 
-    if opts.initial:
-        inventory_store = InventoryStore(flake=Flake(str(opts.dest)))
-        inventory_store.write(opts.initial, message="Init inventory")
+        if opts.initial:
+            inventory_store = InventoryStore(flake)
+            inventory = inventory_store.read()
+            curr_meta = inventory.get("meta", {})
+            new_meta = merge_objects(curr_meta, opts.initial)
+            set_value_by_path(inventory, "meta", new_meta)
+            inventory_store.write(inventory, message="Init inventory")
 
     return
