@@ -59,7 +59,7 @@ Enter a *name*, confirm with *enter*. A directory with that name will be created
 
 ## Explore the Project Structure
 
-Take a lookg at all project files:
+Take a look at all project files:
 
 ```bash
 cd my-clan
