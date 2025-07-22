@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { Routes } from "@/src/routes";
 import { Router } from "@solidjs/router";
 import { Layout } from "@/src/routes/Layout";
+import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 
 export const client = new QueryClient();
 
@@ -25,6 +26,7 @@ if (import.meta.env.DEV) {
 render(
   () => (
     <QueryClientProvider client={client}>
+      {import.meta.env.DEV && <SolidQueryDevtools />}
       <Router root={Layout}>{Routes}</Router>
     </QueryClientProvider>
   ),
