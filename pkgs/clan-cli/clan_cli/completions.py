@@ -289,6 +289,49 @@ def complete_templates_clan(
     return []
 
 
+def complete_vars_for_machine(
+    prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
+) -> Iterable[str]:
+    """
+    Provides completion functionality for variable names for a specific machine.
+    Only completes vars that already exist in the vars directory on disk.
+    This is fast as it only scans the filesystem without any evaluation.
+    """
+    from pathlib import Path
+
+    machine_name = getattr(parsed_args, "machine", None)
+    if not machine_name:
+        return []
+
+    if (clan_dir_result := clan_dir(None)) is not None:
+        flake_path = Path(clan_dir_result)
+    else:
+        flake_path = Path()
+
+    vars_dir = flake_path / "vars" / "per-machine" / machine_name
+    vars_list: list[str] = []
+
+    if vars_dir.exists() and vars_dir.is_dir():
+        try:
+            for generator_dir in vars_dir.iterdir():
+                if not generator_dir.is_dir():
+                    continue
+
+                generator_name = generator_dir.name
+
+                for var_dir in generator_dir.iterdir():
+                    if var_dir.is_dir():
+                        var_name = var_dir.name
+                        var_id = f"{generator_name}/{var_name}"
+                        vars_list.append(var_id)
+
+        except Exception:
+            pass
+
+    vars_dict = dict.fromkeys(vars_list, "var")
+    return vars_dict
+
+
 def complete_target_host(
     prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
 ) -> Iterable[str]:
