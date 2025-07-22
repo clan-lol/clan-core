@@ -13,6 +13,7 @@ from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import merge_objects, set_value_by_path
 from clan_lib.templates.handler import clan_template
+from clan_lib.validator.hostname import hostname
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,11 @@ class CreateOptions:
     setup_git: bool = True
     initial: InventoryMeta | None = None
     update_clan: bool = True
+
+    # -- Internal use only --
+    #
+    # Post-processing hook to make flakes offline testable
+    _postprocess_flake_hook: Callable[[Path], None] | None = None
 
     def validate(self) -> None:
         if self.initial and "name" in self.initial:
@@ -72,7 +78,11 @@ def create_clan(opts: CreateOptions) -> None:
         opts.src_flake = Flake(str(clan_templates()))
 
     with clan_template(
-        opts.src_flake, template_ident=opts.template, dst_dir=opts.dest
+        opts.src_flake,
+        template_ident=opts.template,
+        dst_dir=opts.dest,
+        # _postprocess_flake_hook must be private to avoid leaking it to the public API
+        post_process=opts._postprocess_flake_hook,  # noqa: SLF001
     ) as _clan_dir:
         flake = Flake(str(opts.dest))
 
