@@ -4,4 +4,5 @@ pytest_plugins = [
     "clan_cli.tests.sshd",
     "clan_cli.tests.runtime",
     "clan_lib.fixtures.flake_hooks",
+    "clan_lib.fixtures.flakes.flakes",
 ]
