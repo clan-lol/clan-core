@@ -6,11 +6,13 @@ from pathlib import Path
 from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.errors import ClanError
 
+from clan_cli.completions import add_dynamic_completer, complete_templates_clan
+
 log = logging.getLogger(__name__)
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    template_action = parser.add_argument(
         "--template",
         type=str,
         help="""Reference to the template to use for the clan. default="default". In the format '<flake_ref>#template_name' Where <flake_ref> is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
@@ -18,6 +20,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         """,
         default="default",
     )
+    add_dynamic_completer(template_action, complete_templates_clan)
 
     parser.add_argument(
         "--no-git",
