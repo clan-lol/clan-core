@@ -407,6 +407,14 @@ def setup_filesystems(container: ContainerInfo) -> None:
     Path("/etc/os-release").touch()
     Path("/etc/machine-id").write_text("a5ea3f98dedc0278b6f3cc8c37eeaeac")
     container.nix_store_dir.mkdir(parents=True)
+
+    # Recreate symlinks
+    for file in Path("/nix/store").iterdir():
+        if file.is_symlink():
+            target = file.readlink()
+            sym = container.nix_store_dir / file.name
+            os.symlink(target, sym)
+
     # Read /proc/mounts and replicate every bind mount
     with Path("/proc/self/mounts").open() as f:
         for line in f:
