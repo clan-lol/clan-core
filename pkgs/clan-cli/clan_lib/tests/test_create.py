@@ -115,7 +115,7 @@ def test_clan_create_api(
     host_ip = hosts[0].address
     host_user = hosts[0].user
     vm_name = "test-clan"
-    clan_core_dir_var = str(clan_core)
+
     priv_key_var = hosts[0].private_key
     ssh_port_var = str(hosts[0].port)
 
@@ -143,9 +143,8 @@ def test_clan_create_api(
     assert dest_clan_dir.is_dir()
     assert (dest_clan_dir / "flake.nix").is_file()
 
-    clan_core_dir = Path(clan_core_dir_var)
     # TODO: We need a way to generate the lock file for the templates
-    fix_flake_inputs(dest_clan_dir, clan_core_dir)
+    fix_flake_inputs(dest_clan_dir, clan_core)
 
     # ===== CREATE SOPS KEY ======
     sops_keys = maybe_get_admin_public_keys()
