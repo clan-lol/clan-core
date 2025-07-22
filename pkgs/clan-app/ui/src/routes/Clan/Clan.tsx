@@ -90,7 +90,7 @@ const MockCreateMachine = (props: MockProps) => {
 };
 
 const ClanSceneController = () => {
-  const clanURI = useClanURI({ force: true });
+  const clanURI = useClanURI();
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
@@ -191,7 +191,7 @@ const ClanSceneController = () => {
               cubesQuery={query}
               onCreate={onCreate}
               sceneStore={() => {
-                const clanURI = useClanURI({ force: true });
+                const clanURI = useClanURI();
                 return store.sceneData?.[clanURI];
               }}
               setMachinePos={(machineId: string, pos: [number, number]) => {
