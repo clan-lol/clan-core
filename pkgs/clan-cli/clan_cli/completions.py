@@ -29,6 +29,8 @@ COMPLETION_TIMEOUT: int = 3
 
 
 def clan_dir(flake: str | None) -> str | None:
+    if flake is not None:
+        return flake
     from clan_lib.dirs import get_clan_flake_toplevel_or_env
 
     path_result = get_clan_flake_toplevel_or_env()
@@ -45,7 +47,9 @@ def complete_machines(
 
     def run_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -79,7 +83,9 @@ def complete_services_for_machine(
 
     def run_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -121,7 +127,9 @@ def complete_backup_providers_for_machine(
 
     def run_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -163,7 +171,9 @@ def complete_state_services_for_machine(
 
     def run_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -204,7 +214,12 @@ def complete_secrets(
 
     from .secrets.secrets import list_secrets
 
-    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
 
     secrets = list_secrets(Flake(flake).path)
 
@@ -222,7 +237,12 @@ def complete_users(
 
     from .secrets.users import list_users
 
-    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
 
     users = list_users(Path(flake))
 
@@ -240,7 +260,12 @@ def complete_groups(
 
     from .secrets.groups import list_groups
 
-    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
 
     groups_list = list_groups(Path(flake))
     groups = [group.name for group in groups_list]
@@ -258,7 +283,12 @@ def complete_templates_disko(
 
     from clan_lib.templates import list_templates
 
-    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
 
     list_all_templates = list_templates(Flake(flake))
     disko_template_list = list_all_templates.builtins.get("disko")
@@ -278,7 +308,12 @@ def complete_templates_clan(
 
     from clan_lib.templates import list_templates
 
-    flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
 
     list_all_templates = list_templates(Flake(flake))
     clan_template_list = list_all_templates.builtins.get("clan")
@@ -303,7 +338,7 @@ def complete_vars_for_machine(
     if not machine_name:
         return []
 
-    if (clan_dir_result := clan_dir(None)) is not None:
+    if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))) is not None:
         flake_path = Path(clan_dir_result)
     else:
         flake_path = Path()
@@ -343,7 +378,9 @@ def complete_target_host(
 
     def run_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -383,7 +420,9 @@ def complete_tags(
 
     def run_computed_tags_cmd() -> None:
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
@@ -399,7 +438,9 @@ def complete_tags(
     def run_machines_tags_cmd() -> None:
         machine_tags: list[str] = []
         try:
-            if (clan_dir_result := clan_dir(None)) is not None:
+            if (
+                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
+            ) is not None:
                 flake = clan_dir_result
             else:
                 flake = "."
