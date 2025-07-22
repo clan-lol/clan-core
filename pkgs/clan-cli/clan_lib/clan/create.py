@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,6 +27,18 @@ class CreateOptions:
     initial: InventoryMeta | None = None
     update_clan: bool = True
 
+    def validate(self) -> None:
+        if self.initial and "name" in self.initial:
+            try:
+                hostname(self.initial["name"])
+            except ClanError as e:
+                msg = "must be a valid hostname."
+                raise ClanError(
+                    msg,
+                    location="name",
+                    description="The 'name' field must be a valid hostname.",
+                ) from e
+
 
 def git_command(directory: Path, *args: str) -> list[str]:
     return nix_shell(["git"], ["git", "-C", str(directory), *args])
@@ -41,6 +54,7 @@ def create_clan(opts: CreateOptions) -> None:
         ClanError: If the source flake is not a valid flake or if the destination
             directory already exists.
     """
+    opts.validate()
 
     dest = opts.dest.resolve()
 
