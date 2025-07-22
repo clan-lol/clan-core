@@ -2,7 +2,6 @@ import argparse
 import logging
 import re
 from dataclasses import dataclass
-from typing import TypeVar, cast
 
 from clan_lib.api import API
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
@@ -12,7 +11,7 @@ from clan_lib.git import commit_file
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import set_value_by_path
+from clan_lib.persist.util import merge_objects, set_value_by_path
 from clan_lib.templates.handler import machine_template
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
@@ -26,41 +25,6 @@ class CreateOptions:
     machine: InventoryMachine
     template: str = "new-machine"
     target_host: str | None = None
-
-
-T = TypeVar("T")
-
-
-def merge_objects(obj1: T, obj2: T) -> T:
-    """
-    Updates values in obj2 by values of Obj1
-    The output contains values for all keys of Obj1 and Obj2 together
-
-    Lists are deduplicated and appended almost like in the nix module system.
-    """
-    result = {}
-    msg = f"cannot update non-dictionary values: {obj2} by {obj1}"
-    if not isinstance(obj1, dict):
-        raise ClanError(msg)
-    if not isinstance(obj2, dict):
-        raise ClanError(msg)
-
-    all_keys = set(obj1.keys()).union(obj2.keys())
-
-    for key in all_keys:
-        val1 = obj1.get(key)
-        val2 = obj2.get(key)
-
-        if isinstance(val1, dict) and isinstance(val2, dict):
-            result[key] = merge_objects(val1, val2)
-        elif isinstance(val1, list) and isinstance(val2, list):
-            result[key] = list(dict.fromkeys(val2 + val1))  # type: ignore
-        elif key in obj1:
-            result[key] = val1  # type: ignore
-        elif key in obj2:
-            result[key] = val2  # type: ignore
-
-    return cast(T, result)
 
 
 @API.register
@@ -122,7 +86,7 @@ def create_machine(
         inventory = inventory_store.read()
 
         curr_machine = inventory.get("machines", {}).get(machine_name, {})
-        new_machine = merge_objects(opts.machine, curr_machine)
+        new_machine = merge_objects(curr_machine, opts.machine)
 
         set_value_by_path(
             inventory,
