@@ -9,6 +9,7 @@ from clan_lib.persist.util import (
     calc_patches,
     delete_by_path,
     determine_writeability,
+    merge_objects,
     path_match,
     set_value_by_path,
     unmerge_lists,
@@ -669,3 +670,134 @@ def test_delete_non_existent_path_deep() -> None:
     assert "not found" in str(excinfo.value)
     # Data remains unchanged
     assert data == {"foo": {"bar": {"baz": 123}}}
+
+
+### Merge Objects Tests ###
+
+
+def test_merge_objects_empty() -> None:
+    obj1 = {}  # type: ignore
+    obj2 = {}  # type: ignore
+
+    merged = merge_objects(obj1, obj2)
+
+    assert merged == {}
+
+
+def test_merge_objects_basic() -> None:
+    obj1 = {"a": 1, "b": 2}
+    obj2 = {"b": 3, "c": 4}
+
+    merged = merge_objects(obj1, obj2)
+
+    assert merged == {"a": 1, "b": 3, "c": 4}
+
+
+def test_merge_objects_simple() -> None:
+    obj1 = {"a": 1}
+    obj2 = {"a": None}
+
+    # merge_objects should update obj2 with obj1
+    # Set a value to None
+    merged_order = merge_objects(obj1, obj2)
+
+    assert merged_order == {"a": None}
+
+    # Test reverse merge
+    # Set a value from None to 1
+    merged_reverse = merge_objects(obj2, obj1)
+
+    assert merged_reverse == {"a": 1}
+
+
+def test_merge_none_to_value() -> None:
+    obj1 = {
+        "a": None,
+    }
+    obj2 = {"a": {"b": 1}}
+
+    merged_obj = merge_objects(obj1, obj2)
+    assert merged_obj == {"a": {"b": 1}}
+
+    obj3 = {"a": [1, 2, 3]}
+    merged_list = merge_objects(obj1, obj3)
+    assert merged_list == {"a": [1, 2, 3]}
+
+    obj4 = {"a": 1}
+    merged_int = merge_objects(obj1, obj4)
+    assert merged_int == {"a": 1}
+
+    obj5 = {"a": "test"}
+    merged_str = merge_objects(obj1, obj5)
+    assert merged_str == {"a": "test"}
+
+    obj6 = {"a": True}
+    merged_bool = merge_objects(obj1, obj6)
+    assert merged_bool == {"a": True}
+
+
+def test_merge_objects_value_to_none() -> None:
+    obj1 = {"a": {"b": 1}}
+    obj2 = {"a": None}
+
+    merged_obj = merge_objects(obj1, obj2)
+    assert merged_obj == {"a": None}
+
+    obj3 = {"a": [1, 2, 3]}
+    merged_list = merge_objects(obj3, obj2)
+    assert merged_list == {"a": None}
+
+    obj4 = {"a": 1}
+    merged_int = merge_objects(obj4, obj2)
+    assert merged_int == {"a": None}
+
+    obj5 = {"a": "test"}
+    merged_str = merge_objects(obj5, obj2)
+    assert merged_str == {"a": None}
+
+    obj6 = {"a": True}
+    merged_bool = merge_objects(obj6, obj2)
+    assert merged_bool == {"a": None}
+
+
+def test_merge_objects_nested() -> None:
+    obj1 = {"a": {"b": 1, "c": 2}, "d": 3}
+    obj2 = {"a": {"b": 4}, "e": 5}
+
+    merged = merge_objects(obj1, obj2)
+
+    assert merged == {"a": {"b": 4, "c": 2}, "d": 3, "e": 5}
+
+
+def test_merge_objects_lists() -> None:
+    obj1 = {"a": [1, 2], "b": {"c": [3, 4]}}
+    obj2 = {"a": [2, 3], "b": {"c": [4, 5]}}
+
+    merged = merge_objects(obj1, obj2)
+
+    # Lists get merged and deduplicated
+    # Lists (get sorted, but that is not important)
+    # Maybe we shouldn't sort them?
+    assert merged == {"a": [1, 2, 3], "b": {"c": [3, 4, 5]}}
+
+
+def test_merge_objects_unset_list_elements() -> None:
+    obj1 = {"a": [1, 2], "b": {"c": [3, 4]}}
+    obj2 = {"a": [], "b": {"c": [5]}}
+
+    merged = merge_objects(obj1, obj2, merge_lists=False)
+
+    # Lists get merged and deduplicated
+    # None values are not removed
+    assert merged == {"a": [], "b": {"c": [5]}}
+
+
+def test_merge_objects_with_mismatching_nesting() -> None:
+    obj1 = {"a": {"b": 1}, "c": 2}
+    obj2 = {"a": 3}
+
+    # Merging should raise an error because obj1 and obj2 have different nesting for 'a'
+    with pytest.raises(ClanError) as excinfo:
+        merge_objects(obj1, obj2)
+
+    assert "Type mismatch for key 'a'" in str(excinfo.value)
