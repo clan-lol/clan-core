@@ -91,7 +91,10 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
     proc = run(
         cmd,
         RunOpts(
-            env=env, needs_user_terminal=True, error_msg="failed to upload sources"
+            env=env,
+            needs_user_terminal=True,
+            error_msg="failed to upload sources",
+            prefix=machine.name,
         ),
     )
 
