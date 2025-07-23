@@ -1,5 +1,5 @@
 div.sidebar-pane {
-  @apply w-full max-w-60 border-none;
+  @apply w-full max-w-60 border-none z-10;
 
   & > div.header {
     @apply flex items-center justify-between px-3 py-2 rounded-t-[0.5rem];
