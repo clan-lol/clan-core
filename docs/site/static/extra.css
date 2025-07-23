@@ -2,6 +2,7 @@
   font-family: "Roboto";
   src: url(./Roboto-Regular.ttf) format("truetype");
 }
+
 @font-face {
   font-family: "Fira Code";
   src: url(./FiraCode-VF.ttf) format("truetype");
@@ -17,6 +18,12 @@
 }
 
 .md-nav__title,
-.md-nav__item.md-nav__item--section > label > span {
+.md-nav__item.md-nav__item--section>label>span {
   color: var(--md-typeset-a-color);
+}
+
+.md-typeset h4 {
+  margin: 3em 0 0.5em;
+  font-weight: bold;
+  color: #7ebae4;
 }
