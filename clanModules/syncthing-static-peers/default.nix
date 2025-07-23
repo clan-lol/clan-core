@@ -4,6 +4,8 @@
   pkgs,
   ...
 }:
+# DEPRECATED: This module has been migrated to clanServices/syncthing
+# Please use the syncthing service instead: services.syncthing.instances.default.roles.peer.machines = { ... };
 let
   dir = config.clan.core.settings.directory;
   machineVarDir = "${dir}/vars/per-machine/";
