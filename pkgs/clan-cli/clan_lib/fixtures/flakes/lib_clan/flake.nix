@@ -10,6 +10,8 @@
         imports = [
           ./clan.nix
 
+          (builtins.fromJSON (builtins.readFile ./clan.json))
+
           (
             { lib, ... }:
             {

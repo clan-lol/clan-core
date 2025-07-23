@@ -1,3 +1,4 @@
+import json
 import shutil
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -7,6 +8,7 @@ from typing import Any
 import pytest
 from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.flake.flake import Flake
+from clan_lib.nix_models.clan import Clan
 
 
 @pytest.fixture(scope="session")
@@ -18,8 +20,12 @@ def offline_template(tmp_path_factory: Any, offline_session_flake_hook: Any) -> 
     shutil.copytree(template, dst_dir, dirs_exist_ok=True, symlinks=True)
 
     # Emtpy clan.nix file for evaluation of the template
-    clan_file = dst_dir / "clan.nix"
-    with (clan_file).open("w") as f:
+    clan_nix_file = dst_dir / "clan.nix"
+    with (clan_nix_file).open("w") as f:
+        f.write(r"""{ }""")
+
+    clan_json_file = dst_dir / "clan.json"
+    with (clan_json_file).open("w") as f:
         f.write(r"""{ }""")
 
     # expensive call ~6 seconds
@@ -46,9 +52,15 @@ def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
 
 
 @pytest.fixture()
-def clan_flake(tmp_path: Path, patch_clan_template: Any) -> Callable[[str], Flake]:
-    def factory(clan_expr: str) -> Flake:
+def clan_flake(
+    tmp_path: Path, patch_clan_template: Any
+) -> Callable[[Clan | None, str | None], Flake]:
+    def factory(clan: Clan | None = None, raw: str | None = None) -> Flake:
         # TODO: Make more options configurable
+        if clan is None and raw is None:
+            msg = "Either 'clan' or 'raw' must be provided to create a Flake."
+            raise ValueError(msg)
+
         dest = tmp_path / "my-clan"
         opts = CreateOptions(
             dest,
@@ -57,8 +69,13 @@ def clan_flake(tmp_path: Path, patch_clan_template: Any) -> Callable[[str], Flak
         )
         create_clan(opts)
 
-        with (dest / "clan.nix").open("w") as f:
-            f.write(clan_expr)
+        if clan is not None:
+            with (dest / "clan.json").open("w") as f:
+                f.write(json.dumps(clan))
+
+        if raw is not None:
+            with (dest / "clan.nix").open("w") as f:
+                f.write(raw)
 
         return Flake(str(dest))
 
