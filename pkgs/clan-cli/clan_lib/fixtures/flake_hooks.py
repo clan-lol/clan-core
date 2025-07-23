@@ -23,8 +23,16 @@ def substitute_flake_inputs(clan_dir: Path, clan_core_path: Path) -> None:
     assert flake_lock.exists(), "flake.lock should exist after flake update"
 
 
-@pytest.fixture
+@pytest.fixture()
 def offline_flake_hook(clan_core: Path) -> Callable[[Path], None]:
+    def patch(clan_dir: Path) -> None:
+        substitute_flake_inputs(clan_dir, clan_core)
+
+    return patch
+
+
+@pytest.fixture(scope="session")
+def offline_session_flake_hook(clan_core: Path) -> Callable[[Path], None]:
     def patch(clan_dir: Path) -> None:
         substitute_flake_inputs(clan_dir, clan_core)
 
