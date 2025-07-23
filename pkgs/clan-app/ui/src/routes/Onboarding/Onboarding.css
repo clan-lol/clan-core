@@ -57,7 +57,7 @@ main#welcome {
     @apply flex flex-col items-center justify-evenly gap-y-20 size-fit;
 
     & > div.welcome {
-      @apply flex flex-col min-w-80 gap-y-6;
+      @apply flex flex-col w-80 gap-y-6;
 
       & > div.separator {
         @apply grid grid-cols-3 grid-rows-1 gap-x-4 items-center;
