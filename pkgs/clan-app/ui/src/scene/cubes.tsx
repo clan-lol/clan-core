@@ -563,7 +563,7 @@ export function CubeScene(props: {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 
     // scene.add(new THREE.DirectionalLightHelper(directionalLight));
     // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
@@ -587,7 +587,7 @@ export function CubeScene(props: {
     directionalLight.shadow.camera.far = 2000;
     directionalLight.shadow.mapSize.width = 4096; // Higher resolution for sharper shadows
     directionalLight.shadow.mapSize.height = 4096;
-    directionalLight.shadow.radius = 0; // Hard shadows (low radius)
+    directionalLight.shadow.radius = 1; // Hard shadows (low radius)
     directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
     scene.add(directionalLight.target);
@@ -814,7 +814,7 @@ export function CubeScene(props: {
     nameDiv.textContent = `${userData.id}`;
 
     const nameLabel = new CSS2DObject(nameDiv);
-    nameLabel.position.set(0, CUBE_Y + CUBE_SIZE / 2 + 0.2, 0);
+    nameLabel.position.set(0, CUBE_Y + CUBE_SIZE / 2 - 0.2, 0);
     cubeMesh.add(nameLabel);
 
     // TODO: Destroy Group in onCleanup

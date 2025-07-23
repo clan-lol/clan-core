@@ -14,8 +14,18 @@
   align-items: center;
 }
 
-
 .machine-label {
-  @apply text-white bg-fg-def-2 py-1 px-3 rounded-sm;
-  font-size: 0.8rem;
+  @apply text-white bg-inv-4 py-1 px-2 rounded-sm;
+  font-size: 0.75rem;
+}
+
+.machine-label::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #203637 transparent transparent transparent;
 }
