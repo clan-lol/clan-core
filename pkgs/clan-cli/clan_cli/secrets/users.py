@@ -78,7 +78,9 @@ def remove_user(flake_dir: Path, name: str) -> None:
 
 def get_user(flake_dir: Path, name: str) -> set[sops.SopsKey]:
     keys = read_keys(sops_users_folder(flake_dir) / name)
-    return {sops.SopsKey(key.pubkey, name, key.key_type) for key in keys}
+    return {
+        sops.SopsKey(key.pubkey, name, key.key_type, source=key.source) for key in keys
+    }
 
 
 def list_users(flake_dir: Path) -> list[str]:
@@ -182,11 +184,17 @@ def _key_args(args: argparse.Namespace) -> Iterable[sops.SopsKey]:
         )
         raise ClanError(err_msg)
 
-    age_keys = [sops.SopsKey(key, "", sops.KeyType.AGE) for key in age_keys]
+    age_keys = [
+        sops.SopsKey(key, "", sops.KeyType.AGE, source="cmdline") for key in age_keys
+    ]
     if args.agekey:
-        age_keys.append(sops.SopsKey(args.agekey, "", sops.KeyType.AGE))
+        age_keys.append(
+            sops.SopsKey(args.agekey, "", sops.KeyType.AGE, source="cmdline")
+        )
 
-    pgp_keys = [sops.SopsKey(key, "", sops.KeyType.PGP) for key in pgp_keys]
+    pgp_keys = [
+        sops.SopsKey(key, "", sops.KeyType.PGP, source="cmdline") for key in pgp_keys
+    ]
 
     return age_keys + pgp_keys
 

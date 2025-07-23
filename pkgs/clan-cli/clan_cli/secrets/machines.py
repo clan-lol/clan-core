@@ -26,7 +26,11 @@ from .types import public_or_private_age_key_type, secret_name_type
 
 def add_machine(flake_dir: Path, name: str, pubkey: str, force: bool) -> None:
     machine_path = sops_machines_folder(flake_dir) / name
-    write_key(machine_path, sops.SopsKey(pubkey, "", sops.KeyType.AGE), overwrite=force)
+    write_key(
+        machine_path,
+        sops.SopsKey(pubkey, "", sops.KeyType.AGE, source=str(machine_path)),
+        overwrite=force,
+    )
     paths = [machine_path]
 
     filter_machine_secrets = get_secrets_filter_for_machine(flake_dir, name)

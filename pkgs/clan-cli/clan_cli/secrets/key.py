@@ -31,7 +31,9 @@ def generate_key() -> sops.SopsKey:
     print(
         f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets."
     )
-    return sops.SopsKey(pub_key, username="", key_type=sops.KeyType.AGE)
+    return sops.SopsKey(
+        pub_key, username="", key_type=sops.KeyType.AGE, source=str(path)
+    )
 
 
 def generate_command(args: argparse.Namespace) -> None:

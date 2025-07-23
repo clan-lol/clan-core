@@ -50,7 +50,9 @@ def _select_keys_interactive(pub_keys: list[SopsKey]) -> list[SopsKey]:
     log.info("\nFound existing admin keys on this machine:")
     selected_keys: list[SopsKey] = []
     for i, key in enumerate(pub_keys):
-        log.info(f"{i + 1}: {key}")
+        log.info(
+            f"{i + 1}: type: {key.key_type}\n   pubkey: {key.pubkey}\n   source: {key.source}"
+        )
     while not selected_keys:
         choice = input(
             "Select keys to use (comma-separated list of numbers, or leave empty to select all): "

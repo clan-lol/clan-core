@@ -30,6 +30,9 @@ class KeyType(enum.Enum):
     AGE = enum.auto()
     PGP = enum.auto()
 
+    def __str__(self) -> str:
+        return self.name
+
     @classmethod
     def validate(cls, value: str | None) -> "KeyType | None":
         if value:
@@ -49,7 +52,7 @@ class KeyType(enum.Enum):
         )
         raise ClanError(msg)
 
-    def collect_public_keys(self) -> list[str]:
+    def collect_public_keys(self) -> list["SopsKey"]:
         keyring = []
 
         if self == self.AGE:
@@ -66,7 +69,14 @@ class KeyType(enum.Enum):
                                 f"in {key_path}: {public_key}"
                             )
 
-                            keyring.append(public_key)
+                            keyring.append(
+                                SopsKey(
+                                    pubkey=public_key,
+                                    username="",
+                                    key_type=self,
+                                    source=str(key_path),
+                                )
+                            )
                     except ClanError as e:
                         error_msg = f"Failed to read age keys from {key_path}"
                         raise ClanError(error_msg) from e
@@ -89,7 +99,14 @@ class KeyType(enum.Enum):
                             f"in the environment (SOPS_AGE_KEY): {public_key}"
                         )
 
-                        keyring.append(public_key)
+                        keyring.append(
+                            SopsKey(
+                                pubkey=public_key,
+                                username="",
+                                key_type=self,
+                                source="SOPS_AGE_KEY",
+                            )
+                        )
                 except ClanError as e:
                     error_msg = "Failed to read age keys from SOPS_AGE_KEY"
                     raise ClanError(error_msg) from e
@@ -107,7 +124,11 @@ class KeyType(enum.Enum):
                 for fp in pgp_fingerprints.strip().split(","):
                     msg = f"Found PGP public key in the environment (SOPS_PGP_FP): {fp}"
                     log.debug(msg)
-                    keyring.append(fp)
+                    keyring.append(
+                        SopsKey(
+                            pubkey=fp, username="", key_type=self, source="SOPS_PGP_FP"
+                        )
+                    )
             return keyring
 
         msg = f"KeyType {self.name.lower()} is missing an implementation for collect_public_keys"
@@ -121,13 +142,18 @@ class SopsKey:
     # if they don't have the same username:
     username: str = dataclasses.field(compare=False)
     key_type: KeyType
+    source: str = dataclasses.field(compare=False)
 
     def as_dict(self) -> dict[str, str]:
         return {
             "publickey": self.pubkey,
             "username": self.username,
             "type": self.key_type.name.lower(),
+            "source": self.source,
         }
+
+    def __str__(self) -> str:
+        return f"({self.key_type.name}) {self.pubkey} (source: {self.source})"
 
     @classmethod
     def load_dir(cls, folder: Path) -> set["SopsKey"]:
@@ -136,11 +162,10 @@ class SopsKey:
 
     @classmethod
     def collect_public_keys(cls) -> list["SopsKey"]:
-        return [
-            cls(pubkey=key, username="", key_type=key_type)
-            for key_type in KeyType
-            for key in key_type.collect_public_keys()
-        ]
+        result = []
+        for key_type in KeyType:
+            result.extend(key_type.collect_public_keys())
+        return result
 
 
 class ExitStatus(enum.IntEnum):  # see: cmd/sops/codes/codes.go
@@ -384,7 +409,8 @@ def maybe_get_user(flake_dir: Path, keys: set[SopsKey]) -> set[SopsKey] | None:
             user_keys = read_keys(user)
             if len(keys.intersection(user_keys)):
                 return {
-                    SopsKey(key.pubkey, user.name, key.key_type) for key in user_keys
+                    SopsKey(key.pubkey, user.name, key.key_type, key.source)
+                    for key in user_keys
                 }
 
     return None
@@ -538,6 +564,7 @@ def get_recipients(secret_path: Path) -> set[SopsKey]:
                     pubkey=recipient[key_type.sops_recipient_attr],
                     username="",
                     key_type=key_type,
+                    source="sops_file",
                 )
             )
     return keys
@@ -623,7 +650,7 @@ def parse_key(key: Any) -> SopsKey:
     if not publickey:
         msg = f"{key} does not contain a public key"
         raise ClanError(msg)
-    return SopsKey(publickey, "", key_type)
+    return SopsKey(publickey, "", key_type, "key_file")
 
 
 def read_key(path: Path) -> SopsKey:
