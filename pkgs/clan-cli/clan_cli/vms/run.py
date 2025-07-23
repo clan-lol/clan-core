@@ -191,7 +191,7 @@ class QemuVm:
         start_time = time.time()
         while time.time() - start_time < timeout_sec:
             if self.process.poll() is not None:
-                msg = "VM failed to start. Qemu process exited with code {self.process.returncode}"
+                msg = f"VM failed to start. Qemu process exited with code {self.process.returncode}"
                 raise ClanError(msg)
             if self.qmp_socket_file.exists():
                 break
