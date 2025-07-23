@@ -4,7 +4,21 @@ hide:
   - toc
 ---
 
-# :material-home: Welcome to **Clan**'s  documentation
+# :material-home: What is Clan?
+
+[Clan](https://clan.lol/) is a peer-to-peer computer management framework that
+empowers you to reclaim control over your digital computing experience. Built on
+NixOS, Clan provides a unified interface for managing networks of machines with
+automated [secret management](./guides/secrets.md), secure [mesh VPN
+connectivity](./guides/mesh-vpn.md), and customizable installation images. Whether
+you're running a homelab or building decentralized computing infrastructure,
+Clan simplifies configuration management while restoring your independence from
+closed computing ecosystems.
+
+At the heart of Clan are [Clan Services](./reference/clanServices/index.md) - the core
+concept that enables you to add functionality across multiple machines in your
+network. While Clan ships with essential core services, you can [create custom
+services](./guides/clanServices.md) tailored to your specific needs.
 
 [Getting Started](./guides/getting-started/index.md){ .md-button }
 
