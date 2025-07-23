@@ -1,6 +1,19 @@
 import { RouteSectionProps } from "@solidjs/router";
-import { Component, JSX, Show, createSignal, onMount } from "solid-js";
-import { useClanURI } from "@/src/hooks/clan";
+import {
+  Component,
+  JSX,
+  Show,
+  createEffect,
+  createMemo,
+  createSignal,
+  on,
+  onMount,
+} from "solid-js";
+import {
+  buildMachinePath,
+  maybeUseMachineID,
+  useClanURI,
+} from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import { MachinesQueryResult, useMachinesQuery } from "@/src/queries/queries";
 import { callApi } from "@/src/hooks/api";
@@ -14,6 +27,7 @@ import { Modal } from "@/src/components/Modal/Modal";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
+import { useNavigate } from "@solidjs/router";
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   return (
@@ -64,7 +78,7 @@ const MockCreateMachine = (props: MockProps) => {
               )}
             </Field>
 
-            <div class="flex w-full items-center justify-end gap-4">
+            <div class="mt-4 flex w-full items-center justify-end gap-4">
               <Button size="s" hierarchy="secondary" onClick={props.onClose}>
                 Cancel
               </Button>
@@ -86,6 +100,7 @@ const MockCreateMachine = (props: MockProps) => {
 
 const ClanSceneController = (props: RouteSectionProps) => {
   const clanURI = useClanURI();
+  const navigate = useNavigate();
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
@@ -129,6 +144,32 @@ const ClanSceneController = (props: RouteSectionProps) => {
       setLoadingCooldown(true);
     }, 1500);
   });
+
+  const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
+
+  const onMachineSelect = (ids: Set<string>) => {
+    // Get the first selected ID and navigate to its machine details
+    const selected = ids.values().next().value;
+    if (selected) {
+      navigate(buildMachinePath(clanURI, selected));
+    }
+  };
+
+  const machine = createMemo(() => maybeUseMachineID());
+
+  createEffect(
+    on(machine, (machineId) => {
+      if (machineId) {
+        setSelectedIds(() => {
+          const res = new Set<string>();
+          res.add(machineId);
+          return res;
+        });
+      } else {
+        setSelectedIds(new Set<string>());
+      }
+    }),
+  );
 
   return (
     <SceneDataProvider clanURI={clanURI}>
@@ -190,6 +231,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
             </div>
 
             <CubeScene
+              selectedIds={selectedIds}
+              onSelect={onMachineSelect}
               isLoading={query.isLoading}
               cubesQuery={query}
               onCreate={onCreate}
