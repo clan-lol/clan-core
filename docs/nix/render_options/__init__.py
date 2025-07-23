@@ -805,7 +805,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
 !!! Note
     This is not a user-facing documentation, but rather meant as a reference for *module authors*
 
-    See: [clanService Authoring Guide](../../guides/authoring/clanServices/index.md)
+    See: [clanService Authoring Guide](../../developer/extensions/clanServices/index.md)
 """
     # Inventory options are already included under the clan attribute
     # We just omitted them in the clan docs, because we want a separate output for the inventory model

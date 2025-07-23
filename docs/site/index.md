@@ -38,7 +38,7 @@ hide:
 
     Use Clan with [https://flake.parts/]()
 
--   [Contribute](./guides/contributing/CONTRIBUTING.md)
+-   [Contribute](./developer/contributing/CONTRIBUTING.md)
 
     ---
 
