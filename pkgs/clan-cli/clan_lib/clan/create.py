@@ -84,7 +84,7 @@ def create_clan(opts: CreateOptions) -> None:
         # _postprocess_flake_hook must be private to avoid leaking it to the public API
         post_process=opts._postprocess_flake_hook,  # noqa: SLF001
     ) as _clan_dir:
-        flake = Flake(str(opts.dest))
+        flake = Flake(str(Path(opts.dest).absolute()))
 
         if opts.setup_git:
             run(git_command(dest, "init"))

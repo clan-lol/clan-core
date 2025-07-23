@@ -39,6 +39,29 @@ def test_create_simple(tmp_path: Path, offline_flake_hook: Any) -> None:
 
 
 @pytest.mark.with_core
+def test_can_handle_path_without_slash(
+    tmp_path: Path,
+    offline_flake_hook: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    Tests for a regression, where it broke when the path is a single word like `foo`.
+    The flake identifier was interpreted as an external flake.
+    """
+    monkeypatch.chdir(tmp_path)
+    dest = Path("test_clan")
+
+    opts = CreateOptions(
+        dest=dest, template="default", _postprocess_flake_hook=offline_flake_hook
+    )
+
+    create_clan(opts)
+
+    assert dest.exists()
+    assert dest.is_dir()
+
+
+@pytest.mark.with_core
 def test_create_with_name(tmp_path: Path, offline_flake_hook: Any) -> None:
     """
     Template = 'default'
