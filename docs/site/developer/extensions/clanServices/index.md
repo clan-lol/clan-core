@@ -267,5 +267,5 @@ The benefit of this approach is that downstream users can override the value of 
 ## Further
 
 - [Reference Documentation for Service Authors](../../../reference/clanServices/clan-service-author-interface.md)
-- [Migration Guide from ClanModules to ClanServices](../../migrations/migrate-inventory-services.md)
+- [Migration Guide from ClanModules to ClanServices](../../../guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](../../../decisions/01-ClanModules.md)

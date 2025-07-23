@@ -125,7 +125,7 @@ To change the name of your clan edit `meta.name` in the `clan.nix` or `flake.nix
 You can continue with **any** of the following steps at your own pace:
 
 - [x] [Install Nix & Clan CLI](./index.md)
-- [x] [Initialize Clan](./index.md#initialize-your-project)
+- [x] [Initialize Clan](./index.md#add-clan-cli-to-your-shell)
 - [ ] [Create USB Installer (optional)](./installer.md)
 - [ ] [Add Machines](./add-machines.md)
 - [ ] [Add a User](./add-user.md)
