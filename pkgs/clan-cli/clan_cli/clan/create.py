@@ -7,6 +7,7 @@ from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.errors import ClanError
 
 from clan_cli.completions import add_dynamic_completer, complete_templates_clan
+from clan_cli.vars.keygen import create_secrets_user_auto
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,12 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         default=False,
     )
 
+    parser.add_argument(
+        "--user",
+        help="The user to generate the keys for. Default: logged-in OS username (e.g. from $LOGNAME or system)",
+        default=None,
+    )
+
     def create_flake_command(args: argparse.Namespace) -> None:
         # Ask for a path interactively if none provided
         if args.name is None:
@@ -61,6 +68,11 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
                 src_flake=args.flake,
                 update_clan=not args.no_update,
             )
+        )
+        create_secrets_user_auto(
+            flake_dir=Path(args.name).resolve(),
+            user=args.user,
+            force=True,
         )
 
     parser.set_defaults(func=create_flake_command)

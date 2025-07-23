@@ -421,7 +421,7 @@ def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
             f"- {'\n- '.join(f'{key.key_type.name.lower()}: {key.pubkey}' for key in keys)}\n\n"
             f"Please ensure you have created a Clan secrets user and added one of your SOPS keys"
             f"to that user.\n"
-            f"For more information, see: https://docs.clan.lol/guides/getting-started/secrets/#add-your-public-keys"
+            f"For more information, see: https://docs.clan.lol/guides/secrets/#add-your-public-keys"
         )
         raise ClanError(msg)
 

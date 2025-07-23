@@ -130,6 +130,5 @@ You can continue with **any** of the following steps at your own pace:
 - [ ] [Add Machines](./add-machines.md)
 - [ ] [Add a User](./add-user.md)
 - [ ] [Add Services](./add-services.md)
-- [ ] [Configure Secrets](./secrets.md)
 - [ ] [Deploy](./deploy.md) - Requires configured secrets
 - [ ] [Setup CI (optional)](./check.md)

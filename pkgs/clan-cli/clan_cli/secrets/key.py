@@ -29,7 +29,7 @@ def generate_key() -> sops.SopsKey:
     path = default_admin_private_key_path()
     _, pub_key = generate_private_key(out_file=path)
     print(
-        f"Generated age private key at '{path}' for your user. Please back it up on a secure location or you will lose access to your secrets."
+        f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets."
     )
     return sops.SopsKey(pub_key, username="", key_type=sops.KeyType.AGE)
 

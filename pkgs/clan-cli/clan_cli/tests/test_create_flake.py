@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import pytest
-from clan_cli.tests.fixtures_flakes import FlakeForTest, substitute
+from clan_cli.tests.fixtures_flakes import substitute
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_lib.cmd import run
@@ -21,6 +21,7 @@ def test_create_flake(
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
+    monkeypatch.setenv("LOGNAME", "testuser")
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     # Replace the inputs.clan.url in the template flake.nix
@@ -65,6 +66,7 @@ def test_create_flake_existing_git(
 
     run(["git", "init", str(temporary_home)])
 
+    monkeypatch.setenv("LOGNAME", "testuser")
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     # Replace the inputs.clan.url in the template flake.nix
@@ -101,12 +103,12 @@ def test_create_flake_existing_git(
 def test_ui_template(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    test_flake_with_core: FlakeForTest,
     clan_core: Path,
     capture_output: CaptureOutput,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
+    monkeypatch.setenv("LOGNAME", "testuser")
     cli.run(["flakes", "create", str(flake_dir), "--template=minimal", "--no-update"])
 
     # Replace the inputs.clan.url in the template flake.nix

@@ -53,15 +53,15 @@ nav:
           - ⚙️ Add Machines: guides/getting-started/add-machines.md
           - ⚙️ Add User: guides/getting-started/add-user.md
           - ⚙️ Add Services: guides/getting-started/add-services.md
-          - 🔐 Secrets & Facts: guides/getting-started/secrets.md
           - 🚢 Deploy Machine: guides/getting-started/deploy.md
           - 🧪 Continuous Integration: guides/getting-started/check.md
       - clanServices: guides/clanServices.md
       - Disk Encryption: guides/disk-encryption.md
       - Mesh VPN: guides/mesh-vpn.md
       - Backup & Restore: guides/backups.md
-      - Vars Backend: guides/vars-backend.md
-      - Facts Backend: guides/secrets.md
+      - Vars: guides/vars-backend.md
+      - Age Plugins: guides/age-plugins.md
+      - Secrets (Advanced Usage): guides/secrets.md
       - Adding more machines: guides/more-machines.md
       - Target Host: guides/target-host.md
       - Inventory:
@@ -246,3 +246,6 @@ plugins:
   - search
   - macros
   - redoc-tag
+  - redirects:
+      redirect_maps:
+        guides/getting-started/secrets.md: guides/vars-backend.md
