@@ -171,6 +171,7 @@ nav:
           - reference/clan.core/deployment.md
           - reference/clan.core/facts.md
           - reference/clan.core/networking.md
+          - reference/clan.core/postgresql.md
           - reference/clan.core/settings.md
           - reference/clan.core/sops.md
           - reference/clan.core/state.md

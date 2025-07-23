@@ -61,7 +61,6 @@ in
     };
   };
   imports = [
-    ../postgresql
     (lib.mkRemovedOptionModule [
       "clan"
       "matrix-synapse"
@@ -106,15 +105,16 @@ in
       };
     };
 
-    clan.postgresql.users.matrix-synapse = { };
-    clan.postgresql.databases.matrix-synapse.create.options = {
+    clan.core.postgresql.enable = true;
+    clan.core.postgresql.users.matrix-synapse = { };
+    clan.core.postgresql.databases.matrix-synapse.create.options = {
       TEMPLATE = "template0";
       LC_COLLATE = "C";
       LC_CTYPE = "C";
       ENCODING = "UTF8";
       OWNER = "matrix-synapse";
     };
-    clan.postgresql.databases.matrix-synapse.restore.stopOnRestore = [ "matrix-synapse" ];
+    clan.core.postgresql.databases.matrix-synapse.restore.stopOnRestore = [ "matrix-synapse" ];
 
     clan.core.vars.generators =
       {

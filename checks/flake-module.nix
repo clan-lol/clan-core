@@ -19,18 +19,29 @@ let
   nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
 in
 {
-  imports = filter pathExists [
-    ./backups/flake-module.nix
-    ../nixosModules/clanCore/machine-id/tests/flake-module.nix
-    ../nixosModules/clanCore/state-version/tests/flake-module.nix
-    ./devshell/flake-module.nix
-    ./flash/flake-module.nix
-    ./impure/flake-module.nix
-    ./installation/flake-module.nix
-    ./morph/flake-module.nix
-    ./nixos-documentation/flake-module.nix
-    ./dont-depend-on-repo-root.nix
-  ];
+  imports =
+    let
+      clanCoreModulesDir = ../nixosModules/clanCore;
+      getClanCoreTestModules =
+        let
+          moduleNames = attrNames (builtins.readDir clanCoreModulesDir);
+          testPaths = map (
+            moduleName: clanCoreModulesDir + "/${moduleName}/tests/flake-module.nix"
+          ) moduleNames;
+        in
+        filter pathExists testPaths;
+    in
+    getClanCoreTestModules
+    ++ filter pathExists [
+      ./backups/flake-module.nix
+      ./devshell/flake-module.nix
+      ./flash/flake-module.nix
+      ./impure/flake-module.nix
+      ./installation/flake-module.nix
+      ./morph/flake-module.nix
+      ./nixos-documentation/flake-module.nix
+      ./dont-depend-on-repo-root.nix
+    ];
   flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
     system:
     let
@@ -88,7 +99,6 @@ in
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
             nixos-test-zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
             nixos-test-matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
-            nixos-test-postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
             nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 

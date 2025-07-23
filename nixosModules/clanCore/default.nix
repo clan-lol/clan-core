@@ -18,6 +18,7 @@
     ++ lib.optionals (_class == "nixos") [
       ./nixos-facter.nix
       ./vm.nix
+      ./postgresql
       ./machine-id
       ./state-version
       ./wayland-proxy-virtwl.nix
