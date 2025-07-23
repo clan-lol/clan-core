@@ -11,7 +11,7 @@ import { Checkbox } from "@/src/components/Form/Checkbox";
 import { Combobox } from "../Form/Combobox";
 
 const meta: Meta<SidebarPaneProps> = {
-  title: "Components/Sidebar/Pane",
+  title: "Components/SidebarPane",
   component: SidebarPane,
 };
 

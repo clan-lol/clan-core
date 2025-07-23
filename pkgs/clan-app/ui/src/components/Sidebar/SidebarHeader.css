@@ -15,10 +15,11 @@ div.sidebar-header {
 
     transition: all 250ms ease-in-out;
 
-    div.title {
+    div.clan-label {
       @apply flex items-center gap-2 justify-start;
 
       & > .clan-icon {
+        @apply flex justify-center items-center;
         @apply rounded-full bg-inv-4 w-7 h-7;
       }
     }
