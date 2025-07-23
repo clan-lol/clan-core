@@ -63,3 +63,11 @@ export const useMachineID = (): string => {
   const params = useParams();
   return machineIDParam(params);
 };
+
+export const maybeUseMachineID = (): string | null => {
+  const params = useParams();
+  if (params.machineID === undefined) {
+    return null;
+  }
+  return machineIDParam(params);
+};

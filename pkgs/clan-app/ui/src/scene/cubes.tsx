@@ -36,7 +36,7 @@ function garbageCollectGroup(group: THREE.Group) {
 }
 
 function getFloorPosition(
-  camera: THREE.PerspectiveCamera,
+  camera: THREE.Camera,
   floor: THREE.Object3D,
 ): [number, number, number] {
   const cameraPosition = camera.position.clone();
@@ -67,13 +67,15 @@ function keyFromPos(pos: [number, number]): string {
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
   onCreate: () => Promise<{ id: string }>;
+  selectedIds: Accessor<Set<string>>;
+  onSelect: (v: Set<string>) => void;
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number]) => void;
   isLoading: boolean;
 }) {
   let container: HTMLDivElement;
   let scene: THREE.Scene;
-  let camera: THREE.PerspectiveCamera;
+  let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
   let floor: THREE.Mesh;
   let controls: MapControls;
@@ -108,7 +110,6 @@ export function CubeScene(props: {
   const [worldMode, setWorldMode] = createSignal<"view" | "create">("view");
 
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
-  const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
 
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
@@ -117,8 +118,6 @@ export function CubeScene(props: {
 
   // Animation configuration
   const ANIMATION_DURATION = 800; // milliseconds
-  const DELETE_ANIMATION_DURATION = 400; // milliseconds
-  const CREATE_ANIMATION_DURATION = 600; // milliseconds
 
   // Grid configuration
   const GRID_SIZE = 2;
@@ -146,7 +145,6 @@ export function CubeScene(props: {
   const CREATE_BASE_EMISSIVE = 0xc5fad7;
 
   createEffect(() => {
-    console.log("Direct query data hook");
     // Update when API updates.
     if (props.cubesQuery.data) {
       const actualMachines = Object.keys(props.cubesQuery.data);
@@ -189,7 +187,7 @@ export function CubeScene(props: {
       console.warn("Not animating!");
       return;
     }
-    console.log("Rendering scene...", initBase?.position);
+    console.log("Rendering scene...", camera.toJSON());
 
     needsRender = false;
 
@@ -217,23 +215,53 @@ export function CubeScene(props: {
   }
 
   function nextGridPos(): [number, number] {
-    // Scales up to 10*10 grid = 100 positions
-    // TODO: Make this more scalable and nicer
-    const maxRows = 10; // or dynamic limit if needed
-    const maxCols = 10;
+    let x = 0,
+      z = 0;
+    let layer = 1;
 
-    for (let y = 0; y < maxRows; y++) {
-      for (let x = 0; x < maxCols; x++) {
-        const pos = [x * CUBE_SPACING, y * CUBE_SPACING] as [number, number];
+    while (layer < 100) {
+      // right
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as [number, number];
         const key = keyFromPos(pos);
-
         if (!occupiedPositions.has(key)) {
           return pos;
         }
+        x += 1;
       }
+      // down
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as [number, number];
+        const key = keyFromPos(pos);
+        if (!occupiedPositions.has(key)) {
+          return pos;
+        }
+        z += 1;
+      }
+      layer++;
+      // left
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as [number, number];
+        const key = keyFromPos(pos);
+        if (!occupiedPositions.has(key)) {
+          return pos;
+        }
+        x -= 1;
+      }
+      // up
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as [number, number];
+        const key = keyFromPos(pos);
+        if (!occupiedPositions.has(key)) {
+          return pos;
+        }
+        z -= 1;
+      }
+      layer++;
     }
-
-    throw new Error("No free grid positions available.");
+    console.warn("No free grid positions available, returning [0, 0]");
+    // Fallback if no position was found
+    return [0, 0] as [number, number];
   }
 
   // Circle IDEA:
@@ -331,49 +359,10 @@ export function CubeScene(props: {
     return base;
   }
 
-  function deleteSelectedCubes(selectedSet: Set<string>) {
-    if (selectedSet.size === 0) return;
-
-    console.log("Deleting cubes:", selectedSet);
-
-    // Start delete animations
-    selectedSet.forEach((id) => {
-      const group = groupMap.get(id);
-
-      if (group) {
-        groupMap.delete(id); // Remove from group map
-
-        const base = group.children.find((child) => child.name === "base");
-        const cube = group.children.find((child) => child.name === "cube");
-
-        if (!base || !cube) {
-          console.warn(`DELETE: Base mesh not found for id: ${id}`);
-          return;
-        }
-
-        {
-          setSelectedIds(new Set<string>()); // Clear selection after deletion
-
-          garbageCollectGroup(group); // Clean up geometries and materials
-          scene.remove(group); // Remove from scene
-          groupMap.delete(id); // Remove from group map
-        }
-      } else {
-        console.warn(`DELETE: Group not found for id: ${id}`);
-      }
-    });
-  }
-
   function toggleSelection(id: string) {
-    setSelectedIds((curr) => {
-      const next = new Set(curr);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    const next = new Set<string>();
+    next.add(id);
+    props.onSelect(next);
   }
 
   function updateMeshColors(
@@ -450,7 +439,7 @@ export function CubeScene(props: {
     }
   }
 
-  const initialCameraPosition = { x: 2.8, y: 4, z: -2 };
+  const initialCameraPosition = { x: 20, y: 20, z: 20 };
   const initialSphericalCameraPosition = new THREE.Spherical();
   initialSphericalCameraPosition.setFromVector3(
     new THREE.Vector3(
@@ -465,7 +454,6 @@ export function CubeScene(props: {
   onMount(() => {
     // Scene setup
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xffffff, 10, 50); //
     // Transparent background
     scene.background = null;
 
@@ -506,17 +494,30 @@ export function CubeScene(props: {
     bgScene.add(bgMesh);
 
     // Camera setup
-    camera = new THREE.PerspectiveCamera(
-      75,
-      container!.clientWidth / container!.clientHeight,
-      0.1,
+    // /container!.clientWidth / container!.clientHeight,
+    const aspect = window.innerWidth / window.innerHeight;
+    const d = 20;
+    const zoom = 2.5;
+    camera = new THREE.OrthographicCamera(
+      (-d * aspect) / zoom,
+      (d * aspect) / zoom,
+      d / zoom,
+      -d / zoom,
+      0.001,
       1000,
     );
+    camera.zoom = zoom;
+
     camera.position.setFromSpherical(initialSphericalCameraPosition);
     camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
 
     // Renderer setup
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      logarithmicDepthBuffer: true,
+    });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -527,25 +528,36 @@ export function CubeScene(props: {
     // Enable the context menu,
     // TODO: disable in production
     controls.mouseButtons.RIGHT = null;
-    controls.addEventListener("change", requestRenderIfNotRequested);
+    controls.minZoom = 1.2;
+    controls.maxZoom = 3.5;
+    controls.addEventListener("change", () => {
+      const aspect = container.clientWidth / container.clientHeight;
+      const zoom = camera.zoom;
+      camera.left = (-d * aspect) / zoom;
+      camera.right = (d * aspect) / zoom;
+      camera.top = d / zoom;
+      camera.bottom = -d / zoom;
+      camera.updateProjectionMatrix();
+
+      requestRenderIfNotRequested();
+    });
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 
     // scene.add(new THREE.DirectionalLightHelper(directionalLight));
     // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
     // scene.add(new THREE.CameraHelper(camera));
     const lightPos = new THREE.Spherical(
-      100,
-      initialSphericalCameraPosition.phi,
+      1000,
+      initialSphericalCameraPosition.phi - Math.PI / 8,
       initialSphericalCameraPosition.theta - Math.PI / 2,
     );
     directionalLight.position.setFromSpherical(lightPos);
     directionalLight.target.position.set(0, 0, 0); // Point light at the center
-
     // initialSphericalCameraPosition
     directionalLight.castShadow = true;
 
@@ -555,10 +567,10 @@ export function CubeScene(props: {
     directionalLight.shadow.camera.top = 30;
     directionalLight.shadow.camera.bottom = -30;
     directionalLight.shadow.camera.near = 0.1;
-    directionalLight.shadow.camera.far = 200;
+    directionalLight.shadow.camera.far = 2000;
     directionalLight.shadow.mapSize.width = 4096; // Higher resolution for sharper shadows
     directionalLight.shadow.mapSize.height = 4096;
-    directionalLight.shadow.radius = 1; // Hard shadows (low radius)
+    directionalLight.shadow.radius = 0; // Hard shadows (low radius)
     directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
     scene.add(directionalLight.target);
@@ -631,6 +643,17 @@ export function CubeScene(props: {
     // Initial camera info update
     updateCameraInfo();
 
+    createEffect(
+      on(worldMode, (mode) => {
+        if (mode === "create") {
+          initBase!.visible = true;
+        } else {
+          initBase!.visible = false;
+        }
+        requestRenderIfNotRequested();
+      }),
+    );
+
     // Click handler:
     // - Select/deselects a cube in "view" mode
     // - Creates a new cube in "create" mode
@@ -672,7 +695,7 @@ export function CubeScene(props: {
         const id = intersects[0].object.userData.id;
         toggleSelection(id);
       } else {
-        setSelectedIds(new Set<string>()); // Clear selection if clicked outside cubes
+        props.onSelect(new Set<string>()); // Clear selection if clicked outside cubes
       }
     };
 
@@ -684,8 +707,14 @@ export function CubeScene(props: {
 
     // Handle window resize
     const handleResize = () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
+      const aspect = container.clientWidth / container.clientHeight;
+      const zoom = camera.zoom;
+      camera.left = (-d * aspect) / zoom;
+      camera.right = (d * aspect) / zoom;
+      camera.top = d / zoom;
+      camera.bottom = -d / zoom;
       camera.updateProjectionMatrix();
+
       renderer.setSize(container.clientWidth, container.clientHeight);
 
       // Update background shader resolution
@@ -740,18 +769,6 @@ export function CubeScene(props: {
     });
   });
 
-  // TODO: Move into css
-  // createEffect(
-  //   on(positionMode, (mode) => {
-  //     console.log("Position mode changed:", mode);
-  //     if (mode === "circle") {
-  //       grid.visible = false; // Hide grid when in circle mode
-  //     } else if (mode === "grid") {
-  //       grid.visible = true; // Show grid when in grid mode
-  //     }
-  //   }),
-  // );
-
   function createCube(
     gridPosition: [number, number],
     userData: { id: string },
@@ -787,7 +804,6 @@ export function CubeScene(props: {
   // Effect to manage cube meshes - this runs whenever cubes() changes
   createEffect(() => {
     const currentCubes = cubes();
-    console.log("Current cubes:", currentCubes);
 
     const existing = new Set(groupMap.keys());
 
@@ -808,7 +824,6 @@ export function CubeScene(props: {
         scene.add(group);
         groupMap.set(cube.id, group);
       } else {
-        console.log("Updating existing cube:", cube.id);
         // Only animate position if not being deleted
         const targetPosition = cube.targetPosition || cube.position;
         const currentPosition = existingGroup.position.toArray() as [
@@ -849,7 +864,7 @@ export function CubeScene(props: {
   });
 
   createEffect(
-    on(selectedIds, (curr, prev) => {
+    on(props.selectedIds, (curr, prev) => {
       console.log("Selected cubes:", curr);
       // Update colors of selected cubes
       updateMeshColors(curr, prev);
@@ -933,8 +948,7 @@ export function CubeScene(props: {
           <ToolbarButton
             name="new-machine"
             icon="NewMachine"
-            onMouseEnter={onHover(true)}
-            onMouseLeave={onHover(false)}
+            disabled={positionMode() === "circle"}
             onClick={onAddClick}
             selected={worldMode() === "create"}
           />
@@ -945,6 +959,7 @@ export function CubeScene(props: {
             onClick={() => {
               if (positionMode() === "grid") {
                 setPositionMode("circle");
+                setWorldMode("view");
                 grid.visible = false;
               } else {
                 setPositionMode("grid");
@@ -952,11 +967,7 @@ export function CubeScene(props: {
               }
             }}
           />
-          <ToolbarButton
-            name="delete"
-            icon="Trash"
-            onClick={() => deleteSelectedCubes(selectedIds())}
-          />
+          <ToolbarButton name="delete" icon="Trash" />
         </Toolbar>
       </div>
     </>

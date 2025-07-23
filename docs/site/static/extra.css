@@ -18,7 +18,7 @@
 }
 
 .md-nav__title,
-.md-nav__item.md-nav__item--section>label>span {
+.md-nav__item.md-nav__item--section > label > span {
   color: var(--md-typeset-a-color);
 }
 
