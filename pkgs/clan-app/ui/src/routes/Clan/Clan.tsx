@@ -1,5 +1,5 @@
 import { RouteSectionProps } from "@solidjs/router";
-import { Component, JSX, Show, createSignal } from "solid-js";
+import { Component, JSX, Show, createSignal, onMount } from "solid-js";
 import { useClanURI } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import { MachinesQueryResult, useMachinesQuery } from "@/src/queries/queries";
@@ -128,6 +128,13 @@ const ClanSceneController = () => {
 
   const [showModal, setShowModal] = createSignal(false);
 
+  const [loadingCooldown, setLoadingCooldown] = createSignal(false);
+  onMount(() => {
+    setTimeout(() => {
+      setLoadingCooldown(true);
+    }, 1500);
+  });
+
   return (
     <SceneDataProvider clanURI={clanURI}>
       {({ query }) => {
@@ -162,8 +169,7 @@ const ClanSceneController = () => {
                     produce((s) => {
                       for (const machineId in s.sceneData[clanURI]) {
                         // Reset the position of each machine to [0, 0]
-                        s.sceneData[clanURI] = {}; // Clear the entire object
-                        // delete s.sceneData[clanURI][machineId];
+                        s.sceneData[clanURI] = {};
                       }
                     }),
                   );
@@ -182,7 +188,9 @@ const ClanSceneController = () => {
               </Button>
             </div>
             {/* TODO: Add minimal display time */}
-            <div class={cx({ "fade-out": !query.isLoading })}>
+            <div
+              class={cx({ "fade-out": !query.isLoading && loadingCooldown() })}
+            >
               <Splash />
             </div>
 
