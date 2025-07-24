@@ -6,19 +6,26 @@ hide:
 
 # :material-home: What is Clan?
 
-[Clan](https://clan.lol/) is a peer-to-peer computer management framework that
-empowers you to reclaim control over your digital computing experience. Built on
-NixOS, Clan provides a unified interface for managing networks of machines with
-automated [secret management](./guides/secrets.md), secure [mesh VPN
-connectivity](./guides/mesh-vpn.md), and customizable installation images. Whether
-you're running a homelab or building decentralized computing infrastructure,
-Clan simplifies configuration management while restoring your independence from
-closed computing ecosystems.
+## [Clan](https://clan.lol/) - Peer-to-Peer Computer Management Framework
 
-At the heart of Clan are [Clan Services](./reference/clanServices/index.md) - the core
-concept that enables you to add functionality across multiple machines in your
-network. While Clan ships with essential core services, you can [create custom
-services](./guides/clanServices.md) tailored to your specific needs.
+### Clan is a secure, peer-to-peer framework for managing personal or distributed computing networks
+
+- **Automated** [Secret Management](./guides/secrets.md):
+
+    Effortlessly manage secrets across machines in your network using our automated tools
+
+- **Secure** [mesh VPN connectivity](./guides/mesh-vpn.md):
+
+    Establish encrypted, peer-to-peer communication between machines — without centralized servers.
+
+- **Composable** [Clan Services](./reference/clanServices/index.md):
+
+    Define and deploy reusable service modules that work seamlessly across machines.
+
+- **Custom** [Community services](./guides/services/community.md):
+
+    Everyone can contribute to a growing ecosystem of open-source services.
+
 
 [Getting Started](./guides/getting-started/index.md){ .md-button }
 
@@ -28,47 +35,49 @@ services](./guides/clanServices.md) tailored to your specific needs.
 
 <div class="grid cards" markdown>
 
--   [Adding more machines](./guides/more-machines.md)
+-   [Create a Machine](./guides/getting-started/add-machines.md)
 
     ---
 
-    Learn how Clan automatically includes machines and Nix files.
+    How to create your first machine
 
--   [Vars Backend](./guides/vars-backend.md)
-
-    ---
-
-    Learn how to manage secrets with vars.
-
--   [Inventory](./guides/inventory.md)
+-   [macOS](./guides/macos.md)
 
     ---
 
-    Clan's declaration format for running **services** on one or multiple **machines**.
+    How to manage macOS machines with nix-darwin
 
--   [Flake-parts](./guides/flake-parts.md)
-
-    ---
-
-    Use Clan with [https://flake.parts/]()
-
--   [Contribute](./developer/contributing/CONTRIBUTING.md)
+-   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
     ---
 
-    Discover how to set up a development environment to contribute to Clan!
+    How to set up a development environment
 
--   [macOS machines](./guides/macos.md)
+</div>
+
+## Concepts
+
+Explore the foundational ideas.
+
+<div class="grid cards" markdown>
+
+-   [Generators](./concepts/generators.md)
 
     ---
 
-    Manage macOS machines with nix-darwin
+    Learn about Generators
+
+-   [Inventory](./concepts/inventory.md)
+
+    ---
+
+    Learn about Inventory
 
 </div>
 
 ## API Reference
 
-**Reference API Documentation**
+Technical reference for Clan's CLI and Nix modules
 
 <div class="grid cards" markdown>
 
@@ -76,29 +85,22 @@ services](./guides/clanServices.md) tailored to your specific needs.
 
     ---
 
-    The `clan` CLI command
+    Command-line interface.
+
+    Full reference for the `clan` CLI tool.
 
 -   [Service Modules](./reference/clanServices/index.md)
 
     ---
 
-    An overview of available service modules
+    Overview of built-in service modules that provide composable functionality across machines.
 
--   [Core](./reference/clan.core/index.md)
-
-    ---
-
-    The clan core nix module.
-    This is imported when using clan and is the basis of the extra functionality
-    that can be provided.
-
--   [(Legacy) Modules](./reference/clanModules/index.md)
+-   [Core NixOS-module](./reference/clan.core/index.md)
 
     ---
 
-    An overview of available clanModules
+    The foundation of Clan's functionality
 
-    !!! Example "These will be deprecated soon"
-
+    Reference for the `clan-core` NixOS module — automatically part of any machine to enable Clan's core features.
 
 </div>

@@ -6,7 +6,7 @@ Machines can be added using the following methods
 - Editing machines/`machine_name`/configuration.nix (automatically included if it exists)
 - `clan machines create` (imperative)
 
-See the complete [list](../../guides/more-machines.md#automatic-registration) of auto-loaded files.
+See the complete [list](../../concepts/autoincludes.md) of auto-loaded files.
 
 ## Create a machine
 

@@ -55,29 +55,39 @@ nav:
           - Add Services: guides/getting-started/add-services.md
           - Deploy Machine: guides/getting-started/deploy.md
           - Continuous Integration: guides/getting-started/check.md
-      - Inventory: guides/inventory.md
       - Using Services: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
-      - Vars: guides/vars-backend.md
       - Age Plugins: guides/age-plugins.md
-      - Advanced Secrets: guides/secrets.md
-      - Machine Autoincludes: guides/more-machines.md
+      - Secrets management: guides/secrets.md
       - Target Host: guides/target-host.md
       - Zerotier VPN: guides/mesh-vpn.md
       - Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
+      - macOS: guides/macos.md
+      - Contributing:
+          - Contributing: guides/contributing/CONTRIBUTING.md
+          - Debugging: guides/contributing/debugging.md
+          - Testing: guides/contributing/testing.md
+
+      - Writing a Service Module: guides/services/community.md
+      - Writing a Disko Template: guides/disko-templates/community.md
       - Migrations:
           - Migrate existing Flakes: guides/migrations/migration-guide.md
           - Migrate inventory Services: guides/migrations/migrate-inventory-services.md
           - Facts Vars Migration: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md
-      - macOS: guides/macos.md
+  - Concepts:
+      - Inventory: concepts/inventory.md
+      - Generators: concepts/generators.md
+      - Autoincludes: concepts/autoincludes.md
   - Reference:
       - Overview: reference/index.md
+      - Clan Options: options.md
       - Services:
-          - List:
-              - Overview: reference/clanServices/index.md
+          - Overview:
+              - reference/clanServices/index.md
+
               - reference/clanServices/admin.md
               - reference/clanServices/borgbackup.md
               - reference/clanServices/data-mesher.md
@@ -94,66 +104,7 @@ nav:
               - reference/clanServices/wifi.md
               - reference/clanServices/zerotier.md
           - API: reference/clanServices/clan-service-author-interface.md
-          - Writing a Service Module: developer/extensions/clanServices/index.md
-      - Modules:
-          - List:
-              - Overview: reference/clanModules/index.md
-              - reference/clanModules/frontmatter/index.md
-              # TODO: display the docs of the clan.service modules
-              - reference/clanModules/admin.md
-              # This is the module overview and should stay at the top
-              - reference/clanModules/borgbackup-static.md
-              - reference/clanModules/data-mesher.md
-              - reference/clanModules/borgbackup.md
-              - reference/clanModules/deltachat.md
-              - reference/clanModules/disk-id.md
-              - reference/clanModules/dyndns.md
-              - reference/clanModules/ergochat.md
-              - reference/clanModules/garage.md
-              - reference/clanModules/heisenbridge.md
-              - reference/clanModules/importer.md
-              - reference/clanModules/iwd.md
-              - reference/clanModules/localbackup.md
-              - reference/clanModules/localsend.md
-              - reference/clanModules/matrix-synapse.md
-              - reference/clanModules/moonlight.md
-              - reference/clanModules/mumble.md
-              - reference/clanModules/mycelium.md
-              - reference/clanModules/nginx.md
-              - reference/clanModules/packages.md
-              - reference/clanModules/postgresql.md
-              - reference/clanModules/root-password.md
-              - reference/clanModules/single-disk.md
-              - reference/clanModules/sshd.md
-              - reference/clanModules/state-version.md
-              - reference/clanModules/static-hosts.md
-              - reference/clanModules/sunshine.md
-              - reference/clanModules/syncthing-static-peers.md
-              - reference/clanModules/syncthing.md
-              - reference/clanModules/thelounge.md
-              - reference/clanModules/trusted-nix-caches.md
-              - reference/clanModules/user-password.md
-              - reference/clanModules/auto-upgrade.md
-              - reference/clanModules/vaultwarden.md
-              - reference/clanModules/xfce.md
-              - reference/clanModules/zerotier-static-peers.md
-              - reference/clanModules/zerotier.md
-              - reference/clanModules/zt-tcp-relay.md
-          - Writing a Clan Module: developer/extensions/clanModules/index.md
 
-      - Nix API:
-          - inputs.clan-core.lib.clan: reference/nix-api/clan.md
-          - config.clan.core:
-              - Overview: reference/clan.core/index.md
-              - reference/clan.core/backups.md
-              - reference/clan.core/deployment.md
-              - reference/clan.core/facts.md
-              - reference/clan.core/networking.md
-              - reference/clan.core/settings.md
-              - reference/clan.core/sops.md
-              - reference/clan.core/state.md
-              - reference/clan.core/vars.md
-          - Inventory: reference/nix-api/inventory.md
       - CLI:
           - Overview: reference/cli/index.md
 
@@ -170,8 +121,63 @@ nav:
           - reference/cli/templates.md
           - reference/cli/vars.md
           - reference/cli/vms.md
+      - Modules (deprecated):
+          - Overview: reference/clanModules/index.md
+          - reference/clanModules/frontmatter/index.md
+          # TODO: display the docs of the clan.service modules
+          - reference/clanModules/admin.md
+          # This is the module overview and should stay at the top
+          - reference/clanModules/borgbackup-static.md
+          - reference/clanModules/data-mesher.md
+          - reference/clanModules/borgbackup.md
+          - reference/clanModules/deltachat.md
+          - reference/clanModules/disk-id.md
+          - reference/clanModules/dyndns.md
+          - reference/clanModules/ergochat.md
+          - reference/clanModules/garage.md
+          - reference/clanModules/heisenbridge.md
+          - reference/clanModules/importer.md
+          - reference/clanModules/iwd.md
+          - reference/clanModules/localbackup.md
+          - reference/clanModules/localsend.md
+          - reference/clanModules/matrix-synapse.md
+          - reference/clanModules/moonlight.md
+          - reference/clanModules/mumble.md
+          - reference/clanModules/mycelium.md
+          - reference/clanModules/nginx.md
+          - reference/clanModules/packages.md
+          - reference/clanModules/postgresql.md
+          - reference/clanModules/root-password.md
+          - reference/clanModules/single-disk.md
+          - reference/clanModules/sshd.md
+          - reference/clanModules/state-version.md
+          - reference/clanModules/static-hosts.md
+          - reference/clanModules/sunshine.md
+          - reference/clanModules/syncthing-static-peers.md
+          - reference/clanModules/syncthing.md
+          - reference/clanModules/thelounge.md
+          - reference/clanModules/trusted-nix-caches.md
+          - reference/clanModules/user-password.md
+          - reference/clanModules/auto-upgrade.md
+          - reference/clanModules/vaultwarden.md
+          - reference/clanModules/xfce.md
+          - reference/clanModules/zerotier-static-peers.md
+          - reference/clanModules/zerotier.md
+          - reference/clanModules/zt-tcp-relay.md
 
-      - Glossary: reference/glossary.md
+      - clan.core (NixOS Options):
+          - Overview: reference/clan.core/index.md
+          - reference/clan.core/backups.md
+          - reference/clan.core/deployment.md
+          - reference/clan.core/facts.md
+          - reference/clan.core/networking.md
+          - reference/clan.core/settings.md
+          - reference/clan.core/sops.md
+          - reference/clan.core/state.md
+          - reference/clan.core/vars.md
+
+      - Developer-api: api.md
+
       - Decisions:
           - Architecture Decisions: decisions/README.md
           - 01-clanModules: decisions/01-ClanModules.md
@@ -180,16 +186,7 @@ nav:
           - 04-fetching-nix-from-python: decisions/04-fetching-nix-from-python.md
           - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
-  - Options: options.md
-  - Developer:
-      - Introduction: developer/index.md
-      - Dev Setup: developer/contributing/CONTRIBUTING.md
-      - Writing a Service Module: developer/extensions/clanServices/index.md
-      - Writing a Clan Module: developer/extensions/clanModules/index.md
-      - Writing a Disko Template: developer/extensions/templates/disk/disko-templates.md
-      - Debugging: developer/contributing/debugging.md
-      - Testing: developer/contributing/testing.md
-      - Python API: developer/api.md
+      - Glossary: reference/glossary.md
 
 docs_dir: site
 site_dir: out
@@ -249,4 +246,4 @@ plugins:
   - redoc-tag
   - redirects:
       redirect_maps:
-        guides/getting-started/secrets.md: guides/vars-backend.md
+        guides/getting-started/secrets.md: concepts/generators.md
