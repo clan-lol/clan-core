@@ -27,27 +27,26 @@ def ping_command(args: argparse.Namespace) -> None:
         networks_to_check = sorted(networks.items(), key=lambda x: -x[1].priority)
 
     found = False
-    results = []
     for net_name, network in networks_to_check:
         if machine in network.peers:
             found = True
 
-            # Check if network technology is running
-            if not network.is_running():
-                results.append(f"{machine} ({net_name}): network not running")
-                continue
-
-            # Check if peer is online
-            ping = network.ping(machine)
-            results.append(f"{machine} ({net_name}): {ping}")
+            with network.module.connection(network) as network:
+                log.info(f"Pinging '{machine}' in network '{net_name}' ...")
+                res = ""
+                # Check if peer is online
+                ping = network.ping(machine)
+                if ping is None:
+                    res = "not reachable"
+                    log.info(f"{machine} ({net_name}): {res}")
+                else:
+                    res = f"reachable, ping: {ping:.2f} ms"
+                    log.info(f"{machine} ({net_name}): {res}")
+                    break
 
     if not found:
         msg = f"Machine '{machine}' not found in any network"
         raise ClanError(msg)
-
-    # Print all results
-    for result in results:
-        print(result)
 
 
 def register_ping_parser(parser: argparse.ArgumentParser) -> None:

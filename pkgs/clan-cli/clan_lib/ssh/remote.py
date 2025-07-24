@@ -2,25 +2,26 @@ import ipaddress
 import logging
 import os
 import shlex
-import socket
 import subprocess
 import sys
-import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from shlex import quote
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
-from clan_lib.api import API
-from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, CmdOut, RunOpts, run
+from clan_lib.cmd import CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError, indent_command  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
+
+if TYPE_CHECKING:
+    from clan_lib.network.check import ConnectionOptions
 
 cmdlog = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class Remote:
     host_key_check: HostKeyCheck = "ask"
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
-    tor_socks: bool = False
+    socks_port: int | None = None
+    socks_wrapper: list[str] | None = None
 
     _control_path_dir: Path | None = None
     _askpass_path: str | None = None
@@ -60,7 +62,8 @@ class Remote:
         host_key_check: HostKeyCheck | None = None,
         private_key: Path | None = None,
         password: str | None = None,
-        tor_socks: bool | None = None,
+        socks_port: int | None = None,
+        socks_wrapper: list[str] | None = None,
         command_prefix: str | None = None,
         port: int | None = None,
         ssh_options: dict[str, str] | None = None,
@@ -81,7 +84,10 @@ class Remote:
             ),
             verbose_ssh=self.verbose_ssh,
             ssh_options=ssh_options or self.ssh_options,
-            tor_socks=tor_socks if tor_socks is not None else self.tor_socks,
+            socks_port=socks_port if socks_port is not None else self.socks_port,
+            socks_wrapper=socks_wrapper
+            if socks_wrapper is not None
+            else self.socks_wrapper,
             _control_path_dir=self._control_path_dir,
             _askpass_path=self._askpass_path,
         )
@@ -152,7 +158,7 @@ class Remote:
                 host_key_check=self.host_key_check,
                 verbose_ssh=self.verbose_ssh,
                 ssh_options=self.ssh_options,
-                tor_socks=self.tor_socks,
+                socks_port=self.socks_port,
                 _control_path_dir=Path(temp_dir),
                 _askpass_path=self._askpass_path,
             )
@@ -220,7 +226,7 @@ class Remote:
                 host_key_check=self.host_key_check,
                 verbose_ssh=self.verbose_ssh,
                 ssh_options=self.ssh_options,
-                tor_socks=self.tor_socks,
+                socks_port=self.socks_port,
                 _control_path_dir=self._control_path_dir,
                 _askpass_path=askpass_path,
             )
@@ -373,10 +379,13 @@ class Remote:
         if tty:
             current_ssh_opts.extend(["-t"])
 
-        if self.tor_socks:
+        if self.socks_port:
             packages.append("netcat")
             current_ssh_opts.extend(
-                ["-o", "ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p"]
+                [
+                    "-o",
+                    f"ProxyCommand=nc -x localhost:{self.socks_port} -X 5 %h %p",
+                ]
             )
 
         cmd = [
@@ -447,100 +456,14 @@ class Remote:
         if self.password:
             self.check_sshpass_errorcode(res)
 
-    def check_machine_ssh_reachable(self) -> bool:
-        return check_machine_ssh_reachable(self).ok
+    def check_machine_ssh_reachable(
+        self, opts: "ConnectionOptions | None" = None
+    ) -> None:
+        from clan_lib.network.check import check_machine_ssh_reachable
 
+        return check_machine_ssh_reachable(self, opts)
 
-@dataclass(frozen=True)
-class ConnectionOptions:
-    timeout: int = 2
-    retries: int = 5
+    def check_machine_ssh_login(self) -> None:
+        from clan_lib.network.check import check_machine_ssh_login
 
-
-@dataclass
-class CheckResult:
-    ok: bool
-    reason: str | None = None
-
-
-@API.register
-def check_machine_ssh_login(
-    remote: Remote, opts: ConnectionOptions | None = None
-) -> CheckResult:
-    """Checks if a remote machine is reachable via SSH by attempting to run a simple command.
-    Args:
-        remote (Remote): The remote host to check for SSH login.
-        opts (ConnectionOptions, optional): Connection options such as timeout and number of retries.
-            If not provided, default values are used.
-    Returns:
-        CheckResult: An object indicating whether the SSH login is successful (`ok=True`) or not (`ok=False`),
-        and a reason if the check failed.
-    Usage:
-        result = check_machine_ssh_login(remote)
-        if result.ok:
-            print("SSH login successful")
-        else:
-            print(f"SSH login failed: {result.reason}")
-    """
-    if opts is None:
-        opts = ConnectionOptions()
-
-    for _ in range(opts.retries):
-        with remote.ssh_control_master() as ssh:
-            try:
-                res = ssh.run(
-                    ["true"],
-                    RunOpts(timeout=opts.timeout, needs_user_terminal=True),
-                )
-                return CheckResult(True)
-            except ClanCmdTimeoutError:
-                pass
-            except ClanCmdError as e:
-                if "Host key verification failed." in e.cmd.stderr:
-                    raise ClanError(res.stderr.strip()) from e
-            else:
-                time.sleep(opts.timeout)
-
-    return CheckResult(False, f"failed after {opts.retries} attempts")
-
-
-@API.register
-def check_machine_ssh_reachable(
-    remote: Remote, opts: ConnectionOptions | None = None
-) -> CheckResult:
-    """
-    Checks if a remote machine is reachable via SSH by attempting to open a TCP connection
-    to the specified address and port.
-    Args:
-        remote (Remote): The remote host to check for SSH reachability.
-        opts (ConnectionOptions, optional): Connection options such as timeout and number of retries.
-            If not provided, default values are used.
-    Returns:
-        CheckResult: An object indicating whether the SSH port is reachable (`ok=True`) or not (`ok=False`),
-        and a reason if the check failed.
-    Usage:
-        result = check_machine_ssh_reachable(remote)
-        if result.ok:
-            print("SSH port is reachable")
-            print(f"SSH port is not reachable: {result.reason}")
-    """
-    if opts is None:
-        opts = ConnectionOptions()
-
-    cmdlog.debug(
-        f"Checking SSH reachability for {remote.target} on port {remote.port or 22}",
-    )
-
-    address_family = socket.AF_INET6 if remote.is_ipv6() else socket.AF_INET
-    for _ in range(opts.retries):
-        with socket.socket(address_family, socket.SOCK_STREAM) as sock:
-            sock.settimeout(opts.timeout)
-            try:
-                sock.connect((remote.address, remote.port or 22))
-                return CheckResult(True)
-            except (TimeoutError, OSError):
-                pass
-            else:
-                time.sleep(opts.timeout)
-
-    return CheckResult(False, f"failed after {opts.retries} attempts")
+        return check_machine_ssh_login(self)

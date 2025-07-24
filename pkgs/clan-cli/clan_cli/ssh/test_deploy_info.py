@@ -37,7 +37,7 @@ def test_qrcode_scan(temp_dir: Path) -> None:
         tor_host.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
     )
-    assert tor_host.tor_socks is True
+    assert tor_host.socks_port == 9050
     assert tor_host.password == "scabbed-defender-headlock"
     assert tor_host.user == "root"
     assert (
@@ -59,7 +59,7 @@ def test_from_json() -> None:
         tor_host.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
     )
-    assert tor_host.tor_socks is True
+    assert tor_host.socks_port == 9050
     assert tor_host.password == "scabbed-defender-headlock"
     assert tor_host.user == "root"
     assert (

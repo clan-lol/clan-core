@@ -35,7 +35,7 @@ def install_command(args: argparse.Namespace) -> None:
         use_tor = False
         if deploy_info:
             host = find_reachable_host(deploy_info)
-            if host is None or host.tor_socks:
+            if host is None or host.socks_port:
                 use_tor = True
                 target_host_str = deploy_info.tor.target
             else:
@@ -74,7 +74,9 @@ def install_command(args: argparse.Namespace) -> None:
             target_host = target_host.override(password=password)
 
         if use_tor:
-            target_host = target_host.override(tor_socks=True)
+            target_host = target_host.override(
+                socks_port=9050, socks_wrapper=["torify"]
+            )
 
         return run_machine_install(
             InstallOptions(
