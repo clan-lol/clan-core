@@ -229,8 +229,8 @@ in
     };
 
     inventory = lib.mkOption {
-      type = types.submodule {
-        imports = [
+      type = types.submoduleWith {
+        modules = [
           {
             _module.args = { inherit clanLib; };
             _file = "clan interface";
