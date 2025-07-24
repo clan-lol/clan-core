@@ -1,7 +1,7 @@
 # Migrating from using `clanModules` to `clanServices`
 
 **Audience**: This is a guide for **people using `clanModules`**.
-If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../../developer/extensions/clanServices/index.md)
+If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../../guides/services/community.md)
 
 ## What's Changing?
 
@@ -329,6 +329,6 @@ instances = {
 
 ## Further reference
 
-* [Authoring a 'clan.service' module](../../developer/extensions/clanServices/index.md)
+* [Inventory Concept](../../concepts/inventory.md)
+* [Authoring a 'clan.service' module](../../guides/services/community.md)
 * [ClanServices](../clanServices.md)
-* [Inventory Reference](../../reference/nix-api/inventory.md)

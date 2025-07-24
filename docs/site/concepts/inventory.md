@@ -9,8 +9,6 @@ The inventory logic will automatically derive the modules and configurations to 
 
 The following tutorial will walk through setting up a Backup service where the terms `Service` and `Role` will become more clear.
 
-See also: [Inventory API Documentation](../reference/nix-api/inventory.md)
-
 !!! example "Experimental status"
     The inventory implementation is not considered stable yet.
     We are actively soliciting feedback from users.
@@ -19,7 +17,7 @@ See also: [Inventory API Documentation](../reference/nix-api/inventory.md)
 
 ## Prerequisites
 
-- [x] [Add multiple machines](./more-machines.md) to your Clan.
+- [x] [Add some machines](../guides/getting-started/add-machines.md) to your Clan.
 
 ## Services
 
