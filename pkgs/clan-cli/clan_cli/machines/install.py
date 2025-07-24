@@ -63,9 +63,17 @@ def install_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         if not args.yes:
-            ask = input(f"Install {args.machine} to {target_host.target}? [y/N] ")
-            if ask != "y":
-                return None
+            while True:
+                ask = (
+                    input(f"Install {args.machine} to {target_host.target}? [y/N] ")
+                    .strip()
+                    .lower()
+                )
+                if ask == "y":
+                    break
+                if ask == "n" or ask == "":
+                    return None
+                print(f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no.")
 
         if args.identity_file:
             target_host = target_host.override(private_key=args.identity_file)
