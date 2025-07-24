@@ -1,5 +1,5 @@
 div.sidebar {
-  @apply w-60 border-none;
+  @apply w-60 border-none z-10;
 
   & > div.header {
   }

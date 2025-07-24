@@ -10,6 +10,10 @@ import "./cubes.css";
 
 import * as THREE from "three";
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
+import {
+  CSS2DRenderer,
+  CSS2DObject,
+} from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
@@ -77,6 +81,7 @@ export function CubeScene(props: {
   let scene: THREE.Scene;
   let camera: THREE.OrthographicCamera;
   let renderer: THREE.WebGLRenderer;
+  let labelRenderer: CSS2DRenderer;
   let floor: THREE.Mesh;
   let controls: MapControls;
   // Raycaster for clicking
@@ -195,8 +200,11 @@ export function CubeScene(props: {
 
     renderer.autoClear = false;
     renderer.render(bgScene, bgCamera);
+
     controls.update(); // optional; see note below
+
     renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
 
     if (frameCount % 30 === 0) logMemoryUsage();
   }
@@ -523,6 +531,15 @@ export function CubeScene(props: {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
+    // Label renderer
+    labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(container.clientWidth, container.clientHeight);
+    labelRenderer.domElement.style.position = "absolute";
+    labelRenderer.domElement.style.top = "0px";
+    labelRenderer.domElement.style.pointerEvents = "none";
+    labelRenderer.domElement.style.zIndex = "0";
+    container.appendChild(labelRenderer.domElement);
+
     controls = new MapControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     // Enable the context menu,
@@ -546,7 +563,7 @@ export function CubeScene(props: {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 
     // scene.add(new THREE.DirectionalLightHelper(directionalLight));
     // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
@@ -570,7 +587,7 @@ export function CubeScene(props: {
     directionalLight.shadow.camera.far = 2000;
     directionalLight.shadow.mapSize.width = 4096; // Higher resolution for sharper shadows
     directionalLight.shadow.mapSize.height = 4096;
-    directionalLight.shadow.radius = 0; // Hard shadows (low radius)
+    directionalLight.shadow.radius = 1; // Hard shadows (low radius)
     directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
     scene.add(directionalLight.target);
@@ -716,6 +733,7 @@ export function CubeScene(props: {
       camera.updateProjectionMatrix();
 
       renderer.setSize(container.clientWidth, container.clientHeight);
+      labelRenderer.setSize(container.clientWidth, container.clientHeight);
 
       // Update background shader resolution
       uniforms.resolution.value.set(
@@ -790,6 +808,14 @@ export function CubeScene(props: {
 
     const baseMesh = createCubeBase([0, BASE_HEIGHT / 2, 0]);
     baseMesh.name = "base"; // Name for easy identification
+
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "machine-label";
+    nameDiv.textContent = `${userData.id}`;
+
+    const nameLabel = new CSS2DObject(nameDiv);
+    nameLabel.position.set(0, CUBE_Y + CUBE_SIZE / 2 - 0.2, 0);
+    cubeMesh.add(nameLabel);
 
     // TODO: Destroy Group in onCleanup
     const group = new THREE.Group();
