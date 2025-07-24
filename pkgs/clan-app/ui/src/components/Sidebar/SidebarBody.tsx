@@ -3,7 +3,7 @@ import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, Suspense } from "solid-js";
+import { For } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
 import { useMachinesQuery } from "@/src/queries/queries";
@@ -89,21 +89,19 @@ export const SidebarBody = (props: SidebarProps) => {
             </Accordion.Trigger>
           </Accordion.Header>
           <Accordion.Content class="content">
-            <Suspense fallback={"Loading..."}>
-              <nav>
-                <For each={Object.entries(machineList.data || {})}>
-                  {([id, machine]) => (
-                    <MachineRoute
-                      clanURI={clanURI}
-                      machineID={id}
-                      name={machine.name || id}
-                      status="Not Installed"
-                      serviceCount={0}
-                    />
-                  )}
-                </For>
-              </nav>
-            </Suspense>
+            <nav>
+              <For each={Object.entries(machineList.data || {})}>
+                {([id, machine]) => (
+                  <MachineRoute
+                    clanURI={clanURI}
+                    machineID={id}
+                    name={machine.name || id}
+                    status="Not Installed"
+                    serviceCount={0}
+                  />
+                )}
+              </For>
+            </nav>
           </Accordion.Content>
         </Accordion.Item>
 
