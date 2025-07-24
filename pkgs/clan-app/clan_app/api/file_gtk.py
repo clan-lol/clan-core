@@ -9,6 +9,7 @@ gi.require_version("Gtk", "4.0")
 
 from clan_lib.api import ApiError, ErrorDataClass, SuccessDataClass
 from clan_lib.api.directory import FileRequest
+from clan_lib.async_run import get_current_thread_opkey
 from clan_lib.clan.check import check_clan_valid
 from clan_lib.flake import Flake
 from gi.repository import Gio, GLib, Gtk
@@ -24,7 +25,7 @@ def remove_none(_list: list) -> list:
 RESULT: dict[str, SuccessDataClass[list[str] | None] | ErrorDataClass] = {}
 
 
-def get_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
+def get_clan_folder() -> SuccessDataClass[Flake] | ErrorDataClass:
     """
     Opens the clan folder using the GTK file dialog.
     Returns the path to the clan folder or an error if it fails.
@@ -34,7 +35,10 @@ def get_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
         title="Select Clan Folder",
         initial_folder=str(Path.home()),
     )
-    response = get_system_file(file_request, op_key=op_key)
+
+    response = get_system_file(file_request)
+
+    op_key = response.op_key
 
     if isinstance(response, ErrorDataClass):
         return response
@@ -70,8 +74,13 @@ def get_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
 
 
 def get_system_file(
-    file_request: FileRequest, *, op_key: str
+    file_request: FileRequest,
 ) -> SuccessDataClass[list[str] | None] | ErrorDataClass:
+    op_key = get_current_thread_opkey()
+
+    if not op_key:
+        msg = "No operation key found in the current thread context."
+        raise RuntimeError(msg)
     GLib.idle_add(gtk_open_file, file_request, op_key)
 
     while RESULT.get(op_key) is None:

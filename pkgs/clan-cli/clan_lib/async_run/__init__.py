@@ -74,6 +74,7 @@ class AsyncContext:
     should_cancel: Callable[[], bool] = (
         lambda: False
     )  # Used to signal cancellation of task
+    op_key: str | None = None
 
 
 @dataclass
@@ -88,6 +89,22 @@ class AsyncOpts:
 
 
 ASYNC_CTX_THREAD_LOCAL = threading.local()
+
+
+def set_current_thread_opkey(op_key: str) -> None:
+    """
+    Set the current thread's operation key.
+    """
+    ctx = get_async_ctx()
+    ctx.op_key = op_key
+
+
+def get_current_thread_opkey() -> str | None:
+    """
+    Get the current thread's operation key.
+    """
+    ctx = get_async_ctx()
+    return ctx.op_key
 
 
 def is_async_cancelled() -> bool:
