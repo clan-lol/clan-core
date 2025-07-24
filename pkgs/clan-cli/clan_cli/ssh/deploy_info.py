@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import json
 import logging
 import textwrap
@@ -9,6 +10,7 @@ from typing import Any, get_args
 from clan_lib.cmd import run
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.network.tor.lib import spawn_tor
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import HostKeyCheck, Remote
 
@@ -16,7 +18,6 @@ from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
 )
-from clan_cli.ssh.tor import TorTarget, spawn_tor, ssh_tor_reachable
 
 log = logging.getLogger(__name__)
 
@@ -27,15 +28,15 @@ class DeployInfo:
 
     @property
     def tor(self) -> Remote:
-        """Return a list of Remote objects that are configured for Tor."""
-        addrs = [addr for addr in self.addrs if addr.tor_socks]
+        """Return a list of Remote objects that are configured for SOCKS5 proxy."""
+        addrs = [addr for addr in self.addrs if addr.socks_port]
 
         if not addrs:
-            msg = "No tor address provided, please provide a tor address."
+            msg = "No socks5 proxy address provided, please provide a socks5 proxy address."
             raise ClanError(msg)
 
         if len(addrs) > 1:
-            msg = "Multiple tor addresses provided, expected only one."
+            msg = "Multiple socks5 proxy addresses provided, expected only one."
             raise ClanError(msg)
         return addrs[0]
 
@@ -76,7 +77,12 @@ class DeployInfo:
             remote = Remote.from_ssh_uri(
                 machine_name="clan-installer",
                 address=tor_addr,
-            ).override(host_key_check=host_key_check, tor_socks=True, password=password)
+            ).override(
+                host_key_check=host_key_check,
+                socks_port=9050,
+                socks_wrapper=["torify"],
+                password=password,
+            )
             addrs.append(remote)
 
         return DeployInfo(addrs=addrs)
@@ -103,7 +109,8 @@ def find_reachable_host(deploy_info: DeployInfo) -> Remote | None:
         return deploy_info.addrs[0]
 
     for addr in deploy_info.addrs:
-        if addr.check_machine_ssh_reachable():
+        with contextlib.suppress(ClanError):
+            addr.check_machine_ssh_reachable()
             return addr
     return None
 
@@ -129,7 +136,7 @@ def ssh_shell_from_deploy(
     log.info("Could not reach host via clearnet 'addrs'")
     log.info(f"Trying to reach host via tor '{deploy_info}'")
 
-    tor_addrs = [addr for addr in deploy_info.addrs if addr.tor_socks]
+    tor_addrs = [addr for addr in deploy_info.addrs if addr.socks_port]
     if not tor_addrs:
         msg = "No tor address provided, please provide a tor address."
         raise ClanError(msg)
@@ -137,11 +144,10 @@ def ssh_shell_from_deploy(
     with spawn_tor():
         for tor_addr in tor_addrs:
             log.info(f"Trying to reach host via tor address: {tor_addr}")
-            if ssh_tor_reachable(
-                TorTarget(
-                    onion=tor_addr.address, port=tor_addr.port if tor_addr.port else 22
-                )
-            ):
+
+            with contextlib.suppress(ClanError):
+                tor_addr.check_machine_ssh_reachable()
+
                 log.info(
                     "Host reachable via tor address, starting interactive ssh session."
                 )

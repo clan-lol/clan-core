@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from clan_lib.api import ApiResponse
 from clan_lib.api.tasks import WebThread
-from clan_lib.async_run import set_should_cancel
+from clan_lib.async_run import set_current_thread_opkey, set_should_cancel
 
 if TYPE_CHECKING:
     from .middleware import Middleware
@@ -98,7 +98,7 @@ class ApiBridge(ABC):
         *,
         thread_name: str = "ApiBridgeThread",
         wait_for_completion: bool = False,
-        timeout: float = 60.0,
+        timeout: float = 60.0 * 60,  # 1 hour default timeout
     ) -> None:
         """Process an API request in a separate thread with cancellation support.
 
@@ -112,6 +112,7 @@ class ApiBridge(ABC):
 
         def thread_task(stop_event: threading.Event) -> None:
             set_should_cancel(lambda: stop_event.is_set())
+            set_current_thread_opkey(op_key)
             try:
                 log.debug(
                     f"Processing {request.method_name} with args {request.args} "

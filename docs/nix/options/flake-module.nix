@@ -114,9 +114,6 @@
         in
         {
           options = {
-            _ = mkOption {
-              type = types.raw;
-            };
             instances.${name} = lib.mkOption {
               inherit description;
               type = types.submodule {
@@ -149,20 +146,29 @@
           };
         };
 
-      mkScope = name: modules: {
-        inherit name;
-        modules = [
-          {
-            _module.args = { inherit clanLib; };
-            _file = "docs mkScope";
-          }
-          { noInstanceOptions = true; }
-          ../../../lib/modules/inventoryClass/interface.nix
-        ] ++ mapAttrsToList fakeInstanceOptions modules;
-        urlPrefix = "https://github.com/nix-community/dream2nix/blob/main/";
-      };
+      docModules = [
+        {
+          inherit self;
+        }
+        self.modules.clan.default
+        {
+          options.inventory = lib.mkOption {
+            type = types.submoduleWith {
+              modules = [
+                { noInstanceOptions = true; }
+              ] ++ mapAttrsToList fakeInstanceOptions serviceModules;
+            };
+          };
+        }
+      ];
+
     in
     {
+      # Uncomment for debugging
+      # legacyPackages.docModules = lib.evalModules {
+      #   modules = docModules;
+      # };
+
       packages = lib.optionalAttrs ((privateInputs ? nuschtos) || (inputs ? nuschtos)) {
         docs-options =
           (privateInputs.nuschtos or inputs.nuschtos)
@@ -171,7 +177,13 @@
               inherit baseHref;
               title = "Clan Options";
               # scopes = mapAttrsToList mkScope serviceModules;
-              scopes = [ (mkScope "Clan Inventory" serviceModules) ];
+              scopes = [
+                {
+                  name = "Clan";
+                  modules = docModules;
+                  urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+                }
+              ];
             };
       };
     };

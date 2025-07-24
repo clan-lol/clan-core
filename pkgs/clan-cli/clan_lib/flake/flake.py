@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-import textwrap
+import shlex
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import cache
@@ -307,6 +307,7 @@ class FlakeCacheEntry:
     is_list: bool = False
     exists: bool = True
     fetched_all: bool = False
+    _num_accessed: int = field(default=0, init=False)
 
     def insert(
         self,
@@ -476,6 +477,80 @@ class FlakeCacheEntry:
 
         return False
 
+    def is_path_unaccessed(self, selectors: list[Selector]) -> bool:
+        """Check if the leaf entry has _num_accessed == 0"""
+        if selectors == []:
+            # This is the leaf, check if it's unaccessed
+            return self._num_accessed == 0
+
+        selector = selectors[0]
+
+        # Navigate to leaf for string/maybe selectors
+        if (
+            selector.type == SelectorType.STR or selector.type == SelectorType.MAYBE
+        ) and isinstance(self.value, dict):
+            assert isinstance(selector.value, str)
+            if selector.value in self.value:
+                return self.value[selector.value].is_path_unaccessed(selectors[1:])
+            return True  # Non-existent path is considered unaccessed
+
+        # For set selectors, check if any leaf is unaccessed
+        if (
+            selector.type == SelectorType.SET
+            and isinstance(selector.value, list)
+            and isinstance(self.value, dict)
+        ):
+            for subselector in selector.value:
+                if subselector.value in self.value:
+                    if not self.value[subselector.value].is_path_unaccessed(
+                        selectors[1:]
+                    ):
+                        return False
+            return True
+
+        # For all selectors, check if any existing key is unaccessed
+        if selector.type == SelectorType.ALL and isinstance(self.value, dict):
+            for key in self.value:
+                if self.value[key].exists:
+                    if not self.value[key].is_path_unaccessed(selectors[1:]):
+                        return False
+            return True
+
+        return True
+
+    def mark_path_accessed(self, selectors: list[Selector]) -> None:
+        """Mark only the leaf entry as accessed"""
+        if selectors == []:
+            # This is the leaf, increment access count
+            self._num_accessed += 1
+            return
+
+        selector = selectors[0]
+
+        # Navigate to leaf for string/maybe selectors
+        if (
+            selector.type == SelectorType.STR or selector.type == SelectorType.MAYBE
+        ) and isinstance(self.value, dict):
+            assert isinstance(selector.value, str)
+            if selector.value in self.value:
+                self.value[selector.value].mark_path_accessed(selectors[1:])
+
+        # For set selectors, mark all leaf paths
+        elif (
+            selector.type == SelectorType.SET
+            and isinstance(selector.value, list)
+            and isinstance(self.value, dict)
+        ):
+            for subselector in selector.value:
+                if subselector.value in self.value:
+                    self.value[subselector.value].mark_path_accessed(selectors[1:])
+
+        # For all selectors, mark all existing keys
+        elif selector.type == SelectorType.ALL and isinstance(self.value, dict):
+            for key in self.value:
+                if self.value[key].exists:
+                    self.value[key].mark_path_accessed(selectors[1:])
+
     def select(self, selectors: list[Selector]) -> Any:
         selector: Selector
         if selectors == []:
@@ -593,6 +668,7 @@ class FlakeCacheEntry:
         entry = FlakeCacheEntry(
             value=value, is_list=is_list, exists=exists, fetched_all=fetched_all
         )
+        entry._num_accessed = 0
         return entry
 
     def __repr__(self) -> str:
@@ -620,11 +696,20 @@ class FlakeCache:
 
     def select(self, selector_str: str) -> Any:
         selectors = parse_selector(selector_str)
+        self.mark_path_accessed(selectors)
         return self.cache.select(selectors)
 
     def is_cached(self, selector_str: str) -> bool:
         selectors = parse_selector(selector_str)
+        if self.is_path_unaccessed(selectors):
+            log.debug(f"$ clan select {shlex.quote(selector_str)}")
         return self.cache.is_cached(selectors)
+
+    def is_path_unaccessed(self, selectors: list[Selector]) -> bool:
+        return self.cache.is_path_unaccessed(selectors)
+
+    def mark_path_accessed(self, selectors: list[Selector]) -> None:
+        self.cache.mark_path_accessed(selectors)
 
     def save_to_file(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -636,7 +721,7 @@ class FlakeCache:
 
     def load_from_file(self, path: Path) -> None:
         with path.open("r") as f:
-            log.debug("Loading flake cache from file")
+            log.debug(f"Loading flake cache from file {path}")
             data = json.load(f)
             self.cache = FlakeCacheEntry.from_json(data["cache"])
 
@@ -729,7 +814,7 @@ class Flake:
             self.identifier,
         ]
 
-        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", "0") == "1"
+        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", False) == "1"
         if not trace_prefetch:
             log.debug(f"Prefetching flake {self.identifier}")
         flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
@@ -862,47 +947,11 @@ class Flake:
                 ];
               }}
         """
-        if len(selectors) > 1 :
-            msg = textwrap.dedent(f"""
-                clan select "{selectors}"
-            """).lstrip("\n").rstrip("\n")
-            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
-                msg += textwrap.dedent(f"""
-                    to debug run:
-                    nix repl --expr 'rec {{
-                    flake = builtins.getFlake "{self.identifier}";
-                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-                    query = [
-                        {" ".join(
-                            [
-                                f"(selectLib.select ''{selector}'' flake)"
-                                for selector in selectors
-                            ]
-                        )}
-                    ];
-                    }}'
-                """).lstrip("\n")
-            log.debug(msg)
-        # fmt: on
-        elif len(selectors) == 1:
-            msg = textwrap.dedent(f"""
-               $ clan select "{selectors[0]}"
-            """).lstrip("\n").rstrip("\n")
-            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
-                msg += textwrap.dedent(f"""
-                to debug run:
-                    nix repl --expr 'rec {{
-                    flake = builtins.getFlake "{self.identifier}";
-                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-                    query = selectLib.select '"''{selectors[0]}''"' flake;
-                    }}'
-                    """).lstrip("\n")
-            log.debug(msg)
-
+        trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS", False) == "1"
         build_output = Path(
             run(
                 nix_build(["--expr", nix_code, *nix_options]),
-                RunOpts(log=Log.NONE, trace=False),
+                RunOpts(log=Log.NONE, trace=trace),
             ).stdout.strip()
         )
 
@@ -929,14 +978,21 @@ class Flake:
         Args:
             selectors (list[str]): A list of attribute selectors to check and cache.
         """
+
         if self._cache is None:
             self.invalidate_cache()
         assert self._cache is not None
         assert self.flake_cache_path is not None
         not_fetched_selectors = []
         for selector in selectors:
+            parsed_selectors = parse_selector(selector)
+
             if not self._cache.is_cached(selector):
                 not_fetched_selectors.append(selector)
+
+            # Mark path as accessed after checking
+            self._cache.mark_path_accessed(parsed_selectors)
+
         if not_fetched_selectors:
             self.get_from_nix(not_fetched_selectors)
 
@@ -959,6 +1015,7 @@ class Flake:
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
             self.get_from_nix([selector])
+
         value = self._cache.select(selector)
         return value
 

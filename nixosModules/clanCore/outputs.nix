@@ -31,6 +31,7 @@
             The deployment data is now accessed directly from the configuration
             instead of being written to a separate JSON file.
           '';
+          defaultText = "error: deployment.json file generation has been removed in favor of direct selectors.";
         };
         deployment.buildHost = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
@@ -54,10 +55,10 @@
         deployment.nixosMobileWorkaround = lib.mkOption {
           type = lib.types.bool;
           description = ''
-            if true, the deployment will first do a nixos-rebuild switch 
+            if true, the deployment will first do a nixos-rebuild switch
             to register the boot profile the command will fail applying it to the running system
-            which is why afterwards we execute a nixos-rebuild test to apply 
-            the new config without having to reboot. 
+            which is why afterwards we execute a nixos-rebuild test to apply
+            the new config without having to reboot.
             This is a nixos-mobile deployment bug and will be removed in the future
           '';
           default = false;

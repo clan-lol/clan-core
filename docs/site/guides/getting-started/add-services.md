@@ -41,7 +41,7 @@ To learn more: [Guide about clanService](../clanServices.md)
 ```
 
 1. See [reference/clanServices](../../reference/clanServices/index.md) for all available services and how to configure them.
-   Or read [authoring/clanServices](../../developer/extensions/clanServices/index.md) if you want to bring your own
+   Or read [authoring/clanServices](../../guides/services/community.md) if you want to bring your own
 
 2. Replace `__YOUR_CONTROLLER_` with the *name* of your machine.
 

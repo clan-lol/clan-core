@@ -1,5 +1,5 @@
-This article provides an overview over the underlying secrets system which is used by [Vars](../guides/vars-backend.md).
-Under most circumstances you should use [Vars](../guides/vars-backend.md) directly instead.
+This article provides an overview over the underlying secrets system which is used by [Vars](../concepts/generators.md).
+Under most circumstances you should use [Vars](../concepts/generators.md) directly instead.
 
 Consider using `clan secrets` only for managing admin users and groups, as well as a debugging tool.
 

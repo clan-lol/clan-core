@@ -193,7 +193,7 @@ def module_header(module_name: str, has_inventory_feature: bool = False) -> str:
 def module_nix_usage(module_name: str) -> str:
     return f"""## Usage via Nix
 
-**This module can be also imported directly in your nixos configuration. Although it is recommended to use the [inventory](../../reference/nix-api/inventory.md) interface if available.**
+**This module can be also imported directly in your nixos configuration. Although it is recommended to use the [inventory](../../concepts/inventory.md) interface if available.**
 
 Some modules are considered 'low-level' or 'expert modules' and are not available via the inventory interface.
 
@@ -373,7 +373,7 @@ This module can be used via predefined roles
             """
 Every role has its own configuration options, which are each listed below.
 
-For more information, see the [inventory guide](../../guides/inventory.md).
+For more information, see the [inventory guide](../../concepts/inventory.md).
 
 ??? Example
     For example the `admin` module adds the following options globally to all machines where it is used.
@@ -402,7 +402,7 @@ certain option types restricted to enable configuration through a graphical
 interface.
 
 !!! note "🔹"
-    Modules with this indicator support the [inventory](../../guides/inventory.md) feature.
+    Modules with this indicator support the [inventory](../../concepts/inventory.md) feature.
 
 """
 
@@ -679,86 +679,6 @@ def build_option_card(module_name: str, frontmatter: Frontmatter) -> str:
     return f"{to_md_li(module_name, frontmatter)}\n\n"
 
 
-def produce_build_clan_docs() -> None:
-    if not BUILD_CLAN_PATH:
-        msg = f"Environment variables are not set correctly: BUILD_CLAN_PATH={BUILD_CLAN_PATH}. Expected a path to the optionsJSON"
-        raise ClanError(msg)
-
-    if not OUT:
-        msg = f"Environment variables are not set correctly: $out={OUT}"
-        raise ClanError(msg)
-
-    output = """# Clan
-
-This provides an overview of the available arguments of the `clan` interface.
-
-Each attribute is documented below
-
-- **clan-core.lib.clan**: A function that takes an attribute set.
-
-    ??? example "clan Example"
-
-        ```nix
-        clan {
-            self = self;
-            machines = {
-                jon = { };
-                sara = { };
-            };
-        };
-        ```
-
-- **clan with flake-parts**: Import the FlakeModule
-
-    After importing the FlakeModule you can define your `clan` as a flake attribute
-
-    All attribute can be defined via `clan.*`
-
-    Further information see: [flake-parts](../../guides/flake-parts.md) guide.
-
-    ??? example "flake-parts Example"
-
-        ```nix
-        flake-parts.lib.mkFlake { inherit inputs; } ({
-            systems = [];
-            imports = [
-                clan-core.flakeModules.default
-            ];
-            clan = {
-                machines = {
-                    jon = { };
-                    sara = { };
-                };
-            };
-        });
-        ```
-
-"""
-    with Path(BUILD_CLAN_PATH).open() as f:
-        options: dict[str, dict[str, Any]] = json.load(f)
-
-        split = split_options_by_root(options)
-        for option_name, options in split.items():
-            # Skip underscore options
-            if option_name.startswith("_"):
-                continue
-            # Skip inventory sub options
-            # Inventory model has its own chapter
-            if option_name.startswith("inventory."):
-                continue
-
-            print(f"[build_clan_docs] Rendering option of {option_name}...")
-            root = options_to_tree(options)
-
-            for option in root.suboptions:
-                output += options_docs_from_tree(option, init_level=2)
-
-    outfile = Path(OUT) / "nix-api/clan.md"
-    outfile.parent.mkdir(parents=True, exist_ok=True)
-    with Path.open(outfile, "w") as of:
-        of.write(output)
-
-
 def split_options_by_root(options: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """
     Split the flat dictionary of options into a dict of which each entry will construct complete option trees.
@@ -805,7 +725,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
 !!! Note
     This is not a user-facing documentation, but rather meant as a reference for *module authors*
 
-    See: [clanService Authoring Guide](../../developer/extensions/clanServices/index.md)
+    See: [clanService Authoring Guide](../../guides/services/community.md)
 """
     # Inventory options are already included under the clan attribute
     # We just omitted them in the clan docs, because we want a separate output for the inventory model
@@ -832,48 +752,6 @@ class Option:
     path: list[str]
     info: dict[str, Any]
     suboptions: list["Option"] = field(default_factory=list)
-
-
-def produce_inventory_docs() -> None:
-    if not BUILD_CLAN_PATH:
-        msg = f"Environment variables are not set correctly: BUILD_CLAN_PATH={BUILD_CLAN_PATH}. Expected a path to the optionsJSON"
-        raise ClanError(msg)
-
-    if not OUT:
-        msg = f"Environment variables are not set correctly: $out={OUT}"
-        raise ClanError(msg)
-
-    output = """# Inventory
-This provides an overview of the available attributes of the `inventory` model.
-
-It can be set via the `inventory` attribute of the [`clan`](./clan.md#inventory) function, or via the [`clan.inventory`](./clan.md#inventory) attribute of flake-parts.
-
-"""
-    # Inventory options are already included under the clan attribute
-    # We just omitted them in the clan docs, because we want a separate output for the inventory model
-    with Path(BUILD_CLAN_PATH).open() as f:
-        options: dict[str, dict[str, Any]] = json.load(f)
-
-        clan_root_option = options_to_tree(options)
-        # Find the inventory options
-        inventory_opt: None | Option = None
-        for opt in clan_root_option.suboptions:
-            if opt.name == "inventory":
-                inventory_opt = opt
-                break
-
-        if not inventory_opt:
-            print("No inventory options found.")
-            exit(1)
-        # Render the inventory options
-        # This for loop excludes the root node
-        for option in inventory_opt.suboptions:
-            output += options_docs_from_tree(option, init_level=2)
-
-    outfile = Path(OUT) / "nix-api/inventory.md"
-    outfile.parent.mkdir(parents=True, exist_ok=True)
-    with Path.open(outfile, "w") as of:
-        of.write(output)
 
 
 def option_short_name(option_name: str) -> str:
@@ -983,9 +861,6 @@ def options_docs_from_tree(
 
 if __name__ == "__main__":  #
     produce_clan_core_docs()
-
-    produce_build_clan_docs()
-    produce_inventory_docs()
 
     produce_clan_service_author_docs()
 

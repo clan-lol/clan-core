@@ -1,7 +1,4 @@
-
-!!! Note
-    Vars is the new secret backend that will soon replace the Facts backend
-
+# Generators
 
 Defining a linux user's password via the nixos configuration previously required running `mkpasswd ...` and then copying the hash back into the nix configuration.
 
@@ -11,7 +8,7 @@ For a more general explanation of what clan vars are and how it works, see the i
 
 This guide assumes
 - Clan is set up already (see [Getting Started](../guides/getting-started/index.md))
-- a machine has been added to the clan (see [Adding Machines](./more-machines.md))
+- a machine has been added to the clan (see [Adding Machines](../guides/getting-started/add-machines.md))
 
 This section will walk you through the following steps:
 
@@ -23,7 +20,7 @@ This section will walk you through the following steps:
 6. share the root password between machines
 7. change the password
 
-## Declare the generator
+## Declare a generator
 
 In this example, a `vars` `generator` is used to:
 

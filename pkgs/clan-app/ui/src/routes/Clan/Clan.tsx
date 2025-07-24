@@ -15,9 +15,14 @@ import {
   useClanURI,
 } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
-import { MachinesQueryResult, useMachinesQuery } from "@/src/queries/queries";
+import {
+  ClanListQueryResult,
+  MachinesQueryResult,
+  useClanListQuery,
+  useMachinesQuery,
+} from "@/src/queries/queries";
 import { callApi } from "@/src/hooks/api";
-import { store, setStore } from "@/src/stores/clan";
+import { store, setStore, clanURIs } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
 import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
@@ -42,10 +47,12 @@ export const Clan: Component<RouteSectionProps> = (props) => {
 interface CreateFormValues extends FieldValues {
   name: string;
 }
+
 interface MockProps {
   onClose: () => void;
   onSubmit: (formValues: CreateFormValues) => void;
 }
+
 const MockCreateMachine = (props: MockProps) => {
   let container: Node;
 
@@ -173,7 +180,26 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   return (
     <SceneDataProvider clanURI={clanURI}>
-      {({ query }) => {
+      {({ clansQuery, machinesQuery }) => {
+        // a combination of the individual clan details query status and the machines query status
+        // the cube scene needs the machines query, the sidebar needs the clans query and machines query results
+        // so we wait on both before removing the loader to avoid any loading artefacts
+        const isLoading = (): boolean => {
+          // check the machines query first
+          if (machinesQuery.isLoading) {
+            return true;
+          }
+
+          // otherwise iterate the clans query and return early if we find a queries that is still loading
+          for (const query of clansQuery) {
+            if (query.isLoading) {
+              return true;
+            }
+          }
+
+          return false;
+        };
+
         return (
           <>
             <Show when={showModal()}>
@@ -217,7 +243,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
                 ghost
                 onClick={() => {
                   console.log("Refetching API");
-                  query.refetch();
+                  machinesQuery.refetch();
                 }}
               >
                 Refetch API
@@ -225,7 +251,9 @@ const ClanSceneController = (props: RouteSectionProps) => {
             </div>
             {/* TODO: Add minimal display time */}
             <div
-              class={cx({ "fade-out": !query.isLoading && loadingCooldown() })}
+              class={cx({
+                "fade-out": !machinesQuery.isLoading && loadingCooldown(),
+              })}
             >
               <Splash />
             </div>
@@ -233,8 +261,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
             <CubeScene
               selectedIds={selectedIds}
               onSelect={onMachineSelect}
-              isLoading={query.isLoading}
-              cubesQuery={query}
+              isLoading={isLoading()}
+              cubesQuery={machinesQuery}
               onCreate={onCreate}
               sceneStore={() => {
                 const clanURI = useClanURI();
@@ -268,10 +296,14 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
 const SceneDataProvider = (props: {
   clanURI: string;
-  children: (sceneData: { query: MachinesQueryResult }) => JSX.Element;
+  children: (sceneData: {
+    clansQuery: ClanListQueryResult;
+    machinesQuery: MachinesQueryResult;
+  }) => JSX.Element;
 }) => {
+  const clansQuery = useClanListQuery(clanURIs());
   const machinesQuery = useMachinesQuery(props.clanURI);
 
   // This component can be used to provide scene data or context if needed
-  return props.children({ query: machinesQuery });
+  return props.children({ clansQuery, machinesQuery });
 };

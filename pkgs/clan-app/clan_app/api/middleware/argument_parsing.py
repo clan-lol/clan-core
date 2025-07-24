@@ -21,17 +21,11 @@ class ArgumentParsingMiddleware(Middleware):
             # Convert dictionary arguments to dataclass instances
             reconciled_arguments = {}
             for k, v in context.request.args.items():
-                if k == "op_key":
-                    continue
-
                 # Get the expected argument type from the API
                 arg_class = self.api.get_method_argtype(context.request.method_name, k)
 
                 # Convert dictionary to dataclass instance
                 reconciled_arguments[k] = from_dict(arg_class, v)
-
-            # Add op_key to arguments
-            reconciled_arguments["op_key"] = context.request.op_key
 
             # Create a new request with reconciled arguments
 

@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 
 def get_machine_var(base_dir: str, machine_name: str, var_id: str) -> Var:
+    log.debug(f"getting var: {var_id} from machine: {machine_name}")
     vars_ = get_machine_vars(base_dir=base_dir, machine_name=machine_name)
     results = []
     for var in vars_:

@@ -20,6 +20,7 @@ export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
 interface SendHeaderType {
   logging?: { group_path: string[] };
+  op_key?: string;
 }
 interface BackendSendType<K extends OperationNames> {
   body: OperationArgs<K>;
@@ -64,9 +65,14 @@ export const callApi = <K extends OperationNames>(
     };
   }
 
+  const op_key = backendOpts?.op_key ?? crypto.randomUUID();
+
   const req: BackendSendType<OperationNames> = {
     body: args,
-    header: backendOpts,
+    header: {
+      ...backendOpts,
+      op_key,
+    },
   };
 
   const result = (
@@ -77,9 +83,6 @@ export const callApi = <K extends OperationNames>(
       ) => Promise<BackendReturnType<OperationNames>>
     >
   )[method](req) as Promise<BackendReturnType<K>>;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const op_key = (result as any)._webviewMessageId as string;
 
   return {
     uuid: op_key,

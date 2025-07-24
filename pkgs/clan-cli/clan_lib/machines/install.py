@@ -133,16 +133,15 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         cmd.extend(opts.machine.flake.nix_options or [])
 
         cmd.append(target_host.target)
-        if target_host.tor_socks:
-            # nix copy does not support tor socks proxy
-            # cmd.append("--ssh-option")
-            # cmd.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
+        if target_host.socks_port:
+            # nix copy does not support socks5 proxy, use wrapper command
+            wrapper_cmd = target_host.socks_wrapper or ["torify"]
             cmd = nix_shell(
                 [
                     "nixos-anywhere",
-                    "tor",
+                    *wrapper_cmd,
                 ],
-                ["torify", *cmd],
+                [*wrapper_cmd, *cmd],
             )
         else:
             cmd = nix_shell(

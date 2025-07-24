@@ -22,7 +22,13 @@ def test_import_with_source(tmp_path: Path) -> None:
     test_module_path = module_dir / "test_tech.py"
     test_module_path.write_text(
         dedent("""
-        from clan_lib.network.network import NetworkTechnologyBase
+        from clan_lib.network.network import NetworkTechnologyBase, Peer, Network
+        from contextlib import contextmanager
+        from collections.abc import Iterator
+        from typing import TYPE_CHECKING
+
+        if TYPE_CHECKING:
+            from clan_lib.ssh.remote import Remote
 
         class NetworkTechnology(NetworkTechnologyBase):
             def __init__(self, source):
@@ -31,6 +37,17 @@ def test_import_with_source(tmp_path: Path) -> None:
 
             def is_running(self) -> bool:
                 return True
+
+            def remote(self, peer: Peer) -> "Remote":
+                from clan_lib.ssh.remote import Remote
+                return Remote(host=peer.host)
+
+            def ping(self, peer: Peer) -> None | float:
+                return 0.1
+
+            @contextmanager
+            def connection(self, network: Network) -> Iterator[Network]:
+                yield network
     """)
     )
 
@@ -57,7 +74,7 @@ def test_import_with_source(tmp_path: Path) -> None:
         assert instance.source.module_name == "test_module.test_tech"
         assert instance.source.file_path.name == "test_tech.py"
         assert instance.source.object_name == "NetworkTechnology"
-        assert instance.source.line_number == 4  # Line where class is defined
+        assert instance.source.line_number == 10  # Line where class is defined
 
         # Test string representations
         str_repr = str(instance)
@@ -81,7 +98,13 @@ def test_import_with_source_with_args() -> None:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write(
             dedent("""
-            from clan_lib.network.network import NetworkTechnologyBase
+            from clan_lib.network.network import NetworkTechnologyBase, Peer, Network
+            from contextlib import contextmanager
+            from collections.abc import Iterator
+            from typing import TYPE_CHECKING
+
+            if TYPE_CHECKING:
+                from clan_lib.ssh.remote import Remote
 
             class NetworkTechnology(NetworkTechnologyBase):
                 def __init__(self, source, extra_arg, keyword_arg=None):
@@ -91,6 +114,17 @@ def test_import_with_source_with_args() -> None:
 
                 def is_running(self) -> bool:
                     return False
+
+                def remote(self, peer: Peer) -> "Remote":
+                    from clan_lib.ssh.remote import Remote
+                    return Remote(host=peer.host)
+
+                def ping(self, peer: Peer) -> None | float:
+                    return None
+
+                @contextmanager
+                def connection(self, network: Network) -> Iterator[Network]:
+                    yield network
         """)
         )
         temp_file = Path(f.name)

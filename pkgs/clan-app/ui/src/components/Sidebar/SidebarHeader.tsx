@@ -4,7 +4,7 @@ import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { useNavigate } from "@solidjs/router";
 import { Typography } from "../Typography/Typography";
 import { createSignal, For, Suspense } from "solid-js";
-import { useAllClanDetailsQuery } from "@/src/queries/queries";
+import { useClanListQuery } from "@/src/queries/queries";
 import { navigateToClan, useClanURI } from "@/src/hooks/clan";
 import { clanURIs } from "@/src/stores/clan";
 
@@ -15,7 +15,7 @@ export const SidebarHeader = () => {
 
   // get information about the current active clan
   const clanURI = useClanURI();
-  const allClans = useAllClanDetailsQuery(clanURIs());
+  const allClans = useClanListQuery(clanURIs());
 
   const activeClan = () => allClans.find(({ data }) => data?.uri === clanURI);
 

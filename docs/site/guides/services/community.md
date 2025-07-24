@@ -1,16 +1,16 @@
 # Authoring a 'clan.service' module
 
 !!! Tip
-    This is the successor format to the older [clanModules](../clanModules/index.md)
+    This is the successor format to the older [clanModules](../../reference/clanModules/index.md)
 
     While some features might still be missing we recommend to adapt this format early and give feedback.
 
 ## Service Module Specification
 
 This section explains how to author a clan service module.
-We discussed the initial architecture in [01-clan-service-modules](../../../decisions/01-ClanModules.md) and decided to rework the format.
+We discussed the initial architecture in [01-clan-service-modules](../../decisions/01-ClanModules.md) and decided to rework the format.
 
-For the full specification and current state see: **[Service Author Reference](../../../reference/clanServices/clan-service-author-interface.md)**
+For the full specification and current state see: **[Service Author Reference](../../reference/clanServices/clan-service-author-interface.md)**
 
 ### A Minimal module
 
@@ -52,7 +52,7 @@ The imported module file must fulfill at least the following requirements:
 }
 ```
 
-For more attributes see: **[Service Author Reference](../../../reference/clanServices/clan-service-author-interface.md)**
+For more attributes see: **[Service Author Reference](../../reference/clanServices/clan-service-author-interface.md)**
 
 ### Adding functionality to the module
 
@@ -266,6 +266,6 @@ The benefit of this approach is that downstream users can override the value of 
 
 ## Further
 
-- [Reference Documentation for Service Authors](../../../reference/clanServices/clan-service-author-interface.md)
-- [Migration Guide from ClanModules to ClanServices](../../../guides/migrations/migrate-inventory-services.md)
-- [Decision that lead to ClanServices](../../../decisions/01-ClanModules.md)
+- [Reference Documentation for Service Authors](../../reference/clanServices/clan-service-author-interface.md)
+- [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
+- [Decision that lead to ClanServices](../../decisions/01-ClanModules.md)
