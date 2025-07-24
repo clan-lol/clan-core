@@ -15,6 +15,7 @@ from typing import (
 )
 
 from clan_lib.api.util import JSchemaTypeError
+from clan_lib.async_run import get_current_thread_opkey
 from clan_lib.errors import ClanError
 
 from .serde import dataclass_to_dict, from_dict, sanitize_string
@@ -52,26 +53,6 @@ class ErrorDataClass:
 
 
 ApiResponse = SuccessDataClass[ResponseDataType] | ErrorDataClass
-
-
-def update_wrapper_signature(wrapper: Callable, wrapped: Callable) -> None:
-    sig = signature(wrapped)
-    params = list(sig.parameters.values())
-
-    # Add 'op_key' parameter
-    op_key_param = Parameter(
-        "op_key",
-        Parameter.KEYWORD_ONLY,
-        # we add a None default value so that typescript code gen drops the parameter
-        # FIXME: this is a hack, we should filter out op_key in the typescript code gen
-        default=None,
-        annotation=str,
-    )
-    params.append(op_key_param)
-
-    # Create a new signature
-    new_sig = sig.replace(parameters=params)
-    wrapper.__signature__ = new_sig  # type: ignore
 
 
 class MethodRegistry:
@@ -130,18 +111,8 @@ API.register(get_system_file)
         fn_signature = signature(fn)
         abstract_signature = signature(self._registry[fn_name])
 
-        # Remove the default argument of op_key from abstract_signature
-        # FIXME: This is a hack to make the signature comparison work
-        # because the other hack above where default value of op_key is None in the wrapper
-        abstract_params = list(abstract_signature.parameters.values())
-        for i, param in enumerate(abstract_params):
-            if param.name == "op_key":
-                abstract_params[i] = param.replace(default=Parameter.empty)
-                break
-        abstract_signature = abstract_signature.replace(parameters=abstract_params)
-
         if fn_signature != abstract_signature:
-            msg = f"Expected signature: {abstract_signature}\nActual signature: {fn_signature}"
+            msg = f"For function: {fn_name}. Expected signature: {abstract_signature}\nActual signature: {fn_signature}"
             raise ClanError(msg)
 
         self._registry[fn_name] = fn
@@ -159,7 +130,11 @@ API.register(get_system_file)
         self._orig_signature[fn.__name__] = signature(fn)
 
         @wraps(fn)
-        def wrapper(*args: Any, op_key: str, **kwargs: Any) -> ApiResponse[T]:
+        def wrapper(*args: Any, **kwargs: Any) -> ApiResponse[T]:
+            op_key = get_current_thread_opkey()
+            if op_key is None:
+                msg = f"While executing {fn.__name__}. Middleware forgot to set_current_thread_opkey()"
+                raise RuntimeError(msg)
             try:
                 data: T = fn(*args, **kwargs)
                 return SuccessDataClass(status="success", data=data, op_key=op_key)
@@ -195,11 +170,6 @@ API.register(get_system_file)
         # This overrides the new return type annotation with the generic typeVar filled in
         orig_return_type = get_type_hints(fn).get("return")
         wrapper.__annotations__["return"] = ApiResponse[orig_return_type]  # type: ignore
-
-        # Add additional argument for the operation key
-        wrapper.__annotations__["op_key"] = str  # type: ignore
-
-        update_wrapper_signature(wrapper, fn)
 
         self._registry[fn.__name__] = wrapper
 

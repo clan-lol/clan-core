@@ -1,13 +1,22 @@
 import json
 import logging
+import threading
 import uuid
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
-from clan_lib.api import MethodRegistry, SuccessDataClass, dataclass_to_dict
+from clan_lib.api import (
+    MethodRegistry,
+    SuccessDataClass,
+    dataclass_to_dict,
+)
 from clan_lib.api.tasks import WebThread
+from clan_lib.async_run import (
+    set_current_thread_opkey,
+    set_should_cancel,
+)
 
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
@@ -324,17 +333,34 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             msg = f"Operation key '{op_key}' is already in use. Please try again."
             raise ValueError(msg)
 
+    def process_request_in_thread(
+        self,
+        request: BackendRequest,
+        *,
+        thread_name: str = "ApiBridgeThread",
+        wait_for_completion: bool = False,
+        timeout: float = 60.0 * 60,  # 1 hour default timeout
+    ) -> None:
+        pass
+
     def _process_api_request_in_thread(
         self, api_request: BackendRequest, method_name: str
     ) -> None:
         """Process the API request in a separate thread."""
-        # Use the inherited thread processing method
-        self.process_request_in_thread(
-            api_request,
-            thread_name="HttpThread",
-            wait_for_completion=True,
-            timeout=60.0,
+        stop_event = threading.Event()
+        request = api_request
+        op_key = request.op_key or "unknown"
+        set_should_cancel(lambda: stop_event.is_set())
+        set_current_thread_opkey(op_key)
+
+        curr_thread = threading.current_thread()
+        self.threads[op_key] = WebThread(thread=curr_thread, stop_event=stop_event)
+
+        log.debug(
+            f"Processing {request.method_name} with args {request.args} "
+            f"and header {request.header}"
         )
+        self.process_request(request)
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         """Override default logging to use our logger."""
