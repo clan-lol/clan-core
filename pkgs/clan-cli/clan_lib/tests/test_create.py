@@ -32,7 +32,7 @@ from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
 from clan_lib.services.modules import list_service_modules
-from clan_lib.ssh.remote import Remote, check_machine_ssh_login
+from clan_lib.ssh.remote import Remote
 from clan_lib.templates.disk import hw_main_disk_options, set_machine_disk_schema
 
 log = logging.getLogger(__name__)
@@ -189,9 +189,9 @@ def test_clan_create_api(
     target_host = machine.target_host().override(
         private_key=private_key, host_key_check="none"
     )
-    assert check_machine_ssh_login(target_host).ok, (
-        f"Machine {machine.name} is not online"
-    )
+
+    target_host.check_machine_ssh_reachable()
+    target_host.check_machine_ssh_login()
 
     ssh_keys = [
         SSHKeyPair(

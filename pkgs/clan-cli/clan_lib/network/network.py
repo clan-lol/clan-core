@@ -1,23 +1,27 @@
 import logging
 import textwrap
-import time
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from clan_cli.vars.get import get_machine_var
+
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
-from clan_lib.ssh.parse import parse_ssh_uri
-from clan_lib.ssh.remote import Remote, check_machine_ssh_reachable
+
+if TYPE_CHECKING:
+    from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class Peer:
+    name: str
     _host: dict[str, str | dict[str, str]]
     flake: Flake
 
@@ -30,7 +34,9 @@ class Peer:
             machine_name = _var["machine"]
             generator = _var["generator"]
             var = get_machine_var(
-                str(self.flake),
+                str(
+                    self.flake
+                ),  # TODO we should really pass the flake instance here instead of a str representation
                 machine_name,
                 f"{generator}/{_var['file']}",
             )
@@ -50,35 +56,6 @@ class Peer:
         raise ClanError(msg)
 
 
-@dataclass
-class NetworkTechnologyBase(ABC):
-    source: ClassSource
-
-    @abstractmethod
-    def is_running(self) -> bool:
-        pass
-
-    # TODO this will depend on the network implementation if we do user networking at some point, so it should be abstractmethod
-    def ping(self, peer: Peer) -> None | float:
-        if self.is_running():
-            try:
-                # Parse the peer's host address to create a Remote object, use peer here since we don't have the machine_name here
-                remote = parse_ssh_uri(machine_name="peer", address=peer.host)
-
-                # Use the existing SSH reachability check
-                now = time.time()
-                result = check_machine_ssh_reachable(remote)
-
-                if result.ok:
-                    return (time.time() - now) * 1000
-                return None
-
-            except Exception as e:
-                log.debug(f"Error checking peer {peer.host}: {e}")
-                return None
-        return None
-
-
 @dataclass(frozen=True)
 class Network:
     peers: dict[str, Peer]
@@ -86,7 +63,7 @@ class Network:
     priority: int = 1000
 
     @cached_property
-    def module(self) -> NetworkTechnologyBase:
+    def module(self) -> "NetworkTechnologyBase":
         res = import_with_source(
             self.module_name,
             "NetworkTechnology",
@@ -100,15 +77,49 @@ class Network:
     def ping(self, peer: str) -> float | None:
         return self.module.ping(self.peers[peer])
 
+    def remote(self, peer: str) -> "Remote":
+        # TODO raise exception if peer is not in peers
+        return self.module.remote(self.peers[peer])
+
+
+@dataclass(frozen=True)
+class NetworkTechnologyBase(ABC):
+    source: ClassSource
+
+    @abstractmethod
+    def is_running(self) -> bool:
+        pass
+
+    @abstractmethod
+    def remote(self, peer: Peer) -> "Remote":
+        pass
+
+    @abstractmethod
+    def ping(self, peer: Peer) -> None | float:
+        pass
+
+    @contextmanager
+    @abstractmethod
+    def connection(self, network: Network) -> Iterator[Network]:
+        pass
+
 
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
+    # TODO more precaching, for example for vars
+    flake.precache(
+        [
+            "clan.exports.instances.*.networking",
+        ]
+    )
     networks: dict[str, Network] = {}
     networks_ = flake.select("clan.exports.instances.*.networking")
     for network_name, network in networks_.items():
         if network:
             peers: dict[str, Peer] = {}
             for _peer in network["peers"].values():
-                peers[_peer["name"]] = Peer(_host=_peer["host"], flake=flake)
+                peers[_peer["name"]] = Peer(
+                    name=_peer["name"], _host=_peer["host"], flake=flake
+                )
             networks[network_name] = Network(
                 peers=peers,
                 module_name=network["module"],
@@ -117,17 +128,14 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
     return networks
 
 
-def get_best_remote(machine_name: str, networks: dict[str, Network]) -> Remote | None:
+def get_best_network(machine_name: str, networks: dict[str, Network]) -> Network | None:
     for network_name, network in sorted(
         networks.items(), key=lambda network: -network[1].priority
     ):
         if machine_name in network.peers:
             if network.is_running() and network.ping(machine_name):
                 print(f"connecting via {network_name}")
-                return Remote.from_ssh_uri(
-                    machine_name=machine_name,
-                    address=network.peers[machine_name].host,
-                )
+                return network
     return None
 
 
@@ -137,20 +145,19 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         result[network_name] = {}
         result[network_name]["status"] = None
         result[network_name]["peers"] = {}
-        network_online = False
         module = network.module
         log.debug(f"Using network module: {module}")
         if module.is_running():
             result[network_name]["status"] = True
-            network_online = True
-        for peer_name in network.peers:
-            if network_online:
-                try:
-                    result[network_name]["peers"][peer_name] = network.ping(peer_name)
-                except ClanError:
-                    log.warning(
-                        f"getting host for machine: {peer_name} in network: {network_name} failed"
-                    )
-            else:
-                result[network_name]["peers"][peer_name] = None
+        else:
+            with module.connection(network) as network:
+                for peer_name in network.peers:
+                    try:
+                        result[network_name]["peers"][peer_name] = network.ping(
+                            peer_name
+                        )
+                    except ClanError:
+                        log.warning(
+                            f"getting host for machine: {peer_name} in network: {network_name} failed"
+                        )
     return result
