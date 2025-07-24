@@ -67,7 +67,7 @@ export const callApi = <K extends OperationNames>(
 
   const op_key = backendOpts?.op_key ?? crypto.randomUUID();
 
-  let req: BackendSendType<OperationNames> = {
+  const req: BackendSendType<OperationNames> = {
     body: args,
     header: {
       ...backendOpts,

@@ -3,8 +3,12 @@ import { callApi, SuccessData } from "../hooks/api";
 import { encodeBase64 } from "@/src/hooks/clan";
 
 export type ClanDetails = SuccessData<"get_clan_details">;
+export type ClanDetailsWithURI = ClanDetails & { uri: string };
+
 export type ListMachines = SuccessData<"list_machines">;
+
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
+export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
 
 export const useMachinesQuery = (clanURI: string) =>
   useQuery<ListMachines>(() => ({
@@ -48,7 +52,7 @@ export const useClanDetailsQuery = (clanURI: string) =>
     },
   }));
 
-export const useAllClanDetailsQuery = (clanURIs: string[]) =>
+export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult =>
   useQueries(() => ({
     queries: clanURIs.map((clanURI) => ({
       queryKey: ["clans", encodeBase64(clanURI), "details"],
