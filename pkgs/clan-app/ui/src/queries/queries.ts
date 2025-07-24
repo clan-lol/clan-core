@@ -6,6 +6,7 @@ export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
 
 export type ListMachines = SuccessData<"list_machines">;
+export type MachineDetails = SuccessData<"get_machine_details">;
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
 export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];

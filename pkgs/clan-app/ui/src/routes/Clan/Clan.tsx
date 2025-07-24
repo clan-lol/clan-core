@@ -11,7 +11,7 @@ import {
 } from "solid-js";
 import {
   buildMachinePath,
-  maybeUseMachineID,
+  maybeUseMachineName,
   useClanURI,
 } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
@@ -162,7 +162,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }
   };
 
-  const machine = createMemo(() => maybeUseMachineID());
+  const machine = createMemo(() => maybeUseMachineName());
 
   createEffect(
     on(machine, (machineId) => {
