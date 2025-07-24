@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-import textwrap
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import cache
@@ -729,7 +728,7 @@ class Flake:
             self.identifier,
         ]
 
-        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", "0") == "1"
+        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", False) == "1"
         if not trace_prefetch:
             log.debug(f"Prefetching flake {self.identifier}")
         flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
@@ -862,47 +861,11 @@ class Flake:
                 ];
               }}
         """
-        if len(selectors) > 1 :
-            msg = textwrap.dedent(f"""
-                clan select "{selectors}"
-            """).lstrip("\n").rstrip("\n")
-            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
-                msg += textwrap.dedent(f"""
-                    to debug run:
-                    nix repl --expr 'rec {{
-                    flake = builtins.getFlake "{self.identifier}";
-                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-                    query = [
-                        {" ".join(
-                            [
-                                f"(selectLib.select ''{selector}'' flake)"
-                                for selector in selectors
-                            ]
-                        )}
-                    ];
-                    }}'
-                """).lstrip("\n")
-            log.debug(msg)
-        # fmt: on
-        elif len(selectors) == 1:
-            msg = textwrap.dedent(f"""
-               $ clan select "{selectors[0]}"
-            """).lstrip("\n").rstrip("\n")
-            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
-                msg += textwrap.dedent(f"""
-                to debug run:
-                    nix repl --expr 'rec {{
-                    flake = builtins.getFlake "{self.identifier}";
-                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-                    query = selectLib.select '"''{selectors[0]}''"' flake;
-                    }}'
-                    """).lstrip("\n")
-            log.debug(msg)
-
+        trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS", False) == "1"
         build_output = Path(
             run(
                 nix_build(["--expr", nix_code, *nix_options]),
-                RunOpts(log=Log.NONE, trace=False),
+                RunOpts(log=Log.NONE, trace=trace),
             ).stdout.strip()
         )
 
@@ -918,6 +881,22 @@ class Flake:
         if self.flake_cache_path:
             self._cache.save_to_file(self.flake_cache_path)
 
+    def log_selectors(self, selectors: list[str]) -> None:
+        if not selectors:
+            return
+
+        if len(selectors) > 1:
+            log.debug("==== Printing multi selector command as multiple commands. ====")
+
+        msg = ""
+        # Build base message
+        for selector in selectors:
+            msg += f'$ clan select "{selector}"'
+            if len(selectors) > 1:
+                msg += "\n"
+
+        log.debug(msg)
+
     def precache(self, selectors: list[str]) -> None:
         """
         Ensures that the specified selectors are cached locally.
@@ -929,6 +908,7 @@ class Flake:
         Args:
             selectors (list[str]): A list of attribute selectors to check and cache.
         """
+
         if self._cache is None:
             self.invalidate_cache()
         assert self._cache is not None
@@ -955,6 +935,8 @@ class Flake:
             self.invalidate_cache()
         assert self._cache is not None
         assert self.flake_cache_path is not None
+
+        self.log_selectors([selector])
 
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")

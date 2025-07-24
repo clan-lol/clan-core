@@ -85,7 +85,8 @@ export CLAN_DEBUG_COMMANDS=1
 
 These options help you pinpoint the source and context of print messages and debug logs during development.
 
-
+!!! Note
+    `CLAN_DEBUG_NIX_SELECTORS` and `CLAN_DEBUG_NIX_PREFETCH` will only print the command on a cache miss!
 
 ## Analyzing Performance
 
