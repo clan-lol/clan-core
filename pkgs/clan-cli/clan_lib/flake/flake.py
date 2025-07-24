@@ -721,7 +721,7 @@ class FlakeCache:
 
     def load_from_file(self, path: Path) -> None:
         with path.open("r") as f:
-            log.debug("Loading flake cache from file")
+            log.debug(f"Loading flake cache from file {path}")
             data = json.load(f)
             self.cache = FlakeCacheEntry.from_json(data["cache"])
 
