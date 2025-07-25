@@ -10,7 +10,7 @@ hide:
 empowers you to **selfhost in a reliable and scalable way**.   
 
 Built on NixOS, Clan provides a **declarative interface for managing machines** with automated [secret management](./guides/secrets.md), easy [mesh VPN
-connectivity](./guides/mesh-vpn.md), and [automated backups](./reference/clanServices/borgbackup.md). 
+connectivity](./guides/mesh-vpn.md), and [automated backups](./guides/backups.md). 
 
 Whether you're running a homelab or maintaining critical computing infrastructure,
 Clan will help **reduce maintainance burden** by allowing a **git repository to define your whole network** of computers.
