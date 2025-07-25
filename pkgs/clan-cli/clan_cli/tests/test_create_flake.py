@@ -79,13 +79,6 @@ def test_create_flake_existing_git(
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
 
-    # create a hardware-configuration.nix that doesn't throw an eval error
-
-    # for patch_machine in ["jon", "sara"]:
-    #     (
-    #         flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix"
-    #     ).write_text("{}")
-
     with capture_output as output:
         cli.run(["machines", "list"])
     assert "machine1" in output.out
