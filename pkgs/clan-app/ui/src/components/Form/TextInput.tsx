@@ -18,33 +18,35 @@ export type TextInputProps = FieldProps &
     input?: PolymorphicProps<"input", TextFieldInputProps<"input">>;
   };
 
-export const TextInput = (props: TextInputProps) => (
-  <TextField
-    class={cx("form-field", "text", props.size, props.orientation, {
-      inverted: props.inverted,
-      ghost: props.ghost,
-    })}
-    {...props}
-  >
-    <Orienter orientation={props.orientation}>
-      <Label
-        labelComponent={TextField.Label}
-        descriptionComponent={TextField.Description}
-        {...props}
-      />
-      <div class="input-container">
-        {props.icon && !props.readOnly && (
-          <Icon
-            icon={props.icon}
-            inverted={props.inverted}
-            color={props.disabled ? "tertiary" : "quaternary"}
-          />
-        )}
-        <TextField.Input
-          {...props.input}
-          classList={{ "has-icon": props.icon && !props.readOnly }}
+export const TextInput = (props: TextInputProps) => {
+  return (
+    <TextField
+      class={cx("form-field", "text", props.size, props.orientation, {
+        inverted: props.inverted,
+        ghost: props.ghost,
+      })}
+      {...props}
+    >
+      <Orienter orientation={props.orientation}>
+        <Label
+          labelComponent={TextField.Label}
+          descriptionComponent={TextField.Description}
+          {...props}
         />
-      </div>
-    </Orienter>
-  </TextField>
-);
+        <div class="input-container">
+          {props.icon && !props.readOnly && (
+            <Icon
+              icon={props.icon}
+              inverted={props.inverted}
+              color={props.disabled ? "tertiary" : "quaternary"}
+            />
+          )}
+          <TextField.Input
+            {...props.input}
+            classList={{ "has-icon": props.icon && !props.readOnly }}
+          />
+        </div>
+      </Orienter>
+    </TextField>
+  );
+};

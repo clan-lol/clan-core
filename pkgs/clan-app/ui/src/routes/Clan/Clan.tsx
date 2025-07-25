@@ -20,7 +20,7 @@ import {
   MachinesQueryResult,
   useClanListQuery,
   useMachinesQuery,
-} from "@/src/queries/queries";
+} from "@/src/hooks/queries";
 import { callApi } from "@/src/hooks/api";
 import { store, setStore, clanURIs } from "@/src/stores/clan";
 import { produce } from "solid-js/store";

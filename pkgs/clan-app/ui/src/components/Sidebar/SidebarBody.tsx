@@ -6,7 +6,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { For } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
-import { useMachinesQuery } from "@/src/queries/queries";
+import { useMachinesQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
 
 interface MachineProps {

@@ -5,6 +5,7 @@ import { encodeBase64 } from "@/src/hooks/clan";
 export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
 
+export type Machine = SuccessData<"get_machine">;
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
 
@@ -25,6 +26,50 @@ export const useMachinesQuery = (clanURI: string) =>
         console.error("Error fetching machines:", result.errors);
         return {};
       }
+      return result.data;
+    },
+  }));
+
+export const useMachineQuery = (clanURI: string, machineName: string) =>
+  useQuery<Machine>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
+    queryFn: async () => {
+      const call = callApi("get_machine", {
+        name: machineName,
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error("Error fetching machine: " + result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+
+export const useMachineDetailsQuery = (clanURI: string, machineName: string) =>
+  useQuery<MachineDetails>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "machine_detail", machineName],
+    queryFn: async () => {
+      const call = callApi("get_machine_details", {
+        machine: {
+          name: machineName,
+          flake: {
+            identifier: clanURI,
+          },
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching machine details: " + result.errors[0].message,
+        );
+      }
+
       return result.data;
     },
   }));

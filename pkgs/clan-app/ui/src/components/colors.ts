@@ -29,7 +29,7 @@ const invertedColorMap: Record<Color, string> = {
   secondary: "fg-inv-2",
   tertiary: "fg-inv-3",
   quaternary: "fg-inv-4",
-  error: "fg-semantic-error-2",
+  error: "fg-semantic-error-1",
   inherit: "text-inherit",
 };
 

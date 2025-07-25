@@ -1,7 +1,7 @@
 import { API } from "@/api/API";
 import { Schema as Inventory } from "@/api/Inventory";
 
-type OperationNames = keyof API;
+export type OperationNames = keyof API;
 type Services = NonNullable<Inventory["services"]>;
 type ServiceNames = keyof Services;
 

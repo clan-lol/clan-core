@@ -1,5 +1,5 @@
 div.sidebar-section {
-  @apply flex flex-col gap-2 w-full h-full;
+  @apply flex flex-col gap-2 w-full h-fit;
 
   & > div.header {
     @apply flex items-center justify-between px-1.5;

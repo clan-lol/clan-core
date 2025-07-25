@@ -2,6 +2,7 @@ import { RouteSectionProps, useNavigate } from "@solidjs/router";
 import { SidebarPane } from "@/src/components/Sidebar/SidebarPane";
 import { navigateToClan, useClanURI, useMachineName } from "@/src/hooks/clan";
 import { Show } from "solid-js";
+import { SectionGeneral } from "./SectionGeneral";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export const Machine = (props: RouteSectionProps) => {
   return (
     <Show when={useMachineName()} keyed>
       <SidebarPane title={useMachineName()} onClose={onClose}>
-        <h1>Hello world</h1>
+        <SectionGeneral />
       </SidebarPane>
     </Show>
   );
