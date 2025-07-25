@@ -55,6 +55,7 @@ pkgs.stdenv.mkDerivation {
     chmod -R +w ./site/reference
     echo "Generated API documentation in './site/reference/' "
 
+    rm -r ./site/options-page || true
     cp -r ${docs-options} ./site/options-page
     chmod -R +w ./site/options-page
 

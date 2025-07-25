@@ -7,38 +7,39 @@ hide:
 # :material-home: What is Clan?
 
 [Clan](https://clan.lol/) is a peer-to-peer computer management framework that
-empowers you to reclaim control over your digital computing experience. Built on
-NixOS, Clan provides a unified interface for managing networks of machines with
-automated [secret management](./guides/secrets.md), secure [mesh VPN
-connectivity](./guides/mesh-vpn.md), and customizable installation images. Whether
-you're running a homelab or building decentralized computing infrastructure,
-Clan simplifies configuration management while restoring your independence from
-closed computing ecosystems.
+empowers you to **selfhost in a reliable and scalable way**.   
+
+Built on NixOS, Clan provides a **declarative interface for managing machines** with automated [secret management](./guides/secrets.md), easy [mesh VPN
+connectivity](./guides/mesh-vpn.md), and [automated backups](./reference/clanServices/borgbackup.md). 
+
+Whether you're running a homelab or maintaining critical computing infrastructure,
+Clan will help **reduce maintainance burden** by allowing a **git repository to define your whole network** of computers.
+
+In combination with [sops-nix](https://github.com/Mic92/sops-nix), [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) and [disko](https://github.com/nix-community/disko), Clan makes it possible to have **collaborative infrastructure**.
 
 At the heart of Clan are [Clan Services](./reference/clanServices/index.md) - the core
 concept that enables you to add functionality across multiple machines in your
 network. While Clan ships with essential core services, you can [create custom
 services](./guides/clanServices.md) tailored to your specific needs.
 
-[Getting Started](./guides/getting-started/index.md){ .md-button }
 
 ## :material-book: Guides
 
-**How-to Guides for achieving a certain goal or solving a specific issue.**
+How-to Guides for achieving a certain goal or solving a specific issue.
 
 <div class="grid cards" markdown>
 
--   [Create a Machine](./guides/getting-started/add-machines.md)
+-   [:material-clock-fast: Getting Started](./guides/getting-started/index.md)
 
     ---
 
-    How to create your first machine
+    Get started in less then 20 minutes!
 
--   [macOS](./guides/macos.md)
+-   [Mac OS](./guides/macos.md)
 
     ---
 
-    How to manage macOS machines with nix-darwin
+    How to manage Mac OS machines with Clan
 
 -   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
@@ -50,7 +51,7 @@ services](./guides/clanServices.md) tailored to your specific needs.
 
 ## Concepts
 
-Explore the foundational ideas.
+Explore the underlying principles of Clan
 
 <div class="grid cards" markdown>
 
@@ -58,42 +59,17 @@ Explore the foundational ideas.
 
     ---
 
-    Learn about Generators
+    Learn about Generators, our way to secret management
 
 -   [Inventory](./concepts/inventory.md)
 
     ---
 
-    Learn about Inventory
+    Learn about the Inventory, a multi machine Nix interface
 
 </div>
 
-## API Reference
 
-Technical reference for Clan's CLI and Nix modules
+## Blog
 
-<div class="grid cards" markdown>
-
--   [CLI Reference](./reference/cli/index.md)
-
-    ---
-
-    Command-line interface.
-
-    Full reference for the `clan` CLI tool.
-
--   [Service Modules](./reference/clanServices/index.md)
-
-    ---
-
-    Overview of built-in service modules that provide composable functionality across machines.
-
--   [Core NixOS-module](./reference/clan.core/index.md)
-
-    ---
-
-    The foundation of Clan's functionality
-
-    Reference for the `clan-core` NixOS module — automatically part of any machine to enable Clan's core features.
-
-</div>
+Visit our [Clan Blog](https://clan.lol/blog/) for the latest updates, tutorials, and community stories.
