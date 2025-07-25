@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import pytest
-from clan_cli.ssh.upload import upload
 from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.upload import upload
 
 
 @pytest.mark.with_core

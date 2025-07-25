@@ -6,9 +6,9 @@ from tempfile import TemporaryDirectory
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 from clan_lib.ssh.host import Host
+from clan_lib.ssh.upload import upload
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.ssh.upload import upload
 
 log = logging.getLogger(__name__)
 
