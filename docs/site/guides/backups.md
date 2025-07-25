@@ -1,167 +1,199 @@
-# Introduction to Backups
 
-When you're managing your own services, creating regular backups is crucial to ensure your data's safety.
-This guide introduces you to Clan's built-in backup functionalities.
-Clan supports backing up your data to both local storage devices (like USB drives) and remote servers, using well-known tools like borgbackup and rsnapshot.
-We might add more options in the future, but for now, let's dive into how you can secure your data.
+This guide explains how to set up and manage
+[BorgBackup](https://borgbackup.readthedocs.io/) for secure, efficient backups
+in a clan network. BorgBackup provides:
 
-## Backing Up Locally with Localbackup
+- Space efficient storage of backups with deduplication
+- Secure, authenticated encryption
+- Compression: lz4, zstd, zlib, lzma or none
+- Mountable backups with FUSE
+- Easy installation on multiple platforms: Linux, macOS, BSD, …
+- Free software (BSD license).
+- Backed by a large and active open-source community.
 
-Localbackup lets you backup your data onto physical storage devices connected to your computer,
-such as USB hard drives or network-attached storage. It uses a tool called rsnapshot for this purpose.
-
-### Setting Up Localbackup
-
-1. **Identify Your Backup Device:**
-
-First, figure out which device you'll use for backups. You can see all connected devices by running this command in your terminal:
-
-```bash
-lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-```
-
-Look for the device you intend to use for backups and note its details.
-
-2. **Configure Your Backup Device:**
-
-Once you've identified your device, you'll need to add it to your configuration.
-Here's an example NixOS configuration for a device located at `/dev/sda2` with an `ext4` filesystem:
+## Borgbackup Example
 
 ```nix
-{
-  fileSystems."/mnt/hdd" = {
-    device = "/dev/sda2";
-    fsType = "ext4";
-    options = [ "defaults" "noauto" ];
-  };
-}
-```
-
-Replace `/dev/sda2` with your device and `/mnt/hdd` with your preferred mount point.
-
-3. **Set Backup Targets:** Next, define where on your device you'd like the backups to be stored:
-
-   ```nix
-   {
-     clan.localbackup.targets.hdd = {
-       directory = "/mnt/hdd/backup";
-       mountpoint = "/mnt/hdd";
-     };
-   }
-   ```
-
-   Change `/mnt/hdd` to the actual mount point you're using.
-
-4. **Create Backups:** To create a backup, run:
-
-   ```bash
-   clan backups create mymachine
-   ```
-
-   This command saves snapshots of your data onto the backup device.
-
-5. **Listing Backups:** To see available backups, run:
-
-  ```bash
-  clan backups list mymachine
-  ```
-
-## Remote Backups with Borgbackup
-
-### Overview of Borgbackup
-
-Borgbackup splits the backup process into two parts: a backup client that sends data to a backup server.
-The server stores the backups.
-
-### Setting Up the Borgbackup Client
-
-1. **Specify Backup Server:**
-
-Start by indicating where your backup data should be sent. Replace `hostname` with your server's address:
-
-```nix
-{
-  clan.borgbackup.destinations = {
-    myhostname = {
-      repo = "borg@backuphost:/var/lib/borgbackup/myhostname";
+inventory.instances = {
+  borgbackup = {
+    module = {
+      name = "borgbackup";
+      input = "clan";
     };
+    roles.client.machines."jon".settings = {
+      destinations."storagebox" = {
+        repo = "username@$hostname:/./borgbackup";
+        rsh = ''ssh -oPort=23 -i /run/secrets/vars/borgbackup/borgbackup.ssh'';
+      };
+    };
+    roles.server.machines = { };
   };
-}
+};
 ```
 
-2. **Select Folders to Backup:**
+The input should be named according to your flake input. Jon is configured as a
+client machine with a destination pointing to a Hetzner Storage Box.
 
-Decide which folders you want to back up. For example, to backup your home and root directories:
+To see a list of all possible options go to [borgbackup clan service](../reference/clanServices/borgbackup.md)
+
+## Roles
+
+A Clan Service can have multiple roles, each role applies different nix config to the machine.
+
+### 1. Client
+
+Clients are machines that create and send backups to various destinations. Each
+client can have multiple backup destinations configured.
+
+### 2. Server
+
+Servers act as backup repositories, receiving and storing backups from client
+machines. They can be dedicated backup servers within your clan network.
+
+## Backup destinations
+
+This service allows you to perform backups to multiple `destinations`.
+Destinations can be:
+
+- **Local**: Local disk storage
+- **Server**: Your own borgbackup server (using the `server` role)
+- **Third-party services**: Such as Hetzner's Storage Box
+
+## State management
+
+Backups are based on [states](../reference/clan.core/state.md). A state
+defines which files should be backed up and how these files are obtained through
+pre/post backup and restore scripts.
+
+Here's an example for a user application `linkding`:
+
+In this example:
+
+- `/data/podman/linkding` is the application's data directory
+- `/var/backup/linkding` is the staging directory where data is copied for
+  backup
 
 ```nix
-{ clan.core.state.userdata.folders = [ "/home" "/root" ]; }
+clan.core.state.linkding = {
+  folders = [ "/var/backup/linkding" ];
+
+  preBackupScript = ''
+    export PATH=${
+      lib.makeBinPath [
+        config.systemd.package
+        pkgs.coreutils
+        pkgs.rsync
+      ]
+    }
+
+    service_status=$(systemctl is-active podman-linkding)
+
+    if [ "$service_status" = "active" ]; then
+      systemctl stop podman-linkding
+      rsync -avH --delete --numeric-ids "/data/podman/linkding/" /var/backup/linkding/
+      systemctl start podman-linkding
+    fi
+  '';
+
+  postRestoreScript = ''
+    export PATH=${
+      lib.makeBinPath [
+        config.systemd.package
+        pkgs.coreutils
+        pkgs.rsync
+      ]
+    }
+
+    service_status="$(systemctl is-active podman-linkding)"
+
+    if [ "$service_status" = "active" ]; then
+      systemctl stop podman-linkding
+
+      # Backup locally current linkding data
+      cp -rp "/data/podman/linkding" "/data/podman/linkding.bak"
+
+      # Restore from borgbackup
+      rsync -avH --delete --numeric-ids /var/backup/linkding/ "/data/podman/linkding/"
+
+      systemctl start podman-linkding
+    fi
+  '';
+};
 ```
 
-3. **Generate Backup Credentials:**
+## Managing backups
 
-Run `clan facts generate <yourmachine>` to prepare your machine for backup, creating necessary SSH keys and credentials.
+In this section we go over how to manage your collection of backups with the clan command.
 
-### Setting Up the Borgbackup Server
+### Listing states
 
-1. **Configure Backup Repository:**
-
-On the server where backups will be stored, enable the SSH daemon and set up a repository for each client:
-
-```nix
-{
-  services.borgbackup.repos.myhostname = {
-    path = "/var/lib/borgbackup/myhostname";
-    authorizedKeys = [
-      (builtins.readFile  (config.clan.core.settings.directory + "/machines/myhostname/facts/borgbackup.ssh.pub"))
-    ];
-  };
-}
-```
-
-Ensure the path to the public key is correct.
-
-2. **Update Your Systems:** Apply your changes by running `clan machines update` to both the server and your client
-
-### Managing Backups
-
-- **Scheduled Backups:**
-
-  Backups are automatically performed nightly. To check the next scheduled backup, use:
-
-  ```bash
-  systemctl list-timers | grep -E 'NEXT|borg'
-  ```
-
-- **Listing Backups:** To see available backups, run:
-
-  ```bash
-  clan backups list mymachine
-  ```
-
-- **Manual Backups:** You can also initiate a backup manually:
-
-  ```bash
-  clan backups create mymachine
-  ```
-
-- **Restoring Backups:** To restore a backup that has been listed by the list command (NAME):
-
-  ```bash
-  clan backups restore [MACHINE] [PROVIDER] [NAME]
-
-  ```
-
-  Example (Restoring a machine called `client` with the backup provider `borgbackup`):
-
-  ```bash
-  clan backups restore client borgbackup [NAME]
-
-  ```
-
-  The `backups` command is service aware and allows optional specification of the `--service` flag.
-
-  To only restore the service called `zerotier` on a machine called `controller` through the backup provider `borgbackup` use the following command:
+To see which files (`states`) will be backed up on a specific machine, use:
 
 ```bash
-  clan backups restore client borgbackup [NAME] --service zerotier
+clan state list jon
 ```
+
+This will show all configured states for the machine `jon`, for example:
+
+```text
+· service: linkding
+  folders:
+  - /var/backup/linkding
+  preBackupCommand: pre-backup-linkding
+  postRestoreCommand: post-restore-linkding
+
+· service: zerotier
+  folders:
+  - /var/lib/zerotier-one
+```
+
+### Creating backups
+
+To create a backup of a machine (e.g., `jon`), run:
+
+```bash
+clan backups create jon
+```
+
+This will backup all configured states (`zerotier` and `linkding` in this
+example) from the machine `jon`.
+
+### Listing available backups
+
+To see all available backups, use:
+
+```bash
+clan backups list
+```
+
+This will display all backups with their timestamps:
+
+```text
+storagebox::username@username.your-storagebox.de:/./borgbackup::jon-jon-2025-07-22T19:40:10
+storagebox::username@username.your-storagebox.de:/./borgbackup::jon-jon-2025-07-23T01:00:00
+storagebox::username@username.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T01:00:00
+storagebox::username@username.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T06:02:35
+```
+
+### Restoring backups
+
+For restoring a backup you have two options. 
+
+#### Full restoration
+
+To restore all services from a backup:
+
+```bash
+clan backups restore jon borgbackup storagebox::u444061@u444061.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T06:02:35
+```
+
+#### Partial restoration
+
+To restore only a specific service (e.g., `linkding`):
+
+```bash
+clan backups restore --service linkding jon borgbackup storagebox::u444061@u444061.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T06:02:35
+```
+
+
+
