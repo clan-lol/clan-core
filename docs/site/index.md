@@ -33,7 +33,7 @@ How-to Guides for achieving a certain goal or solving a specific issue.
 
     ---
 
-    Get started in less then 20 minutes!
+    Get started in less than 20 minutes!
 
 -   [Mac OS](./guides/macos.md)
 
