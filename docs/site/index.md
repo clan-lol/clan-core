@@ -13,7 +13,7 @@ Built on NixOS, Clan provides a **declarative interface for managing machines** 
 connectivity](./guides/mesh-vpn.md), and [automated backups](./guides/backups.md). 
 
 Whether you're running a homelab or maintaining critical computing infrastructure,
-Clan will help **reduce maintainance burden** by allowing a **git repository to define your whole network** of computers.
+Clan will help **reduce maintenance burden** by allowing a **git repository to define your whole network** of computers.
 
 In combination with [sops-nix](https://github.com/Mic92/sops-nix), [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) and [disko](https://github.com/nix-community/disko), Clan makes it possible to have **collaborative infrastructure**.
 
