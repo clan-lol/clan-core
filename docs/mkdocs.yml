@@ -197,6 +197,7 @@ theme:
   favicon: https://clan.lol/favicon.svg
   name: material
   features:
+    - navigation.footer
     - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
