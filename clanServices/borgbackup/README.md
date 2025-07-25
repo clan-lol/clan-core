@@ -58,8 +58,8 @@ Destinations can be:
 
 ## State management
 
-Backups are based on [states](/reference/clan.core/state/). A state defines
-which files should be backed up and how these files are obtained through
+Backups are based on [states](../../reference/clan.core/state.md). A state
+defines which files should be backed up and how these files are obtained through
 pre/post backup and restore scripts.
 
 Here's an example for a user application `linkding`:
