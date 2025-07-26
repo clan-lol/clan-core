@@ -174,3 +174,36 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     )
 
 
+@pytest.mark.with_core
+def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
+    flake = clan_flake(
+        clan={
+            "inventory": {
+                "machines": {
+                    "jon": {
+                        "machineClass": "nixos",  # Static string is not writeable
+                        "deploy": {},  # Empty dict is writeable
+                        # TOOD: Return writability for existing items
+                        "tags": ["nix1"],  # Static list is not partially writeable
+                    },
+                },
+            }
+        },
+    )
+
+    write_info = get_machine_writeability(Machine("jon", flake))
+
+    # {'tags': {'writable': True, 'reason': None}, 'machineClass': {'writable': False, 'reason': None}, 'name': {'writable': False, 'reason': None}, 'description': {'writable': True, 'reason': None}, 'deploy.buildHost': {'writable': True, 'reason': None}, 'icon': {'writable': True, 'reason': None}, 'deploy.targetHost': {'writable': True, 'reason': None}}
+    writeable_fields = {field for field, info in write_info.items() if info["writable"]}
+    read_only_fields = {
+        field for field, info in write_info.items() if not info["writable"]
+    }
+
+    assert writeable_fields == {
+        "tags",
+        "deploy.targetHost",
+        "deploy.buildHost",
+        "description",
+        "icon",
+    }
+    assert read_only_fields == {"machineClass", "name"}
