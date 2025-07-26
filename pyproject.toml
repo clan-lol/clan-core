@@ -52,7 +52,6 @@ lint.ignore = [
   "TRY301",
   "TRY300",
   "ANN401",
-  "SLF001",
   "RUF100",
   "TRY400",
   "E402",
@@ -66,3 +65,7 @@ lint.ignore = [
   "SIM112",
   "ISC001",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"*_test.py" = ["SLF001"]
+"test_*.py" = ["SLF001"]
