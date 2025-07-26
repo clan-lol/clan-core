@@ -6,6 +6,8 @@ Accepted
 
 ## Context
 
+Current state as of writing:
+
 To define a service in Clan, you need to define two things:
 
 - `clanModule` - defined by module authors
