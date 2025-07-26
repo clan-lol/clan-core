@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.api import API
-from clan_lib.cmd import RunOpts, run
+from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
@@ -104,7 +104,14 @@ def create_clan(opts: CreateOptions) -> None:
                 run(git_command(dest, "config", "user.email", "clan@example.com"))
 
         if opts.update_clan:
-            run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
+            log.info("Updating flake.lock file...")
+
+            debug_logging = Log.STDERR if log.isEnabledFor(logging.DEBUG) else Log.NONE
+
+            run(
+                nix_command(["flake", "update"]),
+                RunOpts(cwd=dest, log=debug_logging),
+            )
             flake.invalidate_cache()
 
         if opts.setup_git:
