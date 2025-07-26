@@ -200,6 +200,28 @@ def parent_is_dict(key: str, data: dict[str, Any]) -> bool:
     return False
 
 
+def is_writeable_key(
+    key: str,
+    writeables: dict[str, set[str]],
+) -> bool:
+    """
+    Recursively check if a key is writeable.
+    key "machines.machine1.deploy.targetHost" is specified but writeability is only defined for "machines"
+    We pop the last key and check if the parent key is writeable/non-writeable.
+    """
+    remaining = key.split(".")
+    while remaining:
+        if ".".join(remaining) in writeables["writeable"]:
+            return True
+        if ".".join(remaining) in writeables["non_writeable"]:
+            return False
+
+        remaining.pop()
+
+    msg = f"Cannot determine writeability for key '{key}'"
+    raise ClanError(msg, description="F001")
+
+
 def calc_patches(
     persisted: dict[str, Any],
     update: dict[str, Any],
@@ -225,24 +247,6 @@ def calc_patches(
     data_all_updated = flatten_data(update)
     data_dyn = flatten_data(persisted)
 
-    def is_writeable_key(key: str) -> bool:
-        """
-        Recursively check if a key is writeable.
-        key "machines.machine1.deploy.targetHost" is specified but writeability is only defined for "machines"
-        We pop the last key and check if the parent key is writeable/non-writeable.
-        """
-        remaining = key.split(".")
-        while remaining:
-            if ".".join(remaining) in writeables["writeable"]:
-                return True
-            if ".".join(remaining) in writeables["non_writeable"]:
-                return False
-
-            remaining.pop()
-
-        msg = f"Cannot determine writeability for key '{key}'"
-        raise ClanError(msg, description="F001")
-
     all_keys = set(data_all) | set(data_all_updated)
     patchset = {}
 
@@ -256,7 +260,7 @@ def calc_patches(
         # Some kind of change
         if old != new:
             # If there is a change, check if the key is writeable
-            if not is_writeable_key(key):
+            if not is_writeable_key(key, writeables):
                 msg = f"Key '{key}' is not writeable. It seems its value is statically defined in nix."
                 raise ClanError(msg)
 
