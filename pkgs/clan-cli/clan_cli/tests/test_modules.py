@@ -95,7 +95,7 @@ def test_add_module_to_inventory(
         inventory_store.write(
             inventory,
             message="Add borgbackup service",
-            commit=False,
+            commit=True,
         )
 
         # cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
@@ -123,7 +123,7 @@ def test_add_module_to_inventory(
                 generator = gen
                 break
 
-        assert generator
+        assert generator, "Borgbackup generator not found"
 
         ssh_key = machine.public_vars_store.get(generator, "borgbackup.ssh.pub")
 
