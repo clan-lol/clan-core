@@ -105,6 +105,18 @@ class Writeability(TypedDict):
 
 @API.register
 def get_machine_writeability(machine: Machine) -> dict[str, Writeability]:
+    """
+    Get writeability information for the fields of a machine.
+
+    This function checks which fields of the 'machine' resource are writable and provides a reason for each field's writability.
+
+    Args:
+        machine (Machine): The machine object for which to retrieve writeability.
+
+    Returns:
+        dict[str, Writeability]: A map from field-names to { 'writable' (bool) and 'reason' (str or None ) }
+    """
+
     inventory_store = InventoryStore(machine.flake)
     write_info = inventory_store.get_writeability_of(f"machines.{machine.name}")
 
