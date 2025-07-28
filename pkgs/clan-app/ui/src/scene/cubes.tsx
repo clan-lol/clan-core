@@ -22,6 +22,7 @@ import { MachinesQueryResult } from "../queries/queries";
 import { SceneData } from "../stores/clan";
 import { unwrap } from "solid-js/store";
 import { Accessor } from "solid-js";
+import { renderLoop } from "./RenderLoop";
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -88,8 +89,6 @@ export function CubeScene(props: {
   const raycaster = new THREE.Raycaster();
   let initBase: THREE.Mesh | undefined;
 
-  let needsRender = false; // Flag to control rendering
-
   // Create background scene
   const bgScene = new THREE.Scene();
   const bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -100,13 +99,6 @@ export function CubeScene(props: {
 
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
-
-  // Used for development purposes
-  // Vite does hot-reload but we need to ensure the animation loop doesn't run multiple times
-  // This flag prevents multiple animation loops from running simultaneously
-  // It is set to true when the component mounts and false when it unmounts
-  let isAnimating = false; // Flag to prevent multiple loops
-  let frameCount = 0;
 
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
     "grid",
@@ -179,35 +171,6 @@ export function CubeScene(props: {
       }
     }
   });
-
-  function requestRenderIfNotRequested() {
-    if (!needsRender) {
-      needsRender = true;
-      requestAnimationFrame(renderScene);
-    }
-  }
-
-  function renderScene() {
-    if (!isAnimating) {
-      console.warn("Not animating!");
-      return;
-    }
-    console.log("Rendering scene...", camera.toJSON());
-
-    needsRender = false;
-
-    frameCount++;
-
-    renderer.autoClear = false;
-    renderer.render(bgScene, bgCamera);
-
-    controls.update(); // optional; see note below
-
-    renderer.render(scene, camera);
-    labelRenderer.render(scene, camera);
-
-    if (frameCount % 30 === 0) logMemoryUsage();
-  }
 
   function getGridPosition(id: string): [number, number, number] {
     // TODO: Detect collision with other cubes
@@ -341,7 +304,7 @@ export function CubeScene(props: {
 
       if (progress < 1) {
         requestAnimationFrame(animate);
-        requestRenderIfNotRequested();
+        renderLoop.requestRender();
       }
     }
 
@@ -431,20 +394,7 @@ export function CubeScene(props: {
       cubeMaterial.color.set(CUBE_COLOR);
     }
 
-    requestRenderIfNotRequested();
-  }
-
-  function logMemoryUsage() {
-    if (renderer && renderer.info) {
-      console.debug("Three.js Memory:", {
-        frame: renderer.info.render.frame,
-        calls: renderer.info.render.calls,
-        geometries: renderer.info.memory.geometries,
-        textures: renderer.info.memory.textures,
-        programs: renderer.info.programs?.length || 0,
-        triangles: renderer.info.render.triangles,
-      });
-    }
+    renderLoop.requestRender();
   }
 
   const initialCameraPosition = { x: 20, y: 20, z: 20 };
@@ -548,16 +498,25 @@ export function CubeScene(props: {
     controls.minZoom = 1.2;
     controls.maxZoom = 3.5;
     controls.addEventListener("change", () => {
-      const aspect = container.clientWidth / container.clientHeight;
-      const zoom = camera.zoom;
-      camera.left = (-d * aspect) / zoom;
-      camera.right = (d * aspect) / zoom;
-      camera.top = d / zoom;
-      camera.bottom = -d / zoom;
-      camera.updateProjectionMatrix();
-
-      requestRenderIfNotRequested();
+      // const aspect = container.clientWidth / container.clientHeight;
+      // const zoom = camera.zoom;
+      // camera.left = (-d * aspect) / zoom;
+      // camera.right = (d * aspect) / zoom;
+      // camera.top = d / zoom;
+      // camera.bottom = -d / zoom;
+      // camera.updateProjectionMatrix();
+      renderLoop.requestRender();
     });
+
+    renderLoop.init(
+      scene,
+      camera,
+      renderer,
+      labelRenderer,
+      controls,
+      bgScene,
+      bgCamera,
+    );
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -667,7 +626,7 @@ export function CubeScene(props: {
         } else {
           initBase!.visible = false;
         }
-        requestRenderIfNotRequested();
+        renderLoop.requestRender();
       }),
     );
 
@@ -718,9 +677,7 @@ export function CubeScene(props: {
 
     renderer.domElement.addEventListener("click", onClick);
 
-    isAnimating = true;
-
-    requestRenderIfNotRequested();
+    renderLoop.requestRender();
 
     // Handle window resize
     const handleResize = () => {
@@ -742,7 +699,7 @@ export function CubeScene(props: {
       );
 
       renderer.render(bgScene, bgCamera);
-      requestRenderIfNotRequested();
+      renderLoop.requestRender();
     };
 
     renderer.domElement.addEventListener("mousemove", onMouseMove);
@@ -760,8 +717,8 @@ export function CubeScene(props: {
 
     // Cleanup function
     onCleanup(() => {
-      // Stop animation loop
-      isAnimating = false;
+      renderLoop.dispose();
+
       renderer.domElement.removeEventListener("click", onClick);
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", handleResize);
@@ -886,7 +843,7 @@ export function CubeScene(props: {
       }
     });
 
-    requestRenderIfNotRequested();
+    renderLoop.requestRender();
   });
 
   createEffect(
@@ -919,7 +876,7 @@ export function CubeScene(props: {
       initBase.position.set(pos[0], BASE_HEIGHT / 2, pos[1]);
       initBase.visible = true;
     }
-    requestRenderIfNotRequested();
+    renderLoop.requestRender();
   };
 
   const onAddClick = (event: MouseEvent) => {
@@ -955,7 +912,7 @@ export function CubeScene(props: {
         // Only request render if the position actually changed
         initBase.position.set(snapped.x, 0, snapped.z);
         setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
-        requestRenderIfNotRequested();
+        renderLoop.requestRender();
       }
     }
   };
