@@ -493,9 +493,8 @@ export function CubeScene(props: {
 
     controls = new MapControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-    // Enable the context menu,
-    // TODO: disable in production
     controls.mouseButtons.RIGHT = null;
+    controls.enableRotate = false;
     controls.minZoom = 1.2;
     controls.maxZoom = 3.5;
     controls.addEventListener("change", () => {
