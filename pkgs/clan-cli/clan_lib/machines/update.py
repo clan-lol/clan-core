@@ -125,21 +125,24 @@ def run_machine_update(
     with ExitStack() as stack:
         target_host = stack.enter_context(target_host.ssh_control_master())
 
-        if build_host:
+        # If no build host is specified, use the target host as the build host.
+        if build_host is None:
+            build_host = target_host
+        else:
             build_host = stack.enter_context(build_host.ssh_control_master())
 
-        sudo_host = stack.enter_context(target_host.become_root())
+        # Some operations require root privileges on the target host.
+        target_host_root = stack.enter_context(target_host.become_root())
 
         generate_facts([machine], service=None, regenerate=False)
         generate_vars([machine], generator_name=None, regenerate=False)
 
-        upload_secrets(machine, sudo_host)
-        upload_secret_vars(machine, sudo_host)
+        # Upload secrets to the target host using root
+        upload_secrets(machine, target_host_root)
+        upload_secret_vars(machine, target_host_root)
 
-        if build_host:
-            path = upload_sources(machine, build_host, force_fetch_local)
-        else:
-            path = upload_sources(machine, target_host, force_fetch_local)
+        # Upload the flake's source to the build host.
+        path = upload_sources(machine, build_host, force_fetch_local)
 
         nix_options = machine.flake.nix_options if machine.flake.nix_options else []
 
@@ -157,8 +160,6 @@ def run_machine_update(
             f"{path}#{machine.name}",
         ]
 
-        become_root = True
-
         if machine._class_ == "nixos":
             nix_options += [
                 "--fast",
@@ -166,8 +167,7 @@ def run_machine_update(
                 "",
             ]
 
-            if build_host:
-                become_root = False
+            if build_host != target_host:
                 nix_options += ["--target-host", target_host.target]
 
                 if target_host.user != "root":
@@ -181,13 +181,14 @@ def run_machine_update(
                 *nix_options,
             ]
 
-        if become_root and not build_host:
-            target_host = sudo_host
+        # If we build on the target host, we need to become root for building.
+        # TODO: explain why
+        # TODO: why are we not just using --use-remote-sudo here as well?
+        if build_host == target_host:
+            build_host = target_host_root
 
-        deploy_host = build_host if build_host else target_host
-
-        remote_env = deploy_host.nix_ssh_env(control_master=False)
-        ret = deploy_host.run(
+        remote_env = build_host.nix_ssh_env(control_master=False)
+        ret = build_host.run(
             switch_cmd,
             RunOpts(
                 check=False,
@@ -222,7 +223,7 @@ def run_machine_update(
                 machine.info(
                     "Mobile machine detected, applying workaround deployment method"
                 )
-            ret = deploy_host.run(
+            ret = build_host.run(
                 ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
