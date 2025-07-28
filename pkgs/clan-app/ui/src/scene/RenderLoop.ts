@@ -3,8 +3,8 @@ import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 /**
- * Private class dont try to import it
- *
+ * Private class to manage the render loop
+ * @internal
  */
 class RenderLoop {
   // Track if a render is already requested
@@ -81,17 +81,12 @@ class RenderLoop {
 
   private render() {
     // TODO: Disable console.debug in production
-    console.debug("Rendering scene...", this);
+    // console.debug("Rendering scene...", this);
 
-    this.renderer.autoClear = false;
     this.renderer.clear();
 
     this.renderer.render(this.bgScene, this.bgCamera);
-
-    this.controls.update();
-
     this.renderer.render(this.scene, this.camera);
-
     this.labelRenderer.render(this.scene, this.camera);
   }
 
@@ -99,7 +94,14 @@ class RenderLoop {
     // Dispose controls, renderer, remove listeners if any
     this.controls.dispose();
     this.renderer.dispose();
-    // clear refs
+    // clear refs, this prevents memory leaks by allowing garbage collection
+    this.scene = null!;
+    this.bgScene = null!;
+    this.camera = null!;
+    this.bgCamera = null!;
+    this.renderer = null!;
+    this.controls = null!;
+    this.labelRenderer = null!;
     this.initialized = false;
   }
 }
