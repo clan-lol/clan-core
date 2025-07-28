@@ -3,15 +3,18 @@ from pathlib import Path
 
 import pytest
 from clan_lib.cmd import RunOpts, run
+from clan_lib.flake import Flake
+from clan_lib.network.qr_code import parse_qr_image_to_json, parse_qr_json_to_networks
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
-from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host
+from clan_cli.ssh.deploy_info import find_reachable_host
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 
 
-def test_qrcode_scan(temp_dir: Path) -> None:
+@pytest.mark.with_core
+def test_qrcode_scan(temp_dir: Path, flake: ClanFlake) -> None:
     data = '{"pass":"scabbed-defender-headlock","tor":"qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion","addrs":["192.168.122.86"]}'
     img_path = temp_dir / "qrcode.png"
     cmd = nix_shell(
@@ -25,14 +28,29 @@ def test_qrcode_scan(temp_dir: Path) -> None:
     run(cmd, RunOpts(input=data.encode()))
 
     # Call the qrcode_scan function
-    deploy_info = DeployInfo.from_qr_code(img_path, "none")
+    json_data = parse_qr_image_to_json(img_path)
+    networks = parse_qr_json_to_networks(json_data, Flake(str(flake.path)))
 
-    host = deploy_info.addrs[0]
+    # Get direct network data
+    direct_data = networks.get("direct")
+    assert direct_data is not None
+    assert "network" in direct_data
+    assert "remote" in direct_data
+
+    # Get the remote
+    host = direct_data["remote"]
     assert host.address == "192.168.122.86"
     assert host.user == "root"
     assert host.password == "scabbed-defender-headlock"
 
-    tor_host = deploy_info.addrs[1]
+    # Get tor network data
+    tor_data = networks.get("tor")
+    assert tor_data is not None
+    assert "network" in tor_data
+    assert "remote" in tor_data
+
+    # Get the remote
+    tor_host = tor_data["remote"]
     assert (
         tor_host.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
@@ -40,21 +58,32 @@ def test_qrcode_scan(temp_dir: Path) -> None:
     assert tor_host.socks_port == 9050
     assert tor_host.password == "scabbed-defender-headlock"
     assert tor_host.user == "root"
-    assert (
-        tor_host.address
-        == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
-    )
 
 
-def test_from_json() -> None:
+def test_from_json(temp_dir: Path) -> None:
     data = '{"pass":"scabbed-defender-headlock","tor":"qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion","addrs":["192.168.122.86"]}'
-    deploy_info = DeployInfo.from_json(json.loads(data), "none")
+    flake = Flake(str(temp_dir))
+    networks = parse_qr_json_to_networks(json.loads(data), flake)
 
-    host = deploy_info.addrs[0]
+    # Get direct network data
+    direct_data = networks.get("direct")
+    assert direct_data is not None
+    assert "network" in direct_data
+    assert "remote" in direct_data
+
+    # Get the remote
+    host = direct_data["remote"]
     assert host.password == "scabbed-defender-headlock"
     assert host.address == "192.168.122.86"
 
-    tor_host = deploy_info.addrs[1]
+    # Get tor network data
+    tor_data = networks.get("tor")
+    assert tor_data is not None
+    assert "network" in tor_data
+    assert "remote" in tor_data
+
+    # Get the remote
+    tor_host = tor_data["remote"]
     assert (
         tor_host.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
@@ -62,10 +91,6 @@ def test_from_json() -> None:
     assert tor_host.socks_port == 9050
     assert tor_host.password == "scabbed-defender-headlock"
     assert tor_host.user == "root"
-    assert (
-        tor_host.address
-        == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
-    )
 
 
 @pytest.mark.with_core
@@ -74,11 +99,10 @@ def test_find_reachable_host(hosts: list[Remote]) -> None:
 
     uris = ["172.19.1.2", host.ssh_url()]
     remotes = [Remote.from_ssh_uri(machine_name="some", address=uri) for uri in uris]
-    deploy_info = DeployInfo(addrs=remotes)
 
-    assert deploy_info.addrs[0].address == "172.19.1.2"
+    assert remotes[0].address == "172.19.1.2"
 
-    remote = find_reachable_host(deploy_info=deploy_info)
+    remote = find_reachable_host(remotes=remotes)
 
     assert remote is not None
     assert remote.ssh_url() == host.ssh_url()

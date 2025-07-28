@@ -14,6 +14,7 @@ from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
 
 if TYPE_CHECKING:
+    from clan_lib.machines.machines import Machine
     from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -137,6 +138,102 @@ def get_best_network(machine_name: str, networks: dict[str, Network]) -> Network
                 print(f"connecting via {network_name}")
                 return network
     return None
+
+
+@contextmanager
+def get_remote_for_machine(machine: "Machine") -> Iterator["Remote"]:
+    """
+    Context manager that yields the best remote connection for a machine following this priority:
+    1. If machine has targetHost in inventory, return a direct connection
+    2. Return the highest priority network where machine is reachable
+    3. If no network works, try to get targetHost from machine nixos config
+
+    Args:
+        machine: Machine instance to connect to
+
+    Yields:
+        Remote object for connecting to the machine
+
+    Raises:
+        ClanError: If no connection method works
+    """
+
+    # Get networks from the flake
+    networks = networks_from_flake(machine.flake)
+
+    # Step 1: Check if targetHost is set in inventory
+    inv_machine = machine.get_inv_machine()
+    target_host = inv_machine.get("deploy", {}).get("targetHost")
+
+    if target_host:
+        log.debug(f"Using targetHost from inventory for {machine.name}: {target_host}")
+        # Create a direct network with just this machine
+        try:
+            remote = Remote.from_ssh_uri(machine_name=machine.name, address=target_host)
+            yield remote
+            return
+        except Exception as e:
+            log.debug(f"Inventory targetHost not reachable for {machine.name}: {e}")
+
+    # Step 2: Try existing networks by priority
+    sorted_networks = sorted(networks.items(), key=lambda x: -x[1].priority)
+
+    for network_name, network in sorted_networks:
+        if machine.name not in network.peers:
+            continue
+
+        # Check if network is running and machine is reachable
+        if network.is_running():
+            try:
+                ping_time = network.ping(machine.name)
+                if ping_time is not None:
+                    log.info(
+                        f"Machine {machine.name} reachable via {network_name} network"
+                    )
+                    yield network.remote(machine.name)
+                    return
+            except Exception as e:
+                log.debug(f"Failed to reach {machine.name} via {network_name}: {e}")
+        else:
+            try:
+                log.debug(f"Establishing connection for network {network_name}")
+                with network.module.connection(network) as connected_network:
+                    ping_time = connected_network.ping(machine.name)
+                    if ping_time is not None:
+                        log.info(
+                            f"Machine {machine.name} reachable via {network_name} network after connection"
+                        )
+                        yield connected_network.remote(machine.name)
+                        return
+            except Exception as e:
+                log.debug(
+                    f"Failed to establish connection to {machine.name} via {network_name}: {e}"
+                )
+
+    # Step 3: Try targetHost from machine nixos config
+    try:
+        target_host = machine.select('config.clan.core.networking."targetHost"')
+        if target_host:
+            log.debug(
+                f"Using targetHost from machine config for {machine.name}: {target_host}"
+            )
+            # Check if reachable
+            try:
+                remote = Remote.from_ssh_uri(
+                    machine_name=machine.name, address=target_host
+                )
+                yield remote
+                return
+            except Exception as e:
+                log.debug(
+                    f"Machine config targetHost not reachable for {machine.name}: {e}"
+                )
+    except Exception as e:
+        log.debug(f"Could not get targetHost from machine config: {e}")
+
+    # No connection method found
+    msg = f"Could not find any way to connect to machine '{machine.name}'. No targetHost configured and machine not reachable via any network."
+    raise ClanError(msg)
 
 
 def get_network_overview(networks: dict[str, Network]) -> dict:

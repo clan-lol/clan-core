@@ -3,15 +3,13 @@ import contextlib
 import json
 import logging
 import textwrap
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, get_args
+from typing import get_args
 
-from clan_lib.cmd import run
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.network.qr_code import parse_qr_image_to_json, parse_qr_json_to_networks
 from clan_lib.network.tor.lib import spawn_tor
-from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import HostKeyCheck, Remote
 
 from clan_cli.completions import (
@@ -22,101 +20,35 @@ from clan_cli.completions import (
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class DeployInfo:
-    addrs: list[Remote]
+def get_tor_remote(remotes: list[Remote]) -> Remote:
+    """Get the Remote configured for SOCKS5 proxy (Tor)."""
+    tor_remotes = [r for r in remotes if r.socks_port]
 
-    @property
-    def tor(self) -> Remote:
-        """Return a list of Remote objects that are configured for SOCKS5 proxy."""
-        addrs = [addr for addr in self.addrs if addr.socks_port]
+    if not tor_remotes:
+        msg = "No socks5 proxy address provided, please provide a socks5 proxy address."
+        raise ClanError(msg)
 
-        if not addrs:
-            msg = "No socks5 proxy address provided, please provide a socks5 proxy address."
-            raise ClanError(msg)
+    if len(tor_remotes) > 1:
+        msg = "Multiple socks5 proxy addresses provided, expected only one."
+        raise ClanError(msg)
 
-        if len(addrs) > 1:
-            msg = "Multiple socks5 proxy addresses provided, expected only one."
-            raise ClanError(msg)
-        return addrs[0]
-
-    def overwrite_remotes(
-        self,
-        host_key_check: HostKeyCheck | None = None,
-        private_key: Path | None = None,
-        ssh_options: dict[str, str] | None = None,
-    ) -> "DeployInfo":
-        """Return a new DeployInfo with all Remotes overridden with the given host_key_check."""
-        return DeployInfo(
-            addrs=[
-                addr.override(
-                    host_key_check=host_key_check,
-                    private_key=private_key,
-                    ssh_options=ssh_options,
-                )
-                for addr in self.addrs
-            ]
-        )
-
-    @staticmethod
-    def from_json(data: dict[str, Any], host_key_check: HostKeyCheck) -> "DeployInfo":
-        addrs = []
-        password = data.get("pass")
-
-        for addr in data.get("addrs", []):
-            if isinstance(addr, str):
-                remote = Remote.from_ssh_uri(
-                    machine_name="clan-installer",
-                    address=addr,
-                ).override(host_key_check=host_key_check, password=password)
-                addrs.append(remote)
-            else:
-                msg = f"Invalid address format: {addr}"
-                raise ClanError(msg)
-        if tor_addr := data.get("tor"):
-            remote = Remote.from_ssh_uri(
-                machine_name="clan-installer",
-                address=tor_addr,
-            ).override(
-                host_key_check=host_key_check,
-                socks_port=9050,
-                socks_wrapper=["torify"],
-                password=password,
-            )
-            addrs.append(remote)
-
-        return DeployInfo(addrs=addrs)
-
-    @staticmethod
-    def from_qr_code(picture_file: Path, host_key_check: HostKeyCheck) -> "DeployInfo":
-        cmd = nix_shell(
-            ["zbar"],
-            [
-                "zbarimg",
-                "--quiet",
-                "--raw",
-                str(picture_file),
-            ],
-        )
-        res = run(cmd)
-        data = res.stdout.strip()
-        return DeployInfo.from_json(json.loads(data), host_key_check=host_key_check)
+    return tor_remotes[0]
 
 
-def find_reachable_host(deploy_info: DeployInfo) -> Remote | None:
+def find_reachable_host(remotes: list[Remote]) -> Remote | None:
     # If we only have one address, we have no choice but to use it.
-    if len(deploy_info.addrs) == 1:
-        return deploy_info.addrs[0]
+    if len(remotes) == 1:
+        return remotes[0]
 
-    for addr in deploy_info.addrs:
+    for remote in remotes:
         with contextlib.suppress(ClanError):
-            addr.check_machine_ssh_reachable()
-            return addr
+            remote.check_machine_ssh_reachable()
+            return remote
     return None
 
 
-def ssh_shell_from_deploy(
-    deploy_info: DeployInfo, command: list[str] | None = None
+def ssh_shell_from_remotes(
+    remotes: list[Remote], command: list[str] | None = None
 ) -> None:
     if command and len(command) == 1 and command[0].count(" ") > 0:
         msg = (
@@ -129,73 +61,86 @@ def ssh_shell_from_deploy(
         )
         raise ClanError(msg)
 
-    if host := find_reachable_host(deploy_info):
+    if host := find_reachable_host(remotes):
         host.interactive_ssh(command)
         return
 
-    log.info("Could not reach host via clearnet 'addrs'")
-    log.info(f"Trying to reach host via tor '{deploy_info}'")
+    log.info("Could not reach host via clearnet addresses")
+    log.info("Trying to reach host via tor")
 
-    tor_addrs = [addr for addr in deploy_info.addrs if addr.socks_port]
-    if not tor_addrs:
+    tor_remotes = [r for r in remotes if r.socks_port]
+    if not tor_remotes:
         msg = "No tor address provided, please provide a tor address."
         raise ClanError(msg)
 
     with spawn_tor():
-        for tor_addr in tor_addrs:
-            log.info(f"Trying to reach host via tor address: {tor_addr}")
+        for tor_remote in tor_remotes:
+            log.info(f"Trying to reach host via tor address: {tor_remote}")
 
             with contextlib.suppress(ClanError):
-                tor_addr.check_machine_ssh_reachable()
+                tor_remote.check_machine_ssh_reachable()
 
                 log.info(
                     "Host reachable via tor address, starting interactive ssh session."
                 )
-                tor_addr.interactive_ssh(command)
+                tor_remote.interactive_ssh(command)
                 return
 
         log.error("Could not reach host via tor address.")
 
 
-def ssh_command_parse(args: argparse.Namespace) -> DeployInfo | None:
+def ssh_command_parse(args: argparse.Namespace) -> list[Remote] | None:
     host_key_check = args.host_key_check
-    deploy = None
+    remotes = None
 
     if args.json:
         json_file = Path(args.json)
         if json_file.is_file():
             data = json.loads(json_file.read_text())
-            return DeployInfo.from_json(data, host_key_check)
-        data = json.loads(args.json)
-        deploy = DeployInfo.from_json(data, host_key_check)
+        else:
+            data = json.loads(args.json)
+
+        networks = parse_qr_json_to_networks(data, args.flake)
+        remotes = []
+        for _network_type, network_data in networks.items():
+            remote = network_data["remote"]
+            remotes.append(remote.override(host_key_check=host_key_check))
+
     elif args.png:
-        deploy = DeployInfo.from_qr_code(Path(args.png), host_key_check)
+        data = parse_qr_image_to_json(Path(args.png))
+        networks = parse_qr_json_to_networks(data, args.flake)
+        remotes = []
+        for _network_type, network_data in networks.items():
+            remote = network_data["remote"]
+            remotes.append(remote.override(host_key_check=host_key_check))
+
     elif hasattr(args, "machine") and args.machine:
         machine = Machine(args.machine, args.flake)
         target = machine.target_host().override(
             command_prefix=machine.name, host_key_check=host_key_check
         )
-        deploy = DeployInfo(addrs=[target])
+        remotes = [target]
     else:
         return None
 
     ssh_options = None
     if hasattr(args, "ssh_option") and args.ssh_option:
+        ssh_options = {}
         for name, value in args.ssh_option:
-            ssh_options = {}
             ssh_options[name] = value
 
-    deploy = deploy.overwrite_remotes(ssh_options=ssh_options)
+    if ssh_options:
+        remotes = [remote.override(ssh_options=ssh_options) for remote in remotes]
 
-    return deploy
+    return remotes
 
 
 def ssh_command(args: argparse.Namespace) -> None:
-    deploy_info = ssh_command_parse(args)
-    if not deploy_info:
+    remotes = ssh_command_parse(args)
+    if not remotes:
         msg = "No MACHINE, --json or --png data provided"
         raise ClanError(msg)
-    ssh_shell_from_deploy(deploy_info, args.remote_command)
+    ssh_shell_from_remotes(remotes, args.remote_command)
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
