@@ -20,6 +20,32 @@ from colorama import Fore, Style
 
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
 
+# Global flag to track if bridge has been created
+_bridge_created = False
+
+
+def ensure_bridge_exists() -> None:
+    """Ensure the br0 bridge exists, creating it if necessary."""
+    global _bridge_created
+    if _bridge_created:
+        return
+
+    # Check if bridge already exists
+    bridge_check = subprocess.run(
+        ["ip", "link", "show", "br0"], capture_output=True, text=True
+    )
+    if bridge_check.returncode == 0:
+        _bridge_created = True
+        return
+
+    # Create bridge
+    subprocess.run(
+        ["ip", "link", "add", "br0", "type", "bridge"], check=True, text=True
+    )
+    subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
+    _bridge_created = True
+
+
 # Load the C library
 libc = ctypes.CDLL("libc.so.6", use_errno=True)
 
@@ -123,6 +149,7 @@ class Machine:
 
     def start(self) -> None:
         prepare_machine_root(self.name, self.rootdir)
+        ensure_bridge_exists()
         cmd = [
             "systemd-nspawn",
             "--keep-unit",
@@ -146,6 +173,7 @@ class Machine:
     def get_systemd_process(self) -> int:
         assert self.process is not None, "Machine not started"
         assert self.process.stdout is not None, "Machine has no stdout"
+
         for line in self.process.stdout:
             print(line, end="")
             if (
@@ -491,12 +519,8 @@ class Driver:
             )
 
     def start_all(self) -> None:
-        # child
-        # create bridge
-        subprocess.run(
-            ["ip", "link", "add", "br0", "type", "bridge"], check=True, text=True
-        )
-        subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
+        # Ensure bridge exists
+        ensure_bridge_exists()
 
         for machine in self.machines:
             print(f"Starting {machine.name}")
