@@ -479,6 +479,7 @@ export function CubeScene(props: {
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.autoClear = false;
     container.appendChild(renderer.domElement);
 
     // Label renderer
