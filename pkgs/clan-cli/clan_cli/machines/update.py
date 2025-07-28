@@ -146,6 +146,7 @@ def update_command(args: argparse.Namespace) -> None:
                     machine=machine,
                     target_host=target_host,
                     build_host=machine.build_host(),
+                    force_fetch_local=args.fetch_local,
                 )
             runtime.join_all()
             runtime.check_all()
@@ -189,5 +190,14 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         "--build-host",
         type=str,
         help="Address of the machine to build the flake, in the format of user@host:1234.",
+    )
+    parser.add_argument(
+        "--fetch-local",
+        action="store_true",
+        help=(
+            "Prefetch flake inputs locally, then upload them to the build-host.\n"
+            "This is useful if downloading the inputs requires authentication "
+            "which is only available to the local machine"
+        ),
     )
     parser.set_defaults(func=update_command)

@@ -37,7 +37,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, ssh: Remote) -> str:
+def upload_sources(machine: Machine, ssh: Remote, force_fetch_local: bool) -> str:
     env = ssh.nix_ssh_env(os.environ.copy())
 
     flake_url = (
@@ -54,7 +54,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
     if machine._class_ == "darwin":
         remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
 
-    if not has_path_inputs:
+    if not has_path_inputs and not force_fetch_local:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
         cmd = nix_command(
@@ -107,7 +107,10 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
 
 @API.register
 def run_machine_update(
-    machine: Machine, target_host: Remote, build_host: Remote | None
+    machine: Machine,
+    target_host: Remote,
+    build_host: Remote | None,
+    force_fetch_local: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
     Args:
@@ -134,9 +137,9 @@ def run_machine_update(
         upload_secret_vars(machine, sudo_host)
 
         if build_host:
-            path = upload_sources(machine, build_host)
+            path = upload_sources(machine, build_host, force_fetch_local)
         else:
-            path = upload_sources(machine, target_host)
+            path = upload_sources(machine, target_host, force_fetch_local)
 
         nix_options = machine.flake.nix_options if machine.flake.nix_options else []
 
@@ -200,6 +203,14 @@ def run_machine_update(
 
         # retry nixos-rebuild switch if the first attempt failed
         if ret.returncode != 0:
+            # Hint user to --fetch-local on issues with flake inputs
+            if "… while fetching the input" in ret.stderr:
+                msg = (
+                    "Detected potential issue when fetching flake inputs on remote."
+                    "\nTry running the update with --fetch-local to prefetch inputs "
+                    "locally and upload them instead."
+                )
+                raise ClanError(msg)
             try:
                 is_mobile = machine.select(
                     "config.system.clan.deployment.nixosMobileWorkaround"
