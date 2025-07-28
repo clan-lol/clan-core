@@ -8,7 +8,11 @@ from clan_lib.nix_models.clan import (
     InventoryMachine,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import set_value_by_path
+from clan_lib.persist.util import (
+    is_writeable_key,
+    retrieve_typed_field_names,
+    set_value_by_path,
+)
 
 
 class MachineFilter(TypedDict):
@@ -92,3 +96,43 @@ def set_machine(machine: Machine, update: InventoryMachine) -> None:
     inventory_store.write(
         inventory, message=f"Update information about machine {machine.name}"
     )
+
+
+class Writeability(TypedDict):
+    writable: bool
+    reason: str | None
+
+
+@API.register
+def get_machine_writeability(machine: Machine) -> dict[str, Writeability]:
+    """
+    Get writeability information for the fields of a machine.
+
+    This function checks which fields of the 'machine' resource are writable and provides a reason for each field's writability.
+
+    Args:
+        machine (Machine): The machine object for which to retrieve writeability.
+
+    Returns:
+        dict[str, Writeability]: A map from field-names to { 'writable' (bool) and 'reason' (str or None ) }
+    """
+
+    inventory_store = InventoryStore(machine.flake)
+    write_info = inventory_store.get_writeability_of(f"machines.{machine.name}")
+
+    field_names = retrieve_typed_field_names(InventoryMachine)
+
+    # TODO: handle this more generically
+    # persisted_data = inventory_store._get_persisted()  #
+    # unmerge_lists(all_list, persisted_data)
+
+    return {
+        field: {
+            "writable": False
+            if field == "name"
+            else is_writeable_key(f"machines.{machine.name}.{field}", write_info),
+            # TODO: Provide a meaningful reason
+            "reason": None,
+        }
+        for field in field_names
+    }

@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NotRequired, Protocol, TypedDict, cast
@@ -220,6 +221,16 @@ class InventoryStore:
 
         return WriteInfo(writeables, data_eval, data_disk)
 
+    def get_writeability_of(self, path: str) -> Any:
+        """
+        Get the writeability of a path in the inventory
+
+        :param path: The path to check
+        :return: A dictionary with the writeability of the path
+        """
+        write_info = self._write_info()
+        return write_info.writeables
+
     def read(self) -> InventorySnapshot:
         """
         Accessor to the merged inventory
@@ -271,14 +282,30 @@ class InventoryStore:
         for delete_path in delete_set:
             delete_by_path(persisted, delete_path)
 
+        def post_write() -> None:
+            if commit:
+                commit_file(
+                    self.inventory_file,
+                    self._flake.path,
+                    commit_message=f"update({self.inventory_file.name}): {message}",
+                )
+
+            self._flake.invalidate_cache()
+
+        if not patchset and not delete_set:
+            # No changes, no need to write
+            return
+
+        self._write(persisted, post_write=post_write)
+
+    def _write(
+        self, content: Any, post_write: Callable[[], None] | None = None
+    ) -> None:
+        """
+        Write the content to the inventory file and run post_write callback
+        """
         with self.inventory_file.open("w") as f:
-            json.dump(persisted, f, indent=2)
+            json.dump(content, f, indent=2)
 
-        if commit:
-            commit_file(
-                self.inventory_file,
-                self._flake.path,
-                commit_message=f"update({self.inventory_file.name}): {message}",
-            )
-
-        self._flake.invalidate_cache()
+        if post_write:
+            post_write()
