@@ -182,8 +182,8 @@ def run_machine_update(
             ]
 
         # If we build on the target host, we need to become root for building.
-        # TODO: explain why
-        # TODO: why are we not just using --use-remote-sudo here as well?
+        # We are not using --use-remote-sudo here, so that our sudo ask proxy work: https://git.clan.lol/clan/clan-core/pulls/3642
+        # We can't do that yet, when a build host is specified.
         if build_host == target_host:
             build_host = target_host_root
 
