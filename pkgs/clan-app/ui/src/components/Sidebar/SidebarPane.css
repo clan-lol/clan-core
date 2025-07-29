@@ -3,6 +3,10 @@ div.sidebar-pane {
 
   animation: sidebarPaneShow 250ms ease-in forwards;
 
+  &.open {
+    @apply w-60;
+  }
+
   &.closing {
     animation: sidebarPaneHide 250ms ease-out 300ms forwards;
 
