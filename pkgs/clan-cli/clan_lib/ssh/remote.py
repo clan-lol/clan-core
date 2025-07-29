@@ -104,7 +104,7 @@ class Remote:
         address: str,
     ) -> "Remote":
         """
-        Parse a deployment address and return a Host object.
+        Parse a deployment address and return a Remote object.
         """
 
         return parse_ssh_uri(machine_name=machine_name, address=address)
