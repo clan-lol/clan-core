@@ -32,8 +32,6 @@ def get_clan_flake_toplevel() -> Path | None:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
-def find_git_repo_root() -> Path | None:
-    return find_toplevel([".git"])
 
 
 def clan_key_safe(flake_url: str) -> str:
