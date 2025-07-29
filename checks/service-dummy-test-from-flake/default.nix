@@ -29,18 +29,10 @@ nixosLib.runTest (
     testScript =
       { nodes, ... }:
       ''
+        import subprocess
         from nixos_test_lib.nix_setup import setup_nix_in_nix # type: ignore[import-untyped]
-        setup_nix_in_nix(None)  # No closure info for this test
 
-        def run_clan(cmd: list[str], **kwargs) -> str:
-            import subprocess
-            clan = "${clan-core.packages.${hostPkgs.system}.clan-cli}/bin/clan"
-            clan_args = ["--flake", "${config.clan.test.flakeForSandbox}"]
-            return subprocess.run(
-                ["${hostPkgs.util-linux}/bin/unshare", "--user", "--map-user", "1000", "--map-group", "1000", clan, *cmd, *clan_args],
-                **kwargs,
-                check=True,
-            ).stdout
+        setup_nix_in_nix(None)  # No closure info for this test
 
         start_all()
         admin1.wait_for_unit("multi-user.target")
@@ -60,7 +52,13 @@ nixosLib.runTest (
         # Check that the file is in the '0644' mode
         assert "-rw-r--r--" in ls_out, f"File is not in the '0644' mode: {ls_out}"
 
-        run_clan(["machines", "list"])
+        # Run clan command
+        result = subprocess.run(
+            ["${
+              clan-core.packages.${hostPkgs.system}.clan-cli
+            }/bin/clan", "machines", "list", "--flake", "${config.clan.test.flakeForSandbox}"],
+            check=True
+        )
       '';
   }
 )

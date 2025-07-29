@@ -13,37 +13,78 @@ from contextlib import _GeneratorContextManager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
 from colorama import Fore, Style
 
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
 
-# Global flag to track if bridge has been created
-_bridge_created = False
+# Global flag to track if test environment has been initialized
+_test_env_initialized = False
 
 
-def ensure_bridge_exists() -> None:
-    """Ensure the br0 bridge exists, creating it if necessary."""
-    global _bridge_created
-    if _bridge_created:
+def init_test_environment() -> None:
+    """Set up the test environment (network bridge, /etc/passwd) once."""
+    global _test_env_initialized
+    if _test_env_initialized:
         return
 
-    # Check if bridge already exists
-    bridge_check = subprocess.run(
-        ["ip", "link", "show", "br0"], capture_output=True, text=True
-    )
-    if bridge_check.returncode == 0:
-        _bridge_created = True
-        return
-
-    # Create bridge
+    # Set up network bridge
     subprocess.run(
         ["ip", "link", "add", "br0", "type", "bridge"], check=True, text=True
     )
     subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
-    _bridge_created = True
+    subprocess.run(
+        ["ip", "addr", "add", "192.168.1.254/24", "dev", "br0"], check=True, text=True
+    )
+
+    # Set up minimal passwd file for unprivileged operations
+    # Using Nix's convention: UID 1000 for nixbld user, GID 100 for nixbld group
+    passwd_content = """root:x:0:0:Root:/root:/bin/sh
+nixbld:x:1000:100:Nix build user:/tmp:/bin/sh
+nobody:x:65534:65534:Nobody:/:/bin/sh
+"""
+
+    with NamedTemporaryFile(mode="w", delete=False, prefix="test-passwd-") as f:
+        f.write(passwd_content)
+        passwd_path = f.name
+
+    # Set up minimal group file
+    group_content = """root:x:0:
+nixbld:x:100:nixbld
+nogroup:x:65534:
+"""
+
+    with NamedTemporaryFile(mode="w", delete=False, prefix="test-group-") as f:
+        f.write(group_content)
+        group_path = f.name
+
+    # Bind mount our passwd over the system's /etc/passwd
+    result = libc.mount(
+        ctypes.c_char_p(passwd_path.encode()),
+        ctypes.c_char_p(b"/etc/passwd"),
+        ctypes.c_char_p(b"none"),
+        ctypes.c_ulong(MS_BIND),
+        None,
+    )
+    if result != 0:
+        errno = ctypes.get_errno()
+        raise OSError(errno, os.strerror(errno), "Failed to mount passwd")
+
+    # Bind mount our group over the system's /etc/group
+    result = libc.mount(
+        ctypes.c_char_p(group_path.encode()),
+        ctypes.c_char_p(b"/etc/group"),
+        ctypes.c_char_p(b"none"),
+        ctypes.c_ulong(MS_BIND),
+        None,
+    )
+    if result != 0:
+        errno = ctypes.get_errno()
+        raise OSError(errno, os.strerror(errno), "Failed to mount group")
+
+    _test_env_initialized = True
 
 
 # Load the C library
@@ -149,7 +190,7 @@ class Machine:
 
     def start(self) -> None:
         prepare_machine_root(self.name, self.rootdir)
-        ensure_bridge_exists()
+        init_test_environment()
         cmd = [
             "systemd-nspawn",
             "--keep-unit",
@@ -447,6 +488,7 @@ def setup_filesystems(container: ContainerInfo) -> None:
     Path("/etc/os-release").touch()
     Path("/etc/machine-id").write_text("a5ea3f98dedc0278b6f3cc8c37eeaeac")
     container.nix_store_dir.mkdir(parents=True)
+    container.nix_store_dir.chmod(0o755)
 
     # Recreate symlinks
     for file in Path("/nix/store").iterdir():
@@ -519,8 +561,8 @@ class Driver:
             )
 
     def start_all(self) -> None:
-        # Ensure bridge exists
-        ensure_bridge_exists()
+        # Ensure test environment is set up
+        init_test_environment()
 
         for machine in self.machines:
             print(f"Starting {machine.name}")
