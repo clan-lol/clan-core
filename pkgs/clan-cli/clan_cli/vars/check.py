@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
 
 if TYPE_CHECKING:
@@ -110,7 +110,8 @@ def check_vars(
 
 
 def check_command(args: argparse.Namespace) -> None:
-    ok = check_vars(args.machine, args.flake, generator_name=args.generator)
+    flake = require_flake(args.flake)
+    ok = check_vars(args.machine, flake, generator_name=args.generator)
     if not ok:
         raise SystemExit(1)
 
