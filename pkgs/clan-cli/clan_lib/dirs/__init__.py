@@ -29,9 +29,11 @@ def get_clan_flake_toplevel_or_env() -> Path | None:
 
 
 def get_clan_flake_toplevel() -> Path | None:
-    return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
-
-
+    try:
+        return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
+    except OSError:
+        # We might run clan from a directory that is not readable.
+        return None
 
 
 def clan_key_safe(flake_url: str) -> str:
