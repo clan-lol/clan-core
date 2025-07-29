@@ -13,7 +13,9 @@ from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import run_machine_update
 from clan_lib.nix import nix_config
+from clan_lib.ssh.host import Host
 from clan_lib.ssh.host_key import HostKeyCheck
+from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
@@ -128,6 +130,19 @@ def update_command(args: argparse.Namespace) -> None:
         host_key_check = args.host_key_check
         with AsyncRuntime() as runtime:
             for machine in machines_to_update:
+                # figure out on which machine to build on
+                build_host: Host | None = None
+                if args.build_host:
+                    if args.build_host == "local":
+                        build_host = LocalHost()
+                    else:
+                        build_host = Remote.from_ssh_uri(
+                            machine_name=machine.name,
+                            address=args.build_host,
+                        ).override(host_key_check=host_key_check)
+                else:
+                    build_host = machine.build_host()
+                # Figure out the target host
                 if args.target_host:
                     target_host = Remote.from_ssh_uri(
                         machine_name=machine.name,
@@ -137,6 +152,7 @@ def update_command(args: argparse.Namespace) -> None:
                     target_host = machine.target_host().override(
                         host_key_check=host_key_check
                     )
+                # run the update
                 runtime.async_run(
                     AsyncOpts(
                         tid=machine.name,
@@ -145,7 +161,7 @@ def update_command(args: argparse.Namespace) -> None:
                     run_machine_update,
                     machine=machine,
                     target_host=target_host,
-                    build_host=machine.build_host(),
+                    build_host=build_host,
                     force_fetch_local=args.fetch_local,
                 )
             runtime.join_all()
@@ -189,7 +205,10 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--build-host",
         type=str,
-        help="Address of the machine to build the flake, in the format of user@host:1234.",
+        help=(
+            "The machine on which to build the machine configuration.\n"
+            "Pass 'local' to build on the local machine, or an ssh address like user@host:1234\n"
+        ),
     )
     parser.add_argument(
         "--fetch-local",

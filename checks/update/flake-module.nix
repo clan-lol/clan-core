@@ -35,6 +35,13 @@
       services.openssh.enable = true;
       services.openssh.settings.PasswordAuthentication = false;
       users.users.root.openssh.authorizedKeys.keys = [ (builtins.readFile ../assets/ssh/pubkey) ];
+      services.openssh.knownHosts.localhost.publicKeyFile = ../assets/ssh/pubkey;
+      services.openssh.hostKeys = [
+        {
+          path = ../assets/ssh/privkey;
+          type = "ed25519";
+        }
+      ];
       security.sudo.wheelNeedsPassword = false;
 
       boot.consoleLogLevel = lib.mkForce 100;
@@ -99,7 +106,8 @@
               let
                 closureInfo = pkgs.closureInfo {
                   rootPaths = [
-                    self.checks.x86_64-linux.clan-core-for-checks
+                    self.packages.${pkgs.system}.clan-cli
+                    self.checks.${pkgs.system}.clan-core-for-checks
                     self.clanInternals.machines.${pkgs.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
@@ -150,15 +158,7 @@
                       # Update the machine configuration to add a new file
                       machine_config_path = os.path.join(flake_dir, "machines", "test-update-machine", "configuration.nix")
                       os.makedirs(os.path.dirname(machine_config_path), exist_ok=True)
-                      
-                      with open(machine_config_path, "w") as f:
-                          f.write("""
-                      {
-                        environment.etc."update-successful".text = "ok";
-                      }
-                      """)
 
-                      # Run clan update command  
                       # Note: update command doesn't accept -i flag, SSH key must be in ssh-agent
                       # Start ssh-agent and add the key
                       agent_output = subprocess.check_output(["${pkgs.openssh}/bin/ssh-agent", "-s"], text=True)
@@ -167,10 +167,94 @@
                               os.environ["SSH_AUTH_SOCK"] = line.split("=", 1)[1].split(";")[0]
                           elif line.startswith("SSH_AGENT_PID="):
                               os.environ["SSH_AGENT_PID"] = line.split("=", 1)[1].split(";")[0]
-                      
+
                       # Add the SSH key to the agent
                       subprocess.run(["${pkgs.openssh}/bin/ssh-add", ssh_conn.ssh_key], check=True)
 
+
+                      ##############
+                      print("TEST: update with --build-host local")
+                      with open(machine_config_path, "w") as f:
+                          f.write("""
+                      {
+                        environment.etc."update-build-local-successful".text = "ok";
+                      }
+                      """)
+
+                      # rsync the flake into the container
+                      os.environ["PATH"] = f"{os.environ['PATH']}:${pkgs.openssh}/bin"
+                      subprocess.run(
+                        [
+                            "${pkgs.rsync}/bin/rsync",
+                            "-a",
+                            "--delete",
+                            "-e",
+                            "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
+                            f"{str(flake_dir)}/",
+                            f"root@192.168.1.1:/flake",
+                        ],
+                        check=True
+                      )
+
+                      # allow machine to ssh into itself
+                      subprocess.run([
+                          "ssh",
+                          "-o", "UserKnownHostsFile=/dev/null",
+                          "-o", "StrictHostKeyChecking=no",
+                          f"root@192.168.1.1",
+                          "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo \"$(cat \"${../assets/ssh/privkey}\")\" > /root/.ssh/id_ed25519 && chmod 600 /root/.ssh/id_ed25519",
+                      ], check=True)
+
+                      # install the clan-cli package into the container's Nix store
+                      subprocess.run(
+                        [
+                            "${pkgs.nix}/bin/nix",
+                            "copy",
+                            "--to",
+                            "ssh://root@192.168.1.1",
+                            "--no-check-sigs",
+                            f"${self.packages.${pkgs.system}.clan-cli}",
+                            "--extra-experimental-features", "nix-command flakes",
+                            "--from", f"{os.environ["TMPDIR"]}/store"
+                        ],
+                        check=True,
+                        env={
+                          **os.environ,
+                          "NIX_SSHOPTS": "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
+                        },
+                      )
+
+                      # Run ssh on the host to run the clan update command via --build-host local
+                      subprocess.run([
+                          "ssh",
+                          "-o", "UserKnownHostsFile=/dev/null",
+                          "-o", "StrictHostKeyChecking=no",
+                          f"root@192.168.1.1",
+                          "${self.packages.${pkgs.system}.clan-cli}/bin/clan",
+                          "machines",
+                          "update",
+                          "--debug",
+                          "--flake", "/flake",
+                          "--host-key-check", "none",
+                          "--fetch-local",  # Use local store instead of fetching from network
+                          "--build-host", "local",
+                          "test-update-machine",
+                          "--target-host", f"root@localhost",
+                      ], check=True)
+
+                      # Verify the update was successful
+                      machine.succeed("test -f /etc/update-build-local-successful")
+
+
+                      ##############
+                      print("TEST: update with --fetch-local")
+
+                      with open(machine_config_path, "w") as f:
+                          f.write("""
+                      {
+                        environment.etc."update-fetch-local-successful".text = "ok";
+                      }
+                      """)
 
                       # Run clan update command
                       subprocess.run([
@@ -186,33 +270,18 @@
                       ], check=True)
 
                       # Verify the update was successful
-                      machine.succeed("test -f /etc/update-successful")
+                      machine.succeed("test -f /etc/update-fetch-local-successful")
 
-                      # Test update with --build-host
-                      # Update configuration again to test build-host functionality
+
+                      ##############
+                      print("TEST: update with --build-host 192.168.1.1")
+                      # Update configuration again
                       with open(machine_config_path, "w") as f:
                           f.write("""
                       {
                         environment.etc."build-host-update-successful".text = "ok";
                       }
                       """)
-
-                      # Run clan update command with --build-host
-                      subprocess.run([
-                          "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
-                          "machines",
-                          "update",
-                          "--debug",
-                          "--flake", flake_dir,
-                          "--host-key-check", "none",
-                          "--fetch-local",  # Use local store instead of fetching from network
-                          "--build-host", f"root@192.168.1.1:{ssh_conn.host_port}",
-                          "test-update-machine",
-                          "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
-                      ], check=True)
-
-                      # Verify the second update was successful
-                      machine.succeed("test -f /etc/build-host-update-successful")
 
                       # Run clan update command with --build-host
                       subprocess.run([

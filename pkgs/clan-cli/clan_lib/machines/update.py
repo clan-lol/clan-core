@@ -18,7 +18,6 @@ from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_metadata
 from clan_lib.ssh.host import Host
-from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
@@ -133,7 +132,7 @@ def run_machine_update(
         if build_host is None:
             build_host = target_host
         else:
-            stack.enter_context(build_host.host_connection())
+            build_host = stack.enter_context(build_host.host_connection())
 
         # Some operations require root privileges on the target host.
         target_host_root = stack.enter_context(target_host.become_root())
