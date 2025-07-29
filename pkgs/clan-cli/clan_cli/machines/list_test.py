@@ -1,4 +1,5 @@
 import pytest
+from clan_lib.errors import ClanError
 
 from clan_cli.tests import fixtures_flakes
 from clan_cli.tests.helpers import cli
@@ -359,3 +360,12 @@ def list_mixed_tagged_untagged(
     assert "machine-with-tags" not in output.out
     assert "machine-without-tags" not in output.out
     assert output.out.strip() == ""
+
+
+def test_machines_list_require_flake_error() -> None:
+    """Test that machines list command fails when flake is required but not provided."""
+    with pytest.raises(ClanError) as exc_info:
+        cli.run(["machines", "list"])
+
+    error_message = str(exc_info.value)
+    assert "flake" in error_message.lower()
