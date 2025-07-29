@@ -27,10 +27,15 @@ def setup_ssh_connection(
         SSHConnection with host_port and ssh_key path
     """
     host_port = find_free_port()
-    target.wait_for_unit("sshd.service")
     target.wait_for_open_port(22)
 
-    setup_port_forwarding(target, host_port)
+    # Check if this is a container test (doesn't have forward_port method)
+    if hasattr(target, "forward_port"):
+        setup_port_forwarding(target, host_port)
+    else:
+        # In container tests, we use the host network namespace
+        # so we can connect directly to the container's SSH port
+        host_port = 22
 
     ssh_key = Path(temp_dir) / "id_ed25519"
     with ssh_key.open("w") as f, Path(assets_ssh_privkey).open() as src:
