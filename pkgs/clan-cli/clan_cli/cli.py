@@ -210,6 +210,25 @@ Examples:
   $ clan templates list
   List all the machines managed by Clan.
 
+Usage differs based on the template type
+
+---
+
+Clan templates
+
+  $ clan flakes create --template=default
+  Create a clan from the shipped (<builtin>) 'default' clan template
+
+  $ clan flakes create --template=.#myTemplate
+  Create a clan from the `myTemplate` template defined in the current flake
+
+  $ clan flakes create --template=github:owner/repo#foo
+  Specifies a remote url or path to the flake containing the template 'foo'
+
+---
+
+Disk templates
+
   $ clan templates apply disk [TEMPLATE] [MACHINE]
   Will apply the specified [TEMPLATE] to the [MACHINE]
 

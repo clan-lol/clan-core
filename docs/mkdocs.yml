@@ -81,6 +81,7 @@ nav:
       - Inventory: concepts/inventory.md
       - Generators: concepts/generators.md
       - Autoincludes: concepts/autoincludes.md
+      - Templates: concepts/templates.md
   - Reference:
       - Overview: reference/index.md
       - Clan Options: options.md
