@@ -54,7 +54,7 @@ def get_machines_for_update(
         raise ClanError(msg)
 
     # Implicit update all machines / with tags
-    # Using tags is not an explizit update
+    # Using tags is not an explicit update
     if not explicit_names:
         machines_to_update = list(
             filter(
