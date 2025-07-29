@@ -150,3 +150,21 @@ def test_create_flake_fallback_from_non_clan_directory(
     )
 
     assert (new_clan_dir / "flake.nix").exists()
+
+
+@pytest.mark.with_core
+def test_create_flake_with_local_template_reference(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake: FlakeForTest,
+) -> None:
+    monkeypatch.chdir(test_flake.path)
+    new_clan_dir = temporary_home / "new-clan"
+    monkeypatch.setenv("LOGNAME", "testuser")
+
+    # TODO: should error with: localFlake does not export myLocalTemplate clan template
+    cli.run(
+        ["flakes", "create", str(new_clan_dir), "--template=.#default", "--no-update"]
+    )
+
+    assert (new_clan_dir / "flake.nix").exists()
