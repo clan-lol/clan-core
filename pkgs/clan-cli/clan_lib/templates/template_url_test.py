@@ -182,3 +182,69 @@ def test_locked_input_template_no_dot() -> None:
     )
     assert selector == expected_selector
     assert flake_ref == str(local_path.path)
+
+
+def test_explizit_path_default_minimal_rel_1() -> None:
+    user_input = "."
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_explizit_path_default_minimal_rel_2() -> None:
+    user_input = "./"
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_explizit_path_default_minimal_parent_1() -> None:
+    user_input = ".."
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_explizit_path_default_minimal_parent_2() -> None:
+    user_input = "../"
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_internal_dot_template() -> None:
+    user_input = ".internal"
+    expected_selector = 'clanInternals.templates.machine.".internal"'
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == str(local_path.path)
+
+
+def test_explizit_path_default() -> None:
+    user_input = "./path/to/flake"
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
