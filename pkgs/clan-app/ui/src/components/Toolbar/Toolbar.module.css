@@ -1,4 +1,4 @@
-div.toolbar {
+.toolbar {
   @apply flex flex-row items-center justify-center gap-1.5 p-1 size-fit rounded-md self-stretch;
 
   border: 0.0625rem solid theme(colors.off.toolbar_border);
@@ -13,7 +13,7 @@ div.toolbar {
   }
 }
 
-button.toolbar-button {
+.toolbar_button {
   @apply w-6 h-6 p-1 rounded-[0.25rem];
 
   &:hover {

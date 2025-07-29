@@ -1,5 +1,5 @@
-import "./Toolbar.css";
 import { JSX } from "solid-js";
+import styles from "./Toolbar.module.css";
 
 export interface ToolbarProps {
   children: JSX.Element;
@@ -7,7 +7,7 @@ export interface ToolbarProps {
 
 export const Toolbar = (props: ToolbarProps) => {
   return (
-    <div class="toolbar" role="toolbar" aria-orientation="horizontal">
+    <div class={styles.toolbar} role="toolbar" aria-orientation="horizontal">
       {props.children}
     </div>
   );

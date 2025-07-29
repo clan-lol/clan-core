@@ -43,13 +43,8 @@ export const WithTooltip: Story = {
           trigger={<ToolbarButton name="select" icon="Cursor" />}
           placement="top"
         >
-          <div class="p-1 mb-1">
-            <Typography
-              hierarchy="label"
-              size="s"
-              color="inherit"
-              class="text-fg-inv-1"
-            >
+          <div class="p-1 mb-1 text-fg-inv-1">
+            <Typography hierarchy="label" size="s" color="inherit">
               Select an object
             </Typography>
           </div>
@@ -59,13 +54,8 @@ export const WithTooltip: Story = {
           trigger={<ToolbarButton name="new-machine" icon="NewMachine" />}
           placement="top"
         >
-          <div class="p-1 mb-1">
-            <Typography
-              hierarchy="label"
-              size="s"
-              color="inherit"
-              class="text-fg-inv-1"
-            >
+          <div class="p-1 mb-1 text-fg-inv-1">
+            <Typography hierarchy="label" size="s" color="inherit">
               Create a new machine
             </Typography>
           </div>
@@ -76,13 +66,8 @@ export const WithTooltip: Story = {
           }
           placement="top"
         >
-          <div class="p-1 mb-1">
-            <Typography
-              hierarchy="label"
-              size="s"
-              color="inherit"
-              class="text-fg-inv-1"
-            >
+          <div class="p-1 mb-1 text-fg-inv-1">
+            <Typography hierarchy="label" size="s" color="inherit">
               Manage Services
             </Typography>
           </div>
@@ -91,13 +76,8 @@ export const WithTooltip: Story = {
           trigger={<ToolbarButton name="ai" icon="AI" />}
           placement="top"
         >
-          <div class="p-1 mb-1">
-            <Typography
-              hierarchy="label"
-              size="s"
-              color="inherit"
-              class="text-fg-inv-1"
-            >
+          <div class="p-1 mb-1 text-fg-inv-1">
+            <Typography hierarchy="label" size="s" color="inherit">
               Chat with AI
             </Typography>
           </div>
