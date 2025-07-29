@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-type ObjectEntry = {
+interface ObjectEntry {
   object: THREE.Object3D;
   type: string;
   id: string;
   dispose?: () => void;
-};
+}
 
 export class ObjectRegistry {
   #objects = new Map<string, ObjectEntry>();

@@ -1,4 +1,4 @@
-import { Accessor, createEffect, createRoot, on } from "solid-js";
+import { Accessor, createEffect, createRoot } from "solid-js";
 import { MachineRepr } from "./MachineRepr";
 import * as THREE from "three";
 import { SceneData } from "../stores/clan";
@@ -13,7 +13,7 @@ function keyFromPos(pos: [number, number]): string {
 const CUBE_SPACING = 2;
 
 export class MachineManager {
-  public machines: Map<string, MachineRepr> = new Map();
+  public machines = new Map<string, MachineRepr>();
 
   private disposeRoot: () => void;
 
