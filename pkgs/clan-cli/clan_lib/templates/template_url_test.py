@@ -239,8 +239,30 @@ def test_internal_dot_template() -> None:
     assert flake_ref == str(local_path.path)
 
 
-def test_explizit_path_default() -> None:
+def test_explizit_rel_path_default() -> None:
     user_input = "./path/to/flake"
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_explizit_abs_path_default() -> None:
+    user_input = "/path/to/flake"
+    expected_selector = "clan.templates.machine.default"
+
+    flake_ref, selector = transform_url(
+        machine_template_type, user_input, flake=local_path
+    )
+    assert selector == expected_selector
+    assert flake_ref == user_input
+
+
+def test_explizit_home_path_default() -> None:
+    user_input = "~/path/to/flake"
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(

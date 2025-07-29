@@ -84,9 +84,10 @@ def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[st
         flake_ref = str(flake.path)
 
     if "#" not in identifier:
-        # ./ . or ../ .. are relative paths
+        # Local path references are not transformed
+        # return flake_ref=identifier, template='default'
         if (
-            identifier.startswith(("./", "../"))
+            identifier.startswith(("/", "~/", "./", "../"))
             or identifier == "."
             or identifier == ".."
         ):
