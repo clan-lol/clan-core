@@ -11,20 +11,20 @@ div.toolbar {
   & > hr {
     @apply h-full min-h-8;
   }
+}
 
-  & > button.toolbar-button {
-    @apply w-6 h-6 p-1 rounded-[0.25rem];
+button.toolbar-button {
+  @apply w-6 h-6 p-1 rounded-[0.25rem];
 
-    &:hover {
-      @apply bg-inv-1;
-    }
+  &:hover {
+    @apply bg-inv-1;
+  }
 
-    &:active {
-      @apply bg-inv-4;
-    }
+  &:active {
+    @apply bg-inv-4;
+  }
 
-    &.selected {
-      @apply bg-bg-semantic-success-4;
-    }
+  &.selected {
+    @apply bg-bg-semantic-success-4;
   }
 }
