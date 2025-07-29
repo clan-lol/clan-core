@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from clan_lib.dirs import specific_machine_dir
+from clan_lib.dirs import clan_templates, specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import list_machines
@@ -138,8 +138,20 @@ def clan_template(
     try:
         template = template_flake.select(template_selector)
     except ClanError as e:
-        msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"
-        raise ClanError(msg) from e
+        try:
+            log.info(
+                f"Template '{template_ident}' not found in {flake_ref}, trying builtin template"
+            )
+            builtin_flake = Flake(str(clan_templates()))
+            [_, builtin_selector] = transform_url(
+                "clan", template_ident, flake=builtin_flake
+            )
+            template = builtin_flake.select(builtin_selector)
+            template_flake = builtin_flake
+            printable_template_ref = f"{clan_templates()}#{builtin_selector}"
+        except ClanError:
+            msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"
+            raise ClanError(msg) from e
 
     src = template.get("path")
     if not src:

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import pytest
-from clan_cli.tests.fixtures_flakes import substitute
+from clan_cli.tests.fixtures_flakes import FlakeForTest, substitute
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_lib.cmd import run
@@ -125,3 +125,39 @@ def test_ui_template(
         flake_outputs["nixosConfigurations"]["machine1"]
     except KeyError:
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
+
+
+@pytest.mark.with_core
+def test_create_flake_fallback_from_non_clan_directory(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake: FlakeForTest,
+) -> None:
+    """Test that clan flakes create falls back to builtin templates from non-clan flake."""
+    monkeypatch.chdir(test_flake.path)
+    new_clan_dir = temporary_home / "new-clan"
+    monkeypatch.setenv("LOGNAME", "testuser")
+
+    cli.run(
+        ["flakes", "create", str(new_clan_dir), "--template=default", "--no-update"]
+    )
+
+    assert (new_clan_dir / "flake.nix").exists()
+
+
+@pytest.mark.with_core
+def test_create_flake_with_local_template_reference(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake: FlakeForTest,
+) -> None:
+    monkeypatch.chdir(test_flake.path)
+    new_clan_dir = temporary_home / "new-clan"
+    monkeypatch.setenv("LOGNAME", "testuser")
+
+    # TODO: should error with: localFlake does not export myLocalTemplate clan template
+    cli.run(
+        ["flakes", "create", str(new_clan_dir), "--template=.#default", "--no-update"]
+    )
+
+    assert (new_clan_dir / "flake.nix").exists()
