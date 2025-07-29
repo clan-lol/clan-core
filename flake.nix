@@ -50,6 +50,7 @@
         pathExists
         ;
 
+      # Load private flake inputs if available
       loadDevFlake =
         path:
         let
@@ -60,7 +61,13 @@
 
       devFlake = builtins.tryEval (loadDevFlake ./devFlake/private);
 
-      privateInputs = if devFlake.success then devFlake.value.inputs else { };
+      privateInputs =
+        if pathExists ./.skip-private-inputs then
+          { }
+        else if devFlake.success then
+          devFlake.value.inputs
+        else
+          { };
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
