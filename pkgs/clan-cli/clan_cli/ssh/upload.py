@@ -4,11 +4,11 @@ from tempfile import TemporaryDirectory
 
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 
 def upload(
-    host: Remote,
+    host: Host,
     local_src: Path,
     remote_dest: Path,  # must be a directory
     file_user: str = "root",

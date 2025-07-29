@@ -180,7 +180,7 @@ def test_run_no_shell(hosts: list[Remote], runtime: AsyncRuntime) -> None:
 
 def test_sudo_ask_proxy(hosts: list[Remote]) -> None:
     host = hosts[0]
-    with host.ssh_control_master() as host:
+    with host.host_connection() as host:
         proxy = SudoAskpassProxy(host, prompt_command=["bash", "-c", "echo yes"])
 
         try:
@@ -197,7 +197,7 @@ def test_sudo_ask_proxy(hosts: list[Remote]) -> None:
 
 def test_run_function(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     def some_func(h: Remote) -> bool:
-        with h.ssh_control_master() as ssh:
+        with h.host_connection() as ssh:
             p = ssh.run(["echo", "hello"])
         return p.stdout == "hello\n"
 

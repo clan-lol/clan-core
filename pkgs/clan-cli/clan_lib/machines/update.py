@@ -17,6 +17,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_metadata
+from clan_lib.ssh.host import Host
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, ssh: Remote, force_fetch_local: bool) -> str:
+def upload_sources(machine: Machine, ssh: Host, force_fetch_local: bool) -> str:
     env = ssh.nix_ssh_env(os.environ.copy())
 
     flake_url = (
@@ -110,8 +111,8 @@ def upload_sources(machine: Machine, ssh: Remote, force_fetch_local: bool) -> st
 @API.register
 def run_machine_update(
     machine: Machine,
-    target_host: Remote,
-    build_host: Remote | None,
+    target_host: Host,
+    build_host: Host | None,
     force_fetch_local: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
@@ -126,13 +127,13 @@ def run_machine_update(
     """
 
     with ExitStack() as stack:
-        target_host = stack.enter_context(target_host.ssh_control_master())
+        target_host = stack.enter_context(target_host.host_connection())
 
         # If no build host is specified, use the target host as the build host.
         if build_host is None:
             build_host = target_host
         else:
-            build_host = stack.enter_context(build_host.ssh_control_master())
+            stack.enter_context(build_host.host_connection())
 
         # Some operations require root privileges on the target host.
         target_host_root = stack.enter_context(target_host.become_root())

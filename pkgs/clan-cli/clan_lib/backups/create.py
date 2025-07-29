@@ -10,7 +10,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
         if not backup_scripts["providers"]:
             msg = "No providers specified"
             raise ClanError(msg)
-        with host.ssh_control_master() as ssh:
+        with host.host_connection() as ssh:
             for provider in backup_scripts["providers"]:
                 proc = ssh.run(
                     [backup_scripts["providers"][provider]["create"]],
@@ -23,7 +23,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
         if provider not in backup_scripts["providers"]:
             msg = f"provider {provider} not found"
             raise ClanError(msg)
-        with host.ssh_control_master() as ssh:
+        with host.host_connection() as ssh:
             proc = ssh.run(
                 [backup_scripts["providers"][provider]["create"]],
             )

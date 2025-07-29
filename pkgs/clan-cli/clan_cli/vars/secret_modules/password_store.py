@@ -10,7 +10,7 @@ from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.flake import Flake
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 log = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ class SecretStore(StoreBase):
         manifest.append(git_hash)
         return b"\n".join(manifest)
 
-    def needs_upload(self, machine: str, host: Remote) -> bool:
+    def needs_upload(self, machine: str, host: Host) -> bool:
         local_hash = self.generate_hash(machine)
         if not local_hash:
             return True
@@ -243,7 +243,7 @@ class SecretStore(StoreBase):
         if hash_data:
             (output_dir / ".pass_info").write_bytes(hash_data)
 
-    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)

@@ -12,7 +12,7 @@ def hosts(sshd: Sshd) -> list[Remote]:
     login = pwd.getpwuid(os.getuid()).pw_name
     group = [
         Remote(
-            "127.0.0.1",
+            address="127.0.0.1",
             port=sshd.port,
             user=login,
             private_key=Path(sshd.key),

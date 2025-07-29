@@ -35,7 +35,7 @@ def check_machine_ssh_login(
     if opts is None:
         opts = ConnectionOptions()
 
-    with remote.ssh_control_master() as ssh:
+    with remote.host_connection() as ssh:
         try:
             ssh.run(
                 ["true"],
