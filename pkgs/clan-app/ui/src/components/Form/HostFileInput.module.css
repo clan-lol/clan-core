@@ -1,0 +1,7 @@
+.vertical_button {
+  @apply w-fit;
+}
+
+.horizontal_button {
+  @apply grow max-w-[18rem];
+}
