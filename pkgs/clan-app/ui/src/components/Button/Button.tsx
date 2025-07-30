@@ -70,7 +70,7 @@ export const Button = (props: ButtonProps) => {
   const loadingClass =
     "w-4 opacity-100 mr-[revert] transition-all duration-500 ease-linear";
   const idleClass =
-    "w-0 opacity-0 top-0 left-0 -mr-2 transition-all duration-500 ease-linear";
+    "hidden w-0 opacity-0 top-0 left-0 -mr-2 transition-all duration-500 ease-linear";
 
   return (
     <KobalteButton
