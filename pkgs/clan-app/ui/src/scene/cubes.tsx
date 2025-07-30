@@ -8,7 +8,7 @@ import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
 import { Divider } from "../components/Divider/Divider";
-import { MachinesQueryResult } from "../queries/queries";
+import { MachinesQueryResult } from "../hooks/queries";
 import { SceneData } from "../stores/clan";
 import { Accessor } from "solid-js";
 import { renderLoop } from "./RenderLoop";

@@ -2,7 +2,7 @@ import { Accessor, createEffect, createRoot } from "solid-js";
 import { MachineRepr } from "./MachineRepr";
 import * as THREE from "three";
 import { SceneData } from "../stores/clan";
-import { MachinesQueryResult } from "../queries/queries";
+import { MachinesQueryResult } from "../hooks/queries";
 import { ObjectRegistry } from "./ObjectRegistry";
 import { renderLoop } from "./RenderLoop";
 

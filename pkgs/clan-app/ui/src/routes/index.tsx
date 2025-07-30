@@ -28,7 +28,7 @@ export const Routes: RouteDefinition[] = [
             path: "/",
           },
           {
-            path: "/machines/:machineID",
+            path: "/machines/:machineName",
             component: Machine,
           },
         ],

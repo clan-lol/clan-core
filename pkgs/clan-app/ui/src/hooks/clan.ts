@@ -27,11 +27,8 @@ export const buildClanPath = (clanURI: string) => {
   return "/clans/" + encodeBase64(clanURI);
 };
 
-export const buildMachinePath = (clanURI: string, machineID: string) => {
-  return (
-    "/clans/" + encodeBase64(clanURI) + "/machines/" + encodeBase64(machineID)
-  );
-};
+export const buildMachinePath = (clanURI: string, name: string) =>
+  buildClanPath(clanURI) + "/machines/" + name;
 
 export const navigateToClan = (navigate: Navigator, clanURI: string) => {
   const path = buildClanPath(clanURI);
@@ -42,10 +39,10 @@ export const navigateToClan = (navigate: Navigator, clanURI: string) => {
 export const navigateToMachine = (
   navigate: Navigator,
   clanURI: string,
-  machineID: string,
+  name: string,
 ) => {
-  const path = buildMachinePath(clanURI, machineID);
-  console.log("Navigating to machine", clanURI, machineID, path);
+  const path = buildMachinePath(clanURI, name);
+  console.log("Navigating to machine", clanURI, name, path);
   navigate(path);
 };
 
@@ -55,19 +52,16 @@ export const clanURIParam = (params: Params) => {
 
 export const useClanURI = () => clanURIParam(useParams());
 
-export const machineIDParam = (params: Params) => {
-  return decodeBase64(params.machineID);
+export const machineNameParam = (params: Params) => {
+  return params.machineName;
 };
 
-export const useMachineID = (): string => {
-  const params = useParams();
-  return machineIDParam(params);
-};
+export const useMachineName = (): string => machineNameParam(useParams());
 
-export const maybeUseMachineID = (): string | null => {
+export const maybeUseMachineName = (): string | null => {
   const params = useParams();
-  if (params.machineID === undefined) {
+  if (params.machineName === undefined) {
     return null;
   }
-  return machineIDParam(params);
+  return machineNameParam(params);
 };
