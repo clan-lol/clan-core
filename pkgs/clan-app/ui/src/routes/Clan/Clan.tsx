@@ -221,36 +221,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
               />
             </Show>
             <div
-              class="flex flex-row"
-              style={{ position: "absolute", top: "10px", left: "10px" }}
-            >
-              <Button
-                ghost
-                onClick={() => {
-                  setStore(
-                    produce((s) => {
-                      for (const machineId in s.sceneData[clanURI]) {
-                        // Reset the position of each machine to [0, 0]
-                        s.sceneData[clanURI] = {};
-                      }
-                    }),
-                  );
-                }}
-              >
-                Reset Store
-              </Button>
-              <Button
-                ghost
-                onClick={() => {
-                  console.log("Refetching API");
-                  machinesQuery.refetch();
-                }}
-              >
-                Refetch API
-              </Button>
-            </div>
-            {/* TODO: Add minimal display time */}
-            <div
               class={cx({
                 "fade-out": !machinesQuery.isLoading && loadingCooldown(),
               })}
