@@ -1,6 +1,6 @@
 import { createSignal, JSX } from "solid-js";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
-import "./Modal.css";
+import styles from "./Modal.module.css";
 import { Typography } from "../Typography/Typography";
 import Icon from "../Icon/Icon";
 import cx from "classnames";
@@ -24,10 +24,10 @@ export const Modal = (props: ModalProps) => {
   return (
     <KDialog id={props.id} open={open()} modal={true}>
       <KDialog.Portal mount={props.mount}>
-        <KDialog.Content class={cx("modal-content", props.class)}>
-          <div class="header">
+        <KDialog.Content class={cx(styles.modal_content, props.class)}>
+          <div class={styles.modal_header}>
             <Typography
-              class="modal-title"
+              class={styles.modal_title}
               hierarchy="label"
               family="mono"
               size="xs"
@@ -43,7 +43,7 @@ export const Modal = (props: ModalProps) => {
               <Icon icon="Close" size="0.75rem" />
             </KDialog.CloseButton>
           </div>
-          <div class="body">
+          <div class={styles.modal_body}>
             {props.children({
               close: () => {
                 setOpen(false);
