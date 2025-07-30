@@ -79,7 +79,7 @@ const MockCreateMachine = (props: MockProps) => {
                     label="Name"
                     size="s"
                     required={true}
-                    input={{ ...props, placeholder: "name" }}
+                    input={{ ...props, placeholder: "name", autofocus: true }}
                   />
                 </>
               )}
