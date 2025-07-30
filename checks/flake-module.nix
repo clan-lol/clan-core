@@ -38,6 +38,7 @@ in
       ./flash/flake-module.nix
       ./impure/flake-module.nix
       ./installation/flake-module.nix
+      ./update/flake-module.nix
       ./morph/flake-module.nix
       ./nixos-documentation/flake-module.nix
       ./dont-depend-on-repo-root.nix
