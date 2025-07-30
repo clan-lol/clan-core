@@ -81,7 +81,7 @@ export function SidebarSectionForm<
           >
             {props.title}
           </Typography>
-          <div class="controls">
+          <div class="controls h-4">
             {editing() && !formStore.submitting && (
               <KButton type="submit">
                 <Icon
