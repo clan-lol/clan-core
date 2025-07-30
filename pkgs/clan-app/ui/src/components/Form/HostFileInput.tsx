@@ -7,7 +7,7 @@ import {
 import cx from "classnames";
 import { Label } from "./Label";
 import { Button } from "../Button/Button";
-import "./HostFileInput.css";
+import styles from "./HostFileInput.module.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
@@ -41,7 +41,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
 
   return (
     <TextField
-      class={cx("form-field", "host-file", props.size, props.orientation, {
+      class={cx("form-field", props.size, props.orientation, {
         inverted: props.inverted,
         ghost: props.ghost,
       })}
@@ -73,6 +73,11 @@ export const HostFileInput = (props: HostFileInputProps) => {
             startIcon="Folder"
             onClick={selectFile}
             disabled={props.disabled || props.readOnly}
+            class={cx(
+              props.orientation === "vertical"
+                ? styles.vertical_button
+                : styles.horizontal_button,
+            )}
           >
             No Selection
           </Button>
