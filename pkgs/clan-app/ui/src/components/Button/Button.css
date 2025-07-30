@@ -123,20 +123,8 @@
     @apply pr-3.5;
   }
 
-  & > div.loader {
-    @apply w-0 opacity-0;
-    @apply top-0 left-0 -mr-2;
-    transition: all 0.5s ease;
-  }
-
   &.loading {
     @apply cursor-wait;
-
-    & > div.loader {
-      @apply w-4 opacity-100;
-      margin-right: revert;
-      transition: all 0.5s ease;
-    }
   }
 
   & > span.typography {

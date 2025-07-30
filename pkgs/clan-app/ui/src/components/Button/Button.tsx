@@ -67,6 +67,11 @@ export const Button = (props: ButtonProps) => {
 
   const iconSize = iconSizes[local.size || "default"];
 
+  const loadingClass =
+    "w-4 opacity-100 mr-[revert] transition-all duration-500 ease-linear";
+  const idleClass =
+    "w-0 opacity-0 top-0 left-0 -mr-2 transition-all duration-500 ease-linear";
+
   return (
     <KobalteButton
       class={cx(
@@ -83,7 +88,10 @@ export const Button = (props: ButtonProps) => {
       onClick={local.onAction ? onClick : undefined}
       {...other}
     >
-      <Loader hierarchy={hierarchy} />
+      <Loader
+        hierarchy={hierarchy}
+        class={cx({ [idleClass]: !loading(), [loadingClass]: loading() })}
+      />
 
       {local.startIcon && (
         <Icon icon={local.startIcon} class="icon-start" size={iconSize} />
