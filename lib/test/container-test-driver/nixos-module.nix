@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  options,
+  ...
+}:
 {
   boot.isContainer = true;
 
@@ -7,7 +12,9 @@
 
   # undo qemu stuff
   system.build.initialRamdisk = "";
-  virtualisation.sharedDirectories = lib.mkForce { };
+  virtualisation = lib.optionalAttrs (options ? virtualisation.sharedDirectories) {
+    sharedDirectories = lib.mkForce { };
+  };
   networking.useDHCP = false;
 
   # PAM requires setuid and doesn't work in our containers
@@ -15,17 +22,26 @@
 
   # We use networkd to assign static ip addresses
   networking.useNetworkd = true;
+  networking.useHostResolvConf = false;
   services.resolved.enable = false;
 
-  # Rename the host0 interface to eth0 to match what we expect in VM tests.
+  # Rename the host0 interface to eth1 to match what we expect in VM tests.
   system.activationScripts.renameInterface = ''
-    ${pkgs.iproute2}/bin/ip link set dev host0 name eth1
+    if ${pkgs.iproute2}/bin/ip link show host0 2>/dev/null; then
+      ${pkgs.iproute2}/bin/ip link set dev host0 name eth1
+    fi
   '';
 
   systemd.services.backdoor.enable = false;
 
   # we don't have permission to set cpu scheduler in our container
   systemd.services.nix-daemon.serviceConfig.CPUSchedulingPolicy = lib.mkForce "";
+
+  # Disable suid-sgid-wrappers.service as it fails in the nix sandbox
+  systemd.services.suid-sgid-wrappers.enable = false;
+
+  # Disable resolvconf as it can cause issues in containers because it cannot apply posix acl
+  systemd.services.resolvconf.enable = false;
 
   # Adds `Include /nix/store/...` to `/etc/ssh/ssh_config`[1] which will make
   # SSH fail when running inside a container test as SSH checks the permissions

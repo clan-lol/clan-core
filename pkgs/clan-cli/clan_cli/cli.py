@@ -2,7 +2,6 @@ import argparse
 import contextlib
 import logging
 import sys
-from pathlib import Path
 from types import ModuleType
 
 from clan_lib.custom_logger import setup_logging
@@ -35,13 +34,6 @@ log = logging.getLogger(__name__)
 argcomplete: ModuleType | None = None
 with contextlib.suppress(ImportError):
     import argcomplete  # type: ignore[no-redef]
-
-
-def flake_path(arg: str) -> str:
-    flake_dir = Path(arg).resolve()
-    if flake_dir.exists() and flake_dir.is_dir():
-        return str(flake_dir)
-    return arg
 
 
 def default_flake() -> str | None:
@@ -98,7 +90,6 @@ def add_common_flags(parser: argparse.ArgumentParser) -> None:
             help="path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable",
             default=default_flake(),
             metavar="PATH",
-            type=flake_path,
         )
 
 

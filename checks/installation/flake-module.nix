@@ -149,7 +149,6 @@
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks =
         let
-          # Custom Python package for port management utilities
           closureInfo = pkgs.closureInfo {
             rootPaths = [
               self.checks.x86_64-linux.clan-core-for-checks
@@ -225,7 +224,7 @@
                       "install",
                       "--phases", "disko,install",
                       "--debug",
-                      "--flake", flake_dir,
+                      "--flake", str(flake_dir),
                       "--yes", "test-install-machine-without-system",
                       "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
                       "-i", ssh_conn.ssh_key,
@@ -288,9 +287,6 @@
 
                   assert not os.path.exists(hw_config_file), "hardware-configuration.nix should not exist initially"
                   assert not os.path.exists(facter_file), "facter.json should not exist initially"
-
-                  # Set CLAN_FLAKE for the commands
-                  os.environ["CLAN_FLAKE"] = flake_dir
 
                   # Test facter backend
                   clan_cmd = [

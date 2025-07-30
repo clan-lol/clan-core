@@ -12,7 +12,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any, override
 
 from clan_cli.vars.generate import generate_vars
-from clan_lib.dirs import find_git_repo_root
+from clan_lib.dirs import find_toplevel
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
@@ -139,7 +139,7 @@ def parse_args() -> Options:
             i.e. 'nix eval <repo_root>#checks ...'
         """,
         required=False,
-        default=os.environ.get("PRJ_ROOT", find_git_repo_root()),
+        default=os.environ.get("PRJ_ROOT", find_toplevel([".git"])),
     )
     parser.add_argument(
         "--clean",

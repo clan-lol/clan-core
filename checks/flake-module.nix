@@ -38,6 +38,7 @@ in
       ./flash/flake-module.nix
       ./impure/flake-module.nix
       ./installation/flake-module.nix
+      ./update/flake-module.nix
       ./morph/flake-module.nix
       ./nixos-documentation/flake-module.nix
       ./dont-depend-on-repo-root.nix
@@ -157,8 +158,11 @@ in
 
           clan-core-for-checks = pkgs.runCommand "clan-core-for-checks" { } ''
             cp -r ${pkgs.callPackage ./clan-core-for-checks.nix { }} $out
-            chmod +w $out/flake.lock
+            chmod -R +w $out
             cp ${../flake.lock} $out/flake.lock
+
+            # Create marker file to disable private flake loading in tests
+            touch $out/.skip-private-inputs
           '';
         };
       packages = lib.optionalAttrs (pkgs.stdenv.isLinux) {
