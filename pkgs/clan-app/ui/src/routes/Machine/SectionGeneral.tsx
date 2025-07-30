@@ -80,6 +80,9 @@ export const SectionGeneral = () => {
                   readOnly
                   orientation="horizontal"
                   input={input}
+                  tooltip={
+                    "A unique identifier for this machine. It cannot be changed."
+                  }
                 />
               )}
             </Field>
@@ -91,11 +94,14 @@ export const SectionGeneral = () => {
                   value={field.value}
                   size="s"
                   inverted
-                  label="Class"
+                  label="Platform"
                   required
                   readOnly
                   orientation="horizontal"
                   input={input}
+                  tooltip={
+                    "The target platform for this machine. It cannot be changed. It is set in the installer."
+                  }
                 />
               )}
             </Field>
