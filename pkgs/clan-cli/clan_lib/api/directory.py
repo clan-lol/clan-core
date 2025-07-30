@@ -102,18 +102,6 @@ def get_clan_directories(flake: Flake) -> tuple[str, str]:
         raise ClanError(msg) from e
 
 
-# TODO: Implement create_clan_directory function for interactive directory creation
-def create_clan_directory() -> None:
-    """
-    TODO: Create a new clan directory interactively.
-
-    This function should provide an interactive interface for creating
-    new clan directories with proper initialization.
-    """
-    msg = "create_clan_directory() is not implemented yet"
-    raise NotImplementedError(msg)
-
-
 @dataclass
 class BlkInfo:
     name: str
