@@ -117,6 +117,7 @@ def run_machine_update(
         machine: The Machine instance to deploy.
         target_host: Remote object representing the target host for deployment.
         build_host: Optional Remote object representing the build host.
+        force_fetch_local: Whether to fetch flake inputs locally before uploading.
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
             generating facts or variables.
