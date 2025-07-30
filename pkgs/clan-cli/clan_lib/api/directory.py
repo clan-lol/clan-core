@@ -170,3 +170,22 @@ def list_system_storage_devices() -> Blockdevices:
     return Blockdevices(
         blockdevices=[blk_from_dict(device) for device in blk_info["blockdevices"]]
     )
+
+
+@API.register
+def get_clan_directory_relative(flake: Flake) -> str:
+    """
+    Get the clan directory path relative to the flake root
+    from the clan.directory configuration setting.
+
+    Args:
+        flake: The clan flake to get the relative directory from
+
+    Returns:
+        The relative directory path (e.g., ".", "direct-config", "subdir/config")
+
+    Raises:
+        ClanError: If the flake evaluation fails or directories cannot be found
+    """
+    _, relative_dir = get_clan_directories(flake)
+    return relative_dir
