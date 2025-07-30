@@ -1,4 +1,4 @@
-import "./Toolbar.css";
+import styles from "./Toolbar.module.css";
 import cx from "classnames";
 import { Button } from "@kobalte/core/button";
 import Icon, { IconVariant } from "@/src/components/Icon/Icon";
@@ -13,7 +13,7 @@ export interface ToolbarButtonProps
 export const ToolbarButton = (props: ToolbarButtonProps) => {
   return (
     <Button
-      class={cx("toolbar-button", { selected: props.selected })}
+      class={cx(styles.toolbar_button, { selected: props.selected })}
       {...props}
     >
       <Icon icon={props.icon} inverted={!props.selected} />
