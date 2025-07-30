@@ -49,7 +49,9 @@ def upload_sources(machine: Machine, ssh: Remote, force_fetch_local: bool) -> st
     )
 
     # Construct the remote URL with proper parameters for Darwin
-    remote_url = f"ssh-ng://{ssh.target}"
+    # Dont use ssh-ng here. It makes `flake archive` fail, despite root@..., with:
+    #   cannot add path '/nix/store/...' because it lacks a signature by a trusted key
+    remote_url = f"ssh://{ssh.target}"
     # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
     if machine._class_ == "darwin":
         remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
