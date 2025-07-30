@@ -1,6 +1,6 @@
 { fetchgit }:
 fetchgit {
   url = "https://git.clan.lol/clan/clan-core.git";
-  rev = "eea93ea22c9818da67e148ba586277bab9e73cea";
-  sha256 = "sha256-PV0Z+97QuxQbkYSVuNIJwUNXMbHZG/vhsA9M4cDTCOE=";
+  rev = "ba8a80eccf091fc7f99aef3895e31617d3813d20";
+  sha256 = "189srg4mc5y3prapm8day0x0wpibbqc72hrnl61agsmiq7cfmbkd";
 }
