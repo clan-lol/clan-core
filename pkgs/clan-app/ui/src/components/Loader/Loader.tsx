@@ -1,4 +1,5 @@
-import "./Loader.css";
+// Loader.tsx
+import styles from "./Loader.module.css";
 import cx from "classnames";
 
 export type Hierarchy = "primary" | "secondary";
@@ -9,11 +10,11 @@ export interface LoaderProps {
 
 export const Loader = (props: LoaderProps) => {
   return (
-    <div class={cx("loader", props.hierarchy || "primary")}>
-      <div class="wrapper">
-        <div class="parent"></div>
+    <div class={cx(styles.loader, styles[props.hierarchy || "primary"])}>
+      <div class={styles.wrapper}>
+        <div class={styles.parent}></div>
       </div>
-      <div class="child"></div>
+      <div class={styles.child}></div>
     </div>
   );
 };

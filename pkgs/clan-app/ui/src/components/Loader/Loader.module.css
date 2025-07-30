@@ -15,30 +15,30 @@
       background: #0051ff;
     }
   }
+}
 
-  & > div.wrapper {
-    @apply absolute top-0 left-0 w-full h-full;
+.wrapper {
+  @apply absolute top-0 left-0 w-full h-full;
 
-    transform: translate(0%, 0%) rotate(-45deg);
-    animation: moveLoaderWrapper 1.8s ease-in-out infinite;
+  transform: translate(0%, 0%) rotate(-45deg);
+  animation: moveLoaderWrapper 1.8s ease-in-out infinite;
+}
 
-    & > div.parent {
-      @apply absolute top-1/2 left-1/2;
-      @apply w-2/3 h-2/3;
+.parent {
+  @apply absolute top-1/2 left-1/2;
+  @apply w-2/3 h-2/3;
 
-      border-radius: 50%;
-      animation: moveLoaderParent 1.8s ease-in-out infinite;
-      transform: translateX(-50%) translateY(-50%);
-    }
-  }
+  border-radius: 50%;
+  animation: moveLoaderParent 1.8s ease-in-out infinite;
+  transform: translateX(-50%) translateY(-50%);
+}
 
-  & > .child {
-    @apply absolute z-10 top-1/2 left-1/2 w-1/2 h-1/2;
-    border-radius: 50%;
+.child {
+  @apply absolute z-10 top-1/2 left-1/2 w-1/2 h-1/2;
+  border-radius: 50%;
 
-    transform: translate(-50%, -50%);
-    animation: moveLoaderChild 1.8s ease-in-out infinite;
-  }
+  transform: translate(-50%, -50%);
+  animation: moveLoaderChild 1.8s ease-in-out infinite;
 }
 
 @keyframes moveLoaderWrapper {
