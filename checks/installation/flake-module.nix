@@ -149,7 +149,6 @@
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks =
         let
-          # Custom Python package for port management utilities
           closureInfo = pkgs.closureInfo {
             rootPaths = [
               self.checks.x86_64-linux.clan-core-for-checks
