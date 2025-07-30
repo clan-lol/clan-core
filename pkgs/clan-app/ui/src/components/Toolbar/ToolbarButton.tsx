@@ -13,7 +13,9 @@ export interface ToolbarButtonProps
 export const ToolbarButton = (props: ToolbarButtonProps) => {
   return (
     <Button
-      class={cx(styles.toolbar_button, { selected: props.selected })}
+      class={cx(styles.toolbar_button, {
+        [styles["selected"]]: props.selected,
+      })}
       {...props}
     >
       <Icon icon={props.icon} inverted={!props.selected} />
