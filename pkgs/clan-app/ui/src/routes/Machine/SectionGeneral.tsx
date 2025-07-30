@@ -116,7 +116,13 @@ export const SectionGeneral = () => {
                   inverted
                   readOnly={!editing}
                   orientation="horizontal"
-                  input={{ ...input, rows: 4, placeholder: "No description" }}
+                  input={{
+                    ...input,
+                    autoResize: true,
+                    minRows: 2,
+                    maxRows: 4,
+                    placeholder: "No description",
+                  }}
                 />
               )}
             </Field>

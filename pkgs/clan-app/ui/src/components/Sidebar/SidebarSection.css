@@ -10,6 +10,6 @@ div.sidebar-section {
   }
 
   & > div.content {
-    @apply w-full h-full px-1.5 py-3 rounded-md bg-inv-4;
+    @apply w-full h-fit px-1.5 py-3 rounded-md bg-inv-4;
   }
 }
