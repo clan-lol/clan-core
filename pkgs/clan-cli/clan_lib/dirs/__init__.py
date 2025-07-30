@@ -170,3 +170,51 @@ def nixpkgs_source() -> Path:
 
 def select_source() -> Path:
     return (module_root() / "select").resolve()
+
+
+def get_clan_directories(flake: "Flake") -> tuple[str, str]:
+    """
+    Get the clan source directory and computed clan directory paths.
+
+    Args:
+        flake: The clan flake to get directories from
+
+    Returns:
+        A tuple of (source_directory, computed_clan_directory) where:
+        - source_directory: Path to the clan source in the nixpkgs store
+        - computed_clan_directory: Computed clan directory path (source + relative directory)
+
+    Raises:
+        ClanError: If the flake evaluation fails or directories cannot be found
+    """
+    import json
+    from pathlib import Path
+
+    from clan_lib.cmd import run
+    from clan_lib.nix import nix_eval
+
+    # Get the source directory from nix store
+    root_directory = flake.select("sourceInfo")
+
+    # Get the configured directory using nix eval instead of flake.select
+    # to avoid the select bug with clanInternals.inventoryClass.directory
+    directory_result = run(
+        nix_eval(
+            flags=[
+                f"{flake.identifier}#clanInternals.inventoryClass.directory",
+            ]
+        )
+    )
+    directory = json.loads(directory_result.stdout.strip())
+
+    # Both directories are in the nix store, but we need to calculate the relative path
+    # to get the actual configured value (e.g., "./direct-config")
+    root_path = Path(root_directory)
+    directory_path = Path(directory)
+
+    try:
+        relative_path = directory_path.relative_to(root_path)
+        return (root_directory, str(relative_path))
+    except ValueError as e:
+        msg = f"Directory path '{directory}' is not relative to root directory '{root_directory}'. This indicates a configuration issue with the clan directory setting."
+        raise ClanError(msg) from e
