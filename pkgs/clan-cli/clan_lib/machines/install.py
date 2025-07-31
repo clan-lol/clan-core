@@ -13,6 +13,7 @@ from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.create import create_nixos_anywhere_ssh_key
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ BuildOn = Literal["auto", "local", "remote"]
 class InstallOptions:
     machine: Machine
     kexec: str | None = None
+    anywhere_priv_key: Path | None = None
     debug: bool = False
     no_reboot: bool = False
     phases: str | None = None
@@ -115,8 +117,18 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 "IdentitiesOnly=yes",
             ]
 
+        # Always set a nixos-anywhere private key to prevent failures when running
+        # 'clan install --phases kexec' followed by 'clan install --phases disko,install,reboot'.
+        # The kexec phase requires an authorized key, and if not specified,
+        # nixos-anywhere defaults to a key in a temporary directory.
+        if opts.anywhere_priv_key is None:
+            key_pair = create_nixos_anywhere_ssh_key()
+            opts.anywhere_priv_key = key_pair.private
+        cmd += ["-i", str(opts.anywhere_priv_key)]
+
+        # If we need a different private key for being able to kexec, we can specify it here.
         if target_host.private_key:
-            cmd += ["-i", str(target_host.private_key)]
+            cmd += ["--ssh-option", f"IdentityFile={target_host.private_key}"]
 
         if opts.build_on:
             cmd += ["--build-on", opts.build_on]

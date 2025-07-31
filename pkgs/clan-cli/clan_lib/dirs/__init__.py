@@ -120,6 +120,12 @@ def user_cache_dir() -> Path:
     return Path("~/.cache").expanduser()
 
 
+def user_nixos_anywhere_dir() -> Path:
+    p = user_config_dir() / "clan" / "nixos-anywhere"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
 def user_gcroot_dir() -> Path:
     p = user_config_dir() / "clan" / "gcroots"
     p.mkdir(parents=True, exist_ok=True)
