@@ -18,7 +18,6 @@
           documents = {
             path = "/var/lib/syncthing/documents";
             type = "sendreceive";
-            rescanIntervalS = 1;
           };
           partly_shared = {
             devices = [
@@ -85,12 +84,12 @@
       machine1.succeed("echo music > /var/lib/syncthing/music/music")
       machine3.succeed("echo picture > /var/lib/syncthing/pictures/picture")
 
-      machine2.wait_for_file("/var/lib/syncthing/documents/document")
-      machine3.wait_for_file("/var/lib/syncthing/documents/document")
-      machine4.wait_for_file("/var/lib/syncthing/documents/document")
+      machine2.wait_for_file("/var/lib/syncthing/documents/document", 20)
+      machine3.wait_for_file("/var/lib/syncthing/documents/document", 20)
+      machine4.wait_for_file("/var/lib/syncthing/documents/document", 20)
 
-      machine4.wait_for_file("/var/lib/syncthing/music/music")
+      machine4.wait_for_file("/var/lib/syncthing/music/music", 20)
 
-      machine4.wait_for_file("/var/lib/syncthing/pictures/picture")
+      machine4.wait_for_file("/var/lib/syncthing/pictures/picture", 20)
     '';
 }

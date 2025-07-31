@@ -2,8 +2,13 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/syncthing";
-  manifest.description = "Syncthing file synchronization with automatic peer discovery";
-  manifest.categories = [ "File Sync" ];
+  manifest.description = "Syncthing is a continuous file synchronization program with automatic peer discovery";
+  manifest.categories = [
+    "Utility"
+    "System"
+    "Network"
+  ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.peer = {
     interface =
@@ -152,11 +157,11 @@
                 value = {
                   name = machine;
                   id = readMachineVar machine "syncthing/id/value" "";
-                  addresses = [
-                    "dynamic"
-                  ]
-                  ++
-                    lib.optional (readMachineVar machine "zerotier/zerotier-ip/value" null != null)
+                  addresses =
+                    [
+                      "dynamic"
+                    ]
+                    ++ lib.optional (readMachineVar machine "zerotier/zerotier-ip/value" null != null)
                       "tcp://[${readMachineVar machine "zerotier/zerotier-ip/value" ""}]:22000";
                 };
               })
