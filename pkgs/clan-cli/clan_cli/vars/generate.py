@@ -61,8 +61,19 @@ class Generator:
 
     @classmethod
     def generators_from_flake(
-        cls: type["Generator"], machine_name: str, flake: "Flake"
+        cls: type["Generator"],
+        machine_name: str,
+        flake: "Flake",
+        include_previous_values: bool = False,
     ) -> list["Generator"]:
+        """
+        Get all generators for a machine from the flake.
+        Args:
+            machine_name (str): The name of the machine.
+            flake (Flake): The flake to get the generators from.
+        Returns:
+            list[Generator]: A list of (unsorted) generators for the machine.
+        """
         # Get all generator metadata in one select (safe fields only)
         generators_data = flake.select_machine(
             machine_name,
@@ -76,6 +87,12 @@ class Generator:
             machine_name,
             "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}",
         )
+
+        from clan_lib.machines.machines import Machine
+
+        machine = Machine(name=machine_name, flake=flake)
+        pub_store = machine.public_vars_store
+        sec_store = machine.secret_vars_store
 
         generators = []
         for gen_name, gen_data in generators_data.items():
@@ -96,6 +113,7 @@ class Generator:
                         else int(file_data["mode"], 8)
                     ),
                     needed_for=file_data["neededFor"],
+                    _store=pub_store if not file_data["secret"] else sec_store,
                 )
                 files.append(var)
 
@@ -113,6 +131,14 @@ class Generator:
                 _flake=flake,
             )
             generators.append(generator)
+
+        # TODO: This should be done in a non-mutable way.
+        if include_previous_values:
+            for generator in generators:
+                for prompt in generator.prompts:
+                    prompt.previous_value = _get_previous_value(
+                        machine, generator, prompt
+                    )
 
         return generators
 
@@ -431,7 +457,6 @@ def get_closure(
 def get_generators(
     machine_name: str,
     base_dir: Path,
-    full_closure: bool = False,
     include_previous_values: bool = False,
 ) -> list[Generator]:
     """
@@ -442,20 +467,14 @@ def get_generators(
     Args:
         machine_name (str): The name of the machine.
         base_dir (Path): The base directory of the flake.
-        full_closure (bool): Whether to return the full closure of generators. If False,
-            it returns only the generators that are missing or need to be regenerated.
-        include_previous_values (bool): Whether to include previous values for prompts.
     Returns:
         list[Generator]: A list of generators for the machine.
-
     """
-    from clan_lib.machines.machines import Machine
 
-    return get_closure(
-        machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
-        generator_name=None,
-        full_closure=full_closure,
-        include_previous_values=include_previous_values,
+    return Generator.generators_from_flake(
+        machine_name,
+        Flake(str(base_dir)),
+        include_previous_values,
     )
 
 
