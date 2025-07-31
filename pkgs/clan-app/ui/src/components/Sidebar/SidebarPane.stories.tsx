@@ -12,18 +12,9 @@ import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm"
 import * as v from "valibot";
 import { splitProps } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
+import { MachineTags } from "@/src/components/Form/MachineTags";
 
 type Story = StoryObj<SidebarPaneProps>;
-
-const schema = v.object({
-  firstName: v.pipe(v.string(), v.nonEmpty("Please enter a first name.")),
-  lastName: v.pipe(v.string(), v.nonEmpty("Please enter a last name.")),
-  bio: v.string(),
-  shareProfile: v.optional(v.boolean()),
-  tags: v.pipe(v.optional(v.array(v.string()))),
-});
-
-const clanURI = "/home/brian/clans/my-clan";
 
 const profiles = {
   ron: {
@@ -31,7 +22,7 @@ const profiles = {
     lastName: "Burgundy",
     bio: "It's actually an optical illusion, it's the pattern on the pants.",
     shareProfile: true,
-    tags: ["All", "Home Server", "Backup", "Random"],
+    tags: ["all", "home Server", "backup", "random"],
   },
 };
 
@@ -52,7 +43,18 @@ export const Default: Story = {
       <>
         <SidebarSectionForm
           title="General"
-          schema={schema}
+          schema={v.object({
+            firstName: v.pipe(
+              v.string(),
+              v.nonEmpty("Please enter a first name."),
+            ),
+            lastName: v.pipe(
+              v.string(),
+              v.nonEmpty("Please enter a last name."),
+            ),
+            bio: v.string(),
+            shareProfile: v.optional(v.boolean()),
+          })}
           initialValues={profiles.ron}
           onSubmit={async () => {
             console.log("saving general");
@@ -125,33 +127,33 @@ export const Default: Story = {
             </div>
           )}
         </SidebarSectionForm>
-        {/* todo fix tags component */}
-        {/*<SidebarSectionForm*/}
-        {/*  title="Tags"*/}
-        {/*  schema={schema}*/}
-        {/*  initialValues={profiles.ron}*/}
-        {/*  onSubmit={async () => {*/}
-        {/*    console.log("saving general");*/}
-        {/*  }}*/}
-        {/*>*/}
-        {/*  {({ editing, Field }) => (*/}
-        {/*    <Field name="tags">*/}
-        {/*      {(field, input) => (*/}
-        {/*        <Combobox*/}
-        {/*          {...field}*/}
-        {/*          value={field.value}*/}
-        {/*          options={field.value || []}*/}
-        {/*          size="s"*/}
-        {/*          inverted*/}
-        {/*          required*/}
-        {/*          readOnly={!editing}*/}
-        {/*          orientation="horizontal"*/}
-        {/*          multiple*/}
-        {/*        />*/}
-        {/*      )}*/}
-        {/*    </Field>*/}
-        {/*  )}*/}
-        {/*</SidebarSectionForm>*/}
+        <SidebarSectionForm
+          title="Tags"
+          schema={v.object({
+            tags: v.pipe(v.array(v.string()), v.nonEmpty()),
+          })}
+          initialValues={profiles.ron}
+          onSubmit={async (values) => {
+            console.log("saving tags", values);
+          }}
+        >
+          {({ editing, Field }) => (
+            <Field name="tags" type="string[]">
+              {(field, input) => (
+                <MachineTags
+                  {...splitProps(field, ["value"])[1]}
+                  size="s"
+                  inverted
+                  required
+                  readOnly={!editing}
+                  orientation="horizontal"
+                  defaultValue={field.value}
+                  input={input}
+                />
+              )}
+            </Field>
+          )}
+        </SidebarSectionForm>
         <SidebarSection title="Simple" class="flex flex-col">
           <Typography tag="h2" hierarchy="title" size="m" inverted>
             Static Content

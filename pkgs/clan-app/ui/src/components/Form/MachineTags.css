@@ -1,9 +1,9 @@
-div.form-field.combobox {
+div.form-field.machine-tags {
   div.control {
     @apply flex flex-col size-full gap-2;
 
     div.selected-options {
-      @apply flex flex-wrap gap-1 size-full min-h-5;
+      @apply flex flex-wrap gap-2 size-full min-h-5;
     }
 
     div.input-container {
@@ -137,14 +137,14 @@ div.form-field.combobox {
   }
 }
 
-div.combobox-content {
-  @apply rounded-sm bg-def-1 border border-def-2;
+div.machine-tags-content {
+  @apply rounded-sm bg-def-1 border border-def-2 z-10;
 
   transform-origin: var(--kb-combobox-content-transform-origin);
-  animation: comboboxContentHide 250ms ease-in forwards;
+  animation: machineTagsContentHide 250ms ease-in forwards;
 
   &[data-expanded] {
-    animation: comboboxContentShow 250ms ease-out;
+    animation: machineTagsContentShow 250ms ease-out;
   }
 
   & > ul.listbox {
@@ -186,7 +186,7 @@ div.combobox-content {
   }
 }
 
-div.combobox-control {
+div.machine-tags-control {
   @apply flex flex-col w-full gap-2;
 
   & > div.selected-options {
@@ -198,7 +198,7 @@ div.combobox-control {
   }
 }
 
-@keyframes comboboxContentShow {
+@keyframes machineTagsContentShow {
   from {
     opacity: 0;
     transform: translateY(-8px);
@@ -209,7 +209,7 @@ div.combobox-control {
   }
 }
 
-@keyframes comboboxContentHide {
+@keyframes machineTagsContentHide {
   from {
     opacity: 1;
     transform: translateY(0);
