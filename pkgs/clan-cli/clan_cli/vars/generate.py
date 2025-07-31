@@ -61,7 +61,10 @@ class Generator:
 
     @classmethod
     def generators_from_flake(
-        cls: type["Generator"], machine_name: str, flake: "Flake"
+        cls: type["Generator"],
+        machine_name: str,
+        flake: "Flake",
+        include_previous_values: bool = False,
     ) -> list["Generator"]:
         """
         Get all generators for a machine from the flake.
@@ -85,6 +88,12 @@ class Generator:
             "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}",
         )
 
+        from clan_lib.machines.machines import Machine
+
+        machine = Machine(name=machine_name, flake=flake)
+        pub_store = machine.public_vars_store
+        sec_store = machine.secret_vars_store
+
         generators = []
         for gen_name, gen_data in generators_data.items():
             # Build files from the files_data
@@ -104,6 +113,7 @@ class Generator:
                         else int(file_data["mode"], 8)
                     ),
                     needed_for=file_data["neededFor"],
+                    _store=pub_store if not file_data["secret"] else sec_store,
                 )
                 files.append(var)
 
@@ -121,6 +131,14 @@ class Generator:
                 _flake=flake,
             )
             generators.append(generator)
+
+        # TODO: This should be done in a non-mutable way.
+        if include_previous_values:
+            for generator in generators:
+                for prompt in generator.prompts:
+                    prompt.previous_value = _get_previous_value(
+                        machine, generator, prompt
+                    )
 
         return generators
 
@@ -439,6 +457,7 @@ def get_closure(
 def get_generators(
     machine_name: str,
     base_dir: Path,
+    include_previous_values: bool = False,
 ) -> list[Generator]:
     """
     Get the list of generators for a machine, optionally with previous values.
@@ -455,6 +474,7 @@ def get_generators(
     return Generator.generators_from_flake(
         machine_name,
         Flake(str(base_dir)),
+        include_previous_values,
     )
 
 

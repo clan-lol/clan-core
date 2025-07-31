@@ -711,9 +711,11 @@ def test_api_set_prompts(
     assert store.get(my_generator, "prompt1").decode() == "input2"
 
     generators = get_generators(
-        machine_name="my_machine",
-        base_dir=flake.path,
+        machine_name="my_machine", base_dir=flake.path, include_previous_values=True
     )
+    # get_generators should bind the store
+    assert generators[0].files[0]._store is not None
+
     assert len(generators) == 1
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"
