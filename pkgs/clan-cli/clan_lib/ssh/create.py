@@ -2,7 +2,6 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import user_nixos_anywhere_dir
 
@@ -15,8 +14,7 @@ class SSHKeyPair:
     public: Path
 
 
-@API.register
-def create_nixos_anywhere_ssh_key() -> SSHKeyPair:
+def create_secret_key_nixos_anywhere() -> SSHKeyPair:
     """
     Create a new SSH key pair for NixOS Anywhere.
     The keys are stored in ~/.config/clan/nixos-anywhere/keys/id_ed25519 and id_ed25519.pub.

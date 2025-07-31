@@ -5,7 +5,7 @@ Clan CLI enables you to remotely update your machines over SSH. This requires se
 
 ### Setting `targetHost`
 
-In your nix files set the targetHost (reachable ip) that your new machine now has. This removes the need to add `--targetHost` to every command.
+In your Nix files, set the `targetHost` to the reachable IP address of your new machine. This eliminates the need to specify `--target-host` with every command.
 
 
 ```{.nix title="clan.nix" hl_lines="9"}

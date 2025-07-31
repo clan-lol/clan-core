@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from clan_lib.ssh.create import create_nixos_anywhere_ssh_key
+from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 
 
 def test_clan_generate_sshkeys(temporary_home: Path) -> None:
-    keypair = create_nixos_anywhere_ssh_key()
+    keypair = create_secret_key_nixos_anywhere()
 
     assert keypair.private.exists()
     assert keypair.public.exists()
@@ -22,7 +22,7 @@ def test_clan_generate_sshkeys(temporary_home: Path) -> None:
     assert "PRIVATE KEY" in keypair.private.read_text()
     assert "ssh-ed25519" in keypair.public.read_text()
 
-    new_keypair = create_nixos_anywhere_ssh_key()
+    new_keypair = create_secret_key_nixos_anywhere()
 
     assert new_keypair.private == keypair.private
     assert new_keypair.public == keypair.public

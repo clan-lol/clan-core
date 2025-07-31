@@ -47,7 +47,7 @@ Examples:
   $ clan machines update machine1 machine2 --tags production
   Will update only machine1 and machine2 if they both have the "production" tag.
 
-For more detailed information, visit: https://docs.clan.lol/guides/getting-started/deploy
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/update
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -133,8 +133,8 @@ Examples:
   Will install the specified machine [MACHINE] to the host exposed by
   the deployment information of the [JSON] deployment string.
 
-For information on how to set up the installer see: https://docs.clan.lol/guides/getting-started/installer/
-For more detailed information, visit: https://docs.clan.lol/guides/getting-started/deploy
+For information on how to set up the installer see: https://docs.clan.lol/guides/getting-started/create-installer/
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/hardware-report-physical
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,

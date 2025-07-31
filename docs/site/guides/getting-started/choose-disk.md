@@ -2,6 +2,34 @@
 
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
+To see what disk templates are available run:
+```{.shellSession hl_lines="10" .no-copy}
+$ clan templates list
+
+Available 'clan' template
+├── <builtin>
+│   ├── default: Initialize a new clan flake
+│   ├── flake-parts: Flake-parts
+│   └── minimal: for clans managed via (G)UI
+Available 'disko' templates
+├── <builtin>
+│   └── single-disk: A simple ext4 disk with a single partition
+Available 'machine' templates
+├── <builtin>
+│   ├── demo-template: Demo machine for the CLAN project
+│   ├── flash-installer: Initialize a new flash-installer machine
+│   ├── new-machine: Initialize a new machine
+│   └── test-morph-template: Morph a machine
+```
+
+
+For this guide we will select the `single-disk` template, that uses `A simple ext4 disk with a single partition`.
+
+!!! tip
+    For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
+    You can also [contribute a disk template to clan core](https://docs.clan.lol/guides/disko-templates/community/)
+
+
 To setup a disk schema for a machine run
 
 ```bash
@@ -30,15 +58,9 @@ Applied disk template 'single-disk' to machine 'jon'
 A disko.nix file should be created in `machines/jon`
 You can have a look and customize it if needed.
 
-!!! tip
-    For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
-
 !!! Danger
-    Don't change the `disko.nix` after the machine is installed for the first time.
-
+    Don't change the `disko.nix` after the machine is installed for the first time, unless you really know what you are doing.
     Changing disko configuration requires wiping and reinstalling the machine.
-
-    Unless you really know what you are doing.
 
 ## Deploy the machine
 

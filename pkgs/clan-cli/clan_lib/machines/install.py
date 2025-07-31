@@ -13,7 +13,7 @@ from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
-from clan_lib.ssh.create import create_nixos_anywhere_ssh_key
+from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         # The kexec phase requires an authorized key, and if not specified,
         # nixos-anywhere defaults to a key in a temporary directory.
         if opts.anywhere_priv_key is None:
-            key_pair = create_nixos_anywhere_ssh_key()
+            key_pair = create_secret_key_nixos_anywhere()
             opts.anywhere_priv_key = key_pair.private
         cmd += ["-i", str(opts.anywhere_priv_key)]
 
