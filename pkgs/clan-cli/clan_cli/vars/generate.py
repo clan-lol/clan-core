@@ -63,6 +63,14 @@ class Generator:
     def generators_from_flake(
         cls: type["Generator"], machine_name: str, flake: "Flake"
     ) -> list["Generator"]:
+        """
+        Get all generators for a machine from the flake.
+        Args:
+            machine_name (str): The name of the machine.
+            flake (Flake): The flake to get the generators from.
+        Returns:
+            list[Generator]: A list of (unsorted) generators for the machine.
+        """
         # Get all generator metadata in one select (safe fields only)
         generators_data = flake.select_machine(
             machine_name,
@@ -431,8 +439,6 @@ def get_closure(
 def get_generators(
     machine_name: str,
     base_dir: Path,
-    full_closure: bool = False,
-    include_previous_values: bool = False,
 ) -> list[Generator]:
     """
     Get the list of generators for a machine, optionally with previous values.
@@ -442,20 +448,13 @@ def get_generators(
     Args:
         machine_name (str): The name of the machine.
         base_dir (Path): The base directory of the flake.
-        full_closure (bool): Whether to return the full closure of generators. If False,
-            it returns only the generators that are missing or need to be regenerated.
-        include_previous_values (bool): Whether to include previous values for prompts.
     Returns:
         list[Generator]: A list of generators for the machine.
-
     """
-    from clan_lib.machines.machines import Machine
 
-    return get_closure(
-        machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
-        generator_name=None,
-        full_closure=full_closure,
-        include_previous_values=include_previous_values,
+    return Generator.generators_from_flake(
+        machine_name,
+        Flake(str(base_dir)),
     )
 
 
