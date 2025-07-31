@@ -1,6 +1,7 @@
 {
   self,
   lib,
+  inputs,
   ...
 }:
 let
@@ -13,8 +14,30 @@ in
     syncthing = module;
   };
   perSystem =
+    let
+      unit-test-module = (
+        self.clanLib.test.flakeModules.makeEvalChecks {
+          inherit module;
+          inherit inputs;
+          fileset = lib.fileset.unions [
+            # The zerotier service being tested
+            ../../clanServices/syncthing
+            # Required modules
+            ../../nixosModules/clanCore
+            # Dependencies like clan-cli
+            ../../pkgs/clan-cli
+          ];
+          testName = "syncthing";
+          tests = ./tests/eval-tests.nix;
+          testArgs = { };
+        }
+      );
+    in
     { ... }:
     {
+      imports = [
+        unit-test-module
+      ];
       /**
         1. Prepare the test vars
         nix run .#generate-test-vars -- clanServices/syncthing/tests/vm syncthing-service
