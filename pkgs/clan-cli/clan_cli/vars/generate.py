@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -213,27 +213,29 @@ def decrypt_dependencies(
     secret_vars_store: StoreBase,
     public_vars_store: StoreBase,
 ) -> dict[str, dict[str, bytes]]:
-    decrypted_dependencies: dict[str, Any] = {}
+    generators = Generator.generators_from_flake(machine.name, machine.flake)
+
+    result: dict[str, dict[str, bytes]] = {}
+
     for generator_name in set(generator.dependencies):
-        decrypted_dependencies[generator_name] = {}
-        generators = Generator.generators_from_flake(machine.name, machine.flake)
-        for dep_generator in generators:
-            if generator_name == dep_generator.name:
-                break
-        else:
-            msg = f"Could not find dependent generator {generator_name} in machine {machine.name}"
+        result[generator_name] = {}
+
+        dep_generator = next(g for g in generators if g.name == generator_name)
+        if dep_generator is None:
+            msg = f"Generator {generator_name} not found in machine {machine.name}"
             raise ClanError(msg)
+
         dep_files = dep_generator.files
         for file in dep_files:
             if file.secret:
-                decrypted_dependencies[generator_name][file.name] = (
-                    secret_vars_store.get(dep_generator, file.name)
+                result[generator_name][file.name] = secret_vars_store.get(
+                    dep_generator, file.name
                 )
             else:
-                decrypted_dependencies[generator_name][file.name] = (
-                    public_vars_store.get(dep_generator, file.name)
+                result[generator_name][file.name] = public_vars_store.get(
+                    dep_generator, file.name
                 )
-    return decrypted_dependencies
+    return result
 
 
 # decrypt dependencies and return temporary file tree
