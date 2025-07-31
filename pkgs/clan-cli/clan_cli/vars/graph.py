@@ -80,11 +80,22 @@ def toposort_closure(
 
 # all generators in topological order
 def full_closure(generators: dict[str, Generator]) -> list[Generator]:
+    """
+    From a set of generators, return all generators in topological order.
+    This includes all dependencies and dependents of the generators.
+    Returns all generators in topological order.
+    """
     return toposort_closure(generators.keys(), generators)
 
 
 # just the missing generators including their dependents
 def all_missing_closure(generators: dict[str, Generator]) -> list[Generator]:
+    """
+    From a set of generators, return all incomplete generators in topological order.
+
+    incomplete
+    : A generator is missing if at least one of its files is missing.
+    """
     # collect all generators that are missing from disk
     closure = {gen_name for gen_name, gen in generators.items() if not gen.exists}
     closure = add_dependents(closure, generators)
