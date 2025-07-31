@@ -49,12 +49,16 @@ nav:
   - Guides:
       - Getting Started:
           - Creating Your First Clan: guides/getting-started/index.md
-          - Create USB Installer: guides/getting-started/installer.md
           - Add Machines: guides/getting-started/add-machines.md
           - Add User: guides/getting-started/add-user.md
           - Add Services: guides/getting-started/add-services.md
-          - Deploy Machine: guides/getting-started/deploy.md
-          - Continuous Integration: guides/getting-started/check.md
+          - Deploy to Physical Machine:
+              - Create USB Installer: guides/getting-started/create-installer.md
+              - Deploy Physical Machine: guides/getting-started/hardware-report-physical.md
+          - Deploy to Virtual Machine: guides/getting-started/hardware-report-virtual.md
+          - Configure Disk Config: guides/getting-started/choose-disk.md
+          - Update Machine: guides/getting-started/update.md
+          - Continuous Integration: guides/getting-started/flake-check.md
       - Using Services: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
