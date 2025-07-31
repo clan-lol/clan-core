@@ -1,7 +1,6 @@
 import * as v from "valibot";
 import { Show, splitProps } from "solid-js";
-import { Machine } from "@/src/hooks/queries";
-import { callApi } from "@/src/hooks/api";
+import { MachineDetail } from "@/src/hooks/queries";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { pick } from "@/src/util";
 import { UseQueryResult } from "@tanstack/solid-query";
@@ -16,7 +15,8 @@ type FormValues = v.InferInput<typeof schema>;
 export interface SectionTags {
   clanURI: string;
   machineName: string;
-  machineQuery: UseQueryResult<Machine>;
+  onSubmit: (values: FormValues) => Promise<void>;
+  machineQuery: UseQueryResult<MachineDetail>;
 }
 
 export const SectionTags = (props: SectionTags) => {
@@ -27,31 +27,7 @@ export const SectionTags = (props: SectionTags) => {
       return {};
     }
 
-    return pick(machineQuery.data, ["tags"]) satisfies FormValues;
-  };
-
-  const onSubmit = async (values: FormValues) => {
-    console.log("submitting tags", values);
-    const call = callApi("set_machine", {
-      machine: {
-        name: props.machineName,
-        flake: {
-          identifier: props.clanURI,
-        },
-      },
-      update: {
-        ...machineQuery.data,
-        ...values,
-      },
-    });
-
-    const result = await call.result;
-    if (result.status === "error") {
-      throw new Error(result.errors[0].message);
-    }
-
-    // refresh the query
-    await machineQuery.refetch();
+    return pick(machineQuery.data.machine, ["tags"]) satisfies FormValues;
   };
 
   return (
@@ -59,7 +35,7 @@ export const SectionTags = (props: SectionTags) => {
       <SidebarSectionForm
         title="Tags"
         schema={schema}
-        onSubmit={onSubmit}
+        onSubmit={props.onSubmit}
         initialValues={initialValues()}
       >
         {({ editing, Field }) => (

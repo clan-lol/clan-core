@@ -6,9 +6,21 @@ import { useApiClient } from "./ApiClient";
 export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
 
+export type FieldSchema<T> = {
+  [K in keyof T]: {
+    readonly: boolean;
+    reason?: string;
+  };
+};
+
 export type Machine = SuccessData<"get_machine">;
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
+
+export interface MachineDetail {
+  machine: Machine;
+  fieldsSchema: FieldSchema<Machine>;
+}
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
 export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
@@ -35,22 +47,43 @@ export const useMachinesQuery = (clanURI: string) => {
 
 export const useMachineQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
-  return useQuery<Machine>(() => ({
+  return useQuery<MachineDetail>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
     queryFn: async () => {
-      const call = client.fetch("get_machine", {
-        name: machineName,
-        flake: {
-          identifier: clanURI,
-        },
-      });
+      const [machineCall, schemaCall] = await Promise.all([
+        client.fetch("get_machine", {
+          name: machineName,
+          flake: {
+            identifier: clanURI,
+          },
+        }),
+        client.fetch("get_machine_fields_schema", {
+          machine: {
+            name: machineName,
+            flake: {
+              identifier: clanURI,
+            },
+          },
+        }),
+      ]);
 
-      const result = await call.result;
-      if (result.status === "error") {
-        throw new Error("Error fetching machine: " + result.errors[0].message);
+      const machine = await machineCall.result;
+      if (machine.status === "error") {
+        throw new Error("Error fetching machine: " + machine.errors[0].message);
       }
 
-      return result.data;
+      const writeSchema = await schemaCall.result;
+      if (writeSchema.status === "error") {
+        throw new Error(
+          "Error fetching machine fields schema: " +
+            writeSchema.errors[0].message,
+        );
+      }
+
+      return {
+        machine: machine.data,
+        fieldsSchema: writeSchema.data,
+      };
     },
   }));
 };

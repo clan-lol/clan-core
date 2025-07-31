@@ -3,24 +3,30 @@ import { TextInput } from "@/src/components/Form/TextInput";
 import { Divider } from "@/src/components/Divider/Divider";
 import { TextArea } from "@/src/components/Form/TextArea";
 import { Show, splitProps } from "solid-js";
-import { Machine } from "@/src/hooks/queries";
-import { callApi } from "@/src/hooks/api";
+import { MachineDetail } from "@/src/hooks/queries";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { pick } from "@/src/util";
 import { UseQueryResult } from "@tanstack/solid-query";
+import { tooltipText } from "@/src/components/Form";
 
 const schema = v.object({
   name: v.pipe(v.optional(v.string()), v.readonly()),
   description: v.nullish(v.string()),
-  machineClass: v.optional(v.picklist(["nixos", "darwin"])),
+  machineClass: v.pipe(
+    v.optional(v.picklist(["nixos", "darwin"])),
+    v.readonly(),
+  ),
 });
+
+type FieldNames = "name" | "description" | "machineClass";
 
 type FormValues = v.InferInput<typeof schema>;
 
 export interface SectionGeneralProps {
   clanURI: string;
   machineName: string;
-  machineQuery: UseQueryResult<Machine>;
+  onSubmit: (values: FormValues) => Promise<void>;
+  machineQuery: UseQueryResult<MachineDetail>;
 }
 
 export const SectionGeneral = (props: SectionGeneralProps) => {
@@ -31,34 +37,27 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
       return {};
     }
 
-    return pick(machineQuery.data, [
+    return pick(machineQuery.data.machine, [
       "name",
       "description",
       "machineClass",
     ]) satisfies FormValues;
   };
 
-  const onSubmit = async (values: FormValues) => {
-    const call = callApi("set_machine", {
-      machine: {
-        name: props.machineName,
-        flake: {
-          identifier: props.clanURI,
-        },
-      },
-      update: {
-        ...machineQuery.data,
-        ...values,
-      },
-    });
-
-    const result = await call.result;
-    if (result.status === "error") {
-      throw new Error(result.errors[0].message);
+  const fieldsSchema = () => {
+    if (!machineQuery.isSuccess) {
+      return undefined;
     }
 
-    // refresh the query
-    await machineQuery.refetch();
+    return machineQuery.data.fieldsSchema;
+  };
+
+  const readOnly = (editing: boolean, name: FieldNames) => {
+    if (!editing) {
+      return true;
+    }
+
+    return fieldsSchema()?.[name]?.readonly ?? false;
   };
 
   return (
@@ -66,7 +65,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
       <SidebarSectionForm
         title="General"
         schema={schema}
-        onSubmit={onSubmit}
+        onSubmit={props.onSubmit}
         initialValues={initialValues()}
       >
         {({ editing, Field }) => (
@@ -80,12 +79,14 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   inverted
                   label="Name"
                   required
-                  readOnly
+                  readOnly={readOnly(editing, "name")}
                   orientation="horizontal"
                   input={input}
-                  tooltip={
-                    "A unique identifier for this machine. It cannot be changed."
-                  }
+                  tooltip={tooltipText(
+                    "name",
+                    fieldsSchema()!,
+                    "A unique identifier for this machine",
+                  )}
                 />
               )}
             </Field>
@@ -99,12 +100,14 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   inverted
                   label="Platform"
                   required
-                  readOnly
+                  readOnly={readOnly(editing, "machineClass")}
                   orientation="horizontal"
                   input={input}
-                  tooltip={
-                    "The target platform for this machine. It cannot be changed. It is set in the installer."
-                  }
+                  tooltip={tooltipText(
+                    "machineClass",
+                    fieldsSchema()!,
+                    "The target platform for this machine",
+                  )}
                 />
               )}
             </Field>
@@ -117,7 +120,8 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   size="s"
                   label="Description"
                   inverted
-                  readOnly={!editing}
+                  readOnly={readOnly(editing, "description")}
+                  tooltip={tooltipText("description", fieldsSchema()!)}
                   orientation="horizontal"
                   input={{
                     ...input,
