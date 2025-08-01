@@ -114,3 +114,30 @@ export const ReadOnly: Story = {
       "Good evening. I'm Ron Burgundy, and this is what's happening in your world tonight. ",
   },
 };
+
+export const AutoResize: Story = {
+  args: {
+    label: "Auto-resizing TextArea",
+    description:
+      "This textarea automatically adjusts its height based on content",
+    tooltip: "Try typing multiple lines to see it grow",
+    input: {
+      placeholder: "Start typing to see the textarea grow...",
+      autoResize: true,
+      minRows: 2,
+      maxRows: 10,
+    },
+  },
+};
+
+export const AutoResizeNoMax: Story = {
+  args: {
+    label: "Auto-resize without max height",
+    description: "This textarea grows indefinitely with content",
+    input: {
+      placeholder: "This will grow as much as needed...",
+      autoResize: true,
+      minRows: 3,
+    },
+  },
+};

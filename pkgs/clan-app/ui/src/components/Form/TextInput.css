@@ -42,6 +42,11 @@ div.form-field {
     &[data-readonly] {
       @apply overflow-y-hidden;
     }
+
+    &.auto-resize {
+      @apply resize-none overflow-y-auto;
+      transition: height 0.1s ease-out;
+    }
   }
 
   &.horizontal {
