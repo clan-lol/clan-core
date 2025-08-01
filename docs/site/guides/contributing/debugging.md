@@ -24,6 +24,10 @@ pkgs.mkShell {
 }
 ```
 
+## Debugging nixos-anywhere
+
+If you encounter a bug in a complex shell script such as `nixos-anywhere`, start by replacing the `nixos-anywhere` command with a local checkout of the project, look in the [contribution](./CONTRIBUTING.md) section for an example. 
+
 ## The Debug Flag
 
 You can enhance your debugging process with the `--debug` flag in the `clan` command. When you add this flag to any command, it displays all subprocess commands initiated by `clan` in a readable format, along with the source code position that triggered them. This feature makes it easier to understand and trace what's happening under the hood.

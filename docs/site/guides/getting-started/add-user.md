@@ -49,7 +49,7 @@ The example shows how to add a user called `jon`:
 2. Add this user to `all` machines
 3. Define the `name` of the user to be `jon`
 
-The `users` service creates a `/home/jon` directory, allows `jon` to sign in and will take care of the users password as part of [deployment](./deploy.md).
+The `users` service creates a `/home/jon` directory, allows `jon` to sign in and will take care of the user's password.
 
 For more information see [clanService/users](../../reference/clanServices/users.md)
 

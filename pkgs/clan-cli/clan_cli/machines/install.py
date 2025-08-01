@@ -58,6 +58,9 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             target_host = machine.target_host().override(host_key_check=host_key_check)
 
+        if args.identity_file:
+            target_host = target_host.override(private_key=args.identity_file)
+
         if machine._class_ == "darwin":
             msg = "Installing macOS machines is not yet supported"
             raise ClanError(msg)

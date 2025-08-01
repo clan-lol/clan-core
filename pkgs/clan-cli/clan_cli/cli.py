@@ -244,7 +244,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/installer")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/create-installer")}
             """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -271,7 +271,7 @@ Examples:
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/deploy")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/hardware-report-physical")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -402,7 +402,7 @@ Examples:
   If the `--target-host` flag is omitted will try to find host information by
   checking the deployment configuration inside the specified machine.
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/deploy")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/update")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
