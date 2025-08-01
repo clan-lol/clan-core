@@ -43,6 +43,43 @@ let
         { config._module.args.pkgs = pkgs; }
       ];
     };
+  # Display module for prompts
+  displayModule = {
+    options = {
+      display.group = mkOption {
+        type = nullOr str;
+        description = ''
+          The group to display the prompt in.
+          This is useful to group prompts together.
+        '';
+        default = null;
+      };
+      display.label = mkOption {
+        type = nullOr str;
+        description = ''
+          The label to display for the prompt.
+          If not set, the name of the prompt will be used.
+        '';
+        default = null;
+      };
+      display.required = mkOption {
+        type = bool;
+        description = ''
+          Whether the prompt is required.
+          If set to false, the user will be able to continue without providing a value.
+        '';
+        default = true;
+      };
+      display.helperText = mkOption {
+        type = nullOr str;
+        description = ''
+          Additional text to display next to the prompt.
+          This can be used to provide additional information about the prompt.
+        '';
+        default = null;
+      };
+    };
+  };
 in
 {
   options = {
@@ -303,6 +340,7 @@ in
               default = { };
               type = attrsOf (
                 submodule (prompt: {
+                  imports = [ displayModule ];
                   options = {
                     name = mkOption {
                       description = ''

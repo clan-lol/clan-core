@@ -88,6 +88,14 @@
               files.user-password.deploy = false;
 
               prompts.user-password = lib.mkIf settings.prompt {
+                display = {
+                  group = settings.user;
+                  label = "password";
+                  required = false;
+                  helperText = ''
+                    Your password will be encrypted and stored securely using the secret store you've configured.
+                  '';
+                };
                 type = "hidden";
                 persist = true;
                 description = "You can autogenerate a password, if you leave this prompt blank.";
