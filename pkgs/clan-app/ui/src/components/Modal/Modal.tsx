@@ -16,6 +16,7 @@ export interface ModalProps {
   children: (ctx: ModalContext) => JSX.Element;
   mount?: Node;
   class?: string;
+  header?: () => JSX.Element;
 }
 
 export const Modal = (props: ModalProps) => {
@@ -43,6 +44,7 @@ export const Modal = (props: ModalProps) => {
               <Icon icon="Close" size="0.75rem" />
             </KDialog.CloseButton>
           </div>
+          {props.header?.()}
           <div class={styles.modal_body}>
             {props.children({
               close: () => {
