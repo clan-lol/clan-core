@@ -7,10 +7,10 @@ hide:
 # :material-home: What is Clan?
 
 [Clan](https://clan.lol/) is a peer-to-peer computer management framework that
-empowers you to **selfhost in a reliable and scalable way**.   
+empowers you to **selfhost in a reliable and scalable way**.
 
 Built on NixOS, Clan provides a **declarative interface for managing machines** with automated [secret management](./guides/secrets.md), easy [mesh VPN
-connectivity](./guides/mesh-vpn.md), and [automated backups](./guides/backups.md). 
+connectivity](./guides/mesh-vpn.md), and [automated backups](./guides/backups.md).
 
 Whether you're running a homelab or maintaining critical computing infrastructure,
 Clan will help **reduce maintenance burden** by allowing a **git repository to define your whole network** of computers.
@@ -35,11 +35,11 @@ How-to Guides for achieving a certain goal or solving a specific issue.
 
     Get started in less than 20 minutes!
 
--   [Mac OS](./guides/macos.md)
+-   [macOS](./guides/macos.md)
 
     ---
 
-    How to manage Mac OS machines with Clan
+    Using Clan to manage your macOS machines
 
 -   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
