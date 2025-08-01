@@ -48,9 +48,6 @@ export const TextArea = (props: TextAreaProps) => {
     // Update the height
     textareaRef.style.height = `${newHeight}px`;
     textareaRef.style.maxHeight = `${maxHeight}px`;
-
-    console.log("min/max height", minHeight, maxHeight);
-    console.log("textarea ref style", textareaRef.style);
   };
 
   // Set up auto-resize effect
