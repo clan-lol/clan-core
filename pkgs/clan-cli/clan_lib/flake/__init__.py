@@ -1,1 +1,1 @@
-from .flake import Flake, require_flake  # noqa
+from .flake import Flake, require_flake, ClanSelectError  # noqa

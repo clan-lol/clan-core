@@ -11,7 +11,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_lib.errors import ClanError
+from clan_lib.errors import ClanCmdError, ClanError
 
 log = logging.getLogger(__name__)
 
@@ -143,6 +143,42 @@ class Selector:
         raise ValueError(msg)
 
 
+class ClanSelectError(ClanError):
+    selectors: list[str]
+    failed_attr: str | None = None
+    flake_identifier: str
+
+    def __init__(
+        self,
+        flake_identifier: str,
+        selectors: list[str],
+        cmd_error: ClanCmdError | None = None,
+    ) -> None:
+        attribute = None
+        if cmd_error:
+            attribute_match = re.search(r"error: attribute '([^']+)'", str(cmd_error))
+            attribute = attribute_match.group(1) if attribute_match else None
+        if selectors == []:
+            msg = "failed to select []\n"
+        if len(selectors) == 1:
+            msg = f"failed to select {selectors[0]}\n"
+        else:
+            msg = f"failed to select: {'\n'.join(selectors)}\n"
+        msg += f" from {flake_identifier}\n"
+        if attribute:
+            msg += f" '{attribute}' is missing\n"
+        self.selectors = selectors
+        self.failed_attr = attribute
+        self.flake_identifier = flake_identifier
+        super().__init__(msg)
+
+    def __str__(self) -> str:
+        return self.msg
+
+    def __repr__(self) -> str:
+        return f"ClanSelectError({self.failed_attr})"
+
+
 def selectors_as_dict(selectors: list[Selector]) -> list[dict[str, Any]]:
     return [selector.as_dict() for selector in selectors]
 
@@ -180,7 +216,7 @@ def parse_selector(selector: str) -> list[Selector]:
             if c == ".":
                 stack.pop()
                 if stack != []:
-                    msg = "expected empy stack, but got {stack}"
+                    msg = "expected empty stack, but got {stack}"
                     raise ValueError(msg)
             else:
                 msg = "expected ., but got {c}"
@@ -863,12 +899,15 @@ class Flake:
               }}
         """
         trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS", False) == "1"
-        build_output = Path(
-            run(
-                nix_build(["--expr", nix_code, *nix_options]),
-                RunOpts(log=Log.NONE, trace=trace),
-            ).stdout.strip()
-        )
+        try:
+            build_output = Path(
+                run(
+                    nix_build(["--expr", nix_code, *nix_options]),
+                    RunOpts(log=Log.NONE, trace=trace),
+                ).stdout.strip()
+            )
+        except ClanCmdError as e:
+            raise ClanSelectError(flake_identifier=self.identifier, selectors=selectors, cmd_error=e) from e
 
         if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
