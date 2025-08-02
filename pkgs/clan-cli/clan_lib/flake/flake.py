@@ -11,7 +11,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_lib.errors import ClanError
+from clan_lib.errors import ClanCmdError, ClanError
 
 log = logging.getLogger(__name__)
 
@@ -143,6 +143,42 @@ class Selector:
         raise ValueError(msg)
 
 
+class ClanSelectError(ClanError):
+    selectors: list[str]
+    failed_attr: str | None = None
+    flake_identifier: str
+
+    def __init__(
+        self,
+        flake_identifier: str,
+        selectors: list[str],
+        cmd_error: ClanCmdError | None = None,
+    ) -> None:
+        attribute = None
+        if cmd_error:
+            attribute_match = re.search(r"error: attribute '([^']+)'", str(cmd_error))
+            attribute = attribute_match.group(1) if attribute_match else None
+        if selectors == []:
+            msg = "failed to select []\n"
+        if len(selectors) == 1:
+            msg = f"failed to select {selectors[0]}\n"
+        else:
+            msg = f"failed to select: {'\n'.join(selectors)}\n"
+        msg += f" from {flake_identifier}\n"
+        if attribute:
+            msg += f" '{attribute}' is missing\n"
+        self.selectors = selectors
+        self.failed_attr = attribute
+        self.flake_identifier = flake_identifier
+        super().__init__(msg)
+
+    def __str__(self) -> str:
+        return self.msg
+
+    def __repr__(self) -> str:
+        return f"ClanSelectError({self.failed_attr})"
+
+
 def selectors_as_dict(selectors: list[Selector]) -> list[dict[str, Any]]:
     return [selector.as_dict() for selector in selectors]
 
@@ -180,7 +216,7 @@ def parse_selector(selector: str) -> list[Selector]:
             if c == ".":
                 stack.pop()
                 if stack != []:
-                    msg = "expected empy stack, but got {stack}"
+                    msg = "expected empty stack, but got {stack}"
                     raise ValueError(msg)
             else:
                 msg = "expected ., but got {c}"
@@ -307,7 +343,6 @@ class FlakeCacheEntry:
     is_list: bool = False
     exists: bool = True
     fetched_all: bool = False
-    _num_accessed: int = field(default=0, init=False)
 
     def insert(
         self,
@@ -477,80 +512,6 @@ class FlakeCacheEntry:
 
         return False
 
-    def is_path_unaccessed(self, selectors: list[Selector]) -> bool:
-        """Check if the leaf entry has _num_accessed == 0"""
-        if selectors == []:
-            # This is the leaf, check if it's unaccessed
-            return self._num_accessed == 0
-
-        selector = selectors[0]
-
-        # Navigate to leaf for string/maybe selectors
-        if (
-            selector.type == SelectorType.STR or selector.type == SelectorType.MAYBE
-        ) and isinstance(self.value, dict):
-            assert isinstance(selector.value, str)
-            if selector.value in self.value:
-                return self.value[selector.value].is_path_unaccessed(selectors[1:])
-            return True  # Non-existent path is considered unaccessed
-
-        # For set selectors, check if any leaf is unaccessed
-        if (
-            selector.type == SelectorType.SET
-            and isinstance(selector.value, list)
-            and isinstance(self.value, dict)
-        ):
-            for subselector in selector.value:
-                if subselector.value in self.value:
-                    if not self.value[subselector.value].is_path_unaccessed(
-                        selectors[1:]
-                    ):
-                        return False
-            return True
-
-        # For all selectors, check if any existing key is unaccessed
-        if selector.type == SelectorType.ALL and isinstance(self.value, dict):
-            for key in self.value:
-                if self.value[key].exists:
-                    if not self.value[key].is_path_unaccessed(selectors[1:]):
-                        return False
-            return True
-
-        return True
-
-    def mark_path_accessed(self, selectors: list[Selector]) -> None:
-        """Mark only the leaf entry as accessed"""
-        if selectors == []:
-            # This is the leaf, increment access count
-            self._num_accessed += 1
-            return
-
-        selector = selectors[0]
-
-        # Navigate to leaf for string/maybe selectors
-        if (
-            selector.type == SelectorType.STR or selector.type == SelectorType.MAYBE
-        ) and isinstance(self.value, dict):
-            assert isinstance(selector.value, str)
-            if selector.value in self.value:
-                self.value[selector.value].mark_path_accessed(selectors[1:])
-
-        # For set selectors, mark all leaf paths
-        elif (
-            selector.type == SelectorType.SET
-            and isinstance(selector.value, list)
-            and isinstance(self.value, dict)
-        ):
-            for subselector in selector.value:
-                if subselector.value in self.value:
-                    self.value[subselector.value].mark_path_accessed(selectors[1:])
-
-        # For all selectors, mark all existing keys
-        elif selector.type == SelectorType.ALL and isinstance(self.value, dict):
-            for key in self.value:
-                if self.value[key].exists:
-                    self.value[key].mark_path_accessed(selectors[1:])
-
     def select(self, selectors: list[Selector]) -> Any:
         selector: Selector
         if selectors == []:
@@ -668,7 +629,6 @@ class FlakeCacheEntry:
         entry = FlakeCacheEntry(
             value=value, is_list=is_list, exists=exists, fetched_all=fetched_all
         )
-        entry._num_accessed = 0
         return entry
 
     def __repr__(self) -> str:
@@ -696,20 +656,11 @@ class FlakeCache:
 
     def select(self, selector_str: str) -> Any:
         selectors = parse_selector(selector_str)
-        self.mark_path_accessed(selectors)
         return self.cache.select(selectors)
 
     def is_cached(self, selector_str: str) -> bool:
         selectors = parse_selector(selector_str)
-        if self.is_path_unaccessed(selectors):
-            log.debug(f"$ clan select {shlex.quote(selector_str)}")
         return self.cache.is_cached(selectors)
-
-    def is_path_unaccessed(self, selectors: list[Selector]) -> bool:
-        return self.cache.is_path_unaccessed(selectors)
-
-    def mark_path_accessed(self, selectors: list[Selector]) -> None:
-        self.cache.mark_path_accessed(selectors)
 
     def save_to_file(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -948,12 +899,15 @@ class Flake:
               }}
         """
         trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS", False) == "1"
-        build_output = Path(
-            run(
-                nix_build(["--expr", nix_code, *nix_options]),
-                RunOpts(log=Log.NONE, trace=trace),
-            ).stdout.strip()
-        )
+        try:
+            build_output = Path(
+                run(
+                    nix_build(["--expr", nix_code, *nix_options]),
+                    RunOpts(log=Log.NONE, trace=trace),
+                ).stdout.strip()
+            )
+        except ClanCmdError as e:
+            raise ClanSelectError(flake_identifier=self.identifier, selectors=selectors, cmd_error=e) from e
 
         if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
@@ -985,13 +939,8 @@ class Flake:
         assert self.flake_cache_path is not None
         not_fetched_selectors = []
         for selector in selectors:
-            parsed_selectors = parse_selector(selector)
-
             if not self._cache.is_cached(selector):
                 not_fetched_selectors.append(selector)
-
-            # Mark path as accessed after checking
-            self._cache.mark_path_accessed(parsed_selectors)
 
         if not_fetched_selectors:
             self.get_from_nix(not_fetched_selectors)
@@ -1013,8 +962,11 @@ class Flake:
         assert self.flake_cache_path is not None
 
         if not self._cache.is_cached(selector):
+            log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
             log.debug(f"Cache miss for {selector}")
             self.get_from_nix([selector])
+        else:
+            log.debug(f"$ clan select {shlex.quote(selector)}")
 
         value = self._cache.select(selector)
         return value

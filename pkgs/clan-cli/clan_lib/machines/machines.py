@@ -1,6 +1,5 @@
 import importlib
 import logging
-import re
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
@@ -11,8 +10,8 @@ from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.vars._types import StoreBase
 
 from clan_lib.api import API
-from clan_lib.errors import ClanCmdError, ClanError
-from clan_lib.flake import Flake
+from clan_lib.errors import ClanError
+from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
 
@@ -77,10 +76,8 @@ class Machine:
             return self.flake.select(
                 f'clanInternals.inventoryClass.inventory.machines."{self.name}".machineClass'
             )
-        except ClanCmdError as e:
-            if re.search(f"error: attribute '{self.name}' missing", e.cmd.stderr):
-                return "nixos"
-            raise
+        except ClanSelectError:
+            return "nixos"
 
     @property
     def system(self) -> str:
