@@ -961,10 +961,12 @@ class Flake:
         assert self._cache is not None
         assert self.flake_cache_path is not None
 
-        log.debug(f"$ clan select {shlex.quote(selector)}")
         if not self._cache.is_cached(selector):
+            log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
             log.debug(f"Cache miss for {selector}")
             self.get_from_nix([selector])
+        else:
+            log.debug(f"$ clan select {shlex.quote(selector)}")
 
         value = self._cache.select(selector)
         return value
