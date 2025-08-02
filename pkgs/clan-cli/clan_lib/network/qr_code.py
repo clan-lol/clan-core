@@ -1,5 +1,8 @@
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -13,9 +16,33 @@ from clan_lib.ssh.remote import Remote
 log = logging.getLogger(__name__)
 
 
-def parse_qr_json_to_networks(
-    qr_data: dict[str, Any], flake: Flake
-) -> dict[str, dict[str, Any]]:
+@dataclass(frozen=True)
+class RemoteWithNetwork:
+    network: Network
+    remote: Remote
+
+
+@dataclass(frozen=True)
+class QRCodeData:
+    addresses: list[RemoteWithNetwork]
+
+    @contextmanager
+    def get_best_remote(self) -> Iterator[Remote]:
+        for address in self.addresses:
+            try:
+                log.debug(f"Establishing connection via {address}")
+                with address.network.module.connection(
+                    address.network
+                ) as connected_network:
+                    ping_time = connected_network.module.ping(address.remote)
+                    if ping_time is not None:
+                        log.info(f"reachable via {address} after connection")
+                        yield address.remote
+            except Exception as e:
+                log.debug(f"Failed to establish connection via {address}: {e}")
+
+
+def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
     """
     Parse QR code JSON contents and output a dict of networks with remotes.
 
@@ -45,32 +72,31 @@ def parse_qr_json_to_networks(
             }
         }
     """
-    networks: dict[str, dict[str, Any]] = {}
+    addresses: list[RemoteWithNetwork] = []
 
     password = qr_data.get("pass")
 
     # Process clearnet addresses
     clearnet_addrs = qr_data.get("addrs", [])
     if clearnet_addrs:
-        # For now, just use the first address
-        addr = clearnet_addrs[0]
-        if isinstance(addr, str):
-            peer = Peer(name="installer", _host={"plain": addr}, flake=flake)
-            network = Network(
-                peers={"installer": peer},
-                module_name="clan_lib.network.direct",
-                priority=1000,
-            )
-            # Create the remote with password
-            remote = Remote.from_ssh_uri(
-                machine_name="installer",
-                address=addr,
-            ).override(password=password)
+        for addr in clearnet_addrs:
+            if isinstance(addr, str):
+                peer = Peer(name="installer", _host={"plain": addr}, flake=flake)
+                network = Network(
+                    peers={"installer": peer},
+                    module_name="clan_lib.network.direct",
+                    priority=1000,
+                )
+                # Create the remote with password
+                remote = Remote.from_ssh_uri(
+                    machine_name="installer",
+                    address=addr,
+                ).override(password=password)
 
-            networks["direct"] = {"network": network, "remote": remote}
-        else:
-            msg = f"Invalid address format: {addr}"
-            raise ClanError(msg)
+                addresses.append(RemoteWithNetwork(network=network, remote=remote))
+            else:
+                msg = f"Invalid address format: {addr}"
+                raise ClanError(msg)
 
     # Process tor address
     if tor_addr := qr_data.get("tor"):
@@ -86,12 +112,12 @@ def parse_qr_json_to_networks(
             address=tor_addr,
         ).override(password=password, socks_port=9050, socks_wrapper=["torify"])
 
-        networks["tor"] = {"network": network, "remote": remote}
+        addresses.append(RemoteWithNetwork(network=network, remote=remote))
 
-    return networks
+    return QRCodeData(addresses=addresses)
 
 
-def parse_qr_image_to_json(image_path: Path) -> dict[str, Any]:
+def read_qr_image(image_path: Path) -> dict[str, Any]:
     """
     Parse a QR code image and extract the JSON data.
 

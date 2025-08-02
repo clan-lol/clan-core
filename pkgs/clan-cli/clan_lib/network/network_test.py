@@ -26,46 +26,48 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
 
     # Define the expected return value from flake.select
     mock_networking_data = {
-        "vpn-network": {
-            "peers": {
-                "machine1": {
-                    "name": "machine1",
-                    "host": {
-                        "var": {
-                            "machine": "machine1",
-                            "generator": "wireguard",
-                            "file": "address",
-                        }
+        "exports": {
+            "vpn-network": {
+                "peers": {
+                    "machine1": {
+                        "name": "machine1",
+                        "host": {
+                            "var": {
+                                "machine": "machine1",
+                                "generator": "wireguard",
+                                "file": "address",
+                            }
+                        },
+                    },
+                    "machine2": {
+                        "name": "machine2",
+                        "host": {
+                            "var": {
+                                "machine": "machine2",
+                                "generator": "wireguard",
+                                "file": "address",
+                            }
+                        },
                     },
                 },
-                "machine2": {
-                    "name": "machine2",
-                    "host": {
-                        "var": {
-                            "machine": "machine2",
-                            "generator": "wireguard",
-                            "file": "address",
-                        }
+                "module": "clan_lib.network.tor",
+                "priority": 1000,
+            },
+            "local-network": {
+                "peers": {
+                    "machine1": {
+                        "name": "machine1",
+                        "host": {"plain": "10.0.0.10"},
+                    },
+                    "machine3": {
+                        "name": "machine3",
+                        "host": {"plain": "10.0.0.12"},
                     },
                 },
+                "module": "clan_lib.network.direct",
+                "priority": 500,
             },
-            "module": "clan_lib.network.tor",
-            "priority": 1000,
-        },
-        "local-network": {
-            "peers": {
-                "machine1": {
-                    "name": "machine1",
-                    "host": {"plain": "10.0.0.10"},
-                },
-                "machine3": {
-                    "name": "machine3",
-                    "host": {"plain": "10.0.0.12"},
-                },
-            },
-            "module": "clan_lib.network.direct",
-            "priority": 500,
-        },
+        }
     }
 
     # Mock the select method
@@ -75,7 +77,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     networks = networks_from_flake(flake)
 
     # Verify the flake.select was called with the correct pattern
-    flake.select.assert_called_once_with("clan.exports.instances.*.networking")
+    flake.select.assert_called_once_with("clan.?exports.instances.*.networking")
 
     # Verify the returned networks
     assert len(networks) == 2

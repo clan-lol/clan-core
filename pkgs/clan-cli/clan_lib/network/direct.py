@@ -19,12 +19,10 @@ class NetworkTechnology(NetworkTechnologyBase):
         """Direct connections are always 'running' as they don't require a daemon"""
         return True
 
-    def ping(self, peer: Peer) -> None | float:
+    def ping(self, remote: Remote) -> None | float:
         if self.is_running():
             try:
                 # Parse the peer's host address to create a Remote object, use peer here since we don't have the machine_name here
-                remote = Remote.from_ssh_uri(machine_name="peer", address=peer.host)
-
                 # Use the existing SSH reachability check
                 now = time.time()
 
@@ -33,7 +31,7 @@ class NetworkTechnology(NetworkTechnologyBase):
                 return (time.time() - now) * 1000
 
             except ClanError as e:
-                log.debug(f"Error checking peer {peer.host}: {e}")
+                log.debug(f"Error checking peer {remote}: {e}")
                 return None
         return None
 

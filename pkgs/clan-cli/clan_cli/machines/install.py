@@ -1,6 +1,8 @@
 import argparse
+import json
 import logging
 import sys
+from contextlib import ExitStack
 from pathlib import Path
 from typing import get_args
 
@@ -8,6 +10,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
 from clan_lib.machines.machines import Machine
+from clan_lib.network.qr_code import read_qr_image, read_qr_json
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
 
@@ -17,11 +20,6 @@ from clan_cli.completions import (
     complete_target_host,
 )
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.ssh.deploy_info import (
-    find_reachable_host,
-    get_tor_remote,
-    ssh_command_parse,
-)
 
 log = logging.getLogger(__name__)
 
@@ -31,81 +29,71 @@ def install_command(args: argparse.Namespace) -> None:
         flake = require_flake(args.flake)
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
-        target_host_str = args.target_host
-        remotes: list[Remote] | None = (
-            ssh_command_parse(args) if target_host_str is None else None
-        )
-
-        use_tor = False
-        if remotes:
-            host = find_reachable_host(remotes)
-            if host is None or host.socks_port:
-                use_tor = True
-                tor_remote = get_tor_remote(remotes)
-                target_host_str = tor_remote.target
-            else:
-                target_host_str = host.target
-
-        if args.password:
-            password = args.password
-        elif remotes and remotes[0].password:
-            password = remotes[0].password
-        else:
-            password = None
-
-        machine = Machine(name=args.machine, flake=flake)
-        host_key_check = args.host_key_check
-
-        if target_host_str is not None:
-            target_host = Remote.from_ssh_uri(
-                machine_name=machine.name, address=target_host_str
-            ).override(host_key_check=host_key_check)
-        else:
-            target_host = machine.target_host().override(host_key_check=host_key_check)
-
-        if args.identity_file:
-            target_host = target_host.override(private_key=args.identity_file)
-
-        if machine._class_ == "darwin":
-            msg = "Installing macOS machines is not yet supported"
-            raise ClanError(msg)
-
-        if not args.yes:
-            while True:
-                ask = (
-                    input(f"Install {args.machine} to {target_host.target}? [y/N] ")
-                    .strip()
-                    .lower()
+        with ExitStack() as stack:
+            remote: Remote
+            if args.target_host:
+                # TODO add network support here with either --network or some url magic
+                remote = Remote.from_ssh_uri(
+                    machine_name=args.machine, address=args.target_host
                 )
-                if ask == "y":
-                    break
-                if ask == "n" or ask == "":
-                    return None
-                print(f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no.")
+            elif args.png:
+                data = read_qr_image(Path(args.png))
+                qr_code = read_qr_json(data, args.flake)
+                remote = stack.enter_context(qr_code.get_best_remote())
+            elif args.json:
+                json_file = Path(args.json)
+                if json_file.is_file():
+                    data = json.loads(json_file.read_text())
+                else:
+                    data = json.loads(args.json)
 
-        if args.identity_file:
-            target_host = target_host.override(private_key=args.identity_file)
+                qr_code = read_qr_json(data, args.flake)
+                remote = stack.enter_context(qr_code.get_best_remote())
+            else:
+                msg = "No MACHINE, --json or --png data provided"
+                raise ClanError(msg)
 
-        if password:
-            target_host = target_host.override(password=password)
+            machine = Machine(name=args.machine, flake=flake)
+            if args.host_key_check:
+                remote.override(host_key_check=args.host_key_check)
 
-        if use_tor:
-            target_host = target_host.override(
-                socks_port=9050, socks_wrapper=["torify"]
+            if machine._class_ == "darwin":
+                msg = "Installing macOS machines is not yet supported"
+                raise ClanError(msg)
+
+            if not args.yes:
+                while True:
+                    ask = (
+                        input(f"Install {args.machine} to {remote.target}? [y/N] ")
+                        .strip()
+                        .lower()
+                    )
+                    if ask == "y":
+                        break
+                    if ask == "n" or ask == "":
+                        return None
+                    print(
+                        f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no."
+                    )
+
+            if args.identity_file:
+                remote = remote.override(private_key=args.identity_file)
+
+            if args.password:
+                remote = remote.override(password=args.password)
+
+            return run_machine_install(
+                InstallOptions(
+                    machine=machine,
+                    kexec=args.kexec,
+                    phases=args.phases,
+                    debug=args.debug,
+                    no_reboot=args.no_reboot,
+                    build_on=args.build_on if args.build_on is not None else None,
+                    update_hardware_config=HardwareConfig(args.update_hardware_config),
+                ),
+                target_host=remote,
             )
-
-        return run_machine_install(
-            InstallOptions(
-                machine=machine,
-                kexec=args.kexec,
-                phases=args.phases,
-                debug=args.debug,
-                no_reboot=args.no_reboot,
-                build_on=args.build_on if args.build_on is not None else None,
-                update_hardware_config=HardwareConfig(args.update_hardware_config),
-            ),
-            target_host=target_host,
-        )
     except KeyboardInterrupt:
         log.warning("Interrupted by user")
         sys.exit(1)
