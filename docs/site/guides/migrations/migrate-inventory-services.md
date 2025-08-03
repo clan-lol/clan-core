@@ -241,6 +241,55 @@ roles.moon.machines.eve = { };
 
 ---
 
+## Migration Status of clanModules
+
+The following table shows the migration status of each deprecated clanModule:
+
+| clanModule               | Migration Status                                                  | Notes                                                            |
+|--------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
+| `admin`                  | ✅ [Migrated](../../reference/clanServices/admin.md)              |                                                                  |
+| `auto-upgrade`           | ❌ Removed                                                        |                                                                  |
+| `borgbackup-static`      | ❌ Removed                                                        |                                                                  |
+| `borgbackup`             | ✅ [Migrated](../../reference/clanServices/borgbackup.md)         |                                                                  |
+| `data-mesher`            | ✅ [Migrated](../../reference/clanServices/data-mesher.md)        |                                                                  |
+| `deltachat`              | ❌ Removed                                                        |                                                                  |
+| `disk-id`                | ❌ Removed                                                        |                                                                  |
+| `dyndns`                 | [Being Migrated](https://git.clan.lol/clan/clan-core/pulls/4390)  |                                                                  |
+| `ergochat`               | ❌ Removed                                                        |                                                                  |
+| `garage`                 | ✅ [Migrated](../../reference/clanServices/garage.md)             |                                                                  |
+| `golem-provider`         | ❌ Removed                                                        |                                                                  |
+| `heisenbridge`           | ❌ Removed                                                        |                                                                  |
+| `importer`               | ✅ [Migrated](../../reference/clanServices/importer.md)           |                                                                  |
+| `iwd`                    | ❌ Removed                                                        | Use [wifi service](../../reference/clanServices/wifi.md) instead |
+| `localbackup`            | ❌ Removed                                                        | TODO                                                             |
+| `localsend`              | ❌ Removed                                                        |                                                                  |
+| `machine-id`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
+| `matrix-synapse`         | ❌ Removed                                                        | TODO                                                             |
+| `moonlight`              | ❌ Removed                                                        |                                                                  |
+| `mumble`                 | ❌ Removed                                                        |                                                                  |
+| `mycelium`               | ✅ [Migrated](../../reference/clanServices/mycelium.md)           |                                                                  |
+| `nginx`                  | ❌ Removed                                                        |                                                                  |
+| `packages`               | ✅ [Migrated](../../reference/clanServices/packages.md)           |                                                                  |
+| `postgresql`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
+| `root-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              |                                                                  |
+| `single-disk`            | ❌ Removed                                                        |                                                                  |
+| `sshd`                   | ✅ [Migrated](../../reference/clanServices/sshd.md)               |                                                                  |
+| `state-version`          | ✅ [Migrated](../../reference/clanServices/state-version.md)      |                                                                  |
+| `static-hosts`           | ❌ Removed                                                        |                                                                  |
+| `sunshine`               | ❌ Removed                                                        |                                                                  |
+| `syncthing-static-peers` | ❌ Removed                                                        |                                                                  |
+| `syncthing`              | ❌ Removed                                                        | TODO                                                             |
+| `thelounge`              | ❌ Removed                                                        |                                                                  |
+| `trusted-nix-caches`     | ✅ [Migrated](../../reference/clanServices/trusted-nix-caches.md) |                                                                  |
+| `user-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              |                                                                  |
+| `vaultwarden`            | ❌ Removed                                                        |                                                                  |
+| `xfce`                   | ❌ Removed                                                        |                                                                  |
+| `zerotier-static-peers`  | ❌ Removed                                                        |                                                                  |
+| `zerotier`               | ✅ [Migrated](../../reference/clanServices/zerotier.md)           |                                                                  |
+| `zt-tcp-relay`           | ❌ Removed                                                        |                                                                  |
+
+---
+
 !!! Warning
     * Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
     * `inventory.services` is no longer recommended; use `inventory.instances` instead.
