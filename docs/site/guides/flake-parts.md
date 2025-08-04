@@ -17,7 +17,7 @@ inputs = {
   flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
 
   clan-core = {
-    url = "git+https://git.clan.lol/clan/clan-core";
+    url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
     inputs.nixpkgs.follows = "nixpkgs"; # Don't do this if your machines are on nixpkgs stable.
     # New
     inputs.flake-parts.follows = "flake-parts";
