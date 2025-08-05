@@ -236,7 +236,7 @@
                           "--debug",
                           "--flake", "/flake",
                           "--host-key-check", "none",
-                          "--fetch-local",  # Use local store instead of fetching from network
+                          "--upload-inputs",  # Use local store instead of fetching from network
                           "--build-host", "local",
                           "test-update-machine",
                           "--target-host", f"root@localhost",
@@ -247,12 +247,12 @@
 
 
                       ##############
-                      print("TEST: update with --fetch-local")
+                      print("TEST: update with --target-host")
 
                       with open(machine_config_path, "w") as f:
                           f.write("""
                       {
-                        environment.etc."update-fetch-local-successful".text = "ok";
+                        environment.etc."target-host-update-successful".text = "ok";
                       }
                       """)
 
@@ -264,17 +264,17 @@
                           "--debug",
                           "--flake", flake_dir,
                           "--host-key-check", "none",
-                          "--fetch-local",  # Use local store instead of fetching from network
+                          "--upload-inputs",  # Use local store instead of fetching from network
                           "test-update-machine",
                           "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                       ], check=True)
 
                       # Verify the update was successful
-                      machine.succeed("test -f /etc/update-fetch-local-successful")
+                      machine.succeed("test -f /etc/target-host-update-successful")
 
 
                       ##############
-                      print("TEST: update with --build-host 192.168.1.1")
+                      print("TEST: update with --build-host")
                       # Update configuration again
                       with open(machine_config_path, "w") as f:
                           f.write("""
@@ -291,7 +291,7 @@
                           "--debug",
                           "--flake", flake_dir,
                           "--host-key-check", "none",
-                          "--fetch-local",  # Use local store instead of fetching from network
+                          "--upload-inputs",  # Use local store instead of fetching from network
                           "--build-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                           "test-update-machine",
                           "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",

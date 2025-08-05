@@ -37,7 +37,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, ssh: Host, force_fetch_local: bool) -> str:
+def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
     env = ssh.nix_ssh_env(os.environ.copy())
 
     flake_url = (
@@ -53,7 +53,7 @@ def upload_sources(machine: Machine, ssh: Host, force_fetch_local: bool) -> str:
     remote_program_params = ""
     # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
 
-    if not has_path_inputs and not force_fetch_local:
+    if not has_path_inputs and not upload_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
         if machine._class_ == "darwin":
@@ -120,14 +120,14 @@ def run_machine_update(
     machine: Machine,
     target_host: Host,
     build_host: Host | None,
-    force_fetch_local: bool = False,
+    upload_inputs: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
     Args:
         machine: The Machine instance to deploy.
         target_host: Remote object representing the target host for deployment.
         build_host: Optional Remote object representing the build host.
-        force_fetch_local: Whether to fetch flake inputs locally before uploading.
+        upload_inputs: Whether to upload flake inputs from the local.
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
             generating facts or variables.
@@ -153,7 +153,7 @@ def run_machine_update(
         upload_secret_vars(machine, target_host_root)
 
         # Upload the flake's source to the build host.
-        path = upload_sources(machine, build_host, force_fetch_local)
+        path = upload_sources(machine, build_host, upload_inputs)
 
         nix_options = machine.flake.nix_options if machine.flake.nix_options else []
 
@@ -215,11 +215,11 @@ def run_machine_update(
 
         # retry nixos-rebuild switch if the first attempt failed
         if ret.returncode != 0:
-            # Hint user to --fetch-local on issues with flake inputs
+            # Hint user to --upload-inputs on issues with flake inputs
             if "… while fetching the input" in ret.stderr:
                 msg = (
                     "Detected potential issue when fetching flake inputs on remote."
-                    "\nTry running the update with --fetch-local to prefetch inputs "
+                    "\nTry running the update with --update-inputs to prefetch inputs "
                     "locally and upload them instead."
                 )
                 raise ClanError(msg)
