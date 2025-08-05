@@ -52,7 +52,7 @@ export const InstallModal = (props: InstallModalProps) => {
     {
       steps,
     },
-    { initialStep: "init" },
+    { initialStep: props.initialStep || "init" },
   );
 
   return (
