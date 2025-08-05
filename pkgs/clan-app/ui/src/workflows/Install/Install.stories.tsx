@@ -66,3 +66,38 @@ export const InstallCheckHardware: Story = {
     initialStep: "install:check-hardware",
   },
 };
+export const InstallSelectDisk: Story = {
+  description: "Select disk to install the system on",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:disk",
+  },
+};
+export const InstallVars: Story = {
+  description: "Fill required credentials and data for the installation",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:data",
+  },
+};
+export const InstallSummary: Story = {
+  description: "Summary of the installation steps",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:summary",
+  },
+};
+export const InstallProgress: Story = {
+  description: "Shown while the installation is in progress",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:progress",
+  },
+};
+export const InstallDone: Story = {
+  description: "Shown after the installation is done",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:done",
+  },
+};
