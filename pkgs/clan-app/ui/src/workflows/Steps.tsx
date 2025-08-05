@@ -40,13 +40,11 @@ export const BackButton = () => {
     <Button
       hierarchy="secondary"
       disabled={!stepSignal.hasPrevious()}
-      startIcon="ArrowLeft"
+      icon="ArrowLeft"
       onClick={() => {
         stepSignal.previous();
       }}
-    >
-      Back
-    </Button>
+    ></Button>
   );
 };
 
@@ -62,7 +60,7 @@ export const BackButton = () => {
 export const StepFooter = () => {
   const stepper = useStepper<InstallSteps>();
   return (
-    <div class="flex justify-between">
+    <div class="flex justify-between py-4">
       <BackButton />
       <NextButton type="button" onClick={() => stepper.next()} />
     </div>
