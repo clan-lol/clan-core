@@ -49,16 +49,16 @@ def upload_sources(machine: Machine, ssh: Host, force_fetch_local: bool) -> str:
     )
 
     # Construct the remote URL with proper parameters for Darwin
-    # Dont use ssh-ng here. It makes `flake archive` fail, despite root@..., with:
-    #   cannot add path '/nix/store/...' because it lacks a signature by a trusted key
-    remote_url = f"ssh://{ssh.target}"
+    remote_url_base = ssh.target
+    remote_program_params = ""
     # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
     if machine._class_ == "darwin":
-        remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
+        remote_program_params = "?remote-program=bash -lc 'exec nix-daemon --stdio'"
 
     if not has_path_inputs and not force_fetch_local:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
+        remote_url = f"ssh-ng://{remote_url_base}{remote_program_params}"
         cmd = nix_command(
             [
                 "copy",
@@ -80,6 +80,10 @@ def upload_sources(machine: Machine, ssh: Host, force_fetch_local: bool) -> str:
         return path
 
     # Slow path: we need to upload all sources to the remote machine
+    # Don't use ssh-ng here. It makes `flake archive` fail, despite root@..., with:
+    #   cannot add path '/nix/store/...' because it lacks a signature by a trusted key
+    # The issue is the missing `--no-check-sigs` option in `nix flake archive`.
+    remote_url = f"ssh://{remote_url_base}{remote_program_params}"
     cmd = nix_command(
         [
             "flake",
