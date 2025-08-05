@@ -1,6 +1,7 @@
 div.form-label {
   @apply flex flex-col gap-1 w-full;
 
+  & > span,
   & > label,
   & > div {
     @apply w-full;
@@ -8,12 +9,14 @@ div.form-label {
     @apply leading-none;
   }
 
+  & > span,
   & > label {
     @apply flex items-center gap-1;
   }
 
+  & > span[data-required]:not(span[data-readonly]),
   & > label[data-required]:not(label[data-readonly]) {
-    span.typography::after {
+    .typography::after {
       @apply fg-def-4 ml-1;
 
       content: "*";
