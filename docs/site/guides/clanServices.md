@@ -60,7 +60,7 @@ If you used `clan-core` as an input attribute for your flake:
 
 ```nix
       # ↓ module.input = "clan-core"
-inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core"
+inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
 ```
 
 ## Simplified Example

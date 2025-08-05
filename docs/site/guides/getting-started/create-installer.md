@@ -55,7 +55,7 @@ sudo umount /dev/sdb1
     - Set your preferred language and keymap
 
     ```bash
-    clan flash write --flake git+https://git.clan.lol/clan/clan-core \
+    clan flash write --flake https://git.clan.lol/clan/clan-core/archive/main.tar.gz \
       --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
       --keymap us \
       --language en_US.UTF-8 \

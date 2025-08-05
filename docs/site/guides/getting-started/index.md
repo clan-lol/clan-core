@@ -41,7 +41,7 @@ By the end of this guide, you'll have a fresh NixOS configuration ready to push 
 Create a new clan
 
 ```bash
-nix run git+https://git.clan.lol/clan/clan-core#clan-cli --refresh -- flakes create
+nix run https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli --refresh -- flakes create
 ```
 
 This should prompt for a *name*:
