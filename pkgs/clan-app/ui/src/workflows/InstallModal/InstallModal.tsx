@@ -285,7 +285,7 @@ export const InstallModal = (props: InstallModalProps) => {
         onClose={() => {
           console.log("Install aborted");
         }}
-        header={() => {
+        metaHeader={() => {
           const HeaderComponent = stepper.currentStep()?.title;
           return (
             <HeaderComponent
