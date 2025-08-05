@@ -19,6 +19,7 @@ export type HostFileInputProps = FieldProps &
   TextFieldRootProps & {
     onSelectFile: () => Promise<string>;
     input?: PolymorphicProps<"input", TextFieldInputProps<"input">>;
+    placeholder?: string;
   };
 
 export const HostFileInput = (props: HostFileInputProps) => {
@@ -79,7 +80,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
                 : styles.horizontal_button,
             )}
           >
-            No Selection
+            {props.placeholder || "No Selection"}
           </Button>
         )}
 
