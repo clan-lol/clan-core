@@ -62,16 +62,9 @@ const Prose = () => (
 
 const CreateHeader = (props: { machineName: string }) => {
   return (
-    <div class="px-6 py-2">
-      <Typography
-        hierarchy="label"
-        size="default"
-        family="mono"
-        weight="medium"
-      >
-        Create installer
-      </Typography>
-    </div>
+    <Typography hierarchy="label" size="default" family="mono" weight="medium">
+      Create installer
+    </Typography>
   );
 };
 
@@ -271,8 +264,8 @@ const ChooseDisk = () => {
 
 const FlashProgress = () => {
   return (
-    <div class="bg-inv-4 flex h-60 w-full flex-col items-center justify-end">
-      <div class="flex flex-col gap-3 w-full max-w-md fg-inv-1 items-center mb-6">
+    <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
+      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
           size="default"
@@ -292,8 +285,8 @@ const FlashProgress = () => {
 const FlashDone = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <div class="bg-inv-4 flex w-full flex-col items-center">
-      <div class="flex flex-col gap-3 w-full max-w-md fg-inv-1 items-center py-6">
+    <div class="flex w-full flex-col items-center bg-inv-4">
+      <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
           <Icon icon="Checkmark" class="size-9" />
         </div>
@@ -310,7 +303,7 @@ const FlashDone = () => {
           title="Plug the flashed device into the machine that you want to install."
           description=""
         />
-        <div class="w-full flex justify-end mt-3">
+        <div class="mt-3 flex w-full justify-end">
           <Button
             hierarchy="primary"
             endIcon="ArrowRight"
