@@ -52,3 +52,17 @@ export const CreateInstallerDone: Story = {
     initialStep: "create:done",
   },
 };
+export const InstallConfigureAddress: Story = {
+  description: "Installation configure address step",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:address",
+  },
+};
+export const InstallCheckHardware: Story = {
+  description: "Installation check hardware step",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "install:check-hardware",
+  },
+};
