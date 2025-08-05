@@ -4,11 +4,12 @@ import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@kobalte/core/button";
 import { Alert as KAlert } from "@kobalte/core/alert";
+import { Show } from "solid-js";
 
 export interface AlertProps {
   type: "success" | "error" | "warning" | "info";
   title: string;
-  description: string;
+  description?: string;
   icon?: IconVariant;
   onDismiss?: () => void;
 }
@@ -25,9 +26,11 @@ export const Alert = (props: AlertProps) => (
       <Typography hierarchy="body" size="default" weight="bold" color="inherit">
         {props.title}
       </Typography>
-      <Typography hierarchy="body" size="xs" color="inherit">
-        {props.description}
-      </Typography>
+      <Show when={props.description}>
+        <Typography hierarchy="body" size="xs" color="inherit">
+          {props.description}
+        </Typography>
+      </Show>
     </div>
     {props.onDismiss && (
       <Button
