@@ -16,6 +16,7 @@ from clan_lib.cmd import CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError, indent_command  # Assuming these are available
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.host import Host
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
@@ -30,7 +31,7 @@ NO_OUTPUT_TIMEOUT = 20
 
 
 @dataclass(frozen=True)
-class Remote:
+class Remote(Host):
     address: str
     command_prefix: str
     user: str = "root"
@@ -136,7 +137,7 @@ class Remote:
         return run(cmd, opts)
 
     @contextmanager
-    def ssh_control_master(self) -> Iterator["Remote"]:
+    def host_connection(self) -> Iterator["Remote"]:
         """
         Context manager to manage SSH ControlMaster connections.
         This will create a temporary directory for the control socket.
@@ -318,11 +319,11 @@ class Remote:
         if env is None:
             env = {}
         env["NIX_SSHOPTS"] = " ".join(
-            self.ssh_cmd_opts(control_master=control_master)  # Renamed
+            self._ssh_cmd_opts(control_master=control_master)  # Renamed
         )
         return env
 
-    def ssh_cmd_opts(
+    def _ssh_cmd_opts(
         self,
         control_master: bool = True,
     ) -> list[str]:
@@ -373,7 +374,7 @@ class Remote:
             packages.append("sshpass")
             password_args = ["sshpass", "-p", self.password]
 
-        current_ssh_opts = self.ssh_cmd_opts(control_master=control_master)
+        current_ssh_opts = self._ssh_cmd_opts(control_master=control_master)
         if verbose_ssh or self.verbose_ssh:
             current_ssh_opts.extend(["-v"])
         if tty:
@@ -396,7 +397,7 @@ class Remote:
         ]
         return nix_shell(packages, cmd)
 
-    def check_sshpass_errorcode(self, res: subprocess.CompletedProcess) -> None:
+    def _check_sshpass_errorcode(self, res: subprocess.CompletedProcess) -> None:
         """
         Check the return code of the sshpass command and raise an error if it indicates a failure.
         Error codes are based on man sshpass(1) and may vary by version.
@@ -454,7 +455,7 @@ class Remote:
         # We only check the error code if a password is set, as sshpass is used.
         # AS sshpass swallows all output.
         if self.password:
-            self.check_sshpass_errorcode(res)
+            self._check_sshpass_errorcode(res)
 
     def check_machine_ssh_reachable(
         self, opts: "ConnectionOptions | None" = None

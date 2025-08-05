@@ -43,7 +43,7 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
     backup_metadata = machine.select("config.clan.core.backups")
     results = []
-    with machine.target_host().ssh_control_master() as host:
+    with machine.target_host().host_connection() as host:
         if provider is None:
             for _provider in backup_metadata["providers"]:
                 results += list_provider(machine, host, _provider)

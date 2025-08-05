@@ -5,7 +5,7 @@ from pathlib import Path
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.flake import Flake
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 
 class SecretStore(StoreBase):
@@ -57,6 +57,6 @@ class SecretStore(StoreBase):
             shutil.rmtree(self.dir)
         return []
 
-    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         msg = "Cannot upload secrets with FS backend"
         raise NotImplementedError(msg)

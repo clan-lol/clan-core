@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.ssh.upload import upload
@@ -13,7 +13,7 @@ from clan_cli.ssh.upload import upload
 log = logging.getLogger(__name__)
 
 
-def upload_secrets(machine: Machine, host: Remote) -> None:
+def upload_secrets(machine: Machine, host: Host) -> None:
     if not machine.secret_facts_store.needs_upload(host):
         machine.info("Secrets already uploaded")
         return
@@ -28,7 +28,7 @@ def upload_secrets(machine: Machine, host: Remote) -> None:
 def upload_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
     machine = Machine(name=args.machine, flake=flake)
-    with machine.target_host().ssh_control_master() as host:
+    with machine.target_host().host_connection() as host:
         upload_secrets(machine, host)
 
 

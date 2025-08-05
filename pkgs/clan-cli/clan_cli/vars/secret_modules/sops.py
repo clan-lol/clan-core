@@ -28,7 +28,7 @@ from clan_cli.vars.generate import Generator
 from clan_cli.vars.var import Var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 
 @dataclass
@@ -246,7 +246,7 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
     @override
-    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)

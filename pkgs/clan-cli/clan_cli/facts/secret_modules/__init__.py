@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import clan_lib.machines.machines as machines
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.host import Host
 
 
 class SecretStoreBase(ABC):
@@ -26,7 +26,7 @@ class SecretStoreBase(ABC):
     def exists(self, service: str, name: str) -> bool:
         pass
 
-    def needs_upload(self, host: Remote) -> bool:
+    def needs_upload(self, host: Host) -> bool:
         return True
 
     @abstractmethod

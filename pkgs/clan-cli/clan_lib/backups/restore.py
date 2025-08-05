@@ -20,7 +20,7 @@ def restore_service(
     # FIXME: If we have too many folder this might overflow the stack.
     env["FOLDERS"] = ":".join(set(folders))
 
-    with host.ssh_control_master() as ssh:
+    with host.host_connection() as ssh:
         if pre_restore := backup_folders[service]["preRestoreCommand"]:
             proc = ssh.run(
                 [pre_restore],
@@ -58,7 +58,7 @@ def restore_backup(
     service: str | None = None,
 ) -> None:
     errors = []
-    with machine.target_host().ssh_control_master() as host:
+    with machine.target_host().host_connection() as host:
         if service is None:
             backup_folders = machine.select("config.clan.core.state")
             for _service in backup_folders:

@@ -15,7 +15,7 @@ def test_upload_single_file(
     src_file = temporary_home / "test.txt"
     src_file.write_text("test")
     dest_file = temporary_home / "test_dest.txt"
-    with host.ssh_control_master() as host:
+    with host.host_connection() as host:
         upload(host, src_file, dest_file)
 
     assert dest_file.exists()

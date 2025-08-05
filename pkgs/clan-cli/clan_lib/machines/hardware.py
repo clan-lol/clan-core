@@ -90,7 +90,7 @@ def run_machine_hardware_info(
             "--show-hardware-config",
         ]
 
-    with target_host.ssh_control_master() as ssh, ssh.become_root() as sudo_ssh:
+    with target_host.host_connection() as ssh, ssh.become_root() as sudo_ssh:
         out = sudo_ssh.run(config_command, opts=RunOpts(check=False))
     if out.returncode != 0:
         if "nixos-facter" in out.stderr and "not found" in out.stderr:
