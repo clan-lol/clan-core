@@ -17,6 +17,7 @@ export interface ModalProps {
   mount?: Node;
   class?: string;
   metaHeader?: () => JSX.Element;
+  disablePadding?: boolean;
 }
 
 export const Modal = (props: ModalProps) => {
@@ -52,7 +53,7 @@ export const Modal = (props: ModalProps) => {
               </>
             )}
           </Show>
-          <div class={styles.modal_body}>
+          <div class={styles.modal_body} data-no-padding={props.disablePadding}>
             {props.children({
               close: () => {
                 setOpen(false);

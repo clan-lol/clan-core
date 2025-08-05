@@ -1,6 +1,6 @@
 .modal_content {
   @apply min-w-[320px] max-w-[512px];
-  @apply rounded-md;
+  @apply rounded-md overflow-hidden;
 
   /* todo replace with a theme() color */
   box-shadow: 0.1875rem 0.1875rem 0 0 rgba(145, 172, 175, 0.32);
@@ -23,6 +23,10 @@
 
 .modal_body {
   @apply rounded-md p-6 pt-4 bg-def-1;
+
+  &[data-no-padding] {
+    @apply p-0;
+  }
 }
 
 .header_divider {
