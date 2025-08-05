@@ -15,6 +15,8 @@ import { BackButton, NextButton, StepFooter, StepLayout } from "../../Steps";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
+import { Button } from "@/src/components/Button/Button";
+import Icon from "@/src/components/Icon/Icon";
 
 const Prose = () => (
   <StepLayout
@@ -26,7 +28,9 @@ const Prose = () => (
               hierarchy="label"
               size="xs"
               weight="medium"
-              color="inherit"
+              color="quaternary"
+              family="mono"
+              inverted
             >
               Create a portable installer
             </Typography>
@@ -35,6 +39,7 @@ const Prose = () => (
               size="default"
               weight="bold"
               color="inherit"
+              class="text-balance"
             >
               Grab a disposable USB stick and plug it in
             </Typography>
@@ -246,6 +251,7 @@ const ChooseDisk = () => {
               </Field>
               <Alert
                 type="error"
+                icon="Info"
                 title="You're about to format this drive"
                 description="It will erase all existing data on the target device"
               />
@@ -265,8 +271,55 @@ const ChooseDisk = () => {
 
 const FlashProgress = () => {
   return (
-    <div>
-      <LoadingBar />
+    <div class="bg-inv-4 flex h-60 w-full flex-col items-center justify-end">
+      <div class="flex flex-col gap-3 w-full max-w-md fg-inv-1 items-center mb-6">
+        <Typography
+          hierarchy="title"
+          size="default"
+          weight="bold"
+          color="inherit"
+        >
+          USB stick is being flashed
+        </Typography>
+        <LoadingBar class="" />
+        <Button hierarchy="primary" class="w-fit" size="s">
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+};
+const FlashDone = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  return (
+    <div class="bg-inv-4 flex w-full flex-col items-center">
+      <div class="flex flex-col gap-3 w-full max-w-md fg-inv-1 items-center py-6">
+        <div class="rounded-full bg-semantic-success-4">
+          <Icon icon="Checkmark" class="size-9" />
+        </div>
+        <Typography
+          hierarchy="title"
+          size="default"
+          weight="bold"
+          color="inherit"
+        >
+          Device has been successfully flashed!
+        </Typography>
+        <Alert
+          type="warning"
+          title="Plug the flashed device into the machine that you want to install."
+          description=""
+        />
+        <div class="w-full flex justify-end mt-3">
+          <Button
+            hierarchy="primary"
+            endIcon="ArrowRight"
+            onClick={() => stepSignal.next()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -288,7 +341,12 @@ export const createInstallerSteps = [
   },
   {
     id: "create:progress",
-    title: CreateHeader,
     content: FlashProgress,
+    isSplash: true,
+  },
+  {
+    id: "create:done",
+    content: FlashDone,
+    isSplash: true,
   },
 ] as const;

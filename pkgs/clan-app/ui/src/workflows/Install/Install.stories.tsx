@@ -38,3 +38,17 @@ export const CreateInstallerDisk: Story = {
     initialStep: "create:disk",
   },
 };
+export const CreateInstallerProgress: Story = {
+  description: "Showed while the USB stick is being flashed",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "create:progress",
+  },
+};
+export const CreateInstallerDone: Story = {
+  description: "Installation done step",
+  args: {
+    machineName: "Test Machine",
+    initialStep: "create:done",
+  },
+};
