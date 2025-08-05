@@ -55,6 +55,16 @@ export const InstallModal = (props: InstallModalProps) => {
     { initialStep: props.initialStep || "init" },
   );
 
+  const MetaHeader = () => {
+    // @ts-expect-error some steps might not have
+    const HeaderComponent = () => stepper.currentStep()?.title;
+    return (
+      <Show when={HeaderComponent()}>
+        {(C) => <Dynamic component={C()} machineName={props.machineName} />}
+      </Show>
+    );
+  };
+
   return (
     <StepperProvider stepper={stepper}>
       <Modal
@@ -62,18 +72,9 @@ export const InstallModal = (props: InstallModalProps) => {
         onClose={() => {
           console.log("Install aborted");
         }}
-        metaHeader={() => {
-          // @ts-expect-error some steps might not have a title
-          const HeaderComponent = stepper.currentStep()?.title;
-          return (
-            <Show when={HeaderComponent}>
-              {(C) => (
-                <Dynamic component={C()} machineName={props.machineName} />
-              )}
-            </Show>
-          );
-        }}
-        // @ts-expect-error some steps might not have this
+        // @ts-expect-error some steps might not have
+        metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
+        // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
         {(ctx) => <InstallStepper />}
