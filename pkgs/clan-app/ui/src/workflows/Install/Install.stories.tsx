@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import { InstallModal } from "./InstallModal";
-import { machine } from "os";
+import { InstallModal } from "./install";
 
 const meta: Meta = {
-  title: "workflows/InstallModal",
+  title: "workflows/install",
   component: InstallModal,
 };
 
@@ -14,5 +13,6 @@ type Story = StoryObj;
 export const Default: Story = {
   args: {
     machineName: "Test Machine",
+    initialStep: "create:iso-1",
   },
 };
