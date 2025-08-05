@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
 import { useStepper } from "../hooks/stepper";
-import { Button } from "../components/Button/Button";
+import { Button, ButtonProps } from "../components/Button/Button";
 import { InstallSteps } from "./Install/install";
 
 interface StepLayoutProps {
@@ -16,7 +16,7 @@ export const StepLayout = (props: StepLayoutProps) => {
   );
 };
 
-type NextButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {};
+type NextButtonProps = ButtonProps & {};
 
 export const NextButton = (props: NextButtonProps) => {
   // TODO: Make this type generic
@@ -29,7 +29,7 @@ export const NextButton = (props: NextButtonProps) => {
       endIcon="ArrowRight"
       {...props}
     >
-      Next
+      {props.children || "Next"}
     </Button>
   );
 };

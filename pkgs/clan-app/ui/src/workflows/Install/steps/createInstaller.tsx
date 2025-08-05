@@ -13,6 +13,47 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Select } from "@/src/components/Select/Select";
 import { BackButton, NextButton, StepFooter, StepLayout } from "../../Steps";
 import { Typography } from "@/src/components/Typography/Typography";
+import { Alert } from "@/src/components/Alert/Alert";
+import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
+
+const Prose = () => (
+  <StepLayout
+    body={
+      <>
+        <div class="flex h-36 w-full flex-col justify-center gap-3 rounded-md px-4 py-6 text-fg-inv-1 outline-2 outline-bg-def-acc-3 bg-inv-4">
+          <div class="flex flex-col gap-3">
+            <Typography
+              hierarchy="label"
+              size="xs"
+              weight="medium"
+              color="inherit"
+            >
+              Create a portable installer
+            </Typography>
+            <Typography
+              hierarchy="headline"
+              size="default"
+              weight="bold"
+              color="inherit"
+            >
+              Grab a disposable USB stick and plug it in
+            </Typography>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <Typography hierarchy="body" size="default" weight="bold">
+            We will erase everything on it during this process
+          </Typography>
+          <Typography hierarchy="body" size="xs">
+            Create a portable installer tool that can turn any machine into a
+            fully configured Clan machine.
+          </Typography>
+        </div>
+      </>
+    }
+    footer={<StepFooter />}
+  />
+);
 
 const CreateHeader = (props: { machineName: string }) => {
   return (
@@ -29,7 +70,7 @@ const CreateHeader = (props: { machineName: string }) => {
   );
 };
 
-const CreateFlashSchema = v.object({
+const ConfigureImageSchema = v.object({
   ssh_key: v.pipe(
     v.string("Please select a key."),
     v.nonEmpty("Please select a key."),
@@ -38,16 +79,16 @@ const CreateFlashSchema = v.object({
   keymap: v.pipe(v.string(), v.nonEmpty("Please select a keyboard layout.")),
 });
 
-type FlashFormType = v.InferInput<typeof CreateFlashSchema>;
+type ConfigureImageForm = v.InferInput<typeof ConfigureImageSchema>;
 
-const CreateIso = () => {
-  const [formStore, { Form, Field }] = createForm<FlashFormType>({
-    validate: valiForm(CreateFlashSchema),
+const ConfigureImage = () => {
+  const [formStore, { Form, Field }] = createForm<ConfigureImageForm>({
+    validate: valiForm(ConfigureImageSchema),
   });
   const stepSignal = useStepper<InstallSteps>();
 
   // TODO: push values to the parent form Store
-  const handleSubmit: SubmitHandler<FlashFormType> = (values, event) => {
+  const handleSubmit: SubmitHandler<ConfigureImageForm> = (values, event) => {
     console.log("ISO creation submitted", values);
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
@@ -156,51 +197,98 @@ const CreateIso = () => {
   );
 };
 
-export const createInstallerSteps = [
-  {
-    id: "create:iso-0",
-    content: () => (
+const ChooseDiskSchema = v.object({
+  disk: v.pipe(
+    v.string("Please select a disk."),
+    v.nonEmpty("Please select a disk."),
+  ),
+});
+
+type ChooseDiskForm = v.InferInput<typeof ChooseDiskSchema>;
+
+const ChooseDisk = () => {
+  const stepSignal = useStepper<InstallSteps>();
+
+  const [formStore, { Form, Field }] = createForm<ChooseDiskForm>({
+    validate: valiForm(ChooseDiskSchema),
+  });
+
+  const handleSubmit: SubmitHandler<ChooseDiskForm> = (values, event) => {
+    console.log("Disk selected", values);
+    // Here you would typically trigger the disk selection process
+    stepSignal.next();
+  };
+  return (
+    <Form onSubmit={handleSubmit}>
       <StepLayout
         body={
-          <>
-            <div class="flex h-36 w-full flex-col justify-center gap-3 rounded-md px-4 py-6 text-fg-inv-1 outline-2 outline-bg-def-acc-3 bg-inv-4">
-              <div class="flex flex-col gap-3">
-                <Typography
-                  hierarchy="label"
-                  size="xs"
-                  weight="medium"
-                  color="inherit"
-                >
-                  Create a portable installer
-                </Typography>
-                <Typography
-                  hierarchy="headline"
-                  size="default"
-                  weight="bold"
-                  color="inherit"
-                >
-                  Grab a disposable USB stick and plug it in
-                </Typography>
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <Typography hierarchy="body" size="default" weight="bold">
-                We will erase everything on it during this process
-              </Typography>
-              <Typography hierarchy="body" size="xs">
-                Create a portable installer tool that can turn any machine into
-                a fully configured Clan machine.
-              </Typography>
-            </div>
-          </>
+          <div class="flex flex-col gap-2">
+            <Fieldset>
+              <Field name="disk">
+                {(field, props) => (
+                  <Select
+                    {...props}
+                    value={field.value}
+                    error={field.error}
+                    required
+                    label={{
+                      label: "Disk",
+                      description: "Select a usb stick",
+                    }}
+                    options={[
+                      { value: "1", label: "sda1" },
+                      { value: "2", label: "sdb2" },
+                    ]}
+                    placeholder="Disk"
+                    name={field.name}
+                  />
+                )}
+              </Field>
+              <Alert
+                type="error"
+                title="You're about to format this drive"
+                description="It will erase all existing data on the target device"
+              />
+            </Fieldset>
+          </div>
         }
-        footer={<StepFooter />}
+        footer={
+          <div class="flex justify-between">
+            <BackButton />
+            <NextButton endIcon="Flash">Flash USB Stick</NextButton>
+          </div>
+        }
       />
-    ),
+    </Form>
+  );
+};
+
+const FlashProgress = () => {
+  return (
+    <div>
+      <LoadingBar />
+    </div>
+  );
+};
+
+export const createInstallerSteps = [
+  {
+    id: "create:prose",
+    content: Prose,
   },
   {
-    id: "create:iso-1",
+    id: "create:image",
     title: CreateHeader,
-    content: CreateIso,
+    content: ConfigureImage,
+  },
+  {
+    id: "create:disk",
+    title: CreateHeader,
+    content: ChooseDisk,
+  },
+  {
+    id: "create:progress",
+    title: CreateHeader,
+    content: FlashProgress,
   },
 ] as const;

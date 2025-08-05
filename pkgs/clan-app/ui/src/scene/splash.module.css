@@ -18,28 +18,3 @@
 .splash_title {
   @apply h-8 mb-8;
 }
-
-.loading_bar {
-  @apply h-3 w-60 mb-3;
-  width: 18rem;
-  background: repeating-linear-gradient(
-    -45deg,
-    #bfd0d2 0px,
-    #bfd0d2 10px,
-    #f7f9fa 10px,
-    #f7f9fa 20px
-  );
-  animation: stripe-move 1s linear infinite;
-  background-size: 28px 28px; /* Sqrt(20^2 + 20^2) ~= 28 */
-
-  @apply border-2 border-solid rounded-[3px] border-bg-def-1;
-}
-
-@keyframes stripe-move {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 28px 0;
-  }
-}
