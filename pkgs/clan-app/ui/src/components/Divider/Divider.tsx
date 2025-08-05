@@ -4,6 +4,7 @@ import { Separator, SeparatorRootProps } from "@kobalte/core/separator";
 
 export interface DividerProps extends Pick<SeparatorRootProps, "orientation"> {
   inverted?: boolean;
+  class?: string;
 }
 
 export const Divider = (props: DividerProps) => {
@@ -11,7 +12,7 @@ export const Divider = (props: DividerProps) => {
 
   return (
     <Separator
-      class={cx({ inverted: inverted })}
+      class={cx({ inverted: inverted }, props?.class)}
       orientation={props.orientation}
     />
   );

@@ -5,6 +5,7 @@ import Icon from "@/src/components/Icon/Icon";
 import { TextField } from "@kobalte/core/text-field";
 import { Checkbox } from "@kobalte/core/checkbox";
 import { Combobox } from "@kobalte/core/combobox";
+import { Select } from "@kobalte/core/select";
 import "./Label.css";
 
 export type Size = "default" | "s";
@@ -12,11 +13,14 @@ export type Size = "default" | "s";
 export type LabelComponent =
   | typeof TextField.Label
   | typeof Checkbox.Label
-  | typeof Combobox.Label;
+  | typeof Combobox.Label
+  | typeof Select.Label;
+
 export type DescriptionComponent =
   | typeof TextField.Description
   | typeof Checkbox.Description
-  | typeof Combobox.Description;
+  | typeof Combobox.Description
+  | typeof Select.Description;
 
 export interface LabelProps {
   labelComponent: LabelComponent;

@@ -4,14 +4,17 @@
 
   /* todo replace with a theme() color */
   box-shadow: 0.1875rem 0.1875rem 0 0 rgba(145, 172, 175, 0.32);
+  @apply border border-def-3 rounded-bl-md rounded-br-md;
 }
 
 .modal_header {
   @apply flex items-center justify-center;
   @apply w-full px-2 py-1.5;
   @apply bg-def-3;
-  @apply border border-def-2 rounded-tl-md rounded-tr-md;
-  @apply border-b-def-3;
+  @apply rounded-tl-md rounded-tr-md;
+  /* @apply border-b-def-3; */
+
+  border-bottom: solid 1px theme(colors.border.def.2);
 }
 
 .modal_title {
@@ -19,6 +22,9 @@
 }
 
 .modal_body {
-  @apply p-6 bg-def-1;
-  @apply border border-def-2 rounded-bl-md rounded-br-md;
+  @apply rounded-md p-6 pt-4 bg-def-1;
+}
+
+.header_divider {
+  @apply bg-def-3 h-[6px] border-def-2 border-t-[1px];
 }
