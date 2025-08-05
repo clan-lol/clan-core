@@ -179,7 +179,7 @@ def get_machine_host(
     host_str = inv_machine.get("deploy", {}).get(field)
 
     if host_str is None:
-        machine.info(
+        machine.debug(
             f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/target-host"
         )
 
