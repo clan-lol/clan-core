@@ -133,7 +133,7 @@ def update_command(args: argparse.Namespace) -> None:
                 # figure out on which machine to build on
                 build_host: Host | None = None
                 if args.build_host:
-                    if args.build_host == "local":
+                    if args.build_host == "localhost":
                         build_host = LocalHost()
                     else:
                         build_host = Remote.from_ssh_uri(
@@ -207,7 +207,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         help=(
             "The machine on which to build the machine configuration.\n"
-            "Pass 'local' to build on the local machine, or an ssh address like user@host:1234\n"
+            "Pass 'localhost' to build on the local machine, or an ssh address like user@host:1234\n"
         ),
     )
     parser.add_argument(

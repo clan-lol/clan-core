@@ -237,7 +237,7 @@
                           "--flake", "/flake",
                           "--host-key-check", "none",
                           "--upload-inputs",  # Use local store instead of fetching from network
-                          "--build-host", "local",
+                          "--build-host", "localhost",
                           "test-update-machine",
                           "--target-host", f"root@localhost",
                       ], check=True)
