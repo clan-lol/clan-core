@@ -45,6 +45,16 @@ buildClan {
 };
 ```
 
+You can also override the build host via the command line:
+
+```bash
+# Build on a remote host
+clan machines update jon --build-host root@192.168.1.10
+
+# Build locally (useful for testing or when the target has limited resources)
+clan machines update jon --build-host local
+```
+
 !!! Note
     Make sure that the CPU architecture is the same for the buildHost as for the targetHost.
     Example:
@@ -82,3 +92,18 @@ buildClan {
 ```
 
 This is useful for machines that are not always online or are not part of the regular update cycle.
+
+### Uploading Flake Inputs
+
+When updating remote machines, flake inputs are usually fetched by the build host.
+However, if your flake inputs require authentication (e.g., private repositories),
+you can use the `--upload-inputs` flag to upload all inputs from your local machine:
+
+```bash
+clan machines update jon --upload-inputs
+```
+
+This is particularly useful when:
+- Your flake references private Git repositories
+- Authentication credentials are only available on your local machine
+- The build host doesn't have access to certain network resources
