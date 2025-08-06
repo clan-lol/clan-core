@@ -1,8 +1,7 @@
-import { defineSteps, Step, StepBase, useStepper } from "@/src/hooks/stepper";
+import { defineSteps, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps } from "../install";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
-import { Divider } from "@/src/components/Divider/Divider";
 import { StepLayout } from "../../Steps";
 
 const ChoiceLocalOrRemote = () => {
@@ -10,8 +9,8 @@ const ChoiceLocalOrRemote = () => {
   return (
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-6 rounded-md px-4 py-6 text-fg-def-1 bg-def-2">
-        <div class="flex gap-2 justify-between">
-          <div class="flex flex-col gap-1 px-1 justify-center">
+        <div class="flex justify-between gap-2">
+          <div class="flex flex-col justify-center gap-1 px-1">
             <Typography
               hierarchy="label"
               size="xs"
@@ -31,8 +30,8 @@ const ChoiceLocalOrRemote = () => {
         </div>
       </div>
       <div class="flex flex-col gap-6 rounded-md px-4 py-6 text-fg-def-1 bg-def-2">
-        <div class="flex gap-2 justify-between">
-          <div class="flex flex-col gap-1 px-1 justify-center">
+        <div class="flex justify-between gap-2">
+          <div class="flex flex-col justify-center gap-1 px-1">
             <Typography
               hierarchy="label"
               size="xs"
@@ -62,8 +61,8 @@ const ChoiceLocalInstaller = () => {
       body={
         <div class="flex flex-col gap-3">
           <div class="flex flex-col gap-6 rounded-md px-4 py-6 text-fg-def-1 bg-def-2">
-            <div class="flex gap-2 justify-between">
-              <div class="flex flex-col gap-1 px-1 justify-center">
+            <div class="flex justify-between gap-2">
+              <div class="flex flex-col justify-center gap-1 px-1">
                 <Typography
                   hierarchy="label"
                   size="xs"
@@ -83,8 +82,8 @@ const ChoiceLocalInstaller = () => {
             </div>
           </div>
           <div class="flex flex-col gap-6 rounded-md px-4 py-6 text-fg-def-1 bg-def-2">
-            <div class="flex gap-2 justify-between">
-              <div class="flex flex-col gap-1 px-1 justify-center">
+            <div class="flex justify-between gap-2">
+              <div class="flex flex-col justify-center gap-1 px-1">
                 <Typography
                   hierarchy="label"
                   size="xs"
