@@ -118,3 +118,10 @@ export function StepperProvider<
     </StepperContext.Provider>
   );
 }
+
+/**
+ * Helper function to define steps in a type-safe manner.
+ */
+export function defineSteps<T extends readonly StepBase[]>(steps: T) {
+  return steps;
+}
