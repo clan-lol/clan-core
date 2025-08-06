@@ -32,7 +32,7 @@ const Prose = () => (
               family="mono"
               inverted
             >
-              Create a portable installer
+              Local Setup
             </Typography>
             <Typography
               hierarchy="headline"
@@ -41,22 +41,38 @@ const Prose = () => (
               color="inherit"
               class="text-balance"
             >
-              Grab a disposable USB stick and plug it in
+              Here's what you
+              <br />
+              need to do
             </Typography>
           </div>
         </div>
-        <div class="flex flex-col gap-1">
-          <Typography hierarchy="body" size="default" weight="bold">
-            We will erase everything on it during this process
-          </Typography>
-          <Typography hierarchy="body" size="xs">
-            Create a portable installer tool that can turn any machine into a
-            fully configured Clan machine.
-          </Typography>
+        <div class="flex flex-col px-4 gap-4">
+          <div class="flex flex-col gap-1">
+            <Typography hierarchy="body" size="default" weight="bold">
+              Let's walk through it.
+            </Typography>
+            <Typography hierarchy="body" size="xs" weight="normal">
+              In the following we will help you to write the clan installer
+              software to a USB-stick. This USB-stick will then be used to set
+              up the new machine. Get a USB-stick with at least 8GB of capacity,
+              and plug it into the machine on which you read this text. Note,
+              all data on the USB-Stick will be lost.
+            </Typography>
+          </div>
+          <div class="flex flex-col gap-1">
+            <Typography hierarchy="body" size="default" weight="bold">
+              Why do you need to do this?
+            </Typography>
+            <Typography hierarchy="body" size="xs" weight="normal">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Suspendisse varius enim in eros elementum tristique. Duis cursus,
+            </Typography>
+          </div>
         </div>
       </>
     }
-    footer={<StepFooter />}
+    footer={<StepFooter nextText="start" />}
   />
 );
 
@@ -128,7 +144,7 @@ const ConfigureImage = () => {
                     onSelectFile={onSelectFile}
                     {...field}
                     value={field.value}
-                    label="Select directory"
+                    label="Public Key"
                     orientation="horizontal"
                     placeholder="Select SSH Key"
                     required={true}
@@ -230,14 +246,14 @@ const ChooseDisk = () => {
                     error={field.error}
                     required
                     label={{
-                      label: "Disk",
-                      description: "Select a usb stick",
+                      label: "USB Stick",
+                      description: "Select the usb stick",
                     }}
                     options={[
                       { value: "1", label: "sda1" },
                       { value: "2", label: "sdb2" },
                     ]}
-                    placeholder="Disk"
+                    placeholder="Choose Device"
                     name={field.name}
                   />
                 )}
@@ -246,7 +262,7 @@ const ChooseDisk = () => {
                 type="error"
                 icon="Info"
                 title="You're about to format this drive"
-                description="It will erase all existing data on the target device"
+                description="It will erase all existing data"
               />
             </Fieldset>
           </div>
@@ -274,7 +290,7 @@ const FlashProgress = () => {
         >
           USB stick is being flashed
         </Typography>
-        <LoadingBar class="" />
+        <LoadingBar />
         <Button hierarchy="primary" class="w-fit" size="s">
           Cancel
         </Button>
@@ -296,11 +312,11 @@ const FlashDone = () => {
           weight="bold"
           color="inherit"
         >
-          Device has been successfully flashed!
+          USB Stick is ready!
         </Typography>
         <Alert
           type="warning"
-          title="Plug the flashed device into the machine that you want to install."
+          title="Remove it and plug it into the machine that you want to install."
           description=""
         />
         <div class="mt-3 flex w-full justify-end">
