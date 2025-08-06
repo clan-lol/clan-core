@@ -9,12 +9,12 @@ const BASE_SIZE = 0.9;
 const CUBE_SIZE = BASE_SIZE / 1.5;
 const CUBE_HEIGHT = CUBE_SIZE;
 const BASE_HEIGHT = 0.05;
-const CUBE_COLOR = 0xd7e0e1;
+const CUBE_COLOR = 0xe2eff0;
 const CUBE_EMISSIVE = 0x303030;
 
 const CUBE_SELECTED_COLOR = 0x4b6767;
 
-const BASE_COLOR = 0xecfdff;
+const BASE_COLOR = 0xdbeaeb;
 const BASE_EMISSIVE = 0x0c0c0c;
 const BASE_SELECTED_COLOR = 0x69b0e3;
 const BASE_SELECTED_EMISSIVE = 0x666666; // Emissive color for selected bases
@@ -50,7 +50,7 @@ export class MachineRepr {
     this.cubeMesh.receiveShadow = true;
     this.cubeMesh.userData = { id };
     this.cubeMesh.name = "cube";
-    this.cubeMesh.position.set(0, CUBE_HEIGHT / 2, 0);
+    this.cubeMesh.position.set(0, CUBE_HEIGHT / 2 + BASE_HEIGHT, 0);
 
     this.baseMesh = this.createCubeBase(
       BASE_COLOR,
@@ -62,9 +62,27 @@ export class MachineRepr {
     const label = this.createLabel(id);
     this.cubeMesh.add(label);
 
+    const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
+      color: BASE_COLOR, // any color you like
+      roughness: 1,
+      metalness: 0,
+      transparent: true,
+      opacity: 0.4,
+    });
+
+    const shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(BASE_SIZE, BASE_SIZE),
+      shadowPlaneMaterial,
+    );
+
+    shadowPlane.receiveShadow = true;
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.set(0, BASE_HEIGHT + 0.0001, 0);
+
     this.group = new THREE.Group();
     this.group.add(this.cubeMesh);
     this.group.add(this.baseMesh);
+    this.group.add(shadowPlane);
 
     this.group.position.set(position.x, 0, position.y);
     this.group.userData.id = id;
@@ -116,7 +134,7 @@ export class MachineRepr {
     });
     const base = new THREE.Mesh(geometry, baseMaterial);
     base.position.set(0, BASE_HEIGHT / 2, 0);
-    base.receiveShadow = true;
+    base.receiveShadow = false;
     return base;
   }
 

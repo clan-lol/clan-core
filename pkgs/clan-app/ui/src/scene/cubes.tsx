@@ -237,10 +237,10 @@ export function CubeScene(props: {
     );
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    const ambientLight = new THREE.AmbientLight(0xd9f2f7, 0.72);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
 
     // scene.add(new THREE.DirectionalLightHelper(directionalLight));
     // scene.add(new THREE.CameraHelper(camera));
