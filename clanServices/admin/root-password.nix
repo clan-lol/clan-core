@@ -24,7 +24,7 @@
 
     prompts.password.type = "hidden";
     prompts.password.persist = true;
-    prompts.password.description = "You can autogenerate a password, if you leave this prompt blank.";
+    prompts.password.description = "Leave empty to generate automatically";
 
     script = ''
       prompt_value="$(cat "$prompts"/password)"

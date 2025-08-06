@@ -98,7 +98,7 @@
                 };
                 type = "hidden";
                 persist = true;
-                description = "You can autogenerate a password, if you leave this prompt blank.";
+                description = "Leave empty to generate automatically";
               };
 
               runtimeInputs = [
