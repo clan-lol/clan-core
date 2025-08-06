@@ -17,6 +17,8 @@ import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
 import { Select } from "@/src/components/Select/Select";
+import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
+import Icon from "@/src/components/Icon/Icon";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -103,10 +105,10 @@ const CheckHardware = () => {
           <Fieldset>
             <Orienter orientation="horizontal">
               <Typography hierarchy="label" size="xs" weight="bold">
-                Check hardware
+                Hardware Report
               </Typography>
               <Button hierarchy="secondary" startIcon="Report">
-                Run hardware report
+                Update hardware report
               </Button>
             </Orienter>
             <Divider orientation="horizontal" />
@@ -123,7 +125,9 @@ const CheckHardware = () => {
       footer={
         <div class="flex justify-between">
           <BackButton />
-          <NextButton onClick={handleNext}>Next</NextButton>
+          <NextButton type="button" onClick={handleNext}>
+            Next
+          </NextButton>
         </div>
       }
     />
@@ -214,7 +218,7 @@ const ConfigureData = () => {
                   <TextInput
                     {...field}
                     label="Root password"
-                    description="Set the root password for the machine"
+                    description="Leave empty to generate automatically"
                     value={field.value}
                     required
                     orientation="horizontal"
@@ -340,16 +344,63 @@ const InstallSummary = () => {
   );
 };
 
+const InstallProgress = () => {
+  return (
+    <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
+      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
+        <Typography
+          hierarchy="title"
+          size="default"
+          weight="bold"
+          color="inherit"
+        >
+          Machine is beeing installed
+        </Typography>
+        <LoadingBar />
+        <Button hierarchy="primary" class="w-fit" size="s">
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const FlashDone = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  return (
+    <div class="flex w-full flex-col items-center bg-inv-4">
+      <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
+        <div class="rounded-full bg-semantic-success-4">
+          <Icon icon="Checkmark" class="size-9" />
+        </div>
+        <Typography
+          hierarchy="title"
+          size="default"
+          weight="bold"
+          color="inherit"
+        >
+          Machine installation finished!
+        </Typography>
+        <div class="mt-3 flex w-full justify-center">
+          <Button
+            hierarchy="primary"
+            endIcon="Close"
+            size="s"
+            onClick={() => stepSignal.next()}
+          >
+            Close
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const installSteps = [
   {
     id: "install:address",
     title: InstallHeader,
     content: ConfigureAddress,
-  },
-  {
-    id: "install:check-hardware",
-    title: InstallHeader,
-    content: CheckHardware,
   },
   {
     id: "install:check-hardware",
@@ -377,17 +428,12 @@ export const installSteps = [
   },
   {
     id: "install:progress",
-    title: InstallHeader,
-    content: () => (
-      <div>
-        <p>Installation in progress...</p>
-        <p>Please wait while we set up your machine.</p>
-      </div>
-    ),
+    content: InstallProgress,
+    isSplash: true,
   },
   {
     id: "install:done",
-    title: InstallHeader,
-    content: () => <div>Done</div>,
+    content: FlashDone,
+    isSplash: true,
   },
 ] as const;
