@@ -57,12 +57,17 @@ export const BackButton = () => {
  *
  * Use this for overview steps where no form submission is required.
  */
-export const StepFooter = () => {
+interface StepFooterProps {
+  nextText?: string;
+}
+export const StepFooter = (props: StepFooterProps) => {
   const stepper = useStepper<InstallSteps>();
   return (
     <div class="flex justify-between py-4">
       <BackButton />
-      <NextButton type="button" onClick={() => stepper.next()} />
+      <NextButton type="button" onClick={() => stepper.next()}>
+        {props.nextText || undefined}
+      </NextButton>
     </div>
   );
 };

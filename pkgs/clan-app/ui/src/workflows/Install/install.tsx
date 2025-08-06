@@ -7,7 +7,7 @@ import {
 import { createForm, FieldValues, SubmitHandler } from "@modular-forms/solid";
 import { Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { InitialStep } from "./steps/Initial";
+import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
 
@@ -40,10 +40,14 @@ const InstallStepper = () => {
 
 export interface InstallModalProps {
   machineName: string;
-  initialStep?: string;
+  initialStep?: InstallSteps[number]["id"];
 }
 
-const steps = [InitialStep, ...createInstallerSteps, ...installSteps] as const;
+const steps = [
+  ...initialSteps,
+  ...createInstallerSteps,
+  ...installSteps,
+] as const;
 
 export type InstallSteps = typeof steps;
 
