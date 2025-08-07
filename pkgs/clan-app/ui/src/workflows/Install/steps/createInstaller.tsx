@@ -1,4 +1,4 @@
-import { useStepper } from "@/src/hooks/stepper";
+import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import {
   createForm,
   getError,
@@ -6,8 +6,7 @@ import {
   valiForm,
 } from "@modular-forms/solid";
 import * as v from "valibot";
-import { InstallSteps } from "../install";
-import { callApi } from "@/src/hooks/api";
+import { InstallSteps, InstallStoreType } from "../install";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Select } from "@/src/components/Select/Select";
@@ -17,6 +16,12 @@ import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
+import {
+  useMachineFlashOptions,
+  useSystemStorageOptions,
+} from "@/src/hooks/queries";
+import { useClanURI } from "@/src/hooks/clan";
+import { useApiClient } from "@/src/hooks/ApiClient";
 
 const Prose = () => (
   <StepLayout
@@ -47,7 +52,7 @@ const Prose = () => (
             </Typography>
           </div>
         </div>
-        <div class="flex flex-col px-4 gap-4">
+        <div class="flex flex-col gap-4 px-4">
           <div class="flex flex-col gap-1">
             <Typography hierarchy="body" size="default" weight="bold">
               Let's walk through it.
@@ -101,15 +106,23 @@ const ConfigureImage = () => {
   });
   const stepSignal = useStepper<InstallSteps>();
 
-  // TODO: push values to the parent form Store
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
   const handleSubmit: SubmitHandler<ConfigureImageForm> = (values, event) => {
-    console.log("ISO creation submitted", values);
-    // Here you would typically trigger the ISO creation process
+    // Push values to the store
+    set("flash", (s) => ({
+      ...s,
+      language: values.language,
+      keymap: values.keymap,
+      ssh_file: values.ssh_key,
+    }));
+
     stepSignal.next();
   };
 
+  const client = useApiClient();
   const onSelectFile = async () => {
-    const req = callApi("get_system_file", {
+    const req = client.fetch("get_system_file", {
       file_request: {
         mode: "select_folder",
         title: "Select a folder for you new Clan",
@@ -130,6 +143,9 @@ const ConfigureImage = () => {
 
     throw new Error("No data returned from api call");
   };
+
+  const currClan = useClanURI();
+  const optionsQuery = useMachineFlashOptions(currClan);
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -168,10 +184,19 @@ const ConfigureImage = () => {
                       label: "Language",
                       description: "Select your preferred language",
                     }}
-                    options={[
-                      { value: "en", label: "English" },
-                      { value: "fr", label: "Français" },
-                    ]}
+                    getOptions={async () => {
+                      if (!optionsQuery.data) {
+                        await optionsQuery.refetch();
+                      }
+
+                      return (optionsQuery.data?.languages ?? []).map(
+                        (lang) => ({
+                          // TODO: Pretty label ?
+                          value: lang,
+                          label: lang,
+                        }),
+                      );
+                    }}
                     placeholder="Language"
                     name={field.name}
                   />
@@ -188,10 +213,19 @@ const ConfigureImage = () => {
                       label: "Keymap",
                       description: "Select your keyboard layout",
                     }}
-                    options={[
-                      { value: "EN_US", label: "QWERTY" },
-                      { value: "DE_DE", label: "QWERTZ" },
-                    ]}
+                    getOptions={async () => {
+                      if (!optionsQuery.data) {
+                        await optionsQuery.refetch();
+                      }
+
+                      return (optionsQuery.data?.keymaps ?? []).map(
+                        (keymap) => ({
+                          // TODO: Pretty label ?
+                          value: keymap,
+                          label: keymap,
+                        }),
+                      );
+                    }}
                     placeholder="Keymap"
                     name={field.name}
                   />
@@ -226,9 +260,34 @@ const ChooseDisk = () => {
   const [formStore, { Form, Field }] = createForm<ChooseDiskForm>({
     validate: valiForm(ChooseDiskSchema),
   });
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
+  const client = useApiClient();
+  const systemStorageQuery = useSystemStorageOptions();
   const handleSubmit: SubmitHandler<ChooseDiskForm> = (values, event) => {
-    console.log("Disk selected", values);
+    // Just for completeness, set the disk in the store
+    console.log("Flashing", store.flash);
+    set("flash", (s) => ({
+      ...s,
+      device: values.disk,
+    }));
+    const call = client.fetch("run_machine_flash", {
+      system_config: {
+        keymap: store.flash.keymap,
+        language: store.flash.language,
+        ssh_keys_path: [store.flash.ssh_file],
+      },
+      disks: [
+        {
+          name: "main",
+          device: values.disk,
+        },
+      ],
+    });
+    // TOOD: Pass the "call" Promise to the "progress step"
+
+    console.log("Flashing", store.flash);
+
     // Here you would typically trigger the disk selection process
     stepSignal.next();
   };
@@ -249,10 +308,18 @@ const ChooseDisk = () => {
                       label: "USB Stick",
                       description: "Select the usb stick",
                     }}
-                    options={[
-                      { value: "1", label: "sda1" },
-                      { value: "2", label: "sdb2" },
-                    ]}
+                    getOptions={async () => {
+                      if (!systemStorageQuery.data) {
+                        await systemStorageQuery.refetch();
+                      }
+
+                      return (systemStorageQuery.data?.blockdevices ?? []).map(
+                        (dev) => ({
+                          value: dev.path,
+                          label: dev.name,
+                        }),
+                      );
+                    }}
                     placeholder="Choose Device"
                     name={field.name}
                   />
