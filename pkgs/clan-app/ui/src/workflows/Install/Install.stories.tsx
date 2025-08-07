@@ -1,14 +1,105 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
 import { InstallModal } from "./install";
+import {
+  createMemoryHistory,
+  MemoryRouter,
+  RouteDefinition,
+} from "@solidjs/router";
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { ApiClientProvider, Fetcher } from "@/src/hooks/ApiClient";
+import {
+  ApiCall,
+  OperationNames,
+  OperationResponse,
+  SuccessQuery,
+} from "@/src/hooks/api";
 
-const meta: Meta = {
+type ResultDataMap = {
+  [K in OperationNames]: SuccessQuery<K>["data"];
+};
+
+export const mockFetcher: Fetcher = <K extends OperationNames>(
+  name: K,
+  _args: unknown,
+): ApiCall<K> => {
+  // TODO: Make this configurable for every story
+  const resultData: Partial<ResultDataMap> = {
+    get_machine_flash_options: {
+      keymaps: ["DE_de", "US_en"],
+      languages: ["en", "de"],
+    },
+    get_system_file: ["id_rsa.pub"],
+    list_system_storage_devices: {
+      blockdevices: [
+        {
+          name: "sda_bla_bla",
+          path: "/dev/sda",
+        },
+        {
+          name: "sdb_foo_foo",
+          path: "/dev/sdb",
+        },
+      ] as SuccessQuery<"list_system_storage_devices">["data"]["blockdevices"],
+    },
+  };
+
+  return {
+    uuid: "mock",
+    cancel: () => Promise.resolve(),
+    result: new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          op_key: "1",
+          status: "success",
+          data: resultData[name],
+        } as OperationResponse<K>);
+      }, 1500);
+    }),
+  };
+};
+
+const meta: Meta<typeof InstallModal> = {
   title: "workflows/install",
   component: InstallModal,
+  decorators: [
+    (Story: StoryObj, context: StoryContext) => {
+      const Routes: RouteDefinition[] = [
+        {
+          path: "/clans/:clanURI",
+          component: () => (
+            <div class="w-[600px]">
+              <Story />
+            </div>
+          ),
+        },
+      ];
+      const history = createMemoryHistory();
+      history.set({ value: "/clans/dGVzdA==", replace: true });
+
+      const queryClient = new QueryClient();
+
+      return (
+        <ApiClientProvider client={{ fetch: mockFetcher }}>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter
+              root={(props) => {
+                console.debug("Rendering MemoryRouter root with props:", props);
+                return props.children;
+              }}
+              history={history}
+            >
+              {Routes}
+            </MemoryRouter>
+          </QueryClientProvider>
+        </ApiClientProvider>
+      );
+    },
+  ],
 };
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<typeof InstallModal>;
 
 export const Init: Story = {
   description: "Welcome step for the installation workflow",
