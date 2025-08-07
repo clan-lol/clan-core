@@ -47,25 +47,28 @@ export const Default: Story = {
     placeholder: "Select your pet",
   },
 };
-
-// <Field name="language">
-//     {(field, input) => (
-//         <Select
-//         required
-//         label={{
-//             label: "Language",
-//             description: "Select your preferred language",
-//         }}
-//         options={[
-//             { value: "en", label: "English" },
-//             { value: "fr", label: "Français" },
-//         ]}
-//         placeholder="Language"
-//         onChange={(opt) => {
-//             setValue(formStore, "language", opt?.value || "");
-//         }}
-//         name={field.name}
-//         validationState={field.error ? "invalid" : "valid"}
-//         />
-//     )}
-// </Field>
+export const Async: Story = {
+  args: {
+    required: true,
+    label: {
+      label: "Select your pet",
+      description: "Choose your favorite pet from the list",
+    },
+    getOptions: async () => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve([
+            { value: "dog", label: "Doggy" },
+            { value: "cat", label: "Catty" },
+            { value: "fish", label: "Fishy" },
+            { value: "bird", label: "Birdy" },
+            { value: "hamster", label: "Hammy" },
+            { value: "snake", label: "Snakey" },
+            { value: "turtle", label: "Turtly" },
+          ]);
+        }, 3000);
+      });
+    },
+    placeholder: "Select your pet",
+  },
+};
