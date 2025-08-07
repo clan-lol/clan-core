@@ -49,6 +49,11 @@ export interface ApiCall<K extends OperationNames> {
   cancel: () => Promise<void>;
 }
 
+/**
+ * Do not use this function directly, use `useApiClient` function instead.
+ * This allows mocking the result in tests.
+ * Or switch to different client implementations.
+ */
 export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
