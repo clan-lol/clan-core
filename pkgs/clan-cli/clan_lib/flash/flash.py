@@ -37,15 +37,16 @@ class Disk:
     device: str
 
 
+installer_machine = Machine(name="flash-installer", flake=Flake(str(clan_core_flake())))
+
+
 # TODO: unify this with machine install
 @API.register
 def run_machine_flash(
     disks: list[Disk],
     system_config: SystemConfig,
     # Optional parameters
-    machine: Machine = Machine(
-        name="flash-installer", flake=Flake(str(clan_core_flake()))
-    ),
+    machine: Machine = installer_machine,
     mode: Literal["format", "mount"] = "format",
     dry_run: bool = False,
     write_efi_boot_entries: bool = False,

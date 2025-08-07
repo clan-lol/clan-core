@@ -84,8 +84,8 @@ def flash_command(args: argparse.Namespace) -> None:
             return
 
     run_machine_flash(
-        machine,
-        mode=opts.mode,
+        machine=machine,
+        mode=opts.mode,  # type: ignore
         disks=opts.disks,
         system_config=opts.system_config,
         dry_run=opts.dry_run,
