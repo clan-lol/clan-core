@@ -11,6 +11,10 @@
         @apply outline outline-1 outline-inv-2
     }
 
+    &[data-loading] {
+        @apply cursor-wait;
+    }
+
     &:hover {
         @apply bg-def-2;
 
@@ -37,6 +41,9 @@
     @apply flex items-center justify-center h-[14px] w-[14px] p-[2px];
     &[data-disabled] {
         @apply cursor-not-allowed;
+    }
+    &[data-loading] {
+        @apply bg-inherit;
     }
 }
 

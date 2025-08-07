@@ -7,6 +7,8 @@ import { Routes } from "@/src/routes";
 import { Router } from "@solidjs/router";
 import { Layout } from "@/src/routes/Layout";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
+import { ApiClientProvider } from "./hooks/ApiClient";
+import { callApi } from "./hooks/api";
 
 export const client = new QueryClient();
 
@@ -23,10 +25,12 @@ if (import.meta.env.DEV) {
 
 render(
   () => (
-    <QueryClientProvider client={client}>
-      {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
-      <Router root={Layout}>{Routes}</Router>
-    </QueryClientProvider>
+    <ApiClientProvider client={{ fetch: callApi }}>
+      <QueryClientProvider client={client}>
+        {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
+        <Router root={Layout}>{Routes}</Router>
+      </QueryClientProvider>
+    </ApiClientProvider>
   ),
   root!,
 );

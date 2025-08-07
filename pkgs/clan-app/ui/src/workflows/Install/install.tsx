@@ -50,6 +50,14 @@ const steps = [
 ] as const;
 
 export type InstallSteps = typeof steps;
+export interface InstallStoreType {
+  flash: {
+    language: string;
+    keymap: string;
+    ssh_file: string;
+    device: string;
+  };
+}
 
 export const InstallModal = (props: InstallModalProps) => {
   const stepper = createStepper(

@@ -2,18 +2,21 @@ import { Select as KSelect } from "@kobalte/core/select";
 import Icon from "../Icon/Icon";
 import { Orienter } from "../Form/Orienter";
 import { Label, LabelProps } from "../Form/Label";
-import { createEffect, createSignal, JSX, splitProps } from "solid-js";
+import { createEffect, createSignal, JSX, Show, splitProps } from "solid-js";
 import styles from "./Select.module.css";
 import { Typography } from "../Typography/Typography";
 import cx from "classnames";
 
-export interface Option { value: string; label: string; disabled?: boolean }
+export interface Option {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
 
-export interface SelectProps {
+export type SelectProps = {
   // Kobalte Select props, for modular forms
   name: string;
   placeholder?: string | undefined;
-  options: Option[];
   value: string | undefined;
   error: string;
   required?: boolean | undefined;
@@ -25,24 +28,57 @@ export interface SelectProps {
   // Custom props
   orientation?: "horizontal" | "vertical";
   label?: Omit<LabelProps, "labelComponent" | "descriptionComponent">;
-}
+} & (
+  | {
+      // Sync options
+      options: Option[];
+      getOptions?: never;
+    }
+  | {
+      // Async options
+      getOptions: () => Promise<Option[]>;
+      options?: never;
+    }
+);
 
 export const Select = (props: SelectProps) => {
   const [root, selectProps] = splitProps(
     props,
-    ["name", "placeholder", "options", "required", "disabled"],
+    ["name", "placeholder", "required", "disabled"],
     ["placeholder", "ref", "onInput", "onChange", "onBlur"],
   );
 
   const [getValue, setValue] = createSignal<Option>();
 
+  const [resolvedOptions, setResolvedOptions] = createSignal<Option[]>([]);
+
+  // Internal loading state for async options
+  const [loading, setLoading] = createSignal(false);
+  createEffect(async () => {
+    if (props.getOptions) {
+      setLoading(true);
+      try {
+        const options = await props.getOptions();
+        setResolvedOptions(options);
+      } finally {
+        setLoading(false);
+      }
+    } else if (props.options) {
+      setResolvedOptions(props.options);
+    }
+  });
+
+  const options = () => props.options ?? resolvedOptions();
+
   createEffect(() => {
-    setValue(props.options.find((option) => props.value === option.value));
+    console.log("options,", options());
+    setValue(options().find((option) => props.value === option.value));
   });
 
   return (
     <KSelect
       {...root}
+      options={options()}
       sameWidth={true}
       gutter={0}
       multiple={false}
@@ -70,14 +106,29 @@ export const Select = (props: SelectProps) => {
         </KSelect.Item>
       )}
       placeholder={
-        <Typography
-          hierarchy="body"
-          size="xs"
-          weight="bold"
-          class="flex w-full items-center"
+        <Show
+          when={!loading()}
+          fallback={
+            <Typography
+              hierarchy="body"
+              size="xs"
+              weight="bold"
+              class="flex w-full items-center"
+              color="secondary"
+            >
+              Loading...
+            </Typography>
+          }
         >
-          {props.placeholder}
-        </Typography>
+          <Typography
+            hierarchy="body"
+            size="xs"
+            weight="bold"
+            class="flex w-full items-center"
+          >
+            {props.placeholder}
+          </Typography>
+        </Show>
       }
     >
       <Orienter orientation={props.orientation || "horizontal"}>
@@ -88,7 +139,10 @@ export const Select = (props: SelectProps) => {
           validationState={props.error ? "invalid" : "valid"}
         />
         <KSelect.HiddenSelect {...selectProps} />
-        <KSelect.Trigger class={cx(styles.trigger)}>
+        <KSelect.Trigger
+          class={cx(styles.trigger)}
+          data-loading={loading() || undefined}
+        >
           <KSelect.Value<Option>>
             {(state) => (
               <Typography
@@ -101,7 +155,11 @@ export const Select = (props: SelectProps) => {
               </Typography>
             )}
           </KSelect.Value>
-          <KSelect.Icon as="button" class={styles.icon}>
+          <KSelect.Icon
+            as="button"
+            class={styles.icon}
+            data-loading={loading() || undefined}
+          >
             <Icon icon="Expand" color="inherit" />
           </KSelect.Icon>
         </KSelect.Trigger>

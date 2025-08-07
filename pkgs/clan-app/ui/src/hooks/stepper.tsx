@@ -6,6 +6,7 @@ import {
   Setter,
   useContext,
 } from "solid-js";
+import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
 export interface StepBase {
   id: string;
@@ -13,17 +14,26 @@ export interface StepBase {
 
 export type Step<ExtraFields = unknown> = StepBase & ExtraFields;
 
-export interface StepOptions<Id> {
+export interface StepOptions<Id, StoreType> {
   initialStep: Id;
+  initialStoreData?: StoreType;
 }
 
 export function createStepper<
   T extends readonly Step<Extra>[],
   StepId extends T[number]["id"],
   Extra = unknown,
->(s: { steps: T }, stepOpts: StepOptions<StepId>): StepperReturn<T> {
+  StoreType extends Record<string, unknown> = Record<string, unknown>,
+>(
+  s: { steps: T },
+  stepOpts: StepOptions<StepId, StoreType>,
+): StepperReturn<T, T[number]["id"]> {
   const [activeStep, setActiveStep] = createSignal<T[number]["id"]>(
     stepOpts.initialStep,
+  );
+
+  const store: StoreTuple<StoreType> = createStore<StoreType>(
+    stepOpts.initialStoreData ?? ({} as StoreType),
   );
 
   /**
@@ -31,6 +41,12 @@ export function createStepper<
    * It provides the active step and a function to set the active step.
    */
   return {
+    /**
+     * Usage store = getStepStore<MyStoreType>(stepper);
+     *
+     * TODO: Getting type inference working is tricky. Might fix this later.
+     */
+    _store: store as unknown as never,
     activeStep,
     setActiveStep,
     currentStep: () => {
@@ -73,10 +89,12 @@ export function createStepper<
   };
 }
 
+type StoreTuple<T> = [get: Store<T>, set: SetStoreFunction<T>];
 export interface StepperReturn<
   T extends readonly Step[],
   StepId = T[number]["id"],
 > {
+  _store: never;
   activeStep: Accessor<StepId>;
   setActiveStep: Setter<StepId>;
   currentStep: () => T[number];
@@ -124,4 +142,11 @@ export function StepperProvider<
  */
 export function defineSteps<T extends readonly StepBase[]>(steps: T) {
   return steps;
+}
+
+interface getStepStoreArg {
+  _store: never;
+}
+export function getStepStore<StoreType>(stepper: getStepStoreArg) {
+  return stepper._store as StoreTuple<StoreType>;
 }

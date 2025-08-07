@@ -1,6 +1,7 @@
 import { useQueries, useQuery, UseQueryResult } from "@tanstack/solid-query";
-import { callApi, SuccessData } from "../hooks/api";
+import { SuccessData } from "../hooks/api";
 import { encodeBase64 } from "@/src/hooks/clan";
+import { useApiClient } from "./ApiClient";
 
 export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
@@ -12,11 +13,12 @@ export type MachineDetails = SuccessData<"get_machine_details">;
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
 export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
 
-export const useMachinesQuery = (clanURI: string) =>
-  useQuery<ListMachines>(() => ({
+export const useMachinesQuery = (clanURI: string) => {
+  const client = useApiClient();
+  return useQuery<ListMachines>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machines"],
     queryFn: async () => {
-      const api = callApi("list_machines", {
+      const api = client.fetch("list_machines", {
         flake: {
           identifier: clanURI,
         },
@@ -29,12 +31,14 @@ export const useMachinesQuery = (clanURI: string) =>
       return result.data;
     },
   }));
+};
 
-export const useMachineQuery = (clanURI: string, machineName: string) =>
-  useQuery<Machine>(() => ({
+export const useMachineQuery = (clanURI: string, machineName: string) => {
+  const client = useApiClient();
+  return useQuery<Machine>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
     queryFn: async () => {
-      const call = callApi("get_machine", {
+      const call = client.fetch("get_machine", {
         name: machineName,
         flake: {
           identifier: clanURI,
@@ -49,12 +53,17 @@ export const useMachineQuery = (clanURI: string, machineName: string) =>
       return result.data;
     },
   }));
+};
 
-export const useMachineDetailsQuery = (clanURI: string, machineName: string) =>
-  useQuery<MachineDetails>(() => ({
+export const useMachineDetailsQuery = (
+  clanURI: string,
+  machineName: string,
+) => {
+  const client = useApiClient();
+  return useQuery<MachineDetails>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine_detail", machineName],
     queryFn: async () => {
-      const call = callApi("get_machine_details", {
+      const call = client.fetch("get_machine_details", {
         machine: {
           name: machineName,
           flake: {
@@ -73,12 +82,14 @@ export const useMachineDetailsQuery = (clanURI: string, machineName: string) =>
       return result.data;
     },
   }));
+};
 
-export const useClanDetailsQuery = (clanURI: string) =>
-  useQuery<ClanDetails>(() => ({
+export const useClanDetailsQuery = (clanURI: string) => {
+  const client = useApiClient();
+  return useQuery<ClanDetails>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "details"],
     queryFn: async () => {
-      const call = callApi("get_clan_details", {
+      const call = client.fetch("get_clan_details", {
         flake: {
           identifier: clanURI,
         },
@@ -97,14 +108,16 @@ export const useClanDetailsQuery = (clanURI: string) =>
       };
     },
   }));
+};
 
-export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult =>
-  useQueries(() => ({
+export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult => {
+  const client = useApiClient();
+  return useQueries(() => ({
     queries: clanURIs.map((clanURI) => ({
       queryKey: ["clans", encodeBase64(clanURI), "details"],
       enabled: !!clanURI,
       queryFn: async () => {
-        const call = callApi("get_clan_details", {
+        const call = client.fetch("get_clan_details", {
           flake: {
             identifier: clanURI,
           },
@@ -124,3 +137,54 @@ export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult =>
       },
     })),
   }));
+};
+
+export type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
+export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
+
+export const useMachineFlashOptions = (
+  clanURI: string,
+): MachineFlashOptionsQuery => {
+  const client = useApiClient();
+  return useQuery<MachineFlashOptions>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "machine_flash_options"],
+    queryFn: async () => {
+      const call = client.fetch("get_machine_flash_options", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export type SystemStorageOptions = SuccessData<"list_system_storage_devices">;
+export type SystemStorageOptionsQuery = UseQueryResult<SystemStorageOptions>;
+
+export const useSystemStorageOptions = (): SystemStorageOptionsQuery => {
+  const client = useApiClient();
+  return useQuery<SystemStorageOptions>(() => ({
+    queryKey: ["system", "storage_devices"],
+    queryFn: async () => {
+      const call = client.fetch("list_system_storage_devices", {});
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};

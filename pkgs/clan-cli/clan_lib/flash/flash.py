@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Literal
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.vars.generate import generate_vars
@@ -12,7 +12,9 @@ from clan_cli.vars.upload import populate_secret_vars
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, cmd_with_root, run
+from clan_lib.dirs import clan_core_flake
 from clan_lib.errors import ClanError
+from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
 
@@ -35,17 +37,20 @@ class Disk:
     device: str
 
 
+installer_machine = Machine(name="flash-installer", flake=Flake(str(clan_core_flake())))
+
+
 # TODO: unify this with machine install
 @API.register
 def run_machine_flash(
-    machine: Machine,
-    *,
-    mode: str,
     disks: list[Disk],
     system_config: SystemConfig,
-    dry_run: bool,
-    write_efi_boot_entries: bool,
-    debug: bool,
+    # Optional parameters
+    machine: Machine = installer_machine,
+    mode: Literal["format", "mount"] = "format",
+    dry_run: bool = False,
+    write_efi_boot_entries: bool = False,
+    debug: bool = False,
     extra_args: list[str] | None = None,
     graphical: bool = False,
 ) -> None:
