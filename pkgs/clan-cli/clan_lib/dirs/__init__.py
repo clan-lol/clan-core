@@ -56,6 +56,13 @@ def find_toplevel(top_level_files: list[str]) -> Path | None:
     return None
 
 
+def clan_core_flake() -> Path:
+    """
+    Returns the path to the clan core flake.
+    """
+    return module_root().parent.parent.parent
+
+
 class TemplateType(Enum):
     CLAN = "clan"
     DISK = "disk"
