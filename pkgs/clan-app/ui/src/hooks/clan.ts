@@ -47,7 +47,12 @@ export const navigateToMachine = (
 };
 
 export const clanURIParam = (params: Params) => {
-  return decodeBase64(params.clanURI);
+  try {
+    return decodeBase64(params.clanURI);
+  } catch (e) {
+    console.error("Failed to decode clan URI:", params.clanURI, e);
+    throw new Error("Invalid clan URI");
+  }
 };
 
 export const useClanURI = () => clanURIParam(useParams());
