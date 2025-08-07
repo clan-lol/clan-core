@@ -108,7 +108,7 @@ def run_machine_flash(
 
         from clan_cli.vars.generate import Generator
 
-        for generator in Generator.generators_from_flake(machine.name, machine.flake):
+        for generator in Generator.get_machine_generators(machine.name, machine.flake):
             for file in generator.files:
                 if file.needed_for == "partitioning":
                     msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"

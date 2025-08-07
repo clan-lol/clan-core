@@ -56,7 +56,7 @@ class SecretStore(StoreBase):
         # no need to generate keys if we don't manage secrets
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(machine, self.flake)
+        vars_generators = Generator.get_machine_generators(machine, self.flake)
         if not vars_generators:
             return
         has_secrets = False
@@ -123,7 +123,7 @@ class SecretStore(StoreBase):
         if generator is None:
             from clan_cli.vars.generate import Generator
 
-            generators = Generator.generators_from_flake(machine, self.flake)
+            generators = Generator.get_machine_generators(machine, self.flake)
         else:
             generators = [generator]
         file_found = False
@@ -202,7 +202,7 @@ class SecretStore(StoreBase):
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(machine, self.flake)
+        vars_generators = Generator.get_machine_generators(machine, self.flake)
         if "users" in phases or "services" in phases:
             key_name = f"{machine}-age.key"
             if not has_secret(sops_secrets_folder(self.flake.path) / key_name):
@@ -322,7 +322,7 @@ class SecretStore(StoreBase):
         if generator is None:
             from clan_cli.vars.generate import Generator
 
-            generators = Generator.generators_from_flake(machine, self.flake)
+            generators = Generator.get_machine_generators(machine, self.flake)
         else:
             generators = [generator]
         file_found = False
