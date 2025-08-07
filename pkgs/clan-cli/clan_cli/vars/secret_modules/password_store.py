@@ -149,7 +149,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         manifest = []
-        generators = Generator.generators_from_flake(machine, self.flake)
+        generators = Generator.get_machine_generators(machine, self.flake)
         for generator in generators:
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
@@ -180,7 +180,7 @@ class SecretStore(StoreBase):
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(machine, self.flake)
+        vars_generators = Generator.get_machine_generators(machine, self.flake)
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz", "w:gz"

@@ -60,7 +60,7 @@ class Generator:
         return check_vars(self.machine, self._flake, generator_name=self.name)
 
     @classmethod
-    def generators_from_flake(
+    def get_machine_generators(
         cls: type["Generator"],
         machine_name: str,
         flake: "Flake",
@@ -213,7 +213,7 @@ def decrypt_dependencies(
     secret_vars_store: StoreBase,
     public_vars_store: StoreBase,
 ) -> dict[str, dict[str, bytes]]:
-    generators = Generator.generators_from_flake(machine.name, machine.flake)
+    generators = Generator.get_machine_generators(machine.name, machine.flake)
 
     result: dict[str, dict[str, bytes]] = {}
 
@@ -430,7 +430,7 @@ def get_closure(
 ) -> list[Generator]:
     from . import graph
 
-    vars_generators = Generator.generators_from_flake(machine.name, machine.flake)
+    vars_generators = Generator.get_machine_generators(machine.name, machine.flake)
     generators: dict[str, Generator] = {
         generator.name: generator for generator in vars_generators
     }
@@ -473,7 +473,7 @@ def get_generators(
         list[Generator]: A list of generators for the machine.
     """
 
-    return Generator.generators_from_flake(
+    return Generator.get_machine_generators(
         machine_name,
         Flake(str(base_dir)),
         include_previous_values,
@@ -529,7 +529,7 @@ def run_generators(
     generators_set = set(generators)
     generators_ = [
         g
-        for g in Generator.generators_from_flake(machine_name, machine.flake)
+        for g in Generator.get_machine_generators(machine_name, machine.flake)
         if g.name in generators_set
     ]
 
@@ -550,7 +550,7 @@ def create_machine_vars_interactive(
 ) -> bool:
     _generator = None
     if generator_name:
-        generators = Generator.generators_from_flake(machine.name, machine.flake)
+        generators = Generator.get_machine_generators(machine.name, machine.flake)
         for generator in generators:
             if generator.name == generator_name:
                 _generator = generator
