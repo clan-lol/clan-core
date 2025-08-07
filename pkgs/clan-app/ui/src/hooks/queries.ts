@@ -139,3 +139,52 @@ export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult => {
   }));
 };
 
+export type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
+export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
+
+export const useMachineFlashOptions = (
+  clanURI: string,
+): MachineFlashOptionsQuery => {
+  const client = useApiClient();
+  return useQuery<MachineFlashOptions>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "machine_flash_options"],
+    queryFn: async () => {
+      const call = client.fetch("get_machine_flash_options", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export type SystemStorageOptions = SuccessData<"list_system_storage_devices">;
+export type SystemStorageOptionsQuery = UseQueryResult<SystemStorageOptions>;
+
+export const useSystemStorageOptions = (): SystemStorageOptionsQuery => {
+  const client = useApiClient();
+  return useQuery<SystemStorageOptions>(() => ({
+    queryKey: ["system", "storage_devices"],
+    queryFn: async () => {
+      const call = client.fetch("list_system_storage_devices", {});
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
