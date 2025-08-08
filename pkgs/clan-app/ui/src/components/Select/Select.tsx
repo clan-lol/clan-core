@@ -1,4 +1,4 @@
-import { Select as KSelect } from "@kobalte/core/select";
+import { Select as KSelect, SelectPortalProps } from "@kobalte/core/select";
 import Icon from "../Icon/Icon";
 import { Orienter } from "../Form/Orienter";
 import { Label, LabelProps } from "../Form/Label";
@@ -28,6 +28,8 @@ export type SelectProps = {
   // Custom props
   orientation?: "horizontal" | "vertical";
   label?: Omit<LabelProps, "labelComponent" | "descriptionComponent">;
+  portalProps?: Partial<SelectPortalProps>;
+  zIndex?: number;
 } & (
   | {
       // Sync options
@@ -47,6 +49,8 @@ export const Select = (props: SelectProps) => {
     ["name", "placeholder", "required", "disabled"],
     ["placeholder", "ref", "onInput", "onChange", "onBlur"],
   );
+
+  const zIndex = () => props.zIndex ?? 40;
 
   const [getValue, setValue] = createSignal<Option>();
 
@@ -78,6 +82,7 @@ export const Select = (props: SelectProps) => {
   return (
     <KSelect
       {...root}
+      fitViewport={true}
       options={options()}
       sameWidth={true}
       gutter={0}
@@ -164,8 +169,11 @@ export const Select = (props: SelectProps) => {
           </KSelect.Icon>
         </KSelect.Trigger>
       </Orienter>
-      <KSelect.Portal>
-        <KSelect.Content class={styles.options_content}>
+      <KSelect.Portal {...props.portalProps}>
+        <KSelect.Content
+          class={styles.options_content}
+          style={{ "--z-index": zIndex() }}
+        >
           <KSelect.Listbox />
         </KSelect.Content>
       </KSelect.Portal>
