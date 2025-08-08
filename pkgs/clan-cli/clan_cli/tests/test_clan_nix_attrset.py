@@ -43,6 +43,7 @@ def test_clan_core_templates(
     assert list(templates.builtins.get("clan", {}).keys()) == [
         "default",
         "flake-parts",
+        "flake-parts-minimal",
         "minimal",
     ]
 
