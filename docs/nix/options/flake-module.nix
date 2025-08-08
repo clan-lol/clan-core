@@ -1,8 +1,6 @@
 {
   self,
-  config,
-  inputs,
-  privateInputs ? { },
+  privateInputs,
   ...
 }:
 {
@@ -170,22 +168,19 @@
       #   modules = docModules;
       # };
 
-      packages = lib.optionalAttrs ((privateInputs ? nuschtos) || (inputs ? nuschtos)) {
-        docs-options =
-          (privateInputs.nuschtos or inputs.nuschtos)
-          .packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch
+      packages = {
+        docs-options = privateInputs.nuschtos.packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch {
+          inherit baseHref;
+          title = "Clan Options";
+          # scopes = mapAttrsToList mkScope serviceModules;
+          scopes = [
             {
-              inherit baseHref;
-              title = "Clan Options";
-              # scopes = mapAttrsToList mkScope serviceModules;
-              scopes = [
-                {
-                  name = "Clan";
-                  modules = docModules;
-                  urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
-                }
-              ];
-            };
+              name = "Clan";
+              modules = docModules;
+              urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+            }
+          ];
+        };
       };
     };
 }
