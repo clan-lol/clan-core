@@ -62,7 +62,7 @@ def get_machine_target_platform(machine: Machine) -> str | None:
 @dataclass
 class HardwareGenerateOptions:
     machine: Machine
-    backend: HardwareConfig
+    backend: HardwareConfig = HardwareConfig.NIXOS_FACTER
     password: str | None = None
 
 
