@@ -1,24 +1,24 @@
 """Base Host interface for both local and remote command execution."""
 
 import logging
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from typing import Protocol
 
 from clan_lib.cmd import CmdOut, RunOpts
 
 cmdlog = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
-class Host(ABC):
+class Host(Protocol):
     """
     Abstract base class for host command execution.
     This provides a common interface for both local and remote hosts.
     """
 
-    command_prefix: str | None
+    @property
+    def command_prefix(self) -> str | None: ...
 
     @property
     @abstractmethod

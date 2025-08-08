@@ -16,7 +16,6 @@ from clan_lib.cmd import CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError, indent_command  # Assuming these are available
 from clan_lib.nix import nix_shell
-from clan_lib.ssh.host import Host
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
@@ -31,7 +30,7 @@ NO_OUTPUT_TIMEOUT = 20
 
 
 @dataclass(frozen=True)
-class Remote(Host):
+class Remote:
     address: str
     command_prefix: str | None
     user: str = "root"
