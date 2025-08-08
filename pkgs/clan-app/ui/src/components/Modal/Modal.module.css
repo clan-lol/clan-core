@@ -22,7 +22,7 @@
 }
 
 .modal_body {
-  @apply rounded-md p-6 pt-4 bg-def-1;
+  @apply rounded-b-md p-6 pt-4 bg-def-1;
 
   &[data-no-padding] {
     @apply p-0;
