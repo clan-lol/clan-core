@@ -50,24 +50,10 @@
         pathExists
         ;
 
-      # Load private flake inputs if available
-      loadDevFlake =
-        path:
-        let
-          flakeHash = nixpkgs.lib.fileContents "${toString path}.narHash";
-          flakePath = "path:${toString path}?narHash=${flakeHash}";
-        in
-        builtins.getFlake (builtins.unsafeDiscardStringContext flakePath);
-
-      devFlake = builtins.tryEval (loadDevFlake ./devFlake/private);
-
       privateInputs =
-        if pathExists ./.skip-private-inputs then
-          { }
-        else if devFlake.success then
-          devFlake.value.inputs
-        else
-          { };
+        (import ./devFlake/flake-compat.nix {
+          src = ./devFlake;
+        }).outputs;
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:

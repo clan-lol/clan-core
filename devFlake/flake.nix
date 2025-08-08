@@ -15,5 +15,5 @@
 
   inputs.systems.url = "github:nix-systems/default";
 
-  outputs = _: { };
+  outputs = inputs: inputs;
 }
