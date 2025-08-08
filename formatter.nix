@@ -95,39 +95,38 @@
           "*/asciinema-player/*"
         ];
       };
-      treefmt.programs.mypy.directories =
-        {
-          "clan-cli" = {
-            directory = "pkgs/clan-cli";
-            extraPythonPackages = (self'.packages.clan-cli.devshellPyDeps pkgs.python3Packages);
-          };
-          "clan-app" = {
-            directory = "pkgs/ui/clan-app";
-            extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
-            extraPythonPaths = [ "../../clan-cli" ];
-          };
-          "generate-test-vars" = {
-            directory = "pkgs/generate-test-vars";
-            extraPythonPackages = [
-              (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
-            ];
-            extraPythonPaths = [ "../clan-cli" ];
-          };
-        }
-        // (
-          if pkgs.stdenv.isLinux then
-            {
-              "clan-vm-manager" = {
-                directory = "pkgs/clan-vm-manager";
-                extraPythonPackages = self'.packages.clan-vm-manager.externalTestDeps ++ [
-                  (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
-                ];
-                extraPythonPaths = [ "../clan-cli" ];
-              };
-            }
-          else
-            { }
-        );
+      treefmt.programs.mypy.directories = {
+        "clan-cli" = {
+          directory = "pkgs/clan-cli";
+          extraPythonPackages = (self'.packages.clan-cli.devshellPyDeps pkgs.python3Packages);
+        };
+        "clan-app" = {
+          directory = "pkgs/ui/clan-app";
+          extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
+          extraPythonPaths = [ "../../clan-cli" ];
+        };
+        "generate-test-vars" = {
+          directory = "pkgs/generate-test-vars";
+          extraPythonPackages = [
+            (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
+          ];
+          extraPythonPaths = [ "../clan-cli" ];
+        };
+      }
+      // (
+        if pkgs.stdenv.isLinux then
+          {
+            "clan-vm-manager" = {
+              directory = "pkgs/clan-vm-manager";
+              extraPythonPackages = self'.packages.clan-vm-manager.externalTestDeps ++ [
+                (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
+              ];
+              extraPythonPaths = [ "../clan-cli" ];
+            };
+          }
+        else
+          { }
+      );
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
     };

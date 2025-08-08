@@ -90,7 +90,8 @@ pythonRuntime.pkgs.buildPythonApplication {
 
     # gtk4 deps
     wrapGAppsHook4
-  ] ++ runtimeDependencies;
+  ]
+  ++ runtimeDependencies;
 
   # The necessity of setting buildInputs and propagatedBuildInputs to the
   # same values for your Python package within Nix largely stems from ensuring
@@ -98,7 +99,8 @@ pythonRuntime.pkgs.buildPythonApplication {
   # at build time and runtime,
   propagatedBuildInputs = [
     (pythonRuntime.withPackages (ps: clan-cli-module ++ (pyDeps ps)))
-  ] ++ runtimeDependencies;
+  ]
+  ++ runtimeDependencies;
 
   # also re-expose dependencies so we test them in CI
   passthru = {

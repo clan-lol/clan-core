@@ -156,7 +156,8 @@
             type = types.submoduleWith {
               modules = [
                 { noInstanceOptions = true; }
-              ] ++ mapAttrsToList fakeInstanceOptions serviceModules;
+              ]
+              ++ mapAttrsToList fakeInstanceOptions serviceModules;
             };
           };
         }

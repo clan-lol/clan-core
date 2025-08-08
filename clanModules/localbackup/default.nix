@@ -112,125 +112,124 @@ in
       '';
     in
     lib.mkIf (cfg.targets != { }) {
-      environment.systemPackages =
-        [
-          (pkgs.writeShellScriptBin "localbackup-create" ''
-            set -efu -o pipefail
-            export PATH=${
-              lib.makeBinPath [
-                pkgs.rsnapshot
-                pkgs.coreutils
-                pkgs.util-linux
-              ]
-            }
-            ${lib.concatMapStringsSep "\n" (target: ''
-              ${mountHook target}
-              echo "Creating backup '${target.name}'"
+      environment.systemPackages = [
+        (pkgs.writeShellScriptBin "localbackup-create" ''
+          set -efu -o pipefail
+          export PATH=${
+            lib.makeBinPath [
+              pkgs.rsnapshot
+              pkgs.coreutils
+              pkgs.util-linux
+            ]
+          }
+          ${lib.concatMapStringsSep "\n" (target: ''
+            ${mountHook target}
+            echo "Creating backup '${target.name}'"
 
-              ${lib.optionalString (target.preBackupHook != null) ''
-                (
-                  ${target.preBackupHook}
-                )
-              ''}
-
-              declare -A preCommandErrors
-              ${lib.concatMapStringsSep "\n" (
-                state:
-                lib.optionalString (state.preBackupCommand != null) ''
-                  echo "Running pre-backup command for ${state.name}"
-                  if ! /run/current-system/sw/bin/${state.preBackupCommand}; then
-                    preCommandErrors["${state.name}"]=1
-                  fi
-                ''
-              ) (builtins.attrValues config.clan.core.state)}
-
-              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
-              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
-            '') (builtins.attrValues cfg.targets)}'')
-          (pkgs.writeShellScriptBin "localbackup-list" ''
-            set -efu -o pipefail
-            export PATH=${
-              lib.makeBinPath [
-                pkgs.jq
-                pkgs.findutils
-                pkgs.coreutils
-                pkgs.util-linux
-              ]
-            }
-            (${
-              lib.concatMapStringsSep "\n" (target: ''
-                (
-                  ${mountHook target}
-                  find ${lib.escapeShellArg target.directory} -mindepth 1 -maxdepth 1 -name "snapshot.*" -print0 -type d \
-                    | jq -Rs 'split("\u0000") | .[] | select(. != "") | { "name": ("${target.name}::" + .)}'
-                )
-              '') (builtins.attrValues cfg.targets)
-            }) | jq -s .
-          '')
-          (pkgs.writeShellScriptBin "localbackup-restore" ''
-            set -efu -o pipefail
-            export PATH=${
-              lib.makeBinPath [
-                pkgs.rsync
-                pkgs.coreutils
-                pkgs.util-linux
-                pkgs.gawk
-              ]
-            }
-            if [[ "''${NAME:-}" == "" ]]; then
-              echo "No backup name given via NAME environment variable"
-              exit 1
-            fi
-            if [[ "''${FOLDERS:-}" == "" ]]; then
-              echo "No folders given via FOLDERS environment variable"
-              exit 1
-            fi
-            name=$(awk -F'::' '{print $1}' <<< $NAME)
-            backupname=''${NAME#$name::}
-
-            if command -v localbackup-mount-$name; then
-              localbackup-mount-$name
-            fi
-            if command -v localbackup-unmount-$name; then
-              trap "localbackup-unmount-$name" EXIT
-            fi
-
-            if [[ ! -d $backupname ]]; then
-              echo "No backup found $backupname"
-              exit 1
-            fi
-
-            IFS=':' read -ra FOLDER <<< "''$FOLDERS"
-            for folder in "''${FOLDER[@]}"; do
-              mkdir -p "$folder"
-              rsync -a "$backupname/${config.networking.hostName}$folder/" "$folder"
-            done
-          '')
-        ]
-        ++ (lib.mapAttrsToList (
-          name: target:
-          pkgs.writeShellScriptBin ("localbackup-mount-" + name) ''
-            set -efu -o pipefail
-            ${lib.optionalString (target.preMountHook != null) target.preMountHook}
-            ${lib.optionalString (target.mountpoint != null) ''
-              if ! ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg target.mountpoint}; then
-                ${pkgs.util-linux}/bin/mount -o X-mount.mkdir ${lib.escapeShellArg target.mountpoint}
-              fi
+            ${lib.optionalString (target.preBackupHook != null) ''
+              (
+                ${target.preBackupHook}
+              )
             ''}
-            ${lib.optionalString (target.postMountHook != null) target.postMountHook}
-          ''
-        ) cfg.targets)
-        ++ lib.mapAttrsToList (
-          name: target:
-          pkgs.writeShellScriptBin ("localbackup-unmount-" + name) ''
-            set -efu -o pipefail
-            ${lib.optionalString (target.preUnmountHook != null) target.preUnmountHook}
-            ${lib.optionalString (
-              target.mountpoint != null
-            ) "${pkgs.util-linux}/bin/umount ${lib.escapeShellArg target.mountpoint}"}
-            ${lib.optionalString (target.postUnmountHook != null) target.postUnmountHook}
-          ''
-        ) cfg.targets;
+
+            declare -A preCommandErrors
+            ${lib.concatMapStringsSep "\n" (
+              state:
+              lib.optionalString (state.preBackupCommand != null) ''
+                echo "Running pre-backup command for ${state.name}"
+                if ! /run/current-system/sw/bin/${state.preBackupCommand}; then
+                  preCommandErrors["${state.name}"]=1
+                fi
+              ''
+            ) (builtins.attrValues config.clan.core.state)}
+
+            rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
+            rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
+          '') (builtins.attrValues cfg.targets)}'')
+        (pkgs.writeShellScriptBin "localbackup-list" ''
+          set -efu -o pipefail
+          export PATH=${
+            lib.makeBinPath [
+              pkgs.jq
+              pkgs.findutils
+              pkgs.coreutils
+              pkgs.util-linux
+            ]
+          }
+          (${
+            lib.concatMapStringsSep "\n" (target: ''
+              (
+                ${mountHook target}
+                find ${lib.escapeShellArg target.directory} -mindepth 1 -maxdepth 1 -name "snapshot.*" -print0 -type d \
+                  | jq -Rs 'split("\u0000") | .[] | select(. != "") | { "name": ("${target.name}::" + .)}'
+              )
+            '') (builtins.attrValues cfg.targets)
+          }) | jq -s .
+        '')
+        (pkgs.writeShellScriptBin "localbackup-restore" ''
+          set -efu -o pipefail
+          export PATH=${
+            lib.makeBinPath [
+              pkgs.rsync
+              pkgs.coreutils
+              pkgs.util-linux
+              pkgs.gawk
+            ]
+          }
+          if [[ "''${NAME:-}" == "" ]]; then
+            echo "No backup name given via NAME environment variable"
+            exit 1
+          fi
+          if [[ "''${FOLDERS:-}" == "" ]]; then
+            echo "No folders given via FOLDERS environment variable"
+            exit 1
+          fi
+          name=$(awk -F'::' '{print $1}' <<< $NAME)
+          backupname=''${NAME#$name::}
+
+          if command -v localbackup-mount-$name; then
+            localbackup-mount-$name
+          fi
+          if command -v localbackup-unmount-$name; then
+            trap "localbackup-unmount-$name" EXIT
+          fi
+
+          if [[ ! -d $backupname ]]; then
+            echo "No backup found $backupname"
+            exit 1
+          fi
+
+          IFS=':' read -ra FOLDER <<< "''$FOLDERS"
+          for folder in "''${FOLDER[@]}"; do
+            mkdir -p "$folder"
+            rsync -a "$backupname/${config.networking.hostName}$folder/" "$folder"
+          done
+        '')
+      ]
+      ++ (lib.mapAttrsToList (
+        name: target:
+        pkgs.writeShellScriptBin ("localbackup-mount-" + name) ''
+          set -efu -o pipefail
+          ${lib.optionalString (target.preMountHook != null) target.preMountHook}
+          ${lib.optionalString (target.mountpoint != null) ''
+            if ! ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg target.mountpoint}; then
+              ${pkgs.util-linux}/bin/mount -o X-mount.mkdir ${lib.escapeShellArg target.mountpoint}
+            fi
+          ''}
+          ${lib.optionalString (target.postMountHook != null) target.postMountHook}
+        ''
+      ) cfg.targets)
+      ++ lib.mapAttrsToList (
+        name: target:
+        pkgs.writeShellScriptBin ("localbackup-unmount-" + name) ''
+          set -efu -o pipefail
+          ${lib.optionalString (target.preUnmountHook != null) target.preUnmountHook}
+          ${lib.optionalString (
+            target.mountpoint != null
+          ) "${pkgs.util-linux}/bin/umount ${lib.escapeShellArg target.mountpoint}"}
+          ${lib.optionalString (target.postUnmountHook != null) target.postUnmountHook}
+        ''
+      ) cfg.targets;
 
       clan.core.backups.providers.localbackup = {
         # TODO list needs to run locally or on the remote machine

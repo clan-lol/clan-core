@@ -34,14 +34,15 @@ let
     value = {
       name = machine;
       id = (lib.removeSuffix "\n" (builtins.readFile (syncthingPublicKeyPath machine)));
-      addresses =
-        [ "dynamic" ]
-        ++ (
-          if (lib.elem machine networkIpMachines) then
-            [ "tcp://[${(lib.removeSuffix "\n" (builtins.readFile (zerotierIpMachinePath machine)))}]:22000" ]
-          else
-            [ ]
-        );
+      addresses = [
+        "dynamic"
+      ]
+      ++ (
+        if (lib.elem machine networkIpMachines) then
+          [ "tcp://[${(lib.removeSuffix "\n" (builtins.readFile (zerotierIpMachinePath machine)))}]:22000" ]
+        else
+          [ ]
+      );
     };
   }) syncthingPublicKeyMachines;
 in

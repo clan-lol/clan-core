@@ -184,24 +184,24 @@
                 settings.certificate.searchDomains != [ ]
               ) config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
 
-              hostKeys =
-                [
-                  {
-                    path = config.clan.core.vars.generators.openssh.files."ssh.id_ed25519".path;
-                    type = "ed25519";
-                  }
-                ]
-                ++ lib.optional settings.hostKeys.rsa.enable {
-                  path = config.clan.core.vars.generators.openssh-rsa.files."ssh.id_rsa".path;
-                  type = "rsa";
-                };
+              hostKeys = [
+                {
+                  path = config.clan.core.vars.generators.openssh.files."ssh.id_ed25519".path;
+                  type = "ed25519";
+                }
+              ]
+              ++ lib.optional settings.hostKeys.rsa.enable {
+                path = config.clan.core.vars.generators.openssh-rsa.files."ssh.id_rsa".path;
+                type = "rsa";
+              };
             };
 
             programs.ssh.knownHosts.clan-sshd-self-ed25519 = {
               hostNames = [
                 "localhost"
                 config.networking.hostName
-              ] ++ (lib.optional (config.networking.domain != null) config.networking.fqdn);
+              ]
+              ++ (lib.optional (config.networking.domain != null) config.networking.fqdn);
               publicKey = config.clan.core.vars.generators.openssh.files."ssh.id_ed25519.pub".value;
             };
           };

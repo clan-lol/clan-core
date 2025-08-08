@@ -43,23 +43,22 @@ in
     secrets = lib.listToAttrs (
       map (secret: {
         name = "vars/${secret.generator}/${secret.name}";
-        value =
-          {
-            inherit (secret)
-              owner
-              group
-              mode
-              neededForUsers
-              ;
-            sopsFile = builtins.path {
-              name = "${secret.generator}_${secret.name}";
-              path = secretPath secret;
-            };
-            format = "binary";
-          }
-          // (lib.optionalAttrs (_class == "nixos") {
-            inherit (secret) restartUnits;
-          });
+        value = {
+          inherit (secret)
+            owner
+            group
+            mode
+            neededForUsers
+            ;
+          sopsFile = builtins.path {
+            name = "${secret.generator}_${secret.name}";
+            path = secretPath secret;
+          };
+          format = "binary";
+        }
+        // (lib.optionalAttrs (_class == "nixos") {
+          inherit (secret) restartUnits;
+        });
       }) (builtins.filter (x: builtins.pathExists (secretPath x)) vars)
     );
 

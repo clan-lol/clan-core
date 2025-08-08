@@ -30,18 +30,17 @@ pkgs.stdenv.mkDerivation {
     ];
   };
 
-  nativeBuildInputs =
-    [
-      pkgs.python3
-      uml-c4
-    ]
-    ++ (with pkgs.python3Packages; [
-      mkdocs
-      mkdocs-material
-      mkdocs-macros
-      mkdocs-redoc-tag
-      mkdocs-redirects
-    ]);
+  nativeBuildInputs = [
+    pkgs.python3
+    uml-c4
+  ]
+  ++ (with pkgs.python3Packages; [
+    mkdocs
+    mkdocs-material
+    mkdocs-macros
+    mkdocs-redoc-tag
+    mkdocs-redirects
+  ]);
   configurePhase = ''
     pushd docs
 

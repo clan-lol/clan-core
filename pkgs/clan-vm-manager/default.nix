@@ -34,18 +34,17 @@ let
   };
 
   # Dependencies that are directly used in the project but nor from internal python packages
-  externalPythonDeps =
-    [
-      pygobject3
-      pygobject-stubs
-      gtk4
-      libadwaita
-      adwaita-icon-theme
-    ]
-    ++ clan-cli.propagatedBuildInputs
-    ++ lib.optionals (!stdenv.isDarwin) [
-      webkitgtk_6_0
-    ];
+  externalPythonDeps = [
+    pygobject3
+    pygobject-stubs
+    gtk4
+    libadwaita
+    adwaita-icon-theme
+  ]
+  ++ clan-cli.propagatedBuildInputs
+  ++ lib.optionals (!stdenv.isDarwin) [
+    webkitgtk_6_0
+  ];
 
   # Deps including python packages from the local project
   allPythonDeps = [ (python.pkgs.toPythonModule clan-cli) ] ++ externalPythonDeps;

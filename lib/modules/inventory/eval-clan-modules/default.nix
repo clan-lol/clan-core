@@ -35,7 +35,8 @@ let
             clan.core.settings.directory = clan-core;
           }
           clan-core.nixosModules.clanCore
-        ] ++ modules;
+        ]
+        ++ modules;
       };
     in
     # lib.warn ''

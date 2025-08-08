@@ -73,7 +73,8 @@ in
               };
             };
           }
-        ] ++ lib.mapAttrsToList (_: service: service.exports) config.mappedServices;
+        ]
+        ++ lib.mapAttrsToList (_: service: service.exports) config.mappedServices;
       };
       default = { };
     };

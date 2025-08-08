@@ -27,19 +27,18 @@ in
 mkShell {
   inherit (clan-vm-manager) nativeBuildInputs;
   name = "clan-vm-manager";
-  buildInputs =
-    [
-      ruff
-      gtk4.dev # has the demo called 'gtk4-widget-factory'
-      libadwaita.devdoc # has the demo called 'adwaita-1-demo'
-    ]
-    ++ devshellTestDeps
+  buildInputs = [
+    ruff
+    gtk4.dev # has the demo called 'gtk4-widget-factory'
+    libadwaita.devdoc # has the demo called 'adwaita-1-demo'
+  ]
+  ++ devshellTestDeps
 
-    # Dependencies for testing for linux hosts
-    ++ (lib.optionals stdenv.isLinux [
-      xdg-utils # install desktop files
-      desktop-file-utils # verify desktop files
-    ]);
+  # Dependencies for testing for linux hosts
+  ++ (lib.optionals stdenv.isLinux [
+    xdg-utils # install desktop files
+    desktop-file-utils # verify desktop files
+  ]);
 
   shellHook = ''
     export GIT_ROOT=$(git rev-parse --show-toplevel)

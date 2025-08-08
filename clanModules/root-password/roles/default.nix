@@ -18,13 +18,12 @@
     config.clan.core.vars.generators.root-password.files.password-hash.path;
 
   clan.core.vars.generators.root-password = {
-    files.password-hash =
-      {
-        neededFor = "users";
-      }
-      // (lib.optionalAttrs (_class == "nixos") {
-        restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
-      });
+    files.password-hash = {
+      neededFor = "users";
+    }
+    // (lib.optionalAttrs (_class == "nixos") {
+      restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
+    });
     files.password = {
       deploy = false;
     };

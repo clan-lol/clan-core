@@ -158,7 +158,8 @@
               pkgs.stdenv.drvPath
               pkgs.bash.drvPath
               pkgs.buildPackages.xorg.lndir
-            ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+            ]
+            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
