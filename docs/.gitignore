@@ -1,5 +1,5 @@
 /site/reference
 /site/static
-/site/options-page
+/site/options
 /site/openapi.json
 !/site/static/extra.css

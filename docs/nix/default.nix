@@ -54,9 +54,9 @@ pkgs.stdenv.mkDerivation {
     chmod -R +w ./site/reference
     echo "Generated API documentation in './site/reference/' "
 
-    rm -r ./site/options-page || true
-    cp -r ${docs-options} ./site/options-page
-    chmod -R +w ./site/options-page
+    rm -rf ./site/options
+    cp -r ${docs-options} ./site/options
+    chmod -R +w ./site/options
 
     mkdir -p ./site/static/asciinema-player
     ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js

@@ -25,7 +25,7 @@
 
       serviceModules = self.clan.modules;
 
-      baseHref = "/options-page/";
+      baseHref = "/options/";
 
       getRoles =
         module:
@@ -126,7 +126,7 @@
                           nestedSettingsOption = mkOption {
                             type = types.raw;
                             description = ''
-                              See [instances.${name}.roles.${roleName}.settings](${baseHref}?option_scope=0&option=instances.${name}.roles.${roleName}.settings)
+                              See [instances.${name}.roles.${roleName}.settings](${baseHref}?option_scope=0&option=inventory.instances.${name}.roles.${roleName}.settings)
                             '';
                           };
                           settingsOption = mkOption {
@@ -161,6 +161,42 @@
         }
       ];
 
+      baseModule =
+        # Module
+        { config, ... }:
+        {
+          imports = (import (pkgs.path + "/nixos/modules/module-list.nix"));
+          nixpkgs.pkgs = pkgs;
+          clan.core.name = "dummy";
+          system.stateVersion = config.system.nixos.release;
+          # Set this to work around a bug where `clan.core.settings.machine.name`
+          # is forced due to `networking.interfaces` being forced
+          # somewhere in the nixpkgs options
+          facter.detected.dhcp.enable = lib.mkForce false;
+        };
+
+      evalClanModules =
+        let
+          evaled = lib.evalModules {
+            class = "nixos";
+            modules = [
+              baseModule
+              {
+                clan.core.settings.directory = self;
+              }
+              self.nixosModules.clanCore
+            ];
+          };
+        in
+        evaled;
+
+      coreOptions =
+        (pkgs.nixosOptionsDoc {
+          options = (evalClanModules.options).clan.core or { };
+          warningsAreErrors = true;
+          transformOptions = self.clanLib.docs.stripStorePathsFromDeclarations;
+        }).optionsJSON;
+
     in
     {
       # Uncomment for debugging
@@ -175,9 +211,16 @@
           # scopes = mapAttrsToList mkScope serviceModules;
           scopes = [
             {
-              name = "Clan";
+              inherit baseHref;
+              name = "Flake Options (clan.nix file)";
               modules = docModules;
               urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+            }
+            {
+              name = "Machine Options (clan.core NixOS options)";
+              optionsJSON = "${coreOptions}/share/doc/nixos/options.json";
+              urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+
             }
           ];
         };

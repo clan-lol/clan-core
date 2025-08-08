@@ -4,7 +4,7 @@ This section of the site provides an overview of available options and commands 
 
 ---
 
-- [Clan Configuration Option](../options.md) - for defining a Clan
+- [Clan Configuration Option](/options) - for defining a Clan
 - Learn how to use the [Clan CLI](./cli/index.md)
 - Explore available [services](./clanServices/index.md)
 - [NixOS Configuration Options](./clan.core/index.md) - Additional options avilable on a NixOS machine.

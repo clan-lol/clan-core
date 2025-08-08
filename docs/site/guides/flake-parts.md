@@ -27,7 +27,7 @@ inputs = {
 
 ## Import the Clan flake-parts Module
 
-After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](../options.md) available within `mkFlake`.
+After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](/options) available within `mkFlake`.
 
 ```nix
 {

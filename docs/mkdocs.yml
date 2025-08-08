@@ -6,7 +6,7 @@ edit_uri: _edit/main/docs/docs/
 
 validation:
   omitted_files: warn
-  absolute_links: warn
+  absolute_links: ignore
   unrecognized_links: warn
 
 markdown_extensions:
@@ -88,7 +88,7 @@ nav:
       - Templates: concepts/templates.md
   - Reference:
       - Overview: reference/index.md
-      - Clan Options: options.md
+      - Browse Options: "/options"
       - Services:
           - Overview:
               - reference/clanServices/index.md
@@ -155,6 +155,7 @@ nav:
           - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
       - Glossary: reference/glossary.md
+  - Browse Options: "/options"
 
 docs_dir: site
 site_dir: out
