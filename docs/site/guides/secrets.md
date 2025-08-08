@@ -188,7 +188,7 @@ Here's how to get started:
    Assign users to a new group, e.g., `admins`:
 
    ```bash
-   clan secrets groups add admins <username>
+   clan secrets groups add-user admins <username>
    ```
 
 2. **Listing Groups**:
