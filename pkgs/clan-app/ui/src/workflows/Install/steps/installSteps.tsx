@@ -8,8 +8,8 @@ import {
 } from "@modular-forms/solid";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
-import { useStepper } from "@/src/hooks/stepper";
-import { InstallSteps } from "../install";
+import { getStepStore, useStepper } from "@/src/hooks/stepper";
+import { InstallSteps, InstallStoreType } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
 import { createSignal, Show } from "solid-js";
@@ -19,6 +19,9 @@ import { Button } from "@/src/components/Button/Button";
 import { Select } from "@/src/components/Select/Select";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import Icon from "@/src/components/Icon/Icon";
+import { useMachineHardwareSummary } from "@/src/hooks/queries";
+import { useClanURI } from "@/src/hooks/clan";
+import { useApiClient } from "@/src/hooks/ApiClient";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -38,16 +41,24 @@ const ConfigureAdressSchema = v.object({
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
 
 const ConfigureAddress = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
   const [formStore, { Form, Field }] = createForm<ConfigureAdressForm>({
     validate: valiForm(ConfigureAdressSchema),
+    initialValues: {
+      targetHost: store.install?.targetHost,
+    },
   });
-  const stepSignal = useStepper<InstallSteps>();
 
   // TODO: push values to the parent form Store
   const handleSubmit: SubmitHandler<ConfigureAdressForm> = (values, event) => {
-    console.log("ISO creation submitted", values);
+    console.log("targetHost set", values);
+    set("install", (s) => ({ ...s, targetHost: values.targetHost }));
+
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
+    console.log("Shit doesnt work", values);
   };
 
   return (
@@ -91,12 +102,41 @@ const ConfigureAddress = () => {
 
 const CheckHardware = () => {
   const stepSignal = useStepper<InstallSteps>();
-  // TODO: Hook this up with api
-  const [report, setReport] = createSignal<boolean>(true);
+  const [store, get] = getStepStore<InstallStoreType>(stepSignal);
+  const hardwareQuery = useMachineHardwareSummary(
+    useClanURI(),
+    store.install.machineName,
+  );
 
   const handleNext = () => {
     stepSignal.next();
   };
+  const clanUri = useClanURI();
+
+  const client = useApiClient();
+
+  const handleUpdateSummary = async () => {
+    // TODO: Debounce
+    const call = client.fetch("run_machine_hardware_info", {
+      target_host: {
+        address: store.install.targetHost,
+        command_prefix: "D0 YOU SEE ME LEAKING?",
+      },
+      opts: {
+        backend: "nixos-facter",
+        machine: {
+          flake: {
+            identifier: clanUri,
+          },
+          name: store.install.machineName,
+        },
+      },
+    });
+    await call.result;
+    hardwareQuery.refetch();
+  };
+
+  const reportExists = () => hardwareQuery?.data?.hardware_config !== "none";
 
   return (
     <StepLayout
@@ -107,17 +147,28 @@ const CheckHardware = () => {
               <Typography hierarchy="label" size="xs" weight="bold">
                 Hardware Report
               </Typography>
-              <Button hierarchy="secondary" startIcon="Report">
+              <Button
+                hierarchy="secondary"
+                startIcon="Report"
+                onClick={handleUpdateSummary}
+              >
                 Update hardware report
               </Button>
             </Orienter>
             <Divider orientation="horizontal" />
-            <Show when={report()}>
-              <Alert
-                icon="Checkmark"
-                type="info"
-                title="Hardware report exists"
-              />
+            <Show when={hardwareQuery.isLoading}>Loading...</Show>
+            <Show when={hardwareQuery.data}>
+              {(d) => (
+                <Alert
+                  icon="Checkmark"
+                  type={reportExists() ? "warning" : "info"}
+                  title={
+                    reportExists()
+                      ? "Hardware report exists"
+                      : "Hardware report not found"
+                  }
+                />
+              )}
             </Show>
           </Fieldset>
         </div>
@@ -125,7 +176,11 @@ const CheckHardware = () => {
       footer={
         <div class="flex justify-between">
           <BackButton />
-          <NextButton type="button" onClick={handleNext}>
+          <NextButton
+            type="button"
+            onClick={handleNext}
+            disabled={!reportExists()}
+          >
             Next
           </NextButton>
         </div>
