@@ -142,18 +142,12 @@ export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult => {
 export type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
 export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
 
-export const useMachineFlashOptions = (
-  clanURI: string,
-): MachineFlashOptionsQuery => {
+export const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
   const client = useApiClient();
   return useQuery<MachineFlashOptions>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machine_flash_options"],
+    queryKey: ["clans", "machine_flash_options"],
     queryFn: async () => {
-      const call = client.fetch("get_machine_flash_options", {
-        flake: {
-          identifier: clanURI,
-        },
-      });
+      const call = client.fetch("get_machine_flash_options", {});
       const result = await call.result;
 
       if (result.status === "error") {
