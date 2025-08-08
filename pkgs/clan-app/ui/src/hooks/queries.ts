@@ -142,18 +142,12 @@ export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult => {
 export type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
 export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
 
-export const useMachineFlashOptions = (
-  clanURI: string,
-): MachineFlashOptionsQuery => {
+export const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
   const client = useApiClient();
   return useQuery<MachineFlashOptions>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machine_flash_options"],
+    queryKey: ["clans", "machine_flash_options"],
     queryFn: async () => {
-      const call = client.fetch("get_machine_flash_options", {
-        flake: {
-          identifier: clanURI,
-        },
-      });
+      const call = client.fetch("get_machine_flash_options", {});
       const result = await call.result;
 
       if (result.status === "error") {
@@ -176,6 +170,46 @@ export const useSystemStorageOptions = (): SystemStorageOptionsQuery => {
     queryKey: ["system", "storage_devices"],
     queryFn: async () => {
       const call = client.fetch("list_system_storage_devices", {});
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export type MachineHardwareSummary =
+  SuccessData<"get_machine_hardware_summary">;
+export type MachineHardwareSummaryQuery =
+  UseQueryResult<MachineHardwareSummary>;
+
+export const useMachineHardwareSummary = (
+  clanUri: string,
+  machineName: string,
+): MachineHardwareSummaryQuery => {
+  const client = useApiClient();
+  return useQuery<MachineHardwareSummary>(() => ({
+    queryKey: [
+      "clans",
+      encodeBase64(clanUri),
+      "machines",
+      machineName,
+      "hardware_summary",
+    ],
+    queryFn: async () => {
+      const call = client.fetch("get_machine_hardware_summary", {
+        machine: {
+          flake: {
+            identifier: clanUri,
+          },
+          name: machineName,
+        },
+      });
       const result = await call.result;
 
       if (result.status === "error") {

@@ -1,6 +1,7 @@
 import { Modal } from "@/src/components/Modal/Modal";
 import {
   createStepper,
+  getStepStore,
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
@@ -10,6 +11,7 @@ import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
+import { ApiCall } from "@/src/hooks/api";
 
 interface InstallForm extends FieldValues {
   data_from_step_1: string;
@@ -41,6 +43,8 @@ const InstallStepper = () => {
 export interface InstallModalProps {
   machineName: string;
   initialStep?: InstallSteps[number]["id"];
+  mount?: Node;
+  onClose?: () => void;
 }
 
 const steps = [
@@ -52,10 +56,13 @@ const steps = [
 export type InstallSteps = typeof steps;
 export interface InstallStoreType {
   flash: {
-    language: string;
-    keymap: string;
     ssh_file: string;
     device: string;
+    progress: ApiCall<"run_machine_flash">;
+  };
+  install: {
+    targetHost: string;
+    machineName: string;
   };
 }
 
@@ -76,13 +83,18 @@ export const InstallModal = (props: InstallModalProps) => {
       </Show>
     );
   };
+  const [store, set] = getStepStore<InstallStoreType>(stepper);
+
+  set("install", { machineName: props.machineName });
 
   return (
     <StepperProvider stepper={stepper}>
       <Modal
+        mount={props.mount}
         title="Install machine"
         onClose={() => {
-          console.log("Install aborted");
+          console.log("Install modal closed");
+          props.onClose?.();
         }}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}

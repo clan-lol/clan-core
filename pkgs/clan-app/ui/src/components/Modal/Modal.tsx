@@ -49,7 +49,7 @@ export const Modal = (props: ModalProps) => {
           <Show when={props.metaHeader}>
             {(metaHeader) => (
               <>
-                <div class="flex h-9 items-center px-6 py-2">
+                <div class="flex h-9 items-center px-6 py-2 bg-def-1">
                   <Dynamic component={metaHeader()} />
                 </div>
                 <div class={styles.header_divider} />

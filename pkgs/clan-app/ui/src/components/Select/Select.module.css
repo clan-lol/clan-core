@@ -1,87 +1,87 @@
 .trigger {
-    @apply bg-def-1 flex flex-grow justify-between items-center gap-2 h-7 px-2 py-1;
-    @apply rounded-[4px];
+  @apply bg-def-1 flex flex-grow justify-between items-center gap-2 h-7 px-2 py-1;
+  @apply rounded-[4px];
 
-    &[data-expanded] {
-        @apply outline-def-2 outline-1 outline;
-        z-index: 40;
+  &[data-expanded] {
+    @apply outline-def-2 outline-1 outline;
+    z-index: var(--z-index + 5);
+  }
+
+  &[data-highlighted] {
+    @apply outline outline-1 outline-inv-2;
+  }
+
+  &[data-loading] {
+    @apply cursor-wait;
+  }
+
+  &:hover {
+    @apply bg-def-2;
+
+    & .icon {
+      @apply bg-def-1 text-fg-def-1;
     }
+  }
 
-    &[data-highlighted] {
-        @apply outline outline-1 outline-inv-2
+  &:active {
+    @apply bg-def-4;
+
+    & .icon {
+      @apply bg-inv-4 text-fg-inv-1;
     }
+  }
 
-    &[data-loading] {
-        @apply cursor-wait;
-    }
-
-    &:hover {
-        @apply bg-def-2;
-
-        & .icon {
-            @apply bg-def-1 text-fg-def-1;
-        }
-    }
-
-    &:active {
-        @apply bg-def-4;
-
-        & .icon {
-            @apply bg-inv-4 text-fg-inv-1;
-        }
-    }
-
-    &:focus-visible {
-        @apply outline-def-2 outline-1 outline;
-    }
+  &:focus-visible {
+    @apply outline-def-2 outline-1 outline;
+  }
 }
 
 .icon {
-    @apply bg-def-2 rounded-sm;
-    @apply flex items-center justify-center h-[14px] w-[14px] p-[2px];
-    &[data-disabled] {
-        @apply cursor-not-allowed;
-    }
-    &[data-loading] {
-        @apply bg-inherit;
-    }
+  @apply bg-def-2 rounded-sm;
+  @apply flex items-center justify-center h-[14px] w-[14px] p-[2px];
+  &[data-disabled] {
+    @apply cursor-not-allowed;
+  }
+  &[data-loading] {
+    @apply bg-inherit;
+  }
 }
 
 .options_content {
-    @apply bg-def-1 px-1 py-3 rounded-[4px] -mt-8 pt-10 -mx-1;
-    @apply outline-def-2 outline-1 outline;
+  z-index: var(--z-index);
 
-    transform-origin: var(--kb-popper-content-transform-origin);
-    &[data-expanded] {
-        animation: overlayShow 250ms ease-out;
+  @apply bg-def-1 px-1 py-3 rounded-[4px] -mt-8 pt-10 -mx-1;
+  @apply outline-def-2 outline-1 outline;
+
+  transform-origin: var(--kb-popper-content-transform-origin);
+  &[data-expanded] {
+    animation: overlayShow 250ms ease-out;
+  }
+
+  /* Option elements (typically <li>) */
+  & [role="option"] {
+    @apply px-2 py-4 rounded-sm flex items-center gap-1 flex-shrink-0;
+
+    &[data-highlighted],
+    &:focus-visible {
+      @apply outline outline-1 outline-inv-2;
     }
 
-    /* Option elements (typically <li>) */
-    & [role="option"] {
-        @apply px-1 py-2 rounded-sm flex items-center gap-1 flex-shrink-0 ;
-
-        &[data-highlighted],
-        &:focus-visible {
-            @apply outline outline-1 outline-inv-2
-        }
-
-        &:hover {
-            @apply bg-def-2;
-        }
-
-        &:active {
-            @apply bg-def-4;
-        }
-
+    &:hover {
+      @apply bg-def-2;
     }
 
-    & [role="listbox"] {
-        &:focus-visible {
-            @apply outline-none;
-        }
+    &:active {
+      @apply bg-def-4;
     }
+  }
+
+  & [role="listbox"] {
+    &:focus-visible {
+      @apply outline-none;
+    }
+  }
 }
-
 
 @keyframes overlayShow {
   from {
