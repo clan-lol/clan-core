@@ -41,6 +41,8 @@ const InstallStepper = () => {
 export interface InstallModalProps {
   machineName: string;
   initialStep?: InstallSteps[number]["id"];
+  mount?: Node;
+  onClose?: () => void;
 }
 
 const steps = [
@@ -80,9 +82,11 @@ export const InstallModal = (props: InstallModalProps) => {
   return (
     <StepperProvider stepper={stepper}>
       <Modal
+        mount={props.mount}
         title="Install machine"
         onClose={() => {
-          console.log("Install aborted");
+          console.log("Install modal closed");
+          props.onClose?.();
         }}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
