@@ -26,8 +26,10 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class SystemConfig:
-    language: str | None = field(default=None)
-    keymap: str | None = field(default=None)
+    keymap: str = field(default="en")
+    language: str = field(
+        default="en_US.UTF-8"
+    )  # Leave this default, or implement virtual scrolling for the 400+ options in the UI.
     ssh_keys_path: list[str] | None = field(default=None)
 
 
