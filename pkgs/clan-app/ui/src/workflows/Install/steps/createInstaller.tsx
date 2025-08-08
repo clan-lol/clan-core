@@ -20,8 +20,9 @@ import {
   useMachineFlashOptions,
   useSystemStorageOptions,
 } from "@/src/hooks/queries";
-import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import { createEffect, onMount } from "solid-js";
+import { create } from "storybook/internal/theming";
 
 const Prose = () => (
   <StepLayout
@@ -94,26 +95,25 @@ const ConfigureImageSchema = v.object({
     v.string("Please select a key."),
     v.nonEmpty("Please select a key."),
   ),
-  language: v.pipe(v.string(), v.nonEmpty("Please choose a language.")),
-  keymap: v.pipe(v.string(), v.nonEmpty("Please select a keyboard layout.")),
 });
 
 type ConfigureImageForm = v.InferInput<typeof ConfigureImageSchema>;
 
 const ConfigureImage = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
   const [formStore, { Form, Field }] = createForm<ConfigureImageForm>({
     validate: valiForm(ConfigureImageSchema),
+    initialValues: {
+      ssh_key: store.flash?.ssh_file,
+    },
   });
-  const stepSignal = useStepper<InstallSteps>();
-
-  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
   const handleSubmit: SubmitHandler<ConfigureImageForm> = (values, event) => {
     // Push values to the store
     set("flash", (s) => ({
       ...s,
-      language: values.language,
-      keymap: values.keymap,
       ssh_file: values.ssh_key,
     }));
 
@@ -124,8 +124,9 @@ const ConfigureImage = () => {
   const onSelectFile = async () => {
     const req = client.fetch("get_system_file", {
       file_request: {
-        mode: "select_folder",
+        mode: "get_system_file",
         title: "Select a folder for you new Clan",
+        initial_folder: "~/.ssh",
       },
     });
 
@@ -144,14 +145,20 @@ const ConfigureImage = () => {
     throw new Error("No data returned from api call");
   };
 
-  const currClan = useClanURI();
-  const optionsQuery = useMachineFlashOptions(currClan);
+  const optionsQuery = useMachineFlashOptions();
+
+  let content: Node;
 
   return (
     <Form onSubmit={handleSubmit}>
       <StepLayout
         body={
-          <div class="flex flex-col gap-2">
+          <div
+            class="flex flex-col gap-2"
+            ref={(el) => {
+              content = el;
+            }}
+          >
             <Fieldset>
               <Field name="ssh_key">
                 {(field, input) => (
@@ -168,66 +175,6 @@ const ConfigureImage = () => {
                       getError(formStore, "ssh_key") ? "invalid" : "valid"
                     }
                     input={input}
-                  />
-                )}
-              </Field>
-            </Fieldset>
-            <Fieldset>
-              <Field name="language">
-                {(field, props) => (
-                  <Select
-                    {...props}
-                    value={field.value}
-                    error={field.error}
-                    required
-                    label={{
-                      label: "Language",
-                      description: "Select your preferred language",
-                    }}
-                    getOptions={async () => {
-                      if (!optionsQuery.data) {
-                        await optionsQuery.refetch();
-                      }
-
-                      return (optionsQuery.data?.languages ?? []).map(
-                        (lang) => ({
-                          // TODO: Pretty label ?
-                          value: lang,
-                          label: lang,
-                        }),
-                      );
-                    }}
-                    placeholder="Language"
-                    name={field.name}
-                  />
-                )}
-              </Field>
-              <Field name="keymap">
-                {(field, props) => (
-                  <Select
-                    {...props}
-                    value={field.value}
-                    error={field.error}
-                    required
-                    label={{
-                      label: "Keymap",
-                      description: "Select your keyboard layout",
-                    }}
-                    getOptions={async () => {
-                      if (!optionsQuery.data) {
-                        await optionsQuery.refetch();
-                      }
-
-                      return (optionsQuery.data?.keymaps ?? []).map(
-                        (keymap) => ({
-                          // TODO: Pretty label ?
-                          value: keymap,
-                          label: keymap,
-                        }),
-                      );
-                    }}
-                    placeholder="Keymap"
-                    name={field.name}
                   />
                 )}
               </Field>
@@ -256,11 +203,14 @@ type ChooseDiskForm = v.InferInput<typeof ChooseDiskSchema>;
 
 const ChooseDisk = () => {
   const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
   const [formStore, { Form, Field }] = createForm<ChooseDiskForm>({
     validate: valiForm(ChooseDiskSchema),
+    initialValues: {
+      disk: store.flash?.device,
+    },
   });
-  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
   const client = useApiClient();
   const systemStorageQuery = useSystemStorageOptions();
@@ -273,8 +223,6 @@ const ChooseDisk = () => {
     }));
     const call = client.fetch("run_machine_flash", {
       system_config: {
-        keymap: store.flash.keymap,
-        language: store.flash.language,
         ssh_keys_path: [store.flash.ssh_file],
       },
       disks: [
@@ -284,13 +232,15 @@ const ChooseDisk = () => {
         },
       ],
     });
-    // TOOD: Pass the "call" Promise to the "progress step"
+
+    set("flash", "progress", call);
 
     console.log("Flashing", store.flash);
 
-    // Here you would typically trigger the disk selection process
     stepSignal.next();
   };
+
+  const stripId = (s: string) => s.split("-")[1] ?? s;
   return (
     <Form onSubmit={handleSubmit}>
       <StepLayout
@@ -300,6 +250,7 @@ const ChooseDisk = () => {
               <Field name="disk">
                 {(field, props) => (
                   <Select
+                    zIndex={100}
                     {...props}
                     value={field.value}
                     error={field.error}
@@ -312,11 +263,12 @@ const ChooseDisk = () => {
                       if (!systemStorageQuery.data) {
                         await systemStorageQuery.refetch();
                       }
+                      console.log(systemStorageQuery.data);
 
                       return (systemStorageQuery.data?.blockdevices ?? []).map(
                         (dev) => ({
                           value: dev.path,
-                          label: dev.name,
+                          label: stripId(dev.id_link),
                         }),
                       );
                     }}
@@ -346,6 +298,17 @@ const ChooseDisk = () => {
 };
 
 const FlashProgress = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
+  onMount(async () => {
+    const result = await store.flash.progress.result;
+    if (result.status == "success") {
+      console.log("Flashing Success");
+    }
+    stepSignal.next();
+  });
+
   return (
     <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
