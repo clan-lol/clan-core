@@ -16,11 +16,11 @@
       instances = {
         data-mesher =
           let
-            bootstrapNodes = {
-              admin = "[2001:db8:1::1]:7946";
-              peer = "[2001:db8:1::2]:7946";
-              # signer = "2001:db8:1::3:7946";
-            };
+            bootstrapNodes = [
+              "[2001:db8:1::1]:7946" # admin
+              "[2001:db8:1::2]:7946" # peer
+              # "2001:db8:1::3:7946" #signer
+            ];
           in
           {
             roles.peer.machines.peer.settings = {

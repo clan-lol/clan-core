@@ -5,31 +5,15 @@ let
     {
       options = {
         bootstrapNodes = lib.mkOption {
-          type = lib.types.nullOr (lib.types.attrsOf lib.types.str);
-          # the default bootstrap nodes are any machines with the admin or signers role
-          # we iterate through those machines, determining an IP address for them based on their VPN
-          # currently only supports zerotier
-          # default = builtins.foldl' (
-          #   urls: name:
-          #   let
-          #     ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
-          #   in
-          #   if builtins.pathExists ipPath then
-          #     let
-          #       ip = builtins.readFile ipPath;
-          #     in
-          #     urls ++ [ "[${ip}]:${builtins.toString settings.network.port}" ]
-          #   else
-          #     urls
-          # ) [ ] (dmLib.machines config).bootstrap;
+          type = lib.types.nullOr (lib.types.listOf lib.types.str);
           description = ''
             A list of bootstrap nodes that act as an initial gateway when joining
             the cluster.
           '';
-          example = {
-            "node1" = "192.168.1.1:7946";
-            "node2" = "192.168.1.2:7946";
-          };
+          example = [
+            "192.168.1.1:7946"
+            "192.168.1.2:7946"
+          ];
         };
 
         network = {
@@ -55,6 +39,59 @@ let
         };
       };
     };
+
+  mkBootstrapNodes =
+    {
+      config,
+      lib,
+      roles,
+      settings,
+    }:
+    lib.mkDefault (
+      builtins.foldl' (
+        urls: name:
+        let
+          ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
+        in
+        if builtins.pathExists ipPath then
+          let
+            ip = builtins.readFile ipPath;
+          in
+          urls ++ [ "[${ip}]:${builtins.toString settings.network.port}" ]
+        else
+          urls
+      ) [ ] (builtins.attrNames ((roles.admin.machines or { }) // (roles.signer.machines or { })))
+    );
+
+  mkDmService = dmSettings: config: {
+    enable = true;
+    openFirewall = true;
+
+    settings = {
+      log_level = "warn";
+      state_dir = "/var/lib/data-mesher";
+
+      # read network id from vars
+      network.id = config.clan.core.vars.generators.data-mesher-network-key.files.public_key.value;
+
+      host = {
+        names = [ config.networking.hostName ];
+        key_path = config.clan.core.vars.generators.data-mesher-host-key.files.private_key.path;
+      };
+
+      cluster = {
+        port = dmSettings.network.port;
+        join_interval = "30s";
+        push_pull_interval = "30s";
+        interface = dmSettings.network.interface;
+        bootstrap_nodes = dmSettings.bootstrapNodes;
+      };
+
+      http.port = 7331;
+      http.interface = "lo";
+    };
+  };
+
 in
 {
   _class = "clan.service";
@@ -67,11 +104,9 @@ in
     interface =
       { lib, ... }:
       {
-
         imports = [ sharedInterface ];
 
         options = {
-
           network = {
             tld = lib.mkOption {
               type = lib.types.str;
@@ -89,54 +124,117 @@ in
         };
       };
     perInstance =
-      { settings, roles, ... }:
       {
-        nixosModule = {
-          imports = [
-            ./admin.nix
-            ./shared.nix
-          ];
-          _module.args = { inherit settings roles; };
-        };
+        extendSettings,
+        roles,
+        lib,
+        ...
+      }:
+      {
+        nixosModule =
+          { config, ... }:
+          let
+            settings = extendSettings {
+              bootstrapNodes = mkBootstrapNodes {
+                inherit
+                  config
+                  lib
+                  roles
+                  settings
+                  ;
+              };
+            };
+          in
+          {
+            imports = [ ./shared.nix ];
+
+            services.data-mesher = (mkDmService settings config) // {
+              initNetwork =
+                let
+                  # for a given machine, read it's public key and remove any new lines
+                  readHostKey =
+                    machine:
+                    let
+                      path = "${config.clan.core.settings.directory}/vars/per-machine/${machine}/data-mesher-host-key/public_key/value";
+                    in
+                    builtins.elemAt (lib.splitString "\n" (builtins.readFile path)) 1;
+                in
+                {
+                  enable = true;
+                  keyPath = config.clan.core.vars.generators.data-mesher-network-key.files.private_key.path;
+
+                  tld = settings.network.tld;
+                  hostTTL = settings.network.hostTTL;
+
+                  # admin and signer host public keys
+                  signingKeys = builtins.map readHostKey (
+                    builtins.attrNames ((roles.admin.machines or { }) // (roles.signer.machines or { }))
+                  );
+                };
+            };
+          };
       };
   };
 
   roles.signer = {
-    interface =
-      { ... }:
-      {
-        imports = [ sharedInterface ];
-      };
+    interface = sharedInterface;
     perInstance =
-      { settings, roles, ... }:
       {
-        nixosModule = {
-          imports = [
-            ./signer.nix
-            ./shared.nix
-          ];
-          _module.args = { inherit settings roles; };
-        };
+        extendSettings,
+        lib,
+        roles,
+        ...
+      }:
+      {
+        nixosModule =
+          { config, ... }:
+          let
+            settings = extendSettings {
+              bootstrapNodes = mkBootstrapNodes {
+                inherit
+                  config
+                  lib
+                  roles
+                  settings
+                  ;
+              };
+            };
+          in
+          {
+            imports = [ ./shared.nix ];
+            services.data-mesher = (mkDmService settings config);
+          };
       };
   };
 
   roles.peer = {
-    interface =
-      { ... }:
-      {
-        imports = [ sharedInterface ];
-      };
+    interface = sharedInterface;
     perInstance =
-      { settings, roles, ... }:
       {
-        nixosModule = {
-          imports = [
-            ./peer.nix
-            ./shared.nix
-          ];
-          _module.args = { inherit settings roles; };
-        };
+        extendSettings,
+        lib,
+        roles,
+        ...
+      }:
+      {
+        nixosModule =
+          { config, ... }:
+          let
+            settings = extendSettings {
+              bootstrapNodes = mkBootstrapNodes {
+                inherit
+                  config
+                  lib
+                  roles
+                  settings
+                  ;
+              };
+            };
+          in
+          {
+            imports = [ ./shared.nix ];
+            services.data-mesher = (mkDmService settings config);
+          };
       };
   };
-
 }
