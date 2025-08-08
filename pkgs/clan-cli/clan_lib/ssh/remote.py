@@ -33,7 +33,7 @@ NO_OUTPUT_TIMEOUT = 20
 @dataclass(frozen=True)
 class Remote(Host):
     address: str
-    command_prefix: str
+    command_prefix: str | None
     user: str = "root"
     port: int | None = None
     private_key: Path | None = None

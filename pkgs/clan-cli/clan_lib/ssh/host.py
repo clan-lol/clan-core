@@ -18,7 +18,7 @@ class Host(ABC):
     This provides a common interface for both local and remote hosts.
     """
 
-    command_prefix: str
+    command_prefix: str | None
 
     @property
     @abstractmethod
