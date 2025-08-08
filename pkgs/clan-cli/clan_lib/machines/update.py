@@ -18,6 +18,8 @@ from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_metadata
 from clan_lib.ssh.host import Host
+from clan_lib.ssh.localhost import LocalHost
+from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
@@ -118,8 +120,8 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
 @API.register
 def run_machine_update(
     machine: Machine,
-    target_host: Host,
-    build_host: Host | None,
+    target_host: Remote | LocalHost,
+    build_host: Remote | LocalHost | None,
     upload_inputs: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
@@ -134,16 +136,16 @@ def run_machine_update(
     """
 
     with ExitStack() as stack:
-        target_host = stack.enter_context(target_host.host_connection())
-
+        _target_host: Host = stack.enter_context(target_host.host_connection())  # type: ignore
+        _build_host: Host
         # If no build host is specified, use the target host as the build host.
         if build_host is None:
-            build_host = target_host
+            _build_host = _target_host  # type: ignore
         else:
-            build_host = stack.enter_context(build_host.host_connection())
+            _build_host = stack.enter_context(build_host.host_connection())  # type: ignore
 
         # Some operations require root privileges on the target host.
-        target_host_root = stack.enter_context(target_host.become_root())
+        target_host_root = stack.enter_context(_target_host.become_root())
 
         generate_facts([machine], service=None, regenerate=False)
         generate_vars([machine], generator_name=None, regenerate=False)
@@ -153,7 +155,7 @@ def run_machine_update(
         upload_secret_vars(machine, target_host_root)
 
         # Upload the flake's source to the build host.
-        path = upload_sources(machine, build_host, upload_inputs)
+        path = upload_sources(machine, _build_host, upload_inputs)
 
         nix_options = machine.flake.nix_options if machine.flake.nix_options else []
 
@@ -178,7 +180,7 @@ def run_machine_update(
                 "",
             ]
 
-            if build_host != target_host:
+            if _build_host != _target_host:
                 nix_options += ["--target-host", target_host.target]
 
                 if target_host.user != "root":
@@ -195,11 +197,11 @@ def run_machine_update(
         # If we build on the target host, we need to become root for building.
         # We are not using --use-remote-sudo here, so that our sudo ask proxy work: https://git.clan.lol/clan/clan-core/pulls/3642
         # We can't do that yet, when a build host is specified.
-        if build_host == target_host:
-            build_host = target_host_root
+        if _build_host == _target_host:
+            _build_host = target_host_root
 
-        remote_env = build_host.nix_ssh_env(control_master=False)
-        ret = build_host.run(
+        remote_env = _build_host.nix_ssh_env(control_master=False)
+        ret = _build_host.run(
             switch_cmd,
             RunOpts(
                 check=False,
@@ -234,7 +236,7 @@ def run_machine_update(
                 machine.info(
                     "Mobile machine detected, applying workaround deployment method"
                 )
-            ret = build_host.run(
+            ret = _build_host.run(
                 ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
