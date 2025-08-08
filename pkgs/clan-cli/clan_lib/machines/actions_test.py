@@ -10,7 +10,7 @@ from clan_lib.machines import actions as actions_module
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import Clan, InventoryMachine, Unknown
 
-from .actions import get_machine, get_machine_writeability, list_machines, set_machine
+from .actions import get_machine, get_machine_fields_schema, list_machines, set_machine
 
 
 @pytest.mark.with_core
@@ -191,13 +191,13 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
         },
     )
 
-    write_info = get_machine_writeability(Machine("jon", flake))
+    write_info = get_machine_fields_schema(Machine("jon", flake))
 
     # {'tags': {'writable': True, 'reason': None}, 'machineClass': {'writable': False, 'reason': None}, 'name': {'writable': False, 'reason': None}, 'description': {'writable': True, 'reason': None}, 'deploy.buildHost': {'writable': True, 'reason': None}, 'icon': {'writable': True, 'reason': None}, 'deploy.targetHost': {'writable': True, 'reason': None}}
-    writeable_fields = {field for field, info in write_info.items() if info["writable"]}
-    read_only_fields = {
-        field for field, info in write_info.items() if not info["writable"]
+    writeable_fields = {
+        field for field, info in write_info.items() if not info["readonly"]
     }
+    read_only_fields = {field for field, info in write_info.items() if info["readonly"]}
 
     assert writeable_fields == {
         "tags",

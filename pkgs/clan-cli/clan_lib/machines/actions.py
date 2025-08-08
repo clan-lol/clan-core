@@ -98,23 +98,23 @@ def set_machine(machine: Machine, update: InventoryMachine) -> None:
     )
 
 
-class Writeability(TypedDict):
-    writable: bool
+class FieldSchema(TypedDict):
+    readonly: bool
     reason: str | None
 
 
 @API.register
-def get_machine_writeability(machine: Machine) -> dict[str, Writeability]:
+def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     """
-    Get writeability information for the fields of a machine.
+    Get attributes for each field of the machine.
 
-    This function checks which fields of the 'machine' resource are writable and provides a reason for each field's writability.
+    This function checks which fields of the 'machine' resource are readonly and provides a reason if so.
 
     Args:
-        machine (Machine): The machine object for which to retrieve writeability.
+        machine (Machine): The machine object for which to retrieve fields.
 
     Returns:
-        dict[str, Writeability]: A map from field-names to { 'writable' (bool) and 'reason' (str or None ) }
+        dict[str, FieldSchema]: A map from field-names to { 'readonly' (bool) and 'reason' (str or None ) }
     """
 
     inventory_store = InventoryStore(machine.flake)
@@ -122,15 +122,24 @@ def get_machine_writeability(machine: Machine) -> dict[str, Writeability]:
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 
-    # TODO: handle this more generically
+    protected_fields = {
+        "name",  # name is always readonly
+        "machineClass",  # machineClass can only be set during create
+    }
+    # TODO: handle this more generically. I.e via json schema
+
     # persisted_data = inventory_store._get_persisted()  #
     # unmerge_lists(all_list, persisted_data)
 
     return {
         field: {
-            "writable": False
-            if field == "name"
-            else is_writeable_key(f"machines.{machine.name}.{field}", write_info),
+            "readonly": (
+                True
+                if field in protected_fields
+                else not is_writeable_key(
+                    f"machines.{machine.name}.{field}", write_info
+                )
+            ),
             # TODO: Provide a meaningful reason
             "reason": None,
         }
