@@ -157,11 +157,11 @@
                 value = {
                   name = machine;
                   id = readMachineVar machine "syncthing/id/value" "";
-                  addresses =
-                    [
-                      "dynamic"
-                    ]
-                    ++ lib.optional (readMachineVar machine "zerotier/zerotier-ip/value" null != null)
+                  addresses = [
+                    "dynamic"
+                  ]
+                  ++
+                    lib.optional (readMachineVar machine "zerotier/zerotier-ip/value" null != null)
                       "tcp://[${readMachineVar machine "zerotier/zerotier-ip/value" ""}]:22000";
                 };
               })

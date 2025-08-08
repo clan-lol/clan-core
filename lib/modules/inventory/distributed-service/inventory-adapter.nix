@@ -130,7 +130,8 @@ in
           };
           modules = [
             (import ./all-services-wrapper.nix { inherit directory; })
-          ] ++ modules;
+          ]
+          ++ modules;
         };
 
       servicesEval = evalServices {
@@ -139,15 +140,14 @@ in
           {
             inherit exportsModule;
             mappedServices = lib.mapAttrs (_module_ident: instances: {
-              imports =
-                [
-                  # Import the resolved module.
-                  # i.e. clan.modules.admin
-                  (builtins.head instances).instance.resolvedModule
-                ] # Include all the instances that correlate to the resolved module
-                ++ (builtins.map (v: {
-                  instances.${v.instanceName}.roles = v.instance.instanceRoles;
-                }) instances);
+              imports = [
+                # Import the resolved module.
+                # i.e. clan.modules.admin
+                (builtins.head instances).instance.resolvedModule
+              ] # Include all the instances that correlate to the resolved module
+              ++ (builtins.map (v: {
+                instances.${v.instanceName}.roles = v.instance.instanceRoles;
+              }) instances);
             }) grouped;
           }
         ];

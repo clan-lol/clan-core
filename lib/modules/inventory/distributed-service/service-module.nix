@@ -756,14 +756,13 @@ in
             instanceRes
             // {
               nixosModule = {
-                imports =
-                  [
-                    # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
-                    instanceRes.nixosModule
-                  ]
-                  ++ (map (
-                    s: if builtins.typeOf s == "string" then "${directory}/${s}" else s
-                  ) instanceCfg.roles.${roleName}.extraModules);
+                imports = [
+                  # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
+                  instanceRes.nixosModule
+                ]
+                ++ (map (
+                  s: if builtins.typeOf s == "string" then "${directory}/${s}" else s
+                ) instanceCfg.roles.${roleName}.extraModules);
               };
             }
 
@@ -877,7 +876,8 @@ in
                 }
               )
               (lib.setDefaultModuleLocation "Via ${config.manifest.name}.perMachine - machine='${machineName}';" machineResult.nixosModule)
-            ] ++ instanceResults.nixosModules;
+            ]
+            ++ instanceResults.nixosModules;
           };
         }
       ) config.result.allMachines;

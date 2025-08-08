@@ -45,7 +45,8 @@ lib.mkIf (config.clan.test.useContainers or true) {
       {
         nativeBuildInputs = [
           hostPkgs.makeWrapper
-        ] ++ lib.optionals (!config.skipTypeCheck) [ hostPkgs.mypy ];
+        ]
+        ++ lib.optionals (!config.skipTypeCheck) [ hostPkgs.mypy ];
         buildInputs = [ testDriver ];
         testScript = config.testScriptString;
         preferLocalBuild = true;

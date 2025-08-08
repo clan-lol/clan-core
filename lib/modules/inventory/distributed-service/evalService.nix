@@ -15,16 +15,15 @@
 lib.evalModules {
   class = "clan.service";
   specialArgs._ctx = prefix;
-  modules =
-    [
-      # Base module
-      ./service-module.nix
-      # Feature modules
-      (lib.modules.importApply ./api-feature.nix {
-        inherit clanLib prefix;
-      })
-    ]
-    ++
+  modules = [
+    # Base module
+    ./service-module.nix
+    # Feature modules
+    (lib.modules.importApply ./api-feature.nix {
+      inherit clanLib prefix;
+    })
+  ]
+  ++
     # Modules of caller
     modules;
 }

@@ -22,7 +22,8 @@ mkShell {
     ))
     ruff
     nix-unit
-  ] ++ clan-cli.runtimeDependencies;
+  ]
+  ++ clan-cli.runtimeDependencies;
 
   inputsFrom = [ self'.devShells.default ];
 

@@ -156,93 +156,92 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   propagatedBuildInputs = [ pythonRuntimeWithDeps ] ++ bundledRuntimeDependencies;
 
-  passthru.tests =
-    {
-      clan-deps = pkgs.runCommand "clan-deps" { } ''
-        # ${builtins.toString (builtins.attrValues testRuntimeDependenciesMap)}
-        touch $out
-      '';
-      clan-pytest-without-core =
-        runCommand "clan-pytest-without-core"
-          {
-            nativeBuildInputs = testDependencies;
-            closureInfo = pkgs.closureInfo {
-              rootPaths = [
-                templateDerivation
-              ];
-            };
-          }
-          ''
-            set -euo pipefail
-            cp -r ${sourceWithTests} ./src
-            chmod +w -R ./src
-            cd ./src
+  passthru.tests = {
+    clan-deps = pkgs.runCommand "clan-deps" { } ''
+      # ${builtins.toString (builtins.attrValues testRuntimeDependenciesMap)}
+      touch $out
+    '';
+    clan-pytest-without-core =
+      runCommand "clan-pytest-without-core"
+        {
+          nativeBuildInputs = testDependencies;
+          closureInfo = pkgs.closureInfo {
+            rootPaths = [
+              templateDerivation
+            ];
+          };
+        }
+        ''
+          set -euo pipefail
+          cp -r ${sourceWithTests} ./src
+          chmod +w -R ./src
+          cd ./src
 
-            export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 PYTHONWARNINGS=error
+          export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 PYTHONWARNINGS=error
 
-            # required to prevent concurrent 'nix flake lock' operations
-            export CLAN_TEST_STORE=$TMPDIR/store
-            export LOCK_NIX=$TMPDIR/nix_lock
-            mkdir -p "$CLAN_TEST_STORE/nix/store"
+          # required to prevent concurrent 'nix flake lock' operations
+          export CLAN_TEST_STORE=$TMPDIR/store
+          export LOCK_NIX=$TMPDIR/nix_lock
+          mkdir -p "$CLAN_TEST_STORE/nix/store"
 
-            # limit build cores to 16
-            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+          # limit build cores to 16
+          jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli ./clan_lib
-            touch $out
-          '';
-    }
-    // lib.optionalAttrs (!stdenv.isDarwin) {
-      # disabled on macOS until we fix all remaining issues
-      clan-pytest-with-core =
-        runCommand "clan-pytest-with-core"
-          {
-            nativeBuildInputs = testDependencies;
-            buildInputs = [
+          python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli ./clan_lib
+          touch $out
+        '';
+  }
+  // lib.optionalAttrs (!stdenv.isDarwin) {
+    # disabled on macOS until we fix all remaining issues
+    clan-pytest-with-core =
+      runCommand "clan-pytest-with-core"
+        {
+          nativeBuildInputs = testDependencies;
+          buildInputs = [
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.nix
+          ];
+          closureInfo = pkgs.closureInfo {
+            rootPaths = [
+              templateDerivation
               pkgs.bash
               pkgs.coreutils
-              pkgs.nix
+              pkgs.jq.dev
+              pkgs.stdenv
+              pkgs.stdenvNoCC
+              pkgs.openssh
+              pkgs.shellcheck-minimal
+              pkgs.mkpasswd
+              pkgs.xkcdpass
+              pkgs.pass
+              nix-select
             ];
-            closureInfo = pkgs.closureInfo {
-              rootPaths = [
-                templateDerivation
-                pkgs.bash
-                pkgs.coreutils
-                pkgs.jq.dev
-                pkgs.stdenv
-                pkgs.stdenvNoCC
-                pkgs.openssh
-                pkgs.shellcheck-minimal
-                pkgs.mkpasswd
-                pkgs.xkcdpass
-                pkgs.pass
-                nix-select
-              ];
-            };
-          }
-          ''
-            set -euo pipefail
-            cp -r ${sourceWithTests} ./src
-            chmod +w -R ./src
-            cd ./src
+          };
+        }
+        ''
+          set -euo pipefail
+          cp -r ${sourceWithTests} ./src
+          chmod +w -R ./src
+          cd ./src
 
-            ${setupNixInNix}
+          ${setupNixInNix}
 
-            export CLAN_CORE_PATH=${clan-core-path}
-            export PYTHONWARNINGS=error
+          export CLAN_CORE_PATH=${clan-core-path}
+          export PYTHONWARNINGS=error
 
-            # used for tests without flakes
-            export NIXPKGS=${nixpkgs}
-            export NIX_SELECT=${nix-select}
+          # used for tests without flakes
+          export NIXPKGS=${nixpkgs}
+          export NIX_SELECT=${nix-select}
 
-            # limit build cores to 16
-            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+          # limit build cores to 16
+          jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            # Run all tests with core marker
-            python -m pytest -m "not impure and with_core" -n $jobs ./clan_cli ./clan_lib
-            touch $out
-          '';
-    };
+          # Run all tests with core marker
+          python -m pytest -m "not impure and with_core" -n $jobs ./clan_cli ./clan_lib
+          touch $out
+        '';
+  };
 
   passthru.nixpkgs = nixpkgs';
   passthru.devshellPyDeps = ps: (pyTestDeps ps) ++ (pyDeps ps) ++ (devDeps ps);

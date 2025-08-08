@@ -116,47 +116,45 @@ in
     };
     clan.core.postgresql.databases.matrix-synapse.restore.stopOnRestore = [ "matrix-synapse" ];
 
-    clan.core.vars.generators =
-      {
-        "matrix-synapse" = {
-          files."synapse-registration_shared_secret" = { };
-          runtimeInputs = with pkgs; [
-            coreutils
-            pwgen
-          ];
-          migrateFact = "matrix-synapse";
-          script = ''
-            echo -n "$(pwgen -s 32 1)" > "$out"/synapse-registration_shared_secret
-          '';
-        };
+    clan.core.vars.generators = {
+      "matrix-synapse" = {
+        files."synapse-registration_shared_secret" = { };
+        runtimeInputs = with pkgs; [
+          coreutils
+          pwgen
+        ];
+        migrateFact = "matrix-synapse";
+        script = ''
+          echo -n "$(pwgen -s 32 1)" > "$out"/synapse-registration_shared_secret
+        '';
+      };
+    }
+    // lib.mapAttrs' (
+      name: user:
+      lib.nameValuePair "matrix-password-${user.name}" {
+        files."matrix-password-${user.name}" = { };
+        migrateFact = "matrix-password-${user.name}";
+        runtimeInputs = with pkgs; [ xkcdpass ];
+        script = ''
+          xkcdpass -n 4 -d - > "$out"/${lib.escapeShellArg "matrix-password-${user.name}"}
+        '';
       }
-      // lib.mapAttrs' (
-        name: user:
-        lib.nameValuePair "matrix-password-${user.name}" {
-          files."matrix-password-${user.name}" = { };
-          migrateFact = "matrix-password-${user.name}";
-          runtimeInputs = with pkgs; [ xkcdpass ];
-          script = ''
-            xkcdpass -n 4 -d - > "$out"/${lib.escapeShellArg "matrix-password-${user.name}"}
-          '';
-        }
-      ) cfg.users;
+    ) cfg.users;
 
     systemd.services.matrix-synapse =
       let
-        usersScript =
-          ''
-            while ! ${pkgs.netcat}/bin/nc -z -v ::1 8008; do
-              if ! kill -0 "$MAINPID"; then exit 1; fi
-              sleep 1;
-            done
-          ''
-          + lib.concatMapStringsSep "\n" (user: ''
-            # only create user if it doesn't exist
-            /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --exists-ok --password-file ${
-              config.clan.core.vars.generators."matrix-password-${user.name}".files."matrix-password-${user.name}".path
-            } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
-          '') (lib.attrValues cfg.users);
+        usersScript = ''
+          while ! ${pkgs.netcat}/bin/nc -z -v ::1 8008; do
+            if ! kill -0 "$MAINPID"; then exit 1; fi
+            sleep 1;
+          done
+        ''
+        + lib.concatMapStringsSep "\n" (user: ''
+          # only create user if it doesn't exist
+          /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --exists-ok --password-file ${
+            config.clan.core.vars.generators."matrix-password-${user.name}".files."matrix-password-${user.name}".path
+          } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
+        '') (lib.attrValues cfg.users);
       in
       {
         path = [ pkgs.curl ];

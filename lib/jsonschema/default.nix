@@ -252,7 +252,8 @@ rec {
         // {
           oneOf = [
             { type = "null"; }
-          ] ++ (lib.optional (!isExcludedOption nestedOption) (parseOption nestedOption));
+          ]
+          ++ (lib.optional (!isExcludedOption nestedOption) (parseOption nestedOption));
         }
       # parse bool
       else if

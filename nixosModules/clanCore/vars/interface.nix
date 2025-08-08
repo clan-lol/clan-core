@@ -198,136 +198,135 @@ in
                       ]
                     )
                   ];
-                  options =
-                    {
-                      name = mkOption {
-                        type = str;
-                        description = ''
-                          name of the public fact
-                        '';
-                        readOnly = true;
-                        default = file.config._module.args.name;
-                        defaultText = "Name of the file";
-                      };
-                      generatorName = mkOption {
-                        type = str;
-                        description = ''
-                          name of the generator
-                        '';
-                        readOnly = true;
-                        default = generator.config._module.args.name;
-                        defaultText = "Name of the generator that generates this file";
-                      };
-                      share = mkOption {
-                        type = bool;
-                        description = ''
-                          Whether the generated vars should be shared between machines.
-                          Shared vars are only generated once, when the first machine using it is deployed.
-                          Subsequent machines will re-use the already generated values.
-                        '';
-                        readOnly = true;
-                        internal = true;
-                        default = generator.config.share;
-                        defaultText = "Mirror of the share flag of the generator";
-                      };
-                      deploy = mkOption {
-                        description = ''
-                          Whether the file should be deployed to the target machine.
+                  options = {
+                    name = mkOption {
+                      type = str;
+                      description = ''
+                        name of the public fact
+                      '';
+                      readOnly = true;
+                      default = file.config._module.args.name;
+                      defaultText = "Name of the file";
+                    };
+                    generatorName = mkOption {
+                      type = str;
+                      description = ''
+                        name of the generator
+                      '';
+                      readOnly = true;
+                      default = generator.config._module.args.name;
+                      defaultText = "Name of the generator that generates this file";
+                    };
+                    share = mkOption {
+                      type = bool;
+                      description = ''
+                        Whether the generated vars should be shared between machines.
+                        Shared vars are only generated once, when the first machine using it is deployed.
+                        Subsequent machines will re-use the already generated values.
+                      '';
+                      readOnly = true;
+                      internal = true;
+                      default = generator.config.share;
+                      defaultText = "Mirror of the share flag of the generator";
+                    };
+                    deploy = mkOption {
+                      description = ''
+                        Whether the file should be deployed to the target machine.
 
-                          Disable this if the generated file is only used as an input to other generators.
-                        '';
-                        type = bool;
-                        default = true;
-                      };
-                      secret = mkOption {
-                        description = ''
-                          Whether the file should be treated as a secret.
-                        '';
-                        type = bool;
-                        default = true;
-                      };
-                      flakePath = mkOption {
-                        description = ''
-                          The path to the file containing the content of the generated value.
-                          This will be set automatically
-                        '';
-                        type = nullOr path;
-                        default = null;
-                      };
-                      path = mkOption {
-                        description = ''
-                          The path to the file containing the content of the generated value.
-                          This will be set automatically
-                        '';
-                        type = str;
-                        defaultText = ''
-                          builtins.path {
-                            name = "$${generator.config._module.args.name}_$${file.config._module.args.name}";
-                            path = file.config.flakePath;
-                          }
-                        '';
-                        default = builtins.path {
-                          name = "${generator.config._module.args.name}_${file.config._module.args.name}";
+                        Disable this if the generated file is only used as an input to other generators.
+                      '';
+                      type = bool;
+                      default = true;
+                    };
+                    secret = mkOption {
+                      description = ''
+                        Whether the file should be treated as a secret.
+                      '';
+                      type = bool;
+                      default = true;
+                    };
+                    flakePath = mkOption {
+                      description = ''
+                        The path to the file containing the content of the generated value.
+                        This will be set automatically
+                      '';
+                      type = nullOr path;
+                      default = null;
+                    };
+                    path = mkOption {
+                      description = ''
+                        The path to the file containing the content of the generated value.
+                        This will be set automatically
+                      '';
+                      type = str;
+                      defaultText = ''
+                        builtins.path {
+                          name = "$${generator.config._module.args.name}_$${file.config._module.args.name}";
                           path = file.config.flakePath;
-                        };
-                      };
-                      neededFor = mkOption {
-                        description = ''
-                          This option determines when the secret will be decrypted and deployed to the target machine.
-
-                          By setting this to `partitioning`, the secret will be deployed prior to running `disko` allowing
-                          you to manage filesystem encryption keys. These will only be deployed when installing the system.
-                          By setting this to `activation`, the secret will be deployed prior to running `nixos-rebuild` or `nixos-install`.
-                          By setting this to `user`, the secret will be deployed prior to users and groups are created, allowing
-                          users' passwords to be managed by vars. The secret will be stored in `/run/secrets-for-users` and `owner` and `group` must be `root`.
-                        '';
-                        type = enum [
-                          "partitioning"
-                          "activation"
-                          "users"
-                          "services"
-                        ];
-                        default = "services";
-                      };
-                      owner = mkOption {
-                        description = "The user name or id that will own the file.";
-                        default = "root";
-                      };
-                      group = mkOption {
-                        description = "The group name or id that will own the file.";
-                        default = if _class == "darwin" then "wheel" else "root";
-                        defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
-                      };
-                      mode = mkOption {
-                        type = strMatching "^[0-7]{4}$";
-                        description = "The unix file mode of the file. Must be a 4-digit octal number.";
-                        default = "0400";
-                      };
-                      value =
-                        mkOption {
-                          description = ''
-                            The content of the generated value.
-                            Only available if the file is not secret.
-                          '';
-                          type = str;
-                          defaultText = "Throws error because the value of a secret file is not accessible";
                         }
-                        // lib.optionalAttrs file.config.secret {
-                          default = throw "Cannot access value of secret file";
-                        };
-                    }
-                    // (lib.optionalAttrs (_class == "nixos") {
-                      restartUnits = mkOption {
-                        description = ''
-                          A list of systemd units that should be restarted after the file is deployed.
-                          This is useful for services that need to reload their configuration after the file is updated.
-
-                          WARNING: currently only sops-nix implements this option.
-                        '';
-                        type = listOf str;
-                        default = [ ];
+                      '';
+                      default = builtins.path {
+                        name = "${generator.config._module.args.name}_${file.config._module.args.name}";
+                        path = file.config.flakePath;
                       };
-                    });
+                    };
+                    neededFor = mkOption {
+                      description = ''
+                        This option determines when the secret will be decrypted and deployed to the target machine.
+
+                        By setting this to `partitioning`, the secret will be deployed prior to running `disko` allowing
+                        you to manage filesystem encryption keys. These will only be deployed when installing the system.
+                        By setting this to `activation`, the secret will be deployed prior to running `nixos-rebuild` or `nixos-install`.
+                        By setting this to `user`, the secret will be deployed prior to users and groups are created, allowing
+                        users' passwords to be managed by vars. The secret will be stored in `/run/secrets-for-users` and `owner` and `group` must be `root`.
+                      '';
+                      type = enum [
+                        "partitioning"
+                        "activation"
+                        "users"
+                        "services"
+                      ];
+                      default = "services";
+                    };
+                    owner = mkOption {
+                      description = "The user name or id that will own the file.";
+                      default = "root";
+                    };
+                    group = mkOption {
+                      description = "The group name or id that will own the file.";
+                      default = if _class == "darwin" then "wheel" else "root";
+                      defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
+                    };
+                    mode = mkOption {
+                      type = strMatching "^[0-7]{4}$";
+                      description = "The unix file mode of the file. Must be a 4-digit octal number.";
+                      default = "0400";
+                    };
+                    value =
+                      mkOption {
+                        description = ''
+                          The content of the generated value.
+                          Only available if the file is not secret.
+                        '';
+                        type = str;
+                        defaultText = "Throws error because the value of a secret file is not accessible";
+                      }
+                      // lib.optionalAttrs file.config.secret {
+                        default = throw "Cannot access value of secret file";
+                      };
+                  }
+                  // (lib.optionalAttrs (_class == "nixos") {
+                    restartUnits = mkOption {
+                      description = ''
+                        A list of systemd units that should be restarted after the file is deployed.
+                        This is useful for services that need to reload their configuration after the file is updated.
+
+                        WARNING: currently only sops-nix implements this option.
+                      '';
+                      type = listOf str;
+                      default = [ ];
+                    };
+                  });
                 })
               );
             };

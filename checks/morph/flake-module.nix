@@ -35,7 +35,8 @@
                   pkgs.stdenv.drvPath
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
-                ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+                ]
+                ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
                 closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
               in
 

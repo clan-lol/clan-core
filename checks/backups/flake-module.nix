@@ -19,11 +19,10 @@
         ...
       }:
       let
-        dependencies =
-          [
-            pkgs.stdenv.drvPath
-          ]
-          ++ builtins.map (i: i.outPath) (builtins.attrValues (builtins.removeAttrs self.inputs [ "self" ]));
+        dependencies = [
+          pkgs.stdenv.drvPath
+        ]
+        ++ builtins.map (i: i.outPath) (builtins.attrValues (builtins.removeAttrs self.inputs [ "self" ]));
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
       {
@@ -154,13 +153,12 @@
         nixos-test-backups = self.clanLib.test.containerTest {
           name = "nixos-test-backups";
           nodes.machine = {
-            imports =
-              [
-                self.nixosModules.clanCore
-                # Some custom overrides for the backup tests
-                self.nixosModules.test-backup
-              ]
-              ++
+            imports = [
+              self.nixosModules.clanCore
+              # Some custom overrides for the backup tests
+              self.nixosModules.test-backup
+            ]
+            ++
               # import the inventory generated nixosModules
               self.clan.clanInternals.inventoryClass.machines.test-backup.machineImports;
             clan.core.settings.directory = ./.;

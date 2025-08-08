@@ -21,7 +21,8 @@ let
       colorama
       junit-xml
       nix
-    ] ++ extraPythonPackages python3Packages;
+    ]
+    ++ extraPythonPackages python3Packages;
     nativeBuildInputs = [ setuptools ];
     format = "pyproject";
     src = ./.;
