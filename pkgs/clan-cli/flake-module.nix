@@ -92,6 +92,10 @@
             # Retrieve python API Typescript types
             python api.py > $out/API.json
             json2ts --input $out/API.json > $out/API.ts
+            # Substitute '{}' with 'Record<string, never>' because typescript is like that
+            # It treats it not as the type of an empty object, but as non-nullish.
+            # Should be fixed in json2ts: https://github.com/bcherny/json-schema-to-typescript/issues/557
+            sed -i -e 's/{}/Record<string, never>/g' $out/API.ts
 
             # Retrieve python API Typescript types
             # delete the reserved tags from typechecking because the conversion library doesn't support them
