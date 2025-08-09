@@ -573,7 +573,7 @@ def generate_vars(
     generator_name: str | None = None,
     regenerate: bool = False,
     no_sandbox: bool = False,
-) -> bool:
+) -> None:
     was_regenerated = False
     for machine in machines:
         errors = []
@@ -598,8 +598,6 @@ def generate_vars(
         for machine in machines:
             machine.info("All vars are already up to date")
 
-    return was_regenerated
-
 
 def generate_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
@@ -623,14 +621,12 @@ def generate_command(args: argparse.Namespace) -> None:
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ]
     )
-    has_changed = generate_vars(
+    generate_vars(
         machines,
         args.generator,
         args.regenerate,
         no_sandbox=args.no_sandbox,
     )
-    if has_changed:
-        flake.invalidate_cache()
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
