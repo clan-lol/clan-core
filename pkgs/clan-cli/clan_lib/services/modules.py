@@ -6,8 +6,14 @@ from typing import Any, TypedDict
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
-from clan_lib.nix_models.clan import InventoryInstanceModuleType
+from clan_lib.flake.flake import Flake
+from clan_lib.nix_models.clan import (
+    InventoryInstance,
+    InventoryInstanceModuleType,
+    InventoryInstanceRolesType,
+)
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import set_value_by_path
 
 
 class CategoryInfo(TypedDict):
@@ -244,6 +250,57 @@ def get_service_module_schema(
     return flake.select(
         f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}"
     )
+
+
+@API.register
+def create_service_instance(
+    flake: Flake,
+    module_ref: InventoryInstanceModuleType,
+    roles: InventoryInstanceRolesType,
+) -> None:
+    """
+    Show information about a module
+    """
+    input_name, module_name = check_service_module_ref(flake, module_ref)
+
+    inventory_store = InventoryStore(flake)
+
+    inventory = inventory_store.read()
+
+    # TODO: Multiple instances support
+    instance_name = module_name
+    curr_instances = inventory.get("instances", {})
+
+    if instance_name in curr_instances:
+        msg = f"Instance '{instance_name}' already exists in the inventory"
+        raise ClanError(msg)
+
+    # TODO: Check the roles against the schema
+    schema = get_service_module_schema(flake, module_ref)
+    for role_name, _role in roles.items():
+        if role_name not in schema:
+            msg = f"Role '{role_name}' is not defined in the module schema"
+            raise ClanError(msg)
+
+    # TODO: Validate roles against the schema
+
+    # Create a new instance with the given roles
+    new_instance: InventoryInstance = {
+        "module": {
+            "name": module_name,
+            "input": input_name,
+        },
+        "roles": roles,
+    }
+
+    set_value_by_path(inventory, f"instances.{instance_name}", new_instance)
+    inventory_store.write(
+        inventory,
+        message=f"Add service instance '{instance_name}' with module '{module_name} from {input_name}'",
+        commit=True,
+    )
+
+    return
 
 
 @dataclass
