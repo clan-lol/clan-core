@@ -10,9 +10,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any, override
+from unittest.mock import patch
 
-from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.generate import Generator, generate_vars
+from clan_cli.vars.prompt import PromptType
 from clan_lib.dirs import find_toplevel
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
@@ -218,13 +221,36 @@ def main() -> None:
         )
         + "\n"
     )
-    with NamedTemporaryFile("w") as f:
+
+    def mocked_prompts(
+        generator: Generator,
+    ) -> dict[str, str]:
+        prompt_values: dict[str, str] = {}
+        for prompt in generator.prompts:
+            var_id = f"{generator.name}/{prompt.name}"
+            if prompt.prompt_type == PromptType.HIDDEN:
+                prompt_values[prompt.name] = "fake_hidden_value"
+            elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
+                prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
+            elif prompt.prompt_type == PromptType.MULTILINE:
+                prompt_values[prompt.name] = "fake\nmultiline\nvalue"
+            elif prompt.prompt_type == PromptType.LINE:
+                prompt_values[prompt.name] = "fake_line_value"
+            else:
+                msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
+                raise ClanError(msg)
+        return prompt_values
+
+    with (
+        patch("clan_cli.vars.generate._ask_prompts", new=mocked_prompts),
+        NamedTemporaryFile("w") as f,
+    ):
         f.write("# created: 2023-07-17T10:51:45+02:00\n")
         f.write(f"# public key: {sops_pub_key}\n")
         f.write(sops_priv_key)
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
-        generate_vars(list(machines), fake_prompts=True)
+        generate_vars(list(machines))
 
 
 if __name__ == "__main__":
