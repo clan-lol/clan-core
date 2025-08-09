@@ -9,14 +9,7 @@
 let
   controllerMachine = builtins.head (lib.attrNames roles.controller.machines or { });
   networkIdPath = "${config.clan.core.settings.directory}/vars/per-machine/${controllerMachine}/zerotier/zerotier-network-id/value";
-  networkId =
-    if builtins.pathExists networkIdPath then
-      builtins.readFile networkIdPath
-    else
-      builtins.throw ''
-        No zerotier network id found for ${controllerMachine}.
-        Please run `clan vars generate ${controllerMachine}` first.
-      '';
+  networkId = if builtins.pathExists networkIdPath then builtins.readFile networkIdPath else null;
   moons = lib.attrNames (roles.moon.machines or { });
   moonIps = builtins.foldl' (
     ips: name:
