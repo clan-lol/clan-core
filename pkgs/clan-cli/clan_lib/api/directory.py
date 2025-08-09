@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Literal
 
 from clan_lib.cmd import RunOpts, run
@@ -129,3 +130,15 @@ def get_clan_directory_relative(flake: Flake) -> str:
 
     _, relative_dir = get_clan_directories(flake)
     return relative_dir
+
+
+def get_clan_dir(flake: Flake) -> Path:
+    """
+    Get the effective clan directory, respecting the clan.directory configuration.
+    Args:
+        flake: The clan flake
+    Returns:
+        Path to the effective clan directory
+    """
+    relative_clan_dir = get_clan_directory_relative(flake)
+    return flake.path / relative_clan_dir if relative_clan_dir else flake.path
