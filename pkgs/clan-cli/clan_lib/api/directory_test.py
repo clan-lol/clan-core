@@ -16,8 +16,8 @@ def test_get_relative_clan_directory_default(
     flake = Flake(str(test_flake_with_core.path))
     relative_dir = get_clan_directory_relative(flake)
 
-    # Default configuration should return "." (which represents current directory)
-    assert relative_dir == "."
+    # Default configuration should return ""
+    assert relative_dir == ""
 
 
 @pytest.mark.with_core
