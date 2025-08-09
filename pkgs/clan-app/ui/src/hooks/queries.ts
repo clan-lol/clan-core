@@ -260,3 +260,39 @@ export const useMachineDiskSchemas = (
     },
   }));
 };
+
+export type MachineGenerators = SuccessData<"get_generators">;
+export type MachineGeneratorsQuery = UseQueryResult<MachineGenerators>;
+
+export const useMachineGenerators = (
+  clanUri: string,
+  machineName: string,
+): MachineGeneratorsQuery => {
+  const client = useApiClient();
+  return useQuery<MachineGenerators>(() => ({
+    queryKey: [
+      "clans",
+      encodeBase64(clanUri),
+      "machines",
+      machineName,
+      "generators",
+    ],
+    queryFn: async () => {
+      const call = client.fetch("get_generators", {
+        base_dir: clanUri,
+        machine_name: machineName,
+        // TODO: Make this configurable
+        include_previous_values: true,
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
