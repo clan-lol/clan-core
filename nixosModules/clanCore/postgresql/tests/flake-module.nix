@@ -24,7 +24,7 @@
 
                   imports = [
                     #   self.nixosModules.clanCore
-                    self.clanModules.localbackup
+                    self.clanServices.localbackup
                   ];
 
                   clan.core.postgresql.enable = true;

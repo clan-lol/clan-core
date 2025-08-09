@@ -5,6 +5,7 @@
     fileSystems."/".device = "/dev/null";
     boot.loader.grub.device = "/dev/null";
   };
+
   clan.inventory.services = {
     borgbackup.test-backup = {
       roles.client.machines = [ "test-backup" ];
@@ -26,12 +27,6 @@
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
       {
-        imports = [
-          # Do not import inventory modules. They should be configured via 'clan.inventory'
-          #
-          # TODO: Configure localbackup via inventory
-          self.clanModules.localbackup
-        ];
         # Borgbackup overrides
         services.borgbackup.repos.test-backups = {
           path = "/var/lib/borgbackup/test-backups";
