@@ -22,6 +22,15 @@
       pkgs.xkcdpass
     ];
 
+    prompts.password.display = {
+      group = "Root User";
+      label = "Password";
+      required = false;
+      helperText = ''
+        Your password will be encrypted and stored securely using the secret store you've configured.
+      '';
+    };
+
     prompts.password.type = "hidden";
     prompts.password.persist = true;
     prompts.password.description = "Leave empty to generate automatically";
