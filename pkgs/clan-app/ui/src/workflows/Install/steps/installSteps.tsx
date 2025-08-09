@@ -9,10 +9,10 @@ import {
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
-import { InstallSteps, InstallStoreType } from "../install";
+import { InstallSteps, InstallStoreType, PromptValues } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
-import { onMount, Show } from "solid-js";
+import { For, onMount, Show } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -20,7 +20,9 @@ import { Select } from "@/src/components/Select/Select";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import Icon from "@/src/components/Icon/Icon";
 import {
+  MachineGenerators,
   useMachineDiskSchemas,
+  useMachineGenerators,
   useMachineHardwareSummary,
 } from "@/src/hooks/queries";
 import { useClanURI } from "@/src/hooks/clan";
@@ -54,8 +56,13 @@ const ConfigureAddress = () => {
     },
   });
 
+  const client = useApiClient();
+  const clanUri = useClanURI();
   // TODO: push values to the parent form Store
-  const handleSubmit: SubmitHandler<ConfigureAdressForm> = (values, event) => {
+  const handleSubmit: SubmitHandler<ConfigureAdressForm> = async (
+    values,
+    event,
+  ) => {
     console.log("targetHost set", values);
     set("install", (s) => ({ ...s, targetHost: values.targetHost }));
 
@@ -161,8 +168,8 @@ const CheckHardware = () => {
             <Show when={hardwareQuery.data}>
               {(d) => (
                 <Alert
-                  icon="Checkmark"
-                  type={reportExists() ? "warning" : "info"}
+                  icon={reportExists() ? "Checkmark" : "Close"}
+                  type={reportExists() ? "info" : "warning"}
                   title={
                     reportExists()
                       ? "Hardware report exists"
@@ -180,7 +187,7 @@ const CheckHardware = () => {
           <NextButton
             type="button"
             onClick={handleNext}
-            disabled={!reportExists()}
+            disabled={hardwareQuery.isLoading || !reportExists()}
           >
             Next
           </NextButton>
@@ -274,16 +281,85 @@ const ConfigureDisk = () => {
   );
 };
 
-type DynamicForm = Record<string, string>;
-
 const ConfigureData = () => {
-  const [formStore, { Form, Field }] = createForm<DynamicForm>({
-    // TODO: Dynamically validate fields
-  });
   const stepSignal = useStepper<InstallSteps>();
+  const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
-  const handleSubmit: SubmitHandler<DynamicForm> = (values, event) => {
+  const generatorsQuery = useMachineGenerators(
+    useClanURI(),
+    store.install.machineName,
+  );
+
+  return (
+    <>
+      <Show when={generatorsQuery.isLoading}>
+        Checking credentials & data...
+      </Show>
+      <Show when={generatorsQuery.data}>
+        {(generators) => <PromptsFields generators={generators()} />}
+      </Show>
+    </>
+  );
+};
+
+type PromptGroup = {
+  name: string;
+  fields: {
+    prompt: Prompt;
+    generator: string;
+    value?: string | null;
+  }[];
+};
+
+type Prompt = NonNullable<MachineGenerators[number]["prompts"]>[number];
+type PromptForm = {
+  promptValues: PromptValues;
+};
+
+interface PromptsFieldsProps {
+  generators: MachineGenerators;
+}
+const PromptsFields = (props: PromptsFieldsProps) => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
+  const groupsObj: Record<string, PromptGroup> = props.generators.reduce(
+    (acc, generator) => {
+      if (!generator.prompts) {
+        return acc;
+      }
+      for (const prompt of generator.prompts) {
+        const groupName = (
+          prompt.display?.group || generator.name
+        ).toUpperCase();
+
+        if (!acc[groupName]) acc[groupName] = { fields: [], name: groupName };
+
+        acc[groupName].fields.push({
+          prompt,
+          generator: generator.name,
+          value: prompt.previous_value,
+        });
+      }
+      return acc;
+    },
+    {} as Record<string, PromptGroup>,
+  );
+  const groups = Object.values(groupsObj);
+
+  const [formStore, { Form, Field }] = createForm<PromptForm>({
+    initialValues: {
+      promptValues: store.install?.promptValues || {},
+    },
+  });
+
+  console.log(groups);
+
+  const handleSubmit: SubmitHandler<PromptForm> = (values, event) => {
     console.log("vars submitted", values);
+
+    set("install", (s) => ({ ...s, promptValues: values.promptValues }));
+    console.log("vars preloaded");
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
   };
@@ -293,68 +369,49 @@ const ConfigureData = () => {
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
-            <Fieldset legend="Root password">
-              <Field name="root-password">
-                {(field, props) => (
-                  <TextInput
-                    {...field}
-                    label="Root password"
-                    description="Leave empty to generate automatically"
-                    value={field.value}
-                    required
-                    orientation="horizontal"
-                    validationState={
-                      getError(formStore, "root-password") ? "invalid" : "valid"
-                    }
-                    icon="EyeClose"
-                    input={{
-                      ...props,
-                      type: "password",
-                    }}
-                  />
-                )}
-              </Field>
-            </Fieldset>
-            <Fieldset legend="WIFI TU-YAN">
-              <Field name="networkSSID">
-                {(field, props) => (
-                  <TextInput
-                    {...field}
-                    label="ssid"
-                    description="Name of the wifi network"
-                    value={field.value}
-                    required
-                    orientation="horizontal"
-                    validationState={
-                      getError(formStore, "wifi/password") ? "invalid" : "valid"
-                    }
-                    input={{
-                      ...props,
-                    }}
-                  />
-                )}
-              </Field>
-              <Field name="password">
-                {(field, props) => (
-                  <TextInput
-                    {...field}
-                    label="password"
-                    description="Password for the wifi network"
-                    value={field.value}
-                    required
-                    orientation="horizontal"
-                    validationState={
-                      getError(formStore, "wifi/password") ? "invalid" : "valid"
-                    }
-                    icon="EyeClose"
-                    input={{
-                      ...props,
-                      type: "password",
-                    }}
-                  />
-                )}
-              </Field>
-            </Fieldset>
+            <For each={groups}>
+              {(group) => (
+                <Fieldset legend={group.name}>
+                  <For each={group.fields}>
+                    {(fieldInfo) => (
+                      <Field
+                        name={`promptValues.${fieldInfo.generator}.${fieldInfo.prompt.name}`}
+                      >
+                        {(f, props) => (
+                          <TextInput
+                            {...f}
+                            label={
+                              fieldInfo.prompt.display?.label ||
+                              fieldInfo.prompt.name
+                            }
+                            description={fieldInfo.prompt.description}
+                            value={f.value || fieldInfo.value || ""}
+                            required={fieldInfo.prompt.display?.required}
+                            orientation="horizontal"
+                            validationState={
+                              getError(
+                                formStore,
+                                `promptValues.${fieldInfo.generator}.${fieldInfo.prompt.name}`,
+                              )
+                                ? "invalid"
+                                : "valid"
+                            }
+                            input={{
+                              type: fieldInfo.prompt.prompt_type.includes(
+                                "hidden",
+                              )
+                                ? "password"
+                                : "text",
+                              ...props,
+                            }}
+                          />
+                        )}
+                      </Field>
+                    )}
+                  </For>
+                </Fieldset>
+              )}
+            </For>
           </div>
         }
         footer={
@@ -403,6 +460,7 @@ const InstallSummary = () => {
       placeholders: {
         mainDisk: store.install.mainDisk,
       },
+      force: true,
     });
 
     const diskResult = await setDisk.result; // Wait for the disk schema to be set
@@ -410,6 +468,15 @@ const InstallSummary = () => {
       console.error("Error setting disk schema:", diskResult.errors);
       return;
     }
+
+    const runGenerators = client.fetch("run_generators", {
+      all_prompt_values: store.install.promptValues,
+      base_dir: clanUri,
+      machine_name: store.install.machineName,
+    });
+    stepSignal.setActiveStep("install:progress");
+
+    await runGenerators.result; // Wait for the generators to run
 
     const runInstall = client.fetch("run_machine_install", {
       opts: {
@@ -429,7 +496,9 @@ const InstallSummary = () => {
       progress: runInstall,
     }));
 
-    stepSignal.setActiveStep("install:progress");
+    await runInstall.result; // Wait for the installation to finish
+
+    stepSignal.setActiveStep("install:done");
   };
   return (
     <StepLayout
@@ -468,17 +537,6 @@ const InstallProgress = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
-  onMount(async () => {
-    if (store.install.progress) {
-      const result = await store.install.progress.result;
-
-      if (result.status === "error") {
-        console.error("Error during installation:", result.errors);
-      }
-
-      stepSignal.setActiveStep("install:done");
-    }
-  });
   return (
     <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
@@ -501,6 +559,8 @@ const InstallProgress = () => {
 
 const FlashDone = () => {
   const stepSignal = useStepper<InstallSteps>();
+  const [store, get] = getStepStore<InstallStoreType>(stepSignal);
+
   return (
     <div class="flex w-full flex-col items-center bg-inv-4">
       <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
@@ -520,7 +580,7 @@ const FlashDone = () => {
             hierarchy="primary"
             endIcon="Close"
             size="s"
-            onClick={() => stepSignal.next()}
+            onClick={() => store.done()}
           >
             Close
           </Button>

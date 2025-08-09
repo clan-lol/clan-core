@@ -504,9 +504,9 @@ def _generate_vars_for_machine(
 @API.register
 def run_generators(
     machine_name: str,
-    generators: list[str],
     all_prompt_values: dict[str, dict[str, str]],
     base_dir: Path,
+    generators: list[str] | None = None,
     no_sandbox: bool = False,
 ) -> bool:
     """Run the specified generators for a machine.
@@ -526,16 +526,20 @@ def run_generators(
     from clan_lib.machines.machines import Machine
 
     machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
-    generators_set = set(generators)
-    generators_ = [
-        g
-        for g in Generator.get_machine_generators(machine_name, machine.flake)
-        if g.name in generators_set
-    ]
-
+    if not generators:
+        filtered_generators = Generator.get_machine_generators(
+            machine_name, machine.flake
+        )
+    else:
+        generators_set = set(generators)
+        filtered_generators = [
+            g
+            for g in Generator.get_machine_generators(machine_name, machine.flake)
+            if g.name in generators_set
+        ]
     return _generate_vars_for_machine(
         machine=machine,
-        generators=generators_,
+        generators=filtered_generators,
         all_prompt_values=all_prompt_values,
         no_sandbox=no_sandbox,
     )

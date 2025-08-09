@@ -3,9 +3,9 @@ import logging
 import sys
 import termios
 import tty
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from getpass import getpass
-from typing import Any
+from typing import Any, TypedDict
 
 from clan_lib.errors import ClanError
 
@@ -22,6 +22,13 @@ class PromptType(enum.Enum):
     MULTILINE_HIDDEN = "multiline-hidden"
 
 
+class Display(TypedDict):
+    label: str | None
+    group: str | None
+    helperText: str | None
+    required: bool
+
+
 @dataclass
 class Prompt:
     name: str
@@ -30,6 +37,16 @@ class Prompt:
 
     persist: bool = False
     previous_value: str | None = None
+    display: Display = field(
+        default_factory=lambda: Display(
+            {
+                "label": None,
+                "group": None,
+                "helperText": None,
+                "required": False,
+            }
+        )
+    )
 
     @classmethod
     def from_nix(cls: type["Prompt"], data: dict[str, Any]) -> "Prompt":
@@ -38,6 +55,7 @@ class Prompt:
             description=data.get("description", data["name"]),
             prompt_type=PromptType(data.get("type", "line")),
             persist=data.get("persist", False),
+            display=data.get("display", {}),
         )
 
 

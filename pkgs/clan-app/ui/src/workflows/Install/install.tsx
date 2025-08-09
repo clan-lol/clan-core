@@ -66,8 +66,12 @@ export interface InstallStoreType {
     mainDisk: string;
     // ...TODO Vars
     progress: ApiCall<"run_machine_install">;
+
+    promptValues: PromptValues;
   };
+  done: () => void;
 }
+export type PromptValues = Record<string, Record<string, string>>;
 
 export const InstallModal = (props: InstallModalProps) => {
   const stepper = createStepper(
