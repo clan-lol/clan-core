@@ -12,14 +12,17 @@ import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps, InstallStoreType } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
-import { createSignal, Show } from "solid-js";
+import { onMount, Show } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
 import { Select } from "@/src/components/Select/Select";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import Icon from "@/src/components/Icon/Icon";
-import { useMachineHardwareSummary } from "@/src/hooks/queries";
+import {
+  useMachineDiskSchemas,
+  useMachineHardwareSummary,
+} from "@/src/hooks/queries";
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
 
@@ -120,10 +123,8 @@ const CheckHardware = () => {
     const call = client.fetch("run_machine_hardware_info", {
       target_host: {
         address: store.install.targetHost,
-        command_prefix: "D0 YOU SEE ME LEAKING?",
       },
       opts: {
-        backend: "nixos-facter",
         machine: {
           flake: {
             identifier: clanUri,
@@ -199,16 +200,27 @@ const DiskSchema = v.object({
 type DiskForm = v.InferInput<typeof DiskSchema>;
 
 const ConfigureDisk = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
+
   const [formStore, { Form, Field }] = createForm<DiskForm>({
     validate: valiForm(DiskSchema),
+    initialValues: {
+      mainDisk: store.install?.mainDisk,
+    },
   });
-  const stepSignal = useStepper<InstallSteps>();
 
   const handleSubmit: SubmitHandler<DiskForm> = (values, event) => {
-    console.log("submitted", values);
-    // Here you would typically trigger the ISO creation process
+    console.log("disk submitted", values);
+
+    set("install", (s) => ({ ...s, mainDisk: values.mainDisk }));
     stepSignal.next();
   };
+
+  const diskSchemasQuery = useMachineDiskSchemas(
+    useClanURI(),
+    store.install.machineName,
+  );
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -219,6 +231,7 @@ const ConfigureDisk = () => {
               <Field name="mainDisk">
                 {(field, props) => (
                   <Select
+                    zIndex={100}
                     {...props}
                     value={field.value}
                     error={field.error}
@@ -227,8 +240,21 @@ const ConfigureDisk = () => {
                       label: "Main disk",
                       description: "Select the disk to install the system on",
                     }}
-                    // TODO: Get from api
-                    options={[{ value: "disk", label: "Disk0" }]}
+                    getOptions={async () => {
+                      if (!diskSchemasQuery.data) {
+                        await diskSchemasQuery.refetch();
+                      }
+                      const placeholders =
+                        diskSchemasQuery.data?.["single-disk"].placeholders;
+                      const mainDiskOptions = placeholders?.["mainDisk"];
+
+                      return (
+                        mainDiskOptions?.options?.map((disk) => ({
+                          value: disk,
+                          label: disk,
+                        })) || []
+                      );
+                    }}
                     placeholder="Select a disk"
                     name={field.name}
                   />
@@ -357,17 +383,59 @@ const Display = (props: { value: string; label: string }) => {
 
 const InstallSummary = () => {
   const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  const handleInstall = () => {
+  const client = useApiClient();
+
+  const clanUri = useClanURI();
+  const handleInstall = async () => {
     // Here you would typically trigger the installation process
     console.log("Installation started");
+
+    const setDisk = client.fetch("set_machine_disk_schema", {
+      machine: {
+        flake: {
+          identifier: clanUri,
+        },
+        name: store.install.machineName,
+      },
+      schema_name: "single-disk",
+      placeholders: {
+        mainDisk: store.install.mainDisk,
+      },
+    });
+
+    const diskResult = await setDisk.result; // Wait for the disk schema to be set
+    if (diskResult.status === "error") {
+      console.error("Error setting disk schema:", diskResult.errors);
+      return;
+    }
+
+    const runInstall = client.fetch("run_machine_install", {
+      opts: {
+        machine: {
+          name: store.install.machineName,
+          flake: {
+            identifier: clanUri,
+          },
+        },
+      },
+      target_host: {
+        address: store.install.targetHost,
+      },
+    });
+    set("install", (s) => ({
+      ...s,
+      progress: runInstall,
+    }));
+
     stepSignal.setActiveStep("install:progress");
   };
   return (
     <StepLayout
       body={
         <div class="flex flex-col gap-4">
-          <Fieldset legend="Deploy to">
+          <Fieldset legend="Address Configuration">
             <Orienter orientation="horizontal">
               {/* TOOD: Display the values emited from previous steps */}
               <Display label="Target" value="flash-installer.local" />
@@ -379,10 +447,7 @@ const InstallSummary = () => {
             </Orienter>
             <Divider orientation="horizontal" />
             <Orienter orientation="horizontal">
-              <Display
-                label="Main Disk"
-                value="nvme-WD_PC_SN740_SDDQNQD-512G"
-              />
+              <Display label="Main Disk" value={store.install.mainDisk} />
             </Orienter>
           </Fieldset>
         </div>
@@ -400,6 +465,20 @@ const InstallSummary = () => {
 };
 
 const InstallProgress = () => {
+  const stepSignal = useStepper<InstallSteps>();
+  const [store, get] = getStepStore<InstallStoreType>(stepSignal);
+
+  onMount(async () => {
+    if (store.install.progress) {
+      const result = await store.install.progress.result;
+
+      if (result.status === "error") {
+        console.error("Error during installation:", result.errors);
+      }
+
+      stepSignal.setActiveStep("install:done");
+    }
+  });
   return (
     <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">

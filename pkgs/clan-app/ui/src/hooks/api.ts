@@ -91,7 +91,10 @@ export const callApi = <K extends OperationNames>(
 
   return {
     uuid: op_key,
-    result: result.then(({ body }) => body),
+    result: result.then(({ body }) => {
+      console.debug(`API call ${method}`, body);
+      return body;
+    }),
     cancel: async () => {
       console.log("Cancelling api call: ", op_key);
       await callApi("delete_task", { task_id: op_key }).result;

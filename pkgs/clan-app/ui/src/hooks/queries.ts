@@ -222,3 +222,41 @@ export const useMachineHardwareSummary = (
     },
   }));
 };
+
+export type MachineDiskSchema = SuccessData<"get_machine_disk_schemas">;
+export type MachineDiskSchemaQuery = UseQueryResult<MachineDiskSchema>;
+
+export const useMachineDiskSchemas = (
+  clanUri: string,
+  machineName: string,
+): MachineDiskSchemaQuery => {
+  const client = useApiClient();
+  return useQuery<MachineDiskSchema>(() => ({
+    queryKey: [
+      "clans",
+      encodeBase64(clanUri),
+      "machines",
+      machineName,
+      "disk_schemas",
+    ],
+    queryFn: async () => {
+      const call = client.fetch("get_machine_disk_schemas", {
+        machine: {
+          flake: {
+            identifier: clanUri,
+          },
+          name: machineName,
+        },
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
