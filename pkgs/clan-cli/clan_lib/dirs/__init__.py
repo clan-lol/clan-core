@@ -233,5 +233,8 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
         relative_path = directory_path.relative_to(root_path)
         return (root_directory, str(relative_path))
     except ValueError as e:
-        msg = f"Directory path '{directory}' is not relative to root directory '{root_directory}'. This indicates a configuration issue with the clan directory setting."
+        msg = (
+            f"Directory path '{directory}' is not relative to root directory '{root_directory}'."
+            "This indicates a configuration issue with the clan directory setting."
+        )
         raise ClanError(msg) from e
