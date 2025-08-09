@@ -23,13 +23,13 @@ export const Machine = (props: RouteSectionProps) => {
       <Button
         hierarchy="primary"
         onClick={() => setShowModal(true)}
-        class="absolute top-0 right-0 m-4"
+        class="absolute right-0 top-0 m-4"
       >
         Install me!
       </Button>
       <Show when={showInstall()}>
         <div
-          class="absolute top-0 left-0 w-full h-full flex justify-center items-center z-50 bg-white/90"
+          class="absolute left-0 top-0 z-50 flex size-full items-center justify-center bg-white/90"
           ref={(el) => (container = el)}
         >
           <InstallModal

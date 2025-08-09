@@ -21,8 +21,7 @@ import {
   useSystemStorageOptions,
 } from "@/src/hooks/queries";
 import { useApiClient } from "@/src/hooks/ApiClient";
-import { createEffect, onMount } from "solid-js";
-import { create } from "storybook/internal/theming";
+import { onMount } from "solid-js";
 
 const Prose = () => (
   <StepLayout

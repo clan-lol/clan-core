@@ -63,6 +63,9 @@ export interface InstallStoreType {
   install: {
     targetHost: string;
     machineName: string;
+    mainDisk: string;
+    // ...TODO Vars
+    progress: ApiCall<"run_machine_install">;
   };
 }
 
