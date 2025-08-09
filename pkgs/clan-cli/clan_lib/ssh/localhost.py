@@ -6,13 +6,12 @@ from dataclasses import dataclass, field
 
 from clan_lib.cmd import CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
-from clan_lib.ssh.host import Host
 
 cmdlog = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class LocalHost(Host):
+class LocalHost:
     """
     A Host implementation that executes commands locally without SSH.
     """
@@ -42,7 +41,7 @@ class LocalHost(Host):
         control_master: bool = True,
     ) -> CmdOut:
         """
-        Run a command locally instead of via SSH.
+        Run a command locally.
         """
         if opts is None:
             opts = RunOpts()
