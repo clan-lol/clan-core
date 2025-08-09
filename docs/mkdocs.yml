@@ -145,6 +145,7 @@ nav:
           - reference/clanModules/importer.md
           - reference/clanModules/iwd.md
           - reference/clanServices/localbackup.md
+          - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
           - reference/clanModules/matrix-synapse.md
           - reference/clanModules/moonlight.md

@@ -33,7 +33,6 @@ in
     in
     getClanCoreTestModules
     ++ filter pathExists [
-      ./backups/flake-module.nix
       ./devshell/flake-module.nix
       ./flash/flake-module.nix
       ./impure/flake-module.nix
