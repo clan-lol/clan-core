@@ -33,6 +33,7 @@ import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { callApi } from "@/src/hooks/api";
 import { Creating } from "./Creating";
+import { useApiClient } from "@/src/hooks/ApiClient";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -208,13 +209,15 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
     throw new Error("No data returned from api call");
   };
 
+  const client = useApiClient();
+
   const onSubmit: SubmitHandler<SetupForm> = async (
     { name, description, directory },
     event,
   ) => {
     const path = `${directory}/${name}`;
 
-    const req = callApi("create_clan", {
+    const req = client.fetch("create_clan", {
       opts: {
         dest: path,
         // todo allow users to select a template
@@ -229,6 +232,24 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
     setState("creating");
 
     const resp = await req.result;
+
+    // Set up default services
+    await client.fetch("create_service_instance", {
+      flake: {
+        identifier: path,
+      },
+      module_ref: {
+        name: "admin",
+        input: "clan-core",
+      },
+      roles: {
+        default: {
+          tags: {
+            all: {},
+          },
+        },
+      },
+    }).result;
 
     if (resp.status === "error") {
       setWelcomeError(resp.errors[0].message);
