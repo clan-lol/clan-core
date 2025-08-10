@@ -13,22 +13,25 @@ from .sops import (
     default_admin_private_key_path,
     generate_private_key,
     load_age_plugins,
-    maybe_get_admin_public_keys,
 )
 
 log = logging.getLogger(__name__)
 
 
 def generate_key() -> sops.SopsKey:
-    keys = maybe_get_admin_public_keys()
-    if keys is not None:
-        key = keys[0]
-        print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
-        return key
+    """
+    Generate a new age key and return it as a SopsKey.
+
+    This function does not check if the key already exists.
+    It will generate a new key every time it is called.
+
+    Use 'check_key_exists' to check if a key already exists.
+    Before calling this function if you dont want to generate a new key.
+    """
 
     path = default_admin_private_key_path()
     _, pub_key = generate_private_key(out_file=path)
-    print(
+    log.info(
         f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets."
     )
     return sops.SopsKey(
@@ -37,13 +40,21 @@ def generate_key() -> sops.SopsKey:
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    key = generate_key()
-    key_type = key.key_type.name.lower()
-    print(f"Add your {key_type} public key to the repository with:", file=sys.stderr)
-    print(
-        f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
-        file=sys.stderr,
-    )
+    pub_keys = sops.maybe_get_admin_public_keys()
+    if not pub_keys or args.new:
+        key = generate_key()
+        pub_keys = [key]
+
+    for key in pub_keys:
+        key_type = key.key_type.name.lower()
+        print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
+        print(
+            f"Add your {key_type} public key to the repository with:", file=sys.stderr
+        )
+        print(
+            f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
+            file=sys.stderr,
+        )
 
 
 def show_command(args: argparse.Namespace) -> None:
@@ -88,6 +99,14 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
             "or PGP key, then use it to create your user, see: "
             "`clan secrets users add --help'"
         ),
+    )
+    parser_generate.add_argument(
+        "--new",
+        help=(
+            "Generate a new key, without checking if a key already exists. "
+            " This will not overwrite an existing key."
+        ),
+        action="store_true",
     )
     parser_generate.set_defaults(func=generate_command)
 
