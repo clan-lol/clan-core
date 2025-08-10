@@ -11,6 +11,8 @@
       treefmt.programs.nixfmt.enable = true;
       treefmt.programs.nixfmt.package = pkgs.nixfmt-rfc-style;
       treefmt.programs.deadnix.enable = true;
+      treefmt.programs.sizelint.enable = true;
+      treefmt.programs.sizelint.failOnWarn = true;
       treefmt.programs.clang-format.enable = true;
       treefmt.settings.global.excludes = [
         "*.png"
