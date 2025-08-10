@@ -7,8 +7,10 @@ import string
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
+from clan_cli.secrets.key import generate_private_key
 from clan_cli.tests.age_keys import assert_secrets_file_recipients
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.gpg_keys import GpgKey
@@ -629,11 +631,14 @@ def test_secrets(
     monkeypatch.setenv(
         "SOPS_AGE_KEY_FILE", str(test_flake_with_core.path / ".." / "age.key")
     )
-    with capture_output as output:
+    with patch(
+        "clan_cli.secrets.key.generate_private_key", wraps=generate_private_key
+    ) as spy:
         cli.run(
             ["secrets", "key", "generate", "--flake", str(test_flake_with_core.path)]
         )
-    assert "age private key" in output.out
+        assert spy.call_count == 1
+
     # Read the key that was generated
     with capture_output as output:
         cli.run(["secrets", "key", "show", "--flake", str(test_flake_with_core.path)])
@@ -971,7 +976,12 @@ def test_secrets_key_generate_gpg(
     with use_gpg_key(gpg_key, monkeypatch):
         # Make sure clan secrets key generate recognizes
         # the PGP key and does nothing:
-        with capture_output as output:
+        with (
+            capture_output as output,
+            patch(
+                "clan_cli.secrets.key.generate_private_key", wraps=generate_private_key
+            ) as spy_sops,
+        ):
             cli.run(
                 [
                     "secrets",
@@ -981,7 +991,8 @@ def test_secrets_key_generate_gpg(
                     str(test_flake_with_core.path),
                 ]
             )
-        assert "age private key" not in output.out
+            assert spy_sops.call_count == 0
+        # assert "age private key" not in output.out
 
         assert re.match(r"PGP key.+is already set", output.err), (
             f"expected /PGP key.+is already set/ =~ {output.err}"

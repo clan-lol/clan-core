@@ -31,7 +31,7 @@ def generate_key() -> sops.SopsKey:
 
     path = default_admin_private_key_path()
     _, pub_key = generate_private_key(out_file=path)
-    log.warning(
+    log.info(
         f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets."
     )
     return sops.SopsKey(
@@ -41,13 +41,13 @@ def generate_key() -> sops.SopsKey:
 
 def generate_command(args: argparse.Namespace) -> None:
     pub_keys = sops.maybe_get_admin_public_keys()
-
     if not pub_keys or args.new:
         key = generate_key()
         pub_keys = [key]
 
     for key in pub_keys:
         key_type = key.key_type.name.lower()
+        print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
         print(
             f"Add your {key_type} public key to the repository with:", file=sys.stderr
         )
@@ -101,11 +101,12 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
         ),
     )
     parser_generate.add_argument(
-        "new",
+        "--new",
         help=(
             "Generate a new key, without checking if a key already exists. "
             " This will not overwrite an existing key."
         ),
+        action="store_true",
     )
     parser_generate.set_defaults(func=generate_command)
 
