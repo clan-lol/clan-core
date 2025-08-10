@@ -40,13 +40,21 @@ def generate_key() -> sops.SopsKey:
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    key = generate_key()
-    key_type = key.key_type.name.lower()
-    print(f"Add your {key_type} public key to the repository with:", file=sys.stderr)
-    print(
-        f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
-        file=sys.stderr,
-    )
+    pub_keys = sops.maybe_get_admin_public_keys()
+
+    if not pub_keys or args.new:
+        key = generate_key()
+        pub_keys = [key]
+
+    for key in pub_keys:
+        key_type = key.key_type.name.lower()
+        print(
+            f"Add your {key_type} public key to the repository with:", file=sys.stderr
+        )
+        print(
+            f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
+            file=sys.stderr,
+        )
 
 
 def show_command(args: argparse.Namespace) -> None:
@@ -90,6 +98,13 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
             "Generate an age key for the Clan, if you already have an age "
             "or PGP key, then use it to create your user, see: "
             "`clan secrets users add --help'"
+        ),
+    )
+    parser_generate.add_argument(
+        "new",
+        help=(
+            "Generate a new key, without checking if a key already exists. "
+            " This will not overwrite an existing key."
         ),
     )
     parser_generate.set_defaults(func=generate_command)
