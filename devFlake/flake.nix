@@ -15,5 +15,8 @@
 
   inputs.systems.url = "github:nix-systems/default";
 
+  inputs.clan-core-for-checks.url = "git+https://git.clan.lol/clan/clan-core?ref=main&shallow=1";
+  inputs.clan-core-for-checks.flake = false;
+
   outputs = inputs: inputs;
 }

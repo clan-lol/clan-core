@@ -1,6 +1,7 @@
 {
   self,
   lib,
+  privateInputs,
 
   ...
 }:
@@ -151,7 +152,7 @@
         let
           closureInfo = pkgs.closureInfo {
             rootPaths = [
-              self.checks.x86_64-linux.clan-core-for-checks
+              privateInputs.clan-core-for-checks
               self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
               self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.initialRamdisk
               self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
@@ -207,7 +208,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${privateInputs.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 
@@ -271,7 +272,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${privateInputs.clan-core-for-checks}",
                       "${closureInfo}"
                   )
                   

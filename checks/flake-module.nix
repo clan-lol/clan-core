@@ -2,6 +2,7 @@
   self,
   lib,
   inputs,
+  privateInputs ? { },
   ...
 }:
 let
@@ -156,7 +157,7 @@ in
               '';
 
           clan-core-for-checks = pkgs.runCommand "clan-core-for-checks" { } ''
-            cp -r ${pkgs.callPackage ./clan-core-for-checks.nix { }} $out
+            cp -r ${privateInputs.clan-core-for-checks} $out
             chmod -R +w $out
             cp ${../flake.lock} $out/flake.lock
 
