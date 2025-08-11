@@ -5,22 +5,35 @@
     directory = ./.;
     inventory = {
       machines.peer1 = { };
+      machines.peer2 = { };
 
       instances."test" = {
         module.name = "hello-service";
         module.input = "self";
-        roles.peer.machines.peer1 = { };
+
+        # Assign the roles to the two machines
+        roles.morning.machines.peer1 = { };
+
+        roles.evening.machines.peer2 = {
+          # Set roles settings for the peers, where we want to differ from
+          # the role defaults
+          settings = {
+            greeting = "Good night";
+          };
+        };
       };
     };
   };
 
   testScript =
-    { nodes, ... }:
+    { ... }:
     ''
       start_all()
 
-      # peer1 should have the 'hello' file
-      value = peer1.succeed("cat ${nodes.peer1.clan.core.vars.generators.hello.files.hello.path}")
-      assert value.strip() == "Hello world from peer1", value
+      value = peer1.succeed("greet-world")
+      assert value.strip() == "Good morning World! I'm peer1", value
+
+      value = peer2.succeed("greet-world")
+      assert value.strip() == "Good night World! I'm peer2", value
     '';
 }

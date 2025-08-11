@@ -61,6 +61,7 @@
         "pkgs/clan-cli/clan_cli/tests/data/sshd_config"
         "pkgs/clan-vm-manager/.vscode/lhebendanz.weaudit"
         "pkgs/clan-vm-manager/bin/clan-vm-manager"
+        "clanServices/hello-world/default.nix"
         "sops/secrets/test-backup-age.key/secret"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
