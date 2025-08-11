@@ -11,9 +11,9 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import (
     get_value_by_path,
     is_writeable_key,
+    list_difference,
     retrieve_typed_field_names,
     set_value_by_path,
-    list_difference,
 )
 
 
@@ -134,7 +134,9 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     persisted_data = inventory_store._get_persisted()  # noqa: SLF001
     inventory = inventory_store.read()  #
     all_tags = get_value_by_path(inventory, f"machines.{machine.name}.tags", [])
-    persisted_tags = get_value_by_path(persisted_data, f"machines.{machine.name}.tags", [])
+    persisted_tags = get_value_by_path(
+        persisted_data, f"machines.{machine.name}.tags", []
+    )
     nix_tags = list_difference(all_tags, persisted_tags)
 
     return {

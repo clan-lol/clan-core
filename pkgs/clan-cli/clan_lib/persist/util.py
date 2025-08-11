@@ -461,7 +461,6 @@ def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
     return fallback
 
 
-
 def set_value_by_path(d: DictLike, path: str, content: Any) -> None:
     """
     Update the value at a specific dot-separated path in a nested dictionary.

@@ -9,10 +9,10 @@ from clan_lib.persist.util import (
     calc_patches,
     delete_by_path,
     determine_writeability,
+    list_difference,
     merge_objects,
     path_match,
     set_value_by_path,
-    list_difference,
 )
 
 
