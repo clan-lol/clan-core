@@ -5,8 +5,9 @@ import { createSignal, Show } from "solid-js";
 import { SectionGeneral } from "./SectionGeneral";
 import { InstallModal } from "@/src/workflows/Install/install";
 import { Button } from "@/src/components/Button/Button";
-import { useMachineQuery } from "@/src/hooks/queries";
+import { Machine as MachineModel, useMachineQuery } from "@/src/hooks/queries";
 import { SectionTags } from "@/src/routes/Machine/SectionTags";
+import { callApi } from "@/src/hooks/api";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -18,9 +19,38 @@ export const Machine = (props: RouteSectionProps) => {
   };
 
   const [showInstall, setShowModal] = createSignal(false);
+
+  let container: Node;
+
   const sidebarPane = (machineName: string) => {
     const machineQuery = useMachineQuery(clanURI, machineName);
-    const sectionProps = { clanURI, machineName, machineQuery };
+
+    // we have to update the whole machine model rather than just the sub fields that were changed
+    // for that reason we pass in this common submit handler to each machine sub section
+    const onSubmit = async (values: Partial<MachineModel>) => {
+      const call = callApi("set_machine", {
+        machine: {
+          name: machineName,
+          flake: {
+            identifier: clanURI,
+          },
+        },
+        update: {
+          ...machineQuery.data?.machine,
+          ...values,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(result.errors[0].message);
+      }
+
+      // refresh the query
+      await machineQuery.refetch();
+    };
+
+    const sectionProps = { clanURI, machineName, onSubmit, machineQuery };
 
     return (
       <SidebarPane title={machineName} onClose={onClose}>
@@ -30,7 +60,6 @@ export const Machine = (props: RouteSectionProps) => {
     );
   };
 
-  let container: Node;
   return (
     <Show when={useMachineName()} keyed>
       <Button
