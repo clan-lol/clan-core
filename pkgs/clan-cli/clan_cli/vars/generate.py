@@ -26,10 +26,7 @@ from clan_lib.machines.list import list_full_machines
 from clan_lib.nix import nix_config, nix_shell, nix_test_store
 
 from .check import check_vars
-from .graph import (
-    minimal_closure,
-    requested_closure,
-)
+from .graph import minimal_closure, requested_closure
 from .prompt import Prompt, ask
 from .var import Var
 
@@ -40,18 +37,33 @@ if TYPE_CHECKING:
     from clan_lib.machines.machines import Machine
 
 
+@dataclass(frozen=True)
+class GeneratorKey:
+    """A key uniquely identifying a generator within a clan."""
+
+    machine: str | None
+    name: str
+
+
 @dataclass
 class Generator:
     name: str
     files: list[Var] = field(default_factory=list)
     share: bool = False
     prompts: list[Prompt] = field(default_factory=list)
-    dependencies: list[str] = field(default_factory=list)
+    dependencies: list[GeneratorKey] = field(default_factory=list)
 
     migrate_fact: str | None = None
 
     machine: str | None = None
     _flake: "Flake | None" = None
+
+    @property
+    def key(self) -> GeneratorKey:
+        return GeneratorKey(machine=self.machine, name=self.name)
+
+    def __hash__(self) -> int:
+        return hash(self.key)
 
     @cached_property
     def exists(self) -> bool:
@@ -124,7 +136,10 @@ class Generator:
                 name=gen_name,
                 share=gen_data["share"],
                 files=files,
-                dependencies=gen_data["dependencies"],
+                dependencies=[
+                    GeneratorKey(machine=machine_name, name=dep)
+                    for dep in gen_data["dependencies"]
+                ],
                 migrate_fact=gen_data.get("migrateFact"),
                 prompts=prompts,
                 machine=machine_name,
@@ -217,22 +232,27 @@ def decrypt_dependencies(
 
     result: dict[str, dict[str, bytes]] = {}
 
-    for generator_name in set(generator.dependencies):
-        result[generator_name] = {}
+    for dep_key in set(generator.dependencies):
+        # For now, we only support dependencies from the same machine
+        if dep_key.machine != machine.name:
+            msg = f"Cross-machine dependencies are not supported. Generator {generator.name} depends on {dep_key.name} from machine {dep_key.machine}"
+            raise ClanError(msg)
 
-        dep_generator = next(g for g in generators if g.name == generator_name)
+        result[dep_key.name] = {}
+
+        dep_generator = next((g for g in generators if g.name == dep_key.name), None)
         if dep_generator is None:
-            msg = f"Generator {generator_name} not found in machine {machine.name}"
+            msg = f"Generator {dep_key.name} not found in machine {machine.name}"
             raise ClanError(msg)
 
         dep_files = dep_generator.files
         for file in dep_files:
             if file.secret:
-                result[generator_name][file.name] = secret_vars_store.get(
+                result[dep_key.name][file.name] = secret_vars_store.get(
                     dep_generator, file.name
                 )
             else:
-                result[generator_name][file.name] = public_vars_store.get(
+                result[dep_key.name][file.name] = public_vars_store.get(
                     dep_generator, file.name
                 )
     return result
@@ -411,8 +431,8 @@ def _get_closure(
     from . import graph
 
     vars_generators = Generator.get_machine_generators(machine.name, machine.flake)
-    generators: dict[str, Generator] = {
-        generator.name: generator for generator in vars_generators
+    generators: dict[GeneratorKey, Generator] = {
+        generator.key: generator for generator in vars_generators
     }
 
     result_closure = []
@@ -423,9 +443,11 @@ def _get_closure(
             result_closure = graph.all_missing_closure(generators)
     # specific generator selected
     elif full_closure:
-        result_closure = requested_closure([generator_name], generators)
+        gen_key = GeneratorKey(machine=machine.name, name=generator_name)
+        result_closure = requested_closure([gen_key], generators)
     else:
-        result_closure = minimal_closure([generator_name], generators)
+        gen_key = GeneratorKey(machine=machine.name, name=generator_name)
+        result_closure = minimal_closure([gen_key], generators)
 
     if include_previous_values:
         for generator in result_closure:
