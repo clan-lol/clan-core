@@ -6,17 +6,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "zt-tcp-relay";
-  version = "unstable-2023-07-11";
+  version = "unstable-2025-07-03";
 
   src = fetchFromGitHub {
     owner = "alexander-akhmetov";
     repo = "zt-tcp-relay";
-    rev = "b8d3a892c60581e938724a1d5dfb0e1884a9fa6f";
-    hash = "sha256-7ZNWyPf/b4dJqyPQFTBrv2RvY9dDz990CvwcHpaCKSA=";
+    rev = "f6300870efc63a4dd06ed9b40a61a389de606bf5";
+    hash = "sha256-yXCSE0I1u34doQ5PJ8kK6BabopVp5404R5kiJ6lGRa4=";
   };
 
-  useFetchCargoVendor = true;
-  cargoHash = "sha256-gGKiPmvDJFiUec1RHI8D2QwOxL2kyHz49tEmyjetXpw=";
+  cargoHash = "sha256-8RCiGi/w0Qjmfppe236q2ojVbYo/jWIa7j6Nrz8GRiQ=";
 
   meta = with lib; {
     description = "ZeroTier One TCP relay";
