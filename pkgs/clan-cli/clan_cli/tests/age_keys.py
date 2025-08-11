@@ -37,6 +37,7 @@ class SopsSetup:
                 str(flake_path),
                 "--user",
                 self.user,
+                "--no-interactive",
             ]
         )
 

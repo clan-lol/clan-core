@@ -137,11 +137,18 @@ def create_secrets_user_auto(
 def _command(
     args: argparse.Namespace,
 ) -> None:
-    create_secrets_user_auto(
-        flake_dir=args.flake.path,
-        user=args.user,
-        force=args.force,
-    )
+    if args.no_interactive:
+        create_secrets_user(
+            flake_dir=args.flake.path,
+            user=args.user,
+            force=args.force,
+        )
+    else:
+        create_secrets_user_auto(
+            flake_dir=args.flake.path,
+            user=args.user,
+            force=args.force,
+        )
 
 
 def register_keygen_parser(parser: argparse.ArgumentParser) -> None:
@@ -153,6 +160,12 @@ def register_keygen_parser(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "-f", "--force", help="overwrite existing user", action="store_true"
+    )
+
+    parser.add_argument(
+        "--no-interactive",
+        help="Run in non-interactive mode, using keys from the machine if available",
+        action="store_true",
     )
 
     parser.set_defaults(func=_command)
