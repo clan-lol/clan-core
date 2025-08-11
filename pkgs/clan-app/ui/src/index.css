@@ -43,7 +43,7 @@
 @font-face {
   font-family: "Commit Mono";
   font-weight: 400;
-  src: url(../.fonts/CommitMono-400-Regular.otf) format("otf");
+  src: url(../.fonts/CommitMonoV143-VF.woff2) format("woff2");
 }
 
 html {
