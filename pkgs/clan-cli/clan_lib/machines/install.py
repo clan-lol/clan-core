@@ -12,7 +12,7 @@ from clan_cli.vars.generate import generate_vars
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_shell
+from clan_lib.nix import nix_config, nix_shell
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 
@@ -49,6 +49,20 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     machine = opts.machine
 
     machine.debug(f"installing {machine.name}")
+
+    # Pre-cache vars attributes before generation to speed up installation
+    config = nix_config()
+    system = config["system"]
+    machine_name = machine.name
+    machine.flake.precache(
+        [
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.validationHash",
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.{{share,dependencies,migrateFact,prompts}}",
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}",
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.secretModule",
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.publicModule",
+        ]
+    )
 
     generate_facts([machine])
     generate_vars([machine])
