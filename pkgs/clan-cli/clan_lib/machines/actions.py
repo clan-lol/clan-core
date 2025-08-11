@@ -12,6 +12,7 @@ from clan_lib.persist.util import (
     is_writeable_key,
     retrieve_typed_field_names,
     set_value_by_path,
+    unmerge_lists,
 )
 
 
@@ -101,6 +102,7 @@ def set_machine(machine: Machine, update: InventoryMachine) -> None:
 class FieldSchema(TypedDict):
     readonly: bool
     reason: str | None
+    readonly_members: list[str]
 
 
 @API.register
@@ -126,10 +128,15 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
         "name",  # name is always readonly
         "machineClass",  # machineClass can only be set during create
     }
-    # TODO: handle this more generically. I.e via json schema
 
-    # persisted_data = inventory_store._get_persisted()  #
-    # unmerge_lists(all_list, persisted_data)
+    # TODO: handle this more generically. I.e via json schema
+    persisted_data = inventory_store._get_persisted()  # noqa: SLF001
+    inventory = inventory_store.read()  #
+    all_tags = inventory.get("machines", {}).get(machine.name, {}).get("tags", [])
+    persisted_tags = (
+        persisted_data.get("machines", {}).get(machine.name, {}).get("tags", [])
+    )
+    nix_tags = unmerge_lists(all_tags, persisted_tags)
 
     return {
         field: {
@@ -142,6 +149,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
             ),
             # TODO: Provide a meaningful reason
             "reason": None,
+            "readonly_members": nix_tags if field == "tags" else [],
         }
         for field in field_names
     }
