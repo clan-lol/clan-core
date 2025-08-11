@@ -5,8 +5,7 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { createForm, FieldValues, SubmitHandler } from "@modular-forms/solid";
-import { onMount, Show } from "solid-js";
+import { Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
@@ -20,11 +19,12 @@ const InstallStepper = (props: InstallStepperProps) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  onMount(() => {
-    set("done", props.onDone);
-  });
-
-  return <Dynamic component={stepSignal.currentStep().content} />;
+  return (
+    <Dynamic
+      component={stepSignal.currentStep().content}
+      onDone={props.onDone}
+    />
+  );
 };
 
 export interface InstallModalProps {
@@ -53,8 +53,8 @@ export interface InstallStoreType {
     mainDisk: string;
     // ...TODO Vars
     progress: ApiCall<"run_machine_install">;
-
     promptValues: PromptValues;
+    prepareStep: "disk" | "generators" | "install";
   };
   done: () => void;
 }
@@ -84,6 +84,7 @@ export const InstallModal = (props: InstallModalProps) => {
   return (
     <StepperProvider stepper={stepper}>
       <Modal
+        class="h-[30rem] w-screen max-w-3xl"
         mount={props.mount}
         title="Install machine"
         onClose={() => {

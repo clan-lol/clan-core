@@ -1,6 +1,8 @@
 .modal_content {
-  @apply min-w-[320px] max-w-[512px];
+  @apply min-w-[320px] flex flex-col;
   @apply rounded-md overflow-hidden;
+
+  max-height: calc(100vh - 2rem);
 
   /* todo replace with a theme() color */
   box-shadow: 0.1875rem 0.1875rem 0 0 rgba(145, 172, 175, 0.32);
@@ -22,7 +24,8 @@
 }
 
 .modal_body {
-  @apply rounded-b-md p-6 pt-4 bg-def-1;
+  overflow-y: auto;
+  @apply rounded-b-md p-6 pt-4 bg-def-1 flex-grow;
 
   &[data-no-padding] {
     @apply p-0;

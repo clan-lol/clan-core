@@ -1,12 +1,14 @@
 import functools
 import json
 import logging
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import IntEnum
+from time import sleep
 from typing import TYPE_CHECKING, Any
 
-from clan_lib.api import MethodRegistry
+from clan_lib.api import MethodRegistry, message_queue
 from clan_lib.api.tasks import WebThread
 from clan_lib.log_manager import LogManager
 
@@ -69,6 +71,22 @@ class Webview:
         if self.size:
             self.set_size(self.size)
 
+    def __post_init__(self) -> None:
+        self.setup_notify()  # Start the notification loop
+
+    def setup_notify(self) -> None:
+        def loop() -> None:
+            while True:
+                try:
+                    msg = message_queue.get()  # Blocks until available
+                    js_code = f"window.notifyBus({json.dumps(msg)});"
+                    self.eval(js_code)
+                except Exception as e:
+                    print("Bridge notify error:", e)
+                sleep(0.01)  # avoid busy loop
+
+        threading.Thread(target=loop, daemon=True).start()
+
     @property
     def handle(self) -> Any:
         """Get the webview handle, creating it if necessary."""
@@ -129,6 +147,7 @@ class Webview:
                 webview=self, middleware_chain=tuple(self._middleware), threads={}
             )
         self._bridge = bridge
+
         return bridge
 
     # Legacy methods for compatibility

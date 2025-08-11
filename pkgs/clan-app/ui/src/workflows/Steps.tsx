@@ -9,7 +9,7 @@ interface StepLayoutProps {
 }
 export const StepLayout = (props: StepLayoutProps) => {
   return (
-    <div class="flex flex-col gap-6">
+    <div class="flex size-full grow flex-col justify-between gap-6">
       {props.body}
       {props.footer}
     </div>

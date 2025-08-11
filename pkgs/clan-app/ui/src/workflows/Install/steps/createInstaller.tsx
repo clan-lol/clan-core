@@ -149,7 +149,7 @@ const ConfigureImage = () => {
   let content: Node;
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div
@@ -241,7 +241,7 @@ const ChooseDisk = () => {
 
   const stripId = (s: string) => s.split("-")[1] ?? s;
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -317,7 +317,7 @@ const FlashProgress = () => {
   };
 
   return (
-    <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
+    <div class="flex size-full h-60 flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
@@ -343,7 +343,7 @@ const FlashProgress = () => {
 const FlashDone = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <div class="flex w-full flex-col items-center bg-inv-4">
+    <div class="flex size-full flex-col items-center justify-between bg-inv-4">
       <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
           <Icon icon="Checkmark" class="size-9" />
@@ -361,15 +361,15 @@ const FlashDone = () => {
           title="Remove it and plug it into the machine that you want to install."
           description=""
         />
-        <div class="mt-3 flex w-full justify-end">
-          <Button
-            hierarchy="primary"
-            endIcon="ArrowRight"
-            onClick={() => stepSignal.next()}
-          >
-            Next
-          </Button>
-        </div>
+      </div>
+      <div class="flex w-full justify-end p-6">
+        <Button
+          hierarchy="primary"
+          endIcon="ArrowRight"
+          onClick={() => stepSignal.next()}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

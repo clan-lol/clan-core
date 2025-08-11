@@ -25,7 +25,6 @@ class WebviewBridge(ApiBridge):
 
     def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""
-
         serialized = json.dumps(
             dataclass_to_dict(response), indent=4, ensure_ascii=False
         )

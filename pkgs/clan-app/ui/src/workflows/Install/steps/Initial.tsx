@@ -12,8 +12,8 @@ const ChoiceLocalOrRemote = () => {
         <div class="flex justify-between gap-2">
           <div class="flex flex-col justify-center gap-1 px-1">
             <Typography
-              hierarchy="label"
-              size="xs"
+              hierarchy="body"
+              size="default"
               weight="bold"
               color="primary"
             >
@@ -33,8 +33,8 @@ const ChoiceLocalOrRemote = () => {
         <div class="flex justify-between gap-2">
           <div class="flex flex-col justify-center gap-1 px-1">
             <Typography
-              hierarchy="label"
-              size="xs"
+              hierarchy="body"
+              size="default"
               weight="bold"
               color="primary"
             >
@@ -64,8 +64,8 @@ const ChoiceLocalInstaller = () => {
             <div class="flex justify-between gap-2">
               <div class="flex flex-col justify-center gap-1 px-1">
                 <Typography
-                  hierarchy="label"
-                  size="xs"
+                  hierarchy="body"
+                  size="default"
                   weight="bold"
                   color="primary"
                 >
@@ -85,8 +85,8 @@ const ChoiceLocalInstaller = () => {
             <div class="flex justify-between gap-2">
               <div class="flex flex-col justify-center gap-1 px-1">
                 <Typography
-                  hierarchy="label"
-                  size="xs"
+                  hierarchy="body"
+                  size="default"
                   weight="bold"
                   color="primary"
                 >

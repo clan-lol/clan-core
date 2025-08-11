@@ -5,11 +5,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
 from inspect import Parameter, Signature, signature
+from queue import Queue
 from types import ModuleType
 from typing import (
     Annotated,
     Any,
     Literal,
+    TypedDict,
     TypeVar,
     get_type_hints,
 )
@@ -29,6 +31,30 @@ __all__ = ["dataclass_to_dict", "from_dict", "sanitize_string"]
 T = TypeVar("T")
 
 ResponseDataType = TypeVar("ResponseDataType")
+
+
+class ProcessMessage(TypedDict):
+    """
+    Represents a message to be sent to the UI.
+
+    Attributes:
+    - topic: The topic of the message, used to identify the type of message.
+    - data: The data to be sent with the message.
+    - origin: The API operation that this message is related to, if applicable.
+    """
+
+    topic: str
+    data: Any
+    origin: str | None
+
+
+message_queue: Queue[ProcessMessage] = Queue()
+"""
+A global message queue for sending messages to the UI
+This can be used to send notifications or messages to the UI. Before returning a response.
+
+The clan-app imports the queue as clan_lib.api.message_queue and subscribes to it.
+"""
 
 
 @dataclass

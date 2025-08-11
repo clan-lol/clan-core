@@ -72,7 +72,7 @@ export const callApi = <K extends OperationNames>(
 
   const op_key = backendOpts?.op_key ?? crypto.randomUUID();
 
-  const req: BackendSendType<OperationNames> = {
+  const req: BackendSendType<K> = {
     body: args,
     header: {
       ...backendOpts,
@@ -83,11 +83,9 @@ export const callApi = <K extends OperationNames>(
   const result = (
     window as unknown as Record<
       OperationNames,
-      (
-        args: BackendSendType<OperationNames>,
-      ) => Promise<BackendReturnType<OperationNames>>
+      (args: BackendSendType<K>) => Promise<BackendReturnType<K>>
     >
-  )[method](req) as Promise<BackendReturnType<K>>;
+  )[method](req);
 
   return {
     uuid: op_key,

@@ -9,7 +9,7 @@ from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.vars.generate import generate_vars
 
-from clan_lib.api import API
+from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
@@ -20,6 +20,20 @@ log = logging.getLogger(__name__)
 
 
 BuildOn = Literal["auto", "local", "remote"]
+
+
+Step = Literal["generators", "upload-secrets", "nixos-anywhere"]
+
+
+def notify_install_step(current: Step) -> None:
+    message_queue.put(
+        {
+            "topic": current,
+            "data": None,
+            # MUST be set the to api function name, while technically you can set any origin, this is a bad idea.
+            "origin": "run_machine_install",
+        }
+    )
 
 
 @dataclass
@@ -64,6 +78,8 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         ]
     )
 
+    # Notify the UI about what we are doing
+    notify_install_step("generators")
     generate_facts([machine])
     generate_vars([machine])
 
@@ -74,6 +90,9 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         activation_secrets = base_directory / "activation_secrets"
         upload_dir = activation_secrets / machine.secrets_upload_directory.lstrip("/")
         upload_dir.mkdir(parents=True)
+
+        # Notify the UI about what we are doing
+        notify_install_step("upload-secrets")
         machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
             machine.name, upload_dir, phases=["activation", "users", "services"]
@@ -174,4 +193,6 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 ["nixos-anywhere"],
                 cmd,
             )
+
+        notify_install_step("nixos-anywhere")
         run(cmd, RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True))

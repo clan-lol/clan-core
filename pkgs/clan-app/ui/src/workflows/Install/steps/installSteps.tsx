@@ -2,6 +2,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { BackButton, NextButton, StepLayout } from "../../Steps";
 import {
   createForm,
+  FieldValues,
   getError,
   SubmitHandler,
   valiForm,
@@ -12,7 +13,7 @@ import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps, InstallStoreType, PromptValues } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
-import { For, onMount, Show } from "solid-js";
+import { For, Match, Show, Switch } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -27,6 +28,7 @@ import {
 } from "@/src/hooks/queries";
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -72,7 +74,7 @@ const ConfigureAddress = () => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -230,7 +232,7 @@ const ConfigureDisk = () => {
   );
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -302,19 +304,19 @@ const ConfigureData = () => {
   );
 };
 
-type PromptGroup = {
+interface PromptGroup {
   name: string;
   fields: {
     prompt: Prompt;
     generator: string;
     value?: string | null;
   }[];
-};
+}
 
 type Prompt = NonNullable<MachineGenerators[number]["prompts"]>[number];
-type PromptForm = {
+interface PromptForm extends FieldValues {
   promptValues: PromptValues;
-};
+}
 
 interface PromptsFieldsProps {
   generators: MachineGenerators;
@@ -365,7 +367,7 @@ const PromptsFields = (props: PromptsFieldsProps) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -449,6 +451,8 @@ const InstallSummary = () => {
     // Here you would typically trigger the installation process
     console.log("Installation started");
 
+    stepSignal.setActiveStep("install:progress");
+
     const setDisk = client.fetch("set_machine_disk_schema", {
       machine: {
         flake: {
@@ -463,6 +467,10 @@ const InstallSummary = () => {
       force: true,
     });
 
+    set("install", (s) => ({
+      ...s,
+      prepareStep: "disk",
+    }));
     const diskResult = await setDisk.result; // Wait for the disk schema to be set
     if (diskResult.status === "error") {
       console.error("Error setting disk schema:", diskResult.errors);
@@ -474,8 +482,11 @@ const InstallSummary = () => {
       base_dir: clanUri,
       machine_name: store.install.machineName,
     });
-    stepSignal.setActiveStep("install:progress");
 
+    set("install", (s) => ({
+      ...s,
+      prepareStep: "generators",
+    }));
     await runGenerators.result; // Wait for the generators to run
 
     const runInstall = client.fetch("run_machine_install", {
@@ -493,6 +504,7 @@ const InstallSummary = () => {
     });
     set("install", (s) => ({
       ...s,
+      prepareStep: "install",
       progress: runInstall,
     }));
 
@@ -533,6 +545,8 @@ const InstallSummary = () => {
   );
 };
 
+type InstallTopic = "generators" | "upload-secrets" | "nixos-anywhere";
+
 const InstallProgress = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
@@ -542,10 +556,14 @@ const InstallProgress = () => {
     if (progress) {
       await progress.cancel();
     }
-    store.done();
+    stepSignal.previous();
   };
+  const installState = useNotifyOrigin<ProcessMessage<unknown, InstallTopic>>(
+    "run_machine_install",
+  );
+
   return (
-    <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
+    <div class="flex size-full h-60 flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
@@ -554,6 +572,36 @@ const InstallProgress = () => {
           color="inherit"
         >
           Machine is beeing installed
+        </Typography>
+        <Typography
+          hierarchy="label"
+          size="default"
+          class="py-2"
+          color="secondary"
+          inverted
+        >
+          <Switch fallback={"Waiting for preparation to start..."}>
+            <Match when={store.install.prepareStep === "disk"}>
+              Configuring disk schema ...
+            </Match>
+            <Match when={store.install.prepareStep === "generators"}>
+              Provisioning services ...
+            </Match>
+            <Match when={store.install.prepareStep === "install"}>
+              {/* Progress after the run_machine_install api call */}
+              <Switch fallback={"Waiting for installation to start..."}>
+                <Match when={installState()?.topic === "generators"}>
+                  Checking services ...
+                </Match>
+                <Match when={installState()?.topic === "upload-secrets"}>
+                  Uploading Credentials ...
+                </Match>
+                <Match when={installState()?.topic === "nixos-anywhere"}>
+                  Running nixos-anywhere ...
+                </Match>
+              </Switch>
+            </Match>
+          </Switch>
         </Typography>
         <LoadingBar />
         <Button
@@ -569,7 +617,10 @@ const InstallProgress = () => {
   );
 };
 
-const FlashDone = () => {
+interface InstallDoneProps {
+  onDone: () => void;
+}
+const InstallDone = (props: InstallDoneProps) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -592,7 +643,7 @@ const FlashDone = () => {
             hierarchy="primary"
             endIcon="Close"
             size="s"
-            onClick={() => store.done()}
+            onClick={() => props.onDone()}
           >
             Close
           </Button>
@@ -639,7 +690,7 @@ export const installSteps = [
   },
   {
     id: "install:done",
-    content: FlashDone,
+    content: InstallDone,
     isSplash: true,
   },
 ] as const;
