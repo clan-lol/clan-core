@@ -1,4 +1,4 @@
-import { ProcessMessage } from "./src/hooks/api";
+import { ProcessMessage } from "./src/hooks/notify";
 
 export {};
 
