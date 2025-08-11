@@ -5,8 +5,7 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { createForm, FieldValues, SubmitHandler } from "@modular-forms/solid";
-import { onMount, Show } from "solid-js";
+import { Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
@@ -85,6 +84,7 @@ export const InstallModal = (props: InstallModalProps) => {
   return (
     <StepperProvider stepper={stepper}>
       <Modal
+        class="h-[30rem] w-screen max-w-3xl"
         mount={props.mount}
         title="Install machine"
         onClose={() => {

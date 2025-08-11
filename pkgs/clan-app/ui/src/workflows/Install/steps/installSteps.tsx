@@ -74,7 +74,7 @@ const ConfigureAddress = () => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -232,7 +232,7 @@ const ConfigureDisk = () => {
   );
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -367,7 +367,7 @@ const PromptsFields = (props: PromptsFieldsProps) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -563,7 +563,7 @@ const InstallProgress = () => {
   );
 
   return (
-    <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
+    <div class="flex size-full h-60 flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
@@ -617,7 +617,10 @@ const InstallProgress = () => {
   );
 };
 
-const FlashDone = () => {
+interface InstallDoneProps {
+  onDone: () => void;
+}
+const InstallDone = (props: InstallDoneProps) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -687,7 +690,7 @@ export const installSteps = [
   },
   {
     id: "install:done",
-    content: FlashDone,
+    content: InstallDone,
     isSplash: true,
   },
 ] as const;
