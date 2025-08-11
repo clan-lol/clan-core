@@ -20,11 +20,12 @@ const InstallStepper = (props: InstallStepperProps) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  onMount(() => {
-    set("done", props.onDone);
-  });
-
-  return <Dynamic component={stepSignal.currentStep().content} />;
+  return (
+    <Dynamic
+      component={stepSignal.currentStep().content}
+      onDone={props.onDone}
+    />
+  );
 };
 
 export interface InstallModalProps {
@@ -53,8 +54,8 @@ export interface InstallStoreType {
     mainDisk: string;
     // ...TODO Vars
     progress: ApiCall<"run_machine_install">;
-
     promptValues: PromptValues;
+    prepareStep: "disk" | "generators" | "install";
   };
   done: () => void;
 }
