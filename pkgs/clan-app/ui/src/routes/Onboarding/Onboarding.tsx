@@ -136,7 +136,7 @@ const welcome = (props: {
         Start building
       </Button>
       <div class="separator">
-        <Divider orientation="horizontal" inverted={true} />
+        <Divider orientation="horizontal" />
         <Typography
           hierarchy="body"
           size="s"
@@ -146,7 +146,7 @@ const welcome = (props: {
         >
           or
         </Typography>
-        <Divider orientation="horizontal" inverted={true} />
+        <Divider orientation="horizontal" />
       </div>
       <Button hierarchy="primary" ghost={true} onAction={selectFolder}>
         Select folder
@@ -318,7 +318,7 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                       />
                     )}
                   </Field>
-                  <Divider inverted={true} />
+                  <Divider />
                   <Field name="description">
                     {(field, input) => (
                       <TextArea

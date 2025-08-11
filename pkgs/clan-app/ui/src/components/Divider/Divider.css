@@ -1,8 +1,8 @@
 hr {
-  @apply border-none outline-none bg-inv-2 self-stretch;
+  @apply border-none outline-none bg-def-3 self-stretch;
 
   &.inverted {
-    @apply bg-def-3;
+    @apply bg-inv-2;
   }
 
   &[data-orientation="horizontal"] {
