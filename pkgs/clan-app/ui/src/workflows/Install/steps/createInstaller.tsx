@@ -308,6 +308,14 @@ const FlashProgress = () => {
     stepSignal.next();
   });
 
+  const handleCancel = async () => {
+    const progress = store.flash.progress;
+    if (progress) {
+      await progress.cancel();
+    }
+    stepSignal.previous();
+  };
+
   return (
     <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
@@ -320,7 +328,12 @@ const FlashProgress = () => {
           USB stick is being flashed
         </Typography>
         <LoadingBar />
-        <Button hierarchy="primary" class="w-fit" size="s">
+        <Button
+          hierarchy="primary"
+          class="w-fit"
+          size="s"
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
       </div>
