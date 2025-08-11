@@ -9,6 +9,8 @@ from clan_lib.flake import Flake
 from clan_lib.machines import actions as actions_module
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import Clan, InventoryMachine, Unknown
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import get_value_by_path, set_value_by_path
 
 from .actions import get_machine, get_machine_fields_schema, list_machines, set_machine
 
@@ -191,6 +193,18 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
         },
     )
 
+    # TODO: Move this into the api
+    inventory_store = InventoryStore(flake=flake)
+    inventory = inventory_store.read()
+    curr_tags = get_value_by_path(inventory, "machines.jon.tags", [])
+    new_tags = ["managed1", "managed2"]
+    set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])
+    inventory_store.write(inventory, message="Test writeability")
+
+    # Check that the tags were updated
+    persisted = inventory_store._get_persisted()  # noqa: SLF001
+    assert get_value_by_path(persisted, "machines.jon.tags", []) == new_tags
+
     write_info = get_machine_fields_schema(Machine("jon", flake))
 
     # {'tags': {'writable': True, 'reason': None}, 'machineClass': {'writable': False, 'reason': None}, 'name': {'writable': False, 'reason': None}, 'description': {'writable': True, 'reason': None}, 'deploy.buildHost': {'writable': True, 'reason': None}, 'icon': {'writable': True, 'reason': None}, 'deploy.targetHost': {'writable': True, 'reason': None}}
@@ -207,3 +221,5 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
         "icon",
     }
     assert read_only_fields == {"machineClass", "name"}
+
+    assert write_info["tags"]["readonly_members"] == ["nix1", "all", "nixos"]
