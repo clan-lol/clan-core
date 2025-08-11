@@ -51,9 +51,12 @@
         ;
 
       privateInputs =
-        (import ./devFlake/flake-compat.nix {
-          src = ./devFlake;
-        }).outputs;
+        if builtins.pathExists (./. + ".skip-private-inputs") then
+          { }
+        else
+          (import ./devFlake/flake-compat.nix {
+            src = ./devFlake;
+          }).outputs;
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
