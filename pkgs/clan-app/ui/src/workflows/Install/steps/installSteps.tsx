@@ -2,6 +2,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { BackButton, NextButton, StepLayout } from "../../Steps";
 import {
   createForm,
+  FieldValues,
   getError,
   SubmitHandler,
   valiForm,
@@ -12,7 +13,7 @@ import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps, InstallStoreType, PromptValues } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
-import { For, onMount, Show } from "solid-js";
+import { For, Show } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -302,19 +303,19 @@ const ConfigureData = () => {
   );
 };
 
-type PromptGroup = {
+interface PromptGroup {
   name: string;
   fields: {
     prompt: Prompt;
     generator: string;
     value?: string | null;
   }[];
-};
+}
 
 type Prompt = NonNullable<MachineGenerators[number]["prompts"]>[number];
-type PromptForm = {
+interface PromptForm extends FieldValues {
   promptValues: PromptValues;
-};
+}
 
 interface PromptsFieldsProps {
   generators: MachineGenerators;
