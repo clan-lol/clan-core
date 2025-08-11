@@ -9,6 +9,7 @@ from clan_lib.nix_models.clan import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import (
+    get_value_by_path,
     is_writeable_key,
     retrieve_typed_field_names,
     set_value_by_path,
@@ -132,10 +133,8 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     # TODO: handle this more generically. I.e via json schema
     persisted_data = inventory_store._get_persisted()  # noqa: SLF001
     inventory = inventory_store.read()  #
-    all_tags = inventory.get("machines", {}).get(machine.name, {}).get("tags", [])
-    persisted_tags = (
-        persisted_data.get("machines", {}).get(machine.name, {}).get("tags", [])
-    )
+    all_tags = get_value_by_path(inventory, f"machines.{machine.name}.tags", [])
+    persisted_tags = get_value_by_path(persisted_data, f"machines.{machine.name}.tags", [])
     nix_tags = list_difference(all_tags, persisted_tags)
 
     return {

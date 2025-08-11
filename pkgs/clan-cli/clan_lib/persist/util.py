@@ -441,6 +441,27 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
 type DictLike = dict[str, Any] | Any
 
 
+def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
+    """
+    Get the value at a specific dot-separated path in a nested dictionary.
+
+    If the path does not exist, it returns fallback.
+
+    :param d: The dictionary to get from.
+    :param path: The dot-separated path to the key (e.g., 'foo.bar').
+    """
+    keys = path.split(".")
+    current = d
+    for key in keys[:-1]:
+        current = current.setdefault(key, {})
+
+    if isinstance(current, dict):
+        return current.get(keys[-1], fallback)
+
+    return fallback
+
+
+
 def set_value_by_path(d: DictLike, path: str, content: Any) -> None:
     """
     Update the value at a specific dot-separated path in a nested dictionary.
