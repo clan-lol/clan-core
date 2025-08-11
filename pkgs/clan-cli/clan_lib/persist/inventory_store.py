@@ -12,6 +12,7 @@ from clan_lib.nix_models.clan import (
     InventoryMachinesType,
     InventoryMetaType,
     InventoryServicesType,
+    InventoryTagsType,
 )
 
 from .util import (
@@ -106,6 +107,7 @@ class InventorySnapshot(TypedDict):
     instances: NotRequired[InventoryInstancesType]
     meta: NotRequired[InventoryMetaType]
     services: NotRequired[InventoryServicesType]
+    tags: NotRequired[InventoryTagsType]
 
 
 class InventoryStore:
