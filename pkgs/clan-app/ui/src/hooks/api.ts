@@ -99,3 +99,14 @@ export const callApi = <K extends OperationNames>(
     },
   };
 };
+
+export interface ProcessMessage {
+  topic: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+  origin: string | null;
+}
+
+window.notifyBus = (data) => {
+  console.debug("Channel function called with data:", data);
+};
