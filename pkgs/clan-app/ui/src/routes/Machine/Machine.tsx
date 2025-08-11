@@ -5,6 +5,8 @@ import { createSignal, Show } from "solid-js";
 import { SectionGeneral } from "./SectionGeneral";
 import { InstallModal } from "@/src/workflows/Install/install";
 import { Button } from "@/src/components/Button/Button";
+import { useMachineQuery } from "@/src/hooks/queries";
+import { SectionTags } from "@/src/routes/Machine/SectionTags";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -16,6 +18,17 @@ export const Machine = (props: RouteSectionProps) => {
   };
 
   const [showInstall, setShowModal] = createSignal(false);
+  const sidebarPane = (machineName: string) => {
+    const machineQuery = useMachineQuery(clanURI, machineName);
+    const sectionProps = { clanURI, machineName, machineQuery };
+
+    return (
+      <SidebarPane title={machineName} onClose={onClose}>
+        <SectionGeneral {...sectionProps} />
+        <SectionTags {...sectionProps} />
+      </SidebarPane>
+    );
+  };
 
   let container: Node;
   return (
@@ -39,9 +52,7 @@ export const Machine = (props: RouteSectionProps) => {
           />
         </div>
       </Show>
-      <SidebarPane title={useMachineName()} onClose={onClose}>
-        <SectionGeneral />
-      </SidebarPane>
+      {sidebarPane(useMachineName())}
     </Show>
   );
 };

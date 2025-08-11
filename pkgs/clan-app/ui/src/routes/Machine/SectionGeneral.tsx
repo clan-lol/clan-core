@@ -3,11 +3,11 @@ import { TextInput } from "@/src/components/Form/TextInput";
 import { Divider } from "@/src/components/Divider/Divider";
 import { TextArea } from "@/src/components/Form/TextArea";
 import { Show, splitProps } from "solid-js";
-import { useMachineQuery } from "@/src/hooks/queries";
-import { useClanURI, useMachineName } from "@/src/hooks/clan";
+import { Machine } from "@/src/hooks/queries";
 import { callApi } from "@/src/hooks/api";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { pick } from "@/src/util";
+import { UseQueryResult } from "@tanstack/solid-query";
 
 const schema = v.object({
   name: v.pipe(v.optional(v.string()), v.readonly()),
@@ -17,11 +17,14 @@ const schema = v.object({
 
 type FormValues = v.InferInput<typeof schema>;
 
-export const SectionGeneral = () => {
-  const clanURI = useClanURI();
-  const machineName = useMachineName();
+export interface SectionGeneralProps {
+  clanURI: string;
+  machineName: string;
+  machineQuery: UseQueryResult<Machine>;
+}
 
-  const machineQuery = useMachineQuery(clanURI, machineName);
+export const SectionGeneral = (props: SectionGeneralProps) => {
+  const machineQuery = props.machineQuery;
 
   const initialValues = () => {
     if (!machineQuery.isSuccess) {
@@ -38,9 +41,9 @@ export const SectionGeneral = () => {
   const onSubmit = async (values: FormValues) => {
     const call = callApi("set_machine", {
       machine: {
-        name: machineName,
+        name: props.machineName,
         flake: {
-          identifier: clanURI,
+          identifier: props.clanURI,
         },
       },
       update: {
