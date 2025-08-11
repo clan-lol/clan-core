@@ -261,10 +261,10 @@ The following table shows the migration status of each deprecated clanModule:
 | `heisenbridge`           | ❌ Removed                                                        |                                                                  |
 | `importer`               | ✅ [Migrated](../../reference/clanServices/importer.md)           |                                                                  |
 | `iwd`                    | ❌ Removed                                                        | Use [wifi service](../../reference/clanServices/wifi.md) instead |
-| `localbackup`            | ❌ Removed                                                        | TODO                                                             |
+| `localbackup`            | ✅ [Migrated](../../reference/clanServices/localbackup.md)        |                                                                  |
 | `localsend`              | ❌ Removed                                                        |                                                                  |
 | `machine-id`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
-| `matrix-synapse`         | ❌ Removed                                                        | TODO                                                             |
+| `matrix-synapse`         | ✅ [Migrated](../../reference/clanServices/matrix-synapse.md)     |                                                                  |
 | `moonlight`              | ❌ Removed                                                        |                                                                  |
 | `mumble`                 | ❌ Removed                                                        |                                                                  |
 | `mycelium`               | ✅ [Migrated](../../reference/clanServices/mycelium.md)           |                                                                  |
@@ -278,7 +278,7 @@ The following table shows the migration status of each deprecated clanModule:
 | `static-hosts`           | ❌ Removed                                                        |                                                                  |
 | `sunshine`               | ❌ Removed                                                        |                                                                  |
 | `syncthing-static-peers` | ❌ Removed                                                        |                                                                  |
-| `syncthing`              | ❌ Removed                                                        | TODO                                                             |
+| `syncthing`              | ✅ [Migrated](../../reference/clanServices/syncthing.md)          |                                                                  |
 | `thelounge`              | ❌ Removed                                                        |                                                                  |
 | `trusted-nix-caches`     | ✅ [Migrated](../../reference/clanServices/trusted-nix-caches.md) |                                                                  |
 | `user-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              |                                                                  |

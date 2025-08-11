@@ -1,10 +1,5 @@
 # Authoring a 'clan.service' module
 
-!!! Tip
-    This is the successor format to the older [clanModules](../../reference/clanModules/index.md)
-
-    While some features might still be missing we recommend to adapt this format early and give feedback.
-
 ## Service Module Specification
 
 This section explains how to author a clan service module.
