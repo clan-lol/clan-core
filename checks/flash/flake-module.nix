@@ -62,6 +62,10 @@
           nodes.target = {
             virtualisation.emptyDiskImages = [ 4096 ];
             virtualisation.memorySize = 4096;
+
+            virtualisation.useNixStoreImage = true;
+            virtualisation.writableStore = true;
+
             environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
             environment.etc."install-closure".source = "${closureInfo}/store-paths";
 
@@ -80,8 +84,8 @@
             start_all()
 
             # Some distros like to automount disks with spaces
-            machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdb && mount /dev/vdb "/mnt/with spaces"')
-            machine.succeed("clan flash write --debug --flake ${privateInputs.clan-core-for-checks} --yes --disk main /dev/vdb test-flash-machine-${pkgs.hostPlatform.system}")
+            machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
+            machine.succeed("clan flash write --debug --flake ${privateInputs.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
       };
