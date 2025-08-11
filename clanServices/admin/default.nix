@@ -41,25 +41,13 @@
           };
         };
       };
-
-    perInstance =
-      { settings, ... }:
-      {
-        nixosModule =
-          { ... }:
-          {
-            imports = [
-              # We don't have a good way to specify dependencies between
-              # clanServices for now. When it get's implemtende, we should just
-              # use the ssh and users modules here.
-              ./ssh.nix
-              ./root-password.nix
-            ];
-
-            _module.args = { inherit settings; };
-
-            users.users.root.openssh.authorizedKeys.keys = builtins.attrValues settings.allowedKeys;
-          };
-      };
   };
+
+  # We don't have a good way to specify dependencies between
+  # clanServices for now. When it get's implemtende, we should just
+  # use the ssh and users modules here.
+  imports = [
+    ./ssh.nix
+    ./root-password.nix
+  ];
 }
