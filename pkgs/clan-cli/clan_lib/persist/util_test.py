@@ -12,7 +12,7 @@ from clan_lib.persist.util import (
     merge_objects,
     path_match,
     set_value_by_path,
-    unmerge_lists,
+    list_difference,
 )
 
 
@@ -217,7 +217,7 @@ def test_list_unmerge() -> None:
     all_machines = ["machineA", "machineB"]
     inventory = ["machineB"]
 
-    nix_machines = unmerge_lists(all_machines, inventory)
+    nix_machines = list_difference(all_machines, inventory)
     assert nix_machines == ["machineA"]
 
 

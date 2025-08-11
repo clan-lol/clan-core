@@ -12,7 +12,7 @@ from clan_lib.persist.util import (
     is_writeable_key,
     retrieve_typed_field_names,
     set_value_by_path,
-    unmerge_lists,
+    list_difference,
 )
 
 
@@ -136,7 +136,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     persisted_tags = (
         persisted_data.get("machines", {}).get(machine.name, {}).get("tags", [])
     )
-    nix_tags = unmerge_lists(all_tags, persisted_tags)
+    nix_tags = list_difference(all_tags, persisted_tags)
 
     return {
         field: {

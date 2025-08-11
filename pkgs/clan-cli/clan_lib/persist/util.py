@@ -122,7 +122,7 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
     return flattened
 
 
-def unmerge_lists(all_items: list, filter_items: list) -> list:
+def list_difference(all_items: list, filter_items: list) -> list:
     """
     Unmerge the current list. Given a previous list.
 
@@ -292,7 +292,7 @@ After: {new}
                 persisted_data = data_dyn.get(key, [])
                 # List including nix values
                 all_list = data_all.get(key, [])
-                nix_list = unmerge_lists(all_list, persisted_data)
+                nix_list = list_difference(all_list, persisted_data)
 
                 # every item in nix_list MUST be in new
                 nix_items_to_remove = list(
@@ -307,7 +307,7 @@ After: {new}
                     raise ClanError(msg)
 
                 if new != all_list:
-                    patchset[key] = unmerge_lists(new, nix_list)
+                    patchset[key] = list_difference(new, nix_list)
             else:
                 patchset[key] = new
 
