@@ -3,16 +3,20 @@ import { Alert, AlertProps } from "@/src/components/Alert/Alert";
 import { expect, fn } from "storybook/test";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
 
+const AlertExamples = (props: AlertProps) => (
+  <div class="flex flex-row gap-4">
+    <div class="w-72">
+      <Alert {...props} />
+    </div>
+    <div class="w-72">
+      <Alert {...props} size="s" />
+    </div>
+  </div>
+);
+
 const meta: Meta<AlertProps> = {
   title: "Components/Alert",
-  component: Alert,
-  decorators: [
-    (Story: StoryObj) => (
-      <div class="w-72">
-        <Story />
-      </div>
-    ),
-  ],
+  component: AlertExamples,
 };
 
 export default meta;
@@ -23,6 +27,7 @@ export const Info: Story = {
   args: {
     type: "info",
     title: "Headline",
+    onDismiss: undefined,
     description:
       "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.",
   },
