@@ -6,38 +6,25 @@ import {
   useStepper,
 } from "@/src/hooks/stepper";
 import { createForm, FieldValues, SubmitHandler } from "@modular-forms/solid";
-import { Show } from "solid-js";
+import { onMount, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
 import { ApiCall } from "@/src/hooks/api";
 
-interface InstallForm extends FieldValues {
-  data_from_step_1: string;
-  data_from_step_2?: string;
-  data_from_step_3?: string;
+interface InstallStepperProps {
+  onDone: () => void;
 }
-
-const InstallStepper = () => {
+const InstallStepper = (props: InstallStepperProps) => {
   const stepSignal = useStepper<InstallSteps>();
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  const [formStore, { Form, Field, FieldArray }] = createForm<InstallForm>();
+  onMount(() => {
+    set("done", props.onDone);
+  });
 
-  const handleSubmit: SubmitHandler<InstallForm> = (values, event) => {
-    console.log("Installation started (submit)", values);
-    stepSignal.setActiveStep("install:progress");
-  };
-  return (
-    <Form onSubmit={handleSubmit}>
-      <div class="gap-6">
-        <Dynamic
-          component={stepSignal.currentStep().content}
-          machineName={"karl"}
-        />
-      </div>
-    </Form>
-  );
+  return <Dynamic component={stepSignal.currentStep().content} />;
 };
 
 export interface InstallModalProps {
@@ -108,7 +95,7 @@ export const InstallModal = (props: InstallModalProps) => {
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        {(ctx) => <InstallStepper />}
+        {(ctx) => <InstallStepper onDone={ctx.close} />}
       </Modal>
     </StepperProvider>
   );

@@ -537,6 +537,13 @@ const InstallProgress = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
+  const handleCancel = async () => {
+    const progress = store.install.progress;
+    if (progress) {
+      await progress.cancel();
+    }
+    store.done();
+  };
   return (
     <div class="flex h-60 w-full flex-col items-center justify-end bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
@@ -549,7 +556,12 @@ const InstallProgress = () => {
           Machine is beeing installed
         </Typography>
         <LoadingBar />
-        <Button hierarchy="primary" class="w-fit" size="s">
+        <Button
+          hierarchy="primary"
+          class="w-fit"
+          size="s"
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
       </div>
