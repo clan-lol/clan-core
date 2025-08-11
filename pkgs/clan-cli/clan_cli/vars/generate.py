@@ -257,7 +257,7 @@ def dependencies_as_dir(
             file_path.write_bytes(file)
 
 
-def execute_generator(
+def _execute_generator(
     machine: "Machine",
     generator: Generator,
     secret_vars_store: StoreBase,
@@ -402,7 +402,7 @@ def _get_previous_value(
     return None
 
 
-def get_closure(
+def _get_closure(
     machine: "Machine",
     generator_name: str | None,
     full_closure: bool,
@@ -435,6 +435,27 @@ def get_closure(
     return result_closure
 
 
+def _generate_vars_for_machine(
+    machine: "Machine",
+    generators: list[Generator],
+    all_prompt_values: dict[str, dict[str, str]],
+    no_sandbox: bool = False,
+) -> bool:
+    for generator in generators:
+        if check_can_migrate(machine, generator):
+            migrate_files(machine, generator)
+        else:
+            _execute_generator(
+                machine=machine,
+                generator=generator,
+                secret_vars_store=machine.secret_vars_store,
+                public_vars_store=machine.public_vars_store,
+                prompt_values=all_prompt_values.get(generator.name, {}),
+                no_sandbox=no_sandbox,
+            )
+    return True
+
+
 @API.register
 def get_generators(
     machine_name: str,
@@ -458,27 +479,6 @@ def get_generators(
         Flake(str(base_dir)),
         include_previous_values,
     )
-
-
-def _generate_vars_for_machine(
-    machine: "Machine",
-    generators: list[Generator],
-    all_prompt_values: dict[str, dict[str, str]],
-    no_sandbox: bool = False,
-) -> bool:
-    for generator in generators:
-        if check_can_migrate(machine, generator):
-            migrate_files(machine, generator)
-        else:
-            execute_generator(
-                machine=machine,
-                generator=generator,
-                secret_vars_store=machine.secret_vars_store,
-                public_vars_store=machine.public_vars_store,
-                prompt_values=all_prompt_values.get(generator.name, {}),
-                no_sandbox=no_sandbox,
-            )
-    return True
 
 
 @API.register
@@ -554,7 +554,7 @@ def create_machine_vars_interactive(
             msg += f"Secret vars store: {sec_healtcheck_msg}"
         raise ClanError(msg)
 
-    generators = get_closure(machine, generator_name, regenerate)
+    generators = _get_closure(machine, generator_name, regenerate)
     if len(generators) == 0:
         return False
     all_prompt_values = {}
