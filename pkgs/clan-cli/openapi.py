@@ -36,6 +36,7 @@ COMMON_VERBS = {
 # If you need a new top-level resource, create an issue to discuss it first.
 TOP_LEVEL_RESOURCES = {
     "clan",  # clan management
+    "tag",  # Tags
     "machine",  # machine management
     "task",  # task management
     "secret",  # sops & key operations
