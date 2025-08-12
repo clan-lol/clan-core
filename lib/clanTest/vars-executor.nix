@@ -124,7 +124,7 @@ rec {
           ]
         )
       }" \
-      ${pkgs.runtimeShell} ${genInfo.finalScript}
+      ${pkgs.runtimeShell} -x "${genInfo.finalScript}"
 
     # Verify expected outputs were created
     ${lib.concatStringsSep "\n" (
