@@ -70,7 +70,6 @@ const ConfigureAddress = () => {
 
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
-    console.log("Shit doesnt work", values);
   };
 
   return (
@@ -318,6 +317,25 @@ interface PromptForm extends FieldValues {
   promptValues: PromptValues;
 }
 
+const sanitize = (name: string) => {
+  return name.replace(".", "__dot__");
+};
+const restore = (name: string) => {
+  return name.replace("__dot__", ".");
+};
+
+const transformPromptValues = (
+  values: PromptValues,
+  transform: (s: string) => string,
+): PromptValues =>
+  Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      transform(key),
+      Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [transform(k), v]),
+      ),
+    ]),
+  );
 interface PromptsFieldsProps {
   generators: MachineGenerators;
 }
@@ -338,8 +356,11 @@ const PromptsFields = (props: PromptsFieldsProps) => {
         if (!acc[groupName]) acc[groupName] = { fields: [], name: groupName };
 
         acc[groupName].fields.push({
-          prompt,
-          generator: generator.name,
+          prompt: {
+            ...prompt,
+            name: sanitize(prompt.name),
+          },
+          generator: sanitize(generator.name),
           value: prompt.previous_value,
         });
       }
@@ -351,16 +372,24 @@ const PromptsFields = (props: PromptsFieldsProps) => {
 
   const [formStore, { Form, Field }] = createForm<PromptForm>({
     initialValues: {
-      promptValues: store.install?.promptValues || {},
+      promptValues: transformPromptValues(
+        store.install?.promptValues || {},
+        sanitize,
+      ),
     },
   });
 
   console.log(groups);
 
   const handleSubmit: SubmitHandler<PromptForm> = (values, event) => {
-    console.log("vars submitted", values);
+    const restoredValues: PromptValues = transformPromptValues(
+      values.promptValues,
+      restore,
+    );
 
-    set("install", (s) => ({ ...s, promptValues: values.promptValues }));
+    console.log("vars submitted", restoredValues);
+
+    set("install", (s) => ({ ...s, promptValues: restoredValues }));
     console.log("vars preloaded");
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
@@ -570,7 +599,7 @@ const InstallProgress = () => {
   );
 
   return (
-    <div class="flex size-full h-60 flex-col items-center justify-end bg-inv-4">
+    <div class="flex size-full flex-col items-center justify-center bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
@@ -641,7 +670,7 @@ const InstallDone = (props: InstallDoneProps) => {
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
   return (
-    <div class="flex w-full flex-col items-center bg-inv-4">
+    <div class="flex size-full flex-col items-center justify-center bg-inv-4">
       <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
           <Icon icon="Checkmark" class="size-9" />
