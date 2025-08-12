@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 import pytest
+
 from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import get_value_by_path, set_value_by_path
