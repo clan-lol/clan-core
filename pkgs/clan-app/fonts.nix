@@ -1,6 +1,5 @@
 {
   fetchurl,
-  fetchzip,
   runCommand,
 }:
 let
@@ -45,10 +44,9 @@ let
     };
   };
 
-  commitMono = fetchzip {
-    url = "https://github.com/eigilnikolajsen/commit-mono/releases/download/v1.143/CommitMono-1.143.zip";
-    stripRoot = false;
-    hash = "sha256-JTyPgWfbWq+lXQU/rgnyvPG6+V3f+FB5QUkd+I1oFKE=";
+  commitMono = fetchurl {
+    url = "https://github.com/eigilnikolajsen/commit-mono/raw/0b3b192f035cdc8d1ea8ffb5463cc23d73d0b89f/src/fonts/fontlab/CommitMonoV143-VF.woff2";
+    hash = "sha256-80LKbD8ll+bA/NhLPz7WTTzlvbbQrxnRkNZFpVixzyk=";
   };
 
 in
@@ -63,5 +61,5 @@ runCommand "" { } ''
   cp ${archivoSemi.medium} $out/ArchivoSemiCondensed-Medium.woff2
   cp ${archivoSemi.semiBold} $out/ArchivoSemiCondensed-SemiBold.woff2
 
-  cp ${commitMono}/CommitMono-1.143/CommitMono-400-Regular.otf $out/CommitMono-400-Regular.otf
+  cp ${commitMono} $out/CommitMonoV143-VF.woff2
 ''
