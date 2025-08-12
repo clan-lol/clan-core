@@ -907,7 +907,22 @@ class Flake:
                 ).stdout.strip()
             )
         except ClanCmdError as e:
-            raise ClanSelectError(flake_identifier=self.identifier, selectors=selectors, cmd_error=e) from e
+            if "error: attribute 'clan' missing" in str(e):
+                msg = ("This flake does not export the 'clan' attribute. \n"
+                    "Please write 'clan = clan.config' into your flake.nix.")
+                raise ClanError(msg) from e
+            if "error: attribute" in str(e):
+                # If the error is about a missing attribute, we raise a ClanSelectError
+                # with the failed selectors and the flake identifier.
+                raise ClanSelectError(
+                    flake_identifier=self.identifier,
+                    selectors=selectors,
+                    cmd_error=e,
+                ) from e
+
+            # If the error is not about a missing attribute, we re-raise it as a ClanCmdError
+            # to preserve the original error context.
+            raise
 
         if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
