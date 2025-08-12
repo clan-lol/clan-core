@@ -16,10 +16,7 @@ import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
-import {
-  useMachineFlashOptions,
-  useSystemStorageOptions,
-} from "@/src/hooks/queries";
+import { useSystemStorageOptions } from "@/src/hooks/queries";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { onMount } from "solid-js";
 
@@ -143,8 +140,6 @@ const ConfigureImage = () => {
 
     throw new Error("No data returned from api call");
   };
-
-  const optionsQuery = useMachineFlashOptions();
 
   let content: Node;
 
@@ -309,15 +304,17 @@ const FlashProgress = () => {
   });
 
   const handleCancel = async () => {
-    const progress = store.flash.progress;
-    if (progress) {
-      await progress.cancel();
+    if (store.flash) {
+      const progress = store.flash.progress;
+      if (progress) {
+        await progress.cancel();
+      }
     }
     stepSignal.previous();
   };
 
   return (
-    <div class="flex size-full h-60 flex-col items-center justify-end bg-inv-4">
+    <div class="flex size-full flex-col items-center justify-center bg-inv-4">
       <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
@@ -344,7 +341,7 @@ const FlashDone = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
     <div class="flex size-full flex-col items-center justify-between bg-inv-4">
-      <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
+      <div class="flex size-full max-w-md flex-col items-center justify-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
           <Icon icon="Checkmark" class="size-9" />
         </div>
