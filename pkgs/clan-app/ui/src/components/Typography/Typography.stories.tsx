@@ -24,15 +24,16 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
       <For each={props.sizes}>
         {(size) => (
           <tr
-            class="border-b border-def-3 even:bg-def-2"
+            class="border-b fg-semantic-info-1 border-def-3 even:bg-def-2"
             classList={{
               "border-inv-3 even:bg-inv-2": props.inverted,
               "border-def-3 even:bg-def-2": !props.inverted,
             }}
           >
             <For each={props.weights}>
+              {/* we set a foreground color to test color=inherit */}
               {(weight) => (
-                <td class="px-6 py-2 ">
+                <td class="px-6 py-2">
                   <Show when={!props.colors}>
                     <Typography
                       hierarchy={props.hierarchy}
