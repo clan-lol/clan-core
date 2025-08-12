@@ -16,5 +16,6 @@
     {
       # all machines managed by Clan
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
+      clan = clan.config;
     };
 }
