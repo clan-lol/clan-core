@@ -457,12 +457,40 @@ def _get_closure(
     return result_closure
 
 
+def _ensure_healthy(
+    machine: "Machine",
+    generators: list[Generator] | None = None,
+) -> None:
+    """
+    Run health checks on the provided generators.
+    Fails if any of the generators' health checks fail.
+    """
+    if generators is None:
+        generators = Generator.get_machine_generators(machine.name, machine.flake)
+
+    pub_healtcheck_msg = machine.public_vars_store.health_check(
+        machine.name, generators
+    )
+    sec_healtcheck_msg = machine.secret_vars_store.health_check(
+        machine.name, generators
+    )
+
+    if pub_healtcheck_msg or sec_healtcheck_msg:
+        msg = f"Health check failed for machine {machine.name}:\n"
+        if pub_healtcheck_msg:
+            msg += f"Public vars store: {pub_healtcheck_msg}\n"
+        if sec_healtcheck_msg:
+            msg += f"Secret vars store: {sec_healtcheck_msg}"
+        raise ClanError(msg)
+
+
 def _generate_vars_for_machine(
     machine: "Machine",
     generators: list[Generator],
     all_prompt_values: dict[str, dict[str, str]],
     no_sandbox: bool = False,
 ) -> bool:
+    _ensure_healthy(machine=machine, generators=generators)
     for generator in generators:
         if check_can_migrate(machine, generator):
             migrate_files(machine, generator)
@@ -553,29 +581,6 @@ def create_machine_vars_interactive(
     regenerate: bool,
     no_sandbox: bool = False,
 ) -> bool:
-    _generator = None
-    if generator_name:
-        generators = Generator.get_machine_generators(machine.name, machine.flake)
-        for generator in generators:
-            if generator.name == generator_name:
-                _generator = generator
-                break
-
-    pub_healtcheck_msg = machine.public_vars_store.health_check(
-        machine.name, [_generator] if _generator else None
-    )
-    sec_healtcheck_msg = machine.secret_vars_store.health_check(
-        machine.name, [_generator] if _generator else None
-    )
-
-    if pub_healtcheck_msg or sec_healtcheck_msg:
-        msg = f"Health check failed for machine {machine.name}:\n"
-        if pub_healtcheck_msg:
-            msg += f"Public vars store: {pub_healtcheck_msg}\n"
-        if sec_healtcheck_msg:
-            msg += f"Secret vars store: {sec_healtcheck_msg}"
-        raise ClanError(msg)
-
     generators = _get_closure(machine, generator_name, regenerate)
     if len(generators) == 0:
         return False
