@@ -187,11 +187,13 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         cmd.append(target_host.target)
         if target_host.socks_port:
             # nix copy does not support socks5 proxy, use wrapper command
-            wrapper_cmd = target_host.socks_wrapper or ["torify"]
+            wrapper = target_host.socks_wrapper
+            wrapper_cmd = wrapper.cmd if wrapper else []
+            wrapper_packages = wrapper.packages if wrapper else []
             cmd = nix_shell(
                 [
                     "nixos-anywhere",
-                    *wrapper_cmd,
+                    *wrapper_packages,
                 ],
                 [*wrapper_cmd, *cmd],
             )

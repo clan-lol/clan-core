@@ -9,6 +9,7 @@ from clan_lib.errors import ClanError
 from clan_lib.network import Network, NetworkTechnologyBase, Peer
 from clan_lib.network.tor.lib import is_tor_running, spawn_tor
 from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.socks_wrapper import tor_wrapper
 
 if TYPE_CHECKING:
     from clan_lib.ssh.remote import Remote
@@ -57,5 +58,5 @@ class NetworkTechnology(NetworkTechnologyBase):
             address=peer.host,
             command_prefix=peer.name,
             socks_port=self.proxy,
-            socks_wrapper=["torify"],
+            socks_wrapper=tor_wrapper,
         )

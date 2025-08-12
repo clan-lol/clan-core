@@ -28,6 +28,7 @@
   "sops",
   "sshpass",
   "tor",
+  "torsocks",
   "util-linux",
   "virt-viewer",
   "virtiofsd",

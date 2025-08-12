@@ -12,6 +12,7 @@ from clan_lib.flake import Flake
 from clan_lib.network.network import Network, Peer
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.socks_wrapper import tor_wrapper
 
 log = logging.getLogger(__name__)
 
@@ -110,7 +111,11 @@ def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
         remote = Remote.from_ssh_uri(
             machine_name="installer-tor",
             address=tor_addr,
-        ).override(password=password, socks_port=9050, socks_wrapper=["torify"])
+        ).override(
+            password=password,
+            socks_port=9050,
+            socks_wrapper=tor_wrapper,
+        )
 
         addresses.append(RemoteWithNetwork(network=network, remote=remote))
 
