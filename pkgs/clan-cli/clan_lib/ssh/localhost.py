@@ -18,7 +18,7 @@ class LocalHost:
 
     command_prefix: str = "localhost"
     _user: str = field(default_factory=lambda: os.environ.get("USER", "root"))
-    _askpass_path: str | None = None
+    _sudo: bool = False
 
     @property
     def target(self) -> str:
@@ -52,11 +52,10 @@ class LocalHost:
             env.update(extra_env)
 
         # Handle sudo if needed
-        if self._askpass_path is not None:
+        if self._sudo:
             # Prepend sudo command
             sudo_cmd = ["sudo", "-A", "--"]
             cmd = sudo_cmd + cmd
-            env["SUDO_ASKPASS"] = self._askpass_path
 
         # Set options
         opts.env = env
@@ -85,9 +84,8 @@ class LocalHost:
             yield self
             return
 
-        # For local execution, we can use sudo with askpass if GUI is available
-        # This is a simplified version - could be enhanced with sudo askpass proxy
-        yield self
+        # This is a simplified version - could be enhanced with sudo askpass proxy.
+        yield LocalHost(_sudo=True)
 
     @contextmanager
     def host_connection(self) -> Iterator["LocalHost"]:
