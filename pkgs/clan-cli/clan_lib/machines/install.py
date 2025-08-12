@@ -203,21 +203,21 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
 
         notify_install_step("nixos-anywhere")
         run(
-            cmd + +["--phases", "kexec"],
+            [*cmd, "--phases", "kexec"],
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )
         notify_install_step("formatting")
         run(
-            cmd + +["--phases", "disko"],
+            [*cmd, "--phases", "disko"],
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )
         notify_install_step("installing")
         run(
-            cmd + +["--phases", "install"],
+            [*cmd, "--phases", "install"],
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )
         notify_install_step("rebooting")
         run(
-            cmd + +["--phases", "reboot"],
+            [*cmd, "--phases", "reboot"],
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )

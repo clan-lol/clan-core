@@ -545,7 +545,14 @@ const InstallSummary = () => {
   );
 };
 
-type InstallTopic = "generators" | "upload-secrets" | "nixos-anywhere";
+type InstallTopic = [
+  "generators",
+  "upload-secrets",
+  "nixos-anywhere",
+  "formatting",
+  "rebooting",
+  "installing",
+][number];
 
 const InstallProgress = () => {
   const stepSignal = useStepper<InstallSteps>();
@@ -598,6 +605,15 @@ const InstallProgress = () => {
                 </Match>
                 <Match when={installState()?.topic === "nixos-anywhere"}>
                   Running nixos-anywhere ...
+                </Match>
+                <Match when={installState()?.topic === "formatting"}>
+                  Formatting ...
+                </Match>
+                <Match when={installState()?.topic === "installing"}>
+                  Installing ...
+                </Match>
+                <Match when={installState()?.topic === "rebooting"}>
+                  Rebooting ...
                 </Match>
               </Switch>
             </Match>
