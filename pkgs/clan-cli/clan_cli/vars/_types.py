@@ -81,6 +81,20 @@ class StoreBase(ABC):
         generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> str | None:
+        """
+        Check the health of the store for the given machine and generators.
+
+        This method detects any issues or inconsistencies in the store that may
+        require fixing (e.g., outdated encryption keys, missing permissions).
+
+        Args:
+            machine: The name of the machine to check
+            generators: List of generators to check. If None, checks all generators for the machine
+            file_name: Optional specific file to check. If provided, only checks that file
+
+        Returns:
+            str | None: An error message describing issues found, or None if everything is healthy
+        """
         return None
 
     def fix(
@@ -89,7 +103,21 @@ class StoreBase(ABC):
         generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> None:
-        return None
+        """
+        Fix any issues with the store for the given machine and generators.
+
+        This method is intended to repair or update the store when inconsistencies
+        are detected (e.g., re-encrypting secrets with new keys, fixing permissions).
+
+        Args:
+            machine: The name of the machine to fix vars for
+            generators: List of generators to fix. If None, fixes all generators for the machine
+            file_name: Optional specific file to fix. If provided, only fixes that file
+
+        Returns:
+            None
+        """
+        return
 
     def backend_collision_error(self, folder: Path) -> None:
         msg = (

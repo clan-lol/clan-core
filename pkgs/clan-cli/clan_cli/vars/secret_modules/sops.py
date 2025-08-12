@@ -116,8 +116,22 @@ class SecretStore(StoreBase):
         file_name: str | None = None,
     ) -> str | None:
         """
-        Apply local updates to secrets like re-encrypting with missing keys
-            when new users were added.
+        Check if SOPS secrets need to be re-encrypted due to recipient changes.
+
+        This method verifies that all secrets are properly encrypted with the current
+        set of recipient keys. It detects when new users or machines have been added
+        to the clan but secrets haven't been re-encrypted to grant them access.
+
+        Args:
+            machine: The name of the machine to check secrets for
+            generators: List of generators to check. If None, checks all generators for the machine
+            file_name: Optional specific file to check. If provided, only checks that file
+
+        Returns:
+            str | None: A message describing which secrets need updating, or None if all secrets are up-to-date
+
+        Raises:
+            ClanError: If the specified file_name is not found
         """
 
         if generators is None:
@@ -315,6 +329,21 @@ class SecretStore(StoreBase):
         generators: list[Generator] | None = None,
         file_name: str | None = None,
     ) -> None:
+        """
+        Fix sops secrets by re-encrypting them with the current set of recipient keys.
+
+        This method updates secrets when recipients have changed (e.g., new admin users
+        were added to the clan). It ensures all authorized recipients have access to the
+        secrets and removes access from any removed recipients.
+
+        Args:
+            machine: The name of the machine to fix secrets for
+            generators: List of generators to fix. If None, fixes all generators for the machine
+            file_name: Optional specific file to fix. If provided, only fixes that file
+
+        Raises:
+            ClanError: If the specified file_name is not found
+        """
         from clan_cli.secrets.secrets import update_keys
 
         if generators is None:
