@@ -7,17 +7,16 @@ import { Alert as KAlert } from "@kobalte/core/alert";
 import { Show } from "solid-js";
 
 export interface AlertProps {
+  icon?: IconVariant;
   type: "success" | "error" | "warning" | "info";
   size?: "default" | "s";
   title: string;
-  description?: string;
-  icon?: IconVariant;
   onDismiss?: () => void;
+  transparent?: boolean;
+  description?: string;
 }
 
 export const Alert = (props: AlertProps) => {
-  console.log("on dismiss", !!props.onDismiss);
-
   const size = () => props.size || "default";
   const titleSize = () => (size() == "default" ? "default" : "xs");
   const bodySize = () => (size() == "default" ? "xs" : "xxs");
@@ -28,6 +27,7 @@ export const Alert = (props: AlertProps) => {
       class={cx("alert", props.type, {
         "has-icon": props.icon,
         "has-dismiss": props.onDismiss,
+        transparent: props.transparent,
       })}
     >
       {props.icon && (

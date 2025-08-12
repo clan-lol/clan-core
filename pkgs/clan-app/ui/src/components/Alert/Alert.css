@@ -36,4 +36,8 @@ div.alert {
   &.success {
     @apply bg-semantic-success-1 border border-semantic-success-3 fg-semantic-success-3;
   }
+
+  &.transparent {
+    @apply bg-transparent border-none p-0;
+  }
 }

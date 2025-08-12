@@ -4,12 +4,18 @@ import { expect, fn } from "storybook/test";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const AlertExamples = (props: AlertProps) => (
-  <div class="flex flex-row gap-4">
+  <div class="grid w-fit grid-cols-2 gap-8">
     <div class="w-72">
       <Alert {...props} />
     </div>
     <div class="w-72">
       <Alert {...props} size="s" />
+    </div>
+    <div class="w-72">
+      <Alert {...props} transparent />
+    </div>
+    <div class="w-72">
+      <Alert {...props} size="s" transparent />
     </div>
   </div>
 );
