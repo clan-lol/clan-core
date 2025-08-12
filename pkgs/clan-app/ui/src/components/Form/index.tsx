@@ -1,9 +1,9 @@
-import { FieldSchema } from "@/src/hooks/queries";
+import { SuccessData } from "@/src/hooks/api";
 import { Maybe } from "@modular-forms/solid";
 
-export const tooltipText = <T extends object, K extends keyof T>(
-  name: K,
-  schema: FieldSchema<T>,
+export const tooltipText = (
+  name: string,
+  schema: SuccessData<"get_machine_fields_schema">,
   staticValue: Maybe<string> = undefined,
 ): Maybe<string> => {
   const entry = schema[name];

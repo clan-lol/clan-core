@@ -30,6 +30,26 @@ export const SectionTags = (props: SectionTags) => {
     return pick(machineQuery.data.machine, ["tags"]) satisfies FormValues;
   };
 
+  const options = () => {
+    if (!machineQuery.isSuccess) {
+      return [[], []];
+    }
+
+    // these are static values or values which have been configured in nix and
+    // cannot be modified in the UI
+    const readonlyOptions =
+      machineQuery.data.fieldsSchema.tags?.readonly_members || [];
+
+    // filter out the read-only options from the superset of clan-wide options
+    const readonlySet = new Set(readonlyOptions);
+
+    const defaultOptions = (machineQuery.data.tags.options || []).filter(
+      (tag) => !readonlySet.has(tag),
+    );
+
+    return [defaultOptions, readonlyOptions];
+  };
+
   return (
     <Show when={machineQuery.isSuccess}>
       <SidebarSectionForm
@@ -50,6 +70,8 @@ export const SectionTags = (props: SectionTags) => {
                   readOnly={!editing}
                   orientation="horizontal"
                   defaultValue={field.value}
+                  defaultOptions={options()[0]}
+                  readonlyOptions={options()[1]}
                   input={input}
                 />
               )}
