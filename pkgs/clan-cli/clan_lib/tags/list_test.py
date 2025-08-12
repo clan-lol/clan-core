@@ -55,13 +55,8 @@ def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
 
     tags = list_tags(flake)
 
-    assert tags == set(
+    assert tags.options == set(
         {
-            # Predefined tags
-            "all",
-            "global",
-            "darwin",
-            "nixos",
             # Tags defined in nix
             "bar",
             "baz",
@@ -74,5 +69,15 @@ def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
             # Tags managed by the UI
             "managed1",
             "managed2",
+        }
+    )
+
+    assert tags.special == set(
+        {
+            # Predefined tags
+            "all",
+            "global",
+            "darwin",
+            "nixos",
         }
     )

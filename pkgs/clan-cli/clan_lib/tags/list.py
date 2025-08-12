@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 from clan_lib.api import API
@@ -5,8 +6,14 @@ from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
 
 
+@dataclass
+class TagList:
+    options: set[str]
+    special: set[str]
+
+
 @API.register
-def list_tags(flake: Flake) -> set[str]:
+def list_tags(flake: Flake) -> TagList:
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
@@ -28,7 +35,11 @@ def list_tags(flake: Flake) -> set[str]:
                 tags.add(tag)
 
     global_tags = inventory.get("tags", {})
-    for tag in global_tags:
-        tags.add(tag)
 
-    return tags
+    for tag in global_tags:
+        if tag not in tags:
+            continue
+
+        tags.remove(tag)
+
+    return TagList(options=tags, special=set(global_tags.keys()))
