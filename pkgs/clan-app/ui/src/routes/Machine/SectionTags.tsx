@@ -4,8 +4,7 @@ import { MachineDetail } from "@/src/hooks/queries";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { pick } from "@/src/util";
 import { UseQueryResult } from "@tanstack/solid-query";
-import { MachineTag, MachineTags } from "@/src/components/Form/MachineTags";
-import { machineNameParam } from "@/src/hooks/clan";
+import { MachineTags } from "@/src/components/Form/MachineTags";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),
@@ -31,26 +30,24 @@ export const SectionTags = (props: SectionTags) => {
     return pick(machineQuery.data.machine, ["tags"]) satisfies FormValues;
   };
 
-  const readonlyOptions = () => {
+  const options = () => {
     if (!machineQuery.isSuccess) {
-      return [];
+      return [[], []];
     }
 
-    const result: string[] = ["all"];
+    // these are static values or values which have been configured in nix and
+    // cannot be modified in the UI
+    const readonlyOptions =
+      machineQuery.data.fieldsSchema.tags?.readonly_members || [];
 
-    if (machineQuery.data.machine.machineClass) {
-      result.push(machineQuery.data.machine.machineClass);
-    }
+    // filter out the read-only options from the superset of clan-wide options
+    const readonlySet = new Set(readonlyOptions);
 
-    return result;
-  };
+    const defaultOptions = (machineQuery.data.tags.options || []).filter(
+      (tag) => !readonlySet.has(tag),
+    );
 
-  const defaultOptions = () => {
-    if (!machineQuery.isSuccess) {
-      return [];
-    }
-
-    return machineQuery.data.tags?.options ?? [];
+    return [defaultOptions, readonlyOptions];
   };
 
   return (
@@ -73,8 +70,8 @@ export const SectionTags = (props: SectionTags) => {
                   readOnly={!editing}
                   orientation="horizontal"
                   defaultValue={field.value}
-                  defaultOptions={defaultOptions()}
-                  readonlyOptions={readonlyOptions()}
+                  defaultOptions={options()[0]}
+                  readonlyOptions={options()[1]}
                   input={input}
                 />
               )}

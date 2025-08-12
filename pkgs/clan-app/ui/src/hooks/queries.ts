@@ -6,13 +6,6 @@ import { useApiClient } from "./ApiClient";
 export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
 
-export type FieldSchema<T> = {
-  [K in keyof T]: {
-    readonly: boolean;
-    reason?: string;
-  };
-};
-
 export type Tags = SuccessData<"list_tags">;
 export type Machine = SuccessData<"get_machine">;
 export type ListMachines = SuccessData<"list_machines">;
@@ -21,7 +14,7 @@ export type MachineDetails = SuccessData<"get_machine_details">;
 export interface MachineDetail {
   tags: Tags;
   machine: Machine;
-  fieldsSchema: FieldSchema<Machine>;
+  fieldsSchema: SuccessData<"get_machine_fields_schema">;
 }
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
