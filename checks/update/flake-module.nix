@@ -174,7 +174,7 @@
 
 
                       ##############
-                      print("TEST: update with --build-host localhost --target-host localhost")
+                      print("TEST: update with --build-host local")
                       with open(machine_config_path, "w") as f:
                           f.write("""
                       {
@@ -197,6 +197,15 @@
                         check=True
                       )
 
+                      # allow machine to ssh into itself
+                      subprocess.run([
+                          "ssh",
+                          "-o", "UserKnownHostsFile=/dev/null",
+                          "-o", "StrictHostKeyChecking=no",
+                          f"root@192.168.1.1",
+                          "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo \"$(cat \"${../assets/ssh/privkey}\")\" > /root/.ssh/id_ed25519 && chmod 600 /root/.ssh/id_ed25519",
+                      ], check=True)
+
                       # install the clan-cli package into the container's Nix store
                       subprocess.run(
                         [
@@ -216,7 +225,7 @@
                         },
                       )
 
-                      # Run ssh on the host to run the clan update command via --build-host localhost
+                      # Run ssh on the host to run the clan update command via --build-host local
                       subprocess.run([
                           "ssh",
                           "-o", "UserKnownHostsFile=/dev/null",
@@ -230,8 +239,8 @@
                           "--host-key-check", "none",
                           "--upload-inputs",  # Use local store instead of fetching from network
                           "--build-host", "localhost",
-                          "--target-host", "localhost",
                           "test-update-machine",
+                          "--target-host", f"root@localhost",
                       ], check=True)
 
                       # Verify the update was successful

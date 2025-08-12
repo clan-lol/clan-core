@@ -144,14 +144,10 @@ def update_command(args: argparse.Namespace) -> None:
                     build_host = machine.build_host()
                 # Figure out the target host
                 if args.target_host:
-                    target_host: Host | None = None
-                    if args.target_host == "localhost":
-                        target_host = LocalHost()
-                    else:
-                        target_host = Remote.from_ssh_uri(
-                            machine_name=machine.name,
-                            address=args.target_host,
-                        ).override(host_key_check=host_key_check)
+                    target_host = Remote.from_ssh_uri(
+                        machine_name=machine.name,
+                        address=args.target_host,
+                    ).override(host_key_check=host_key_check)
                 else:
                     target_host = machine.target_host().override(
                         host_key_check=host_key_check
