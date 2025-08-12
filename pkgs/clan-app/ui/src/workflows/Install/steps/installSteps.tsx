@@ -4,6 +4,7 @@ import {
   createForm,
   FieldValues,
   getError,
+  getValue,
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
@@ -13,7 +14,7 @@ import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps, InstallStoreType, PromptValues } from "../install";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
-import { For, Match, Show, Switch } from "solid-js";
+import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -59,8 +60,9 @@ const ConfigureAddress = () => {
     },
   });
 
+  const [isReachable, setIsReachable] = createSignal<string | null>(null);
+
   const client = useApiClient();
-  const clanUri = useClanURI();
   // TODO: push values to the parent form Store
   const handleSubmit: SubmitHandler<ConfigureAdressForm> = async (
     values,
@@ -71,6 +73,24 @@ const ConfigureAddress = () => {
 
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
+  };
+
+  const tryReachable = async () => {
+    const address = getValue(formStore, "targetHost");
+    if (!address) {
+      return;
+    }
+
+    const call = client.fetch("check_machine_ssh_login", {
+      remote: {
+        address,
+      },
+    });
+    const result = await call.result;
+    console.log("SSH login check result:", result);
+    if (result.status === "success") {
+      setIsReachable(address);
+    }
   };
 
   return (
@@ -99,12 +119,28 @@ const ConfigureAddress = () => {
                 )}
               </Field>
             </Fieldset>
+            <Button
+              disabled={!getValue(formStore, "targetHost")}
+              endIcon="ArrowRight"
+              onClick={tryReachable}
+              hierarchy="secondary"
+            >
+              Test Connection
+            </Button>
           </div>
         }
         footer={
           <div class="flex justify-between">
             <BackButton />
-            <NextButton type="submit">Next</NextButton>
+            <NextButton
+              type="submit"
+              disabled={
+                !isReachable() ||
+                isReachable() !== getValue(formStore, "targetHost")
+              }
+            >
+              Next
+            </NextButton>
           </div>
         }
       />
