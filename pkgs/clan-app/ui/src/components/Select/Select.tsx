@@ -146,6 +146,7 @@ export const Select = (props: SelectProps) => {
         <KSelect.HiddenSelect {...selectProps} />
         <KSelect.Trigger
           class={cx(styles.trigger)}
+          style={{ "--z-index": zIndex() }}
           data-loading={loading() || undefined}
         >
           <KSelect.Value<Option>>

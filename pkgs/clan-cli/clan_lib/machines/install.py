@@ -22,7 +22,14 @@ log = logging.getLogger(__name__)
 BuildOn = Literal["auto", "local", "remote"]
 
 
-Step = Literal["generators", "upload-secrets", "nixos-anywhere"]
+Step = Literal[
+    "generators",
+    "upload-secrets",
+    "nixos-anywhere",
+    "formatting",
+    "rebooting",
+    "installing",
+]
 
 
 def notify_install_step(current: Step) -> None:
@@ -195,4 +202,22 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             )
 
         notify_install_step("nixos-anywhere")
-        run(cmd, RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True))
+        run(
+            [*cmd, "--phases", "kexec"],
+            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+        )
+        notify_install_step("formatting")
+        run(
+            [*cmd, "--phases", "disko"],
+            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+        )
+        notify_install_step("installing")
+        run(
+            [*cmd, "--phases", "install"],
+            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+        )
+        notify_install_step("rebooting")
+        run(
+            [*cmd, "--phases", "reboot"],
+            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+        )

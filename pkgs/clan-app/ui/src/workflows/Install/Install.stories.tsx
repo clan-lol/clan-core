@@ -18,28 +18,63 @@ type ResultDataMap = {
   [K in OperationNames]: SuccessQuery<K>["data"];
 };
 
-export const mockFetcher: Fetcher = <K extends OperationNames>(
+const mockFetcher: Fetcher = <K extends OperationNames>(
   name: K,
   _args: unknown,
 ): ApiCall<K> => {
   // TODO: Make this configurable for every story
   const resultData: Partial<ResultDataMap> = {
-    get_machine_flash_options: {
-      keymaps: ["DE_de", "US_en"],
-      languages: ["en", "de"],
-    },
     get_system_file: ["id_rsa.pub"],
     list_system_storage_devices: {
       blockdevices: [
         {
           name: "sda_bla_bla",
           path: "/dev/sda",
+          id_link: "sda_bla_bla",
         },
         {
           name: "sdb_foo_foo",
           path: "/dev/sdb",
+          id_link: "sdb_foo_foo",
         },
       ] as SuccessQuery<"list_system_storage_devices">["data"]["blockdevices"],
+    },
+    get_machine_disk_schemas: {
+      "single-disk": {
+        readme: "This is a single disk installation schema",
+        frontmatter: {
+          description: "Single disk installation schema",
+        },
+        name: "single-disk",
+        placeholders: {
+          mainDisk: {
+            label: "Main Disk",
+            required: true,
+            options: ["disk1", "usb1"],
+          },
+        },
+      },
+    },
+    get_generators: [
+      {
+        name: "funny.gritty",
+        prompts: [
+          {
+            name: "gritty.name",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "Gritty Name",
+              group: "User",
+              required: true,
+            },
+          },
+        ],
+      },
+    ],
+    run_generators: true,
+    get_machine_hardware_summary: {
+      hardware_config: "nixos-facter",
     },
   };
 

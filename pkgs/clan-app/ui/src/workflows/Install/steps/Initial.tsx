@@ -7,7 +7,7 @@ import { StepLayout } from "../../Steps";
 const ChoiceLocalOrRemote = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3 size-full">
       <div class="flex flex-col gap-6 rounded-md px-4 py-6 text-fg-def-1 bg-def-2">
         <div class="flex justify-between gap-2">
           <div class="flex flex-col justify-center gap-1 px-1">

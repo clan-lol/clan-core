@@ -251,6 +251,10 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
       },
     }).result;
 
+    await client.fetch("create_secrets_user", {
+      flake_dir: path,
+    }).result;
+
     if (resp.status === "error") {
       setWelcomeError(resp.errors[0].message);
       setState("welcome");

@@ -4,7 +4,7 @@
 
   &[data-expanded] {
     @apply outline-def-2 outline-1 outline;
-    z-index: var(--z-index + 5);
+    z-index: calc(var(--z-index) + 5);
   }
 
   &[data-highlighted] {
