@@ -198,7 +198,7 @@ def test_generate_public_and_secret_vars(
     assert check_vars(machine.name, machine.flake)
     # get last commit message
     commit_message = run(
-        ["git", "log", "-5", "--pretty=%B"],
+        ["git", "log", "-6", "--pretty=%B"],
     ).stdout.strip()
     assert (
         "Update vars via generator my_generator for machine my_machine"
@@ -878,7 +878,7 @@ def test_api_set_prompts(
     # get_generators should bind the store
     assert generators[0].files[0]._store is not None
 
-    assert len(generators) == 1
+    assert len(generators) == 2
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"
     assert generators[0].prompts[0].previous_value == "input2"
