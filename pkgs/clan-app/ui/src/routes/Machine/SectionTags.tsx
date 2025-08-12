@@ -4,7 +4,8 @@ import { MachineDetail } from "@/src/hooks/queries";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { pick } from "@/src/util";
 import { UseQueryResult } from "@tanstack/solid-query";
-import { MachineTags } from "@/src/components/Form/MachineTags";
+import { MachineTag, MachineTags } from "@/src/components/Form/MachineTags";
+import { machineNameParam } from "@/src/hooks/clan";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),
@@ -30,6 +31,28 @@ export const SectionTags = (props: SectionTags) => {
     return pick(machineQuery.data.machine, ["tags"]) satisfies FormValues;
   };
 
+  const readonlyOptions = () => {
+    if (!machineQuery.isSuccess) {
+      return [];
+    }
+
+    const result: string[] = ["all"];
+
+    if (machineQuery.data.machine.machineClass) {
+      result.push(machineQuery.data.machine.machineClass);
+    }
+
+    return result;
+  };
+
+  const defaultOptions = () => {
+    if (!machineQuery.isSuccess) {
+      return [];
+    }
+
+    return machineQuery.data.tags?.options ?? [];
+  };
+
   return (
     <Show when={machineQuery.isSuccess}>
       <SidebarSectionForm
@@ -50,6 +73,8 @@ export const SectionTags = (props: SectionTags) => {
                   readOnly={!editing}
                   orientation="horizontal"
                   defaultValue={field.value}
+                  defaultOptions={defaultOptions()}
+                  readonlyOptions={readonlyOptions()}
                   input={input}
                 />
               )}

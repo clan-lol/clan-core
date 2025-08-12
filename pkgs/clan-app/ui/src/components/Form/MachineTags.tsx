@@ -11,7 +11,7 @@ import { Label } from "@/src/components/Form/Label";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { CollectionNode } from "@kobalte/core";
 
-interface MachineTag {
+export interface MachineTag {
   value: string;
   disabled?: boolean;
   new?: boolean;
@@ -24,10 +24,9 @@ export type MachineTagsProps = FieldProps & {
   disabled?: boolean;
   required?: boolean;
   defaultValue?: string[];
+  defaultOptions?: string[];
+  readonlyOptions?: string[];
 };
-
-// tags which are applied to all machines and cannot be removed
-const staticOptions = [{ value: "all", disabled: true }];
 
 const uniqueOptions = (options: MachineTag[]) => {
   const record: Record<string, MachineTag> = {};
@@ -39,13 +38,8 @@ const uniqueOptions = (options: MachineTag[]) => {
   return Object.values(record);
 };
 
-const sortedOptions = (options: MachineTag[]) => {
-  return options.sort((a, b) => {
-    if (a.new && !b.new) return -1;
-    if (a.disabled && !b.disabled) return -1;
-    return a.value.localeCompare(b.value);
-  });
-};
+const sortedOptions = (options: MachineTag[]) =>
+  options.sort((a, b) => a.value.localeCompare(b.value));
 
 const sortedAndUniqueOptions = (options: MachineTag[]) =>
   sortedOptions(uniqueOptions(options));
@@ -72,9 +66,15 @@ export const MachineTags = (props: MachineTagsProps) => {
     (props.defaultValue || []).map((value) => ({ value })),
   );
 
-  // todo this should be the superset of tags used across the entire clan and be passed in via a prop
+  // convert default options string[] into MachineTag[]
   const [availableOptions, setAvailableOptions] = createSignal<MachineTag[]>(
-    sortedAndUniqueOptions([...staticOptions, ...defaultValue]),
+    sortedAndUniqueOptions([
+      ...(props.readonlyOptions || []).map((value) => ({
+        value,
+        disabled: true,
+      })),
+      ...(props.defaultOptions || []).map((value) => ({ value })),
+    ]),
   );
 
   const onKeyDown = (event: KeyboardEvent) => {

@@ -13,11 +13,13 @@ export type FieldSchema<T> = {
   };
 };
 
+export type Tags = SuccessData<"list_tags">;
 export type Machine = SuccessData<"get_machine">;
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
 
 export interface MachineDetail {
+  tags: Tags;
   machine: Machine;
   fieldsSchema: FieldSchema<Machine>;
 }
@@ -50,7 +52,12 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
   return useQuery<MachineDetail>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
     queryFn: async () => {
-      const [machineCall, schemaCall] = await Promise.all([
+      const [tagsCall, machineCall, schemaCall] = await Promise.all([
+        client.fetch("list_tags", {
+          flake: {
+            identifier: clanURI,
+          },
+        }),
         client.fetch("get_machine", {
           name: machineName,
           flake: {
@@ -67,6 +74,11 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
         }),
       ]);
 
+      const tags = await tagsCall.result;
+      if (tags.status === "error") {
+        throw new Error("Error fetching tags: " + tags.errors[0].message);
+      }
+
       const machine = await machineCall.result;
       if (machine.status === "error") {
         throw new Error("Error fetching machine: " + machine.errors[0].message);
@@ -81,6 +93,7 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
       }
 
       return {
+        tags: tags.data,
         machine: machine.data,
         fieldsSchema: writeSchema.data,
       };
