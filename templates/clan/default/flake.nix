@@ -19,6 +19,7 @@
     in
     {
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
+      clan = clan.config;
       # Add the Clan cli tool to the dev shell.
       # Use "nix develop" to enter the dev shell.
       devShells =

@@ -21,6 +21,7 @@ from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.network.network import get_network_overview, networks_from_flake
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.clan import (
     InventoryInstancesType,
@@ -271,6 +272,11 @@ def test_clan_create_api(
     placeholders = {"mainDisk": disk_devs[0]}
     set_machine_disk_schema(machine, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
+
+    # ===== Test that clan network list works ======
+    networks = networks_from_flake(clan_dir_flake)
+    overview = get_network_overview(networks)
+    assert overview is not None
 
     # In the sandbox, building fails due to network restrictions (can't download dependencies)
     # Outside the sandbox, the build should succeed
