@@ -43,7 +43,7 @@ enable_inhibition() {
 disable_inhibition() {
   local devices=("$@")
   local rules_dir="/run/udev/rules.d"
-  
+
   for device in "${devices[@]}"; do
     local devpath="$device"
     local rule_file="$rules_dir/90-udisks-inhibit-${devpath//\//_}.rules"
