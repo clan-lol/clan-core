@@ -1,6 +1,5 @@
 {
   self,
-  privateInputs,
   ...
 }:
 {
@@ -55,7 +54,7 @@
           testScript = ''
             start_all()
             actual.fail("cat /etc/testfile")
-            actual.succeed("env CLAN_DIR=${privateInputs.clan-core-for-checks} clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
+            actual.succeed("env CLAN_DIR=${self.checks.x86_64-linux.clan-core-for-checks} clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
             assert actual.succeed("cat /etc/testfile") == "morphed"
           '';
         } { inherit pkgs self; };

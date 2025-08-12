@@ -2,7 +2,6 @@
   config,
   self,
   lib,
-  privateInputs,
   ...
 }:
 {
@@ -85,7 +84,7 @@
 
             # Some distros like to automount disks with spaces
             machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
-            machine.succeed("clan flash write --debug --flake ${privateInputs.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
+            machine.succeed("clan flash write --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
       };

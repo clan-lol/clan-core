@@ -208,7 +208,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${privateInputs.clan-core-for-checks}",
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 
@@ -272,7 +272,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${privateInputs.clan-core-for-checks}",
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
                       "${closureInfo}"
                   )
                   
