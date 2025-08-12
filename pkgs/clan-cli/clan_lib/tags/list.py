@@ -14,6 +14,15 @@ class TagList:
 
 @API.register
 def list_tags(flake: Flake) -> TagList:
+    """
+    List all tags of a clan.
+
+    Returns:
+      - 'options' - Existing Tags that can be added to machines
+      - 'special' - Prefined Tags that are special and cannot be added to machines, they can be used in roles and refer to a fixed set of machines.
+
+    """
+
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
