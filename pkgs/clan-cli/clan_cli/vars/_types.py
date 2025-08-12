@@ -78,7 +78,7 @@ class StoreBase(ABC):
     def health_check(
         self,
         machine: str,
-        generator: "Generator | None" = None,
+        generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> str | None:
         return None
@@ -86,7 +86,7 @@ class StoreBase(ABC):
     def fix(
         self,
         machine: str,
-        generator: "Generator | None" = None,
+        generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> None:
         return None

@@ -112,7 +112,7 @@ class SecretStore(StoreBase):
     def health_check(
         self,
         machine: str,
-        generator: Generator | None = None,
+        generators: list[Generator] | None = None,
         file_name: str | None = None,
     ) -> str | None:
         """
@@ -120,12 +120,10 @@ class SecretStore(StoreBase):
             when new users were added.
         """
 
-        if generator is None:
+        if generators is None:
             from clan_cli.vars.generate import Generator
 
             generators = Generator.get_machine_generators(machine, self.flake)
-        else:
-            generators = [generator]
         file_found = False
         outdated = []
         for generator in generators:
@@ -314,17 +312,15 @@ class SecretStore(StoreBase):
     def fix(
         self,
         machine: str,
-        generator: Generator | None = None,
+        generators: list[Generator] | None = None,
         file_name: str | None = None,
     ) -> None:
         from clan_cli.secrets.secrets import update_keys
 
-        if generator is None:
+        if generators is None:
             from clan_cli.vars.generate import Generator
 
             generators = Generator.get_machine_generators(machine, self.flake)
-        else:
-            generators = [generator]
         file_found = False
         for generator in generators:
             for file in generator.files:

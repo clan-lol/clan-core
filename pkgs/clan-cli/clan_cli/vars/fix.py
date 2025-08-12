@@ -24,9 +24,8 @@ def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
             )
             raise ClanError(err_msg)
 
-    for generator in generators:
-        machine.public_vars_store.fix(machine.name, generator=generator)
-        machine.secret_vars_store.fix(machine.name, generator=generator)
+    machine.public_vars_store.fix(machine.name, generators=generators)
+    machine.secret_vars_store.fix(machine.name, generators=generators)
 
 
 def fix_command(args: argparse.Namespace) -> None:

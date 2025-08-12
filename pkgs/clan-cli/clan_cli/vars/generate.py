@@ -529,19 +529,19 @@ def run_generators(
 
     machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
     if not generators:
-        filtered_generators = Generator.get_machine_generators(
+        generator_objects = Generator.get_machine_generators(
             machine_name, machine.flake
         )
     else:
         generators_set = set(generators)
-        filtered_generators = [
+        generator_objects = [
             g
             for g in Generator.get_machine_generators(machine_name, machine.flake)
             if g.name in generators_set
         ]
     return _generate_vars_for_machine(
         machine=machine,
-        generators=filtered_generators,
+        generators=generator_objects,
         all_prompt_values=all_prompt_values,
         no_sandbox=no_sandbox,
     )
@@ -562,10 +562,10 @@ def create_machine_vars_interactive(
                 break
 
     pub_healtcheck_msg = machine.public_vars_store.health_check(
-        machine.name, _generator
+        machine.name, [_generator] if _generator else None
     )
     sec_healtcheck_msg = machine.secret_vars_store.health_check(
-        machine.name, _generator
+        machine.name, [_generator] if _generator else None
     )
 
     if pub_healtcheck_msg or sec_healtcheck_msg:

@@ -66,7 +66,7 @@ def vars_status(
                 else:
                     msg = machine.secret_vars_store.health_check(
                         machine=machine.name,
-                        generator=generator,
+                        generators=[generator],
                         file_name=file.name,
                     )
                     if msg:
