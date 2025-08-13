@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
@@ -15,9 +15,6 @@ from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    pass
 
 
 @dataclass(frozen=True)
