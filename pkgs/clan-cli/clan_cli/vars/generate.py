@@ -357,6 +357,11 @@ def _execute_generator(
             if not secret_file.is_file():
                 msg = f"did not generate a file for '{file.name}' when running the following command:\n"
                 msg += str(final_script)
+                # list all files in the output directory
+                if tmpdir_out.is_dir():
+                    msg += "\nOutput files:\n"
+                    for f in tmpdir_out.iterdir():
+                        msg += f"  - {f.name}\n"
                 raise ClanError(msg)
             if file.secret:
                 file_path = secret_vars_store.set(
