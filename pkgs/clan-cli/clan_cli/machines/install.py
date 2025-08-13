@@ -50,7 +50,7 @@ def install_command(args: argparse.Namespace) -> None:
                 qr_code = read_qr_json(data, args.flake)
                 remote = stack.enter_context(qr_code.get_best_remote())
             else:
-                msg = "No MACHINE, --json or --png data provided"
+                msg = "No --target-host, --json or --png data provided"
                 raise ClanError(msg)
 
             machine = Machine(name=args.machine, flake=flake)
