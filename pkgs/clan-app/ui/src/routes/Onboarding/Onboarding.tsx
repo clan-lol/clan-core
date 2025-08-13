@@ -99,8 +99,12 @@ const welcome = (props: {
 }) => {
   const navigate = useNavigate();
 
+  const [loading, setLoading] = createSignal(false);
+
   const selectFolder = async () => {
+    setLoading(true);
     const uri = await selectClanFolder();
+    setLoading(false);
     navigateToClan(navigate, uri);
   };
 
@@ -148,7 +152,12 @@ const welcome = (props: {
         </Typography>
         <Divider orientation="horizontal" />
       </div>
-      <Button hierarchy="primary" ghost={true} onAction={selectFolder}>
+      <Button
+        hierarchy="primary"
+        ghost={true}
+        loading={loading()}
+        onClick={selectFolder}
+      >
         Select folder
       </Button>
     </div>
