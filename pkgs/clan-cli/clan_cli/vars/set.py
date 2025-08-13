@@ -13,7 +13,7 @@ from clan_lib.flake import Flake
 from clan_lib.git import commit_files
 from clan_lib.machines.machines import Machine
 
-from .generate import Var
+from .generator import Var
 from .prompt import ask
 
 log = logging.getLogger(__name__)

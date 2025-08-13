@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.vars._types import StoreBase
-from clan_cli.vars.generate import Generator, Var
+from clan_cli.vars.generator import Generator, Var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
