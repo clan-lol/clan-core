@@ -489,7 +489,7 @@ def _generate_vars_for_machine(
     generators: list[Generator],
     all_prompt_values: dict[str, dict[str, str]],
     no_sandbox: bool = False,
-) -> bool:
+) -> None:
     _ensure_healthy(machine=machine, generators=generators)
     for generator in generators:
         if check_can_migrate(machine, generator):
@@ -503,7 +503,6 @@ def _generate_vars_for_machine(
                 prompt_values=all_prompt_values.get(generator.name, {}),
                 no_sandbox=no_sandbox,
             )
-    return True
 
 
 @API.register
@@ -538,7 +537,7 @@ def run_generators(
     base_dir: Path,
     generators: list[str] | None = None,
     no_sandbox: bool = False,
-) -> bool:
+) -> None:
     """Run the specified generators for a machine.
     Args:
         machine_name (str): The name of the machine.
@@ -567,7 +566,7 @@ def run_generators(
             for g in Generator.get_machine_generators(machine_name, machine.flake)
             if g.name in generators_set
         ]
-    return _generate_vars_for_machine(
+    _generate_vars_for_machine(
         machine=machine,
         generators=generator_objects,
         all_prompt_values=all_prompt_values,
@@ -580,14 +579,14 @@ def create_machine_vars_interactive(
     generator_name: str | None,
     regenerate: bool,
     no_sandbox: bool = False,
-) -> bool:
+) -> None:
     generators = _get_closure(machine, generator_name, regenerate)
     if len(generators) == 0:
-        return False
+        return
     all_prompt_values = {}
     for generator in generators:
         all_prompt_values[generator.name] = _ask_prompts(generator)
-    return _generate_vars_for_machine(
+    _generate_vars_for_machine(
         machine,
         generators,
         all_prompt_values,
@@ -601,29 +600,25 @@ def generate_vars(
     regenerate: bool = False,
     no_sandbox: bool = False,
 ) -> None:
-    was_regenerated = False
     for machine in machines:
         errors = []
         try:
-            was_regenerated |= create_machine_vars_interactive(
+            create_machine_vars_interactive(
                 machine,
                 generator_name,
                 regenerate,
                 no_sandbox=no_sandbox,
             )
+            machine.info("All vars are up to date")
         except Exception as exc:
             errors += [(machine, exc)]
         if len(errors) == 1:
             raise errors[0][1]
         if len(errors) > 1:
-            msg = f"Failed to generate facts for {len(errors)} hosts:"
+            msg = f"Failed to generate vars for {len(errors)} hosts:"
             for machine, error in errors:
                 msg += f"\n{machine}: {error}"
             raise ClanError(msg) from errors[0][1]
-
-    if not was_regenerated and len(machines) > 0:
-        for machine in machines:
-            machine.info("All vars are already up to date")
 
 
 def generate_command(args: argparse.Namespace) -> None:
