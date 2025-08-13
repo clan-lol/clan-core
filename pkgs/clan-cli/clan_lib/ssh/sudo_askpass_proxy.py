@@ -8,21 +8,28 @@ import sys
 import termios
 import threading
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Protocol
 
 from clan_lib.cmd import terminate_process
 from clan_lib.errors import ClanError
-
-if TYPE_CHECKING:
-    from clan_lib.ssh.remote import Remote
 
 logger = logging.getLogger(__name__)
 
 remote_script = (Path(__file__).parent / "sudo_askpass_proxy.sh").read_text()
 
 
+class RemoteP(Protocol):
+    @property
+    def address(self) -> str: ...
+
+    @property
+    def target(self) -> str: ...
+
+    def ssh_cmd(self) -> list[str]: ...
+
+
 class SudoAskpassProxy:
-    def __init__(self, host: "Remote", prompt_command: list[str]) -> None:
+    def __init__(self, host: "RemoteP", prompt_command: list[str]) -> None:
         self.host = host
         self.password_prompt_command = prompt_command
         self.ssh_process: subprocess.Popen | None = None
