@@ -5,17 +5,15 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from clan_cli.vars.get import get_machine_var
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
+from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
-
-if TYPE_CHECKING:
-    from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
