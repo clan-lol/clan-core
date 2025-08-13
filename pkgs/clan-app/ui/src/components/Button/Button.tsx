@@ -22,7 +22,7 @@ export interface ButtonProps
   startIcon?: IconVariant;
   endIcon?: IconVariant;
   class?: string;
-  onAction?: Action;
+  loading?: boolean;
 }
 
 const iconSizes: Record<Size, string> = {
@@ -40,30 +40,11 @@ export const Button = (props: ButtonProps) => {
     "startIcon",
     "endIcon",
     "class",
-    "onAction",
+    "loading",
   ]);
 
   const size = local.size || "default";
   const hierarchy = local.hierarchy || "primary";
-
-  const [loading, setLoading] = createSignal(false);
-
-  const onClick = async () => {
-    if (!local.onAction) {
-      console.error("this should not be possible");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await local.onAction();
-    } catch (error) {
-      console.error("Error while executing action", error);
-    }
-
-    setLoading(false);
-  };
 
   const iconSize = iconSizes[local.size || "default"];
 
@@ -81,16 +62,19 @@ export const Button = (props: ButtonProps) => {
         hierarchy,
         {
           icon: local.icon,
-          loading: loading(),
+          loading: props.loading,
           ghost: local.ghost,
         },
       )}
-      onClick={local.onAction ? onClick : undefined}
+      onClick={props.onClick}
       {...other}
     >
       <Loader
         hierarchy={hierarchy}
-        class={cx({ [idleClass]: !loading(), [loadingClass]: loading() })}
+        class={cx({
+          [idleClass]: !props.loading,
+          [loadingClass]: props.loading,
+        })}
       />
 
       {local.startIcon && (
