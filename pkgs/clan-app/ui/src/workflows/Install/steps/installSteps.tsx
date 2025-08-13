@@ -198,22 +198,14 @@ const CheckHardware = () => {
                 hierarchy="secondary"
                 startIcon="Report"
                 onClick={handleUpdateSummary}
+                class="flex gap-3"
+                loading={hardwareQuery.isFetching}
               >
                 Update hardware report
               </Button>
             </Orienter>
             <Divider orientation="horizontal" />
-            <Show when={hardwareQuery.isLoading}>
-              <Typography
-                hierarchy="label"
-                size="s"
-                color="secondary"
-                class="flex gap-4 w-full justify-end items-center"
-              >
-                <Loader />
-                Loading
-              </Typography>
-            </Show>
+
             <Show when={hardwareQuery.data}>
               {(d) => (
                 <Alert
@@ -593,13 +585,16 @@ const InstallSummary = () => {
     <StepLayout
       body={
         <div class="flex flex-col gap-4">
-          <Fieldset legend="Address Configuration">
+          <Fieldset legend="Machine">
             <Orienter orientation="horizontal">
-              {/* TOOD: Display the values emited from previous steps */}
-              <Display label="Target" value="flash-installer.local" />
+              <Display label="Name" value={store.install.machineName} />
+            </Orienter>
+            <Divider orientation="horizontal" />
+            <Orienter orientation="horizontal">
+              <Display label="Address" value={store.install.targetHost} />
             </Orienter>
           </Fieldset>
-          <Fieldset legend="Disk Configuration">
+          <Fieldset legend="Disk">
             <Orienter orientation="horizontal">
               <Display label="Disk Schema" value="Single" />
             </Orienter>
