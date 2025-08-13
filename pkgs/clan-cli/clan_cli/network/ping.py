@@ -16,8 +16,8 @@ def ping_command(args: argparse.Namespace) -> None:
     networks = networks_from_flake(flake)
 
     if not networks:
-        print("No networks found in the flake")
-
+        print("No networks found")
+        return
     # If network is specified, only check that network
     if network_name:
         networks_to_check = [(network_name, networks[network_name])]

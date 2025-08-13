@@ -10,7 +10,6 @@ from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.vars._types import StoreBase
 
 from clan_lib.api import API
-from clan_lib.errors import ClanError
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
@@ -125,15 +124,10 @@ class Machine:
         return self.flake.path
 
     def target_host(self) -> Remote:
-        remote = get_machine_host(self.name, self.flake, field="targetHost")
-        if remote is None:
-            msg = f"'targetHost' is not set for machine '{self.name}'"
-            raise ClanError(
-                msg,
-                description="See https://docs.clan.lol/guides/getting-started/update/#setting-the-target-host for more information.",
-            )
-        data = remote.data
-        return data
+        from clan_lib.network.network import get_best_remote
+
+        with get_best_remote(self) as remote:
+            return remote
 
     def build_host(self) -> Remote | None:
         """

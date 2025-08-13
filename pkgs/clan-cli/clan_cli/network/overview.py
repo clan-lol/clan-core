@@ -16,6 +16,9 @@ def overview_command(args: argparse.Namespace) -> None:
         for peer_name, peer in network["peers"].items():
             print(f"\t{peer_name}: {'[OFFLINE]' if not peer else f'[{peer}]'}")
 
+    if not overview:
+        print("No networks found.")
+
 
 def register_overview_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=overview_command)

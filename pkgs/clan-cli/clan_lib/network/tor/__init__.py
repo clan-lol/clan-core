@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 from clan_lib.network import Network, NetworkTechnologyBase, Peer
 from clan_lib.network.tor.lib import is_tor_running, spawn_tor
+from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.socks_wrapper import tor_wrapper
 
 if TYPE_CHECKING:
     from clan_lib.ssh.remote import Remote
@@ -27,11 +29,9 @@ class NetworkTechnology(NetworkTechnologyBase):
         """Check if Tor is running by sending HTTP request to SOCKS port."""
         return is_tor_running(self.proxy)
 
-    def ping(self, peer: Peer) -> None | float:
+    def ping(self, remote: Remote) -> None | float:
         if self.is_running():
             try:
-                remote = self.remote(peer)
-
                 # Use the existing SSH reachability check
                 now = time.time()
                 remote.check_machine_ssh_reachable()
@@ -39,7 +39,7 @@ class NetworkTechnology(NetworkTechnologyBase):
                 return (time.time() - now) * 1000
 
             except ClanError as e:
-                log.debug(f"Error checking peer {peer.host}: {e}")
+                log.debug(f"Error checking peer {remote}: {e}")
                 return None
         return None
 
@@ -58,5 +58,5 @@ class NetworkTechnology(NetworkTechnologyBase):
             address=peer.host,
             command_prefix=peer.name,
             socks_port=self.proxy,
-            socks_wrapper=["torify"],
+            socks_wrapper=tor_wrapper,
         )

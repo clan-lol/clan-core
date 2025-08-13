@@ -18,6 +18,7 @@ from clan_lib.errors import ClanError, indent_command  # Assuming these are avai
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_ssh_uri
+from clan_lib.ssh.socks_wrapper import SocksWrapper
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ class Remote:
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
     socks_port: int | None = None
-    socks_wrapper: list[str] | None = None
+    socks_wrapper: SocksWrapper | None = None
 
     _control_path_dir: Path | None = None
     _askpass_path: str | None = None
@@ -63,7 +64,7 @@ class Remote:
         private_key: Path | None = None,
         password: str | None = None,
         socks_port: int | None = None,
-        socks_wrapper: list[str] | None = None,
+        socks_wrapper: SocksWrapper | None = None,
         command_prefix: str | None = None,
         port: int | None = None,
         ssh_options: dict[str, str] | None = None,

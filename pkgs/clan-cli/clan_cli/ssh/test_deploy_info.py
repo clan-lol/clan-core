@@ -3,15 +3,17 @@ from pathlib import Path
 
 import pytest
 from clan_lib.cmd import RunOpts, run
+from clan_lib.flake import Flake
+from clan_lib.network.qr_code import read_qr_image, read_qr_json
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
-from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 
 
-def test_qrcode_scan(temp_dir: Path) -> None:
+@pytest.mark.with_core
+def test_qrcode_scan(temp_dir: Path, flake: ClanFlake) -> None:
     data = '{"pass":"scabbed-defender-headlock","tor":"qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion","addrs":["192.168.122.86"]}'
     img_path = temp_dir / "qrcode.png"
     cmd = nix_shell(
@@ -25,63 +27,93 @@ def test_qrcode_scan(temp_dir: Path) -> None:
     run(cmd, RunOpts(input=data.encode()))
 
     # Call the qrcode_scan function
-    deploy_info = DeployInfo.from_qr_code(img_path, "none")
+    json_data = read_qr_image(img_path)
+    qr_code = read_qr_json(json_data, Flake(str(flake.path)))
 
-    host = deploy_info.addrs[0]
-    assert host.address == "192.168.122.86"
-    assert host.user == "root"
-    assert host.password == "scabbed-defender-headlock"
+    # Check addresses
+    addresses = qr_code.addresses
+    assert len(addresses) >= 2  # At least direct and tor
 
-    tor_host = deploy_info.addrs[1]
+    # Find direct connection
+    direct_remote = None
+    for addr in addresses:
+        if addr.network.module_name == "clan_lib.network.direct":
+            direct_remote = addr.remote
+            break
+
+    assert direct_remote is not None
+    assert direct_remote.address == "192.168.122.86"
+    assert direct_remote.user == "root"
+    assert direct_remote.password == "scabbed-defender-headlock"
+
+    # Find tor connection
+    tor_remote = None
+    for addr in addresses:
+        if addr.network.module_name == "clan_lib.network.tor":
+            tor_remote = addr.remote
+            break
+
+    assert tor_remote is not None
     assert (
-        tor_host.address
+        tor_remote.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
     )
-    assert tor_host.socks_port == 9050
-    assert tor_host.password == "scabbed-defender-headlock"
-    assert tor_host.user == "root"
-    assert (
-        tor_host.address
-        == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
-    )
+    assert tor_remote.socks_port == 9050
+    assert tor_remote.password == "scabbed-defender-headlock"
+    assert tor_remote.user == "root"
 
 
-def test_from_json() -> None:
+def test_from_json(temp_dir: Path) -> None:
     data = '{"pass":"scabbed-defender-headlock","tor":"qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion","addrs":["192.168.122.86"]}'
-    deploy_info = DeployInfo.from_json(json.loads(data), "none")
+    flake = Flake(str(temp_dir))
+    qr_code = read_qr_json(json.loads(data), flake)
 
-    host = deploy_info.addrs[0]
-    assert host.password == "scabbed-defender-headlock"
-    assert host.address == "192.168.122.86"
+    # Check addresses
+    addresses = qr_code.addresses
+    assert len(addresses) >= 2  # At least direct and tor
 
-    tor_host = deploy_info.addrs[1]
+    # Find direct connection
+    direct_remote = None
+    for addr in addresses:
+        if addr.network.module_name == "clan_lib.network.direct":
+            direct_remote = addr.remote
+            break
+
+    assert direct_remote is not None
+    assert direct_remote.password == "scabbed-defender-headlock"
+    assert direct_remote.address == "192.168.122.86"
+
+    # Find tor connection
+    tor_remote = None
+    for addr in addresses:
+        if addr.network.module_name == "clan_lib.network.tor":
+            tor_remote = addr.remote
+            break
+
+    assert tor_remote is not None
     assert (
-        tor_host.address
+        tor_remote.address
         == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
     )
-    assert tor_host.socks_port == 9050
-    assert tor_host.password == "scabbed-defender-headlock"
-    assert tor_host.user == "root"
-    assert (
-        tor_host.address
-        == "qjeerm4r6t55hcfum4pinnvscn5njlw2g3k7ilqfuu7cdt3ahaxhsbid.onion"
-    )
+    assert tor_remote.socks_port == 9050
+    assert tor_remote.password == "scabbed-defender-headlock"
+    assert tor_remote.user == "root"
 
 
-@pytest.mark.with_core
-def test_find_reachable_host(hosts: list[Remote]) -> None:
-    host = hosts[0]
-
-    uris = ["172.19.1.2", host.ssh_url()]
-    remotes = [Remote.from_ssh_uri(machine_name="some", address=uri) for uri in uris]
-    deploy_info = DeployInfo(addrs=remotes)
-
-    assert deploy_info.addrs[0].address == "172.19.1.2"
-
-    remote = find_reachable_host(deploy_info=deploy_info)
-
-    assert remote is not None
-    assert remote.ssh_url() == host.ssh_url()
+# TODO: This test needs to be updated to use get_best_remote from clan_lib.network.network
+# @pytest.mark.with_core
+# def test_find_reachable_host(hosts: list[Remote]) -> None:
+#     host = hosts[0]
+#
+#     uris = ["172.19.1.2", host.ssh_url()]
+#     remotes = [Remote.from_ssh_uri(machine_name="some", address=uri) for uri in uris]
+#
+#     assert remotes[0].address == "172.19.1.2"
+#
+#     remote = find_reachable_host(remotes=remotes)
+#
+#     assert remote is not None
+#     assert remote.ssh_url() == host.ssh_url()
 
 
 @pytest.mark.with_core

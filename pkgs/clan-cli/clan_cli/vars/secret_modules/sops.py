@@ -22,13 +22,13 @@ from clan_cli.secrets.secrets import (
     has_secret,
 )
 from clan_cli.secrets.sops import load_age_plugins
-from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator
 from clan_cli.vars.var import Var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
+from clan_lib.ssh.upload import upload
 
 
 @dataclass
