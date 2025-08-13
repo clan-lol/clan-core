@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -32,9 +31,6 @@ from .prompt import Prompt, ask
 from .var import Var
 
 log = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from clan_lib.flake import Flake
 
 
 @dataclass(frozen=True)
