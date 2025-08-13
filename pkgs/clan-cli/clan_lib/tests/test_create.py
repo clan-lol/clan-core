@@ -236,8 +236,7 @@ def test_clan_create_api(
         all_prompt_values[generator.name] = prompt_values
 
     run_generators(
-        machine_name=machine.name,
-        base_dir=machine.flake.path,
+        machine=machine,
         generators=[gen.name for gen in generators],
         all_prompt_values=all_prompt_values,
     )

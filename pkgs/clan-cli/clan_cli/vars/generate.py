@@ -23,6 +23,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
 from clan_lib.git import commit_files
 from clan_lib.machines.list import list_full_machines
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell, nix_test_store
 
 from .check import check_vars
@@ -34,7 +35,6 @@ log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
-    from clan_lib.machines.machines import Machine
 
 
 @dataclass(frozen=True)
@@ -429,7 +429,7 @@ def _get_previous_value(
 
 @API.register
 def get_generators(
-    machine: "Machine",
+    machine: Machine,
     full_closure: bool,
     generator_name: str | None = None,
     include_previous_values: bool = False,
@@ -525,9 +525,8 @@ def _generate_vars_for_machine(
 
 @API.register
 def run_generators(
-    machine_name: str,
+    machine: Machine,
     all_prompt_values: dict[str, dict[str, str]],
-    base_dir: Path,
     generators: list[str] | None = None,
     no_sandbox: bool = False,
 ) -> None:
@@ -545,18 +544,16 @@ def run_generators(
         ClanError: If the machine or generator is not found, or if there are issues with
         executing the generator.
     """
-    from clan_lib.machines.machines import Machine
 
-    machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
     if not generators:
         generator_objects = Generator.get_machine_generators(
-            machine_name, machine.flake
+            machine.name, machine.flake
         )
     else:
         generators_set = set(generators)
         generator_objects = [
             g
-            for g in Generator.get_machine_generators(machine_name, machine.flake)
+            for g in Generator.get_machine_generators(machine.name, machine.flake)
             if g.name in generators_set
         ]
     _generate_vars_for_machine(

@@ -699,8 +699,7 @@ def test_api_set_prompts(
     monkeypatch.chdir(flake.path)
 
     run_generators(
-        machine_name="my_machine",
-        base_dir=flake.path,
+        machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
         generators=["my_generator"],
         all_prompt_values={
             "my_generator": {
@@ -714,8 +713,7 @@ def test_api_set_prompts(
     assert store.exists(my_generator, "prompt1")
     assert store.get(my_generator, "prompt1").decode() == "input1"
     run_generators(
-        machine_name="my_machine",
-        base_dir=flake.path,
+        machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
         generators=["my_generator"],
         all_prompt_values={
             "my_generator": {

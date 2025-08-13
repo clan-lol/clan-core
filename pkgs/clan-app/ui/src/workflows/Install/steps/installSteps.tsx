@@ -548,8 +548,12 @@ const InstallSummary = () => {
 
     const runGenerators = client.fetch("run_generators", {
       all_prompt_values: store.install.promptValues,
-      base_dir: clanUri,
-      machine_name: store.install.machineName,
+      machine: {
+        name: store.install.machineName,
+        flake: {
+          identifier: clanUri,
+        },
+      },
     });
 
     set("install", (s) => ({

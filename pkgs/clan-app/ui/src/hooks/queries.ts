@@ -323,8 +323,8 @@ export const useMachineGenerators = (
           flake: {
             identifier: clanUri,
           },
-          full_closure: true, // TODO: Make this configurable
         },
+        full_closure: true, // TODO: Make this configurable
         // TODO: Make this configurable
         include_previous_values: true,
       });
