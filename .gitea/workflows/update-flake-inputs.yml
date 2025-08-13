@@ -19,8 +19,7 @@ jobs:
         uses: Mic92/update-flake-inputs-gitea@main
         with:
           # Exclude private flakes and update-clan-core checks flake
-
-          exclude-patterns: "devFlake/private/flake.nix,checks/impure/flake.nix"
+          exclude-patterns: "checks/impure/flake.nix"
           auto-merge: true
           gitea-token: ${{ secrets.CI_BOT_TOKEN }}
           github-token: ${{ secrets.CI_BOT_GITHUB_TOKEN }}
