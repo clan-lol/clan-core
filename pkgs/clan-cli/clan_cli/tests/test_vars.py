@@ -725,8 +725,9 @@ def test_api_set_prompts(
     )
     assert store.get(my_generator, "prompt1").decode() == "input2"
 
+    machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     generators = get_generators(
-        machine_name="my_machine", base_dir=flake.path, include_previous_values=True
+        machine=machine, full_closure=True, include_previous_values=True
     )
     # get_generators should bind the store
     assert generators[0].files[0]._store is not None

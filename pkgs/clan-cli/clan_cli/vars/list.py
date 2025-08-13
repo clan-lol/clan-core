@@ -1,6 +1,5 @@
 import argparse
 import logging
-from pathlib import Path
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.flake import Flake, require_flake
@@ -20,7 +19,7 @@ def get_machine_vars(base_dir: str, machine_name: str) -> list[Var]:
 
     all_vars = []
 
-    generators = get_generators(base_dir=Path(base_dir), machine_name=machine_name)
+    generators = get_generators(machine=machine, full_closure=True)
     for generator in generators:
         for var in generator.files:
             if var.secret:

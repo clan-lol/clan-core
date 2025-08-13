@@ -318,8 +318,13 @@ export const useMachineGenerators = (
     ],
     queryFn: async () => {
       const call = client.fetch("get_generators", {
-        base_dir: clanUri,
-        machine_name: machineName,
+        machine: {
+          name: machineName,
+          flake: {
+            identifier: clanUri,
+          },
+          full_closure: true, // TODO: Make this configurable
+        },
         // TODO: Make this configurable
         include_previous_values: true,
       });
