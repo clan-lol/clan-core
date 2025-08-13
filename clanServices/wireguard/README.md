@@ -8,6 +8,11 @@ The wireguard service creates a secure mesh network between clan machines using 
 - **Controllers**: Machines with public endpoints that act as connection points and routers
 - **Peers**: Machines that connect through controllers to access the network
 
+## Requirements
+
+- Controllers must have a publicly accessible endpoint (domain name or static IP)
+- Peers must be in networks where UDP traffic is not blocked (uses port 51820 by default, configurable)
+
 ## Features
 
 - Automatic IPv6 address allocation using ULA (Unique Local Address) prefixes
@@ -117,7 +122,7 @@ graph TB
 
   services.wireguard.laptop1 = {
     roles.peer = {
-      # Must specify which controller's subnet to use for IP allocation
+      # Must specify which controller subnet is exposed as the default in /etc/hosts, when multiple controllers exist
       controller = "server1";
     };
   };
@@ -210,8 +215,3 @@ clan machines update <machine-name>
 - Controllers must have publicly accessible endpoints
 - Firewall rules are automatically configured for the Wireguard ports
 
-## Requirements
-
-- Controllers must have a publicly accessible endpoint (domain name or static IP)
-- IPv6 support in the kernel (standard in modern systems)
-- UDP port access (default: 51820, configurable)
