@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from clan_lib.errors import ClanError
 
@@ -6,8 +8,8 @@ from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 
 
-@pytest.mark.impure
 def list_basic(
+    temporary_home: Path,
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
@@ -18,7 +20,6 @@ def list_basic(
     assert "vm2" in output.out
 
 
-@pytest.mark.impure
 @pytest.mark.parametrize(
     "test_flake_with_core",
     [
@@ -47,8 +48,8 @@ def list_basic(
     ],
     indirect=True,
 )
-@pytest.mark.impure
 def list_with_tags_single_tag(
+    temporary_home: Path,
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
@@ -70,7 +71,6 @@ def list_with_tags_single_tag(
     assert "dev-machine" not in output.out
 
 
-@pytest.mark.impure
 @pytest.mark.parametrize(
     "test_flake_with_core",
     [
@@ -99,8 +99,8 @@ def list_with_tags_single_tag(
     ],
     indirect=True,
 )
-@pytest.mark.impure
 def list_with_tags_multiple_tags_intersection(
+    temporary_home: Path,
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
@@ -145,7 +145,6 @@ def test_machines_list_with_tags_no_matches(
     assert output.out.strip() == ""
 
 
-@pytest.mark.impure
 @pytest.mark.parametrize(
     "test_flake_with_core",
     [
@@ -168,7 +167,6 @@ def test_machines_list_with_tags_no_matches(
     ],
     indirect=True,
 )
-@pytest.mark.impure
 def list_with_tags_various_scenarios(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
@@ -227,7 +225,6 @@ def list_with_tags_various_scenarios(
     assert "server4" not in output.out
 
 
-@pytest.mark.impure
 def created_machine_and_tags(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
@@ -302,7 +299,6 @@ def created_machine_and_tags(
     assert "vm2" not in output.out
 
 
-@pytest.mark.impure
 @pytest.mark.parametrize(
     "test_flake_with_core",
     [
@@ -319,7 +315,6 @@ def created_machine_and_tags(
     ],
     indirect=True,
 )
-@pytest.mark.impure
 def list_mixed_tagged_untagged(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
@@ -362,8 +357,11 @@ def list_mixed_tagged_untagged(
     assert output.out.strip() == ""
 
 
-def test_machines_list_require_flake_error() -> None:
+def test_machines_list_require_flake_error(
+    temporary_home: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that machines list command fails when flake is required but not provided."""
+    monkeypatch.chdir(temporary_home)
     with pytest.raises(ClanError) as exc_info:
         cli.run(["machines", "list"])
 
