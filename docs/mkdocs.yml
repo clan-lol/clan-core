@@ -100,6 +100,7 @@ nav:
               - reference/clanServices/garage.md
               - reference/clanServices/hello-world.md
               - reference/clanServices/importer.md
+              - reference/clanServices/matrix-synapse.md
               - reference/clanServices/mycelium.md
               - reference/clanServices/packages.md
               - reference/clanServices/sshd.md

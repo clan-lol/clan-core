@@ -99,7 +99,6 @@ in
             # Container Tests
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
             nixos-test-zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
-            nixos-test-matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
             nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
