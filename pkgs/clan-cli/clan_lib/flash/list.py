@@ -5,6 +5,7 @@ from typing import TypedDict
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.dirs import nixpkgs_source
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_build
 
@@ -28,7 +29,7 @@ def get_machine_flash_options() -> FlashOptions:
 
 
 def list_languages() -> list[str]:
-    cmd = nix_build(["nixpkgs#glibcLocales"])
+    cmd = nix_build([f"{nixpkgs_source()}#legacyPackages.x86_64-linux.glibcLocales"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find glibc locales"))
     locale_file = Path(result.stdout.strip()) / "share" / "i18n" / "SUPPORTED"
 
@@ -53,7 +54,7 @@ def list_languages() -> list[str]:
 
 
 def list_keymaps() -> list[str]:
-    cmd = nix_build(["nixpkgs#kbd"])
+    cmd = nix_build([f"{nixpkgs_source()}#legacyPackages.x86_64-linux.kbd"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find kbdinfo"))
     keymaps_dir = Path(result.stdout.strip()) / "share" / "keymaps"
 
