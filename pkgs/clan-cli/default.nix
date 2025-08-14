@@ -216,6 +216,10 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.xkcdpass
               pkgs.pass
               nix-select
+
+              # needed by flash list tests
+              nixpkgs.legacyPackages.x86_64-linux.kbd
+              nixpkgs.legacyPackages.x86_64-linux.glibcLocales
             ];
           };
         }
