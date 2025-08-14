@@ -1,0 +1,20 @@
+clanServices/.* @pinpox @kenji
+
+lib/test/container-test-driver/.* @DavHau @mic92
+lib/modules/inventory/.* @hsjobeki
+lib/modules/inventoryClass/.* @hsjobeki
+
+pkgs/clan-app/ui/.* @hsjobeki @brianmcgee
+pkgs/clan-app/clan_app/.* @qubasa @hsjobeki
+
+pkgs/clan-cli/clan_cli/.* @lassulus @mic92 @kenji
+pkgs/clan-cli/clan_cli/(secrets|vars)/.* @DavHau @lassulus
+
+pkgs/clan-cli/clan_lib/log_machines/.* @Qubasa
+pkgs/clan-cli/clan_lib/ssh/.* @Qubasa @Mic92 @lassulus
+pkgs/clan-cli/clan_lib/tags/.* @hsjobeki
+pkgs/clan-cli/clan_lib/persist/.* @hsjobeki
+pkgs/clan-cli/clan_lib/flake/.* @lassulus
+
+pkgs/clan-cli/api.py @hsjobeki
+pkgs/clan-cli/openapi.py @hsjobeki
