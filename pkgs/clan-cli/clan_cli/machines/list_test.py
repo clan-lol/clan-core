@@ -125,7 +125,7 @@ def list_with_tags_multiple_tags_intersection(
     assert "dev-machine" not in output.out
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_machines_list_with_tags_no_matches(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
