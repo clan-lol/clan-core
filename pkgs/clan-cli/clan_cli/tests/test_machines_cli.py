@@ -9,7 +9,7 @@ from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_machine_subcommands(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
@@ -65,7 +65,7 @@ def test_machine_subcommands(
     assert "vm2" in output.out
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_machines_update_with_tags(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
@@ -90,7 +90,7 @@ def test_machines_update_with_tags(
     assert args.tags == ["vm"]
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_machines_update_nonexistent_machine(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
 ) -> None:
@@ -115,7 +115,7 @@ def test_machines_update_nonexistent_machine(
     assert "Did you mean:" in error_message or "Available machines:" in error_message
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_machines_update_typo_in_machine_name(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
 ) -> None:
