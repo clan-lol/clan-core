@@ -1,10 +1,7 @@
-div.sidebar {
+.sidebar {
   @apply w-60 border-none z-10;
 
-  & > div.header {
-  }
-
-  & > div.body {
+  .body {
     @apply pt-4 pb-3 px-2;
   }
 }

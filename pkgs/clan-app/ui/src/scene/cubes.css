@@ -5,7 +5,7 @@
 }
 
 .toolbar-container {
-  @apply absolute bottom-8 z-10 w-full;
+  @apply absolute bottom-10 z-10 w-full;
   @apply flex justify-center items-center;
 }
 

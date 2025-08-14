@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TypedDict
 
 from clan_lib.api import API
@@ -23,6 +24,18 @@ class MachineFilter(TypedDict):
 
 class ListOptions(TypedDict):
     filter: MachineFilter
+
+
+class MachineStatus(StrEnum):
+    NOT_INSTALLED = "not_installed"
+    OFFLINE = "offline"
+    OUT_OF_SYNC = "out_of_sync"
+    ONLINE = "online"
+
+
+class MachineState(TypedDict):
+    status: MachineStatus
+    # add more info later when retrieving remote state
 
 
 @API.register
@@ -154,3 +167,47 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
         }
         for field in field_names
     }
+
+
+@API.register
+def list_machine_state(flake: Flake) -> dict[str, MachineState]:
+    """
+    Retrieve the current state of all machines in the clan.
+
+    Args:
+        flake (Flake): The flake object representing the configuration source.
+    """
+    inventory_store = InventoryStore(flake=flake)
+    inventory = inventory_store.read()
+
+    # todo integrate with remote state when implementing https://git.clan.lol/clan/clan-core/issues/4748
+    machines = inventory.get("machines", {})
+
+    return {
+        machine_name: MachineState(
+            status=MachineStatus.OFFLINE
+            if get_value_by_path(machine, "installedAt", None)
+            else MachineStatus.NOT_INSTALLED
+        )
+        for machine_name, machine in machines.items()
+    }
+
+
+@API.register
+def get_machine_state(machine: Machine) -> MachineState:
+    """
+    Retrieve the current state of the machine.
+
+    Args:
+        machine (Machine): The machine object for which we want to retrieve the latest state.
+    """
+    inventory_store = InventoryStore(flake=machine.flake)
+    inventory = inventory_store.read()
+
+    # todo integrate with remote state when implementing https://git.clan.lol/clan/clan-core/issues/4748
+
+    return MachineState(
+        status=MachineStatus.OFFLINE
+        if get_value_by_path(inventory, f"machines.{machine.name}.installedAt", None)
+        else MachineStatus.NOT_INSTALLED
+    )

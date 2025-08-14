@@ -72,6 +72,7 @@ class InventoryMachineDeploy(TypedDict):
 InventoryMachineDeployType = InventoryMachineDeploy
 InventoryMachineDescriptionType = str | None
 InventoryMachineIconType = str | None
+InventoryMachineInstalledatType = int | None
 InventoryMachineMachineclassType = Literal["nixos", "darwin"]
 InventoryMachineNameType = str
 InventoryMachineTagsType = list[str]
@@ -80,6 +81,7 @@ class InventoryMachine(TypedDict):
     deploy: NotRequired[InventoryMachineDeployType]
     description: NotRequired[InventoryMachineDescriptionType]
     icon: NotRequired[InventoryMachineIconType]
+    installedAt: NotRequired[InventoryMachineInstalledatType]
     machineClass: NotRequired[InventoryMachineMachineclassType]
     name: NotRequired[InventoryMachineNameType]
     tags: NotRequired[InventoryMachineTagsType]

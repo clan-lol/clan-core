@@ -1,24 +1,20 @@
-.fade-out {
+.fadeOut {
   opacity: 0;
   transition: opacity 0.5s ease;
 }
 
-.create-backdrop {
+.createBackdrop {
   @apply absolute top-0 left-0 w-full h-svh flex justify-center items-center backdrop-blur-0 z-50;
   -webkit-backdrop-filter: blur(4px);
 }
 
-.create-modal {
+.createModal {
   @apply min-w-96;
 }
 
-.sidebar-container {
-}
+.sidebar {
+  @apply absolute left-4 top-10 w-60;
+  @apply min-h-96;
 
-div.sidebar {
-  @apply absolute top-10 bottom-20 left-4 w-60;
-}
-
-div.sidebar-pane {
-  @apply absolute top-12 bottom-20 left-[16.5rem] w-64;
+  height: calc(100vh - 8rem);
 }

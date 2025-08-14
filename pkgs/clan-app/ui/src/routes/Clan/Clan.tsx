@@ -27,7 +27,7 @@ import { produce } from "solid-js/store";
 import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
 import cx from "classnames";
-import "./Clan.css";
+import styles from "./Clan.module.css";
 import { Modal } from "@/src/components/Modal/Modal";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
@@ -37,7 +37,7 @@ import { useNavigate } from "@solidjs/router";
 export const Clan: Component<RouteSectionProps> = (props) => {
   return (
     <>
-      <Sidebar />
+      <Sidebar class={cx(styles.sidebar)} />
       {props.children}
       <ClanSceneController {...props} />
     </>
@@ -59,7 +59,7 @@ const MockCreateMachine = (props: MockProps) => {
   const [form, { Form, Field, FieldArray }] = createForm<CreateFormValues>();
 
   return (
-    <div ref={(el) => (container = el)} class="create-backdrop">
+    <div ref={(el) => (container = el)} class={cx(styles.createBackdrop)}>
       <Modal
         open={true}
         mount={container!}
@@ -67,7 +67,7 @@ const MockCreateMachine = (props: MockProps) => {
           reset(form);
           props.onClose();
         }}
-        class="create-modal"
+        class={cx(styles.createModal)}
         title="Create Machine"
       >
         {() => (
@@ -234,7 +234,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
             </Button>
             <div
               class={cx({
-                "fade-out": !machinesQuery.isLoading && loadingCooldown(),
+                [styles.fadeOut]: !machinesQuery.isLoading && loadingCooldown(),
               })}
             >
               <Splash />

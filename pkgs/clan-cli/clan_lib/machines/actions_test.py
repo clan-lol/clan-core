@@ -1,3 +1,4 @@
+import time
 from collections.abc import Callable
 from typing import cast
 from unittest.mock import ANY, patch
@@ -12,7 +13,16 @@ from clan_lib.nix_models.clan import Clan, InventoryMachine, Unknown
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import get_value_by_path, set_value_by_path
 
-from .actions import get_machine, get_machine_fields_schema, list_machines, set_machine
+from .actions import (
+    MachineState,
+    MachineStatus,
+    get_machine,
+    get_machine_fields_schema,
+    get_machine_state,
+    list_machine_state,
+    list_machines,
+    set_machine,
+)
 
 
 @pytest.mark.with_core
@@ -219,7 +229,44 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
         "deploy.buildHost",
         "description",
         "icon",
+        "installedAt",
     }
     assert read_only_fields == {"machineClass", "name"}
 
     assert write_info["tags"]["readonly_members"] == ["nix1", "all", "nixos"]
+
+
+@pytest.mark.with_core
+def test_machine_state(clan_flake: Callable[..., Flake]) -> None:
+    now = int(time.time())
+    yesterday = now - 86400
+    last_week = now - 604800
+
+    flake = clan_flake(
+        # clan.nix, cannot be changed
+        clan={
+            "inventory": {
+                "machines": {
+                    "jon": {},
+                    "sara": {"installedAt": yesterday},
+                    "bob": {"installedAt": last_week},
+                },
+            }
+        },
+    )
+
+    assert list_machine_state(flake) == {
+        "jon": MachineState(status=MachineStatus.NOT_INSTALLED),
+        "sara": MachineState(status=MachineStatus.OFFLINE),
+        "bob": MachineState(status=MachineStatus.OFFLINE),
+    }
+
+    assert get_machine_state(Machine("jon", flake)) == MachineState(
+        status=MachineStatus.NOT_INSTALLED
+    )
+    assert get_machine_state(Machine("sara", flake)) == MachineState(
+        status=MachineStatus.OFFLINE
+    )
+    assert get_machine_state(Machine("bob", flake)) == MachineState(
+        status=MachineStatus.OFFLINE
+    )

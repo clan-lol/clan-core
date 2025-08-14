@@ -1,0 +1,3 @@
+.install {
+  @apply flex flex-col gap-4 w-full justify-center items-center;
+}

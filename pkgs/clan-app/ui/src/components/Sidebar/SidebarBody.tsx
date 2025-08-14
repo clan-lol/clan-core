@@ -6,47 +6,53 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { For } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
-import { useMachinesQuery } from "@/src/hooks/queries";
+import { useMachinesQuery, useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
 
 interface MachineProps {
   clanURI: string;
   machineID: string;
   name: string;
-  status: MachineStatus;
   serviceCount: number;
 }
 
-const MachineRoute = (props: MachineProps) => (
-  <A href={buildMachinePath(props.clanURI, props.machineID)}>
-    <div class="flex w-full flex-col gap-2">
-      <div class="flex flex-row items-center justify-between">
-        <Typography
-          hierarchy="label"
-          size="xs"
-          weight="bold"
-          color="primary"
-          inverted={true}
-        >
-          {props.name}
-        </Typography>
-        <MachineStatus status={props.status} />
+const MachineRoute = (props: MachineProps) => {
+  const statusQuery = useMachineStateQuery(props.clanURI, props.machineID);
+
+  const status = () =>
+    statusQuery.isSuccess ? statusQuery.data.status : undefined;
+
+  return (
+    <A href={buildMachinePath(props.clanURI, props.machineID)}>
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <Typography
+            hierarchy="label"
+            size="xs"
+            weight="bold"
+            color="primary"
+            inverted={true}
+          >
+            {props.name}
+          </Typography>
+          <MachineStatus status={status()} />
+        </div>
+        <div class="flex w-full flex-row items-center gap-1">
+          <Icon icon="Flash" size="0.75rem" inverted={true} color="tertiary" />
+          <Typography
+            hierarchy="label"
+            family="mono"
+            size="s"
+            inverted={true}
+            color="primary"
+          >
+            {props.serviceCount}
+          </Typography>
+        </div>
       </div>
-      <div class="flex w-full flex-row items-center gap-1">
-        <Icon icon="Flash" size="0.75rem" inverted={true} color="tertiary" />
-        <Typography
-          hierarchy="label"
-          family="mono"
-          size="s"
-          inverted={true}
-          color="primary"
-        >
-          {props.serviceCount}
-        </Typography>
-      </div>
-    </div>
-  </A>
-);
+    </A>
+  );
+};
 
 export const SidebarBody = (props: SidebarProps) => {
   const clanURI = useClanURI();
@@ -96,7 +102,6 @@ export const SidebarBody = (props: SidebarProps) => {
                     clanURI={clanURI}
                     machineID={id}
                     name={machine.name || id}
-                    status="Not Installed"
                     serviceCount={0}
                   />
                 )}
