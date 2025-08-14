@@ -64,15 +64,70 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
-              label: "Gritty Name",
+              label: "(1) Name",
               group: "User",
+              required: true,
+            },
+          },
+          {
+            name: "gritty.foo",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "(2) Password",
+              group: "Root",
+              required: true,
+            },
+          },
+          {
+            name: "gritty.bar",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "(3) Gritty",
+              group: "Root",
+              required: true,
+            },
+          },
+        ],
+      },
+      {
+        name: "funny.dodo",
+        prompts: [
+          {
+            name: "gritty.name",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "(4) Name",
+              group: "User",
+              required: true,
+            },
+          },
+          {
+            name: "gritty.foo",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "(5) Password",
+              group: "Lonely",
+              required: true,
+            },
+          },
+          {
+            name: "gritty.bar",
+            description: "Name of the gritty",
+            prompt_type: "line",
+            display: {
+              label: "(6) Batty",
+              group: "Root",
               required: true,
             },
           },
         ],
       },
     ],
-    run_generators: null,
+    run_generators: true,
     get_machine_hardware_summary: {
       hardware_config: "nixos-facter",
     },
