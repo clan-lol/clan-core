@@ -111,6 +111,8 @@ in
             "dont-depend-on-repo-root"
           ];
 
+          # Temporary workaround: Filter out docs package and devshell for aarch64-darwin due to CI builder hangs
+          # TODO: Remove this filter once macOS CI builder is updated
           flakeOutputs =
             lib.mapAttrs' (
               name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
@@ -118,8 +120,18 @@ in
             // lib.mapAttrs' (
               name: config: lib.nameValuePair "darwin-${name}" config.config.system.build.toplevel
             ) (self.darwinConfigurations or { })
-            // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") packagesToBuild
-            // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells
+            // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") (
+              if system == "aarch64-darwin" then
+                lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs" && n != "docs-options") packagesToBuild
+              else
+                packagesToBuild
+            )
+            // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") (
+              if system == "aarch64-darwin" then
+                lib.filterAttrs (n: _: n != "docs") self'.devShells
+              else
+                self'.devShells
+            )
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
               self'.legacyPackages.homeConfigurations or { }
             );
