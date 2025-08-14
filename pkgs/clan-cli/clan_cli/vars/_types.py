@@ -10,7 +10,7 @@ from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 
 if TYPE_CHECKING:
-    from .generate import Generator, Var
+    from .generator import Generator, Var
 
 log = logging.getLogger(__name__)
 

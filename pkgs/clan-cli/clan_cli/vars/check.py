@@ -8,7 +8,7 @@ from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
 
 if TYPE_CHECKING:
-    from .generate import Var
+    from .generator import Var
 
 log = logging.getLogger(__name__)
 

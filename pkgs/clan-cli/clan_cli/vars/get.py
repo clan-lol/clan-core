@@ -10,7 +10,7 @@ from clan_cli.completions import (
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
 
-from .generate import Var
+from .generator import Var
 from .list import get_machine_vars
 
 log = logging.getLogger(__name__)
