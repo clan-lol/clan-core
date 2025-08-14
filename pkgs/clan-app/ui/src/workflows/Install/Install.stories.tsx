@@ -127,7 +127,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
         ],
       },
     ],
-    run_generators: true,
+    run_generators: null,
     get_machine_hardware_summary: {
       hardware_config: "nixos-facter",
     },
