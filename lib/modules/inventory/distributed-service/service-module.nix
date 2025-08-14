@@ -3,6 +3,7 @@
   config,
   _ctx,
   directory,
+  exports,
   ...
 }:
 let
@@ -464,7 +465,7 @@ in
                           roles = applySettings instanceName config.instances.${instanceName};
                         in
                         {
-                          inherit instanceName roles;
+                          inherit instanceName roles exports;
                           machine = {
                             name = machineName;
                             roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
@@ -608,6 +609,7 @@ in
                 in
                 uniqueStrings (collectRoles machineScope.instances);
             };
+            inherit exports;
             inherit (machineScope) instances;
 
             # There are no machine settings.
