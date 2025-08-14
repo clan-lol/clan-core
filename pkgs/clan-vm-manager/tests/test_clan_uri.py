@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_lib.flake import Flake
 from clan_vm_manager.clan_uri import ClanURI
@@ -21,7 +20,6 @@ def test_get_url() -> None:
     assert uri.get_url() == "file:///home/user/Downloads"
 
 
-@pytest.mark.impure
 def test_is_local(flake: ClanFlake) -> None:
     uri = ClanURI.from_str(f"clan://git+file://{flake.path}")
     assert uri.get_url() == str(flake.path)
