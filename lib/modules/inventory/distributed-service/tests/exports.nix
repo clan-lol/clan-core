@@ -24,7 +24,7 @@ let
     machines.sara = { };
     # A module that adds exports perMachine
     modules.A =
-      { exports', ... }:
+      { exports, ... }:
       {
         manifest.name = "A";
         roles.peer.perInstance =
@@ -32,10 +32,10 @@ let
           {
             # Cross reference a perMachine exports
             exports.vars.generators."${machine.name}-network-ip".script =
-              "A:" + exports'.machines.${machine.name}.vars.generators.key.script;
+              "A:" + exports.machines.${machine.name}.vars.generators.key.script;
             # Cross reference a perInstance exports from a different service
             exports.vars.generators."${machine.name}-full-hostname".script =
-              "A:" + exports'.instances."B-1".vars.generators.hostname.script;
+              "A:" + exports.instances."B-1".vars.generators.hostname.script;
           };
         roles.server = { };
         perMachine =

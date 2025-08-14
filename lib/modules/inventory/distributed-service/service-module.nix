@@ -635,10 +635,10 @@ in
         This services exports.
         Gets merged with all other services exports
 
-        Final value (merged and evaluated with other services) available as `exports'` in the arguments of this module.
+        Final value (merged and evaluated with other services) available as `exports` in the arguments of this module.
 
         ```nix
-        { exports', ... }: {
+        { exports, ... }: {
           _class = "clan.service";
           # ...
         }
