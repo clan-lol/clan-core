@@ -103,6 +103,7 @@ nav:
               - reference/clanServices/localbackup.md
               - reference/clanServices/matrix-synapse.md
               - reference/clanServices/mycelium.md
+              - reference/clanServices/monitoring.md
               - reference/clanServices/packages.md
               - reference/clanServices/sshd.md
               - reference/clanServices/state-version.md
