@@ -4,7 +4,6 @@ import {
   createSignal,
   Match,
   Setter,
-  Show,
   Switch,
 } from "solid-js";
 import { RouteSectionProps, useNavigate } from "@solidjs/router";
@@ -22,7 +21,6 @@ import {
   FormStore,
   getError,
   getErrors,
-  getValue,
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
@@ -62,33 +60,7 @@ const background = (props: { state: State; form: FormStore<SetupForm> }) => (
     <div class="layer-1" />
     <div class="layer-2" />
     <div class="layer-3" />
-    <Logo variant="Darknet" inverted={true} />
     <Logo variant="Clan" inverted={true} />
-    <Show when={props.state === "setup"}>
-      <div class="darknet-info">
-        <Typography
-          class="darknet-label"
-          hierarchy="label"
-          family="mono"
-          size="default"
-          color="inherit"
-          weight="medium"
-          inverted={true}
-        >
-          Your Darknet:
-        </Typography>
-        <Typography
-          class="darknet-name"
-          hierarchy="teaser"
-          size="default"
-          color="inherit"
-          weight="medium"
-          inverted={true}
-        >
-          {getValue(props.form, "name")}
-        </Typography>
-      </div>
-    </Show>
   </div>
 );
 
@@ -117,8 +89,9 @@ const welcome = (props: {
         align="center"
         inverted={true}
       >
-        Build your <br />
-        own darknet
+        Build your own
+        <br />
+        Clan
       </Typography>
       {props.welcomeError() && (
         <Alert

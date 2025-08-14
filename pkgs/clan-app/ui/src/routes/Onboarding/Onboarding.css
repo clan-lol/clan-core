@@ -29,27 +29,9 @@ main#welcome {
       @apply absolute top-0 left-0 w-full h-full;
     }
 
-    svg[data-logo-name="Darknet"] {
-      @apply w-52;
-      @apply absolute top-28 left-1/2 transform -translate-x-1/2;
-    }
-
     svg[data-logo-name="Clan"] {
       @apply w-16;
       @apply absolute bottom-28 left-1/2 transform -translate-x-1/2;
-    }
-
-    div.darknet-info {
-      @apply absolute bottom-[6.5rem] left-12;
-      @apply flex flex-col gap-y-2;
-
-      span.darknet-label {
-        color: theme(colors.off.darknet_label);
-      }
-
-      span.darknet-name {
-        color: theme(colors.off.darknet_name);
-      }
     }
   }
 

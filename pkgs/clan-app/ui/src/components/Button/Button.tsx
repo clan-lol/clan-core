@@ -1,4 +1,4 @@
-import { splitProps, type JSX, createSignal } from "solid-js";
+import { splitProps, type JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "../Typography/Typography";
 import { Button as KobalteButton } from "@kobalte/core/button";

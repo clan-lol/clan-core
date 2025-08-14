@@ -1,5 +1,4 @@
 import Clan from "@/logos/clan.svg";
-import Darknet from "@/logos/darknet.svg";
 import { Dynamic } from "solid-js/web";
 import { Color, fgClass } from "@/src/components/colors";
 import { JSX, splitProps } from "solid-js";
@@ -7,7 +6,6 @@ import cx from "classnames";
 
 const logos = {
   Clan,
-  Darknet,
 };
 
 export type LogoVariant = keyof typeof logos;
