@@ -635,14 +635,23 @@ in
     exports = mkOption {
       description = ''
         This services exports.
-        Gets merged with all other services exports
+        Gets merged with all other services exports.
 
-        Final value (merged and evaluated with other services) available as `exports` in the arguments of this module.
+        Exports are used to share and expose information between instances.
+
+        Define exports in the [`perInstance`](#perInstance) or [`perMachine`](#perMachine) scope.
+
+        Accessing the exports:
 
         ```nix
         { exports, ... }: {
           _class = "clan.service";
+
           # ...
+          roles.peer.perInstance = { exports, ...}: { ...};
+
+          # ...
+          perMachine = { exports, ...}: { ...};
         }
         ```
       '';
