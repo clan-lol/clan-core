@@ -21,5 +21,9 @@ jobs:
           # Exclude private flakes and update-clan-core checks flake
           exclude-patterns: "checks/impure/flake.nix"
           auto-merge: true
+          git-author-name: "clan-bot"
+          git-committer-name: "clan-bot"
+          git-author-email: "clan-bot@clan.lol"
+          git-committer-email: "clan-bot@clan.lol"
           gitea-token: ${{ secrets.CI_BOT_TOKEN }}
           github-token: ${{ secrets.CI_BOT_GITHUB_TOKEN }}
