@@ -158,8 +158,6 @@ in
   };
 
   config = {
-    inventory.modules = clan-core.clanModules;
-    inventory._legacyModules = clan-core.clanModules;
     inventory.meta = config.meta;
 
     outputs.moduleForMachine = lib.mkMerge [
@@ -266,7 +264,6 @@ in
 
       # TODO: unify this interface
       # We should have only clan.modules. (consistent with clan.templates)
-      inherit (clan-core) clanModules;
 
       # Statically export the predefined clan modules
       templates = clan-core.clan.templates;

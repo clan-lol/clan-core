@@ -32,7 +32,7 @@ let
     let
       inventory = evalInventory inventoryModule;
       flakeInputsFixture = {
-        self.clan.modules = inventory.modules;
+        self.clan.modules = inventoryModule.modules or { };
         # Example upstream module
         upstream.clan.modules = {
           uzzi = {
@@ -167,7 +167,7 @@ in
         instances."instance_zaza" = {
           module = {
             name = "B";
-            input = "self";
+            input = null;
           };
         };
       };
@@ -193,7 +193,7 @@ in
           _class = "clan.service";
           manifest = {
             name = "network";
-            input = "self";
+            input = null;
           };
           # Define a role without special behavior
           roles.peer = { };
@@ -222,7 +222,7 @@ in
         instances."instance_zaza" = {
           module = {
             name = "B";
-            input = "self";
+            input = null;
           };
           roles.peer.tags.all = { };
         };
@@ -274,7 +274,7 @@ in
         instances."instance_zaza" = {
           module = {
             name = "B";
-            input = "self";
+            input = null;
           };
           roles.peer.tags.all = { };
         };

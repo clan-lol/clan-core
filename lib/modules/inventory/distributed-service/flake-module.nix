@@ -21,7 +21,6 @@ in
           ../../../../flakeModules
           ../../../../lib
           ../../../../nixosModules/clanCore
-          ../../../../clanModules/borgbackup
           ../../../../machines
           ../../../../inventory.json
         ];
