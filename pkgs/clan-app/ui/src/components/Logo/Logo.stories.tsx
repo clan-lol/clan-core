@@ -3,7 +3,7 @@ import { Component, For } from "solid-js";
 import { Logo, LogoProps, LogoVariant } from "./Logo";
 import cx from "classnames";
 
-const variants: LogoVariant[] = ["Clan", "Darknet"];
+const variants: LogoVariant[] = ["Clan"];
 
 const LogoExamples: Component<LogoProps> = (props) => (
   <div class="grid grid-cols-6 items-center gap-4">

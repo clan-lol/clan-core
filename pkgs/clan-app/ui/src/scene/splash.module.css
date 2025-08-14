@@ -10,9 +10,7 @@
 }
 
 .splash_content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  @apply flex flex-col items-center gap-2;
 }
 
 .splash_title {

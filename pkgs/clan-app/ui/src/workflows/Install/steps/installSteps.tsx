@@ -30,7 +30,6 @@ import {
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
-import { Loader } from "@/src/components/Loader/Loader";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
