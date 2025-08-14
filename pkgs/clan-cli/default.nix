@@ -17,6 +17,8 @@
   pythonRuntime,
   setupNixInNix,
   templateDerivation,
+  zerotierone,
+  minifakeroot,
 }:
 let
   pyDeps = ps: [
@@ -215,7 +217,10 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.mkpasswd
               pkgs.xkcdpass
               pkgs.pass
+              zerotierone
+              minifakeroot
               nix-select
+              ../../nixosModules/clanCore/zerotier/generate.py
 
               # needed by flash list tests
               nixpkgs.legacyPackages.x86_64-linux.kbd

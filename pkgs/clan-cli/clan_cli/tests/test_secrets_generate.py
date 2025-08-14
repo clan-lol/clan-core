@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .age_keys import KeyPair
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_generate_secret(
     monkeypatch: pytest.MonkeyPatch,
     test_flake_with_core: FlakeForTest,
