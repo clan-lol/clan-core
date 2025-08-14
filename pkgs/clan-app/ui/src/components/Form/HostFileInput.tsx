@@ -101,6 +101,11 @@ export const HostFileInput = (props: HostFileInputProps) => {
             </Tooltip.Portal>
             <Tooltip.Trigger
               as={Button}
+              class={cx(
+                props.orientation === "vertical"
+                  ? styles.vertical_button
+                  : styles.horizontal_button,
+              )}
               hierarchy="secondary"
               size={props.size}
               startIcon="Folder"
