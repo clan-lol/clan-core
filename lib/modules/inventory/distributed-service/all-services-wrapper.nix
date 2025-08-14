@@ -32,7 +32,7 @@ in
               { name, ... }:
               {
                 _module.args._ctx = [ name ];
-                _module.args.exports' = config.exports;
+                _module.args.exports = config.exports;
                 _module.args.directory = directory;
 
               }
