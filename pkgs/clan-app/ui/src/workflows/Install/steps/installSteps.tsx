@@ -60,6 +60,7 @@ const ConfigureAddress = () => {
   });
 
   const [isReachable, setIsReachable] = createSignal<string | null>(null);
+  const [loading, setLoading] = createSignal<boolean>(false);
 
   const client = useApiClient();
   // TODO: push values to the parent form Store
@@ -80,12 +81,15 @@ const ConfigureAddress = () => {
       return;
     }
 
+    setLoading(true);
     const call = client.fetch("check_machine_ssh_login", {
       remote: {
         address,
       },
     });
     const result = await call.result;
+    setLoading(false);
+
     console.log("SSH login check result:", result);
     if (result.status === "success") {
       setIsReachable(address);
@@ -118,28 +122,28 @@ const ConfigureAddress = () => {
                 )}
               </Field>
             </Fieldset>
-            <Button
-              disabled={!getValue(formStore, "targetHost")}
-              endIcon="ArrowRight"
-              onClick={tryReachable}
-              hierarchy="secondary"
-            >
-              Test Connection
-            </Button>
           </div>
         }
         footer={
           <div class="flex justify-between">
             <BackButton />
-            <NextButton
-              type="submit"
-              disabled={
+
+            <Show
+              when={
                 !isReachable() ||
                 isReachable() !== getValue(formStore, "targetHost")
               }
+              fallback={<NextButton type="submit">Next</NextButton>}
             >
-              Next
-            </NextButton>
+              <Button
+                endIcon="ArrowRight"
+                onClick={tryReachable}
+                hierarchy="secondary"
+                loading={loading()}
+              >
+                Test Connection
+              </Button>
+            </Show>
           </div>
         }
       />
@@ -435,7 +439,7 @@ const PromptsFields = (props: PromptsFieldsProps) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit} class="h-full">
+    <Form onSubmit={handleSubmit}>
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -580,7 +584,7 @@ const InstallSummary = () => {
       progress: runInstall,
     }));
 
-    await runInstall.result; // Wait for the installation to finish
+    await runInstall.result;
 
     stepSignal.setActiveStep("install:done");
   };
@@ -645,8 +649,13 @@ const InstallProgress = () => {
   );
 
   return (
-    <div class="flex size-full flex-col items-center justify-center bg-inv-4">
-      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
+    <div class="relative flex size-full flex-col items-center justify-center bg-inv-4">
+      <img
+        src="/logos/usb-stick-min.png"
+        alt="usb logo"
+        class="absolute z-0 top-2"
+      />
+      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1 z-10">
         <Typography
           hierarchy="title"
           size="default"
@@ -655,10 +664,11 @@ const InstallProgress = () => {
         >
           Machine is beeing installed
         </Typography>
+        <LoadingBar />
         <Typography
           hierarchy="label"
           size="default"
-          class="py-2"
+          class=""
           color="secondary"
           inverted
         >
@@ -694,10 +704,9 @@ const InstallProgress = () => {
             </Match>
           </Switch>
         </Typography>
-        <LoadingBar />
         <Button
           hierarchy="primary"
-          class="w-fit"
+          class="w-fit mt-3"
           size="s"
           onClick={handleCancel}
         >

@@ -19,6 +19,7 @@ import Icon from "@/src/components/Icon/Icon";
 import { useSystemStorageOptions } from "@/src/hooks/queries";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { onMount } from "solid-js";
+import cx from "classnames";
 
 const Prose = () => (
   <StepLayout
@@ -272,6 +273,7 @@ const ChooseDisk = () => {
                 )}
               </Field>
               <Alert
+                transparent
                 type="error"
                 icon="Info"
                 title="You're about to format this drive"
@@ -314,8 +316,17 @@ const FlashProgress = () => {
   };
 
   return (
-    <div class="flex size-full flex-col items-center justify-center bg-inv-4">
-      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
+    <div
+      class={cx(
+        "relative flex size-full flex-col items-center justify-center bg-inv-4",
+      )}
+    >
+      <img
+        src="/logos/usb-stick-min.png"
+        alt="usb logo"
+        class="absolute z-0 top-2"
+      />
+      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1 z-10">
         <Typography
           hierarchy="title"
           size="default"
@@ -327,7 +338,7 @@ const FlashProgress = () => {
         <LoadingBar />
         <Button
           hierarchy="primary"
-          class="w-fit"
+          class="w-fit mt-3"
           size="s"
           onClick={handleCancel}
         >
