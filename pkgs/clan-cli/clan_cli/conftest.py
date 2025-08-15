@@ -11,5 +11,4 @@ pytest_plugins = [
     "clan_cli.tests.runtime",
     "clan_cli.tests.fixtures_flakes",
     "clan_cli.tests.stdout",
-    "clan_cli.tests.nix_config",
 ]

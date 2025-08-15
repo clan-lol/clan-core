@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 no_kvm = not Path("/dev/kvm").exists()
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_inspect(
     test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
 ) -> None:
