@@ -268,8 +268,14 @@ class Machine:
         )
 
     def nsenter_command(self, command: str) -> list[str]:
+        nsenter = shutil.which("nsenter")
+
+        if not nsenter:
+            msg = "nsenter command not found"
+            raise RuntimeError(msg)
+
         return [
-            "nsenter",
+            nsenter,
             "--target",
             str(self.container_pid),
             "--mount",
@@ -326,6 +332,7 @@ class Machine:
 
         return subprocess.run(
             self.nsenter_command(command),
+            env={},
             timeout=timeout,
             check=False,
             stdout=subprocess.PIPE,
