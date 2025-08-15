@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     pass
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_flakes_inspect(
     test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
 ) -> None:
