@@ -241,7 +241,7 @@
                   target.shutdown()
               except BrokenPipeError:
                   # qemu has already exited
-                  pass
+                  target.connected = False
 
               # Create a new machine instance that boots from the installed system
               installed_machine = create_test_machine(target, "${pkgs.qemu_test}", name="after_install")
