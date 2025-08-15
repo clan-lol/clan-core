@@ -40,7 +40,7 @@
         jobs=$(nproc)
         # Spawning worker in pytest is relatively slow, so we limit the number of jobs to 13
         # (current number of impure tests)
-        jobs="$((jobs > 13 ? 13 : jobs))"
+        jobs="$((jobs > 6 ? 6 : jobs))"
 
         nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -n $jobs -m impure ./clan_cli $@"
 

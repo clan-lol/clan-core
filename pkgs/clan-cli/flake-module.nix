@@ -23,6 +23,8 @@
             "flake.lock"
             "templates"
             "clanServices"
+            "pkgs/zerotierone"
+            "pkgs/minifakeroot"
           ];
         };
       };
@@ -44,6 +46,7 @@
         clan-cli = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
           inherit (self.legacyPackages.${system}) setupNixInNix;
+          inherit (self'.packages) zerotierone minifakeroot;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -55,6 +58,7 @@
         clan-cli-full = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
           inherit (self.legacyPackages.${system}) setupNixInNix;
+          inherit (self'.packages) zerotierone minifakeroot;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
