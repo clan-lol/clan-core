@@ -16,7 +16,7 @@ from clan_lib.cmd import CmdOut, Log, RunOpts, handle_io, run
 from clan_lib.dirs import module_root, user_cache_dir, vm_state_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_shell
+from clan_lib.nix import nix_shell, nix_test_store
 from clan_lib.vars.generate import run_generators
 
 from clan_cli.completions import add_dynamic_completer, complete_machines

@@ -5,6 +5,8 @@
   ...
 }:
 {
+  imports = [ ./clan_cli/tests/flake-module.nix ];
+
   perSystem =
     {
       self',
@@ -55,6 +57,7 @@
             "age"
             "git"
           ];
+          inherit (self) nixosConfigurations;
         };
         clan-cli-full = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
@@ -64,6 +67,7 @@
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           includedRuntimeDeps = lib.importJSON ./clan_lib/nix/allowed-packages.json;
+          inherit (self) nixosConfigurations;
         };
         clan-cli-docs = pkgs.stdenv.mkDerivation {
           name = "clan-cli-docs";
