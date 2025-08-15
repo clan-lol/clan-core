@@ -40,6 +40,7 @@ writeShellScriptBin "deploy-docs" ''
 
   rsync \
     --checksum \
+    --delete \
     -e "ssh -o StrictHostKeyChecking=no $sshExtraArgs" \
     -a ${docs}/ \
     www@clan.lol:/var/www/docs.clan.lol
