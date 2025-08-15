@@ -153,30 +153,35 @@ class ClanSelectError(ClanError):
         flake_identifier: str,
         selectors: list[str],
         cmd_error: ClanCmdError | None = None,
+        description: str | None = None,
     ) -> None:
         attribute = None
-        if cmd_error:
-            attribute_match = re.search(r"error: attribute '([^']+)'", str(cmd_error))
-            attribute = attribute_match.group(1) if attribute_match else None
+        if cmd_error and description is None:
+            # Match for "error: <rest of error>"
+            error_match = re.search(r"error: (.+)", str(cmd_error))
+            if error_match:
+                description = error_match.group(1).strip()
         if selectors == []:
             msg = "failed to select []\n"
-        if len(selectors) == 1:
-            msg = f"failed to select {selectors[0]}\n"
+        elif len(selectors) == 1:
+            msg = f"Error on: $ clan select '{selectors[0]}'\n"
         else:
-            msg = f"failed to select: {'\n'.join(selectors)}\n"
-        msg += f" from {flake_identifier}\n"
-        if attribute:
-            msg += f" '{attribute}' is missing\n"
+            msg = "Error while executing:"
+            for selector in selectors:
+                msg += f"$ clan select '{selector}'\n"
+
         self.selectors = selectors
         self.failed_attr = attribute
         self.flake_identifier = flake_identifier
-        super().__init__(msg)
+        super().__init__(msg, description=description, location=flake_identifier)
 
     def __str__(self) -> str:
+        if self.description:
+            return f"{self.msg}  Reason: {self.description}"
         return self.msg
 
     def __repr__(self) -> str:
-        return f"ClanSelectError({self.failed_attr})"
+        return f"ClanSelectError({self})"
 
 
 def selectors_as_dict(selectors: list[Selector]) -> list[dict[str, Any]]:
@@ -909,20 +914,23 @@ class Flake:
         except ClanCmdError as e:
             if "error: attribute 'clan' missing" in str(e):
                 msg = ("This flake does not export the 'clan' attribute. \n"
-                    "Please write 'clan = clan.config' into your flake.nix.")
-                raise ClanError(msg) from e
-            if "error: attribute" in str(e):
-                # If the error is about a missing attribute, we raise a ClanSelectError
-                # with the failed selectors and the flake identifier.
+                    "Please write 'clan = clan.config;' into the outputs of your flake.nix.")
                 raise ClanSelectError(
                     flake_identifier=self.identifier,
                     selectors=selectors,
                     cmd_error=e,
+                    description=msg,
                 ) from e
 
-            # If the error is not about a missing attribute, we re-raise it as a ClanCmdError
-            # to preserve the original error context.
-            raise
+            # If the error is about a missing attribute, we raise a ClanSelectError
+            # with the failed selectors and the flake identifier.
+            raise ClanSelectError(
+                flake_identifier=self.identifier,
+                selectors=selectors,
+                cmd_error=e,
+            ) from e
+
+
 
         if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
