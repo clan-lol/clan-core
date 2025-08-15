@@ -4,7 +4,12 @@
     {
 
       nixosModule =
-        { pkgs, lib, ... }:
+        {
+          config,
+          pkgs,
+          lib,
+          ...
+        }:
         {
 
           networking.firewall.interfaces = lib.mkIf (settings.allowAllInterfaces == false) (
@@ -18,8 +23,29 @@
 
           networking.firewall.allowedTCPPorts = lib.mkIf (settings.allowAllInterfaces == true) [ 9273 ];
 
+          clan.core.vars.generators."telegraf-password" = {
+            files.telegraf-password.neededFor = "users";
+            files.telegraf-password.restartUnits = [ "telegraf.service" ];
+
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.xkcdpass
+              pkgs.mkpasswd
+            ];
+
+            script = ''
+              PASSWORD=$(xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n")
+              echo "BASIC_AUTH_PWD=$PASSWORD" > "$out"/telegraf-password
+            '';
+          };
+
           services.telegraf = {
             enable = true;
+            environmentFiles = [
+              (builtins.toString
+                config.clan.core.vars.generators."telegraf-password".files.telegraf-password.path
+              )
+            ];
             extraConfig = {
               agent.interval = "60s";
               inputs = {
@@ -49,6 +75,8 @@
               outputs.prometheus_client = {
                 listen = ":9273";
                 metric_version = 2;
+                basic_username = "prometheus";
+                basic_password = "$${BASIC_AUTH_PWD}";
               };
             };
           };
