@@ -5,7 +5,7 @@ inventory.instances = {
   borgbackup = {
     module = {
       name = "borgbackup";
-      input = "clan";
+      input = "clan-core";
     };
     roles.client.machines."jon".settings = {
       destinations."storagebox" = {
