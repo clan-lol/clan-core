@@ -97,18 +97,10 @@ class InventoryMeta(TypedDict):
 
 
 
-
-
-class InventoryService(TypedDict):
-    pass
-
-
-
 InventoryInstancesType = dict[str, InventoryInstance]
 InventoryMachinesType = dict[str, InventoryMachine]
 InventoryMetaType = InventoryMeta
 InventoryModulesType = dict[str, dict[str, Any] | list[Any] | bool | float | int | str | None]
-InventoryServicesType = dict[str, InventoryService]
 InventoryTagsType = dict[str, list[str]]
 
 class Inventory(TypedDict):
@@ -116,7 +108,6 @@ class Inventory(TypedDict):
     machines: NotRequired[InventoryMachinesType]
     meta: NotRequired[InventoryMetaType]
     modules: NotRequired[InventoryModulesType]
-    services: NotRequired[InventoryServicesType]
     tags: NotRequired[InventoryTagsType]
 
 

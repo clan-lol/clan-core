@@ -5,7 +5,7 @@ import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 import clan_cli.clan.create
 import pytest
@@ -26,7 +26,6 @@ from clan_lib.nix import nix_command
 from clan_lib.nix_models.clan import (
     InventoryInstancesType,
     InventoryMachine,
-    InventoryServicesType,
     Unknown,
 )
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
@@ -41,7 +40,6 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class InventoryWrapper:
-    services: InventoryServicesType
     instances: InventoryInstancesType
 
 
@@ -65,8 +63,6 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
         ssh_keys.append(InvSSHKeyEntry(f"user_{num}", ssh_key.public.read_text()))
 
     """Create the base inventory structure."""
-    legacy_services: dict[str, Any] = {}
-
     instances = InventoryInstancesType(
         {
             "admin-inst": {
@@ -88,7 +84,7 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
         }
     )
 
-    return InventoryWrapper(services=legacy_services, instances=instances)
+    return InventoryWrapper(instances=instances)
 
 
 # TODO: We need a way to calculate the narHash of the current clan-core
@@ -212,7 +208,6 @@ def test_clan_create_api(
         == "clan-core/admin"
     )
 
-    set_value_by_path(inventory, "services", inventory_conf.services)
     set_value_by_path(inventory, "instances", inventory_conf.instances)
     store.write(
         inventory,

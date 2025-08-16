@@ -53,7 +53,6 @@ def test_inventory_deserialize_variants(
     # Check that all keys are present
     assert "meta" in inventory
     assert "machines" in inventory
-    assert "services" in inventory
     # assert "tags" in inventory
     # assert "modules" in inventory
     assert "instances" in inventory

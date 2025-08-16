@@ -1,16 +1,9 @@
 import { API } from "@/api/API";
-import { Schema as Inventory } from "@/api/Inventory";
 
 export type OperationNames = keyof API;
-type Services = NonNullable<Inventory["services"]>;
-type ServiceNames = keyof Services;
 
 export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
 export type OperationResponse<T extends OperationNames> = API[T]["return"];
-
-export type ClanServiceInstance<T extends ServiceNames> = NonNullable<
-  Services[T]
->[string];
 
 export type SuccessQuery<T extends OperationNames> = Extract<
   OperationResponse<T>,

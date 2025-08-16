@@ -100,12 +100,6 @@
             # It treats it not as the type of an empty object, but as non-nullish.
             # Should be fixed in json2ts: https://github.com/bcherny/json-schema-to-typescript/issues/557
             sed -i -e 's/{}/Record<string, never>/g' $out/API.ts
-
-            # Retrieve python API Typescript types
-            # delete the reserved tags from typechecking because the conversion library doesn't support them
-            jq 'del(.properties.tags.properties)' ${self'.legacyPackages.schemas.inventory}/schema.json > schema.json
-            json2ts --input schema.json > $out/Inventory.ts
-            cp ${self'.legacyPackages.schemas.inventory}/* $out
           '';
         };
         clan-lib-openapi = pkgs.stdenv.mkDerivation {

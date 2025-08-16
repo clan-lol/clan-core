@@ -33,21 +33,12 @@ from clan_lib.errors import ClanError
 from clan_lib.services.modules import (
     CategoryInfo,
     Frontmatter,
-    extract_frontmatter,
-    get_roles,
 )
 
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])
 CLAN_CORE_DOCS = Path(os.environ["CLAN_CORE_DOCS"])
-CLAN_MODULES_FRONTMATTER_DOCS = os.environ.get("CLAN_MODULES_FRONTMATTER_DOCS")
 BUILD_CLAN_PATH = os.environ.get("BUILD_CLAN_PATH")
-
-## Clan modules ##
-# Some modules can be imported via nix natively
-CLAN_MODULES_VIA_NIX = os.environ.get("CLAN_MODULES_VIA_NIX")
-# Some modules can be imported via inventory
-CLAN_MODULES_VIA_ROLES = os.environ.get("CLAN_MODULES_VIA_ROLES")
 
 # Options how to author clan.modules
 # perInstance, perMachine, ...
@@ -190,23 +181,6 @@ def module_header(module_name: str, has_inventory_feature: bool = False) -> str:
     return f"# {module_name}{indicator}\n\n"
 
 
-def module_nix_usage(module_name: str) -> str:
-    return f"""## Usage via Nix
-
-**This module can be also imported directly in your nixos configuration. Although it is recommended to use the [inventory](../../concepts/inventory.md) interface if available.**
-
-Some modules are considered 'low-level' or 'expert modules' and are not available via the inventory interface.
-
-```nix
-{{config, lib, inputs, ...}}: {{
-    imports = [ inputs.clan-core.clanModules.{module_name} ];
-    # ...
-}}
-```
-
-"""
-
-
 clan_core_descr = """
 `clan.core` is always present in a clan machine
 
@@ -221,68 +195,6 @@ options_head = """
 
 The following options are available for this module.
 """
-
-
-def produce_clan_modules_frontmatter_docs() -> None:
-    if not CLAN_MODULES_FRONTMATTER_DOCS:
-        msg = f"Environment variables are not set correctly: $CLAN_CORE_DOCS={CLAN_CORE_DOCS}"
-        raise ClanError(msg)
-
-    if not OUT:
-        msg = f"Environment variables are not set correctly: $out={OUT}"
-        raise ClanError(msg)
-
-    with Path(CLAN_MODULES_FRONTMATTER_DOCS).open() as f:
-        options: dict[str, dict[str, Any]] = json.load(f)
-
-        # header
-        output = """# Frontmatter
-
-Every clan module has a `frontmatter` section within its readme. It provides
-machine readable metadata about the module.
-
-!!! example
-
-    The used format is `TOML`
-
-    The content is separated by `---` and the frontmatter must be placed at the very top of the `README.md` file.
-
-    ```toml
-    ---
-    description = "A description of the module"
-    categories = ["category1", "category2"]
-
-    [constraints]
-    roles.client.max = 10
-    roles.server.min = 1
-    ---
-    # Readme content
-    ...
-    ```
-
-"""
-
-        output += """## Overview
-
-This provides an overview of the available attributes of the `frontmatter`
-within the `README.md` of a clan module.
-
-"""
-        # for option_name, info in options.items():
-        #     if option_name == "_module.args":
-        #         continue
-        #     output += render_option(option_name, info)
-        root = options_to_tree(options, debug=True)
-        for option in root.suboptions:
-            output += options_docs_from_tree(option, init_level=2)
-
-        outfile = Path(OUT) / "clanModules/frontmatter/index.md"
-        outfile.parent.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-        with outfile.open("w") as of:
-            of.write(output)
 
 
 def produce_clan_core_docs() -> None:
@@ -505,154 +417,6 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
             of.write(output)
 
 
-def produce_clan_modules_docs() -> None:
-    if not CLAN_MODULES_VIA_NIX:
-        msg = f"Environment variables are not set correctly: $CLAN_MODULES_VIA_NIX={CLAN_MODULES_VIA_NIX}"
-        raise ClanError(msg)
-
-    if not CLAN_MODULES_VIA_ROLES:
-        msg = f"Environment variables are not set correctly: $CLAN_MODULES_VIA_ROLES={CLAN_MODULES_VIA_ROLES}"
-        raise ClanError(msg)
-
-    if not CLAN_CORE_PATH:
-        msg = f"Environment variables are not set correctly: $CLAN_CORE_PATH={CLAN_CORE_PATH}"
-        raise ClanError(msg)
-
-    if not OUT:
-        msg = f"Environment variables are not set correctly: $out={OUT}"
-        raise ClanError(msg)
-
-    modules_index = "# Modules Overview\n\n"
-    modules_index += clan_modules_descr
-    modules_index += "## Overview\n\n"
-    modules_index += '<div class="grid cards" markdown>\n\n'
-
-    with Path(CLAN_MODULES_VIA_ROLES).open() as f2:
-        role_links: dict[str, dict[str, str]] = json.load(f2)
-
-    with Path(CLAN_MODULES_VIA_NIX).open() as f:
-        links: dict[str, str] = json.load(f)
-
-    for module_name, options_file in links.items():
-        print(f"Rendering ClanModule: {module_name}")
-        readme_file = CLAN_CORE_PATH / "clanModules" / module_name / "README.md"
-        with readme_file.open() as f:
-            readme = f.read()
-            frontmatter: Frontmatter
-            frontmatter, readme_content = extract_frontmatter(readme, str(readme_file))
-
-        # skip if experimental feature enabled
-        if "experimental" in frontmatter.features:
-            print(f"Skipping {module_name}: Experimental feature")
-            continue
-
-        modules_index += build_option_card(module_name, frontmatter)
-
-        ##### Print module documentation #####
-
-        # 1. Header
-        output = module_header(module_name, "inventory" in frontmatter.features)
-
-        # 2. Description from README.md
-        if frontmatter.description:
-            output += f"*{frontmatter.description}*\n\n"
-
-        # 2. Deprecation note if the module is deprecated
-        if "deprecated" in frontmatter.features:
-            output += f"""
-!!! Warning "Deprecated"
-    The `{module_name}` module is deprecated.*
-
-    Use 'clanServices/{module_name}' or a similar successor instead
-"""
-        else:
-            output += f"""
-!!! Warning "Will be deprecated"
-    The `{module_name}` module might eventually be migrated to 'clanServices'*
-
-    See: [clanServices](../../guides/clanServices.md)
-"""
-
-        # 3. Categories from README.md
-        output += "## Categories\n\n"
-        output += render_categories(frontmatter.categories, frontmatter.categories_info)
-        output += "\n---\n\n"
-
-        # 3. README.md content
-        output += f"{readme_content}\n"
-
-        # 4. Usage
-        ##### Print usage via Inventory #####
-
-        # get_roles(str) -> list[str] | None
-        # if not isinstance(options_file, str):
-        roles = get_roles(CLAN_CORE_PATH / "clanModules" / module_name)
-        if roles:
-            # Render inventory usage
-            output += """## Usage via Inventory\n\n"""
-            output += render_roles(roles, module_name)
-            for role in roles:
-                role_options_file = role_links[module_name][role]
-                # Abort if the options file is not found
-                if not isinstance(role_options_file, str):
-                    print(
-                        f"Error: module: {module_name} in role: {role} - options file not found, Got {role_options_file}"
-                    )
-                    exit(1)
-
-                no_options = f"""### Options of `{role}` role
-
-**The `{module_name}` `{role}` doesnt offer / require any options to be set.**
-"""
-
-                heading = f"""### Options of `{role}` role
-
-The following options are available when using the `{role}` role.
-"""
-                output += print_options(
-                    role_options_file,
-                    heading,
-                    no_options,
-                    replace_prefix=f"clan.{module_name}",
-                )
-        else:
-            # No roles means no inventory usage
-            output += """## Usage via Inventory
-
-**This module cannot be used via the inventory interface.**
-"""
-
-        ##### Print usage via Nix / nixos #####
-        if not isinstance(options_file, str):
-            print(
-                f"Skipping {module_name}: Cannot be used via import clanModules.{module_name}"
-            )
-            output += """## Usage via Nix
-
-**This module cannot be imported directly in your nixos configuration.**
-
-"""
-        else:
-            output += module_nix_usage(module_name)
-            no_options = "** This module doesnt require any options to be set.**"
-            output += print_options(options_file, options_head, no_options)
-
-        outfile = Path(OUT) / f"clanModules/{module_name}.md"
-        outfile.parent.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-        with outfile.open("w") as of:
-            of.write(output)
-
-    modules_index += "</div>"
-    modules_index += "\n"
-    modules_outfile = Path(OUT) / "clanModules/index.md"
-
-    with modules_outfile.open("w") as of:
-        of.write(modules_index)
-
-
 def build_option_card(module_name: str, frontmatter: Frontmatter) -> str:
     """
     Build the overview index card for each reference target option.
@@ -863,8 +627,4 @@ if __name__ == "__main__":  #
     produce_clan_core_docs()
 
     produce_clan_service_author_docs()
-
-    # produce_clan_modules_docs()
     produce_clan_service_docs()
-
-    # produce_clan_modules_frontmatter_docs()

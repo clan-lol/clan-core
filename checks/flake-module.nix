@@ -139,33 +139,6 @@ in
         nixosTests
         // flakeOutputs
         // {
-          # TODO: Automatically provide this check to downstream users to check their modules
-          clan-modules-json-compatible =
-            let
-              allSchemas = lib.mapAttrs (
-                _n: m:
-                let
-                  schema =
-                    (self.clanLib.evalService {
-                      modules = [ m ];
-                      prefix = [
-                        "checks"
-                        system
-                      ];
-                    }).config.result.api.schema;
-                in
-                schema
-              ) self.clan.modules;
-            in
-            pkgs.runCommand "combined-result"
-              {
-                schemaFile = builtins.toFile "schemas.json" (builtins.toJSON allSchemas);
-              }
-              ''
-                mkdir -p $out
-                cat $schemaFile > $out/allSchemas.json
-              '';
-
           clan-core-for-checks = pkgs.runCommand "clan-core-for-checks" { } ''
             cp -r ${privateInputs.clan-core-for-checks} $out
             chmod -R +w $out
