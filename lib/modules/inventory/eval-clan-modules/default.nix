@@ -1,6 +1,5 @@
 {
   lib,
-  clanLib,
 }:
 let
   baseModule =
@@ -51,7 +50,6 @@ let
     #   FIX: Use evalClanModuleWithRole instead.
     # ''
     evaled;
-
 
 in
 {
