@@ -3,51 +3,6 @@ let
   # Trim the .nix extension from a filename
   trimExtension = name: builtins.substring 0 (builtins.stringLength name - 4) name;
 
-  jsonWithoutHeader = clanLib.jsonschema {
-    includeDefaults = true;
-    header = { };
-  };
-
-  getModulesSchema =
-    {
-      modules,
-      clan-core,
-      pkgs,
-    }:
-    lib.mapAttrs
-      (
-        _moduleName: rolesOptions:
-        lib.mapAttrs (_roleName: options: jsonWithoutHeader.parseOptions options { }) rolesOptions
-      )
-      (
-        clanLib.evalClan.evalClanModulesWithRoles {
-          allModules = modules;
-          inherit pkgs clan-core;
-        }
-      );
-
-  evalFrontmatter =
-    {
-      moduleName,
-      instanceName,
-      resolvedRoles,
-      allModules,
-    }:
-    lib.evalModules {
-      modules = [
-        (getFrontmatter allModules.${moduleName} moduleName)
-        ./interface.nix
-        {
-          constraints.imports = [
-            (lib.modules.importApply ../constraints {
-              inherit moduleName resolvedRoles instanceName;
-              allRoles = getRoles "inventory.modules" allModules moduleName;
-            })
-          ];
-        }
-      ];
-    };
-
   # For Documentation purposes only
   frontmatterOptions =
     (lib.evalModules {
@@ -119,17 +74,12 @@ let
         builtins.readDir (checkedPath)
       )
     );
-
-  checkConstraints = args: (evalFrontmatter args).config.constraints.assertions;
   getFrontmatter = _modulepath: _modulename: "clanModules are removed!";
 in
 {
   inherit
     frontmatterOptions
-    getModulesSchema
     getFrontmatter
-
-    checkConstraints
     getRoles
     ;
 }

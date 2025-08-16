@@ -19,11 +19,6 @@
         clan-core = self;
         inherit pkgs;
         evalClanModules = self.clanLib.evalClan.evalClanModules;
-        modulesRolesOptions = self.clanLib.evalClan.evalClanModulesWithRoles {
-          allModules = self.clanModules;
-          inherit pkgs;
-          clan-core = self;
-        };
       };
 
       # Frontmatter for clanModules
@@ -35,10 +30,6 @@
           };
         in
         docs.optionsJSON;
-
-      # Options available when imported via ` inventory.${moduleName}....${rolesName} `
-      clanModulesViaRoles = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesViaRoles);
-
       # clan service options
       clanModulesViaService = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesViaService);
 
@@ -89,7 +80,6 @@
             }
             export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json
             # A file that contains the links to all clanModule docs
-            export CLAN_MODULES_VIA_ROLES=${clanModulesViaRoles}
             export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_SERVICE_INTERFACE=${self'.legacyPackages.clan-service-module-interface}/share/doc/nixos/options.json
             # Frontmatter format for clanModules
@@ -107,7 +97,6 @@
       legacyPackages = {
         inherit
           jsonDocs
-          clanModulesViaRoles
           clanModulesViaService
           ;
       };

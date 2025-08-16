@@ -11,6 +11,7 @@
     default =
       builtins.removeAttrs (clanLib.introspection.getPrios { options = config.inventory.options; })
         # tags are freeformType which is not supported yet.
-        [ "tags" ];
+        # services is removed and throws an error if accessed.
+        [ "tags" "services"];
   };
 }

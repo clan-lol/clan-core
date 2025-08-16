@@ -52,57 +52,8 @@ let
     # ''
     evaled;
 
-  /*
-    This function takes a list of module names and evaluates them
-    Returns a set of interfaces as described below:
 
-    Fn :: { ${moduleName} = Module; } -> {
-      ${moduleName} :: {
-        ${roleName}: JSONSchema
-      }
-    }
-  */
-  evalClanModulesWithRoles =
-    {
-      allModules,
-      clan-core,
-      pkgs,
-    }:
-    let
-      res = builtins.mapAttrs (
-        moduleName: module:
-        let
-          frontmatter = clanLib.modules.getFrontmatter allModules.${moduleName} moduleName;
-          roles =
-            if builtins.elem "inventory" frontmatter.features or [ ] then
-              assert lib.isPath module;
-              clan-core.clanLib.modules.getRoles "Documentation: inventory.modules" allModules moduleName
-            else
-              [ ];
-        in
-        lib.listToAttrs (
-          lib.map (role: {
-            name = role;
-            value =
-              (lib.evalModules {
-                class = "nixos";
-                modules = [
-                  (baseModule { inherit pkgs; })
-                  clan-core.nixosModules.clanCore
-                  {
-                    clan.core.settings.directory = clan-core;
-                  }
-                  # Role interface
-                  (module + "/roles/${role}.nix")
-                ];
-              }).options.clan.${moduleName} or { };
-          }) roles
-        )
-      ) allModules;
-    in
-    res;
 in
 {
   evalClanModules = evalClanModulesLegacy;
-  inherit evalClanModulesWithRoles;
 }

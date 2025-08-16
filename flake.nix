@@ -67,7 +67,6 @@
         clan = {
           meta.name = "clan-core";
           inventory = {
-            services = { };
             machines = {
               "test-darwin-machine" = {
                 machineClass = "darwin";

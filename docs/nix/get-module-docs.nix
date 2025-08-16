@@ -1,5 +1,4 @@
 {
-  modulesRolesOptions,
   nixosOptionsDoc,
   evalClanModules,
   lib,
@@ -12,19 +11,6 @@ let
   transformOptions = stripStorePathsFromDeclarations;
 in
 {
-
-  clanModulesViaRoles = lib.mapAttrs (
-    _moduleName: rolesOptions:
-    lib.mapAttrs (
-      _roleName: options:
-      (nixosOptionsDoc {
-        inherit options;
-        warningsAreErrors = true;
-        inherit transformOptions;
-      }).optionsJSON
-    ) rolesOptions
-  ) modulesRolesOptions;
-
   # Test with:
   # nix build .\#legacyPackages.x86_64-linux.clanModulesViaService
   clanModulesViaService = lib.mapAttrs (

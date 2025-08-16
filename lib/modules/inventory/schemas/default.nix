@@ -1,19 +1,11 @@
 {
   self,
-  self',
   lib,
   pkgs,
   flakeOptions,
   ...
 }:
 let
-
-  modulesSchema = self.clanLib.modules.getModulesSchema {
-    modules = self.clanModules;
-    inherit pkgs;
-    clan-core = self;
-  };
-
   jsonLib = self.clanLib.jsonschema { inherit includeDefaults; };
   includeDefaults = true;
 
@@ -38,13 +30,6 @@ let
   ];
   clanSchema = jsonLib.parseOptions (lib.filterAttrs (n: _v: lib.elem n include) clanOpts) { };
 
-  renderSchema = pkgs.writers.writePython3Bin "render-schema" {
-    flakeIgnore = [
-      "F401"
-      "E501"
-    ];
-  } ./render_schema.py;
-
   clan-schema-abstract = pkgs.stdenv.mkDerivation {
     name = "clan-schema-files";
     buildInputs = [ pkgs.cue ];
@@ -66,26 +51,6 @@ in
     frontMatterSchema
     clanSchema
     inventorySchema
-    modulesSchema
-    renderSchema
     clan-schema-abstract
     ;
-
-  # Inventory schema, with the modules schema added per role
-  inventory =
-    pkgs.runCommand "rendered"
-      {
-        buildInputs = [
-          pkgs.python3
-          self'.packages.clan-cli
-        ];
-      }
-      ''
-        export INVENTORY_SCHEMA_PATH=${builtins.toFile "inventory-schema.json" (builtins.toJSON inventorySchema)}
-        export MODULES_SCHEMA_PATH=${builtins.toFile "modules-schema.json" (builtins.toJSON modulesSchema)}
-
-        mkdir $out
-        # The python script will place the schemas in the output directory
-        exec python3 ${renderSchema}/bin/render-schema
-      '';
 }
