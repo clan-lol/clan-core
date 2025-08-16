@@ -161,7 +161,8 @@ class InventoryStore:
         return sanitized
 
     def get_readonly_raw(self) -> Inventory:
-        return self._flake.select("clanInternals.inventoryClass.inventory")
+        attrs = "{" + ",".join(self._keys) + "}"
+        return self._flake.select(f"clanInternals.inventoryClass.inventory.{attrs}")
 
     def _get_persisted(self) -> InventorySnapshot:
         """
