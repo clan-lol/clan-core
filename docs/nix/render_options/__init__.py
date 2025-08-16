@@ -38,7 +38,6 @@ from clan_lib.services.modules import (
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])
 CLAN_CORE_DOCS = Path(os.environ["CLAN_CORE_DOCS"])
-CLAN_MODULES_FRONTMATTER_DOCS = os.environ.get("CLAN_MODULES_FRONTMATTER_DOCS")
 BUILD_CLAN_PATH = os.environ.get("BUILD_CLAN_PATH")
 
 # Options how to author clan.modules
@@ -182,23 +181,6 @@ def module_header(module_name: str, has_inventory_feature: bool = False) -> str:
     return f"# {module_name}{indicator}\n\n"
 
 
-def module_nix_usage(module_name: str) -> str:
-    return f"""## Usage via Nix
-
-**This module can be also imported directly in your nixos configuration. Although it is recommended to use the [inventory](../../concepts/inventory.md) interface if available.**
-
-Some modules are considered 'low-level' or 'expert modules' and are not available via the inventory interface.
-
-```nix
-{{config, lib, inputs, ...}}: {{
-    imports = [ inputs.clan-core.clanModules.{module_name} ];
-    # ...
-}}
-```
-
-"""
-
-
 clan_core_descr = """
 `clan.core` is always present in a clan machine
 
@@ -213,68 +195,6 @@ options_head = """
 
 The following options are available for this module.
 """
-
-
-def produce_clan_modules_frontmatter_docs() -> None:
-    if not CLAN_MODULES_FRONTMATTER_DOCS:
-        msg = f"Environment variables are not set correctly: $CLAN_CORE_DOCS={CLAN_CORE_DOCS}"
-        raise ClanError(msg)
-
-    if not OUT:
-        msg = f"Environment variables are not set correctly: $out={OUT}"
-        raise ClanError(msg)
-
-    with Path(CLAN_MODULES_FRONTMATTER_DOCS).open() as f:
-        options: dict[str, dict[str, Any]] = json.load(f)
-
-        # header
-        output = """# Frontmatter
-
-Every clan module has a `frontmatter` section within its readme. It provides
-machine readable metadata about the module.
-
-!!! example
-
-    The used format is `TOML`
-
-    The content is separated by `---` and the frontmatter must be placed at the very top of the `README.md` file.
-
-    ```toml
-    ---
-    description = "A description of the module"
-    categories = ["category1", "category2"]
-
-    [constraints]
-    roles.client.max = 10
-    roles.server.min = 1
-    ---
-    # Readme content
-    ...
-    ```
-
-"""
-
-        output += """## Overview
-
-This provides an overview of the available attributes of the `frontmatter`
-within the `README.md` of a clan module.
-
-"""
-        # for option_name, info in options.items():
-        #     if option_name == "_module.args":
-        #         continue
-        #     output += render_option(option_name, info)
-        root = options_to_tree(options, debug=True)
-        for option in root.suboptions:
-            output += options_docs_from_tree(option, init_level=2)
-
-        outfile = Path(OUT) / "clanModules/frontmatter/index.md"
-        outfile.parent.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-        with outfile.open("w") as of:
-            of.write(output)
 
 
 def produce_clan_core_docs() -> None:
@@ -708,5 +628,3 @@ if __name__ == "__main__":  #
 
     produce_clan_service_author_docs()
     produce_clan_service_docs()
-
-    # produce_clan_modules_frontmatter_docs()

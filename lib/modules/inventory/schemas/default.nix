@@ -9,13 +9,6 @@ let
   jsonLib = self.clanLib.jsonschema { inherit includeDefaults; };
   includeDefaults = true;
 
-  frontMatterSchema = jsonLib.parseOptions self.clanLib.modules.frontmatterOptions { };
-
-  inventorySchema = jsonLib.parseModule ({
-    imports = [ ../../inventoryClass/interface.nix ];
-    _module.args = { inherit (self) clanLib; };
-  });
-
   opts = (flakeOptions.flake.type.getSubOptions [ "flake" ]);
   clanOpts = opts.clan.type.getSubOptions [ "clan" ];
   include = [
@@ -48,9 +41,7 @@ in
 {
   inherit
     flakeOptions
-    frontMatterSchema
     clanSchema
-    inventorySchema
     clan-schema-abstract
     ;
 }

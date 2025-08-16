@@ -18,18 +18,8 @@
         inherit (self) clanModules;
         clan-core = self;
         inherit pkgs;
-        evalClanModules = self.clanLib.evalClan.evalClanModules;
       };
 
-      # Frontmatter for clanModules
-      clanModulesFrontmatter =
-        let
-          docs = pkgs.nixosOptionsDoc {
-            options = self.clanLib.modules.frontmatterOptions;
-            transformOptions = self.clanLib.docs.stripStorePathsFromDeclarations;
-          };
-        in
-        docs.optionsJSON;
       # clan service options
       clanModulesViaService = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesViaService);
 
@@ -79,11 +69,10 @@
               }
             }
             export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json
+
             # A file that contains the links to all clanModule docs
             export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_SERVICE_INTERFACE=${self'.legacyPackages.clan-service-module-interface}/share/doc/nixos/options.json
-            # Frontmatter format for clanModules
-            export CLAN_MODULES_FRONTMATTER_DOCS=${clanModulesFrontmatter}/share/doc/nixos/options.json
 
             export BUILD_CLAN_PATH=${buildClanOptions}/share/doc/nixos/options.json
 

@@ -33,7 +33,6 @@ lib.fix (
     evalService = clanLib.callLib ./modules/inventory/distributed-service/evalService.nix { };
     # ------------------------------------
     # ClanLib functions
-    evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
     inventory = clanLib.callLib ./modules/inventory { };
     modules = clanLib.callLib ./modules/inventory/frontmatter { };
     test = clanLib.callLib ./test { };
