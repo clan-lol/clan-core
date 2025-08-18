@@ -653,9 +653,9 @@ const InstallProgress = () => {
       <img
         src="/logos/usb-stick-min.png"
         alt="usb logo"
-        class="absolute z-0 top-2"
+        class="absolute top-2 z-0"
       />
-      <div class="mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1 z-10">
+      <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
         <Typography
           hierarchy="title"
           size="default"
@@ -706,7 +706,7 @@ const InstallProgress = () => {
         </Typography>
         <Button
           hierarchy="primary"
-          class="w-fit mt-3"
+          class="mt-3 w-fit"
           size="s"
           onClick={handleCancel}
         >

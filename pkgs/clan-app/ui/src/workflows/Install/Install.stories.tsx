@@ -64,6 +64,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(1) Name",
               group: "User",
               required: true,
@@ -74,6 +75,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(2) Password",
               group: "Root",
               required: true,
@@ -84,6 +86,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(3) Gritty",
               group: "Root",
               required: true,
@@ -99,6 +102,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(4) Name",
               group: "User",
               required: true,
@@ -109,6 +113,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(5) Password",
               group: "Lonely",
               required: true,
@@ -119,6 +124,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
             description: "Name of the gritty",
             prompt_type: "line",
             display: {
+              helperText: null,
               label: "(6) Batty",
               group: "Root",
               required: true,
@@ -130,6 +136,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
     run_generators: null,
     get_machine_hardware_summary: {
       hardware_config: "nixos-facter",
+      platform: "x86_64-linux",
     },
   };
 

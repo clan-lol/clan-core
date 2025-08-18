@@ -151,13 +151,13 @@ def type_to_dict(
             if f.default is MISSING and f.default_factory is MISSING
         }
 
-        # Find intersection
-        intersection = required & required_fields
+        # TODO: figure out why we needed to do this
+        # intersection = required_fields & required
 
         return {
             "type": "object",
             "properties": properties,
-            "required": list(intersection),
+            "required": sorted(required_fields),
             # Dataclasses can only have the specified properties
             "additionalProperties": False,
         }
@@ -165,24 +165,26 @@ def type_to_dict(
     if is_typed_dict(t):
         dict_fields = get_typed_dict_fields(t, scope)
         dict_properties: dict = {}
-        dict_required: list[str] = []
+        explicit_optional: set[str] = set()
+        explicit_required: set[str] = set()
         for field_name, field_type in dict_fields.items():
             # Unwrap special case for "NotRequired" and "Required"
             # A field type that only exist for TypedDicts
-            if (
-                not is_type_in_union(field_type, type(None))
-                and get_origin(field_type) is not NotRequired
-            ) or get_origin(field_type) is Required:
-                dict_required.append(field_name)
+            if get_origin(field_type) is NotRequired:
+                explicit_optional.add(field_name)
+
+            if get_origin(field_type) is Required:
+                explicit_required.add(field_name)
 
             dict_properties[field_name] = type_to_dict(
                 field_type, f"{scope} {t.__name__}.{field_name}", type_map
             )
 
+        optional = set(dict_fields) - explicit_optional
         return {
             "type": "object",
             "properties": dict_properties,
-            "required": dict_required if is_total(t) else [],
+            "required": sorted(optional) if is_total(t) else sorted(explicit_required),
             "additionalProperties": False,
         }
 
