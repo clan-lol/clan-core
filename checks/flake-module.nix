@@ -36,7 +36,6 @@ in
     ++ filter pathExists [
       ./devshell/flake-module.nix
       ./flash/flake-module.nix
-      ./impure/flake-module.nix
       ./installation/flake-module.nix
       ./update/flake-module.nix
       ./morph/flake-module.nix

@@ -90,12 +90,9 @@ export CLAN_DEBUG_COMMANDS=1
 These options help you pinpoint the source and context of print messages and debug logs during development.
 
 
-
 ## Analyzing Performance
 
 To understand what's causing slow performance, set the environment variable `export CLAN_CLI_PERF=1`. When you complete a clan command, you'll see a summary of various performance metrics, helping you identify what's taking up time.
-
-
 
 ## See all possible packages and tests
 
@@ -155,27 +152,15 @@ To test the CLI locally in a development environment and set breakpoints for deb
 
 ## Test Locally in a Nix Sandbox
 
-To run tests in a Nix sandbox, you have two options depending on whether your test functions have been marked as impure or not:
-
-### Running Tests Marked as Impure
-
-If your test functions need to execute `nix build` and have been marked as impure because you can't execute `nix build` inside a Nix sandbox, use the following command:
+To run tests in a Nix sandbox:
 
 ```bash
-nix run .#impure-checks -L
+nix build .#checks.x86_64-linux.clan-pytest-with-core
 ```
-
-This command will run the impure test functions.
-
-### Running Pure Tests
-
-For test functions that have not been marked as impure and don't require executing `nix build`, you can use the following command:
 
 ```bash
-nix build .#checks.x86_64-linux.clan-pytest --rebuild
+nix build .#checks.x86_64-linux.clan-pytest-without-core
 ```
-
-This command will run all pure test functions.
 
 ### Inspecting the Nix Sandbox
 

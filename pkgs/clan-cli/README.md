@@ -32,16 +32,12 @@ You can also run a single test like this:
 pytest -n0 -s tests/test_secrets_cli.py::test_users
 ```
 
-## Run tests in nix container
-
-Run all impure checks
+Run all checks in a sandbox
 
 ```bash
-nix run .#impure-checks
+nix build .#checks.x86_64-linux.clan-pytest-with-core
 ```
 
-Run all checks
-
 ```bash
-nix flake check
+nix build .#checks.x86_64-linux.clan-pytest-without-core
 ```
