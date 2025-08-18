@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_test_store
 
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
@@ -98,9 +99,17 @@ def qemu_command(
 ) -> QemuCommand:
     if portmap is None:
         portmap = {}
+
+    toplevel = Path(nixos_config["toplevel"])
+    chroot_toplevel = toplevel
+    initrd = Path(nixos_config["initrd"])
+    if tmp_store := nix_test_store():
+        chroot_toplevel = tmp_store / toplevel.relative_to("/")
+        initrd = tmp_store / initrd.relative_to("/")
+
     kernel_cmdline = [
-        (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
-        f"init={nixos_config['toplevel']}/init",
+        (chroot_toplevel / "kernel-params").read_text(),
+        f"init={toplevel}/init",
         f"regInfo={nixos_config['regInfo']}/registration",
         "console=hvc0",
     ]
@@ -131,8 +140,8 @@ def qemu_command(
         "-device", "virtio-blk-pci,drive=state",
         "-device", "virtio-keyboard",
         "-usb", "-device", "usb-tablet,bus=usb-bus.0",
-        "-kernel", f'{nixos_config["toplevel"]}/kernel',
-        "-initrd", nixos_config["initrd"],
+        "-kernel", f"{chroot_toplevel}/kernel",
+        "-initrd", str(initrd),
         "-append", " ".join(kernel_cmdline),
         # qmp & qga setup
         "-qmp", f"unix:{qmp_socket_file},server,wait=off",
