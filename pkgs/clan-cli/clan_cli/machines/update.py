@@ -12,6 +12,7 @@ from clan_lib.machines.list import instantiate_inventory_to_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import run_machine_update
+from clan_lib.network.network import get_best_remote
 from clan_lib.nix import nix_config
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.host_key import HostKeyCheck
@@ -25,6 +26,42 @@ from clan_cli.completions import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def run_update_with_network(
+    machine: Machine,
+    build_host: Remote | LocalHost | None,
+    upload_inputs: bool,
+    host_key_check: HostKeyCheck,
+    target_host_override: str | None = None,
+) -> None:
+    """Run machine update with proper network context handling.
+
+    If target_host_override is provided, use it directly.
+    Otherwise, use get_best_remote to establish network connection.
+    """
+    if target_host_override:
+        # Direct connection without network context
+        target_host = Remote.from_ssh_uri(
+            machine_name=machine.name,
+            address=target_host_override,
+        ).override(host_key_check=host_key_check)
+        run_machine_update(
+            machine=machine,
+            target_host=target_host,
+            build_host=build_host,
+            upload_inputs=upload_inputs,
+        )
+    else:
+        # Use network context
+        with get_best_remote(machine) as remote:
+            target_host = remote.override(host_key_check=host_key_check)
+            run_machine_update(
+                machine=machine,
+                target_host=target_host,
+                build_host=build_host,
+                upload_inputs=upload_inputs,
+            )
 
 
 def requires_explicit_update(m: Machine) -> bool:
@@ -144,27 +181,19 @@ def update_command(args: argparse.Namespace) -> None:
                         ).override(host_key_check=host_key_check)
                 else:
                     build_host = machine.build_host()
-                # Figure out the target host
-                if args.target_host:
-                    target_host = Remote.from_ssh_uri(
-                        machine_name=machine.name,
-                        address=args.target_host,
-                    ).override(host_key_check=host_key_check)
-                else:
-                    target_host = machine.target_host().override(
-                        host_key_check=host_key_check
-                    )
-                # run the update
+
+                # Schedule the update with network handling
                 runtime.async_run(
                     AsyncOpts(
                         tid=machine.name,
                         async_ctx=AsyncContext(prefix=machine.name),
                     ),
-                    run_machine_update,
+                    run_update_with_network,
                     machine=machine,
-                    target_host=target_host,
                     build_host=build_host,
                     upload_inputs=args.upload_inputs,
+                    host_key_check=host_key_check,
+                    target_host_override=args.target_host,
                 )
             runtime.join_all()
             runtime.check_all()

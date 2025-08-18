@@ -5,6 +5,7 @@ from pathlib import Path
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
+from clan_lib.network.network import get_best_remote
 from clan_lib.ssh.host import Host
 
 log = logging.getLogger(__name__)
@@ -32,7 +33,12 @@ def upload_command(args: argparse.Namespace) -> None:
         populate_secret_vars(machine, directory)
         return
 
-    with machine.target_host().host_connection() as host, host.become_root() as host:
+    # Use get_best_remote to handle networking
+    with (
+        get_best_remote(machine) as remote,
+        remote.host_connection() as host,
+        host.become_root() as host,
+    ):
         upload_secret_vars(machine, host)
 
 
