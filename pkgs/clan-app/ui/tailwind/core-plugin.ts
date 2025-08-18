@@ -203,7 +203,7 @@ const colorSystem = {
       1: primaries.secondary["950"],
       2: primaries.secondary["900"],
       3: primaries.secondary["700"],
-      4: primaries.secondary["500"],
+      4: primaries.secondary["600"],
     },
     inv: {
       1: primaries.off.white,
