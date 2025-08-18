@@ -51,7 +51,6 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         </Button>
       </div>
 
-
       <div>
         <Button data-testid="default-start-icon" {...props} startIcon="Flash">
           Label

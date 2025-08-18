@@ -1,122 +1,127 @@
 div.sidebar-body {
-    @apply py-4 px-2 h-full;
-    @apply border border-inv-3 rounded-bl-md rounded-br-md;
+  @apply py-4 px-2 h-full;
+  @apply border border-inv-3 rounded-bl-md rounded-br-md;
 
-    &::-webkit-scrollbar {
-        display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),
+    linear-gradient(
+      180deg,
+      theme(colors.bg.inv.1) 0%,
+      theme(colors.bg.inv.3) 100%
+    );
+
+  @apply backdrop-blur-sm;
+
+  .accordion {
+    @apply w-full mb-4;
+
+    &:last-child {
+      @apply mb-0;
     }
 
-    overflow-y: auto;
-    scrollbar-width: none;
+    & > .item {
+      &:last-child {
+        @apply mb-0;
+      }
 
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.10) 0%, rgba(0, 0, 0, 0.10) 100%),
-    linear-gradient(180deg, theme(colors.bg.inv.1) 0%, theme(colors.bg.inv.3) 100%);
+      & > .header {
+        @apply flex mb-2 px-2;
 
-    @apply backdrop-blur-sm;
+        & > .trigger {
+          @apply inline-flex items-center justify-between w-full;
 
-    .accordion {
-        @apply w-full mb-4;
+          &:focus-visible {
+            @apply z-10;
+            outline: 2px solid hsl(200 98% 39%);
+            outline-offset: 2px;
+          }
 
-        &:last-child {
+          & > .icon {
+            transition: transform 300ms cubic-bezier(0.87, 0, 0.13, 1);
+          }
+
+          &[data-expanded] > .icon {
+            transform: rotate(180deg);
+          }
+
+          .section-title {
+            @apply uppercase;
+          }
+        }
+      }
+
+      & > .content {
+        @apply overflow-hidden flex flex-col;
+        @apply py-3 px-1.5 bg-inv-4 rounded-md mb-4;
+
+        animation: slideAccordionUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
+
+        &[data-expanded] {
+          animation: slideAccordionDown 300ms cubic-bezier(0.87, 0, 0.13, 1);
+        }
+
+        nav * {
+          @apply outline-none;
+        }
+
+        nav > a {
+          @apply block w-full px-2 py-1.5 min-h-7 my-2 rounded-md;
+
+          &:first-child {
+            @apply mt-0;
+          }
+
+          &:last-child {
             @apply mb-0;
+          }
+
+          &:focus-visible {
+            background: linear-gradient(
+              90deg,
+              theme(colors.secondary.900),
+              60%,
+              theme(colors.secondary.600) 100%
+            );
+          }
+
+          &:hover {
+            @apply bg-inv-acc-2;
+          }
+
+          &:active {
+            @apply bg-inv-acc-3;
+          }
+
+          &.active {
+            @apply bg-inv-acc-2;
+          }
         }
-
-        & > .item {
-            &:last-child {
-                @apply mb-0;
-            }
-
-            & > .header {
-                @apply flex mb-2 px-2;
-
-                & > .trigger {
-                    @apply inline-flex items-center justify-between w-full;
-
-                    &:focus-visible {
-                        @apply z-10;
-                        outline: 2px solid hsl(200 98% 39%);
-                        outline-offset: 2px;
-                    }
-
-                    & > .icon {
-                        transition: transform 300ms cubic-bezier(0.87, 0, 0.13, 1);
-                    }
-
-                    &[data-expanded] > .icon {
-                        transform: rotate(180deg);
-                    }
-
-                    .section-title {
-                        @apply uppercase;
-                    }
-                }
-            }
-
-            & > .content {
-                @apply overflow-hidden flex flex-col;
-                @apply py-3 px-1.5 bg-inv-4 rounded-md mb-4;
-
-                animation: slideAccordionUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
-
-                &[data-expanded] {
-                    animation: slideAccordionDown 300ms cubic-bezier(0.87, 0, 0.13, 1);
-                }
-
-                nav * {
-                    @apply outline-none;
-                }
-
-                nav > a {
-                    @apply block w-full px-2 py-1.5 min-h-7 my-2 rounded-md;
-
-                    &:first-child {
-                        @apply mt-0;
-                    }
-
-                    &:last-child {
-                        @apply mb-0;
-                    }
-
-                    &:focus-visible {
-                        background: linear-gradient(
-                                90deg,
-                                theme(colors.secondary.900),
-                                60%,
-                                theme(colors.secondary.600) 100%
-                        );
-                    }
-
-                    &:hover {
-                        @apply bg-inv-acc-2;
-                    }
-
-                    &:active {
-                        @apply bg-inv-acc-3;
-                    }
-
-                    &.active {
-                        @apply bg-inv-acc-2;
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 }
 
 @keyframes slideAccordionDown {
-    from {
-        height: 0;
-    }
-    to {
-        height: var(--kb-accordion-content-height);
-    }
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--kb-accordion-content-height);
+  }
 }
 
 @keyframes slideAccordionUp {
-    from {
-        height: var(--kb-accordion-content-height);
-    }
-    to {
-        height: 0;
-    }
+  from {
+    height: var(--kb-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
 }
