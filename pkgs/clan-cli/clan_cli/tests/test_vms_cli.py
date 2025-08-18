@@ -25,14 +25,14 @@ def test_inspect(
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_run(
     monkeypatch: pytest.MonkeyPatch,
-    test_flake_with_core: FlakeForTest,
+    vm_test_flake: Path,
     age_keys: list["KeyPair"],
 ) -> None:
     with monkeypatch.context():
-        monkeypatch.chdir(test_flake_with_core.path)
+        monkeypatch.chdir(vm_test_flake)
         monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
         cli.run(
@@ -53,11 +53,22 @@ def test_run(
                 "user1",
             ]
         )
-        cli.run(["vms", "run", "--no-block", "vm1", "-c", "shutdown", "-h", "now"])
+        cli.run(
+            [
+                "vms",
+                "run",
+                "--no-block",
+                "test-vm-deployment",
+                "-c",
+                "shutdown",
+                "-h",
+                "now",
+            ]
+        )
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_vm_persistence(
     vm_test_flake: Path,
 ) -> None:
