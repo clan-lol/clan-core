@@ -104,7 +104,10 @@ def is_total(typed_dict_class: type) -> bool:
 
 
 def type_to_dict(
-    t: Any, scope: str = "", type_map: dict[TypeVar, type] | None = None
+    t: Any,
+    scope: str = "",
+    type_map: dict[TypeVar, type] | None = None,
+    narrow_unsupported_union_types: bool = False,
 ) -> dict:
     if type_map is None:
         type_map = {}
@@ -164,6 +167,8 @@ def type_to_dict(
         dict_properties: dict = {}
         dict_required: list[str] = []
         for field_name, field_type in dict_fields.items():
+            # Unwrap special case for "NotRequired" and "Required"
+            # A field type that only exist for TypedDicts
             if (
                 not is_type_in_union(field_type, type(None))
                 and get_origin(field_type) is not NotRequired
@@ -181,9 +186,32 @@ def type_to_dict(
             "additionalProperties": False,
         }
 
-    if type(t) is UnionType:
+    origin = get_origin(t)
+    # UnionTypes
+    if type(t) is UnionType or origin is Union:
+        supported = []
+        for arg in get_args(t):
+            try:
+                supported.append(
+                    type_to_dict(arg, scope, type_map, narrow_unsupported_union_types)
+                )
+            except JSchemaTypeError:
+                if narrow_unsupported_union_types:
+                    # If we are narrowing unsupported union types, we skip the error
+                    continue
+                raise
+
+        if len(supported) == 0:
+            msg = f"{scope} - No supported types in Union {t!s}, type_map: {type_map}"
+            raise JSchemaTypeError(msg)
+
+        if len(supported) == 1:
+            # If there's only one supported type, return it directly
+            return supported[0]
+
+        # If there are multiple supported types, return them as oneOf
         return {
-            "oneOf": [type_to_dict(arg, scope, type_map) for arg in t.__args__],
+            "oneOf": supported,
         }
 
     if isinstance(t, TypeVar):
@@ -220,12 +248,6 @@ def type_to_dict(
             base_type, *metadata = get_args(t)
             schema = type_to_dict(base_type, scope)  # Generate schema for the base type
             return apply_annotations(schema, metadata)
-
-        if origin is Union:
-            union_types = [type_to_dict(arg, scope, type_map) for arg in t.__args__]
-            return {
-                "oneOf": union_types,
-            }
 
         if origin in {list, set, frozenset, tuple}:
             return {
