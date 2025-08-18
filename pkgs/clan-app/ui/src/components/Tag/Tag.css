@@ -1,5 +1,5 @@
 span.tag {
-  @apply flex items-center gap-1 w-fit px-2 py-1 rounded-full;
+  @apply flex items-center gap-1 w-fit px-2 py-[0.1875rem] rounded-full;
   @apply bg-def-4;
 
   &:focus-visible {

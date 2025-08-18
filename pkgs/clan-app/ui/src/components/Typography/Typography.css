@@ -56,19 +56,19 @@
 
       &.size-default {
         font-size: 1rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: 0.02rem;
       }
 
       &.size-s {
         font-size: 0.875rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: 0.0175rem;
       }
 
       &.size-xs {
         font-size: 0.8125rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: 0.008125rem;
       }
     }
@@ -78,19 +78,19 @@
 
       &.size-default {
         font-size: 1rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: normal;
       }
 
       &.size-s {
         font-size: 0.875rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: normal;
       }
 
       &.size-xs {
         font-size: 0.8125rem;
-        line-height: 1;
+        line-height: normal;
         letter-spacing: normal;
       }
     }
