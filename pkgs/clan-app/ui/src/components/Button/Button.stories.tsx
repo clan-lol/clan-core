@@ -8,7 +8,7 @@ const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
 
 const ButtonExamples: Component<ButtonProps> = (props) => (
   <>
-    <div class="grid w-fit grid-cols-4 gap-8">
+    <div class="grid w-fit grid-cols-6 gap-8">
       <div>
         <Button data-testid="default" {...props}>
           Label
@@ -16,6 +16,11 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
       </div>
       <div>
         <Button data-testid="small" size="s" {...props}>
+          Label
+        </Button>
+      </div>
+      <div>
+        <Button data-testid="xsmall" size="xs" {...props}>
           Label
         </Button>
       </div>
@@ -36,6 +41,18 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
       </div>
 
       <div>
+        <Button
+          data-testid="xsmall-disabled"
+          {...props}
+          disabled={true}
+          size="xs"
+        >
+          Disabled
+        </Button>
+      </div>
+
+
+      <div>
         <Button data-testid="default-start-icon" {...props} startIcon="Flash">
           Label
         </Button>
@@ -46,6 +63,16 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
           {...props}
           startIcon="Flash"
           size="s"
+        >
+          Label
+        </Button>
+      </div>
+      <div>
+        <Button
+          data-testid="xsmall-start-icon"
+          {...props}
+          startIcon="Flash"
+          size="xs"
         >
           Label
         </Button>
@@ -73,6 +100,18 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
       </div>
 
       <div>
+        <Button
+          data-testid="xsmall-disabled-start-icon"
+          {...props}
+          startIcon="Flash"
+          size="xs"
+          disabled={true}
+        >
+          Disabled
+        </Button>
+      </div>
+
+      <div>
         <Button data-testid="default-end-icon" {...props} endIcon="Flash">
           Label
         </Button>
@@ -83,6 +122,16 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
           {...props}
           endIcon="Flash"
           size="s"
+        >
+          Label
+        </Button>
+      </div>
+      <div>
+        <Button
+          data-testid="xsmall-end-icon"
+          {...props}
+          endIcon="Flash"
+          size="xs"
         >
           Label
         </Button>
@@ -109,10 +158,25 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         </Button>
       </div>
       <div>
+        <Button
+          data-testid="xsmall-disabled-end-icon"
+          {...props}
+          endIcon="Flash"
+          size="xs"
+          disabled={true}
+        >
+          Disabled
+        </Button>
+      </div>
+
+      <div>
         <Button data-testid="default-icon" {...props} icon="Flash" />
       </div>
       <div>
         <Button data-testid="small-icon" {...props} icon="Flash" size="s" />
+      </div>
+      <div>
+        <Button data-testid="xsmall-icon" {...props} icon="Flash" size="xs" />
       </div>
       <div>
         <Button
@@ -129,6 +193,15 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
           icon="Flash"
           disabled={true}
           size="s"
+        />
+      </div>
+      <div>
+        <Button
+          data-testid="xsmall-disabled-icon"
+          {...props}
+          icon="Flash"
+          disabled={true}
+          size="xs"
         />
       </div>
     </div>
