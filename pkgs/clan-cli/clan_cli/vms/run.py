@@ -57,8 +57,6 @@ def build_vm(
         nix_options = []
     secrets_dir = get_secrets(machine, tmpdir)
 
-    from clan_lib.nix import nix_test_store
-
     output = Path(
         machine.select(
             "config.system.clan.vm.create",
