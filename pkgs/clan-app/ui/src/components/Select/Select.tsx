@@ -100,9 +100,10 @@ export const Select = (props: SelectProps) => {
           </KSelect.ItemIndicator>
           <KSelect.ItemLabel>
             <Typography
-              hierarchy="body"
-              size="xs"
+              hierarchy="label"
+              size="s"
               weight="bold"
+              family="condensed"
               class="flex w-full items-center"
             >
               {props.item.rawValue.label}
@@ -115,9 +116,10 @@ export const Select = (props: SelectProps) => {
           when={!loading()}
           fallback={
             <Typography
-              hierarchy="body"
-              size="xs"
+              hierarchy="label"
+              size="s"
               weight="bold"
+              family="condensed"
               class="flex w-full items-center"
               color="secondary"
             >
@@ -126,9 +128,10 @@ export const Select = (props: SelectProps) => {
           }
         >
           <Typography
-            hierarchy="body"
-            size="xs"
+            hierarchy="label"
+            size="s"
             weight="bold"
+            family="condensed"
             class="flex w-full items-center"
           >
             {props.placeholder}
@@ -152,9 +155,10 @@ export const Select = (props: SelectProps) => {
           <KSelect.Value<Option>>
             {(state) => (
               <Typography
-                hierarchy="body"
-                size="xs"
+                hierarchy="label"
+                size="s"
                 weight="bold"
+                family="condensed"
                 class="flex w-full items-center"
               >
                 {state.selectedOption().label}
