@@ -104,7 +104,10 @@ def is_total(typed_dict_class: type) -> bool:
 
 
 def type_to_dict(
-    t: Any, scope: str = "", type_map: dict[TypeVar, type] | None = None
+    t: Any,
+    scope: str = "",
+    type_map: dict[TypeVar, type] | None = None,
+    narrow_unsupported_union_types: bool = False,
 ) -> dict:
     if type_map is None:
         type_map = {}
@@ -148,13 +151,13 @@ def type_to_dict(
             if f.default is MISSING and f.default_factory is MISSING
         }
 
-        # Find intersection
-        intersection = required & required_fields
+        # TODO: figure out why we needed to do this
+        # intersection = required_fields & required
 
         return {
             "type": "object",
             "properties": properties,
-            "required": list(intersection),
+            "required": sorted(required_fields),
             # Dataclasses can only have the specified properties
             "additionalProperties": False,
         }
@@ -162,28 +165,59 @@ def type_to_dict(
     if is_typed_dict(t):
         dict_fields = get_typed_dict_fields(t, scope)
         dict_properties: dict = {}
-        dict_required: list[str] = []
+        explicit_optional: set[str] = set()
+        explicit_required: set[str] = set()
         for field_name, field_type in dict_fields.items():
-            if (
-                not is_type_in_union(field_type, type(None))
-                and get_origin(field_type) is not NotRequired
-            ) or get_origin(field_type) is Required:
-                dict_required.append(field_name)
+            # Unwrap special case for "NotRequired" and "Required"
+            # A field type that only exist for TypedDicts
+            if get_origin(field_type) is NotRequired:
+                explicit_optional.add(field_name)
+
+            if get_origin(field_type) is Required:
+                explicit_required.add(field_name)
 
             dict_properties[field_name] = type_to_dict(
                 field_type, f"{scope} {t.__name__}.{field_name}", type_map
             )
 
+        optional = set(dict_fields) - explicit_optional
         return {
             "type": "object",
             "properties": dict_properties,
-            "required": dict_required if is_total(t) else [],
+            "required": sorted(optional) if is_total(t) else sorted(explicit_required),
             "additionalProperties": False,
         }
 
-    if type(t) is UnionType:
+    origin = get_origin(t)
+    # UnionTypes
+    if type(t) is UnionType or origin is Union:
+        supported = []
+        for arg in get_args(t):
+            try:
+                supported.append(
+                    type_to_dict(arg, scope, type_map, narrow_unsupported_union_types)
+                )
+            except JSchemaTypeError:
+                if narrow_unsupported_union_types:
+                    # If we are narrowing unsupported union types, we skip the error
+                    continue
+                raise
+
+        if len(supported) == 0:
+            msg = f"{scope} - No supported types in Union {t!s}, type_map: {type_map}"
+            raise JSchemaTypeError(msg)
+
+        if len(supported) == 1:
+            # If there's only one supported type, return it directly
+            return supported[0]
+
+        # TODO: it would maybe be better to return 'anyOf' this should work for typescript
+        # But is more correct for JSON Schema validation
+        # i.e. 42 would match all of "int | float" which would be an invalid value for that using "oneOf"
+
+        # If there are multiple supported types, return them as oneOf
         return {
-            "oneOf": [type_to_dict(arg, scope, type_map) for arg in t.__args__],
+            "oneOf": supported,
         }
 
     if isinstance(t, TypeVar):
@@ -220,12 +254,6 @@ def type_to_dict(
             base_type, *metadata = get_args(t)
             schema = type_to_dict(base_type, scope)  # Generate schema for the base type
             return apply_annotations(schema, metadata)
-
-        if origin is Union:
-            union_types = [type_to_dict(arg, scope, type_map) for arg in t.__args__]
-            return {
-                "oneOf": union_types,
-            }
 
         if origin in {list, set, frozenset, tuple}:
             return {
