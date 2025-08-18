@@ -25,6 +25,7 @@
             "clanServices"
             "pkgs/zerotierone"
             "pkgs/minifakeroot"
+            "pkgs/clan-cli/clan_cli/tests/flake-module.nix"
           ];
         };
       };
