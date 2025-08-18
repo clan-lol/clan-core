@@ -36,7 +36,7 @@ export interface LabelProps {
 }
 
 export const Label = (props: LabelProps) => {
-  const descriptionSize = () => (props.size == "default" ? "xs" : "xxs");
+  const descriptionSize = () => (props.size == "default" ? "s" : "xs");
 
   return (
     <Show when={props.label}>
