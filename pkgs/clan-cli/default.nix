@@ -244,8 +244,8 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.libxslt
               pkgs.getconf
 
-              nixosConfigurations.test-vm-persistence.config.system.clan.vm.create
-              nixosConfigurations.test-vm-deployment.config.system.clan.vm.create
+              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
+              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
             ];
           };
         }

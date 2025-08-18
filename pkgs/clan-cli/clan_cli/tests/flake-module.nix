@@ -2,11 +2,21 @@
 {
   # Define machines that use the nixOS modules
   clan.machines = {
-    test-vm-persistence = {
+    test-vm-persistence-x86_64-linux = {
       imports = [ self.nixosModules.test-vm-persistence ];
+      nixpkgs.hostPlatform = "x86_64-linux";
     };
-    test-vm-deployment = {
+    test-vm-persistence-aarch64-linux = {
+      imports = [ self.nixosModules.test-vm-persistence ];
+      nixpkgs.hostPlatform = "aarch64-linux";
+    };
+    test-vm-deployment-x86_64-linux = {
       imports = [ self.nixosModules.test-vm-deployment ];
+      nixpkgs.hostPlatform = "x86_64-linux";
+    };
+    test-vm-deployment-aarch64-linux = {
+      imports = [ self.nixosModules.test-vm-deployment ];
+      nixpkgs.hostPlatform = "aarch64-linux";
     };
   };
 
@@ -15,7 +25,6 @@
     test-vm-persistence =
       { config, ... }:
       {
-        nixpkgs.hostPlatform = "x86_64-linux";
         system.stateVersion = config.system.nixos.release;
 
         # Disable services that might cause issues in tests
@@ -53,7 +62,6 @@
     test-vm-deployment =
       { config, lib, ... }:
       {
-        nixpkgs.hostPlatform = "x86_64-linux";
         system.stateVersion = config.system.nixos.release;
 
         # Disable services that might cause issues in tests

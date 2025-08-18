@@ -498,8 +498,18 @@ def vm_test_flake(
     template_path = Path(__file__).parent / "vm_test_flake.nix"
     template_content = template_path.read_text()
 
-    # Substitute the clan-core URL
+    # Get the current system
+    system_result = sp.run(
+        nix_command(["config", "show", "system"]),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    current_system = system_result.stdout.strip()
+
+    # Substitute the clan-core URL and system
     flake_content = template_content.replace("__CLAN_CORE__", clan_core_url)
+    flake_content = flake_content.replace("__SYSTEM__", current_system)
 
     # Write the flake.nix
     (test_flake_dir / "flake.nix").write_text(flake_content)

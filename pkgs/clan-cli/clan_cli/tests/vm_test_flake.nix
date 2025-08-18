@@ -10,9 +10,11 @@
         machines = {
           test-vm-persistence = {
             imports = [ clan-core.nixosModules.test-vm-persistence ];
+            nixpkgs.hostPlatform = "__SYSTEM__";
           };
           test-vm-deployment = {
             imports = [ clan-core.nixosModules.test-vm-deployment ];
+            nixpkgs.hostPlatform = "__SYSTEM__";
           };
         };
       };
