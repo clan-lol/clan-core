@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 # These paths will be substituted during package build
-CP_BIN = "@cp@"
+XCP_BIN = "@xcp@"
 NIX_STORE_BIN = "@nix-store@"
 XARGS_BIN = "@xargs@"
 
@@ -52,7 +52,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
                 subprocess.run(  # noqa: S603
                     [
                         XARGS_BIN,
-                        CP_BIN,
+                        XCP_BIN,
                         "--recursive",
                         "--target-directory",
                         f"{tmpdir}/store/nix/store",

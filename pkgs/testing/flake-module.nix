@@ -15,8 +15,7 @@
           mkdir -p "$CLAN_TEST_STORE/nix/store"
           mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
           if [[ -n "''${closureInfo-}" ]]; then
-            # ${pkgs.findutils}/bin/xargs ${pkgs.xcp}/bin/xcp --recursive --target-directory "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
-            ${pkgs.findutils}/bin/xargs ${pkgs.coreutils}/bin/cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
+            ${pkgs.findutils}/bin/xargs ${pkgs.xcp}/bin/xcp --recursive --target-directory "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
             ${pkgs.nix}/bin/nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
           fi
         '';
@@ -39,7 +38,7 @@
           ];
           postPatch = ''
             substituteInPlace nixos_test_lib/nix_setup.py \
-              --replace '@cp@' '${pkgs.coreutils}/bin/cp' \
+              --replace '@xcp@' '${pkgs.xcp}/bin/xcp' \
               --replace '@nix-store@' '${pkgs.nix}/bin/nix-store' \
               --replace '@xargs@' '${pkgs.findutils}/bin/xargs'
           '';
