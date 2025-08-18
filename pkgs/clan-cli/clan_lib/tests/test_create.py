@@ -218,7 +218,7 @@ def test_clan_create_api(
     clan_dir_flake.invalidate_cache()
 
     generators = get_generators(machine=machine, full_closure=True)
-    all_prompt_values = {}
+    collected_prompt_values = {}
     for generator in generators:
         prompt_values = {}
         for prompt in generator.prompts:
@@ -228,12 +228,12 @@ def test_clan_create_api(
             else:
                 msg = f"Prompt {var_id} not handled in test, please fix it"
                 raise ClanError(msg)
-        all_prompt_values[generator.name] = prompt_values
+        collected_prompt_values[generator.name] = prompt_values
 
     run_generators(
         machine=machine,
-        generators=[gen.name for gen in generators],
-        all_prompt_values=all_prompt_values,
+        generators=[gen.key for gen in generators],
+        prompt_values=collected_prompt_values,
     )
 
     clan_dir_flake.invalidate_cache()
