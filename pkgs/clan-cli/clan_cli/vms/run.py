@@ -82,11 +82,9 @@ def get_secrets(
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
-    generate_facts([machine])
-    run_generators([machine])
-
     machine.secret_facts_store.upload(secrets_dir)
     populate_secret_vars(machine, secrets_dir)
+
     return secrets_dir
 
 
@@ -383,6 +381,9 @@ def run_command(
     args: argparse.Namespace,
 ) -> None:
     machine_obj: Machine = Machine(args.machine, args.flake)
+
+    generate_facts([machine_obj])
+    run_generators([machine_obj])
 
     vm: VmConfig = inspect_vm(machine=machine_obj)
 
