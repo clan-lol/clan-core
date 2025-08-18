@@ -211,6 +211,10 @@ def type_to_dict(
             # If there's only one supported type, return it directly
             return supported[0]
 
+        # TODO: it would maybe be better to return 'anyOf' this should work for typescript
+        # But is more correct for JSON Schema validation
+        # i.e. 42 would match all of "int | float" which would be an invalid value for that using "oneOf"
+
         # If there are multiple supported types, return them as oneOf
         return {
             "oneOf": supported,

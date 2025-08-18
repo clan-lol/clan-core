@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import cast
 
 from clan_lib.api import API
-from clan_lib.api.util import JSchemaTypeError, type_to_dict
+from clan_lib.api.type_to_jsonschema import JSchemaTypeError, type_to_dict
 from clan_lib.errors import ClanError
 
 

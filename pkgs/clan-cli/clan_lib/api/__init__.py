@@ -16,7 +16,6 @@ from typing import (
     get_type_hints,
 )
 
-from clan_lib.api.util import JSchemaTypeError
 from clan_lib.async_run import get_current_thread_opkey
 from clan_lib.errors import ClanError
 
@@ -204,7 +203,7 @@ API.register(get_system_file)
     def to_json_schema(self) -> dict[str, Any]:
         from typing import get_type_hints
 
-        from .util import type_to_dict
+        from .type_to_jsonschema import JSchemaTypeError, type_to_dict
 
         api_schema: dict[str, Any] = {
             "$comment": "An object containing API methods. ",
