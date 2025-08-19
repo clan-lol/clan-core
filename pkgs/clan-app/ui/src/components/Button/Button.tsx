@@ -7,7 +7,7 @@ import "./Button.css";
 import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
 
-export type Size = "default" | "s";
+export type Size = "default" | "s" | "xs";
 export type Hierarchy = "primary" | "secondary";
 
 export type Action = () => Promise<void>;
@@ -28,6 +28,7 @@ export interface ButtonProps
 const iconSizes: Record<Size, string> = {
   default: "1rem",
   s: "0.8125rem",
+  xs: "0.625rem",
 };
 
 export const Button = (props: ButtonProps) => {

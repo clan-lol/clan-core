@@ -9,13 +9,13 @@ div.sidebar-body {
   overflow-y: auto;
   scrollbar-width: none;
 
-  scrollbar-color: theme(colors.primary.700) theme(colors.primary.600);
-
-  background: linear-gradient(
-    180deg,
-    theme(colors.bg.inv.1) 0%,
-    theme(colors.bg.inv.3) 100%
-  );
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),
+    linear-gradient(
+      180deg,
+      theme(colors.bg.inv.1) 0%,
+      theme(colors.bg.inv.3) 100%
+    );
 
   @apply backdrop-blur-sm;
 
@@ -27,14 +27,12 @@ div.sidebar-body {
     }
 
     & > .item {
-      @apply py-3 px-1.5 bg-inv-3 rounded-md mb-4;
-
       &:last-child {
         @apply mb-0;
       }
 
       & > .header {
-        @apply flex mb-4 px-2;
+        @apply flex mb-2 px-2;
 
         & > .trigger {
           @apply inline-flex items-center justify-between w-full;
@@ -61,6 +59,8 @@ div.sidebar-body {
 
       & > .content {
         @apply overflow-hidden flex flex-col;
+        @apply py-3 px-1.5 bg-inv-4 rounded-md mb-4;
+
         animation: slideAccordionUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
 
         &[data-expanded] {

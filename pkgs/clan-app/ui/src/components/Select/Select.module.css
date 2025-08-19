@@ -60,7 +60,7 @@
 
   /* Option elements (typically <li>) */
   & [role="option"] {
-    @apply px-2 py-4 rounded-sm flex items-center gap-1 flex-shrink-0;
+    @apply p-2 rounded-sm flex items-center gap-1 flex-shrink-0;
 
     &[data-highlighted],
     &:focus-visible {

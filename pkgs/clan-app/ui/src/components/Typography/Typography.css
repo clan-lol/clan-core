@@ -28,25 +28,25 @@
     &.size-default {
       font-size: 1rem;
       line-height: 1.32;
-      letter-spacing: 0.02rem;
+      letter-spacing: 0.005rem;
     }
 
     &.size-s {
       font-size: 0.875rem;
       line-height: 1.32;
-      letter-spacing: 0.0175rem;
+      letter-spacing: 0.00875rem;
     }
 
     &.size-xs {
-      font-size: 0.75rem;
+      font-size: 0.8125rem;
       line-height: 1.32;
-      letter-spacing: 0.0225rem;
+      letter-spacing: 0.01625rem;
     }
 
     &.size-xxs {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       line-height: 1.32;
-      letter-spacing: 0.00688rem;
+      letter-spacing: 0.015rem;
     }
   }
 
@@ -55,27 +55,21 @@
       font-family: "Archivo SemiCondensed", sans-serif;
 
       &.size-default {
-        font-size: 0.875rem;
-        line-height: 1;
-        letter-spacing: 0.0175rem;
+        font-size: 1rem;
+        line-height: normal;
+        letter-spacing: 0.02rem;
       }
 
       &.size-s {
-        font-size: 0.8125rem;
-        line-height: 1;
+        font-size: 0.875rem;
+        line-height: normal;
         letter-spacing: 0.0175rem;
       }
 
       &.size-xs {
-        font-size: 0.75rem;
-        line-height: 1;
-        letter-spacing: 0.0075rem;
-      }
-
-      &.size-xxs {
-        font-size: 0.6875rem;
-        line-height: 1;
-        letter-spacing: normal;
+        font-size: 0.8125rem;
+        line-height: normal;
+        letter-spacing: 0.008125rem;
       }
     }
 
@@ -83,20 +77,20 @@
       font-family: "Commit Mono", monospace;
 
       &.size-default {
-        font-size: 0.8125rem;
-        line-height: 1;
+        font-size: 1rem;
+        line-height: normal;
         letter-spacing: normal;
       }
 
       &.size-s {
-        font-size: 0.75rem;
-        line-height: 1;
+        font-size: 0.875rem;
+        line-height: normal;
         letter-spacing: normal;
       }
 
       &.size-xs {
-        font-size: 0.6875rem;
-        line-height: 1;
+        font-size: 0.8125rem;
+        line-height: normal;
         letter-spacing: normal;
       }
     }
