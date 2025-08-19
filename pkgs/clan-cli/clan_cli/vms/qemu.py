@@ -179,7 +179,6 @@ def qemu_command(
         "-drive", f"cache=writeback,file={state_img},format=qcow2,id=state,if=none,index=2,werror=report",
         "-device", "virtio-blk-pci,drive=state",
         "-device", "virtio-keyboard",
-        "-usb", "-device", "usb-tablet,bus=usb-bus.0",
         "-kernel", f"{chroot_toplevel}/kernel",
         "-initrd", str(initrd),
         "-append", " ".join(kernel_cmdline),
@@ -189,6 +188,11 @@ def qemu_command(
         "-device", "virtio-serial",
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
     ]
+    # USB tablet only works reliably on x86_64 Linux for now, not aarch64-linux.
+    # TODO: Fix USB tablet support for ARM architectures and test macOS
+    if platform.system().lower() == "linux" and platform.machine().lower() in ("x86_64", "amd64"):
+        command.extend(["-usb", "-device", "usb-tablet,bus=usb-bus.0"])
+
     if interactive:
         command.extend(
             [
