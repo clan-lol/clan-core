@@ -62,6 +62,11 @@ class RenderLoop {
 
     this.renderRequested = true;
     requestAnimationFrame(() => {
+      if (!this.initialized) {
+        console.log("RenderLoop not initialized, skipping render.");
+        return;
+      }
+
       this.updateTweens();
 
       const needsUpdate = this.controls.update(); // returns true if damping is ongoing
@@ -69,6 +74,7 @@ class RenderLoop {
       this.render();
       this.renderRequested = false;
 
+      // Controls smoothing may require another render
       if (needsUpdate) {
         this.requestRender();
       }
