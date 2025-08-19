@@ -110,6 +110,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
   const clanURI = useClanURI();
   const navigate = useNavigate();
 
+  const machinesQuery = useMachinesQuery(clanURI);
+
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
     reject: (err: unknown) => void;
@@ -141,6 +143,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
       // Important: rejects the promise
       throw new Error(res.errors[0].message);
     }
+
+    // trigger a refetch of the machines query
+    machinesQuery.refetch();
+
     return { id: values.name };
   };
 
