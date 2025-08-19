@@ -12,6 +12,8 @@ import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
 import { ApiCall } from "@/src/hooks/api";
 
+import cx from "classnames";
+
 interface InstallStepperProps {
   onDone: () => void;
 }
@@ -82,10 +84,29 @@ export const InstallModal = (props: InstallModalProps) => {
 
   set("install", { machineName: props.machineName });
 
+  // allows each step to adjust the size of the modal
+  const sizeClasses = () => {
+    const defaultClass = "max-w-3xl h-[30rem]";
+
+    const currentStep = stepper.currentStep();
+    if (!currentStep) {
+      return defaultClass;
+    }
+
+    switch (currentStep.id) {
+      case "create:progress":
+      case "create:done":
+        return currentStep.class;
+
+      default:
+        return defaultClass;
+    }
+  };
+
   return (
     <StepperProvider stepper={stepper}>
       <Modal
-        class="h-[30rem] w-screen max-w-3xl"
+        class={cx("w-screen", sizeClasses())}
         title="Install machine"
         onClose={() => {
           console.log("Install modal closed");
