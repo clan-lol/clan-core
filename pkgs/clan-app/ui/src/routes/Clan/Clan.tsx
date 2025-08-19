@@ -22,7 +22,7 @@ import {
   useMachinesQuery,
 } from "@/src/hooks/queries";
 import { callApi } from "@/src/hooks/api";
-import { store, setStore, clanURIs } from "@/src/stores/clan";
+import { store, setStore, clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
 import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
@@ -164,6 +164,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const machine = createMemo(() => maybeUseMachineName());
 
+  createEffect(() => {
+    console.log("Selected clan:", clanURI);
+  });
+
   createEffect(
     on(machine, (machineId) => {
       if (machineId) {
@@ -220,6 +224,13 @@ const ClanSceneController = (props: RouteSectionProps) => {
                 }}
               />
             </Show>
+            <Button
+              onClick={() => setActiveClanURI(undefined)}
+              hierarchy="primary"
+              class="absolute bottom-4 right-4"
+            >
+              close this clan
+            </Button>
             <div
               class={cx({
                 "fade-out": !machinesQuery.isLoading && loadingCooldown(),

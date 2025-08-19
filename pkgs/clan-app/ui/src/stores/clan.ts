@@ -41,7 +41,8 @@ const activeClanURI = () => store.activeClanURI;
  *
  * @param {string} uri - The URI to be set as the active Clan URI.
  */
-const setActiveClanURI = (uri: string) => setStore("activeClanURI", uri);
+const setActiveClanURI = (uri: string | undefined) =>
+  setStore("activeClanURI", uri);
 
 /**
  * Retrieves the current list of clan URIs from the store.
