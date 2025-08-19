@@ -6,6 +6,7 @@ import { createEffect, createSignal, JSX, Show, splitProps } from "solid-js";
 import styles from "./Select.module.css";
 import { Typography } from "../Typography/Typography";
 import cx from "classnames";
+import { useModalContext } from "../Modal/Modal";
 
 export interface Option {
   value: string;
@@ -79,6 +80,13 @@ export const Select = (props: SelectProps) => {
     setValue(options().find((option) => props.value === option.value));
   });
 
+  const modalContext = useModalContext();
+  const defaultMount =
+    props.portalProps?.mount || modalContext?.portalRef || document.body;
+
+  createEffect(() => {
+    console.debug("Select component mounted at:", defaultMount);
+  });
   return (
     <KSelect
       {...root}
@@ -174,12 +182,40 @@ export const Select = (props: SelectProps) => {
           </KSelect.Icon>
         </KSelect.Trigger>
       </Orienter>
-      <KSelect.Portal {...props.portalProps}>
+      <KSelect.Portal mount={defaultMount} {...props.portalProps}>
         <KSelect.Content
           class={styles.options_content}
           style={{ "--z-index": zIndex() }}
         >
-          <KSelect.Listbox />
+          <KSelect.Listbox>
+            {() => (
+              <KSelect.Trigger
+                class={cx(styles.trigger)}
+                style={{ "--z-index": zIndex() }}
+                data-loading={loading() || undefined}
+              >
+                <KSelect.Value<Option>>
+                  {(state) => (
+                    <Typography
+                      hierarchy="body"
+                      size="xs"
+                      weight="bold"
+                      class="flex w-full items-center"
+                    >
+                      {state.selectedOption().label}
+                    </Typography>
+                  )}
+                </KSelect.Value>
+                <KSelect.Icon
+                  as="button"
+                  class={styles.icon}
+                  data-loading={loading() || undefined}
+                >
+                  <Icon icon="Expand" color="inherit" />
+                </KSelect.Icon>
+              </KSelect.Trigger>
+            )}
+          </KSelect.Listbox>
         </KSelect.Content>
       </KSelect.Portal>
       {/* TODO: Display error next to the problem */}

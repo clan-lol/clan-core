@@ -201,6 +201,7 @@ type Story = StoryObj<typeof InstallModal>;
 export const Init: Story = {
   description: "Welcome step for the installation workflow",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "init",
   },
@@ -208,6 +209,7 @@ export const Init: Story = {
 export const CreateInstallerProse: Story = {
   description: "Prose step for creating an installer",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "create:prose",
   },
@@ -215,6 +217,7 @@ export const CreateInstallerProse: Story = {
 export const CreateInstallerImage: Story = {
   description: "Configure the image to install",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "create:image",
   },
@@ -222,6 +225,7 @@ export const CreateInstallerImage: Story = {
 export const CreateInstallerDisk: Story = {
   description: "Select a disk to install the image on",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "create:disk",
   },
@@ -229,6 +233,7 @@ export const CreateInstallerDisk: Story = {
 export const CreateInstallerProgress: Story = {
   description: "Showed while the USB stick is being flashed",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "create:progress",
   },
@@ -236,6 +241,7 @@ export const CreateInstallerProgress: Story = {
 export const CreateInstallerDone: Story = {
   description: "Installation done step",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "create:done",
   },
@@ -243,6 +249,7 @@ export const CreateInstallerDone: Story = {
 export const InstallConfigureAddress: Story = {
   description: "Installation configure address step",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:address",
   },
@@ -250,6 +257,7 @@ export const InstallConfigureAddress: Story = {
 export const InstallCheckHardware: Story = {
   description: "Installation check hardware step",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:check-hardware",
   },
@@ -257,6 +265,7 @@ export const InstallCheckHardware: Story = {
 export const InstallSelectDisk: Story = {
   description: "Select disk to install the system on",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:disk",
   },
@@ -264,6 +273,7 @@ export const InstallSelectDisk: Story = {
 export const InstallVars: Story = {
   description: "Fill required credentials and data for the installation",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:data",
   },
@@ -271,6 +281,7 @@ export const InstallVars: Story = {
 export const InstallSummary: Story = {
   description: "Summary of the installation steps",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:summary",
   },
@@ -278,6 +289,7 @@ export const InstallSummary: Story = {
 export const InstallProgress: Story = {
   description: "Shown while the installation is in progress",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:progress",
   },
@@ -285,6 +297,7 @@ export const InstallProgress: Story = {
 export const InstallDone: Story = {
   description: "Shown after the installation is done",
   args: {
+    open: true,
     machineName: "Test Machine",
     initialStep: "install:done",
   },

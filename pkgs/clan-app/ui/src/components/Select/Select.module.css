@@ -60,11 +60,11 @@
 
   /* Option elements (typically <li>) */
   & [role="option"] {
-    @apply p-2 rounded-sm flex items-center gap-1 flex-shrink-0;
+    @apply w-full p-2 rounded-sm flex items-center gap-1 flex-shrink-0;
 
     &[data-highlighted],
     &:focus-visible {
-      @apply outline outline-1 outline-inv-2;
+      @apply outline outline-1 outline-inv-2 outline-offset-[-1px];
     }
 
     &:hover {
@@ -77,6 +77,10 @@
   }
 
   & [role="listbox"] {
+    width: var(--kb-popper-anchor-width);
+    overflow-x: hidden;
+    overflow-y: scroll;
+
     &:focus-visible {
       @apply outline-none;
     }

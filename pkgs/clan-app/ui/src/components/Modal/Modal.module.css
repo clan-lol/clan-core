@@ -37,7 +37,8 @@
 }
 
 .backdrop {
-  @apply absolute left-0 top-0 z-50 size-full bg-black opacity-40;
+  @apply absolute top-0 left-0 w-full h-svh flex justify-center items-center backdrop-blur-0 z-50;
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .contentWrapper {

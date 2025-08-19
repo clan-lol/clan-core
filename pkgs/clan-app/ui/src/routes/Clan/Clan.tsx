@@ -54,55 +54,43 @@ interface MockProps {
 }
 
 const MockCreateMachine = (props: MockProps) => {
-  let container: Node;
-
   const [form, { Form, Field, FieldArray }] = createForm<CreateFormValues>();
 
   return (
-    <div ref={(el) => (container = el)} class={cx(styles.createBackdrop)}>
-      <Modal
-        open={true}
-        mount={container!}
-        onClose={() => {
-          reset(form);
-          props.onClose();
-        }}
-        class={cx(styles.createModal)}
-        title="Create Machine"
-      >
-        {() => (
-          <Form class="flex flex-col" onSubmit={props.onSubmit}>
-            <Field name="name">
-              {(field, props) => (
-                <>
-                  <TextInput
-                    {...field}
-                    label="Name"
-                    size="s"
-                    required={true}
-                    input={{ ...props, placeholder: "name", autofocus: true }}
-                  />
-                </>
-              )}
-            </Field>
-
-            <div class="mt-4 flex w-full items-center justify-end gap-4">
-              <Button size="s" hierarchy="secondary" onClick={props.onClose}>
-                Cancel
-              </Button>
-              <Button
+    <Modal
+      open={true}
+      onClose={() => {
+        reset(form);
+        props.onClose();
+      }}
+      class={cx(styles.createModal)}
+      title="Create Machine"
+    >
+      <Form class="flex flex-col" onSubmit={props.onSubmit}>
+        <Field name="name">
+          {(field, props) => (
+            <>
+              <TextInput
+                {...field}
+                label="Name"
                 size="s"
-                type="submit"
-                hierarchy="primary"
-                onClick={close}
-              >
-                Create
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Modal>
-    </div>
+                required={true}
+                input={{ ...props, placeholder: "name", autofocus: true }}
+              />
+            </>
+          )}
+        </Field>
+
+        <div class="mt-4 flex w-full items-center justify-end gap-4">
+          <Button size="s" hierarchy="secondary" onClick={props.onClose}>
+            Cancel
+          </Button>
+          <Button size="s" type="submit" hierarchy="primary" onClick={close}>
+            Create
+          </Button>
+        </div>
+      </Form>
+    </Modal>
   );
 };
 
