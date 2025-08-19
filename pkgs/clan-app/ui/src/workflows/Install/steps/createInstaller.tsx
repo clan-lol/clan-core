@@ -196,6 +196,8 @@ const ChooseDiskSchema = v.object({
 
 type ChooseDiskForm = v.InferInput<typeof ChooseDiskSchema>;
 
+const installMediaRegex = new RegExp("^(?<type>usb|mmc)-(?<name>.*)(-(.*))?$");
+
 const ChooseDisk = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
@@ -236,6 +238,34 @@ const ChooseDisk = () => {
   };
 
   const stripId = (s: string) => s.split("-")[1] ?? s;
+
+  const getOptions = async () => {
+    if (!systemStorageQuery.data) {
+      await systemStorageQuery.refetch();
+    }
+
+    const blockDevices = systemStorageQuery.data?.blockdevices ?? [];
+
+    return (
+      blockDevices
+        // we only want writeable block devices which are USB or MMC (SD cards)
+        .filter(({ id_link, ro }) => !ro && installMediaRegex.test(id_link))
+        // transform each entry into an option
+        .map(({ id_link, size, path }) => {
+          const match = id_link.match(installMediaRegex)!;
+          const name = match.groups?.name || "";
+
+          const truncatedName =
+            name.length > 32 ? name.slice(0, 32) + "..." : name;
+
+          return {
+            value: path,
+            label: `${truncatedName.replaceAll("_", " ")} (${size})`,
+          };
+        })
+    );
+  };
+
   return (
     <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
@@ -251,22 +281,11 @@ const ChooseDisk = () => {
                     error={field.error}
                     required
                     label={{
-                      label: "USB Stick",
-                      description: "Select the usb stick",
+                      label: "Install Media",
+                      description:
+                        "Select a USB stick or SD card from the list",
                     }}
-                    getOptions={async () => {
-                      if (!systemStorageQuery.data) {
-                        await systemStorageQuery.refetch();
-                      }
-                      console.log(systemStorageQuery.data);
-
-                      return (systemStorageQuery.data?.blockdevices ?? []).map(
-                        (dev) => ({
-                          value: dev.path,
-                          label: stripId(dev.id_link),
-                        }),
-                      );
-                    }}
+                    getOptions={getOptions}
                     placeholder="Choose Device"
                     name={field.name}
                   />
@@ -287,7 +306,7 @@ const ChooseDisk = () => {
         footer={
           <div class="flex justify-between">
             <BackButton />
-            <NextButton endIcon="Flash">Flash USB Stick</NextButton>
+            <NextButton endIcon="Flash">Flash Installer</NextButton>
           </div>
         }
       />
