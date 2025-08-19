@@ -442,17 +442,31 @@ Examples:
     parser_network = subparsers.add_parser(
         "network",
         aliases=["net"],
-        # TODO: Add help="Manage networks" when network code is ready
-        # help="Manage networks",
+        help="Manage networks",
         description="Manage networks",
         epilog=(
             """
-show information about configured networks
+Manage and monitor network connections for machines.
+
+Clan supports multiple network technologies (direct SSH, Tor, etc.) that can be
+configured with different priorities. When connecting to a machine, Clan will:
+1. Check for targetHost in inventory
+2. Try configured networks by priority
+3. Fall back to targetHost from machine config
+
+Commands like 'ssh' and 'machines update' automatically use the best
+available network connection unless overridden with --target-host.
 
 Examples:
 
     $ clan network list
-    Will list networks
+    List all configured networks and their peers
+
+    $ clan network ping machine1
+    Check connectivity to machine1 across all networks
+
+    $ clan network overview
+    Show complete network status and connectivity
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -495,7 +509,7 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     register_common_flags(parser)
 
     if argcomplete:
-        argcomplete.autocomplete(parser, exclude=["morph", "network", "net"])
+        argcomplete.autocomplete(parser, exclude=["morph"])
 
     return parser
 
