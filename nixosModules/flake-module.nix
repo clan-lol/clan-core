@@ -34,4 +34,7 @@ in
 
   flake.nixosModules.clanCore = clanCore;
   flake.darwinModules.clanCore = clanCore;
+
+  # Standalone VM base module that can be imported for VM testing
+  flake.nixosModules.clan-vm-base = ./clanCore/vm-base.nix;
 }

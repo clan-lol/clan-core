@@ -25,6 +25,8 @@
     test-vm-persistence =
       { config, ... }:
       {
+        imports = [ self.nixosModules.clan-vm-base ];
+
         system.stateVersion = config.system.nixos.release;
 
         # Disable services that might cause issues in tests
@@ -62,6 +64,8 @@
     test-vm-deployment =
       { config, lib, ... }:
       {
+        imports = [ self.nixosModules.clan-vm-base ];
+
         system.stateVersion = config.system.nixos.release;
 
         # Disable services that might cause issues in tests

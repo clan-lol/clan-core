@@ -13,7 +13,7 @@ from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_eval, run
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 @pytest.mark.skipif(sys.platform == "darwin", reason="preload doesn't work on darwin")
 def test_vm_deployment(
     vm_test_flake: Path,
