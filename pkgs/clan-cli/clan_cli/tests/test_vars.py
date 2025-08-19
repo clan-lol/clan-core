@@ -9,10 +9,12 @@ from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import (
-    Generator,
-    GeneratorKey,
     get_generators,
     run_generators,
+)
+from clan_cli.vars.generator import (
+    Generator,
+    GeneratorKey,
 )
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
@@ -698,8 +700,8 @@ def test_api_set_prompts(
     monkeypatch.chdir(flake.path)
 
     run_generators(
-        machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
-        generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+        machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+        generators=["my_generator"],
         prompt_values={
             "my_generator": {
                 "prompt1": "input1",
@@ -712,8 +714,8 @@ def test_api_set_prompts(
     assert store.exists(my_generator, "prompt1")
     assert store.get(my_generator, "prompt1").decode() == "input1"
     run_generators(
-        machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
-        generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+        machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+        generators=["my_generator"],
         prompt_values={
             "my_generator": {
                 "prompt1": "input2",
@@ -759,8 +761,8 @@ def test_stdout_of_generate(
     # with capture_output as output:
     with caplog.at_level(logging.INFO):
         run_generators(
-            Machine(name="my_machine", flake=flake),
-            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+            machines=[Machine(name="my_machine", flake=flake)],
+            generators=["my_generator"],
         )
 
     assert "Updated var my_generator/my_value" in caplog.text
@@ -771,8 +773,8 @@ def test_stdout_of_generate(
     set_var("my_machine", "my_generator/my_value", b"world", flake)
     with caplog.at_level(logging.INFO):
         run_generators(
-            Machine(name="my_machine", flake=flake),
-            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+            machines=[Machine(name="my_machine", flake=flake)],
+            generators=["my_generator"],
         )
     assert "Updated var my_generator/my_value" in caplog.text
     assert "old: world" in caplog.text
@@ -781,16 +783,16 @@ def test_stdout_of_generate(
     # check the output when nothing gets regenerated
     with caplog.at_level(logging.INFO):
         run_generators(
-            Machine(name="my_machine", flake=flake),
-            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+            machines=[Machine(name="my_machine", flake=flake)],
+            generators=["my_generator"],
         )
     assert "Updated var" not in caplog.text
     assert "hello" in caplog.text
     caplog.clear()
     with caplog.at_level(logging.INFO):
         run_generators(
-            Machine(name="my_machine", flake=flake),
-            generators=[GeneratorKey(machine="my_machine", name="my_secret_generator")],
+            machines=[Machine(name="my_machine", flake=flake)],
+            generators=["my_secret_generator"],
         )
     assert "Updated secret var my_secret_generator/my_secret" in caplog.text
     assert "hello" not in caplog.text
@@ -803,8 +805,8 @@ def test_stdout_of_generate(
     )
     with caplog.at_level(logging.INFO):
         run_generators(
-            Machine(name="my_machine", flake=flake),
-            generators=[GeneratorKey(machine="my_machine", name="my_secret_generator")],
+            machines=[Machine(name="my_machine", flake=flake)],
+            generators=["my_secret_generator"],
         )
     assert "Updated secret var my_secret_generator/my_secret" in caplog.text
     assert "world" not in caplog.text
@@ -892,8 +894,8 @@ def test_fails_when_files_are_left_from_other_backend(
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
         run_generators(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
-            generators=GeneratorKey(machine="my_machine", name=generator),
+            machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+            generators=generator,
         )
     # Will raise. It was secret before, but now it's not.
     my_secret_generator["files"]["my_secret"]["secret"] = (
@@ -908,13 +910,13 @@ def test_fails_when_files_are_left_from_other_backend(
         if generator == "my_secret_generator":
             with pytest.raises(ClanError):
                 run_generators(
-                    Machine(name="my_machine", flake=Flake(str(flake.path))),
-                    generators=GeneratorKey(machine="my_machine", name=generator),
+                    machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+                    generators=generator,
                 )
         else:
             run_generators(
-                Machine(name="my_machine", flake=Flake(str(flake.path))),
-                generators=GeneratorKey(machine="my_machine", name=generator),
+                machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+                generators=generator,
             )
 
 

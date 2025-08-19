@@ -7,7 +7,7 @@ from typing import Literal
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.generate import run_generators
 
 from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
@@ -88,7 +88,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     # Notify the UI about what we are doing
     notify_install_step("generators")
     generate_facts([machine])
-    generate_vars([machine])
+    run_generators([machine])
 
     with (
         TemporaryDirectory(prefix="nixos-install-") as _base_directory,

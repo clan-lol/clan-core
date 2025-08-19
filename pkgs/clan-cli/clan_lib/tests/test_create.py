@@ -231,8 +231,8 @@ def test_clan_create_api(
         collected_prompt_values[generator.name] = prompt_values
 
     run_generators(
-        machine=machine,
-        generators=[gen.key for gen in generators],
+        machines=[machine],
+        generators=[gen.name for gen in generators],
         prompt_values=collected_prompt_values,
     )
 

@@ -1,7 +1,6 @@
 import argparse
 import logging
 from collections.abc import Callable
-from typing import Literal
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -106,19 +105,17 @@ strategies (e.g., interactive CLI, GUI, or programmatic).
 
 @API.register
 def run_generators(
-    machine: Machine,
-    generators: GeneratorKey
-    | list[GeneratorKey]
-    | Literal["all", "minimal"] = "minimal",
+    machines: list[Machine],
+    generators: str | list[str] = "minimal",
     prompt_values: dict[str, dict[str, str]] | PromptFunc = lambda g: g.ask_prompts(),
     no_sandbox: bool = False,
 ) -> None:
-    """Run the specified generators for a machine.
+    """Run the specified generators for machines.
     Args:
-        machine: The machine to run generators for.
+        machines: The machines to run generators for.
         generators: Can be:
-            - GeneratorKey: Single generator to run (ensuring dependencies are met)
-            - list[GeneratorKey]: Specific generators to run exactly as provided.
+            - str: Single generator name to run (ensuring dependencies are met)
+            - list[str]: Specific generator names to run exactly as provided.
                 Dependency generators are not added automatically in this case.
                 The caller must ensure that all dependencies are included.
             - "all": Run all generators (full closure)
@@ -130,77 +127,49 @@ def run_generators(
         ClanError: If the machine or generator is not found, or if there are issues with
         executing the generator.
     """
-
-    if generators == "all":
-        generator_objects = get_generators(machine, full_closure=True)
-    elif generators == "minimal":
-        generator_objects = get_generators(machine, full_closure=False)
-    elif isinstance(generators, GeneratorKey):
-        # Single generator - compute minimal closure for it
-        generator_objects = get_generators(
-            machine, full_closure=False, generator_name=generators.name
-        )
-    elif isinstance(generators, list):
-        if len(generators) == 0:
-            return
-        generator_keys = set(generators)
-        all_generators = get_generators(machine, full_closure=True)
-        generator_objects = [g for g in all_generators if g.key in generator_keys]
-    else:
-        msg = f"Invalid generators argument: {generators}. Must be 'all', 'minimal', GeneratorKey, or a list of GeneratorKey"
-        raise ValueError(msg)
-
-    # If prompt function provided, ask all prompts
-    # TODO: make this more lazy and ask for every generator on execution
-    if callable(prompt_values):
-        prompt_values = {
-            generator.name: prompt_values(generator) for generator in generator_objects
-        }
-    # execute health check
-    _ensure_healthy(machine=machine, generators=generator_objects)
-
-    # execute generators
-    for generator in generator_objects:
-        if check_can_migrate(machine, generator):
-            migrate_files(machine, generator)
-        else:
-            generator.execute(
-                machine=machine,
-                prompt_values=prompt_values.get(generator.name, {}),
-                no_sandbox=no_sandbox,
-            )
-
-
-def generate_vars(
-    machines: list["Machine"],
-    generator_name: str | None = None,
-    regenerate: bool = False,
-    no_sandbox: bool = False,
-) -> None:
     for machine in machines:
-        errors = []
-        try:
-            generators: GeneratorKey | Literal["all", "minimal"]
-            if generator_name:
-                generators = GeneratorKey(machine=machine.name, name=generator_name)
-            else:
-                generators = "all" if regenerate else "minimal"
-
-            run_generators(
-                machine,
-                generators=generators,
-                no_sandbox=no_sandbox,
+        if generators == "all":
+            generator_objects = get_generators(machine, full_closure=True)
+        elif generators == "minimal":
+            generator_objects = get_generators(machine, full_closure=False)
+        elif isinstance(generators, str) and generators not in ["all", "minimal"]:
+            # Single generator name - compute minimal closure for it
+            generator_objects = get_generators(
+                machine, full_closure=False, generator_name=generators
             )
-            machine.info("All vars are up to date")
-        except Exception as exc:
-            errors += [(machine, exc)]
-        if len(errors) == 1:
-            raise errors[0][1]
-        if len(errors) > 1:
-            msg = f"Failed to generate vars for {len(errors)} hosts:"
-            for machine, error in errors:
-                msg += f"\n{machine}: {error}"
-            raise ClanError(msg) from errors[0][1]
+        elif isinstance(generators, list):
+            if len(generators) == 0:
+                return
+            # Create GeneratorKeys for this specific machine
+            generator_keys = {
+                GeneratorKey(machine=machine.name, name=name) for name in generators
+            }
+            all_generators = get_generators(machine, full_closure=True)
+            generator_objects = [g for g in all_generators if g.key in generator_keys]
+        else:
+            msg = f"Invalid generators argument: {generators}. Must be 'all', 'minimal', a generator name, or a list of generator names"
+            raise ValueError(msg)
+
+        # If prompt function provided, ask all prompts
+        # TODO: make this more lazy and ask for every generator on execution
+        if callable(prompt_values):
+            prompt_values = {
+                generator.name: prompt_values(generator)
+                for generator in generator_objects
+            }
+        # execute health check
+        _ensure_healthy(machine=machine, generators=generator_objects)
+
+        # execute generators
+        for generator in generator_objects:
+            if check_can_migrate(machine, generator):
+                migrate_files(machine, generator)
+            else:
+                generator.execute(
+                    machine=machine,
+                    prompt_values=prompt_values.get(generator.name, {}),
+                    no_sandbox=no_sandbox,
+                )
 
 
 def generate_command(args: argparse.Namespace) -> None:
@@ -225,10 +194,14 @@ def generate_command(args: argparse.Namespace) -> None:
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ]
     )
-    generate_vars(
+
+    run_generators(
         machines,
-        args.generator,
-        args.regenerate,
+        generators=args.generator
+        if args.generator
+        else "all"
+        if args.regenerate
+        else "minimal",
         no_sandbox=args.no_sandbox,
     )
 

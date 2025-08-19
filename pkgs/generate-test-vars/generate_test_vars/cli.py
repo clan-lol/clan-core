@@ -10,9 +10,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any, override
-from unittest.mock import patch
 
-from clan_cli.vars.generate import Generator, generate_vars
+from clan_cli.vars.generate import run_generators
+from clan_cli.vars.generator import Generator
 from clan_cli.vars.prompt import PromptType
 from clan_lib.dirs import find_toplevel
 from clan_lib.errors import ClanError
@@ -241,16 +241,13 @@ def main() -> None:
                 raise ClanError(msg)
         return prompt_values
 
-    with (
-        patch("clan_cli.vars.generate._ask_prompts", new=mocked_prompts),
-        NamedTemporaryFile("w") as f,
-    ):
+    with NamedTemporaryFile("w") as f:
         f.write("# created: 2023-07-17T10:51:45+02:00\n")
         f.write(f"# public key: {sops_pub_key}\n")
         f.write(sops_priv_key)
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
-        generate_vars(list(machines))
+        run_generators(list(machines), prompt_values=mocked_prompts)
 
 
 if __name__ == "__main__":

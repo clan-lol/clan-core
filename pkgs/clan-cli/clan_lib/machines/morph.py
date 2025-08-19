@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_cli.machines.create import CreateOptions, create_machine
-from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.generate import run_generators
 
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import specific_machine_dir
@@ -78,7 +78,7 @@ def morph_machine(
 
         machine = Machine(name=name, flake=Flake(str(flakedir)))
 
-        generate_vars([machine], generator_name=None, regenerate=False)
+        run_generators([machine], generators="minimal")
 
         machine.secret_vars_store.populate_dir(
             machine.name,

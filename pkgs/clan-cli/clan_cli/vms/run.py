@@ -22,7 +22,7 @@ from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.facts.generate import generate_facts
 from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
-from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.generate import run_generators
 from clan_cli.vars.upload import populate_secret_vars
 
 from .inspect import VmConfig, inspect_vm
@@ -85,7 +85,7 @@ def get_secrets(
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
     generate_facts([machine])
-    generate_vars([machine])
+    run_generators([machine])
 
     machine.secret_facts_store.upload(secrets_dir)
     populate_secret_vars(machine, secrets_dir)

@@ -7,7 +7,7 @@ from contextlib import ExitStack
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
-from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.generate import run_generators
 from clan_cli.vars.upload import upload_secret_vars
 
 from clan_lib.api import API
@@ -148,7 +148,7 @@ def run_machine_update(
         target_host_root = stack.enter_context(_target_host.become_root())
 
         generate_facts([machine], service=None, regenerate=False)
-        generate_vars([machine], generator_name=None, regenerate=False)
+        run_generators([machine], generators="minimal")
 
         # Upload secrets to the target host using root
         upload_secrets(machine, target_host_root)
