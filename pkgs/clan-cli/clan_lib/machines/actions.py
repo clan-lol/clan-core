@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TypedDict
 
@@ -18,12 +19,14 @@ from clan_lib.persist.util import (
 )
 
 
-class MachineFilter(TypedDict):
-    tags: list[str]
+@dataclass
+class MachineFilter:
+    tags: list[str] | None = None
 
 
-class ListOptions(TypedDict):
-    filter: MachineFilter
+@dataclass
+class ListOptions:
+    filter: MachineFilter = field(default_factory=MachineFilter)
 
 
 class MachineStatus(StrEnum):
@@ -44,26 +47,18 @@ def list_machines(
 ) -> dict[str, InventoryMachine]:
     """
     List machines of a clan
-
-    Usage Example:
-
-    machines = list_machines(flake, {"filter": {"tags": ["foo" "bar"]}})
-
-    lists only machines that include both "foo" AND "bar"
-
     """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
     machines = inventory.get("machines", {})
 
-    if opts and opts.get("filter"):
+    if opts and opts.filter.tags is not None:
         filtered_machines = {}
-        filter_tags = opts.get("filter", {}).get("tags", [])
 
         for machine_name, machine in machines.items():
             machine_tags = machine.get("tags", [])
-            if all(ft in machine_tags for ft in filter_tags):
+            if all(ft in machine_tags for ft in opts.filter.tags):
                 filtered_machines[machine_name] = machine
 
         return filtered_machines

@@ -7,7 +7,7 @@ from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.flake.flake import Flake
-from clan_lib.machines.actions import list_machines
+from clan_lib.machines.actions import ListOptions, MachineFilter, list_machines
 from clan_lib.machines.list import instantiate_inventory_to_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
@@ -49,7 +49,9 @@ def get_machines_for_update(
     filter_tags: list[str],
 ) -> list[Machine]:
     all_machines = list_machines(flake)
-    machines_with_tags = list_machines(flake, {"filter": {"tags": filter_tags}})
+    machines_with_tags = list_machines(
+        flake, ListOptions(filter=MachineFilter(tags=filter_tags))
+    )
 
     if filter_tags and not machines_with_tags:
         msg = f"No machines found with tags: {' AND '.join(filter_tags)}"
