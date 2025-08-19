@@ -3,3 +3,4 @@ app/.fonts
 
 .vite
 storybook-static
+*.css.d.ts
