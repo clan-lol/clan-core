@@ -18,6 +18,7 @@ export type SelectProps = {
   // Kobalte Select props, for modular forms
   name: string;
   placeholder?: string | undefined;
+  noOptionsText?: string | undefined;
   value: string | undefined;
   error: string;
   required?: boolean | undefined;
@@ -135,15 +136,33 @@ export const Select = (props: SelectProps) => {
             </Typography>
           }
         >
-          <Typography
-            hierarchy="label"
-            size="s"
-            weight="bold"
-            family="condensed"
-            class="flex w-full items-center"
+          <Show
+            when={options().length > 0}
+            fallback={
+              <Typography
+                hierarchy="label"
+                size="s"
+                weight="normal"
+                family="condensed"
+                class="flex w-full items-center"
+                color="secondary"
+              >
+                {props.noOptionsText || "No options available"}
+              </Typography>
+            }
           >
-            {props.placeholder}
-          </Typography>
+            <Show when={props.placeholder}>
+              <Typography
+                hierarchy="label"
+                size="s"
+                weight="bold"
+                family="condensed"
+                class="flex w-full items-center"
+              >
+                {props.placeholder}
+              </Typography>
+            </Show>
+          </Show>
         </Show>
       }
     >

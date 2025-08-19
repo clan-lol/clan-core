@@ -30,12 +30,14 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
         {
           name: "sda_bla_bla",
           path: "/dev/sda",
-          id_link: "sda_bla_bla",
+          id_link: "usb-bla-bla",
+          size: "12gb",
         },
         {
           name: "sdb_foo_foo",
           path: "/dev/sdb",
-          id_link: "sdb_foo_foo",
+          id_link: "usb-boo-foo",
+          size: "16gb",
         },
       ] as SuccessQuery<"list_system_storage_devices">["data"]["blockdevices"],
     },
