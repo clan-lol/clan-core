@@ -9,6 +9,7 @@ from clan_cli.completions import (
 )
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
+from clan_lib.machines.machines import Machine
 
 from .generator import Var
 from .list import get_machine_vars
@@ -16,9 +17,9 @@ from .list import get_machine_vars
 log = logging.getLogger(__name__)
 
 
-def get_machine_var(base_dir: str, machine_name: str, var_id: str) -> Var:
-    log.debug(f"getting var: {var_id} from machine: {machine_name}")
-    vars_ = get_machine_vars(base_dir=base_dir, machine_name=machine_name)
+def get_machine_var(machine: Machine, var_id: str) -> Var:
+    log.debug(f"getting var: {var_id} from machine: {machine.name}")
+    vars_ = get_machine_vars(machine)
     results = []
     for var in vars_:
         if var.id == var_id:
@@ -44,7 +45,8 @@ def get_machine_var(base_dir: str, machine_name: str, var_id: str) -> Var:
 
 
 def get_command(machine_name: str, var_id: str, flake: Flake) -> None:
-    var = get_machine_var(str(flake.path), machine_name, var_id)
+    machine = Machine(name=machine_name, flake=flake)
+    var = get_machine_var(machine, var_id)
     if not var.exists:
         msg = f"Var {var.id} has not been generated yet"
         raise ClanError(msg)

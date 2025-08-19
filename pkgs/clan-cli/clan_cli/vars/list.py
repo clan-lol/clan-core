@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_lib.flake import Flake, require_flake
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 from clan_lib.vars.generate import get_generators
 
@@ -11,10 +11,9 @@ from .generator import Var
 log = logging.getLogger(__name__)
 
 
-def get_machine_vars(base_dir: str, machine_name: str) -> list[Var]:
+def get_machine_vars(machine: Machine) -> list[Var]:
     # TODO: We dont have machine level store / this granularity yet
     # We should move the store definition to the flake, as there can be only one store per clan
-    machine = Machine(name=machine_name, flake=Flake(base_dir))
     pub_store = machine.public_vars_store
     sec_store = machine.secret_vars_store
 
@@ -37,7 +36,7 @@ def stringify_vars(_vars: list[Var]) -> str:
 
 
 def stringify_all_vars(machine: Machine) -> str:
-    return stringify_vars(get_machine_vars(str(machine.flake), machine.name))
+    return stringify_vars(get_machine_vars(machine))
 
 
 def list_command(args: argparse.Namespace) -> None:

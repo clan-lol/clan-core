@@ -187,16 +187,9 @@ def test_generate_public_and_secret_vars(
         "Update vars via generator my_shared_generator for machine my_machine"
         in commit_message
     )
+    assert get_machine_var(machine, "my_generator/my_value").printable_value == "public"
     assert (
-        get_machine_var(
-            str(machine.flake.path), machine.name, "my_generator/my_value"
-        ).printable_value
-        == "public"
-    )
-    assert (
-        get_machine_var(
-            str(machine.flake.path), machine.name, "my_shared_generator/my_shared_value"
-        ).printable_value
+        get_machine_var(machine, "my_shared_generator/my_shared_value").printable_value
         == "shared"
     )
     vars_text = stringify_all_vars(machine)
@@ -953,29 +946,21 @@ def test_invalidation(
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    value1 = get_machine_var(
-        str(machine.flake.path), machine.name, "my_generator/my_value"
-    ).printable_value
+    value1 = get_machine_var(machine, "my_generator/my_value").printable_value
     # generate again and make sure nothing changes without the invalidation data being set
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value1_new = get_machine_var(
-        str(machine.flake.path), machine.name, "my_generator/my_value"
-    ).printable_value
+    value1_new = get_machine_var(machine, "my_generator/my_value").printable_value
     assert value1 == value1_new
     # set the invalidation data of the generator
     my_generator["validation"] = 1
     flake.refresh()
     # generate again and make sure the value changes
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value2 = get_machine_var(
-        str(machine.flake.path), machine.name, "my_generator/my_value"
-    ).printable_value
+    value2 = get_machine_var(machine, "my_generator/my_value").printable_value
     assert value1 != value2
     # generate again without changing invalidation data -> value should not change
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value2_new = get_machine_var(
-        str(machine.flake.path), machine.name, "my_generator/my_value"
-    ).printable_value
+    value2_new = get_machine_var(machine, "my_generator/my_value").printable_value
     assert value2 == value2_new
 
 

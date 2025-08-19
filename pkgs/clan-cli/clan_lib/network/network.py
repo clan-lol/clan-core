@@ -32,11 +32,11 @@ class Peer:
             _var: dict[str, str] = self._host["var"]
             machine_name = _var["machine"]
             generator = _var["generator"]
+            from clan_lib.machines.machines import Machine
+
+            machine = Machine(name=machine_name, flake=self.flake)
             var = get_machine_var(
-                str(
-                    self.flake
-                ),  # TODO we should really pass the flake instance here instead of a str representation
-                machine_name,
+                machine,
                 f"{generator}/{_var['file']}",
             )
             if not var.exists:

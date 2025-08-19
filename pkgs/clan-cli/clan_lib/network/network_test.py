@@ -2,6 +2,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 from clan_lib.flake import Flake
+from clan_lib.machines.machines import Machine
 from clan_lib.network.network import Network, Peer, networks_from_flake
 
 
@@ -11,12 +12,12 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     flake = MagicMock(spec=Flake)
 
     # Mock the var decryption
-    def mock_var_side_effect(flake_path: str, machine: str, var_path: str) -> Any:
-        if machine == "machine1" and var_path == "wireguard/address":
+    def mock_var_side_effect(machine: Machine, var_path: str) -> Any:
+        if machine.name == "machine1" and var_path == "wireguard/address":
             mock_var = MagicMock()
             mock_var.value.decode.return_value = "192.168.1.10"
             return mock_var
-        if machine == "machine2" and var_path == "wireguard/address":
+        if machine.name == "machine2" and var_path == "wireguard/address":
             mock_var = MagicMock()
             mock_var.value.decode.return_value = "192.168.1.11"
             return mock_var
