@@ -56,11 +56,12 @@ const Prose = () => (
               Let's walk through it.
             </Typography>
             <Typography hierarchy="body" size="xs" weight="normal">
-              In the following we will help you to write the clan installer
-              software to a USB-stick. This USB-stick will then be used to set
-              up the new machine. Get a USB-stick with at least 8GB of capacity,
-              and plug it into the machine on which you read this text. Note,
-              all data on the USB-Stick will be lost.
+              We will help you write the Clan Installer to a USB-stick or SD
+              card, which will then be used to set up the new machine.
+            </Typography>
+            <Typography hierarchy="body" size="xs" weight="normal">
+              Get a USB-stick or an SD card with at least 8GB of capacity, and
+              plug it into this machine.
             </Typography>
           </div>
           <div class="flex flex-col gap-1">
