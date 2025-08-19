@@ -37,7 +37,7 @@
 }
 
 .backdrop {
-  @apply absolute left-0 top-0 z-50 size-full bg-white/90;
+  @apply absolute left-0 top-0 z-50 size-full bg-black opacity-40;
 }
 
 .contentWrapper {
