@@ -8,6 +8,10 @@ export type ClanDetailsWithURI = ClanDetails & { uri: string };
 
 export type Tags = SuccessData<"list_tags">;
 export type Machine = SuccessData<"get_machine">;
+
+export type MachineState = SuccessData<"get_machine_state">;
+export type MachineStatus = MachineState["status"];
+
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
 
@@ -90,6 +94,33 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
         machine: machine.data,
         fieldsSchema: writeSchema.data,
       };
+    },
+  }));
+};
+
+export const useMachineStateQuery = (clanURI: string, machineName: string) => {
+  const client = useApiClient();
+  return useQuery<MachineState>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "machine", machineName, "state"],
+    refetchInterval: 1000 * 60, // poll every 60 seconds
+    queryFn: async () => {
+      const apiCall = client.fetch("get_machine_state", {
+        machine: {
+          name: machineName,
+          flake: {
+            identifier: clanURI,
+          },
+        },
+      });
+
+      const result = await apiCall.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching machine status: " + result.errors[0].message,
+        );
+      }
+
+      return result.data;
     },
   }));
 };

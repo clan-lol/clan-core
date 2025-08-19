@@ -1,13 +1,16 @@
 import { RouteSectionProps, useNavigate } from "@solidjs/router";
 import { SidebarPane } from "@/src/components/Sidebar/SidebarPane";
 import { navigateToClan, useClanURI, useMachineName } from "@/src/hooks/clan";
-import { createSignal, Show } from "solid-js";
+import { Show } from "solid-js";
 import { SectionGeneral } from "./SectionGeneral";
-import { InstallModal } from "@/src/workflows/Install/install";
-import { Button } from "@/src/components/Button/Button";
 import { Machine as MachineModel, useMachineQuery } from "@/src/hooks/queries";
 import { SectionTags } from "@/src/routes/Machine/SectionTags";
 import { callApi } from "@/src/hooks/api";
+import { SidebarMachineStatus } from "@/src/components/Sidebar/SidebarMachineStatus";
+import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarSectionInstall";
+
+import cx from "classnames";
+import styles from "./Machine.module.css";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -17,10 +20,6 @@ export const Machine = (props: RouteSectionProps) => {
     // go back to clan route
     navigateToClan(navigate, clanURI);
   };
-
-  const [showInstall, setShowModal] = createSignal(false);
-
-  let container: Node;
 
   const sidebarPane = (machineName: string) => {
     const machineQuery = useMachineQuery(clanURI, machineName);
@@ -53,7 +52,15 @@ export const Machine = (props: RouteSectionProps) => {
     const sectionProps = { clanURI, machineName, onSubmit, machineQuery };
 
     return (
-      <SidebarPane title={machineName} onClose={onClose}>
+      <SidebarPane
+        class={cx(styles.sidebarPane)}
+        title={machineName}
+        onClose={onClose}
+        subHeader={() => (
+          <SidebarMachineStatus clanURI={clanURI} machineName={machineName} />
+        )}
+      >
+        <SidebarSectionInstall clanURI={clanURI} machineName={machineName} />
         <SectionGeneral {...sectionProps} />
         <SectionTags {...sectionProps} />
       </SidebarPane>
@@ -62,22 +69,6 @@ export const Machine = (props: RouteSectionProps) => {
 
   return (
     <Show when={useMachineName()} keyed>
-      <Button
-        hierarchy="primary"
-        onClick={() => setShowModal(true)}
-        class="absolute right-0 top-0 m-4"
-      >
-        Install me!
-      </Button>
-      {/* Unmount the whole component to destroy the store and form values */}
-      <Show when={showInstall()}>
-        <InstallModal
-          open={showInstall()}
-          machineName={useMachineName()}
-          mount={container!}
-          onClose={() => setShowModal(false)}
-        />
-      </Show>
       {sidebarPane(useMachineName())}
     </Show>
   );

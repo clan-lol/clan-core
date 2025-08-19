@@ -11,6 +11,7 @@ div.sidebar-pane {
     animation: sidebarPaneHide 250ms ease-out 300ms forwards;
 
     & > div.header > *,
+    & > div.sub-header > *,
     & > div.body > * {
       animation: sidebarFadeOut 250ms ease-out forwards;
     }
@@ -28,6 +29,25 @@ div.sidebar-pane {
       theme(colors.bg.inv.3) 0%,
       theme(colors.bg.inv.4) 100%
     );
+
+    & > * {
+      @apply opacity-0;
+      animation: sidebarFadeIn 250ms ease-in 250ms forwards;
+    }
+  }
+
+  & > div.sub-header {
+    @apply px-3 py-1;
+    @apply border-b-[1px] border-b-bg-inv-4;
+    @apply border-r-[1px] border-r-bg-inv-3 border-l-[1px] border-l-bg-inv-3;
+
+    background:
+      linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.08) 100%),
+      linear-gradient(
+        90deg,
+        theme(colors.bg.inv.3) 0%,
+        theme(colors.bg.inv.4) 100%
+      );
 
     & > * {
       @apply opacity-0;

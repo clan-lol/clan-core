@@ -1,0 +1,7 @@
+.machineStatus {
+  @apply flex flex-col gap-2 w-full;
+
+  .summary {
+    @apply flex flex-row justify-between items-center;
+  }
+}

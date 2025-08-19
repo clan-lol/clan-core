@@ -2,41 +2,58 @@ import "./MachineStatus.css";
 
 import { Badge } from "@kobalte/core/badge";
 import cx from "classnames";
-import { Show } from "solid-js";
+import { Match, Show, Switch } from "solid-js";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-
-export type MachineStatus =
-  | "Online"
-  | "Offline"
-  | "Installed"
-  | "Not Installed";
+import { MachineStatus as MachineStatusModel } from "@/src/hooks/queries";
+import { Loader } from "../Loader/Loader";
 
 export interface MachineStatusProps {
   label?: boolean;
-  status: MachineStatus;
+  status?: MachineStatusModel;
 }
 
-export const MachineStatus = (props: MachineStatusProps) => (
-  <Badge
-    class={cx("machine-status", {
-      online: props.status == "Online",
-      offline: props.status == "Offline",
-      installed: props.status == "Installed",
-      "not-installed": props.status == "Not Installed",
-    })}
-    textValue={props.status}
-  >
-    {props.label && (
-      <Typography hierarchy="label" size="xs" weight="medium" inverted={true}>
-        {props.status}
-      </Typography>
-    )}
-    <Show
-      when={props.status == "Not Installed"}
-      fallback={<div class="indicator" />}
-    >
-      <Icon icon="Offline" inverted={true} />
-    </Show>
-  </Badge>
-);
+export const MachineStatus = (props: MachineStatusProps) => {
+  const status = () => props.status;
+
+  // remove the '_' from the enum
+  // we will use css transform in the typography component to capitalize
+  const statusText = () => props.status?.replaceAll("_", " ");
+
+  return (
+    <Switch>
+      <Match when={!status()}>
+        <Loader />
+      </Match>
+      <Match when={status()}>
+        <Badge
+          class={cx("machine-status", {
+            online: status() == "online",
+            offline: status() == "offline",
+            "out-of-sync": status() == "out_of_sync",
+            "not-installed": status() == "not_installed",
+          })}
+          textValue={status()}
+        >
+          {props.label && (
+            <Typography
+              hierarchy="label"
+              size="xs"
+              weight="medium"
+              inverted={true}
+              transform="capitalize"
+            >
+              {statusText()}
+            </Typography>
+          )}
+          <Show
+            when={status() != "not_installed"}
+            fallback={<Icon icon="Offline" inverted={true} />}
+          >
+            <div class="indicator" />
+          </Show>
+        </Badge>
+      </Match>
+    </Switch>
+  );
+};

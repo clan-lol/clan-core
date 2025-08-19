@@ -255,6 +255,16 @@ in
                     '';
                   };
 
+                  installedAt = lib.mkOption {
+                    type = types.nullOr types.int;
+                    default = null;
+                    description = ''
+                      Indicates when the machine was first installed.
+
+                      Timestamp is in unix time (seconds since epoch).
+                    '';
+                  };
+
                   tags = lib.mkOption {
                     description = ''
                       List of tags for the machine.

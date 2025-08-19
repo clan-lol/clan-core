@@ -20,27 +20,38 @@ export default meta;
 
 type Story = StoryObj<MachineStatusProps>;
 
+export const Loading: Story = {
+  args: {},
+};
+
 export const Online: Story = {
   args: {
-    status: "Online",
+    status: "online",
   },
 };
 
 export const Offline: Story = {
   args: {
-    status: "Offline",
+    status: "offline",
   },
 };
 
-export const Installed: Story = {
+export const OutOfSync: Story = {
   args: {
-    status: "Installed",
+    status: "out_of_sync",
   },
 };
 
 export const NotInstalled: Story = {
   args: {
-    status: "Not Installed",
+    status: "not_installed",
+  },
+};
+
+export const LoadingWithLabel: Story = {
+  args: {
+    ...Loading.args,
+    label: true,
   },
 };
 
@@ -60,7 +71,7 @@ export const OfflineWithLabel: Story = {
 
 export const InstalledWithLabel: Story = {
   args: {
-    ...Installed.args,
+    ...OutOfSync.args,
     label: true,
   },
 };
