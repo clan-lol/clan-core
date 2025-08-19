@@ -61,6 +61,7 @@ const MockCreateMachine = (props: MockProps) => {
   return (
     <div ref={(el) => (container = el)} class="create-backdrop">
       <Modal
+        open={true}
         mount={container!}
         onClose={() => {
           reset(form);

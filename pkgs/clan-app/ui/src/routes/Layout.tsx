@@ -1,8 +1,7 @@
 import { Component, createEffect, on } from "solid-js";
 import { RouteSectionProps, useNavigate } from "@solidjs/router";
-import { activeClanURI, setActiveClanURI } from "@/src/stores/clan";
+import { activeClanURI } from "@/src/stores/clan";
 import { navigateToClan } from "@/src/hooks/clan";
-import { Button } from "../components/Button/Button";
 
 export const Layout: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();

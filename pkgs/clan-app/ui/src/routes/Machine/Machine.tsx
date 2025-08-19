@@ -69,17 +69,14 @@ export const Machine = (props: RouteSectionProps) => {
       >
         Install me!
       </Button>
+      {/* Unmount the whole component to destroy the store and form values */}
       <Show when={showInstall()}>
-        <div
-          class="absolute left-0 top-0 z-50 flex size-full items-center justify-center bg-white/90"
-          ref={(el) => (container = el)}
-        >
-          <InstallModal
-            machineName={useMachineName()}
-            mount={container!}
-            onClose={() => setShowModal(false)}
-          />
-        </div>
+        <InstallModal
+          open={showInstall()}
+          machineName={useMachineName()}
+          mount={container!}
+          onClose={() => setShowModal(false)}
+        />
       </Show>
       {sidebarPane(useMachineName())}
     </Show>
