@@ -27,7 +27,7 @@ from clan_lib.nix import nix_eval, run
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
-    from clan_cli.vars.generate import dependencies_as_dir
+    from clan_cli.vars.generator import dependencies_as_dir
 
     decrypted_dependencies = {
         "gen_1": {
