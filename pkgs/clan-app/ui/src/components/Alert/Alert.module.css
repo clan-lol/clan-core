@@ -1,0 +1,46 @@
+.alert {
+  @apply flex flex-row gap-2.5 p-4 rounded-md items-start;
+
+  &.hasIcon {
+    @apply pl-3;
+  }
+
+  &.hasIcon svg.icon {
+    @apply relative top-0.5;
+  }
+
+  &.hasDismiss {
+    @apply pr-3;
+  }
+
+  &.info {
+    @apply bg-semantic-info-1 border border-semantic-info-3 fg-semantic-info-3;
+  }
+  &.error {
+    @apply bg-semantic-error-2 border border-semantic-error-3 fg-semantic-error-3;
+  }
+
+  &.warning {
+    @apply bg-semantic-warning-2 border border-semantic-warning-3 fg-semantic-warning-3;
+  }
+
+  &.success {
+    @apply bg-semantic-success-1 border border-semantic-success-3 fg-semantic-success-3;
+  }
+
+  &.transparent {
+    @apply bg-transparent border-none;
+  }
+
+  &.noPadding {
+    @apply p-0;
+  }
+}
+
+.alertContent {
+  @apply flex flex-col size-full gap-1;
+}
+
+.dismissTrigger {
+  @apply relative top-0.5;
+}

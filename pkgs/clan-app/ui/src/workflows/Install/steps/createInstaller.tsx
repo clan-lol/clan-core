@@ -274,6 +274,8 @@ const ChooseDisk = () => {
               </Field>
               <Alert
                 transparent
+                dense
+                size="s"
                 type="error"
                 icon="Info"
                 title="You're about to format this drive"
