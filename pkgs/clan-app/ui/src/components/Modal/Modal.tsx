@@ -1,4 +1,11 @@
-import { Component, JSX, Show } from "solid-js";
+import {
+  Component,
+  JSX,
+  Show,
+  createContext,
+  createSignal,
+  useContext,
+} from "solid-js";
 import { Dialog as KDialog } from "@kobalte/core/dialog";
 import styles from "./Modal.module.css";
 import { Typography } from "../Typography/Typography";
@@ -6,15 +13,25 @@ import Icon from "../Icon/Icon";
 import cx from "classnames";
 import { Dynamic } from "solid-js/web";
 
-export interface ModalContext {
-  close(): void;
-}
+export type ModalContextType = {
+  portalRef: HTMLDivElement;
+};
+
+const ModalContext = createContext<unknown>();
+
+export const useModalContext = () => {
+  const context = useContext(ModalContext);
+  if (!context) {
+    return null;
+  }
+  return context as ModalContextType;
+};
 
 export interface ModalProps {
   id?: string;
   title: string;
   onClose: () => void;
-  children: (ctx: ModalContext) => JSX.Element;
+  children: JSX.Element;
   mount?: Node;
   class?: string;
   metaHeader?: Component;
@@ -23,6 +40,7 @@ export interface ModalProps {
 }
 
 export const Modal = (props: ModalProps) => {
+  const [portalRef, setPortalRef] = createSignal<HTMLDivElement>();
   return (
     <Show when={props.open}>
       <KDialog id={props.id} open={props.open} modal={true}>
@@ -60,12 +78,11 @@ export const Modal = (props: ModalProps) => {
               <div
                 class={styles.modal_body}
                 data-no-padding={props.disablePadding}
+                ref={setPortalRef}
               >
-                {props.children({
-                  close: () => {
-                    props.onClose();
-                  },
-                })}
+                <ModalContext.Provider value={{ portalRef: portalRef()! }}>
+                  {props.children}
+                </ModalContext.Provider>
               </div>
             </KDialog.Content>
           </div>

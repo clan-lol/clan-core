@@ -97,7 +97,7 @@ export const InstallModal = (props: InstallModalProps) => {
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        {(ctx) => <InstallStepper onDone={ctx.close} />}
+        <InstallStepper onDone={() => props.onClose} />
       </Modal>
     </StepperProvider>
   );

@@ -36,7 +36,10 @@ export const Default: Story = {
       description: "Choose your favorite pet from the list",
     },
     options: [
-      { value: "dog", label: "Doggy" },
+      {
+        value: "dog",
+        label: "DoggyDoggyDoggyDoggyDoggyDoggy DoggyDoggyDoggyDoggyDoggy",
+      },
       { value: "cat", label: "Catty" },
       { value: "fish", label: "Fishy" },
       { value: "bird", label: "Birdy" },

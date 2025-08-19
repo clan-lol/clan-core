@@ -1,7 +1,7 @@
 import { TagProps } from "@/src/components/Tag/Tag";
 import { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { fn } from "storybook/test";
-import { Modal, ModalContext, ModalProps } from "@/src/components/Modal/Modal";
+import { Modal, ModalProps } from "@/src/components/Modal/Modal";
 import { Fieldset, FieldsetFieldProps } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { TextArea } from "@/src/components/Form/TextArea";
@@ -21,7 +21,7 @@ export const Default: Story = {
   args: {
     title: "Example Modal",
     onClose: fn(),
-    children: ({ close }: ModalContext) => (
+    children: (
       <form class="flex flex-col gap-5">
         <Fieldset legend="General">
           {(props: FieldsetFieldProps) => (

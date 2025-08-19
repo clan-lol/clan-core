@@ -142,18 +142,11 @@ const ConfigureImage = () => {
     throw new Error("No data returned from api call");
   };
 
-  let content: Node;
-
   return (
     <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
-          <div
-            class="flex flex-col gap-2"
-            ref={(el) => {
-              content = el;
-            }}
-          >
+          <div class="flex flex-col gap-2">
             <Fieldset>
               <Field name="ssh_key">
                 {(field, input) => (
