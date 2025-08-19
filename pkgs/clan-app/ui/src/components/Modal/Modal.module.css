@@ -35,3 +35,11 @@
 .header_divider {
   @apply bg-def-3 h-[6px] border-def-2 border-t-[1px];
 }
+
+.backdrop {
+  @apply absolute left-0 top-0 z-50 size-full bg-white/90;
+}
+
+.contentWrapper {
+  @apply absolute left-0 top-0 z-50 flex size-full items-center justify-center;
+}

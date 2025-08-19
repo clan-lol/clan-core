@@ -32,6 +32,7 @@ export interface InstallModalProps {
   initialStep?: InstallSteps[number]["id"];
   mount?: Node;
   onClose?: () => void;
+  open: boolean;
 }
 
 const steps = [
@@ -85,12 +86,12 @@ export const InstallModal = (props: InstallModalProps) => {
     <StepperProvider stepper={stepper}>
       <Modal
         class="h-[30rem] w-screen max-w-3xl"
-        mount={props.mount}
         title="Install machine"
         onClose={() => {
           console.log("Install modal closed");
           props.onClose?.();
         }}
+        open={props.open}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
         // @ts-expect-error some steps might not have
