@@ -290,9 +290,11 @@ in
                     };
                     owner = mkOption {
                       description = "The user name or id that will own the file.";
+                      type = str;
                       default = "root";
                     };
                     group = mkOption {
+                      type = str;
                       description = "The group name or id that will own the file.";
                       default = if _class == "darwin" then "wheel" else "root";
                       defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
