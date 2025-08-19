@@ -95,24 +95,6 @@ def _ensure_healthy(
         raise ClanError(msg)
 
 
-def _generate_vars_for_machine(
-    machine: "Machine",
-    generators: list[Generator],
-    prompt_values: dict[str, dict[str, str]],
-    no_sandbox: bool = False,
-) -> None:
-    _ensure_healthy(machine=machine, generators=generators)
-    for generator in generators:
-        if check_can_migrate(machine, generator):
-            migrate_files(machine, generator)
-        else:
-            generator.execute(
-                machine=machine,
-                prompt_values=prompt_values.get(generator.name, {}),
-                no_sandbox=no_sandbox,
-            )
-
-
 PromptFunc = Callable[[Generator], dict[str, str]]
 """Type for a function that collects prompt values for a generator.
 
@@ -174,12 +156,19 @@ def run_generators(
         prompt_values = {
             generator.name: prompt_values(generator) for generator in generator_objects
         }
-    _generate_vars_for_machine(
-        machine=machine,
-        generators=generator_objects,
-        prompt_values=prompt_values,
-        no_sandbox=no_sandbox,
-    )
+    # execute health check
+    _ensure_healthy(machine=machine, generators=generator_objects)
+
+    # execute generators
+    for generator in generator_objects:
+        if check_can_migrate(machine, generator):
+            migrate_files(machine, generator)
+        else:
+            generator.execute(
+                machine=machine,
+                prompt_values=prompt_values.get(generator.name, {}),
+                no_sandbox=no_sandbox,
+            )
 
 
 def generate_vars(
