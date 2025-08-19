@@ -1,9 +1,0 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "moonlight-sunshine-accept"
-description = "Moonlight Sunshine Bridge"
-dynamic = ["version"]
-scripts = { moonlight-sunshine-accept = "moonlight_sunshine_accept:main" }
