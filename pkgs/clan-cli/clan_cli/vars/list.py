@@ -4,8 +4,8 @@ import logging
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
+from clan_lib.vars.generate import get_generators
 
-from .generate import get_generators
 from .generator import Var
 
 log = logging.getLogger(__name__)

@@ -14,7 +14,6 @@ from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_cli.vars.generate import get_generators, run_generators
 
 from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
@@ -34,6 +33,7 @@ from clan_lib.persist.util import set_value_by_path
 from clan_lib.services.modules import list_service_modules
 from clan_lib.ssh.remote import Remote
 from clan_lib.templates.disk import hw_main_disk_options, set_machine_disk_schema
+from clan_lib.vars.generate import get_generators, run_generators
 
 log = logging.getLogger(__name__)
 

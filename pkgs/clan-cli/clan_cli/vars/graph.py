@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from .generate import Generator, GeneratorKey
+    from .generator import Generator, GeneratorKey
 
 
 class GeneratorNotFoundError(ClanError):

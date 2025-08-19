@@ -17,12 +17,12 @@ from clan_lib.dirs import module_root, user_cache_dir, vm_state_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
+from clan_lib.vars.generate import run_generators
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.facts.generate import generate_facts
 from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
-from clan_cli.vars.generate import run_generators
 from clan_cli.vars.upload import populate_secret_vars
 
 from .inspect import VmConfig, inspect_vm

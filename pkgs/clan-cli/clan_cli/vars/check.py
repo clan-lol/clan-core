@@ -36,7 +36,7 @@ def vars_status(
     # signals if a var needs to be updated (eg. needs re-encryption due to new users added)
     unfixed_secret_vars = []
     invalid_generators = []
-    from clan_cli.vars.generate import Generator
+    from clan_cli.vars.generator import Generator
 
     generators = Generator.get_machine_generators(machine.name, machine.flake)
     if generator_name:

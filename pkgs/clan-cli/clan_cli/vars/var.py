@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from clan_cli.vars.generate import Generator
+    from clan_cli.vars.generator import Generator
 
     from ._types import StoreBase
 

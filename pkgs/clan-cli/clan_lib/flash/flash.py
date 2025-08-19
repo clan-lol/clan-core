@@ -7,7 +7,6 @@ from tempfile import TemporaryDirectory
 from typing import Any, Literal
 
 from clan_cli.facts.generate import generate_facts
-from clan_cli.vars.generate import run_generators
 from clan_cli.vars.upload import populate_secret_vars
 
 from clan_lib.api import API
@@ -17,6 +16,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
+from clan_lib.vars.generate import run_generators
 
 from .automount import pause_automounting
 from .list import list_keymaps, list_languages

@@ -7,7 +7,6 @@ from typing import Literal
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.vars.generate import run_generators
 
 from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
@@ -15,6 +14,7 @@ from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
+from clan_lib.vars.generate import run_generators
 
 log = logging.getLogger(__name__)
 

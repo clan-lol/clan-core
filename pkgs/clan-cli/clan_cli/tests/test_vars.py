@@ -8,10 +8,6 @@ from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
-from clan_cli.vars.generate import (
-    get_generators,
-    run_generators,
-)
 from clan_cli.vars.generator import (
     Generator,
     GeneratorKey,
@@ -26,6 +22,10 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_eval, run
+from clan_lib.vars.generate import (
+    get_generators,
+    run_generators,
+)
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:

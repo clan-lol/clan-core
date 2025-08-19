@@ -7,7 +7,6 @@ from contextlib import ExitStack
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
-from clan_cli.vars.generate import run_generators
 from clan_cli.vars.upload import upload_secret_vars
 
 from clan_lib.api import API
@@ -20,6 +19,7 @@ from clan_lib.nix import nix_command, nix_metadata
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
+from clan_lib.vars.generate import run_generators
 
 log = logging.getLogger(__name__)
 

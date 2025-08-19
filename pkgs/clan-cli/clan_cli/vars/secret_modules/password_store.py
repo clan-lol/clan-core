@@ -146,7 +146,7 @@ class SecretStore(StoreBase):
         if not git_hash:
             return b""
 
-        from clan_cli.vars.generate import Generator
+        from clan_cli.vars.generator import Generator
 
         manifest = []
         generators = Generator.get_machine_generators(machine, self.flake)
@@ -178,7 +178,7 @@ class SecretStore(StoreBase):
         return local_hash != remote_hash.encode()
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_cli.vars.generate import Generator
+        from clan_cli.vars.generator import Generator
 
         vars_generators = Generator.get_machine_generators(machine, self.flake)
         if "users" in phases:

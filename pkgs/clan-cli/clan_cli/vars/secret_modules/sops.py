@@ -23,7 +23,7 @@ from clan_cli.secrets.secrets import (
 )
 from clan_cli.secrets.sops import load_age_plugins
 from clan_cli.vars._types import StoreBase
-from clan_cli.vars.generate import Generator
+from clan_cli.vars.generator import Generator
 from clan_cli.vars.var import Var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
@@ -54,7 +54,7 @@ class SecretStore(StoreBase):
     def ensure_machine_key(self, machine: str) -> None:
         """Ensure machine has sops keys initialized."""
         # no need to generate keys if we don't manage secrets
-        from clan_cli.vars.generate import Generator
+        from clan_cli.vars.generator import Generator
 
         vars_generators = Generator.get_machine_generators(machine, self.flake)
         if not vars_generators:
@@ -135,7 +135,7 @@ class SecretStore(StoreBase):
         """
 
         if generators is None:
-            from clan_cli.vars.generate import Generator
+            from clan_cli.vars.generator import Generator
 
             generators = Generator.get_machine_generators(machine, self.flake)
         file_found = False
@@ -212,7 +212,7 @@ class SecretStore(StoreBase):
         return [store_folder]
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_cli.vars.generate import Generator
+        from clan_cli.vars.generator import Generator
 
         vars_generators = Generator.get_machine_generators(machine, self.flake)
         if "users" in phases or "services" in phases:
@@ -347,7 +347,7 @@ class SecretStore(StoreBase):
         from clan_cli.secrets.secrets import update_keys
 
         if generators is None:
-            from clan_cli.vars.generate import Generator
+            from clan_cli.vars.generator import Generator
 
             generators = Generator.get_machine_generators(machine, self.flake)
         file_found = False

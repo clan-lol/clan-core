@@ -7,7 +7,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_cli.machines.create import CreateOptions, create_machine
-from clan_cli.vars.generate import run_generators
 
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import specific_machine_dir
@@ -16,6 +15,7 @@ from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command
 from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.vars.generate import run_generators
 
 log = logging.getLogger(__name__)
 
