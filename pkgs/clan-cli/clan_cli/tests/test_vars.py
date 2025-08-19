@@ -11,7 +11,6 @@ from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import (
     Generator,
     GeneratorKey,
-    create_machine_vars_interactive,
     get_generators,
     run_generators,
 )
@@ -700,8 +699,8 @@ def test_api_set_prompts(
 
     run_generators(
         machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
-        generators=["my_generator"],
-        all_prompt_values={
+        generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+        prompt_values={
             "my_generator": {
                 "prompt1": "input1",
             }
@@ -714,8 +713,8 @@ def test_api_set_prompts(
     assert store.get(my_generator, "prompt1").decode() == "input1"
     run_generators(
         machine=Machine(name="my_machine", flake=Flake(str(flake.path))),
-        generators=["my_generator"],
-        all_prompt_values={
+        generators=[GeneratorKey(machine="my_machine", name="my_generator")],
+        prompt_values={
             "my_generator": {
                 "prompt1": "input2",
             }
@@ -757,14 +756,11 @@ def test_stdout_of_generate(
     flake_.refresh()
     monkeypatch.chdir(flake_.path)
     flake = Flake(str(flake_.path))
-    from clan_cli.vars.generate import create_machine_vars_interactive
-
     # with capture_output as output:
     with caplog.at_level(logging.INFO):
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=flake),
-            "my_generator",
-            regenerate=False,
+            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
         )
 
     assert "Updated var my_generator/my_value" in caplog.text
@@ -774,10 +770,9 @@ def test_stdout_of_generate(
 
     set_var("my_machine", "my_generator/my_value", b"world", flake)
     with caplog.at_level(logging.INFO):
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=flake),
-            "my_generator",
-            regenerate=True,
+            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
         )
     assert "Updated var my_generator/my_value" in caplog.text
     assert "old: world" in caplog.text
@@ -785,19 +780,17 @@ def test_stdout_of_generate(
     caplog.clear()
     # check the output when nothing gets regenerated
     with caplog.at_level(logging.INFO):
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=flake),
-            "my_generator",
-            regenerate=True,
+            generators=[GeneratorKey(machine="my_machine", name="my_generator")],
         )
     assert "Updated var" not in caplog.text
     assert "hello" in caplog.text
     caplog.clear()
     with caplog.at_level(logging.INFO):
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=flake),
-            "my_secret_generator",
-            regenerate=False,
+            generators=[GeneratorKey(machine="my_machine", name="my_secret_generator")],
         )
     assert "Updated secret var my_secret_generator/my_secret" in caplog.text
     assert "hello" not in caplog.text
@@ -809,10 +802,9 @@ def test_stdout_of_generate(
         Flake(str(flake.path)),
     )
     with caplog.at_level(logging.INFO):
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=flake),
-            "my_secret_generator",
-            regenerate=True,
+            generators=[GeneratorKey(machine="my_machine", name="my_secret_generator")],
         )
     assert "Updated secret var my_secret_generator/my_secret" in caplog.text
     assert "world" not in caplog.text
@@ -899,10 +891,9 @@ def test_fails_when_files_are_left_from_other_backend(
     flake.refresh()
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
-        create_machine_vars_interactive(
+        run_generators(
             Machine(name="my_machine", flake=Flake(str(flake.path))),
-            generator,
-            regenerate=False,
+            generators=GeneratorKey(machine="my_machine", name=generator),
         )
     # Will raise. It was secret before, but now it's not.
     my_secret_generator["files"]["my_secret"]["secret"] = (
@@ -916,16 +907,14 @@ def test_fails_when_files_are_left_from_other_backend(
         # This should raise an error
         if generator == "my_secret_generator":
             with pytest.raises(ClanError):
-                create_machine_vars_interactive(
+                run_generators(
                     Machine(name="my_machine", flake=Flake(str(flake.path))),
-                    generator,
-                    regenerate=False,
+                    generators=GeneratorKey(machine="my_machine", name=generator),
                 )
         else:
-            create_machine_vars_interactive(
+            run_generators(
                 Machine(name="my_machine", flake=Flake(str(flake.path))),
-                generator,
-                regenerate=False,
+                generators=GeneratorKey(machine="my_machine", name=generator),
             )
 
 

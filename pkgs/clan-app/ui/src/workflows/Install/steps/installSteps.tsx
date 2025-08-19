@@ -550,7 +550,7 @@ const InstallSummary = () => {
     }
 
     const runGenerators = client.fetch("run_generators", {
-      all_prompt_values: store.install.promptValues,
+      prompt_values: store.install.promptValues,
       machine: {
         name: store.install.machineName,
         flake: {
