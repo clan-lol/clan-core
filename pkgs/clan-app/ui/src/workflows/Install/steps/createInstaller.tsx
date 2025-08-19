@@ -230,8 +230,6 @@ const ChooseDisk = () => {
     stepSignal.next();
   };
 
-  const stripId = (s: string) => s.split("-")[1] ?? s;
-
   const getOptions = async () => {
     if (!systemStorageQuery.data) {
       await systemStorageQuery.refetch();
@@ -239,24 +237,24 @@ const ChooseDisk = () => {
 
     const blockDevices = systemStorageQuery.data?.blockdevices ?? [];
 
-    return (
-      blockDevices
-        // we only want writeable block devices which are USB or MMC (SD cards)
-        .filter(({ id_link, ro }) => !ro && installMediaRegex.test(id_link))
-        // transform each entry into an option
-        .map(({ id_link, size, path }) => {
-          const match = id_link.match(installMediaRegex)!;
-          const name = match.groups?.name || "";
+    const options = blockDevices
+      // we only want writeable block devices which are USB or MMC (SD cards)
+      .filter(({ id_link, ro }) => !ro && installMediaRegex.test(id_link))
+      // transform each entry into an option
+      .map(({ id_link, size, path }) => {
+        const match = id_link.match(installMediaRegex)!;
+        const name = match.groups?.name || "";
 
-          const truncatedName =
-            name.length > 32 ? name.slice(0, 32) + "..." : name;
+        const truncatedName =
+          name.length > 32 ? name.slice(0, 32) + "..." : name;
 
-          return {
-            value: path,
-            label: `${truncatedName.replaceAll("_", " ")} (${size})`,
-          };
-        })
-    );
+        return {
+          value: path,
+          label: `${truncatedName.replaceAll("_", " ")} (${size})`,
+        };
+      });
+
+    return options;
   };
 
   return (
@@ -280,6 +278,7 @@ const ChooseDisk = () => {
                     }}
                     getOptions={getOptions}
                     placeholder="Choose Device"
+                    noOptionsText="No devices found"
                     name={field.name}
                   />
                 )}
