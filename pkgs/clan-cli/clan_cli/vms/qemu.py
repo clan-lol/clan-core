@@ -1,3 +1,4 @@
+import platform
 import random
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -5,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_test_store
 
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
@@ -84,6 +86,44 @@ class QemuCommand:
     vsock_cid: int | None = None
 
 
+def get_machine_options() -> str:
+    """Get appropriate QEMU machine options for host architecture."""
+    arch = platform.machine().lower()
+    system = platform.system().lower()
+
+    # Determine accelerator based on OS
+    if system == "darwin":
+        # macOS uses Hypervisor.framework
+        accel = "hvf"
+    else:
+        # Linux and others use KVM
+        accel = "kvm"
+
+    if arch in ("x86_64", "amd64", "i386", "i686"):
+        # For x86_64, use q35 for modern PCIe support
+        return f"q35,memory-backend=mem,accel={accel}"
+    if arch in ("aarch64", "arm64"):
+        # Use virt machine type for ARM64
+        if system == "darwin":
+            # macOS ARM uses GIC version 2
+            return f"virt,gic-version=2,memory-backend=mem,accel={accel}"
+        # Linux ARM uses max GIC version
+        return f"virt,gic-version=max,memory-backend=mem,accel={accel}"
+    if arch == "armv7l":
+        # 32-bit ARM
+        return f"virt,memory-backend=mem,accel={accel}"
+    if arch in ("riscv64", "riscv32"):
+        # RISC-V architectures
+        return f"virt,memory-backend=mem,accel={accel}"
+    if arch in ("powerpc64le", "powerpc64", "ppc64le", "ppc64"):
+        # PowerPC architectures
+        return f"powernv,memory-backend=mem,accel={accel}"
+
+    # No fallback - raise an error for unsupported architectures
+    msg = f"Unsupported architecture: {arch} on {system}. Supported architectures are: x86_64, aarch64, armv7l, riscv64, riscv32, powerpc64"
+    raise ClanError(msg)
+
+
 def qemu_command(
     vm: VmConfig,
     nixos_config: dict[str, str],
@@ -98,22 +138,31 @@ def qemu_command(
 ) -> QemuCommand:
     if portmap is None:
         portmap = {}
+
+    toplevel = Path(nixos_config["toplevel"])
+    chroot_toplevel = toplevel
+    initrd = Path(nixos_config["initrd"])
+    if tmp_store := nix_test_store():
+        chroot_toplevel = tmp_store / toplevel.relative_to("/")
+        initrd = tmp_store / initrd.relative_to("/")
+
     kernel_cmdline = [
-        (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
-        f"init={nixos_config['toplevel']}/init",
+        (chroot_toplevel / "kernel-params").read_text(),
+        f"init={toplevel}/init",
         f"regInfo={nixos_config['regInfo']}/registration",
         "console=hvc0",
     ]
     if not vm.waypipe.enable:
         kernel_cmdline.append("console=tty0")
     hostfwd = ",".join(f"hostfwd=tcp::{h}-:{g}" for h, g in portmap.items())
+    machine_options = get_machine_options()
     # fmt: off
     command = [
         "qemu-kvm",
         "-name", vm.machine_name,
         "-m", f'{nixos_config["memorySize"]}M',
         "-object", f"memory-backend-memfd,id=mem,size={nixos_config['memorySize']}M",
-        "-machine", "pc,memory-backend=mem,accel=kvm",
+        "-machine", machine_options,
         "-smp", str(nixos_config["cores"]),
         "-cpu", "max",
         "-enable-kvm",
@@ -130,9 +179,8 @@ def qemu_command(
         "-drive", f"cache=writeback,file={state_img},format=qcow2,id=state,if=none,index=2,werror=report",
         "-device", "virtio-blk-pci,drive=state",
         "-device", "virtio-keyboard",
-        "-usb", "-device", "usb-tablet,bus=usb-bus.0",
-        "-kernel", f'{nixos_config["toplevel"]}/kernel',
-        "-initrd", nixos_config["initrd"],
+        "-kernel", f"{chroot_toplevel}/kernel",
+        "-initrd", str(initrd),
         "-append", " ".join(kernel_cmdline),
         # qmp & qga setup
         "-qmp", f"unix:{qmp_socket_file},server,wait=off",
@@ -140,6 +188,11 @@ def qemu_command(
         "-device", "virtio-serial",
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
     ]
+    # USB tablet only works reliably on x86_64 Linux for now, not aarch64-linux.
+    # TODO: Fix USB tablet support for ARM architectures and test macOS
+    if platform.system().lower() == "linux" and platform.machine().lower() in ("x86_64", "amd64"):
+        command.extend(["-usb", "-device", "usb-tablet,bus=usb-bus.0"])
+
     if interactive:
         command.extend(
             [

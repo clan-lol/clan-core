@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from clan_cli.tests.fixtures_flakes import ClanFlake, FlakeForTest
+from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_cli.vms.run import inspect_vm, spawn_vm
@@ -24,8 +24,7 @@ def test_inspect(
     assert "Cores" in output.out
 
 
-# @pytest.mark.skipif(no_kvm, reason="Requires KVM")
-@pytest.mark.skipif(True, reason="We need to fix vars support for vms for this test")
+@pytest.mark.skipif(no_kvm, reason="Requires KVM")
 @pytest.mark.impure
 def test_run(
     monkeypatch: pytest.MonkeyPatch,
@@ -60,30 +59,12 @@ def test_run(
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
 @pytest.mark.impure
 def test_vm_persistence(
-    flake: ClanFlake,
+    vm_test_flake: Path,
 ) -> None:
-    # set up a clan flake with some systemd services to test persistence
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
-    # logrotate-checkconf doesn't work in VM because /nix/store is owned by nobody
-    config["systemd"]["services"]["logrotate-checkconf"]["enable"] = False
-    config["services"]["getty"]["autologinUser"] = "root"
-    config["clan"]["virtualisation"] = {"graphics": False}
-    config["clan"]["core"]["networking"] = {"targetHost": "client"}
-    config["clan"]["core"]["state"]["my_state"]["folders"] = [
-        # to be owned by root
-        "/var/my-state",
-        # to be owned by user 'test'
-        "/var/user-state",
-    ]
-    config["users"]["users"] = {
-        "test": {"initialPassword": "test", "isSystemUser": True, "group": "users"},
-        "root": {"initialPassword": "root"},
-    }
-
-    flake.refresh()
-
-    vm_config = inspect_vm(machine=Machine("my_machine", Flake(str(flake.path))))
+    # Use the pre-built test VM from the test flake
+    vm_config = inspect_vm(
+        machine=Machine("test-vm-persistence", Flake(str(vm_test_flake)))
+    )
 
     with spawn_vm(vm_config) as vm, vm.qga_connect() as qga:
         # create state via qmp command instead of systemd service

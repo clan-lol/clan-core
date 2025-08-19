@@ -19,6 +19,7 @@
   templateDerivation,
   zerotierone,
   minifakeroot,
+  nixosConfigurations,
 }:
 let
   pyDeps = ps: [
@@ -225,6 +226,26 @@ pythonRuntime.pkgs.buildPythonApplication {
               # needed by flash list tests
               nixpkgs.legacyPackages.x86_64-linux.kbd
               nixpkgs.legacyPackages.x86_64-linux.glibcLocales
+
+              # Pre-built VMs for impure tests
+              pkgs.stdenv.drvPath
+              pkgs.bash.drvPath
+              pkgs.buildPackages.xorg.lndir
+              (pkgs.perl.withPackages (
+                p: with p; [
+                  ConfigIniFiles
+                  FileSlurp
+                ]
+              ))
+              (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
+              pkgs.desktop-file-utils
+              pkgs.dbus
+              pkgs.unzip
+              pkgs.libxslt
+              pkgs.getconf
+
+              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
+              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
             ];
           };
         }

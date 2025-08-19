@@ -1,6 +1,5 @@
 import dataclasses
 import json
-import os
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -26,7 +25,7 @@ class SopsSetup:
 
     def __init__(self, keys: list[KeyPair]) -> None:
         self.keys = keys
-        self.user = os.environ.get("USER", "admin")
+        self.user = "admin"
 
     def init(self, flake_path: Path) -> None:
         cli.run(

@@ -422,3 +422,103 @@ def test_flake_with_core(
         monkeypatch=monkeypatch,
         inventory_expr=inventory_expr,
     )
+
+
+@pytest.fixture
+def writable_clan_core(
+    clan_core: Path,
+    tmp_path: Path,
+) -> Path:
+    """
+    Creates a writable copy of clan_core in a temporary directory.
+    If clan_core is a git repo, copies tracked files and uncommitted changes.
+    Removes vars/ and sops/ directories if they exist.
+    """
+    temp_flake = tmp_path / "clan-core"
+
+    # Check if it's a git repository
+    if (clan_core / ".git").exists():
+        # Create the target directory
+        temp_flake.mkdir(parents=True)
+
+        # Copy all tracked and untracked files (excluding ignored)
+        # Using git ls-files with -z for null-terminated output to handle filenames with spaces
+        sp.run(
+            f"(git ls-files -z; git ls-files -z --others --exclude-standard) | "
+            f"xargs -0 cp --parents -t {temp_flake}/",
+            shell=True,
+            cwd=clan_core,
+            check=True,
+        )
+
+        # Copy .git directory to maintain git functionality
+        if (clan_core / ".git").is_dir():
+            shutil.copytree(
+                clan_core / ".git", temp_flake / ".git", ignore_dangling_symlinks=True
+            )
+        else:
+            # It's a git file (for submodules/worktrees)
+            shutil.copy2(clan_core / ".git", temp_flake / ".git")
+    else:
+        # Regular copy if not a git repo
+        shutil.copytree(clan_core, temp_flake, ignore_dangling_symlinks=True)
+
+    # Make writable
+    sp.run(["chmod", "-R", "+w", str(temp_flake)], check=True)
+
+    # Remove vars and sops directories
+    shutil.rmtree(temp_flake / "vars", ignore_errors=True)
+    shutil.rmtree(temp_flake / "sops", ignore_errors=True)
+
+    return temp_flake
+
+
+@pytest.fixture
+def vm_test_flake(
+    clan_core: Path,
+    tmp_path: Path,
+) -> Path:
+    """
+    Creates a test flake that imports the VM test nixOS modules from clan-core.
+    """
+    test_flake_dir = tmp_path / "test-flake"
+    test_flake_dir.mkdir(parents=True)
+
+    metadata = sp.run(
+        nix_command(["flake", "metadata", "--json"]),
+        cwd=CLAN_CORE,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    metadata_json = json.loads(metadata)
+    clan_core_url = f"path:{metadata_json['path']}"
+
+    # Read the template and substitute the clan-core path
+    template_path = Path(__file__).parent / "vm_test_flake.nix"
+    template_content = template_path.read_text()
+
+    # Get the current system
+    system_result = sp.run(
+        nix_command(["config", "show", "system"]),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    current_system = system_result.stdout.strip()
+
+    # Substitute the clan-core URL and system
+    flake_content = template_content.replace("__CLAN_CORE__", clan_core_url)
+    flake_content = flake_content.replace("__SYSTEM__", current_system)
+
+    # Write the flake.nix
+    (test_flake_dir / "flake.nix").write_text(flake_content)
+
+    # Lock the flake with --allow-dirty to handle uncommitted changes
+    sp.run(
+        nix_command(["flake", "lock", "--allow-dirty-locks"]),
+        cwd=test_flake_dir,
+        check=True,
+    )
+
+    return test_flake_dir

@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import shutil
 import subprocess
 import time
@@ -6,7 +7,9 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from clan_lib.errors import ClanError
-from clan_lib.nix import nix_shell
+from clan_lib.nix import nix_shell, nix_test_store
+
+log = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
@@ -14,6 +17,9 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
     sandbox = "namespace"
     if shutil.which("newuidmap") is None:
         sandbox = "none"
+    store_root = nix_test_store() or Path("/")
+    store = store_root / "nix" / "store"
+
     virtiofsd = nix_shell(
         ["virtiofsd"],
         [
@@ -25,9 +31,10 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
             "--sandbox",
             sandbox,
             "--shared-dir",
-            "/nix/store",
+            str(store),
         ],
     )
+    log.debug("$ {}".format(" ".join(virtiofsd)))
     with subprocess.Popen(virtiofsd) as proc:
         try:
             while not socket_path.exists():
