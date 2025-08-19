@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -142,6 +142,8 @@ class StoreBase(ABC):
         value: bytes,
         is_migration: bool = False,
     ) -> Path | None:
+        from clan_lib.machines.machines import Machine
+
         if self.exists(generator, var.name):
             if self.is_secret_store:
                 old_val = None
@@ -154,6 +156,12 @@ class StoreBase(ABC):
             old_val_str = "<not set>"
         new_file = self._set(generator, var, value)
         action_str = "Migrated" if is_migration else "Updated"
+        log_info: Callable
+        if generator.machine is None:
+            log_info = log.info
+        else:
+            machine = Machine(name=generator.machine, flake=self.flake)
+            log_info = machine.info
         if self.is_secret_store:
             log.info(f"{action_str} secret var {generator.name}/{var.name}\n")
         else:
@@ -161,9 +169,9 @@ class StoreBase(ABC):
                 msg = f"{action_str} var {generator.name}/{var.name}"
                 if not is_migration:
                     msg += f"\n  old: {old_val_str}\n  new: {string_repr(value)}"
-                log.info(msg)
+                log_info(msg)
             else:
-                log.info(
+                log_info(
                     f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}"
                 )
         return new_file
