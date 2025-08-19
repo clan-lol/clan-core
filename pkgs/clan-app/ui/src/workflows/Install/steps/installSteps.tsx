@@ -212,6 +212,7 @@ const CheckHardware = () => {
             <Show when={hardwareQuery.data}>
               {(d) => (
                 <Alert
+                  size="s"
                   icon={reportExists() ? "Checkmark" : "Close"}
                   type={reportExists() ? "info" : "warning"}
                   title={

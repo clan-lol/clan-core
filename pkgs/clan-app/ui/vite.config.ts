@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
+import { patchCssModules } from "vite-css-modules";
 import path from "node:path";
 import { exec } from "child_process";
 
@@ -40,6 +41,7 @@ export default defineConfig({
     solidPlugin(),
     solidSvg(),
     regenPythonApiOnFileChange(),
+    patchCssModules({ generateSourceTypes: true }),
   ],
   server: {
     port: 3000,
