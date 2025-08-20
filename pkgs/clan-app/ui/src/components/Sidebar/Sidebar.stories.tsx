@@ -18,6 +18,7 @@ import {
   OperationNames,
   OperationResponse,
 } from "@/src/hooks/api";
+import { mac } from "valibot";
 
 const defaultClanURI = "/home/brian/clans/my-clan";
 
@@ -31,10 +32,16 @@ const queryData = {
       europa: {
         name: "Europa",
         machineClass: "nixos",
+        state: {
+          status: "online",
+        },
       },
       ganymede: {
         name: "Ganymede",
         machineClass: "nixos",
+        state: {
+          status: "out_of_sync",
+        },
       },
     },
   },
@@ -47,10 +54,16 @@ const queryData = {
       callisto: {
         name: "Callisto",
         machineClass: "nixos",
+        state: {
+          status: "not_installed",
+        },
       },
       amalthea: {
         name: "Amalthea",
         machineClass: "nixos",
+        state: {
+          status: "offline",
+        },
       },
     },
   },
@@ -63,10 +76,16 @@ const queryData = {
       thebe: {
         name: "Thebe",
         machineClass: "nixos",
+        state: {
+          status: "online",
+        },
       },
       sponde: {
         name: "Sponde",
         machineClass: "nixos",
+        state: {
+          status: "online",
+        },
       },
     },
   },
@@ -160,10 +179,20 @@ export const Default: Story = {
           ["clans", encodeBase64(clanURI), "details"],
           clan.details,
         );
+
+        const machines = clan.machines || {};
+
         queryClient.setQueryData(
           ["clans", encodeBase64(clanURI), "machines"],
-          clan.machines || {},
+          machines,
         );
+
+        Object.entries(machines).forEach(([name, machine]) => {
+          queryClient.setQueryData(
+            ["clans", encodeBase64(clanURI), "machine", name, "state"],
+            machine.state,
+          );
+        });
       });
 
       return (
