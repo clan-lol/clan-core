@@ -18,6 +18,12 @@ class Host(Protocol):
     """
 
     @property
+    def address(self) -> str:
+        """Return the address of the host."""
+        msg = "Subclasses must implement address property"
+        raise NotImplementedError(msg)
+
+    @property
     def command_prefix(self) -> str | None: ...
 
     @property

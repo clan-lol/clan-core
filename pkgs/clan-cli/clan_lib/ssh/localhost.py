@@ -21,6 +21,11 @@ class LocalHost:
     _askpass_path: str | None = None
 
     @property
+    def address(self) -> str:
+        """Return the address of the localhost."""
+        return "localhost"
+
+    @property
     def target(self) -> str:
         """Return a descriptive target string for localhost."""
         return "localhost"

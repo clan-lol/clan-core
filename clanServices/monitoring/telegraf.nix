@@ -10,22 +10,34 @@
           lib,
           ...
         }:
+        let
+          jsonpath = "/tmp/telegraf.json";
+          auth_user = "prometheus";
+        in
         {
 
           networking.firewall.interfaces = lib.mkIf (settings.allowAllInterfaces == false) (
             builtins.listToAttrs (
               map (name: {
                 inherit name;
-                value.allowedTCPPorts = [ 9273 ];
+                value.allowedTCPPorts = [
+                  9273
+                  9990
+                ];
               }) settings.interfaces
             )
           );
 
-          networking.firewall.allowedTCPPorts = lib.mkIf (settings.allowAllInterfaces == true) [ 9273 ];
+          networking.firewall.allowedTCPPorts = lib.mkIf (settings.allowAllInterfaces == true) [
+            9273
+            9990
+          ];
 
-          clan.core.vars.generators."telegraf-password" = {
-            files.telegraf-password.neededFor = "users";
-            files.telegraf-password.restartUnits = [ "telegraf.service" ];
+          clan.core.vars.generators."telegraf" = {
+
+            files.password.restartUnits = [ "telegraf.service" ];
+            files.password-env.restartUnits = [ "telegraf.service" ];
+            files.miniserve-auth.restartUnits = [ "telegraf.service" ];
 
             runtimeInputs = [
               pkgs.coreutils
@@ -35,16 +47,22 @@
 
             script = ''
               PASSWORD=$(xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n")
-              echo "BASIC_AUTH_PWD=$PASSWORD" > "$out"/telegraf-password
+              echo "BASIC_AUTH_PWD=$PASSWORD" > "$out"/password-env
+              echo "${auth_user}:$PASSWORD" > "$out"/miniserve-auth
+              echo "$PASSWORD" | tr -d "\n" > "$out"/password
             '';
+          };
+
+          systemd.services.telegraf-json = {
+            enable = true;
+            wantedBy = [ "multi-user.target" ];
+            script = "${pkgs.miniserve}/bin/miniserve -p 9990 ${jsonpath} --auth-file ${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}";
           };
 
           services.telegraf = {
             enable = true;
             environmentFiles = [
-              (builtins.toString
-                config.clan.core.vars.generators."telegraf-password".files.telegraf-password.path
-              )
+              (builtins.toString config.clan.core.vars.generators.telegraf.files.password-env.path)
             ];
             extraConfig = {
               agent.interval = "60s";
@@ -59,24 +77,34 @@
 
                 exec =
                   let
-                    currentSystemScript = pkgs.writeShellScript "current-system" ''
-                      printf "current_system,path=%s present=0\n" $(readlink /run/current-system)
+                    nixosSystems = pkgs.writeShellScript "current-system" ''
+                      printf "nixos_systems,current_system=%s,booted_system=%s,current_kernel=%s,booted_kernel=%s present=0\n" \
+                        "$(readlink /run/current-system)" "$(readlink /run/booted-system)" \
+                        "$(basename $(echo /run/current-system/kernel-modules/lib/modules/*))" \
+                        "$(basename $(echo /run/booted-system/kernel-modules/lib/modules/*))"
                     '';
                   in
                   [
                     {
                       # Expose the path to current-system as metric. We use
                       # this to check if the machine is up-to-date.
-                      commands = [ currentSystemScript ];
+                      commands = [ nixosSystems ];
                       data_format = "influx";
                     }
                   ];
               };
+              # sadly there doesn'T seem to exist a telegraf http_client output plugin
               outputs.prometheus_client = {
                 listen = ":9273";
                 metric_version = 2;
-                basic_username = "prometheus";
+                basic_username = "${auth_user}";
                 basic_password = "$${BASIC_AUTH_PWD}";
+              };
+
+              outputs.file = {
+                files = [ jsonpath ];
+                data_format = "json";
+                json_timestamp_units = "1s";
               };
             };
           };
