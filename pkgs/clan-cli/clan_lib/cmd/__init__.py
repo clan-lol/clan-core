@@ -404,7 +404,6 @@ def run(
         if not is_async_cancelled():
             process.wait()
 
-    global TIME_TABLE
     if TIME_TABLE:
         TIME_TABLE.add(shlex.join(cmd), timeit.default_timer() - start)
 
