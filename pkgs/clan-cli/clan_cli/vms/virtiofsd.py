@@ -34,7 +34,7 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
             str(store),
         ],
     )
-    log.debug("$ {}".format(" ".join(virtiofsd)))
+    log.debug("$ %s", " ".join(virtiofsd))
     with subprocess.Popen(virtiofsd) as proc:
         try:
             while not socket_path.exists():
