@@ -296,17 +296,23 @@ class BaseImplementation:
 
 class StatusNotifierImplementation(BaseImplementation):
     class DBusProperty:
+        """Represents a D-Bus property with name, signature, and value."""
+
         def __init__(self, name, signature, value) -> None:
             self.name = name
             self.signature = signature
             self.value = value
 
     class DBusSignal:
+        """Represents a D-Bus signal with name and arguments."""
+
         def __init__(self, name, args) -> None:
             self.name = name
             self.args = args
 
     class DBusMethod:
+        """Represents a D-Bus method with arguments and callback."""
+
         def __init__(self, name, in_args, out_args, callback) -> None:
             self.name = name
             self.in_args = in_args
@@ -314,6 +320,8 @@ class StatusNotifierImplementation(BaseImplementation):
             self.callback = callback
 
     class DBusService:
+        """Base class for D-Bus service implementations."""
+
         def __init__(self, interface_name, object_path, bus_type) -> None:
             self._interface_name = interface_name
             self._object_path = object_path
@@ -438,6 +446,8 @@ class StatusNotifierImplementation(BaseImplementation):
             return GLib.Variant(prop.signature, prop.value)
 
     class DBusMenuService(DBusService):
+        """D-Bus service for menu management."""
+
         def __init__(self) -> None:
             super().__init__(
                 interface_name="com.canonical.dbusmenu",
@@ -516,6 +526,8 @@ class StatusNotifierImplementation(BaseImplementation):
                 self._items[idx]["callback"]()
 
     class StatusNotifierItemService(DBusService):
+        """D-Bus service for status notifier items."""
+
         def __init__(self, activate_callback) -> None:
             super().__init__(
                 interface_name="org.kde.StatusNotifierItem",
@@ -737,6 +749,8 @@ class Win32Implementation(BaseImplementation):
         from ctypes import Structure
 
         class WNDCLASSW(Structure):
+            """Windows class structure for window registration."""
+
             from ctypes import CFUNCTYPE, wintypes
 
             LPFN_WND_PROC = CFUNCTYPE(
@@ -760,6 +774,8 @@ class Win32Implementation(BaseImplementation):
             ]
 
         class MENUITEMINFOW(Structure):
+            """Windows menu item information structure."""
+
             from ctypes import wintypes
 
             _fields_: ClassVar = [
@@ -778,6 +794,8 @@ class Win32Implementation(BaseImplementation):
             ]
 
         class NOTIFYICONDATAW(Structure):
+            """Windows notification icon data structure."""
+
             from ctypes import wintypes
 
             _fields_: ClassVar = [
