@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -95,8 +96,6 @@ def app_run(app_opts: ClanAppOptions) -> int:
         log.info("Press Ctrl+C to stop the server")
         try:
             # Keep the main thread alive
-            import time
-
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
