@@ -671,7 +671,7 @@ const InstallProgress = () => {
           weight="bold"
           color="inherit"
         >
-          Machine is beeing installed
+          Machine is being installed
         </Typography>
         <LoadingBar />
         <Typography

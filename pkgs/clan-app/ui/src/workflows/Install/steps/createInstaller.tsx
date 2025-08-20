@@ -56,11 +56,12 @@ const Prose = () => (
               Let's walk through it.
             </Typography>
             <Typography hierarchy="body" size="xs" weight="normal">
-              In the following we will help you to write the clan installer
-              software to a USB-stick. This USB-stick will then be used to set
-              up the new machine. Get a USB-stick with at least 8GB of capacity,
-              and plug it into the machine on which you read this text. Note,
-              all data on the USB-Stick will be lost.
+              We will help you write the Clan Installer to a USB-stick or SD
+              card, which will then be used to set up the new machine.
+            </Typography>
+            <Typography hierarchy="body" size="xs" weight="normal">
+              Get a USB-stick or an SD card with at least 8GB of capacity, and
+              plug it into this machine.
             </Typography>
           </div>
           <div class="flex flex-col gap-1">
@@ -331,27 +332,27 @@ const FlashProgress = () => {
   return (
     <div
       class={cx(
-        "relative flex size-full flex-col items-center justify-center bg-inv-4",
+        "relative flex size-full flex-col items-center justify-end bg-inv-4",
       )}
     >
       <img
         src="/logos/usb-stick-min.png"
         alt="usb logo"
-        class="absolute top-2 z-0"
+        class="absolute top-4 z-0"
       />
-      <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
+      <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 fg-inv-1">
         <Typography
           hierarchy="title"
           size="default"
           weight="bold"
           color="inherit"
         >
-          USB stick is being flashed
+          Removable media is being flashed
         </Typography>
         <LoadingBar />
         <Button
           hierarchy="primary"
-          class="mt-3 w-fit"
+          class="mt-2 w-fit"
           size="s"
           onClick={handleCancel}
         >
@@ -364,8 +365,8 @@ const FlashProgress = () => {
 const FlashDone = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <div class="flex size-full flex-col items-center justify-between bg-inv-4">
-      <div class="flex size-full max-w-md flex-col items-center justify-center gap-3 py-6 fg-inv-1">
+    <div class="flex size-full flex-col items-center justify-end bg-inv-4">
+      <div class="flex size-full max-w-md flex-col items-center justify-center gap-3 pt-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
           <Icon icon="Checkmark" class="size-9" />
         </div>
@@ -375,7 +376,7 @@ const FlashDone = () => {
           weight="bold"
           color="inherit"
         >
-          USB Stick is ready!
+          Your device has been flashed!
         </Typography>
         <Alert
           type="warning"
@@ -383,7 +384,7 @@ const FlashDone = () => {
           description=""
         />
       </div>
-      <div class="flex w-full justify-end p-6">
+      <div class="flex w-full justify-end px-5 py-4">
         <Button
           hierarchy="primary"
           endIcon="ArrowRight"
@@ -415,10 +416,12 @@ export const createInstallerSteps = [
     id: "create:progress",
     content: FlashProgress,
     isSplash: true,
+    class: "max-w-[30rem] h-[18rem]",
   },
   {
     id: "create:done",
     content: FlashDone,
     isSplash: true,
+    class: "max-w-[30rem] h-[18rem]",
   },
 ] as const;
