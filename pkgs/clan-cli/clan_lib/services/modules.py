@@ -1,7 +1,6 @@
 import re
 import tomllib
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass, field, fields
 from typing import Any, TypedDict, TypeVar
 
 from clan_lib.api import API
@@ -22,11 +21,11 @@ class CategoryInfo(TypedDict):
 
 
 @dataclass
-class ModuleFrontmatter:
+class ModuleManifest:
+    name: str
     description: str
     categories: list[str] = field(default_factory=lambda: ["Uncategorized"])
     features: list[str] = field(default_factory=list)
-    constraints: dict[str, Any] = field(default_factory=dict)
 
     @property
     def categories_info(self) -> dict[str, CategoryInfo]:
@@ -58,6 +57,15 @@ class ModuleFrontmatter:
             if category not in self.categories_info:
                 msg = f"Invalid category: {category}"
                 raise ValueError(msg)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ModuleManifest":
+        """
+        Create an instance of ModuleFrontmatter from a dictionary.
+        Drops any keys that are not defined in the dataclass.
+        """
+        valid = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in data.items() if k in valid})
 
 
 def parse_frontmatter(readme_content: str) -> tuple[dict[str, Any] | None, str]:
@@ -127,40 +135,6 @@ def extract_frontmatter[T](
     )
 
 
-def has_inventory_feature(module_path: Path) -> bool:
-    readme_file = module_path / "README.md"
-    if not readme_file.exists():
-        return False
-    with readme_file.open() as f:
-        readme = f.read()
-        frontmatter, _ = extract_frontmatter(
-            readme, f"{module_path}", fm_class=ModuleFrontmatter
-        )
-        return "inventory" in frontmatter.features
-
-
-def get_roles(module_path: Path) -> None | list[str]:
-    if not has_inventory_feature(module_path):
-        return None
-
-    roles_dir = module_path / "roles"
-    if not roles_dir.exists() or not roles_dir.is_dir():
-        return []
-
-    return [
-        role.stem  # filename without .nix extension
-        for role in roles_dir.iterdir()
-        if role.is_file() and role.suffix == ".nix"
-    ]
-
-
-class ModuleManifest(TypedDict):
-    name: str
-    description: str
-    categories: list[str]
-    features: dict[str, bool]
-
-
 @dataclass
 class ModuleInfo(TypedDict):
     manifest: ModuleManifest
@@ -178,7 +152,18 @@ def list_service_modules(flake: Flake) -> ModuleList:
     """
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
-    return ModuleList({"modules": modules})
+    res: dict[str, dict[str, ModuleInfo]] = {}
+    for input_name, module_set in modules.items():
+        res[input_name] = {}
+
+        for module_name, module_info in module_set.items():
+            # breakpoint()
+            res[input_name][module_name] = ModuleInfo(
+                manifest=ModuleManifest.from_dict(module_info.get("manifest")),
+                roles=module_info.get("roles", {}),
+            )
+
+    return ModuleList(modules=res)
 
 
 @API.register
@@ -308,51 +293,3 @@ def create_service_instance(
     )
 
     return
-
-
-@dataclass
-class LegacyModuleInfo:
-    description: str
-    categories: list[str]
-    roles: None | list[str]
-    readme: str
-    features: list[str]
-    constraints: dict[str, Any]
-
-
-def get_module_info(
-    module_name: str,
-    module_path: Path,
-) -> LegacyModuleInfo:
-    """
-    Retrieves information about a module
-    """
-    if not module_path.exists():
-        msg = "Module not found"
-        raise ClanError(
-            msg,
-            location=f"show_module_info {module_name}",
-            description="Module does not exist",
-        )
-    module_readme = module_path / "README.md"
-    if not module_readme.exists():
-        msg = "Module not found"
-        raise ClanError(
-            msg,
-            location=f"show_module_info {module_name}",
-            description="Module does not exist or doesn't have any README.md file",
-        )
-    with module_readme.open() as f:
-        readme = f.read()
-        frontmatter, readme_content = extract_frontmatter(
-            readme, f"{module_path}/README.md", fm_class=ModuleFrontmatter
-        )
-
-    return LegacyModuleInfo(
-        description=frontmatter.description,
-        categories=frontmatter.categories,
-        roles=get_roles(module_path),
-        readme=readme_content,
-        features=["inventory"] if has_inventory_feature(module_path) else [],
-        constraints=frontmatter.constraints,
-    )
