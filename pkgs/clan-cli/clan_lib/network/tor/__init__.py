@@ -10,10 +10,6 @@ from clan_lib.network.tor.lib import is_tor_running, spawn_tor
 from clan_lib.ssh.remote import Remote
 from clan_lib.ssh.socks_wrapper import tor_wrapper
 
-if TYPE_CHECKING:
-    from clan_lib.ssh.remote import Remote
-
-
 log = logging.getLogger(__name__)
 
 

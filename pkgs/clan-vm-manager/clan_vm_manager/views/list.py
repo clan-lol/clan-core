@@ -2,7 +2,7 @@ import base64
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import gi
 from clan_lib.errors import ClanError
@@ -21,10 +21,12 @@ from clan_vm_manager.singletons.toast import (
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
 from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore, VMStore
-from clan_vm_manager.views.logs import Logs
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
+
+if TYPE_CHECKING:
+    from clan_vm_manager.views.logs import Logs
 
 log = logging.getLogger(__name__)
 

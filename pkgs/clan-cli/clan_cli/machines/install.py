@@ -71,7 +71,7 @@ def install_command(args: argparse.Namespace) -> None:
                     )
                     if ask == "y":
                         break
-                    if ask == "n" or ask == "":
+                    if ask in {"n", ""}:
                         return None
                     print(
                         f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no.",

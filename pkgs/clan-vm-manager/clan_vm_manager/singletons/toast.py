@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import gi
 
@@ -10,7 +10,9 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw
 
 from clan_vm_manager.singletons.use_views import ViewStack
-from clan_vm_manager.views.logs import Logs
+
+if TYPE_CHECKING:
+    from clan_vm_manager.views.logs import Logs
 
 log = logging.getLogger(__name__)
 

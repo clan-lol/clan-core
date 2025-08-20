@@ -1,7 +1,9 @@
 import argparse
 import json
+from typing import TYPE_CHECKING
 
-from clan_lib.flake import Flake
+if TYPE_CHECKING:
+    from clan_lib.flake import Flake
 
 
 def select_command(args: argparse.Namespace) -> None:

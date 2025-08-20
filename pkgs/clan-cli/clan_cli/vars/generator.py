@@ -4,13 +4,15 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from clan_lib.flake import Flake
-from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_test_store
 
 from .check import check_vars
 from .prompt import Prompt
 from .var import Var
+
+if TYPE_CHECKING:
+    from clan_lib.flake import Flake
+    from clan_lib.machines.machines import Machine
 
 if TYPE_CHECKING:
     from ._types import StoreBase

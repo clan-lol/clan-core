@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from graphlib import TopologicalSorter
 from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from .generator import Generator, GeneratorKey
 
 

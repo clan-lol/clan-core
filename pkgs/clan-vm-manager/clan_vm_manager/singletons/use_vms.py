@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import gi
 from clan_lib.flake import Flake
@@ -13,11 +13,13 @@ from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.history import HistoryEntry
 from clan_vm_manager.singletons.use_views import ViewStack
-from clan_vm_manager.views.logs import Logs
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gio, GLib, GObject
+
+if TYPE_CHECKING:
+    from clan_vm_manager.views.logs import Logs
 
 log = logging.getLogger(__name__)
 

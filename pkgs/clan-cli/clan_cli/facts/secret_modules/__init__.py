@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from clan_lib.machines import machines
-from clan_lib.ssh.host import Host
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from clan_lib.machines import machines
+    from clan_lib.ssh.host import Host
 
 
 class SecretStoreBase(ABC):

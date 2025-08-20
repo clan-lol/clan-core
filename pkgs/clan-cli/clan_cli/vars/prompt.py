@@ -91,7 +91,7 @@ def get_multiline_hidden_input() -> str:
                 raise KeyboardInterrupt
 
             # Handle Enter key
-            if char == "\r" or char == "\n":
+            if char in {"\r", "\n"}:
                 lines.append("".join(current_line))
                 current_line = []
                 # Print newline for visual feedback

@@ -30,7 +30,7 @@ def list_service_instances(flake: Flake) -> InventoryInstancesType:
 
 def collect_tags(machines: InventoryMachinesType) -> set[str]:
     res = set()
-    for _, machine in machines.items():
+    for machine in machines.values():
         res |= set(machine.get("tags", []))
 
     return res

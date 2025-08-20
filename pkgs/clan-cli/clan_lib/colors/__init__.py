@@ -145,9 +145,9 @@ def color(
 
 if __name__ == "__main__":
     print("====ANSI Colors====")
-    for _, value in AnsiColor.__members__.items():
+    for value in AnsiColor.__members__.values():
         print(color_by_tuple(f"{value}", fg=value.value))
 
     print("====CSS Colors====")
-    for _, cs_value in RgbColor.__members__.items():
+    for cs_value in RgbColor.__members__.values():
         print(color_by_tuple(f"{cs_value}", fg=cs_value.value))

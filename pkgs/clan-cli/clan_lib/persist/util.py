@@ -87,7 +87,7 @@ def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
             continue
         match = True
         for p, w in zip(path, wp, strict=False):
-            if w != "*" and p != w:
+            if w not in ("*", p):
                 match = False
                 break
         if match:

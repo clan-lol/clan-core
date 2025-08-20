@@ -352,7 +352,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
 
         output += f"The {module_name} module has the following roles:\n\n"
 
-        for role_name, _ in module_info["roles"].items():
+        for role_name in module_info["roles"]:
             output += f"- {role_name}\n"
 
         for role_name, role_filename in module_info["roles"].items():

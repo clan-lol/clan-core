@@ -318,7 +318,7 @@ def parse_selector(selector: str) -> list[Selector]:
             stack.pop()
             acc_str += c
 
-        elif mode == "str" or mode == "maybe":
+        elif mode in {"str", "maybe"}:
             if c == ".":
                 stack.pop()
                 if mode == "maybe":
@@ -517,9 +517,9 @@ class FlakeCacheEntry:
             return True
 
         # string and maybe work the same for cache checking
-        if (
-            selector.type == SelectorType.STR or selector.type == SelectorType.MAYBE
-        ) and isinstance(self.value, dict):
+        if (selector.type in (SelectorType.STR, SelectorType.MAYBE)) and isinstance(
+            self.value, dict
+        ):
             assert isinstance(selector.value, str)
             val = selector.value
             if val not in self.value:

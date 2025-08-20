@@ -262,7 +262,7 @@ def add_secret(
 
 def get_groups(flake_dir: Path, what: str, name: str) -> list[str]:
     """Returns the list of group names the given user or machine is part of."""
-    assert what == "users" or what == "machines"
+    assert what in {"users", "machines"}
 
     groups_dir = sops_groups_folder(flake_dir)
     if not groups_dir.exists():

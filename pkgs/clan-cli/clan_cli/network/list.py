@@ -16,10 +16,10 @@ def list_command(args: argparse.Namespace) -> None:
         return
 
     # Calculate column widths
-    col_network = max(12, max(len(name) for name in networks))
+    col_network = max(12, *(len(name) for name in networks))
     col_priority = 8
     col_module = max(
-        10, max(len(net.module_name.split(".")[-1]) for net in networks.values()),
+        10, *(len(net.module_name.split(".")[-1]) for net in networks.values())
     )
     col_running = 8
 

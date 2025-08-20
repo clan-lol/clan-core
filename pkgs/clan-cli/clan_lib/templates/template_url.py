@@ -83,11 +83,7 @@ def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[st
     if "#" not in identifier:
         # Local path references are not transformed
         # return flake_ref=identifier, template='default'
-        if (
-            identifier.startswith(("/", "~/", "./", "../"))
-            or identifier == "."
-            or identifier == ".."
-        ):
+        if identifier.startswith(("/", "~/", "./", "../")) or identifier in {".", ".."}:
             return (identifier, f"clan.templates.{template_type}.default")
 
         # No fragment, so we assume its a builtin template

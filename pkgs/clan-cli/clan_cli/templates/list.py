@@ -1,8 +1,11 @@
 import argparse
 import logging
+from typing import TYPE_CHECKING
 
-from clan_lib.nix_models.clan import TemplateClanType
 from clan_lib.templates import list_templates
+
+if TYPE_CHECKING:
+    from clan_lib.nix_models.clan import TemplateClanType
 
 log = logging.getLogger(__name__)
 

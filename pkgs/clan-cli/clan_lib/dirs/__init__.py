@@ -4,10 +4,12 @@ import sys
 import urllib.parse
 from enum import Enum
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+
+if TYPE_CHECKING:
+    from clan_lib.flake import Flake
 
 log = logging.getLogger(__name__)
 

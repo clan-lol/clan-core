@@ -1,6 +1,6 @@
 import logging
 import shutil
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.secrets.machines import has_machine as secrets_has_machine
@@ -13,6 +13,9 @@ from clan_lib.api import API
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.machines.machines import Machine
 from clan_lib.persist.inventory_store import InventoryStore
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 

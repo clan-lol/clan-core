@@ -267,7 +267,7 @@ def create_service_instance(
 
     # TODO: Check the roles against the schema
     schema = get_service_module_schema(flake, module_ref)
-    for role_name, _role in roles.items():
+    for role_name in roles:
         if role_name not in schema:
             msg = f"Role '{role_name}' is not defined in the module schema"
             raise ClanError(msg)
