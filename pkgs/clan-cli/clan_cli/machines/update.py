@@ -70,7 +70,7 @@ def requires_explicit_update(m: Machine) -> bool:
     try:
         if m.select("config.clan.deployment.requireExplicitUpdate"):
             return False
-    except Exception:
+    except (ClanError, AttributeError):
         pass
 
     try:

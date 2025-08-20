@@ -239,7 +239,7 @@ def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
             runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))  # noqa: S604
         runtime.join_all()
         runtime.check_all()
-    except Exception:
+    except Exception:  # noqa: S110
         pass
     else:
         msg = "should have raised Exception"
@@ -255,7 +255,7 @@ def test_run_function_exception(hosts: list[Remote], runtime: AsyncRuntime) -> N
             runtime.async_run(None, some_func, host)
         runtime.join_all()
         runtime.check_all()
-    except Exception:
+    except Exception:  # noqa: S110
         pass
     else:
         msg = "should have raised Exception"
