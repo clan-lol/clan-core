@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import contextlib
 import socket
 from collections.abc import Callable
