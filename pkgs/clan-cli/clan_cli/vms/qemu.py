@@ -1,5 +1,5 @@
 import platform
-import random
+import secrets
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -27,7 +27,7 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
 
     if vm.waypipe.enable:
         # FIXME: check for collisions
-        cid = random.randint(1, 2**32)
+        cid = secrets.randbelow(2**32 - 1) + 1  # Generate random CID between 1 and 2^32
         # fmt: off
         return GraphicOptions([
           *common,

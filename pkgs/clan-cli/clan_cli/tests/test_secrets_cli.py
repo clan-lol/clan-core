@@ -235,7 +235,7 @@ def test_multiple_user_keys(
         # let's do some setting and getting of secrets
 
         def random_str() -> str:
-            return "".join(random.choices(string.ascii_letters, k=10))
+            return "".join(random.choices(string.ascii_letters, k=10))  # noqa: S311 - Test data generation, not cryptographic
 
         for user_key in user_keys:
             # set a secret using each of the user's private keys
