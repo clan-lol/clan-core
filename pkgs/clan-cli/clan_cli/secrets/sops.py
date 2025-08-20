@@ -83,7 +83,7 @@ class KeyType(enum.Enum):
 
                 except FileNotFoundError:
                     return
-                except Exception as ex:
+                except OSError as ex:
                     log.warning(f"Could not read age keys from {key_path}", exc_info=ex)
 
             if keys := os.environ.get("SOPS_AGE_KEY"):

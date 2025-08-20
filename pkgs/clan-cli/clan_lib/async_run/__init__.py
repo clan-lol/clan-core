@@ -155,7 +155,7 @@ class AsyncThread[**P, R](threading.Thread):
             set_should_cancel(lambda: self.stop_event.is_set())
             # Arguments for ParamSpec "P@AsyncThread" are missing
             self.result = AsyncResult(_result=self.function(*self.args, **self.kwargs))
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             self.result = AsyncResult(_result=ex)
         finally:
             self.finished = True

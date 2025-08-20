@@ -139,7 +139,7 @@ class ClanStore:
 
                 # Convert the byte array to a string and print it
                 logs_view.set_message(contents.decode("utf-8"))
-            except Exception as e:
+            except (GLib.Error, UnicodeDecodeError) as e:
                 print(f"Error reading file: {e}")
 
         # only one vm can output logs at a time

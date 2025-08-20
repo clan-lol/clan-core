@@ -345,7 +345,7 @@ class VMObject(GObject.Object):
                     raise ClanError(msg)
                 with self.qmp_wrap.qmp_ctx() as qmp:
                     qmp.command("system_powerdown")
-            except Exception as ex:
+            except (ClanError, OSError, ConnectionError) as ex:
                 log.debug(f"QMP command 'system_powerdown' ignored. Error: {ex}")
 
             # Try 20 times to stop the VM

@@ -148,7 +148,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             self.send_header("Content-Type", content_type)
             self.end_headers()
             self.wfile.write(file_data)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as e:
             log.error(f"Error reading Swagger file: {e!s}")
             self.send_error(500, "Internal Server Error")
 
@@ -252,7 +252,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         gen_op_key = str(uuid.uuid4())
         try:
             self._handle_api_request(method_name, request_data, gen_op_key)
-        except Exception as e:
+        except RuntimeError as e:
             log.exception(f"Error processing API request {method_name}")
             self.send_api_error_response(
                 gen_op_key,
@@ -275,7 +275,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
                 ["http_bridge", "POST", method_name],
             )
             return None
-        except Exception as e:
+        except (OSError, ValueError, UnicodeDecodeError) as e:
             self.send_api_error_response(
                 "post",
                 f"Error reading request: {e!s}",
@@ -305,7 +305,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
                 op_key=op_key,
             )
 
-        except Exception as e:
+        except (KeyError, TypeError, ValueError) as e:
             self.send_api_error_response(
                 gen_op_key,
                 str(e),
