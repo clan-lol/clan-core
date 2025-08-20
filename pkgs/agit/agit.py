@@ -179,7 +179,7 @@ def run_git_command(command: list) -> tuple[int, str, str]:
     try:
         result = subprocess.run(command, capture_output=True, text=True, check=False)
         return result.returncode, result.stdout.strip(), result.stderr.strip()
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
         return 1, "", str(e)
 
 
