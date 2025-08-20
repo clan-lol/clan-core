@@ -178,10 +178,10 @@ def _generate_facts_for_machine(
     else:
         machine_service_facts = machine.facts_data
 
-    for service in machine_service_facts:
+    for svc in machine_service_facts:
         machine_updated |= generate_service_facts(
             machine=machine,
-            service=service,
+            service=svc,
             regenerate=regenerate,
             secret_facts_store=machine.secret_facts_store,
             public_facts_store=machine.public_facts_store,
