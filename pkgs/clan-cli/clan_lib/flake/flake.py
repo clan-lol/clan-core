@@ -99,7 +99,7 @@ class SetSelectorType(str, Enum):
 
 @dataclass
 class SetSelector:
-    """This class represents a selector used in a set.
+    """Represents a selector used in a set.
     type: SetSelectorType = SetSelectorType.STR
     value: str = ""
 
@@ -783,7 +783,7 @@ class FlakeCache:
 
 @dataclass
 class Flake:
-    """This class represents a flake, and is used to interact with it.
+    """Represents a flake, and is used to interact with it.
     values can be accessed using the select method, which will fetch the value from the cache if it is present.
     """
 

@@ -46,7 +46,7 @@ class JoinValue(GObject.Object):
 
 
 class JoinList:
-    """This is a singleton.
+    """Singleton class.
     It is initialized with the first call of use()
     """
 

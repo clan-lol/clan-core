@@ -119,7 +119,7 @@ def load_dataclass_from_file(
 
 
 def test_all_dataclasses() -> None:
-    """This Test ensures that all dataclasses are compatible with the API.
+    """Ensures that all dataclasses are compatible with the API.
 
     It will load all dataclasses from the clan_cli directory and
     generate a JSON schema for each of them.
