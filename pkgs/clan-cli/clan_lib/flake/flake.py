@@ -869,7 +869,7 @@ class Flake:
             self.identifier,
         ]
 
-        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", False) == "1"
+        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH") == "1"
         if not trace_prefetch:
             log.debug(f"Prefetching flake {self.identifier}")
         try:
@@ -1018,7 +1018,7 @@ class Flake:
                 ];
               }}
         """
-        trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS", False) == "1"
+        trace = os.environ.get("CLAN_DEBUG_NIX_SELECTORS") == "1"
         try:
             build_output = Path(
                 run(

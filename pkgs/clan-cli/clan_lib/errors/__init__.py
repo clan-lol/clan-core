@@ -90,7 +90,7 @@ def indent_command(command_list: list[str]) -> str:
     return final_command
 
 
-DEBUG_COMMANDS = os.environ.get("CLAN_DEBUG_COMMANDS", False)
+DEBUG_COMMANDS = os.environ.get("CLAN_DEBUG_COMMANDS") == "1"
 
 
 @dataclass
