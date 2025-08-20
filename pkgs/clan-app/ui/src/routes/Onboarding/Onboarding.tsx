@@ -99,9 +99,17 @@ const welcome = (props: {
 
   const selectFolder = async () => {
     setLoading(true);
-    const uri = await selectClanFolder();
-    setLoading(false);
-    navigateToClan(navigate, uri);
+
+    try {
+      const uri = await selectClanFolder();
+      setLoading(false);
+      navigateToClan(navigate, uri);
+    } catch (e) {
+      // todo display error, currently we don't get anything to distinguish between cancel or an actual error
+    } finally {
+      // stop the loading state of the button
+      setLoading(false);
+    }
   };
 
   return (
@@ -151,7 +159,7 @@ const welcome = (props: {
       </div>
       <Button
         hierarchy="primary"
-        ghost={true}
+        ghost
         loading={loading()}
         onClick={selectFolder}
       >
