@@ -59,7 +59,7 @@ def machine_template(
     try:
         template = template_flake.select(template_selector)
     except ClanError as e:
-        msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"
+        msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"  # noqa: S608
         raise ClanError(msg) from e
 
     src = template.get("path")
@@ -152,7 +152,7 @@ def clan_template(
             template_flake = builtin_flake
             printable_template_ref = f"{clan_templates()}#{builtin_selector}"
         except ClanError:
-            msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"
+            msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"  # noqa: S608
             raise ClanError(msg) from e
 
     src = template.get("path")
