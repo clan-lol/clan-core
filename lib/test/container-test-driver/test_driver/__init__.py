@@ -50,7 +50,7 @@ def init_test_environment() -> None:
     passwd_content = """root:x:0:0:Root:/root:/bin/sh
 nixbld:x:1000:100:Nix build user:/tmp:/bin/sh
 nobody:x:65534:65534:Nobody:/:/bin/sh
-"""
+"""  # noqa: S105 - This is not a password, it's a Unix passwd file format for testing
 
     with NamedTemporaryFile(mode="w", delete=False, prefix="test-passwd-") as f:
         f.write(passwd_content)
