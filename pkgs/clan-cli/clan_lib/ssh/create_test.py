@@ -3,7 +3,7 @@ from pathlib import Path
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 
 
-def test_clan_generate_sshkeys(temporary_home: Path) -> None:
+def test_clan_generate_sshkeys(temporary_home: Path) -> None:  # noqa: ARG001
     keypair = create_secret_key_nixos_anywhere()
 
     assert keypair.private.exists()

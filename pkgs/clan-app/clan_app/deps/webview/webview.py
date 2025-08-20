@@ -205,7 +205,7 @@ class Webview:
             )
 
     def bind(self, name: str, callback: Callable[..., Any]) -> None:
-        def wrapper(seq: bytes, req: bytes, arg: int) -> None:
+        def wrapper(seq: bytes, req: bytes, _arg: int) -> None:
             args = json.loads(req.decode())
             try:
                 result = callback(*args)

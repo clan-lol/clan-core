@@ -10,7 +10,6 @@ from clan_lib.templates.filesystem import copy_from_nixstore
 @pytest.mark.with_core
 def test_clan_core_templates(
     test_flake_with_core: FlakeForTest,
-    monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
 ) -> None:
     clan_dir = Flake(str(test_flake_with_core.path))

@@ -214,7 +214,6 @@ def field_def_from_default_value(
 
 def get_field_def(
     field_name: str,
-    field_meta: str | None,
     field_types: list[str],
     default: str | None = None,
     default_factory: str | None = None,
@@ -332,11 +331,7 @@ def generate_dataclass(
             msg = f"Python type not found for {prop} {prop_info}"
             raise Error(msg)
 
-        field_meta = None
-        if field_name != prop:
-            field_meta = f"""{{"alias": "{prop}"}}"""
-
-        finalize_field = partial(get_field_def, field_name, field_meta)
+        finalize_field = partial(get_field_def, field_name)
 
         # Sort and remove potential duplicates
         field_types_sorted = sort_types(set(field_types))

@@ -475,7 +475,7 @@ def writable_clan_core(
 
 @pytest.fixture
 def vm_test_flake(
-    clan_core: Path,
+    clan_core: Path,  # noqa: ARG001
     tmp_path: Path,
 ) -> Path:
     """Creates a test flake that imports the VM test nixOS modules from clan-core."""
