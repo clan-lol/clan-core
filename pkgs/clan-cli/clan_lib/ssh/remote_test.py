@@ -157,7 +157,7 @@ def test_run_environment(hosts: list[Remote], runtime: AsyncRuntime) -> None:
             None,
             host.run_local,
             ["echo $env_var"],
-            RunOpts(shell=True, log=Log.STDERR),
+            RunOpts(shell=True, log=Log.STDERR),  # noqa: S604
             extra_env={"env_var": "true"},
         )
     assert proc.wait().result.stdout == "true\n"
@@ -230,13 +230,13 @@ def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
             None,
             host.run_local,
             ["exit 1"],
-            RunOpts(shell=True, check=False),
+            RunOpts(shell=True, check=False),  # noqa: S604
         )
     assert proc.wait().result.returncode == 1
 
     try:
         for host in hosts:
-            runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))
+            runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))  # noqa: S604
         runtime.join_all()
         runtime.check_all()
     except Exception:
@@ -248,7 +248,7 @@ def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
 
 def test_run_function_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     def some_func(h: Remote) -> CmdOut:
-        return h.run_local(["exit 1"], RunOpts(shell=True))
+        return h.run_local(["exit 1"], RunOpts(shell=True))  # noqa: S604
 
     try:
         for host in hosts:

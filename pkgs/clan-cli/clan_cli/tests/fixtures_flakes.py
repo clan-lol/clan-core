@@ -441,13 +441,43 @@ def writable_clan_core(
 
         # Copy all tracked and untracked files (excluding ignored)
         # Using git ls-files with -z for null-terminated output to handle filenames with spaces
-        sp.run(
-            f"(git ls-files -z; git ls-files -z --others --exclude-standard) | "
-            f"xargs -0 cp --parents -t {temp_flake}/",
-            shell=True,
-            cwd=clan_core,
-            check=True,
+
+        # Get tracked files
+        tracked_files = (
+            sp.run(
+                ["git", "ls-files", "-z"],
+                cwd=clan_core,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            .stdout.rstrip("\0")
+            .split("\0")
         )
+
+        # Get untracked files (excluding ignored)
+        untracked_files = (
+            sp.run(
+                ["git", "ls-files", "-z", "--others", "--exclude-standard"],
+                cwd=clan_core,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            .stdout.rstrip("\0")
+            .split("\0")
+        )
+
+        # Combine and filter out empty strings
+        all_files = [f for f in tracked_files + untracked_files if f]
+
+        # Copy files preserving directory structure
+        if all_files:
+            sp.run(
+                ["cp", "--parents", "-t", str(temp_flake), "--", *all_files],
+                cwd=clan_core,
+                check=True,
+            )
 
         # Copy .git directory to maintain git functionality
         if (clan_core / ".git").is_dir():
