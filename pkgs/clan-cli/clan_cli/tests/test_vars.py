@@ -127,7 +127,7 @@ def test_generate_public_and_secret_vars(
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["script"] = (
-        'echo -n public > "$out"/my_value; echo -n secret > "$out"/my_secret; echo -n non-default > "$out"/value_with_default'
+        'echo -n public$RANDOM > "$out"/my_value; echo -n secret$RANDOM > "$out"/my_secret; echo -n non-default$RANDOM > "$out"/value_with_default'
     )
 
     my_generator["files"]["value_with_default"]["secret"] = False
@@ -140,7 +140,7 @@ def test_generate_public_and_secret_vars(
     ]
     my_shared_generator["share"] = True
     my_shared_generator["files"]["my_shared_value"]["secret"] = False
-    my_shared_generator["script"] = 'echo -n shared > "$out"/my_shared_value'
+    my_shared_generator["script"] = 'echo -n shared$RANDOM > "$out"/my_shared_value'
 
     dependent_generator = config["clan"]["core"]["vars"]["generators"][
         "dependent_generator"
@@ -187,11 +187,12 @@ def test_generate_public_and_secret_vars(
         "Update vars via generator my_shared_generator for machine my_machine"
         in commit_message
     )
-    assert get_machine_var(machine, "my_generator/my_value").printable_value == "public"
-    assert (
-        get_machine_var(machine, "my_shared_generator/my_shared_value").printable_value
-        == "shared"
-    )
+    public_value = get_machine_var(machine, "my_generator/my_value").printable_value
+    assert public_value.startswith("public")
+    shared_value = get_machine_var(
+        machine, "my_shared_generator/my_shared_value"
+    ).printable_value
+    assert shared_value.startswith("shared")
     vars_text = stringify_all_vars(machine)
     flake_obj = Flake(str(flake.path))
     my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
@@ -202,9 +203,10 @@ def test_generate_public_and_secret_vars(
     assert not in_repo_store.exists(my_generator, "my_secret")
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator, "my_secret")
-    assert sops_store.get(my_generator, "my_secret").decode() == "secret"
+    assert sops_store.get(my_generator, "my_secret").decode().startswith("secret")
     assert sops_store.exists(dependent_generator, "my_secret")
-    assert sops_store.get(dependent_generator, "my_secret").decode() == "shared"
+    secret_value = sops_store.get(dependent_generator, "my_secret").decode()
+    assert secret_value.startswith("shared")
 
     assert "my_generator/my_value: public" in vars_text
     assert "my_generator/my_secret" in vars_text
@@ -215,7 +217,7 @@ def test_generate_public_and_secret_vars(
             ]
         )
     ).stdout.strip()
-    assert json.loads(vars_eval) == "public"
+    assert json.loads(vars_eval).startswith("public")
 
     value_non_default = run(
         nix_eval(
@@ -224,7 +226,8 @@ def test_generate_public_and_secret_vars(
             ]
         )
     ).stdout.strip()
-    assert json.loads(value_non_default) == "non-default"
+    assert json.loads(value_non_default).startswith("non-default")
+
     # test regeneration works
     cli.run(
         ["vars", "generate", "--flake", str(flake.path), "my_machine", "--regenerate"]
@@ -240,6 +243,19 @@ def test_generate_public_and_secret_vars(
             "--regenerate",
             "--no-sandbox",
         ]
+    )
+    # test stuff actually changed after regeneration
+    public_value_new = get_machine_var(machine, "my_generator/my_value").printable_value
+    assert public_value_new != public_value, "Value should change after regeneration"
+    secret_value_new = sops_store.get(dependent_generator, "my_secret").decode()
+    assert secret_value_new != secret_value, (
+        "Secret value should change after regeneration"
+    )
+    shared_value_new = get_machine_var(
+        machine, "my_shared_generator/my_shared_value"
+    ).printable_value
+    assert shared_value != shared_value_new, (
+        "Shared value should change after regeneration"
     )
 
 
