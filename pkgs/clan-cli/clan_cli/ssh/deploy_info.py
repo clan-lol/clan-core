@@ -58,10 +58,7 @@ def ssh_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         # Convert ssh_option list to dictionary
-        ssh_options = {}
-        if args.ssh_option:
-            for name, value in args.ssh_option:
-                ssh_options[name] = value
+        ssh_options = dict(args.ssh_option) if args.ssh_option else {}
 
         remote = remote.override(
             host_key_check=args.host_key_check,

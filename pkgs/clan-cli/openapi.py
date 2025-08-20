@@ -105,11 +105,10 @@ def fix_nullables(schema: dict) -> dict:
     if isinstance(schema, dict):
         if "type" in schema and schema["type"] == "null":
             # Convert 'type: null' to 'nullable: true'
-            new_schema = {"nullable": True}
             # Merge any other keys from original schema except type
-            for k, v in schema.items():
-                if k != "type":
-                    new_schema[k] = v
+            new_schema = {"nullable": True} | {
+                k: v for k, v in schema.items() if k != "type"
+            }
             return fix_nullables(new_schema)
 
         # If 'oneOf' present
