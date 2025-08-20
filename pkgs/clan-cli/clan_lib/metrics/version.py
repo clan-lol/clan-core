@@ -67,8 +67,8 @@ def check_machine_up_to_date(
         ],
     )
 
-    log.debug(
-        f"Checking if {machine.name} needs an update:\n"
+    machine.debug(
+        f"Checking up-to-date:\n"
         f"Machine outPath: {nixos_systems.current_system}\n"
         f"Git outPath    : {git_out_path}\n",
     )

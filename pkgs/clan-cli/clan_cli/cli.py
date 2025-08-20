@@ -549,11 +549,11 @@ def main() -> None:
 
     try:
         args.func(args)
-    except ClanError:
+    except ClanError as e:
         if debug:
             log.exception("Exited with error")
         else:
-            log.exception("Exited with error")
+            log.error(e)  # noqa: TRY400
         sys.exit(1)
     except KeyboardInterrupt as ex:
         log.warning("Interrupted by user", exc_info=ex)

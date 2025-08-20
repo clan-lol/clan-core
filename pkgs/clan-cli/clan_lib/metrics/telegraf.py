@@ -5,7 +5,7 @@ from base64 import b64encode
 from collections.abc import Iterator
 from typing import Any, TypedDict, cast
 
-from clan_cli.vars.get import get_machine_var
+from clan_cli.vars.get import VarNotFoundError, get_machine_var
 
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
@@ -21,6 +21,11 @@ class MetricSample(TypedDict):
     timestamp: int
 
 
+class MonitoringNotEnabledError(ClanError):
+    pass
+
+
+# Tests for this function are in the monitoring clanService tests
 def get_metrics(
     machine: Machine,
     target_host: Host,
@@ -39,11 +44,15 @@ def get_metrics(
     url = f"http://{target_host.address}:9990/telegraf.json"
     username = "prometheus"
     var_name = "telegraf/password"
-    password_var = get_machine_var(machine, var_name)
+    try:
+        password_var = get_machine_var(machine, var_name)
+    except VarNotFoundError as e:
+        msg = f"Module 'monitoring' is required to fetch metrics from machine '{machine.name}'."
+        raise MonitoringNotEnabledError(msg) from e
     if not password_var.exists:
         msg = (
             f"Missing required var '{var_name}' for machine '{machine.name}'.\n"
-            "Ensure the 'monitoring' clanService is enabled and run `clan machines update {machine.name}`."
+            f"Ensure the 'monitoring' clanService is enabled and run `clan machines update {machine.name}`."
             "For more information, see: https://docs.clan.lol/reference/clanServices/monitoring/"
         )
         raise ClanError(msg)
@@ -56,14 +65,15 @@ def get_metrics(
     req = urllib.request.Request(url, headers=headers)  # noqa: S310
 
     try:
-        response = urllib.request.urlopen(req)  # noqa: S310
+        machine.info(f"Fetching Prometheus metrics from {url}")
+        response = urllib.request.urlopen(req, timeout=6)  # noqa: S310
         for line in response:
             line_str = line.decode("utf-8").strip()
             if line_str:
                 try:
                     yield cast("MetricSample", json.loads(line_str))
                 except json.JSONDecodeError:
-                    log.warning(f"Skipping invalid JSON line: {line_str}")
+                    machine.warn(f"Skipping invalid JSON line: {line_str}")
                     continue
     except Exception as e:
         msg = (

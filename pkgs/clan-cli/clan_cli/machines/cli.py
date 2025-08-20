@@ -3,6 +3,7 @@ import argparse
 
 from .create import register_create_parser
 from .delete import register_delete_parser
+from .generations import register_generations_parser
 from .hardware import register_update_hardware_config
 from .install import register_install_parser
 from .list import register_list_parser
@@ -145,3 +146,19 @@ For more detailed information, visit: https://docs.clan.lol/guides/getting-start
         formatter_class=argparse.RawTextHelpFormatter,
     )
     register_install_parser(install_parser)
+
+    generations_parser = subparser.add_parser(
+        "generations",
+        help="list generations of machines",
+        description="list generations of machines",
+        epilog=(
+            """
+  List NixOS generations of the machine.
+  The generations are the different versions of the machine that are installed on the target host.
+  Examples:
+  $ clan generations [MACHINE]
+            """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    register_generations_parser(generations_parser)

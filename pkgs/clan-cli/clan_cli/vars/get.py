@@ -17,6 +17,10 @@ from .list import get_machine_vars
 log = logging.getLogger(__name__)
 
 
+class VarNotFoundError(ClanError):
+    pass
+
+
 def get_machine_var(machine: Machine, var_id: str) -> Var:
     log.debug(f"getting var: {var_id} from machine: {machine.name}")
     vars_ = get_machine_vars(machine)
@@ -29,11 +33,14 @@ def get_machine_var(machine: Machine, var_id: str) -> Var:
         if var.id.startswith(var_id):
             results.append(var)
     if len(results) == 0:
-        msg = f"Couldn't find var: {var_id} for machine: {machine}"
-        raise ClanError(msg)
+        msg = f"Couldn't find var: {var_id} for machine: {machine.name}"
+        raise VarNotFoundError(msg)
     if len(results) > 1:
-        error = f"Found multiple vars in {machine} for {var_id}:\n  - " + "\n  - ".join(
-            [str(var) for var in results],
+        error = (
+            f"Found multiple vars in {machine.name} for {var_id}:\n  - "
+            + "\n  - ".join(
+                [str(var) for var in results],
+            )
         )
         raise ClanError(error)
     # we have exactly one result at this point
