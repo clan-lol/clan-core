@@ -36,6 +36,9 @@ export const navigateToClan = (navigate: Navigator, clanURI: string) => {
   navigate(path);
 };
 
+export const navigateToOnboarding = (navigate: Navigator, addClan: boolean) =>
+  navigate(`/${addClan ? "?addClan=true" : ""}`);
+
 export const navigateToMachine = (
   navigate: Navigator,
   clanURI: string,

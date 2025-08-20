@@ -5,8 +5,12 @@ import { useNavigate } from "@solidjs/router";
 import { Typography } from "../Typography/Typography";
 import { createSignal, For, Suspense } from "solid-js";
 import { useClanListQuery } from "@/src/hooks/queries";
-import { navigateToClan, useClanURI } from "@/src/hooks/clan";
-import { clanURIs } from "@/src/stores/clan";
+import {
+  navigateToClan,
+  navigateToOnboarding,
+  useClanURI,
+} from "@/src/hooks/clan";
+import { clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { Button } from "../Button/Button";
 
 export const SidebarHeader = () => {
@@ -81,7 +85,7 @@ export const SidebarHeader = () => {
                     ghost
                     size="xs"
                     startIcon="Plus"
-                    onClick={() => navigate("/?addClan=true")}
+                    onClick={() => navigateToOnboarding(navigate, true)}
                   >
                     Add
                   </Button>
@@ -92,9 +96,9 @@ export const SidebarHeader = () => {
                       <Suspense fallback={"Loading..."}>
                         <DropdownMenu.Item
                           class="dropdown-item"
-                          onSelect={() =>
-                            navigateToClan(navigate, clan.data!.uri)
-                          }
+                          onSelect={() => {
+                            setActiveClanURI(clan.data!.uri);
+                          }}
                         >
                           <Typography
                             hierarchy="label"

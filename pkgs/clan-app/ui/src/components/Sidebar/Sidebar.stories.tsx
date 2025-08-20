@@ -18,7 +18,6 @@ import {
   OperationNames,
   OperationResponse,
 } from "@/src/hooks/api";
-import { mac } from "valibot";
 
 const defaultClanURI = "/home/brian/clans/my-clan";
 

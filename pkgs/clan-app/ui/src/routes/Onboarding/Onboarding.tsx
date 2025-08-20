@@ -4,6 +4,7 @@ import {
   createSignal,
   Match,
   Setter,
+  Show,
   Switch,
 } from "solid-js";
 import {
@@ -36,6 +37,7 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { callApi } from "@/src/hooks/api";
 import { Creating } from "./Creating";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import { ListClansModal } from "@/src/routes/Onboarding/ListClansModal";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -59,14 +61,32 @@ const SetupSchema = v.object({
 
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
-const background = (props: { state: State; form: FormStore<SetupForm> }) => (
-  <div class="background">
-    <div class="layer-1" />
-    <div class="layer-2" />
-    <div class="layer-3" />
-    <Logo variant="Clan" inverted={true} />
-  </div>
-);
+const background = (props: { state: State; form: FormStore<SetupForm> }) => {
+  // controls whether the list clans modal is displayed
+  const [showModal, setShowModal] = createSignal(false);
+
+  return (
+    <div class="background">
+      <div class="layer-1" />
+      <div class="layer-2" />
+      <div class="layer-3" />
+      <Logo variant="Clan" inverted />
+      <Button
+        class="list-clans"
+        hierarchy="primary"
+        ghost
+        size="s"
+        startIcon="Grid"
+        onClick={() => setShowModal(true)}
+      >
+        All Clans
+      </Button>
+      <Show when={showModal()}>
+        <ListClansModal onClose={() => setShowModal(false)} />
+      </Show>
+    </div>
+  );
+};
 
 const welcome = (props: {
   setState: Setter<State>;
@@ -147,17 +167,13 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
 
   const activeURI = activeClanURI();
 
-  console.log("onboarding params", searchParams.addClan);
-
   if (!searchParams.addClan && activeURI) {
     // the user has already selected a clan, so we should navigate to it
     console.log("active clan detected, navigating to it", activeURI);
     navigateToClan(navigate, activeURI);
   }
 
-  const [state, setState] = createSignal<State>(
-    searchParams.addClan ? "setup" : "welcome",
-  );
+  const [state, setState] = createSignal<State>("welcome");
 
   // used to display an error in the welcome screen in the event of a failed
   // clan creation
@@ -280,15 +296,7 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                   hierarchy="secondary"
                   ghost={true}
                   icon="ArrowLeft"
-                  onClick={() => {
-                    // if we arrived here by way of adding a clan then we return to the active clan
-                    if (searchParams.addClan && activeURI) {
-                      navigateToClan(navigate, activeURI);
-                    }
-
-                    // otherwise we return to the initial welcome screen
-                    setState("welcome");
-                  }}
+                  onClick={() => setState("welcome")}
                 />
                 <Typography hierarchy="headline" size="default" weight="bold">
                   Setup
