@@ -138,15 +138,6 @@ class LogFile:
         return path / self.func_name / f"{self.date_second}_{self.op_key}.log"
 
     def __eq__(self, other: object) -> bool:
-        """Check equality with another LogFile instance.
-
-        Args:
-            other: The object to compare with.
-
-        Returns:
-            True if all significant fields are equal, False otherwise.
-
-        """
         if not isinstance(other, LogFile):
             return NotImplemented
         # Compare all significant fields for equality
@@ -158,18 +149,18 @@ class LogFile:
             and self._base_dir == other._base_dir
         )
 
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self._datetime_obj,
+                self.group,
+                self.func_name,
+                self.op_key,
+                self._base_dir,
+            ),
+        )
+
     def __lt__(self, other: object) -> bool:
-        """Compare LogFile instances for sorting.
-
-        Sorting order: datetime (newest first), then group, func_name, op_key (all ascending).
-
-        Args:
-            other: The object to compare with.
-
-        Returns:
-            True if this instance should be sorted before the other.
-
-        """
         if not isinstance(other, LogFile):
             return NotImplemented
         # Primary sort: datetime (newest first). self is "less than" other if self is newer.
@@ -228,31 +219,14 @@ class LogDayDir:
         return self._base_dir / self.date_day
 
     def __eq__(self, other: object) -> bool:
-        """Check equality with another LogDayDir instance.
-
-        Args:
-            other: The object to compare with.
-
-        Returns:
-            True if date_day and base_dir are equal, False otherwise.
-
-        """
         if not isinstance(other, LogDayDir):
             return NotImplemented
         return self.date_day == other.date_day and self._base_dir == other._base_dir
 
+    def __hash__(self) -> int:
+        return hash((self.date_day, self._base_dir))
+
     def __lt__(self, other: object) -> bool:
-        """Compare LogDayDir instances for sorting.
-
-        Sorting order: date (newest first).
-
-        Args:
-            other: The object to compare with.
-
-        Returns:
-            True if this instance should be sorted before the other.
-
-        """
         if not isinstance(other, LogDayDir):
             return NotImplemented
         # Primary sort: date (newest first)
