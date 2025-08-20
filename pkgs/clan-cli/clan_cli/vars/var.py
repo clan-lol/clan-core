@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from clan_lib.errors import ClanError
+
 if TYPE_CHECKING:
     from clan_cli.vars.generator import Generator
 
@@ -31,8 +33,12 @@ class Var:
 
     @property
     def value(self) -> bytes:
-        assert self._store is not None
-        assert self._generator is not None
+        if self._store is None:
+            msg = "Store cannot be None"
+            raise ClanError(msg)
+        if self._generator is None:
+            msg = "Generator cannot be None"
+            raise ClanError(msg)
         if not self._store.exists(self._generator, self.name):
             msg = f"Var {self.id} has not been generated yet"
             raise ValueError(msg)
@@ -47,14 +53,22 @@ class Var:
             return "<binary blob>"
 
     def set(self, value: bytes) -> list[Path]:
-        assert self._store is not None
-        assert self._generator is not None
+        if self._store is None:
+            msg = "Store cannot be None"
+            raise ClanError(msg)
+        if self._generator is None:
+            msg = "Generator cannot be None"
+            raise ClanError(msg)
         return self._store.set(self._generator, self, value)
 
     @property
     def exists(self) -> bool:
-        assert self._store is not None
-        assert self._generator is not None
+        if self._store is None:
+            msg = "Store cannot be None"
+            raise ClanError(msg)
+        if self._generator is None:
+            msg = "Generator cannot be None"
+            raise ClanError(msg)
         return self._store.exists(self._generator, self.name)
 
     def __str__(self) -> str:

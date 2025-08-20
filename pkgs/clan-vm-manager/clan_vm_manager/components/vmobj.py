@@ -16,6 +16,7 @@ from clan_cli import vms
 from clan_cli.vms.inspect import inspect_vm
 from clan_cli.vms.qemu import QMPWrapper
 from clan_lib.dirs import vm_state_dir
+from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 
 from clan_vm_manager.clan_uri import ClanURI
@@ -158,14 +159,18 @@ class VMObject(GObject.Object):
             name=self.data.flake.flake_attr,
             flake=uri.flake,
         )
-        assert self.machine is not None
+        if self.machine is None:
+            msg = "Machine object is not available"
+            raise ClanError(msg)
 
         state_dir = vm_state_dir(
             flake_url=self.machine.flake.identifier,
             vm_name=self.machine.name,
         )
         self.qmp_wrap = QMPWrapper(state_dir)
-        assert self.machine is not None
+        if self.machine is None:
+            msg = "Machine object is not available"
+            raise ClanError(msg)
         yield self.machine
         self.machine = None
 
@@ -332,7 +337,9 @@ class VMObject(GObject.Object):
 
             # Try to shutdown the VM gracefully using QMP
             try:
-                assert self.qmp_wrap is not None
+                if self.qmp_wrap is None:
+                    msg = "QMP wrapper is not available"
+                    raise ClanError(msg)
                 with self.qmp_wrap.qmp_ctx() as qmp:
                     qmp.command("system_powerdown")
             except Exception as ex:

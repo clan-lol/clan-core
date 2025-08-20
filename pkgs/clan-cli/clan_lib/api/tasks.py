@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from clan_lib.api import API
 from clan_lib.async_run import get_async_ctx, is_async_cancelled
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +22,9 @@ BAKEND_THREADS: dict[str, WebThread] | None = None
 @API.register
 def delete_task(task_id: str) -> None:
     """Cancel a task by its op_key."""
-    assert BAKEND_THREADS is not None, "Backend threads not initialized"
+    if BAKEND_THREADS is None:
+        msg = "Backend threads not initialized"
+        raise ClanError(msg)
     future = BAKEND_THREADS.get(task_id)
 
     log.debug(f"Thread ID: {threading.get_ident()}")
@@ -53,5 +56,7 @@ def run_task_blocking(somearg: str) -> str:
 @API.register
 def list_tasks() -> list[str]:
     """List all tasks."""
-    assert BAKEND_THREADS is not None, "Backend threads not initialized"
+    if BAKEND_THREADS is None:
+        msg = "Backend threads not initialized"
+        raise ClanError(msg)
     return list(BAKEND_THREADS.keys())

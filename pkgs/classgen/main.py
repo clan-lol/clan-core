@@ -69,10 +69,14 @@ def map_json_type(
     if json_type == "number":
         return ["float"]
     if json_type == "array":
-        assert nested_types, f"Array type not found for {parent}"
+        if not nested_types:
+            msg = f"Array type not found for {parent}"
+            raise Error(msg)
         return [f"""list[{" | ".join(sort_types(nested_types))}]"""]
     if json_type == "object":
-        assert nested_types, f"dict type not found for {parent}"
+        if not nested_types:
+            msg = f"dict type not found for {parent}"
+            raise Error(msg)
         return [f"""dict[str, {" | ".join(sort_types(nested_types))}]"""]
     if json_type == "null":
         return ["None"]
@@ -324,7 +328,9 @@ def generate_dataclass(
                 parent=field_name,
             )
 
-        assert field_types, f"Python type not found for {prop} {prop_info}"
+        if not field_types:
+            msg = f"Python type not found for {prop} {prop_info}"
+            raise Error(msg)
 
         field_meta = None
         if field_name != prop:

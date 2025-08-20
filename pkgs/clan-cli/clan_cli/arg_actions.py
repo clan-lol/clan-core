@@ -3,6 +3,8 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
+from clan_lib.errors import ClanError
+
 log = logging.getLogger(__name__)
 
 
@@ -19,6 +21,8 @@ class AppendOptionAction(argparse.Action):
     ) -> None:
         lst = getattr(namespace, self.dest)
         lst.append("--option")
-        assert isinstance(values, list), "values must be a list"
+        if not values or not hasattr(values, "__getitem__"):
+            msg = "values must be indexable"
+            raise ClanError(msg)
         lst.append(values[0])
         lst.append(values[1])

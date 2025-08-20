@@ -4,6 +4,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from clan_lib.errors import ClanError
 from clan_lib.nix import nix_test_store
 
 from .check import check_vars
@@ -64,8 +65,12 @@ class Generator:
 
     @cached_property
     def exists(self) -> bool:
-        assert self.machine is not None
-        assert self._flake is not None
+        if self.machine is None:
+            msg = "Machine cannot be None"
+            raise ClanError(msg)
+        if self._flake is None:
+            msg = "Flake cannot be None"
+            raise ClanError(msg)
         return check_vars(self.machine, self._flake, generator_name=self.name)
 
     @classmethod
@@ -174,8 +179,12 @@ class Generator:
         return None
 
     def final_script(self) -> Path:
-        assert self.machine is not None
-        assert self._flake is not None
+        if self.machine is None:
+            msg = "Machine cannot be None"
+            raise ClanError(msg)
+        if self._flake is None:
+            msg = "Flake cannot be None"
+            raise ClanError(msg)
         from clan_lib.machines.machines import Machine
 
         machine = Machine(name=self.machine, flake=self._flake)
@@ -189,8 +198,12 @@ class Generator:
         return output
 
     def validation(self) -> str | None:
-        assert self.machine is not None
-        assert self._flake is not None
+        if self.machine is None:
+            msg = "Machine cannot be None"
+            raise ClanError(msg)
+        if self._flake is None:
+            msg = "Flake cannot be None"
+            raise ClanError(msg)
         from clan_lib.machines.machines import Machine
 
         machine = Machine(name=self.machine, flake=self._flake)

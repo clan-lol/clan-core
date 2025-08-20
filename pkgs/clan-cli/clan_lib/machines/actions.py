@@ -94,7 +94,9 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
 @API.register
 def set_machine(machine: Machine, update: InventoryMachine) -> None:
     """Update the machine information in the inventory."""
-    assert machine.name == update.get("name", machine.name), "Machine name mismatch"
+    if machine.name != update.get("name", machine.name):
+        msg = "Machine name mismatch"
+        raise ClanError(msg)
 
     inventory_store = InventoryStore(flake=machine.flake)
     inventory = inventory_store.read()

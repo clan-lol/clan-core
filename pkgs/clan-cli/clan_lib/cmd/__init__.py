@@ -159,7 +159,9 @@ def handle_io(
         if process.stdin in writelist:
             if input_bytes:
                 try:
-                    assert process.stdin is not None
+                    if process.stdin is None:
+                        msg = "Process stdin is unexpectedly None"
+                        raise ClanError(msg)
                     written = os.write(process.stdin.fileno(), input_bytes)
                 except BrokenPipeError:
                     wlist.remove(process.stdin)

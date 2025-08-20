@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import Any, ClassVar, cast
 
 import gi
+from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 
 from clan_vm_manager.clan_uri import ClanURI
@@ -109,7 +110,9 @@ class JoinList:
     def _on_join_finished(self, source: JoinValue) -> None:
         log.info(f"Join finished: {source.url}")
         self.discard(source)
-        assert source.entry is not None
+        if source.entry is None:
+            msg = "Join entry is not available"
+            raise ClanError(msg)
         ClanStore.use().push_history_entry(source.entry)
 
     def discard(self, value: JoinValue) -> None:

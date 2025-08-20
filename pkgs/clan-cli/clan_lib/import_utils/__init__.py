@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar, cast
 
+from clan_lib.errors import ClanError
+
 T = TypeVar("T")
 
 
@@ -76,7 +78,9 @@ def import_with_source[T](
 
     # Get the file path
     file_path_str = module.__file__
-    assert file_path_str is not None, f"Module {module_name} file path cannot be None"
+    if file_path_str is None:
+        msg = f"Module {module_name} file path cannot be None"
+        raise ClanError(msg)
 
     # Make the path relative to home for better readability
     try:

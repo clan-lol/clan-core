@@ -2,6 +2,7 @@ import logging
 import threading
 
 import gi
+from clan_lib.errors import ClanError
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.history import list_history
@@ -37,7 +38,9 @@ class MainWindow(Adw.ApplicationWindow):
         view.add_top_bar(header)
 
         app = Gio.Application.get_default()
-        assert app is not None
+        if app is None:
+            msg = "Application is not available"
+            raise ClanError(msg)
         self.tray_icon: TrayIcon = TrayIcon(app)
 
         # Initialize all ClanStore
