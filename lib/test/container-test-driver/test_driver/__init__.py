@@ -639,7 +639,7 @@ class Driver:
 
     def test_script(self) -> None:
         """Run the test script"""
-        exec(self.testscript, self.test_symbols(), None)
+        exec(self.testscript, self.test_symbols(), None)  # noqa: S102
 
     def run_tests(self) -> None:
         """Run the test script (for non-interactive test runs)"""
