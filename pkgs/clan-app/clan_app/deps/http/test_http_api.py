@@ -4,13 +4,11 @@ import json
 import logging
 import threading
 import time
-from unittest.mock import Mock
 from urllib.request import Request, urlopen
 
 import pytest
 from clan_lib.api import MethodRegistry, tasks
 from clan_lib.async_run import is_async_cancelled
-from clan_lib.log_manager import LogManager
 
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
@@ -54,30 +52,19 @@ def mock_api() -> MethodRegistry:
 
 
 @pytest.fixture
-def mock_log_manager() -> Mock:
-    """Create a mock log manager."""
-    log_manager = Mock(spec=LogManager)
-    log_manager.create_log_file.return_value.get_file_path.return_value = Mock()
-    log_manager.create_log_file.return_value.get_file_path.return_value.open.return_value = Mock()
-    return log_manager
-
-
-@pytest.fixture
 def http_bridge(
     mock_api: MethodRegistry,
-    mock_log_manager: Mock,
 ) -> tuple[MethodRegistry, tuple]:
     """Create HTTP bridge dependencies for testing."""
     middleware_chain = (
         ArgumentParsingMiddleware(api=mock_api),
-        # LoggingMiddleware(log_manager=mock_log_manager),
         MethodExecutionMiddleware(api=mock_api),
     )
     return mock_api, middleware_chain
 
 
 @pytest.fixture
-def http_server(mock_api: MethodRegistry, mock_log_manager: Mock) -> HttpApiServer:
+def http_server(mock_api: MethodRegistry) -> HttpApiServer:
     """Create HTTP server with mock dependencies."""
     server = HttpApiServer(
         api=mock_api,
@@ -87,7 +74,6 @@ def http_server(mock_api: MethodRegistry, mock_log_manager: Mock) -> HttpApiServ
 
     # Add middleware
     server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
-    # server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
     server.add_middleware(MethodExecutionMiddleware(api=mock_api))
 
     # Bridge will be created automatically when accessed
@@ -114,7 +100,6 @@ class TestHttpBridge:
         # The actual HTTP handling will be tested through the server integration tests
         assert len(middleware_chain) == 2
         assert isinstance(middleware_chain[0], ArgumentParsingMiddleware)
-        # assert isinstance(middleware_chain[1], LoggingMiddleware)
         assert isinstance(middleware_chain[1], MethodExecutionMiddleware)
 
 
@@ -259,7 +244,6 @@ class TestIntegration:
     def test_full_request_flow(
         self,
         mock_api: MethodRegistry,
-        mock_log_manager: Mock,
     ) -> None:
         """Test complete request flow from server to bridge to middleware."""
         server: HttpApiServer = HttpApiServer(
@@ -270,7 +254,6 @@ class TestIntegration:
 
         # Add middleware
         server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
-        # server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
         server.add_middleware(MethodExecutionMiddleware(api=mock_api))
 
         # Bridge will be created automatically when accessed
@@ -306,7 +289,6 @@ class TestIntegration:
     def test_blocking_task(
         self,
         mock_api: MethodRegistry,
-        mock_log_manager: Mock,
     ) -> None:
         shared_threads: dict[str, tasks.WebThread] = {}
         tasks.BAKEND_THREADS = shared_threads
@@ -321,7 +303,6 @@ class TestIntegration:
 
         # Add middleware
         server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
-        # server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
         server.add_middleware(MethodExecutionMiddleware(api=mock_api))
 
         # Start server
