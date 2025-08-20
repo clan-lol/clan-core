@@ -270,54 +270,6 @@ def produce_clan_core_docs() -> None:
                 of.write(output)
 
 
-def render_roles(roles: list[str] | None, module_name: str) -> str:
-    if roles:
-        roles_list = "\n".join([f"- `{r}`" for r in roles])
-        return (
-            f"""
-### Roles
-
-This module can be used via predefined roles
-
-{roles_list}
-"""
-            """
-Every role has its own configuration options, which are each listed below.
-
-For more information, see the [inventory guide](../../concepts/inventory.md).
-
-??? Example
-    For example the `admin` module adds the following options globally to all machines where it is used.
-
-    `clan.admin.allowedkeys`
-
-    ```nix
-    clan-core.lib.clan {
-        inventory.services = {
-            admin.me = {
-                roles.default.machines = [ "jon" ];
-                config.allowedkeys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD..." ];
-            };
-        };
-    };
-    ```
-"""
-        )
-    return ""
-
-
-clan_modules_descr = """
-Clan modules are [NixOS modules](https://wiki.nixos.org/wiki/NixOS_modules)
-which have been enhanced with additional features provided by Clan, with
-certain option types restricted to enable configuration through a graphical
-interface.
-
-!!! note "🔹"
-    Modules with this indicator support the [inventory](../../concepts/inventory.md) feature.
-
-"""
-
-
 def render_categories(
     categories: list[str], categories_info: dict[str, CategoryInfo]
 ) -> str:
@@ -414,32 +366,6 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
         )
         with outfile.open("w") as of:
             of.write(output)
-
-
-def build_option_card(module_name: str, frontmatter: ModuleFrontmatter) -> str:
-    """
-    Build the overview index card for each reference target option.
-    """
-
-    def indent_all(text: str, indent_size: int = 4) -> str:
-        """
-        Indent all lines in a string.
-        """
-        indent = " " * indent_size
-        lines = text.split("\n")
-        indented_text = indent + ("\n" + indent).join(lines)
-        return indented_text
-
-    def to_md_li(module_name: str, frontmatter: ModuleFrontmatter) -> str:
-        md_li = (
-            f"""-   **[{module_name}](./{"-".join(module_name.split(" "))}.md)**\n\n"""
-        )
-        md_li += f"""{indent_all("---", 4)}\n\n"""
-        fmd = f"\n{frontmatter.description.strip()}" if frontmatter.description else ""
-        md_li += f"""{indent_all(fmd, 4)}"""
-        return md_li
-
-    return f"{to_md_li(module_name, frontmatter)}\n\n"
 
 
 def split_options_by_root(options: dict[str, Any]) -> dict[str, dict[str, Any]]:
