@@ -234,7 +234,7 @@ def run_machine_update(
                 is_mobile = machine.select(
                     "config.system.clan.deployment.nixosMobileWorkaround",
                 )
-            except Exception:
+            except ClanError:
                 is_mobile = False
             # if the machine is mobile, we retry to deploy with the mobile workaround method
             if is_mobile:

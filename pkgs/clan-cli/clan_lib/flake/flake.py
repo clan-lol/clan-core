@@ -846,7 +846,7 @@ class Flake:
             return
         try:
             self._cache.load_from_file(path)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, KeyError, ValueError) as e:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
 
     def prefetch(self) -> None:

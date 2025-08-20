@@ -90,7 +90,7 @@ class SudoAskpassProxy:
                     ssh_process.stdin.flush()
                 else:
                     print(stripped_line)
-        except Exception as e:
+        except (OSError, ClanError) as e:
             logger.error(f"Error processing passwords requests output: {e}")
 
     def run(self) -> str:

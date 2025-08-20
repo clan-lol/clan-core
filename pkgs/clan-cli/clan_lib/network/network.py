@@ -161,12 +161,9 @@ def get_best_remote(machine: "Machine") -> Iterator["Remote"]:
     if target_host:
         log.debug(f"Using targetHost from inventory for {machine.name}: {target_host}")
         # Create a direct network with just this machine
-        try:
-            remote = Remote.from_ssh_uri(machine_name=machine.name, address=target_host)
-            yield remote
-            return
-        except Exception as e:
-            log.debug(f"Inventory targetHost not reachable for {machine.name}: {e}")
+        remote = Remote.from_ssh_uri(machine_name=machine.name, address=target_host)
+        yield remote
+        return
 
     # Step 2: Try existing networks by priority
     try:
@@ -189,7 +186,7 @@ def get_best_remote(machine: "Machine") -> Iterator["Remote"]:
                         )
                         yield network.remote(machine.name)
                         return
-                except Exception as e:
+                except ClanError as e:
                     log.debug(f"Failed to reach {machine.name} via {network_name}: {e}")
             else:
                 try:
@@ -202,34 +199,26 @@ def get_best_remote(machine: "Machine") -> Iterator["Remote"]:
                             )
                             yield connected_network.remote(machine.name)
                             return
-                except Exception as e:
+                except ClanError as e:
                     log.debug(
                         f"Failed to establish connection to {machine.name} via {network_name}: {e}",
                     )
-    except Exception as e:
+    except (ImportError, AttributeError, KeyError) as e:
         log.debug(f"Failed to use networking modules to determine machines remote: {e}")
 
     # Step 3: Try targetHost from machine nixos config
-    try:
-        target_host = machine.select('config.clan.core.networking."targetHost"')
-        if target_host:
-            log.debug(
-                f"Using targetHost from machine config for {machine.name}: {target_host}",
-            )
-            # Check if reachable
-            try:
-                remote = Remote.from_ssh_uri(
-                    machine_name=machine.name,
-                    address=target_host,
-                )
-                yield remote
-                return
-            except Exception as e:
-                log.debug(
-                    f"Machine config targetHost not reachable for {machine.name}: {e}",
-                )
-    except Exception as e:
-        log.debug(f"Could not get targetHost from machine config: {e}")
+    target_host = machine.select('config.clan.core.networking."targetHost"')
+    if target_host:
+        log.debug(
+            f"Using targetHost from machine config for {machine.name}: {target_host}",
+        )
+        # Check if reachable
+        remote = Remote.from_ssh_uri(
+            machine_name=machine.name,
+            address=target_host,
+        )
+        yield remote
+        return
 
     # No connection method found
     msg = f"Could not find any way to connect to machine '{machine.name}'. No targetHost configured and machine not reachable via any network."
@@ -249,12 +238,7 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         else:
             with module.connection(network) as conn:
                 for peer_name in conn.peers:
-                    try:
-                        result[network_name]["peers"][peer_name] = conn.ping(
-                            peer_name,
-                        )
-                    except ClanError:
-                        log.warning(
-                            f"getting host for machine: {peer_name} in network: {network_name} failed",
-                        )
+                    result[network_name]["peers"][peer_name] = conn.ping(
+                        peer_name,
+                    )
     return result
