@@ -11,9 +11,9 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
             msg = "No providers specified"
             raise ClanError(msg)
         with host.host_connection() as ssh:
-            for provider in backup_scripts["providers"]:
+            for prov in backup_scripts["providers"]:
                 proc = ssh.run(
-                    [backup_scripts["providers"][provider]["create"]],
+                    [backup_scripts["providers"][prov]["create"]],
                 )
                 if proc.returncode != 0:
                     msg = "failed to start backup"
