@@ -70,22 +70,31 @@ def substitute(
 
     with file.open() as f:
         for line in f:
-            line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
+            processed_line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
             if clan_core_replacement:
-                line = line.replace("__CLAN_CORE__", clan_core_replacement)
-                line = line.replace(
+                processed_line = processed_line.replace(
+                    "__CLAN_CORE__",
+                    clan_core_replacement,
+                )
+                processed_line = processed_line.replace(
                     "git+https://git.clan.lol/clan/clan-core",
                     clan_core_replacement,
                 )
-                line = line.replace(
+                processed_line = processed_line.replace(
                     "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
                     clan_core_replacement,
                 )
-                line = line.replace("__INVENTORY_EXPR__", str(inventory_expr))
+                processed_line = processed_line.replace(
+                    "__INVENTORY_EXPR__",
+                    str(inventory_expr),
+                )
 
-            line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
-            line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake / "facts"))
-            buf += line
+            processed_line = processed_line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
+            processed_line = processed_line.replace(
+                "__CLAN_SOPS_KEY_DIR__",
+                str(flake / "facts"),
+            )
+            buf += processed_line
 
     print(f"file: {file}")
     print(f"clan_core: {clan_core_flake}")
@@ -202,9 +211,10 @@ class ClanFlake:
                 buf = ""
                 with file.open() as f:
                     for line in f:
+                        processed_line = line
                         for key, value in self.substitutions.items():
-                            line = line.replace(key, value)
-                        buf += line
+                            processed_line = processed_line.replace(key, value)
+                        buf += processed_line
                 file.write_text(buf)
 
     def init_from_template(self) -> None:

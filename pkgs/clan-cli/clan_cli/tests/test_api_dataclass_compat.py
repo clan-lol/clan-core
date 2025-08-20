@@ -14,8 +14,8 @@ from clan_lib.errors import ClanError
 def should_skip(file_path: Path, excludes: list[Path]) -> bool:
     file_path = file_path.resolve()  # Ensure absolute path
     for exclude in excludes:
-        exclude = exclude.resolve()
-        if exclude in file_path.parents or exclude == file_path:
+        resolved_exclude = exclude.resolve()
+        if resolved_exclude in file_path.parents or resolved_exclude == file_path:
             return True  # Skip this file
     return False
 

@@ -37,22 +37,22 @@ def import_sops(args: argparse.Namespace) -> None:
         res = run(cmd, RunOpts(error_msg=f"Could not import sops file {file}"))
         secrets = json.loads(res.stdout)
         for k, v in secrets.items():
-            k = args.prefix + k
+            secret_name = args.prefix + k
             if not isinstance(v, str):
                 print(
-                    f"WARNING: {k} is not a string but {type(v)}, skipping",
+                    f"WARNING: {secret_name} is not a string but {type(v)}, skipping",
                     file=sys.stderr,
                 )
                 continue
-            if (sops_secrets_folder(args.flake.path) / k / "secret").exists():
+            if (sops_secrets_folder(args.flake.path) / secret_name / "secret").exists():
                 print(
-                    f"WARNING: {k} already exists, skipping",
+                    f"WARNING: {secret_name} already exists, skipping",
                     file=sys.stderr,
                 )
                 continue
             encrypt_secret(
                 args.flake.path,
-                sops_secrets_folder(args.flake.path) / k,
+                sops_secrets_folder(args.flake.path) / secret_name,
                 v,
                 add_groups=args.group,
                 add_machines=args.machine,

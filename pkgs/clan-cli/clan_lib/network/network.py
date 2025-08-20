@@ -247,10 +247,10 @@ def get_network_overview(networks: dict[str, Network]) -> dict:
         if module.is_running():
             result[network_name]["status"] = True
         else:
-            with module.connection(network) as network:
-                for peer_name in network.peers:
+            with module.connection(network) as conn:
+                for peer_name in conn.peers:
                     try:
-                        result[network_name]["peers"][peer_name] = network.ping(
+                        result[network_name]["peers"][peer_name] = conn.ping(
                             peer_name,
                         )
                     except ClanError:

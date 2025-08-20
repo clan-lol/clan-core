@@ -79,9 +79,9 @@ class SudoAskpassProxy:
             raise ClanError(msg)
         try:
             for line in ssh_process.stdout:
-                line = line.strip()
-                if line.startswith("PASSWORD_REQUESTED:"):
-                    prompt = line[len("PASSWORD_REQUESTED:") :].strip()
+                stripped_line = line.strip()
+                if stripped_line.startswith("PASSWORD_REQUESTED:"):
+                    prompt = stripped_line[len("PASSWORD_REQUESTED:") :].strip()
                     password = self.handle_password_request(prompt)
                     if ssh_process.stdin is None:
                         msg = "SSH process stdin is None"
@@ -89,7 +89,7 @@ class SudoAskpassProxy:
                     print(password, file=ssh_process.stdin)
                     ssh_process.stdin.flush()
                 else:
-                    print(line)
+                    print(stripped_line)
         except Exception as e:
             logger.error(f"Error processing passwords requests output: {e}")
 
@@ -116,9 +116,9 @@ class SudoAskpassProxy:
             raise ClanError(msg)
 
         for line in self.ssh_process.stdout:
-            line = line.strip()
-            if line.startswith("ASKPASS_SCRIPT:"):
-                askpass_script = line[len("ASKPASS_SCRIPT:") :].strip()
+            stripped_line = line.strip()
+            if stripped_line.startswith("ASKPASS_SCRIPT:"):
+                askpass_script = stripped_line[len("ASKPASS_SCRIPT:") :].strip()
                 break
         else:
             msg = f"Failed to create askpass script on {self.host.target}. Did not receive ASKPASS_SCRIPT line."

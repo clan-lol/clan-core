@@ -175,9 +175,11 @@ def print_options(
         res += head if len(options.items()) else no_options
         for option_name, info in options.items():
             if replace_prefix:
-                option_name = option_name.replace(replace_prefix + ".", "")
+                display_name = option_name.replace(replace_prefix + ".", "")
+            else:
+                display_name = option_name
 
-            res += render_option(option_name, info, 4)
+            res += render_option(display_name, info, 4)
     return res
 
 

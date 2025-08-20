@@ -498,12 +498,14 @@ def retrieve_typed_field_names(obj: type, prefix: str = "") -> set[str]:
 
         # Unwrap Required/NotRequired
         if origin in {NotRequired, Required}:
-            field_type = args[0]
-            origin = get_origin(field_type)
-            args = get_args(field_type)
+            unwrapped_type = args[0]
+            origin = get_origin(unwrapped_type)
+            args = get_args(unwrapped_type)
+        else:
+            unwrapped_type = field_type
 
-        if is_typeddict_class(field_type):
-            fields |= retrieve_typed_field_names(field_type, prefix=full_key)
+        if is_typeddict_class(unwrapped_type):
+            fields |= retrieve_typed_field_names(unwrapped_type, prefix=full_key)
         else:
             fields.add(full_key)
 
