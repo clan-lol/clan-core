@@ -6,7 +6,11 @@ import {
   Setter,
   Switch,
 } from "solid-js";
-import { RouteSectionProps, useNavigate } from "@solidjs/router";
+import {
+  RouteSectionProps,
+  useNavigate,
+  useSearchParams,
+} from "@solidjs/router";
 import "./Onboarding.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
@@ -139,15 +143,21 @@ const welcome = (props: {
 
 export const Onboarding: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const activeURI = activeClanURI();
-  if (activeURI) {
+
+  console.log("onboarding params", searchParams.addClan);
+
+  if (!searchParams.addClan && activeURI) {
     // the user has already selected a clan, so we should navigate to it
     console.log("active clan detected, navigating to it", activeURI);
     navigateToClan(navigate, activeURI);
   }
 
-  const [state, setState] = createSignal<State>("welcome");
+  const [state, setState] = createSignal<State>(
+    searchParams.addClan ? "setup" : "welcome",
+  );
 
   // used to display an error in the welcome screen in the event of a failed
   // clan creation
@@ -270,7 +280,15 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                   hierarchy="secondary"
                   ghost={true}
                   icon="ArrowLeft"
-                  onClick={() => setState("welcome")}
+                  onClick={() => {
+                    // if we arrived here by way of adding a clan then we return to the active clan
+                    if (searchParams.addClan && activeURI) {
+                      navigateToClan(navigate, activeURI);
+                    }
+
+                    // otherwise we return to the initial welcome screen
+                    setState("welcome");
+                  }}
                 />
                 <Typography hierarchy="headline" size="default" weight="bold">
                   Setup

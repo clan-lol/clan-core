@@ -7,6 +7,7 @@ import { createSignal, For, Suspense } from "solid-js";
 import { useClanListQuery } from "@/src/hooks/queries";
 import { navigateToClan, useClanURI } from "@/src/hooks/clan";
 import { clanURIs } from "@/src/stores/clan";
+import { Button } from "../Button/Button";
 
 export const SidebarHeader = () => {
   const navigate = useNavigate();
@@ -71,9 +72,19 @@ export const SidebarHeader = () => {
                     family="mono"
                     size="xs"
                     color="tertiary"
+                    transform="uppercase"
                   >
-                    YOUR CLANS
+                    Your Clans
                   </Typography>
+                  <Button
+                    hierarchy="secondary"
+                    ghost
+                    size="xs"
+                    startIcon="Plus"
+                    onClick={() => navigate("/?addClan=true")}
+                  >
+                    Add
+                  </Button>
                 </DropdownMenu.GroupLabel>
                 <div class="dropdown-group-items">
                   <For each={allClans}>
