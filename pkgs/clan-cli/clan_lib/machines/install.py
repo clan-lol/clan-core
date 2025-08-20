@@ -56,6 +56,7 @@ class InstallOptions:
     phases: str | None = None
     build_on: BuildOn | None = None
     update_hardware_config: HardwareConfig = HardwareConfig.NONE
+    persist_state: bool = True
 
 
 @API.register
@@ -227,16 +228,16 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )
 
-    inventory_store = InventoryStore(machine.flake)
-    inventory = inventory_store.read()
+    if opts.persist_state:
+        inventory_store = InventoryStore(machine.flake)
+        inventory = inventory_store.read()
 
-    set_value_by_path(
-        inventory,
-        f"machine.{machine.name}.installedAt",
-        # Cut of the milliseconds
-        int(time()),
-    )
-
-    inventory_store.write(
-        inventory, f"Installed {machine.name} at {target_host.target}"
-    )
+        set_value_by_path(
+            inventory,
+            f"machine.{machine.name}.installedAt",
+            # Cut of the milliseconds
+            int(time()),
+        )
+        inventory_store.write(
+            inventory, f"Installed {machine.name} at {target_host.target}"
+        )

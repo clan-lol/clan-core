@@ -232,6 +232,7 @@
                       "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
                       "--update-hardware-config", "nixos-facter",
+                      "--no-persist-state",
                   ]
 
                   subprocess.run(clan_cmd, check=True)
@@ -275,7 +276,7 @@
                       "${self.checks.x86_64-linux.clan-core-for-checks}",
                       "${closureInfo}"
                   )
-                  
+
                   # Set up SSH connection
                   ssh_conn = setup_ssh_connection(
                       target,
