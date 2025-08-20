@@ -176,7 +176,7 @@ class ClanFlake:
         self.temporary_home = temporary_home
         self.path = temporary_home / "flake"
         if not suppress_tmp_home_warning:
-            if "/tmp" not in str(os.environ.get("HOME")):
+            if "/tmp" not in str(os.environ.get("HOME")):  # noqa: S108 - Checking if HOME is in temp directory
                 log.warning(
                     f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}",
                 )
@@ -368,7 +368,7 @@ def create_flake(
             check=True,
         )
 
-    if "/tmp" not in str(os.environ.get("HOME")):
+    if "/tmp" not in str(os.environ.get("HOME")):  # noqa: S108 - Checking if HOME is in temp directory
         log.warning(
             f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}",
         )

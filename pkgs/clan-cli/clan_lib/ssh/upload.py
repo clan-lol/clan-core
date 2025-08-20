@@ -33,7 +33,7 @@ def upload(
         # Exceptions: Allow depth 2 if the path starts with /tmp/, /root/, or /etc/.
         # This allows destinations like /tmp/mydir or /etc/conf.d, but not /tmp or /etc directly.
         is_allowed_exception = depth >= 2 and (
-            str(remote_dest).startswith("/tmp/")
+            str(remote_dest).startswith("/tmp/")  # noqa: S108 - Path validation check
             or str(remote_dest).startswith("/root/")
             or str(remote_dest).startswith("/etc/")
         )

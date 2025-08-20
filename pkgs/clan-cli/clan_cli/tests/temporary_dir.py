@@ -14,7 +14,7 @@ TEMPDIR = None
 # macOS' default temporary directory is too long for unix sockets
 # This can break applications such as gpg-agent
 if platform == "darwin":
-    TEMPDIR = Path("/tmp")
+    TEMPDIR = Path("/tmp")  # noqa: S108 - Required on macOS due to socket path length limits
 
 
 @pytest.fixture

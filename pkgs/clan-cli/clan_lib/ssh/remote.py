@@ -139,7 +139,7 @@ class Remote:
         if sys.platform == "darwin" and os.environ.get("TMPDIR", "").startswith(
             "/var/folders/",
         ):
-            directory = "/tmp/"
+            directory = "/tmp/"  # noqa: S108 - Required on macOS due to bugs with default TMPDIR
         with TemporaryDirectory(prefix="clan-ssh", dir=directory) as temp_dir:
             remote = Remote(
                 address=self.address,
