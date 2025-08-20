@@ -33,6 +33,10 @@ main#welcome {
       @apply w-16;
       @apply absolute bottom-28 left-1/2 transform -translate-x-1/2;
     }
+
+    button.list-clans {
+      @apply absolute bottom-28 right-0 transform -translate-x-1/2;
+    }
   }
 
   & > div.container {

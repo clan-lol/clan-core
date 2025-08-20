@@ -4,9 +4,14 @@ import {
   createSignal,
   Match,
   Setter,
+  Show,
   Switch,
 } from "solid-js";
-import { RouteSectionProps, useNavigate } from "@solidjs/router";
+import {
+  RouteSectionProps,
+  useNavigate,
+  useSearchParams,
+} from "@solidjs/router";
 import "./Onboarding.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
@@ -32,6 +37,7 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { callApi } from "@/src/hooks/api";
 import { Creating } from "./Creating";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import { ListClansModal } from "@/src/routes/Onboarding/ListClansModal";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -55,14 +61,32 @@ const SetupSchema = v.object({
 
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
-const background = (props: { state: State; form: FormStore<SetupForm> }) => (
-  <div class="background">
-    <div class="layer-1" />
-    <div class="layer-2" />
-    <div class="layer-3" />
-    <Logo variant="Clan" inverted={true} />
-  </div>
-);
+const background = (props: { state: State; form: FormStore<SetupForm> }) => {
+  // controls whether the list clans modal is displayed
+  const [showModal, setShowModal] = createSignal(false);
+
+  return (
+    <div class="background">
+      <div class="layer-1" />
+      <div class="layer-2" />
+      <div class="layer-3" />
+      <Logo variant="Clan" inverted />
+      <Button
+        class="list-clans"
+        hierarchy="primary"
+        ghost
+        size="s"
+        startIcon="Grid"
+        onClick={() => setShowModal(true)}
+      >
+        All Clans
+      </Button>
+      <Show when={showModal()}>
+        <ListClansModal onClose={() => setShowModal(false)} />
+      </Show>
+    </div>
+  );
+};
 
 const welcome = (props: {
   setState: Setter<State>;
@@ -75,9 +99,17 @@ const welcome = (props: {
 
   const selectFolder = async () => {
     setLoading(true);
-    const uri = await selectClanFolder();
-    setLoading(false);
-    navigateToClan(navigate, uri);
+
+    try {
+      const uri = await selectClanFolder();
+      setLoading(false);
+      navigateToClan(navigate, uri);
+    } catch (e) {
+      // todo display error, currently we don't get anything to distinguish between cancel or an actual error
+    } finally {
+      // stop the loading state of the button
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,7 +159,7 @@ const welcome = (props: {
       </div>
       <Button
         hierarchy="primary"
-        ghost={true}
+        ghost
         loading={loading()}
         onClick={selectFolder}
       >
@@ -139,9 +171,11 @@ const welcome = (props: {
 
 export const Onboarding: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const activeURI = activeClanURI();
-  if (activeURI) {
+
+  if (!searchParams.addClan && activeURI) {
     // the user has already selected a clan, so we should navigate to it
     console.log("active clan detected, navigating to it", activeURI);
     navigateToClan(navigate, activeURI);

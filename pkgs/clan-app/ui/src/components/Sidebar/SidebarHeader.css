@@ -58,6 +58,7 @@ div.sidebar-header {
     @apply px-1;
 
     .dropdown-group-label {
+      @apply flex items-baseline justify-between w-full;
     }
 
     .dropdown-group-items {

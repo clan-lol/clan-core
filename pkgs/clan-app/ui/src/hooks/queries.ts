@@ -27,10 +27,6 @@ export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
 export const useMachinesQuery = (clanURI: string) => {
   const client = useApiClient();
 
-  if (!clanURI) {
-    throw new Error("useMachinesQuery: clanURI is undefined");
-  }
-
   return useQuery<ListMachines>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machines"],
     queryFn: async () => {
