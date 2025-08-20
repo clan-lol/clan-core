@@ -383,7 +383,7 @@ def test_unknown_serialize() -> None:
     class Person:
         name: Unknown
 
-    data = Person(["a", "b"])  # type: ignore
+    data = Person(["a", "b"])  # type: ignore[arg-type]
 
     person = dataclass_to_dict(data)
     assert person == {"name": ["a", "b"]}

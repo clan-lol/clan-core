@@ -283,7 +283,7 @@ class ClanList(Gtk.Box):
 
         views = ViewStack.use().view
         # Reset the logs view
-        logs: Logs = views.get_child_by_name("logs")  # type: ignore
+        logs: Logs = views.get_child_by_name("logs")  # type: ignore[assignment]
 
         if logs is None:
             msg = "Logs view not found"

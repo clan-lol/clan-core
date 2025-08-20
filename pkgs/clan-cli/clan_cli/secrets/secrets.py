@@ -12,14 +12,6 @@ from typing import IO
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 
-from clan_cli.completions import (
-    add_dynamic_completer,
-    complete_groups,
-    complete_machines,
-    complete_secrets,
-    complete_users,
-)
-
 from . import sops
 from .folders import (
     list_objects,
@@ -258,6 +250,11 @@ def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> 
         type=secret_name_type,
     )
     if autocomplete:
+        from clan_cli.completions import (  # noqa: PLC0415
+            add_dynamic_completer,
+            complete_secrets,
+        )
+
         add_dynamic_completer(secrets_parser, complete_secrets)
 
 
@@ -465,6 +462,11 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         default=[],
         help="the group to import the secrets to (can be repeated)",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_groups,
+    )
+
     add_dynamic_completer(set_group_action, complete_groups)
     machine_parser = parser_set.add_argument(
         "--machine",
@@ -473,6 +475,11 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         default=[],
         help="the machine to import the secrets to (can be repeated)",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_machines,
+    )
+
     add_dynamic_completer(machine_parser, complete_machines)
     set_user_action = parser_set.add_argument(
         "--user",
@@ -481,6 +488,11 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         default=[],
         help="the user to import the secrets to (can be repeated)",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(set_user_action, complete_users)
     parser_set.add_argument(
         "-e",
