@@ -682,6 +682,39 @@ def test_prompt(
 
 
 @pytest.mark.with_core
+def test_shared_vars_must_never_depend_on_machine_specific_vars(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """
+    Ensure that shared vars never depend on machine specific vars.
+    """
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"]
+    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["share"] = True
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["script"] = 'echo "$RANDOM" > "$out"/my_value'
+    my_generator["dependencies"] = ["machine_specific_generator"]
+    machine_specific_generator = config["clan"]["core"]["vars"]["generators"][
+        "machine_specific_generator"
+    ]
+    machine_specific_generator["share"] = False
+    machine_specific_generator["files"]["my_value"]["secret"] = False
+    machine_specific_generator["script"] = 'echo "$RANDOM" > "$out"/my_value'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    # make sure an Exception is raised when trying to generate vars
+    with pytest.raises(
+        ClanError,
+        match="Shared generators must not depend on machine specific generators",
+    ):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+
+@pytest.mark.with_core
 def test_multi_machine_shared_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,

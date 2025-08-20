@@ -228,6 +228,11 @@ class Generator:
                 msg = f"Generator {dep_key.name} not found in machine {machine.name}"
                 raise ClanError(msg)
 
+            # Check that shared generators don't depend on machine-specific generators
+            if self.share and not dep_generator.share:
+                msg = f"Shared generators must not depend on machine specific generators. Generator '{self.name}' (shared) depends on '{dep_generator.name}' (machine-specific)"
+                raise ClanError(msg)
+
             dep_files = dep_generator.files
             for file in dep_files:
                 if file.secret:
