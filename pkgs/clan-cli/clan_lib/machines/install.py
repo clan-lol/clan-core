@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from time import time
 from typing import Literal
 
 from clan_cli.facts.generate import generate_facts
@@ -12,6 +13,8 @@ from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import set_value_by_path
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars.generate import run_generators
@@ -223,3 +226,17 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             [*cmd, "--phases", "reboot"],
             RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
         )
+
+    inventory_store = InventoryStore(machine.flake)
+    inventory = inventory_store.read()
+
+    set_value_by_path(
+        inventory,
+        f"machine.{machine.name}.installedAt",
+        # Cut of the milliseconds
+        int(time()),
+    )
+
+    inventory_store.write(
+        inventory, f"Installed {machine.name} at {target_host.target}"
+    )
