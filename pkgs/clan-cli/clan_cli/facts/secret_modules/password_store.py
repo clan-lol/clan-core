@@ -74,26 +74,28 @@ class SecretStore(SecretStoreBase):
                 check=False,
             ).stdout.strip(),
         )
-        for symlink in Path(password_store).glob(f"machines/{self.machine.name}/**/*"):
-            if symlink.is_symlink():
-                hashes.append(
-                    subprocess.run(
-                        nix_shell(
-                            ["git"],
-                            [
-                                "git",
-                                "-C",
-                                password_store,
-                                "log",
-                                "-1",
-                                "--format=%H",
-                                str(symlink),
-                            ],
-                        ),
-                        stdout=subprocess.PIPE,
-                        check=False,
-                    ).stdout.strip(),
-                )
+        hashes.extend(
+            subprocess.run(
+                nix_shell(
+                    ["git"],
+                    [
+                        "git",
+                        "-C",
+                        password_store,
+                        "log",
+                        "-1",
+                        "--format=%H",
+                        str(symlink),
+                    ],
+                ),
+                stdout=subprocess.PIPE,
+                check=False,
+            ).stdout.strip()
+            for symlink in Path(password_store).glob(
+                f"machines/{self.machine.name}/**/*",
+            )
+            if symlink.is_symlink()
+        )
 
         # we sort the hashes to make sure that the order is always the same
         hashes.sort()

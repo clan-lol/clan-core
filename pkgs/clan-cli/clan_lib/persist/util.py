@@ -133,12 +133,7 @@ def list_difference(all_items: list, filter_items: list) -> list:
 
     """
     # Unmerge the lists
-    res = []
-    for value in all_items:
-        if value not in filter_items:
-            res.append(value)
-
-    return res
+    return [value for value in all_items if value not in filter_items]
 
 
 def find_duplicates(string_list: list[str]) -> list[str]:

@@ -164,11 +164,12 @@ class SecretStore(StoreBase):
 
         from clan_cli.vars.generator import Generator
 
-        manifest = []
         generators = Generator.get_machine_generators(machine, self.flake)
-        for generator in generators:
-            for file in generator.files:
-                manifest.append(f"{generator.name}/{file.name}".encode())
+        manifest = [
+            f"{generator.name}/{file.name}".encode()
+            for generator in generators
+            for file in generator.files
+        ]
 
         manifest.append(git_hash)
         return b"\n".join(manifest)

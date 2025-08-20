@@ -14,7 +14,6 @@ class Backup:
 
 
 def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]:
-    results = []
     backup_metadata = machine.select("config.clan.core.backups")
     list_command = backup_metadata["providers"][provider]["list"]
     proc = host.run(
@@ -35,8 +34,11 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
         msg = f"Failed to parse json output from provider {provider}:\n{proc.stdout}"
         raise ClanError(msg) from e
 
-    for archive in parsed_json:
-        results.append(Backup(name=archive["name"], job_name=archive.get("job_name")))
+    results : list[Backup] = []
+    results.extend(
+        Backup(name=archive["name"], job_name=archive.get("job_name"))
+        for archive in parsed_json
+    )
     return results
 
 
