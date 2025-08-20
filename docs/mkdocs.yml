@@ -78,7 +78,7 @@ nav:
       - Writing a Disko Template: guides/disko-templates/community.md
       - Migrations:
           - Migrate existing Flakes: guides/migrations/migration-guide.md
-          - Migrate inventory Services: guides/migrations/migrate-inventory-services.md
+          - Migrate from clan modules to services: guides/migrations/migrate-inventory-services.md
           - Facts Vars Migration: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md
   - Concepts:
