@@ -311,10 +311,9 @@ def open_editor_for_pr() -> tuple[str, str]:
         with Path(temp_file_path).open() as f:
             content = f.read()
 
-        lines = []
-        for line in content.split("\n"):
-            if not line.lstrip().startswith("#"):
-                lines.append(line)
+        lines = [
+            line for line in content.split("\n") if not line.lstrip().startswith("#")
+        ]
 
         cleaned_content = "\n".join(lines).strip()
 
