@@ -1,21 +1,14 @@
 import os
 import shutil
+from functools import cache
 from pathlib import Path
 
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.nix import nix_shell
 
-_works: bool | None = None
 
-
+@cache
 def bubblewrap_works() -> bool:
-    global _works
-    if _works is None:
-        _works = _bubblewrap_works()
-    return _works
-
-
-def _bubblewrap_works() -> bool:
     real_bash_path = Path("bash")
     if os.environ.get("IN_NIX_SANDBOX"):
         bash_executable_path = Path(str(shutil.which("bash")))

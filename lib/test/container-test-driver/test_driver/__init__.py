@@ -13,7 +13,7 @@ import uuid
 from collections.abc import Callable
 from contextlib import _GeneratorContextManager
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cache, cached_property
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
@@ -22,16 +22,10 @@ from colorama import Fore, Style
 
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
 
-# Global flag to track if test environment has been initialized
-_test_env_initialized = False
 
-
+@cache
 def init_test_environment() -> None:
     """Set up the test environment (network bridge, /etc/passwd) once."""
-    global _test_env_initialized
-    if _test_env_initialized:
-        return
-
     # Set up network bridge
     subprocess.run(
         ["ip", "link", "add", "br0", "type", "bridge"],
@@ -89,8 +83,6 @@ nogroup:x:65534:
     if result != 0:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), "Failed to mount group")
-
-    _test_env_initialized = True
 
 
 # Load the C library
