@@ -44,6 +44,7 @@ class LocalHost:
         control_master: bool = True,
     ) -> CmdOut:
         """Run a command locally."""
+        del tty, verbose_ssh, control_master  # Unused but kept for API compatibility
         if opts is None:
             opts = RunOpts()
 
@@ -99,6 +100,7 @@ class LocalHost:
         control_master: bool = True,
     ) -> dict[str, str]:
         """LocalHost doesn't need SSH environment variables."""
+        del control_master  # Unused but kept for API compatibility
         if env is None:
             env = {}
         # Don't set NIX_SSHOPTS for localhost

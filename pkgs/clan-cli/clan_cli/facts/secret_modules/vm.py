@@ -21,6 +21,7 @@ class SecretStore(SecretStoreBase):
         value: bytes,
         groups: list[str],
     ) -> Path | None:
+        del groups  # Unused but kept for API compatibility
         secret_file = self.dir / service / name
         secret_file.parent.mkdir(parents=True, exist_ok=True)
         secret_file.write_bytes(value)

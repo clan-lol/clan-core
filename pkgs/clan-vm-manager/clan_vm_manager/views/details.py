@@ -59,6 +59,7 @@ class Details(Gtk.Box):
         boxed_list: Gtk.ListBox,
         item: PreferencesValue,
     ) -> Gtk.Widget:
+        del boxed_list  # Unused but kept for API compatibility
         cores: int | None = os.cpu_count()
         fcores = float(cores) if cores else 1.0
 

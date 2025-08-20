@@ -39,6 +39,7 @@ class AppendDiskAction(argparse.Action):
         values: str | Sequence[str] | None,  # Updated type hint
         option_string: str | None = None,
     ) -> None:
+        del parser, option_string  # Unused but required by argparse API
         # Ensure 'values' is a sequence of two elements
         if not (
             isinstance(values, Sequence)

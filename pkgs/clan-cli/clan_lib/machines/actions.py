@@ -128,7 +128,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_writeability_of(f"machines.{machine.name}")
+    write_info = inventory_store.get_writeability()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 

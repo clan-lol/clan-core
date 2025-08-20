@@ -86,6 +86,7 @@ class MainWindow(Adw.ApplicationWindow):
         ClanStore.use().kill_all()
 
     def on_destroy(self, source: "Adw.ApplicationWindow") -> None:
+        del source  # Unused but kept for API compatibility
         log.info("====Destroying Adw.ApplicationWindow===")
         ClanStore.use().kill_all()
         self.tray_icon.destroy()

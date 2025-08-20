@@ -94,6 +94,7 @@ class StoreBase(ABC):
             str | None: An error message describing issues found, or None if everything is healthy
 
         """
+        del machine, generators, file_name  # Unused but kept for API compatibility
         return None
 
     def fix(
@@ -116,7 +117,7 @@ class StoreBase(ABC):
             None
 
         """
-        return
+        del machine, generators, file_name  # Unused but kept for API compatibility
 
     def backend_collision_error(self, folder: Path) -> None:
         msg = (

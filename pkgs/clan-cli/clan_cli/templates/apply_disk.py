@@ -27,6 +27,7 @@ class AppendSetAction(argparse.Action):
         values: str | Sequence[str] | None,
         option_string: str | None = None,
     ) -> None:
+        del parser, option_string  # Unused but required by argparse API
         lst = getattr(namespace, self.dest)
         if not values or not hasattr(values, "__getitem__"):
             msg = "values must be indexable"

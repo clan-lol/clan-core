@@ -12,6 +12,7 @@ class FactStore(FactStoreBase):
         self.works_remotely = False
 
     def set(self, service: str, name: str, value: bytes) -> Path | None:
+        del service  # Unused but kept for API compatibility
         if self.machine.flake.is_local:
             fact_path = (
                 self.machine.flake.path
@@ -28,6 +29,7 @@ class FactStore(FactStoreBase):
         raise ClanError(msg)
 
     def exists(self, service: str, name: str) -> bool:
+        del service  # Unused but kept for API compatibility
         fact_path = (
             self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
         )
@@ -35,6 +37,7 @@ class FactStore(FactStoreBase):
 
     # get a single fact
     def get(self, service: str, name: str) -> bytes:
+        del service  # Unused but kept for API compatibility
         fact_path = (
             self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
         )

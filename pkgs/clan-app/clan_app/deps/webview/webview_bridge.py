@@ -39,7 +39,6 @@ class WebviewBridge(ApiBridge):
         method_name: str,
         op_key_bytes: bytes,
         request_data: bytes,
-        arg: int,
     ) -> None:
         """Handle a call from webview's JavaScript bridge."""
         try:

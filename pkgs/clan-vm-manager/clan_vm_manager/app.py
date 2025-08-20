@@ -32,6 +32,7 @@ class MainApplication(Adw.Application):
     }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        del args, kwargs  # Unused but kept for API compatibility
         super().__init__(
             application_id="org.clan.vm-manager",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
@@ -51,6 +52,7 @@ class MainApplication(Adw.Application):
         self.connect("shutdown", self.on_shutdown)
 
     def on_shutdown(self, source: "MainApplication") -> None:
+        del source  # Unused but kept for API compatibility
         log.debug("Shutting down Adw.Application")
 
         if self.get_windows() == []:
@@ -103,6 +105,7 @@ class MainApplication(Adw.Application):
         log.info("Dummy menu entry called")
 
     def on_activate(self, source: "MainApplication") -> None:
+        del source  # Unused but kept for API compatibility
         if not self.window:
             self.init_style()
             self.window = MainWindow(config=ClanConfig(initial_view="list"))

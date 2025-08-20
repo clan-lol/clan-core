@@ -90,7 +90,8 @@ LONG_PATH_PREFIX = "\\\\?\\"
 # from pynicotine.gtkgui.widgets.theme import ICON_THEME
 class IconTheme:
     def lookup_icon(self, icon_name: str, **kwargs: Any) -> None:
-        return None
+        del icon_name
+        del kwargs
 
 
 ICON_THEME = IconTheme()
@@ -177,7 +178,9 @@ class BaseImplementation:
         self.application = application
         self.menu_items: dict[int, Any] = {}
         self.menu_item_id: int = 1
-        self.activate_callback: Callable = lambda a, b: self.update_window_visibility
+        self.activate_callback: Callable = (
+            lambda _a, _b: self.update_window_visibility()
+        )
         self.is_visible: bool = True
 
         self.create_menu()
@@ -275,9 +278,11 @@ class BaseImplementation:
         pass
 
     def set_download_status(self, status: str) -> None:
+        del status  # Unused but kept for API compatibility
         self.update_menu()
 
     def set_upload_status(self, status) -> None:
+        del status  # Unused but kept for API compatibility
         self.update_menu()
 
     def show_notification(self, title, message) -> None:

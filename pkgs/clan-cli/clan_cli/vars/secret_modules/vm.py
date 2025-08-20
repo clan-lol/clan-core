@@ -66,6 +66,7 @@ class SecretStore(StoreBase):
         return [vars_dir]
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
+        del phases  # Unused but kept for API compatibility
         vars_dir = self.get_dir(machine)
         if output_dir.exists():
             shutil.rmtree(output_dir)
