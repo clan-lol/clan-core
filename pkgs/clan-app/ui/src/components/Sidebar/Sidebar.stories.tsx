@@ -11,6 +11,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { addClanURI, resetStore } from "@/src/stores/clan";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { encodeBase64 } from "@/src/hooks/clan";
+import { ApiClientProvider } from "@/src/hooks/ApiClient";
+import {
+  ApiCall,
+  OperationArgs,
+  OperationNames,
+  OperationResponse,
+} from "@/src/hooks/api";
 
 const defaultClanURI = "/home/brian/clans/my-clan";
 
@@ -123,6 +130,18 @@ export default meta;
 
 type Story = StoryObj<RouteSectionProps>;
 
+const mockFetcher = <K extends OperationNames>(
+  method: K,
+  args: OperationArgs<K>,
+) =>
+  ({
+    uuid: "mock",
+    result: Promise.reject<OperationResponse<K>>("not implemented"),
+    cancel: async () => {
+      throw new Error("not implemented");
+    },
+  }) satisfies ApiCall<K>;
+
 export const Default: Story = {
   args: {},
   decorators: [
@@ -148,9 +167,11 @@ export const Default: Story = {
       });
 
       return (
-        <QueryClientProvider client={queryClient}>
-          <Story />
-        </QueryClientProvider>
+        <ApiClientProvider client={{ fetch: mockFetcher }}>
+          <QueryClientProvider client={queryClient}>
+            <Story />
+          </QueryClientProvider>
+        </ApiClientProvider>
       );
     },
   ],
