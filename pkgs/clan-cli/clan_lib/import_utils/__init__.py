@@ -35,7 +35,7 @@ class ClassSource:
 def import_with_source[T](
     module_name: str,
     class_name: str,
-    base_class: type[T],
+    _base_class: type[T],
     *args: Any,
     **kwargs: Any,
 ) -> T:

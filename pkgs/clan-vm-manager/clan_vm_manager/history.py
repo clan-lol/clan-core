@@ -116,7 +116,7 @@ def add_history_command(args: argparse.Namespace) -> None:
         add_history(args.uri)
 
 
-def list_history_command(args: argparse.Namespace) -> None:
+def list_history_command(_args: argparse.Namespace) -> None:
     res: dict[str, list[HistoryEntry]] = {}
     for history_entry in list_history():
         url = str(history_entry.flake.flake_url)
