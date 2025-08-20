@@ -32,7 +32,7 @@ from typing import Any
 from clan_lib.errors import ClanError
 from clan_lib.services.modules import (
     CategoryInfo,
-    Frontmatter,
+    ModuleFrontmatter,
 )
 
 # Get environment variables
@@ -176,9 +176,8 @@ def print_options(
     return res
 
 
-def module_header(module_name: str, has_inventory_feature: bool = False) -> str:
-    indicator = " 🔹" if has_inventory_feature else ""
-    return f"# {module_name}{indicator}\n\n"
+def module_header(module_name: str) -> str:
+    return f"# {module_name}\n\n"
 
 
 clan_core_descr = """
@@ -385,7 +384,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
         # output += f"`clan.modules.{module_name}`\n"
         output += f"*{module_info['manifest']['description']}*\n"
 
-        fm = Frontmatter("")
+        fm = ModuleFrontmatter("")
         # output += "## Categories\n\n"
         output += render_categories(
             module_info["manifest"]["categories"], fm.categories_info
@@ -417,7 +416,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
             of.write(output)
 
 
-def build_option_card(module_name: str, frontmatter: Frontmatter) -> str:
+def build_option_card(module_name: str, frontmatter: ModuleFrontmatter) -> str:
     """
     Build the overview index card for each reference target option.
     """
@@ -431,7 +430,7 @@ def build_option_card(module_name: str, frontmatter: Frontmatter) -> str:
         indented_text = indent + ("\n" + indent).join(lines)
         return indented_text
 
-    def to_md_li(module_name: str, frontmatter: Frontmatter) -> str:
+    def to_md_li(module_name: str, frontmatter: ModuleFrontmatter) -> str:
         md_li = (
             f"""-   **[{module_name}](./{"-".join(module_name.split(" "))}.md)**\n\n"""
         )

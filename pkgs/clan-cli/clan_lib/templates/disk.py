@@ -11,7 +11,7 @@ from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.hardware import HardwareConfig, get_machine_hardware_config
 from clan_lib.machines.machines import Machine
-from clan_lib.services.modules import Frontmatter, extract_frontmatter
+from clan_lib.services.modules import ModuleFrontmatter, extract_frontmatter
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class Placeholder:
 class DiskSchema:
     name: str
     readme: str
-    frontmatter: Frontmatter
+    frontmatter: ModuleFrontmatter
     placeholders: dict[str, Placeholder]
 
 
@@ -128,7 +128,7 @@ def get_machine_disk_schemas(
 
             raw_readme = (disk_template / "README.md").read_text()
             frontmatter, readme = extract_frontmatter(
-                raw_readme, f"{disk_template}/README.md"
+                raw_readme, f"{disk_template}/README.md", fm_class=ModuleFrontmatter
             )
 
             disk_schemas[schema_name] = DiskSchema(

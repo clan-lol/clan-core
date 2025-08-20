@@ -2,7 +2,7 @@ import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any, TypedDict, TypeVar
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
@@ -22,7 +22,7 @@ class CategoryInfo(TypedDict):
 
 
 @dataclass
-class Frontmatter:
+class ModuleFrontmatter:
     description: str
     categories: list[str] = field(default_factory=lambda: ["Uncategorized"])
     features: list[str] = field(default_factory=list)
@@ -87,14 +87,19 @@ def parse_frontmatter(readme_content: str) -> tuple[dict[str, Any] | None, str]:
             raise ClanError(
                 msg,
                 description="Invalid TOML frontmatter",
-                location="extract_frontmatter",
+                location="parse_frontmatter",
             ) from e
 
         return frontmatter_parsed, remaining_content
     return None, readme_content
 
 
-def extract_frontmatter(readme_content: str, err_scope: str) -> tuple[Frontmatter, str]:
+T = TypeVar("T")
+
+
+def extract_frontmatter[T](
+    readme_content: str, err_scope: str, fm_class: type[T]
+) -> tuple[T, str]:
     """
     Extracts TOML frontmatter from a README file content.
 
@@ -111,13 +116,13 @@ def extract_frontmatter(readme_content: str, err_scope: str) -> tuple[Frontmatte
     frontmatter_raw, remaining_content = parse_frontmatter(readme_content)
 
     if frontmatter_raw:
-        return Frontmatter(**frontmatter_raw), remaining_content
+        return fm_class(**frontmatter_raw), remaining_content
 
     # If no frontmatter is found, raise an error
     msg = "Invalid README: Frontmatter not found."
     raise ClanError(
         msg,
-        location="extract_frontmatter",
+        location="extract_module_frontmatter",
         description=f"{err_scope} does not contain valid frontmatter.",
     )
 
@@ -128,7 +133,9 @@ def has_inventory_feature(module_path: Path) -> bool:
         return False
     with readme_file.open() as f:
         readme = f.read()
-        frontmatter, _ = extract_frontmatter(readme, f"{module_path}")
+        frontmatter, _ = extract_frontmatter(
+            readme, f"{module_path}", fm_class=ModuleFrontmatter
+        )
         return "inventory" in frontmatter.features
 
 
@@ -338,7 +345,7 @@ def get_module_info(
     with module_readme.open() as f:
         readme = f.read()
         frontmatter, readme_content = extract_frontmatter(
-            readme, f"{module_path}/README.md"
+            readme, f"{module_path}/README.md", fm_class=ModuleFrontmatter
         )
 
     return LegacyModuleInfo(
