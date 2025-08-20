@@ -91,6 +91,7 @@ def install_command(args: argparse.Namespace) -> None:
                     no_reboot=args.no_reboot,
                     build_on=args.build_on if args.build_on is not None else None,
                     update_hardware_config=HardwareConfig(args.update_hardware_config),
+                    persist_state=not args.no_persist_state,
                 ),
                 target_host=remote,
             )
@@ -136,6 +137,12 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         default="none",
         help="update the hardware configuration",
         choices=[x.value for x in HardwareConfig],
+    )
+    parser.add_argument(
+        "--no-persist-state",
+        action="store_true",
+        help="Disable persisting the result of the installation after it is done",
+        default=False,
     )
 
     parser.add_argument(
