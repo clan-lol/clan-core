@@ -12,7 +12,9 @@
         module.input = "self";
 
         roles.telegraf.machines.peer1 = { };
-
+        roles.telegraf.settings = {
+          allowAllInterfaces = true;
+        };
       };
     };
   };
@@ -26,9 +28,11 @@
     ''
       import time
       start_all()
-      time.sleep(99999)
+
       peer1.wait_for_unit("network-online.target")
       peer1.wait_for_unit("telegraf.service")
+      time.sleep(99999)
+      # peer1.wait_for_unit("telegraf-json.service")
 
       from clan_lib.metrics.version import get_nixos_systems
       from clan_lib.machines.machines import Machine as ClanMachine
