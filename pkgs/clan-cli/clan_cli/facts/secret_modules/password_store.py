@@ -22,6 +22,7 @@ class SecretStore(SecretStoreBase):
         value: bytes,
         groups: list[str],
     ) -> Path | None:
+        del service, groups  # Unused but kept for API compatibility
         subprocess.run(
             nix_shell(
                 ["pass"],
@@ -33,6 +34,7 @@ class SecretStore(SecretStoreBase):
         return None  # we manage the files outside of the git repo
 
     def get(self, service: str, name: str) -> bytes:
+        del service  # Unused but kept for API compatibility
         return subprocess.run(
             nix_shell(
                 ["pass"],
@@ -43,6 +45,7 @@ class SecretStore(SecretStoreBase):
         ).stdout
 
     def exists(self, service: str, name: str) -> bool:
+        del service  # Unused but kept for API compatibility
         password_store = os.environ.get(
             "PASSWORD_STORE_DIR",
             f"{os.environ['HOME']}/.password-store",

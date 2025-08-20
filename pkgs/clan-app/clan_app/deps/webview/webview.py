@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any
 
 from clan_lib.api import MethodRegistry, message_queue
 from clan_lib.api.tasks import WebThread
-from clan_lib.log_manager import LogManager
 
 from ._webview_ffi import _encode_c_string, _webview_lib
 
@@ -107,17 +106,16 @@ class Webview:
     def api_wrapper(
         self,
         method_name: str,
-        wrap_method: Callable[..., Any],
         op_key_bytes: bytes,
         request_data: bytes,
         arg: int,
     ) -> None:
         """Legacy API wrapper - delegates to the bridge."""
+        del arg  # Unused but required for C callback signature
         self.bridge.handle_webview_call(
             method_name=method_name,
             op_key_bytes=op_key_bytes,
             request_data=request_data,
-            arg=arg,
         )
 
     @property
@@ -186,12 +184,11 @@ class Webview:
         log.info("Shutting down webview...")
         self.destroy()
 
-    def bind_jsonschema_api(self, api: MethodRegistry, log_manager: LogManager) -> None:
-        for name, method in api.functions.items():
+    def bind_jsonschema_api(self, api: MethodRegistry) -> None:
+        for name in api.functions:
             wrapper = functools.partial(
                 self.api_wrapper,
                 name,
-                method,
             )
             c_callback = _webview_lib.binding_callback_t(wrapper)
 

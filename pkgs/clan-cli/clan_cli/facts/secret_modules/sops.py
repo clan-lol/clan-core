@@ -43,6 +43,7 @@ class SecretStore(SecretStoreBase):
         value: bytes,
         groups: list[str],
     ) -> Path | None:
+        del service  # Unused but kept for API compatibility
         path = (
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}"
         )
@@ -57,12 +58,14 @@ class SecretStore(SecretStoreBase):
         return path
 
     def get(self, service: str, name: str) -> bytes:
+        del service  # Unused but kept for API compatibility
         return decrypt_secret(
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
             age_plugins=load_age_plugins(self.machine.flake),
         ).encode("utf-8")
 
     def exists(self, service: str, name: str) -> bool:
+        del service  # Unused but kept for API compatibility
         return has_secret(
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
         )

@@ -75,6 +75,7 @@ class JoinList:
         removed: int,
         added: int,
     ) -> None:
+        del source, position, removed, added  # Unused but kept for API compatibility
         self.list_store.items_changed(
             0,
             self.list_store.get_n_items(),
