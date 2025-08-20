@@ -59,8 +59,20 @@ const clanURIs = (): string[] => store.clanURIs;
  *
  */
 const addClanURI = (uri: string) => {
-  setStore("clanURIs", store.clanURIs.length, uri);
-  setStore("sceneData", uri, {}); // Initialize empty scene data for every new clan URI
+  setStore(
+    produce((state) => {
+      // check if it's already in the list
+      if (state.clanURIs.find((clanURI) => clanURI == uri)) {
+        return;
+      }
+
+      // otherwise add it
+      state.clanURIs = [...state.clanURIs, uri];
+
+      // initiliase empty scene data
+      state.sceneData[uri] = {};
+    }),
+  );
 };
 
 /**
