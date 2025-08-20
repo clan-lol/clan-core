@@ -28,7 +28,10 @@ from typing import Any, ClassVar
 import gi
 
 gi.require_version("Gtk", "4.0")
+
 from gi.repository import GdkPixbuf, Gio, GLib, Gtk
+
+from clan_vm_manager.assets import loc
 
 
 # DUMMY IMPLEMENTATION
@@ -595,8 +598,6 @@ class StatusNotifierImplementation(BaseImplementation):
                 activate_callback=self.activate_callback,
             )
             self.tray_icon.register()
-
-            from clan_vm_manager.assets import loc
 
             icon_path = str(loc / "clan_white_notext.png")
             self.set_icon(icon_path)

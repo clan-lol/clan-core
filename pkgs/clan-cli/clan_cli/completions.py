@@ -4,13 +4,16 @@ import json
 import subprocess
 import threading
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 from clan_lib.cmd import run
+from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.flake.flake import Flake
 from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.templates import list_templates
 
 """
 This module provides dynamic completions.
@@ -31,7 +34,6 @@ COMPLETION_TIMEOUT: int = 3
 def clan_dir(flake: str | None) -> str | None:
     if flake is not None:
         return flake
-    from clan_lib.dirs import get_clan_flake_toplevel_or_env
 
     path_result = get_clan_flake_toplevel_or_env()
     return str(path_result) if path_result is not None else None
@@ -210,10 +212,6 @@ def complete_secrets(
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan secrets"""
-    from clan_lib.flake.flake import Flake
-
-    from .secrets.secrets import list_secrets
-
     flake = (
         clan_dir_result
         if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
@@ -233,10 +231,6 @@ def complete_users(
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan users"""
-    from pathlib import Path
-
-    from .secrets.users import list_users
-
     flake = (
         clan_dir_result
         if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
@@ -256,10 +250,6 @@ def complete_groups(
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan groups"""
-    from pathlib import Path
-
-    from .secrets.groups import list_groups
-
     flake = (
         clan_dir_result
         if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
@@ -280,8 +270,6 @@ def complete_templates_disko(
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for disko templates"""
-    from clan_lib.templates import list_templates
-
     flake = (
         clan_dir_result
         if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
@@ -304,8 +292,6 @@ def complete_templates_clan(
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan templates"""
-    from clan_lib.templates import list_templates
-
     flake = (
         clan_dir_result
         if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
@@ -331,8 +317,6 @@ def complete_vars_for_machine(
     Only completes vars that already exist in the vars directory on disk.
     This is fast as it only scans the filesystem without any evaluation.
     """
-    from pathlib import Path
-
     machine_name = getattr(parsed_args, "machine", None)
     if not machine_name:
         return []
