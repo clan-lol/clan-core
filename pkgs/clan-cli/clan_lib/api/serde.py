@@ -114,7 +114,7 @@ def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
                 ): _to_dict(getattr(obj, field.name))
                 for field in fields(obj)
                 if not field.name.startswith("_")
-                and getattr(obj, field.name) is not None  # type: ignore
+                and getattr(obj, field.name) is not None  # type: ignore[no-any-return]
             }
         if isinstance(obj, list | tuple | set):
             return [_to_dict(item) for item in obj]
@@ -129,7 +129,7 @@ def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
     return _to_dict(obj)
 
 
-T = TypeVar("T", bound=dataclass)  # type: ignore
+T = TypeVar("T", bound=dataclass)  # type: ignore[misc]
 
 
 def is_union_type(type_hint: type | UnionType) -> bool:
@@ -177,7 +177,7 @@ def unwrap_none_type(type_hint: type | UnionType) -> type:
         # Return the first non-None type
         return next(t for t in get_args(type_hint) if t is not type(None))
 
-    return type_hint  # type: ignore
+    return type_hint  # type: ignore[misc]
 
 
 JsonValue = str | float | dict[str, Any] | list[Any] | None
@@ -250,11 +250,11 @@ def construct_value(
         return field_value
 
     if t is int and not isinstance(field_value, str):
-        return int(field_value)  # type: ignore
+        return int(field_value)  # type: ignore[misc]
     if t is float and not isinstance(field_value, str):
-        return float(field_value)  # type: ignore
+        return float(field_value)  # type: ignore[misc]
     if t is bool and isinstance(field_value, bool):
-        return field_value  # type: ignore
+        return field_value  # type: ignore[misc]
 
     # Union types construct the first non-None type
     if is_union_type(t):
@@ -288,14 +288,14 @@ def construct_value(
     # Enums
     if origin is Enum:
         try:
-            return t(field_value)  # type: ignore
+            return t(field_value)  # type: ignore[misc]
         except ValueError:
             msg = f"Expected one of {', '.join(str(origin))}, got {field_value}"
             raise ClanError(msg, location=f"{loc}") from ValueError
 
     if isinstance(t, type) and issubclass(t, Enum):
         try:
-            return t(field_value)  # type: ignore
+            return t(field_value)  # type: ignore[misc]
         except ValueError:
             msg = f"Expected one of {', '.join(t.__members__)}, got {field_value}"
             raise ClanError(msg, location=f"{loc}") from ValueError
@@ -313,7 +313,7 @@ def construct_value(
             msg = f"Expected TypedDict {t}, got {field_value}"
             raise ClanError(msg, location=f"{loc}")
 
-        return t(field_value)  # type: ignore
+        return t(field_value)  # type: ignore[misc]
 
     if inspect.isclass(t) and t.__name__ == "Unknown":
         # Return the field value as is
@@ -348,7 +348,7 @@ def construct_dataclass[T: Any](
             continue
         # The first type in a Union
         # str <- None | str | Path
-        field_type: type[Any] = unwrap_none_type(field.type)  # type: ignore
+        field_type: type[Any] = unwrap_none_type(field.type)  # type: ignore[misc]
         data_field_name = field.metadata.get("alias", field.name)
 
         if (
@@ -363,7 +363,7 @@ def construct_dataclass[T: Any](
             field_value = data.get(data_field_name)
 
             if field_value is None and (
-                field.type is None or is_type_in_union(field.type, type(None))  # type: ignore
+                field.type is None or is_type_in_union(field.type, type(None))  # type: ignore[misc]
             ):
                 field_values[field.name] = None
             else:
@@ -376,7 +376,7 @@ def construct_dataclass[T: Any](
             msg = f"Default value missing for: '{field_name}' in {t} {formatted_path}, got Value: {data}"
             raise ClanError(msg)
 
-    return t(**field_values)  # type: ignore
+    return t(**field_values)  # type: ignore[misc]
 
 
 def from_dict(
@@ -394,5 +394,5 @@ def from_dict(
         if not isinstance(data, dict):
             msg = f"{data} is not a dict. Expected {t}"
             raise ClanError(msg)
-        return construct_dataclass(t, data, path)  # type: ignore
+        return construct_dataclass(t, data, path)  # type: ignore[misc]
     return construct_value(t, data, path)

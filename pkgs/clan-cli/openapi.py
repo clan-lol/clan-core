@@ -262,11 +262,11 @@ def main() -> None:
         # Register schemas under components
         args_name = make_schema_name(func_name, "args")
         return_name = make_schema_name(func_name, "return")
-        openapi["components"]["schemas"][args_name] = args_schema  # type: ignore
-        openapi["components"]["schemas"][return_name] = return_schema  # type: ignore
+        openapi["components"]["schemas"][args_name] = args_schema  # type: ignore[misc]
+        openapi["components"]["schemas"][return_name] = return_schema  # type: ignore[misc]
         tag = operation_to_tag(func_name)
         # Create a POST endpoint for the function
-        openapi["paths"][f"/{func_name}"] = {  # type: ignore
+        openapi["paths"][f"/{func_name}"] = {  # type: ignore[misc]
             "post": {
                 "summary": func_name,
                 "operationId": func_name,
@@ -301,7 +301,7 @@ def main() -> None:
     for def_name, def_schema in defs.items():
         fixed_schema = fix_nullables(deepcopy(def_schema))
         fix_error_refs(fixed_schema)
-        openapi["components"]["schemas"][def_name] = fixed_schema  # type: ignore
+        openapi["components"]["schemas"][def_name] = fixed_schema  # type: ignore[misc]
 
     # === Write to output JSON ===
     with Path("openapi.json").open("w") as f:

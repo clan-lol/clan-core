@@ -23,8 +23,7 @@ def hyperlink_same_text_and_url(url: str) -> str:
 
 
 def help_hyperlink(description: str, url: str) -> str:
-    """Keep the description and the link the same to support legacy terminals.
-    """
+    """Keep the description and the link the same to support legacy terminals."""
     if sys.argv[0].__contains__("docs.py"):
         return docs_hyperlink(description, url)
 

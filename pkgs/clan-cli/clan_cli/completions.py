@@ -15,6 +15,10 @@ from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.templates import list_templates
 
+from .secrets.groups import list_groups
+from .secrets.secrets import list_secrets
+from .secrets.users import list_users
+
 """
 This module provides dynamic completions.
 The completions should feel fast.

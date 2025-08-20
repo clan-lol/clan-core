@@ -4,11 +4,6 @@ from pathlib import Path
 from clan_lib.flake import require_flake
 from clan_lib.git import commit_files
 
-from clan_cli.completions import (
-    add_dynamic_completer,
-    complete_machines,
-    complete_secrets,
-)
 from clan_cli.machines.types import machine_name_type, validate_hostname
 
 from . import secrets, sops
@@ -177,6 +172,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machine",
         type=machine_name_type,
     )
+    from clan_cli.completions import add_dynamic_completer, complete_machines  # noqa: PLC0415
     add_dynamic_completer(add_machine_action, complete_machines)
     add_parser.add_argument(
         "key",
@@ -192,6 +188,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machine",
         type=machine_name_type,
     )
+    from clan_cli.completions import add_dynamic_completer, complete_machines  # noqa: PLC0415
     add_dynamic_completer(get_machine_parser, complete_machines)
     get_parser.set_defaults(func=get_command)
 
@@ -202,6 +199,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machine",
         type=machine_name_type,
     )
+    from clan_cli.completions import add_dynamic_completer, complete_machines  # noqa: PLC0415
     add_dynamic_completer(remove_machine_parser, complete_machines)
     remove_parser.set_defaults(func=remove_command)
 
@@ -215,6 +213,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machine",
         type=machine_name_type,
     )
+    from clan_cli.completions import add_dynamic_completer, complete_machines, complete_secrets  # noqa: PLC0415
     add_dynamic_completer(machine_add_secret_parser, complete_machines)
     add_secret_action = add_secret_parser.add_argument(
         "secret",
@@ -234,6 +233,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machine",
         type=machine_name_type,
     )
+    from clan_cli.completions import add_dynamic_completer, complete_machines, complete_secrets  # noqa: PLC0415
     add_dynamic_completer(machine_remove_parser, complete_machines)
     remove_secret_action = remove_secret_parser.add_argument(
         "secret",
