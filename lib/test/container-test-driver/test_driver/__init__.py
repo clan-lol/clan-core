@@ -294,8 +294,8 @@ class Machine:
     def execute(
         self,
         command: str,
-        check_return: bool = True,
-        check_output: bool = True,
+        check_return: bool = True,  # noqa: ARG002
+        check_output: bool = True,  # noqa: ARG002
         timeout: int | None = 900,
     ) -> subprocess.CompletedProcess:
         """Execute a shell command, returning a list `(status, stdout)`.
