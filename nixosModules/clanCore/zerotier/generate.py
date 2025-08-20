@@ -84,8 +84,9 @@ class ZerotierController:
             headers["Content-Type"] = "application/json"
         headers["X-ZT1-AUTH"] = self.authtoken
         url = f"http://127.0.0.1:{self.port}{path}"
-        req = urllib.request.Request(url, headers=headers, method=method, data=body)
-        resp = urllib.request.urlopen(req)
+        # Safe: only connecting to localhost zerotier API
+        req = urllib.request.Request(url, headers=headers, method=method, data=body)  # noqa: S310
+        resp = urllib.request.urlopen(req)  # noqa: S310
         return json.load(resp)
 
     def status(self) -> dict[str, Any]:

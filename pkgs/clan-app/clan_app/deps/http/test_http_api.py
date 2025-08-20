@@ -151,14 +151,14 @@ class TestHttpApiServer:
 
         try:
             # Test root endpoint
-            response = urlopen("http://127.0.0.1:8081/")
+            response = urlopen("http://127.0.0.1:8081/")  # noqa: S310
             data: dict = json.loads(response.read().decode())
             assert data["body"]["status"] == "success"
             assert data["body"]["data"]["message"] == "Clan API Server"
             assert data["body"]["data"]["version"] == "1.0.0"
 
             # Test methods endpoint
-            response = urlopen("http://127.0.0.1:8081/api/methods")
+            response = urlopen("http://127.0.0.1:8081/api/methods")  # noqa: S310
             data = json.loads(response.read().decode())
             assert data["body"]["status"] == "success"
             assert "test_method" in data["body"]["data"]["methods"]
@@ -171,7 +171,7 @@ class TestHttpApiServer:
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
-            response = urlopen(req)
+            response = urlopen(req)  # noqa: S310
             data = json.loads(response.read().decode())
 
             # Response should be BackendResponse format
@@ -194,7 +194,7 @@ class TestHttpApiServer:
         try:
             # Test 404 error
 
-            res = urlopen("http://127.0.0.1:8081/nonexistent")
+            res = urlopen("http://127.0.0.1:8081/nonexistent")  # noqa: S310
             assert res.status == 200
             body = json.loads(res.read().decode())["body"]
             assert body["status"] == "error"
@@ -207,7 +207,7 @@ class TestHttpApiServer:
                 headers={"Content-Type": "application/json"},
             )
 
-            res = urlopen(req)
+            res = urlopen(req)  # noqa: S310
             assert res.status == 200
             body = json.loads(res.read().decode())["body"]
             assert body["status"] == "error"
@@ -219,7 +219,7 @@ class TestHttpApiServer:
                 headers={"Content-Type": "application/json"},
             )
 
-            res = urlopen(req)
+            res = urlopen(req)  # noqa: S310
             assert res.status == 200
             body = json.loads(res.read().decode())["body"]
             assert body["status"] == "error"
@@ -240,7 +240,7 @@ class TestHttpApiServer:
                     return "OPTIONS"
 
             req: Request = OptionsRequest("http://127.0.0.1:8081/api/call/test_method")
-            response = urlopen(req)
+            response = urlopen(req)  # noqa: S310
 
             # Check CORS headers
             headers = response.info()
@@ -290,7 +290,7 @@ class TestIntegration:
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
-            response = urlopen(req)
+            response = urlopen(req)  # noqa: S310
             data: dict = json.loads(response.read().decode())
 
             # Verify response in BackendResponse format
@@ -341,7 +341,7 @@ class TestIntegration:
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
-            response = urlopen(req)
+            response = urlopen(req)  # noqa: S310
             data: dict = json.loads(response.read().decode())
 
             # thread.join()
@@ -365,7 +365,7 @@ class TestIntegration:
             data=json.dumps(request_data).encode(),
             headers={"Content-Type": "application/json"},
         )
-        response = urlopen(req)
+        response = urlopen(req)  # noqa: S310
         data: dict = json.loads(response.read().decode())
 
         assert "body" in data
