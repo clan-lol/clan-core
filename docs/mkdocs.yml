@@ -64,7 +64,7 @@ nav:
       - Disk Encryption: guides/disk-encryption.md
       - Age Plugins: guides/age-plugins.md
       - Secrets management: guides/secrets.md
-      - Target Host: guides/target-host.md
+      - Networking: guides/networking.md
       - Zerotier VPN: guides/mesh-vpn.md
       - Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
