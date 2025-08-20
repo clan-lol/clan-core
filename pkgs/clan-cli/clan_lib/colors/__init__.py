@@ -7,9 +7,7 @@ DEFAULT_MARKER = 302
 
 
 class RgbColor(Enum):
-    """
-    A subset of CSS colors with RGB values that work well in Dark and Light mode.
-    """
+    """A subset of CSS colors with RGB values that work well in Dark and Light mode."""
 
     TEAL = (0, 130, 128)
     OLIVEDRAB = (113, 122, 57)
@@ -85,8 +83,7 @@ class ColorType(Enum):
 
 
 def _join(*values: int | str) -> str:
-    """
-    Join a series of values with semicolons. The values
+    """Join a series of values with semicolons. The values
     are either integers or strings, so stringify each for
     good measure. Worth breaking out as its own function
     because semicolon-joined lists are core to ANSI coding.
@@ -95,8 +92,7 @@ def _join(*values: int | str) -> str:
 
 
 def color_code(spec: tuple[int, int, int], base: ColorType) -> str:
-    """
-    Workhorse of encoding a color. Give preference to named colors from
+    """Workhorse of encoding a color. Give preference to named colors from
     ANSI, then to specific numeric or tuple specs. If those don't work,
     try looking up CSS color names or parsing CSS color specifications
     (hex or rgb).
@@ -143,9 +139,7 @@ def color(
     fg: Color = AnsiColor.DEFAULT,
     bg: Color = AnsiColor.DEFAULT,
 ) -> str:
-    """
-    Add ANSI colors and styles to a string.
-    """
+    """Add ANSI colors and styles to a string."""
     return color_by_tuple(message, fg.value, bg.value)
 
 

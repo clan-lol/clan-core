@@ -26,7 +26,9 @@ class WebviewBridge(ApiBridge):
     def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""
         serialized = json.dumps(
-            dataclass_to_dict(response), indent=4, ensure_ascii=False
+            dataclass_to_dict(response),
+            indent=4,
+            ensure_ascii=False,
         )
 
         log.debug(f"Sending response: {serialized}")
@@ -40,7 +42,6 @@ class WebviewBridge(ApiBridge):
         arg: int,
     ) -> None:
         """Handle a call from webview's JavaScript bridge."""
-
         try:
             op_key = op_key_bytes.decode()
             raw_args = json.loads(request_data.decode())
@@ -68,7 +69,10 @@ class WebviewBridge(ApiBridge):
 
             # Create API request
             api_request = BackendRequest(
-                method_name=method_name, args=args, header=header, op_key=op_key
+                method_name=method_name,
+                args=args,
+                header=header,
+                op_key=op_key,
             )
 
         except Exception as e:
@@ -77,7 +81,9 @@ class WebviewBridge(ApiBridge):
             )
             log.exception(msg)
             self.send_api_error_response(
-                op_key, str(e), ["webview_bridge", method_name]
+                op_key,
+                str(e),
+                ["webview_bridge", method_name],
             )
             return
 

@@ -3,9 +3,7 @@ from clan_lib.flake import Flake
 
 
 def _levenshtein_distance(s1: str, s2: str) -> int:
-    """
-    Calculate the Levenshtein distance between two strings.
-    """
+    """Calculate the Levenshtein distance between two strings."""
     if len(s1) < len(s2):
         return _levenshtein_distance(s2, s1)
 
@@ -26,7 +24,9 @@ def _levenshtein_distance(s1: str, s2: str) -> int:
 
 
 def _suggest_similar_names(
-    target: str, candidates: list[str], max_suggestions: int = 3
+    target: str,
+    candidates: list[str],
+    max_suggestions: int = 3,
 ) -> list[str]:
     if not candidates:
         return []
@@ -49,8 +49,7 @@ def get_available_machines(flake: Flake) -> list[str]:
 
 
 def validate_machine_names(machine_names: list[str], flake: Flake) -> list[str]:
-    """
-    Returns a list of valid machine names
+    """Returns a list of valid machine names
     that are guaranteed to exist in the referenced clan
     """
     if not machine_names:

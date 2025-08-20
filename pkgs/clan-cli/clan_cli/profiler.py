@@ -95,8 +95,7 @@ PROFS = ProfilerStore()
 
 
 def profile(func: Callable) -> Callable:
-    """
-    A decorator that profiles the decorated function, printing out the profiling
+    """A decorator that profiles the decorated function, printing out the profiling
     results with paths trimmed to three directories deep.
     """
 

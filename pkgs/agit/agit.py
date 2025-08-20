@@ -38,8 +38,7 @@ def get_gitea_api_url(remote: str = "origin") -> str:
         host_and_path = remote_url.split("@")[1]  # git.clan.lol:clan/clan-core.git
         host = host_and_path.split(":")[0]  # git.clan.lol
         repo_path = host_and_path.split(":")[1]  # clan/clan-core.git
-        if repo_path.endswith(".git"):
-            repo_path = repo_path[:-4]  # clan/clan-core
+        repo_path = repo_path.removesuffix(".git")  # clan/clan-core
     elif remote_url.startswith("https://"):
         # HTTPS format: https://git.clan.lol/clan/clan-core.git
         url_parts = remote_url.replace("https://", "").split("/")
@@ -86,7 +85,10 @@ def get_repo_info_from_api_url(api_url: str) -> tuple[str, str]:
 
 
 def fetch_pr_statuses(
-    repo_owner: str, repo_name: str, commit_sha: str, host: str
+    repo_owner: str,
+    repo_name: str,
+    commit_sha: str,
+    host: str,
 ) -> list[dict]:
     """Fetch CI statuses for a specific commit SHA."""
     status_url = (
@@ -183,7 +185,7 @@ def run_git_command(command: list) -> tuple[int, str, str]:
 
 def get_current_branch_name() -> str:
     exit_code, branch_name, error = run_git_command(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
     )
 
     if exit_code != 0:
@@ -196,7 +198,7 @@ def get_current_branch_name() -> str:
 def get_latest_commit_info() -> tuple[str, str]:
     """Get the title and body of the latest commit."""
     exit_code, commit_msg, error = run_git_command(
-        ["git", "log", "-1", "--pretty=format:%B"]
+        ["git", "log", "-1", "--pretty=format:%B"],
     )
 
     if exit_code != 0:
@@ -225,7 +227,7 @@ def get_commits_since_main() -> list[tuple[str, str]]:
             "main..HEAD",
             "--no-merges",
             "--pretty=format:%s|%b|---END---",
-        ]
+        ],
     )
 
     if exit_code != 0:
@@ -263,7 +265,9 @@ def open_editor_for_pr() -> tuple[str, str]:
     commits_since_main = get_commits_since_main()
 
     with tempfile.NamedTemporaryFile(
-        mode="w+", suffix="COMMIT_EDITMSG", delete=False
+        mode="w+",
+        suffix="COMMIT_EDITMSG",
+        delete=False,
     ) as temp_file:
         temp_file.flush()
         temp_file_path = temp_file.name
@@ -280,7 +284,7 @@ def open_editor_for_pr() -> tuple[str, str]:
         temp_file.write("# The first line will be used as the PR title.\n")
         temp_file.write("# Everything else will be used as the PR description.\n")
         temp_file.write(
-            "# To abort creation of the PR, close editor with an error code.\n"
+            "# To abort creation of the PR, close editor with an error code.\n",
         )
         temp_file.write("# In vim for example you can use :cq!\n")
         temp_file.write("#\n")
@@ -373,7 +377,7 @@ def create_agit_push(
         print(
             f"  Description: {description[:50]}..."
             if len(description) > 50
-            else f"  Description: {description}"
+            else f"  Description: {description}",
         )
     print()
 
@@ -530,19 +534,26 @@ Examples:
     )
 
     create_parser.add_argument(
-        "-t", "--topic", help="Set PR topic (default: current branch name)"
+        "-t",
+        "--topic",
+        help="Set PR topic (default: current branch name)",
     )
 
     create_parser.add_argument(
-        "--title", help="Set the PR title (default: last commit title)"
+        "--title",
+        help="Set the PR title (default: last commit title)",
     )
 
     create_parser.add_argument(
-        "--description", help="Override the PR description (default: commit body)"
+        "--description",
+        help="Override the PR description (default: commit body)",
     )
 
     create_parser.add_argument(
-        "-f", "--force", action="store_true", help="Force push the changes"
+        "-f",
+        "--force",
+        action="store_true",
+        help="Force push the changes",
     )
 
     create_parser.add_argument(

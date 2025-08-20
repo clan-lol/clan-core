@@ -10,10 +10,13 @@ log = logging.getLogger(__name__)
 @API.register
 def check_clan_valid(flake: Flake) -> bool:
     """Check if a clan is valid by verifying if it has the clanInternals attribute.
+
     Args:
         flake: The Flake instance representing the clan.
+
     Returns:
         bool: True if the clan exists, False otherwise.
+
     """
     try:
         flake.prefetch()

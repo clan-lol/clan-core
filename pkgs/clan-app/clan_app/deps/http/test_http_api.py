@@ -64,7 +64,8 @@ def mock_log_manager() -> Mock:
 
 @pytest.fixture
 def http_bridge(
-    mock_api: MethodRegistry, mock_log_manager: Mock
+    mock_api: MethodRegistry,
+    mock_log_manager: Mock,
 ) -> tuple[MethodRegistry, tuple]:
     """Create HTTP bridge dependencies for testing."""
     middleware_chain = (
@@ -256,7 +257,9 @@ class TestIntegration:
     """Integration tests for HTTP API components."""
 
     def test_full_request_flow(
-        self, mock_api: MethodRegistry, mock_log_manager: Mock
+        self,
+        mock_api: MethodRegistry,
+        mock_log_manager: Mock,
     ) -> None:
         """Test complete request flow from server to bridge to middleware."""
         server: HttpApiServer = HttpApiServer(
@@ -301,7 +304,9 @@ class TestIntegration:
             server.stop()
 
     def test_blocking_task(
-        self, mock_api: MethodRegistry, mock_log_manager: Mock
+        self,
+        mock_api: MethodRegistry,
+        mock_log_manager: Mock,
     ) -> None:
         shared_threads: dict[str, tasks.WebThread] = {}
         tasks.BAKEND_THREADS = shared_threads

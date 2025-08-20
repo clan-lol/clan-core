@@ -92,7 +92,9 @@ def add_history(uri: ClanURI) -> HistoryEntry:
 
 
 def _add_maschine_to_history_list(
-    uri_path: str, uri_machine: str, entries: list[HistoryEntry]
+    uri_path: str,
+    uri_machine: str,
+    entries: list[HistoryEntry],
 ) -> HistoryEntry:
     for new_entry in entries:
         if (
@@ -143,10 +145,16 @@ def parse_args() -> argparse.Namespace:
     )
     add_parser = subparser.add_parser("add", help="Add a clan flake")
     add_parser.add_argument(
-        "uri", type=ClanURI.from_str, help="Path to the flake", default="."
+        "uri",
+        type=ClanURI.from_str,
+        help="Path to the flake",
+        default=".",
     )
     add_parser.add_argument(
-        "--all", help="Add all machines", default=False, action="store_true"
+        "--all",
+        help="Add all machines",
+        default=False,
+        action="store_true",
     )
     add_parser.set_defaults(func=add_history_command)
     list_parser = subparser.add_parser("list", help="List recently used flakes")

@@ -16,8 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class ToastOverlay:
-    """
-    The ToastOverlay is a class that manages the display of toasts
+    """The ToastOverlay is a class that manages the display of toasts
     It should be used as a singleton in your application to prevent duplicate toasts
     Usage
     """
@@ -53,11 +52,14 @@ class ErrorToast:
     toast: Adw.Toast
 
     def __init__(
-        self, message: str, persistent: bool = False, details: str = ""
+        self,
+        message: str,
+        persistent: bool = False,
+        details: str = "",
     ) -> None:
         super().__init__()
         self.toast = Adw.Toast.new(
-            f"""<span foreground='red'>❌ Error </span> {message}"""
+            f"""<span foreground='red'>❌ Error </span> {message}""",
         )
         self.toast.set_use_markup(True)
 
@@ -85,7 +87,7 @@ class WarningToast:
     def __init__(self, message: str, persistent: bool = False) -> None:
         super().__init__()
         self.toast = Adw.Toast.new(
-            f"<span foreground='orange'>⚠ Warning </span> {message}"
+            f"<span foreground='orange'>⚠ Warning </span> {message}",
         )
         self.toast.set_use_markup(True)
 
@@ -135,7 +137,7 @@ class LogToast:
     ) -> None:
         super().__init__()
         self.toast = Adw.Toast.new(
-            f"""Logs are available <span weight="regular">{message}</span>"""
+            f"""Logs are available <span weight="regular">{message}</span>""",
         )
         self.toast.set_use_markup(True)
 

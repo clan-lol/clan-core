@@ -23,7 +23,9 @@ class Middleware(ABC):
         """Process the request through this middleware."""
 
     def register_context_manager(
-        self, context: MiddlewareContext, cm: AbstractContextManager[Any]
+        self,
+        context: MiddlewareContext,
+        cm: AbstractContextManager[Any],
     ) -> Any:
         """Register a context manager with the exit stack."""
         return context.exit_stack.enter_context(cm)

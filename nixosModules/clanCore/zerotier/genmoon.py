@@ -17,7 +17,7 @@ def main() -> None:
 
     moon_json = json.loads(Path(moon_json_path).read_text())
     moon_json["roots"][0]["stableEndpoints"] = json.loads(
-        Path(endpoint_config).read_text()
+        Path(endpoint_config).read_text(),
     )
 
     with NamedTemporaryFile("w") as f:

@@ -75,7 +75,8 @@ class SecretStore(StoreBase):
             sops_secrets_folder(self.flake.path) / f"{machine}-age.key",
             priv_key,
             add_groups=self.flake.select_machine(
-                machine, "config.clan.core.sops.defaultGroups"
+                machine,
+                "config.clan.core.sops.defaultGroups",
             ),
             age_plugins=load_age_plugins(self.flake),
         )
@@ -86,7 +87,10 @@ class SecretStore(StoreBase):
         return "sops"
 
     def user_has_access(
-        self, user: str, generator: Generator, secret_name: str
+        self,
+        user: str,
+        generator: Generator,
+        secret_name: str,
     ) -> bool:
         key_dir = sops_users_folder(self.flake.path) / user
         return self.key_has_access(key_dir, generator, secret_name)
@@ -98,7 +102,10 @@ class SecretStore(StoreBase):
         return self.key_has_access(key_dir, generator, secret_name)
 
     def key_has_access(
-        self, key_dir: Path, generator: Generator, secret_name: str
+        self,
+        key_dir: Path,
+        generator: Generator,
+        secret_name: str,
     ) -> bool:
         secret_path = self.secret_path(generator, secret_name)
         recipient = sops.SopsKey.load_dir(key_dir)
@@ -115,8 +122,7 @@ class SecretStore(StoreBase):
         generators: list[Generator] | None = None,
         file_name: str | None = None,
     ) -> str | None:
-        """
-        Check if SOPS secrets need to be re-encrypted due to recipient changes.
+        """Check if SOPS secrets need to be re-encrypted due to recipient changes.
 
         This method verifies that all secrets are properly encrypted with the current
         set of recipient keys. It detects when new users or machines have been added
@@ -132,8 +138,8 @@ class SecretStore(StoreBase):
 
         Raises:
             ClanError: If the specified file_name is not found
-        """
 
+        """
         if generators is None:
             from clan_cli.vars.generator import Generator
 
@@ -185,7 +191,8 @@ class SecretStore(StoreBase):
             value,
             add_machines=[machine] if var.deploy else [],
             add_groups=self.flake.select_machine(
-                machine, "config.clan.core.sops.defaultGroups"
+                machine,
+                "config.clan.core.sops.defaultGroups",
             ),
             git_commit=False,
             age_plugins=load_age_plugins(self.flake),
@@ -291,17 +298,18 @@ class SecretStore(StoreBase):
 
         keys = collect_keys_for_path(path)
         for group in self.flake.select_machine(
-            machine, "config.clan.core.sops.defaultGroups"
+            machine,
+            "config.clan.core.sops.defaultGroups",
         ):
             keys.update(
                 collect_keys_for_type(
-                    self.flake.path / "sops" / "groups" / group / "machines"
-                )
+                    self.flake.path / "sops" / "groups" / group / "machines",
+                ),
             )
             keys.update(
                 collect_keys_for_type(
-                    self.flake.path / "sops" / "groups" / group / "users"
-                )
+                    self.flake.path / "sops" / "groups" / group / "users",
+                ),
             )
 
         return keys
@@ -329,8 +337,7 @@ class SecretStore(StoreBase):
         generators: list[Generator] | None = None,
         file_name: str | None = None,
     ) -> None:
-        """
-        Fix sops secrets by re-encrypting them with the current set of recipient keys.
+        """Fix sops secrets by re-encrypting them with the current set of recipient keys.
 
         This method updates secrets when recipients have changed (e.g., new admin users
         were added to the clan). It ensures all authorized recipients have access to the
@@ -343,6 +350,7 @@ class SecretStore(StoreBase):
 
         Raises:
             ClanError: If the specified file_name is not found
+
         """
         from clan_cli.secrets.secrets import update_keys
 
@@ -368,7 +376,8 @@ class SecretStore(StoreBase):
 
                 gen_machine = self.get_machine(generator)
                 for group in self.flake.select_machine(
-                    gen_machine, "config.clan.core.sops.defaultGroups"
+                    gen_machine,
+                    "config.clan.core.sops.defaultGroups",
                 ):
                     allow_member(
                         groups_folder(secret_path),

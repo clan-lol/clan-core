@@ -9,7 +9,7 @@ from clan_lib.nix import nix_shell
 
 sys.path.append(str(Path(__file__).parent / "helpers"))
 sys.path.append(
-    str(Path(__file__).parent.parent)
+    str(Path(__file__).parent.parent),
 )  # Also add clan vm manager to PYTHONPATH
 
 pytest_plugins = [

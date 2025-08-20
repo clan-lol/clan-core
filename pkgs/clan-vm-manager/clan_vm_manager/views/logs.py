@@ -11,8 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class Logs(Gtk.Box):
-    """
-    Simple log view
+    """Simple log view
     This includes a banner and a text view and a button to close the log and navigate back to the overview
     """
 
@@ -44,9 +43,7 @@ class Logs(Gtk.Box):
         self.banner.set_title(title)
 
     def set_message(self, message: str) -> None:
-        """
-        Set the log message. This will delete any previous message
-        """
+        """Set the log message. This will delete any previous message"""
         buffer = self.text_view.get_buffer()
         buffer.set_text(message)
 
@@ -54,9 +51,7 @@ class Logs(Gtk.Box):
         self.text_view.scroll_to_mark(mark, 0.05, True, 0.0, 1.0)
 
     def append_message(self, message: str) -> None:
-        """
-        Append to the end of a potentially existent log message
-        """
+        """Append to the end of a potentially existent log message"""
         buffer = self.text_view.get_buffer()
         end_iter = buffer.get_end_iter()
         buffer.insert(end_iter, message)  # type: ignore

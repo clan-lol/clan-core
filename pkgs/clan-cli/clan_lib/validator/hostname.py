@@ -4,8 +4,7 @@ from clan_lib.errors import ClanError
 
 
 def hostname(host: str) -> str:
-    """
-    Validates a hostname according to the expected format in NixOS.
+    """Validates a hostname according to the expected format in NixOS.
 
     Usage Example
 
@@ -20,7 +19,6 @@ def hostname(host: str) -> str:
             except ValueError as e:
                 raise ClanError(str(e), location="name")
     """
-
     # TODO: Generate from nix schema
     hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
     if not re.fullmatch(hostname_regex, host):

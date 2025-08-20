@@ -89,8 +89,7 @@ def is_pure_store_path(path: str) -> bool:
 
 
 class SetSelectorType(str, Enum):
-    """
-    enum for the type of selector in a set.
+    """enum for the type of selector in a set.
     For now this is either a string or a maybe selector.
     """
 
@@ -100,8 +99,7 @@ class SetSelectorType(str, Enum):
 
 @dataclass
 class SetSelector:
-    """
-    This class represents a selector used in a set.
+    """This class represents a selector used in a set.
     type: SetSelectorType = SetSelectorType.STR
     value: str = ""
 
@@ -114,8 +112,7 @@ class SetSelector:
 
 
 class SelectorType(str, Enum):
-    """
-    enum for the type of a selector
+    """enum for the type of a selector
     this can be all, string, set or maybe
     """
 
@@ -127,8 +124,7 @@ class SelectorType(str, Enum):
 
 @dataclass
 class Selector:
-    """
-    A class to represent a selector, which selects nix elements one level down.
+    """A class to represent a selector, which selects nix elements one level down.
     consists of a SelectorType and a value.
 
     if the type is all, no value is needed, since it selects all elements.
@@ -209,8 +205,7 @@ def selectors_as_json(selectors: list[Selector]) -> str:
 
 
 def parse_selector(selector: str) -> list[Selector]:
-    """
-    takes a string and returns a list of selectors.
+    """Takes a string and returns a list of selectors.
 
     a selector can be:
     - a string, which is a key in a dict
@@ -286,7 +281,7 @@ def parse_selector(selector: str) -> list[Selector]:
                     else:
                         set_select_type = SetSelectorType.STR
                     acc_selectors.append(
-                        SetSelector(type=set_select_type, value=acc_str)
+                        SetSelector(type=set_select_type, value=acc_str),
                     )
                 # Check for invalid multiselect patterns with outPath
                 for subselector in acc_selectors:
@@ -355,8 +350,7 @@ def parse_selector(selector: str) -> list[Selector]:
 
 @dataclass
 class FlakeCacheEntry:
-    """
-    a recursive structure to store the cache.
+    """a recursive structure to store the cache.
     consists of a dict with the keys being the selectors and the values being FlakeCacheEntry objects.
 
     is_list is used to check if the value is a list.
@@ -565,8 +559,8 @@ class FlakeCacheEntry:
                     if self.value[selector.value].exists:
                         return {
                             selector.value: self.value[selector.value].select(
-                                selectors[1:]
-                            )
+                                selectors[1:],
+                            ),
                         }
                     return {}
                 # Key not found, return empty dict for MAYBE selector
@@ -684,7 +678,10 @@ class FlakeCacheEntry:
         fetched_all = json_data.get("fetched_all", False)
 
         entry = FlakeCacheEntry(
-            value=value, is_list=is_list, exists=exists, fetched_all=fetched_all
+            value=value,
+            is_list=is_list,
+            exists=exists,
+            fetched_all=fetched_all,
         )
         return entry
 
@@ -696,9 +693,7 @@ class FlakeCacheEntry:
 
 @dataclass
 class FlakeCache:
-    """
-    an in-memory cache for flake outputs, uses a recursive FLakeCacheEntry structure
-    """
+    """an in-memory cache for flake outputs, uses a recursive FLakeCacheEntry structure"""
 
     def __init__(self) -> None:
         self.cache: FlakeCacheEntry = FlakeCacheEntry()
@@ -736,8 +731,7 @@ class FlakeCache:
 
 @dataclass
 class Flake:
-    """
-    This class represents a flake, and is used to interact with it.
+    """This class represents a flake, and is used to interact with it.
     values can be accessed using the select method, which will fetch the value from the cache if it is present.
     """
 
@@ -800,9 +794,7 @@ class Flake:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
 
     def prefetch(self) -> None:
-        """
-        Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
-        """
+        """Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline"""
         from clan_lib.cmd import RunOpts, run
         from clan_lib.nix import (
             nix_command,
@@ -843,8 +835,7 @@ class Flake:
         self.flake_metadata = flake_metadata
 
     def invalidate_cache(self) -> None:
-        """
-        Invalidate the cache and reload it.
+        """Invalidate the cache and reload it.
 
         This method is used to refresh the cache by reloading it from the flake.
         """
@@ -883,8 +874,7 @@ class Flake:
         self,
         selectors: list[str],
     ) -> None:
-        """
-        Retrieves specific attributes from a Nix flake using the provided selectors.
+        """Retrieves specific attributes from a Nix flake using the provided selectors.
 
         This function interacts with the Nix build system to fetch and process
         attributes from a flake. It uses the provided selectors to determine which
@@ -899,6 +889,7 @@ class Flake:
         Raises:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
+
         """
         from clan_lib.cmd import Log, RunOpts, run
         from clan_lib.dirs import select_source
@@ -972,7 +963,7 @@ class Flake:
                 run(
                     nix_build(["--expr", nix_code, *nix_options]),
                     RunOpts(log=Log.NONE, trace=trace),
-                ).stdout.strip()
+                ).stdout.strip(),
             )
         except ClanCmdError as e:
             if "error: attribute 'clan' missing" in str(e):
@@ -1008,8 +999,7 @@ class Flake:
             self._cache.save_to_file(self.flake_cache_path)
 
     def precache(self, selectors: list[str]) -> None:
-        """
-        Ensures that the specified selectors are cached locally.
+        """Ensures that the specified selectors are cached locally.
 
         This function checks if the given selectors are already cached. If not, it
         fetches them using the Nix build system and stores them in the local cache.
@@ -1017,8 +1007,8 @@ class Flake:
 
         Args:
             selectors (list[str]): A list of attribute selectors to check and cache.
-        """
 
+        """
         if self._cache is None:
             self.invalidate_cache()
         assert self._cache is not None
@@ -1035,12 +1025,12 @@ class Flake:
         self,
         selector: str,
     ) -> Any:
-        """
-        Selects a value from the cache based on the provided selector string.
+        """Selects a value from the cache based on the provided selector string.
         Fetches it via nix_build if it is not already cached.
 
         Args:
             selector (str): The attribute selector string to fetch the value for.
+
         """
         if self._cache is None:
             self.invalidate_cache()
@@ -1058,13 +1048,13 @@ class Flake:
         return value
 
     def select_machine(self, machine_name: str, selector: str) -> Any:
-        """
-        Select a nix attribute for a specific machine.
+        """Select a nix attribute for a specific machine.
 
         Args:
             machine_name: The name of the machine
             selector: The attribute selector string relative to the machine config
             apply: Optional function to apply to the result
+
         """
         from clan_lib.nix import nix_config
 
@@ -1076,8 +1066,7 @@ class Flake:
 
 
 def require_flake(flake: Flake | None) -> Flake:
-    """
-    Require that a flake argument is provided, if not in a clan flake.
+    """Require that a flake argument is provided, if not in a clan flake.
 
     This should be called by commands that require a flake but don't have
     a sensible default when no clan flake is found locally.
@@ -1090,6 +1079,7 @@ def require_flake(flake: Flake | None) -> Flake:
 
     Raises:
         ClanError: If the flake is None
+
     """
     if flake is None:
         msg = "No clan flake found in the current directory or its parents"

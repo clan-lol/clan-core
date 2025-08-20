@@ -34,7 +34,8 @@ def install_command(args: argparse.Namespace) -> None:
             if args.target_host:
                 # TODO add network support here with either --network or some url magic
                 remote = Remote.from_ssh_uri(
-                    machine_name=args.machine, address=args.target_host
+                    machine_name=args.machine,
+                    address=args.target_host,
                 )
             elif args.png:
                 data = read_qr_image(Path(args.png))
@@ -73,7 +74,7 @@ def install_command(args: argparse.Namespace) -> None:
                     if ask == "n" or ask == "":
                         return None
                     print(
-                        f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no."
+                        f"Invalid input '{ask}'. Please enter 'y' for yes or 'n' for no.",
                     )
 
             if args.identity_file:

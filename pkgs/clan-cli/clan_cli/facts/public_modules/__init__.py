@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import clan_lib.machines.machines as machines
+from clan_lib.machines import machines
 
 
 class FactStoreBase(ABC):

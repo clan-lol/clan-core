@@ -9,7 +9,6 @@ from tempfile import NamedTemporaryFile
 
 def create_sandbox_profile() -> str:
     """Create a sandbox profile that allows access to tmpdir and nix store, based on Nix's sandbox-defaults.sb."""
-
     # Based on Nix's sandbox-defaults.sb implementation with TMPDIR parameter
     profile_content = """(version 1)
 
@@ -102,6 +101,7 @@ def sandbox_exec_cmd(generator: str, tmpdir: Path) -> Iterator[list[str]]:
 
     Yields:
         list[str]: The command to execute
+
     """
     profile_content = create_sandbox_profile()
 

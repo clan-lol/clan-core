@@ -5,7 +5,11 @@ from clan_lib.ssh.remote import Remote
 
 
 def restore_service(
-    machine: Machine, host: Remote, name: str, provider: str, service: str
+    machine: Machine,
+    host: Remote,
+    name: str,
+    provider: str,
+    service: str,
 ) -> None:
     backup_metadata = machine.select("config.clan.core.backups")
     backup_folders = machine.select("config.clan.core.state")
@@ -73,5 +77,5 @@ def restore_backup(
                 errors.append(f"{service}: {e}")
     if errors:
         raise ClanError(
-            "Restore failed for the following services:\n" + "\n".join(errors)
+            "Restore failed for the following services:\n" + "\n".join(errors),
         )

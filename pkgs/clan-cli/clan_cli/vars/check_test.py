@@ -6,7 +6,8 @@ from clan_lib.errors import ClanError
 
 
 def test_check_command_no_flake(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.chdir(tmp_path)
 

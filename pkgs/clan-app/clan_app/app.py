@@ -48,7 +48,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
     # Add a log group ["clans", <dynamic_name>, "machines", <dynamic_name>]
     log_manager = LogManager(base_dir=user_data_dir() / "clan-app" / "logs")
     clan_log_group = LogGroupConfig("clans", "Clans").add_child(
-        LogGroupConfig("machines", "Machines")
+        LogGroupConfig("machines", "Machines"),
     )
     log_manager = log_manager.add_root_group_config(clan_log_group)
     # Init LogManager global in log_manager_api module
@@ -89,7 +89,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         # HTTP-only mode - keep the server running
         log.info("HTTP API server running...")
         log.info(
-            f"Swagger: http://{app_opts.http_host}:{app_opts.http_port}/api/swagger"
+            f"Swagger: http://{app_opts.http_host}:{app_opts.http_port}/api/swagger",
         )
 
         log.info("Press Ctrl+C to stop the server")

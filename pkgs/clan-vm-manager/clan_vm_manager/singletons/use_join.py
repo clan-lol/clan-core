@@ -45,8 +45,7 @@ class JoinValue(GObject.Object):
 
 
 class JoinList:
-    """
-    This is a singleton.
+    """This is a singleton.
     It is initialized with the first call of use()
     """
 
@@ -69,28 +68,32 @@ class JoinList:
         return cls._instance
 
     def rerender_join_list(
-        self, source: GKVStore, position: int, removed: int, added: int
+        self,
+        source: GKVStore,
+        position: int,
+        removed: int,
+        added: int,
     ) -> None:
         self.list_store.items_changed(
-            0, self.list_store.get_n_items(), self.list_store.get_n_items()
+            0,
+            self.list_store.get_n_items(),
+            self.list_store.get_n_items(),
         )
 
     def is_empty(self) -> bool:
         return self.list_store.get_n_items() == 0
 
     def push(self, uri: ClanURI, after_join: Callable[[JoinValue], None]) -> None:
-        """
-        Add a join request.
+        """Add a join request.
         This method can add multiple join requests if called subsequently for each request.
         """
-
         value = JoinValue(uri)
 
         machine_id = Machine(uri.machine_name, uri.flake)
         machine_id_list = []
 
         for machine_obj in self.list_store:
-            mvalue: ClanURI = cast(JoinValue, machine_obj).url
+            mvalue: ClanURI = cast("JoinValue", machine_obj).url
             machine = Machine(mvalue.machine_name, mvalue.flake)
             machine_id_list.append(machine.get_id())
 

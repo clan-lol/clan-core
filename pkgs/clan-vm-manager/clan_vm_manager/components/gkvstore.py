@@ -14,7 +14,8 @@ log = logging.getLogger(__name__)
 # Define type variables for key and value types
 K = TypeVar("K")  # Key type
 V = TypeVar(
-    "V", bound=GObject.Object
+    "V",
+    bound=GObject.Object,
 )  # Value type, bound to GObject.GObject or its subclasses
 
 
@@ -23,8 +24,7 @@ V = TypeVar(
 # clan_vm_manager/components/gkvstore.py:21: error: Definition of "install_properties" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
 # clan_vm_manager/components/gkvstore.py:21: error: Definition of "getv" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
 class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: ignore[misc]
-    """
-    A simple key-value store that implements the Gio.ListModel interface, with generic types for keys and values.
+    """A simple key-value store that implements the Gio.ListModel interface, with generic types for keys and values.
     Only use self[key] and del self[key] for accessing the items for better performance.
     This class could be optimized by having the objects remember their position in the list.
     """
@@ -57,7 +57,9 @@ class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: i
         return False, -1
 
     def find_with_equal_func(
-        self, item: V, equal_func: Callable[[V, V], bool]
+        self,
+        item: V,
+        equal_func: Callable[[V, V], bool],
     ) -> tuple[bool, int]:
         log.warning("Finding is O(n) in GKVStore. Better use indexing")
         for i, v in enumerate(self.values()):
@@ -66,7 +68,10 @@ class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: i
         return False, -1
 
     def find_with_equal_func_full(
-        self, item: V, equal_func: Callable[[V, V, Any], bool], user_data: Any
+        self,
+        item: V,
+        equal_func: Callable[[V, V, Any], bool],
+        user_data: Any,
     ) -> tuple[bool, int]:
         log.warning("Finding is O(n) in GKVStore. Better use indexing")
         for i, v in enumerate(self.values()):
@@ -77,7 +82,7 @@ class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: i
     def insert(self, position: int, item: V) -> None:
         log.warning("Inserting is O(n) in GKVStore. Better use append")
         log.warning(
-            "This functions may have incorrect items_changed signal behavior. Please test it"
+            "This functions may have incorrect items_changed signal behavior. Please test it",
         )
         key = self.key_gen(item)
         if key in self._items:
@@ -105,7 +110,10 @@ class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: i
         self.items_changed(position, 0, 1)
 
     def insert_sorted(
-        self, item: V, compare_func: Callable[[V, V, Any], int], user_data: Any
+        self,
+        item: V,
+        compare_func: Callable[[V, V, Any], int],
+        user_data: Any,
     ) -> None:
         msg = "insert_sorted is not implemented in GKVStore"
         raise NotImplementedError(msg)
@@ -225,6 +233,7 @@ class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: i
         return self.values()[-1]
 
     def register_on_change(
-        self, callback: Callable[["GKVStore[K,V]", int, int, int], None]
+        self,
+        callback: Callable[["GKVStore[K,V]", int, int, int], None],
     ) -> None:
         self.connect("items-changed", callback)

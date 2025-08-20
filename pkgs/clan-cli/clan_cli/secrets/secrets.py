@@ -50,7 +50,8 @@ def list_generators_secrets(generators_path: Path) -> list[Path]:
             return has_secret(generator_path / name)
 
         for obj in list_objects(
-            generator_path, functools.partial(validate, generator_path)
+            generator_path,
+            functools.partial(validate, generator_path),
         ):
             paths.append(generator_path / obj)
     return paths
@@ -89,7 +90,7 @@ def update_secrets(
         changed_files.extend(cleanup_dangling_symlinks(path / "groups"))
         changed_files.extend(cleanup_dangling_symlinks(path / "machines"))
         changed_files.extend(
-            update_keys(path, collect_keys_for_path(path), age_plugins=age_plugins)
+            update_keys(path, collect_keys_for_path(path), age_plugins=age_plugins),
         )
     return changed_files
 
@@ -120,7 +121,7 @@ def collect_keys_for_type(folder: Path) -> set[sops.SopsKey]:
         kind = target.parent.name
         if folder.name != kind:
             log.warning(
-                f"Expected {p} to point to {folder} but points to {target.parent}"
+                f"Expected {p} to point to {folder} but points to {target.parent}",
             )
             continue
         keys.update(read_keys(target))
@@ -160,7 +161,7 @@ def encrypt_secret(
     admin_keys = sops.ensure_admin_public_keys(flake_dir)
 
     if not admin_keys:
-        # todo double check the correct command to run
+        # TODO double check the correct command to run
         msg = "No keys found. Please run 'clan secrets add-key' to add a key."
         raise ClanError(msg)
 
@@ -179,7 +180,7 @@ def encrypt_secret(
                 user,
                 do_update_keys,
                 age_plugins=age_plugins,
-            )
+            ),
         )
 
     for machine in add_machines:
@@ -190,7 +191,7 @@ def encrypt_secret(
                 machine,
                 do_update_keys,
                 age_plugins=age_plugins,
-            )
+            ),
         )
 
     for group in add_groups:
@@ -201,7 +202,7 @@ def encrypt_secret(
                 group,
                 do_update_keys,
                 age_plugins=age_plugins,
-            )
+            ),
         )
 
     recipient_keys = collect_keys_for_path(secret_path)
@@ -216,7 +217,7 @@ def encrypt_secret(
                 username,
                 do_update_keys,
                 age_plugins=age_plugins,
-            )
+            ),
         )
 
     secret_path = secret_path / "secret"
@@ -310,13 +311,15 @@ def allow_member(
                 group_folder.parent,
                 collect_keys_for_path(group_folder.parent),
                 age_plugins=age_plugins,
-            )
+            ),
         )
     return changed
 
 
 def disallow_member(
-    group_folder: Path, name: str, age_plugins: list[str] | None
+    group_folder: Path,
+    name: str,
+    age_plugins: list[str] | None,
 ) -> list[Path]:
     target = group_folder / name
     if not target.exists():
@@ -349,7 +352,8 @@ def has_secret(secret_path: Path) -> bool:
 
 
 def list_secrets(
-    flake_dir: Path, filter_fn: Callable[[str], bool] | None = None
+    flake_dir: Path,
+    filter_fn: Callable[[str], bool] | None = None,
 ) -> list[str]:
     path = sops_secrets_folder(flake_dir)
 

@@ -19,7 +19,8 @@ log = logging.getLogger(__name__)
 
 
 def dependencies_as_dir(
-    decrypted_dependencies: dict[str, dict[str, bytes]], tmpdir: Path
+    decrypted_dependencies: dict[str, dict[str, bytes]],
+    tmpdir: Path,
 ) -> None:
     """Helper function to create directory structure from decrypted dependencies."""
     for dep_generator, files in decrypted_dependencies.items():
@@ -72,13 +73,15 @@ class Generator:
         flake: "Flake",
         include_previous_values: bool = False,
     ) -> list["Generator"]:
-        """
-        Get all generators for a machine from the flake.
+        """Get all generators for a machine from the flake.
+
         Args:
             machine_name (str): The name of the machine.
             flake (Flake): The flake to get the generators from.
+
         Returns:
             list[Generator]: A list of (unsorted) generators for the machine.
+
         """
         # Get all generator metadata in one select (safe fields only)
         generators_data = flake.select_machine(
@@ -146,7 +149,8 @@ class Generator:
             for generator in generators:
                 for prompt in generator.prompts:
                     prompt.previous_value = generator.get_previous_value(
-                        machine, prompt
+                        machine,
+                        prompt,
                     )
 
         return generators
@@ -175,8 +179,8 @@ class Generator:
         machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
             machine.select(
-                f'config.clan.core.vars.generators."{self.name}".finalScript'
-            )
+                f'config.clan.core.vars.generators."{self.name}".finalScript',
+            ),
         )
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
@@ -189,7 +193,7 @@ class Generator:
 
         machine = Machine(name=self.machine, flake=self._flake)
         return machine.select(
-            f'config.clan.core.vars.generators."{self.name}".validationHash'
+            f'config.clan.core.vars.generators."{self.name}".validationHash',
         )
 
     def decrypt_dependencies(
@@ -207,6 +211,7 @@ class Generator:
 
         Returns:
             Dictionary mapping generator names to their variable values
+
         """
         from clan_lib.errors import ClanError
 
@@ -222,7 +227,8 @@ class Generator:
             result[dep_key.name] = {}
 
             dep_generator = next(
-                (g for g in generators if g.name == dep_key.name), None
+                (g for g in generators if g.name == dep_key.name),
+                None,
             )
             if dep_generator is None:
                 msg = f"Generator {dep_key.name} not found in machine {machine.name}"
@@ -237,11 +243,13 @@ class Generator:
             for file in dep_files:
                 if file.secret:
                     result[dep_key.name][file.name] = secret_vars_store.get(
-                        dep_generator, file.name
+                        dep_generator,
+                        file.name,
                     )
                 else:
                     result[dep_key.name][file.name] = public_vars_store.get(
-                        dep_generator, file.name
+                        dep_generator,
+                        file.name,
                     )
         return result
 
@@ -250,6 +258,7 @@ class Generator:
 
         Returns:
             Dictionary mapping prompt names to their values
+
         """
         from .prompt import ask
 
@@ -275,6 +284,7 @@ class Generator:
             machine: The machine to execute the generator for
             prompt_values: Optional dictionary of prompt values. If not provided, prompts will be asked interactively.
             no_sandbox: Whether to disable sandboxing when executing the generator
+
         """
         import os
         import sys
@@ -333,8 +343,8 @@ class Generator:
                     "--uid", "1000",
                     "--gid", "1000",
                     "--",
-                    str(real_bash_path), "-c", generator
-                ]
+                    str(real_bash_path), "-c", generator,
+                ],
             )
             # fmt: on
 
@@ -418,11 +428,11 @@ class Generator:
             if validation is not None:
                 if public_changed:
                     files_to_commit.append(
-                        machine.public_vars_store.set_validation(self, validation)
+                        machine.public_vars_store.set_validation(self, validation),
                     )
                 if secret_changed:
                     files_to_commit.append(
-                        machine.secret_vars_store.set_validation(self, validation)
+                        machine.secret_vars_store.set_validation(self, validation),
                     )
 
         commit_files(

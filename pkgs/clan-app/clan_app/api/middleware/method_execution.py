@@ -32,7 +32,7 @@ class MethodExecutionMiddleware(Middleware):
 
         except Exception as e:
             log.exception(
-                f"Error while handling result of {context.request.method_name}"
+                f"Error while handling result of {context.request.method_name}",
             )
             context.bridge.send_api_error_response(
                 context.request.op_key or "unknown",

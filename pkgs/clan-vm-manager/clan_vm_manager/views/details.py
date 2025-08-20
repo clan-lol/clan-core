@@ -13,7 +13,8 @@ ListItem = TypeVar("ListItem", bound=GObject.Object)
 
 
 def create_details_list[ListItem: GObject.Object](
-    model: Gio.ListStore, render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget]
+    model: Gio.ListStore,
+    render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget],
 ) -> Gtk.ListBox:
     boxed_list = Gtk.ListBox()
     boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -28,7 +29,10 @@ class PreferencesValue(GObject.Object):
     data: Any
 
     def __init__(
-        self, variant: Literal["CPU", "MEMORY"], editable: bool, data: Any
+        self,
+        variant: Literal["CPU", "MEMORY"],
+        editable: bool,
+        data: Any,
     ) -> None:
         super().__init__()
         self.variant = variant
@@ -44,13 +48,16 @@ class Details(Gtk.Box):
         preferences_store.append(PreferencesValue("CPU", True, 1))
 
         self.details_list = create_details_list(
-            model=preferences_store, render_row=self.render_entry_row
+            model=preferences_store,
+            render_row=self.render_entry_row,
         )
 
         self.append(self.details_list)
 
     def render_entry_row(
-        self, boxed_list: Gtk.ListBox, item: PreferencesValue
+        self,
+        boxed_list: Gtk.ListBox,
+        item: PreferencesValue,
     ) -> Gtk.Widget:
         cores: int | None = os.cpu_count()
         fcores = float(cores) if cores else 1.0

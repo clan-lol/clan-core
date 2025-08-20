@@ -26,13 +26,15 @@ def get_metrics(
     target_host: Host,
 ) -> Iterator[MetricSample]:
     """Fetch Prometheus metrics from telegraf and return them as streaming metrics.
+
     Args:
         machine: The Machine instance to check.
         target_host: Remote instance representing the target host.
+
     Returns:
         Iterator[dict[str, Any]]: An iterator yielding parsed metric dictionaries line by line.
-    """
 
+    """
     # Example: fetch Prometheus metrics with basic auth
     url = f"http://{target_host.address}:9990"
     username = "prometheus"
@@ -59,7 +61,7 @@ def get_metrics(
             line_str = line.decode("utf-8").strip()
             if line_str:
                 try:
-                    yield cast(MetricSample, json.loads(line_str))
+                    yield cast("MetricSample", json.loads(line_str))
                 except json.JSONDecodeError:
                     log.warning(f"Skipping invalid JSON line: {line_str}")
                     continue

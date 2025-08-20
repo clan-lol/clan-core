@@ -40,7 +40,7 @@ def test_get_clan_directories_with_direct_directory_config(
 {
   directory = ./direct-config;
 }
-"""
+""",
     )
 
     test_subdir = Path(flake.path) / "direct-config"

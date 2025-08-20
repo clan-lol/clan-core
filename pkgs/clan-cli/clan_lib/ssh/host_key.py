@@ -13,9 +13,7 @@ HostKeyCheck = Literal[
 
 
 def hostkey_to_ssh_opts(host_key_check: HostKeyCheck) -> list[str]:
-    """
-    Convert a HostKeyCheck value to SSH options.
-    """
+    """Convert a HostKeyCheck value to SSH options."""
     match host_key_check:
         case "strict":
             return ["-o", "StrictHostKeyChecking=yes"]

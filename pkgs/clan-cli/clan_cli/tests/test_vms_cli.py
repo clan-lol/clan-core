@@ -17,7 +17,8 @@ no_kvm = not Path("/dev/kvm").exists()
 
 @pytest.mark.with_core
 def test_inspect(
-    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
@@ -42,7 +43,7 @@ def test_run(
                 "add",
                 "user1",
                 age_keys[0].pubkey,
-            ]
+            ],
         )
         cli.run(
             [
@@ -51,7 +52,7 @@ def test_run(
                 "add-user",
                 "admins",
                 "user1",
-            ]
+            ],
         )
         cli.run(
             [
@@ -63,7 +64,7 @@ def test_run(
                 "shutdown",
                 "-h",
                 "now",
-            ]
+            ],
         )
 
 
@@ -74,7 +75,7 @@ def test_vm_persistence(
 ) -> None:
     # Use the pre-built test VM from the test flake
     vm_config = inspect_vm(
-        machine=Machine("test-vm-persistence", Flake(str(vm_test_flake)))
+        machine=Machine("test-vm-persistence", Flake(str(vm_test_flake))),
     )
 
     with spawn_vm(vm_config) as vm, vm.qga_connect() as qga:

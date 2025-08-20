@@ -28,7 +28,10 @@ def test_run_environment(runtime: AsyncRuntime) -> None:
 
 def test_run_local(runtime: AsyncRuntime) -> None:
     p1 = runtime.async_run(
-        None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
+        None,
+        host.run_local,
+        ["echo", "hello"],
+        RunOpts(log=Log.STDERR),
     )
     assert p1.wait().result.stdout == "hello\n"
 

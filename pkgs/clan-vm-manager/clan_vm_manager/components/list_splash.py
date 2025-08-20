@@ -67,8 +67,7 @@ class EmptySplash(Gtk.Box):
             return pixbuf
 
     def _on_join(self, button: Gtk.Button, entry: Gtk.Entry) -> None:
-        """
-        Callback for the join button
+        """Callback for the join button
         Extracts the text from the entry and calls the on_join callback
         """
         log.info(f"Splash screen: Joining {entry.get_text()}")

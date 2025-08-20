@@ -7,7 +7,8 @@ from clan_cli.tests.stdout import CaptureOutput
 
 @pytest.mark.with_core
 def test_state_list_vm1(
-    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["state", "list", "vm1", "--flake", str(test_flake_with_core.path)])
@@ -19,7 +20,8 @@ def test_state_list_vm1(
 
 @pytest.mark.with_core
 def test_state_list_vm2(
-    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["state", "list", "vm2", "--flake", str(test_flake_with_core.path)])

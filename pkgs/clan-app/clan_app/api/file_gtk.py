@@ -26,8 +26,7 @@ RESULT: dict[str, SuccessDataClass[list[str] | None] | ErrorDataClass] = {}
 
 
 def get_clan_folder() -> SuccessDataClass[Flake] | ErrorDataClass:
-    """
-    Opens the clan folder using the GTK file dialog.
+    """Opens the clan folder using the GTK file dialog.
     Returns the path to the clan folder or an error if it fails.
     """
     file_request = FileRequest(
@@ -52,7 +51,7 @@ def get_clan_folder() -> SuccessDataClass[Flake] | ErrorDataClass:
                     message="No folder selected",
                     description="You must select a folder to open.",
                     location=["get_clan_folder"],
-                )
+                ),
             ],
         )
 
@@ -66,7 +65,7 @@ def get_clan_folder() -> SuccessDataClass[Flake] | ErrorDataClass:
                     message="Invalid clan folder",
                     description=f"The selected folder '{clan_folder}' is not a valid clan folder.",
                     location=["get_clan_folder"],
-                )
+                ),
             ],
         )
 
@@ -102,8 +101,10 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                 selected_path = remove_none([gfile.get_path()])
                 returns(
                     SuccessDataClass(
-                        op_key=op_key, data=selected_path, status="success"
-                    )
+                        op_key=op_key,
+                        data=selected_path,
+                        status="success",
+                    ),
                 )
         except Exception as e:
             log.exception("Error opening file")
@@ -116,9 +117,9 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                             message=e.__class__.__name__,
                             description=str(e),
                             location=["get_system_file"],
-                        )
+                        ),
                     ],
-                )
+                ),
             )
 
     def on_file_select_multiple(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
@@ -128,8 +129,10 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                 selected_paths = remove_none([gfile.get_path() for gfile in gfiles])
                 returns(
                     SuccessDataClass(
-                        op_key=op_key, data=selected_paths, status="success"
-                    )
+                        op_key=op_key,
+                        data=selected_paths,
+                        status="success",
+                    ),
                 )
             else:
                 returns(SuccessDataClass(op_key=op_key, data=None, status="success"))
@@ -144,9 +147,9 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                             message=e.__class__.__name__,
                             description=str(e),
                             location=["get_system_file"],
-                        )
+                        ),
                     ],
-                )
+                ),
             )
 
     def on_folder_select(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
@@ -156,8 +159,10 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                 selected_path = remove_none([gfile.get_path()])
                 returns(
                     SuccessDataClass(
-                        op_key=op_key, data=selected_path, status="success"
-                    )
+                        op_key=op_key,
+                        data=selected_path,
+                        status="success",
+                    ),
                 )
             else:
                 returns(SuccessDataClass(op_key=op_key, data=None, status="success"))
@@ -172,9 +177,9 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                             message=e.__class__.__name__,
                             description=str(e),
                             location=["get_system_file"],
-                        )
+                        ),
                     ],
-                )
+                ),
             )
 
     def on_save_finish(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
@@ -184,8 +189,10 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                 selected_path = remove_none([gfile.get_path()])
                 returns(
                     SuccessDataClass(
-                        op_key=op_key, data=selected_path, status="success"
-                    )
+                        op_key=op_key,
+                        data=selected_path,
+                        status="success",
+                    ),
                 )
             else:
                 returns(SuccessDataClass(op_key=op_key, data=None, status="success"))
@@ -200,9 +207,9 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                             message=e.__class__.__name__,
                             description=str(e),
                             location=["get_system_file"],
-                        )
+                        ),
                     ],
-                )
+                ),
             )
 
     dialog = Gtk.FileDialog()

@@ -87,7 +87,8 @@ def get_machines_for_update(
 ) -> list[Machine]:
     all_machines = list_machines(flake)
     machines_with_tags = list_machines(
-        flake, ListOptions(filter=MachineFilter(tags=filter_tags))
+        flake,
+        ListOptions(filter=MachineFilter(tags=filter_tags)),
     )
 
     if filter_tags and not machines_with_tags:
@@ -101,7 +102,7 @@ def get_machines_for_update(
             filter(
                 requires_explicit_update,
                 instantiate_inventory_to_machines(flake, machines_with_tags).values(),
-            )
+            ),
         )
         # all machines that are in the clan but not included in the update list
         machine_names_to_update = [m.name for m in machines_to_update]
@@ -131,7 +132,7 @@ def get_machines_for_update(
             raise ClanError(msg)
 
         machines_to_update.append(
-            Machine.from_inventory(name, flake, inventory_machine)
+            Machine.from_inventory(name, flake, inventory_machine),
         )
 
     return machines_to_update
@@ -163,7 +164,7 @@ def update_command(args: argparse.Namespace) -> None:
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
-            ]
+            ],
         )
 
         host_key_check = args.host_key_check

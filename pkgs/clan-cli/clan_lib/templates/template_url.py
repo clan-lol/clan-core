@@ -8,8 +8,7 @@ log = logging.getLogger(__name__)
 
 
 class Flake(Protocol):
-    """
-    Protocol for a local flake, which has a path attribute.
+    """Protocol for a local flake, which has a path attribute.
     Pass clan_lib.flake.Flake or any other object that implements this protocol.
     """
 
@@ -20,8 +19,7 @@ class Flake(Protocol):
 
 
 def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[str, str]:
-    """
-    Transform a template flake ref by injecting the context (clan|machine|disko) into the url.
+    """Transform a template flake ref by injecting the context (clan|machine|disko) into the url.
     We do this for shorthand notation of URLs.
     If the attribute selector path is explicitly selecting an attribute, we don't transform it.
 
@@ -30,7 +28,6 @@ def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[st
     :param local_path: The local flake path, which is used to resolve to a local flake reference, i.e. ".#" shorthand.
 
     Examples:
-
     1. injects "machine" as context
     clan machines create --template .#new-machine
     or
@@ -106,7 +103,7 @@ def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[st
     # If the tail contains a dot, or is quoted we assume its a path and don't transform it.
     if '"' in selector or "'" in selector:
         log.warning(
-            "Quotes in template paths are not yet supported. Please use unquoted paths."
+            "Quotes in template paths are not yet supported. Please use unquoted paths.",
         )
         return (flake_ref, input_prefix + selector)
 

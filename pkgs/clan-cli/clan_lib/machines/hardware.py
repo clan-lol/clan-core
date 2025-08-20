@@ -50,7 +50,7 @@ def get_machine_target_platform(machine: Machine) -> str | None:
             "--apply",
             "machine: { inherit (machine.pkgs) system; }",
             "--json",
-        ]
+        ],
     )
     proc = run(cmd, RunOpts(prefix=machine.name))
     res = proc.stdout.strip()
@@ -68,13 +68,12 @@ class HardwareGenerateOptions:
 
 @API.register
 def run_machine_hardware_info(
-    opts: HardwareGenerateOptions, target_host: Remote
+    opts: HardwareGenerateOptions,
+    target_host: Remote,
 ) -> HardwareConfig:
-    """
-    Generate hardware information for a machine
+    """Generate hardware information for a machine
     and place the resulting *.nix file in the machine's directory.
     """
-
     machine = opts.machine
 
     hw_file = opts.backend.config_path(opts.machine)
@@ -142,11 +141,11 @@ def run_machine_hardware_info(
 
 
 def get_machine_hardware_config(machine: Machine) -> HardwareConfig:
-    """
-    Detect and return the full hardware configuration for the given machine.
+    """Detect and return the full hardware configuration for the given machine.
 
     Returns:
         HardwareConfig: Structured hardware information, or None if unavailable.
+
     """
     return HardwareConfig.detect_type(machine)
 
@@ -158,9 +157,7 @@ class MachineHardwareBrief(TypedDict):
 
 @API.register
 def get_machine_hardware_summary(machine: Machine) -> MachineHardwareBrief:
-    """
-    Return a high-level summary of hardware config and platform type.
-    """
+    """Return a high-level summary of hardware config and platform type."""
     return {
         "hardware_config": get_machine_hardware_config(machine),
         "platform": get_machine_target_platform(machine),

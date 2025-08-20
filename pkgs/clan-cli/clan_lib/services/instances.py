@@ -21,10 +21,7 @@ from clan_lib.services.modules import (
 
 @API.register
 def list_service_instances(flake: Flake) -> InventoryInstancesType:
-    """
-    Returns all currently present service instances including their full configuration
-    """
-
+    """Returns all currently present service instances including their full configuration"""
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
     instances = inventory.get("instances", {})
@@ -87,7 +84,7 @@ def create_service_instance(
         msg = f"Role: '{role_name}' - "
         if machine_refs:
             unavailable_machines = list(
-                filter(lambda m: m not in available_machine_refs, machine_refs)
+                filter(lambda m: m not in available_machine_refs, machine_refs),
             )
             if unavailable_machines:
                 msg += f"Unknown machine reference: {unavailable_machines}. Use one of {available_machine_refs}"
@@ -96,7 +93,7 @@ def create_service_instance(
         tag_refs = role_members.get("tags")
         if tag_refs:
             unavailable_tags = list(
-                filter(lambda m: m not in available_tag_refs, tag_refs)
+                filter(lambda m: m not in available_tag_refs, tag_refs),
             )
 
             if unavailable_tags:
@@ -111,5 +108,6 @@ def create_service_instance(
     set_value_by_path(inventory, f"instances.{instance_name}", instance_config)
     set_value_by_path(inventory, f"instances.{instance_name}.module", module_ref)
     inventory_store.write(
-        inventory, message=f"services: instance '{instance_name}' init"
+        inventory,
+        message=f"services: instance '{instance_name}' init",
     )

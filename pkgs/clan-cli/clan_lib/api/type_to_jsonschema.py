@@ -29,9 +29,7 @@ class JSchemaTypeError(Exception):
 
 # Inspect the fields of the parameterized type
 def inspect_dataclass_fields(t: type) -> dict[TypeVar, type]:
-    """
-    Returns a map of type variables to actual types for a parameterized type.
-    """
+    """Returns a map of type variables to actual types for a parameterized type."""
     origin = get_origin(t)
     type_args = get_args(t)
     if origin is None:
@@ -45,13 +43,12 @@ def inspect_dataclass_fields(t: type) -> dict[TypeVar, type]:
 
 
 def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[str, Any]:
-    """
-    Add metadata from typing.annotations to the json Schema.
+    """Add metadata from typing.annotations to the json Schema.
     The annotations can be a dict, a tuple, or a string and is directly applied to the schema as shown below.
     No further validation is done, the caller is responsible for following json-schema.
 
     Examples
-
+    --------
     ```python
     # String annotation
     Annotated[int, "This is an int"] -> {"type": "integer", "description": "This is an int"}
@@ -62,6 +59,7 @@ def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[st
     # Tuple annotation
     Annotated[int, ("minimum", 0)] -> {"type": "integer", "minimum": 0}
     ```
+
     """
     for annotation in annotations:
         if isinstance(annotation, dict):
@@ -96,8 +94,7 @@ def is_type_in_union(union_type: type | UnionType, target_type: type) -> bool:
 
 
 def is_total(typed_dict_class: type) -> bool:
-    """
-    Check if a TypedDict has total=true
+    """Check if a TypedDict has total=true
     https://typing.readthedocs.io/en/latest/spec/typeddict.html#interaction-with-total-false
     """
     return getattr(typed_dict_class, "__total__", True)  # Default to True if not set
@@ -177,7 +174,9 @@ def type_to_dict(
                 explicit_required.add(field_name)
 
             dict_properties[field_name] = type_to_dict(
-                field_type, f"{scope} {t.__name__}.{field_name}", type_map
+                field_type,
+                f"{scope} {t.__name__}.{field_name}",
+                type_map,
             )
 
         optional = set(dict_fields) - explicit_optional
@@ -195,7 +194,7 @@ def type_to_dict(
         for arg in get_args(t):
             try:
                 supported.append(
-                    type_to_dict(arg, scope, type_map, narrow_unsupported_union_types)
+                    type_to_dict(arg, scope, type_map, narrow_unsupported_union_types),
                 )
             except JSchemaTypeError:
                 if narrow_unsupported_union_types:

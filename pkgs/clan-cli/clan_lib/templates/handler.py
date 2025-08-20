@@ -17,10 +17,11 @@ log = logging.getLogger(__name__)
 
 @contextmanager
 def machine_template(
-    flake: Flake, template_ident: str, dst_machine_name: str
+    flake: Flake,
+    template_ident: str,
+    dst_machine_name: str,
 ) -> Iterator[Path]:
-    """
-    Create a machine from a template.
+    """Create a machine from a template.
     This function will copy the template files to the machine specific directory of the specified flake.
 
     :param flake: The flake to create the machine in.
@@ -37,7 +38,6 @@ def machine_template(
     ... The machine directory is removed if the context raised any errors.
     ... Only if the context is exited without errors, the machine directory is kept.
     """
-
     # Check for duplicates
     if dst_machine_name in list_machines(flake):
         msg = f"Machine '{dst_machine_name}' already exists"
@@ -48,7 +48,9 @@ def machine_template(
 
     # Get the clan template from the specifier
     [flake_ref, template_selector] = transform_url(
-        "machine", template_ident, flake=flake
+        "machine",
+        template_ident,
+        flake=flake,
     )
     # For pretty error messages
     printable_template_ref = f"{flake_ref}#{template_selector}"
@@ -108,8 +110,7 @@ def clan_template(
     dst_dir: Path,
     post_process: Callable[[Path], None] | None = None,
 ) -> Iterator[Path]:
-    """
-    Create a clan from a template.
+    """Create a clan from a template.
     This function will copy the template files to a new clan directory
 
     :param flake: The flake to create the machine in.
@@ -127,7 +128,6 @@ def clan_template(
     ... The directory is removed if the context raised any errors.
     ... Only if the context is exited without errors, it is kept.
     """
-
     # Get the clan template from the specifier
     [flake_ref, template_selector] = transform_url("clan", template_ident, flake=flake)
     # For pretty error messages
@@ -140,11 +140,13 @@ def clan_template(
     except ClanError as e:
         try:
             log.info(
-                f"Template '{template_ident}' not found in {flake_ref}, trying builtin template"
+                f"Template '{template_ident}' not found in {flake_ref}, trying builtin template",
             )
             builtin_flake = Flake(str(clan_templates()))
             [_, builtin_selector] = transform_url(
-                "clan", template_ident, flake=builtin_flake
+                "clan",
+                template_ident,
+                flake=builtin_flake,
             )
             template = builtin_flake.select(builtin_selector)
             template_flake = builtin_flake

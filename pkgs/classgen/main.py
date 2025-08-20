@@ -28,7 +28,9 @@ def sort_types(items: Iterable[str]) -> list[str]:
 
 # Function to map JSON schemas and types to Python types
 def map_json_type(
-    json_type: Any, nested_types: list[str] | None = None, parent: Any = None
+    json_type: Any,
+    nested_types: list[str] | None = None,
+    parent: Any = None,
 ) -> list[str]:
     if nested_types is None:
         nested_types = ["Any"]
@@ -270,7 +272,9 @@ def generate_dataclass(
 
             if isinstance(item_schema, dict):
                 field_types = map_json_type(
-                    prop_type, map_json_type(item_schema), field_name
+                    prop_type,
+                    map_json_type(item_schema),
+                    field_name,
                 )
         elif enum := prop_info.get("enum"):
             literals = ", ".join([f'"{string}"' for string in enum])
@@ -285,8 +289,10 @@ def generate_dataclass(
                 if nested_class_name not in known_classes:
                     nested_classes.append(
                         generate_dataclass(
-                            inner_type, [*attr_path, prop], nested_class_name
-                        )
+                            inner_type,
+                            [*attr_path, prop],
+                            nested_class_name,
+                        ),
                     )
                     known_classes.add(nested_class_name)
 
@@ -294,7 +300,7 @@ def generate_dataclass(
                 # Trivial type:
                 # dict[str, inner_type]
                 field_types = [
-                    f"""dict[str, {" | ".join(map_json_type(inner_type))}]"""
+                    f"""dict[str, {" | ".join(map_json_type(inner_type))}]""",
                 ]
 
             elif not inner_type:
@@ -303,8 +309,10 @@ def generate_dataclass(
                 if nested_class_name not in known_classes:
                     nested_classes.append(
                         generate_dataclass(
-                            prop_info, [*attr_path, prop], nested_class_name
-                        )
+                            prop_info,
+                            [*attr_path, prop],
+                            nested_class_name,
+                        ),
                     )
                     known_classes.add(nested_class_name)
         elif prop_type == "Unknown":
@@ -384,7 +392,7 @@ def generate_dataclass(
         [
             f"{class_name}{n.capitalize()}Type = {x}"
             for n, x in (required_fields + fields_with_default)
-        ]
+        ],
     )
     fields_str = "\n    ".join(all_field_declarations)
     nested_classes_str = "\n\n".join(nested_classes)
@@ -423,7 +431,7 @@ from typing import Any, Literal, NotRequired, TypedDict\n
 # This forces the user to use type-narrowing or casting in the code
 class Unknown:
     pass
-"""
+""",
         )
         f.write(dataclass_code)
         f.write("\n")

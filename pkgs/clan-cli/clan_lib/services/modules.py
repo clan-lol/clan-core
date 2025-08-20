@@ -60,8 +60,7 @@ class ModuleManifest:
 
     @classmethod
     def from_dict(cls, data: dict) -> "ModuleManifest":
-        """
-        Create an instance of this class from a dictionary.
+        """Create an instance of this class from a dictionary.
         Drops any keys that are not defined in the dataclass.
         """
         valid = {f.name for f in fields(cls)}
@@ -69,11 +68,11 @@ class ModuleManifest:
 
 
 def parse_frontmatter(readme_content: str) -> tuple[dict[str, Any] | None, str]:
-    """
-    Extracts TOML frontmatter from a string
+    """Extracts TOML frontmatter from a string
 
     Raises:
     - ClanError: If the toml frontmatter is invalid
+
     """
     # Pattern to match YAML frontmatter enclosed by triple-dashed lines
     frontmatter_pattern = r"^---\s+(.*?)\s+---\s?+(.*)$"
@@ -106,20 +105,25 @@ T = TypeVar("T")
 
 
 def extract_frontmatter[T](
-    readme_content: str, err_scope: str, fm_class: type[T]
+    readme_content: str,
+    err_scope: str,
+    fm_class: type[T],
 ) -> tuple[T, str]:
-    """
-    Extracts TOML frontmatter from a README file content.
+    """Extracts TOML frontmatter from a README file content.
 
-    Parameters:
+    Parameters
+    ----------
     - readme_content (str): The content of the README file as a string.
 
-    Returns:
+    Returns
+    -------
     - str: The extracted frontmatter as a string.
     - str: The content of the README file without the frontmatter.
 
-    Raises:
+    Raises
+    ------
     - ValueError: If the README does not contain valid frontmatter.
+
     """
     frontmatter_raw, remaining_content = parse_frontmatter(readme_content)
 
@@ -147,9 +151,7 @@ class ModuleList(TypedDict):
 
 @API.register
 def list_service_modules(flake: Flake) -> ModuleList:
-    """
-    Show information about a module
-    """
+    """Show information about a module"""
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
     res: dict[str, dict[str, ModuleInfo]] = {}
@@ -168,16 +170,15 @@ def list_service_modules(flake: Flake) -> ModuleList:
 
 @API.register
 def get_service_module(
-    flake: Flake, module_ref: InventoryInstanceModuleType
+    flake: Flake,
+    module_ref: InventoryInstanceModuleType,
 ) -> ModuleInfo:
-    """
-    Returns the module information for a given module reference
+    """Returns the module information for a given module reference
 
     :param module_ref: The module reference to get the information for
     :return: Dict of module information
     :raises ClanError: If the module_ref is invalid or missing required fields
     """
-
     input_name, module_name = check_service_module_ref(flake, module_ref)
 
     avilable_modules = list_service_modules(flake)
@@ -196,8 +197,7 @@ def check_service_module_ref(
     flake: Flake,
     module_ref: InventoryInstanceModuleType,
 ) -> tuple[str, str]:
-    """
-    Checks if the module reference is valid
+    """Checks if the module reference is valid
 
     :param module_ref: The module reference to check
     :raises ClanError: If the module_ref is invalid or missing required fields
@@ -228,10 +228,10 @@ def check_service_module_ref(
 
 @API.register
 def get_service_module_schema(
-    flake: Flake, module_ref: InventoryInstanceModuleType
+    flake: Flake,
+    module_ref: InventoryInstanceModuleType,
 ) -> dict[str, Any]:
-    """
-    Returns the schema for a service module
+    """Returns the schema for a service module
 
     :param module_ref: The module reference to get the schema for
     :return: Dict of schemas for the service module roles
@@ -240,7 +240,7 @@ def get_service_module_schema(
     input_name, module_name = check_service_module_ref(flake, module_ref)
 
     return flake.select(
-        f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}"
+        f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}",
     )
 
 
@@ -250,9 +250,7 @@ def create_service_instance(
     module_ref: InventoryInstanceModuleType,
     roles: InventoryInstanceRolesType,
 ) -> None:
-    """
-    Show information about a module
-    """
+    """Show information about a module"""
     input_name, module_name = check_service_module_ref(flake, module_ref)
 
     inventory_store = InventoryStore(flake)
@@ -291,5 +289,3 @@ def create_service_instance(
         message=f"Add service instance '{instance_name}' with module '{module_name} from {input_name}'",
         commit=True,
     )
-
-    return

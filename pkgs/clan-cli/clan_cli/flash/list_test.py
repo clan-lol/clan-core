@@ -8,7 +8,8 @@ from clan_cli.tests.stdout import CaptureOutput
 
 @pytest.mark.with_core
 def test_flash_list_languages(
-    temporary_home: Path, capture_output: CaptureOutput
+    temporary_home: Path,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["flash", "list", "languages"])
@@ -20,7 +21,8 @@ def test_flash_list_languages(
 
 @pytest.mark.with_core
 def test_flash_list_keymaps(
-    temporary_home: Path, capture_output: CaptureOutput
+    temporary_home: Path,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["flash", "list", "keymaps"])

@@ -3,7 +3,6 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
 from clan_lib.network import Network, NetworkTechnologyBase, Peer

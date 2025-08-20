@@ -147,7 +147,7 @@ def test_ssh_shell_from_deploy(
             str(success_txt),
             "&&",
             "exit 0",
-        ]
+        ],
     )
 
     assert success_txt.exists()

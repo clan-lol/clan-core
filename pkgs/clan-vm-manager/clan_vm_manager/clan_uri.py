@@ -33,8 +33,7 @@ class ClanURI:
         # Check if the URI starts with clan://
         # If it does, remove the clan:// prefix
         prefix = "clan://"
-        if uri.startswith(prefix):
-            uri = uri[len(prefix) :]
+        uri = uri.removeprefix(prefix)
 
         # Fix missing colon (caused by browsers like Firefox)
         if "//" in uri and ":" not in uri.split("//", 1)[0]:

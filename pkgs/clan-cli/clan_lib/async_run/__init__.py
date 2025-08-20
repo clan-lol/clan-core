@@ -44,17 +44,14 @@ class AsyncResult[R]:
 
     @property
     def error(self) -> Exception | None:
-        """
-        Returns an error if the callable raised an exception.
-        """
+        """Returns an error if the callable raised an exception."""
         if isinstance(self._result, Exception):
             return self._result
         return None
 
     @property
     def result(self) -> R:
-        """
-        Unwraps and returns the result if no exception occurred.
+        """Unwraps and returns the result if no exception occurred.
         Raises the exception otherwise.
         """
         if isinstance(self._result, Exception):
@@ -64,9 +61,7 @@ class AsyncResult[R]:
 
 @dataclass
 class AsyncContext:
-    """
-    This class stores thread-local data.
-    """
+    """This class stores thread-local data."""
 
     prefix: str | None = None  # prefix for logging
     stdout: IO[bytes] | None = None  # stdout of subprocesses
@@ -79,9 +74,7 @@ class AsyncContext:
 
 @dataclass
 class AsyncOpts:
-    """
-    Options for the async_run function.
-    """
+    """Options for the async_run function."""
 
     tid: str | None = None
     check: bool = True
@@ -92,39 +85,29 @@ ASYNC_CTX_THREAD_LOCAL = threading.local()
 
 
 def set_current_thread_opkey(op_key: str) -> None:
-    """
-    Set the current thread's operation key.
-    """
+    """Set the current thread's operation key."""
     ctx = get_async_ctx()
     ctx.op_key = op_key
 
 
 def get_current_thread_opkey() -> str | None:
-    """
-    Get the current thread's operation key.
-    """
+    """Get the current thread's operation key."""
     ctx = get_async_ctx()
     return ctx.op_key
 
 
 def is_async_cancelled() -> bool:
-    """
-    Check if the current task has been cancelled.
-    """
+    """Check if the current task has been cancelled."""
     return get_async_ctx().should_cancel()
 
 
 def set_should_cancel(should_cancel: Callable[[], bool]) -> None:
-    """
-    Set the cancellation function for the current task.
-    """
+    """Set the cancellation function for the current task."""
     get_async_ctx().should_cancel = should_cancel
 
 
 def get_async_ctx() -> AsyncContext:
-    """
-    Retrieve the current AsyncContext, creating a new one if none exists.
-    """
+    """Retrieve the current AsyncContext, creating a new one if none exists."""
     global ASYNC_CTX_THREAD_LOCAL
 
     if not hasattr(ASYNC_CTX_THREAD_LOCAL, "async_ctx"):
@@ -155,9 +138,7 @@ class AsyncThread[**P, R](threading.Thread):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """
-        A threaded wrapper for running a function asynchronously.
-        """
+        """A threaded wrapper for running a function asynchronously."""
         super().__init__()
         self.function = function
         self.args = args
@@ -169,9 +150,7 @@ class AsyncThread[**P, R](threading.Thread):
         self.stop_event = stop_event  # Event to signal cancellation
 
     def run(self) -> None:
-        """
-        Run the function in a separate thread.
-        """
+        """Run the function in a separate thread."""
         try:
             set_should_cancel(lambda: self.stop_event.is_set())
             # Arguments for ParamSpec "P@AsyncThread" are missing
@@ -191,9 +170,7 @@ class AsyncFuture[R]:
     _runtime: "AsyncRuntime"
 
     def wait(self) -> AsyncResult[R]:
-        """
-        Wait for the task to finish.
-        """
+        """Wait for the task to finish."""
         if self._tid not in self._runtime.tasks:
             msg = f"No task with the name '{self._tid}' exists."
             raise ClanError(msg)
@@ -207,9 +184,7 @@ class AsyncFuture[R]:
         return result
 
     def get_result(self) -> AsyncResult[R] | None:
-        """
-        Retrieve the result of a finished task and remove it from the task list.
-        """
+        """Retrieve the result of a finished task and remove it from the task list."""
         if self._tid not in self._runtime.tasks:
             msg = f"No task with the name '{self._tid}' exists."
             raise ClanError(msg)
@@ -251,8 +226,7 @@ class AsyncRuntime:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> AsyncFuture[R]:
-        """
-        Run the given function asynchronously in a thread with a specific name and arguments.
+        """Run the given function asynchronously in a thread with a specific name and arguments.
         The function's static typing is preserved.
         """
         if opts is None:
@@ -268,7 +242,12 @@ class AsyncRuntime:
         stop_event = threading.Event()
         # Create and start the new AsyncThread
         thread = AsyncThread(
-            opts, self.condition, stop_event, function, *args, **kwargs
+            opts,
+            self.condition,
+            stop_event,
+            function,
+            *args,
+            **kwargs,
         )
         self.tasks[opts.tid] = thread
         thread.start()
@@ -282,17 +261,14 @@ class AsyncRuntime:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> AsyncFutureRef[R, Q]:
-        """
-        The same as async_run, but with an additional reference to an object.
+        """The same as async_run, but with an additional reference to an object.
         This is useful to keep track of the origin of the task.
         """
         future = self.async_run(opts, function, *args, **kwargs)
         return AsyncFutureRef(_tid=future._tid, _runtime=self, ref=ref)  # noqa: SLF001
 
     def join_all(self) -> None:
-        """
-        Wait for all tasks to finish
-        """
+        """Wait for all tasks to finish"""
         with self.condition:
             while any(
                 not task.finished for task in self.tasks.values()
@@ -300,9 +276,7 @@ class AsyncRuntime:
                 self.condition.wait()  # Wait until a thread signals completion
 
     def check_all(self) -> None:
-        """
-        Check if there where any errors
-        """
+        """Check if there where any errors"""
         err_count = 0
 
         for name, task in self.tasks.items():
@@ -328,9 +302,7 @@ class AsyncRuntime:
             raise ClanError(msg)
 
     def __enter__(self) -> "AsyncRuntime":
-        """
-        Enter the runtime context related to this object.
-        """
+        """Enter the runtime context related to this object."""
         return self
 
     def __exit__(
@@ -339,8 +311,7 @@ class AsyncRuntime:
         exc_value: BaseException | None,
         traceback: types.TracebackType | None,
     ) -> None:
-        """
-        Exit the runtime context related to this object.
+        """Exit the runtime context related to this object.
         Sets async_ctx.cancel to True to signal cancellation.
         """
         for name, task in self.tasks.items():

@@ -66,7 +66,7 @@ def remove_user(flake_dir: Path, name: str) -> None:
                 continue
             log.info(f"Removing user {name} from group {group}")
             updated_paths.extend(
-                groups.remove_member(flake_dir, group.name, groups.users_folder, name)
+                groups.remove_member(flake_dir, group.name, groups.users_folder, name),
             )
     # Remove the user's key:
     updated_paths.extend(remove_object(sops_users_folder(flake_dir), name))
@@ -96,7 +96,10 @@ def list_users(flake_dir: Path) -> list[str]:
 
 
 def add_secret(
-    flake_dir: Path, user: str, secret: str, age_plugins: list[str] | None
+    flake_dir: Path,
+    user: str,
+    secret: str,
+    age_plugins: list[str] | None,
 ) -> None:
     updated_paths = secrets.allow_member(
         secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
@@ -112,10 +115,15 @@ def add_secret(
 
 
 def remove_secret(
-    flake_dir: Path, user: str, secret: str, age_plugins: list[str] | None
+    flake_dir: Path,
+    user: str,
+    secret: str,
+    age_plugins: list[str] | None,
 ) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user, age_plugins
+        secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
+        user,
+        age_plugins,
     )
     commit_files(
         updated_paths,
@@ -189,7 +197,7 @@ def _key_args(args: argparse.Namespace) -> Iterable[sops.SopsKey]:
     ]
     if args.agekey:
         age_keys.append(
-            sops.SopsKey(args.agekey, "", sops.KeyType.AGE, source="cmdline")
+            sops.SopsKey(args.agekey, "", sops.KeyType.AGE, source="cmdline"),
         )
 
     pgp_keys = [
@@ -260,7 +268,10 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
 
     add_parser = subparser.add_parser("add", help="add a user")
     add_parser.add_argument(
-        "-f", "--force", help="overwrite existing user", action="store_true"
+        "-f",
+        "--force",
+        help="overwrite existing user",
+        action="store_true",
     )
     add_parser.add_argument("user", help="the name of the user", type=user_name_type)
     _add_key_flags(add_parser)
@@ -268,59 +279,79 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
 
     get_parser = subparser.add_parser("get", help="get a user public key")
     get_user_action = get_parser.add_argument(
-        "user", help="the name of the user", type=user_name_type
+        "user",
+        help="the name of the user",
+        type=user_name_type,
     )
     add_dynamic_completer(get_user_action, complete_users)
     get_parser.set_defaults(func=get_command)
 
     remove_parser = subparser.add_parser("remove", help="remove a user")
     remove_user_action = remove_parser.add_argument(
-        "user", help="the name of the user", type=user_name_type
+        "user",
+        help="the name of the user",
+        type=user_name_type,
     )
     add_dynamic_completer(remove_user_action, complete_users)
     remove_parser.set_defaults(func=remove_command)
 
     add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a user to access a secret"
+        "add-secret",
+        help="allow a user to access a secret",
     )
     add_secret_user_action = add_secret_parser.add_argument(
-        "user", help="the name of the user", type=user_name_type
+        "user",
+        help="the name of the user",
+        type=user_name_type,
     )
     add_dynamic_completer(add_secret_user_action, complete_users)
     add_secrets_action = add_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(add_secrets_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     remove_secret_parser = subparser.add_parser(
-        "remove-secret", help="remove a user's access to a secret"
+        "remove-secret",
+        help="remove a user's access to a secret",
     )
     remove_secret_user_action = remove_secret_parser.add_argument(
-        "user", help="the name of the group", type=user_name_type
+        "user",
+        help="the name of the group",
+        type=user_name_type,
     )
     add_dynamic_completer(remove_secret_user_action, complete_users)
     remove_secrets_action = remove_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(remove_secrets_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)
 
     add_key_parser = subparser.add_parser(
-        "add-key", help="add one or more keys for a user"
+        "add-key",
+        help="add one or more keys for a user",
     )
     add_key_user_action = add_key_parser.add_argument(
-        "user", help="the name of the user", type=user_name_type
+        "user",
+        help="the name of the user",
+        type=user_name_type,
     )
     add_dynamic_completer(add_key_user_action, complete_users)
     _add_key_flags(add_key_parser)
     add_key_parser.set_defaults(func=add_key_command)
 
     remove_key_parser = subparser.add_parser(
-        "remove-key", help="remove one or more keys for a user"
+        "remove-key",
+        help="remove one or more keys for a user",
     )
     remove_key_user_action = remove_key_parser.add_argument(
-        "user", help="the name of the user", type=user_name_type
+        "user",
+        help="the name of the user",
+        type=user_name_type,
     )
     add_dynamic_completer(remove_key_user_action, complete_users)
     _add_key_flags(remove_key_parser)

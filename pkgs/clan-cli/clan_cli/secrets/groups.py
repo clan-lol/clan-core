@@ -41,7 +41,11 @@ def users_folder(flake_dir: Path, group: str) -> Path:
 
 class Group:
     def __init__(
-        self, flake_dir: Path, name: str, machines: list[str], users: list[str]
+        self,
+        flake_dir: Path,
+        name: str,
+        machines: list[str],
+        users: list[str],
     ) -> None:
         self.name = name
         self.machines = machines
@@ -235,13 +239,18 @@ def remove_machine_command(args: argparse.Namespace) -> None:
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
     group_action = parser.add_argument(
-        "group", help="the name of the secret", type=group_name_type
+        "group",
+        help="the name of the secret",
+        type=group_name_type,
     )
     add_dynamic_completer(group_action, complete_groups)
 
 
 def add_secret(
-    flake_dir: Path, group: str, name: str, age_plugins: list[str] | None
+    flake_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str] | None,
 ) -> None:
     secrets.allow_member(
         secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
@@ -276,7 +285,10 @@ def add_secret_command(args: argparse.Namespace) -> None:
 
 
 def remove_secret(
-    flake_dir: Path, group: str, name: str, age_plugins: list[str]
+    flake_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str],
 ) -> None:
     updated_paths = secrets.disallow_member(
         secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
@@ -313,22 +325,28 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
 
     # Add user
     add_machine_parser = subparser.add_parser(
-        "add-machine", help="add a machine to group"
+        "add-machine",
+        help="add a machine to group",
     )
     add_group_argument(add_machine_parser)
     add_machine_action = add_machine_parser.add_argument(
-        "machine", help="the name of the machines to add", type=machine_name_type
+        "machine",
+        help="the name of the machines to add",
+        type=machine_name_type,
     )
     add_dynamic_completer(add_machine_action, complete_machines)
     add_machine_parser.set_defaults(func=add_machine_command)
 
     # Remove machine
     remove_machine_parser = subparser.add_parser(
-        "remove-machine", help="remove a machine from group"
+        "remove-machine",
+        help="remove a machine from group",
     )
     add_group_argument(remove_machine_parser)
     remove_machine_action = remove_machine_parser.add_argument(
-        "machine", help="the name of the machines to remove", type=machine_name_type
+        "machine",
+        help="the name of the machines to remove",
+        type=machine_name_type,
     )
     add_dynamic_completer(remove_machine_action, complete_machines)
     remove_machine_parser.set_defaults(func=remove_machine_command)
@@ -337,40 +355,51 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     add_user_parser = subparser.add_parser("add-user", help="add a user to group")
     add_group_argument(add_user_parser)
     add_user_action = add_user_parser.add_argument(
-        "user", help="the name of the user to add", type=user_name_type
+        "user",
+        help="the name of the user to add",
+        type=user_name_type,
     )
     add_dynamic_completer(add_user_action, complete_users)
     add_user_parser.set_defaults(func=add_user_command)
 
     # Remove user
     remove_user_parser = subparser.add_parser(
-        "remove-user", help="remove a user from a group"
+        "remove-user",
+        help="remove a user from a group",
     )
     add_group_argument(remove_user_parser)
     remove_user_action = remove_user_parser.add_argument(
-        "user", help="the name of the user to remove", type=user_name_type
+        "user",
+        help="the name of the user to remove",
+        type=user_name_type,
     )
     add_dynamic_completer(remove_user_action, complete_users)
     remove_user_parser.set_defaults(func=remove_user_command)
 
     # Add secret
     add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a groups to access a secret"
+        "add-secret",
+        help="allow a groups to access a secret",
     )
     add_group_argument(add_secret_parser)
     add_secret_action = add_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(add_secret_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     # Remove secret
     remove_secret_parser = subparser.add_parser(
-        "remove-secret", help="remove a group's access to a secret"
+        "remove-secret",
+        help="remove a group's access to a secret",
     )
     add_group_argument(remove_secret_parser)
     remove_secret_action = remove_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(remove_secret_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)

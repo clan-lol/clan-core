@@ -24,7 +24,9 @@ def test_transform_url_self_explizit_dot() -> None:
     expected_selector = 'clan.templates.machine."new-machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -44,7 +46,9 @@ def test_transform_url_self_no_dot() -> None:
     expected_selector = 'clan.templates.machine."new-machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -55,7 +59,9 @@ def test_transform_url_builtin_template() -> None:
     expected_selector = 'clanInternals.templates.machine."new-machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -66,7 +72,9 @@ def test_transform_url_remote_template() -> None:
     expected_selector = 'clan.templates.machine."new-machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
 
     assert flake_ref == "github:/org/repo"
@@ -78,7 +86,9 @@ def test_transform_url_explicit_path() -> None:
     expected_selector = "clan.templates.machine.new-machine"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -89,7 +99,9 @@ def test_transform_url_quoted_selector() -> None:
     user_input = '.#"new.machine"'
     expected_selector = '"new.machine"'
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -99,7 +111,9 @@ def test_single_quote_selector() -> None:
     user_input = ".#'new.machine'"
     expected_selector = "'new.machine'"
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -110,7 +124,9 @@ def test_custom_template_path() -> None:
     expected_selector = "my.templates.custom.machine"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == "github:/org/repo"
     assert selector == expected_selector
@@ -122,7 +138,9 @@ def test_full_url_query_and_fragment() -> None:
     expected_selector = "my.templates.custom.machine"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == expected_flake_ref
     assert selector == expected_selector
@@ -141,7 +159,9 @@ def test_malformed_identifier() -> None:
     user_input = "github:/org/repo#my.templates.custom.machine#extra"
     with pytest.raises(ClanError) as exc_info:
         _flake_ref, _selector = transform_url(
-            machine_template_type, user_input, flake=local_path
+            machine_template_type,
+            user_input,
+            flake=local_path,
         )
 
     assert isinstance(exc_info.value, ClanError)
@@ -156,7 +176,9 @@ def test_locked_input_template() -> None:
     expected_selector = 'inputs.locked-input.clan.templates.machine."new-machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert flake_ref == str(local_path.path)
     assert selector == expected_selector
@@ -167,7 +189,9 @@ def test_locked_input_template_no_quotes() -> None:
     expected_selector = 'inputs.locked-input."new.machine"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == str(local_path.path)
@@ -178,7 +202,9 @@ def test_locked_input_template_no_dot() -> None:
     expected_selector = "inputs.locked-input.new.machine"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == str(local_path.path)
@@ -189,7 +215,9 @@ def test_explizit_path_default_minimal_rel_1() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -200,7 +228,9 @@ def test_explizit_path_default_minimal_rel_2() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -211,7 +241,9 @@ def test_explizit_path_default_minimal_parent_1() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -222,7 +254,9 @@ def test_explizit_path_default_minimal_parent_2() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -233,7 +267,9 @@ def test_internal_dot_template() -> None:
     expected_selector = 'clanInternals.templates.machine.".internal"'
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == str(local_path.path)
@@ -244,7 +280,9 @@ def test_explizit_rel_path_default() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -255,7 +293,9 @@ def test_explizit_abs_path_default() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input
@@ -266,7 +306,9 @@ def test_explizit_home_path_default() -> None:
     expected_selector = "clan.templates.machine.default"
 
     flake_ref, selector = transform_url(
-        machine_template_type, user_input, flake=local_path
+        machine_template_type,
+        user_input,
+        flake=local_path,
     )
     assert selector == expected_selector
     assert flake_ref == user_input

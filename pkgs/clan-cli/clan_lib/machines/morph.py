@@ -40,7 +40,10 @@ def random_hostname() -> str:
 
 
 def morph_machine(
-    flake: Flake, template: str, ask_confirmation: bool, name: str | None = None
+    flake: Flake,
+    template: str,
+    ask_confirmation: bool,
+    name: str | None = None,
 ) -> None:
     cmd = nix_command(
         [
@@ -48,11 +51,12 @@ def morph_machine(
             "archive",
             "--json",
             f"{flake}",
-        ]
+        ],
     )
 
     archive_json = run(
-        cmd, RunOpts(error_msg="Failed to archive flake for morphing")
+        cmd,
+        RunOpts(error_msg="Failed to archive flake for morphing"),
     ).stdout.rstrip()
     archive_path = json.loads(archive_json)["path"]
 
@@ -96,8 +100,8 @@ def morph_machine(
         Path(f"{machine_dir}/facter.json").write_text('{"system": "x86_64-linux"}')
         result_path = run(
             nix_build(
-                [f"{flakedir}#nixosConfigurations.{name}.config.system.build.toplevel"]
-            )
+                [f"{flakedir}#nixosConfigurations.{name}.config.system.build.toplevel"],
+            ),
         ).stdout.rstrip()
 
         ropts = RunOpts(log=Log.BOTH)
@@ -115,11 +119,11 @@ def morph_machine(
         if ask_confirmation:
             log.warning("ARE YOU SURE YOU WANT TO DO THIS?")
             log.warning(
-                "You should have read and understood all of the above and know what you are doing."
+                "You should have read and understood all of the above and know what you are doing.",
             )
 
             ask = input(
-                f"Do you really want convert this machine into {name}? If to continue, type in the new machine name: "
+                f"Do you really want convert this machine into {name}? If to continue, type in the new machine name: ",
             )
             if ask != name:
                 return

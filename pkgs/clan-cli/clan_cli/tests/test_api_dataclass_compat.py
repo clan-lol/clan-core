@@ -21,16 +21,17 @@ def should_skip(file_path: Path, excludes: list[Path]) -> bool:
 
 
 def find_dataclasses_in_directory(
-    directory: Path, exclude_paths: list[str] | None = None
+    directory: Path,
+    exclude_paths: list[str] | None = None,
 ) -> list[tuple[Path, str]]:
-    """
-    Find all dataclass classes in all Python files within a nested directory.
+    """Find all dataclass classes in all Python files within a nested directory.
 
     Args:
         directory (str): The root directory to start searching from.
 
     Returns:
         List[Tuple[str, str]]: A list of tuples containing the file path and the dataclass name.
+
     """
     if exclude_paths is None:
         exclude_paths = []
@@ -69,10 +70,11 @@ def find_dataclasses_in_directory(
 
 
 def load_dataclass_from_file(
-    file_path: Path, class_name: str, root_dir: str
+    file_path: Path,
+    class_name: str,
+    root_dir: str,
 ) -> type | None:
-    """
-    Load a dataclass from a given file path.
+    """Load a dataclass from a given file path.
 
     Args:
         file_path (str): Path to the file.
@@ -80,6 +82,7 @@ def load_dataclass_from_file(
 
     Returns:
         List[Type]: The dataclass type if found, else an empty list.
+
     """
     module_name = (
         os.path.relpath(file_path, root_dir).replace(os.path.sep, ".").rstrip(".py")
@@ -109,15 +112,14 @@ def load_dataclass_from_file(
     dataclass_type = getattr(module, class_name, None)
 
     if dataclass_type and is_dataclass(dataclass_type):
-        return cast(type, dataclass_type)
+        return cast("type", dataclass_type)
 
     msg = f"Could not load dataclass {class_name} from file: {file_path}"
     raise ClanError(msg)
 
 
 def test_all_dataclasses() -> None:
-    """
-    This Test ensures that all dataclasses are compatible with the API.
+    """This Test ensures that all dataclasses are compatible with the API.
 
     It will load all dataclasses from the clan_cli directory and
     generate a JSON schema for each of them.
@@ -125,7 +127,6 @@ def test_all_dataclasses() -> None:
     It will fail if any dataclass cannot be converted to JSON schema.
     This means the dataclass in its current form is not compatible with the API.
     """
-
     # Excludes:
     # - API includes Type Generic wrappers, that are not known in the init file.
     excludes = [

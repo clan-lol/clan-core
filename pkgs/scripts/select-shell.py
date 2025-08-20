@@ -13,7 +13,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("shell", help="the name of the devshell to select", nargs="?")
     parser.add_argument("--list", action="store_true", help="list available devshells")
     parser.add_argument(
-        "--show", action="store_true", help="show the currently selected devshell"
+        "--show",
+        action="store_true",
+        help="show the currently selected devshell",
     )
     return parser.parse_args()
 

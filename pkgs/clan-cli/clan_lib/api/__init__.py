@@ -33,13 +33,13 @@ ResponseDataType = TypeVar("ResponseDataType")
 
 
 class ProcessMessage(TypedDict):
-    """
-    Represents a message to be sent to the UI.
+    """Represents a message to be sent to the UI.
 
     Attributes:
     - topic: The topic of the message, used to identify the type of message.
     - data: The data to be sent with the message.
     - origin: The API operation that this message is related to, if applicable.
+
     """
 
     topic: str
@@ -173,7 +173,7 @@ API.register(get_system_file)
                             message=e.msg,
                             description=e.description,
                             location=[fn.__name__, e.location],
-                        )
+                        ),
                     ],
                 )
             except Exception as e:
@@ -186,7 +186,7 @@ API.register(get_system_file)
                             message=str(e),
                             description="An unexpected error occurred",
                             location=[fn.__name__],
-                        )
+                        ),
                     ],
                 )
 
@@ -292,7 +292,8 @@ API.register(get_system_file)
 
 def import_all_modules_from_package(pkg: ModuleType) -> None:
     for _loader, module_name, _is_pkg in pkgutil.walk_packages(
-        pkg.__path__, prefix=f"{pkg.__name__}."
+        pkg.__path__,
+        prefix=f"{pkg.__name__}.",
     ):
         base_name = module_name.split(".")[-1]
 
@@ -308,8 +309,7 @@ def import_all_modules_from_package(pkg: ModuleType) -> None:
 
 
 def load_in_all_api_functions() -> None:
-    """
-    For the global API object, to have all functions available.
+    """For the global API object, to have all functions available.
     We have to make sure python loads every wrapped function at least once.
     This is done by importing all modules from the clan_lib and clan_cli packages.
     """

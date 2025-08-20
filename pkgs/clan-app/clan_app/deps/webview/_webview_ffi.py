@@ -36,7 +36,6 @@ def _get_lib_names() -> list[str]:
 
 def _be_sure_libraries() -> list[Path] | None:
     """Ensure libraries exist and return paths."""
-
     lib_dir = os.environ.get("WEBVIEW_LIB_DIR")
     if not lib_dir:
         msg = "WEBVIEW_LIB_DIR environment variable is not set"

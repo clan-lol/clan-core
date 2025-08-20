@@ -84,14 +84,14 @@ def check_operation_name(op_name: str, normalized: list[str]) -> list[str]:
         warnings.append(
             f"""Verb '{verb}' of API operation {op_name} is not allowed.
 Use one of: {", ".join(COMMON_VERBS)}
-"""
+""",
         )
     top_level_noun = nouns[0] if nouns else None
     if top_level_noun is None or top_level_noun.lower() not in TOP_LEVEL_RESOURCES:
         warnings.append(
             f"""Top-level resource '{top_level_noun}' of API operation {op_name} is not allowed.
 Use one of: {", ".join(TOP_LEVEL_RESOURCES)}
-"""
+""",
         )
     return warnings
 
@@ -136,11 +136,9 @@ def fix_nullables(schema: dict) -> dict:
 
 
 def fix_empty_required(schema: dict) -> dict:
-    """
-    Recursively remove "required: []" from schemas
+    """Recursively remove "required: []" from schemas
     This is valid in json schema, but leads to errors in some OpenAPI 3.0 renderers.
     """
-
     if isinstance(schema, dict):
         if "required" in schema and schema["required"] == []:
             # Remove empty required list
@@ -243,7 +241,7 @@ def main() -> None:
 
         if not func_schema.get("description"):
             errors.append(
-                f"{func_name} doesn't have a description. Python docstring is required for an API function."
+                f"{func_name} doesn't have a description. Python docstring is required for an API function.",
             )
 
     if warnings:
@@ -279,8 +277,8 @@ def main() -> None:
                     "required": True,
                     "content": {
                         "application/json": {
-                            "schema": {"$ref": f"#/components/schemas/{args_name}"}
-                        }
+                            "schema": {"$ref": f"#/components/schemas/{args_name}"},
+                        },
                     },
                 },
                 "responses": {
@@ -289,13 +287,13 @@ def main() -> None:
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": f"#/components/schemas/{return_name}"
-                                }
-                            }
+                                    "$ref": f"#/components/schemas/{return_name}",
+                                },
+                            },
                         },
-                    }
+                    },
                 },
-            }
+            },
         }
 
     sort_openapi_paths_by_tag_tree(openapi)

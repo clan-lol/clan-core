@@ -53,12 +53,15 @@ def git_command(directory: Path, *args: str) -> list[str]:
 @API.register
 def create_clan(opts: CreateOptions) -> None:
     """Create a new clan repository with the specified template.
+
     Args:
         opts: CreateOptions containing the destination path, template name,
             source flake, and other options.
+
     Raises:
         ClanError: If the source flake is not a valid flake or if the destination
             directory already exists.
+
     """
     opts.validate()
 
@@ -69,7 +72,7 @@ def create_clan(opts: CreateOptions) -> None:
             nix_metadata(str(opts.src_flake))
         except ClanError:
             log.error(
-                f"Found a repository, but it is not a valid flake: {opts.src_flake}"
+                f"Found a repository, but it is not a valid flake: {opts.src_flake}",
             )
             log.warning("Setting src_flake to None")
             opts.src_flake = None
@@ -92,13 +95,15 @@ def create_clan(opts: CreateOptions) -> None:
 
             # check if username is set
             has_username = run(
-                git_command(dest, "config", "user.name"), RunOpts(check=False)
+                git_command(dest, "config", "user.name"),
+                RunOpts(check=False),
             )
             if has_username.returncode != 0:
                 run(git_command(dest, "config", "user.name", "clan-tool"))
 
             has_username = run(
-                git_command(dest, "config", "user.email"), RunOpts(check=False)
+                git_command(dest, "config", "user.email"),
+                RunOpts(check=False),
             )
             if has_username.returncode != 0:
                 run(git_command(dest, "config", "user.email", "clan@example.com"))
@@ -125,5 +130,3 @@ def create_clan(opts: CreateOptions) -> None:
             new_meta = merge_objects(curr_meta, opts.initial)
             set_value_by_path(inventory, "meta", new_meta)
             inventory_store.write(inventory, message="Init inventory")
-
-    return

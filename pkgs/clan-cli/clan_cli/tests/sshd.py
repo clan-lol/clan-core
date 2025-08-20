@@ -29,7 +29,12 @@ class Sshd:
 
 class SshdConfig:
     def __init__(
-        self, path: Path, login_shell: Path, key: str, preload_lib: Path, log_file: Path
+        self,
+        path: Path,
+        login_shell: Path,
+        key: str,
+        preload_lib: Path,
+        log_file: Path,
     ) -> None:
         self.path = path
         self.login_shell = login_shell
@@ -53,7 +58,7 @@ def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
         sftp_server = sshdp.parent.parent / "libexec" / "sftp-server"
         assert sftp_server is not None
         content = string.Template(template).substitute(
-            {"host_key": host_key, "sftp_server": sftp_server}
+            {"host_key": host_key, "sftp_server": sftp_server},
         )
         config = tmpdir / "sshd_config"
         config.write_text(content)
@@ -74,7 +79,7 @@ if [[ -f /etc/profile ]]; then
 fi
 export PATH="{bin_path}:{path}"
 exec {bash} -l "${{@}}"
-        """
+        """,
         )
         login_shell.chmod(0o755)
 
@@ -82,7 +87,7 @@ exec {bash} -l "${{@}}"
             f"""#!{bash}
 shift
 exec "${{@}}"
-        """
+        """,
         )
         fake_sudo.chmod(0o755)
 

@@ -37,7 +37,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                                 "machine": "machine1",
                                 "generator": "wireguard",
                                 "file": "address",
-                            }
+                            },
                         },
                     },
                     "machine2": {
@@ -47,7 +47,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                                 "machine": "machine2",
                                 "generator": "wireguard",
                                 "file": "address",
-                            }
+                            },
                         },
                     },
                 },
@@ -68,7 +68,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "module": "clan_lib.network.direct",
                 "priority": 500,
             },
-        }
+        },
     }
 
     # Mock the select method

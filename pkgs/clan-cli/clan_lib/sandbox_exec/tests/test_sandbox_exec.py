@@ -19,7 +19,7 @@ def test_sandbox_allows_write_to_tmpdir() -> None:
         script = f'echo "test content" > "{test_file}"'
 
         with sandbox_exec_cmd(script, tmpdir_path) as cmd:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             assert result.returncode == 0, f"Command failed: {result.stderr}"
             assert test_file.exists(), "File was not created in tmpdir"
             assert test_file.read_text().strip() == "test content"
@@ -42,7 +42,9 @@ def test_sandbox_denies_write_to_home() -> None:
                 forbidden_file.unlink()
 
             with sandbox_exec_cmd(script, tmpdir_path) as cmd:
-                result = subprocess.run(cmd, capture_output=True, text=True)
+                result = subprocess.run(
+                    cmd, check=False, capture_output=True, text=True
+                )
 
             # Check that either the write was denied or the file wasn't created
             # macOS sandbox-exec with (allow default) has limitations
@@ -50,7 +52,7 @@ def test_sandbox_denies_write_to_home() -> None:
                 # If file was created, clean it up and note the limitation
                 forbidden_file.unlink()
                 pytest.skip(
-                    "macOS sandbox-exec with (allow default) has limited deny capabilities"
+                    "macOS sandbox-exec with (allow default) has limited deny capabilities",
                 )
             else:
                 # Good - file was not created
@@ -76,7 +78,7 @@ def test_sandbox_allows_nix_store_read() -> None:
         script = f'ls /nix/store >/dev/null 2>&1 && echo "success" > "{success_file}"'
 
         with sandbox_exec_cmd(script, tmpdir_path) as cmd:
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
             assert result.returncode == 0, f"Command failed: {result.stderr}"
             assert success_file.exists(), "Success file was not created"
             assert success_file.read_text().strip() == "success"

@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 class SystemConfig:
     keymap: str = field(default="en")
     language: str = field(
-        default="en_US.UTF-8"
+        default="en_US.UTF-8",
     )  # Leave this default, or implement virtual scrolling for the 400+ options in the UI.
     ssh_keys_path: list[str] | None = field(default=None)
 
@@ -57,6 +57,7 @@ def run_machine_flash(
     graphical: bool = False,
 ) -> None:
     """Flash a machine with the given configuration.
+
     Args:
         machine: The Machine instance to flash.
         mode: The mode to use for flashing (e.g., "install", "reinstall
@@ -67,9 +68,11 @@ def run_machine_flash(
         debug: If True, enable debug mode.
         extra_args: Additional arguments to pass to the disko-install command.
         graphical: If True, run the command in graphical mode.
+
     Raises:
         ClanError: If the language or keymap is invalid, or if there are issues with
             reading SSH keys, or if disko-install fails.
+
     """
     devices = [Path(disk.device) for disk in disks]
     with pause_automounting(devices, machine, request_graphical=graphical):
@@ -98,7 +101,7 @@ def run_machine_flash(
                 raise ClanError(msg)
             system_config_nix["console"] = {"keyMap": system_config.keymap}
             system_config_nix["services"] = {
-                "xserver": {"xkb": {"layout": system_config.keymap}}
+                "xserver": {"xkb": {"layout": system_config.keymap}},
             }
 
         if system_config.ssh_keys_path:
@@ -110,7 +113,7 @@ def run_machine_flash(
                     msg = f"Cannot read SSH public key file: {key_path}: {e}"
                     raise ClanError(msg) from e
             system_config_nix["users"] = {
-                "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
+                "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}},
             }
 
         from clan_cli.vars.generator import Generator
@@ -141,7 +144,7 @@ def run_machine_flash(
                         "disko_install=$(command -v disko-install);",
                         "exec",
                         *cmd_with_root(['"$disko_install" "$@"'], graphical=graphical),
-                    ]
+                    ],
                 )
                 disko_install.extend(["bash", "-c", wrapper])
 
@@ -164,7 +167,7 @@ def run_machine_flash(
                 [
                     "--system-config",
                     json.dumps(system_config_nix),
-                ]
+                ],
             )
             disko_install.extend(["--option", "dry-run", "true"])
             disko_install.extend(extra_args)

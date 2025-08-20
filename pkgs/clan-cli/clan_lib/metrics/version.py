@@ -21,10 +21,10 @@ class NixOSSystems:
 
 
 def get_nixos_systems(
-    machine: Machine, target_host: Remote | LocalHost
+    machine: Machine,
+    target_host: Remote | LocalHost,
 ) -> NixOSSystems | None:
     """Get the nixos systems from the target host."""
-
     parsed_metrics = get_metrics(machine, target_host)
 
     for metric in parsed_metrics:
@@ -44,13 +44,15 @@ def check_machine_up_to_date(
     target_host: Remote | LocalHost,
 ) -> bool:
     """Check if a machine needs an update.
+
     Args:
         machine: The Machine instance to check.
         target_host: Optional Remote or LocalHost instance representing the target host.
+
     Returns:
         bool: True if the machine needs an update, False otherwise.
-    """
 
+    """
     nixos_systems = get_nixos_systems(machine, target_host)
 
     if nixos_systems is None:
@@ -61,14 +63,14 @@ def check_machine_up_to_date(
 
     git_out_path = nix_eval(
         [
-            f"{machine.flake}#nixosConfigurations.'{machine.name}'.config.system.build.toplevel.outPath"
-        ]
+            f"{machine.flake}#nixosConfigurations.'{machine.name}'.config.system.build.toplevel.outPath",
+        ],
     )
 
     log.debug(
         f"Checking if {machine.name} needs an update:\n"
         f"Machine outPath: {nixos_systems.current_system}\n"
-        f"Git outPath    : {git_out_path}\n"
+        f"Git outPath    : {git_out_path}\n",
     )
 
     return git_out_path != nixos_systems.current_system

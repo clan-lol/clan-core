@@ -7,7 +7,8 @@ from clan_cli.tests.helpers import cli
 
 
 def test_generate_command_no_flake(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.chdir(tmp_path)
 

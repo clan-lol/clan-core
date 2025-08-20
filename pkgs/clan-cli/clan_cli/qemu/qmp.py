@@ -20,32 +20,23 @@ from clan_lib.errors import ClanError
 
 
 class QMPError(Exception):
-    """
-    QMP base exception
-    """
+    """QMP base exception"""
 
 
 class QMPConnectError(QMPError):
-    """
-    QMP connection exception
-    """
+    """QMP connection exception"""
 
 
 class QMPCapabilitiesError(QMPError):
-    """
-    QMP negotiate capabilities exception
-    """
+    """QMP negotiate capabilities exception"""
 
 
 class QMPTimeoutError(QMPError):
-    """
-    QMP timeout exception
-    """
+    """QMP timeout exception"""
 
 
 class QEMUMonitorProtocol:
-    """
-    Provide an API to connect to QEMU via QEMU Monitor Protocol (QMP) and then
+    """Provide an API to connect to QEMU via QEMU Monitor Protocol (QMP) and then
     allow to handle commands and events.
     """
 
@@ -58,8 +49,7 @@ class QEMUMonitorProtocol:
         server: bool = False,
         nickname: str | None = None,
     ) -> None:
-        """
-        Create a QEMUMonitorProtocol class.
+        """Create a QEMUMonitorProtocol class.
 
         @param address: QEMU address, can be either a unix socket path (string)
                         or a tuple in the form ( address, port ) for a TCP
@@ -109,8 +99,7 @@ class QEMUMonitorProtocol:
             return resp
 
     def __get_events(self, wait: bool | float = False) -> None:
-        """
-        Check for new events in the stream and cache them in __events.
+        """Check for new events in the stream and cache them in __events.
 
         @param wait (bool): block until an event is available.
         @param wait (float): If wait is a float, treat it as a timeout value.
@@ -120,7 +109,6 @@ class QEMUMonitorProtocol:
         @raise QMPConnectError: If wait is True but no events could be
                                 retrieved or if some other error occurred.
         """
-
         # Check for new events regardless and pull them into the cache:
         self.__sock.setblocking(0)
         try:
@@ -163,8 +151,7 @@ class QEMUMonitorProtocol:
         self.close()
 
     def connect(self, negotiate: bool = True) -> dict[str, Any] | None:
-        """
-        Connect to the QMP Monitor and perform capabilities negotiation.
+        """Connect to the QMP Monitor and perform capabilities negotiation.
 
         @return QMP greeting dict, or None if negotiate is false
         @raise OSError on socket connection errors
@@ -178,8 +165,7 @@ class QEMUMonitorProtocol:
         return None
 
     def accept(self, timeout: float | None = 15.0) -> dict[str, Any]:
-        """
-        Await connection from QMP Monitor and perform capabilities negotiation.
+        """Await connection from QMP Monitor and perform capabilities negotiation.
 
         @param timeout: timeout in seconds (nonnegative float number, or
                         None). The value passed will set the behavior of the
@@ -199,8 +185,7 @@ class QEMUMonitorProtocol:
         return self.__negotiate_capabilities()
 
     def cmd_obj(self, qmp_cmd: dict[str, Any]) -> dict[str, Any] | None:
-        """
-        Send a QMP command to the QMP Monitor.
+        """Send a QMP command to the QMP Monitor.
 
         @param qmp_cmd: QMP command to be sent as a Python dict
         @return QMP response as a Python dict or None if the connection has
@@ -223,8 +208,7 @@ class QEMUMonitorProtocol:
         args: dict[str, Any] | None = None,
         cmd_id: dict[str, Any] | list[Any] | str | int | None = None,
     ) -> dict[str, Any] | None:
-        """
-        Build a QMP command and send it to the QMP Monitor.
+        """Build a QMP command and send it to the QMP Monitor.
 
         @param name: command name (string)
         @param args: command arguments (dict)
@@ -238,17 +222,14 @@ class QEMUMonitorProtocol:
         return self.cmd_obj(qmp_cmd)
 
     def command(self, cmd: str, **kwds: Any) -> Any:
-        """
-        Build and send a QMP command to the monitor, report errors if any
-        """
+        """Build and send a QMP command to the monitor, report errors if any"""
         ret = self.cmd(cmd, kwds)
         if "error" in ret:
             raise ClanError(ret["error"]["desc"])
         return ret["return"]
 
     def pull_event(self, wait: bool | float = False) -> dict[str, Any] | None:
-        """
-        Pulls a single event.
+        """Pulls a single event.
 
         @param wait (bool): block until an event is available.
         @param wait (float): If wait is a float, treat it as a timeout value.
@@ -267,8 +248,7 @@ class QEMUMonitorProtocol:
         return None
 
     def get_events(self, wait: bool | float = False) -> list[dict[str, Any]]:
-        """
-        Get a list of available QMP events.
+        """Get a list of available QMP events.
 
         @param wait (bool): block until an event is available.
         @param wait (float): If wait is a float, treat it as a timeout value.
@@ -284,23 +264,18 @@ class QEMUMonitorProtocol:
         return self.__events
 
     def clear_events(self) -> None:
-        """
-        Clear current list of pending events.
-        """
+        """Clear current list of pending events."""
         self.__events = []
 
     def close(self) -> None:
-        """
-        Close the socket and socket file.
-        """
+        """Close the socket and socket file."""
         if self.__sock:
             self.__sock.close()
         if self.__sockfile:
             self.__sockfile.close()
 
     def settimeout(self, timeout: float | None) -> None:
-        """
-        Set the socket timeout.
+        """Set the socket timeout.
 
         @param timeout (float): timeout in seconds, or None.
         @note This is a wrap around socket.settimeout
@@ -308,16 +283,14 @@ class QEMUMonitorProtocol:
         self.__sock.settimeout(timeout)
 
     def get_sock_fd(self) -> int:
-        """
-        Get the socket file descriptor.
+        """Get the socket file descriptor.
 
         @return The file descriptor number.
         """
         return self.__sock.fileno()
 
     def is_scm_available(self) -> bool:
-        """
-        Check if the socket allows for SCM_RIGHTS.
+        """Check if the socket allows for SCM_RIGHTS.
 
         @return True if SCM_RIGHTS is available, otherwise False.
         """

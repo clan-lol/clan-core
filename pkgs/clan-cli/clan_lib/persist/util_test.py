@@ -58,7 +58,9 @@ from clan_lib.persist.util import (
     ],
 )
 def test_path_match(
-    path: list[str], whitelist: list[list[str]], expected: bool
+    path: list[str],
+    whitelist: list[list[str]],
+    expected: bool,
 ) -> None:
     assert path_match(path, whitelist) == expected
 
@@ -167,7 +169,7 @@ def test_write_list() -> None:
         "foo": [
             "a",
             "b",
-        ]  # <- writeable: because lists are merged. Filtering out nix-values comes later
+        ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
     }
     res = determine_writeability(prios, default, data)
     assert res == {
@@ -199,9 +201,9 @@ def test_write_because_written() -> None:
     data: dict = {
         "foo": {
             "bar": {
-                "baz": "foo"  # <- written. Since we created the data, we know we can write to it
-            }
-        }
+                "baz": "foo",  # <- written. Since we created the data, we know we can write to it
+            },
+        },
     }
     res = determine_writeability(prios, {}, data)
     assert res == {
@@ -246,10 +248,13 @@ def test_update_simple() -> None:
             "bar": "new value",  # <- user sets this value
             "nix": "this is set in nix",  # <- user didnt touch this value
             # If the user would have set this value, it would trigger an error
-        }
+        },
     }
     patchset, _ = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {"foo.bar": "new value"}
@@ -274,7 +279,10 @@ def test_update_add_empty_dict() -> None:
     set_value_by_path(update, "foo.mimi", {})
 
     patchset, _ = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {"foo.mimi": {}}  # this is what gets persisted
@@ -299,7 +307,7 @@ def test_update_many() -> None:
             "bar": "baz",
             "nix": "this is set in nix",
             "nested": {"x": "x", "y": "y"},
-        }
+        },
     }
 
     data_disk = {"foo": {"bar": "baz", "nested": {"x": "x"}}}
@@ -319,10 +327,13 @@ def test_update_many() -> None:
                 "x": "new value for x",  # <- user sets this value
                 "y": "y",  # <- user cannot set this value
             },
-        }
+        },
     }
     patchset, _ = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {
@@ -342,13 +353,13 @@ def test_update_parent_non_writeable() -> None:
     data_eval = {
         "foo": {
             "bar": "baz",
-        }
+        },
     }
 
     data_disk = {
         "foo": {
             "bar": "baz",
-        }
+        },
     }
 
     writeables = determine_writeability(prios, data_eval, data_disk)
@@ -358,7 +369,7 @@ def test_update_parent_non_writeable() -> None:
     update = {
         "foo": {
             "bar": "new value",  # <- user sets this value
-        }
+        },
     }
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
@@ -375,7 +386,7 @@ def test_update_list() -> None:
 
     data_eval = {
         #  [ "A" ]  is defined in nix.
-        "foo": ["A", "B"]
+        "foo": ["A", "B"],
     }
 
     data_disk = {"foo": ["B"]}
@@ -388,7 +399,10 @@ def test_update_list() -> None:
     update = {"foo": ["A", "B", "C"]}  # User wants to add "C"
 
     patchset, _ = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {"foo": ["B", "C"]}
@@ -399,7 +413,10 @@ def test_update_list() -> None:
     update = {"foo": ["A"]}  # User wants to remove "B"
 
     patchset, _ = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {"foo": []}
@@ -414,7 +431,7 @@ def test_update_list_duplicates() -> None:
 
     data_eval = {
         #  [ "A" ]  is defined in nix.
-        "foo": ["A", "B"]
+        "foo": ["A", "B"],
     }
 
     data_disk = {"foo": ["B"]}
@@ -433,10 +450,7 @@ def test_update_list_duplicates() -> None:
 
 
 def test_dont_persist_defaults() -> None:
-    """
-    Default values should not be persisted to disk if not explicitly requested by the user.
-    """
-
+    """Default values should not be persisted to disk if not explicitly requested by the user."""
     prios = {
         "enabled": {"__prio": 1500},
         "config": {"__prio": 100},
@@ -453,7 +467,10 @@ def test_dont_persist_defaults() -> None:
     set_value_by_path(update, "config.foo", "foo")
 
     patchset, delete_set = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
     assert patchset == {"config.foo": "foo"}
     assert delete_set == set()
@@ -480,7 +497,10 @@ def test_machine_delete() -> None:
     delete_by_path(update, "machines.bar")
 
     patchset, delete_set = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {}
@@ -533,7 +553,10 @@ def test_delete_key() -> None:
     update: dict = {"foo": {}}
 
     patchset, delete_set = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {"foo": {}}
@@ -553,10 +576,10 @@ def test_delete_key_intermediate() -> None:
             "bar": {"name": "bar", "info": "info", "other": ["a", "b"]},
             # Leave the key "other"
             "other": {"name": "other", "info": "info", "other": ["a", "b"]},
-        }
+        },
     }
     update: dict = {
-        "foo": {"other": {"name": "other", "info": "info", "other": ["a", "b"]}}
+        "foo": {"other": {"name": "other", "info": "info", "other": ["a", "b"]}},
     }
 
     data_disk = data_eval
@@ -568,7 +591,10 @@ def test_delete_key_intermediate() -> None:
     # remove all keys from foo
 
     patchset, delete_set = calc_patches(
-        data_disk, update, all_values=data_eval, writeables=writeables
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=writeables,
     )
 
     assert patchset == {}
@@ -586,7 +612,7 @@ def test_delete_key_non_writeable() -> None:
         "foo": {
             # Remove the key "bar"
             "bar": {"name": "bar", "info": "info", "other": ["a", "b"]},
-        }
+        },
     }
     update: dict = {"foo": {}}
 

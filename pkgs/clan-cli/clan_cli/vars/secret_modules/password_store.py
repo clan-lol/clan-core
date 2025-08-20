@@ -33,7 +33,11 @@ class SecretStore(StoreBase):
         """Get the password store directory, cached per machine."""
         if not self._store_dir:
             result = self._run_pass(
-                machine, "git", "rev-parse", "--show-toplevel", check=False
+                machine,
+                "git",
+                "rev-parse",
+                "--show-toplevel",
+                check=False,
             )
             if result.returncode != 0:
                 msg = "Password store must be a git repository"
@@ -43,7 +47,8 @@ class SecretStore(StoreBase):
 
     def _pass_command(self, machine: str) -> str:
         out_path = self.flake.select_machine(
-            machine, "config.clan.core.vars.password-store.passPackage.outPath"
+            machine,
+            "config.clan.core.vars.password-store.passPackage.outPath",
         )
         main_program = (
             self.flake.select_machine(
@@ -133,13 +138,24 @@ class SecretStore(StoreBase):
         result = self._run_pass(machine, "ls", str(machine_dir), check=False)
         if result.returncode == 0:
             self._run_pass(
-                machine, "rm", "--force", "--recursive", str(machine_dir), check=True
+                machine,
+                "rm",
+                "--force",
+                "--recursive",
+                str(machine_dir),
+                check=True,
             )
         return []
 
     def generate_hash(self, machine: str) -> bytes:
         result = self._run_pass(
-            machine, "git", "log", "-1", "--format=%H", self.entry_prefix, check=False
+            machine,
+            "git",
+            "log",
+            "-1",
+            "--format=%H",
+            self.entry_prefix,
+            check=False,
         )
         git_hash = result.stdout.strip()
 
@@ -183,7 +199,8 @@ class SecretStore(StoreBase):
         vars_generators = Generator.get_machine_generators(machine, self.flake)
         if "users" in phases:
             with tarfile.open(
-                output_dir / "secrets_for_users.tar.gz", "w:gz"
+                output_dir / "secrets_for_users.tar.gz",
+                "w:gz",
             ) as user_tar:
                 for generator in vars_generators:
                     dir_exists = False
@@ -255,7 +272,8 @@ class SecretStore(StoreBase):
             self.populate_dir(machine, pass_dir, phases)
             upload_dir = Path(
                 self.flake.select_machine(
-                    machine, "config.clan.core.vars.password-store.secretLocation"
-                )
+                    machine,
+                    "config.clan.core.vars.password-store.secretLocation",
+                ),
             )
             upload(host, pass_dir, upload_dir)

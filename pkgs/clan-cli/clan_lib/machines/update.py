@@ -68,7 +68,7 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
                 remote_url,
                 "--no-check-sigs",
                 path,
-            ]
+            ],
         )
         run(
             cmd,
@@ -98,7 +98,7 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
             remote_url,
             "--json",
             flake_url,
-        ]
+        ],
     )
     proc = run(
         cmd,
@@ -125,16 +125,18 @@ def run_machine_update(
     upload_inputs: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
+
     Args:
         machine: The Machine instance to deploy.
         target_host: Remote object representing the target host for deployment.
         build_host: Optional Remote object representing the build host.
         upload_inputs: Whether to upload flake inputs from the local.
+
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
             generating facts or variables.
-    """
 
+    """
     with ExitStack() as stack:
         _target_host: Host = stack.enter_context(target_host.host_connection())  # type: ignore
         _build_host: Host
@@ -227,14 +229,14 @@ def run_machine_update(
                 raise ClanError(msg)
             try:
                 is_mobile = machine.select(
-                    "config.system.clan.deployment.nixosMobileWorkaround"
+                    "config.system.clan.deployment.nixosMobileWorkaround",
                 )
             except Exception:
                 is_mobile = False
             # if the machine is mobile, we retry to deploy with the mobile workaround method
             if is_mobile:
                 machine.info(
-                    "Mobile machine detected, applying workaround deployment method"
+                    "Mobile machine detected, applying workaround deployment method",
                 )
             ret = _build_host.run(
                 ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,

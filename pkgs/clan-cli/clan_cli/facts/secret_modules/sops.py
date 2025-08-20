@@ -37,7 +37,11 @@ class SecretStore(SecretStoreBase):
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self,
+        service: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
     ) -> Path | None:
         path = (
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}"

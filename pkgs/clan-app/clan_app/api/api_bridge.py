@@ -56,18 +56,23 @@ class ApiBridge(ABC):
             for middleware in self.middleware_chain:
                 try:
                     log.debug(
-                        f"{middleware.__class__.__name__} => {request.method_name}"
+                        f"{middleware.__class__.__name__} => {request.method_name}",
                     )
                     middleware.process(context)
                 except Exception as e:
                     # If middleware fails, handle error
                     self.send_api_error_response(
-                        request.op_key or "unknown", str(e), ["middleware_error"]
+                        request.op_key or "unknown",
+                        str(e),
+                        ["middleware_error"],
                     )
                     return
 
     def send_api_error_response(
-        self, op_key: str, error_message: str, location: list[str]
+        self,
+        op_key: str,
+        error_message: str,
+        location: list[str],
     ) -> None:
         """Send an error response."""
         from clan_lib.api import ApiError, ErrorDataClass
@@ -80,7 +85,7 @@ class ApiBridge(ABC):
                     message="An internal error occured",
                     description=error_message,
                     location=location,
-                )
+                ),
             ],
         )
 
@@ -107,6 +112,7 @@ class ApiBridge(ABC):
             thread_name: Name for the thread (for debugging)
             wait_for_completion: Whether to wait for the thread to complete
             timeout: Timeout in seconds when waiting for completion
+
         """
         op_key = request.op_key or "unknown"
 
@@ -116,7 +122,7 @@ class ApiBridge(ABC):
             try:
                 log.debug(
                     f"Processing {request.method_name} with args {request.args} "
-                    f"and header {request.header} in thread {thread_name}"
+                    f"and header {request.header} in thread {thread_name}",
                 )
                 self.process_request(request)
             finally:
@@ -124,7 +130,9 @@ class ApiBridge(ABC):
 
         stop_event = threading.Event()
         thread = threading.Thread(
-            target=thread_task, args=(stop_event,), name=thread_name
+            target=thread_task,
+            args=(stop_event,),
+            name=thread_name,
         )
         thread.start()
 
@@ -138,5 +146,7 @@ class ApiBridge(ABC):
             if thread.is_alive():
                 stop_event.set()  # Cancel the thread
                 self.send_api_error_response(
-                    op_key, "Request timeout", ["api_bridge", request.method_name]
+                    op_key,
+                    "Request timeout",
+                    ["api_bridge", request.method_name],
                 )

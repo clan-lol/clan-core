@@ -35,10 +35,7 @@ def is_tor_running(proxy_port: int | None = None) -> bool:
 # TODO: Move this to network technology tor module
 @contextmanager
 def spawn_tor() -> Iterator[None]:
-    """
-    Spawns a Tor process using `nix-shell` if Tor is not already running.
-    """
-
+    """Spawns a Tor process using `nix-shell` if Tor is not already running."""
     # Check if Tor is already running
     if is_tor_running():
         log.info("Tor is running")
@@ -68,9 +65,7 @@ class TorCheck:
 
 
 def tor_online_test(proxy_port: int) -> None:
-    """
-    Tests if Tor is online by checking if we can establish a SOCKS5 connection.
-    """
+    """Tests if Tor is online by checking if we can establish a SOCKS5 connection."""
     import socket
 
     # Try to establish a SOCKS5 handshake with the Tor proxy

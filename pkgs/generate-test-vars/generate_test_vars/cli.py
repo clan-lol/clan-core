@@ -29,9 +29,7 @@ sops_pub_key = "age1qm0p4vf9jvcnn43s6l4prk8zn6cx0ep9gzvevxecv729xz540v8qa742eg"
 
 
 def get_machine_names(repo_root: Path, check_attr: str, system: str) -> list[str]:
-    """
-    Get the machine names from the test flake
-    """
+    """Get the machine names from the test flake"""
     nix_options = []
     if tmp_store := nix_test_store():
         nix_options += ["--store", str(tmp_store)]
@@ -41,34 +39,31 @@ def get_machine_names(repo_root: Path, check_attr: str, system: str) -> list[str
             "--apply",
             "builtins.attrNames",
             *nix_options,
-        ]
+        ],
     )
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
     return json.loads(out.stdout.strip())
 
 
 class TestFlake(Flake):
-    """
-    Flake class which is able to deal with not having an actual flake.
+    """Flake class which is able to deal with not having an actual flake.
     All nix build and eval calls will be forwarded to:
       clan-core#checks.<system>.<test_name>
     """
 
     def __init__(self, check_attr: str, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the TestFlake with the check attribute.
-        """
+        """Initialize the TestFlake with the check attribute."""
         super().__init__(*args, **kwargs)
         self.check_attr = check_attr
 
     def select_machine(self, machine_name: str, selector: str) -> Any:
-        """
-        Select a nix attribute for a specific machine.
+        """Select a nix attribute for a specific machine.
 
         Args:
             machine_name: The name of the machine
             selector: The attribute selector string relative to the machine config
             apply: Optional function to apply to the result
+
         """
         from clan_lib.nix import nix_config
 
@@ -83,15 +78,18 @@ class TestFlake(Flake):
 
 
 class TestMachine(Machine):
-    """
-    Machine class which is able to deal with not having an actual flake.
+    """Machine class which is able to deal with not having an actual flake.
     All nix build and eval calls will be forwarded to:
       clan-core#checks.<system>.<test_name>.nodes.<machine_name>.<attr>
     """
 
     @override
     def __init__(
-        self, name: str, flake: Flake, test_dir: Path, check_attr: str
+        self,
+        name: str,
+        flake: Flake,
+        test_dir: Path,
+        check_attr: str,
     ) -> None:
         super().__init__(name, flake)
         self.check_attr = check_attr
@@ -102,11 +100,9 @@ class TestMachine(Machine):
         return self.test_dir
 
     def select(self, attr: str) -> Any:
-        """
-        Build the machine and return the path to the result
+        """Build the machine and return the path to the result
         accepts a secret store and a facts store # TODO
         """
-
         config = nix_config()
         system = config["system"]
         test_system = system
@@ -114,7 +110,7 @@ class TestMachine(Machine):
             test_system = system.rstrip("darwin") + "linux"
 
         return self.flake.select(
-            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}'
+            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}',
         )
 
 
@@ -199,7 +195,7 @@ def main() -> None:
     flake.precache(
         [
             f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-        ]
+        ],
     )
 
     # This hack is necessary because the sops store uses flake.path to find the machine keys
@@ -219,7 +215,7 @@ def main() -> None:
             },
             indent=2,
         )
-        + "\n"
+        + "\n",
     )
 
     def mocked_prompts(

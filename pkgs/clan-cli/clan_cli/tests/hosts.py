@@ -18,7 +18,7 @@ def hosts(sshd: Sshd) -> list[Remote]:
             private_key=Path(sshd.key),
             host_key_check="none",
             command_prefix="local_test",
-        )
+        ),
     ]
 
     return group

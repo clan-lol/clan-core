@@ -121,7 +121,7 @@ def register_flash_write_parser(parser: argparse.ArgumentParser) -> None:
         Format will format the disk before installing.
         Mount will mount the disk before installing.
         Mount is useful for updating an existing system without losing data.
-        """
+        """,
     )
     parser.add_argument(
         "--mode",
@@ -166,7 +166,7 @@ def register_flash_write_parser(parser: argparse.ArgumentParser) -> None:
           Write EFI boot entries to the NVRAM of the system for the installed system.
           Specify this option if you plan to boot from this disk on the current machine,
           but not if you plan to move the disk to another machine.
-        """
+        """,
         ).strip(),
         default=False,
         action="store_true",

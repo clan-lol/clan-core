@@ -21,7 +21,7 @@ def generate_command(args: argparse.Namespace) -> None:
             filter(
                 lambda m: m.name in args.machines,
                 machines,
-            )
+            ),
         )
 
     # prefetch all vars
@@ -32,7 +32,7 @@ def generate_command(args: argparse.Namespace) -> None:
     flake.precache(
         [
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-        ]
+        ],
     )
 
     run_generators(

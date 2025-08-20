@@ -66,7 +66,7 @@ class KeyType(enum.Enum):
                         for public_key in get_public_age_keys(content):
                             log.debug(
                                 f"Found age public key from a private key "
-                                f"in {key_path}: {public_key}"
+                                f"in {key_path}: {public_key}",
                             )
 
                             keyring.append(
@@ -75,7 +75,7 @@ class KeyType(enum.Enum):
                                     username="",
                                     key_type=self,
                                     source=str(key_path),
-                                )
+                                ),
                             )
                     except ClanError as e:
                         error_msg = f"Failed to read age keys from {key_path}"
@@ -96,7 +96,7 @@ class KeyType(enum.Enum):
                     for public_key in get_public_age_keys(content):
                         log.debug(
                             f"Found age public key from a private key "
-                            f"in the environment (SOPS_AGE_KEY): {public_key}"
+                            f"in the environment (SOPS_AGE_KEY): {public_key}",
                         )
 
                         keyring.append(
@@ -105,7 +105,7 @@ class KeyType(enum.Enum):
                                 username="",
                                 key_type=self,
                                 source="SOPS_AGE_KEY",
-                            )
+                            ),
                         )
                 except ClanError as e:
                     error_msg = "Failed to read age keys from SOPS_AGE_KEY"
@@ -126,8 +126,11 @@ class KeyType(enum.Enum):
                     log.debug(msg)
                     keyring.append(
                         SopsKey(
-                            pubkey=fp, username="", key_type=self, source="SOPS_PGP_FP"
-                        )
+                            pubkey=fp,
+                            username="",
+                            key_type=self,
+                            source="SOPS_PGP_FP",
+                        ),
                     )
             return keyring
 
@@ -389,7 +392,7 @@ def get_user_name(flake_dir: Path, user: str) -> str:
     """Ask the user for their name until a unique one is provided."""
     while True:
         name = input(
-            f"Your key is not yet added to the repository. Enter your user name for which your sops key will be stored in the repository [default: {user}]: "
+            f"Your key is not yet added to the repository. Enter your user name for which your sops key will be stored in the repository [default: {user}]: ",
         )
         if name:
             user = name
@@ -455,7 +458,9 @@ def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
 
 
 def update_keys(
-    secret_path: Path, keys: Iterable[SopsKey], age_plugins: list[str] | None = None
+    secret_path: Path,
+    keys: Iterable[SopsKey],
+    age_plugins: list[str] | None = None,
 ) -> list[Path]:
     secret_path = secret_path / "secret"
     error_msg = f"Could not update keys for {secret_path}"
@@ -565,7 +570,7 @@ def get_recipients(secret_path: Path) -> set[SopsKey]:
                     username="",
                     key_type=key_type,
                     source="sops_file",
-                )
+                ),
             )
     return keys
 

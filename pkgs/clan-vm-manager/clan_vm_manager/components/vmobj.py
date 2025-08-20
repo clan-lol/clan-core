@@ -56,10 +56,14 @@ class VMObject(GObject.Object):
 
         # Create a process object to store the VM process
         self.vm_process: MPProcess = MPProcess(
-            "vm_dummy", mp.Process(), Path("./dummy")
+            "vm_dummy",
+            mp.Process(),
+            Path("./dummy"),
         )
         self.build_process: MPProcess = MPProcess(
-            "build_dummy", mp.Process(), Path("./dummy")
+            "build_dummy",
+            mp.Process(),
+            Path("./dummy"),
         )
         self._start_thread: threading.Thread = threading.Thread()
         self.machine: Machine | None = None
@@ -77,7 +81,8 @@ class VMObject(GObject.Object):
 
         # Create a temporary directory to store the logs
         self.log_dir: tempfile.TemporaryDirectory = tempfile.TemporaryDirectory(
-            prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
+            prefix="clan_vm-",
+            suffix=f"-{self.data.flake.flake_attr}",
         )
         self._logs_id: int = 0
         self._log_file: IO[str] | None = None
@@ -87,7 +92,8 @@ class VMObject(GObject.Object):
         # and block the signal while we change the state. This is cursed.
         self.switch: Gtk.Switch = Gtk.Switch()
         self.switch_handler_id: int = self.switch.connect(
-            "notify::active", self._on_switch_toggle
+            "notify::active",
+            self._on_switch_toggle,
         )
         self.connect("vm_status_changed", self._on_vm_status_changed)
 
@@ -145,7 +151,8 @@ class VMObject(GObject.Object):
     @contextmanager
     def _create_machine(self) -> Generator[Machine]:
         uri = ClanURI.from_str(
-            url=str(self.data.flake.flake_url), machine_name=self.data.flake.flake_attr
+            url=str(self.data.flake.flake_url),
+            machine_name=self.data.flake.flake_attr,
         )
         self.machine = Machine(
             name=self.data.flake.flake_attr,
@@ -154,7 +161,8 @@ class VMObject(GObject.Object):
         assert self.machine is not None
 
         state_dir = vm_state_dir(
-            flake_url=self.machine.flake.identifier, vm_name=self.machine.name
+            flake_url=self.machine.flake.identifier,
+            vm_name=self.machine.name,
         )
         self.qmp_wrap = QMPWrapper(state_dir)
         assert self.machine is not None
@@ -194,7 +202,9 @@ class VMObject(GObject.Object):
             self.switch.set_sensitive(True)
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(
-                50, self._get_logs_task, self.build_process
+                50,
+                self._get_logs_task,
+                self.build_process,
             )
             if self._logs_id == 0:
                 log.error("Failed to start VM log watcher")
@@ -307,7 +317,7 @@ class VMObject(GObject.Object):
             diff = datetime.datetime.now(tz=datetime.UTC) - start_time
             if diff.seconds > self.KILL_TIMEOUT:
                 log.error(
-                    f"VM {self.get_id()} has not stopped after {self.KILL_TIMEOUT}s. Killing it"
+                    f"VM {self.get_id()} has not stopped after {self.KILL_TIMEOUT}s. Killing it",
                 )
                 self.vm_process.kill_group()
                 break
@@ -334,7 +344,8 @@ class VMObject(GObject.Object):
         log.debug(f"VM {self.get_id()} has stopped")
 
         ToastOverlay.use().add_toast_unique(
-            InfoToast(f"Stopped {self.get_id()}").toast, "info.vm.exit"
+            InfoToast(f"Stopped {self.get_id()}").toast,
+            "info.vm.exit",
         )
 
     def shutdown(self) -> None:

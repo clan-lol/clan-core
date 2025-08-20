@@ -144,7 +144,9 @@ class Webview:
             )
         else:
             bridge = WebviewBridge(
-                webview=self, middleware_chain=tuple(self._middleware), threads={}
+                webview=self,
+                middleware_chain=tuple(self._middleware),
+                threads={},
             )
         self._bridge = bridge
 
@@ -154,7 +156,10 @@ class Webview:
     def set_size(self, value: Size) -> None:
         """Set the webview size (legacy compatibility)."""
         _webview_lib.webview_set_size(
-            self.handle, value.width, value.height, value.hint
+            self.handle,
+            value.width,
+            value.height,
+            value.hint,
         )
 
     def set_title(self, value: str) -> None:
@@ -194,7 +199,10 @@ class Webview:
 
             self._callbacks[name] = c_callback
             _webview_lib.webview_bind(
-                self.handle, _encode_c_string(name), c_callback, None
+                self.handle,
+                _encode_c_string(name),
+                c_callback,
+                None,
             )
 
     def bind(self, name: str, callback: Callable[..., Any]) -> None:
@@ -219,7 +227,10 @@ class Webview:
 
     def return_(self, seq: str, status: int, result: str) -> None:
         _webview_lib.webview_return(
-            self.handle, _encode_c_string(seq), status, _encode_c_string(result)
+            self.handle,
+            _encode_c_string(seq),
+            status,
+            _encode_c_string(result),
         )
 
     def eval(self, source: str) -> None:

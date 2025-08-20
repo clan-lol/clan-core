@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Simple LogManager example with filter function.
+"""Simple LogManager example with filter function.
 
 This demonstrates:
 - Dynamic group names with URL encoding
@@ -80,7 +79,7 @@ def main() -> None:
         )
         if specific_log:
             print(
-                f"5. Found specific log: {specific_log.op_key} in {specific_log.func_name}"
+                f"5. Found specific log: {specific_log.op_key} in {specific_log.func_name}",
             )
         else:
             print("5. Specific log not found")

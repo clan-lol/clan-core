@@ -54,6 +54,7 @@ class MockFlake:
         )
         output = subprocess.run(
             cmd,
+            check=False,
             capture_output=True,
         )
         res_str = output.stdout.decode()

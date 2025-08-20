@@ -42,8 +42,7 @@ class DictDiff:
 
 
 def diff_dicts(dict1: dict[str, str], dict2: dict[str, str]) -> DictDiff:
-    """
-    Compare two dictionaries and report additions, deletions, and changes.
+    """Compare two dictionaries and report additions, deletions, and changes.
 
     :param dict1: The first dictionary (baseline).
     :param dict2: The second dictionary (to compare).
@@ -117,14 +116,14 @@ class CmdOut:
 {optional_text("Stdout", self.stdout)}
 {optional_text("Stderr", self.stderr)}
 {"Return Code:":<{label_width}} {self.returncode}
-"""
+""",
         ]
         if self.msg:
             error_msg += [f"{'Error Msg:':<{label_width}} {self.msg.capitalize()}"]
 
         if DEBUG_COMMANDS:
             diffed_dict = (
-                diff_dicts(cast(dict[str, str], os.environ), self.env)
+                diff_dicts(cast("dict[str, str]", os.environ), self.env)
                 if self.env
                 else None
             )
@@ -136,7 +135,7 @@ class CmdOut:
 {optional_text("Environment", diffed_dict_str)}
 {text_heading(heading="Metadata")}
 {"Work Dir:":<{label_width}} '{self.cwd}'
-"""
+""",
             ]
         return "\n".join(error_msg)
 

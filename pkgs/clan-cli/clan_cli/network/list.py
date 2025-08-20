@@ -19,7 +19,7 @@ def list_command(args: argparse.Namespace) -> None:
     col_network = max(12, max(len(name) for name in networks))
     col_priority = 8
     col_module = max(
-        10, max(len(net.module_name.split(".")[-1]) for net in networks.values())
+        10, max(len(net.module_name.split(".")[-1]) for net in networks.values()),
     )
     col_running = 8
 
@@ -30,7 +30,8 @@ def list_command(args: argparse.Namespace) -> None:
 
     # Print network entries
     for network_name, network in sorted(
-        networks.items(), key=lambda network: -network[1].priority
+        networks.items(),
+        key=lambda network: -network[1].priority,
     ):
         # Extract simple module name from full module path
         module_name = network.module_name.split(".")[-1]
@@ -56,7 +57,7 @@ def list_command(args: argparse.Namespace) -> None:
             running_status = "Error"
 
         print(
-            f"{network_name:<{col_network}}  {network.priority:<{col_priority}}  {module_name:<{col_module}}  {running_status:<{col_running}}  {peers_str}"
+            f"{network_name:<{col_network}}  {network.priority:<{col_priority}}  {module_name:<{col_module}}  {running_status:<{col_running}}  {peers_str}",
         )
 
 

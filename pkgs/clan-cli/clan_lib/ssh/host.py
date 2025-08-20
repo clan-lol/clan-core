@@ -12,8 +12,7 @@ cmdlog = logging.getLogger(__name__)
 
 
 class Host(Protocol):
-    """
-    Abstract base class for host command execution.
+    """Abstract base class for host command execution.
     This provides a common interface for both local and remote hosts.
     """
 
@@ -47,8 +46,7 @@ class Host(Protocol):
         quiet: bool = False,
         control_master: bool = True,
     ) -> CmdOut:
-        """
-        Run a command on the host.
+        """Run a command on the host.
 
         Args:
             cmd: Command to execute
@@ -61,20 +59,18 @@ class Host(Protocol):
 
         Returns:
             Command output
+
         """
 
     @contextmanager
     @abstractmethod
     def become_root(self) -> Iterator["Host"]:
-        """
-        Context manager to execute commands as root.
-        """
+        """Context manager to execute commands as root."""
 
     @contextmanager
     @abstractmethod
     def host_connection(self) -> Iterator["Host"]:
-        """
-        Context manager to manage host connections.
+        """Context manager to manage host connections.
         For remote hosts, this manages SSH ControlMaster connections.
         For local hosts, this is a no-op that returns self.
         """
@@ -85,7 +81,6 @@ class Host(Protocol):
         env: dict[str, str] | None = None,
         control_master: bool = True,
     ) -> dict[str, str]:
-        """
-        Get environment variables for Nix operations.
+        """Get environment variables for Nix operations.
         Remote hosts will add NIX_SSHOPTS, local hosts won't.
         """

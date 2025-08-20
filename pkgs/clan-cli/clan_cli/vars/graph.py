@@ -72,7 +72,8 @@ def add_dependents(
 
 
 def toposort_closure(
-    _closure: Iterable[GeneratorKey], generators: dict[GeneratorKey, Generator]
+    _closure: Iterable[GeneratorKey],
+    generators: dict[GeneratorKey, Generator],
 ) -> list[Generator]:
     closure = set(_closure)
     # return the topological sorted list of generators to execute
@@ -87,8 +88,7 @@ def toposort_closure(
 
 # all generators in topological order
 def full_closure(generators: dict[GeneratorKey, Generator]) -> list[Generator]:
-    """
-    From a set of generators, return all generators in topological order.
+    """From a set of generators, return all generators in topological order.
     This includes all dependencies and dependents of the generators.
     Returns all generators in topological order.
     """
@@ -97,8 +97,7 @@ def full_closure(generators: dict[GeneratorKey, Generator]) -> list[Generator]:
 
 # just the missing generators including their dependents
 def all_missing_closure(generators: dict[GeneratorKey, Generator]) -> list[Generator]:
-    """
-    From a set of generators, return all incomplete generators in topological order.
+    """From a set of generators, return all incomplete generators in topological order.
 
     incomplete
     : A generator is missing if at least one of its files is missing.
@@ -111,7 +110,8 @@ def all_missing_closure(generators: dict[GeneratorKey, Generator]) -> list[Gener
 
 # only a selected list of generators including their missing dependencies and their dependents
 def requested_closure(
-    requested_generators: list[GeneratorKey], generators: dict[GeneratorKey, Generator]
+    requested_generators: list[GeneratorKey],
+    generators: dict[GeneratorKey, Generator],
 ) -> list[Generator]:
     closure = set(requested_generators)
     # extend the graph to include all dependencies which are not on disk
@@ -123,7 +123,8 @@ def requested_closure(
 # just enough to ensure that the list of selected generators are in a consistent state.
 # empty if nothing is missing.
 def minimal_closure(
-    requested_generators: list[GeneratorKey], generators: dict[GeneratorKey, Generator]
+    requested_generators: list[GeneratorKey],
+    generators: dict[GeneratorKey, Generator],
 ) -> list[Generator]:
     closure = set(requested_generators)
     final_closure = missing_dependency_closure(closure, generators)

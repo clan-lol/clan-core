@@ -33,7 +33,7 @@ def get_machine_var(machine: Machine, var_id: str) -> Var:
         raise ClanError(msg)
     if len(results) > 1:
         error = f"Found multiple vars for {var_id}:\n  - " + "\n  - ".join(
-            [str(var) for var in results]
+            [str(var) for var in results],
         )
         raise ClanError(error)
     # we have exactly one result at this point

@@ -25,7 +25,7 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
         [
             f"{flake}#nixosConfigurations.{machine.name}.config.clan.core.state",
             "--json",
-        ]
+        ],
     )
     res = "{}"
 
@@ -80,7 +80,7 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
         if post_restore:
             print(f"  postRestoreCommand: {post_restore}")
 
-        print("")
+        print()
 
 
 def list_command(args: argparse.Namespace) -> None:
