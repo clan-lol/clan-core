@@ -23,13 +23,9 @@ sops_groups_folder = gen_sops_subfolder("groups")
 
 
 def list_objects(path: Path, is_valid: Callable[[str], bool]) -> list[str]:
-    objs: list[str] = []
     if not path.exists():
-        return objs
-    for f in path.iterdir():
-        if is_valid(f.name):
-            objs.append(f.name)
-    return objs
+        return []
+    return [f.name for f in path.iterdir() if is_valid(f.name)]
 
 
 def remove_object(path: Path, name: str) -> list[Path]:

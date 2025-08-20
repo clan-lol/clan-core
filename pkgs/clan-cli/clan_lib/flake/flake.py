@@ -444,8 +444,9 @@ class FlakeCacheEntry:
                 if not isinstance(selector.value, list):
                     msg = f"Expected list for SET selector value, got {type(selector.value)}"
                     raise ClanError(msg)
-                for subselector in selector.value:
-                    fetched_indices.append(subselector.value)
+                fetched_indices.extend(
+                    subselector.value for subselector in selector.value
+                )
             # if it's just a str, that is the index
             elif selector.type == SelectorType.STR:
                 if not isinstance(selector.value, str):
@@ -635,9 +636,9 @@ class FlakeCacheEntry:
             keys_to_select: list[str] = []
             # if we want to select all keys, we take all existing sub elements
             if selector.type == SelectorType.ALL:
-                for key in self.value:
-                    if self.value[key].exists:
-                        keys_to_select.append(key)
+                keys_to_select.extend(
+                    key for key in self.value if self.value[key].exists
+                )
 
             # if we want to select a set of keys, we take the keys from the selector
             if selector.type == SelectorType.SET:
@@ -657,9 +658,9 @@ class FlakeCacheEntry:
 
             # if we are a list, return a list
             if self.is_list:
-                result_list: list[Any] = []
-                for index in keys_to_select:
-                    result_list.append(self.value[index].select(selectors[1:]))
+                result_list: list[Any] = [
+                    self.value[index].select(selectors[1:]) for index in keys_to_select
+                ]
                 return result_list
 
             # otherwise return a dict
@@ -681,12 +682,10 @@ class FlakeCacheEntry:
         if selector.type == SelectorType.ALL:
             str_selector = "*"
         elif selector.type == SelectorType.SET:
-            subselectors: list[str] = []
             if not isinstance(selector.value, list):
                 msg = f"Expected list for SET selector value in error handling, got {type(selector.value)}"
                 raise ClanError(msg)
-            for subselector in selector.value:
-                subselectors.append(subselector.value)
+            subselectors = [subselector.value for subselector in selector.value]
             str_selector = "{" + ",".join(subselectors) + "}"
         else:
             if not isinstance(selector.value, str):
@@ -967,9 +966,9 @@ class Flake:
 
         nix_options = self.nix_options[:] if self.nix_options is not None else []
 
-        str_selectors: list[str] = []
-        for selector in selectors:
-            str_selectors.append(selectors_as_json(parse_selector(selector)))
+        str_selectors = [
+            selectors_as_json(parse_selector(selector)) for selector in selectors
+        ]
 
         config = nix_config()
 
@@ -1079,10 +1078,9 @@ class Flake:
         if self.flake_cache_path is None:
             msg = "Flake cache path cannot be None"
             raise ClanError(msg)
-        not_fetched_selectors = []
-        for selector in selectors:
-            if not self._cache.is_cached(selector):
-                not_fetched_selectors.append(selector)
+        not_fetched_selectors = [
+            selector for selector in selectors if not self._cache.is_cached(selector)
+        ]
 
         if not_fetched_selectors:
             self.get_from_nix(not_fetched_selectors)
