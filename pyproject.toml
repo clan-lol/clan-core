@@ -10,62 +10,80 @@ exclude = "clan_cli.nixpkgs"
 [tool.ruff]
 target-version = "py313"
 line-length = 88
-lint.select = [
-  "A",
-  "ANN",
-  "ASYNC",
-  "B",
-  "C4",
-  "DTZ",
-  "E",
-  "EM",
-  "F",
-  "FA",
-  "I",
-  "ICN",
-  "ISC",
-  "LOG",
-  "N",
-  "PIE",
-  "PT",
-  "PTH",
-  "PYI",
-  "Q",
-  "RET",
-  "RSE",
-  "RUF",
-  "SIM",
-  "SLF",
-  "SLOT",
-  "T10",
-  "TID",
-  "TRY",
-  "U",
-  "W",
-  "YTT",
-]
+lint.select = [ "ALL" ]
 lint.ignore = [
   "A003",
   # A005 Module `inspect` shadows a Python standard-library module
   # We might actually want to fix this.
   "A005",
-  "TRY301",
-  "TRY300",
   "ANN401",
-  "RUF100",
-  "TRY400",
+  "C901",
+  "COM812",
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D104",
+  "D105",
+  "D107",
+  "D200",
+  "D203",
+  "D213",
+  "D401",
+  "D415",
   "E402",
   "E501",
   "E731",
+  "ERA001",
+  "FBT001",
+  "FBT002",
+  "FIX",
+  "G001",
+  "G004",
+  "ISC001",
+  "PLR0911",
+  "PLR2004",
   "PT001",
   "PT023",
   "RET504",
+  "RUF100",
+  "S603",
+  "S607",
   "SIM102",
   "SIM108",
   "SIM112",
-  "ISC001",
+  "T201",
+  "TD",
+  "TRY400",
+
+  # Maybe we can fix those
+  "D205",
+  "D400",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
+  "TRY300",
+  "TRY301",
+  "FBT003",
+  "INP001",
+  # TODO: fix later
+  "PLC0415",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"*_test.py" = ["SLF001"]
-"test_*.py" = ["SLF001"]
+"*_test.py" = [
+  "SLF001",
+  "S101",
+  "S105"
+]
+"test_*.py" = [
+  "SLF001",
+  "S101",
+  "S105"
+]
+"*/tests/*.py" = [
+  "S101"
+]
+"*/fixtures/*.py" = [
+  "S101"
+]
