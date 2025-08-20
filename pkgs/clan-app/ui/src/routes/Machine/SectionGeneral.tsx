@@ -90,7 +90,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                 />
               )}
             </Field>
-            <Divider />
+            <Divider inverted />
             <Field name="machineClass">
               {(field, input) => (
                 <TextInput
@@ -111,7 +111,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                 />
               )}
             </Field>
-            <Divider />
+            <Divider inverted />
             <Field name="description">
               {(field, input) => (
                 <TextArea
