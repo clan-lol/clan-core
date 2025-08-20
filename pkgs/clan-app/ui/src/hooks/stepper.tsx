@@ -28,9 +28,13 @@ export function createStepper<
   s: { steps: T },
   stepOpts: StepOptions<StepId, StoreType>,
 ): StepperReturn<T, T[number]["id"]> {
-  const [activeStep, setActiveStep] = createSignal<T[number]["id"]>(
-    stepOpts.initialStep,
-  );
+  const [history, setHistory] = createSignal<T[number]["id"][]>(["init"]);
+
+  const activeStep = () => history()[history().length - 1];
+
+  const setActiveStep = (id: T[number]["id"]) => {
+    setHistory((prev) => [...prev, id]);
+  };
 
   const store: StoreTuple<StoreType> = createStore<StoreType>(
     stepOpts.initialStoreData ?? ({} as StoreType),
@@ -66,19 +70,19 @@ export function createStepper<
       setActiveStep(s.steps[currentIndex + 1].id);
     },
     previous: () => {
-      const currentIndex = s.steps.findIndex(
-        (step) => step.id === activeStep(),
-      );
-      if (currentIndex <= 0) {
+      const hist = history();
+      if (hist.length <= 1) {
         throw new Error("No previous step available");
       }
-      setActiveStep(s.steps[currentIndex - 1].id);
+
+      setHistory((prev) => {
+        const update = prev.slice(0, -1);
+        setActiveStep(update[update.length - 1]);
+        return update;
+      });
     },
     hasPrevious: () => {
-      const currentIndex = s.steps.findIndex(
-        (step) => step.id === activeStep(),
-      );
-      return currentIndex > 0;
+      return history().length > 1;
     },
     hasNext: () => {
       const currentIndex = s.steps.findIndex(
@@ -96,7 +100,7 @@ export interface StepperReturn<
 > {
   _store: never;
   activeStep: Accessor<StepId>;
-  setActiveStep: Setter<StepId>;
+  setActiveStep: (id: StepId) => void;
   currentStep: () => T[number];
   next: () => void;
   previous: () => void;
