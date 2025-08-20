@@ -383,7 +383,7 @@ def run_command(
     machine_obj: Machine = Machine(args.machine, args.flake)
 
     generate_facts([machine_obj])
-    run_generators([machine_obj])
+    run_generators([machine_obj], generators=None, full_closure=False)
 
     vm: VmConfig = inspect_vm(machine=machine_obj)
 

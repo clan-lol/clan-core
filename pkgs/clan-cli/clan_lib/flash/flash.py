@@ -78,7 +78,7 @@ def run_machine_flash(
         system_config_nix: dict[str, Any] = {}
 
         generate_facts([machine])
-        run_generators([machine])
+        run_generators([machine], generators=None, full_closure=False)
 
         if system_config.language:
             if system_config.language not in list_languages():

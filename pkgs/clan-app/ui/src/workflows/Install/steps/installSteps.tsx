@@ -550,7 +550,13 @@ const InstallSummary = () => {
       return;
     }
 
+    // Extract generator names from prompt values
+    // TODO: This is wrong. We need to extend run_generators to be able to compute
+    //       a sane closure over a list of provided generators.
+    const generators = Object.keys(store.install.promptValues || {});
+
     const runGenerators = client.fetch("run_generators", {
+      generators: generators.length > 0 ? generators : undefined,
       prompt_values: store.install.promptValues,
       machines: [
         {

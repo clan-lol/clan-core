@@ -97,7 +97,8 @@ strategies (e.g., interactive CLI, GUI, or programmatic).
 @API.register
 def run_generators(
     machines: list[Machine],
-    generators: str | list[str] = "minimal",
+    generators: str | list[str] | None = None,
+    full_closure: bool = False,
     prompt_values: dict[str, dict[str, str]] | PromptFunc = lambda g: g.ask_prompts(),
     no_sandbox: bool = False,
 ) -> None:
@@ -105,12 +106,13 @@ def run_generators(
     Args:
         machines: The machines to run generators for.
         generators: Can be:
-            - str: Single generator name to run (ensuring dependencies are met)
+            - None: Run all generators (with closure based on full_closure parameter)
+            - str: Single generator name to run (with closure based on full_closure parameter)
             - list[str]: Specific generator names to run exactly as provided.
                 Dependency generators are not added automatically in this case.
                 The caller must ensure that all dependencies are included.
-            - "all": Run all generators (full closure)
-            - "minimal": Run only missing generators (minimal closure) (default)
+        full_closure: Whether to include all dependencies (True) or only missing ones (False).
+            Only used when generators is None or a string.
         prompt_values: A dictionary mapping generator names to their prompt values,
             or a function that returns prompt values for a generator.
         no_sandbox: Whether to disable sandboxing when executing the generator.
@@ -119,16 +121,8 @@ def run_generators(
         executing the generator.
     """
     for machine in machines:
-        if generators == "all":
-            generator_objects = get_generators(machine, full_closure=True)
-        elif generators == "minimal":
-            generator_objects = get_generators(machine, full_closure=False)
-        elif isinstance(generators, str) and generators not in ["all", "minimal"]:
-            # Single generator name - compute minimal closure for it
-            generator_objects = get_generators(
-                machine, full_closure=False, generator_name=generators
-            )
-        elif isinstance(generators, list):
+        if isinstance(generators, list):
+            # List of generator names - use them exactly as provided
             if len(generators) == 0:
                 return
             # Create GeneratorKeys for this specific machine
@@ -138,8 +132,10 @@ def run_generators(
             all_generators = get_generators(machine, full_closure=True)
             generator_objects = [g for g in all_generators if g.key in generator_keys]
         else:
-            msg = f"Invalid generators argument: {generators}. Must be 'all', 'minimal', a generator name, or a list of generator names"
-            raise ValueError(msg)
+            # None or single string - use get_generators with closure parameter
+            generator_objects = get_generators(
+                machine, full_closure=full_closure, generator_name=generators
+            )
 
         # If prompt function provided, ask all prompts
         # TODO: make this more lazy and ask for every generator on execution

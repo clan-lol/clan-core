@@ -148,7 +148,7 @@ def run_machine_update(
         target_host_root = stack.enter_context(_target_host.become_root())
 
         generate_facts([machine], service=None, regenerate=False)
-        run_generators([machine], generators="minimal")
+        run_generators([machine], generators=None, full_closure=False)
 
         # Upload secrets to the target host using root
         upload_secrets(machine, target_host_root)

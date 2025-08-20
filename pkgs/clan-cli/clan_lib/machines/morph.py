@@ -78,7 +78,7 @@ def morph_machine(
 
         machine = Machine(name=name, flake=Flake(str(flakedir)))
 
-        run_generators([machine], generators="minimal")
+        run_generators([machine], generators=None, full_closure=False)
 
         machine.secret_vars_store.populate_dir(
             machine.name,

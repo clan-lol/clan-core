@@ -119,6 +119,28 @@ def test_generate_public_and_secret_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
 ) -> None:
+    """Test generation of public and secret vars with dependencies.
+
+    Generator dependency graph:
+
+    my_generator (standalone)
+        ├── my_value (public)
+        ├── my_secret (secret)
+        └── value_with_default (public, has default)
+
+    my_shared_generator (shared=True)
+        └── my_shared_value (public)
+                ↓
+    dependent_generator (depends on my_shared_generator)
+        └── my_secret (secret, copies from my_shared_value)
+
+    This test verifies:
+    - Public and secret vars are stored correctly
+    - Shared generators work across dependencies
+    - Default values are handled properly
+    - Regeneration with --regenerate updates all values
+    - Regeneration with --regenerate --generator only updates specified generator
+    """
     flake = flake_with_sops
 
     config = flake.machines["my_machine"]
@@ -126,14 +148,13 @@ def test_generate_public_and_secret_vars(
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
-    my_generator["script"] = (
-        'echo -n public$RANDOM > "$out"/my_value; echo -n secret$RANDOM > "$out"/my_secret; echo -n non-default$RANDOM > "$out"/value_with_default'
-    )
-
     my_generator["files"]["value_with_default"]["secret"] = False
     my_generator["files"]["value_with_default"]["value"]["_type"] = "override"
     my_generator["files"]["value_with_default"]["value"]["priority"] = 1000  # mkDefault
     my_generator["files"]["value_with_default"]["value"]["content"] = "default_value"
+    my_generator["script"] = (
+        'echo -n public$RANDOM > "$out"/my_value; echo -n secret$RANDOM > "$out"/my_secret; echo -n non-default$RANDOM > "$out"/value_with_default'
+    )
 
     my_shared_generator = config["clan"]["core"]["vars"]["generators"][
         "my_shared_generator"
@@ -256,6 +277,44 @@ def test_generate_public_and_secret_vars(
     ).printable_value
     assert shared_value != shared_value_new, (
         "Shared value should change after regeneration"
+    )
+    # test that after regenerating a shared generator, it and its dependents are regenerated
+    cli.run(
+        [
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            "--regenerate",
+            "--no-sandbox",
+            "--generator",
+            "my_shared_generator",
+        ]
+    )
+    # test that the shared generator is regenerated
+    shared_value_after_regeneration = get_machine_var(
+        machine, "my_shared_generator/my_shared_value"
+    ).printable_value
+    assert shared_value_after_regeneration != shared_value_new, (
+        "Shared value should change after regenerating my_shared_generator"
+    )
+    # test that the dependent generator is also regenerated (because it depends on my_shared_generator)
+    secret_value_after_regeneration = sops_store.get(
+        dependent_generator, "my_secret"
+    ).decode()
+    assert secret_value_after_regeneration != secret_value_new, (
+        "Dependent generator's secret should change after regenerating my_shared_generator"
+    )
+    assert secret_value_after_regeneration == shared_value_after_regeneration, (
+        "Dependent generator's secret should match the new shared value"
+    )
+    # test that my_generator is NOT regenerated (it doesn't depend on my_shared_generator)
+    public_value_after_regeneration = get_machine_var(
+        machine, "my_generator/my_value"
+    ).printable_value
+    assert public_value_after_regeneration == public_value_new, (
+        "my_generator value should NOT change after regenerating only my_shared_generator"
     )
 
 

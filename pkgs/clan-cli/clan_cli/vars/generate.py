@@ -37,11 +37,8 @@ def generate_command(args: argparse.Namespace) -> None:
 
     run_generators(
         machines,
-        generators=args.generator
-        if args.generator
-        else "all"
-        if args.regenerate
-        else "minimal",
+        generators=args.generator,
+        full_closure=args.regenerate if args.regenerate is not None else False,
         no_sandbox=args.no_sandbox,
     )
 

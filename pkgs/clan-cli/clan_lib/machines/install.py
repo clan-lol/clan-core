@@ -88,7 +88,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     # Notify the UI about what we are doing
     notify_install_step("generators")
     generate_facts([machine])
-    run_generators([machine])
+    run_generators([machine], generators=None, full_closure=False)
 
     with (
         TemporaryDirectory(prefix="nixos-install-") as _base_directory,
