@@ -128,8 +128,8 @@ def type_to_dict(
                 raise JSchemaTypeError(msg)
             properties[f.metadata.get("alias", f.name)] = type_to_dict(
                 f.type,
-                f"{scope} {t.__name__}.{f.name}",  # type: ignore
-                type_map,  # type: ignore
+                f"{scope} {t.__name__}.{f.name}",  # type: ignore[union-attr]
+                type_map,  # type: ignore[misc]
             )
 
         required = set()
@@ -301,7 +301,7 @@ def type_to_dict(
             return {
                 "type": "string",
                 # Construct every enum value and use the same method as the serde module for converting it into the same literal string
-                "enum": [dataclass_to_dict(t(value)) for value in t],  # type: ignore
+                "enum": [dataclass_to_dict(t(value)) for value in t],  # type: ignore[var-annotated]
             }
         if t is Any:
             msg = f"{scope} - Usage of the Any type is not supported for API functions. In: {scope}"

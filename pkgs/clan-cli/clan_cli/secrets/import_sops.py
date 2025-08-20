@@ -7,12 +7,6 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_shell
 
-from clan_cli.completions import (
-    add_dynamic_completer,
-    complete_groups,
-    complete_machines,
-    complete_users,
-)
 from clan_cli.secrets.sops import load_age_plugins
 
 from .secrets import encrypt_secret, sops_secrets_folder
@@ -75,6 +69,11 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         default=[],
         help="the group to import the secrets to",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_groups,
+    )
+
     add_dynamic_completer(group_action, complete_groups)
     machine_action = parser.add_argument(
         "--machine",
@@ -83,6 +82,11 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         default=[],
         help="the machine to import the secrets to",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_machines,
+    )
+
     add_dynamic_completer(machine_action, complete_machines)
     user_action = parser.add_argument(
         "--user",
@@ -91,6 +95,11 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         default=[],
         help="the user to import the secrets to",
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(user_action, complete_users)
     parser.add_argument(
         "--prefix",

@@ -194,7 +194,7 @@ API.register(get_system_file)
         # we need to update the annotation, because our wrapper changes the return type
         # This overrides the new return type annotation with the generic typeVar filled in
         orig_return_type = get_type_hints(fn).get("return")
-        wrapper.__annotations__["return"] = ApiResponse[orig_return_type]  # type: ignore
+        wrapper.__annotations__["return"] = ApiResponse[orig_return_type]  # type: ignore[misc,valid-type]
 
         self._registry[fn.__name__] = wrapper
 

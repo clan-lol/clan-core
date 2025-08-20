@@ -51,9 +51,9 @@ def merge_objects(
             )
         elif isinstance(update_val, list) and isinstance(curr_val, list):
             if merge_lists:
-                result[key] = list(dict.fromkeys(curr_val + update_val))  # type: ignore
+                result[key] = list(dict.fromkeys(curr_val + update_val))  # type: ignore[assignment]
             else:
-                result[key] = update_val  # type: ignore
+                result[key] = update_val  # type: ignore[assignment]
         elif (
             update_val is not None
             and curr_val is not None
@@ -62,9 +62,9 @@ def merge_objects(
             msg = f"Type mismatch for key '{key}'. Cannot update {type(curr_val)} with {type(update_val)}"
             raise ClanError(msg, location=json.dumps([*path, key]))
         elif key in update:
-            result[key] = update_val  # type: ignore
+            result[key] = update_val  # type: ignore[assignment]
         elif key in curr:
-            result[key] = curr_val  # type: ignore
+            result[key] = curr_val  # type: ignore[assignment]
 
     return cast("T", result)
 

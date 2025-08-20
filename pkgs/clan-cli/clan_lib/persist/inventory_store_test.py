@@ -106,11 +106,11 @@ def test_simple_read_write(setup_test_files: Path) -> None:
         _keys=["foo", "protected"],
     )
     store._flake.invalidate_cache()
-    data: dict = store.read()  # type: ignore
+    data = store.read()  # type: ignore[assignment]
     assert data == {"foo": "bar", "protected": "protected"}
 
-    set_value_by_path(data, "foo", "foo")  # type: ignore
-    store.write(data, "test", commit=False)  # type: ignore
+    set_value_by_path(data, "foo", "foo")  # type: ignore[arg-type]
+    store.write(data, "test", commit=False)  # type: ignore[arg-type]
     # Default method to access the inventory
     assert store.read() == {"foo": "foo", "protected": "protected"}
 
@@ -120,7 +120,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     # clan_lib.errors.ClanError: Key 'protected' is not writeable.
     invalid_data = {"protected": "foo"}
     with pytest.raises(ClanError) as e:
-        store.write(invalid_data, "test", commit=False)  # type: ignore
+        store.write(invalid_data, "test", commit=False)  # type: ignore[arg-type]
     assert (
         str(e.value)
         == "Key 'protected' is not writeable. It seems its value is statically defined in nix."
@@ -132,8 +132,8 @@ def test_simple_read_write(setup_test_files: Path) -> None:
 
     # Remove the foo key from the persisted data
     # Technically data = { } should also work
-    data = {"protected": "protected"}
-    store.write(data, "test", commit=False)  # type: ignore
+    data = {"protected": "protected"}  # type: ignore[typeddict-unknown-key]
+    store.write(data, "test", commit=False)  # type: ignore[arg-type]
 
 
 @pytest.mark.with_core
@@ -159,23 +159,23 @@ def test_simple_deferred(setup_test_files: Path) -> None:
 
     # Create a new "deferredModule" "C"
     set_value_by_path(data, "foo.c", {})
-    store.write(data, "test", commit=False)  # type: ignore
+    store.write(data, "test", commit=False)  # type: ignore[arg-type]
 
     assert store.read() == {"foo": {"a": {}, "b": {}, "c": {}}}
 
     # Remove the "deferredModule" "C"
-    delete_by_path(data, "foo.c")  # type: ignore
+    delete_by_path(data, "foo.c")  # type: ignore[arg-type]
     store.write(data, "test", commit=False)
     assert store.read() == {"foo": {"a": {}, "b": {}}}
 
     # Write settings into a new "deferredModule" "C" and read them back
     set_value_by_path(data, "foo.c", {"timeout": "1s"})
-    store.write(data, "test", commit=False)  # type: ignore
+    store.write(data, "test", commit=False)  # type: ignore[arg-type]
 
     assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}
 
     # Remove the "deferredModle" "C" along with its settings
-    delete_by_path(data, "foo.c")  # type: ignore
+    delete_by_path(data, "foo.c")  # type: ignore[arg-type]
     store.write(data, "test", commit=False)
     assert store.read() == {"foo": {"a": {}, "b": {}}}
 
@@ -203,7 +203,7 @@ def test_simple_deferred(setup_test_files: Path) -> None:
 #     assert data == {"foo": {"a": {}, "b": {}}}
 
 #     # Create a new "deferredModule" "a" which collides with existing foo.a
-#     set_value_by_path(data, "foo.a", {"timeout": "1s"})  # type: ignore
+#     set_value_by_path(data, "foo.a", {"timeout": "1s"})  # type: ignore[misc]
 #     with pytest.raises(ClanError) as e:
 #         store.write(data, "test", commit=False)
 #     assert (

@@ -74,7 +74,7 @@ class ErrorToast:
         views = ViewStack.use().view
 
         # we cannot check this type, python is not smart enough
-        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
+        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore[assignment]
         logs_view.set_message(details)
 
         self.toast.connect(

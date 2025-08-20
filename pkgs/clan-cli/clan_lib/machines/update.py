@@ -138,13 +138,13 @@ def run_machine_update(
 
     """
     with ExitStack() as stack:
-        _target_host: Host = stack.enter_context(target_host.host_connection())  # type: ignore
+        _target_host: Host = stack.enter_context(target_host.host_connection())  # type: ignore[assignment]
         _build_host: Host
         # If no build host is specified, use the target host as the build host.
         if build_host is None:
-            _build_host = _target_host  # type: ignore
+            _build_host = _target_host  # type: ignore[assignment]
         else:
-            _build_host = stack.enter_context(build_host.host_connection())  # type: ignore
+            _build_host = stack.enter_context(build_host.host_connection())  # type: ignore[assignment]
 
         # Some operations require root privileges on the target host.
         target_host_root = stack.enter_context(_target_host.become_root())

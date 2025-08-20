@@ -106,7 +106,7 @@ def test_parse_deployment_address(
         def noop() -> Generator[None, Any]:
             yield
 
-        maybe_check_exception = noop()  # type: ignore
+        maybe_check_exception = noop()  # type: ignore[assignment]
 
     with maybe_check_exception:
         machine_name = "foo"

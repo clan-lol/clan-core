@@ -9,8 +9,6 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.git import commit_files
 
-from clan_cli.completions import add_dynamic_completer, complete_secrets, complete_users
-
 from . import groups, secrets, sops
 from .filters import get_secrets_filter_for_user
 from .folders import (
@@ -283,6 +281,11 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(get_user_action, complete_users)
     get_parser.set_defaults(func=get_command)
 
@@ -292,6 +295,11 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(remove_user_action, complete_users)
     remove_parser.set_defaults(func=remove_command)
 
@@ -304,6 +312,12 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_secrets,
+        complete_users,
+    )
+
     add_dynamic_completer(add_secret_user_action, complete_users)
     add_secrets_action = add_secret_parser.add_argument(
         "secret",
@@ -322,6 +336,12 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the group",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_secrets,
+        complete_users,
+    )
+
     add_dynamic_completer(remove_secret_user_action, complete_users)
     remove_secrets_action = remove_secret_parser.add_argument(
         "secret",
@@ -340,6 +360,11 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(add_key_user_action, complete_users)
     _add_key_flags(add_key_parser)
     add_key_parser.set_defaults(func=add_key_command)
@@ -353,6 +378,11 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(remove_key_user_action, complete_users)
     _add_key_flags(remove_key_parser)
     remove_key_parser.set_defaults(func=remove_key_command)

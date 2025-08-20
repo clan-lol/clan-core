@@ -125,7 +125,7 @@ class ClanStore:
 
     def log_details(self, vm: VMObject, gfile: Gio.File) -> None:
         views = ViewStack.use().view
-        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
+        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore[assignment]
 
         def file_read_callback(
             source_object: Gio.File,
