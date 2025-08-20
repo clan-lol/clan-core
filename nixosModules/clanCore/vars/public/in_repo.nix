@@ -25,7 +25,7 @@ in
       );
       value = mkIf (file.config.secret == false) (
         # dynamically adjust priority to allow overriding with mkDefault in case the file is not found
-        if (pathExists file.config.flakePath) then
+        if file.config.exists then
           # if the file is found it should have normal priority
           readFile file.config.flakePath
         else
@@ -34,6 +34,7 @@ in
             throw "Please run `clan vars generate ${config.clan.core.settings.machine.name}` as file was not found: ${file.config.path}"
           )
       );
+      exists = mkIf (file.config.secret == false) (pathExists file.config.flakePath);
     };
   };
 }
