@@ -7,12 +7,18 @@ export interface ClanStoreType {
   clanURIs: string[];
   activeClanURI?: string;
   sceneData: Record<string, SceneData>;
+  queryCache: {
+    clanDetails: Record<string, string>;
+  };
 }
 
 const [store, setStore] = makePersisted(
   createStore<ClanStoreType>({
     clanURIs: [],
     sceneData: {},
+    queryCache: {
+      clanDetails: {},
+    },
   }),
   {
     name: "clanStore",

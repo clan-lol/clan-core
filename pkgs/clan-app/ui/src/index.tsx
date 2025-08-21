@@ -2,21 +2,14 @@
 import { render } from "solid-js/web";
 
 import "./index.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { QueryClientProvider } from "@tanstack/solid-query";
 import { Routes } from "@/src/routes";
 import { Router } from "@solidjs/router";
 import { Layout } from "@/src/routes/Layout";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { ApiClientProvider } from "./hooks/ApiClient";
 import { callApi } from "./hooks/api";
-
-export const client = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
-});
+import { DefaultQueryClient } from "@/src/hooks/queries";
 
 const root = document.getElementById("app");
 
@@ -32,7 +25,7 @@ if (import.meta.env.DEV) {
 render(
   () => (
     <ApiClientProvider client={{ fetch: callApi }}>
-      <QueryClientProvider client={client}>
+      <QueryClientProvider client={DefaultQueryClient}>
         {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
         <Router root={Layout}>{Routes}</Router>
       </QueryClientProvider>
