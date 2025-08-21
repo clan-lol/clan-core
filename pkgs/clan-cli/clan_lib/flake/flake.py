@@ -16,6 +16,22 @@ from clan_lib.errors import ClanCmdError, ClanError
 log = logging.getLogger(__name__)
 
 
+class FlakeDoesNotExistError(ClanError):
+    """Raised when a flake does not exist"""
+
+    def __init__(self, flake_identifier: str, description: str | None = None) -> None:
+        msg = f"Flake '{flake_identifier}' does not exist or is not a valid flake."
+        super().__init__(msg, description=description, location=flake_identifier)
+
+
+class FlakeInvalidError(ClanError):
+    """Raised when a flake is invalid"""
+
+    def __init__(self, flake_identifier: str, description: str | None = None) -> None:
+        msg = f"Flake is invalid. Could not find a flake.nix file in '{flake_identifier}'."
+        super().__init__(msg, description=description, location=flake_identifier)
+
+
 def get_nix_store_dir() -> str:
     """Get the Nix store directory path pattern for regex matching.
 
@@ -773,7 +789,18 @@ class Flake:
         trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", False) == "1"
         if not trace_prefetch:
             log.debug(f"Prefetching flake {self.identifier}")
-        flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
+        try:
+            flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
+        except ClanCmdError as e:
+            if (
+                f"error: getting status of '{self.identifier}': No such file or directory"
+                in str(e)
+            ):
+                raise FlakeDoesNotExistError(self.identifier) from e
+            if "error: could not find a flake.nix file":
+                raise FlakeInvalidError(self.identifier) from e
+            raise
+
         flake_metadata = json.loads(flake_prefetch.stdout)
         self.store_path = flake_metadata["storePath"]
         self.hash = flake_metadata["hash"]
