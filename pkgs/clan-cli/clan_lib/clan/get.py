@@ -19,9 +19,6 @@ def get_clan_details(flake: Flake) -> InventoryMeta:
     Raises:
         ClanError: If the flake does not exist, or if the inventory is invalid (missing the meta attribute).
     """
-    if flake.is_local and not flake.path.exists():
-        msg = f"Path {flake} does not exist"
-        raise ClanError(msg, description="clan directory does not exist")
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
 
