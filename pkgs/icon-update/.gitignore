@@ -1,2 +1,3 @@
 icons/
 .vscode/
+.env.local

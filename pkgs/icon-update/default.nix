@@ -7,13 +7,13 @@ pkgs.writeShellApplication {
 
   runtimeInputs = [ deno ];
   runtimeEnv = {
-    FIGMA_ICON_FILE_ID = "KJgLnsBI9nvUt44qKJXmVm";
-    FRAME_ID = "709-324";
+    FIGMA_ICON_FILE_ID = "uyl2qJ78r6ISagQQlT4tr7";
+    FRAME_ID = "689-1390";
   };
 
   text = ''
     REPO_ROOT="$(git rev-parse --show-toplevel)"
-    OUT_DIR="$(realpath "$REPO_ROOT"/pkgs/clan-app/ui/src/icons)"
+    OUT_DIR="$(realpath "$REPO_ROOT"/pkgs/clan-app/ui/icons)"
     export OUT_DIR
     deno run --allow-all ${src}/main.ts
   '';
