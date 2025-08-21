@@ -55,23 +55,14 @@ export const Label = (props: LabelProps) => {
             <Tooltip
               placement="top"
               inverted={props.inverted}
-              trigger={
-                <Icon
-                  icon="Info"
-                  color="tertiary"
-                  inverted={props.inverted}
-                  size={props.size == "default" ? "0.85em" : "0.75rem"}
-                />
-              }
+              description={props.tooltip}
             >
-              <Typography
-                hierarchy="body"
-                size="xs"
-                weight="medium"
-                inverted={!props.inverted}
-              >
-                {props.tooltip}
-              </Typography>
+              <Icon
+                icon="Info"
+                color="tertiary"
+                inverted={props.inverted}
+                size={props.size == "default" ? "0.85em" : "0.75rem"}
+              />
             </Tooltip>
           )}
         </props.labelComponent>

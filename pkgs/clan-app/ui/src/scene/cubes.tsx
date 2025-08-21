@@ -530,12 +530,14 @@ export function CubeScene(props: {
       <div class="toolbar-container">
         <Toolbar>
           <ToolbarButton
+            description="Select machine"
             name="Select"
             icon="Cursor"
             onClick={() => setWorldMode("view")}
             selected={worldMode() === "view"}
           />
           <ToolbarButton
+            description="Create new machine"
             name="new-machine"
             icon="NewMachine"
             disabled={positionMode() === "circle"}
@@ -544,6 +546,7 @@ export function CubeScene(props: {
           />
           <Divider orientation="vertical" />
           <ToolbarButton
+            description="Add new Service"
             name="modules"
             icon="Modules"
             onClick={() => {
@@ -558,7 +561,11 @@ export function CubeScene(props: {
               renderLoop.requestRender();
             }}
           />
-          <ToolbarButton name="delete" icon="Trash" />
+          {/* <ToolbarButton
+            description="Delete Machine"
+            name="delete"
+            icon="Trash"
+          /> */}
         </Toolbar>
       </div>
     </>

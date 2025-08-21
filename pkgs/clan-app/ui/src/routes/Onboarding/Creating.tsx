@@ -1,14 +1,15 @@
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
-import { Typography } from "@/src/components/Typography/Typography";
 
 import "./Creating.css";
 
 export const Creating = () => (
   <div class="creating">
-    <Tooltip open={true} placement="top" trigger={<div />}>
-      <Typography hierarchy="body" size="xs" weight="medium" inverted={true}>
-        Your Clan is being created
-      </Typography>
+    <Tooltip
+      open={true}
+      placement="top"
+      description={"Your Clan is being created"}
+    >
+      <div></div>
     </Tooltip>
 
     <div class="scene">

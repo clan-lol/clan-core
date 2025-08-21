@@ -87,7 +87,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
         {value() && (
           <Tooltip placement="top">
             <Tooltip.Portal>
-              <Tooltip.Content class="tooltip-content">
+              <Tooltip.Content class={styles.tooltipContent}>
                 <Typography
                   hierarchy="body"
                   size="xs"
