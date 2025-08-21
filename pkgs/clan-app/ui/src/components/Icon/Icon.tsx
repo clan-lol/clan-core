@@ -1,5 +1,8 @@
 import cx from "classnames";
 import { Component, JSX, splitProps } from "solid-js";
+
+import Address from "@/icons/address.svg";
+import AI from "@/icons/ai.svg";
 import ArrowBottom from "@/icons/arrow-bottom.svg";
 import ArrowLeft from "@/icons/arrow-left.svg";
 import ArrowRight from "@/icons/arrow-right.svg";
@@ -10,9 +13,12 @@ import CaretLeft from "@/icons/caret-left.svg";
 import CaretRight from "@/icons/caret-right.svg";
 import CaretUp from "@/icons/caret-up.svg";
 import Checkmark from "@/icons/checkmark.svg";
+import CheckSolid from "@/icons/check-solid.svg";
 import ClanIcon from "@/icons/clan-icon.svg";
-import Cursor from "@/icons/cursor.svg";
 import Close from "@/icons/close.svg";
+import CloseCircle from "@/icons/close-circle.svg";
+import Code from "@/icons/code.svg";
+import Cursor from "@/icons/cursor.svg";
 import Download from "@/icons/download.svg";
 import Edit from "@/icons/edit.svg";
 import Expand from "@/icons/expand.svg";
@@ -21,35 +27,39 @@ import EyeOpen from "@/icons/eye-open.svg";
 import Filter from "@/icons/filter.svg";
 import Flash from "@/icons/flash.svg";
 import Folder from "@/icons/folder.svg";
+import General from "@/icons/general.svg";
 import Grid from "@/icons/grid.svg";
+import Heart from "@/icons/heart.svg";
 import Info from "@/icons/info.svg";
 import List from "@/icons/list.svg";
 import Load from "@/icons/load.svg";
+import Machine from "@/icons/machine.svg";
+import Minimize from "@/icons/minimize.svg";
+import Modules from "@/icons/modules.svg";
 import More from "@/icons/more.svg";
+import NewMachine from "@/icons/new-machine.svg";
+import Offline from "@/icons/offline.svg";
 import Paperclip from "@/icons/paperclip.svg";
 import Plus from "@/icons/plus.svg";
 import Reload from "@/icons/reload.svg";
 import Report from "@/icons/report.svg";
 import Search from "@/icons/search.svg";
-import Settings from "@/icons/settings.svg";
-import Trash from "@/icons/trash.svg";
-import Update from "@/icons/update.svg";
-import WarningFilled from "@/icons/warning-filled.svg";
-import Modules from "@/icons/modules.svg";
-import NewMachine from "@/icons/new-machine.svg";
-import AI from "@/icons/ai.svg";
-import User from "@/icons/user.svg";
-import Heart from "@/icons/heart.svg";
 import SearchFilled from "@/icons/search-filled.svg";
-import Offline from "@/icons/offline.svg";
+import Services from "@/icons/services.svg";
+import Settings from "@/icons/settings.svg";
 import Switch from "@/icons/switch.svg";
 import Tag from "@/icons/tag.svg";
-import Machine from "@/icons/machine.svg";
+import Trash from "@/icons/trash.svg";
+import Update from "@/icons/update.svg";
+import User from "@/icons/user.svg";
+import WarningFilled from "@/icons/warning-filled.svg";
+
 import { Dynamic } from "solid-js/web";
 
 import { Color, fgClass } from "../colors";
 
 const icons = {
+  Address,
   AI,
   ArrowBottom,
   ArrowLeft,
@@ -61,8 +71,11 @@ const icons = {
   CaretRight,
   CaretUp,
   Checkmark,
+  CheckSolid,
   ClanIcon,
   Close,
+  CloseCircle,
+  Code,
   Cursor,
   Download,
   Edit,
@@ -72,12 +85,14 @@ const icons = {
   Filter,
   Flash,
   Folder,
+  General,
   Grid,
   Heart,
   Info,
   List,
   Load,
   Machine,
+  Minimize,
   Modules,
   More,
   NewMachine,
@@ -88,6 +103,7 @@ const icons = {
   Report,
   Search,
   SearchFilled,
+  Services,
   Settings,
   Switch,
   Tag,

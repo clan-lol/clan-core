@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="38" height="27" viewBox="0 0 38 27" fill="currentColor">
-    <rect x="4.46155" y="4.15381" width="4.15385" height="4.15385"/>
-    <rect x="29.3846" y="4.15381" width="4.15385" height="4.15385"/>
-    <rect x="8.61539" width="4.15385" height="4.15385"/>
-    <rect x="33.5385" width="4.15385" height="4.15385"/>
-    <rect x="0.307678" width="4.15385" height="4.15385"/>
-    <rect x="25.2308" width="4.15385" height="4.15385"/>
-    <rect x="0.307678" y="8.30762" width="4.15385" height="4.15385"/>
-    <rect x="25.2308" y="8.30762" width="4.15385" height="4.15385"/>
-    <rect x="8.61539" y="8.30762" width="4.15385" height="4.15385"/>
-    <rect x="33.5385" y="8.30762" width="4.15385" height="4.15385"/>
-    <rect x="4" y="23" width="30" height="4"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"><path d="M39.247 38H8.753v-4.148h30.494zM9.223 22.923H5v-4.308h4.223zm8.444 0h-4.223v-4.308h4.223zm16.889 0h-4.223v-4.308h4.223zm8.444 0h-4.223v-4.308H43zm-29.556-4.308H9.223v-4.307h4.221zm25.333 0h-4.221v-4.307h4.221zM9.223 14.308H5V10h4.223zm8.444 0h-4.223V10h4.223zm16.889 0h-4.223V10h4.223zm8.444 0h-4.223V10H43z"/></svg>
