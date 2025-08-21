@@ -31,7 +31,11 @@ export const SidebarHeader = () => {
     ctx?.activeClanQuery?.data?.name.charAt(0).toUpperCase();
   const clanName = () => ctx?.activeClanQuery?.data?.name;
 
-  const clans = () => ctx.otherClanQueries.filter((clan) => !clan.isError);
+  const clanList = () =>
+    ctx.allClansQueries
+      .filter((it) => it.isSuccess)
+      .map((it) => it.data!)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div class="sidebar-header">
@@ -100,13 +104,13 @@ export const SidebarHeader = () => {
                   </Button>
                 </DropdownMenu.GroupLabel>
                 <div class="dropdown-group-items">
-                  <For each={clans()}>
+                  <For each={clanList()}>
                     {(clan) => (
                       <Suspense fallback={"Loading..."}>
                         <DropdownMenu.Item
                           class="dropdown-item"
                           onSelect={() => {
-                            setActiveClanURI(clan.data!.uri);
+                            setActiveClanURI(clan.uri);
                           }}
                         >
                           <Typography
@@ -114,7 +118,7 @@ export const SidebarHeader = () => {
                             size="xs"
                             weight="medium"
                           >
-                            {clan.data?.name}
+                            {clan.name}
                           </Typography>
                         </DropdownMenu.Item>
                       </Suspense>

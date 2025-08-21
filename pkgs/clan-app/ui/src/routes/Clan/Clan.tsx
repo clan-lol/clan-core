@@ -41,6 +41,7 @@ interface ClanContextProps {
   machinesQuery: MachinesQueryResult;
   activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
   otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
+  allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
 
   isLoading(): boolean;
 }
@@ -48,8 +49,10 @@ interface ClanContextProps {
 class DefaultClanContext implements ClanContextProps {
   public readonly clanURI: string;
   public readonly machinesQuery: MachinesQueryResult;
+
   public readonly activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
   public readonly otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
+  public readonly allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
 
   allQueries: UseQueryResult[];
 
@@ -61,8 +64,10 @@ class DefaultClanContext implements ClanContextProps {
   ) {
     this.clanURI = clanURI;
     this.machinesQuery = machinesQuery;
+
     this.activeClanQuery = activeClanQuery;
     this.otherClanQueries = otherClanQueries;
+    this.allClansQueries = [activeClanQuery, ...otherClanQueries];
 
     this.allQueries = [machinesQuery, activeClanQuery, ...otherClanQueries];
   }
