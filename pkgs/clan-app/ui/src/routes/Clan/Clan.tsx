@@ -36,12 +36,43 @@ import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 
-export const ClanContext = createContext<{
+interface ClanContextProps {
   clanURI: string;
   machinesQuery: MachinesQueryResult;
   activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
   otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
-}>();
+
+  isLoading(): boolean;
+}
+
+class DefaultClanContext implements ClanContextProps {
+  public readonly clanURI: string;
+  public readonly machinesQuery: MachinesQueryResult;
+  public readonly activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
+  public readonly otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
+
+  allQueries: UseQueryResult[];
+
+  constructor(
+    clanURI: string,
+    machinesQuery: MachinesQueryResult,
+    activeClanQuery: UseQueryResult<ClanDetailsWithURI>,
+    otherClanQueries: UseQueryResult<ClanDetailsWithURI>[],
+  ) {
+    this.clanURI = clanURI;
+    this.machinesQuery = machinesQuery;
+    this.activeClanQuery = activeClanQuery;
+    this.otherClanQueries = otherClanQueries;
+
+    this.allQueries = [machinesQuery, activeClanQuery, ...otherClanQueries];
+  }
+
+  isLoading(): boolean {
+    return this.allQueries.some((q) => q.isLoading);
+  }
+}
+
+export const ClanContext = createContext<ClanContextProps>();
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   const clanURI = useClanURI();
@@ -55,12 +86,14 @@ export const Clan: Component<RouteSectionProps> = (props) => {
 
   return (
     <ClanContext.Provider
-      value={{
-        clanURI,
-        machinesQuery,
-        activeClanQuery,
-        otherClanQueries,
-      }}
+      value={
+        new DefaultClanContext(
+          clanURI,
+          machinesQuery,
+          activeClanQuery,
+          otherClanQueries,
+        )
+      }
     >
       <Sidebar class={cx(styles.sidebar)} />
       {props.children}
@@ -205,30 +238,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
-  // a combination of the individual clan details query status and the machines query status
-  // the cube scene needs the machines query, the sidebar needs the clans query and machines query results
-  // so we wait on both before removing the loader to avoid any loading artefacts
-  const isLoading = (): boolean => {
-    // check if the active clan query is still loading
-    if (ctx.activeClanQuery.isLoading) {
-      return true;
-    }
-
-    // check the machines query first
-    if (ctx.machinesQuery.isLoading) {
-      return true;
-    }
-
-    // otherwise iterate the clans query and return early if we find a queries that is still loading
-    for (const query of ctx.otherClanQueries) {
-      if (query.isLoading) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
   return (
     <>
       <Show when={showModal()}>
@@ -251,7 +260,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       </Show>
       <div
         class={cx({
-          [styles.fadeOut]: !ctx.machinesQuery.isLoading && loadingCooldown(),
+          [styles.fadeOut]: !ctx.isLoading() && loadingCooldown(),
         })}
       >
         <Splash />
@@ -260,7 +269,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       <CubeScene
         selectedIds={selectedIds}
         onSelect={onMachineSelect}
-        isLoading={isLoading()}
+        isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
         onCreate={onCreate}
         sceneStore={() => store.sceneData?.[ctx.clanURI]}
