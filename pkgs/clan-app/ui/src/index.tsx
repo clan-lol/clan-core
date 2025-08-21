@@ -10,7 +10,13 @@ import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { ApiClientProvider } from "./hooks/ApiClient";
 import { callApi } from "./hooks/api";
 
-export const client = new QueryClient();
+export const client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 const root = document.getElementById("app");
 
