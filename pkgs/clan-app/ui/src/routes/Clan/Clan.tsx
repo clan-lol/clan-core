@@ -37,6 +37,7 @@ import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 
 export const ClanContext = createContext<{
+  clanURI: string;
   machinesQuery: MachinesQueryResult;
   activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
   otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
@@ -55,6 +56,7 @@ export const Clan: Component<RouteSectionProps> = (props) => {
   return (
     <ClanContext.Provider
       value={{
+        clanURI,
         machinesQuery,
         activeClanQuery,
         otherClanQueries,
@@ -118,13 +120,13 @@ const MockCreateMachine = (props: MockProps) => {
 };
 
 const ClanSceneController = (props: RouteSectionProps) => {
-  const clanURI = useClanURI();
-  const navigate = useNavigate();
-
   const ctx = useContext(ClanContext);
   if (!ctx) {
     throw new Error("ClanContext not found");
   }
+
+  const navigate = useNavigate();
+  const { clanURI } = ctx;
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
@@ -261,10 +263,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
         isLoading={isLoading()}
         cubesQuery={ctx.machinesQuery}
         onCreate={onCreate}
-        sceneStore={() => {
-          const clanURI = useClanURI();
-          return store.sceneData?.[clanURI];
-        }}
+        sceneStore={() => store.sceneData?.[ctx.clanURI]}
         setMachinePos={(machineId: string, pos: [number, number]) => {
           console.log("calling setStore", machineId, pos);
           setStore(
