@@ -3,11 +3,12 @@ import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For } from "solid-js";
+import { For, useContext } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
-import { useMachinesQuery, useMachineStateQuery } from "@/src/hooks/queries";
+import { useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
+import { ClanContext } from "@/src/routes/Clan/Clan";
 
 interface MachineProps {
   clanURI: string;
@@ -56,7 +57,11 @@ const MachineRoute = (props: MachineProps) => {
 
 export const SidebarBody = (props: SidebarProps) => {
   const clanURI = useClanURI();
-  const machineList = useMachinesQuery(clanURI);
+
+  const ctx = useContext(ClanContext);
+  if (!ctx) {
+    throw new Error("ClanContext not found");
+  }
 
   const sectionLabels = (props.staticSections || []).map(
     (section) => section.title,
@@ -96,7 +101,7 @@ export const SidebarBody = (props: SidebarProps) => {
           </Accordion.Header>
           <Accordion.Content class="content">
             <nav>
-              <For each={Object.entries(machineList.data || {})}>
+              <For each={Object.entries(ctx.machinesQuery.data || {})}>
                 {([id, machine]) => (
                   <MachineRoute
                     clanURI={clanURI}

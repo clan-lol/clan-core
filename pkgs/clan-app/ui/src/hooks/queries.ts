@@ -157,7 +157,7 @@ export const useMachineDetailsQuery = (
 
 export const useClanDetailsQuery = (clanURI: string) => {
   const client = useApiClient();
-  return useQuery<ClanDetails>(() => ({
+  return useQuery<ClanDetailsWithURI>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "details"],
     queryFn: async () => {
       const call = client.fetch("get_clan_details", {
