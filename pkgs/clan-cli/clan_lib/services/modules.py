@@ -1,8 +1,7 @@
 import re
 import tomllib
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, TypedDict
+from dataclasses import dataclass, field, fields
+from typing import Any, TypedDict, TypeVar
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
@@ -22,14 +21,14 @@ class CategoryInfo(TypedDict):
 
 
 @dataclass
-class Frontmatter:
+class ModuleManifest:
+    name: str
     description: str
     categories: list[str] = field(default_factory=lambda: ["Uncategorized"])
     features: list[str] = field(default_factory=list)
-    constraints: dict[str, Any] = field(default_factory=dict)
 
-    @property
-    def categories_info(self) -> dict[str, CategoryInfo]:
+    @classmethod
+    def categories_info(cls) -> dict[str, CategoryInfo]:
         category_map: dict[str, CategoryInfo] = {
             "AudioVideo": {
                 "color": "#AEC6CF",
@@ -55,9 +54,18 @@ class Frontmatter:
 
     def __post_init__(self) -> None:
         for category in self.categories:
-            if category not in self.categories_info:
+            if category not in ModuleManifest.categories_info():
                 msg = f"Invalid category: {category}"
                 raise ValueError(msg)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ModuleManifest":
+        """
+        Create an instance of this class from a dictionary.
+        Drops any keys that are not defined in the dataclass.
+        """
+        valid = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in data.items() if k in valid})
 
 
 def parse_frontmatter(readme_content: str) -> tuple[dict[str, Any] | None, str]:
@@ -87,14 +95,19 @@ def parse_frontmatter(readme_content: str) -> tuple[dict[str, Any] | None, str]:
             raise ClanError(
                 msg,
                 description="Invalid TOML frontmatter",
-                location="extract_frontmatter",
+                location="parse_frontmatter",
             ) from e
 
         return frontmatter_parsed, remaining_content
     return None, readme_content
 
 
-def extract_frontmatter(readme_content: str, err_scope: str) -> tuple[Frontmatter, str]:
+T = TypeVar("T")
+
+
+def extract_frontmatter[T](
+    readme_content: str, err_scope: str, fm_class: type[T]
+) -> tuple[T, str]:
     """
     Extracts TOML frontmatter from a README file content.
 
@@ -111,47 +124,15 @@ def extract_frontmatter(readme_content: str, err_scope: str) -> tuple[Frontmatte
     frontmatter_raw, remaining_content = parse_frontmatter(readme_content)
 
     if frontmatter_raw:
-        return Frontmatter(**frontmatter_raw), remaining_content
+        return fm_class(**frontmatter_raw), remaining_content
 
     # If no frontmatter is found, raise an error
     msg = "Invalid README: Frontmatter not found."
     raise ClanError(
         msg,
-        location="extract_frontmatter",
+        location="extract_module_frontmatter",
         description=f"{err_scope} does not contain valid frontmatter.",
     )
-
-
-def has_inventory_feature(module_path: Path) -> bool:
-    readme_file = module_path / "README.md"
-    if not readme_file.exists():
-        return False
-    with readme_file.open() as f:
-        readme = f.read()
-        frontmatter, _ = extract_frontmatter(readme, f"{module_path}")
-        return "inventory" in frontmatter.features
-
-
-def get_roles(module_path: Path) -> None | list[str]:
-    if not has_inventory_feature(module_path):
-        return None
-
-    roles_dir = module_path / "roles"
-    if not roles_dir.exists() or not roles_dir.is_dir():
-        return []
-
-    return [
-        role.stem  # filename without .nix extension
-        for role in roles_dir.iterdir()
-        if role.is_file() and role.suffix == ".nix"
-    ]
-
-
-class ModuleManifest(TypedDict):
-    name: str
-    description: str
-    categories: list[str]
-    features: dict[str, bool]
 
 
 @dataclass
@@ -171,7 +152,18 @@ def list_service_modules(flake: Flake) -> ModuleList:
     """
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
-    return ModuleList({"modules": modules})
+    res: dict[str, dict[str, ModuleInfo]] = {}
+    for input_name, module_set in modules.items():
+        res[input_name] = {}
+
+        for module_name, module_info in module_set.items():
+            # breakpoint()
+            res[input_name][module_name] = ModuleInfo(
+                manifest=ModuleManifest.from_dict(module_info.get("manifest")),
+                roles=module_info.get("roles", {}),
+            )
+
+    return ModuleList(modules=res)
 
 
 @API.register
@@ -301,51 +293,3 @@ def create_service_instance(
     )
 
     return
-
-
-@dataclass
-class LegacyModuleInfo:
-    description: str
-    categories: list[str]
-    roles: None | list[str]
-    readme: str
-    features: list[str]
-    constraints: dict[str, Any]
-
-
-def get_module_info(
-    module_name: str,
-    module_path: Path,
-) -> LegacyModuleInfo:
-    """
-    Retrieves information about a module
-    """
-    if not module_path.exists():
-        msg = "Module not found"
-        raise ClanError(
-            msg,
-            location=f"show_module_info {module_name}",
-            description="Module does not exist",
-        )
-    module_readme = module_path / "README.md"
-    if not module_readme.exists():
-        msg = "Module not found"
-        raise ClanError(
-            msg,
-            location=f"show_module_info {module_name}",
-            description="Module does not exist or doesn't have any README.md file",
-        )
-    with module_readme.open() as f:
-        readme = f.read()
-        frontmatter, readme_content = extract_frontmatter(
-            readme, f"{module_path}/README.md"
-        )
-
-    return LegacyModuleInfo(
-        description=frontmatter.description,
-        categories=frontmatter.categories,
-        roles=get_roles(module_path),
-        readme=readme_content,
-        features=["inventory"] if has_inventory_feature(module_path) else [],
-        constraints=frontmatter.constraints,
-    )

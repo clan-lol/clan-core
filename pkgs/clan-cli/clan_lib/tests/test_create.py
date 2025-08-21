@@ -204,8 +204,7 @@ def test_clan_create_api(
 
     modules = list_service_modules(clan_dir_flake)
     assert (
-        modules["modules"]["clan-core"]["admin"]["manifest"]["name"]
-        == "clan-core/admin"
+        modules["modules"]["clan-core"]["admin"]["manifest"].name == "clan-core/admin"
     )
 
     set_value_by_path(inventory, "instances", inventory_conf.instances)
