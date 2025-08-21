@@ -39,7 +39,7 @@ div.sidebar-header {
 }
 
 .sidebar-dropdown-content {
-  @apply flex flex-col w-full px-2 py-1.5 z-10;
+  @apply flex flex-col w-full px-2 py-1.5 z-10 gap-3;
   @apply bg-def-1 rounded-bl-md rounded-br-md;
   @apply border border-def-2;
 
