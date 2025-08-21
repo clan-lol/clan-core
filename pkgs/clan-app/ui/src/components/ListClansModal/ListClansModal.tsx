@@ -5,15 +5,20 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { navigateToClan, navigateToOnboarding } from "@/src/hooks/clan";
 import { useNavigate } from "@solidjs/router";
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import { activeClanURI, clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { useClanListQuery } from "@/src/hooks/queries";
+import { Alert } from "@/src/components/Alert/Alert";
 
-export interface ClansModalProps {
+export interface ListClansModalProps {
   onClose: () => void;
+  error?: {
+    title: string;
+    description: string;
+  };
 }
 
-export const ListClansModal = (props: ClansModalProps) => {
+export const ListClansModal = (props: ListClansModalProps) => {
   const navigate = useNavigate();
 
   const query = useClanListQuery(clanURIs());
@@ -38,6 +43,14 @@ export const ListClansModal = (props: ClansModalProps) => {
       class={cx(styles.modal)}
     >
       <div class={cx(styles.content)}>
+        <Show when={props.error}>
+          <Alert
+            type="error"
+            title={props.error?.title || ""}
+            description={props.error?.description}
+          />
+        </Show>
+
         <div class={cx(styles.header)}>
           <Typography
             hierarchy="label"

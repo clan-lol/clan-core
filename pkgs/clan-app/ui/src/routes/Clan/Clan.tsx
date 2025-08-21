@@ -1,13 +1,14 @@
-import { RouteSectionProps } from "@solidjs/router";
+import { RouteSectionProps, useNavigate } from "@solidjs/router";
 import {
   Component,
-  JSX,
-  Show,
+  createContext,
   createEffect,
   createMemo,
   createSignal,
   on,
   onMount,
+  Show,
+  useContext,
 } from "solid-js";
 import {
   buildMachinePath,
@@ -16,13 +17,14 @@ import {
 } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import {
-  ClanListQueryResult,
+  ClanDetailsWithURI,
   MachinesQueryResult,
+  useClanDetailsQuery,
   useClanListQuery,
   useMachinesQuery,
 } from "@/src/hooks/queries";
 import { callApi } from "@/src/hooks/api";
-import { store, setStore, clanURIs } from "@/src/stores/clan";
+import { clanURIs, setStore, store } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
 import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
@@ -32,15 +34,36 @@ import { Modal } from "@/src/components/Modal/Modal";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
-import { useNavigate } from "@solidjs/router";
+import { UseQueryResult } from "@tanstack/solid-query";
+
+export const ClanContext = createContext<{
+  machinesQuery: MachinesQueryResult;
+  activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
+  otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
+}>();
 
 export const Clan: Component<RouteSectionProps> = (props) => {
+  const clanURI = useClanURI();
+  const activeClanQuery = useClanDetailsQuery(clanURI);
+
+  const otherClanQueries = useClanListQuery(
+    clanURIs().filter((uri) => uri !== clanURI),
+  );
+
+  const machinesQuery = useMachinesQuery(clanURI);
+
   return (
-    <>
+    <ClanContext.Provider
+      value={{
+        machinesQuery,
+        activeClanQuery,
+        otherClanQueries,
+      }}
+    >
       <Sidebar class={cx(styles.sidebar)} />
       {props.children}
       <ClanSceneController {...props} />
-    </>
+    </ClanContext.Provider>
   );
 };
 
@@ -98,7 +121,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
   const clanURI = useClanURI();
   const navigate = useNavigate();
 
-  const machinesQuery = useMachinesQuery(clanURI);
+  const ctx = useContext(ClanContext);
+  if (!ctx) {
+    throw new Error("ClanContext not found");
+  }
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
@@ -133,7 +159,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }
 
     // trigger a refetch of the machines query
-    machinesQuery.refetch();
+    ctx.machinesQuery.refetch();
 
     return { id: values.name };
   };
@@ -177,102 +203,87 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
+  // a combination of the individual clan details query status and the machines query status
+  // the cube scene needs the machines query, the sidebar needs the clans query and machines query results
+  // so we wait on both before removing the loader to avoid any loading artefacts
+  const isLoading = (): boolean => {
+    // check if the active clan query is still loading
+    if (ctx.activeClanQuery.isLoading) {
+      return true;
+    }
+
+    // check the machines query first
+    if (ctx.machinesQuery.isLoading) {
+      return true;
+    }
+
+    // otherwise iterate the clans query and return early if we find a queries that is still loading
+    for (const query of ctx.otherClanQueries) {
+      if (query.isLoading) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   return (
-    <SceneDataProvider clanURI={clanURI}>
-      {({ clansQuery, machinesQuery }) => {
-        // a combination of the individual clan details query status and the machines query status
-        // the cube scene needs the machines query, the sidebar needs the clans query and machines query results
-        // so we wait on both before removing the loader to avoid any loading artefacts
-        const isLoading = (): boolean => {
-          // check the machines query first
-          if (machinesQuery.isLoading) {
-            return true;
-          }
-
-          // otherwise iterate the clans query and return early if we find a queries that is still loading
-          for (const query of clansQuery) {
-            if (query.isLoading) {
-              return true;
+    <>
+      <Show when={showModal()}>
+        <MockCreateMachine
+          onClose={() => {
+            setShowModal(false);
+            dialogHandlers()?.reject(new Error("User cancelled"));
+          }}
+          onSubmit={async (values) => {
+            try {
+              const result = await sendCreate(values);
+              dialogHandlers()?.resolve(result);
+              setShowModal(false);
+            } catch (err) {
+              dialogHandlers()?.reject(err);
+              setShowModal(false);
             }
-          }
+          }}
+        />
+      </Show>
+      <div
+        class={cx({
+          [styles.fadeOut]: !ctx.machinesQuery.isLoading && loadingCooldown(),
+        })}
+      >
+        <Splash />
+      </div>
 
-          return false;
-        };
-
-        return (
-          <>
-            <Show when={showModal()}>
-              <MockCreateMachine
-                onClose={() => {
-                  setShowModal(false);
-                  dialogHandlers()?.reject(new Error("User cancelled"));
-                }}
-                onSubmit={async (values) => {
-                  try {
-                    const result = await sendCreate(values);
-                    dialogHandlers()?.resolve(result);
-                    setShowModal(false);
-                  } catch (err) {
-                    dialogHandlers()?.reject(err);
-                    setShowModal(false);
-                  }
-                }}
-              />
-            </Show>
-            <div
-              class={cx({
-                [styles.fadeOut]: !machinesQuery.isLoading && loadingCooldown(),
-              })}
-            >
-              <Splash />
-            </div>
-
-            <CubeScene
-              selectedIds={selectedIds}
-              onSelect={onMachineSelect}
-              isLoading={isLoading()}
-              cubesQuery={machinesQuery}
-              onCreate={onCreate}
-              sceneStore={() => {
-                const clanURI = useClanURI();
-                return store.sceneData?.[clanURI];
-              }}
-              setMachinePos={(machineId: string, pos: [number, number]) => {
-                console.log("calling setStore", machineId, pos);
-                setStore(
-                  produce((s) => {
-                    if (!s.sceneData) {
-                      s.sceneData = {};
-                    }
-                    if (!s.sceneData[clanURI]) {
-                      s.sceneData[clanURI] = {};
-                    }
-                    if (!s.sceneData[clanURI][machineId]) {
-                      s.sceneData[clanURI][machineId] = { position: pos };
-                    } else {
-                      s.sceneData[clanURI][machineId].position = pos;
-                    }
-                  }),
-                );
-              }}
-            />
-          </>
-        );
-      }}
-    </SceneDataProvider>
+      <CubeScene
+        selectedIds={selectedIds}
+        onSelect={onMachineSelect}
+        isLoading={isLoading()}
+        cubesQuery={ctx.machinesQuery}
+        onCreate={onCreate}
+        sceneStore={() => {
+          const clanURI = useClanURI();
+          return store.sceneData?.[clanURI];
+        }}
+        setMachinePos={(machineId: string, pos: [number, number]) => {
+          console.log("calling setStore", machineId, pos);
+          setStore(
+            produce((s) => {
+              if (!s.sceneData) {
+                s.sceneData = {};
+              }
+              if (!s.sceneData[clanURI]) {
+                s.sceneData[clanURI] = {};
+              }
+              if (!s.sceneData[clanURI][machineId]) {
+                s.sceneData[clanURI][machineId] = { position: pos };
+              } else {
+                s.sceneData[clanURI][machineId].position = pos;
+              }
+            }),
+          );
+        }}
+      />
+    </>
   );
-};
-
-const SceneDataProvider = (props: {
-  clanURI: string;
-  children: (sceneData: {
-    clansQuery: ClanListQueryResult;
-    machinesQuery: MachinesQueryResult;
-  }) => JSX.Element;
-}) => {
-  const clansQuery = useClanListQuery(clanURIs());
-  const machinesQuery = useMachinesQuery(props.clanURI);
-
-  // This component can be used to provide scene data or context if needed
-  return props.children({ clansQuery, machinesQuery });
 };
