@@ -3,7 +3,6 @@ import {
   createContext,
   createSignal,
   JSX,
-  Setter,
   useContext,
 } from "solid-js";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
@@ -28,7 +27,9 @@ export function createStepper<
   s: { steps: T },
   stepOpts: StepOptions<StepId, StoreType>,
 ): StepperReturn<T, T[number]["id"]> {
-  const [history, setHistory] = createSignal<T[number]["id"][]>(["init"]);
+  const [history, setHistory] = createSignal<T[number]["id"][]>([
+    stepOpts.initialStep,
+  ]);
 
   const activeStep = () => history()[history().length - 1];
 
