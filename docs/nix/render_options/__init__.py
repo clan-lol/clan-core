@@ -32,7 +32,7 @@ from typing import Any
 from clan_lib.errors import ClanError
 from clan_lib.services.modules import (
     CategoryInfo,
-    ModuleFrontmatter,
+    ModuleManifest,
 )
 
 # Get environment variables
@@ -336,10 +336,9 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
         # output += f"`clan.modules.{module_name}`\n"
         output += f"*{module_info['manifest']['description']}*\n"
 
-        fm = ModuleFrontmatter("")
         # output += "## Categories\n\n"
         output += render_categories(
-            module_info["manifest"]["categories"], fm.categories_info
+            module_info["manifest"]["categories"], ModuleManifest.categories_info()
         )
 
         output += f"{module_info['manifest']['readme']}\n"

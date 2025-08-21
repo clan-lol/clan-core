@@ -27,8 +27,8 @@ class ModuleManifest:
     categories: list[str] = field(default_factory=lambda: ["Uncategorized"])
     features: list[str] = field(default_factory=list)
 
-    @property
-    def categories_info(self) -> dict[str, CategoryInfo]:
+    @classmethod
+    def categories_info(cls) -> dict[str, CategoryInfo]:
         category_map: dict[str, CategoryInfo] = {
             "AudioVideo": {
                 "color": "#AEC6CF",
@@ -54,14 +54,14 @@ class ModuleManifest:
 
     def __post_init__(self) -> None:
         for category in self.categories:
-            if category not in self.categories_info:
+            if category not in ModuleManifest.categories_info():
                 msg = f"Invalid category: {category}"
                 raise ValueError(msg)
 
     @classmethod
     def from_dict(cls, data: dict) -> "ModuleManifest":
         """
-        Create an instance of ModuleFrontmatter from a dictionary.
+        Create an instance of this class from a dictionary.
         Drops any keys that are not defined in the dataclass.
         """
         valid = {f.name for f in fields(cls)}
