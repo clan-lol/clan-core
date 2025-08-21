@@ -46,6 +46,18 @@
   src: url(../.fonts/CommitMonoV143-VF.woff2) format("woff2");
 }
 
+@font-face {
+  font-family: "Commit Mono";
+  font-weight: 500;
+  src: url(../.fonts/CommitMonoV143-VF.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  font-weight: 600;
+  src: url(../.fonts/CommitMonoV143-VF.woff2) format("woff2");
+}
+
 html {
   @apply font-sans;
   overflow-x: hidden;
