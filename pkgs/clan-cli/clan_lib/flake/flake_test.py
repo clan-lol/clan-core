@@ -157,6 +157,21 @@ def test_select() -> None:
     with pytest.raises(KeyError):
         test_cache.select(selectors)
 
+    testdict2 = {"x": {"y": {"a": 1, "b": 2}, "z": None}, "n": {}}
+    test_cache.insert(testdict2, parse_selector("testdict2"))
+    assert test_cache.select(parse_selector("testdict2.n")) == {}
+    assert test_cache.select(parse_selector("testdict2.?n")) == {"n": {}}
+    assert test_cache.select(parse_selector("testdict2.x.*.?a")) == {"y": {"a": 1}}
+    assert test_cache.select(parse_selector("testdict2.x.z.?a")) == {}
+    assert test_cache.select(parse_selector("testdict2.x.z.{?a}")) == {}
+    assert test_cache.select(parse_selector("testdict2.x.z.{}")) == {}
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("testdict2.x.z.a"))
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("testdict2.x.z.{a}"))
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("testdict2.x.z.{a,?b}"))
+
 
 def test_out_path() -> None:
     testdict = {"x": {"y": [123, 345, 456], "z": "/nix/store/abc-bla"}}

@@ -279,11 +279,15 @@ def parse_selector(selector: str) -> list[Selector]:
                 submode = ""
                 acc_str = ""
             elif c == "}":
-                if submode == "maybe":
-                    set_select_type = SetSelectorType.MAYBE
-                else:
-                    set_select_type = SetSelectorType.STR
-                acc_selectors.append(SetSelector(type=set_select_type, value=acc_str))
+                # Only append selector if we have accumulated content
+                if acc_str != "" or submode != "":
+                    if submode == "maybe":
+                        set_select_type = SetSelectorType.MAYBE
+                    else:
+                        set_select_type = SetSelectorType.STR
+                    acc_selectors.append(
+                        SetSelector(type=set_select_type, value=acc_str)
+                    )
                 # Check for invalid multiselect patterns with outPath
                 for subselector in acc_selectors:
                     if subselector.value == "outPath":
@@ -554,16 +558,37 @@ class FlakeCacheEntry:
             return self.value[selector.value].select(selectors[1:])
 
         # if we are a MAYBE selector, we check if the key exists in the dict
-        if selector.type == SelectorType.MAYBE and isinstance(self.value, dict):
+        if selector.type == SelectorType.MAYBE:
             assert isinstance(selector.value, str)
-            if selector.value in self.value:
-                if self.value[selector.value].exists:
-                    return {
-                        selector.value: self.value[selector.value].select(selectors[1:])
-                    }
+            if isinstance(self.value, dict):
+                if selector.value in self.value:
+                    if self.value[selector.value].exists:
+                        return {
+                            selector.value: self.value[selector.value].select(
+                                selectors[1:]
+                            )
+                        }
+                    return {}
+                # Key not found, return empty dict for MAYBE selector
                 return {}
-            if self.fetched_all:
+            # Non-dict value (including None), return empty dict for MAYBE selector
+            return {}
+
+        # Handle SET selector on non-dict values
+        if selector.type == SelectorType.SET and not isinstance(self.value, dict):
+            assert isinstance(selector.value, list)
+            # Empty set or all sub-selectors are MAYBE
+            if len(selector.value) == 0:
+                # Empty set, return empty dict
                 return {}
+            all_maybe = all(
+                subselector.type == SetSelectorType.MAYBE
+                for subselector in selector.value
+            )
+            if all_maybe:
+                # All sub-selectors are MAYBE, return empty dict for non-dict values
+                return {}
+            # Not all sub-selectors are MAYBE, fall through to raise KeyError
 
         # otherwise we return a list or a dict
         if isinstance(self.value, dict):
@@ -590,13 +615,24 @@ class FlakeCacheEntry:
 
             # if we are a list, return a list
             if self.is_list:
-                result = []
+                result_list: list[Any] = []
                 for index in keys_to_select:
-                    result.append(self.value[index].select(selectors[1:]))
-                return result
+                    result_list.append(self.value[index].select(selectors[1:]))
+                return result_list
 
             # otherwise return a dict
-            return {k: self.value[k].select(selectors[1:]) for k in keys_to_select}
+            result_dict: dict[str, Any] = {}
+            for key in keys_to_select:
+                value = self.value[key].select(selectors[1:])
+                if self.value[key].exists:
+                    # Skip empty dicts when the original value is None
+                    if not (
+                        isinstance(value, dict)
+                        and len(value) == 0
+                        and self.value[key].value is None
+                    ):
+                        result_dict[key] = value
+            return result_dict
 
         # return a KeyError if we cannot fetch the key
         str_selector: str
