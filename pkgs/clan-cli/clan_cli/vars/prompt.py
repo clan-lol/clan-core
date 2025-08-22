@@ -114,34 +114,89 @@ def get_multiline_hidden_input() -> str:
     return "\n".join(lines)
 
 
+def _get_secret_input_with_confirmation(
+    ident: str, input_type: PromptType, text: str, max_attempts: int = 3
+) -> str:
+    """Get secret input with confirmation, retrying on mismatch."""
+    for attempt in range(max_attempts):
+        try:
+            first_input, second_input = _prompt_for_confirmation(input_type, text)
+
+            if first_input == second_input:
+                log.info("Input received and confirmed. Processing...")
+                return first_input
+
+            remaining = max_attempts - attempt - 1
+            if remaining > 0:
+                attempts_text = "attempt" if remaining == 1 else "attempts"
+                print(f"Values do not match. {remaining} {attempts_text} remaining.")
+            else:
+                msg = f"Failed to confirm value for {ident} after {max_attempts} attempts."
+                raise ClanError(msg)
+
+        except KeyboardInterrupt as e:
+            msg = "User cancelled the input."
+            raise ClanError(msg) from e
+
+    # Should never reach here due to logic above, but keeping for safety
+    msg = f"Failed to get input for {ident}"
+    raise ClanError(msg)
+
+
+def _prompt_for_confirmation(input_type: PromptType, text: str) -> tuple[str, str]:
+    """Prompt user twice for the same input to confirm."""
+    match input_type:
+        case PromptType.MULTILINE_HIDDEN:
+            print("Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):")
+            first_input = get_multiline_hidden_input()
+            print(
+                "Confirm by entering the same value again (press Ctrl-D to finish or Ctrl-C to cancel):"
+            )
+            second_input = get_multiline_hidden_input()
+        case PromptType.HIDDEN:
+            first_input = getpass(f"{text} (hidden): ")
+            second_input = getpass(f"Confirm {text} (hidden): ")
+        case _:
+            msg = f"Unsupported input type for confirmation: {input_type}"
+            raise ClanError(msg)
+
+    return first_input, second_input
+
+
+def _get_regular_input(input_type: PromptType, text: str) -> str:
+    """Get regular (non-secret) input from user."""
+    try:
+        match input_type:
+            case PromptType.LINE:
+                return input(f"{text}: ")
+            case PromptType.MULTILINE:
+                print(f"{text} (Finish with Ctrl-D): ")
+                return sys.stdin.read()
+            case _:
+                msg = f"Unsupported input type: {input_type}"
+                raise ClanError(msg)
+    except KeyboardInterrupt as e:
+        msg = "User cancelled the input."
+        raise ClanError(msg) from e
+
+
 def ask(
     ident: str,
     input_type: PromptType,
     label: str | None,
 ) -> str:
-    text = f"Enter the value for {ident}:"
-    if label:
-        text = f"{label}"
+    """Ask user for input, with confirmation for secret inputs."""
+    text = label or f"Enter the value for {ident}:"
     log.info(f"Prompting value for {ident}")
+
     if MOCK_PROMPT_RESPONSE:
         return next(MOCK_PROMPT_RESPONSE)
-    try:
-        match input_type:
-            case PromptType.LINE:
-                result = input(f"{text}: ")
-            case PromptType.MULTILINE:
-                print(f"{text} (Finish with Ctrl-D): ")
-                result = sys.stdin.read()
-            case PromptType.MULTILINE_HIDDEN:
-                print(
-                    "Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):",
-                )
-                result = get_multiline_hidden_input()
-            case PromptType.HIDDEN:
-                result = getpass(f"{text} (hidden): ")
-    except KeyboardInterrupt as e:
-        msg = "User cancelled the input."
-        raise ClanError(msg) from e
 
+    # Secret prompts require confirmation
+    if input_type in (PromptType.HIDDEN, PromptType.MULTILINE_HIDDEN):
+        return _get_secret_input_with_confirmation(ident, input_type, text)
+
+    # Regular prompts don't need confirmation
+    result = _get_regular_input(input_type, text)
     log.info("Input received. Processing...")
     return result
