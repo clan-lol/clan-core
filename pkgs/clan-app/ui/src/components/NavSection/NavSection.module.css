@@ -1,9 +1,9 @@
 .navSection {
-  @apply w-full flex gap-2 items-center justify-between;
+  @apply w-full flex gap-1.5 items-center justify-between;
   @apply rounded-md px-4 py-5 bg-def-2;
 
   .meta {
-    @apply flex flex-col gap-2;
+    @apply flex flex-col gap-1;
   }
 
   &:hover {
