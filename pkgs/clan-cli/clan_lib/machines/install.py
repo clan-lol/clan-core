@@ -234,7 +234,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
 
         set_value_by_path(
             inventory,
-            f"machine.{machine.name}.installedAt",
+            f"machines.{machine.name}.installedAt",
             # Cut of the milliseconds
             int(time()),
         )
