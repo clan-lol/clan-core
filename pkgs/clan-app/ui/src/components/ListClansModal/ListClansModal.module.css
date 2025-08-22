@@ -12,13 +12,4 @@
   .clans {
     @apply flex flex-col gap-2;
   }
-
-  .clan {
-    @apply flex items-center justify-between;
-    @apply px-4 py-5 bg-def-2;
-
-    .meta {
-      @apply flex flex-col gap-1;
-    }
-  }
 }

@@ -9,6 +9,7 @@ import { For, Show } from "solid-js";
 import { activeClanURI, clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { useClanListQuery } from "@/src/hooks/queries";
 import { Alert } from "@/src/components/Alert/Alert";
+import { NavSection } from "../NavSection/NavSection";
 
 export interface ListClansModalProps {
   onClose?: () => void;
@@ -78,20 +79,10 @@ export const ListClansModal = (props: ListClansModalProps) => {
         <ul class={cx(styles.clans)}>
           <For each={clanList()}>
             {(clan) => (
-              <li class={cx(styles.clan)}>
-                <div class={cx(styles.meta)}>
-                  <Typography hierarchy="label" weight="bold" size="default">
-                    {clan.data.name}
-                  </Typography>
-                  <Typography hierarchy="body" size="s">
-                    {clan.data.description}
-                  </Typography>
-                </div>
-
-                <Button
-                  hierarchy="secondary"
-                  ghost
-                  icon="CaretRight"
+              <li>
+                <NavSection
+                  label={clan.data.name}
+                  description={clan.data.description ?? undefined}
                   onClick={selectClan(clan.data.uri)}
                 />
               </li>
