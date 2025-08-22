@@ -35,30 +35,84 @@ import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
+import { ListClansModal } from "@/src/components/ListClansModal/ListClansModal";
 
-export const ClanContext = createContext<{
+interface ClanContextProps {
+  clanURI: string;
   machinesQuery: MachinesQueryResult;
   activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
   otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
-}>();
+  allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
+
+  isLoading(): boolean;
+  isError(): boolean;
+}
+
+class DefaultClanContext implements ClanContextProps {
+  public readonly clanURI: string;
+
+  public readonly activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
+  public readonly otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
+  public readonly allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
+
+  public readonly machinesQuery: MachinesQueryResult;
+
+  allQueries: UseQueryResult[];
+
+  constructor(
+    clanURI: string,
+    machinesQuery: MachinesQueryResult,
+    activeClanQuery: UseQueryResult<ClanDetailsWithURI>,
+    otherClanQueries: UseQueryResult<ClanDetailsWithURI>[],
+  ) {
+    this.clanURI = clanURI;
+    this.machinesQuery = machinesQuery;
+
+    this.activeClanQuery = activeClanQuery;
+    this.otherClanQueries = otherClanQueries;
+    this.allClansQueries = [activeClanQuery, ...otherClanQueries];
+
+    this.allQueries = [machinesQuery, activeClanQuery, ...otherClanQueries];
+  }
+
+  isLoading(): boolean {
+    return this.allQueries.some((q) => q.isLoading);
+  }
+
+  isError(): boolean {
+    return this.activeClanQuery.isError;
+  }
+}
+
+export const ClanContext = createContext<ClanContextProps>();
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   const clanURI = useClanURI();
   const activeClanQuery = useClanDetailsQuery(clanURI);
 
+  createEffect(() => {
+    if (activeClanQuery.isError) {
+      console.error("Error loading active clan", activeClanQuery.error);
+    }
+  });
+
   const otherClanQueries = useClanListQuery(
-    clanURIs().filter((uri) => uri !== clanURI),
+    clanURIs().filter((uri) => uri != clanURI),
+    clanURI,
   );
 
   const machinesQuery = useMachinesQuery(clanURI);
 
   return (
     <ClanContext.Provider
-      value={{
-        machinesQuery,
-        activeClanQuery,
-        otherClanQueries,
-      }}
+      value={
+        new DefaultClanContext(
+          clanURI,
+          machinesQuery,
+          activeClanQuery,
+          otherClanQueries,
+        )
+      }
     >
       <Sidebar class={cx(styles.sidebar)} />
       {props.children}
@@ -118,13 +172,12 @@ const MockCreateMachine = (props: MockProps) => {
 };
 
 const ClanSceneController = (props: RouteSectionProps) => {
-  const clanURI = useClanURI();
-  const navigate = useNavigate();
-
   const ctx = useContext(ClanContext);
   if (!ctx) {
     throw new Error("ClanContext not found");
   }
+
+  const navigate = useNavigate();
 
   const [dialogHandlers, setDialogHandlers] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
@@ -142,7 +195,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
     const api = callApi("create_machine", {
       opts: {
         clan_dir: {
-          identifier: clanURI,
+          identifier: ctx.clanURI,
         },
         machine: {
           name: values.name,
@@ -166,11 +219,24 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const [showModal, setShowModal] = createSignal(false);
 
+  const [loadingError, setLoadingError] = createSignal<
+    { title: string; description: string } | undefined
+  >();
   const [loadingCooldown, setLoadingCooldown] = createSignal(false);
+
   onMount(() => {
     setTimeout(() => {
       setLoadingCooldown(true);
     }, 1500);
+  });
+
+  createEffect(() => {
+    if (ctx.activeClanQuery.isError) {
+      setLoadingError({
+        title: "Error loading clan",
+        description: ctx.activeClanQuery.error.message,
+      });
+    }
   });
 
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
@@ -179,15 +245,11 @@ const ClanSceneController = (props: RouteSectionProps) => {
     // Get the first selected ID and navigate to its machine details
     const selected = ids.values().next().value;
     if (selected) {
-      navigate(buildMachinePath(clanURI, selected));
+      navigate(buildMachinePath(ctx.clanURI, selected));
     }
   };
 
   const machine = createMemo(() => maybeUseMachineName());
-
-  createEffect(() => {
-    console.log("Selected clan:", clanURI);
-  });
 
   createEffect(
     on(machine, (machineId) => {
@@ -203,32 +265,11 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
-  // a combination of the individual clan details query status and the machines query status
-  // the cube scene needs the machines query, the sidebar needs the clans query and machines query results
-  // so we wait on both before removing the loader to avoid any loading artefacts
-  const isLoading = (): boolean => {
-    // check if the active clan query is still loading
-    if (ctx.activeClanQuery.isLoading) {
-      return true;
-    }
-
-    // check the machines query first
-    if (ctx.machinesQuery.isLoading) {
-      return true;
-    }
-
-    // otherwise iterate the clans query and return early if we find a queries that is still loading
-    for (const query of ctx.otherClanQueries) {
-      if (query.isLoading) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
   return (
     <>
+      <Show when={loadingError()}>
+        <ListClansModal error={loadingError()} />
+      </Show>
       <Show when={showModal()}>
         <MockCreateMachine
           onClose={() => {
@@ -249,7 +290,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       </Show>
       <div
         class={cx({
-          [styles.fadeOut]: !ctx.machinesQuery.isLoading && loadingCooldown(),
+          [styles.fadeOut]: !ctx.isLoading() && loadingCooldown(),
         })}
       >
         <Splash />
@@ -258,13 +299,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
       <CubeScene
         selectedIds={selectedIds}
         onSelect={onMachineSelect}
-        isLoading={isLoading()}
+        isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
         onCreate={onCreate}
-        sceneStore={() => {
-          const clanURI = useClanURI();
-          return store.sceneData?.[clanURI];
-        }}
+        sceneStore={() => store.sceneData?.[ctx.clanURI]}
         setMachinePos={(machineId: string, pos: [number, number]) => {
           console.log("calling setStore", machineId, pos);
           setStore(
@@ -272,13 +310,13 @@ const ClanSceneController = (props: RouteSectionProps) => {
               if (!s.sceneData) {
                 s.sceneData = {};
               }
-              if (!s.sceneData[clanURI]) {
-                s.sceneData[clanURI] = {};
+              if (!s.sceneData[ctx.clanURI]) {
+                s.sceneData[ctx.clanURI] = {};
               }
-              if (!s.sceneData[clanURI][machineId]) {
-                s.sceneData[clanURI][machineId] = { position: pos };
+              if (!s.sceneData[ctx.clanURI][machineId]) {
+                s.sceneData[ctx.clanURI][machineId] = { position: pos };
               } else {
-                s.sceneData[clanURI][machineId].position = pos;
+                s.sceneData[ctx.clanURI][machineId].position = pos;
               }
             }),
           );

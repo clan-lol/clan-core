@@ -1,7 +1,14 @@
-import { useQueries, useQuery, UseQueryResult } from "@tanstack/solid-query";
+import {
+  QueryClient,
+  useQueries,
+  useQuery,
+  UseQueryResult,
+} from "@tanstack/solid-query";
 import { SuccessData } from "../hooks/api";
 import { encodeBase64 } from "@/src/hooks/clan";
 import { useApiClient } from "./ApiClient";
+import { experimental_createQueryPersister } from "@tanstack/solid-query-persist-client";
+import { ClanDetailsStore } from "@/src/stores/clanDetails";
 
 export type ClanDetails = SuccessData<"get_clan_details">;
 export type ClanDetailsWithURI = ClanDetails & { uri: string };
@@ -23,6 +30,14 @@ export interface MachineDetail {
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
 export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
+
+export const DefaultQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 export const useMachinesQuery = (clanURI: string) => {
   const client = useApiClient();
@@ -155,10 +170,15 @@ export const useMachineDetailsQuery = (
   }));
 };
 
+export const ClanDetailsPersister = experimental_createQueryPersister({
+  storage: ClanDetailsStore,
+});
+
 export const useClanDetailsQuery = (clanURI: string) => {
   const client = useApiClient();
   return useQuery<ClanDetailsWithURI>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "details"],
+    persister: ClanDetailsPersister.persisterFn,
     queryFn: async () => {
       const call = client.fetch("get_clan_details", {
         flake: {
@@ -169,7 +189,7 @@ export const useClanDetailsQuery = (clanURI: string) => {
 
       if (result.status === "error") {
         // todo should we create some specific error types?
-        console.error("Error fetching clan details:", result.errors);
+        console.error("Error fetching clan details", clanURI, result.errors);
         throw new Error(result.errors[0].message);
       }
 
@@ -181,32 +201,54 @@ export const useClanDetailsQuery = (clanURI: string) => {
   }));
 };
 
-export const useClanListQuery = (clanURIs: string[]): ClanListQueryResult => {
+export const useClanListQuery = (
+  clanURIs: string[],
+  activeClanURI?: string,
+): ClanListQueryResult => {
   const client = useApiClient();
+
   return useQueries(() => ({
-    queries: clanURIs.map((clanURI) => ({
-      queryKey: ["clans", encodeBase64(clanURI), "details"],
-      enabled: !!clanURI,
-      queryFn: async () => {
-        const call = client.fetch("get_clan_details", {
-          flake: {
-            identifier: clanURI,
-          },
-        });
-        const result = await call.result;
+    queries: clanURIs.map((clanURI) => {
+      const queryKey = ["clans", encodeBase64(clanURI), "details"];
 
-        if (result.status === "error") {
-          // todo should we create some specific error types?
-          console.error("Error fetching clan details:", result.errors);
-          throw new Error(result.errors[0].message);
-        }
+      return {
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey,
+        persister: ClanDetailsPersister.persisterFn,
+        queryFn: async () => {
+          // we only perform a request for the active clan
+          // for all others we load the cached query state
+          // this is due to how expensive it currently is to evaluate a flake for clan details
+          // it also helps when a clan folder has been moved/renamed
+          if (clanURI != activeClanURI) {
+            const cached = DefaultQueryClient.getQueryCache().find({
+              queryKey,
+            });
 
-        return {
-          uri: clanURI,
-          ...result.data,
-        };
-      },
-    })),
+            if (cached?.state?.data) {
+              return cached.state.data;
+            }
+          }
+
+          const call = client.fetch("get_clan_details", {
+            flake: {
+              identifier: clanURI,
+            },
+          });
+          const result = await call.result;
+
+          if (result.status === "error") {
+            // todo should we create some specific error types?
+            throw new Error(result.errors[0].message);
+          }
+
+          return {
+            uri: clanURI,
+            ...result.data,
+          };
+        },
+      };
+    }),
   }));
 };
 

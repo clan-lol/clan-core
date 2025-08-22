@@ -11,7 +11,7 @@ import { useClanListQuery } from "@/src/hooks/queries";
 import { Alert } from "@/src/components/Alert/Alert";
 
 export interface ListClansModalProps {
-  onClose: () => void;
+  onClose?: () => void;
   error?: {
     title: string;
     description: string;
@@ -68,7 +68,7 @@ export const ListClansModal = (props: ListClansModalProps) => {
             size="s"
             startIcon="Plus"
             onClick={() => {
-              props.onClose();
+              props.onClose?.();
               navigateToOnboarding(navigate, true);
             }}
           >

@@ -30,7 +30,7 @@ export const useModalContext = () => {
 export interface ModalProps {
   id?: string;
   title: string;
-  onClose: () => void;
+  onClose?: () => void;
   children: JSX.Element;
   mount?: Node;
   class?: string;
@@ -57,13 +57,11 @@ export const Modal = (props: ModalProps) => {
                 >
                   {props.title}
                 </Typography>
-                <KDialog.CloseButton
-                  onClick={() => {
-                    props.onClose();
-                  }}
-                >
-                  <Icon icon="Close" size="0.75rem" />
-                </KDialog.CloseButton>
+                <Show when={props.onClose}>
+                  <KDialog.CloseButton onClick={props.onClose}>
+                    <Icon icon="Close" size="0.75rem" />
+                  </KDialog.CloseButton>
+                </Show>
               </div>
               <Show when={props.metaHeader}>
                 {(metaHeader) => (
