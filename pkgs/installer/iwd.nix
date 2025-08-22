@@ -55,6 +55,7 @@ in
       networking.wireless.iwd = {
         enable = true;
         settings = {
+          General.EnableNetworkConfiguration = true;
           Network = {
             EnableIPv6 = true;
             RoutePriorityOffset = 300;
