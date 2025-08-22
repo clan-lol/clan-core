@@ -3,20 +3,18 @@ import Icon from "@/src/components/Icon/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { useNavigate } from "@solidjs/router";
 import { Typography } from "../Typography/Typography";
-import { createSignal, For, Suspense, useContext } from "solid-js";
-import {
-  navigateToClan,
-  navigateToOnboarding,
-  useClanURI,
-} from "@/src/hooks/clan";
+import { createSignal, For, Show, Suspense, useContext } from "solid-js";
+import { navigateToOnboarding } from "@/src/hooks/clan";
 import { setActiveClanURI } from "@/src/stores/clan";
 import { Button } from "../Button/Button";
 import { ClanContext } from "@/src/routes/Clan/Clan";
+import { ClanSettingsModal } from "@/src/modals/ClanSettingsModal/ClanSettingsModal";
 
 export const SidebarHeader = () => {
   const navigate = useNavigate();
 
   const [open, setOpen] = createSignal(false);
+  const [showSettings, setShowSettings] = createSignal(false);
 
   // get information about the current active clan
   const ctx = useContext(ClanContext);
@@ -25,20 +23,27 @@ export const SidebarHeader = () => {
     throw new Error("SidebarContext not found");
   }
 
-  const clanURI = useClanURI();
-
   const clanChar = () =>
-    ctx?.activeClanQuery?.data?.name.charAt(0).toUpperCase();
-  const clanName = () => ctx?.activeClanQuery?.data?.name;
+    ctx?.activeClanQuery?.data?.details.name.charAt(0).toUpperCase();
+  const clanName = () => ctx?.activeClanQuery?.data?.details.name;
 
   const clanList = () =>
     ctx.allClansQueries
       .filter((it) => it.isSuccess)
       .map((it) => it.data!)
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => a.details.name.localeCompare(b.details.name));
 
   return (
     <div class="sidebar-header">
+      <Show when={ctx.activeClanQuery.isSuccess && showSettings()}>
+        <ClanSettingsModal
+          model={ctx.activeClanQuery.data!}
+          onClose={() => {
+            ctx?.activeClanQuery?.refetch(); // refresh clan data
+            setShowSettings(false);
+          }}
+        />
+      </Show>
       <Suspense fallback={"Loading..."}>
         <DropdownMenu open={open()} onOpenChange={setOpen} sameWidth={true}>
           <DropdownMenu.Trigger class="dropdown-trigger">
@@ -70,7 +75,7 @@ export const SidebarHeader = () => {
             <DropdownMenu.Content class="sidebar-dropdown-content">
               <DropdownMenu.Item
                 class="dropdown-item"
-                onSelect={() => navigateToClan(navigate, clanURI)}
+                onSelect={() => setShowSettings(true)}
               >
                 <Icon
                   icon="Settings"
@@ -118,7 +123,7 @@ export const SidebarHeader = () => {
                             size="xs"
                             weight="medium"
                           >
-                            {clan.name}
+                            {clan.details.name}
                           </Typography>
                         </DropdownMenu.Item>
                       </Suspense>

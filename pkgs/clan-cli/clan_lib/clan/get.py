@@ -3,8 +3,10 @@ import logging
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.actions import FieldSchema
 from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import is_writeable_key, retrieve_typed_field_names
 
 log = logging.getLogger(__name__)
 
@@ -32,3 +34,32 @@ def get_clan_details(flake: Flake) -> InventoryMeta:
         raise ClanError(msg)
 
     return meta
+
+
+@API.register
+def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
+    """
+    Get attributes for each field of the clan.
+
+    This function checks which fields of the 'clan' resource are readonly and provides a reason if so.
+
+    Args:
+        flake (Flake): The Flake object for which to retrieve fields.
+
+    Returns:
+        dict[str, FieldSchema]: A map from field-names to { 'readonly' (bool) and 'reason' (str or None ) }
+    """
+
+    inventory_store = InventoryStore(flake)
+    write_info = inventory_store.get_writeability_of("meta")
+
+    field_names = retrieve_typed_field_names(InventoryMeta)
+
+    return {
+        field: {
+            "readonly": not is_writeable_key(f"meta.{field}", write_info),
+            # TODO: Provide a meaningful reason
+            "reason": None,
+        }
+        for field in field_names
+    }

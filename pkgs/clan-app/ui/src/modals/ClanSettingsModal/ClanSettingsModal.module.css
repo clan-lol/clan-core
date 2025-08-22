@@ -1,0 +1,7 @@
+.modal {
+  @apply w-screen max-w-xl h-fit flex flex-col;
+
+  .header {
+    @apply flex w-full items-center justify-between;
+  }
+}
