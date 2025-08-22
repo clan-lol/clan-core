@@ -1,6 +1,5 @@
 import { defineSteps, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps } from "../install";
-import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { StepLayout } from "../../Steps";
 import { NavSection } from "@/src/components/NavSection/NavSection";
