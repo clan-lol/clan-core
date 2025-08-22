@@ -58,7 +58,10 @@ export const Modal = (props: ModalProps) => {
         <KDialog.Portal mount={props.mount}>
           <div class={styles.backdrop} />
           <div class={styles.contentWrapper}>
-            <KDialog.Content class={cx(styles.modal_content, props.class)}>
+            <KDialog.Content
+              class={cx(styles.modal_content, props.class)}
+              onEscapeKeyDown={props.onClose}
+            >
               {contentWrapper({
                 children: (
                   <>

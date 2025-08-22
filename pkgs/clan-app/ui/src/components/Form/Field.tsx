@@ -1,6 +1,7 @@
 export interface FieldProps {
   class?: string;
   label?: string;
+  labelWeight?: "bold" | "normal";
   description?: string;
   tooltip?: string;
   ghost?: boolean;

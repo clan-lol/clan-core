@@ -85,6 +85,14 @@ export const TextArea = (props: TextAreaProps) => {
     "maxRows",
   ]);
 
+  const [styleProps, otherProps] = splitProps(props, [
+    "class",
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+  ]);
+
   return (
     <TextField
       ref={(el: HTMLDivElement) => {
@@ -92,13 +100,20 @@ export const TextArea = (props: TextAreaProps) => {
         // but not in webkit, so we capture the parent ref and query for the textarea
         textareaRef = el.querySelector("textarea")! as HTMLTextAreaElement;
       }}
-      class={cx("form-field", "textarea", props.size, props.orientation, {
-        inverted: props.inverted,
-        ghost: props.ghost,
-      })}
-      {...props}
+      class={cx(
+        styleProps.class,
+        "form-field",
+        "textarea",
+        styleProps.size,
+        styleProps.orientation,
+        {
+          inverted: styleProps.inverted,
+          ghost: styleProps.ghost,
+        },
+      )}
+      {...otherProps}
     >
-      <Orienter orientation={props.orientation} align={"start"}>
+      <Orienter orientation={styleProps.orientation} align={"start"}>
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}

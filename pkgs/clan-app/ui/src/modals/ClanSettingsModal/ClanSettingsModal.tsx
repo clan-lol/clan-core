@@ -20,6 +20,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { callApi } from "@/src/hooks/api";
 import { Alert } from "@/src/components/Alert/Alert";
+import { removeClanURI } from "@/src/stores/clan";
 
 const schema = v.object({
   name: v.pipe(v.optional(v.string())),
@@ -93,6 +94,14 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
     return firstFormError || formStore.response.message;
   };
 
+  const [removeValue, setRemoveValue] = createSignal("");
+
+  const removeDisabled = () => removeValue() !== props.model.details.name;
+
+  const onRemove = () => {
+    removeClanURI(props.model.uri);
+  };
+
   return (
     <Modal
       class={cx(styles.modal)}
@@ -118,53 +127,82 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
         </div>
       )}
     >
-      <Show when={errorMessage()}>
-        <Alert type="error" title="Error" description={errorMessage()} />
-      </Show>
-      <Fieldset>
-        <Field name="name">
-          {(field, input) => (
-            <TextInput
-              {...field}
-              value={field.value}
-              label="Name"
-              required
-              readOnly={readOnly("name")}
-              orientation="horizontal"
-              input={input}
-              tooltip={tooltipText(
-                "name",
-                props.model.fieldsSchema,
-                "A unique identifier for this Clan",
-              )}
-            />
-          )}
-        </Field>
-        <Divider />
-        <Field name="description">
-          {(field, input) => (
-            <TextArea
-              {...splitProps(field, ["value"])[1]}
-              defaultValue={field.value ?? ""}
-              label="Description"
-              readOnly={readOnly("description")}
-              tooltip={tooltipText(
-                "description",
-                props.model.fieldsSchema,
-                "A description of this Clan",
-              )}
-              orientation="horizontal"
-              input={{
-                ...input,
-                autoResize: true,
-                minRows: 2,
-                maxRows: 4,
-                placeholder: "No description",
-              }}
-            />
-          )}
-        </Field>
-      </Fieldset>
+      <div class={cx(styles.content)}>
+        <Show when={errorMessage()}>
+          <Alert type="error" title="Error" description={errorMessage()} />
+        </Show>
+        <Fieldset>
+          <Field name="name">
+            {(field, input) => (
+              <TextInput
+                {...field}
+                value={field.value}
+                label="Name"
+                required
+                readOnly={readOnly("name")}
+                orientation="horizontal"
+                input={input}
+                tooltip={tooltipText(
+                  "name",
+                  props.model.fieldsSchema,
+                  "A unique identifier for this Clan",
+                )}
+              />
+            )}
+          </Field>
+          <Divider />
+          <Field name="description">
+            {(field, input) => (
+              <TextArea
+                {...splitProps(field, ["value"])[1]}
+                defaultValue={field.value ?? ""}
+                label="Description"
+                readOnly={readOnly("description")}
+                tooltip={tooltipText(
+                  "description",
+                  props.model.fieldsSchema,
+                  "A description of this Clan",
+                )}
+                orientation="horizontal"
+                input={{
+                  ...input,
+                  autoResize: true,
+                  minRows: 2,
+                  maxRows: 4,
+                  placeholder: "No description",
+                }}
+              />
+            )}
+          </Field>
+        </Fieldset>
+
+        <div class={cx(styles.remove)}>
+          <TextInput
+            class={cx(styles.clanInput)}
+            orientation="horizontal"
+            onChange={setRemoveValue}
+            input={{
+              value: removeValue(),
+              placeholder: "Enter the name of this Clan",
+              onKeyDown: (event) => {
+                if (event.key == "Enter" && !removeDisabled()) {
+                  onRemove();
+                }
+              },
+            }}
+          />
+
+          <Button
+            hierarchy="primary"
+            size="s"
+            startIcon="Trash"
+            disabled={removeDisabled()}
+            onClick={onRemove}
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
     </Modal>
   );
 };

@@ -27,6 +27,7 @@ export interface LabelProps {
   descriptionComponent: DescriptionComponent;
   size?: Size;
   label?: string;
+  labelWeight?: "bold" | "normal";
   description?: string;
   tooltip?: string;
   icon?: string;
@@ -46,7 +47,7 @@ export const Label = (props: LabelProps) => {
             hierarchy="label"
             size={props.size || "default"}
             color={props.validationState == "invalid" ? "error" : "primary"}
-            weight={props.readOnly ? "normal" : "bold"}
+            weight={props.labelWeight || "bold"}
             inverted={props.inverted}
           >
             {props.label}

@@ -78,6 +78,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   size="s"
                   inverted
                   label="Name"
+                  labelWeight="normal"
                   required
                   readOnly={readOnly(editing, "name")}
                   orientation="horizontal"
@@ -99,6 +100,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   size="s"
                   inverted
                   label="Platform"
+                  labelWeight="normal"
                   required
                   readOnly={readOnly(editing, "machineClass")}
                   orientation="horizontal"
@@ -119,6 +121,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   defaultValue={field.value ?? ""}
                   size="s"
                   label="Description"
+                  labelWeight="normal"
                   inverted
                   readOnly={readOnly(editing, "description")}
                   tooltip={tooltipText("description", fieldsSchema()!)}

@@ -51,7 +51,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
     """
 
     inventory_store = InventoryStore(flake)
-    write_info = inventory_store.get_writeability_of("meta")
+    write_info = inventory_store.get_writeability()
 
     field_names = retrieve_typed_field_names(InventoryMeta)
 
@@ -60,6 +60,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
             "readonly": not is_writeable_key(f"meta.{field}", write_info),
             # TODO: Provide a meaningful reason
             "reason": None,
+            "readonly_members": [],
         }
         for field in field_names
     }
