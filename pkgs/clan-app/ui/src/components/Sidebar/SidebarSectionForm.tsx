@@ -12,8 +12,7 @@ import {
 import { OperationNames, SuccessData } from "@/src/hooks/api";
 import { GenericSchema, GenericSchemaAsync } from "valibot";
 import { Typography } from "@/src/components/Typography/Typography";
-import { Button as KButton } from "@kobalte/core/button";
-import Icon from "@/src/components/Icon/Icon";
+import { Button } from "@/src/components/Button/Button";
 
 import "./SidebarSection.css";
 import { Loader } from "../../components/Loader/Loader";
@@ -83,24 +82,24 @@ export function SidebarSectionForm<
           </Typography>
           <div class="controls h-4">
             {editing() && !formStore.submitting && (
-              <KButton type="submit">
-                <Icon
-                  icon="Checkmark"
-                  color="tertiary"
-                  size="0.75rem"
-                  inverted
-                />
-              </KButton>
+              <Button
+                hierarchy="primary"
+                size="xs"
+                startIcon="Checkmark"
+                ghost
+                type="submit"
+              >
+                Save
+              </Button>
             )}
             {editing() && formStore.submitting && <Loader />}
-            <KButton onClick={editOrClose}>
-              <Icon
-                icon={editing() ? "Close" : "Edit"}
-                color="tertiary"
-                size="0.75rem"
-                inverted
-              />
-            </KButton>
+            <Button
+              hierarchy="primary"
+              ghost
+              size="xs"
+              icon={editing() ? "Close" : "Edit"}
+              onClick={editOrClose}
+            />
           </div>
         </div>
         <div class="content">
