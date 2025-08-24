@@ -5,7 +5,7 @@ div.sidebar-section {
     @apply flex items-center justify-between px-1.5;
 
     & > div.controls {
-      @apply flex justify-end gap-2;
+      @apply flex items-center justify-end;
     }
   }
 
