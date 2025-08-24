@@ -27,7 +27,7 @@ div.form-field.machine-tags {
           @apply bg-def-acc-1 outline-def-acc-2;
         }
 
-        &:focus-visible {
+        &:not(:read-only):focus-visible {
           @apply bg-def-1 outline-def-acc-3;
 
           box-shadow:
@@ -106,7 +106,7 @@ div.form-field.machine-tags {
           @apply bg-inv-acc-2 outline-inv-acc-2;
         }
 
-        &:focus-visible {
+        &:not(:read-only):focus-visible {
           @apply bg-inv-acc-4;
           box-shadow:
             0 0 0 0.125rem theme(colors.bg.inv.1),
