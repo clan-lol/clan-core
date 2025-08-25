@@ -30,7 +30,8 @@ export const ListClansModal = (props: ListClansModalProps) => {
 
   const selectClan = (uri: string) => () => {
     if (uri == activeClanURI()) {
-      navigateToClan(navigate, uri);
+      // this is the easiest way of reloading the clan
+      window.location.reload();
     } else {
       setActiveClanURI(uri);
     }
