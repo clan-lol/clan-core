@@ -43,7 +43,10 @@ def test_sandbox_denies_write_to_home() -> None:
 
             with sandbox_exec_cmd(script, tmpdir_path) as cmd:
                 result = subprocess.run(
-                    cmd, check=False, capture_output=True, text=True
+                    cmd,
+                    check=False,
+                    capture_output=True,
+                    text=True,
                 )
 
             # Check that either the write was denied or the file wasn't created
