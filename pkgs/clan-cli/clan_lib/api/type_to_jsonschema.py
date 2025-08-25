@@ -21,7 +21,6 @@ from typing import (
 )
 
 from clan_lib.api.serde import dataclass_to_dict
-from clan_lib.errors import ClanError
 
 
 class JSchemaTypeError(Exception):
@@ -126,7 +125,7 @@ def type_to_dict(
                 continue
             if isinstance(f.type, str):
                 msg = f"Expected field type to be a type, got {f.type}, Have you imported `from __future__ import annotations`?"
-                raise ClanError(msg)
+                raise JSchemaTypeError(msg)
             properties[f.metadata.get("alias", f.name)] = type_to_dict(
                 f.type,
                 f"{scope} {t.__name__}.{f.name}",  # type: ignore
