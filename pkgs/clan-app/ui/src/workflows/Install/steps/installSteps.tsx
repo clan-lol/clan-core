@@ -667,13 +667,13 @@ const InstallProgress = () => {
   );
 
   return (
-    <div class="relative flex size-full flex-col items-center justify-center bg-inv-4">
+    <div class="relative flex size-full flex-col items-center justify-end bg-inv-4">
       <img
         src="/logos/usb-stick-min.png"
         alt="usb logo"
         class="absolute top-2 z-0"
       />
-      <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-3 fg-inv-1">
+      <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 fg-inv-1">
         <Typography
           hierarchy="title"
           size="default"
@@ -805,10 +805,12 @@ export const installSteps = [
     id: "install:progress",
     content: InstallProgress,
     isSplash: true,
+    class: "max-w-[30rem] h-[18rem]",
   },
   {
     id: "install:done",
     content: InstallDone,
     isSplash: true,
+    class: "max-w-[30rem] h-[18rem]",
   },
 ] as const;

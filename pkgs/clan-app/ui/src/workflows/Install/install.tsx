@@ -96,6 +96,8 @@ export const InstallModal = (props: InstallModalProps) => {
     switch (currentStep.id) {
       case "create:progress":
       case "create:done":
+      case "install:progress":
+      case "install:done":
         return currentStep.class;
 
       default:
