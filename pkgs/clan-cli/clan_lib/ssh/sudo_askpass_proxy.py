@@ -83,10 +83,10 @@ class SudoAskpassProxy:
                 if line.startswith("PASSWORD_REQUESTED:"):
                     prompt = line[len("PASSWORD_REQUESTED:") :].strip()
                     password = self.handle_password_request(prompt)
-                    print(password, file=ssh_process.stdin)
                     if ssh_process.stdin is None:
                         msg = "SSH process stdin is None"
                         raise ClanError(msg)
+                    print(password, file=ssh_process.stdin)
                     ssh_process.stdin.flush()
                 else:
                     print(line)
