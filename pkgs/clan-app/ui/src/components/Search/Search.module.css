@@ -42,17 +42,6 @@
 }
 
 .searchItem {
-  @apply flex py-1 px-2 pr-4 gap-2 justify-between items-center rounded-md;
-
-  & [role="option"] {
-    @apply flex flex-col w-full;
-  }
-
-  /* Icon */
-  & [role="complementary"] {
-    @apply size-8 flex items-center justify-center bg-white rounded-md;
-  }
-
   &[data-highlighted],
   &:focus,
   &:focus-visible,
@@ -63,12 +52,16 @@
   &:active {
     @apply bg-inv-acc-3;
   }
+
+  @apply flex flex-col justify-center;
 }
 
 .searchContainer {
   @apply bg-gradient-to-b from-bg-inv-3 to-bg-inv-4;
 
-  @apply h-[14.5rem] rounded-lg;
+  @apply rounded-lg;
+
+  height: var(--container-height, 14.5rem);
 
   border: 1px solid #2b4647;
 
@@ -87,7 +80,8 @@
 
 .searchContent {
   @apply px-3;
-  height: calc(14.5rem - 4rem);
+  height: var(--container-height, 14.5rem);
+  padding-bottom: 4rem;
 }
 
 @keyframes contentHide {
