@@ -17,8 +17,16 @@ def compute_zerotier_ip(network_id: str, identity: str) -> ipaddress.IPv6Address
     if len(network_id) != 16:
         msg = f"network_id must be 16 characters long, got {network_id}"
         raise ClanError(msg)
-    nwid = int(network_id, 16)
-    node_id = int(identity, 16)
+    try:
+        nwid = int(network_id, 16)
+    except ValueError:
+        msg = f"network_id must be a valid hexadecimal string, got {network_id}"
+        raise ClanError(msg) from None
+    try:
+        node_id = int(identity, 16)
+    except ValueError:
+        msg = f"identity must be a valid hexadecimal string, got {identity}"
+        raise ClanError(msg) from None
     addr_parts = bytearray(
         [
             0xFD,
