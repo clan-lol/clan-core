@@ -17,6 +17,20 @@
       };
     };
 
+    # Deploy user Carol on all machines. Prompt only once and use the
+    # same password on all machines. (`share = true`)
+    user-carol = {
+      module = {
+        name = "users";
+        input = "clan";
+      };
+      roles.default.tags.all = { };
+      roles.default.settings = {
+        user = "carol";
+        share = true;
+      };
+    };
+
     # Deploy user bob only on his laptop. Prompt for a password.
     user-bob = {
       module = {
