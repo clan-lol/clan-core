@@ -59,6 +59,7 @@ nav:
           - Configure Disk Config: guides/getting-started/choose-disk.md
           - Update Machine: guides/getting-started/update.md
           - Continuous Integration: guides/getting-started/flake-check.md
+          - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
       - ClanServices: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
@@ -77,7 +78,6 @@ nav:
       - Writing a Service Module: guides/services/community.md
       - Writing a Disko Template: guides/disko-templates/community.md
       - Migrations:
-          - Migrate existing Flakes: guides/migrations/migration-guide.md
           - Migrate from clan modules to services: guides/migrations/migrate-inventory-services.md
           - Facts Vars Migration: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md

@@ -639,7 +639,7 @@ in
 
         Exports are used to share and expose information between instances.
 
-        Define exports in the [`perInstance`](#perInstance) or [`perMachine`](#perMachine) scope.
+        Define exports in the [`perInstance`](#roles.perInstance) or [`perMachine`](#perMachine) scope.
 
         Accessing the exports:
 
