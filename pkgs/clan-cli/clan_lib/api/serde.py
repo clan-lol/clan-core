@@ -1,4 +1,4 @@
-"""This module provides utility functions for serialization and deserialization of data classes.
+"""Provides utility functions for serialization and deserialization of data classes.
 
 Functions:
 - sanitize_string(s: str) -> str: Ensures a string is properly escaped for json serializing.

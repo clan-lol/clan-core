@@ -61,7 +61,7 @@ class AsyncResult[R]:
 
 @dataclass
 class AsyncContext:
-    """This class stores thread-local data."""
+    """Stores thread-local data."""
 
     prefix: str | None = None  # prefix for logging
     stdout: IO[bytes] | None = None  # stdout of subprocesses

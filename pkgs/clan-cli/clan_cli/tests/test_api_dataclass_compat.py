@@ -28,6 +28,7 @@ def find_dataclasses_in_directory(
 
     Args:
         directory (str): The root directory to start searching from.
+        exclude_paths: Optional list of paths to exclude from the search.
 
     Returns:
         List[Tuple[str, str]]: A list of tuples containing the file path and the dataclass name.
@@ -79,6 +80,7 @@ def load_dataclass_from_file(
     Args:
         file_path (str): Path to the file.
         class_name (str): Name of the class to load.
+        root_dir: The root directory for module path resolution.
 
     Returns:
         List[Type]: The dataclass type if found, else an empty list.
@@ -119,7 +121,7 @@ def load_dataclass_from_file(
 
 
 def test_all_dataclasses() -> None:
-    """This Test ensures that all dataclasses are compatible with the API.
+    """Ensures that all dataclasses are compatible with the API.
 
     It will load all dataclasses from the clan_cli directory and
     generate a JSON schema for each of them.

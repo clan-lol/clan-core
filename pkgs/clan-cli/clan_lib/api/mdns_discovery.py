@@ -25,9 +25,7 @@ class Host:
 
 @dataclass
 class DNSInfo:
-    """ "
-    mDNS/DNS-SD services discovered on the network
-    """
+    """mDNS/DNS-SD services discovered on the network."""
 
     services: dict[str, Host]
 

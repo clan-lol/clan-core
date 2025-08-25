@@ -63,6 +63,8 @@ class AbstractLogger(ABC):
 
 class JunitXMLLogger(AbstractLogger):
     class TestCaseState:
+        """State tracking for individual test cases in JUnit XML reports."""
+
         def __init__(self) -> None:
             self.stdout = ""
             self.stderr = ""

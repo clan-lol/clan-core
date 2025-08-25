@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 
 class MainApplication(Adw.Application):
-    """This class is initialized  every time the app is started
+    """Initialized  every time the app is started.
     Only the Adw.ApplicationWindow is a singleton.
     So don't use any singletons  in the Adw.Application class.
     """
