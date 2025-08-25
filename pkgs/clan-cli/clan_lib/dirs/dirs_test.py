@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 
-from clan_lib.dirs import get_clan_directories
+from clan_lib.dirs import clan_key_safe, get_clan_directories, vm_state_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
@@ -52,3 +52,19 @@ def test_get_clan_directories_with_direct_directory_config(
     assert "source" in source_dir
 
     assert computed_dir == "direct-config"
+
+
+def test_clan_key_safe() -> None:
+    assert clan_key_safe("/foo/bar") == "%2Ffoo%2Fbar"
+
+
+def test_vm_state_dir_identity() -> None:
+    dir1 = vm_state_dir("https://some.clan", "vm1")
+    dir2 = vm_state_dir("https://some.clan", "vm1")
+    assert str(dir1) == str(dir2)
+
+
+def test_vm_state_dir_no_collision() -> None:
+    dir1 = vm_state_dir("/foo/bar", "vm1")
+    dir2 = vm_state_dir("https://some.clan", "vm1")
+    assert str(dir1) != str(dir2)
