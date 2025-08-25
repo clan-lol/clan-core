@@ -555,7 +555,8 @@ class FlakeCacheEntry:
 
         # string and maybe work the same for cache checking
         if (selector.type in (SelectorType.STR, SelectorType.MAYBE)) and isinstance(
-            self.value, dict
+            self.value,
+            dict,
         ):
             if not isinstance(selector.value, str):
                 msg = f"Expected str for STR/MAYBE selector value in caching, got {type(selector.value)}"

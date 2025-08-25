@@ -172,7 +172,10 @@ class Remote:
                         ]
                         exit_cmd.append(remote.target)
                         subprocess.run(
-                            exit_cmd, check=False, capture_output=True, timeout=5
+                            exit_cmd,
+                            check=False,
+                            capture_output=True,
+                            timeout=5,
                         )
                     except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
                         # If exit fails still try to stop the master connection

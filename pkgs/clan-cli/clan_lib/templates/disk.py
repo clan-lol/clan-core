@@ -134,7 +134,9 @@ def get_machine_disk_schemas(
 
             raw_readme = (disk_template / "README.md").read_text()
             frontmatter, readme = extract_frontmatter(
-                raw_readme, f"{disk_template}/README.md", fm_class=DiskManifest
+                raw_readme,
+                f"{disk_template}/README.md",
+                fm_class=DiskManifest,
             )
 
             disk_schemas[schema_name] = DiskSchema(
