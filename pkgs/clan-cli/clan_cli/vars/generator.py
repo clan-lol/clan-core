@@ -85,6 +85,7 @@ class Generator:
         Args:
             machine_name (str): The name of the machine.
             flake (Flake): The flake to get the generators from.
+            include_previous_values: Whether to include previous values in the generators.
 
         Returns:
             list[Generator]: A list of (unsorted) generators for the machine.

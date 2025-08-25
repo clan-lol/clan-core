@@ -113,16 +113,22 @@ def extract_frontmatter[T](
 
     Parameters
     ----------
-    - readme_content (str): The content of the README file as a string.
+    readme_content : str
+        The content of the README file as a string.
+    err_scope : str
+        The error scope for error messages.
+    fm_class : type[T]
+        The class type to deserialize the frontmatter into.
 
     Returns
     -------
-    - str: The extracted frontmatter as a string.
-    - str: The content of the README file without the frontmatter.
+    tuple[T, str]
+        The extracted frontmatter object and the content without frontmatter.
 
     Raises
     ------
-    - ValueError: If the README does not contain valid frontmatter.
+    ValueError
+        If the README does not contain valid frontmatter.
 
     """
     frontmatter_raw, remaining_content = parse_frontmatter(readme_content)
