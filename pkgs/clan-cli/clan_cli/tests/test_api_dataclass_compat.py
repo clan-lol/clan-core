@@ -63,7 +63,7 @@ def find_dataclasses_in_directory(
                                 and isinstance(deco.func, ast.Name)
                                 and deco.func.id == "dataclass"
                             ):
-                                dataclass_files.append((file_path, node.name))
+                                dataclass_files.append((file_path, node.name))  # noqa: PERF401
             except (SyntaxError, UnicodeDecodeError) as e:
                 print(f"Error parsing {file_path}: {e}")
 
