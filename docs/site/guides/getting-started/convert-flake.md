@@ -104,8 +104,6 @@ For the provide flake example, your flake should now look like this:
     };
   in
   {
-      nixosConfigurations = clan.nixosConfigurations;
-
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
       clan = clan.config;
   };
