@@ -1,6 +1,7 @@
 import logging
 
 import gi
+from clan_lib.errors import ClanError
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, Gtk
@@ -19,7 +20,9 @@ class Logs(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
         app = Gio.Application.get_default()
-        assert app is not None
+        if app is None:
+            msg = "Application is not available"
+            raise ClanError(msg)
 
         self.banner = Adw.Banner.new("")
         self.banner.set_use_markup(True)

@@ -1,3 +1,5 @@
+"""Test driver for container-based NixOS testing."""
+
 import argparse
 import ctypes
 import os
@@ -218,8 +220,12 @@ class Machine:
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, env=env)
 
     def get_systemd_process(self) -> int:
-        assert self.process is not None, "Machine not started"
-        assert self.process.stdout is not None, "Machine has no stdout"
+        if self.process is None:
+            msg = "Machine not started"
+            raise RuntimeError(msg)
+        if self.process.stdout is None:
+            msg = "Machine has no stdout"
+            raise RuntimeError(msg)
 
         for line in self.process.stdout:
             print(line, end="")
@@ -236,9 +242,9 @@ class Machine:
             .read_text()
             .split()
         )
-        assert len(childs) == 1, (
-            f"Expected exactly one child process for systemd-nspawn, got {childs}"
-        )
+        if len(childs) != 1:
+            msg = f"Expected exactly one child process for systemd-nspawn, got {childs}"
+            raise RuntimeError(msg)
         try:
             return int(childs[0])
         except ValueError as e:
@@ -258,7 +264,9 @@ class Machine:
 
         def tuple_from_line(line: str) -> tuple[str, str]:
             match = line_pattern.match(line)
-            assert match is not None
+            if match is None:
+                msg = f"Failed to parse line: {line}"
+                raise RuntimeError(msg)
             return match[1], match[2]
 
         return dict(
@@ -575,7 +583,9 @@ class Driver:
             # We lauch a sleep here, so we can pgrep the process cmdline for
             # the uuid
             sleep = shutil.which("sleep")
-            assert sleep is not None, "sleep command not found"
+            if sleep is None:
+                msg = "sleep command not found"
+                raise RuntimeError(msg)
             machine.execute(
                 f"systemd-run /bin/sh -c '{sleep} 999999999 && echo {nspawn_uuid}'",
             )

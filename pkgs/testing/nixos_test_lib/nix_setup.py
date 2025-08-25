@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 # These paths will be substituted during package build
-XCP_BIN = "@xcp@"
+CP_BIN = "@cp@"
 NIX_STORE_BIN = "@nix-store@"
 XARGS_BIN = "@xargs@"
 
@@ -45,15 +45,18 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
     if closure_info and Path(closure_info).exists():
         store_paths_file = Path(closure_info) / "store-paths"
         if store_paths_file.exists():
-            # Use xargs to handle potentially long lists of store paths
-            # Equivalent to: xargs cp --recursive --target-directory
-            # "$CLAN_TEST_STORE/nix/store" < "$closureInfo/store-paths"
+            # Use xargs with parallel processing to copy store paths efficiently
+            # --reflink=auto enables copy-on-write when filesystem supports it
+            # -P uses all available CPU cores for parallel copying
+            num_cpus = str(os.cpu_count() or 1)
             with store_paths_file.open() as f:
                 subprocess.run(  # noqa: S603
                     [
                         XARGS_BIN,
-                        XCP_BIN,
+                        f"-P{num_cpus}",  # Use all available CPUs
+                        CP_BIN,
                         "--recursive",
+                        "--reflink=auto",  # Use copy-on-write if available
                         "--target-directory",
                         f"{tmpdir}/store/nix/store",
                     ],

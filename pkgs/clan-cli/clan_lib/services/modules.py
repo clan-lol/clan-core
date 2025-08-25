@@ -184,11 +184,15 @@ def get_service_module(
     avilable_modules = list_service_modules(flake)
     module_set = avilable_modules.get("modules", {}).get(input_name)
 
-    assert module_set is not None  # Since check_service_module_ref already checks this
+    if module_set is None:
+        msg = f"Module set for input '{input_name}' not found"
+        raise ClanError(msg)
 
     module = module_set.get(module_name)
 
-    assert module is not None  # Since check_service_module_ref already checks this
+    if module is None:
+        msg = f"Module '{module_name}' not found in input '{input_name}'"
+        raise ClanError(msg)
 
     return module
 
@@ -217,7 +221,9 @@ def check_service_module_ref(
         raise ClanError(msg)
 
     module_name = module_ref.get("name")
-    assert module_name
+    if not module_name:
+        msg = "Module name is required in module_ref"
+        raise ClanError(msg)
     module = module_set.get(module_name)
     if module is None:
         msg = f"module with name '{module_name}' not found"

@@ -16,7 +16,6 @@
     { config, pkgs, ... }:
     {
       packages = {
-        agit = pkgs.callPackage ./agit { };
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
         zerotier-members = pkgs.callPackage ./zerotier-members { };
         merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };

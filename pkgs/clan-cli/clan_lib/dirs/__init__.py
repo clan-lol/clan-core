@@ -157,7 +157,9 @@ def machines_dir(flake: "Flake") -> Path:
         return flake.path / "machines"
 
     store_path = flake.store_path
-    assert store_path is not None, "Invalid flake object. Doesn't have a store path"
+    if store_path is None:
+        msg = "Invalid flake object. Doesn't have a store path"
+        raise ClanError(msg)
     return Path(store_path) / "machines"
 
 

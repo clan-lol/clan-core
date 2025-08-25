@@ -138,7 +138,9 @@ class Selector:
 
     def as_dict(self) -> dict[str, Any]:
         if self.type == SelectorType.SET:
-            assert isinstance(self.value, list)
+            if not isinstance(self.value, list):
+                msg = f"Expected list for SET selector, got {type(self.value)}"
+                raise ClanError(msg)
             return {
                 "type": self.type.value,
                 "value": [asdict(selector) for selector in self.value],
@@ -146,10 +148,14 @@ class Selector:
         if self.type == SelectorType.ALL:
             return {"type": self.type.value}
         if self.type == SelectorType.STR:
-            assert isinstance(self.value, str)
+            if not isinstance(self.value, str):
+                msg = f"Expected str for STR selector, got {type(self.value)}"
+                raise ClanError(msg)
             return {"type": self.type.value, "value": self.value}
         if self.type == SelectorType.MAYBE:
-            assert isinstance(self.value, str)
+            if not isinstance(self.value, str):
+                msg = f"Expected str for MAYBE selector, got {type(self.value)}"
+                raise ClanError(msg)
             return {"type": self.type.value, "value": self.value}
         msg = f"Invalid selector type: {self.type}"
         raise ValueError(msg)
@@ -385,8 +391,12 @@ class FlakeCacheEntry:
         # if we have a string selector, that means we are usually on a dict or a list, since we cannot walk down scalar values
         # so we passthrough the value to the next level
         if selector.type == SelectorType.STR:
-            assert isinstance(selector.value, str)
-            assert isinstance(self.value, dict)
+            if not isinstance(selector.value, str):
+                msg = f"Expected str for STR selector value, got {type(selector.value)}"
+                raise ClanError(msg)
+            if not isinstance(self.value, dict):
+                msg = f"Expected dict for cache value, got {type(self.value)}"
+                raise ClanError(msg)
             if selector.value not in self.value:
                 self.value[selector.value] = FlakeCacheEntry()
             self.value[selector.value].insert(value, selectors[1:])
@@ -395,9 +405,17 @@ class FlakeCacheEntry:
         # otherwise we just insert the value into the current dict
         # we can skip creating the non existing entry if we already fetched all keys
         elif selector.type == SelectorType.MAYBE:
-            assert isinstance(self.value, dict)
-            assert isinstance(value, dict)
-            assert isinstance(selector.value, str)
+            if not isinstance(self.value, dict):
+                msg = f"Expected dict for cache value in MAYBE, got {type(self.value)}"
+                raise ClanError(msg)
+            if not isinstance(value, dict):
+                msg = f"Expected dict for value in MAYBE, got {type(value)}"
+                raise ClanError(msg)
+            if not isinstance(selector.value, str):
+                msg = (
+                    f"Expected str for MAYBE selector value, got {type(selector.value)}"
+                )
+                raise ClanError(msg)
             if selector.value in value:
                 if selector.value not in self.value:
                     self.value[selector.value] = FlakeCacheEntry()
@@ -409,7 +427,9 @@ class FlakeCacheEntry:
 
         # insert a dict is pretty straight forward
         elif isinstance(value, dict):
-            assert isinstance(self.value, dict)
+            if not isinstance(self.value, dict):
+                msg = f"Expected dict for cache value in dict insert, got {type(self.value)}"
+                raise ClanError(msg)
             for key, value_ in value.items():
                 if key not in self.value:
                     self.value[key] = FlakeCacheEntry()
@@ -421,21 +441,31 @@ class FlakeCacheEntry:
             fetched_indices: list[str] = []
             # if we are in a set, we take all the selectors
             if selector.type == SelectorType.SET:
-                assert isinstance(selector.value, list)
+                if not isinstance(selector.value, list):
+                    msg = f"Expected list for SET selector value, got {type(selector.value)}"
+                    raise ClanError(msg)
                 for subselector in selector.value:
                     fetched_indices.append(subselector.value)
             # if it's just a str, that is the index
             elif selector.type == SelectorType.STR:
-                assert isinstance(selector.value, str)
+                if not isinstance(selector.value, str):
+                    msg = f"Expected str for STR selector value, got {type(selector.value)}"
+                    raise ClanError(msg)
                 fetched_indices = [selector.value]
             # otherwise we just take all the indices, which is the length of the list
             elif selector.type == SelectorType.ALL:
                 fetched_indices = list(map(str, range(len(value))))
 
             # insert is the same is insert a dict
-            assert isinstance(self.value, dict)
+            if not isinstance(self.value, dict):
+                msg = f"Expected dict for cache value in list insert, got {type(self.value)}"
+                raise ClanError(msg)
             for i, requested_index in enumerate(fetched_indices):
-                assert isinstance(requested_index, str)
+                if not isinstance(requested_index, str):
+                    msg = (
+                        f"Expected str for requested index, got {type(requested_index)}"
+                    )
+                    raise ClanError(msg)
                 if requested_index not in self.value:
                     self.value[requested_index] = FlakeCacheEntry()
                 self.value[requested_index].insert(value[i], selectors[1:])
@@ -444,13 +474,17 @@ class FlakeCacheEntry:
         # if they are, we store them as a dict with the outPath key
         # this is to mirror nix behavior, where the outPath of an attrset is used if no further key is specified
         elif isinstance(value, str) and is_pure_store_path(value):
-            assert selectors == []
+            if selectors != []:
+                msg = "Expected empty selectors for pure store path"
+                raise ClanError(msg)
             self.value = {"outPath": FlakeCacheEntry(value)}
 
         # if we have a normal scalar, we check if it conflicts with a maybe already store value
         # since an empty attrset is the default value, we cannot check that, so we just set it to the value
         elif isinstance(value, float | int | str) or value is None:
-            assert selectors == []
+            if selectors != []:
+                msg = "Expected empty selectors for scalar value"
+                raise ClanError(msg)
             if self.value == {}:
                 self.value = value
             # Only check for outPath wrapping conflicts for strings (store paths)
@@ -491,7 +525,9 @@ class FlakeCacheEntry:
 
         # we just fetch all subkeys, so we need to check of we inserted all keys at this level before
         if selector.type == SelectorType.ALL:
-            assert isinstance(self.value, dict)
+            if not isinstance(self.value, dict):
+                msg = f"Expected dict for ALL selector caching, got {type(self.value)}"
+                raise ClanError(msg)
             if self.fetched_all:
                 result = all(
                     self.value[sel].is_cached(selectors[1:]) for sel in self.value
@@ -520,7 +556,9 @@ class FlakeCacheEntry:
         if (selector.type in (SelectorType.STR, SelectorType.MAYBE)) and isinstance(
             self.value, dict
         ):
-            assert isinstance(selector.value, str)
+            if not isinstance(selector.value, str):
+                msg = f"Expected str for STR/MAYBE selector value in caching, got {type(selector.value)}"
+                raise ClanError(msg)
             val = selector.value
             if val not in self.value:
                 # if we fetched all keys and we are not in there, refetching won't help, so we can assume we are cached
@@ -548,12 +586,16 @@ class FlakeCacheEntry:
 
         # if we fetch a specific key, we return the recurse into that value in the dict
         if selector.type == SelectorType.STR and isinstance(self.value, dict):
-            assert isinstance(selector.value, str)
+            if not isinstance(selector.value, str):
+                msg = f"Expected str for STR selector value in select, got {type(selector.value)}"
+                raise ClanError(msg)
             return self.value[selector.value].select(selectors[1:])
 
         # if we are a MAYBE selector, we check if the key exists in the dict
         if selector.type == SelectorType.MAYBE:
-            assert isinstance(selector.value, str)
+            if not isinstance(selector.value, str):
+                msg = f"Expected str for MAYBE selector value in select, got {type(selector.value)}"
+                raise ClanError(msg)
             if isinstance(self.value, dict):
                 if selector.value in self.value:
                     if self.value[selector.value].exists:
@@ -570,7 +612,11 @@ class FlakeCacheEntry:
 
         # Handle SET selector on non-dict values
         if selector.type == SelectorType.SET and not isinstance(self.value, dict):
-            assert isinstance(selector.value, list)
+            if not isinstance(selector.value, list):
+                msg = (
+                    f"Expected list for SET selector value, got {type(selector.value)}"
+                )
+                raise ClanError(msg)
             # Empty set or all sub-selectors are MAYBE
             if len(selector.value) == 0:
                 # Empty set, return empty dict
@@ -595,7 +641,9 @@ class FlakeCacheEntry:
 
             # if we want to select a set of keys, we take the keys from the selector
             if selector.type == SelectorType.SET:
-                assert isinstance(selector.value, list)
+                if not isinstance(selector.value, list):
+                    msg = f"Expected list for SET selector value in select, got {type(selector.value)}"
+                    raise ClanError(msg)
                 for subselector in selector.value:
                     # make sure the keys actually exist if we have a maybe selector
                     if subselector.type == SetSelectorType.MAYBE:
@@ -634,12 +682,16 @@ class FlakeCacheEntry:
             str_selector = "*"
         elif selector.type == SelectorType.SET:
             subselectors: list[str] = []
-            assert isinstance(selector.value, list)
+            if not isinstance(selector.value, list):
+                msg = f"Expected list for SET selector value in error handling, got {type(selector.value)}"
+                raise ClanError(msg)
             for subselector in selector.value:
                 subselectors.append(subselector.value)
             str_selector = "{" + ",".join(subselectors) + "}"
         else:
-            assert isinstance(selector.value, str)
+            if not isinstance(selector.value, str):
+                msg = f"Expected str for selector value in error handling, got {type(selector.value)}"
+                raise ClanError(msg)
             str_selector = selector.value
 
         raise KeyError(str_selector)
@@ -769,7 +821,9 @@ class Flake:
     def is_local(self) -> bool:
         if self._is_local is None:
             self.invalidate_cache()
-        assert isinstance(self._is_local, bool)
+        if not isinstance(self._is_local, bool):
+            msg = f"Expected bool for is_local, got {type(self._is_local)}"
+            raise ClanError(msg)
         return self._is_local
 
     def get_input_names(self) -> list[str]:
@@ -781,7 +835,9 @@ class Flake:
     def path(self) -> Path:
         if self._path is None:
             self.invalidate_cache()
-        assert isinstance(self._path, Path)
+        if not isinstance(self._path, Path):
+            msg = f"Expected Path for path, got {type(self._path)}"
+            raise ClanError(msg)
         return self._path
 
     def load_cache(self) -> None:
@@ -847,7 +903,9 @@ class Flake:
         self.prefetch()
 
         self._cache = FlakeCache()
-        assert self.hash is not None
+        if self.hash is None:
+            msg = "Hash cannot be None"
+            raise ClanError(msg)
         hashed_hash = sha1(self.hash.encode()).hexdigest()
         self.flake_cache_path = (
             Path(user_cache_dir()) / "clan" / "flakes-v2" / hashed_hash
@@ -867,7 +925,9 @@ class Flake:
             self._path = Path(self.flake_metadata["original"]["path"])
         else:
             self._is_local = False
-            assert self.store_path is not None
+            if self.store_path is None:
+                msg = "Store path cannot be None"
+                raise ClanError(msg)
             self._path = Path(self.store_path)
 
     def get_from_nix(
@@ -901,7 +961,9 @@ class Flake:
 
         if self._cache is None:
             self.invalidate_cache()
-        assert self._cache is not None
+        if self._cache is None:
+            msg = "Cache cannot be None after invalidation"
+            raise ClanError(msg)
 
         nix_options = self.nix_options[:] if self.nix_options is not None else []
 
@@ -915,9 +977,9 @@ class Flake:
         if not select_hash.startswith("sha256-"):
             select_flake = Flake(str(select_source()), nix_options=nix_options)
             select_flake.invalidate_cache()
-            assert select_flake.hash is not None, (
-                "this should be impossible as invalidate_cache() should always set `hash`"
-            )
+            if select_flake.hash is None:
+                msg = "this should be impossible as invalidate_cache() should always set `hash`"
+                raise ClanError(msg)
             select_hash = select_flake.hash
 
         # fmt: off
@@ -1011,8 +1073,12 @@ class Flake:
         """
         if self._cache is None:
             self.invalidate_cache()
-        assert self._cache is not None
-        assert self.flake_cache_path is not None
+        if self._cache is None:
+            msg = "Cache cannot be None after invalidation"
+            raise ClanError(msg)
+        if self.flake_cache_path is None:
+            msg = "Flake cache path cannot be None"
+            raise ClanError(msg)
         not_fetched_selectors = []
         for selector in selectors:
             if not self._cache.is_cached(selector):
@@ -1034,8 +1100,12 @@ class Flake:
         """
         if self._cache is None:
             self.invalidate_cache()
-        assert self._cache is not None
-        assert self.flake_cache_path is not None
+        if self._cache is None:
+            msg = "Cache cannot be None after invalidation"
+            raise ClanError(msg)
+        if self.flake_cache_path is None:
+            msg = "Flake cache path cannot be None"
+            raise ClanError(msg)
 
         if not self._cache.is_cached(selector):
             log.debug(f"(cached) $ clan select {shlex.quote(selector)}")

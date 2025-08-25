@@ -64,7 +64,9 @@ class ClanList(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
         app = Gio.Application.get_default()
-        assert app is not None
+        if app is None:
+            msg = "Application is not available"
+            raise ClanError(msg)
         app.connect("join_request", self.on_join_request)
 
         self.log_label: Gtk.Label = Gtk.Label()
@@ -306,7 +308,9 @@ class ClanList(Gtk.Box):
         # Can't do this here because clan store is empty at this point
         if vm is not None:
             sub = row.get_subtitle()
-            assert sub is not None
+            if sub is None:
+                msg = "Subtitle is not available"
+                raise ClanError(msg)
 
             ToastOverlay.use().add_toast_unique(
                 WarningToast(

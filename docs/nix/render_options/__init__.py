@@ -1,3 +1,5 @@
+"""Module for rendering NixOS options documentation from JSON format."""
+
 # Options are available in the following format:
 # https://github.com/nixos/nixpkgs/blob/master/nixos/lib/make-options-doc/default.nix
 #

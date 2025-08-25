@@ -3,6 +3,7 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
+from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.templates.disk import set_machine_disk_schema
 
@@ -27,7 +28,9 @@ class AppendSetAction(argparse.Action):
         option_string: str | None = None,
     ) -> None:
         lst = getattr(namespace, self.dest)
-        assert isinstance(values, list), "values must be a list"
+        if not values or not hasattr(values, "__getitem__"):
+            msg = "values must be indexable"
+            raise ClanError(msg)
         lst.append((values[0], values[1]))
 
 

@@ -99,7 +99,9 @@ class Webview:
         """Get the bridge, creating it if necessary."""
         if self._bridge is None:
             self.create_bridge()
-        assert self._bridge is not None, "Bridge should be created"
+        if self._bridge is None:
+            msg = "Bridge should be created"
+            raise RuntimeError(msg)
         return self._bridge
 
     def api_wrapper(

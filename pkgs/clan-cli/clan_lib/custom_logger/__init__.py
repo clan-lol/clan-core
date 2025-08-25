@@ -16,7 +16,7 @@ def _get_filepath(record: logging.LogRecord) -> Path:
     try:
         filepath = Path(record.pathname).resolve()
         filepath = Path("~", filepath.relative_to(Path.home()))
-    except Exception:
+    except ValueError:
         filepath = Path(record.pathname)
     return filepath
 
@@ -117,7 +117,7 @@ def get_callers(start: int = 2, end: int = 2) -> list[str]:
             try:
                 filepath = Path(frame_info.filename).resolve()
                 filepath = Path("~", filepath.relative_to(Path.home()))
-            except Exception:
+            except ValueError:
                 filepath = Path(frame_info.filename)
 
             ret = f"{filepath}:{frame_info.lineno}::{frame_info.function}"
