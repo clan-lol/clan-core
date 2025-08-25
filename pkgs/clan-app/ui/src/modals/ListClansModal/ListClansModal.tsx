@@ -3,13 +3,13 @@ import cx from "classnames";
 import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
-import { navigateToClan, navigateToOnboarding } from "@/src/hooks/clan";
+import { navigateToOnboarding } from "@/src/hooks/clan";
 import { useNavigate } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { activeClanURI, clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { useClanListQuery } from "@/src/hooks/queries";
 import { Alert } from "@/src/components/Alert/Alert";
-import { NavSection } from "../NavSection/NavSection";
+import { NavSection } from "@/src/components/NavSection/NavSection";
 
 export interface ListClansModalProps {
   onClose?: () => void;
@@ -30,7 +30,8 @@ export const ListClansModal = (props: ListClansModalProps) => {
 
   const selectClan = (uri: string) => () => {
     if (uri == activeClanURI()) {
-      navigateToClan(navigate, uri);
+      // this is the easiest way of reloading the clan
+      window.location.reload();
     } else {
       setActiveClanURI(uri);
     }

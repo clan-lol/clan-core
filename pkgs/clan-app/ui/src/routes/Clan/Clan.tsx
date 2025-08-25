@@ -35,7 +35,7 @@ import { TextInput } from "@/src/components/Form/TextInput";
 import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
-import { ListClansModal } from "@/src/components/ListClansModal/ListClansModal";
+import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 
 interface ClanContextProps {
   clanURI: string;
