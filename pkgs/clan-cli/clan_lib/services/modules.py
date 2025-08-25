@@ -127,7 +127,7 @@ def extract_frontmatter[T](
 
     Raises
     ------
-    ValueError
+    ClanError
         If the README does not contain valid frontmatter.
 
     """
