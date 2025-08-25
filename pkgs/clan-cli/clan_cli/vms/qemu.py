@@ -27,7 +27,8 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
 
     if vm.waypipe.enable:
         # FIXME: check for collisions
-        cid = secrets.randbelow(2**32 - 1) + 1  # Generate random CID between 1 and 2^32
+        # Generate random CID in [3, 2^32-1] (0,1,2 are reserved)
+        cid = secrets.randbelow(2**32 - 3) + 3
         # fmt: off
         return GraphicOptions([
           *common,

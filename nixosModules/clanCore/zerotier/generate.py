@@ -86,8 +86,8 @@ class ZerotierController:
         url = f"http://127.0.0.1:{self.port}{path}"
         # Safe: only connecting to localhost zerotier API
         req = urllib.request.Request(url, headers=headers, method=method, data=body)  # noqa: S310
-        resp = urllib.request.urlopen(req)  # noqa: S310
-        return json.load(resp)
+        with urllib.request.urlopen(req, timeout=5) as resp:  # noqa: S310
+            return json.load(resp)
 
     def status(self) -> dict[str, Any]:
         return self._http_request("/status")
