@@ -34,6 +34,7 @@ class SecretStoreBase(ABC):
         pass
 
     def needs_upload(self, host: Host) -> bool:
+        del host  # Unused but kept for API compatibility
         return True
 
     @abstractmethod

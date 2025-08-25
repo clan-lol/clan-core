@@ -41,6 +41,7 @@ class SecretStore(StoreBase):
         return secret_file.read_bytes()
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
+        del machine, phases  # Unused but kept for API compatibility
         if output_dir.exists():
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
@@ -53,6 +54,7 @@ class SecretStore(StoreBase):
         return []
 
     def delete_store(self, machine: str) -> list[Path]:
+        del machine  # Unused but kept for API compatibility
         if self.dir.exists():
             shutil.rmtree(self.dir)
         return []

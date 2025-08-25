@@ -9,7 +9,7 @@ from clan_cli.tests.stdout import CaptureOutput
 
 
 def list_basic(
-    temporary_home: Path,
+    temporary_home: Path,  # noqa: ARG001
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
@@ -49,7 +49,7 @@ def list_basic(
     indirect=True,
 )
 def list_with_tags_single_tag(
-    temporary_home: Path,
+    temporary_home: Path,  # noqa: ARG001
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
@@ -100,7 +100,7 @@ def list_with_tags_single_tag(
     indirect=True,
 )
 def list_with_tags_multiple_tags_intersection(
-    temporary_home: Path,
+    temporary_home: Path,  # noqa: ARG001
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:

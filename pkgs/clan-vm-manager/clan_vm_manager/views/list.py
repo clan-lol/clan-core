@@ -61,6 +61,7 @@ class ClanList(Gtk.Box):
     """
 
     def __init__(self, config: ClanConfig) -> None:
+        del config  # Unused but kept for API compatibility
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
         app = Gio.Application.get_default()
@@ -92,6 +93,7 @@ class ClanList(Gtk.Box):
         self.splash = EmptySplash(on_join=lambda x: self.on_join_request(x, x))
 
     def display_splash(self, source: GKVStore) -> None:
+        del source  # Unused but kept for API compatibility
         print("Displaying splash")
         if (
             ClanStore.use().clan_store.get_n_items() == 0
@@ -104,6 +106,7 @@ class ClanList(Gtk.Box):
         boxed_list: Gtk.ListBox,
         vm_store: VMStore,
     ) -> Gtk.Widget:
+        del boxed_list  # Unused but kept for API compatibility
         self.remove(self.splash)
 
         vm = vm_store.first()
@@ -150,6 +153,7 @@ class ClanList(Gtk.Box):
         return grp
 
     def on_add(self, source: Any, parameter: Any) -> None:
+        del source  # Unused but kept for API compatibility
         target = parameter.get_string()
         print("Adding new machine", target)
 
@@ -263,6 +267,7 @@ class ClanList(Gtk.Box):
         return row
 
     def on_edit(self, source: Any, parameter: Any) -> None:
+        del source  # Unused but kept for API compatibility
         target = parameter.get_string()
         print("Editing settings for machine", target)
 
@@ -352,6 +357,7 @@ class ClanList(Gtk.Box):
         return row
 
     def on_join_request(self, source: Any, url: str) -> None:
+        del source  # Unused but kept for API compatibility
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
         JoinList.use().push(clan_uri, self.on_after_join)
@@ -371,6 +377,7 @@ class ClanList(Gtk.Box):
         value.join()
 
     def on_discard_clicked(self, value: JoinValue, source: Gtk.Widget) -> None:
+        del source  # Unused but kept for API compatibility
         JoinList.use().discard(value)
         if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")

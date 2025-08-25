@@ -38,9 +38,9 @@ def clan_dir(flake: str | None) -> str | None:
 
 
 def complete_machines(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for machine names configured in the clan."""
     machines: list[str] = []
@@ -72,9 +72,9 @@ def complete_machines(
 
 
 def complete_services_for_machine(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for machine facts generation services."""
     services: list[str] = []
@@ -117,9 +117,9 @@ def complete_services_for_machine(
 
 
 def complete_backup_providers_for_machine(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for machine backup providers."""
     providers: list[str] = []
@@ -161,9 +161,9 @@ def complete_backup_providers_for_machine(
 
 
 def complete_state_services_for_machine(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for machine state providers."""
     providers: list[str] = []
@@ -205,9 +205,9 @@ def complete_state_services_for_machine(
 
 
 def complete_secrets(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan secrets"""
     from clan_lib.flake.flake import Flake
@@ -228,9 +228,9 @@ def complete_secrets(
 
 
 def complete_users(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan users"""
     from pathlib import Path
@@ -251,9 +251,9 @@ def complete_users(
 
 
 def complete_groups(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan groups"""
     from pathlib import Path
@@ -275,9 +275,9 @@ def complete_groups(
 
 
 def complete_templates_disko(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for disko templates"""
     from clan_lib.templates import list_templates
@@ -299,9 +299,9 @@ def complete_templates_disko(
 
 
 def complete_templates_clan(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for clan templates"""
     from clan_lib.templates import list_templates
@@ -323,9 +323,9 @@ def complete_templates_clan(
 
 
 def complete_vars_for_machine(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for variable names for a specific machine.
     Only completes vars that already exist in the vars directory on disk.
@@ -367,9 +367,9 @@ def complete_vars_for_machine(
 
 
 def complete_target_host(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for target_host for a specific machine"""
     target_hosts: list[str] = []
@@ -409,9 +409,9 @@ def complete_target_host(
 
 
 def complete_tags(
-    prefix: str,
+    _prefix: str,
     parsed_args: argparse.Namespace,
-    **kwargs: Any,
+    **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for tags inside the inventory"""
     tags: list[str] = []

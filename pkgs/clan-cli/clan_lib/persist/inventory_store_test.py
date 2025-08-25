@@ -28,6 +28,7 @@ class MockFlake:
         selector: str,
         nix_options: list[str] | None = None,
     ) -> Any:
+        del nix_options  # Unused but kept for API compatibility
         nixpkgs = os.environ.get("NIXPKGS")
         select = os.environ.get("NIX_SELECT")
         clan_core_path = os.environ.get("CLAN_CORE_PATH")

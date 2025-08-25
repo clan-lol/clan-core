@@ -70,5 +70,6 @@ class EmptySplash(Gtk.Box):
         """Callback for the join button
         Extracts the text from the entry and calls the on_join callback
         """
+        del button  # Unused but kept for API compatibility
         log.info(f"Splash screen: Joining {entry.get_text()}")
         self.on_join(entry.get_text())

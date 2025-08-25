@@ -41,15 +41,15 @@ class AbstractLogger(ABC):
         pass
 
     @abstractmethod
-    def info(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def info(self, *args: Any, **kwargs: Any) -> None:
         pass
 
     @abstractmethod
-    def warning(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def warning(self, *args: Any, **kwargs: Any) -> None:
         pass
 
     @abstractmethod
-    def error(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def error(self, *args: Any, **kwargs: Any) -> None:
         pass
 
     @abstractmethod
@@ -78,6 +78,7 @@ class JunitXMLLogger(AbstractLogger):
         atexit.register(self.close)
 
     def log(self, message: str, attributes: dict[str, str] | None = None) -> None:
+        del attributes  # Unused but kept for API compatibility
         self.tests[self.currentSubtest].stdout += message + os.linesep
 
     @contextmanager
@@ -86,6 +87,7 @@ class JunitXMLLogger(AbstractLogger):
         name: str,
         attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
+        del attributes  # Unused but kept for API compatibility
         old_test = self.currentSubtest
         self.tests.setdefault(name, self.TestCaseState())
         self.currentSubtest = name
@@ -100,16 +102,20 @@ class JunitXMLLogger(AbstractLogger):
         message: str,
         attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
+        del attributes  # Unused but kept for API compatibility
         self.log(message)
         yield
 
     def info(self, *args: Any, **kwargs: Any) -> None:
+        del kwargs  # Unused but kept for API compatibility
         self.tests[self.currentSubtest].stdout += args[0] + os.linesep
 
     def warning(self, *args: Any, **kwargs: Any) -> None:
+        del kwargs  # Unused but kept for API compatibility
         self.tests[self.currentSubtest].stdout += args[0] + os.linesep
 
     def error(self, *args: Any, **kwargs: Any) -> None:
+        del kwargs  # Unused but kept for API compatibility
         self.tests[self.currentSubtest].stderr += args[0] + os.linesep
         self.tests[self.currentSubtest].failure = True
 

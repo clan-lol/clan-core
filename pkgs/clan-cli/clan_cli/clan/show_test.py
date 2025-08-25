@@ -23,7 +23,6 @@ def test_clan_show(
 def test_clan_show_no_flake(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    capture_output: CaptureOutput,
 ) -> None:
     monkeypatch.chdir(tmp_path)
 

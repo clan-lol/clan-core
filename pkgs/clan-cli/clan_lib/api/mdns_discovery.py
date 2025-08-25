@@ -112,7 +112,7 @@ def list_system_services_mdns() -> DNSInfo:
     return data
 
 
-def mdns_command(args: argparse.Namespace) -> None:
+def mdns_command(_args: argparse.Namespace) -> None:
     dns_info = list_system_services_mdns()
     for name, info in dns_info.services.items():
         print(f"Hostname: {name} - ip: {info.ip}")

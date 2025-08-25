@@ -151,7 +151,7 @@ def generate_service_facts(
     return True
 
 
-def prompt_func(service: str, text: str) -> str:
+def prompt_func(_service: str, text: str) -> str:
     print(f"{text}: ")
     return read_multiline_input()
 

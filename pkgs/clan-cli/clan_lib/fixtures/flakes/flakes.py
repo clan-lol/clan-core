@@ -39,10 +39,10 @@ def offline_template(tmp_path_factory: Any, offline_session_flake_hook: Any) -> 
 def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
     @contextmanager
     def fake_clan_template(
-        flake: Flake,
-        template_ident: str,
+        _flake: Flake,
+        template_ident: str,  # noqa: ARG001
         dst_dir: Path,
-        post_process: Callable[[Path], None] | None = None,
+        post_process: Callable[[Path], None] | None = None,  # noqa: ARG001
     ) -> Iterator[Path]:
         # Just yield static destination directory without any processing
         shutil.copytree(offline_template, dst_dir, dirs_exist_ok=True, symlinks=True)
@@ -54,7 +54,7 @@ def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
 @pytest.fixture()
 def clan_flake(
     tmp_path: Path,
-    patch_clan_template: Any,
+    patch_clan_template: Any,  # noqa: ARG001
 ) -> Callable[[Clan | None, str | None], Flake]:
     def factory(clan: Clan | None = None, raw: str | None = None) -> Flake:
         # TODO: Make more options configurable

@@ -49,6 +49,7 @@ class VMObject(GObject.Object):
         data: HistoryEntry,
         build_log_cb: Callable[[Gio.File], None],
     ) -> None:
+        del icon  # Unused but kept for API compatibility
         super().__init__()
 
         # Store the data from the history entry
@@ -138,6 +139,7 @@ class VMObject(GObject.Object):
             )
 
     def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
+        del user_state  # Unused but kept for API compatibility
         if switch.get_active():
             switch.set_state(False)
             switch.set_sensitive(False)
@@ -265,6 +267,7 @@ class VMObject(GObject.Object):
         other_file: Gio.File,
         event_type: Gio.FileMonitorEvent,
     ) -> None:
+        del monitor, other_file  # Unused but kept for API compatibility
         if event_type == Gio.FileMonitorEvent.CHANGES_DONE_HINT:
             # File was changed and the changes were written to disk
             # wire up the callback for setting the logs

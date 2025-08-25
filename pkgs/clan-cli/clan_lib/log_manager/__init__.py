@@ -575,6 +575,7 @@ class LogManager:
             The LogFile if found, None otherwise.
 
         """
+        del group_path  # Unused but kept for API compatibility
         log_files: list[LogFile] = []
 
         # Recursively search for log files

@@ -67,8 +67,7 @@ def test_machine_subcommands(
 
 @pytest.mark.with_core
 def test_machines_update_with_tags(
-    test_flake_with_core: fixtures_flakes.FlakeForTest,
-    capture_output: CaptureOutput,
+    test_flake_with_core: fixtures_flakes.FlakeForTest,  # noqa: ARG001
 ) -> None:
     import argparse
 

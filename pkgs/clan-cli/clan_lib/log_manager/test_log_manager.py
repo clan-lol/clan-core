@@ -811,6 +811,7 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that list_log_days returns days sorted newest first."""
+        del configured_log_manager  # Unused but kept for API compatibility
         # Create log files on different days by manipulating the date
         import tempfile
 

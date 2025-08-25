@@ -59,7 +59,7 @@ def generate_command(args: argparse.Namespace) -> None:
         )
 
 
-def show_command(args: argparse.Namespace) -> None:
+def show_command(_args: argparse.Namespace) -> None:
     keys = sops.maybe_get_admin_public_keys()
     if not keys:
         msg = "No public key found"

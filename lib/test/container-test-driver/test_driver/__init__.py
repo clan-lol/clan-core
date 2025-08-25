@@ -150,7 +150,7 @@ class Error(Exception):
     pass
 
 
-def prepare_machine_root(machinename: str, root: Path) -> None:
+def prepare_machine_root(root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
     root.joinpath("etc").mkdir(parents=True, exist_ok=True)
     root.joinpath(".env").write_text(
@@ -197,7 +197,7 @@ class Machine:
         return self.get_systemd_process()
 
     def start(self) -> None:
-        prepare_machine_root(self.name, self.rootdir)
+        prepare_machine_root(self.rootdir)
         init_test_environment()
         cmd = [
             "systemd-nspawn",
@@ -294,8 +294,8 @@ class Machine:
     def execute(
         self,
         command: str,
-        check_return: bool = True,
-        check_output: bool = True,
+        check_return: bool = True,  # noqa: ARG002
+        check_output: bool = True,  # noqa: ARG002
         timeout: int | None = 900,
     ) -> subprocess.CompletedProcess:
         """Execute a shell command, returning a list `(status, stdout)`.

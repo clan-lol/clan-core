@@ -215,11 +215,10 @@ class InventoryStore:
 
         return WriteInfo(writeables, data_eval, data_disk)
 
-    def get_writeability_of(self, path: str) -> Any:
-        """Get the writeability of a path in the inventory
+    def get_writeability(self) -> Any:
+        """Get the writeability of the inventory
 
-        :param path: The path to check
-        :return: A dictionary with the writeability of the path
+        :return: A dictionary with the writeability of all paths
         """
         write_info = self._write_info()
         return write_info.writeables

@@ -47,7 +47,7 @@ class ToastOverlay:
         if key not in self.active_toasts:
             self.active_toasts.add(key)
             self.overlay.add_toast(toast)
-            toast.connect("dismissed", lambda toast: self.active_toasts.remove(key))
+            toast.connect("dismissed", lambda _toast: self.active_toasts.remove(key))
 
 
 class ErrorToast:

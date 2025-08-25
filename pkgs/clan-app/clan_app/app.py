@@ -121,7 +121,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
         webview.add_middleware(MethodExecutionMiddleware(api=API))
 
-        webview.bind_jsonschema_api(API, log_manager=log_manager)
+        webview.bind_jsonschema_api(API)
         webview.navigate(content_uri)
         webview.run()
 

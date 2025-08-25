@@ -331,7 +331,7 @@ if __name__ == "__main__":
 
     def concatenate(a: str, b: str) -> str:
         time.sleep(1)
-        msg = "Hello World"
+        msg = a + b
         raise ClanError(msg)
 
     with runtime:

@@ -107,7 +107,7 @@ def fix_flake_inputs(clan_dir: Path, clan_core_dir: Path) -> None:
 @pytest.mark.with_core
 @pytest.mark.skipif(sys.platform == "darwin", reason="sshd fails to start on darwin")
 def test_clan_create_api(
-    temporary_home: Path,
+    temporary_home: Path,  # noqa: ARG001
     test_lib_root: Path,
     clan_core: Path,
     hosts: list[Remote],

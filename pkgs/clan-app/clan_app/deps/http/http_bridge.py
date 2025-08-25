@@ -313,7 +313,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             )
             return
 
-        self._process_api_request_in_thread(api_request, method_name)
+        self._process_api_request_in_thread(api_request)
 
     def _parse_request_data(
         self,
@@ -363,7 +363,6 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
     def _process_api_request_in_thread(
         self,
         api_request: BackendRequest,
-        method_name: str,
     ) -> None:
         """Process the API request in a separate thread."""
         stop_event = threading.Event()
