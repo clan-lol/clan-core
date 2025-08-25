@@ -29,3 +29,44 @@
   };
 }
 ```
+
+## Migration from `root-password` module
+
+The deprecated `clan.root-password` module has been replaced by the `users` module. Here's how to migrate:
+
+### 1. Update your flake configuration
+
+Replace the `root-password` module import with a `users` service instance:
+
+```nix
+# OLD - Remove this from your nixosModules:
+imports = [
+  self.inputs.clan-core.clanModules.root-password
+];
+
+# NEW - Add to inventory.instances or machines/flake-module.nix:
+instances = {
+  users-root = {
+    module.name = "users";
+    module.input = "clan-core";
+    roles.default.tags.nixos = { };
+    roles.default.settings = {
+      user = "root";
+      prompt = false;  # Set to true if you want to be prompted
+      groups = [ ];
+    };
+  };
+};
+```
+
+### 2. Migrate vars
+
+The vars structure has changed from `root-password` to `user-password-root`:
+
+```bash
+# For each machine, rename the vars directories:
+cd vars/per-machine/<machine-name>/
+mv root-password user-password-root
+mv user-password-root/password-hash user-password-root/user-password-hash
+mv user-password-root/password user-password-root/user-password
+```

@@ -271,7 +271,7 @@ The following table shows the migration status of each deprecated clanModule:
 | `nginx`                  | ❌ Removed                                                        |                                                                  |
 | `packages`               | ✅ [Migrated](../../reference/clanServices/packages.md)           |                                                                  |
 | `postgresql`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
-| `root-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              |                                                                  |
+| `root-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              | See [migration guide](../../reference/clanServices/users.md#migration-from-root-password-module) |
 | `single-disk`            | ❌ Removed                                                        |                                                                  |
 | `sshd`                   | ✅ [Migrated](../../reference/clanServices/sshd.md)               |                                                                  |
 | `state-version`          | ✅ [Migrated](../../reference/clanServices/state-version.md)      |                                                                  |
