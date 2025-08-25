@@ -17,7 +17,7 @@ import {
 } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import {
-  ClanDetailsWithURI,
+  ClanDetails,
   MachinesQueryResult,
   useClanDetailsQuery,
   useClanListQuery,
@@ -40,9 +40,9 @@ import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 interface ClanContextProps {
   clanURI: string;
   machinesQuery: MachinesQueryResult;
-  activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
-  otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
-  allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
+  activeClanQuery: UseQueryResult<ClanDetails>;
+  otherClanQueries: UseQueryResult<ClanDetails>[];
+  allClansQueries: UseQueryResult<ClanDetails>[];
 
   isLoading(): boolean;
   isError(): boolean;
@@ -51,9 +51,9 @@ interface ClanContextProps {
 class DefaultClanContext implements ClanContextProps {
   public readonly clanURI: string;
 
-  public readonly activeClanQuery: UseQueryResult<ClanDetailsWithURI>;
-  public readonly otherClanQueries: UseQueryResult<ClanDetailsWithURI>[];
-  public readonly allClansQueries: UseQueryResult<ClanDetailsWithURI>[];
+  public readonly activeClanQuery: UseQueryResult<ClanDetails>;
+  public readonly otherClanQueries: UseQueryResult<ClanDetails>[];
+  public readonly allClansQueries: UseQueryResult<ClanDetails>[];
 
   public readonly machinesQuery: MachinesQueryResult;
 
@@ -62,8 +62,8 @@ class DefaultClanContext implements ClanContextProps {
   constructor(
     clanURI: string,
     machinesQuery: MachinesQueryResult,
-    activeClanQuery: UseQueryResult<ClanDetailsWithURI>,
-    otherClanQueries: UseQueryResult<ClanDetailsWithURI>[],
+    activeClanQuery: UseQueryResult<ClanDetails>,
+    otherClanQueries: UseQueryResult<ClanDetails>[],
   ) {
     this.clanURI = clanURI;
     this.machinesQuery = machinesQuery;

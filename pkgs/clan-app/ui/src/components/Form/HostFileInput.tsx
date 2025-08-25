@@ -11,7 +11,7 @@ import styles from "./HostFileInput.module.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
-import { createSignal } from "solid-js";
+import { createSignal, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
 
@@ -40,17 +40,31 @@ export const HostFileInput = (props: HostFileInputProps) => {
     }
   };
 
+  const [styleProps, otherProps] = splitProps(props, [
+    "class",
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+  ]);
+
   return (
     <TextField
-      class={cx("form-field", props.size, props.orientation, {
-        inverted: props.inverted,
-        ghost: props.ghost,
-      })}
-      {...props}
+      class={cx(
+        styleProps.class,
+        "form-field",
+        styleProps.size,
+        styleProps.orientation,
+        {
+          inverted: styleProps.inverted,
+          ghost: styleProps.ghost,
+        },
+      )}
+      {...otherProps}
     >
       <Orienter
-        orientation={props.orientation}
-        align={props.orientation == "horizontal" ? "center" : "start"}
+        orientation={styleProps.orientation}
+        align={styleProps.orientation == "horizontal" ? "center" : "start"}
       >
         <Label
           labelComponent={TextField.Label}
@@ -70,12 +84,12 @@ export const HostFileInput = (props: HostFileInputProps) => {
         {!value() && (
           <Button
             hierarchy="secondary"
-            size={props.size}
+            size={styleProps.size}
             startIcon="Folder"
             onClick={selectFile}
             disabled={props.disabled || props.readOnly}
             class={cx(
-              props.orientation === "vertical"
+              styleProps.orientation === "vertical"
                 ? styles.vertical_button
                 : styles.horizontal_button,
             )}
@@ -92,7 +106,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
                   hierarchy="body"
                   size="xs"
                   weight="medium"
-                  inverted={!props.inverted}
+                  inverted={!styleProps.inverted}
                 >
                   {value()}
                 </Typography>
@@ -107,7 +121,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
                   : styles.horizontal_button,
               )}
               hierarchy="secondary"
-              size={props.size}
+              size={styleProps.size}
               startIcon="Folder"
               onClick={selectFile}
               disabled={props.disabled || props.readOnly}

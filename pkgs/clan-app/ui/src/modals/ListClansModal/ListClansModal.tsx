@@ -82,8 +82,8 @@ export const ListClansModal = (props: ListClansModalProps) => {
             {(clan) => (
               <li>
                 <NavSection
-                  label={clan.data.name}
-                  description={clan.data.description ?? undefined}
+                  label={clan.data.details.name}
+                  description={clan.data.details.description ?? undefined}
                   onClick={selectClan(clan.data.uri)}
                 />
               </li>

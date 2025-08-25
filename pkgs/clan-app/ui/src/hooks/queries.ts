@@ -10,8 +10,11 @@ import { useApiClient } from "./ApiClient";
 import { experimental_createQueryPersister } from "@tanstack/solid-query-persist-client";
 import { ClanDetailsStore } from "@/src/stores/clanDetails";
 
-export type ClanDetails = SuccessData<"get_clan_details">;
-export type ClanDetailsWithURI = ClanDetails & { uri: string };
+export interface ClanDetails {
+  uri: string;
+  details: SuccessData<"get_clan_details">;
+  fieldsSchema: SuccessData<"get_clan_details_schema">;
+}
 
 export type Tags = SuccessData<"list_tags">;
 export type Machine = SuccessData<"get_machine">;
@@ -29,7 +32,7 @@ export interface MachineDetail {
 }
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
-export type ClanListQueryResult = UseQueryResult<ClanDetailsWithURI>[];
+export type ClanListQueryResult = UseQueryResult<ClanDetails>[];
 
 export const DefaultQueryClient = new QueryClient({
   defaultOptions: {
@@ -65,7 +68,7 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
   return useQuery<MachineDetail>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
     queryFn: async () => {
-      const [tagsCall, machineCall, schemaCall] = await Promise.all([
+      const [tagsCall, machineCall, schemaCall] = [
         client.fetch("list_tags", {
           flake: {
             identifier: clanURI,
@@ -85,7 +88,7 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
             },
           },
         }),
-      ]);
+      ];
 
       const tags = await tagsCall.result;
       if (tags.status === "error") {
@@ -176,26 +179,45 @@ export const ClanDetailsPersister = experimental_createQueryPersister({
 
 export const useClanDetailsQuery = (clanURI: string) => {
   const client = useApiClient();
-  return useQuery<ClanDetailsWithURI>(() => ({
+  return useQuery<ClanDetails>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "details"],
     persister: ClanDetailsPersister.persisterFn,
     queryFn: async () => {
-      const call = client.fetch("get_clan_details", {
+      const args = {
         flake: {
           identifier: clanURI,
         },
-      });
-      const result = await call.result;
+      };
 
-      if (result.status === "error") {
-        // todo should we create some specific error types?
-        console.error("Error fetching clan details", clanURI, result.errors);
-        throw new Error(result.errors[0].message);
+      const [detailsCall, schemaCall] = [
+        client.fetch("get_clan_details", args),
+        client.fetch("get_clan_details_schema", {
+          flake: {
+            identifier: clanURI,
+          },
+        }),
+      ];
+
+      const details = await detailsCall.result;
+
+      if (details.status === "error") {
+        throw new Error(
+          "Error fetching clan details: " + details.errors[0].message,
+        );
+      }
+
+      const schema = await schemaCall.result;
+
+      if (schema.status === "error") {
+        throw new Error(
+          "Error fetching clan details schema: " + schema.errors[0].message,
+        );
       }
 
       return {
         uri: clanURI,
-        ...result.data,
+        details: details.data!,
+        fieldsSchema: schema.data,
       };
     },
   }));
@@ -230,21 +252,41 @@ export const useClanListQuery = (
             }
           }
 
-          const call = client.fetch("get_clan_details", {
+          const args = {
             flake: {
               identifier: clanURI,
             },
-          });
-          const result = await call.result;
+          };
 
-          if (result.status === "error") {
-            // todo should we create some specific error types?
-            throw new Error(result.errors[0].message);
+          const [detailsCall, schemaCall] = [
+            client.fetch("get_clan_details", args),
+            client.fetch("get_clan_details_schema", {
+              flake: {
+                identifier: clanURI,
+              },
+            }),
+          ];
+
+          const details = await detailsCall.result;
+
+          if (details.status === "error") {
+            throw new Error(
+              "Error fetching clan details: " + details.errors[0].message,
+            );
+          }
+
+          const schema = await schemaCall.result;
+
+          if (schema.status === "error") {
+            throw new Error(
+              "Error fetching clan details schema: " + schema.errors[0].message,
+            );
           }
 
           return {
             uri: clanURI,
-            ...result.data,
+            details: details.data,
+            fieldsSchema: schema.data,
           };
         },
       };

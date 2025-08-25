@@ -24,6 +24,14 @@ export const Checkbox = (props: CheckboxProps) => {
   // we need to separate output the input otherwise it interferes with prop binding
   const [_, rootProps] = splitProps(props, ["input"]);
 
+  const [styleProps, otherRootProps] = splitProps(rootProps, [
+    "class",
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+  ]);
+
   const alignment = () =>
     (props.orientation || "vertical") == "vertical" ? "start" : "center";
 
@@ -47,14 +55,21 @@ export const Checkbox = (props: CheckboxProps) => {
 
   return (
     <KCheckbox.Root
-      class={cx("form-field", "checkbox", props.size, props.orientation, {
-        inverted: props.inverted,
-        ghost: props.ghost,
-      })}
-      {...rootProps}
+      class={cx(
+        styleProps.class,
+        "form-field",
+        "checkbox",
+        styleProps.size,
+        styleProps.orientation,
+        {
+          inverted: styleProps.inverted,
+          ghost: styleProps.ghost,
+        },
+      )}
+      {...otherRootProps}
     >
       {(state) => (
-        <Orienter orientation={props.orientation} align={alignment()}>
+        <Orienter orientation={styleProps.orientation} align={alignment()}>
           <Label
             labelComponent={KCheckbox.Label}
             descriptionComponent={KCheckbox.Description}

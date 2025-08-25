@@ -11,6 +11,7 @@ import "./TextInput.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
+import { splitProps } from "solid-js";
 
 export type TextInputProps = FieldProps &
   TextFieldRootProps & {
@@ -19,15 +20,30 @@ export type TextInputProps = FieldProps &
   };
 
 export const TextInput = (props: TextInputProps) => {
+  const [styleProps, otherProps] = splitProps(props, [
+    "class",
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+  ]);
+
   return (
     <TextField
-      class={cx("form-field", "text", props.size, props.orientation, {
-        inverted: props.inverted,
-        ghost: props.ghost,
-      })}
-      {...props}
+      class={cx(
+        styleProps.class,
+        "form-field",
+        "text",
+        styleProps.size,
+        styleProps.orientation,
+        {
+          inverted: styleProps.inverted,
+          ghost: styleProps.ghost,
+        },
+      )}
+      {...otherProps}
     >
-      <Orienter orientation={props.orientation}>
+      <Orienter orientation={styleProps.orientation}>
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
@@ -37,7 +53,7 @@ export const TextInput = (props: TextInputProps) => {
           {props.icon && !props.readOnly && (
             <Icon
               icon={props.icon}
-              inverted={props.inverted}
+              inverted={styleProps.inverted}
               color={props.disabled ? "tertiary" : "quaternary"}
             />
           )}
