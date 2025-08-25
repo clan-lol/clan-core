@@ -21,14 +21,14 @@ let
     "secrets"
     "templates"
   ];
-  clanSchema = jsonLib.parseOptions (lib.filterAttrs (n: _v: lib.elem n include) clanOpts) { };
+  clanSchemaNix = jsonLib.parseOptions (lib.filterAttrs (n: _v: lib.elem n include) clanOpts) { };
 
-  clan-schema-abstract = pkgs.stdenv.mkDerivation {
+  clanSchemaJson = pkgs.stdenv.mkDerivation {
     name = "clan-schema-files";
     buildInputs = [ pkgs.cue ];
     src = ./.;
     buildPhase = ''
-      export SCHEMA=${builtins.toFile "clan-schema.json" (builtins.toJSON clanSchema)}
+      export SCHEMA=${builtins.toFile "clan-schema.json" (builtins.toJSON clanSchemaNix)}
       cp $SCHEMA schema.json
       # Also generate a CUE schema version that is derived from the JSON schema
       cue import -f -p compose -l '#Root:' schema.json
@@ -41,7 +41,7 @@ in
 {
   inherit
     flakeOptions
-    clanSchema
-    clan-schema-abstract
+    clanSchemaNix
+    clanSchemaJson
     ;
 }
