@@ -15,8 +15,7 @@ class SSHKeyPair:
 
 
 def create_secret_key_nixos_anywhere() -> SSHKeyPair:
-    """
-    Create a new SSH key pair for NixOS Anywhere.
+    """Create a new SSH key pair for NixOS Anywhere.
     The keys are stored in ~/.config/clan/nixos-anywhere/keys/id_ed25519 and id_ed25519.pub.
     """
     private_key_dir = user_nixos_anywhere_dir()
@@ -27,8 +26,7 @@ def create_secret_key_nixos_anywhere() -> SSHKeyPair:
 
 
 def generate_ssh_key(root_dir: Path) -> SSHKeyPair:
-    """
-    Generate a new SSH key pair at root_dir/keys/id_ed25519 and id_ed25519.pub.
+    """Generate a new SSH key pair at root_dir/keys/id_ed25519 and id_ed25519.pub.
     If the key already exists, it will not be regenerated.
     """
     key_dir = root_dir / "keys"

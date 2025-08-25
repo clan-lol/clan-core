@@ -25,14 +25,18 @@ class AbstractLogger(ABC):
     @abstractmethod
     @contextmanager
     def subtest(
-        self, name: str, attributes: dict[str, str] | None = None
+        self,
+        name: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         pass
 
     @abstractmethod
     @contextmanager
     def nested(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         pass
 
@@ -66,7 +70,7 @@ class JunitXMLLogger(AbstractLogger):
 
     def __init__(self, outfile: Path) -> None:
         self.tests: dict[str, JunitXMLLogger.TestCaseState] = {
-            "main": self.TestCaseState()
+            "main": self.TestCaseState(),
         }
         self.currentSubtest = "main"
         self.outfile: Path = outfile
@@ -78,7 +82,9 @@ class JunitXMLLogger(AbstractLogger):
 
     @contextmanager
     def subtest(
-        self, name: str, attributes: dict[str, str] | None = None
+        self,
+        name: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         old_test = self.currentSubtest
         self.tests.setdefault(name, self.TestCaseState())
@@ -90,7 +96,9 @@ class JunitXMLLogger(AbstractLogger):
 
     @contextmanager
     def nested(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         self.log(message)
         yield
@@ -144,7 +152,9 @@ class CompositeLogger(AbstractLogger):
 
     @contextmanager
     def subtest(
-        self, name: str, attributes: dict[str, str] | None = None
+        self,
+        name: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         with ExitStack() as stack:
             for logger in self.logger_list:
@@ -153,7 +163,9 @@ class CompositeLogger(AbstractLogger):
 
     @contextmanager
     def nested(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         with ExitStack() as stack:
             for logger in self.logger_list:
@@ -200,19 +212,24 @@ class TerminalLogger(AbstractLogger):
 
     @contextmanager
     def subtest(
-        self, name: str, attributes: dict[str, str] | None = None
+        self,
+        name: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         with self.nested("subtest: " + name, attributes):
             yield
 
     @contextmanager
     def nested(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         self._eprint(
             self.maybe_prefix(
-                Style.BRIGHT + Fore.GREEN + message + Style.RESET_ALL, attributes
-            )
+                Style.BRIGHT + Fore.GREEN + message + Style.RESET_ALL,
+                attributes,
+            ),
         )
 
         tic = time.time()
@@ -259,7 +276,9 @@ class XMLLogger(AbstractLogger):
         return "".join(ch for ch in message if unicodedata.category(ch)[0] != "C")
 
     def maybe_prefix(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> str:
         if attributes and "machine" in attributes:
             return f"{attributes['machine']}: {message}"
@@ -309,14 +328,18 @@ class XMLLogger(AbstractLogger):
 
     @contextmanager
     def subtest(
-        self, name: str, attributes: dict[str, str] | None = None
+        self,
+        name: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         with self.nested("subtest: " + name, attributes):
             yield
 
     @contextmanager
     def nested(
-        self, message: str, attributes: dict[str, str] | None = None
+        self,
+        message: str,
+        attributes: dict[str, str] | None = None,
     ) -> Iterator[None]:
         if attributes is None:
             attributes = {}

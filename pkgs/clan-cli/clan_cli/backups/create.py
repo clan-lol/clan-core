@@ -22,12 +22,16 @@ def create_command(args: argparse.Namespace) -> None:
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     machines_parser = parser.add_argument(
-        "machine", type=str, help="machine in the flake to create backups of"
+        "machine",
+        type=str,
+        help="machine in the flake to create backups of",
     )
     add_dynamic_completer(machines_parser, complete_machines)
 
     provider_action = parser.add_argument(
-        "--provider", type=str, help="backup provider to use"
+        "--provider",
+        type=str,
+        help="backup provider to use",
     )
     add_dynamic_completer(provider_action, complete_backup_providers_for_machine)
     parser.set_defaults(func=create_command)

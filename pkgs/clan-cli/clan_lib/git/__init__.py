@@ -51,7 +51,9 @@ def commit_files(
 
 
 def _commit_file_to_git(
-    repo_dir: Path, file_paths: list[Path], commit_message: str
+    repo_dir: Path,
+    file_paths: list[Path],
+    commit_message: str,
 ) -> None:
     """Commit a file to a git repository.
 
@@ -115,6 +117,6 @@ def _commit_file_to_git(
         run(
             cmd,
             RunOpts(
-                error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}"
+                error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}",
             ),
         )

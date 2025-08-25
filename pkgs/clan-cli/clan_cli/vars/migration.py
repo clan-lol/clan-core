@@ -29,13 +29,13 @@ def _migration_file_exists(
         if machine.secret_facts_store.exists(generator.name, fact_name):
             return True
         machine.debug(
-            f"Cannot migrate fact {fact_name} for service {generator.name}, as it does not exist in the secret fact store"
+            f"Cannot migrate fact {fact_name} for service {generator.name}, as it does not exist in the secret fact store",
         )
     if not is_secret:
         if machine.public_facts_store.exists(generator.name, fact_name):
             return True
         machine.debug(
-            f"Cannot migrate fact {fact_name} for service {generator.name}, as it does not exist in the public fact store"
+            f"Cannot migrate fact {fact_name} for service {generator.name}, as it does not exist in the public fact store",
         )
     return False
 
@@ -59,14 +59,20 @@ def _migrate_file(
     if file.secret:
         old_value = machine.secret_facts_store.get(service_name, fact_name)
         maybe_path = machine.secret_vars_store.set(
-            generator, file, old_value, is_migration=True
+            generator,
+            file,
+            old_value,
+            is_migration=True,
         )
         if maybe_path:
             paths.append(maybe_path)
     else:
         old_value = machine.public_facts_store.get(service_name, fact_name)
         maybe_path = machine.public_vars_store.set(
-            generator, file, old_value, is_migration=True
+            generator,
+            file,
+            old_value,
+            is_migration=True,
         )
         if maybe_path:
             paths.append(maybe_path)
@@ -84,7 +90,11 @@ def migrate_files(
         if _migration_file_exists(machine, generator, file.name):
             assert generator.migrate_fact is not None
             files_to_commit += _migrate_file(
-                machine, generator, file.name, generator.migrate_fact, file.name
+                machine,
+                generator,
+                file.name,
+                generator.migrate_fact,
+                file.name,
             )
         else:
             not_found.append(file.name)
@@ -114,11 +124,10 @@ def check_can_migrate(
                 all_files_missing = False
             else:
                 all_files_present = False
+        elif machine.public_vars_store.exists(generator, file.name):
+            all_files_missing = False
         else:
-            if machine.public_vars_store.exists(generator, file.name):
-                all_files_missing = False
-            else:
-                all_files_present = False
+            all_files_present = False
 
     if not all_files_present and not all_files_missing:
         msg = f"Cannot migrate facts for generator {generator.name} as some files already exist in the store"
@@ -132,5 +141,5 @@ def check_can_migrate(
         all(
             _migration_file_exists(machine, generator, file.name)
             for file in generator.files
-        )
+        ),
     )

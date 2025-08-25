@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-IPv6 address allocator for WireGuard networks.
+"""IPv6 address allocator for WireGuard networks.
 
 Network layout:
 - Base network: /40 ULA prefix (fd00::/8 + 32 bits from hash)
@@ -20,8 +19,7 @@ def hash_string(s: str) -> str:
 
 
 def generate_ula_prefix(instance_name: str) -> ipaddress.IPv6Network:
-    """
-    Generate a /40 ULA prefix from instance name.
+    """Generate a /40 ULA prefix from instance name.
 
     Format: fd{32-bit hash}/40
     This gives us fd00:0000:0000::/40 through fdff:ffff:ff00::/40
@@ -46,10 +44,10 @@ def generate_ula_prefix(instance_name: str) -> ipaddress.IPv6Network:
 
 
 def generate_controller_subnet(
-    base_network: ipaddress.IPv6Network, controller_name: str
+    base_network: ipaddress.IPv6Network,
+    controller_name: str,
 ) -> ipaddress.IPv6Network:
-    """
-    Generate a /56 subnet for a controller from the base /40 network.
+    """Generate a /56 subnet for a controller from the base /40 network.
 
     We have 16 bits (40 to 56) to allocate controller subnets.
     This allows for 65,536 possible controller subnets.
@@ -68,8 +66,7 @@ def generate_controller_subnet(
 
 
 def generate_peer_suffix(peer_name: str) -> str:
-    """
-    Generate a unique 64-bit host suffix for a peer.
+    """Generate a unique 64-bit host suffix for a peer.
 
     This suffix will be used in all controller subnets to create unique addresses.
     Format: :xxxx:xxxx:xxxx:xxxx (64 bits)
@@ -86,7 +83,7 @@ def generate_peer_suffix(peer_name: str) -> str:
 def main() -> None:
     if len(sys.argv) < 4:
         print(
-            "Usage: ipv6_allocator.py <output_dir> <instance_name> <controller|peer> <machine_name>"
+            "Usage: ipv6_allocator.py <output_dir> <instance_name> <controller|peer> <machine_name>",
         )
         sys.exit(1)
 

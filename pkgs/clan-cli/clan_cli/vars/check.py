@@ -28,7 +28,9 @@ class VarStatus:
 
 
 def vars_status(
-    machine_name: str, flake: Flake, generator_name: None | str = None
+    machine_name: str,
+    flake: Flake,
+    generator_name: None | str = None,
 ) -> VarStatus:
     machine = Machine(name=machine_name, flake=flake)
     missing_secret_vars = []
@@ -53,14 +55,14 @@ def vars_status(
     for generator in generators:
         for file in generator.files:
             file.store(
-                machine.secret_vars_store if file.secret else machine.public_vars_store
+                machine.secret_vars_store if file.secret else machine.public_vars_store,
             )
             file.generator(generator)
 
             if file.secret:
                 if not machine.secret_vars_store.exists(generator, file.name):
                     machine.info(
-                        f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing."
+                        f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing.",
                     )
                     missing_secret_vars.append(file)
                 else:
@@ -71,13 +73,13 @@ def vars_status(
                     )
                     if msg:
                         machine.info(
-                            f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} needs update: {msg}"
+                            f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} needs update: {msg}",
                         )
                         unfixed_secret_vars.append(file)
 
             elif not machine.public_vars_store.exists(generator, file.name):
                 machine.info(
-                    f"Public var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing."
+                    f"Public var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing.",
                 )
                 missing_public_vars.append(file)
         # check if invalidation hash is up to date
@@ -87,7 +89,7 @@ def vars_status(
         ):
             invalid_generators.append(generator.name)
             machine.info(
-                f"Generator '{generator.name}' in machine {machine.name} has outdated invalidation hash."
+                f"Generator '{generator.name}' in machine {machine.name} has outdated invalidation hash.",
             )
     return VarStatus(
         missing_secret_vars,
@@ -98,7 +100,9 @@ def vars_status(
 
 
 def check_vars(
-    machine_name: str, flake: Flake, generator_name: None | str = None
+    machine_name: str,
+    flake: Flake,
+    generator_name: None | str = None,
 ) -> bool:
     status = vars_status(machine_name, flake, generator_name=generator_name)
     return not (

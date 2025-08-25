@@ -39,7 +39,7 @@ class ArgumentParsingMiddleware(Middleware):
 
         except Exception as e:
             log.exception(
-                f"Error while parsing arguments for {context.request.method_name}"
+                f"Error while parsing arguments for {context.request.method_name}",
             )
             context.bridge.send_api_error_response(
                 context.request.op_key or "unknown",

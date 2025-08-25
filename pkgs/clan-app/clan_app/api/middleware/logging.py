@@ -25,23 +25,26 @@ class LoggingMiddleware(Middleware):
         try:
             # Handle log group configuration
             log_group: list[str] | None = context.request.header.get("logging", {}).get(
-                "group_path", None
+                "group_path",
+                None,
             )
             if log_group is not None:
                 if not isinstance(log_group, list):
                     msg = f"Expected log_group to be a list, got {type(log_group)}"
                     raise TypeError(msg)  # noqa: TRY301
                 log.warning(
-                    f"Using log group {log_group} for {context.request.method_name} with op_key {context.request.op_key}"
+                    f"Using log group {log_group} for {context.request.method_name} with op_key {context.request.op_key}",
                 )
             # Create log file
             log_file = self.log_manager.create_log_file(
-                method, op_key=context.request.op_key or "unknown", group_path=log_group
+                method,
+                op_key=context.request.op_key or "unknown",
+                group_path=log_group,
             ).get_file_path()
 
         except Exception as e:
             log.exception(
-                f"Error while handling request header of {context.request.method_name}"
+                f"Error while handling request header of {context.request.method_name}",
             )
             context.bridge.send_api_error_response(
                 context.request.op_key or "unknown",
@@ -76,7 +79,8 @@ class LoggingMiddleware(Middleware):
                     line_buffering=True,
                 )
                 self.handler = setup_logging(
-                    log.getEffectiveLevel(), log_file=handler_stream
+                    log.getEffectiveLevel(),
+                    log_file=handler_stream,
                 )
 
                 return self

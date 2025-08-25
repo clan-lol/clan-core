@@ -48,15 +48,20 @@ class SudoAskpassProxy:
                 old_settings = termios.tcgetattr(sys.stdin.fileno())
             try:
                 logger.debug(
-                    f"Running password prompt command: {' '.join(password_command)}"
+                    f"Running password prompt command: {' '.join(password_command)}",
                 )
                 password_process = subprocess.run(
-                    password_command, text=True, check=False, stdout=subprocess.PIPE
+                    password_command,
+                    text=True,
+                    check=False,
+                    stdout=subprocess.PIPE,
                 )
             finally:  # dialog messes with the terminal settings, so we need to restore them
                 if old_settings is not None:
                     termios.tcsetattr(
-                        sys.stdin.fileno(), termios.TCSADRAIN, old_settings
+                        sys.stdin.fileno(),
+                        termios.TCSADRAIN,
+                        old_settings,
                     )
 
             if password_process.returncode != 0:
@@ -68,7 +73,6 @@ class SudoAskpassProxy:
 
     def _process(self, ssh_process: subprocess.Popen) -> None:
         """Execute the remote command with password proxying"""
-
         # Monitor SSH output for password requests
         assert ssh_process.stdout is not None, "SSH process stdout is None"
         try:
@@ -115,7 +119,9 @@ class SudoAskpassProxy:
             raise ClanError(msg)
 
         self.thread = threading.Thread(
-            target=self._process, name="SudoAskpassProxy", args=(self.ssh_process,)
+            target=self._process,
+            name="SudoAskpassProxy",
+            args=(self.ssh_process,),
         )
         self.thread.start()
         return askpass_script

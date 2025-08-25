@@ -1,5 +1,4 @@
-"""
-Utilities for working with nested dictionaries, particularly for
+"""Utilities for working with nested dictionaries, particularly for
 flattening, unmerging lists, finding duplicates, and calculating patches.
 """
 
@@ -15,18 +14,20 @@ empty: list[str] = []
 
 
 def merge_objects(
-    curr: T, update: T, merge_lists: bool = True, path: list[str] = empty
+    curr: T,
+    update: T,
+    merge_lists: bool = True,
+    path: list[str] = empty,
 ) -> T:
-    """
-    Updates values in curr by values of update
+    """Updates values in curr by values of update
     The output contains values for all keys of curr and update together.
 
     Lists are deduplicated and appended almost like in the nix module system.
 
     Example:
-
     merge_objects({"a": 1}, {"a": null }) -> {"a": null}
     merge_objects({"a": null}, {"a": 1 }) -> {"a": 1}
+
     """
     result = {}
     msg = f"cannot update non-dictionary values: {curr} by {update}"
@@ -43,7 +44,10 @@ def merge_objects(
 
         if isinstance(update_val, dict) and isinstance(curr_val, dict):
             result[key] = merge_objects(
-                curr_val, update_val, merge_lists=merge_lists, path=[*path, key]
+                curr_val,
+                update_val,
+                merge_lists=merge_lists,
+                path=[*path, key],
             )
         elif isinstance(update_val, list) and isinstance(curr_val, list):
             if merge_lists:
@@ -62,12 +66,11 @@ def merge_objects(
         elif key in curr:
             result[key] = curr_val  # type: ignore
 
-    return cast(T, result)
+    return cast("T", result)
 
 
 def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
-    """
-    Returns True if path matches any whitelist path with "*" wildcards.
+    """Returns True if path matches any whitelist path with "*" wildcards.
 
     I.e.:
     whitelist_paths = [["a.b.*"]]
@@ -84,7 +87,7 @@ def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
             continue
         match = True
         for p, w in zip(path, wp, strict=False):
-            if w != "*" and p != w:
+            if w not in ("*", p):
                 match = False
                 break
         if match:
@@ -93,8 +96,7 @@ def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
 
 
 def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict:
-    """
-    Recursively flattens a nested dictionary structure where keys are joined by the separator.
+    """Recursively flattens a nested dictionary structure where keys are joined by the separator.
 
     Args:
         data (dict): The nested dictionary structure.
@@ -103,6 +105,7 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
 
     Returns:
         dict: A flattened dictionary with all values. Directly in the root.
+
     """
     flattened = {}
 
@@ -123,11 +126,11 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
 
 
 def list_difference(all_items: list, filter_items: list) -> list:
-    """
-    Unmerge the current list. Given a previous list.
+    """Unmerge the current list. Given a previous list.
 
     Returns:
         The other list.
+
     """
     # Unmerge the lists
     res = []
@@ -145,10 +148,11 @@ def find_duplicates(string_list: list[str]) -> list[str]:
 
 
 def find_deleted_paths(
-    curr: dict[str, Any], update: dict[str, Any], parent_key: str = ""
+    curr: dict[str, Any],
+    update: dict[str, Any],
+    parent_key: str = "",
 ) -> set[str]:
-    """
-    Recursively find keys (at any nesting level) that exist in persisted but do not
+    """Recursively find keys (at any nesting level) that exist in persisted but do not
     exist in update. If a nested dictionary is completely removed, return that dictionary key.
 
     :param persisted: The original (persisted) nested dictionary.
@@ -180,7 +184,9 @@ def find_deleted_paths(
                     else:
                         # Both are dicts, recurse deeper
                         deleted_paths |= find_deleted_paths(
-                            p_value, u_value, current_path
+                            p_value,
+                            u_value,
+                            current_path,
                         )
                 else:
                     # Persisted was a dict, update is not a dict -> entire branch changed
@@ -204,8 +210,7 @@ def is_writeable_key(
     key: str,
     writeables: dict[str, set[str]],
 ) -> bool:
-    """
-    Recursively check if a key is writeable.
+    """Recursively check if a key is writeable.
     key "machines.machine1.deploy.targetHost" is specified but writeability is only defined for "machines"
     We pop the last key and check if the parent key is writeable/non-writeable.
     """
@@ -228,8 +233,7 @@ def calc_patches(
     all_values: dict[str, Any],
     writeables: dict[str, set[str]],
 ) -> tuple[dict[str, Any], set[str]]:
-    """
-    Calculate the patches to apply to the inventory.
+    """Calculate the patches to apply to the inventory.
 
     Given its current state and the update to apply.
 
@@ -296,7 +300,7 @@ After: {new}
 
                 # every item in nix_list MUST be in new
                 nix_items_to_remove = list(
-                    filter(lambda item: item not in new, nix_list)
+                    filter(lambda item: item not in new, nix_list),
                 )
 
                 if nix_items_to_remove:
@@ -403,8 +407,7 @@ def determine_writeability(
 
 
 def delete_by_path(d: dict[str, Any], path: str) -> Any:
-    """
-    Deletes the nested entry specified by a dot-separated path from the dictionary using pop().
+    """Deletes the nested entry specified by a dot-separated path from the dictionary using pop().
 
     :param data: The dictionary to modify.
     :param path: A dot-separated string indicating the nested key to delete.
@@ -442,8 +445,7 @@ type DictLike = dict[str, Any] | Any
 
 
 def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
-    """
-    Get the value at a specific dot-separated path in a nested dictionary.
+    """Get the value at a specific dot-separated path in a nested dictionary.
 
     If the path does not exist, it returns fallback.
 
@@ -462,8 +464,7 @@ def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
 
 
 def set_value_by_path(d: DictLike, path: str, content: Any) -> None:
-    """
-    Update the value at a specific dot-separated path in a nested dictionary.
+    """Update the value at a specific dot-separated path in a nested dictionary.
 
     If the value didn't exist before, it will be created recursively.
 

@@ -29,30 +29,30 @@ def test_vm_deployment(
             nix_eval(
                 [
                     f"{vm_test_flake}#nixosConfigurations.test-vm-deployment.config.sops.secrets",
-                ]
-            )
-        ).stdout.strip()
+                ],
+            ),
+        ).stdout.strip(),
     )
     assert sops_secrets != {}
     my_secret_path = run(
         nix_eval(
             [
                 f"{vm_test_flake}#nixosConfigurations.test-vm-deployment.config.clan.core.vars.generators.m1_generator.files.my_secret.path",
-            ]
-        )
+            ],
+        ),
     ).stdout.strip()
     assert "no-such-path" not in my_secret_path
     shared_secret_path = run(
         nix_eval(
             [
                 f"{vm_test_flake}#nixosConfigurations.test-vm-deployment.config.clan.core.vars.generators.my_shared_generator.files.shared_secret.path",
-            ]
-        )
+            ],
+        ),
     ).stdout.strip()
     assert "no-such-path" not in shared_secret_path
 
     vm1_config = inspect_vm(
-        machine=Machine("test-vm-deployment", Flake(str(vm_test_flake)))
+        machine=Machine("test-vm-deployment", Flake(str(vm_test_flake))),
     )
     with ExitStack() as stack:
         vm1 = stack.enter_context(spawn_vm(vm1_config, stdin=subprocess.DEVNULL))
@@ -64,7 +64,7 @@ def test_vm_deployment(
         assert result.stdout == "hello\n"
         # check shared_secret is deployed
         result = qga_m1.run(
-            ["cat", "/run/secrets/vars/my_shared_generator/shared_secret"]
+            ["cat", "/run/secrets/vars/my_shared_generator/shared_secret"],
         )
         assert result.stdout == "hello\n"
         # check no_deploy_secret is not deployed

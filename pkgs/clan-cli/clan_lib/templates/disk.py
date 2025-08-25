@@ -30,9 +30,8 @@ def get_best_unix_device_name(unix_device_names: list[str]) -> str:
     for device_name in unix_device_names:
         if "disk/by-id" in device_name:
             return device_name
-    else:
-        # if no by-id found, use the first device name
-        return unix_device_names[0]
+    # if no by-id found, use the first device name
+    return unix_device_names[0]
 
 
 def hw_main_disk_options(hw_report: dict) -> list[str] | None:
@@ -71,9 +70,11 @@ templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
     "single-disk": {
         # Placeholders
         "mainDisk": lambda hw_report: Placeholder(
-            label="Main disk", options=hw_main_disk_options(hw_report), required=True
+            label="Main disk",
+            options=hw_main_disk_options(hw_report),
+            required=True,
         ),
-    }
+    },
 }
 
 
@@ -87,10 +88,10 @@ def get_empty_placeholder(label: str) -> Placeholder:
 
 @API.register
 def get_machine_disk_schemas(
-    machine: Machine, check_hw: bool = True
+    machine: Machine,
+    check_hw: bool = True,
 ) -> dict[str, DiskSchema]:
-    """
-    Get the available disk schemas.
+    """Get the available disk schemas.
     This function reads the disk schemas from the templates directory and returns them as a dictionary.
     Offering options based on the hardware report of the machine.
 
@@ -161,9 +162,7 @@ def set_machine_disk_schema(
     force: bool = False,
     check_hw: bool = True,
 ) -> None:
-    """
-    Set the disk placeholders of the template
-    """
+    """Set the disk placeholders of the template"""
     # Ensure the machine exists
     machine.get_inv_machine()
 
@@ -221,7 +220,7 @@ def set_machine_disk_schema(
             )
 
     placeholders_toml = "\n".join(
-        [f"""# {k} = "{v}" """ for k, v in placeholders.items() if v is not None]
+        [f"""# {k} = "{v}" """ for k, v in placeholders.items() if v is not None],
     )
     header = f"""# ---
 # schema = "{schema_name}"
@@ -235,7 +234,8 @@ def set_machine_disk_schema(
         config_str = disk_template.read()
         for placeholder_name, placeholder_value in placeholders.items():
             config_str = config_str.replace(
-                r"{{" + placeholder_name + r"}}", placeholder_value
+                r"{{" + placeholder_name + r"}}",
+                placeholder_value,
             )
 
         # Custom replacements

@@ -29,9 +29,9 @@ from .actions import (
 def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
     clan_config: Clan = {
         "machines": {
-            "jon": cast(Unknown, {}),  # Nixos Modules are not type checkable
-            "sara": cast(Unknown, {}),  # Nixos Modules are not type checkable
-        }
+            "jon": cast("Unknown", {}),  # Nixos Modules are not type checkable
+            "sara": cast("Unknown", {}),  # Nixos Modules are not type checkable
+        },
     }
     flake = clan_flake(clan_config)
 
@@ -49,7 +49,7 @@ def test_list_inventory_machines(clan_flake: Callable[..., Flake]) -> None:
                     "jon": {},
                     "sara": {},
                 },
-            }
+            },
         },
         # Attention: This is a raw Nix expression, which is not type-checked in python
         # Use with care!
@@ -77,7 +77,7 @@ def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
                     "jon": {},
                     "sara": {},
                 },
-            }
+            },
         },
     )
 
@@ -97,7 +97,8 @@ def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
         # This is a bit internal - we want to make sure the write is called
         # with only the changed value, so we don't persist the whole machine
         mock_write.assert_called_once_with(
-            {"machines": {"jon": {"machineClass": "darwin"}}}, post_write=ANY
+            {"machines": {"jon": {"machineClass": "darwin"}}},
+            post_write=ANY,
         )
 
 
@@ -119,7 +120,7 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
                         "tags": ["server", "backup"],
                     },
                 },
-            }
+            },
         },
     )
 
@@ -143,14 +144,13 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
 @pytest.mark.with_core
 def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     """Test adding/removing tags on a machine with validation of immutable base tags."""
-
     flake = clan_flake(
         clan={
             "inventory": {
                 "machines": {
                     "jon": {"tags": ["nix1", "nix2"]},
                 },
-            }
+            },
         },
     )
 
@@ -182,7 +182,7 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
         set_jon(invalid_tags)
 
     assert "Key 'machines.jon.tags' doesn't contain items ['nix1', 'nix2']" in str(
-        exc_info.value
+        exc_info.value,
     )
 
 
@@ -199,7 +199,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
                         "tags": ["nix1"],  # Static list is not partially writeable
                     },
                 },
-            }
+            },
         },
     )
 
@@ -251,7 +251,7 @@ def test_machine_state(clan_flake: Callable[..., Flake]) -> None:
                     "sara": {"installedAt": yesterday},
                     "bob": {"installedAt": last_week},
                 },
-            }
+            },
         },
     )
 
@@ -262,11 +262,11 @@ def test_machine_state(clan_flake: Callable[..., Flake]) -> None:
     }
 
     assert get_machine_state(Machine("jon", flake)) == MachineState(
-        status=MachineStatus.NOT_INSTALLED
+        status=MachineStatus.NOT_INSTALLED,
     )
     assert get_machine_state(Machine("sara", flake)) == MachineState(
-        status=MachineStatus.OFFLINE
+        status=MachineStatus.OFFLINE,
     )
     assert get_machine_state(Machine("bob", flake)) == MachineState(
-        status=MachineStatus.OFFLINE
+        status=MachineStatus.OFFLINE,
     )

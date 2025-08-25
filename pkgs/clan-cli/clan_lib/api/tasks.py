@@ -44,7 +44,7 @@ def run_task_blocking(somearg: str) -> str:
             log.debug("Task was cancelled")
             return "Task was cancelled"
         log.debug(
-            f"Processing {i} for {somearg}. ctx.should_cancel={ctx.should_cancel()}"
+            f"Processing {i} for {somearg}. ctx.should_cancel={ctx.should_cancel()}",
         )
         time.sleep(1)
     return f"Task completed with argument: {somearg}"

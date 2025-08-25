@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import clan_lib.machines.machines as machines
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from clan_lib.machines import machines
 
 
 class FactStoreBase(ABC):

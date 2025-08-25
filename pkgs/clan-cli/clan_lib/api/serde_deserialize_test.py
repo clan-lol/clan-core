@@ -102,7 +102,9 @@ def test_nested_nullable() -> None:
         mode="format",
         disks={"main": "/dev/sda"},
         system_config=SystemConfig(
-            language="en_US.UTF-8", keymap="en", ssh_keys_path=None
+            language="en_US.UTF-8",
+            keymap="en",
+            ssh_keys_path=None,
         ),
         dry_run=False,
         write_efi_boot_entries=False,
@@ -182,9 +184,7 @@ def test_alias_field() -> None:
 
 
 def test_alias_field_from_orig_name() -> None:
-    """
-    Field declares an alias. But the data is provided with the field name.
-    """
+    """Field declares an alias. But the data is provided with the field name."""
 
     @dataclass
     class Person:
@@ -197,10 +197,7 @@ def test_alias_field_from_orig_name() -> None:
 
 
 def test_none_or_string() -> None:
-    """
-    Field declares an alias. But the data is provided with the field name.
-    """
-
+    """Field declares an alias. But the data is provided with the field name."""
     data = None
 
     @dataclass
@@ -218,8 +215,7 @@ def test_none_or_string() -> None:
 
 
 def test_union_with_none_edge_cases() -> None:
-    """
-    Test various union types with None to ensure issubclass() error is avoided.
+    """Test various union types with None to ensure issubclass() error is avoided.
     This specifically tests the fix for the TypeError in is_type_in_union.
     """
     # Test basic types with None

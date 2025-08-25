@@ -30,7 +30,7 @@ def nix_flake_show(flake_url: str | Path) -> list[str]:
             "--json",
             *(["--show-trace"] if log.isEnabledFor(logging.DEBUG) else []),
             str(flake_url),
-        ]
+        ],
     )
 
 
@@ -43,7 +43,7 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
             *(["--show-trace"] if log.isEnabledFor(logging.DEBUG) else []),
             *(["--out-root", str(gcroot)] if gcroot is not None else ["--no-link"]),
             *flags,
-        ]
+        ],
     )
 
 
@@ -86,7 +86,7 @@ def nix_eval(flags: list[str]) -> list[str]:
             *(["--show-trace"] if log.isEnabledFor(logging.DEBUG) else []),
             "--json",
             "--print-build-logs",
-        ]
+        ],
     )
     if os.environ.get("IN_NIX_SANDBOX"):
         return [
@@ -132,12 +132,10 @@ class Packages:
 
     @classmethod
     def is_provided(cls: type["Packages"], program: str) -> bool:
-        """
-        Determines if a program is shipped with the clan package.
-        """
+        """Determines if a program is shipped with the clan package."""
         if cls.static_packages is None:
             cls.static_packages = set(
-                os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":")
+                os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":"),
             )
 
         if "#" in program:

@@ -139,7 +139,7 @@ def test_create_flake_fallback_from_non_clan_directory(
     monkeypatch.setenv("LOGNAME", "testuser")
 
     cli.run(
-        ["flakes", "create", str(new_clan_dir), "--template=default", "--no-update"]
+        ["flakes", "create", str(new_clan_dir), "--template=default", "--no-update"],
     )
 
     assert (new_clan_dir / "flake.nix").exists()
@@ -157,7 +157,7 @@ def test_create_flake_with_local_template_reference(
 
     # TODO: should error with: localFlake does not export myLocalTemplate clan template
     cli.run(
-        ["flakes", "create", str(new_clan_dir), "--template=.#default", "--no-update"]
+        ["flakes", "create", str(new_clan_dir), "--template=.#default", "--no-update"],
     )
 
     assert (new_clan_dir / "flake.nix").exists()

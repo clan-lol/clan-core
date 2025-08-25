@@ -19,8 +19,7 @@ log = logging.getLogger(__name__)
 
 
 def generate_key() -> sops.SopsKey:
-    """
-    Generate a new age key and return it as a SopsKey.
+    """Generate a new age key and return it as a SopsKey.
 
     This function does not check if the key already exists.
     It will generate a new key every time it is called.
@@ -28,14 +27,16 @@ def generate_key() -> sops.SopsKey:
     Use 'check_key_exists' to check if a key already exists.
     Before calling this function if you dont want to generate a new key.
     """
-
     path = default_admin_private_key_path()
     _, pub_key = generate_private_key(out_file=path)
     log.info(
-        f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets."
+        f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets.",
     )
     return sops.SopsKey(
-        pub_key, username="", key_type=sops.KeyType.AGE, source=str(path)
+        pub_key,
+        username="",
+        key_type=sops.KeyType.AGE,
+        source=str(path),
     )
 
 
@@ -49,7 +50,8 @@ def generate_command(args: argparse.Namespace) -> None:
         key_type = key.key_type.name.lower()
         print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
         print(
-            f"Add your {key_type} public key to the repository with:", file=sys.stderr
+            f"Add your {key_type} public key to the repository with:",
+            file=sys.stderr,
         )
         print(
             f"clan secrets users add <username> --{key_type}-key {key.pubkey}",

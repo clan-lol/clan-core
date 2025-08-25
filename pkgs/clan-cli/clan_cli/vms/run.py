@@ -43,14 +43,16 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
         nixos_config["clan"]["core"]["secrets"][service]["facts"] = {}
         for fact, value in service_facts.items():
             nixos_config["clan"]["core"]["secrets"][service]["facts"][fact] = {
-                "value": value.decode()
+                "value": value.decode(),
             }
     return nixos_config
 
 
 # TODO move this to the Machines class
 def build_vm(
-    machine: Machine, tmpdir: Path, nix_options: list[str] | None = None
+    machine: Machine,
+    tmpdir: Path,
+    nix_options: list[str] | None = None,
 ) -> dict[str, str]:
     # TODO pass prompt here for the GTK gui
     if nix_options is None:
@@ -60,7 +62,7 @@ def build_vm(
     output = Path(
         machine.select(
             "config.system.clan.vm.create",
-        )
+        ),
     )
     if tmp_store := nix_test_store():
         output = tmp_store.joinpath(*output.parts[1:])
@@ -129,7 +131,11 @@ def start_vm(
     machine.debug(f"Starting VM with command: {cmd}")
 
     with subprocess.Popen(
-        cmd, env=env, stdout=stdout, stderr=stderr, stdin=stdin
+        cmd,
+        env=env,
+        stdout=stdout,
+        stderr=stderr,
+        stdin=stdin,
     ) as process:
         try:
             yield process
@@ -222,7 +228,7 @@ def spawn_vm(
 
         if cachedir is None:
             cache_tmp = stack.enter_context(
-                TemporaryDirectory(prefix="vm-cache-", dir=cache)
+                TemporaryDirectory(prefix="vm-cache-", dir=cache),
             )
             cachedir = Path(cache_tmp)
 
@@ -403,7 +409,9 @@ def run_command(
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
     machine_action = parser.add_argument(
-        "machine", type=str, help="machine in the flake to run"
+        "machine",
+        type=str,
+        help="machine in the flake to run",
     )
     add_dynamic_completer(machine_action, complete_machines)
     # option: --publish 2222:22

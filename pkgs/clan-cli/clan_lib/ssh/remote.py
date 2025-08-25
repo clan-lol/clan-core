@@ -70,9 +70,7 @@ class Remote:
         port: int | None = None,
         ssh_options: dict[str, str] | None = None,
     ) -> "Remote":
-        """
-        Returns a new Remote instance with the same data but with a different host_key_check.
-        """
+        """Returns a new Remote instance with the same data but with a different host_key_check."""
         return Remote(
             address=self.address,
             user=self.user,
@@ -105,10 +103,7 @@ class Remote:
         machine_name: str,
         address: str,
     ) -> "Remote":
-        """
-        Parse a deployment address and return a Remote object.
-        """
-
+        """Parse a deployment address and return a Remote object."""
         return _parse_ssh_uri(machine_name=machine_name, address=address)
 
     def run_local(
@@ -117,9 +112,7 @@ class Remote:
         opts: RunOpts | None = None,
         extra_env: dict[str, str] | None = None,
     ) -> CmdOut:
-        """
-        Command to run locally for the host
-        """
+        """Command to run locally for the host"""
         if opts is None:
             opts = RunOpts()
         env = opts.env or os.environ.copy()
@@ -139,13 +132,12 @@ class Remote:
 
     @contextmanager
     def host_connection(self) -> Iterator["Remote"]:
-        """
-        Context manager to manage SSH ControlMaster connections.
+        """Context manager to manage SSH ControlMaster connections.
         This will create a temporary directory for the control socket.
         """
         directory = None
         if sys.platform == "darwin" and os.environ.get("TMPDIR", "").startswith(
-            "/var/folders/"
+            "/var/folders/",
         ):
             directory = "/tmp/"
         with TemporaryDirectory(prefix="clan-ssh", dir=directory) as temp_dir:
@@ -179,15 +171,16 @@ class Remote:
                             "exit",
                         ]
                         exit_cmd.append(remote.target)
-                        subprocess.run(exit_cmd, capture_output=True, timeout=5)
+                        subprocess.run(
+                            exit_cmd, check=False, capture_output=True, timeout=5
+                        )
                     except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
                         # If exit fails still try to stop the master connection
                         pass
 
     @contextmanager
     def become_root(self) -> Iterator["Remote"]:
-        """
-        Context manager to set up sudo askpass proxy.
+        """Context manager to set up sudo askpass proxy.
         This will set up a proxy for sudo password prompts.
         """
         if self.user == "root":
@@ -245,8 +238,7 @@ class Remote:
         quiet: bool = False,
         control_master: bool = True,
     ) -> CmdOut:
-        """
-        Internal method to run a command on the host via ssh.
+        """Internal method to run a command on the host via ssh.
         `control_path_dir`: If provided, SSH ControlMaster options will be used.
         """
         if extra_env is None:
@@ -299,7 +291,9 @@ class Remote:
 
         ssh_cmd = [
             *self.ssh_cmd(
-                verbose_ssh=verbose_ssh, tty=tty, control_master=control_master
+                verbose_ssh=verbose_ssh,
+                tty=tty,
+                control_master=control_master,
             ),
             "--",
             *sudo,
@@ -320,7 +314,7 @@ class Remote:
         if env is None:
             env = {}
         env["NIX_SSHOPTS"] = " ".join(
-            self._ssh_cmd_opts(control_master=control_master)  # Renamed
+            self._ssh_cmd_opts(control_master=control_master),  # Renamed
         )
         return env
 
@@ -350,14 +344,12 @@ class Remote:
                     "ControlPersist=1m",
                     "-o",
                     f"ControlPath={socket_path}",
-                ]
+                ],
             )
         return ssh_opts
 
     def ssh_url(self) -> str:
-        """
-        Generates a standard SSH URL (ssh://[user@]host[:port]).
-        """
+        """Generates a standard SSH URL (ssh://[user@]host[:port])."""
         url = "ssh://"
         if self.user:
             url += f"{self.user}@"
@@ -367,7 +359,10 @@ class Remote:
         return url
 
     def ssh_cmd(
-        self, verbose_ssh: bool = False, tty: bool = False, control_master: bool = True
+        self,
+        verbose_ssh: bool = False,
+        tty: bool = False,
+        control_master: bool = True,
     ) -> list[str]:
         packages = []
         password_args = []
@@ -387,7 +382,7 @@ class Remote:
                 [
                     "-o",
                     f"ProxyCommand=nc -x localhost:{self.socks_port} -X 5 %h %p",
-                ]
+                ],
             )
 
         cmd = [
@@ -399,8 +394,7 @@ class Remote:
         return nix_shell(packages, cmd)
 
     def _check_sshpass_errorcode(self, res: subprocess.CompletedProcess) -> None:
-        """
-        Check the return code of the sshpass command and raise an error if it indicates a failure.
+        """Check the return code of the sshpass command and raise an error if it indicates a failure.
         Error codes are based on man sshpass(1) and may vary by version.
         """
         if res.returncode == 0:
@@ -459,7 +453,8 @@ class Remote:
             self._check_sshpass_errorcode(res)
 
     def check_machine_ssh_reachable(
-        self, opts: "ConnectionOptions | None" = None
+        self,
+        opts: "ConnectionOptions | None" = None,
     ) -> None:
         from clan_lib.network.check import check_machine_ssh_reachable
 
@@ -476,16 +471,13 @@ def _parse_ssh_uri(
     machine_name: str,
     address: str,
 ) -> "Remote":
-    """
-    Parses an SSH URI into a Remote object.
+    """Parses an SSH URI into a Remote object.
     The address can be in the form of:
     - `ssh://[user@]hostname[:port]?option=value&option2=value2`
     - `[user@]hostname[:port]`
     The specification can be found here: https://www.ietf.org/archive/id/draft-salowey-secsh-uri-00.html
     """
-    if address.startswith("ssh://"):
-        # Strip the `ssh://` prefix if it exists
-        address = address[len("ssh://") :]
+    address = address.removeprefix("ssh://")
 
     parts = address.split("?", maxsplit=1)
     endpoint, maybe_options = parts if len(parts) == 2 else (parts[0], "")

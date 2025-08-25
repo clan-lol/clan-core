@@ -32,8 +32,7 @@ def create_machine(
     opts: CreateOptions,
     commit: bool = True,
 ) -> None:
-    """
-    Create a new machine in the clan directory.
+    """Create a new machine in the clan directory.
 
     This function will create a new machine based on a template.
 
@@ -41,7 +40,6 @@ def create_machine(
     :param commit: Whether to commit the changes to the git repository.
     :param _persist: Temporary workaround for 'morph'. Whether to persist the changes to the inventory store.
     """
-
     if not opts.clan_dir.is_local:
         msg = f"Clan {opts.clan_dir} is not a local clan."
         description = "Import machine only works on local clans"

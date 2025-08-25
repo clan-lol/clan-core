@@ -63,7 +63,9 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def _send_json_response_with_status(
-        self, data: dict[str, Any], status_code: int = 200
+        self,
+        data: dict[str, Any],
+        status_code: int = 200,
     ) -> None:
         """Send a JSON response with the given status code."""
         try:
@@ -82,11 +84,13 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         response_dict = dataclass_to_dict(response)
         self._send_json_response_with_status(response_dict, 200)
         log.debug(
-            f"HTTP response for {response._op_key}: {json.dumps(response_dict, indent=2)}"  # noqa: SLF001
+            f"HTTP response for {response._op_key}: {json.dumps(response_dict, indent=2)}",  # noqa: SLF001
         )
 
     def _create_success_response(
-        self, op_key: str, data: dict[str, Any]
+        self,
+        op_key: str,
+        data: dict[str, Any],
     ) -> BackendResponse:
         """Create a successful API response."""
         return BackendResponse(
@@ -98,14 +102,16 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
     def _send_info_response(self) -> None:
         """Send server information response."""
         response = self._create_success_response(
-            "info", {"message": "Clan API Server", "version": "1.0.0"}
+            "info",
+            {"message": "Clan API Server", "version": "1.0.0"},
         )
         self.send_api_response(response)
 
     def _send_methods_response(self) -> None:
         """Send available API methods response."""
         response = self._create_success_response(
-            "methods", {"methods": list(self.api.functions.keys())}
+            "methods",
+            {"methods": list(self.api.functions.keys())},
         )
         self.send_api_response(response)
 
@@ -179,7 +185,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             json_data = json.loads(file_data.decode("utf-8"))
             server_address = getattr(self.server, "server_address", ("localhost", 80))
             json_data["servers"] = [
-                {"url": f"http://{server_address[0]}:{server_address[1]}/api/v1/"}
+                {"url": f"http://{server_address[0]}:{server_address[1]}/api/v1/"},
             ]
             file_data = json.dumps(json_data, indent=2).encode("utf-8")
 
@@ -213,7 +219,9 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         # Validate API path
         if not path.startswith("/api/v1/"):
             self.send_api_error_response(
-                "post", f"Path not found: {path}", ["http_bridge", "POST"]
+                "post",
+                f"Path not found: {path}",
+                ["http_bridge", "POST"],
             )
             return
 
@@ -221,7 +229,9 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         method_name = path[len("/api/v1/") :]
         if not method_name:
             self.send_api_error_response(
-                "post", "Method name required", ["http_bridge", "POST"]
+                "post",
+                "Method name required",
+                ["http_bridge", "POST"],
             )
             return
 
@@ -289,19 +299,26 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
 
             # Create API request
             api_request = BackendRequest(
-                method_name=method_name, args=body, header=header, op_key=op_key
+                method_name=method_name,
+                args=body,
+                header=header,
+                op_key=op_key,
             )
 
         except Exception as e:
             self.send_api_error_response(
-                gen_op_key, str(e), ["http_bridge", method_name]
+                gen_op_key,
+                str(e),
+                ["http_bridge", method_name],
             )
             return
 
         self._process_api_request_in_thread(api_request, method_name)
 
     def _parse_request_data(
-        self, request_data: dict[str, Any], gen_op_key: str
+        self,
+        request_data: dict[str, Any],
+        gen_op_key: str,
     ) -> tuple[dict[str, Any], dict[str, Any], str]:
         """Parse and validate request data components."""
         header = request_data.get("header", {})
@@ -344,7 +361,9 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         pass
 
     def _process_api_request_in_thread(
-        self, api_request: BackendRequest, method_name: str
+        self,
+        api_request: BackendRequest,
+        method_name: str,
     ) -> None:
         """Process the API request in a separate thread."""
         stop_event = threading.Event()
@@ -358,7 +377,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
 
         log.debug(
             f"Processing {request.method_name} with args {request.args} "
-            f"and header {request.header}"
+            f"and header {request.header}",
         )
         self.process_request(request)
 

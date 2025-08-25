@@ -43,11 +43,10 @@ class MachineState(TypedDict):
 
 @API.register
 def list_machines(
-    flake: Flake, opts: ListOptions | None = None
+    flake: Flake,
+    opts: ListOptions | None = None,
 ) -> dict[str, InventoryMachine]:
-    """
-    List machines of a clan
-    """
+    """List machines of a clan"""
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
@@ -68,8 +67,7 @@ def list_machines(
 
 @API.register
 def get_machine(flake: Flake, name: str) -> InventoryMachine:
-    """
-    Retrieve a machine's inventory details by name from the given flake.
+    """Retrieve a machine's inventory details by name from the given flake.
 
     Args:
         flake (Flake): The flake object representing the configuration source.
@@ -80,6 +78,7 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
 
     Raises:
         ClanError: If the machine with the specified name is not found in the clan
+
     """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
@@ -94,9 +93,7 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
 
 @API.register
 def set_machine(machine: Machine, update: InventoryMachine) -> None:
-    """
-    Update the machine information in the inventory.
-    """
+    """Update the machine information in the inventory."""
     assert machine.name == update.get("name", machine.name), "Machine name mismatch"
 
     inventory_store = InventoryStore(flake=machine.flake)
@@ -104,7 +101,8 @@ def set_machine(machine: Machine, update: InventoryMachine) -> None:
 
     set_value_by_path(inventory, f"machines.{machine.name}", update)
     inventory_store.write(
-        inventory, message=f"Update information about machine {machine.name}"
+        inventory,
+        message=f"Update information about machine {machine.name}",
     )
 
 
@@ -116,8 +114,7 @@ class FieldSchema(TypedDict):
 
 @API.register
 def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
-    """
-    Get attributes for each field of the machine.
+    """Get attributes for each field of the machine.
 
     This function checks which fields of the 'machine' resource are readonly and provides a reason if so.
 
@@ -126,8 +123,8 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     Returns:
         dict[str, FieldSchema]: A map from field-names to { 'readonly' (bool) and 'reason' (str or None ) }
-    """
 
+    """
     inventory_store = InventoryStore(machine.flake)
     write_info = inventory_store.get_writeability_of(f"machines.{machine.name}")
 
@@ -140,10 +137,12 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     # TODO: handle this more generically. I.e via json schema
     persisted_data = inventory_store._get_persisted()  # noqa: SLF001
-    inventory = inventory_store.read()  #
+    inventory = inventory_store.read()
     all_tags = get_value_by_path(inventory, f"machines.{machine.name}.tags", [])
     persisted_tags = get_value_by_path(
-        persisted_data, f"machines.{machine.name}.tags", []
+        persisted_data,
+        f"machines.{machine.name}.tags",
+        [],
     )
     nix_tags = list_difference(all_tags, persisted_tags)
 
@@ -153,7 +152,8 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
                 True
                 if field in protected_fields
                 else not is_writeable_key(
-                    f"machines.{machine.name}.{field}", write_info
+                    f"machines.{machine.name}.{field}",
+                    write_info,
                 )
             ),
             # TODO: Provide a meaningful reason
@@ -166,11 +166,11 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
 @API.register
 def list_machine_state(flake: Flake) -> dict[str, MachineState]:
-    """
-    Retrieve the current state of all machines in the clan.
+    """Retrieve the current state of all machines in the clan.
 
     Args:
         flake (Flake): The flake object representing the configuration source.
+
     """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
@@ -182,7 +182,7 @@ def list_machine_state(flake: Flake) -> dict[str, MachineState]:
         machine_name: MachineState(
             status=MachineStatus.OFFLINE
             if get_value_by_path(machine, "installedAt", None)
-            else MachineStatus.NOT_INSTALLED
+            else MachineStatus.NOT_INSTALLED,
         )
         for machine_name, machine in machines.items()
     }
@@ -190,11 +190,11 @@ def list_machine_state(flake: Flake) -> dict[str, MachineState]:
 
 @API.register
 def get_machine_state(machine: Machine) -> MachineState:
-    """
-    Retrieve the current state of the machine.
+    """Retrieve the current state of the machine.
 
     Args:
         machine (Machine): The machine object for which we want to retrieve the latest state.
+
     """
     inventory_store = InventoryStore(flake=machine.flake)
     inventory = inventory_store.read()
@@ -204,5 +204,5 @@ def get_machine_state(machine: Machine) -> MachineState:
     return MachineState(
         status=MachineStatus.OFFLINE
         if get_value_by_path(inventory, f"machines.{machine.name}.installedAt", None)
-        else MachineStatus.NOT_INSTALLED
+        else MachineStatus.NOT_INSTALLED,
     )

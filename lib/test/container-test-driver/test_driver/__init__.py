@@ -32,11 +32,15 @@ def init_test_environment() -> None:
 
     # Set up network bridge
     subprocess.run(
-        ["ip", "link", "add", "br0", "type", "bridge"], check=True, text=True
+        ["ip", "link", "add", "br0", "type", "bridge"],
+        check=True,
+        text=True,
     )
     subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
     subprocess.run(
-        ["ip", "addr", "add", "192.168.1.254/24", "dev", "br0"], check=True, text=True
+        ["ip", "addr", "add", "192.168.1.254/24", "dev", "br0"],
+        check=True,
+        text=True,
     )
 
     # Set up minimal passwd file for unprivileged operations
@@ -111,8 +115,7 @@ def mount(
     mountflags: int = 0,
     data: str | None = None,
 ) -> None:
-    """
-    A Python wrapper for the mount system call.
+    """A Python wrapper for the mount system call.
 
     :param source: The source of the file system (e.g., device name, remote filesystem).
     :param target: The mount point (an existing directory).
@@ -129,7 +132,11 @@ def mount(
 
     # Call the mount system call
     result = libc.mount(
-        source_c, target_c, fstype_c, ctypes.c_ulong(mountflags), data_c
+        source_c,
+        target_c,
+        fstype_c,
+        ctypes.c_ulong(mountflags),
+        data_c,
     )
 
     if result != 0:
@@ -145,7 +152,7 @@ def prepare_machine_root(machinename: str, root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
     root.joinpath("etc").mkdir(parents=True, exist_ok=True)
     root.joinpath(".env").write_text(
-        "\n".join(f"{k}={v}" for k, v in os.environ.items())
+        "\n".join(f"{k}={v}" for k, v in os.environ.items()),
     )
 
 
@@ -157,7 +164,6 @@ def retry(fn: Callable, timeout: int = 900) -> None:
     """Call the given function repeatedly, with 1 second intervals,
     until it returns True or a timeout is reached.
     """
-
     for _ in range(timeout):
         if fn(False):
             return
@@ -284,8 +290,7 @@ class Machine:
         check_output: bool = True,
         timeout: int | None = 900,
     ) -> subprocess.CompletedProcess:
-        """
-        Execute a shell command, returning a list `(status, stdout)`.
+        """Execute a shell command, returning a list `(status, stdout)`.
 
         Commands are run with `set -euo pipefail` set:
 
@@ -316,7 +321,6 @@ class Machine:
         `timeout` parameter, e.g., `execute(cmd, timeout=10)` or
         `execute(cmd, timeout=None)`. The default is 900 seconds.
         """
-
         # Always run command with shell opts
         command = f"set -eo pipefail; source /etc/profile; set -xu; {command}"
 
@@ -330,7 +334,9 @@ class Machine:
         return proc
 
     def nested(
-        self, msg: str, attrs: dict[str, str] | None = None
+        self,
+        msg: str,
+        attrs: dict[str, str] | None = None,
     ) -> _GeneratorContextManager:
         if attrs is None:
             attrs = {}
@@ -339,8 +345,7 @@ class Machine:
         return self.logger.nested(msg, my_attrs)
 
     def systemctl(self, q: str) -> subprocess.CompletedProcess:
-        """
-        Runs `systemctl` commands with optional support for
+        """Runs `systemctl` commands with optional support for
         `systemctl --user`
 
         ```py
@@ -355,8 +360,7 @@ class Machine:
         return self.execute(f"systemctl {q}")
 
     def wait_until_succeeds(self, command: str, timeout: int = 900) -> str:
-        """
-        Repeat a shell command with 1-second intervals until it succeeds.
+        """Repeat a shell command with 1-second intervals until it succeeds.
         Has a default timeout of 900 seconds which can be modified, e.g.
         `wait_until_succeeds(cmd, timeout=10)`. See `execute` for details on
         command execution.
@@ -374,18 +378,17 @@ class Machine:
             return output
 
     def wait_for_open_port(
-        self, port: int, addr: str = "localhost", timeout: int = 900
+        self,
+        port: int,
+        addr: str = "localhost",
+        timeout: int = 900,
     ) -> None:
-        """
-        Wait for a port to be open on the given address.
-        """
+        """Wait for a port to be open on the given address."""
         command = f"nc -z {shlex.quote(addr)} {port}"
         self.wait_until_succeeds(command, timeout=timeout)
 
     def wait_for_file(self, filename: str, timeout: int = 30) -> None:
-        """
-        Waits until the file exists in the machine's file system.
-        """
+        """Waits until the file exists in the machine's file system."""
 
         def check_file(_last_try: bool) -> bool:
             result = self.execute(f"test -e {filename}")
@@ -395,8 +398,7 @@ class Machine:
             retry(check_file, timeout)
 
     def wait_for_unit(self, unit: str, timeout: int = 900) -> None:
-        """
-        Wait for a systemd unit to get into "active" state.
+        """Wait for a systemd unit to get into "active" state.
         Throws exceptions on "failed" and "inactive" states as well as after
         timing out.
         """
@@ -441,9 +443,7 @@ class Machine:
         return res.stdout
 
     def shutdown(self) -> None:
-        """
-        Shut down the machine, waiting for the VM to exit.
-        """
+        """Shut down the machine, waiting for the VM to exit."""
         if self.process:
             self.process.terminate()
             self.process.wait()
@@ -557,7 +557,7 @@ class Driver:
                     rootdir=tempdir_path / container.name,
                     out_dir=self.out_dir,
                     logger=self.logger,
-                )
+                ),
             )
 
     def start_all(self) -> None:
@@ -581,7 +581,7 @@ class Driver:
             )
 
             print(
-                f"To attach to container {machine.name} run on the same machine that runs the test:"
+                f"To attach to container {machine.name} run on the same machine that runs the test:",
             )
             print(
                 " ".join(
@@ -603,8 +603,8 @@ class Driver:
                         "-c",
                         "bash",
                         Style.RESET_ALL,
-                    ]
-                )
+                    ],
+                ),
             )
 
     def test_symbols(self) -> dict[str, Any]:
@@ -623,7 +623,7 @@ class Driver:
             "additionally exposed symbols:\n    "
             + ", ".join(m.name for m in self.machines)
             + ",\n    "
-            + ", ".join(list(general_symbols.keys()))
+            + ", ".join(list(general_symbols.keys())),
         )
         return {**general_symbols, **machine_symbols}
 

@@ -10,7 +10,8 @@ from clan_cli.tests.stdout import CaptureOutput
 
 @pytest.mark.with_core
 def test_clan_show(
-    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["show", "--flake", str(test_flake_with_core.path)])
@@ -20,7 +21,9 @@ def test_clan_show(
 
 
 def test_clan_show_no_flake(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capture_output: CaptureOutput
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capture_output: CaptureOutput,
 ) -> None:
     monkeypatch.chdir(tmp_path)
 
@@ -28,8 +31,8 @@ def test_clan_show_no_flake(
         cli.run(["show"])
 
     assert "No clan flake found in the current directory or its parents" in str(
-        exc_info.value
+        exc_info.value,
     )
     assert "Use the --flake flag to specify a clan flake path or URL" in str(
-        exc_info.value
+        exc_info.value,
     )

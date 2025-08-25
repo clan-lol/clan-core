@@ -28,7 +28,7 @@ def test_import_sops(
             str(test_flake_with_core.path),
             "machine1",
             age_keys[0].pubkey,
-        ]
+        ],
     )
     cli.run(
         [
@@ -39,7 +39,7 @@ def test_import_sops(
             str(test_flake_with_core.path),
             "user1",
             age_keys[1].pubkey,
-        ]
+        ],
     )
     cli.run(
         [
@@ -50,7 +50,7 @@ def test_import_sops(
             str(test_flake_with_core.path),
             "user2",
             age_keys[2].pubkey,
-        ]
+        ],
     )
     cli.run(
         [
@@ -61,7 +61,7 @@ def test_import_sops(
             str(test_flake_with_core.path),
             "group1",
             "user1",
-        ]
+        ],
     )
     cli.run(
         [
@@ -72,7 +72,7 @@ def test_import_sops(
             str(test_flake_with_core.path),
             "group1",
             "user2",
-        ]
+        ],
     )
 
     # To edit:
@@ -98,6 +98,6 @@ def test_import_sops(
 
     with capture_output as output:
         cli.run(
-            ["secrets", "get", "--flake", str(test_flake_with_core.path), "secret-key"]
+            ["secrets", "get", "--flake", str(test_flake_with_core.path), "secret-key"],
         )
     assert output.out == "secret-value"

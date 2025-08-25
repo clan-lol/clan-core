@@ -229,8 +229,7 @@ def terminate_process(process: subprocess.Popen) -> Iterator[None]:
 
 
 class TimeTable:
-    """
-    This class is used to store the time taken by each command
+    """This class is used to store the time taken by each command
     and print it at the end of the program if env CLAN_CLI_PERF=1 is set.
     """
 
@@ -245,7 +244,9 @@ class TimeTable:
 
             # Sort the table by time in descending order
             sorted_table = sorted(
-                self.table.items(), key=lambda item: item[1], reverse=True
+                self.table.items(),
+                key=lambda item: item[1],
+                reverse=True,
             )
 
             for k, v in sorted_table:
@@ -294,8 +295,7 @@ class RunOpts:
 
 
 def cmd_with_root(cmd: list[str], graphical: bool = False) -> list[str]:
-    """
-    This function returns a wrapped command that will be run with root permissions.
+    """This function returns a wrapped command that will be run with root permissions.
     It will use sudo if graphical is False, otherwise it will use run0 or pkexec.
     """
     if os.geteuid() == 0:
@@ -375,7 +375,7 @@ def run(
                 stderr=subprocess.PIPE,
                 start_new_session=not options.needs_user_terminal,
                 shell=options.shell,
-            )
+            ),
         )
 
         if options.needs_user_terminal:

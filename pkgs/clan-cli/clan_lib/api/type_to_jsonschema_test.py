@@ -85,7 +85,7 @@ def test_simple_union_types() -> None:
         "oneOf": [
             {"type": "integer"},
             {"type": "string"},
-        ]
+        ],
     }
 
     assert type_to_dict(int | str | float) == {
@@ -93,7 +93,7 @@ def test_simple_union_types() -> None:
             {"type": "integer"},
             {"type": "string"},
             {"type": "number"},
-        ]
+        ],
     }
 
     assert type_to_dict(int | str | None) == {
@@ -101,7 +101,7 @@ def test_simple_union_types() -> None:
             {"type": "integer"},
             {"type": "string"},
             {"type": "null"},
-        ]
+        ],
     }
 
 
@@ -133,7 +133,7 @@ def test_complex_union_types() -> None:
                 "required": ["bar"],
             },
             {"type": "null"},
-        ]
+        ],
     }
 
 
@@ -187,7 +187,7 @@ def test_dataclasses() -> None:
         },
         "additionalProperties": False,
         "required": [
-            "name"
+            "name",
         ],  # value is optional because it has a default value of None
     }
 

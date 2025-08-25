@@ -23,7 +23,7 @@ class Option:
         md_li += f"`<{self.metavar}>` " if self.metavar else ""
         md_li += f"(Default: `{self.default}`) " if self.default else ""
         md_li += indent_next(
-            f"\n{self.description.strip()}" if self.description else ""
+            f"\n{self.description.strip()}" if self.description else "",
         )
         # md_li += indent_next(f"\n{self.epilog.strip()}" if self.epilog else "")
 
@@ -83,16 +83,15 @@ class Category:
             md_li += f"""-   **[{icon}{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
             md_li += f"""{indent_all("---", 4)}\n\n"""
             md_li += indent_all(
-                f"{self.description.strip()}\n" if self.description else "", 4
+                f"{self.description.strip()}\n" if self.description else "",
+                4,
             )
 
         return md_li
 
 
 def epilog_to_md(text: str) -> str:
-    """
-    Convert the epilog to md
-    """
+    """Convert the epilog to md"""
     after_examples = False
     md = ""
     # md += text
@@ -101,21 +100,20 @@ def epilog_to_md(text: str) -> str:
             after_examples = True
             md += "### Examples"
             md += "\n"
-        else:
-            if after_examples:
-                if line.strip().startswith("$"):
-                    md += f"`{line}`"
-                    md += "\n"
-                    md += "\n"
-                else:
-                    # TODO: check, if the link is already a markdown link, only convert if not
-                    # if contains_https_link(line):
-                    #     line = convert_to_markdown_link(line)
-                    md += line
-                    md += "\n"
+        elif after_examples:
+            if line.strip().startswith("$"):
+                md += f"`{line}`"
+                md += "\n"
+                md += "\n"
             else:
+                # TODO: check, if the link is already a markdown link, only convert if not
+                # if contains_https_link(line):
+                #     line = convert_to_markdown_link(line)
                 md += line
                 md += "\n"
+        else:
+            md += line
+            md += "\n"
     return md
 
 
@@ -132,8 +130,7 @@ def convert_to_markdown_link(line: str) -> str:
 
 
 def indent_next(text: str, indent_size: int = 4) -> str:
-    """
-    Indent all lines in a string except the first line.
+    """Indent all lines in a string except the first line.
     This is useful for adding multiline texts a lists in Markdown.
     """
     indent = " " * indent_size
@@ -143,9 +140,7 @@ def indent_next(text: str, indent_size: int = 4) -> str:
 
 
 def indent_all(text: str, indent_size: int = 4) -> str:
-    """
-    Indent all lines in a string.
-    """
+    """Indent all lines in a string."""
     indent = " " * indent_size
     lines = text.split("\n")
     indented_text = indent + ("\n" + indent).join(lines)
@@ -158,14 +153,12 @@ def get_subcommands(
     level: int = 0,
     prefix: list[str] | None = None,
 ) -> tuple[list[Option], list[Option], list[Subcommand]]:
-    """
-    Generate Markdown documentation for an argparse.ArgumentParser instance including its subcommands.
+    """Generate Markdown documentation for an argparse.ArgumentParser instance including its subcommands.
 
     :param parser: The argparse.ArgumentParser instance.
     :param level: Current depth of subcommand.
     :return: Markdown formatted documentation as a string.
     """
-
     # Document each argument
     # --flake --option --debug, etc.
     if prefix is None:
@@ -190,7 +183,7 @@ def get_subcommands(
                     description=action.help if action.help else "",
                     default=action.default if action.default is not None else "",
                     metavar=f"{action.metavar}" if action.metavar else "",
-                )
+                ),
             )
 
         if not option_strings:
@@ -201,7 +194,7 @@ def get_subcommands(
                     description=action.help if action.help else "",
                     default=action.default if action.default is not None else "",
                     metavar=f"{action.metavar}" if action.metavar else "",
-                )
+                ),
             )
 
     for action in parser._actions:  # noqa: SLF001
@@ -215,7 +208,10 @@ def get_subcommands(
                 subcommands.append(sub_command)
 
                 (_options, _positionals, _subcommands) = get_subcommands(
-                    parser=subparser, to=to, level=level + 1, prefix=[*prefix, name]
+                    parser=subparser,
+                    to=to,
+                    level=level + 1,
+                    prefix=[*prefix, name],
                 )
 
                 to.append(
@@ -227,15 +223,14 @@ def get_subcommands(
                         options=_options,
                         positionals=_positionals,
                         subcommands=_subcommands,
-                    )
+                    ),
                 )
 
     return (flag_options, positional_options, subcommands)
 
 
 def collect_commands() -> list[Category]:
-    """
-    Returns a sorted list of all available commands.
+    """Returns a sorted list of all available commands.
 
     i.e.
         a...
@@ -261,12 +256,15 @@ def collect_commands() -> list[Category]:
                     continue
                 if str(name) in hidden_subcommands:
                     print(
-                        f"Excluded {name} from documentation as it is a hidden subcommand."
+                        f"Excluded {name} from documentation as it is a hidden subcommand.",
                     )
                     continue
 
                 (_options, _positionals, _subcommands) = get_subcommands(
-                    subparser, to=result, level=2, prefix=[name]
+                    subparser,
+                    to=result,
+                    level=2,
+                    prefix=[name],
                 )
                 result.append(
                     Category(
@@ -277,7 +275,7 @@ def collect_commands() -> list[Category]:
                         subcommands=_subcommands,
                         epilog=subparser.epilog,
                         level=1,
-                    )
+                    ),
                 )
 
     def weight_cmd_groups(c: Category) -> tuple[str, str, int]:
@@ -297,8 +295,7 @@ def collect_commands() -> list[Category]:
 
 
 def build_command_reference() -> None:
-    """
-    Function that will build the reference
+    """Function that will build the reference
     and write it to the out path.
     """
     cmds = collect_commands()

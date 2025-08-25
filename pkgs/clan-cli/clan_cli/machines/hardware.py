@@ -33,13 +33,15 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
 
     if args.target_host:
         target_host = Remote.from_ssh_uri(
-            machine_name=machine.name, address=args.target_host
+            machine_name=machine.name,
+            address=args.target_host,
         )
     else:
         target_host = machine.target_host()
 
     target_host = target_host.override(
-        host_key_check=args.host_key_check, private_key=args.identity_file
+        host_key_check=args.host_key_check,
+        private_key=args.identity_file,
     )
 
     run_machine_hardware_info(opts, target_host)

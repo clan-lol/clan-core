@@ -15,9 +15,7 @@ class TemplateList:
 
 
 def get_builtin_template_list() -> TemplateList:
-    """
-    Fallback to get only builtin clan templates with no custom templates.
-    """
+    """Fallback to get only builtin clan templates with no custom templates."""
     builtin_flake = Flake(str(clan_templates()))
     builtin_templates = builtin_flake.select("clanInternals.templates")
     custom_templates: dict[str, ClanTemplatesType] = {}
@@ -25,16 +23,14 @@ def get_builtin_template_list() -> TemplateList:
 
 
 def list_templates(flake: Flake | None) -> TemplateList:
-    """
-    Show information about a module
-    """
+    """Show information about a module"""
     if flake is None:
         log.debug("No flake provided, falling back to clan-core builtin templates")
         return get_builtin_template_list()
 
     try:
         custom_templates = flake.select(
-            "clanInternals.inventoryClass.templatesPerSource"
+            "clanInternals.inventoryClass.templatesPerSource",
         )
         builtin_templates = flake.select("clanInternals.templates")
 
@@ -43,6 +39,6 @@ def list_templates(flake: Flake | None) -> TemplateList:
     except (AttributeError, KeyError, Exception):
         log.debug(
             "Failed to get templates from clan inputs, "
-            "falling back to clan-core builtin templates"
+            "falling back to clan-core builtin templates",
         )
         return get_builtin_template_list()

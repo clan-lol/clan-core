@@ -21,7 +21,7 @@ def _get_lib_names() -> list[str]:
     machine = platform.machine().lower()
 
     if system == "windows":
-        if machine == "amd64" or machine == "x86_64":
+        if machine in {"amd64", "x86_64"}:
             return ["webview.dll", "WebView2Loader.dll"]
         if machine == "arm64":
             msg = "arm64 is not supported on Windows"
@@ -36,7 +36,6 @@ def _get_lib_names() -> list[str]:
 
 def _be_sure_libraries() -> list[Path] | None:
     """Ensure libraries exist and return paths."""
-
     lib_dir = os.environ.get("WEBVIEW_LIB_DIR")
     if not lib_dir:
         msg = "WEBVIEW_LIB_DIR environment variable is not set"

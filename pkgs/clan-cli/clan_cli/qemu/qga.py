@@ -39,7 +39,8 @@ class QgaSession:
 
     def run_nonblocking(self, cmd: list[str]) -> int:
         result_pid = self.client.cmd(
-            "guest-exec", {"path": cmd[0], "arg": cmd[1:], "capture-output": True}
+            "guest-exec",
+            {"path": cmd[0], "arg": cmd[1:], "capture-output": True},
         )
         if result_pid is None:
             msg = "Could not get PID from QGA"

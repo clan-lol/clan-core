@@ -4,10 +4,12 @@ import sys
 import urllib.parse
 from enum import Enum
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+
+if TYPE_CHECKING:
+    from clan_lib.flake import Flake
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +37,7 @@ def get_clan_flake_toplevel() -> Path | None:
 
 
 def clan_key_safe(flake_url: str) -> str:
-    """
-    only embed the url in the path, not the clan name, as it would involve eval.
-    """
+    """Only embed the url in the path, not the clan name, as it would involve eval."""
     quoted_url = urllib.parse.quote_plus(flake_url)
     return f"{quoted_url}"
 
@@ -55,9 +55,7 @@ def find_toplevel(top_level_files: list[str]) -> Path | None:
 
 
 def clan_core_flake() -> Path:
-    """
-    Returns the path to the clan core flake.
-    """
+    """Returns the path to the clan core flake."""
     return module_root().parent.parent.parent
 
 
@@ -102,7 +100,7 @@ def user_config_dir() -> Path:
 def user_data_dir() -> Path:
     if sys.platform == "win32":
         return Path(
-            Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser()))
+            Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser())),
         )
     xdg_data = os.getenv("XDG_DATA_HOME")
     if xdg_data:
@@ -115,7 +113,7 @@ def user_data_dir() -> Path:
 def user_cache_dir() -> Path:
     if sys.platform == "win32":
         return Path(
-            Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser()))
+            Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser())),
         )
     xdg_cache = os.getenv("XDG_CACHE_HOME")
     if xdg_cache:
@@ -184,8 +182,7 @@ def select_source() -> Path:
 
 
 def get_clan_directories(flake: "Flake") -> tuple[str, str]:
-    """
-    Get the clan source directory and computed clan directory paths.
+    """Get the clan source directory and computed clan directory paths.
 
     Args:
         flake: The clan flake to get directories from
@@ -197,6 +194,7 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
 
     Raises:
         ClanError: If the flake evaluation fails or directories cannot be found
+
     """
     import json
     from pathlib import Path
@@ -213,8 +211,8 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
         nix_eval(
             flags=[
                 f"{flake.identifier}#clanInternals.inventoryClass.directory",
-            ]
-        )
+            ],
+        ),
     )
     directory = json.loads(directory_result.stdout.strip())
 

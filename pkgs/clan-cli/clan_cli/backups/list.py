@@ -21,11 +21,15 @@ def list_command(args: argparse.Namespace) -> None:
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
     machines_parser = parser.add_argument(
-        "machine", type=str, help="machine in the flake to show backups of"
+        "machine",
+        type=str,
+        help="machine in the flake to show backups of",
     )
     add_dynamic_completer(machines_parser, complete_machines)
     provider_action = parser.add_argument(
-        "--provider", type=str, help="backup provider to filter by"
+        "--provider",
+        type=str,
+        help="backup provider to filter by",
     )
     add_dynamic_completer(provider_action, complete_backup_providers_for_machine)
     parser.set_defaults(func=list_command)

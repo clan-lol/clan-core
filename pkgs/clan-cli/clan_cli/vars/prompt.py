@@ -44,8 +44,8 @@ class Prompt:
                 "group": None,
                 "helperText": None,
                 "required": False,
-            }
-        )
+            },
+        ),
     )
 
     @classmethod
@@ -60,13 +60,11 @@ class Prompt:
 
 
 def get_multiline_hidden_input() -> str:
-    """
-    Get multiline input from the user without echoing the input.
+    """Get multiline input from the user without echoing the input.
     This function allows the user to enter multiple lines of text,
     and it will return the concatenated string of all lines entered.
     The user can finish the input by pressing Ctrl-D (EOF).
     """
-
     # Save terminal settings
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -93,7 +91,7 @@ def get_multiline_hidden_input() -> str:
                 raise KeyboardInterrupt
 
             # Handle Enter key
-            if char == "\r" or char == "\n":
+            if char in {"\r", "\n"}:
                 lines.append("".join(current_line))
                 current_line = []
                 # Print newline for visual feedback
@@ -136,7 +134,7 @@ def ask(
                 result = sys.stdin.read()
             case PromptType.MULTILINE_HIDDEN:
                 print(
-                    "Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):"
+                    "Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):",
                 )
                 result = get_multiline_hidden_input()
             case PromptType.HIDDEN:

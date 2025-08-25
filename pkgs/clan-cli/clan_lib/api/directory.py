@@ -32,8 +32,7 @@ class FileRequest:
 
 @API.register_abstract
 def get_system_file(file_request: FileRequest) -> list[str] | None:
-    """
-    Api method to open a file dialog window.
+    """Api method to open a file dialog window.
 
     Implementations is specific to the platform and
     returns the name of the selected file or None if no file was selected.
@@ -44,8 +43,7 @@ def get_system_file(file_request: FileRequest) -> list[str] | None:
 
 @API.register_abstract
 def get_clan_folder() -> Flake:
-    """
-    Api method to open the clan folder.
+    """Api method to open the clan folder.
 
     Implementations is specific to the platform and returns the path to the clan folder.
     """
@@ -85,13 +83,12 @@ def blk_from_dict(data: dict) -> BlkInfo:
 
 @API.register
 def list_system_storage_devices() -> Blockdevices:
-    """
-    List local block devices by running `lsblk`.
+    """List local block devices by running `lsblk`.
 
     Returns:
         A list of detected block devices with metadata like size, path, type, etc.
-    """
 
+    """
     cmd = nix_shell(
         ["util-linux"],
         [
@@ -107,14 +104,13 @@ def list_system_storage_devices() -> Blockdevices:
     blk_info: dict[str, Any] = json.loads(res)
 
     return Blockdevices(
-        blockdevices=[blk_from_dict(device) for device in blk_info["blockdevices"]]
+        blockdevices=[blk_from_dict(device) for device in blk_info["blockdevices"]],
     )
 
 
 @API.register
 def get_clan_directory_relative(flake: Flake) -> str:
-    """
-    Get the clan directory path relative to the flake root
+    """Get the clan directory path relative to the flake root
     from the clan.directory configuration setting.
 
     Args:
@@ -125,6 +121,7 @@ def get_clan_directory_relative(flake: Flake) -> str:
 
     Raises:
         ClanError: If the flake evaluation fails or directories cannot be found
+
     """
     from clan_lib.dirs import get_clan_directories
 
@@ -133,12 +130,13 @@ def get_clan_directory_relative(flake: Flake) -> str:
 
 
 def get_clan_dir(flake: Flake) -> Path:
-    """
-    Get the effective clan directory, respecting the clan.directory configuration.
+    """Get the effective clan directory, respecting the clan.directory configuration.
+
     Args:
         flake: The clan flake
     Returns:
         Path to the effective clan directory
+
     """
     relative_clan_dir = get_clan_directory_relative(flake)
     return flake.path / relative_clan_dir if relative_clan_dir else flake.path

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import clan_lib.machines.machines as machines
-from clan_lib.ssh.host import Host
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from clan_lib.machines import machines
+    from clan_lib.ssh.host import Host
 
 
 class SecretStoreBase(ABC):
@@ -14,7 +17,11 @@ class SecretStoreBase(ABC):
 
     @abstractmethod
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self,
+        service: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
     ) -> Path | None:
         pass
 

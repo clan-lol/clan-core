@@ -68,7 +68,9 @@ class TestURLEncoding:
             group_path = ["clans", dynamic_name, "machines", f"machine-{dynamic_name}"]
 
             log_file = log_manager.create_log_file(
-                sample_function, f"test_{dynamic_name}", group_path
+                sample_function,
+                f"test_{dynamic_name}",
+                group_path,
             )
 
             # Check that the file was created and encoded names appear in path
@@ -78,7 +80,8 @@ class TestURLEncoding:
             # Verify encoding for both dynamic elements (indices 1 and 3)
             expected_encoded_repo = urllib.parse.quote(dynamic_name, safe="")
             expected_encoded_machine = urllib.parse.quote(
-                f"machine-{dynamic_name}", safe=""
+                f"machine-{dynamic_name}",
+                safe="",
             )
 
             assert expected_encoded_repo in str(file_path)
@@ -126,7 +129,9 @@ class TestURLEncoding:
         group_path = ["clans", dynamic_name, "default"]
 
         log_file = log_manager.create_log_file(
-            sample_function, "unicode_test", group_path
+            sample_function,
+            "unicode_test",
+            group_path,
         )
         file_path = log_file.get_file_path()
 
@@ -153,7 +158,9 @@ class TestURLEncoding:
         group_path = ["default"]
 
         log_file = log_manager.create_log_file(
-            sample_function, "simple_test", group_path
+            sample_function,
+            "simple_test",
+            group_path,
         )
         file_path = log_file.get_file_path()
 
@@ -177,7 +184,9 @@ class TestURLEncoding:
         group_path = ["clans", "", "default"]
 
         log_file = log_manager.create_log_file(
-            sample_function, "empty_test", group_path
+            sample_function,
+            "empty_test",
+            group_path,
         )
         file_path = log_file.get_file_path()
 

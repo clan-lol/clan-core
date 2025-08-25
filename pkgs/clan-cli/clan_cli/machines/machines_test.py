@@ -15,7 +15,7 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
                 machines.jon1 = { };
                 machines.jon2 = { machineClass = "nixos"; };
                 machines.sara = { machineClass = "darwin"; };
-            }"""
+            }""",
         },
     ],
     # Important!
@@ -27,8 +27,7 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
 def test_inventory_machine_detect_class(
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    """
-    Testing different inventory deserializations
+    """Testing different inventory deserializations
     Inventory should always be deserializable to a dict
     """
     machine_jon1 = Machine(

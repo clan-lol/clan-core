@@ -1,8 +1,11 @@
 import argparse
 import logging
+from typing import TYPE_CHECKING
 
-from clan_lib.nix_models.clan import TemplateClanType
 from clan_lib.templates import list_templates
+
+if TYPE_CHECKING:
+    from clan_lib.nix_models.clan import TemplateClanType
 
 log = logging.getLogger(__name__)
 
@@ -12,10 +15,11 @@ def list_command(args: argparse.Namespace) -> None:
 
     # Display all templates
     for i, (template_type, _builtin_template_set) in enumerate(
-        templates.builtins.items()
+        templates.builtins.items(),
     ):
         builtin_template_set: TemplateClanType | None = templates.builtins.get(
-            template_type, None
+            template_type,
+            None,
         )  # type: ignore
         if not builtin_template_set:
             continue
@@ -32,7 +36,8 @@ def list_command(args: argparse.Namespace) -> None:
 
         for i, (input_name, input_templates) in enumerate(templates.custom.items()):
             custom_templates: TemplateClanType | None = input_templates.get(
-                template_type, None
+                template_type,
+                None,
             )  # type: ignore
             if not custom_templates:
                 continue
@@ -48,11 +53,11 @@ def list_command(args: argparse.Namespace) -> None:
                 is_last_template = i == len(custom_templates.items()) - 1
                 if not is_last_template:
                     print(
-                        f"{prefix}   ├── {name}: {template.get('description', 'no description')}"
+                        f"{prefix}   ├── {name}: {template.get('description', 'no description')}",
                     )
                 else:
                     print(
-                        f"{prefix}   └── {name}: {template.get('description', 'no description')}"
+                        f"{prefix}   └── {name}: {template.get('description', 'no description')}",
                     )
 
 

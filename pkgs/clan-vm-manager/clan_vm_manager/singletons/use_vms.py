@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import gi
 from clan_lib.flake import Flake
@@ -13,11 +13,13 @@ from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.history import HistoryEntry
 from clan_vm_manager.singletons.use_views import ViewStack
-from clan_vm_manager.views.logs import Logs
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gio, GLib, GObject
+
+if TYPE_CHECKING:
+    from clan_vm_manager.views.logs import Logs
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +55,8 @@ class ClanStore:
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls._clan_store = GKVStore(
-                VMStore, lambda store: store.first().data.flake.flake_url
+                VMStore,
+                lambda store: store.first().data.flake.flake_url,
             )
             cls._emitter = Emitter()
 
@@ -74,19 +77,24 @@ class ClanStore:
         return self._logging_vm
 
     def register_on_deep_change(
-        self, callback: Callable[[GKVStore, int, int, int], None]
+        self,
+        callback: Callable[[GKVStore, int, int, int], None],
     ) -> None:
-        """
-        Register a callback that is called when a clan_store or one of the included VMStores changes
-        """
+        """Register a callback that is called when a clan_store or one of the included VMStores changes"""
 
         def on_vmstore_change(
-            store: VMStore, position: int, removed: int, added: int
+            store: VMStore,
+            position: int,
+            removed: int,
+            added: int,
         ) -> None:
             callback(store, position, removed, added)
 
         def on_clanstore_change(
-            store: "GKVStore", position: int, removed: int, added: int
+            store: "GKVStore",
+            position: int,
+            removed: int,
+            added: int,
         ) -> None:
             if added > 0:
                 store.values()[position].register_on_change(on_vmstore_change)
@@ -120,7 +128,9 @@ class ClanStore:
         logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
 
         def file_read_callback(
-            source_object: Gio.File, result: Gio.AsyncResult, _user_data: Any
+            source_object: Gio.File,
+            result: Gio.AsyncResult,
+            _user_data: Any,
         ) -> None:
             try:
                 # Finish the asynchronous read operation
@@ -155,7 +165,7 @@ class ClanStore:
 
             if old_vm:
                 log.info(
-                    f"VM {vm.data.flake.flake_attr} already exists in store. Updating data field."
+                    f"VM {vm.data.flake.flake_attr} already exists in store. Updating data field.",
                 )
                 old_vm.update(vm.data)
             else:

@@ -48,7 +48,7 @@ def test_import_with_source(tmp_path: Path) -> None:
             @contextmanager
             def connection(self, network: Network) -> Iterator[Network]:
                 yield network
-    """)
+    """),
     )
 
     # Add the temp directory to sys.path
@@ -61,7 +61,7 @@ def test_import_with_source(tmp_path: Path) -> None:
         instance = import_with_source(
             "test_module.test_tech",
             "NetworkTechnology",
-            cast(Any, NetworkTechnologyBase),
+            cast("Any", NetworkTechnologyBase),
         )
 
         # Verify the instance is created correctly
@@ -125,7 +125,7 @@ def test_import_with_source_with_args() -> None:
                 @contextmanager
                 def connection(self, network: Network) -> Iterator[Network]:
                     yield network
-        """)
+        """),
         )
         temp_file = Path(f.name)
 
@@ -145,7 +145,7 @@ def test_import_with_source_with_args() -> None:
         instance = import_with_source(
             "temp_module",
             "NetworkTechnology",
-            cast(Any, NetworkTechnologyBase),
+            cast("Any", NetworkTechnologyBase),
             "extra_value",
             keyword_arg="keyword_value",
         )
@@ -165,7 +165,9 @@ def test_import_with_source_module_not_found() -> None:
     """Test error handling when module is not found."""
     with pytest.raises(ModuleNotFoundError):
         import_with_source(
-            "non_existent_module", "SomeClass", cast(Any, NetworkTechnologyBase)
+            "non_existent_module",
+            "SomeClass",
+            cast("Any", NetworkTechnologyBase),
         )
 
 
@@ -175,5 +177,5 @@ def test_import_with_source_class_not_found() -> None:
         import_with_source(
             "clan_lib.network.network",
             "NonExistentClass",
-            cast(Any, NetworkTechnologyBase),
+            cast("Any", NetworkTechnologyBase),
         )

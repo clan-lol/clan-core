@@ -13,23 +13,17 @@ else:
 
 @pytest.fixture(scope="session")
 def project_root() -> Path:
-    """
-    Root directory the clan-cli
-    """
+    """Root directory the clan-cli"""
     return PROJECT_ROOT
 
 
 @pytest.fixture(scope="session")
 def test_root() -> Path:
-    """
-    Root directory of the tests
-    """
+    """Root directory of the tests"""
     return TEST_ROOT
 
 
 @pytest.fixture(scope="session")
 def clan_core() -> Path:
-    """
-    Directory of the clan-core flake
-    """
+    """Directory of the clan-core flake"""
     return CLAN_CORE

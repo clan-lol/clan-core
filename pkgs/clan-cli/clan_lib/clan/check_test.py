@@ -9,7 +9,9 @@ from clan_lib.flake import Flake
 
 @pytest.mark.with_core
 def test_check_clan_valid(
-    temporary_home: Path, test_flake_with_core: FlakeForTest, test_flake: FlakeForTest
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
+    test_flake: FlakeForTest,
 ) -> None:
     # Test with a valid clan
     flake = Flake(str(test_flake_with_core.path))

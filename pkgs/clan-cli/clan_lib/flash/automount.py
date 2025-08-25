@@ -13,13 +13,13 @@ log = logging.getLogger(__name__)
 
 @contextmanager
 def pause_automounting(
-    devices: list[Path], machine: Machine, request_graphical: bool = False
+    devices: list[Path],
+    machine: Machine,
+    request_graphical: bool = False,
 ) -> Generator[None]:
-    """
-    Pause automounting on the device for the duration of this context
+    """Pause automounting on the device for the duration of this context
     manager
     """
-
     if shutil.which("udevadm") is None:
         msg = "udev is required to disable automounting"
         log.warning(msg)

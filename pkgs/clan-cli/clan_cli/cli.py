@@ -52,8 +52,7 @@ def create_flake_from_args(args: argparse.Namespace) -> Flake:
 
 def add_common_flags(parser: argparse.ArgumentParser) -> None:
     def argument_exists(parser: argparse.ArgumentParser, arg: str) -> bool:
-        """
-        Check if an argparse argument already exists.
+        """Check if an argparse argument already exists.
         This is needed because the aliases subcommand doesn't *really*
         create an alias - it duplicates the actual parser in the tree
         making duplication inevitable while naively traversing.
@@ -97,7 +96,7 @@ def register_common_flags(parser: argparse.ArgumentParser) -> None:
     has_subparsers = False
     for action in parser._actions:  # noqa: SLF001
         if isinstance(action, argparse._SubParsersAction):  # noqa: SLF001
-            for _choice, child_parser in action.choices.items():
+            for child_parser in action.choices.values():
                 has_subparsers = True
                 register_common_flags(child_parser)
 
@@ -410,7 +409,9 @@ For more detailed information, visit: {help_hyperlink("deploy", "https://docs.cl
     machines.register_parser(parser_machine)
 
     parser_vms = subparsers.add_parser(
-        "vms", help="Manage virtual machines", description="Manage virtual machines"
+        "vms",
+        help="Manage virtual machines",
+        description="Manage virtual machines",
     )
     vms.register_parser(parser_vms)
 

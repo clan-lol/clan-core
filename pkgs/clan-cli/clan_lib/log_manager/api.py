@@ -14,6 +14,7 @@ def list_log_days() -> list[str]:
 
     Raises:
         AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
+
     """
     assert LOG_MANAGER_INSTANCE is not None
     return [day.date_day for day in LOG_MANAGER_INSTANCE.list_log_days()]
@@ -21,7 +22,8 @@ def list_log_days() -> list[str]:
 
 @API.register
 def list_log_groups(
-    selector: list[str] | None, date_day: str | None = None
+    selector: list[str] | None,
+    date_day: str | None = None,
 ) -> list[str]:
     """List all log groups at the specified hierarchical path.
 
@@ -34,6 +36,7 @@ def list_log_groups(
 
     Raises:
         AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
+
     """
     assert LOG_MANAGER_INSTANCE is not None
     return LOG_MANAGER_INSTANCE.filter(selector, date_day=date_day)
@@ -41,7 +44,9 @@ def list_log_groups(
 
 @API.register
 def get_log_file(
-    id_key: str, selector: list[str] | None = None, date_day: str | None = None
+    id_key: str,
+    selector: list[str] | None = None,
+    date_day: str | None = None,
 ) -> str:
     """Get the contents of a specific log file by operation key.
 
@@ -56,11 +61,14 @@ def get_log_file(
     Raises:
         ClanError: If the log file is not found.
         AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
+
     """
     assert LOG_MANAGER_INSTANCE is not None
 
     log_file = LOG_MANAGER_INSTANCE.get_log_file(
-        op_key=id_key, selector=selector, date_day=date_day
+        op_key=id_key,
+        selector=selector,
+        date_day=date_day,
     )
     if log_file is None:
         msg = f"Log file with op_key '{id_key}' not found in selector '{selector}' and date_day '{date_day}'."

@@ -19,7 +19,8 @@ def test_commit_file(git_repo: Path) -> None:
     # check that the latest commit message is correct
     assert (
         subprocess.check_output(
-            ["git", "log", "-1", "--pretty=%B"], cwd=git_repo
+            ["git", "log", "-1", "--pretty=%B"],
+            cwd=git_repo,
         ).decode("utf-8")
         == "test commit\n\n"
     )
@@ -59,7 +60,8 @@ def test_clan_flake_in_subdir(git_repo: Path, monkeypatch: pytest.MonkeyPatch) -
     # check that the latest commit message is correct
     assert (
         subprocess.check_output(
-            ["git", "log", "-1", "--pretty=%B"], cwd=git_repo
+            ["git", "log", "-1", "--pretty=%B"],
+            cwd=git_repo,
         ).decode("utf-8")
         == "test commit\n\n"
     )

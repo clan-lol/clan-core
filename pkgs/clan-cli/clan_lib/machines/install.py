@@ -42,7 +42,7 @@ def notify_install_step(current: Step) -> None:
             "data": None,
             # MUST be set the to api function name, while technically you can set any origin, this is a bad idea.
             "origin": "run_machine_install",
-        }
+        },
     )
 
 
@@ -62,14 +62,17 @@ class InstallOptions:
 @API.register
 def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     """Install a machine using nixos-anywhere.
+
     Args:
         opts: InstallOptions containing the machine to install, kexec option, debug mode,
             no-reboot option, phases, build-on option, hardware config update, password,
             identity file, and use_tor flag.
         target_host: Remote object representing the target host for installation.
+
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
             generating facts or variables.
+
     """
     machine = opts.machine
 
@@ -86,7 +89,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}",
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.secretModule",
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.publicModule",
-        ]
+        ],
     )
 
     # Notify the UI about what we are doing
@@ -106,13 +109,17 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         notify_install_step("upload-secrets")
         machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
-            machine.name, upload_dir, phases=["activation", "users", "services"]
+            machine.name,
+            upload_dir,
+            phases=["activation", "users", "services"],
         )
 
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
-            machine.name, partitioning_secrets, phases=["partitioning"]
+            machine.name,
+            partitioning_secrets,
+            phases=["partitioning"],
         )
 
         if target_host.password:
@@ -133,10 +140,10 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                         "--disk-encryption-keys",
                         str(
                             "/run/partitioning-secrets"
-                            / path.relative_to(partitioning_secrets)
+                            / path.relative_to(partitioning_secrets),
                         ),
                         str(path),
-                    ]
+                    ],
                 )
 
         if opts.no_reboot:
@@ -151,7 +158,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                     "--generate-hardware-config",
                     str(opts.update_hardware_config.value),
                     str(opts.update_hardware_config.config_path(machine)),
-                ]
+                ],
             )
 
         if target_host.password:
@@ -239,5 +246,6 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             int(time()),
         )
         inventory_store.write(
-            inventory, f"Installed {machine.name} at {target_host.target}"
+            inventory,
+            f"Installed {machine.name} at {target_host.target}",
         )

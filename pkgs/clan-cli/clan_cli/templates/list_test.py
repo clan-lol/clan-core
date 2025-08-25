@@ -9,7 +9,8 @@ from clan_cli.tests.stdout import CaptureOutput
 
 @pytest.mark.with_core
 def test_templates_list(
-    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     with capture_output as output:
         cli.run(["templates", "list", "--flake", str(test_flake_with_core.path)])
@@ -26,7 +27,8 @@ def test_templates_list(
 
 @pytest.mark.with_core
 def test_templates_list_outside_clan(
-    capture_output: CaptureOutput, temp_dir: Path
+    capture_output: CaptureOutput,
+    temp_dir: Path,
 ) -> None:
     """Test templates list command when run outside a clan directory."""
     with capture_output as output:

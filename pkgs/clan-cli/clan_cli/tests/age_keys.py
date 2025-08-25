@@ -37,7 +37,7 @@ class SopsSetup:
                 "--user",
                 self.user,
                 "--no-interactive",
-            ]
+            ],
         )
 
 

@@ -90,8 +90,10 @@ def parse_avahi_output(output: str) -> DNSInfo:
 @API.register
 def list_system_services_mdns() -> DNSInfo:
     """List mDNS/DNS-SD services on the local network.
+
     Returns:
         DNSInfo: A dictionary containing discovered mDNS/DNS-SD services.
+
     """
     cmd = nix_shell(
         ["avahi"],

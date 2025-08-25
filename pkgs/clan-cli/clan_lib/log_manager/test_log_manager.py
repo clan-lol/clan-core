@@ -1,5 +1,4 @@
-"""
-Simplified tests for the log manager focusing only on features used by the API.
+"""Simplified tests for the log manager focusing only on features used by the API.
 
 Tests are based on actual usage patterns from example_usage.py and api.py.
 """
@@ -150,14 +149,15 @@ class TestLogManagerGroupConfiguration:
         """Test finding nested group configuration."""
         # ["clans", "dynamic_name", "machines"] - should find machines config
         config = configured_log_manager.find_group_config(
-            ["clans", "repo1", "machines"]
+            ["clans", "repo1", "machines"],
         )
         assert config is not None
         assert config.name == "machines"
         assert config.nickname == "Machines"
 
     def test_find_group_config_nonexistent(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test finding non-existent group configuration."""
         config = configured_log_manager.find_group_config(["nonexistent"])
@@ -171,7 +171,8 @@ class TestLogFileCreation:
     """Test log file creation features used in example_usage.py."""
 
     def test_create_log_file_default_group(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test creating log file with default group."""
         log_file = configured_log_manager.create_log_file(example_function, "test_op")
@@ -185,7 +186,8 @@ class TestLogFileCreation:
         assert log_file.get_file_path().exists()
 
     def test_create_log_file_with_nested_groups(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test creating log file with nested groups like example_usage.py."""
         repos = ["/home/user/Projects/qubasas_clan", "https://github.com/qubasa/myclan"]
@@ -210,7 +212,8 @@ class TestLogFileCreation:
                 # Dynamic elements should be URL encoded if they contain special chars
 
     def test_create_log_file_unregistered_group_fails(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that creating log file with unregistered group fails."""
         with pytest.raises(ValueError, match="Group structure.*is not valid"):
@@ -221,7 +224,8 @@ class TestLogFileCreation:
             )
 
     def test_create_log_file_invalid_structure_fails(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that invalid nested structure fails."""
         with pytest.raises(ValueError, match="Group structure.*is not valid"):
@@ -236,19 +240,23 @@ class TestFilterFunction:
     """Test filter functionality used in example_usage.py and api.py."""
 
     def test_filter_empty_returns_top_level_groups(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that empty filter returns top-level groups."""
         # Create some log files first
         configured_log_manager.create_log_file(
-            run_machine_update, "test_op", ["clans", "repo1", "machines", "machine1"]
+            run_machine_update,
+            "test_op",
+            ["clans", "repo1", "machines", "machine1"],
         )
 
         top_level = configured_log_manager.filter([])
         assert "clans" in top_level
 
     def test_filter_lists_dynamic_names(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test filtering lists dynamic names like example_usage.py."""
         repos = ["repo1", "repo2"]
@@ -271,17 +279,20 @@ class TestFilterFunction:
         if clans_repos:
             first_repo = clans_repos[0]
             repo_machines = configured_log_manager.filter(
-                ["clans", first_repo, "machines"]
+                ["clans", first_repo, "machines"],
             )
             assert set(repo_machines) == set(machines)
 
     def test_filter_with_specific_date(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test filtering with specific date."""
         # Create log file
         log_file = configured_log_manager.create_log_file(
-            run_machine_update, "test_op", ["clans", "repo1", "machines", "machine1"]
+            run_machine_update,
+            "test_op",
+            ["clans", "repo1", "machines", "machine1"],
         )
 
         # Filter with the specific date
@@ -320,7 +331,8 @@ class TestGetLogFile:
         assert found_log_file.func_name == "run_machine_update"
 
     def test_get_log_file_with_selector(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test getting log file with specific selector like example_usage.py."""
         # Create log files in different locations
@@ -347,12 +359,15 @@ class TestGetLogFile:
         """Test getting log file with specific date."""
         # Create log file
         log_file = configured_log_manager.create_log_file(
-            run_machine_update, "deploy_demo", ["clans", "repo1", "machines", "demo"]
+            run_machine_update,
+            "deploy_demo",
+            ["clans", "repo1", "machines", "demo"],
         )
 
         # Find it by op_key and date
         found_log_file = configured_log_manager.get_log_file(
-            "deploy_demo", date_day=log_file.date_day
+            "deploy_demo",
+            date_day=log_file.date_day,
         )
         assert found_log_file is not None
         assert found_log_file.op_key == "deploy_demo"
@@ -362,7 +377,8 @@ class TestGetLogFile:
             datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
         ).strftime("%Y-%m-%d")
         not_found = configured_log_manager.get_log_file(
-            "deploy_demo", date_day=tomorrow
+            "deploy_demo",
+            date_day=tomorrow,
         )
         assert not_found is None
 
@@ -384,10 +400,14 @@ class TestListLogDays:
         """Test listing log days when logs exist."""
         # Create log files
         configured_log_manager.create_log_file(
-            run_machine_update, "op1", ["clans", "repo1", "machines", "machine1"]
+            run_machine_update,
+            "op1",
+            ["clans", "repo1", "machines", "machine1"],
         )
         configured_log_manager.create_log_file(
-            run_machine_update, "op2", ["clans", "repo2", "machines", "machine2"]
+            run_machine_update,
+            "op2",
+            ["clans", "repo2", "machines", "machine2"],
         )
 
         days = configured_log_manager.list_log_days()
@@ -402,7 +422,8 @@ class TestApiCompatibility:
     """Test that the log manager works with the API functions."""
 
     def test_api_workflow_like_example_usage(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test a complete workflow like example_usage.py and api.py."""
         repos = ["/home/user/Projects/qubasas_clan", "https://github.com/qubasa/myclan"]
@@ -447,7 +468,8 @@ class TestLogFileSorting:
     """Test LogFile sorting functionality - newest first is a key feature."""
 
     def test_logfile_comparison_by_datetime(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles are sorted by datetime (newest first)."""
         from clan_lib.log_manager import LogFile
@@ -482,7 +504,8 @@ class TestLogFileSorting:
         assert sorted_files[1] == older_file
 
     def test_logfile_comparison_by_date(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles are sorted by date (newer dates first)."""
         from clan_lib.log_manager import LogFile
@@ -516,7 +539,8 @@ class TestLogFileSorting:
         assert sorted_files[1] == older_date_file
 
     def test_logfile_secondary_sort_by_group(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime are sorted by group name (alphabetical)."""
         from clan_lib.log_manager import LogFile
@@ -551,7 +575,8 @@ class TestLogFileSorting:
         assert sorted_files[1] == group_b_file
 
     def test_logfile_tertiary_sort_by_func_name(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime and group are sorted by func_name (alphabetical)."""
         from clan_lib.log_manager import LogFile
@@ -585,7 +610,8 @@ class TestLogFileSorting:
         assert sorted_files[1] == func_b_file
 
     def test_logfile_quaternary_sort_by_op_key(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime, group, and func_name are sorted by op_key (alphabetical)."""
         from clan_lib.log_manager import LogFile
@@ -619,10 +645,10 @@ class TestLogFileSorting:
         assert sorted_files[1] == op_b_file
 
     def test_logfile_complex_sorting_scenario(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test complex sorting with multiple LogFiles demonstrating full sort order."""
-
         from clan_lib.log_manager import LogFile
 
         # Create multiple files with different characteristics
@@ -720,7 +746,7 @@ class TestLogFileSorting:
         ]
 
         for i, (exp_op, exp_date, exp_group, exp_func, exp_time) in enumerate(
-            expected_order
+            expected_order,
         ):
             actual = sorted_files[i]
             assert actual.op_key == exp_op, (
@@ -740,7 +766,8 @@ class TestLogFileSorting:
             )
 
     def test_get_log_file_returns_newest_when_multiple_exist(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that get_log_file returns the newest file when multiple files with same op_key exist in different locations."""
         # Create log files with same op_key in different locations (different groups/machines)
@@ -771,7 +798,8 @@ class TestLogFileSorting:
 
         # When searching with specific selector, should find the specific one
         specific_log = configured_log_manager.get_log_file(
-            "deploy_operation", selector=["clans", "repo1", "machines", "machine1"]
+            "deploy_operation",
+            selector=["clans", "repo1", "machines", "machine1"],
         )
         assert specific_log is not None
         assert specific_log.op_key == "deploy_operation"
@@ -779,7 +807,8 @@ class TestLogFileSorting:
         assert "machine1" in specific_log.group
 
     def test_list_log_days_sorted_newest_first(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that list_log_days returns days sorted newest first."""
         # Create log files on different days by manipulating the date
@@ -817,7 +846,8 @@ class TestURLEncoding:
     """Test URL encoding for dynamic group names with special characters."""
 
     def test_special_characters_in_dynamic_names(
-        self, configured_log_manager: LogManager
+        self,
+        configured_log_manager: LogManager,
     ) -> None:
         """Test that special characters in dynamic names are handled correctly."""
         special_repo = "/home/user/Projects/my clan"  # Contains space

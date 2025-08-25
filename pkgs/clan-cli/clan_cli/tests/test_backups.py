@@ -14,5 +14,5 @@ def test_backups(
             "--flake",
             str(test_flake_with_core.path),
             "vm1",
-        ]
+        ],
     )

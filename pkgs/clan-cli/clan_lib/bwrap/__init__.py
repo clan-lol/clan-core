@@ -39,7 +39,7 @@ def _bubblewrap_works() -> bool:
             "--gid", "1000",
             "--",
             # do nothing, just test if bash executes
-            str(real_bash_path), "-c", ":"
+            str(real_bash_path), "-c", ":",
         ],
     )
 

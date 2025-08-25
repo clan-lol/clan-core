@@ -16,7 +16,11 @@ class SecretStore(SecretStoreBase):
         self.machine = machine
 
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self,
+        service: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
     ) -> Path | None:
         subprocess.run(
             nix_shell(
@@ -40,14 +44,16 @@ class SecretStore(SecretStoreBase):
 
     def exists(self, service: str, name: str) -> bool:
         password_store = os.environ.get(
-            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
+            "PASSWORD_STORE_DIR",
+            f"{os.environ['HOME']}/.password-store",
         )
         secret_path = Path(password_store) / f"machines/{self.machine.name}/{name}.gpg"
         return secret_path.exists()
 
     def generate_hash(self) -> bytes:
         password_store = os.environ.get(
-            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
+            "PASSWORD_STORE_DIR",
+            f"{os.environ['HOME']}/.password-store",
         )
         hashes = []
         hashes.append(
@@ -66,7 +72,7 @@ class SecretStore(SecretStoreBase):
                 ),
                 stdout=subprocess.PIPE,
                 check=False,
-            ).stdout.strip()
+            ).stdout.strip(),
         )
         for symlink in Path(password_store).glob(f"machines/{self.machine.name}/**/*"):
             if symlink.is_symlink():
@@ -86,7 +92,7 @@ class SecretStore(SecretStoreBase):
                         ),
                         stdout=subprocess.PIPE,
                         check=False,
-                    ).stdout.strip()
+                    ).stdout.strip(),
                 )
 
         # we sort the hashes to make sure that the order is always the same

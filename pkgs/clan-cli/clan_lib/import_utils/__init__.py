@@ -37,8 +37,7 @@ def import_with_source[T](
     *args: Any,
     **kwargs: Any,
 ) -> T:
-    """
-    Import a class from a module and instantiate it with source information.
+    """Import a class from a module and instantiate it with source information.
 
     This function dynamically imports a class and adds source location metadata
     that can be used for debugging. The instantiated object will have VSCode-clickable
@@ -62,6 +61,7 @@ def import_with_source[T](
         ...     NetworkTechnologyBase
         ... )
         >>> print(tech)  # Outputs: ~/Projects/clan-core/.../tor.py:7
+
     """
     # Import the module
     module = importlib.import_module(module_name)
@@ -95,4 +95,4 @@ def import_with_source[T](
     )
 
     # Instantiate the class with source information
-    return cast(T, cls(source, *args, **kwargs))
+    return cast("T", cls(source, *args, **kwargs))

@@ -8,8 +8,7 @@ from gi.repository import Adw
 
 
 class ViewStack:
-    """
-    This is a singleton.
+    """This is a singleton.
     It is initialized with the first call of use()
 
     Usage:

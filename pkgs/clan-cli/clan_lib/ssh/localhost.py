@@ -12,9 +12,7 @@ cmdlog = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class LocalHost:
-    """
-    A Host implementation that executes commands locally without SSH.
-    """
+    """A Host implementation that executes commands locally without SSH."""
 
     command_prefix: str = "localhost"
     _user: str = field(default_factory=lambda: os.environ.get("USER", "root"))
@@ -45,9 +43,7 @@ class LocalHost:
         quiet: bool = False,
         control_master: bool = True,
     ) -> CmdOut:
-        """
-        Run a command locally.
-        """
+        """Run a command locally."""
         if opts is None:
             opts = RunOpts()
 
@@ -83,9 +79,7 @@ class LocalHost:
 
     @contextmanager
     def become_root(self) -> Iterator["LocalHost"]:
-        """
-        Context manager to execute commands as root.
-        """
+        """Context manager to execute commands as root."""
         if self._user == "root":
             yield self
             return
@@ -96,9 +90,7 @@ class LocalHost:
 
     @contextmanager
     def host_connection(self) -> Iterator["LocalHost"]:
-        """
-        For LocalHost, this is a no-op that just returns self.
-        """
+        """For LocalHost, this is a no-op that just returns self."""
         yield self
 
     def nix_ssh_env(
@@ -106,9 +98,7 @@ class LocalHost:
         env: dict[str, str] | None = None,
         control_master: bool = True,
     ) -> dict[str, str]:
-        """
-        LocalHost doesn't need SSH environment variables.
-        """
+        """LocalHost doesn't need SSH environment variables."""
         if env is None:
             env = {}
         # Don't set NIX_SSHOPTS for localhost

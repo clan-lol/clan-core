@@ -66,8 +66,7 @@ def render_option_header(name: str) -> str:
 
 
 def join_lines_with_indentation(lines: list[str], indent: int = 4) -> str:
-    """
-    Joins multiple lines with a specified number of whitespace characters as indentation.
+    """Joins multiple lines with a specified number of whitespace characters as indentation.
 
     Args:
     lines (list of str): The lines of text to join.
@@ -75,6 +74,7 @@ def join_lines_with_indentation(lines: list[str], indent: int = 4) -> str:
 
     Returns:
     str: The indented and concatenated string.
+
     """
     # Create the indentation string (e.g., four spaces)
     indent_str = " " * indent
@@ -161,7 +161,10 @@ def render_option(
 
 
 def print_options(
-    options_file: str, head: str, no_options: str, replace_prefix: str | None = None
+    options_file: str,
+    head: str,
+    no_options: str,
+    replace_prefix: str | None = None,
 ) -> str:
     res = ""
     with (Path(options_file) / "share/doc/nixos/options.json").open() as f:
@@ -235,7 +238,7 @@ def produce_clan_core_docs() -> None:
         for submodule_name, split_options in split.items():
             outfile = f"{module_name}/{submodule_name}.md"
             print(
-                f"[clan_core.{submodule_name}] Rendering option of: {submodule_name}... {outfile}"
+                f"[clan_core.{submodule_name}] Rendering option of: {submodule_name}... {outfile}",
             )
             init_level = 1
             root = options_to_tree(split_options, debug=True)
@@ -271,7 +274,8 @@ def produce_clan_core_docs() -> None:
 
 
 def render_categories(
-    categories: list[str], categories_info: dict[str, CategoryInfo]
+    categories: list[str],
+    categories_info: dict[str, CategoryInfo],
 ) -> str:
     res = """<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">"""
     for cat in categories:
@@ -338,7 +342,8 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
 
         # output += "## Categories\n\n"
         output += render_categories(
-            module_info["manifest"]["categories"], ModuleManifest.categories_info()
+            module_info["manifest"]["categories"],
+            ModuleManifest.categories_info(),
         )
 
         output += f"{module_info['manifest']['readme']}\n"
@@ -347,7 +352,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
 
         output += f"The {module_name} module has the following roles:\n\n"
 
-        for role_name, _ in module_info["roles"].items():
+        for role_name in module_info["roles"]:
             output += f"- {role_name}\n"
 
         for role_name, role_filename in module_info["roles"].items():
@@ -368,8 +373,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
 
 
 def split_options_by_root(options: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """
-    Split the flat dictionary of options into a dict of which each entry will construct complete option trees.
+    """Split the flat dictionary of options into a dict of which each entry will construct complete option trees.
     {
         "a": { Data }
         "a.b": { Data }
@@ -453,9 +457,7 @@ def option_short_name(option_name: str) -> str:
 
 
 def options_to_tree(options: dict[str, Any], debug: bool = False) -> Option:
-    """
-    Convert the options dictionary to a tree structure.
-    """
+    """Convert the options dictionary to a tree structure."""
 
     # Helper function to create nested structure
     def add_to_tree(path_parts: list[str], info: Any, current_node: Option) -> None:
@@ -507,22 +509,24 @@ def options_to_tree(options: dict[str, Any], debug: bool = False) -> Option:
 
 
 def options_docs_from_tree(
-    root: Option, init_level: int = 1, prefix: list[str] | None = None
+    root: Option,
+    init_level: int = 1,
+    prefix: list[str] | None = None,
 ) -> str:
-    """
-    eender the options from the tree structure.
+    """Eender the options from the tree structure.
 
     Args:
     root (Option): The root option node.
     init_level (int): The initial level of indentation.
     prefix (list str): Will be printed as common prefix of all attribute names.
+
     """
 
     def render_tree(option: Option, level: int = init_level) -> str:
         output = ""
 
         should_render = not option.name.startswith("<") and not option.name.startswith(
-            "_"
+            "_",
         )
         if should_render:
             # short_name = option_short_name(option.name)
@@ -547,7 +551,7 @@ def options_docs_from_tree(
     return md
 
 
-if __name__ == "__main__":  #
+if __name__ == "__main__":
     produce_clan_core_docs()
 
     produce_clan_service_author_docs()

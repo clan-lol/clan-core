@@ -59,16 +59,12 @@ def get_machine_pubkey(flake_dir: Path, name: str) -> str:
 
 
 def has_machine(flake_dir: Path, name: str) -> bool:
-    """
-    Checks if a machine exists in the sops machines folder
-    """
+    """Checks if a machine exists in the sops machines folder"""
     return (sops_machines_folder(flake_dir) / name / "key.json").exists()
 
 
 def list_sops_machines(flake_dir: Path) -> list[str]:
-    """
-    Lists all machines in the sops machines folder
-    """
+    """Lists all machines in the sops machines folder"""
     path = sops_machines_folder(flake_dir)
 
     def validate(name: str) -> bool:
@@ -97,7 +93,10 @@ def add_secret(
 
 
 def remove_secret(
-    flake_dir: Path, machine: str, secret: str, age_plugins: list[str] | None
+    flake_dir: Path,
+    machine: str,
+    secret: str,
+    age_plugins: list[str] | None,
 ) -> None:
     updated_paths = secrets.disallow_member(
         secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
@@ -174,7 +173,9 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         default=False,
     )
     add_machine_action = add_parser.add_argument(
-        "machine", help="the name of the machine", type=machine_name_type
+        "machine",
+        help="the name of the machine",
+        type=machine_name_type,
     )
     add_dynamic_completer(add_machine_action, complete_machines)
     add_parser.add_argument(
@@ -187,7 +188,9 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
     # Parser
     get_parser = subparser.add_parser("get", help="get a machine public key")
     get_machine_parser = get_parser.add_argument(
-        "machine", help="the name of the machine", type=machine_name_type
+        "machine",
+        help="the name of the machine",
+        type=machine_name_type,
     )
     add_dynamic_completer(get_machine_parser, complete_machines)
     get_parser.set_defaults(func=get_command)
@@ -195,35 +198,47 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
     # Parser
     remove_parser = subparser.add_parser("remove", help="remove a machine")
     remove_machine_parser = remove_parser.add_argument(
-        "machine", help="the name of the machine", type=machine_name_type
+        "machine",
+        help="the name of the machine",
+        type=machine_name_type,
     )
     add_dynamic_completer(remove_machine_parser, complete_machines)
     remove_parser.set_defaults(func=remove_command)
 
     # Parser
     add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a machine to access a secret"
+        "add-secret",
+        help="allow a machine to access a secret",
     )
     machine_add_secret_parser = add_secret_parser.add_argument(
-        "machine", help="the name of the machine", type=machine_name_type
+        "machine",
+        help="the name of the machine",
+        type=machine_name_type,
     )
     add_dynamic_completer(machine_add_secret_parser, complete_machines)
     add_secret_action = add_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(add_secret_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     # Parser
     remove_secret_parser = subparser.add_parser(
-        "remove-secret", help="remove a group's access to a secret"
+        "remove-secret",
+        help="remove a group's access to a secret",
     )
     machine_remove_parser = remove_secret_parser.add_argument(
-        "machine", help="the name of the machine", type=machine_name_type
+        "machine",
+        help="the name of the machine",
+        type=machine_name_type,
     )
     add_dynamic_completer(machine_remove_parser, complete_machines)
     remove_secret_action = remove_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     add_dynamic_completer(remove_secret_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)

@@ -43,7 +43,7 @@ def list_basic(
                     description = "Backup server";
                   };
                 };
-            }"""
+            }""",
         },
     ],
     indirect=True,
@@ -62,7 +62,7 @@ def list_with_tags_single_tag(
                 str(test_flake_with_core.path),
                 "--tags",
                 "production",
-            ]
+            ],
         )
 
     assert "web-server" in output.out
@@ -94,7 +94,7 @@ def list_with_tags_single_tag(
                     description = "Backup server";
                   };
                 };
-            }"""
+            }""",
         },
     ],
     indirect=True,
@@ -114,7 +114,7 @@ def list_with_tags_multiple_tags_intersection(
                 "--tags",
                 "web",
                 "production",
-            ]
+            ],
         )
 
     # Should only include machines that have BOTH tags (intersection)
@@ -139,7 +139,7 @@ def test_machines_list_with_tags_no_matches(
                 str(test_flake_with_core.path),
                 "--tags",
                 "nonexistent",
-            ]
+            ],
         )
 
     assert output.out.strip() == ""
@@ -162,7 +162,7 @@ def test_machines_list_with_tags_no_matches(
                   };
                   server4 = { };
                 };
-            }"""
+            }""",
         },
     ],
     indirect=True,
@@ -180,7 +180,7 @@ def list_with_tags_various_scenarios(
                 str(test_flake_with_core.path),
                 "--tags",
                 "web",
-            ]
+            ],
         )
 
     assert "server1" in output.out
@@ -197,7 +197,7 @@ def list_with_tags_various_scenarios(
                 str(test_flake_with_core.path),
                 "--tags",
                 "database",
-            ]
+            ],
         )
 
     assert "server2" in output.out
@@ -216,7 +216,7 @@ def list_with_tags_various_scenarios(
                 "--tags",
                 "web",
                 "database",
-            ]
+            ],
         )
 
     assert "server3" in output.out
@@ -239,7 +239,7 @@ def created_machine_and_tags(
             "--tags",
             "test",
             "server",
-        ]
+        ],
     )
 
     with capture_output as output:
@@ -258,7 +258,7 @@ def created_machine_and_tags(
                 str(test_flake_with_core.path),
                 "--tags",
                 "test",
-            ]
+            ],
         )
 
     assert "test-machine" in output.out
@@ -274,7 +274,7 @@ def created_machine_and_tags(
                 str(test_flake_with_core.path),
                 "--tags",
                 "server",
-            ]
+            ],
         )
 
     assert "test-machine" in output.out
@@ -291,7 +291,7 @@ def created_machine_and_tags(
                 "--tags",
                 "test",
                 "server",
-            ]
+            ],
         )
 
     assert "test-machine" in output.out
@@ -310,7 +310,7 @@ def created_machine_and_tags(
                   };
                   machine-without-tags = { };
                 };
-            }"""
+            }""",
         },
     ],
     indirect=True,
@@ -334,7 +334,7 @@ def list_mixed_tagged_untagged(
                 str(test_flake_with_core.path),
                 "--tags",
                 "tag1",
-            ]
+            ],
         )
 
     assert "machine-with-tags" in output.out
@@ -349,7 +349,7 @@ def list_mixed_tagged_untagged(
                 str(test_flake_with_core.path),
                 "--tags",
                 "nonexistent",
-            ]
+            ],
         )
 
     assert "machine-with-tags" not in output.out
@@ -358,7 +358,8 @@ def list_mixed_tagged_untagged(
 
 
 def test_machines_list_require_flake_error(
-    temporary_home: Path, monkeypatch: pytest.MonkeyPatch
+    temporary_home: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test that machines list command fails when flake is required but not provided."""
     monkeypatch.chdir(temporary_home)

@@ -1,5 +1,4 @@
-"""
-This module provides utility functions for serialization and deserialization of data classes.
+"""This module provides utility functions for serialization and deserialization of data classes.
 
 Functions:
 - sanitize_string(s: str) -> str: Ensures a string is properly escaped for json serializing.
@@ -56,9 +55,7 @@ def sanitize_string(s: str) -> str:
 
 
 def is_enum(obj: Any) -> bool:
-    """
-    Safely checks if the object or one of its attributes is an Enum.
-    """
+    """Safely checks if the object or one of its attributes is an Enum."""
     # Check if the object itself is an Enum
     if isinstance(obj, Enum):
         return True
@@ -69,9 +66,7 @@ def is_enum(obj: Any) -> bool:
 
 
 def get_enum_value(obj: Any) -> Any:
-    """
-    Safely checks if the object or one of its attributes is an Enum.
-    """
+    """Safely checks if the object or one of its attributes is an Enum."""
     # Check if the object itself is an Enum
     value = getattr(obj, "value", None)
     if value is None and obj.enum:
@@ -85,8 +80,7 @@ def get_enum_value(obj: Any) -> Any:
 
 
 def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
-    """
-    Converts objects to dictionaries.
+    """Converts objects to dictionaries.
 
     This function is round trip safe.
     Meaning that if you convert the object to a dict and then back to a dataclass using 'from_dict'
@@ -103,8 +97,7 @@ def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
     """
 
     def _to_dict(obj: Any) -> Any:
-        """
-        Utility function to convert dataclasses to dictionaries
+        """Utility function to convert dataclasses to dictionaries
         It converts all nested dataclasses, lists, tuples, and dictionaries to dictionaries
 
         It does NOT convert member functions.
@@ -115,7 +108,9 @@ def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
             return {
                 # Use either the original name or name
                 sanitize_string(
-                    field.metadata.get("alias", field.name) if use_alias else field.name
+                    field.metadata.get("alias", field.name)
+                    if use_alias
+                    else field.name,
                 ): _to_dict(getattr(obj, field.name))
                 for field in fields(obj)
                 if not field.name.startswith("_")
@@ -173,13 +168,11 @@ def is_type_in_union(union_type: type | UnionType, target_type: type) -> bool:
 
 
 def unwrap_none_type(type_hint: type | UnionType) -> type:
-    """
-    Takes a type union and returns the first non-None type.
+    """Takes a type union and returns the first non-None type.
     None | str
     =>
     str
     """
-
     if is_union_type(type_hint):
         # Return the first non-None type
         return next(t for t in get_args(type_hint) if t is not type(None))
@@ -191,10 +184,11 @@ JsonValue = str | float | dict[str, Any] | list[Any] | None
 
 
 def construct_value(
-    t: type | UnionType, field_value: JsonValue, loc: list[str] | None = None
+    t: type | UnionType,
+    field_value: JsonValue,
+    loc: list[str] | None = None,
 ) -> Any:
-    """
-    Construct a field value from a type hint and a field value.
+    """Construct a field value from a type hint and a field value.
 
     The following types are supported and matched in this order:
 
@@ -328,10 +322,11 @@ def construct_value(
 
 
 def construct_dataclass[T: Any](
-    t: type[T], data: dict[str, Any], path: list[str] | None = None
+    t: type[T],
+    data: dict[str, Any],
+    path: list[str] | None = None,
 ) -> T:
-    """
-    type t MUST be a dataclass
+    """Type t MUST be a dataclass
     Dynamically instantiate a data class from a dictionary, handling nested data classes.
 
     Constructs the field values from the data dictionary using 'construct_value'
@@ -383,10 +378,11 @@ def construct_dataclass[T: Any](
 
 
 def from_dict(
-    t: type | UnionType, data: dict[str, Any] | Any, path: list[str] | None = None
+    t: type | UnionType,
+    data: dict[str, Any] | Any,
+    path: list[str] | None = None,
 ) -> Any:
-    """
-    Dynamically instantiate a data class from a dictionary, handling nested data classes.
+    """Dynamically instantiate a data class from a dictionary, handling nested data classes.
 
     This function is round trip safe in conjunction with 'dataclass_to_dict'
     """

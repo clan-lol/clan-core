@@ -17,12 +17,12 @@ from clan_cli.tests.helpers import cli
                 "inventory_expr": r"""{
                     machines.jon = { tags = [ "foo" "bar" ]; };
                     machines.sara = { tags = [ "foo" "baz" ]; };
-                }"""
+                }""",
             },
             ["jon"],  # explizit names
             [],  # filter tags
             ["jon"],  # expected
-        )
+        ),
     ],
     # Important!
     # tells pytest to pass these values to the fixture
@@ -55,12 +55,12 @@ def test_get_machines_for_update_single_name(
                 "inventory_expr": r"""{
                     machines.jon = { tags = [ "foo" "bar" ]; };
                     machines.sara = { tags = [ "foo" "baz" ]; };
-                }"""
+                }""",
             },
             [],  # explizit names
             ["foo"],  # filter tags
             ["jon", "sara"],  # expected
-        )
+        ),
     ],
     # Important!
     # tells pytest to pass these values to the fixture
@@ -93,12 +93,12 @@ def test_get_machines_for_update_tags(
                 "inventory_expr": r"""{
                     machines.jon = { tags = [ "foo" "bar" ]; };
                     machines.sara = { tags = [ "foo" "baz" ]; };
-                }"""
+                }""",
             },
             ["sara"],  # explizit names
             ["foo"],  # filter tags
             ["sara"],  # expected
-        )
+        ),
     ],
     # Important!
     # tells pytest to pass these values to the fixture
@@ -131,7 +131,7 @@ def test_get_machines_for_update_tags_and_name(
                 "inventory_expr": r"""{
                     machines.jon = { tags = [ "foo" "bar" ]; };
                     machines.sara = { tags = [ "foo" "baz" ]; };
-                }"""
+                }""",
             },
             [],  # no explizit names
             [],  # no filter tags
@@ -162,7 +162,8 @@ def test_get_machines_for_update_implicit_all(
 
 
 def test_update_command_no_flake(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.chdir(tmp_path)
 

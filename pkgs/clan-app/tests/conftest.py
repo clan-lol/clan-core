@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import logging
 import subprocess
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from clan_lib.custom_logger import setup_logging
 from clan_lib.nix import nix_shell
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 pytest_plugins = [
     "temporary_dir",

@@ -19,8 +19,7 @@ def get_generators(
     generator_name: str | None = None,
     include_previous_values: bool = False,
 ) -> list[Generator]:
-    """
-    Get generators for a machine, with optional closure computation.
+    """Get generators for a machine, with optional closure computation.
 
     Args:
         machine: The machine to get generators for.
@@ -30,6 +29,7 @@ def get_generators(
 
     Returns:
         List of generators based on the specified selection and closure mode.
+
     """
     from clan_cli.vars import graph
 
@@ -62,18 +62,19 @@ def _ensure_healthy(
     machine: "Machine",
     generators: list[Generator] | None = None,
 ) -> None:
-    """
-    Run health checks on the provided generators.
+    """Run health checks on the provided generators.
     Fails if any of the generators' health checks fail.
     """
     if generators is None:
         generators = Generator.get_machine_generators(machine.name, machine.flake)
 
     pub_healtcheck_msg = machine.public_vars_store.health_check(
-        machine.name, generators
+        machine.name,
+        generators,
     )
     sec_healtcheck_msg = machine.secret_vars_store.health_check(
-        machine.name, generators
+        machine.name,
+        generators,
     )
 
     if pub_healtcheck_msg or sec_healtcheck_msg:
@@ -103,6 +104,7 @@ def run_generators(
     no_sandbox: bool = False,
 ) -> None:
     """Run the specified generators for machines.
+
     Args:
         machines: The machines to run generators for.
         generators: Can be:
@@ -116,9 +118,11 @@ def run_generators(
         prompt_values: A dictionary mapping generator names to their prompt values,
             or a function that returns prompt values for a generator.
         no_sandbox: Whether to disable sandboxing when executing the generator.
+
     Raises:
         ClanError: If the machine or generator is not found, or if there are issues with
         executing the generator.
+
     """
     for machine in machines:
         if isinstance(generators, list):
@@ -134,7 +138,9 @@ def run_generators(
         else:
             # None or single string - use get_generators with closure parameter
             generator_objects = get_generators(
-                machine, full_closure=full_closure, generator_name=generators
+                machine,
+                full_closure=full_closure,
+                generator_name=generators,
             )
 
         # If prompt function provided, ask all prompts

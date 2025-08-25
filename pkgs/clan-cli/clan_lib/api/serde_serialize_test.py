@@ -7,7 +7,6 @@ from clan_lib.api import (
 )
 
 
-#
 def test_sanitize_string() -> None:
     # Simple strings
     assert sanitize_string("Hello World") == "Hello World"

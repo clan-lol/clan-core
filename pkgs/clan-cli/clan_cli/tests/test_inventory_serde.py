@@ -16,7 +16,7 @@ from clan_lib.persist.inventory_store import InventoryStore
             "inventory_expr": r"""{
                 machines.jon = {};
                 machines.sara = {};
-            }"""
+            }""",
         },
         # TODO: Test
         # - Function modules
@@ -38,14 +38,13 @@ from clan_lib.persist.inventory_store import InventoryStore
 def test_inventory_deserialize_variants(
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    """
-    Testing different inventory deserializations
+    """Testing different inventory deserializations
     Inventory should always be deserializable to a dict
     """
     inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
 
     # Cast the inventory to a dict for the following assertions
-    inventory = cast(dict[str, Any], inventory_store.read())
+    inventory = cast("dict[str, Any]", inventory_store.read())
 
     # Check that the inventory is a dict
     assert isinstance(inventory, dict)

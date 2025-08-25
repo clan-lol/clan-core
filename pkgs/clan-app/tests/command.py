@@ -54,8 +54,7 @@ class Command:
 
 @pytest.fixture
 def command() -> Iterator[Command]:
-    """
-    Starts a background command. The process is automatically terminated in the end.
+    """Starts a background command. The process is automatically terminated in the end.
     >>> p = command.run(["some", "daemon"])
     >>> print(p.pid)
     """

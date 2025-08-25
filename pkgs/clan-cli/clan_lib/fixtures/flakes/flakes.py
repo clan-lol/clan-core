@@ -53,7 +53,8 @@ def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
 
 @pytest.fixture()
 def clan_flake(
-    tmp_path: Path, patch_clan_template: Any
+    tmp_path: Path,
+    patch_clan_template: Any,
 ) -> Callable[[Clan | None, str | None], Flake]:
     def factory(clan: Clan | None = None, raw: str | None = None) -> Flake:
         # TODO: Make more options configurable

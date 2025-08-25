@@ -29,9 +29,7 @@ log = logging.getLogger(__name__)
 
 
 def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
-    """
-    Read multi-line input from stdin.
-    """
+    """Read multi-line input from stdin."""
     print(prompt, flush=True)
     proc = run(["cat"], RunOpts(check=False))
     log.info("Input received. Processing...")
@@ -63,7 +61,7 @@ def bubblewrap_cmd(generator: str, facts_dir: Path, secrets_dir: Path) -> list[s
             "--uid", "1000",
             "--gid", "1000",
             "--",
-            "bash", "-c", generator
+            "bash", "-c", generator,
         ],
     )
     # fmt: on
@@ -102,7 +100,8 @@ def generate_service_facts(
         generator = machine.facts_data[service]["generator"]["finalScript"]
         if machine.facts_data[service]["generator"]["prompt"]:
             prompt_value = prompt(
-                service, machine.facts_data[service]["generator"]["prompt"]
+                service,
+                machine.facts_data[service]["generator"]["prompt"],
             )
             env["prompt_value"] = prompt_value
     from clan_lib import bwrap
@@ -126,7 +125,10 @@ def generate_service_facts(
             msg += generator
             raise ClanError(msg)
         secret_path = secret_facts_store.set(
-            service, secret_name, secret_file.read_bytes(), groups
+            service,
+            secret_name,
+            secret_file.read_bytes(),
+            groups,
         )
         if secret_path:
             files_to_commit.append(secret_path)
@@ -206,7 +208,11 @@ def generate_facts(
             errors = 0
             try:
                 was_regenerated |= _generate_facts_for_machine(
-                    machine, service, regenerate, tmpdir, prompt
+                    machine,
+                    service,
+                    regenerate,
+                    tmpdir,
+                    prompt,
                 )
             except (OSError, ClanError) as e:
                 machine.error(f"Failed to generate facts: {e}")
@@ -231,7 +237,7 @@ def generate_command(args: argparse.Namespace) -> None:
             filter(
                 lambda m: m.name in args.machines,
                 machines,
-            )
+            ),
         )
     generate_facts(machines, args.service, args.regenerate)
 

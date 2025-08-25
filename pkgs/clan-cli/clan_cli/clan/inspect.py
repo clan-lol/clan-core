@@ -74,8 +74,8 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the Clan name
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.name'
-        ]
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.name',
+        ],
     )
     res = run_cmd(cmd)
     clan_name = res.strip('"')
@@ -83,8 +83,8 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the clan icon path
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon'
-        ]
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon',
+        ],
     )
     res = run_cmd(cmd)
 
@@ -96,7 +96,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
         cmd = nix_build(
             [
-                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon'
+                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon',
             ],
             machine_gcroot(flake_url=str(flake_url)) / "icon",
         )
@@ -129,7 +129,8 @@ def inspect_command(args: argparse.Namespace) -> None:
         flake=args.flake or Flake(str(Path.cwd())),
     )
     res = inspect_flake(
-        flake_url=str(inspect_options.flake), machine_name=inspect_options.machine
+        flake_url=str(inspect_options.flake),
+        machine_name=inspect_options.machine,
     )
     print("Clan name:", res.clan_name)
     print("Icon:", res.icon)

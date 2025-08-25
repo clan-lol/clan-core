@@ -62,9 +62,7 @@ class StoreBase(ABC):
         var: "Var",
         value: bytes,
     ) -> Path | None:
-        """
-        override this method to implement the actual creation of the file
-        """
+        """Override this method to implement the actual creation of the file"""
 
     @abstractmethod
     def exists(self, generator: "Generator", name: str) -> bool:
@@ -81,8 +79,7 @@ class StoreBase(ABC):
         generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> str | None:
-        """
-        Check the health of the store for the given machine and generators.
+        """Check the health of the store for the given machine and generators.
 
         This method detects any issues or inconsistencies in the store that may
         require fixing (e.g., outdated encryption keys, missing permissions).
@@ -94,6 +91,7 @@ class StoreBase(ABC):
 
         Returns:
             str | None: An error message describing issues found, or None if everything is healthy
+
         """
         return None
 
@@ -103,8 +101,7 @@ class StoreBase(ABC):
         generators: list["Generator"] | None = None,
         file_name: str | None = None,
     ) -> None:
-        """
-        Fix any issues with the store for the given machine and generators.
+        """Fix any issues with the store for the given machine and generators.
 
         This method is intended to repair or update the store when inconsistencies
         are detected (e.g., re-encrypting secrets with new keys, fixing permissions).
@@ -116,6 +113,7 @@ class StoreBase(ABC):
 
         Returns:
             None
+
         """
         return
 
@@ -164,16 +162,15 @@ class StoreBase(ABC):
             log_info = machine.info
         if self.is_secret_store:
             log.info(f"{action_str} secret var {generator.name}/{var.name}\n")
+        elif value != old_val:
+            msg = f"{action_str} var {generator.name}/{var.name}"
+            if not is_migration:
+                msg += f"\n  old: {old_val_str}\n  new: {string_repr(value)}"
+            log_info(msg)
         else:
-            if value != old_val:
-                msg = f"{action_str} var {generator.name}/{var.name}"
-                if not is_migration:
-                    msg += f"\n  old: {old_val_str}\n  new: {string_repr(value)}"
-                log_info(msg)
-            else:
-                log_info(
-                    f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}"
-                )
+            log_info(
+                f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}",
+            )
         return new_file
 
     @abstractmethod
@@ -200,8 +197,7 @@ class StoreBase(ABC):
         """
 
     def get_validation(self, generator: "Generator") -> str | None:
-        """
-        Return the invalidation hash that indicates if a generator needs to be re-run
+        """Return the invalidation hash that indicates if a generator needs to be re-run
         due to a change in its definition
         """
         hash_file = self.directory(generator, ".validation-hash")
@@ -210,17 +206,14 @@ class StoreBase(ABC):
         return hash_file.read_text().strip()
 
     def set_validation(self, generator: "Generator", hash_str: str) -> Path:
-        """
-        Store the invalidation hash that indicates if a generator needs to be re-run
-        """
+        """Store the invalidation hash that indicates if a generator needs to be re-run"""
         hash_file = self.directory(generator, ".validation-hash")
         hash_file.parent.mkdir(parents=True, exist_ok=True)
         hash_file.write_text(hash_str)
         return hash_file
 
     def hash_is_valid(self, generator: "Generator") -> bool:
-        """
-        Check if the invalidation hash is up to date
+        """Check if the invalidation hash is up to date
         If the hash is not set in nix and hasn't been stored before, it is considered valid
             -> this provides backward and forward compatibility
         """

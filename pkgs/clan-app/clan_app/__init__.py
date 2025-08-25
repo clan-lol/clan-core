@@ -13,7 +13,9 @@ log = logging.getLogger(__name__)
 def main(argv: list[str] = sys.argv) -> int:
     parser = argparse.ArgumentParser(description="Clan App")
     parser.add_argument(
-        "--content-uri", type=str, help="The URI of the content to display"
+        "--content-uri",
+        type=str,
+        help="The URI of the content to display",
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument(

@@ -37,7 +37,7 @@ def compute_zerotier_ip(network_id: str, identity: str) -> ipaddress.IPv6Address
             (node_id >> 16) & 0xFF,
             (node_id >> 8) & 0xFF,
             (node_id) & 0xFF,
-        ]
+        ],
     )
     return ipaddress.IPv6Address(bytes(addr_parts))
 
@@ -119,7 +119,9 @@ def main() -> None:
 
     parser_list = subparser.add_parser("list", help="List members")
     parser_list.add_argument(
-        "--no-headers", action="store_true", help="Do not print headers"
+        "--no-headers",
+        action="store_true",
+        help="Do not print headers",
     )
     parser_list.set_defaults(func=list_members)
 

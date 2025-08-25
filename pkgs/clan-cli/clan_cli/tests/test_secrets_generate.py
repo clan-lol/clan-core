@@ -31,7 +31,7 @@ def test_generate_secret(
             str(test_flake_with_core.path),
             "user1",
             age_keys[0].pubkey,
-        ]
+        ],
     )
     cli.run(
         [
@@ -42,7 +42,7 @@ def test_generate_secret(
             str(test_flake_with_core.path),
             "admins",
             "user1",
-        ]
+        ],
     )
     cmd = [
         "vars",
@@ -56,7 +56,7 @@ def test_generate_secret(
     cli.run(cmd)
 
     store1 = SecretStore(
-        Machine(name="vm1", flake=Flake(str(test_flake_with_core.path)))
+        Machine(name="vm1", flake=Flake(str(test_flake_with_core.path))),
     )
 
     assert store1.exists("", "age.key")
@@ -97,13 +97,13 @@ def test_generate_secret(
             str(test_flake_with_core.path),
             "--generator",
             "zerotier",
-        ]
+        ],
     )
     assert age_key.lstat().st_mtime_ns == age_key_mtime
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 
     store2 = SecretStore(
-        Machine(name="vm2", flake=Flake(str(test_flake_with_core.path)))
+        Machine(name="vm2", flake=Flake(str(test_flake_with_core.path))),
     )
 
     assert store2.exists("", "age.key")

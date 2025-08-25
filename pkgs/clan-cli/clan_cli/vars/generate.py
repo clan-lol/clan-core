@@ -1,4 +1,5 @@
 import argparse
+from typing import TYPE_CHECKING
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -7,9 +8,11 @@ from clan_cli.completions import (
 )
 from clan_lib.flake import require_flake
 from clan_lib.machines.list import list_full_machines
-from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config
 from clan_lib.vars.generate import run_generators
+
+if TYPE_CHECKING:
+    from clan_lib.machines.machines import Machine
 
 
 def generate_command(args: argparse.Namespace) -> None:
@@ -21,7 +24,7 @@ def generate_command(args: argparse.Namespace) -> None:
             filter(
                 lambda m: m.name in args.machines,
                 machines,
-            )
+            ),
         )
 
     # prefetch all vars
@@ -32,7 +35,7 @@ def generate_command(args: argparse.Namespace) -> None:
     flake.precache(
         [
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-        ]
+        ],
     )
 
     run_generators(

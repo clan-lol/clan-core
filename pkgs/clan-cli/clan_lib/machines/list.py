@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 
 
 def instantiate_inventory_to_machines(
-    flake: Flake, machines: dict[str, InventoryMachine]
+    flake: Flake,
+    machines: dict[str, InventoryMachine],
 ) -> dict[str, Machine]:
     return {
         name: Machine.from_inventory(name, flake, _inventory_machine)
@@ -26,9 +27,7 @@ def instantiate_inventory_to_machines(
 
 
 def list_full_machines(flake: Flake) -> dict[str, Machine]:
-    """
-    Like `list_machines`, but returns a full 'machine' instance for each machine.
-    """
+    """Like `list_machines`, but returns a full 'machine' instance for each machine."""
     machines = list_machines(flake)
 
     return instantiate_inventory_to_machines(flake, machines)
@@ -59,14 +58,18 @@ def extract_header(c: str) -> str:
 def get_machine_details(machine: Machine) -> MachineDetails:
     """Retrieve detailed information about a machine, including its inventory,
     hardware configuration, and disk schema if available.
+
     Args:
         machine (Machine): The machine instance for which details are to be retrieved.
+
     Returns:
         MachineDetails: An instance containing the machine's inventory, hardware configuration,
         and disk schema.
+
     Raises:
         ClanError: If the machine's inventory cannot be found or if there are issues with the
         hardware configuration or disk schema extraction.
+
     """
     machine_inv = get_machine(machine.flake, machine.name)
     hw_config = HardwareConfig.detect_type(machine)

@@ -13,6 +13,6 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     )
 
     register_inspect_parser(
-        subparser.add_parser("inspect", help="inspect the vm configuration")
+        subparser.add_parser("inspect", help="inspect the vm configuration"),
     )
     register_run_parser(subparser.add_parser("run", help="run a VM from a machine"))

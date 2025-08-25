@@ -33,7 +33,7 @@ class QRCodeData:
             try:
                 log.debug(f"Establishing connection via {address}")
                 with address.network.module.connection(
-                    address.network
+                    address.network,
                 ) as connected_network:
                     ping_time = connected_network.module.ping(address.remote)
                     if ping_time is not None:
@@ -44,8 +44,7 @@ class QRCodeData:
 
 
 def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
-    """
-    Parse QR code JSON contents and output a dict of networks with remotes.
+    """Parse QR code JSON contents and output a dict of networks with remotes.
 
     Args:
         qr_data: JSON data from QR code containing network information
@@ -72,6 +71,7 @@ def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
                 "remote": Remote(...)
             }
         }
+
     """
     addresses: list[RemoteWithNetwork] = []
 
@@ -123,8 +123,7 @@ def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
 
 
 def read_qr_image(image_path: Path) -> dict[str, Any]:
-    """
-    Parse a QR code image and extract the JSON data.
+    """Parse a QR code image and extract the JSON data.
 
     Args:
         image_path: Path to the QR code image file
@@ -134,6 +133,7 @@ def read_qr_image(image_path: Path) -> dict[str, Any]:
 
     Raises:
         ClanError: If the QR code cannot be read or contains invalid JSON
+
     """
     if not image_path.exists():
         msg = f"QR code image file not found: {image_path}"

@@ -27,7 +27,7 @@ def test_machine_subcommands(
             "machine1",
             "--tags",
             "vm",
-        ]
+        ],
     )
     # Usually this is done by `inventory.write` but we created a separate flake object in the test that now holds stale data
     inventory_store._flake.invalidate_cache()
@@ -47,7 +47,7 @@ def test_machine_subcommands(
     assert "vm2" in output.out
 
     cli.run(
-        ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
+        ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"],
     )
     # See comment above
     inventory_store._flake.invalidate_cache()
@@ -105,7 +105,7 @@ def test_machines_update_nonexistent_machine(
                 "--flake",
                 str(test_flake_with_core.path),
                 "nonexistent-machine",
-            ]
+            ],
         )
 
     error_message = str(exc_info.value)
@@ -130,7 +130,7 @@ def test_machines_update_typo_in_machine_name(
                 "--flake",
                 str(test_flake_with_core.path),
                 "v1",  # typo of "vm1"
-            ]
+            ],
         )
 
     error_message = str(exc_info.value)

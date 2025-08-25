@@ -70,7 +70,7 @@ class Machine:
     def _class_(self) -> str:
         try:
             return self.flake.select(
-                f'clanInternals.inventoryClass.inventory.machines."{self.name}".machineClass'
+                f'clanInternals.inventoryClass.inventory.machines."{self.name}".machineClass',
             )
         except ClanSelectError:
             return "nixos"
@@ -78,7 +78,7 @@ class Machine:
     @property
     def system(self) -> str:
         return self.flake.select(
-            f'{self._class_}Configurations."{self.name}".pkgs.hostPlatform.system'
+            f'{self._class_}Configurations."{self.name}".pkgs.hostPlatform.system',
         )
 
     @cached_property
@@ -127,8 +127,7 @@ class Machine:
             return remote
 
     def build_host(self) -> Remote | None:
-        """
-        The host where the machine is built and deployed from.
+        """The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
         remote = get_machine_host(self.name, self.flake, field="buildHost")
@@ -143,8 +142,7 @@ class Machine:
         self,
         attr: str,
     ) -> Any:
-        """
-        Select a nix attribute of the machine
+        """Select a nix attribute of the machine
         @attr: the attribute to get
         """
         return self.flake.select_machine(self.name, attr)
@@ -158,11 +156,11 @@ class RemoteSource:
 
 @API.register
 def get_machine_host(
-    name: str, flake: Flake, field: Literal["targetHost", "buildHost"]
+    name: str,
+    flake: Flake,
+    field: Literal["targetHost", "buildHost"],
 ) -> RemoteSource | None:
-    """
-    Get the build or target host for a machine.
-    """
+    """Get the build or target host for a machine."""
     machine = Machine(name=name, flake=flake)
     inv_machine = machine.get_inv_machine()
 
@@ -171,7 +169,7 @@ def get_machine_host(
 
     if host_str is None:
         machine.debug(
-            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/target-host"
+            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/target-host",
         )
 
         host_str = machine.select(f'config.clan.core.networking."{field}"')

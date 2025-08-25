@@ -64,7 +64,8 @@ def ssh_command(args: argparse.Namespace) -> None:
                 ssh_options[name] = value
 
         remote = remote.override(
-            host_key_check=args.host_key_check, ssh_options=ssh_options
+            host_key_check=args.host_key_check,
+            ssh_options=ssh_options,
         )
         if args.remote_command:
             remote.interactive_ssh(args.remote_command)

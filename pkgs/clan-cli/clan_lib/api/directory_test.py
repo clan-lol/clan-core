@@ -29,7 +29,7 @@ def test_get_relative_clan_directory_custom(
 {
   directory = ./direct-config;
 }
-"""
+""",
     )
 
     test_subdir = Path(flake.path) / "direct-config"
@@ -68,7 +68,7 @@ def test_get_clan_dir_custom(
 {
   directory = ./direct-config;
 }
-"""
+""",
     )
 
     test_subdir = Path(flake.path) / "direct-config"

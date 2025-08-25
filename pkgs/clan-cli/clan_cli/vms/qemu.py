@@ -204,7 +204,7 @@ def qemu_command(
                 "chardev=char0,mode=readline",
                 "-device",
                 "virtconsole,chardev=char0,nr=0",
-            ]
+            ],
         )
     else:
         command.extend(
@@ -217,7 +217,7 @@ def qemu_command(
                 "virtconsole,chardev=char0,nr=0",
                 "-monitor",
                 "none",
-            ]
+            ],
         )
 
     vsock_cid = None

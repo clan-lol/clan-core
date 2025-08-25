@@ -67,7 +67,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
                 setup_git=not args.no_git,
                 src_flake=args.flake,
                 update_clan=not args.no_update,
-            )
+            ),
         )
         create_secrets_user_auto(
             flake_dir=Path(args.name).resolve(),

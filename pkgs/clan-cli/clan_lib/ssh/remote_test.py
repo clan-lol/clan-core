@@ -131,7 +131,7 @@ def test_parse_deployment_address(
 def test_parse_ssh_options() -> None:
     addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictRemoteKeyChecking=yes"
     host = Remote.from_ssh_uri(machine_name="foo", address=addr).override(
-        host_key_check="strict"
+        host_key_check="strict",
     )
     assert host.address == "example.com"
     assert host.port == 2222
@@ -143,7 +143,10 @@ def test_parse_ssh_options() -> None:
 def test_run(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
-            None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
+            None,
+            host.run_local,
+            ["echo", "hello"],
+            RunOpts(log=Log.STDERR),
         )
     assert proc.wait().result.stdout == "hello\n"
 
@@ -173,7 +176,10 @@ def test_run_environment(hosts: list[Remote], runtime: AsyncRuntime) -> None:
 def test_run_no_shell(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
-            None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
+            None,
+            host.run_local,
+            ["echo", "hello"],
+            RunOpts(log=Log.STDERR),
         )
     assert proc.wait().result.stdout == "hello\n"
 
@@ -209,7 +215,10 @@ def test_run_function(hosts: list[Remote], runtime: AsyncRuntime) -> None:
 def test_timeout(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
-            None, host.run_local, ["sleep", "10"], RunOpts(timeout=0.01)
+            None,
+            host.run_local,
+            ["sleep", "10"],
+            RunOpts(timeout=0.01),
         )
     error = proc.wait().error
     assert isinstance(error, ClanCmdTimeoutError)
@@ -218,7 +227,10 @@ def test_timeout(hosts: list[Remote], runtime: AsyncRuntime) -> None:
 def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
-            None, host.run_local, ["exit 1"], RunOpts(shell=True, check=False)
+            None,
+            host.run_local,
+            ["exit 1"],
+            RunOpts(shell=True, check=False),
         )
     assert proc.wait().result.returncode == 1
 

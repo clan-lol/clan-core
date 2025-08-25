@@ -128,7 +128,6 @@ def encode_path(path: str, prefix: bool = True) -> bytes:
 
     On Windows, also append prefix to enable extended-length path.
     """
-
     if sys.platform == "win32" and prefix:
         path = path.replace("/", "\\")
 
@@ -142,10 +141,12 @@ def encode_path(path: str, prefix: bool = True) -> bytes:
 
 # from pynicotine.utils import truncate_string_byte
 def truncate_string_byte(
-    string: str, byte_limit: int, encoding: str = "utf-8", ellipsize: bool = False
+    string: str,
+    byte_limit: int,
+    encoding: str = "utf-8",
+    ellipsize: bool = False,
 ) -> str:
     """Truncates a string to fit inside a byte limit."""
-
     string_bytes = string.encode(encoding)
 
     if len(string_bytes) <= byte_limit:
@@ -217,7 +218,8 @@ class BaseImplementation:
 
     def create_menu(self) -> None:
         self.show_hide_item = self.create_item(
-            "default", self.application.on_window_hide_unhide
+            "default",
+            self.application.on_window_hide_unhide,
         )
 
         # self.create_item()
@@ -365,17 +367,26 @@ class StatusNotifierImplementation(BaseImplementation):
 
         def add_property(self, name: str, signature: Any, value: Any) -> None:
             self.properties[name] = StatusNotifierImplementation.DBusProperty(
-                name, signature, value
+                name,
+                signature,
+                value,
             )
 
         def add_signal(self, name: str, args: Any) -> None:
             self.signals[name] = StatusNotifierImplementation.DBusSignal(name, args)
 
         def add_method(
-            self, name: str, in_args: Any, out_args: Any, callback: Any
+            self,
+            name: str,
+            in_args: Any,
+            out_args: Any,
+            callback: Any,
         ) -> None:
             self.methods[name] = StatusNotifierImplementation.DBusMethod(
-                name, in_args, out_args, callback
+                name,
+                in_args,
+                out_args,
+                callback,
             )
 
         def emit_signal(self, name: str, *args: Any) -> None:
@@ -411,7 +422,12 @@ class StatusNotifierImplementation(BaseImplementation):
             invocation.return_value(return_value)
 
         def on_get_property(
-            self, _connection, _sender, _path, _interface_name, property_name
+            self,
+            _connection,
+            _sender,
+            _path,
+            _interface_name,
+            property_name,
         ):
             prop = self.properties[property_name]
             return GLib.Variant(prop.signature, prop.value)
@@ -483,7 +499,8 @@ class StatusNotifierImplementation(BaseImplementation):
 
             for idx, item in self._items.items():
                 serialized_item = GLib.Variant(
-                    "(ia{sv}av)", (idx, self._serialize_item(item), [])
+                    "(ia{sv}av)",
+                    (idx, self._serialize_item(item), []),
                 )
                 serialized_items.append(serialized_item)
 
@@ -558,7 +575,7 @@ class StatusNotifierImplementation(BaseImplementation):
         try:
             self.bus = Gio.bus_get_sync(bus_type=Gio.BusType.SESSION)
             self.tray_icon = self.StatusNotifierItemService(
-                activate_callback=self.activate_callback
+                activate_callback=self.activate_callback,
             )
             self.tray_icon.register()
 
@@ -573,7 +590,8 @@ class StatusNotifierImplementation(BaseImplementation):
                 interface_name="org.kde.StatusNotifierWatcher",
                 method_name="RegisterStatusNotifierItem",
                 parameters=GLib.Variant(
-                    "(s)", ("/org/ayatana/NotificationItem/Nicotine",)
+                    "(s)",
+                    ("/org/ayatana/NotificationItem/Nicotine",),
                 ),
                 reply_type=None,
                 flags=Gio.DBusCallFlags.NONE,
@@ -590,7 +608,6 @@ class StatusNotifierImplementation(BaseImplementation):
     @staticmethod
     def check_icon_path(icon_name, icon_path) -> bool:
         """Check if tray icons exist in the specified icon path."""
-
         if not icon_path:
             return False
 
@@ -600,7 +617,8 @@ class StatusNotifierImplementation(BaseImplementation):
             with os.scandir(encode_path(icon_path)) as entries:
                 for entry in entries:
                     if entry.is_file() and entry.name.decode(
-                        "utf-8", "replace"
+                        "utf-8",
+                        "replace",
                     ).startswith(icon_scheme):
                         return True
 
@@ -611,8 +629,8 @@ class StatusNotifierImplementation(BaseImplementation):
 
     def get_icon_path(self):
         """Returns an icon path to use for tray icons, or None to fall back to
-        system-wide icons."""
-
+        system-wide icons.
+        """
         # icon_path = self.application.get_application_icon_path()
 
         return ""
@@ -811,7 +829,8 @@ class Win32Implementation(BaseImplementation):
         from ctypes import windll
 
         windll.user32.UnregisterClassW(
-            self.WINDOW_CLASS_NAME, self._window_class.h_instance
+            self.WINDOW_CLASS_NAME,
+            self._window_class.h_instance,
         )
         self._window_class = None
 
@@ -850,7 +869,12 @@ class Win32Implementation(BaseImplementation):
 
         if GTK_API_VERSION >= 4:
             icon = ICON_THEME.lookup_icon(
-                icon_name, fallbacks=None, size=icon_size, scale=1, direction=0, flags=0
+                icon_name,
+                fallbacks=None,
+                size=icon_size,
+                scale=1,
+                direction=0,
+                flags=0,
             )
             icon_path = icon.get_file().get_path()
 
@@ -858,7 +882,9 @@ class Win32Implementation(BaseImplementation):
                 return ico_buffer
 
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                icon_path, icon_size, icon_size
+                icon_path,
+                icon_size,
+                icon_size,
             )
         else:
             icon = ICON_THEME.lookup_icon(icon_name, size=icon_size, flags=0)
@@ -931,7 +957,8 @@ class Win32Implementation(BaseImplementation):
                 ),
                 u_callback_message=self.WM_TRAYICON,
                 sz_tip=truncate_string_byte(
-                    pynicotine.__application_name__, byte_limit=127
+                    pynicotine.__application_name__,
+                    byte_limit=127,
                 ),
             )
             action = self.NIM_ADD
@@ -943,10 +970,14 @@ class Win32Implementation(BaseImplementation):
 
         self._notify_id.h_icon = self._h_icon
         self._notify_id.sz_info_title = truncate_string_byte(
-            title, byte_limit=63, ellipsize=True
+            title,
+            byte_limit=63,
+            ellipsize=True,
         )
         self._notify_id.sz_info = truncate_string_byte(
-            message, byte_limit=255, ellipsize=True
+            message,
+            byte_limit=255,
+            ellipsize=True,
         )
 
         windll.shell32.Shell_NotifyIconW(action, byref(self._notify_id))
@@ -1019,10 +1050,16 @@ class Win32Implementation(BaseImplementation):
             item_info = self._serialize_menu_item(item)
 
             if not windll.user32.SetMenuItemInfoW(
-                self._menu, item_id, False, byref(item_info)
+                self._menu,
+                item_id,
+                False,
+                byref(item_info),
             ):
                 windll.user32.InsertMenuItemW(
-                    self._menu, item_id, False, byref(item_info)
+                    self._menu,
+                    item_id,
+                    False,
+                    byref(item_info),
                 )
 
     def set_icon(self, icon_name):

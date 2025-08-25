@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import get_args
+from typing import TYPE_CHECKING, get_args
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
@@ -14,7 +14,6 @@ from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import run_machine_update
 from clan_lib.network.network import get_best_remote
 from clan_lib.nix import nix_config
-from clan_lib.ssh.host import Host
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
@@ -24,6 +23,9 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
+
+if TYPE_CHECKING:
+    from clan_lib.ssh.host import Host
 
 log = logging.getLogger(__name__)
 
@@ -87,7 +89,8 @@ def get_machines_for_update(
 ) -> list[Machine]:
     all_machines = list_machines(flake)
     machines_with_tags = list_machines(
-        flake, ListOptions(filter=MachineFilter(tags=filter_tags))
+        flake,
+        ListOptions(filter=MachineFilter(tags=filter_tags)),
     )
 
     if filter_tags and not machines_with_tags:
@@ -101,7 +104,7 @@ def get_machines_for_update(
             filter(
                 requires_explicit_update,
                 instantiate_inventory_to_machines(flake, machines_with_tags).values(),
-            )
+            ),
         )
         # all machines that are in the clan but not included in the update list
         machine_names_to_update = [m.name for m in machines_to_update]
@@ -131,7 +134,7 @@ def get_machines_for_update(
             raise ClanError(msg)
 
         machines_to_update.append(
-            Machine.from_inventory(name, flake, inventory_machine)
+            Machine.from_inventory(name, flake, inventory_machine),
         )
 
     return machines_to_update
@@ -163,7 +166,7 @@ def update_command(args: argparse.Namespace) -> None:
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
-            ]
+            ],
         )
 
         host_key_check = args.host_key_check

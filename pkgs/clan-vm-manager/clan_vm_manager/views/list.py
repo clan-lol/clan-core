@@ -2,7 +2,7 @@ import base64
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import gi
 from clan_lib.errors import ClanError
@@ -21,10 +21,12 @@ from clan_vm_manager.singletons.toast import (
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
 from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore, VMStore
-from clan_vm_manager.views.logs import Logs
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
+
+if TYPE_CHECKING:
+    from clan_vm_manager.views.logs import Logs
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +48,7 @@ def create_boxed_list[CustomStore: Gio.ListModel, ListItem: GObject.Object](
 
 
 class ClanList(Gtk.Box):
-    """
-    The ClanList
+    """The ClanList
     Is the composition of
     the ClanListToolbar
     the clanListView
@@ -70,7 +71,8 @@ class ClanList(Gtk.Box):
 
         # Add join list
         self.join_boxed_list = create_boxed_list(
-            model=JoinList.use().list_store, render_row=self.render_join_row
+            model=JoinList.use().list_store,
+            render_row=self.render_join_row,
         )
         self.join_boxed_list.add_css_class("join-list")
         self.append(self.join_boxed_list)
@@ -79,7 +81,8 @@ class ClanList(Gtk.Box):
         clan_store.connect("is_ready", self.display_splash)
 
         self.group_list = create_boxed_list(
-            model=clan_store.clan_store, render_row=self.render_group_row
+            model=clan_store.clan_store,
+            render_row=self.render_group_row,
         )
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
@@ -95,7 +98,9 @@ class ClanList(Gtk.Box):
             self.append(self.splash)
 
     def render_group_row(
-        self, boxed_list: Gtk.ListBox, vm_store: VMStore
+        self,
+        boxed_list: Gtk.ListBox,
+        vm_store: VMStore,
     ) -> Gtk.Widget:
         self.remove(self.splash)
 
@@ -199,7 +204,8 @@ class ClanList(Gtk.Box):
         action_id = base64.b64encode(vm.get_id().encode("utf-8")).decode("utf-8")
 
         build_logs_action = Gio.SimpleAction.new(
-            f"logs.{action_id}", GLib.VariantType.new("s")
+            f"logs.{action_id}",
+            GLib.VariantType.new("s"),
         )
 
         build_logs_action.connect("activate", self.on_show_build_logs)
@@ -213,7 +219,9 @@ class ClanList(Gtk.Box):
 
         # set a callback function for conditionally enabling the build_logs action
         def on_vm_build_notify(
-            vm: VMObject, is_building: bool, is_running: bool
+            vm: VMObject,
+            is_building: bool,
+            is_running: bool,
         ) -> None:
             build_logs_action.set_enabled(is_building or is_running)
             app.add_action(build_logs_action)
@@ -279,7 +287,9 @@ class ClanList(Gtk.Box):
         views.set_visible_child_name("logs")
 
     def render_join_row(
-        self, boxed_list: Gtk.ListBox, join_val: JoinValue
+        self,
+        boxed_list: Gtk.ListBox,
+        join_val: JoinValue,
     ) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
@@ -300,13 +310,13 @@ class ClanList(Gtk.Box):
 
             ToastOverlay.use().add_toast_unique(
                 WarningToast(
-                    f"""<span weight="regular">{join_val.url.machine_name!s}</span> Already exists. Joining again will update it"""
+                    f"""<span weight="regular">{join_val.url.machine_name!s}</span> Already exists. Joining again will update it""",
                 ).toast,
                 "warning.duplicate.join",
             )
 
             row.set_subtitle(
-                sub + "\nClan already exists. Joining again will update it"
+                sub + "\nClan already exists. Joining again will update it",
             )
 
         avatar = Adw.Avatar()

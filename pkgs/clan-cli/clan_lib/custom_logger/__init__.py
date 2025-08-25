@@ -22,9 +22,7 @@ def _get_filepath(record: logging.LogRecord) -> Path:
 
 
 class PrefixFormatter(logging.Formatter):
-    """
-    print errors in red and warnings in yellow
-    """
+    """print errors in red and warnings in yellow"""
 
     def __init__(self, trace_prints: bool = False) -> None:
         super().__init__()
@@ -90,14 +88,12 @@ class PrefixFormatter(logging.Formatter):
 
 
 def get_callers(start: int = 2, end: int = 2) -> list[str]:
-    """
-    Get a list of caller information for a given range in the call stack.
+    """Get a list of caller information for a given range in the call stack.
 
     :param start: The starting position in the call stack (1 being directly above in the call stack).
     :param end: The end position in the call stack.
     :return: A list of strings, each containing the file, line number, and function of the caller.
     """
-
     frame = inspect.currentframe()
     if frame is None:
         return ["unknown"]

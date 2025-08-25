@@ -22,8 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class MainApplication(Adw.Application):
-    """
-    This class is initialized  every time the app is started
+    """This class is initialized  every time the app is started
     Only the Adw.ApplicationWindow is a singleton.
     So don't use any singletons  in the Adw.Application class.
     """
@@ -78,7 +77,8 @@ class MainApplication(Adw.Application):
 
         if "debug" in options:
             ToastOverlay.use().add_toast_unique(
-                InfoToast("Debug logging enabled").toast, "info.debugging.enabled"
+                InfoToast("Debug logging enabled").toast,
+                "info.debugging.enabled",
             )
 
         args = command_line.get_arguments()

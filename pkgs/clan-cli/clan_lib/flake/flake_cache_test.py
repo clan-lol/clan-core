@@ -48,13 +48,13 @@ def test_cache_persistance(flake: ClanFlake) -> None:
     assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
     assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
     assert not flake1._cache.is_cached(  # noqa: SLF001
-        "nixosConfigurations.*.config.networking.hostName"
+        "nixosConfigurations.*.config.networking.hostName",
     )
     flake1.select("nixosConfigurations.*.config.networking.hostName")
     flake1.select("nixosConfigurations.*.config.networking.{hostName,hostId}")
     flake2.invalidate_cache()
     assert flake2._cache.is_cached(  # noqa: SLF001
-        "nixosConfigurations.*.config.networking.{hostName,hostId}"
+        "nixosConfigurations.*.config.networking.{hostName,hostId}",
     )
 
 
@@ -171,7 +171,8 @@ def test_insert_and_iscached() -> None:
 
 
 def test_cache_is_cached_with_clan_test_store(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test that is_cached correctly handles CLAN_TEST_STORE paths.
 
@@ -237,7 +238,9 @@ def test_caching_works(flake: ClanFlake) -> None:
     my_flake = Flake(str(flake.path))
 
     with patch.object(
-        my_flake, "get_from_nix", wraps=my_flake.get_from_nix
+        my_flake,
+        "get_from_nix",
+        wraps=my_flake.get_from_nix,
     ) as tracked_build:
         assert tracked_build.call_count == 0
         my_flake.select("clanInternals.inventoryClass.inventory.meta")
@@ -247,7 +250,8 @@ def test_caching_works(flake: ClanFlake) -> None:
 
 
 def test_cache_is_cached_with_nix_store_dir(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test that is_cached works correctly when NIX_STORE_DIR is set to match CLAN_TEST_STORE."""
     # Create a temporary store
@@ -364,10 +368,10 @@ def test_store_reference_helpers() -> None:
     # Test find_store_references
     assert find_store_references("/nix/store/abc123-pkg") == ["/nix/store/abc123-pkg"]
     assert find_store_references("/nix/store/abc123-file.nix:42") == [
-        "/nix/store/abc123-file.nix"
+        "/nix/store/abc123-file.nix",
     ]
     assert find_store_references("/nix/store/abc123-src/lib/file.nix:42:10") == [
-        "/nix/store/abc123-src"
+        "/nix/store/abc123-src",
     ]
 
     # Multiple references
@@ -385,10 +389,10 @@ def test_store_reference_helpers() -> None:
     assert is_pure_store_path("/nix/store/abc123def456ghi789jkl012mno345pqr-package")
     assert is_pure_store_path("/nix/store/abc123def456ghi789jkl012mno345pqr-source")
     assert not is_pure_store_path(
-        "/nix/store/abc123def456ghi789jkl012mno345pqr-file.nix:42"
+        "/nix/store/abc123def456ghi789jkl012mno345pqr-file.nix:42",
     )
     assert not is_pure_store_path(
-        "/nix/store/abc123def456ghi789jkl012mno345pqr-src/subdir/file.nix"
+        "/nix/store/abc123def456ghi789jkl012mno345pqr-src/subdir/file.nix",
     )
     assert not is_pure_store_path("/home/user/file")
 
@@ -412,30 +416,30 @@ def test_store_references_with_custom_store_dir(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test store reference detection with custom NIX_STORE_DIR."""
-
     # Set custom store directory
     monkeypatch.setenv("NIX_STORE_DIR", "/custom/store")
 
     # Test find_store_references with custom dir
     assert find_store_references("/custom/store/abc123-pkg") == [
-        "/custom/store/abc123-pkg"
+        "/custom/store/abc123-pkg",
     ]
     assert find_store_references("/custom/store/abc123-file.nix") == [
-        "/custom/store/abc123-file.nix"
+        "/custom/store/abc123-file.nix",
     ]
 
     # Test is_pure_store_path with custom dir
     assert is_pure_store_path("/custom/store/abc123def456ghi789jkl012mno345pqr-package")
     assert not is_pure_store_path(
-        "/custom/store/abc123def456ghi789jkl012mno345pqr-file.nix:42"
+        "/custom/store/abc123def456ghi789jkl012mno345pqr-file.nix:42",
     )
     assert not is_pure_store_path(
-        "/nix/store/abc123def456ghi789jkl012mno345pqr-package"
+        "/nix/store/abc123def456ghi789jkl012mno345pqr-package",
     )
 
 
 def test_cache_path_with_line_numbers(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test that is_cached correctly handles store paths with line numbers appended.
 

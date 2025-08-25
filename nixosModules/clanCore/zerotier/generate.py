@@ -195,7 +195,7 @@ def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Ad
             (node_id >> 16) & 0xFF,
             (node_id >> 8) & 0xFF,
             (node_id) & 0xFF,
-        ]
+        ],
     )
     return ipaddress.IPv6Address(bytes(addr_parts))
 
@@ -203,7 +203,10 @@ def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Ad
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--mode", choices=["network", "identity"], required=True, type=str
+        "--mode",
+        choices=["network", "identity"],
+        required=True,
+        type=str,
     )
     parser.add_argument("--ip", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
