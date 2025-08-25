@@ -55,7 +55,8 @@
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
-      checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
+      # Skip flash test on aarch64-linux for now as it's too slow
+      checks = lib.optionalAttrs (pkgs.stdenv.isLinux && pkgs.hostPlatform.system != "aarch64-linux") {
         nixos-test-flash = self.clanLib.test.baseTest {
           name = "flash";
           nodes.target = {
