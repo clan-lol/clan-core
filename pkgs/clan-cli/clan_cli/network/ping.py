@@ -31,11 +31,11 @@ def ping_command(args: argparse.Namespace) -> None:
         if machine in network.peers:
             found = True
 
-            with network.module.connection(network) as network:
+            with network.module.connection(network) as conn:
                 log.info(f"Pinging '{machine}' in network '{net_name}' ...")
                 res = ""
                 # Check if peer is online
-                ping = network.ping(machine)
+                ping = conn.ping(machine)
                 if ping is None:
                     res = "not reachable"
                     log.info(f"{machine} ({net_name}): {res}")
