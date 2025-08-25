@@ -27,7 +27,9 @@ in
       default = { };
     };
     tags = lib.mkOption {
-      type = types.attrsOf (types.submodule { });
+      type = types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
+        types.attrsOf (types.submodule { })
+      );
       default = { };
     };
     settings =
