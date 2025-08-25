@@ -116,7 +116,9 @@ class ClanList(Gtk.Box):
         add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
         add_action.connect("activate", self.on_add)
         app = Gio.Application.get_default()
-        assert app is not None
+        if app is None:
+            msg = "Could not get default application"
+            raise ClanError(msg)
         app.add_action(add_action)
 
         # menu_model = Gio.Menu()
@@ -214,7 +216,9 @@ class ClanList(Gtk.Box):
         build_logs_action.set_enabled(False)
 
         app = Gio.Application.get_default()
-        assert app is not None
+        if app is None:
+            msg = "Could not get default application"
+            raise ClanError(msg)
 
         app.add_action(open_action)
         app.add_action(build_logs_action)

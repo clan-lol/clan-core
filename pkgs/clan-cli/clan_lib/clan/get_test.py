@@ -13,7 +13,7 @@ def test_get_clan_details_invalid_flake() -> None:
         get_clan_details(invalid_flake)
 
     with pytest.raises(FlakeInvalidError):
-        get_clan_details(Flake("/tmp"))
+        get_clan_details(Flake("/tmp"))  # noqa: S108
 
 
 @pytest.mark.with_core

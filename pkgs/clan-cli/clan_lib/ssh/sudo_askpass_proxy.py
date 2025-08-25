@@ -74,17 +74,19 @@ class SudoAskpassProxy:
     def _process(self, ssh_process: subprocess.Popen) -> None:
         """Execute the remote command with password proxying"""
         # Monitor SSH output for password requests
-        assert ssh_process.stdout is not None, "SSH process stdout is None"
+        if ssh_process.stdout is None:
+            msg = "SSH process stdout is None"
+            raise ClanError(msg)
         try:
             for line in ssh_process.stdout:
                 line = line.strip()
                 if line.startswith("PASSWORD_REQUESTED:"):
                     prompt = line[len("PASSWORD_REQUESTED:") :].strip()
                     password = self.handle_password_request(prompt)
-                    print(password, file=ssh_process.stdin)
                     if ssh_process.stdin is None:
                         msg = "SSH process stdin is None"
                         raise ClanError(msg)
+                    print(password, file=ssh_process.stdin)
                     ssh_process.stdin.flush()
                 else:
                     print(line)
@@ -137,10 +139,10 @@ class SudoAskpassProxy:
                 pass
 
             # Unclear why we have to close this manually, but pytest reports unclosed fd
-            assert self.ssh_process.stdout is not None
-            self.ssh_process.stdout.close()
-            assert self.ssh_process.stdin is not None
-            self.ssh_process.stdin.close()
+            if self.ssh_process.stdout is not None:
+                self.ssh_process.stdout.close()
+            if self.ssh_process.stdin is not None:
+                self.ssh_process.stdin.close()
             self.ssh_process = None
         if self.thread:
             self.thread.join()

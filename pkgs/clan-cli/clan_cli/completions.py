@@ -359,7 +359,7 @@ def complete_vars_for_machine(
                         var_id = f"{generator_name}/{var_name}"
                         vars_list.append(var_id)
 
-        except Exception:
+        except (OSError, PermissionError):
             pass
 
     vars_dict = dict.fromkeys(vars_list, "var")

@@ -10,7 +10,7 @@ def test_run_environment(runtime: AsyncRuntime) -> None:
         None,
         host.run_local,
         ["echo $env_var"],
-        RunOpts(shell=True, log=Log.STDERR),
+        RunOpts(shell=True, log=Log.STDERR),  # noqa: S604 - Testing shell env var expansion
         extra_env={"env_var": "true"},
     )
 
@@ -20,7 +20,7 @@ def test_run_environment(runtime: AsyncRuntime) -> None:
         None,
         host.run_local,
         ["env"],
-        RunOpts(shell=True, log=Log.STDERR),
+        RunOpts(shell=True, log=Log.STDERR),  # noqa: S604 - Testing shell env passing
         extra_env={"env_var": "true"},
     )
     assert "env_var=true" in p3.wait().result.stdout
@@ -43,7 +43,7 @@ def test_timeout(runtime: AsyncRuntime) -> None:
 
 
 def test_run_exception(runtime: AsyncRuntime) -> None:
-    p1 = runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))
+    p1 = runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))  # noqa: S604 - Testing shell error handling
     assert p1.wait().error is not None
 
 

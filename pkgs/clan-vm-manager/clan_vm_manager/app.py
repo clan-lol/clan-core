@@ -11,6 +11,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from clan_lib.custom_logger import setup_logging
+from clan_lib.errors import ClanError
 from gi.repository import Adw, Gdk, Gio, Gtk
 
 from clan_vm_manager.components.interfaces import ClanConfig
@@ -118,7 +119,9 @@ class MainApplication(Adw.Application):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(str(resource_path))
         display = Gdk.Display.get_default()
-        assert display is not None
+        if display is None:
+            msg = "Could not get default display"
+            raise ClanError(msg)
         Gtk.StyleContext.add_provider_for_display(
             display,
             css_provider,

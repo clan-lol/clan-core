@@ -53,10 +53,10 @@ def get_metrics(
 
     encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
     headers = {"Authorization": f"Basic {encoded_credentials}"}
-    req = urllib.request.Request(url, headers=headers)
+    req = urllib.request.Request(url, headers=headers)  # noqa: S310
 
     try:
-        response = urllib.request.urlopen(req)
+        response = urllib.request.urlopen(req)  # noqa: S310
         for line in response:
             line_str = line.decode("utf-8").strip()
             if line_str:

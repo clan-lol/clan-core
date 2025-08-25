@@ -13,10 +13,11 @@ def list_log_days() -> list[str]:
         A list of date strings in YYYY-MM-DD format representing all available log days.
 
     Raises:
-        AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
-
+        ClanError: If LOG_MANAGER_INSTANCE is not initialized.
     """
-    assert LOG_MANAGER_INSTANCE is not None
+    if LOG_MANAGER_INSTANCE is None:
+        msg = "LOG_MANAGER_INSTANCE is not initialized"
+        raise ClanError(msg)
     return [day.date_day for day in LOG_MANAGER_INSTANCE.list_log_days()]
 
 
@@ -35,10 +36,12 @@ def list_log_groups(
         A list of folder names (decoded) at the specified path level.
 
     Raises:
-        AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
+        ClanError: If LOG_MANAGER_INSTANCE is not initialized.
 
     """
-    assert LOG_MANAGER_INSTANCE is not None
+    if LOG_MANAGER_INSTANCE is None:
+        msg = "LOG_MANAGER_INSTANCE is not initialized"
+        raise ClanError(msg)
     return LOG_MANAGER_INSTANCE.filter(selector, date_day=date_day)
 
 
@@ -59,11 +62,11 @@ def get_log_file(
         The contents of the log file as a string.
 
     Raises:
-        ClanError: If the log file is not found.
-        AssertionError: If LOG_MANAGER_INSTANCE is not initialized.
-
+        ClanError: If the log file is not found or LOG_MANAGER_INSTANCE is not initialized.
     """
-    assert LOG_MANAGER_INSTANCE is not None
+    if LOG_MANAGER_INSTANCE is None:
+        msg = "LOG_MANAGER_INSTANCE is not initialized"
+        raise ClanError(msg)
 
     log_file = LOG_MANAGER_INSTANCE.get_log_file(
         op_key=id_key,

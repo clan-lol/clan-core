@@ -281,7 +281,9 @@ class AsyncRuntime:
 
         for name, task in self.tasks.items():
             if task.finished and task.async_opts.check:
-                assert task.result is not None
+                if task.result is None:
+                    msg = f"Task {name} finished but has no result"
+                    raise ClanError(msg)
                 error = task.result.error
                 if error is not None:
                     if log.isEnabledFor(logging.DEBUG):

@@ -53,8 +53,10 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
                 subprocess.run(  # noqa: S603
                     [
                         XARGS_BIN,
+                        "-r",
                         f"-P{num_cpus}",  # Use all available CPUs
                         CP_BIN,
+                        "--no-dereference",
                         "--recursive",
                         "--reflink=auto",  # Use copy-on-write if available
                         "--target-directory",

@@ -1,8 +1,8 @@
 import json
 import logging
 import os
-import random
 import re
+import secrets
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -34,8 +34,8 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
 def random_hostname() -> str:
     adjectives = ["wacky", "happy", "fluffy", "silly", "quirky", "zany", "bouncy"]
     nouns = ["unicorn", "penguin", "goose", "ninja", "octopus", "hamster", "robot"]
-    adjective = random.choice(adjectives)
-    noun = random.choice(nouns)
+    adjective = secrets.choice(adjectives)
+    noun = secrets.choice(nouns)
     return f"{adjective}-{noun}"
 
 
