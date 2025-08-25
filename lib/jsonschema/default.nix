@@ -328,7 +328,7 @@ rec {
         # To get the type of a Deferred modules we need to know the interface of the place where it is evaluated.
         # i.e. in case of a clan.service this is the interface of the service which dynamically changes depending on the service
         # We assign "type" = []
-        # This means any value is valid — or like TypeScript’s unknown.
+        # This means any value is valid — or like TypeScript's unknown.
         # We can assign the type later, when we know the exact interface.
         # tsType = "unknown" is a type that we preload for json2ts, such that it gets the correct type in typescript
         (option.type.name == "deferredModule")

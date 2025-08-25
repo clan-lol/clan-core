@@ -1,6 +1,6 @@
 # Using `clanServices`
 
-Clan’s `clanServices` system is a composable way to define and deploy services across machines.
+Clan's `clanServices` system is a composable way to define and deploy services across machines.
 
 This guide shows how to **instantiate** a `clanService`, explains how service definitions are structured in your inventory, and how to pick or create services from modules exposed by flakes.
 
@@ -130,7 +130,7 @@ inventory.instances = {
 
 ## Picking a clanService
 
-You can use services exposed by Clan’s core module library, `clan-core`.
+You can use services exposed by Clan's core module library, `clan-core`.
 
 🔗 See: [List of Available Services in clan-core](../reference/clanServices/index.md)
 
@@ -152,7 +152,7 @@ You might expose your service module from your flake — this makes it easy for 
 
 ---
 
-## What’s Next?
+## What's Next?
 
 * [Author your own clanService →](../guides/services/community.md)
 * [Migrate from clanModules →](../guides/migrations/migrate-inventory-services.md)
