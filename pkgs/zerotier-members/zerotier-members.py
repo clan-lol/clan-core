@@ -66,9 +66,12 @@ def get_network_id() -> str:
 
 def allow_member(args: argparse.Namespace) -> None:
     if args.member_ip:
-        member_id = compute_member_id(args.member_ip)
+        member_id = compute_member_id(args.member_id_or_ip)
     else:
-        member_id = args.member_id
+        if not args.member_id_or_ip:
+            msg = "Either --member-ip or member_id_or_ip must be provided"
+            raise ClanError(msg)
+        member_id = args.member_id_or_ip
     network_id = get_network_id()
     token = ZEROTIER_STATE_DIR.joinpath("authtoken.secret").read_text()
     conn = http.client.HTTPConnection("localhost", 9993)
@@ -111,10 +114,12 @@ def main() -> None:
     parser_allow = subparser.add_parser("allow", help="Allow a member to join")
     parser_allow.add_argument(
         "--member-ip",
-        help="Allow a member to join by their zerotier ipv6 address",
+        help="Interpret the positional argument as an IPv6 address instead of member ID",
         action="store_true",
     )
-    parser_allow.add_argument("member_id")
+    parser_allow.add_argument(
+        "member_id_or_ip", help="Member ID or IPv6 address (when --member-ip is used)"
+    )
     parser_allow.set_defaults(func=allow_member)
 
     parser_list = subparser.add_parser("list", help="List members")
