@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
@@ -139,8 +140,17 @@ class StoreBase(ABC):
         var: "Var",
         value: bytes,
         is_migration: bool = False,
-    ) -> Path | None:
+    ) -> list[Path]:
         from clan_lib.machines.machines import Machine
+
+        changed_files: list[Path] = []
+
+        # if generator was switched from shared to per-machine or vice versa,
+        # remove the old var first
+        if self.exists(
+            gen := dataclasses.replace(generator, share=not generator.share), var.name
+        ):
+            changed_files += self.delete(gen, var.name)
 
         if self.exists(generator, var.name):
             if self.is_secret_store:
@@ -171,7 +181,8 @@ class StoreBase(ABC):
             log_info(
                 f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}",
             )
-        return new_file
+        changed_files += [new_file] if new_file else []
+        return changed_files
 
     @abstractmethod
     def delete(self, generator: "Generator", name: str) -> Iterable[Path]:

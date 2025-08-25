@@ -410,21 +410,20 @@ class Generator:
                             msg += f"  - {f.name}\n"
                     raise ClanError(msg)
                 if file.secret:
-                    file_path = machine.secret_vars_store.set(
+                    file_paths = machine.secret_vars_store.set(
                         self,
                         file,
                         secret_file.read_bytes(),
                     )
                     secret_changed = True
                 else:
-                    file_path = machine.public_vars_store.set(
+                    file_paths = machine.public_vars_store.set(
                         self,
                         file,
                         secret_file.read_bytes(),
                     )
                     public_changed = True
-                if file_path:
-                    files_to_commit.append(file_path)
+                files_to_commit.extend(file_paths)
 
             validation = self.validation()
             if validation is not None:

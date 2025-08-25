@@ -58,24 +58,16 @@ def _migrate_file(
 
     if file.secret:
         old_value = machine.secret_facts_store.get(service_name, fact_name)
-        maybe_path = machine.secret_vars_store.set(
-            generator,
-            file,
-            old_value,
-            is_migration=True,
+        paths_list = machine.secret_vars_store.set(
+            generator, file, old_value, is_migration=True
         )
-        if maybe_path:
-            paths.append(maybe_path)
+        paths.extend(paths_list)
     else:
         old_value = machine.public_facts_store.get(service_name, fact_name)
-        maybe_path = machine.public_vars_store.set(
-            generator,
-            file,
-            old_value,
-            is_migration=True,
+        paths_list = machine.public_vars_store.set(
+            generator, file, old_value, is_migration=True
         )
-        if maybe_path:
-            paths.append(maybe_path)
+        paths.extend(paths_list)
 
     return paths
 

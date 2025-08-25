@@ -46,7 +46,7 @@ class Var:
         except UnicodeDecodeError:
             return "<binary blob>"
 
-    def set(self, value: bytes) -> Path | None:
+    def set(self, value: bytes) -> list[Path]:
         assert self._store is not None
         assert self._generator is not None
         return self._store.set(self._generator, self, value)

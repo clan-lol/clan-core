@@ -1122,6 +1122,89 @@ def test_invalidation(
 
 
 @pytest.mark.with_core
+def test_share_mode_switch_regenerates_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """
+    Test that switching a generator from share=false to share=true
+    causes the secret to be regenerated with a new value.
+    """
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"]
+    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+
+    # Create a generator with share=false initially
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["share"] = False
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["files"]["my_secret"]["secret"] = True
+    my_generator["script"] = (
+        'echo -n "public$RANDOM" > "$out"/my_value && echo -n "secret$RANDOM" > "$out"/my_secret'
+    )
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate with share=false
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Read the initial values
+    flake_obj = Flake(str(flake.path))
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    sops_store = sops.SecretStore(flake=flake_obj)
+
+    generator_not_shared = Generator(
+        "my_generator", share=False, machine="my_machine", _flake=flake_obj
+    )
+
+    initial_public = in_repo_store.get(generator_not_shared, "my_value").decode()
+    initial_secret = sops_store.get(generator_not_shared, "my_secret").decode()
+
+    # Verify initial values exist and have expected format
+    assert initial_public.startswith("public")
+    assert initial_secret.startswith("secret")
+
+    # Now switch to share=true
+    my_generator["share"] = True
+    flake.refresh()
+
+    # Generate again with share=true
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Read the new values with shared generator
+    generator_shared = Generator(
+        "my_generator", share=True, machine="my_machine", _flake=flake_obj
+    )
+
+    new_public = in_repo_store.get(generator_shared, "my_value").decode()
+    new_secret = sops_store.get(generator_shared, "my_secret").decode()
+
+    # Verify that both values have changed (regenerated)
+    assert new_public != initial_public, (
+        "Public value should be regenerated when switching to share=true"
+    )
+    assert new_secret != initial_secret, (
+        "Secret value should be regenerated when switching to share=true"
+    )
+
+    # Verify new values still have expected format
+    assert new_public.startswith("public")
+    assert new_secret.startswith("secret")
+
+    # Verify the old machine-specific secret no longer exists
+    assert not sops_store.exists(generator_not_shared, "my_secret"), (
+        "Machine-specific secret should be removed"
+    )
+
+    # Verify the new shared secret exists
+    assert sops_store.exists(generator_shared, "my_secret"), (
+        "Shared secret should exist"
+    )
+
+
+@pytest.mark.with_core
 def test_dynamic_invalidation(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
