@@ -37,7 +37,7 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { callApi } from "@/src/hooks/api";
 import { Creating } from "./Creating";
 import { useApiClient } from "@/src/hooks/ApiClient";
-import { ListClansModal } from "@/src/components/ListClansModal/ListClansModal";
+import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 
 type State = "welcome" | "setup" | "creating";
 
