@@ -223,7 +223,9 @@ def construct_value(
     # If the field is another dataclass
     # Field_value must be a dictionary
     if is_dataclass(t) and isinstance(field_value, dict):
-        assert isinstance(t, type)
+        if not isinstance(t, type):
+            msg = f"Expected a type, got {t}"
+            raise ClanError(msg)
         return construct_dataclass(t, field_value)
 
     # If the field expects a path

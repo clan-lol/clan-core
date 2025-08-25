@@ -80,7 +80,9 @@ def migrate_files(
     files_to_commit = []
     for file in generator.files:
         if _migration_file_exists(machine, generator, file.name):
-            assert generator.migrate_fact is not None
+            if generator.migrate_fact is None:
+                msg = f"Generator {generator.name} has no migrate_fact defined"
+                raise ClanError(msg)
             files_to_commit += _migrate_file(
                 machine,
                 generator,
