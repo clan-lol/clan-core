@@ -59,14 +59,14 @@ nav:
           - Configure Disk Config: guides/getting-started/choose-disk.md
           - Update Machine: guides/getting-started/update.md
           - Continuous Integration: guides/getting-started/flake-check.md
-      - Using Services: guides/clanServices.md
+      - ClanServices: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
       - Age Plugins: guides/age-plugins.md
       - Secrets management: guides/secrets.md
       - Networking: guides/networking.md
       - Zerotier VPN: guides/mesh-vpn.md
-      - Secure Boot: guides/secure-boot.md
+      - How to disable Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
       - macOS: guides/macos.md
       - Contributing:
