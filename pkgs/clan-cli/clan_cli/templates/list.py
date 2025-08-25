@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import logging
 from typing import TYPE_CHECKING
@@ -32,17 +34,15 @@ def list_command(args: argparse.Namespace) -> None:
             else:
                 print(f"│   └── {name}: {description}")
 
-        for input_idx, (input_name, input_templates) in enumerate(
-            templates.custom.items(),
-        ):
-            custom_templates: TemplateClanType | None = input_templates.get(
-                template_type,
-                None,
-            )  # type: ignore
-            if not custom_templates:
-                continue
-
-            is_last_input = input_idx == len(templates.custom.items()) - 1
+        visible_inputs = [
+            (input_name, input_templates)
+            for input_name, input_templates in templates.custom.items()
+            if template_type in input_templates
+        ]
+        last_idx = len(visible_inputs) - 1
+        for input_idx, (input_name, input_templates) in enumerate(visible_inputs):
+            custom_templates: TemplateClanType = input_templates[template_type]  # type: ignore
+            is_last_input = input_idx == last_idx
             prefix = "│" if not is_last_input else " "
             if not is_last_input:
                 print(f"├── inputs.{input_name}:")
