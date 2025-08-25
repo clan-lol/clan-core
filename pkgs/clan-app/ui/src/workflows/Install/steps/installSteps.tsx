@@ -166,23 +166,32 @@ const CheckHardware = () => {
 
   const client = useApiClient();
 
+  const [updatingHardwareReport, setUpdatingHardwareReport] =
+    createSignal(false);
+
   const handleUpdateSummary = async () => {
-    // TODO: Debounce
-    const call = client.fetch("run_machine_hardware_info", {
-      target_host: {
-        address: store.install.targetHost,
-      },
-      opts: {
-        machine: {
-          flake: {
-            identifier: clanUri,
-          },
-          name: store.install.machineName,
+    setUpdatingHardwareReport(true);
+
+    try {
+      // TODO: Debounce
+      const call = client.fetch("run_machine_hardware_info", {
+        target_host: {
+          address: store.install.targetHost,
         },
-      },
-    });
-    await call.result;
-    hardwareQuery.refetch();
+        opts: {
+          machine: {
+            flake: {
+              identifier: clanUri,
+            },
+            name: store.install.machineName,
+          },
+        },
+      });
+      await call.result;
+      await hardwareQuery.refetch();
+    } finally {
+      setUpdatingHardwareReport(false);
+    }
   };
 
   const reportExists = () => hardwareQuery?.data?.hardware_config !== "none";
@@ -197,12 +206,12 @@ const CheckHardware = () => {
                 Hardware Report
               </Typography>
               <Button
-                disabled={hardwareQuery.isLoading}
+                disabled={hardwareQuery.isLoading || updatingHardwareReport()}
                 hierarchy="secondary"
                 startIcon="Report"
                 onClick={handleUpdateSummary}
                 class="flex gap-3"
-                loading={hardwareQuery.isFetching}
+                loading={hardwareQuery.isFetching || updatingHardwareReport()}
               >
                 Update hardware report
               </Button>
