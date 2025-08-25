@@ -31,7 +31,7 @@ let
   desktop-file = makeDesktopItem {
     name = "org.clan.app";
     exec = "clan-app %u";
-    icon = "clan-white";
+    icon = "clan-app";
     desktopName = "Clan App";
     startupWMClass = "clan";
     mimeTypes = [ "x-scheme-handler/clan" ];
