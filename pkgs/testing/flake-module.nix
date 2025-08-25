@@ -15,7 +15,7 @@
           mkdir -p "$CLAN_TEST_STORE/nix/store"
           mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
           if [[ -n "''${closureInfo-}" ]]; then
-            ${pkgs.findutils}/bin/xargs -P"$(nproc)" ${pkgs.coreutils}/bin/cp --recursive --reflink=auto --target-directory "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
+            ${pkgs.findutils}/bin/xargs -r -P"$(nproc)" ${pkgs.coreutils}/bin/cp --recursive --no-dereference --reflink=auto --target-directory "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
             ${pkgs.nix}/bin/nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
           fi
         '';
