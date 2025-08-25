@@ -3,7 +3,7 @@ import { Button } from "../Button/Button";
 import styles from "./Search.module.css";
 import { Combobox } from "@kobalte/core/combobox";
 import { createMemo, createSignal, For, JSX } from "solid-js";
-import { createVirtualizer } from "@tanstack/solid-virtual";
+import { createVirtualizer, VirtualizerOptions } from "@tanstack/solid-virtual";
 import { CollectionNode } from "@kobalte/core/*";
 
 export interface Option {
@@ -11,14 +11,24 @@ export interface Option {
   label: string;
 }
 
-export interface SearchProps<T> {
-  onChange: (value: T | null) => void;
-  options: T[];
-  renderItem: (item: T) => JSX.Element;
+export interface ItemRenderOptions {
+  selected: boolean;
 }
-export function Search<T extends Option>(props: SearchProps<T>) {
+
+export interface SearchMultipleProps<T> {
+  onChange: (values: T[]) => void;
+  options: T[];
+  renderItem: (item: T, opts: ItemRenderOptions) => JSX.Element;
+  initialValues?: T[];
+  placeholder?: string;
+  virtualizerOptions?: Partial<VirtualizerOptions<Element, Element>>;
+  height: string; // e.g. '14.5rem'
+}
+export function SearchMultiple<T extends Option>(
+  props: SearchMultipleProps<T>,
+) {
   // Controlled input value, to allow resetting the input itself
-  const [value, setValue] = createSignal<T | null>(null);
+  const [values, setValues] = createSignal<T[]>(props.initialValues || []);
   const [inputValue, setInputValue] = createSignal<string>("");
 
   let inputEl: HTMLInputElement;
@@ -46,6 +56,7 @@ export function Search<T extends Option>(props: SearchProps<T>) {
       estimateSize: () => 42,
       gap: 6,
       overscan: 5,
+      ...props.virtualizerOptions,
     });
 
     return newVirtualizer;
@@ -53,19 +64,20 @@ export function Search<T extends Option>(props: SearchProps<T>) {
 
   return (
     <Combobox<T>
-      value={value()}
-      onChange={(value) => {
-        setValue(() => value);
-        setInputValue(value ? value.label : "");
-        props.onChange(value);
+      multiple
+      value={values()}
+      onChange={(values) => {
+        setValues(() => values);
+        // setInputValue(value ? value.label : "");
+        props.onChange(values);
       }}
       class={styles.searchContainer}
+      style={{ "--container-height": props.height }}
       placement="bottom-start"
       options={props.options}
       optionValue="value"
       optionTextValue="label"
       optionLabel="label"
-      placeholder="Search a service"
       sameWidth={true}
       open={true}
       gutter={7}
@@ -86,7 +98,7 @@ export function Search<T extends Option>(props: SearchProps<T>) {
                 inputEl = el;
               }}
               class={styles.searchInput}
-              placeholder={"Search a service"}
+              placeholder={props.placeholder}
               value={inputValue()}
               onChange={(e) => {
                 setInputValue(e.currentTarget.value);
@@ -112,7 +124,11 @@ export function Search<T extends Option>(props: SearchProps<T>) {
         )}
       </Combobox.Control>
       <Combobox.Portal>
-        <Combobox.Content class={styles.searchContent} tabIndex={-1}>
+        <Combobox.Content
+          class={styles.searchContent}
+          tabIndex={-1}
+          style={{ "--container-height": props.height }}
+        >
           <Combobox.Listbox<T>
             ref={(el) => {
               listboxRef = el;
@@ -152,6 +168,8 @@ export function Search<T extends Option>(props: SearchProps<T>) {
                         console.warn("Item not found for key:", virtualRow.key);
                         return null;
                       }
+                      const isSelected = () =>
+                        values().some((v) => v.value === item.rawValue.value);
                       return (
                         <Combobox.Item
                           item={item}
@@ -165,7 +183,9 @@ export function Search<T extends Option>(props: SearchProps<T>) {
                             transform: `translateY(${virtualRow.start}px)`,
                           }}
                         >
-                          {props.renderItem(item.rawValue)}
+                          {props.renderItem(item.rawValue, {
+                            selected: isSelected(),
+                          })}
                         </Combobox.Item>
                       );
                     }}
