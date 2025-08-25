@@ -52,12 +52,12 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
                 description=f"The service: {service} needs to be configured for the machine.",
             )
 
-    for service in state:
-        if not service:
+    for svc in state:
+        if not svc:
             continue
 
-        print(f"· service: {service}")
-        service_cfg = state.get(service)
+        print(f"· service: {svc}")
+        service_cfg = state.get(svc)
 
         if not service_cfg:
             continue  # or handle missing config

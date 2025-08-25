@@ -5,12 +5,14 @@ from contextlib import ExitStack
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from clan_lib.api import ApiResponse
+from clan_lib.api import ApiError, ApiResponse, ErrorDataClass
 from clan_lib.api.tasks import WebThread
 from clan_lib.async_run import set_current_thread_opkey, set_should_cancel
 
 if TYPE_CHECKING:
     from .middleware import Middleware
+
+from .middleware import MiddlewareContext
 
 log = logging.getLogger(__name__)
 
@@ -43,8 +45,6 @@ class ApiBridge(ABC):
 
     def process_request(self, request: BackendRequest) -> None:
         """Process an API request through the middleware chain."""
-        from .middleware import MiddlewareContext
-
         with ExitStack() as stack:
             context = MiddlewareContext(
                 request=request,
@@ -59,7 +59,7 @@ class ApiBridge(ABC):
                         f"{middleware.__class__.__name__} => {request.method_name}",
                     )
                     middleware.process(context)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     # If middleware fails, handle error
                     self.send_api_error_response(
                         request.op_key or "unknown",
@@ -75,8 +75,6 @@ class ApiBridge(ABC):
         location: list[str],
     ) -> None:
         """Send an error response."""
-        from clan_lib.api import ApiError, ErrorDataClass
-
         error_data = ErrorDataClass(
             op_key=op_key,
             status="error",

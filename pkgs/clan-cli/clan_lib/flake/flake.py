@@ -555,7 +555,8 @@ class FlakeCacheEntry:
 
         # string and maybe work the same for cache checking
         if (selector.type in (SelectorType.STR, SelectorType.MAYBE)) and isinstance(
-            self.value, dict
+            self.value,
+            dict,
         ):
             if not isinstance(selector.value, str):
                 msg = f"Expected str for STR/MAYBE selector value in caching, got {type(selector.value)}"
@@ -845,7 +846,7 @@ class Flake:
             return
         try:
             self._cache.load_from_file(path)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, KeyError, ValueError) as e:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
 
     def prefetch(self) -> None:
@@ -880,7 +881,7 @@ class Flake:
                 in str(e)
             ):
                 raise FlakeDoesNotExistError(self.identifier) from e
-            if "error: could not find a flake.nix file":
+            if "error: could not find a flake.nix file" in str(e):
                 raise FlakeInvalidError(self.identifier) from e
             raise
 

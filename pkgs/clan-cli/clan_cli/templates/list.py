@@ -20,7 +20,7 @@ def list_command(args: argparse.Namespace) -> None:
         builtin_template_set: TemplateClanType | None = templates.builtins.get(
             template_type,
             None,
-        )  # type: ignore
+        )  # type: ignore[misc]
         if not builtin_template_set:
             continue
 

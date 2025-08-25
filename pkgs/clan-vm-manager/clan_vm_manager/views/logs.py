@@ -50,14 +50,14 @@ class Logs(Gtk.Box):
         buffer = self.text_view.get_buffer()
         buffer.set_text(message)
 
-        mark = buffer.create_mark(None, buffer.get_end_iter(), False)  # type: ignore
+        mark = buffer.create_mark(None, buffer.get_end_iter(), False)  # type: ignore[misc]
         self.text_view.scroll_to_mark(mark, 0.05, True, 0.0, 1.0)
 
     def append_message(self, message: str) -> None:
         """Append to the end of a potentially existent log message"""
         buffer = self.text_view.get_buffer()
         end_iter = buffer.get_end_iter()
-        buffer.insert(end_iter, message)  # type: ignore
+        buffer.insert(end_iter, message)  # type: ignore[misc]
 
-        mark = buffer.create_mark(None, buffer.get_end_iter(), False)  # type: ignore
+        mark = buffer.create_mark(None, buffer.get_end_iter(), False)  # type: ignore[misc]
         self.text_view.scroll_to_mark(mark, 0.05, True, 0.0, 1.0)

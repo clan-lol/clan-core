@@ -1,7 +1,6 @@
 import argparse
 import json
 import logging
-import traceback
 from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
@@ -454,8 +453,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        print("An error occurred:")
-        traceback.print_exc()
+    main()

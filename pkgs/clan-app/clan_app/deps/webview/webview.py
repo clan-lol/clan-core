@@ -81,7 +81,7 @@ class Webview:
                     msg = message_queue.get()  # Blocks until available
                     js_code = f"window.notifyBus({json.dumps(msg)});"
                     self.eval(js_code)
-                except Exception as e:
+                except (json.JSONDecodeError, RuntimeError, AttributeError) as e:
                     print("Bridge notify error:", e)
                 sleep(0.01)  # avoid busy loop
 
@@ -211,7 +211,7 @@ class Webview:
             try:
                 result = callback(*args)
                 success = True
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 result = str(e)
                 success = False
             self.return_(seq.decode(), 0 if success else 1, json.dumps(result))

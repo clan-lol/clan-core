@@ -14,6 +14,7 @@ def list_log_days() -> list[str]:
 
     Raises:
         ClanError: If LOG_MANAGER_INSTANCE is not initialized.
+
     """
     if LOG_MANAGER_INSTANCE is None:
         msg = "LOG_MANAGER_INSTANCE is not initialized"
@@ -63,6 +64,7 @@ def get_log_file(
 
     Raises:
         ClanError: If the log file is not found or LOG_MANAGER_INSTANCE is not initialized.
+
     """
     if LOG_MANAGER_INSTANCE is None:
         msg = "LOG_MANAGER_INSTANCE is not initialized"

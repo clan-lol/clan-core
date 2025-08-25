@@ -169,7 +169,7 @@ class InventoryStore:
         with self.inventory_file.open() as f:
             try:
                 res: dict = json.load(f)
-                inventory = Inventory(res)  # type: ignore
+                inventory = Inventory(res)  # type: ignore[misc]
             except json.JSONDecodeError as e:
                 # Error decoding the inventory file
                 msg = f"Error decoding inventory file: {e}"

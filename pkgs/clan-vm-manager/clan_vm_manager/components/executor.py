@@ -84,7 +84,7 @@ def _init_proc(
     print(linebreak + f" {func.__name__}:{pid} " + linebreak, file=sys.stderr)
     try:
         func(**kwargs)
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         traceback.print_exc()
         if on_except is not None:
             on_except(ex, mp.current_process())

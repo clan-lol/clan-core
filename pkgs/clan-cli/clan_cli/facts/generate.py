@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
@@ -104,7 +105,6 @@ def generate_service_facts(
                 machine.facts_data[service]["generator"]["prompt"],
             )
             env["prompt_value"] = prompt_value
-    from clan_lib import bwrap
 
     if sys.platform == "linux" and bwrap.bubblewrap_works():
         cmd = bubblewrap_cmd(generator, facts_dir, secrets_dir)
@@ -178,10 +178,10 @@ def _generate_facts_for_machine(
     else:
         machine_service_facts = machine.facts_data
 
-    for service in machine_service_facts:
+    for svc in machine_service_facts:
         machine_updated |= generate_service_facts(
             machine=machine,
-            service=service,
+            service=svc,
             regenerate=regenerate,
             secret_facts_store=machine.secret_facts_store,
             public_facts_store=machine.public_facts_store,

@@ -1,5 +1,8 @@
 # ruff: noqa: SLF001
+import argparse
+
 import pytest
+from clan_cli.machines.update import register_update_parser
 from clan_cli.secrets.folders import sops_machines_folder
 from clan_cli.tests import fixtures_flakes
 from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
@@ -69,10 +72,6 @@ def test_machine_subcommands(
 def test_machines_update_with_tags(
     test_flake_with_core: fixtures_flakes.FlakeForTest,  # noqa: ARG001
 ) -> None:
-    import argparse
-
-    from clan_cli.machines.update import register_update_parser
-
     parser = argparse.ArgumentParser()
     register_update_parser(parser)
 

@@ -1,6 +1,7 @@
 import argparse
 import logging
 
+from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.network.network import networks_from_flake
 
@@ -19,7 +20,8 @@ def list_command(args: argparse.Namespace) -> None:
     col_network = max(12, *(len(name) for name in networks))
     col_priority = 8
     col_module = max(
-        10, *(len(net.module_name.split(".")[-1]) for net in networks.values())
+        10,
+        *(len(net.module_name.split(".")[-1]) for net in networks.values()),
     )
     col_running = 8
 
@@ -53,7 +55,7 @@ def list_command(args: argparse.Namespace) -> None:
         try:
             is_running = network.is_running()
             running_status = "Yes" if is_running else "No"
-        except Exception:
+        except ClanError:
             running_status = "Error"
 
         print(

@@ -123,8 +123,6 @@ def sshd(
     unused_tcp_port: "PortFunction",
     monkeypatch: pytest.MonkeyPatch,
 ) -> Iterator[Sshd]:
-    import subprocess
-
     port = unused_tcp_port()
     sshd = shutil.which("sshd")
     assert sshd is not None, "no sshd binary found"

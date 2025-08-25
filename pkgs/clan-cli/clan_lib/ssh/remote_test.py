@@ -106,7 +106,7 @@ def test_parse_deployment_address(
         def noop() -> Generator[None, Any]:
             yield
 
-        maybe_check_exception = noop()  # type: ignore
+        maybe_check_exception = noop()  # type: ignore[misc]
 
     with maybe_check_exception:
         machine_name = "foo"
@@ -239,7 +239,7 @@ def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
             runtime.async_run(None, host.run_local, ["exit 1"], RunOpts(shell=True))  # noqa: S604
         runtime.join_all()
         runtime.check_all()
-    except Exception:  # noqa: S110
+    except ClanError:
         pass
     else:
         msg = "should have raised Exception"
@@ -255,7 +255,7 @@ def test_run_function_exception(hosts: list[Remote], runtime: AsyncRuntime) -> N
             runtime.async_run(None, some_func, host)
         runtime.join_all()
         runtime.check_all()
-    except Exception:  # noqa: S110
+    except ClanError:
         pass
     else:
         msg = "should have raised Exception"
