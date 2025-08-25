@@ -59,6 +59,17 @@
               - "input" - Allows the user to access input devices.
             '';
           };
+          share = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            example = true;
+            description = ''
+              Weather the user should have the same password on all machines.
+
+              By default, you will be prompted for a new password for every host.
+              Unless `generate` is set to `true`.
+            '';
+          };
         };
       };
 
@@ -82,7 +93,6 @@
             };
 
             clan.core.vars.generators."user-password-${settings.user}" = {
-
               files.user-password-hash.neededFor = "users";
               files.user-password-hash.restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
               files.user-password.deploy = false;
@@ -106,6 +116,8 @@
                 pkgs.xkcdpass
                 pkgs.mkpasswd
               ];
+
+              share = settings.share;
 
               script =
                 (
