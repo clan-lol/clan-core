@@ -1,17 +1,19 @@
-# Migrate existing NixOS configurations
+# Convert existing NixOS configurations
 
-This guide will help you migrate your existing NixOS configurations into Clan.
+This guide will help you convert your existing NixOS configurations into a Clan.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend following the [Getting Started](../getting-started/index.md) guide first. Once you have a working setup, you can easily transfer your NixOS configurations over.
+    unexpected issues. We recommend reading the [Getting Started](./index.md) guide first.
 
-## Back up your existing configuration!
+    Once you have a working setup and understand the concepts transfering your NixOS configurations over is easy.
+
+## Back up your existing configuration
+
 Before you start, it is strongly recommended to back up your existing
 configuration in any form you see fit. If you use version control to manage
 your configuration changes, it is also a good idea to follow the migration
 guide in a separte branch until everything works as expected.
-
 
 ## Starting Point
 
@@ -43,10 +45,9 @@ have have two hosts: **berlin** and **cologne**.
 }
 ```
 
-## Add clan-core Input
+## 1. Add `clan-core` to `inputs`
 
-Add `clan-core` to your flake as input. It will provide everything we need to
-manage your configurations with clan.
+Add `clan-core` to your flake as input.
 
 ```nix
 inputs.clan-core = {
@@ -56,7 +57,7 @@ inputs.clan-core = {
 }
 ```
 
-## Update Outputs
+## 2. Update Outputs
 
 To be able to access our newly added dependency, it has to be added to the
 output parameters.
@@ -105,24 +106,23 @@ For the provide flake example, your flake should now look like this:
   {
       nixosConfigurations = clan.nixosConfigurations;
 
-      inherit (clan) clanInternals;
-
-      clan = {
-        inherit (clan) templates;
-      };
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
+      clan = clan.config;
   };
 }
 ```
 
-Et voilà! Your existing hosts are now part of a clan. Existing Nix tooling
+✅ Et voilà! Your existing hosts are now part of a clan.
+
+Existing Nix tooling
 should still work as normal. To check that you didn't make any errors, run `nix
 flake show` and verify both hosts are still recognized as if nothing had
-changed. You should also see the new `clanInternals` output.
+changed. You should also see the new `clan` output.
 
 ```
 ❯ nix flake show
 git+file:///my-nixos-config
-├───clanInternals: unknown
+├───clan: unknown
 └───nixosConfigurations
     ├───berlin: NixOS configuration
     └───cologne: NixOS configuration
@@ -131,7 +131,7 @@ git+file:///my-nixos-config
 Of course you can also rebuild your configuration using `nixos-rebuild` and
 veryify everything still works.
 
-## Add Clan CLI devShell
+## 3. Add `clan-cli` to your `devShells`
 
 At this point Clan is set up, but you can't use the CLI yet. To do so, it is
 recommended to expose it via a `devShell` in your flake. It is also possible to
@@ -163,8 +163,8 @@ cologne
 
 ## Specify Targets
 
-Clan needs to know where it can reach your hosts. For each of your hosts, set
-`clan.core.networking.targetHost` to its adress or hostname.
+Clan needs to know where it can reach your hosts. For testing purpose set
+`clan.core.networking.targetHost` to the machines adress or hostname.
 
 ```nix
 # machines/berlin/configuration.nix
@@ -172,6 +172,8 @@ Clan needs to know where it can reach your hosts. For each of your hosts, set
   clan.core.networking.targetHost = "123.4.56.78";
 }
 ```
+
+See our guide on for properly [configuring machines networking](../networking.md)
 
 ## Next Steps
 
