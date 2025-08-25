@@ -56,7 +56,8 @@ class Webview:
 
     def _create_handle(self) -> None:
         # Initialize the webview handle
-        handle = _webview_lib.webview_create(int(True), self.window)
+        with_debugger = True
+        handle = _webview_lib.webview_create(int(with_debugger), self.window)
         callbacks: dict[str, Callable[..., Any]] = {}
 
         # Since we can't use object.__setattr__, we'll initialize differently
