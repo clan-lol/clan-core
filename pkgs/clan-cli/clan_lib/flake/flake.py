@@ -881,7 +881,7 @@ class Flake:
                 in str(e)
             ):
                 raise FlakeDoesNotExistError(self.identifier) from e
-            if "error: could not find a flake.nix file":
+            if "error: could not find a flake.nix file" in str(e):
                 raise FlakeInvalidError(self.identifier) from e
             raise
 
