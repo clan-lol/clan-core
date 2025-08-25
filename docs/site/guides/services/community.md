@@ -255,11 +255,50 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 })
 ```
 
-The benefit of this approach is that downstream users can override the value of `myClan` by using `mkForce` or other priority modifiers.
+The benefit of this approach is that downstream users can override the value of
+`myClan` by using `mkForce` or other priority modifiers.
+
+## Example: A machine-type service
+
+Users often have different types of machines. These could be any classification
+you like, for example "servers" and "desktops". Having such distictions, allows
+reusing parts of your configuration that should be appplied to a class of
+machines. Since this is such a common pattern, here is how to write such a
+service.
+
+For this example the we have to roles: `server` and `desktop`. Additionally, we
+can use the `perMachine` section to add configuration to all machines regardless
+of their type.
+
+```nix title="machine-type.nix"
+{
+  _class = "clan.service";
+  manifest.name = "machine-type";
+
+  roles.server.perInstance.nixosModule = ./server.nix;
+  roles.desktop.perInstance.nixosModule = ./desktop.nix;
+
+  perMachine.nixosModule = {
+    # Configuration for all machines (any type)
+  };
+}
+
+```
+
+In the inventory we the assign machines to a type, e.g. by using tags
+
+```nix title="flake.nix"
+instnaces.machine-type = {
+  module.input = "self";
+  module.name = "@pinpox/machine-type";
+  roles.desktop.tags.desktop = { };
+  roles.server.tags.server = { };
+};
+```
 
 ---
 
-## Further
+## Further Reading
 
 - [Reference Documentation for Service Authors](../../reference/clanServices/clan-service-author-interface.md)
 - [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
