@@ -8,7 +8,7 @@ Our mission is simple: to democratize computing by providing tools that empower 
 
 ## Features of Clan
 
-- **Full-Stack System Deployment:** Utilize Clan’s toolkit alongside Nix's reliability to build and manage systems effortlessly.
+- **Full-Stack System Deployment:** Utilize Clan's toolkit alongside Nix's reliability to build and manage systems effortlessly.
 - **Overlay Networks:** Secure, private communication channels between devices.
 - **Virtual Machine Integration:** Seamless operation of VM applications within the main operating system.
 - **Robust Backup Management:** Long-term, self-hosted data preservation.
