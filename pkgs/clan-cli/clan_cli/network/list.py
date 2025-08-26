@@ -19,7 +19,8 @@ def list_command(args: argparse.Namespace) -> None:
     col_network = max(12, *(len(name) for name in networks))
     col_priority = 8
     col_module = max(
-        10, *(len(net.module_name.split(".")[-1]) for net in networks.values())
+        10,
+        *(len(net.module_name.split(".")[-1]) for net in networks.values()),
     )
     col_running = 8
 

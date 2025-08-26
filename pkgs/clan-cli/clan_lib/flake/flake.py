@@ -555,7 +555,8 @@ class FlakeCacheEntry:
 
         # string and maybe work the same for cache checking
         if (selector.type in (SelectorType.STR, SelectorType.MAYBE)) and isinstance(
-            self.value, dict
+            self.value,
+            dict,
         ):
             if not isinstance(selector.value, str):
                 msg = f"Expected str for STR/MAYBE selector value in caching, got {type(selector.value)}"
@@ -880,7 +881,7 @@ class Flake:
                 in str(e)
             ):
                 raise FlakeDoesNotExistError(self.identifier) from e
-            if "error: could not find a flake.nix file":
+            if "error: could not find a flake.nix file" in str(e):
                 raise FlakeInvalidError(self.identifier) from e
             raise
 

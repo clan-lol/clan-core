@@ -28,7 +28,10 @@ from typing import Any, ClassVar
 import gi
 
 gi.require_version("Gtk", "4.0")
+
 from gi.repository import GdkPixbuf, Gio, GLib, Gtk
+
+from clan_vm_manager.assets import loc
 
 
 # DUMMY IMPLEMENTATION
@@ -596,8 +599,6 @@ class StatusNotifierImplementation(BaseImplementation):
             )
             self.tray_icon.register()
 
-            from clan_vm_manager.assets import loc
-
             icon_path = str(loc / "clan_white_notext.png")
             self.set_icon(icon_path)
 
@@ -817,7 +818,7 @@ class Win32Implementation(BaseImplementation):
             ]
 
     def __init__(self, application: Gtk.Application) -> None:
-        from ctypes import windll  # type: ignore
+        from ctypes import windll  # type: ignore[attr-defined]
 
         super().__init__(application)
 
@@ -833,11 +834,11 @@ class Win32Implementation(BaseImplementation):
         self.update_icon()
 
     def _register_class(self) -> None:
-        from ctypes import byref, windll  # type: ignore
+        from ctypes import byref, windll  # type: ignore[attr-defined]
 
-        self._window_class = self.WNDCLASSW(  # type: ignore
+        self._window_class = self.WNDCLASSW(  # type: ignore[attr-defined]
             style=(self.CS_VREDRAW | self.CS_HREDRAW),
-            lpfn_wnd_proc=self.WNDCLASSW.LPFN_WND_PROC(self.on_process_window_message),  # type: ignore
+            lpfn_wnd_proc=self.WNDCLASSW.LPFN_WND_PROC(self.on_process_window_message),  # type: ignore[attr-defined]
             h_cursor=windll.user32.LoadCursorW(0, self.IDC_ARROW),
             hbr_background=self.COLOR_WINDOW,
             lpsz_class_name=self.WINDOW_CLASS_NAME,
@@ -858,7 +859,7 @@ class Win32Implementation(BaseImplementation):
         self._window_class = None
 
     def _create_window(self) -> None:
-        from ctypes import windll  # type: ignore
+        from ctypes import windll  # type: ignore[attr-defined]
 
         style = self.WS_OVERLAPPED | self.WS_SYSMENU
         self._h_wnd = windll.user32.CreateWindowExW(
@@ -1179,7 +1180,7 @@ class TrayIcon:
                 self.implementation = Win32Implementation(self.application)
             else:
                 try:
-                    self.implementation = StatusNotifierImplementation(self.application)  # type: ignore
+                    self.implementation = StatusNotifierImplementation(self.application)  # type: ignore[misc]
 
                 except ImplUnavailableError:
                     self.available = False

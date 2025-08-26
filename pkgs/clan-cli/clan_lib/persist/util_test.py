@@ -702,8 +702,8 @@ def test_delete_non_existent_path_deep() -> None:
 
 
 def test_merge_objects_empty() -> None:
-    obj1 = {}  # type: ignore
-    obj2 = {}  # type: ignore
+    obj1: dict[str, int] = {}  # type: ignore[var-annotated]
+    obj2: dict[str, int] = {}  # type: ignore[var-annotated]
 
     merged = merge_objects(obj1, obj2)
 

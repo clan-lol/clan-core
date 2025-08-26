@@ -6,13 +6,6 @@ from pathlib import Path
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 
-from clan_cli.completions import (
-    add_dynamic_completer,
-    complete_groups,
-    complete_machines,
-    complete_secrets,
-    complete_users,
-)
 from clan_cli.machines.types import machine_name_type, validate_hostname
 from clan_cli.secrets.sops import load_age_plugins
 
@@ -238,6 +231,11 @@ def remove_machine_command(args: argparse.Namespace) -> None:
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_groups,
+    )
+
     group_action = parser.add_argument(
         "group",
         help="the name of the secret",
@@ -336,6 +334,11 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machines to add",
         type=machine_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_machines,
+    )
+
     add_dynamic_completer(add_machine_action, complete_machines)
     add_machine_parser.set_defaults(func=add_machine_command)
 
@@ -350,6 +353,11 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the machines to remove",
         type=machine_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_machines,
+    )
+
     add_dynamic_completer(remove_machine_action, complete_machines)
     remove_machine_parser.set_defaults(func=remove_machine_command)
 
@@ -361,6 +369,11 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user to add",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(add_user_action, complete_users)
     add_user_parser.set_defaults(func=add_user_command)
 
@@ -375,6 +388,11 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the user to remove",
         type=user_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_users,
+    )
+
     add_dynamic_completer(remove_user_action, complete_users)
     remove_user_parser.set_defaults(func=remove_user_command)
 
@@ -389,6 +407,11 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the secret",
         type=secret_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_secrets,
+    )
+
     add_dynamic_completer(add_secret_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
@@ -403,5 +426,10 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the name of the secret",
         type=secret_name_type,
     )
+    from clan_cli.completions import (  # noqa: PLC0415
+        add_dynamic_completer,
+        complete_secrets,
+    )
+
     add_dynamic_completer(remove_secret_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)

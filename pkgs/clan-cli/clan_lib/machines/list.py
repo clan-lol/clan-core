@@ -83,7 +83,7 @@ def get_machine_details(machine: Machine) -> MachineDetails:
             header = extract_header(content)
             data, _rest = parse_frontmatter(header)
             if data:
-                disk_schema = data  # type: ignore
+                disk_schema = data  # type: ignore[assignment]
 
     return MachineDetails(
         machine=machine_inv,

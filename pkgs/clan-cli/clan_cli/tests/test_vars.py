@@ -1146,8 +1146,7 @@ def test_share_mode_switch_regenerates_secret(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
 ) -> None:
-    """
-    Test that switching a generator from share=false to share=true
+    """Test that switching a generator from share=false to share=true
     causes the secret to be regenerated with a new value.
     """
     flake = flake_with_sops

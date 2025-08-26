@@ -2,6 +2,7 @@ import json
 import os
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 # !!! IMPORTANT !!!
 # AVOID VERBS NOT IN THIS LIST
@@ -186,7 +187,7 @@ def get_tag_key(tags: list[str]) -> tuple:
     return tuple(tags)
 
 
-def sort_openapi_paths_by_tag_tree(openapi: dict) -> None:
+def sort_openapi_paths_by_tag_tree(openapi: dict[str, Any]) -> None:
     # Extract (tags, path, method, operation) tuples
     operations = []
 
@@ -218,7 +219,7 @@ def main() -> None:
     functions = schema["properties"]
 
     # === Start OpenAPI 3.0 spec in JSON ===
-    openapi = {
+    openapi: dict[str, Any] = {
         "openapi": "3.0.3",
         "info": {
             "title": "Function-Based Python API",
@@ -262,11 +263,11 @@ def main() -> None:
         # Register schemas under components
         args_name = make_schema_name(func_name, "args")
         return_name = make_schema_name(func_name, "return")
-        openapi["components"]["schemas"][args_name] = args_schema  # type: ignore
-        openapi["components"]["schemas"][return_name] = return_schema  # type: ignore
+        openapi["components"]["schemas"][args_name] = args_schema  # type: ignore[misc]
+        openapi["components"]["schemas"][return_name] = return_schema  # type: ignore[misc]
         tag = operation_to_tag(func_name)
         # Create a POST endpoint for the function
-        openapi["paths"][f"/{func_name}"] = {  # type: ignore
+        openapi["paths"][f"/{func_name}"] = {  # type: ignore[misc]
             "post": {
                 "summary": func_name,
                 "operationId": func_name,
@@ -301,7 +302,7 @@ def main() -> None:
     for def_name, def_schema in defs.items():
         fixed_schema = fix_nullables(deepcopy(def_schema))
         fix_error_refs(fixed_schema)
-        openapi["components"]["schemas"][def_name] = fixed_schema  # type: ignore
+        openapi["components"]["schemas"][def_name] = fixed_schema  # type: ignore[misc]
 
     # === Write to output JSON ===
     with Path("openapi.json").open("w") as f:

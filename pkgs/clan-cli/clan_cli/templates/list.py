@@ -20,7 +20,7 @@ def list_command(args: argparse.Namespace) -> None:
         builtin_template_set: TemplateClanType | None = templates.builtins.get(
             template_type,
             None,
-        )  # type: ignore
+        )  # type: ignore[assignment]
         if not builtin_template_set:
             continue
 
@@ -41,7 +41,7 @@ def list_command(args: argparse.Namespace) -> None:
         ]
         last_idx = len(visible_inputs) - 1
         for input_idx, (input_name, input_templates) in enumerate(visible_inputs):
-            custom_templates: TemplateClanType = input_templates[template_type]  # type: ignore
+            custom_templates: TemplateClanType = input_templates[template_type]  # type: ignore[literal-required]
             is_last_input = input_idx == last_idx
             prefix = "│" if not is_last_input else " "
             if not is_last_input:
