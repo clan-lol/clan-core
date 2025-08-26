@@ -10,7 +10,7 @@ function keyFromPos(pos: [number, number]): string {
   return `${pos[0]},${pos[1]}`;
 }
 
-const CUBE_SPACING = 2;
+const CUBE_SPACING = 1;
 
 export class MachineManager {
   public machines = new Map<string, MachineRepr>();
