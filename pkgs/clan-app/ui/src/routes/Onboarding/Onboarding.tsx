@@ -163,7 +163,7 @@ const welcome = (props: {
         loading={loading()}
         onClick={selectFolder}
       >
-        Select folder
+        Select existing Clan
       </Button>
     </div>
   );
