@@ -134,7 +134,7 @@ def _get_secret_input_with_confirmation(
                 msg = f"Failed to confirm value for {ident} after {max_attempts} attempts."
                 raise ClanError(msg)
 
-        except KeyboardInterrupt as e:
+        except (KeyboardInterrupt, EOFError) as e:
             msg = "User cancelled the input."
             raise ClanError(msg) from e
 
@@ -175,7 +175,7 @@ def _get_regular_input(input_type: PromptType, text: str) -> str:
             case _:
                 msg = f"Unsupported input type: {input_type}"
                 raise ClanError(msg)
-    except KeyboardInterrupt as e:
+    except (KeyboardInterrupt, EOFError) as e:
         msg = "User cancelled the input."
         raise ClanError(msg) from e
 
