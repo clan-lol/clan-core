@@ -15,7 +15,7 @@ export const TagGroup = (props: TagGroupProps) => {
   return (
     <div class={cx("tag-group", props.class, { inverted: inverted() })}>
       <For each={props.labels}>
-        {(label) => <Tag label={label} inverted={inverted()} />}
+        {(label) => <Tag inverted={inverted()}>{label}</Tag>}
       </For>
     </div>
   );

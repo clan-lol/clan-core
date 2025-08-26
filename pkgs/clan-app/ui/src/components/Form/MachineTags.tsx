@@ -164,17 +164,26 @@ export const MachineTags = (props: MachineTagsProps) => {
               <For each={state.selectedOptions()}>
                 {(option) => (
                   <Tag
-                    label={option.value}
                     inverted={props.inverted}
-                    action={
-                      option.disabled || props.disabled || props.readOnly
-                        ? undefined
-                        : {
-                            icon: "Close",
-                            onClick: () => state.remove(option),
-                          }
+                    interactive={
+                      !(option.disabled || props.disabled || props.readOnly)
                     }
-                  />
+                    icon={({ inverted }) =>
+                      option.disabled ||
+                      props.disabled ||
+                      props.readOnly ? undefined : (
+                        <Icon
+                          role="button"
+                          icon={"Close"}
+                          size="0.5rem"
+                          inverted={inverted}
+                          onClick={() => state.remove(option)}
+                        />
+                      )
+                    }
+                  >
+                    {option.value}
+                  </Tag>
                 )}
               </For>
               <Show when={!props.readOnly}>
