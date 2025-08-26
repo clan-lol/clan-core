@@ -43,7 +43,7 @@ class ApiBridge(ABC):
 
     def process_request(self, request: BackendRequest) -> None:
         """Process an API request through the middleware chain."""
-        from .middleware import MiddlewareContext
+        from .middleware import MiddlewareContext  # noqa: PLC0415
 
         with ExitStack() as stack:
             context = MiddlewareContext(

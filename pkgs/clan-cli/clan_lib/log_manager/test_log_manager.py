@@ -4,11 +4,13 @@ Tests are based on actual usage patterns from example_usage.py and api.py.
 """
 
 import datetime
+import tempfile
 from pathlib import Path
 
 import pytest
 
 from clan_lib.log_manager import (
+    LogFile,
     LogGroupConfig,
     LogManager,
     is_correct_day_format,
@@ -472,8 +474,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles are sorted by datetime (newest first)."""
-        from clan_lib.log_manager import LogFile
-
         # Create LogFiles with different times (same date)
         newer_file = LogFile(
             op_key="test_op",
@@ -508,8 +508,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles are sorted by date (newer dates first)."""
-        from clan_lib.log_manager import LogFile
-
         # Create LogFiles with different dates
         newer_date_file = LogFile(
             op_key="test_op",
@@ -543,8 +541,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime are sorted by group name (alphabetical)."""
-        from clan_lib.log_manager import LogFile
-
         # Create LogFiles with same datetime but different groups
         group_a_file = LogFile(
             op_key="test_op",
@@ -579,8 +575,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime and group are sorted by func_name (alphabetical)."""
-        from clan_lib.log_manager import LogFile
-
         # Create LogFiles with same datetime and group but different func_names
         func_a_file = LogFile(
             op_key="test_op",
@@ -614,8 +608,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that LogFiles with same datetime, group, and func_name are sorted by op_key (alphabetical)."""
-        from clan_lib.log_manager import LogFile
-
         # Create LogFiles identical except for op_key
         op_a_file = LogFile(
             op_key="op_a",  # Should sort first alphabetically
@@ -649,8 +641,6 @@ class TestLogFileSorting:
         configured_log_manager: LogManager,
     ) -> None:
         """Test complex sorting with multiple LogFiles demonstrating full sort order."""
-        from clan_lib.log_manager import LogFile
-
         # Create multiple files with different characteristics
         files = [
             # Oldest datetime, should be last
@@ -813,8 +803,6 @@ class TestLogFileSorting:
         """Test that list_log_days returns days sorted newest first."""
         del configured_log_manager  # Unused but kept for API compatibility
         # Create log files on different days by manipulating the date
-        import tempfile
-
         # Create files with different dates manually to test sorting
         with tempfile.TemporaryDirectory() as tmp_dir:
             base_dir = Path(tmp_dir)

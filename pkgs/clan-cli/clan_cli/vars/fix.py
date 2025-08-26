@@ -2,6 +2,7 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.vars.generator import Generator
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
@@ -10,8 +11,6 @@ log = logging.getLogger(__name__)
 
 
 def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
-    from clan_cli.vars.generator import Generator
-
     generators = Generator.get_machine_generators([machine.name], machine.flake)
     if generator_name:
         for generator in generators:

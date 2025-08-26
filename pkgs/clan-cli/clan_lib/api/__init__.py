@@ -20,6 +20,7 @@ from clan_lib.async_run import get_current_thread_opkey
 from clan_lib.errors import ClanError
 
 from .serde import dataclass_to_dict, from_dict, sanitize_string
+from .type_to_jsonschema import JSchemaTypeError, type_to_dict
 
 log = logging.getLogger(__name__)
 
@@ -201,10 +202,6 @@ API.register(get_system_file)
         return fn
 
     def to_json_schema(self) -> dict[str, Any]:
-        from typing import get_type_hints
-
-        from .type_to_jsonschema import JSchemaTypeError, type_to_dict
-
         api_schema: dict[str, Any] = {
             "$comment": "An object containing API methods. ",
             "type": "object",
@@ -268,8 +265,6 @@ API.register(get_system_file)
         return api_schema
 
     def get_method_argtype(self, method_name: str, arg_name: str) -> Any:
-        from inspect import signature
-
         func = self._registry.get(method_name, None)
         if not func:
             msg = f"API Method {method_name} not found in registry. Available methods: {list(self._registry.keys())}"
@@ -313,9 +308,9 @@ def load_in_all_api_functions() -> None:
     We have to make sure python loads every wrapped function at least once.
     This is done by importing all modules from the clan_lib and clan_cli packages.
     """
-    import clan_cli
+    import clan_cli  # noqa: PLC0415 # Avoid circular imports - many modules import from clan_lib.api
 
-    import clan_lib
+    import clan_lib  # noqa: PLC0415 # Avoid circular imports - many modules import from clan_lib.api
 
     import_all_modules_from_package(clan_lib)
     import_all_modules_from_package(clan_cli)

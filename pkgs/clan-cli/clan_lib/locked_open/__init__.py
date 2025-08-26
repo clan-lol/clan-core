@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from clan_lib.dirs import user_history_file
 from clan_lib.jsonrpc import ClanJSONEncoder
 
 
@@ -19,11 +18,15 @@ def locked_open(filename: Path, mode: str = "r") -> Generator:
 
 
 def write_history_file(data: Any) -> None:
+    from clan_lib.dirs import user_history_file  # noqa: PLC0415
+
     with locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(data, cls=ClanJSONEncoder, indent=4))
 
 
 def read_history_file() -> list[dict]:
+    from clan_lib.dirs import user_history_file  # noqa: PLC0415
+
     with locked_open(user_history_file(), "r") as f:
         content: str = f.read()
         parsed: list[dict] = json.loads(content)

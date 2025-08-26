@@ -360,11 +360,6 @@ def test_store_path_with_line_numbers_not_wrapped() -> None:
 
 def test_store_reference_helpers() -> None:
     """Test the store reference helper functions."""
-    from clan_lib.flake.flake import (
-        find_store_references,
-        is_pure_store_path,
-    )
-
     # Test find_store_references
     assert find_store_references("/nix/store/abc123-pkg") == ["/nix/store/abc123-pkg"]
     assert find_store_references("/nix/store/abc123-file.nix:42") == [

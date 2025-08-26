@@ -1,22 +1,30 @@
 import logging
+import os
+import shutil
+import sys
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
+from clan_lib import bwrap
+from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
-from clan_lib.nix import nix_test_store
+from clan_lib.git import commit_files
+from clan_lib.nix import nix_config, nix_shell, nix_test_store
 
 from .check import check_vars
-from .prompt import Prompt
+from .prompt import Prompt, ask
 from .var import Var
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
-    from clan_lib.machines.machines import Machine
 
-if TYPE_CHECKING:
     from ._types import StoreBase
+
+from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
@@ -91,8 +99,6 @@ class Generator:
             list[Generator]: A list of (unsorted) generators for the machine.
 
         """
-        from clan_lib.nix import nix_config
-
         config = nix_config()
         system = config["system"]
 
@@ -124,8 +130,6 @@ class Generator:
                 machine_name,
                 files_selector,
             )
-
-            from clan_lib.machines.machines import Machine
 
             machine = Machine(name=machine_name, flake=flake)
             pub_store = machine.public_vars_store
@@ -207,8 +211,6 @@ class Generator:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        from clan_lib.machines.machines import Machine
-
         machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
             machine.select(
@@ -226,8 +228,6 @@ class Generator:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        from clan_lib.machines.machines import Machine
-
         machine = Machine(name=self.machine, flake=self._flake)
         return machine.select(
             f'config.clan.core.vars.generators."{self.name}".validationHash',
@@ -250,8 +250,6 @@ class Generator:
             Dictionary mapping generator names to their variable values
 
         """
-        from clan_lib.errors import ClanError
-
         generators = self.get_machine_generators([machine.name], machine.flake)
         result: dict[str, dict[str, bytes]] = {}
 
@@ -297,8 +295,6 @@ class Generator:
             Dictionary mapping prompt names to their values
 
         """
-        from .prompt import ask
-
         prompt_values: dict[str, str] = {}
         for prompt in self.prompts:
             var_id = f"{self.name}/{prompt.name}"
@@ -323,17 +319,6 @@ class Generator:
             no_sandbox: Whether to disable sandboxing when executing the generator
 
         """
-        import os
-        import sys
-        from contextlib import ExitStack
-        from pathlib import Path
-        from tempfile import TemporaryDirectory
-
-        from clan_lib import bwrap
-        from clan_lib.cmd import RunOpts, run
-        from clan_lib.errors import ClanError
-        from clan_lib.git import commit_files
-
         if prompt_values is None:
             prompt_values = self.ask_prompts()
 
@@ -353,10 +338,6 @@ class Generator:
 
         def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
             """Helper function to create bubblewrap command."""
-            import shutil
-
-            from clan_lib.nix import nix_shell, nix_test_store
-
             test_store = nix_test_store()
             real_bash_path = Path("bash")
             if os.environ.get("IN_NIX_SANDBOX"):
@@ -414,7 +395,7 @@ class Generator:
             if sys.platform == "linux" and bwrap.bubblewrap_works():
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
             elif sys.platform == "darwin":
-                from clan_lib.sandbox_exec import sandbox_exec_cmd
+                from clan_lib.sandbox_exec import sandbox_exec_cmd  # noqa: PLC0415
 
                 cmd = stack.enter_context(sandbox_exec_cmd(str(final_script), tmpdir))
             else:

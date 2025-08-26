@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 
 # Functions to test
 from clan_lib.api import (
@@ -124,8 +125,6 @@ def test_filters_null_fields() -> None:
 
 
 def test_custom_enum() -> None:
-    from enum import Enum
-
     class CustomEnum(Enum):
         FOO = "foo"
         BAR = "bar"

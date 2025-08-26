@@ -12,11 +12,10 @@ from clan_lib.api import MethodRegistry, message_queue
 from clan_lib.api.tasks import WebThread
 
 from ._webview_ffi import _encode_c_string, _webview_lib
+from .webview_bridge import WebviewBridge
 
 if TYPE_CHECKING:
     from clan_app.api.middleware import Middleware
-
-    from .webview_bridge import WebviewBridge
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ class Webview:
     shared_threads: dict[str, WebThread] | None = None
 
     # initialized later
-    _bridge: "WebviewBridge | None" = None
+    _bridge: WebviewBridge | None = None
     _handle: Any | None = None
     _callbacks: dict[str, Callable[..., Any]] = field(default_factory=dict)
     _middleware: list["Middleware"] = field(default_factory=list)
@@ -132,10 +131,8 @@ class Webview:
 
         self._middleware.append(middleware)
 
-    def create_bridge(self) -> "WebviewBridge":
+    def create_bridge(self) -> WebviewBridge:
         """Create and initialize the WebviewBridge with current middleware."""
-        from .webview_bridge import WebviewBridge
-
         # Use shared_threads if provided, otherwise let WebviewBridge use its default
         if self.shared_threads is not None:
             bridge = WebviewBridge(

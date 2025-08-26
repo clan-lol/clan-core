@@ -66,8 +66,6 @@ lint.ignore = [
   "TRY301",
   "FBT003",
   "INP001",
-  # TODO: fix later
-  "PLC0415",
 ]
 
 [tool.ruff.lint.per-file-ignores]

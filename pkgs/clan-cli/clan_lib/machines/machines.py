@@ -33,7 +33,7 @@ class Machine:
 
     def get_inv_machine(self) -> "InventoryMachine":
         # Import on demand to avoid circular imports
-        from clan_lib.machines.actions import get_machine
+        from clan_lib.machines.actions import get_machine  # noqa: PLC0415
 
         return get_machine(self.flake, self.name)
 
@@ -121,7 +121,7 @@ class Machine:
         return self.flake.path
 
     def target_host(self) -> Remote:
-        from clan_lib.network.network import get_best_remote
+        from clan_lib.network.network import get_best_remote  # noqa: PLC0415
 
         with get_best_remote(self) as remote:
             return remote

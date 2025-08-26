@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Callable
 
+from clan_cli.vars import graph
 from clan_cli.vars.generator import Generator, GeneratorKey
 from clan_cli.vars.graph import minimal_closure, requested_closure
 from clan_cli.vars.migration import check_can_migrate, migrate_files
@@ -31,8 +32,6 @@ def get_generators(
         List of generators based on the specified selection and closure mode.
 
     """
-    from clan_cli.vars import graph
-
     machine_names = [machine.name for machine in machines]
     vars_generators = Generator.get_machine_generators(
         machine_names,

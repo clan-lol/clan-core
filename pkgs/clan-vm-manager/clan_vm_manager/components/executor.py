@@ -36,7 +36,7 @@ class MPProcess:
 def _set_proc_name(name: str) -> None:
     if sys.platform != "linux":
         return
-    import ctypes
+    import ctypes  # noqa: PLC0415
 
     # Define the prctl function with the appropriate arguments and return type
     libc = ctypes.CDLL("libc.so.6")

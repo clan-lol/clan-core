@@ -1,3 +1,5 @@
+import importlib.util
+import sys
 import tempfile
 from pathlib import Path
 from textwrap import dedent
@@ -52,8 +54,6 @@ def test_import_with_source(tmp_path: Path) -> None:
     )
 
     # Add the temp directory to sys.path
-    import sys
-
     sys.path.insert(0, str(tmp_path))
 
     try:
@@ -130,9 +130,6 @@ def test_import_with_source_with_args() -> None:
         temp_file = Path(f.name)
 
     # Import module dynamically
-    import importlib.util
-    import sys
-
     spec = importlib.util.spec_from_file_location("temp_module", temp_file)
     assert spec is not None
     assert spec.loader is not None

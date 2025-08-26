@@ -17,6 +17,7 @@ from clan_app.api.middleware import (
     LoggingMiddleware,
     MethodExecutionMiddleware,
 )
+from clan_app.deps.http.http_server import HttpApiServer
 from clan_app.deps.webview.webview import Size, SizeHint, Webview
 
 log = logging.getLogger(__name__)
@@ -65,8 +66,6 @@ def app_run(app_opts: ClanAppOptions) -> int:
     # Start HTTP API server if requested
     http_server = None
     if app_opts.http_api:
-        from clan_app.deps.http.http_server import HttpApiServer
-
         openapi_file = os.getenv("OPENAPI_FILE", None)
         swagger_dist = os.getenv("SWAGGER_UI_DIST", None)
 
