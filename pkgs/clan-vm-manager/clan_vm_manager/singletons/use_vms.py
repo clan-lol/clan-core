@@ -181,8 +181,7 @@ class ClanStore:
 
         if vm_store is None:
             return None
-        vm = vm_store.get(str(machine.name), None)
-        return vm
+        return vm_store.get(str(machine.name), None)
 
     def get_running_vms(self) -> list[VMObject]:
         return [

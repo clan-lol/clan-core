@@ -65,12 +65,11 @@ class Network:
 
     @cached_property
     def module(self) -> "NetworkTechnologyBase":
-        res = import_with_source(
+        return import_with_source(
             self.module_name,
             "NetworkTechnology",
             NetworkTechnologyBase,  # type: ignore[type-abstract]
         )
-        return res
 
     def is_running(self) -> bool:
         return self.module.is_running()

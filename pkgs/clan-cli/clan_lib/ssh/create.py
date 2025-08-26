@@ -20,9 +20,7 @@ def create_secret_key_nixos_anywhere() -> SSHKeyPair:
     """
     private_key_dir = user_nixos_anywhere_dir()
 
-    key_pair = generate_ssh_key(private_key_dir)
-
-    return key_pair
+    return generate_ssh_key(private_key_dir)
 
 
 def generate_ssh_key(root_dir: Path) -> SSHKeyPair:

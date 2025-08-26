@@ -133,8 +133,7 @@ class Machine:
         remote = get_machine_host(self.name, self.flake, field="buildHost")
 
         if remote:
-            data = remote.data
-            return data
+            return remote.data
 
         return None
 

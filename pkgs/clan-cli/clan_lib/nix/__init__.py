@@ -103,8 +103,7 @@ def nix_eval(flags: list[str]) -> list[str]:
 def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     cmd = nix_command(["flake", "metadata", "--json", f"{flake_url}"])
     proc = run(cmd)
-    data = json.loads(proc.stdout)
-    return data
+    return json.loads(proc.stdout)
 
 
 # lazy loads list of allowed and static programs

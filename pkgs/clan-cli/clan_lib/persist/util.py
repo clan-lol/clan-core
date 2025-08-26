@@ -138,8 +138,7 @@ def list_difference(all_items: list, filter_items: list) -> list:
 
 def find_duplicates(string_list: list[str]) -> list[str]:
     count = Counter(string_list)
-    duplicates = [item for item, freq in count.items() if freq > 1]
-    return duplicates
+    return [item for item, freq in count.items() if freq > 1]
 
 
 def find_deleted_paths(

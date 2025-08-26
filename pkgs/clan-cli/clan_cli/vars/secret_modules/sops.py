@@ -164,13 +164,12 @@ class SecretStore(StoreBase):
             msg = f"file {file_name} was not found"
             raise ClanError(msg)
         if outdated:
-            msg = (
+            return (
                 "The local state of some secret vars is inconsistent and needs to be updated.\n"
                 f"Run 'clan vars fix {machine}' to apply the necessary changes."
                 "Problems to fix:\n"
                 "\n".join(o[2] for o in outdated if o[2])
             )
-            return msg
         return None
 
     def _set(

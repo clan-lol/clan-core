@@ -151,9 +151,7 @@ class InventoryStore:
             )
         else:
             filtered = cast("InventorySnapshot", raw_value)
-        sanitized = sanitize(filtered, self._allowed_path_transforms, [])
-
-        return sanitized
+        return sanitize(filtered, self._allowed_path_transforms, [])
 
     def get_readonly_raw(self) -> Inventory:
         attrs = "{" + ",".join(self._keys) + "}"

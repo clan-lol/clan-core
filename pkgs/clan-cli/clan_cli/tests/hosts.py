@@ -10,7 +10,7 @@ from clan_lib.ssh.remote import Remote
 @pytest.fixture
 def hosts(sshd: Sshd) -> list[Remote]:
     login = pwd.getpwuid(os.getuid()).pw_name
-    group = [
+    return [
         Remote(
             address="127.0.0.1",
             port=sshd.port,
@@ -20,5 +20,3 @@ def hosts(sshd: Sshd) -> list[Remote]:
             command_prefix="local_test",
         ),
     ]
-
-    return group

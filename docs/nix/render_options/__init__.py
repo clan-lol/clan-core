@@ -551,8 +551,7 @@ def options_docs_from_tree(
 
         return output
 
-    md = render_tree(root)
-    return md
+    return render_tree(root)
 
 
 if __name__ == "__main__":

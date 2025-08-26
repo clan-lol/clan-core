@@ -37,9 +37,7 @@ def inspect_dataclass_fields(t: type) -> dict[TypeVar, type]:
 
     type_params = origin.__parameters__
     # Create a map from type parameters to actual type arguments
-    type_map = dict(zip(type_params, type_args, strict=False))
-
-    return type_map
+    return dict(zip(type_params, type_args, strict=False))
 
 
 def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[str, Any]:

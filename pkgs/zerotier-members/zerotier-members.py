@@ -58,9 +58,7 @@ def compute_member_id(ipv6_addr: str) -> str:
     node_id_bytes = addr_bytes[10:16]
     node_id = int.from_bytes(node_id_bytes, byteorder="big")
 
-    member_id = format(node_id, "x").zfill(10)[-10:]
-
-    return member_id
+    return format(node_id, "x").zfill(10)[-10:]
 
 
 # this is managed by the nixos module

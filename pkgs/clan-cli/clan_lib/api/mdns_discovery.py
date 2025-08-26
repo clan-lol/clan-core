@@ -105,9 +105,7 @@ def list_system_services_mdns() -> DNSInfo:
         ],
     )
     proc = run(cmd)
-    data = parse_avahi_output(proc.stdout)
-
-    return data
+    return parse_avahi_output(proc.stdout)
 
 
 def mdns_command(_args: argparse.Namespace) -> None:

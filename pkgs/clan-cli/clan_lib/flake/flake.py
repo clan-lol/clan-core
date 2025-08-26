@@ -530,10 +530,9 @@ class FlakeCacheEntry:
                 msg = f"Expected dict for ALL selector caching, got {type(self.value)}"
                 raise ClanError(msg)
             if self.fetched_all:
-                result = all(
+                return all(
                     self.value[sel].is_cached(selectors[1:]) for sel in self.value
                 )
-                return result
             return False
         if (
             selector.type == SelectorType.SET
@@ -724,13 +723,12 @@ class FlakeCacheEntry:
         exists = json_data.get("exists", True)
         fetched_all = json_data.get("fetched_all", False)
 
-        entry = FlakeCacheEntry(
+        return FlakeCacheEntry(
             value=value,
             is_list=is_list,
             exists=exists,
             fetched_all=fetched_all,
         )
-        return entry
 
     def __repr__(self) -> str:
         if isinstance(self.value, dict):
@@ -1087,8 +1085,7 @@ class Flake:
         else:
             log.debug(f"$ clan select {shlex.quote(selector)}")
 
-        value = self._cache.select(selector)
-        return value
+        return self._cache.select(selector)
 
     def select_machine(self, machine_name: str, selector: str) -> Any:
         """Select a nix attribute for a specific machine.

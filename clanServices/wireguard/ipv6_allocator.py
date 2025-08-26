@@ -39,8 +39,7 @@ def generate_ula_prefix(instance_name: str) -> ipaddress.IPv6Network:
     prefix = f"fd{prefix_bits:08x}"
     prefix_formatted = f"{prefix[:4]}:{prefix[4:8]}::/40"
 
-    network = ipaddress.IPv6Network(prefix_formatted)
-    return network
+    return ipaddress.IPv6Network(prefix_formatted)
 
 
 def generate_controller_subnet(
@@ -60,9 +59,7 @@ def generate_controller_subnet(
     # The controller subnet is at base_prefix:controller_id::/56
     base_int = int(base_network.network_address)
     controller_subnet_int = base_int | (controller_id << (128 - 56))
-    controller_subnet = ipaddress.IPv6Network((controller_subnet_int, 56))
-
-    return controller_subnet
+    return ipaddress.IPv6Network((controller_subnet_int, 56))
 
 
 def generate_peer_suffix(peer_name: str) -> str:
@@ -76,8 +73,7 @@ def generate_peer_suffix(peer_name: str) -> str:
     suffix_bits = h[:16]
 
     # Format as IPv6 suffix without leading colon
-    suffix = f"{suffix_bits[0:4]}:{suffix_bits[4:8]}:{suffix_bits[8:12]}:{suffix_bits[12:16]}"
-    return suffix
+    return f"{suffix_bits[0:4]}:{suffix_bits[4:8]}:{suffix_bits[8:12]}:{suffix_bits[12:16]}"
 
 
 def main() -> None:
