@@ -94,10 +94,10 @@ class LoggingMiddleware(Middleware):
                 if self.handler:
                     self.handler.root_logger.removeHandler(self.handler.new_handler)
                     self.handler.new_handler.close()
-                if self.log_f:
-                    self.log_f.close()
                 if self.original_ctx:
                     set_async_ctx(self.original_ctx)
+                if self.log_f:
+                    self.log_f.close()
 
         # Register the logging context manager
         self.register_context_manager(context, LoggingContextManager(log_file))
