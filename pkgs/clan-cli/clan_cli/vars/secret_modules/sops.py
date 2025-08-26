@@ -54,7 +54,7 @@ class SecretStore(StoreBase):
     def ensure_machine_key(self, machine: str) -> None:
         """Ensure machine has sops keys initialized."""
         # no need to generate keys if we don't manage secrets
-        from clan_cli.vars.generator import Generator
+        from clan_cli.vars.generator import Generator  # noqa: PLC0415
 
         vars_generators = Generator.get_machine_generators([machine], self.flake)
         if not vars_generators:
@@ -141,7 +141,7 @@ class SecretStore(StoreBase):
 
         """
         if generators is None:
-            from clan_cli.vars.generator import Generator
+            from clan_cli.vars.generator import Generator  # noqa: PLC0415
 
             generators = Generator.get_machine_generators([machine], self.flake)
         file_found = False
@@ -219,7 +219,7 @@ class SecretStore(StoreBase):
         return [store_folder]
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_cli.vars.generator import Generator
+        from clan_cli.vars.generator import Generator  # noqa: PLC0415
 
         vars_generators = Generator.get_machine_generators([machine], self.flake)
         if "users" in phases or "services" in phases:
@@ -291,7 +291,7 @@ class SecretStore(StoreBase):
         )
 
     def collect_keys_for_secret(self, machine: str, path: Path) -> set[sops.SopsKey]:
-        from clan_cli.secrets.secrets import (
+        from clan_cli.secrets.secrets import (  # noqa: PLC0415
             collect_keys_for_path,
             collect_keys_for_type,
         )
@@ -352,10 +352,10 @@ class SecretStore(StoreBase):
             ClanError: If the specified file_name is not found
 
         """
-        from clan_cli.secrets.secrets import update_keys
+        from clan_cli.secrets.secrets import update_keys  # noqa: PLC0415
 
         if generators is None:
-            from clan_cli.vars.generator import Generator
+            from clan_cli.vars.generator import Generator  # noqa: PLC0415
 
             generators = Generator.get_machine_generators([machine], self.flake)
         file_found = False

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Any, NotRequired, Required
+from enum import Enum
+from typing import Any, Generic, NotRequired, Required, TypedDict, TypeVar
 
 import pytest
 
@@ -27,8 +28,6 @@ def test_simple_primitives() -> None:
 
 
 def test_enum_type() -> None:
-    from enum import Enum
-
     class Color(Enum):
         RED = "red"
         GREEN = "green"
@@ -224,8 +223,6 @@ def test_nested_open_dicts() -> None:
 
 
 def test_type_variables() -> None:
-    from typing import Generic, TypeVar
-
     T = TypeVar("T")
 
     @dataclass
@@ -253,8 +250,6 @@ def test_type_variables() -> None:
 
 def test_type_variable_nested_scopes() -> None:
     # Define two type variables with the same name "T" but in different scopes
-
-    from typing import Generic, TypeVar
 
     T = TypeVar("T")
 
@@ -284,8 +279,6 @@ def test_type_variable_nested_scopes() -> None:
 
 
 def test_total_typed_dict() -> None:
-    from typing import TypedDict
-
     class ExampleTypedDict(TypedDict):
         name: str
         value: NotRequired[int]
@@ -314,8 +307,6 @@ def test_total_typed_dict() -> None:
 
 
 def test_open_typed_dict() -> None:
-    from typing import TypedDict
-
     class ExampleTypedDict(TypedDict, total=False):
         name: Required[str]
         value: int

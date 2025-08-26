@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generator import Generator, Var
+from clan_lib.cmd import Log, RunOpts
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
@@ -162,8 +163,6 @@ class SecretStore(StoreBase):
         if not git_hash:
             return b""
 
-        from clan_cli.vars.generator import Generator
-
         generators = Generator.get_machine_generators([machine], self.flake)
         manifest = [
             f"{generator.name}/{file.name}".encode()
@@ -179,8 +178,6 @@ class SecretStore(StoreBase):
         if not local_hash:
             return True
 
-        from clan_lib.cmd import Log, RunOpts
-
         remote_hash = host.run(
             [
                 "cat",
@@ -195,8 +192,6 @@ class SecretStore(StoreBase):
         return local_hash != remote_hash.encode()
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_cli.vars.generator import Generator
-
         vars_generators = Generator.get_machine_generators([machine], self.flake)
         if "users" in phases:
             with tarfile.open(

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+import socket
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -70,8 +71,6 @@ class TorCheck:
 
 def tor_online_test(proxy_port: int) -> None:
     """Tests if Tor is online by checking if we can establish a SOCKS5 connection."""
-    import socket
-
     # Try to establish a SOCKS5 handshake with the Tor proxy
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(2.0)  # Short timeout for local connection

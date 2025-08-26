@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 from clan_lib.cmd import run
-from clan_lib.dirs import nixpkgs_flake, nixpkgs_source
 from clan_lib.errors import ClanError
 from clan_lib.locked_open import locked_open
 
@@ -89,6 +88,8 @@ def nix_eval(flags: list[str]) -> list[str]:
         ],
     )
     if os.environ.get("IN_NIX_SANDBOX"):
+        from clan_lib.dirs import nixpkgs_source  # noqa: PLC0415
+
         return [
             *default_flags,
             "--override-input",
@@ -168,6 +169,9 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     ] + [package for package in packages if "#" in package]
     if not missing_packages:
         return cmd
+
+    from clan_lib.dirs import nixpkgs_flake  # noqa: PLC0415
+
     return [
         *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
         *missing_packages,

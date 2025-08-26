@@ -32,13 +32,14 @@ def vars_status(
     flake: Flake,
     generator_name: None | str = None,
 ) -> VarStatus:
+    from clan_cli.vars.generator import Generator  # noqa: PLC0415
+
     machine = Machine(name=machine_name, flake=flake)
     missing_secret_vars = []
     missing_public_vars = []
     # signals if a var needs to be updated (eg. needs re-encryption due to new users added)
     unfixed_secret_vars = []
     invalid_generators = []
-    from clan_cli.vars.generator import Generator
 
     generators = Generator.get_machine_generators([machine.name], machine.flake)
     if generator_name:

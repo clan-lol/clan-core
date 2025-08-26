@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
@@ -334,8 +335,6 @@ def test_literal_field() -> None:
 
 
 def test_enum_roundtrip() -> None:
-    from enum import Enum
-
     class MyEnum(Enum):
         FOO = "abc"
         BAR = 2

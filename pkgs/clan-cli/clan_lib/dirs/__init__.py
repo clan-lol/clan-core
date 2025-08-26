@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -6,7 +7,9 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
+from clan_lib.cmd import run
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_eval
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
@@ -198,12 +201,6 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
         ClanError: If the flake evaluation fails or directories cannot be found
 
     """
-    import json
-    from pathlib import Path
-
-    from clan_lib.cmd import run
-    from clan_lib.nix import nix_eval
-
     # Get the source directory from nix store
     root_directory = flake.select("sourceInfo")
 

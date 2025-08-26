@@ -142,8 +142,6 @@ class StoreBase(ABC):
         value: bytes,
         is_migration: bool = False,
     ) -> list[Path]:
-        from clan_lib.machines.machines import Machine
-
         changed_files: list[Path] = []
 
         # if generator was switched from shared to per-machine or vice versa,
@@ -169,6 +167,8 @@ class StoreBase(ABC):
         if generator.machine is None:
             log_info = log.info
         else:
+            from clan_lib.machines.machines import Machine  # noqa: PLC0415
+
             machine = Machine(name=generator.machine, flake=self.flake)
             log_info = machine.info
         if self.is_secret_store:

@@ -47,8 +47,6 @@ class NetworkTechnology(NetworkTechnologyBase):
                 yield network
 
     def remote(self, peer: Peer) -> "Remote":
-        from clan_lib.ssh.remote import Remote
-
         return Remote(
             address=peer.host,
             command_prefix=peer.name,

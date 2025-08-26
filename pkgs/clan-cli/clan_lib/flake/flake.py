@@ -11,7 +11,16 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
+from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.dirs import select_source, user_cache_dir
 from clan_lib.errors import ClanCmdError, ClanError
+from clan_lib.nix import (
+    nix_build,
+    nix_command,
+    nix_config,
+    nix_metadata,
+    nix_test_store,
+)
 
 log = logging.getLogger(__name__)
 
@@ -851,11 +860,6 @@ class Flake:
 
     def prefetch(self) -> None:
         """Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline"""
-        from clan_lib.cmd import RunOpts, run
-        from clan_lib.nix import (
-            nix_command,
-        )
-
         if self.nix_options is None:
             self.nix_options = []
 
@@ -895,11 +899,6 @@ class Flake:
 
         This method is used to refresh the cache by reloading it from the flake.
         """
-        from clan_lib.dirs import user_cache_dir
-        from clan_lib.nix import (
-            nix_metadata,
-        )
-
         self.prefetch()
 
         self._cache = FlakeCache()
@@ -951,14 +950,6 @@ class Flake:
             AssertionError: If the cache or flake cache path is not properly initialized.
 
         """
-        from clan_lib.cmd import Log, RunOpts, run
-        from clan_lib.dirs import select_source
-        from clan_lib.nix import (
-            nix_build,
-            nix_config,
-            nix_test_store,
-        )
-
         if self._cache is None:
             self.invalidate_cache()
         if self._cache is None:
@@ -1125,8 +1116,6 @@ class Flake:
             apply: Optional function to apply to the result
 
         """
-        from clan_lib.nix import nix_config
-
         config = nix_config()
         system = config["system"]
 

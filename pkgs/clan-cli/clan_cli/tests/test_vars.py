@@ -1,6 +1,7 @@
 import json
 import logging
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from clan_cli.vars.check import check_vars
 from clan_cli.vars.generator import (
     Generator,
     GeneratorKey,
+    dependencies_as_dir,
 )
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
@@ -21,7 +23,7 @@ from clan_cli.vars.set import set_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_eval, run
+from clan_lib.nix import nix_config, nix_eval, run
 from clan_lib.vars.generate import (
     get_generators,
     run_generators,
@@ -29,8 +31,6 @@ from clan_lib.vars.generate import (
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
-    from clan_cli.vars.generator import dependencies_as_dir
-
     decrypted_dependencies = {
         "gen_1": {
             "var_1a": b"var_1a",
@@ -506,7 +506,6 @@ def test_generate_secret_var_password_store(
     monkeypatch.setenv("PASSWORD_STORE_DIR", str(password_store_dir))
 
     # Initialize password store as a git repository
-    import subprocess
 
     subprocess.run(["git", "init"], cwd=password_store_dir, check=True)
     subprocess.run(
@@ -612,8 +611,6 @@ def test_generate_secret_for_multiple_machines(
     flake_with_sops: ClanFlake,
 ) -> None:
     flake = flake_with_sops
-
-    from clan_lib.nix import nix_config
 
     local_system = nix_config()["system"]
 
@@ -1101,8 +1098,6 @@ def test_create_sops_age_secrets(
     # check private key exists
     assert (flake.temporary_home / ".config" / "sops" / "age" / "keys.txt").is_file()
     # it should still work, even if the keys already exist
-    import shutil
-
     shutil.rmtree(flake.path / "sops" / "users" / "user")
     cli.run(["vars", "keygen", "--flake", str(flake.path), "--user", "user"])
     # check public key exists

@@ -8,8 +8,6 @@ from clan_lib.api.tasks import WebThread
 
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
-from .webview import FuncStatus
-
 if TYPE_CHECKING:
     from .webview import Webview
 
@@ -32,6 +30,9 @@ class WebviewBridge(ApiBridge):
         )
 
         log.debug(f"Sending response: {serialized}")
+        # Import FuncStatus locally to avoid circular import
+        from .webview import FuncStatus  # noqa: PLC0415
+
         self.webview.return_(response._op_key, FuncStatus.SUCCESS, serialized)  # noqa: SLF001
 
     def handle_webview_call(

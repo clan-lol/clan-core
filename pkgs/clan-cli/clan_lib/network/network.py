@@ -34,7 +34,7 @@ class Peer:
             _var: dict[str, str] = self._host["var"]
             machine_name = _var["machine"]
             generator = _var["generator"]
-            from clan_lib.machines.machines import Machine
+            from clan_lib.machines.machines import Machine  # noqa: PLC0415
 
             machine = Machine(name=machine_name, flake=self.flake)
             var = get_machine_var(

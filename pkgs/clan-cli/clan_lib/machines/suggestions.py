@@ -42,7 +42,7 @@ def _suggest_similar_names(
 
 
 def get_available_machines(flake: Flake) -> list[str]:
-    from clan_lib.machines.list import list_machines
+    from clan_lib.machines.list import list_machines  # noqa: PLC0415
 
     machines = list_machines(flake)
     return list(machines.keys())

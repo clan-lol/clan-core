@@ -459,12 +459,12 @@ class Remote:
         self,
         opts: "ConnectionOptions | None" = None,
     ) -> None:
-        from clan_lib.network.check import check_machine_ssh_reachable
+        from clan_lib.network.check import check_machine_ssh_reachable  # noqa: PLC0415
 
         return check_machine_ssh_reachable(self, opts)
 
     def check_machine_ssh_login(self) -> None:
-        from clan_lib.network.check import check_machine_ssh_login
+        from clan_lib.network.check import check_machine_ssh_login  # noqa: PLC0415
 
         return check_machine_ssh_login(self)
 
@@ -521,7 +521,6 @@ def _parse_ssh_uri(
         raise ClanError(msg)
     hostname = result.hostname
     port = result.port
-    from clan_lib.ssh.remote import Remote
 
     return Remote(
         address=hostname,

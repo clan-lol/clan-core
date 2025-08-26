@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from clan_lib.cmd import RunOpts, run
-from clan_lib.flake import Flake
-from clan_lib.nix import nix_shell
+from clan_lib.flake.flake import Flake
 
 from . import API
 
@@ -89,6 +88,8 @@ def list_system_storage_devices() -> Blockdevices:
         A list of detected block devices with metadata like size, path, type, etc.
 
     """
+    from clan_lib.nix import nix_shell  # noqa: PLC0415
+
     cmd = nix_shell(
         ["util-linux"],
         [
@@ -123,7 +124,7 @@ def get_clan_directory_relative(flake: Flake) -> str:
         ClanError: If the flake evaluation fails or directories cannot be found
 
     """
-    from clan_lib.dirs import get_clan_directories
+    from clan_lib.dirs import get_clan_directories  # noqa: PLC0415
 
     _, relative_dir = get_clan_directories(flake)
     return relative_dir

@@ -65,8 +65,6 @@ class TestFlake(Flake):
             apply: Optional function to apply to the result
 
         """
-        from clan_lib.nix import nix_config
-
         config = nix_config()
         system = config["system"]
         test_system = system

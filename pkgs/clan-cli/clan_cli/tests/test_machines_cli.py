@@ -8,6 +8,7 @@ from clan_cli.tests import fixtures_flakes
 from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
+from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
 
@@ -93,8 +94,6 @@ def test_machines_update_nonexistent_machine(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
 ) -> None:
     """Test that update command gives helpful error messages for non-existent machines."""
-    from clan_lib.errors import ClanError
-
     with pytest.raises(ClanError) as exc_info:
         cli.run(
             [
@@ -118,8 +117,6 @@ def test_machines_update_typo_in_machine_name(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
 ) -> None:
     """Test that update command suggests similar machine names for typos."""
-    from clan_lib.errors import ClanError
-
     with pytest.raises(ClanError) as exc_info:
         cli.run(
             [

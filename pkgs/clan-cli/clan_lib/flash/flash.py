@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Literal
 
 from clan_cli.facts.generate import generate_facts
+from clan_cli.vars.generator import Generator
 from clan_cli.vars.upload import populate_secret_vars
 
 from clan_lib.api import API
@@ -115,8 +116,6 @@ def run_machine_flash(
             system_config_nix["users"] = {
                 "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}},
             }
-
-        from clan_cli.vars.generator import Generator
 
         for generator in Generator.get_machine_generators(
             [machine.name], machine.flake

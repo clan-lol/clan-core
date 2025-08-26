@@ -33,6 +33,15 @@ from gi.repository import GdkPixbuf, Gio, GLib, Gtk
 
 from clan_vm_manager.assets import loc
 
+# Windows-specific imports
+if sys.platform == "win32":
+    from ctypes import byref, sizeof, windll  # type: ignore[attr-defined]
+else:
+    # Create dummy objects for type checking on non-Windows systems
+    windll = None
+    byref = None  # type: ignore[assignment]
+    sizeof = None  # type: ignore[assignment]
+
 
 # DUMMY IMPLEMENTATION
 ################################################
@@ -747,12 +756,12 @@ class Win32Implementation(BaseImplementation):
     SM_CXSMICON = 49
 
     if sys.platform == "win32":
-        from ctypes import Structure
+        from ctypes import Structure  # noqa: PLC0415
 
         class WNDCLASSW(Structure):
             """Windows class structure for window registration."""
 
-            from ctypes import CFUNCTYPE, wintypes
+            from ctypes import CFUNCTYPE, wintypes  # noqa: PLC0415
 
             LPFN_WND_PROC = CFUNCTYPE(
                 wintypes.INT,
@@ -777,7 +786,7 @@ class Win32Implementation(BaseImplementation):
         class MENUITEMINFOW(Structure):
             """Windows menu item information structure."""
 
-            from ctypes import wintypes
+            from ctypes import wintypes  # noqa: PLC0415
 
             _fields_: ClassVar = [
                 ("cb_size", wintypes.UINT),
@@ -797,7 +806,7 @@ class Win32Implementation(BaseImplementation):
         class NOTIFYICONDATAW(Structure):
             """Windows notification icon data structure."""
 
-            from ctypes import wintypes
+            from ctypes import wintypes  # noqa: PLC0415
 
             _fields_: ClassVar = [
                 ("cb_size", wintypes.DWORD),
@@ -818,8 +827,6 @@ class Win32Implementation(BaseImplementation):
             ]
 
     def __init__(self, application: Gtk.Application) -> None:
-        from ctypes import windll  # type: ignore[attr-defined]
-
         super().__init__(application)
 
         self._window_class: Any = None
@@ -827,42 +834,45 @@ class Win32Implementation(BaseImplementation):
         self._notify_id = None
         self._h_icon = None
         self._menu = None
-        self._wm_taskbarcreated = windll.user32.RegisterWindowMessageW("TaskbarCreated")
+        if sys.platform == "win32":
+            self._wm_taskbarcreated = windll.user32.RegisterWindowMessageW(
+                "TaskbarCreated"
+            )  # type: ignore[attr-defined]
 
         self._register_class()
         self._create_window()
         self.update_icon()
 
     def _register_class(self) -> None:
-        from ctypes import byref, windll  # type: ignore[attr-defined]
+        if sys.platform != "win32":
+            return
 
         self._window_class = self.WNDCLASSW(  # type: ignore[attr-defined]
             style=(self.CS_VREDRAW | self.CS_HREDRAW),
             lpfn_wnd_proc=self.WNDCLASSW.LPFN_WND_PROC(self.on_process_window_message),  # type: ignore[attr-defined]
-            h_cursor=windll.user32.LoadCursorW(0, self.IDC_ARROW),
+            h_cursor=windll.user32.LoadCursorW(0, self.IDC_ARROW),  # type: ignore[attr-defined]
             hbr_background=self.COLOR_WINDOW,
             lpsz_class_name=self.WINDOW_CLASS_NAME,
         )
 
-        windll.user32.RegisterClassW(byref(self._window_class))
+        windll.user32.RegisterClassW(byref(self._window_class))  # type: ignore[attr-defined]
 
     def _unregister_class(self):
-        if self._window_class is None:
+        if self._window_class is None or sys.platform != "win32":
             return
 
-        from ctypes import windll
-
-        windll.user32.UnregisterClassW(
+        windll.user32.UnregisterClassW(  # type: ignore[attr-defined]
             self.WINDOW_CLASS_NAME,
             self._window_class.h_instance,
         )
         self._window_class = None
 
     def _create_window(self) -> None:
-        from ctypes import windll  # type: ignore[attr-defined]
+        if sys.platform != "win32":
+            return
 
         style = self.WS_OVERLAPPED | self.WS_SYSMENU
-        self._h_wnd = windll.user32.CreateWindowExW(
+        self._h_wnd = windll.user32.CreateWindowExW(  # type: ignore[attr-defined]
             0,
             self.WINDOW_CLASS_NAME,
             self.WINDOW_CLASS_NAME,
@@ -877,15 +887,13 @@ class Win32Implementation(BaseImplementation):
             None,
         )
 
-        windll.user32.UpdateWindow(self._h_wnd)
+        windll.user32.UpdateWindow(self._h_wnd)  # type: ignore[attr-defined]
 
     def _destroy_window(self):
-        if self._h_wnd is None:
+        if self._h_wnd is None or sys.platform != "win32":
             return
 
-        from ctypes import windll
-
-        windll.user32.DestroyWindow(self._h_wnd)
+        windll.user32.DestroyWindow(self._h_wnd)  # type: ignore[attr-defined]
         self._h_wnd = None
 
     def _load_ico_buffer(self, icon_name, icon_size):
@@ -922,10 +930,11 @@ class Win32Implementation(BaseImplementation):
         return ico_buffer
 
     def _load_h_icon(self, icon_name):
-        from ctypes import windll
+        if sys.platform != "win32":
+            return None
 
         # Attempt to load custom icons first
-        icon_size = windll.user32.GetSystemMetrics(self.SM_CXSMICON)
+        icon_size = windll.user32.GetSystemMetrics(self.SM_CXSMICON)  # type: ignore[attr-defined]
         ico_buffer = self._load_ico_buffer(
             icon_name.replace(f"{pynicotine.__application_id__}-", "nplus-tray-"),
             icon_size,
@@ -937,7 +946,7 @@ class Win32Implementation(BaseImplementation):
 
         with tempfile.NamedTemporaryFile(delete=False) as file_handle:
             file_handle.write(ico_buffer)
-            return windll.user32.LoadImageA(
+            return windll.user32.LoadImageA(  # type: ignore[attr-defined]
                 0,
                 encode_path(file_handle.name),
                 self.IMAGE_ICON,
@@ -947,16 +956,15 @@ class Win32Implementation(BaseImplementation):
             )
 
     def _destroy_h_icon(self):
-        from ctypes import windll
+        if sys.platform != "win32" or not self._h_icon:
+            return
 
-        if self._h_icon:
-            windll.user32.DestroyIcon(self._h_icon)
-            self._h_icon = None
+        windll.user32.DestroyIcon(self._h_icon)  # type: ignore[attr-defined]
+        self._h_icon = None
 
     def _update_notify_icon(self, title="", message="", icon_name=None):
         # pylint: disable=attribute-defined-outside-init,no-member
-
-        if self._h_wnd is None:
+        if sys.platform != "win32" or self._h_wnd is None:
             return
 
         if icon_name:
@@ -966,8 +974,6 @@ class Win32Implementation(BaseImplementation):
         if not self.is_visible and not (title or message):
             # When disabled by user, temporarily show tray icon when displaying a notification
             return
-
-        from ctypes import byref, sizeof, windll
 
         action = self.NIM_MODIFY
 
@@ -1004,23 +1010,24 @@ class Win32Implementation(BaseImplementation):
             ellipsize=True,
         )
 
-        windll.shell32.Shell_NotifyIconW(action, byref(self._notify_id))
+        windll.shell32.Shell_NotifyIconW(action, byref(self._notify_id))  # type: ignore[attr-defined]
 
     def _remove_notify_icon(self):
-        from ctypes import byref, windll
+        if sys.platform != "win32":
+            return
 
         if self._notify_id:
-            windll.shell32.Shell_NotifyIconW(self.NIM_DELETE, byref(self._notify_id))
+            windll.shell32.Shell_NotifyIconW(self.NIM_DELETE, byref(self._notify_id))  # type: ignore[attr-defined]
             self._notify_id = None
 
         if self._menu:
-            windll.user32.DestroyMenu(self._menu)
+            windll.user32.DestroyMenu(self._menu)  # type: ignore[attr-defined]
             self._menu = None
 
     def _serialize_menu_item(self, item):
         # pylint: disable=attribute-defined-outside-init,no-member
-
-        from ctypes import sizeof
+        if sys.platform != "win32":
+            return None
 
         item_info = self.MENUITEMINFOW(cb_size=sizeof(self.MENUITEMINFOW))
         w_id = item["id"]
@@ -1048,38 +1055,42 @@ class Win32Implementation(BaseImplementation):
         return item_info
 
     def _show_menu(self):
-        from ctypes import byref, windll, wintypes
+        if sys.platform != "win32":
+            return
+
+        from ctypes import wintypes  # noqa: PLC0415
 
         if self._menu is None:
             self.update_menu()
 
         pos = wintypes.POINT()
-        windll.user32.GetCursorPos(byref(pos))
+        windll.user32.GetCursorPos(byref(pos))  # type: ignore[attr-defined]
 
         # PRB: Menus for Notification Icons Do Not Work Correctly
         # https://web.archive.org/web/20121015064650/http://support.microsoft.com/kb/135788
 
-        windll.user32.SetForegroundWindow(self._h_wnd)
-        windll.user32.TrackPopupMenu(self._menu, 0, pos.x, pos.y, 0, self._h_wnd, None)
-        windll.user32.PostMessageW(self._h_wnd, self.WM_NULL, 0, 0)
+        windll.user32.SetForegroundWindow(self._h_wnd)  # type: ignore[attr-defined]
+        windll.user32.TrackPopupMenu(self._menu, 0, pos.x, pos.y, 0, self._h_wnd, None)  # type: ignore[attr-defined]
+        windll.user32.PostMessageW(self._h_wnd, self.WM_NULL, 0, 0)  # type: ignore[attr-defined]
 
     def update_menu(self):
-        from ctypes import byref, windll
+        if sys.platform != "win32":
+            return
 
         if self._menu is None:
-            self._menu = windll.user32.CreatePopupMenu()
+            self._menu = windll.user32.CreatePopupMenu()  # type: ignore[attr-defined]
 
         for item in self.menu_items.values():
             item_id = item["id"]
             item_info = self._serialize_menu_item(item)
 
-            if not windll.user32.SetMenuItemInfoW(
+            if not windll.user32.SetMenuItemInfoW(  # type: ignore[attr-defined]
                 self._menu,
                 item_id,
                 False,
                 byref(item_info),
             ):
-                windll.user32.InsertMenuItemW(
+                windll.user32.InsertMenuItemW(  # type: ignore[attr-defined]
                     self._menu,
                     item_id,
                     False,
@@ -1093,7 +1104,10 @@ class Win32Implementation(BaseImplementation):
         self._update_notify_icon(title=title, message=message)
 
     def on_process_window_message(self, h_wnd, msg, w_param, l_param):
-        from ctypes import windll, wintypes
+        if sys.platform != "win32":
+            return 0
+
+        from ctypes import wintypes  # noqa: PLC0415
 
         if msg == self.WM_TRAYICON:
             if l_param == self.WM_RBUTTONUP:
@@ -1124,7 +1138,7 @@ class Win32Implementation(BaseImplementation):
             self._remove_notify_icon()
             self._update_notify_icon()
 
-        return windll.user32.DefWindowProcW(
+        return windll.user32.DefWindowProcW(  # type: ignore[attr-defined]
             wintypes.HWND(h_wnd),
             msg,
             wintypes.WPARAM(w_param),
