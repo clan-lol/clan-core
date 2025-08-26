@@ -191,13 +191,13 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
 
         return file_data
 
-    def do_OPTIONS(self) -> None:  # noqa: N802
+    def do_OPTIONS(self) -> None:
         """Handle CORS preflight requests."""
         self.send_response_only(200)
         self._send_cors_headers()
         self.end_headers()
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         """Handle GET requests."""
         parsed_url = urlparse(self.path)
         path = parsed_url.path
@@ -211,7 +211,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         else:
             self.send_api_error_response("info", "Not Found", ["http_bridge", "GET"])
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         """Handle POST requests."""
         parsed_url = urlparse(self.path)
         path = parsed_url.path

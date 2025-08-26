@@ -1,4 +1,3 @@
-# ruff: noqa: SLF001
 import argparse
 
 import pytest

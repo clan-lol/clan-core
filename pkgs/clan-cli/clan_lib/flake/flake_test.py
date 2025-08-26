@@ -207,8 +207,8 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     flake2 = Flake(str(flake.path))
     flake1.invalidate_cache()
     flake2.invalidate_cache()
-    assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
-    assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
+    assert isinstance(flake1._cache, FlakeCache)
+    assert isinstance(flake2._cache, FlakeCache)
     log.info("First select")
     res1 = flake1.select("inputs.*.{?clan,?missing}.templates.*.*.description")
 

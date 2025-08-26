@@ -212,7 +212,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     inventory_store.write(inventory, message="Test writeability")
 
     # Check that the tags were updated
-    persisted = inventory_store._get_persisted()  # noqa: SLF001
+    persisted = inventory_store._get_persisted()
     assert get_value_by_path(persisted, "machines.jon.tags", []) == new_tags
 
     write_info = get_machine_fields_schema(Machine("jon", flake))
