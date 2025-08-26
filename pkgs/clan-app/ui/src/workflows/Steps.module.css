@@ -1,0 +1,7 @@
+.step {
+  @apply relative flex size-full flex-col justify-between gap-8;
+
+  .footer {
+    @apply flex justify-between;
+  }
+}

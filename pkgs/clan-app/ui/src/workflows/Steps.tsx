@@ -2,6 +2,7 @@ import { JSX } from "solid-js";
 import { useStepper } from "../hooks/stepper";
 import { Button, ButtonProps } from "../components/Button/Button";
 import { InstallSteps } from "./Install/install";
+import styles from "./Steps.module.css";
 
 interface StepLayoutProps {
   body: JSX.Element;
@@ -9,7 +10,7 @@ interface StepLayoutProps {
 }
 export const StepLayout = (props: StepLayoutProps) => {
   return (
-    <div class="flex size-full grow flex-col justify-between gap-6">
+    <div class={styles.step}>
       {props.body}
       {props.footer}
     </div>
@@ -63,7 +64,7 @@ interface StepFooterProps {
 export const StepFooter = (props: StepFooterProps) => {
   const stepper = useStepper<InstallSteps>();
   return (
-    <div class="flex justify-between py-4">
+    <div class={styles.footer}>
       <BackButton />
       <NextButton type="button" onClick={() => stepper.next()}>
         {props.nextText || undefined}

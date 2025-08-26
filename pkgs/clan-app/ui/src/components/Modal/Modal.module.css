@@ -25,7 +25,7 @@
 
 .modal_body {
   overflow-y: auto;
-  @apply rounded-b-md p-6 pt-4 bg-def-1 flex-grow;
+  @apply rounded-b-md p-4 pt-4 bg-def-1 flex-grow;
 
   &[data-no-padding] {
     @apply p-0;

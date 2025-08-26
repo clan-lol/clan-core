@@ -24,8 +24,8 @@ import cx from "classnames";
 const Prose = () => (
   <StepLayout
     body={
-      <>
-        <div class="flex h-36 w-full flex-col justify-center gap-3 rounded-md px-4 py-6 text-fg-inv-1 outline-2 outline-bg-def-acc-3 bg-inv-4">
+      <div class="flex flex-col gap-4">
+        <div class="flex h-36 w-full flex-col justify-center gap-3 rounded-md p-4 text-fg-inv-1 outline-2 outline-bg-def-acc-3 bg-inv-4">
           <div class="flex flex-col gap-3">
             <Typography
               hierarchy="label"
@@ -74,7 +74,7 @@ const Prose = () => (
             </Typography>
           </div>
         </div>
-      </>
+      </div>
     }
     footer={<StepFooter nextText="start" />}
   />
