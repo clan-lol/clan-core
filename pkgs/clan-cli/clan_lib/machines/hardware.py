@@ -6,12 +6,13 @@ from pathlib import Path
 from typing import TypedDict
 
 from clan_lib.api import API
-from clan_lib.cmd import RunOpts, run
+from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_config, nix_eval
+from clan_lib.nix import nix_config, nix_eval, nix_shell
+from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -79,41 +80,45 @@ def run_machine_hardware_info(
     hw_file = opts.backend.config_path(opts.machine)
     hw_file.parent.mkdir(parents=True, exist_ok=True)
 
-    if opts.backend == HardwareConfig.NIXOS_FACTER:
-        config_command = ["nixos-facter"]
-    else:
-        config_command = [
-            "nixos-generate-config",
-            # Filesystems are managed by disko
-            "--no-filesystems",
-            "--show-hardware-config",
-        ]
+    cmd = [
+        "nixos-anywhere",
+        "--flake",
+        f"{machine.flake}#{machine.name}",
+        "--phases",
+        "kexec",
+        "--generate-hardware-config",
+        str(opts.backend.value),
+        str(opts.backend.config_path(machine)),
+    ]
 
-    with target_host.host_connection() as ssh, ssh.become_root() as sudo_ssh:
-        out = sudo_ssh.run(config_command, opts=RunOpts(check=False))
-    if out.returncode != 0:
-        if "nixos-facter" in out.stderr and "not found" in out.stderr:
-            machine.error(str(out.stderr))
-            msg = (
-                "Please use our custom nixos install images from https://github.com/nix-community/nixos-images/releases/tag/nixos-unstable. "
-                "nixos-factor only works on nixos / clan systems currently."
-            )
-            raise ClanError(msg)
+    if target_host.private_key:
+        cmd += ["--ssh-option", f"IdentityFile={target_host.private_key}"]
 
-        machine.error(str(out))
-        msg = f"Failed to inspect {opts.machine}. Address: {target_host.target}"
-        raise ClanError(msg)
+    if target_host.port:
+        cmd += ["--ssh-port", str(target_host.port)]
+
+    key_pair = create_secret_key_nixos_anywhere()
+    cmd += ["-i", str(key_pair.private)]
 
     backup_file = None
     if hw_file.exists():
         backup_file = hw_file.with_suffix(".bak")
         hw_file.replace(backup_file)
-    hw_file.write_text(out.stdout)
+
+    cmd += [target_host.target]
+    cmd = nix_shell(
+        ["nixos-anywhere"],
+        cmd,
+    )
+
+    run(
+        cmd,
+        RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+    )
     print(f"Successfully generated: {hw_file}")
 
     # try to evaluate the machine
     # If it fails, the hardware-configuration.nix file is invalid
-
     commit_file(
         hw_file,
         opts.machine.flake.path,

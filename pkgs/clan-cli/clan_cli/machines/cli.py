@@ -92,16 +92,21 @@ Examples:
         "update-hardware-config",
         help="Generate hardware specifics for a machine",
         description="""
-Generates hardware specifics for a machine. Such as the host platform, available kernel modules, etc.
+
+This command will use kexec to boot the target into a minimal NixOS environment to gather the hardware information.
+If you want to manually ssh into the target after this command use `ssh root@<ip> -i ~/.config/clan/nixos-anywhere/keys/id_ed25519`
+
 
 The target must be a Linux based system reachable via SSH.
+
+
         """,
         epilog=(
             """
 Examples:
 
-  $ clan machines update-hardware-config [MACHINE] [TARGET_HOST]
-  Will generate hardware specifics for the the specified `[TARGET_HOST]` and place the result in hardware.nix for the given machine `[MACHINE]`.
+  $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
+  Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 
 For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration
 
