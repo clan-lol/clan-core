@@ -15,7 +15,7 @@ export const Loader = (props: LoaderProps) => {
       class={cx(
         styles.loader,
         styles[props.hierarchy || "primary"],
-        props.class,
+        props.class
       )}
     >
       <div class={styles.wrapper}>
