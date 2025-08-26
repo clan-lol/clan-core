@@ -288,14 +288,31 @@ def create_service_instance(
         msg = f"Instance '{instance_name}' already exists in the inventory"
         raise ClanError(msg)
 
-    # TODO: Check the roles against the schema
+    if roles == {}:
+        msg = "Creating a service instance requires adding roles"
+        raise ClanError(msg)
+
+    all_machines = inventory.get("machines", {})
+    available_machine_refs = set(all_machines.keys())
+
     schema = get_service_module_schema(flake, module_ref)
-    for role_name in roles:
+    for role_name, role_members in roles.items():
         if role_name not in schema:
             msg = f"Role '{role_name}' is not defined in the module schema"
             raise ClanError(msg)
 
-    # TODO: Validate roles against the schema
+        machine_refs = role_members.get("machines")
+        msg = f"Role: '{role_name}' - "
+        if machine_refs:
+            unavailable_machines = list(
+                filter(lambda m: m not in available_machine_refs, machine_refs),
+            )
+            if unavailable_machines:
+                msg += f"Unknown machine reference: {unavailable_machines}. Use one of {available_machine_refs}"
+                raise ClanError(msg)
+
+        # TODO: Check the settings against the schema
+        # settings = role_members.get("settings", {})
 
     # Create a new instance with the given roles
     new_instance: InventoryInstance = {
