@@ -129,7 +129,10 @@ def _get_secret_input_with_confirmation(
             remaining = max_attempts - attempt - 1
             if remaining > 0:
                 attempts_text = "attempt" if remaining == 1 else "attempts"
-                print(f"Values do not match. {remaining} {attempts_text} remaining.")
+                print(
+                    f"Values do not match. {remaining} {attempts_text} remaining.",
+                    file=sys.stderr,
+                )
             else:
                 msg = f"Failed to confirm value for {ident} after {max_attempts} attempts."
                 raise ClanError(msg)
@@ -171,7 +174,9 @@ def _get_regular_input(input_type: PromptType, text: str) -> str:
                 return input(f"{text}: ")
             case PromptType.MULTILINE:
                 print(f"{text} (Finish with Ctrl-D): ")
-                return sys.stdin.read()
+                content = sys.stdin.read()
+                # Remove final newline if present to match hidden multi-line behavior
+                return content.rstrip("\n")
             case _:
                 msg = f"Unsupported input type: {input_type}"
                 raise ClanError(msg)
