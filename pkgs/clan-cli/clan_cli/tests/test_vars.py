@@ -671,34 +671,50 @@ def test_prompt(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
 ) -> None:
+    """Test that generators can use prompts to collect user input and store the values appropriately."""
     flake = flake_with_sops
 
+    # Configure the machine and generator
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
-    my_generator["files"]["line_value"]["secret"] = False
-    my_generator["files"]["multiline_value"]["secret"] = False
 
+    # Define output files - these will contain the prompt responses
+    my_generator["files"]["line_value"]["secret"] = False  # Public file
+    my_generator["files"]["multiline_value"]["secret"] = False  # Public file
+
+    # Configure prompts that will collect user input
+    # prompt1: Single line input, not persisted (temporary)
     my_generator["prompts"]["prompt1"]["description"] = "dream2nix"
     my_generator["prompts"]["prompt1"]["persist"] = False
     my_generator["prompts"]["prompt1"]["type"] = "line"
 
+    # prompt2: Single line input, not persisted (temporary)
     my_generator["prompts"]["prompt2"]["description"] = "dream2nix"
     my_generator["prompts"]["prompt2"]["persist"] = False
     my_generator["prompts"]["prompt2"]["type"] = "line"
 
+    # prompt_persist: This prompt will be stored as a secret for reuse
     my_generator["prompts"]["prompt_persist"]["persist"] = True
 
+    # Script that reads prompt responses and writes them to output files
     my_generator["script"] = (
         'cat "$prompts"/prompt1 > "$out"/line_value; cat "$prompts"/prompt2 > "$out"/multiline_value'
     )
+
     flake.refresh()
     monkeypatch.chdir(flake.path)
+
+    # Mock the prompt responses to simulate user input
     monkeypatch.setattr(
         "clan_cli.vars.prompt.MOCK_PROMPT_RESPONSE",
         iter(["line input", "my\nmultiline\ninput\n", "prompt_persist"]),
     )
+
+    # Run the generator which will collect prompts and generate vars
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Set up objects for testing the results
     flake_obj = Flake(str(flake.path))
     my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
     my_generator_with_details = Generator(
@@ -708,6 +724,8 @@ def test_prompt(
         machine="my_machine",
         _flake=flake_obj,
     )
+
+    # Verify that non-persistent prompts created public vars correctly
     in_repo_store = in_repo.FactStore(flake=flake_obj)
     assert in_repo_store.exists(my_generator, "line_value")
     assert in_repo_store.get(my_generator, "line_value").decode() == "line input"
@@ -717,6 +735,8 @@ def test_prompt(
         in_repo_store.get(my_generator, "multiline_value").decode()
         == "my\nmultiline\ninput\n"
     )
+
+    # Verify that persistent prompt was stored as a secret
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator_with_details, "prompt_persist")
     assert sops_store.get(my_generator, "prompt_persist").decode() == "prompt_persist"
