@@ -387,3 +387,22 @@ def test_unknown_serialize() -> None:
 
     person = dataclass_to_dict(data)
     assert person == {"name": ["a", "b"]}
+
+
+def test_union_dataclass() -> None:
+    @dataclass
+    class A:
+        val: str | list[str] | None = None
+
+    data1 = {"val": "hello"}
+    expected1 = A(val="hello")
+    assert from_dict(A, data1) == expected1
+    data2 = {"val": ["a", "b"]}
+    expected2 = A(val=["a", "b"])
+    assert from_dict(A, data2) == expected2
+    data3 = {"val": None}
+    expected3 = A(val=None)
+    assert from_dict(A, data3) == expected3
+    data4: dict[str, object] = {}
+    expected4 = A(val=None)
+    assert from_dict(A, data4) == expected4
