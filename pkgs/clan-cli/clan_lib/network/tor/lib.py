@@ -43,18 +43,22 @@ def spawn_tor() -> Iterator[None]:
     cmd_args = ["tor", "--HardwareAccel", "1"]
     packages = ["tor"]
     cmd = nix_shell(packages, cmd_args)
-    process = Popen(cmd)
     try:
-        while not is_tor_running():
-            log.debug("Waiting for Tor to start...")
-            time.sleep(0.2)
-        log.info("Tor is now running")
-        yield
-    finally:
-        log.info("Terminating Tor process...")
-        process.terminate()
-        process.wait()
-        log.info("Tor process terminated")
+        process = Popen(cmd)
+        try:
+            while not is_tor_running():
+                log.debug("Waiting for Tor to start...")
+                time.sleep(0.2)
+            log.info("Tor is now running")
+            yield
+        finally:
+            log.info("Terminating Tor process...")
+            process.terminate()
+            process.wait()
+            log.info("Tor process terminated")
+    except OSError as e:
+        msg = f"Failed to spawn tor process with command: {cmd}"
+        raise ClanError(msg) from e
 
 
 @dataclass(frozen=True)
