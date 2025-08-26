@@ -124,10 +124,8 @@ class SecretStore(SecretStoreBase):
         os.umask(0o077)
         for service in self.machine.facts_data:
             for secret in self.machine.facts_data[service]["secret"]:
-                if isinstance(secret, dict):
-                    secret_name = secret["name"]
-                else:
-                    # TODO: drop old format soon
-                    secret_name = secret
+                secret_name = (
+                    secret["name"] if isinstance(secret, dict) else secret
+                )  # TODO: drop old format soon
                 (output_dir / secret_name).write_bytes(self.get(service, secret_name))
         (output_dir / ".pass_info").write_bytes(self.generate_hash())

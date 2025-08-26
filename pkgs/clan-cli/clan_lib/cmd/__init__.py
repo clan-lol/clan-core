@@ -386,10 +386,7 @@ def run(
         else:
             stack.enter_context(terminate_process_group(process))
 
-        if isinstance(options.input, bytes):
-            input_bytes = options.input
-        else:
-            input_bytes = None
+        input_bytes = options.input if isinstance(options.input, bytes) else None
 
         stdout_buf, stderr_buf = handle_io(
             process,

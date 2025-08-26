@@ -238,10 +238,7 @@ def parse_selector(selector: str) -> list[Selector]:
 
     for i in range(len(selector)):
         c = selector[i]
-        if stack == []:
-            mode = "start"
-        else:
-            mode = stack[-1]
+        mode = "start" if stack == [] else stack[-1]
 
         if mode == "end":
             if c == ".":
@@ -385,10 +382,7 @@ class FlakeCacheEntry:
     ) -> None:
         selector: Selector
         # if we have no more selectors, it means we select all keys from now one and futher down
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # first we find out if we have all subkeys already
 
@@ -528,10 +522,7 @@ class FlakeCacheEntry:
         if isinstance(self.value, str | float | int | None):
             return True
 
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # we just fetch all subkeys, so we need to check of we inserted all keys at this level before
         if selector.type == SelectorType.ALL:
@@ -582,10 +573,7 @@ class FlakeCacheEntry:
 
     def select(self, selectors: list[Selector]) -> Any:
         selector: Selector
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # mirror nix behavior where we return outPath if no further selector is specified
         if selectors == [] and isinstance(self.value, dict) and "outPath" in self.value:
@@ -758,10 +746,7 @@ class FlakeCache:
         self.cache: FlakeCacheEntry = FlakeCacheEntry()
 
     def insert(self, data: dict[str, Any], selector_str: str) -> None:
-        if selector_str:
-            selectors = parse_selector(selector_str)
-        else:
-            selectors = []
+        selectors = parse_selector(selector_str) if selector_str else []
 
         self.cache.insert(data, selectors)
 
