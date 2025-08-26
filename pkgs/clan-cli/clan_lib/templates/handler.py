@@ -89,8 +89,8 @@ def machine_template(
 
     try:
         yield dst_machine_dir
-    except Exception as e:
-        log.error(f"An error occurred inside the 'machine_template' context: {e}")
+    except Exception:
+        log.exception("An error occurred inside the 'machine_template' context")
 
         # Ensure that the directory is removed to avoid half-created machines
         # Everything in the with block is considered part of the context
@@ -182,7 +182,7 @@ def clan_template(
         try:
             post_process(dst_dir)
         except Exception as e:
-            log.error(f"Error during post-processing of clan template: {e}")
+            log.exception("Error during post-processing of clan template")
             log.info(f"Removing left-over directory: {dst_dir}")
             shutil.rmtree(dst_dir, ignore_errors=True)
             msg = (
@@ -191,8 +191,8 @@ def clan_template(
             raise ClanError(msg) from e
     try:
         yield dst_dir
-    except Exception as e:
-        log.error(f"An error occurred inside the 'clan_template' context: {e}")
+    except Exception:
+        log.exception("An error occurred inside the 'clan_template' context")
         log.info(f"Removing left-over directory: {dst_dir}")
         shutil.rmtree(dst_dir, ignore_errors=True)
         raise

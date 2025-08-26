@@ -148,8 +148,8 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             self.send_header("Content-Type", content_type)
             self.end_headers()
             self.wfile.write(file_data)
-        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as e:
-            log.error(f"Error reading Swagger file: {e!s}")
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            log.exception("Error reading Swagger file")
             self.send_error(500, "Internal Server Error")
 
     def _get_swagger_file_path(self, rel_path: str) -> Path:
@@ -264,10 +264,10 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         """Read and parse the request body. Returns None if there was an error."""
         try:
             content_length = int(self.headers.get("Content-Length", 0))
-            if content_length > 0:
-                body = self.rfile.read(content_length)
-                return json.loads(body.decode("utf-8"))
-            return {}
+            if content_length == 0:
+                return {}
+            body = self.rfile.read(content_length)
+            return json.loads(body.decode("utf-8"))
         except json.JSONDecodeError:
             self.send_api_error_response(
                 "post",

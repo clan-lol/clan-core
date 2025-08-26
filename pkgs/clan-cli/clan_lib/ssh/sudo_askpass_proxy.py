@@ -82,14 +82,14 @@ class SudoAskpassProxy:
                     prompt = stripped_line[len("PASSWORD_REQUESTED:") :].strip()
                     password = self.handle_password_request(prompt)
                     if ssh_process.stdin is None:
-                        msg = "SSH process stdin is None"
-                        raise ClanError(msg)
+                        logger.error("SSH process stdin is None")
+                        return
                     print(password, file=ssh_process.stdin)
                     ssh_process.stdin.flush()
                 else:
                     print(stripped_line)
-        except (OSError, ClanError) as e:
-            logger.error(f"Error processing passwords requests output: {e}")
+        except (OSError, ClanError):
+            logger.exception("Error processing passwords requests output")
 
     def run(self) -> str:
         """Run the SSH command with password proxying. Returns the askpass script path."""

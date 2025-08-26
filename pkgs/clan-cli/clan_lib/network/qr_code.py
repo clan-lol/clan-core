@@ -158,15 +158,15 @@ def read_qr_image(image_path: Path) -> dict[str, Any]:
     try:
         res = run(cmd)
         data = res.stdout.strip()
-
-        if not data:
-            msg = f"No QR code found in image: {image_path}"
-            raise ClanError(msg)
-
-        return json.loads(data)
     except json.JSONDecodeError as e:
         msg = f"Invalid JSON in QR code: {e}"
         raise ClanError(msg) from e
-    except Exception as e:
+    except OSError as e:
         msg = f"Failed to read QR code from {image_path}: {e}"
         raise ClanError(msg) from e
+
+    if not data:
+        msg = f"No QR code found in image: {image_path}"
+        raise ClanError(msg)
+
+    return json.loads(data)

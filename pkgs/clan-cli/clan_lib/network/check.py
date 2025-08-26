@@ -45,7 +45,6 @@ def check_machine_ssh_login(
                 ["true"],
                 RunOpts(timeout=opts.timeout, needs_user_terminal=True),
             )
-            return
         except ClanCmdTimeoutError as e:
             msg = f"SSH login timeout after {opts.timeout}s"
             raise ClanError(msg) from e
@@ -54,6 +53,8 @@ def check_machine_ssh_login(
                 raise ClanError(e.cmd.stderr.strip()) from e
             msg = f"SSH login failed: {e}"
             raise ClanError(msg) from e
+        else:
+            return
 
 
 @API.register
