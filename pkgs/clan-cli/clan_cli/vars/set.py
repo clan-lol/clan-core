@@ -24,10 +24,7 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
         _machine = Machine(name=machine, flake=flake)
     else:
         _machine = machine
-    if isinstance(var, str):
-        _var = get_machine_var(_machine, var)
-    else:
-        _var = var
+    _var = get_machine_var(_machine, var) if isinstance(var, str) else var
     paths = _var.set(value)
     if paths:
         commit_files(

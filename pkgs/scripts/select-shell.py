@@ -48,8 +48,7 @@ def list_devshells() -> list[str]:
         stdout=subprocess.PIPE,
         check=True,
     )
-    names = json.loads(flake_show.stdout.decode())
-    return names
+    return json.loads(flake_show.stdout.decode())
 
 
 def print_devshells() -> None:

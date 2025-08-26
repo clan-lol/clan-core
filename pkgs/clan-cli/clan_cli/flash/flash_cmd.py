@@ -14,6 +14,9 @@ from clan_cli.completions import add_dynamic_completer, complete_machines
 
 log = logging.getLogger(__name__)
 
+# Constants for disk validation
+EXPECTED_DISK_VALUES = 2
+
 
 @dataclass
 class FlashOptions:
@@ -44,7 +47,7 @@ class AppendDiskAction(argparse.Action):
         if not (
             isinstance(values, Sequence)
             and not isinstance(values, str)
-            and len(values) == 2
+            and len(values) == EXPECTED_DISK_VALUES
         ):
             msg = "Two values must be provided for a 'disk'"
             raise ValueError(msg)

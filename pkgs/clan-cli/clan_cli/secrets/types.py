@@ -10,6 +10,9 @@ from .sops import get_public_age_keys
 VALID_SECRET_NAME = re.compile(r"^[a-zA-Z0-9._-]+$")
 VALID_USER_NAME = re.compile(r"^[a-z_]([a-z0-9_-]{0,31})?$")
 
+# Maximum length for user and group names
+MAX_USER_GROUP_NAME_LENGTH = 32
+
 
 def secret_name_type(arg_value: str) -> str:
     if not VALID_SECRET_NAME.match(arg_value):
@@ -45,7 +48,7 @@ def public_or_private_age_key_type(arg_value: str) -> str:
 
 def group_or_user_name_type(what: str) -> Callable[[str], str]:
     def name_type(arg_value: str) -> str:
-        if len(arg_value) > 32:
+        if len(arg_value) > MAX_USER_GROUP_NAME_LENGTH:
             msg = f"{what.capitalize()} name must be less than 32 characters long"
             raise argparse.ArgumentTypeError(msg)
         if not VALID_USER_NAME.match(arg_value):

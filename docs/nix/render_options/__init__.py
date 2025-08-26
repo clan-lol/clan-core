@@ -48,7 +48,7 @@ CLAN_SERVICE_INTERFACE = os.environ.get("CLAN_SERVICE_INTERFACE")
 
 CLAN_MODULES_VIA_SERVICE = os.environ.get("CLAN_MODULES_VIA_SERVICE")
 
-OUT = os.environ.get("out")
+OUT = os.environ.get("out")  # noqa: SIM112
 
 
 def sanitize(text: str) -> str:
@@ -551,8 +551,7 @@ def options_docs_from_tree(
 
         return output
 
-    md = render_tree(root)
-    return md
+    return render_tree(root)
 
 
 if __name__ == "__main__":

@@ -7,81 +7,61 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 exclude = "clan_cli.nixpkgs"
 
+
+
 [tool.ruff]
 target-version = "py313"
 line-length = 88
 lint.select = [ "ALL" ]
 lint.ignore = [
-  "A003",
-  # A005 Module `inspect` shadows a Python standard-library module
-  # We might actually want to fix this.
-  "A005",
-  "ANN401",
-  "C901",
-  "COM812",
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D104",
-  "D105",
-  "D107",
-  "D200",
-  "D203",
-  "D213",
-  "D401",
-  "D415",
-  "E402",
-  "E501",
-  "E731",
-  "ERA001",
-  "FBT001",
-  "FBT002",
-  "FIX",
-  "G001",
-  "G004",
-  "ISC001",
-  "PLR0911",
-  "PLR2004",
-  "PT001",
-  "PT023",
-  "RET504",
-  "RUF100",
-  "S603",
-  "S607",
-  "SIM102",
-  "SIM108",
-  "SIM112",
-  "T201",
-  "TD",
-  "TRY400",
+  "ANN401",  # any-type
+  "C901",    # complex-structure
+  "COM812",  # missing-trailing-comma
+  "D100",    # undocumented-public-module
+  "D101",    # undocumented-public-class
+  "D102",    # undocumented-public-method
+  "D103",    # undocumented-public-function
+  "D104",    # undocumented-public-package
+  "D105",    # undocumented-magic-method
+  "D107",    # undocumented-public-init
+  "D200",    # unnecessary-multiline-docstring
+  "D203",    # incorrect-blank-line-before-class
+  "D213",    # multi-line-summary-second-line
+  "D401",    # non-imperative-mood
+  "D415",    # missing-terminal-punctuation
+  "E402",    # module-import-not-at-top-of-file
+  "E501",    # line-too-long
+  "ERA001",  # commented-out-code
+  "FBT001",  # boolean-type-hint-positional-argument
+  "FBT002",  # boolean-default-value-positional-argument
+  "FIX",     # flake8-fixme (FIXME comments)
+  "G001",    # logging-string-format
+  "G004",    # logging-f-string
+  "PLR0911", # too-many-return-statements
+  "PT023",   # pytest-incorrect-mark-parentheses-style
+  "S603",    # subprocess-without-shell-equals-true
+  "S607",    # start-process-with-partial-path
+  "T201",    # print
+  "TD",      # flake8-todos (TODO comments)
+  "INP001",  # implicit-namespace-package
 
   # Maybe we can fix those
-  "D205",
-  "D400",
-  "PLR0912",
-  "PLR0913",
-  "PLR0915",
-  "TRY300",
-  "TRY301",
-  "FBT003",
-  "INP001",
+  "D205",    # missing-blank-line-after-summary
+  "D400",    # missing-trailing-period
+  "PLR0912", # too-many-branches
+  "PLR0913", # too-many-arguments
+  "PLR0915", # too-many-statements
+  "FBT003",  # boolean-positional-value-in-call
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"*_test.py" = [
-  "SLF001",
-  "S101",
-  "S105"
+# Test files (covers test_*.py, *_test.py, and files in tests/ directories)
+"{test_*,*_test,**/tests/*}.py" = [
+  "SLF001",  # private-member-access
+  "S101",    # assert
+  "S105",    # hardcoded-password-string
+  "PLR2004"  # magic-value-comparison
 ]
-"test_*.py" = [
-  "SLF001",
-  "S101",
-  "S105"
-]
-"*/tests/*.py" = [
-  "S101"
-]
-"*/fixtures/*.py" = [
-  "S101"
+"**/fixtures/*.py" = [
+  "S101"     # assert
 ]

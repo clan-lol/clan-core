@@ -24,8 +24,7 @@ def list_service_instances(flake: Flake) -> InventoryInstancesType:
     """Returns all currently present service instances including their full configuration"""
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
-    instances = inventory.get("instances", {})
-    return instances
+    return inventory.get("instances", {})
 
 
 def collect_tags(machines: InventoryMachinesType) -> set[str]:

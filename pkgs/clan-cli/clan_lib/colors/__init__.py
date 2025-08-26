@@ -5,6 +5,9 @@ ANSI16_MARKER = 300
 ANSI256_MARKER = 301
 DEFAULT_MARKER = 302
 
+# RGB color constants
+RGB_MAX_VALUE = 255  # Maximum value for RGB color components (0-255)
+
 
 class RgbColor(Enum):
     """A subset of CSS colors with RGB values that work well in Dark and Light mode."""
@@ -107,7 +110,11 @@ def color_code(spec: tuple[int, int, int], base: ColorType) -> str:
         val = _join(base.value + 8, 5, green)
     elif red == DEFAULT_MARKER:
         val = _join(base.value + 9)
-    elif 0 <= red <= 255 and 0 <= green <= 255 and 0 <= blue <= 255:
+    elif (
+        0 <= red <= RGB_MAX_VALUE
+        and 0 <= green <= RGB_MAX_VALUE
+        and 0 <= blue <= RGB_MAX_VALUE
+    ):
         val = _join(base.value + 8, 2, red, green, blue)
     else:
         msg = f"Invalid color specification: {spec}"

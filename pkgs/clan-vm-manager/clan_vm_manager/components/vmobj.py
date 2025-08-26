@@ -340,11 +340,9 @@ class VMObject(GObject.Object):
 
             # Try to shutdown the VM gracefully using QMP
             try:
-                if self.qmp_wrap is None:
-                    msg = "QMP wrapper is not available"
-                    raise ClanError(msg)
-                with self.qmp_wrap.qmp_ctx() as qmp:
-                    qmp.command("system_powerdown")
+                if self.qmp_wrap is not None:
+                    with self.qmp_wrap.qmp_ctx() as qmp:
+                        qmp.command("system_powerdown")
             except (ClanError, OSError, ConnectionError) as ex:
                 log.debug(f"QMP command 'system_powerdown' ignored. Error: {ex}")
 

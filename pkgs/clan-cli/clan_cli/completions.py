@@ -73,8 +73,7 @@ def complete_machines(
     if thread.is_alive():
         return iter([])
 
-    machines_dict = dict.fromkeys(machines, "machine")
-    return machines_dict
+    return dict.fromkeys(machines, "machine")
 
 
 def complete_services_for_machine(
@@ -118,8 +117,7 @@ def complete_services_for_machine(
     if thread.is_alive():
         return iter([])
 
-    services_dict = dict.fromkeys(services, "service")
-    return services_dict
+    return dict.fromkeys(services, "service")
 
 
 def complete_backup_providers_for_machine(
@@ -162,8 +160,7 @@ def complete_backup_providers_for_machine(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = dict.fromkeys(providers, "provider")
-    return providers_dict
+    return dict.fromkeys(providers, "provider")
 
 
 def complete_state_services_for_machine(
@@ -206,8 +203,7 @@ def complete_state_services_for_machine(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = dict.fromkeys(providers, "service")
-    return providers_dict
+    return dict.fromkeys(providers, "service")
 
 
 def complete_secrets(
@@ -225,8 +221,7 @@ def complete_secrets(
 
     secrets = list_secrets(Flake(flake).path)
 
-    secrets_dict = dict.fromkeys(secrets, "secret")
-    return secrets_dict
+    return dict.fromkeys(secrets, "secret")
 
 
 def complete_users(
@@ -244,8 +239,7 @@ def complete_users(
 
     users = list_users(Path(flake))
 
-    users_dict = dict.fromkeys(users, "user")
-    return users_dict
+    return dict.fromkeys(users, "user")
 
 
 def complete_groups(
@@ -264,8 +258,7 @@ def complete_groups(
     groups_list = list_groups(Path(flake))
     groups = [group.name for group in groups_list]
 
-    groups_dict = dict.fromkeys(groups, "group")
-    return groups_dict
+    return dict.fromkeys(groups, "group")
 
 
 def complete_templates_disko(
@@ -285,8 +278,7 @@ def complete_templates_disko(
     disko_template_list = list_all_templates.builtins.get("disko")
     if disko_template_list:
         disko_templates = list(disko_template_list)
-        disko_dict = dict.fromkeys(disko_templates, "disko")
-        return disko_dict
+        return dict.fromkeys(disko_templates, "disko")
     return []
 
 
@@ -307,8 +299,7 @@ def complete_templates_clan(
     clan_template_list = list_all_templates.builtins.get("clan")
     if clan_template_list:
         clan_templates = list(clan_template_list)
-        clan_dict = dict.fromkeys(clan_templates, "clan")
-        return clan_dict
+        return dict.fromkeys(clan_templates, "clan")
     return []
 
 
@@ -350,8 +341,7 @@ def complete_vars_for_machine(
         except (OSError, PermissionError):
             pass
 
-    vars_dict = dict.fromkeys(vars_list, "var")
-    return vars_dict
+    return dict.fromkeys(vars_list, "var")
 
 
 def complete_target_host(
@@ -392,8 +382,7 @@ def complete_target_host(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = dict.fromkeys(target_hosts, "target_host")
-    return providers_dict
+    return dict.fromkeys(target_hosts, "target_host")
 
 
 def complete_tags(
@@ -462,8 +451,7 @@ def complete_tags(
     if any(thread.is_alive() for thread in threads):
         return iter([])
 
-    providers_dict = dict.fromkeys(tags, "tag")
-    return providers_dict
+    return dict.fromkeys(tags, "tag")
 
 
 def add_dynamic_completer(

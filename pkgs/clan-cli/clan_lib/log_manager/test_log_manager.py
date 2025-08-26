@@ -47,9 +47,7 @@ def configured_log_manager(base_dir: Path) -> LogManager:
     clans_config = LogGroupConfig("clans", "Clans")
     machines_config = LogGroupConfig("machines", "Machines")
     clans_config = clans_config.add_child(machines_config)
-    log_manager = log_manager.add_root_group_config(clans_config)
-
-    return log_manager
+    return log_manager.add_root_group_config(clans_config)
 
 
 class TestLogGroupConfig:

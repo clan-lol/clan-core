@@ -324,14 +324,13 @@ class Machine:
         # Always run command with shell opts
         command = f"set -eo pipefail; source /etc/profile; set -xu; {command}"
 
-        proc = subprocess.run(
+        return subprocess.run(
             self.nsenter_command(command),
             timeout=timeout,
             check=False,
             stdout=subprocess.PIPE,
             text=True,
         )
-        return proc
 
     def nested(
         self,

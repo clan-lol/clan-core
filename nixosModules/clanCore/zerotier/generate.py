@@ -16,6 +16,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+# Constants
+NODE_ID_LENGTH = 10
+NETWORK_ID_LENGTH = 16
+
 
 class ClanError(Exception):
     pass
@@ -55,8 +59,8 @@ class Identity:
 
     def node_id(self) -> str:
         nid = self.public.split(":")[0]
-        if len(nid) != 10:
-            msg = f"node_id must be 10 characters long, got {len(nid)}: {nid}"
+        if len(nid) != NODE_ID_LENGTH:
+            msg = f"node_id must be {NODE_ID_LENGTH} characters long, got {len(nid)}: {nid}"
             raise ClanError(msg)
         return nid
 
@@ -173,8 +177,8 @@ def create_identity() -> Identity:
 
 
 def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Address:
-    if len(network_id) != 16:
-        msg = f"network_id must be 16 characters long, got '{network_id}'"
+    if len(network_id) != NETWORK_ID_LENGTH:
+        msg = f"network_id must be {NETWORK_ID_LENGTH} characters long, got '{network_id}'"
         raise ClanError(msg)
     nwid = int(network_id, 16)
     node_id = int(identity.node_id(), 16)

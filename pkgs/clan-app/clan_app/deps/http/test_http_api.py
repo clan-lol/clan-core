@@ -136,14 +136,14 @@ class TestHttpApiServer:
 
         try:
             # Test root endpoint
-            response = urlopen("http://127.0.0.1:8081/")  # noqa: S310
+            response = urlopen("http://127.0.0.1:8081/")
             data: dict = json.loads(response.read().decode())
             assert data["body"]["status"] == "success"
             assert data["body"]["data"]["message"] == "Clan API Server"
             assert data["body"]["data"]["version"] == "1.0.0"
 
             # Test methods endpoint
-            response = urlopen("http://127.0.0.1:8081/api/methods")  # noqa: S310
+            response = urlopen("http://127.0.0.1:8081/api/methods")
             data = json.loads(response.read().decode())
             assert data["body"]["status"] == "success"
             assert "test_method" in data["body"]["data"]["methods"]
@@ -179,7 +179,7 @@ class TestHttpApiServer:
         try:
             # Test 404 error
 
-            res = urlopen("http://127.0.0.1:8081/nonexistent")  # noqa: S310
+            res = urlopen("http://127.0.0.1:8081/nonexistent")
             assert res.status == 200
             body = json.loads(res.read().decode())["body"]
             assert body["status"] == "error"

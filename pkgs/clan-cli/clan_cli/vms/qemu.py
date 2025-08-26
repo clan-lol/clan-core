@@ -93,12 +93,7 @@ def get_machine_options() -> str:
     system = platform.system().lower()
 
     # Determine accelerator based on OS
-    if system == "darwin":
-        # macOS uses Hypervisor.framework
-        accel = "hvf"
-    else:
-        # Linux and others use KVM
-        accel = "kvm"
+    accel = "hvf" if system == "darwin" else "kvm"
 
     if arch in ("x86_64", "amd64", "i386", "i686"):
         # For x86_64, use q35 for modern PCIe support

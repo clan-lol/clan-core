@@ -51,7 +51,7 @@ def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
     inventory_store.write(inventory, message="Test add tags via API")
 
     # Check that the tags were updated
-    persisted = inventory_store._get_persisted()  # noqa: SLF001
+    persisted = inventory_store._get_persisted()
     assert get_value_by_path(persisted, "machines.jon.tags", []) == new_tags
 
     tags = list_tags(flake)

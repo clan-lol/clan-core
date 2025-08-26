@@ -138,6 +138,4 @@ def spawn(
     proc.start()
 
     # Return the process
-    mp_proc = MPProcess(name=proc_name, proc=proc, out_file=out_file)
-
-    return mp_proc
+    return MPProcess(name=proc_name, proc=proc, out_file=out_file)

@@ -10,6 +10,9 @@ from clan_lib.errors import ClanError
 
 T = TypeVar("T")
 
+# Priority constants for configuration merging
+WRITABLE_PRIORITY_THRESHOLD = 100  # Values below this are not writeable
+
 empty: list[str] = []
 
 
@@ -138,8 +141,7 @@ def list_difference(all_items: list, filter_items: list) -> list:
 
 def find_duplicates(string_list: list[str]) -> list[str]:
     count = Counter(string_list)
-    duplicates = [item for item, freq in count.items() if freq > 1]
-    return duplicates
+    return [item for item, freq in count.items() if freq > 1]
 
 
 def find_deleted_paths(
@@ -348,7 +350,7 @@ def determine_writeability(
 
         # If priority is less than 100, all children are not writeable
         # If the parent passed "non_writeable" earlier, this makes all children not writeable
-        if (prio is not None and prio < 100) or non_writeable:
+        if (prio is not None and prio < WRITABLE_PRIORITY_THRESHOLD) or non_writeable:
             results["non_writeable"].add(full_key)
             if isinstance(value, dict):
                 determine_writeability(
@@ -370,7 +372,7 @@ def determine_writeability(
             raise ClanError(msg)
 
         is_mergeable = False
-        if prio == 100:
+        if prio == WRITABLE_PRIORITY_THRESHOLD:
             default = defaults.get(key)
             if isinstance(default, dict):
                 is_mergeable = True
@@ -379,7 +381,7 @@ def determine_writeability(
             if key_in_correlated:
                 is_mergeable = True
 
-        is_writeable = prio > 100 or is_mergeable
+        is_writeable = prio > WRITABLE_PRIORITY_THRESHOLD or is_mergeable
 
         # Append the result
         if is_writeable:

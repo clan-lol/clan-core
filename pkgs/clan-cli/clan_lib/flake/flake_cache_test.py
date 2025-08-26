@@ -45,15 +45,15 @@ def test_cache_persistance(flake: ClanFlake) -> None:
     flake2 = Flake(str(flake.path))
     flake1.invalidate_cache()
     flake2.invalidate_cache()
-    assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
-    assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
-    assert not flake1._cache.is_cached(  # noqa: SLF001
+    assert isinstance(flake1._cache, FlakeCache)
+    assert isinstance(flake2._cache, FlakeCache)
+    assert not flake1._cache.is_cached(
         "nixosConfigurations.*.config.networking.hostName",
     )
     flake1.select("nixosConfigurations.*.config.networking.hostName")
     flake1.select("nixosConfigurations.*.config.networking.{hostName,hostId}")
     flake2.invalidate_cache()
-    assert flake2._cache.is_cached(  # noqa: SLF001
+    assert flake2._cache.is_cached(
         "nixosConfigurations.*.config.networking.{hostName,hostId}",
     )
 
@@ -312,10 +312,10 @@ def test_cache_gc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         my_flake.select("testfile")
     else:
         my_flake.select("testfile")
-    assert my_flake._cache is not None  # noqa: SLF001
-    assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
+    assert my_flake._cache is not None
+    assert my_flake._cache.is_cached("testfile")
     subprocess.run(["nix-collect-garbage"], check=True)
-    assert not my_flake._cache.is_cached("testfile")  # noqa: SLF001
+    assert not my_flake._cache.is_cached("testfile")
 
 
 def test_store_path_with_line_numbers_not_wrapped() -> None:

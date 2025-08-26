@@ -22,6 +22,11 @@ from typing import (
 
 from clan_lib.api.serde import dataclass_to_dict
 
+# Annotation constants
+TUPLE_KEY_VALUE_PAIR_LENGTH = (
+    2  # Expected length for tuple annotations like ("key", value)
+)
+
 
 class JSchemaTypeError(Exception):
     pass
@@ -37,9 +42,7 @@ def inspect_dataclass_fields(t: type) -> dict[TypeVar, type]:
 
     type_params = origin.__parameters__
     # Create a map from type parameters to actual type arguments
-    type_map = dict(zip(type_params, type_args, strict=False))
-
-    return type_map
+    return dict(zip(type_params, type_args, strict=False))
 
 
 def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[str, Any]:
@@ -65,7 +68,10 @@ def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[st
         if isinstance(annotation, dict):
             # Assuming annotation is a dict that can directly apply to the schema
             schema.update(annotation)
-        elif isinstance(annotation, tuple) and len(annotation) == 2:
+        elif (
+            isinstance(annotation, tuple)
+            and len(annotation) == TUPLE_KEY_VALUE_PAIR_LENGTH
+        ):
             # Assuming a tuple where first element is a keyword (like 'minLength') and the second is the value
             schema[annotation[0]] = annotation[1]
         elif isinstance(annotation, str):
@@ -138,9 +144,10 @@ def type_to_dict(
                 if "null" not in pv["type"]:
                     required.add(pn)
 
-            elif pv.get("oneOf") is not None:
-                if "null" not in [i.get("type") for i in pv.get("oneOf", [])]:
-                    required.add(pn)
+            elif pv.get("oneOf") is not None and "null" not in [
+                i.get("type") for i in pv.get("oneOf", [])
+            ]:
+                required.add(pn)
 
         required_fields = {
             f.name

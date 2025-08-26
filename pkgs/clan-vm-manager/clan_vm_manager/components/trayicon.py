@@ -91,8 +91,11 @@ class Core:
 
 
 core = Core()
+# Constants
+GTK_VERSION_4 = 4
+
 ### from pynicotine.gtkgui.application import GTK_API_VERSION
-GTK_API_VERSION = 4
+GTK_API_VERSION = GTK_VERSION_4
 
 ## from pynicotine.gtkgui.application import GTK_GUI_FOLDER_PATH
 GTK_GUI_FOLDER_PATH = "assets"
@@ -899,7 +902,7 @@ class Win32Implementation(BaseImplementation):
     def _load_ico_buffer(self, icon_name, icon_size):
         ico_buffer = b""
 
-        if GTK_API_VERSION >= 4:
+        if GTK_API_VERSION >= GTK_VERSION_4:
             icon = ICON_THEME.lookup_icon(
                 icon_name,
                 fallbacks=None,
@@ -1118,14 +1121,17 @@ class Win32Implementation(BaseImplementation):
                 # Icon pressed
                 self.activate_callback()
 
-            elif l_param in (
-                self.NIN_BALLOONHIDE,
-                self.NIN_BALLOONTIMEOUT,
-                self.NIN_BALLOONUSERCLICK,
+            elif (
+                l_param
+                in (
+                    self.NIN_BALLOONHIDE,
+                    self.NIN_BALLOONTIMEOUT,
+                    self.NIN_BALLOONUSERCLICK,
+                )
+                and not config.sections["ui"]["trayicon"]
             ):
-                if not config.sections["ui"]["trayicon"]:
-                    # Notification dismissed, but user has disabled tray icon
-                    self._remove_notify_icon()
+                # Notification dismissed, but user has disabled tray icon
+                self._remove_notify_icon()
 
         elif msg == self.WM_COMMAND:
             # Menu item pressed

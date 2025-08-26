@@ -6,6 +6,9 @@ from pathlib import Path
 
 from clan_cli.cli import create_parser
 
+# Constants for command line argument validation
+EXPECTED_ARGC = 2  # Expected number of command line arguments
+
 hidden_subcommands = ["machine", "b", "f", "m", "se", "st", "va", "net", "network"]
 
 
@@ -135,16 +138,14 @@ def indent_next(text: str, indent_size: int = 4) -> str:
     """
     indent = " " * indent_size
     lines = text.split("\n")
-    indented_text = lines[0] + ("\n" + indent).join(lines[1:])
-    return indented_text
+    return lines[0] + ("\n" + indent).join(lines[1:])
 
 
 def indent_all(text: str, indent_size: int = 4) -> str:
     """Indent all lines in a string."""
     indent = " " * indent_size
     lines = text.split("\n")
-    indented_text = indent + ("\n" + indent).join(lines)
-    return indented_text
+    return indent + ("\n" + indent).join(lines)
 
 
 def get_subcommands(
@@ -382,7 +383,7 @@ def build_command_reference() -> None:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
+    if len(sys.argv) != EXPECTED_ARGC:
         print("Usage: python docs.py <command>")
         print("Available commands: reference")
         sys.exit(1)

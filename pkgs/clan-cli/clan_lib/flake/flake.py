@@ -238,10 +238,7 @@ def parse_selector(selector: str) -> list[Selector]:
 
     for i in range(len(selector)):
         c = selector[i]
-        if stack == []:
-            mode = "start"
-        else:
-            mode = stack[-1]
+        mode = "start" if stack == [] else stack[-1]
 
         if mode == "end":
             if c == ".":
@@ -385,10 +382,7 @@ class FlakeCacheEntry:
     ) -> None:
         selector: Selector
         # if we have no more selectors, it means we select all keys from now one and futher down
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # first we find out if we have all subkeys already
 
@@ -528,10 +522,7 @@ class FlakeCacheEntry:
         if isinstance(self.value, str | float | int | None):
             return True
 
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # we just fetch all subkeys, so we need to check of we inserted all keys at this level before
         if selector.type == SelectorType.ALL:
@@ -539,10 +530,9 @@ class FlakeCacheEntry:
                 msg = f"Expected dict for ALL selector caching, got {type(self.value)}"
                 raise ClanError(msg)
             if self.fetched_all:
-                result = all(
+                return all(
                     self.value[sel].is_cached(selectors[1:]) for sel in self.value
                 )
-                return result
             return False
         if (
             selector.type == SelectorType.SET
@@ -582,10 +572,7 @@ class FlakeCacheEntry:
 
     def select(self, selectors: list[Selector]) -> Any:
         selector: Selector
-        if selectors == []:
-            selector = Selector(type=SelectorType.ALL)
-        else:
-            selector = selectors[0]
+        selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # mirror nix behavior where we return outPath if no further selector is specified
         if selectors == [] and isinstance(self.value, dict) and "outPath" in self.value:
@@ -677,14 +664,12 @@ class FlakeCacheEntry:
             result_dict: dict[str, Any] = {}
             for key in keys_to_select:
                 value = self.value[key].select(selectors[1:])
-                if self.value[key].exists:
-                    # Skip empty dicts when the original value is None
-                    if not (
-                        isinstance(value, dict)
-                        and len(value) == 0
-                        and self.value[key].value is None
-                    ):
-                        result_dict[key] = value
+                if self.value[key].exists and not (
+                    isinstance(value, dict)
+                    and len(value) == 0
+                    and self.value[key].value is None
+                ):
+                    result_dict[key] = value
             return result_dict
 
         # return a KeyError if we cannot fetch the key
@@ -738,13 +723,12 @@ class FlakeCacheEntry:
         exists = json_data.get("exists", True)
         fetched_all = json_data.get("fetched_all", False)
 
-        entry = FlakeCacheEntry(
+        return FlakeCacheEntry(
             value=value,
             is_list=is_list,
             exists=exists,
             fetched_all=fetched_all,
         )
-        return entry
 
     def __repr__(self) -> str:
         if isinstance(self.value, dict):
@@ -760,10 +744,7 @@ class FlakeCache:
         self.cache: FlakeCacheEntry = FlakeCacheEntry()
 
     def insert(self, data: dict[str, Any], selector_str: str) -> None:
-        if selector_str:
-            selectors = parse_selector(selector_str)
-        else:
-            selectors = []
+        selectors = parse_selector(selector_str) if selector_str else []
 
         self.cache.insert(data, selectors)
 
@@ -1104,8 +1085,7 @@ class Flake:
         else:
             log.debug(f"$ clan select {shlex.quote(selector)}")
 
-        value = self._cache.select(selector)
-        return value
+        return self._cache.select(selector)
 
     def select_machine(self, machine_name: str, selector: str) -> Any:
         """Select a nix attribute for a specific machine.

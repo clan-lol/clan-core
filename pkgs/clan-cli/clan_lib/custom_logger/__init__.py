@@ -82,9 +82,7 @@ class PrefixFormatter(logging.Formatter):
             self.hostnames += [hostname]
             index = self.hostnames.index(hostname)
         coloroffset = (index + self.hostname_color_offset) % len(colorcodes)
-        colorcode = colorcodes[coloroffset]
-
-        return colorcode
+        return colorcodes[coloroffset]
 
 
 def get_callers(start: int = 2, end: int = 2) -> list[str]:

@@ -71,7 +71,7 @@ def create_clan(opts: CreateOptions) -> None:
         try:
             nix_metadata(str(opts.src_flake))
         except ClanError:
-            log.error(
+            log.exception(
                 f"Found a repository, but it is not a valid flake: {opts.src_flake}",
             )
             log.warning("Setting src_flake to None")

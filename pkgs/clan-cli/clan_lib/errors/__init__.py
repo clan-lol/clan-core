@@ -67,13 +67,11 @@ def indent_command(command_list: list[str]) -> str:
         arg = command_list[i]
         formatted_command.append(shlex.quote(arg))
 
-        if i < len(command_list) - 1:
-            # Check if the current argument is an option
-            if arg.startswith("-"):
-                # Indent after the next argument
-                formatted_command.append(" ")
-                i += 1
-                formatted_command.append(shlex.quote(command_list[i]))
+        if i < len(command_list) - 1 and arg.startswith("-"):
+            # Indent after the next argument
+            formatted_command.append(" ")
+            i += 1
+            formatted_command.append(shlex.quote(command_list[i]))
 
         if i < len(command_list) - 1:
             # Add line continuation only if it's not the last argument

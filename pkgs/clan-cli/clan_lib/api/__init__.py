@@ -279,8 +279,7 @@ API.register(get_system_file)
 
         param = sig.parameters.get(arg_name)
         if param:
-            param_class = param.annotation
-            return param_class
+            return param.annotation
 
         return None
 

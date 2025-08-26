@@ -35,7 +35,7 @@ def offline_template(tmp_path_factory: Any, offline_session_flake_hook: Any) -> 
     return dst_dir
 
 
-@pytest.fixture()
+@pytest.fixture
 def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
     @contextmanager
     def fake_clan_template(
@@ -51,7 +51,7 @@ def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
     monkeypatch.setattr("clan_lib.clan.create.clan_template", fake_clan_template)
 
 
-@pytest.fixture()
+@pytest.fixture
 def clan_flake(
     tmp_path: Path,
     patch_clan_template: Any,  # noqa: ARG001
