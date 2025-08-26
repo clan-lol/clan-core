@@ -506,12 +506,24 @@ export function CubeScene(props: {
     const intersects = raycaster.intersectObject(floor);
     if (intersects.length > 0) {
       const point = intersects[0].point;
+
       // Snap to grid
       const snapped = new THREE.Vector3(
         Math.round(point.x / GRID_SIZE) * GRID_SIZE,
         0,
         Math.round(point.z / GRID_SIZE) * GRID_SIZE,
       );
+
+      // Skip snapping if there's already a cube at this position
+      if (props.sceneStore()) {
+        const positions = Object.values(props.sceneStore());
+        const intersects = positions.some(
+          (p) => p.position[0] === snapped.x && p.position[1] === snapped.z,
+        );
+        if (intersects) {
+          return;
+        }
+      }
 
       if (
         Math.abs(initBase.position.x - snapped.x) > 0.01 ||
