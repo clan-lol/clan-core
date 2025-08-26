@@ -25,50 +25,71 @@ export class MachineManager {
     machinePositionsSignal: Accessor<SceneData>,
     machinesQueryResult: MachinesQueryResult,
     selectedIds: Accessor<Set<string>>,
-    setMachinePos: (id: string, position: [number, number]) => void,
+    setMachinePos: (id: string, position: [number, number] | null) => void,
   ) {
     this.machinePositionsSignal = machinePositionsSignal;
 
     this.disposeRoot = createRoot((disposeEffects) => {
-      createEffect(() => {
-        const machines = machinePositionsSignal();
-
-        Object.entries(machines).forEach(([id, data]) => {
-          const machineRepr = new MachineRepr(
-            scene,
-            registry,
-            new THREE.Vector2(data.position[0], data.position[1]),
-            id,
-            selectedIds,
-          );
-          this.machines.set(id, machineRepr);
-          scene.add(machineRepr.group);
-        });
-        renderLoop.requestRender();
-      });
-
-      // Push positions of previously existing machines to the scene
-      // TODO: Maybe we should do this in some post query hook?
+      //
+      // Effect 1: sync query → store (positions)
+      //
       createEffect(() => {
         if (!machinesQueryResult.data) return;
 
-        const actualMachines = Object.keys(machinesQueryResult.data);
+        const actualIds = Object.keys(machinesQueryResult.data);
         const machinePositions = machinePositionsSignal();
-        const placed: Set<string> = machinePositions
-          ? new Set(Object.keys(machinePositions))
-          : new Set();
 
-        const nonPlaced = actualMachines.filter((m) => !placed.has(m));
-
-        // Push not explizitly placed machines to the scene
-        // TODO: Make the user place them manually
-        // We just calculate some next free position
-        for (const id of nonPlaced) {
-          console.log("adding", id);
-          const position = this.nextGridPos();
-
-          setMachinePos(id, position);
+        // Remove stale
+        for (const id of Object.keys(machinePositions)) {
+          if (!actualIds.includes(id)) {
+            setMachinePos(id, null);
+          }
         }
+
+        // Add missing
+        for (const id of actualIds) {
+          if (!machinePositions[id]) {
+            const pos = this.nextGridPos();
+            setMachinePos(id, pos);
+          }
+        }
+      });
+
+      //
+      // Effect 2: sync store → scene
+      //
+      createEffect(() => {
+        const positions = machinePositionsSignal();
+
+        // Remove machines from scene
+        for (const [id, repr] of this.machines) {
+          if (!(id in positions)) {
+            repr.dispose(scene);
+            this.machines.delete(id);
+          }
+        }
+
+        // Add or update machines
+        for (const [id, data] of Object.entries(positions)) {
+          let repr = this.machines.get(id);
+          if (!repr) {
+            repr = new MachineRepr(
+              scene,
+              registry,
+              new THREE.Vector2(data.position[0], data.position[1]),
+              id,
+              selectedIds,
+            );
+            this.machines.set(id, repr);
+            scene.add(repr.group);
+          } else {
+            repr.setPosition(
+              new THREE.Vector2(data.position[0], data.position[1]),
+            );
+          }
+        }
+
+        renderLoop.requestRender();
       });
 
       return disposeEffects;

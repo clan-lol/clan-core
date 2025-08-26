@@ -121,6 +121,11 @@ export class MachineRepr {
     });
   }
 
+  public setPosition(position: THREE.Vector2) {
+    this.group.position.set(position.x, 0, position.y);
+    renderLoop.requestRender();
+  }
+
   private createCubeBase(
     color: THREE.ColorRepresentation,
     emissive: THREE.ColorRepresentation,
@@ -154,6 +159,14 @@ export class MachineRepr {
 
     this.geometry.dispose();
     this.material.dispose();
+    for (const child of this.cubeMesh.children) {
+      if (child instanceof THREE.Mesh)
+        (child.material as THREE.Material).dispose();
+
+      if (child instanceof CSS2DObject) child.element.remove();
+
+      if (child instanceof THREE.Object3D) child.remove();
+    }
     (this.baseMesh.material as THREE.Material).dispose();
   }
 }

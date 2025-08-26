@@ -121,7 +121,6 @@ export const useMachineStateQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
   return useQuery<MachineState>(() => ({
     queryKey: ["clans", encodeBase64(clanURI), "machine", machineName, "state"],
-    refetchInterval: 1000 * 60, // poll every 60 seconds
     queryFn: async () => {
       const apiCall = client.fetch("get_machine_state", {
         machine: {
