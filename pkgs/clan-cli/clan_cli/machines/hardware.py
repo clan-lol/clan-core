@@ -44,6 +44,18 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
         private_key=args.identity_file,
     )
 
+    if not args.yes:
+        confirm = (
+            input(
+                f"Update hardware configuration for machine '{machine.name}' at '{target_host.target}'? [y/N]: "
+            )
+            .strip()
+            .lower()
+        )
+        if confirm not in ("y", "yes"):
+            log.info("Aborted.")
+            return
+
     run_machine_hardware_info(opts, target_host)
 
 
@@ -56,10 +68,15 @@ def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(machine_parser, complete_machines)
     parser.add_argument(
-        "target_host",
+        "--target-host",
         type=str,
-        nargs="?",
         help="ssh address to install to in the form of user@host:2222",
+    )
+    parser.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="Automatic yes to prompts; assume 'yes' as answer to all prompts and run non-interactively.",
     )
     parser.add_argument(
         "--host-key-check",

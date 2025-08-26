@@ -302,7 +302,8 @@
                       "test-install-machine-without-system",
                       "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
-                      f"nonrootuser@localhost:{ssh_conn.host_port}"
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "--yes"
                   ]
 
                   result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
@@ -326,7 +327,9 @@
                       "test-install-machine-without-system",
                       "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
-                      f"nonrootuser@localhost:{ssh_conn.host_port}"
+                      "--target-host",
+                      f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "--yes"
                   ]
 
                   result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
