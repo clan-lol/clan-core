@@ -312,3 +312,13 @@ def create_service_instance(
         message=f"Add service instance '{instance_name}' with module '{module_name} from {input_name}'",
         commit=True,
     )
+
+
+@API.register
+def list_service_instances(
+    flake: Flake,
+) -> dict[str, InventoryInstance]:
+    """Show information about a module"""
+    inventory_store = InventoryStore(flake)
+    inventory = inventory_store.read()
+    return inventory.get("instances", {})
