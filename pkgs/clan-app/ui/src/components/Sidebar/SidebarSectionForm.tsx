@@ -73,7 +73,6 @@ export function SidebarSectionForm<
             hierarchy="label"
             size="xs"
             family="mono"
-            weight="light"
             transform="uppercase"
             color="tertiary"
             inverted
