@@ -277,9 +277,9 @@ def construct_value(
         inner_types = unwrap_union_type(t)
         # Construct the field value
         errors = []
-        for t in inner_types:
+        for inner_type in inner_types:
             try:
-                return construct_value(t, field_value, loc)
+                return construct_value(inner_type, field_value, loc)
             except ClanError as exc:
                 errors.append(exc)
                 continue
@@ -392,7 +392,7 @@ def construct_dataclass[T: Any](
                 field_values[field.name] = None
             else:
                 field_values[field.name] = construct_value(
-                    cast(type, field.type), field_value
+                    cast("type", field.type), field_value
                 )
 
     # Check that all required field are present.
