@@ -8,7 +8,7 @@ import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Toolbar } from "../components/Toolbar/Toolbar";
 import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
 import { Divider } from "../components/Divider/Divider";
-import { MachinesQueryResult } from "../hooks/queries";
+import { MachinesQueryResult, useMachinesQuery } from "../hooks/queries";
 import { SceneData } from "../stores/clan";
 import { Accessor } from "solid-js";
 import { renderLoop } from "./RenderLoop";
@@ -39,6 +39,7 @@ export function CubeScene(props: {
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number]) => void;
   isLoading: boolean;
+  clanURI: string;
 }) {
   let container: HTMLDivElement;
   let scene: THREE.Scene;
@@ -524,6 +525,8 @@ export function CubeScene(props: {
     }
   };
 
+  const machinesQuery = useMachinesQuery(props.clanURI);
+
   return (
     <>
       <div class="cubes-scene-container" ref={(el) => (container = el)} />
@@ -561,11 +564,13 @@ export function CubeScene(props: {
               renderLoop.requestRender();
             }}
           />
-          {/* <ToolbarButton
-            description="Delete Machine"
-            name="delete"
-            icon="Trash"
-          /> */}
+          <ToolbarButton
+            icon="Reload"
+            name="Reload"
+            title="Reload"
+            description="Reload machines"
+            onClick={() => machinesQuery.refetch()}
+          />
         </Toolbar>
       </div>
     </>

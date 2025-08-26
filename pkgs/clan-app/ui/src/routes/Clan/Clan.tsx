@@ -302,6 +302,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
         isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
         onCreate={onCreate}
+        clanURI={ctx.clanURI}
         sceneStore={() => store.sceneData?.[ctx.clanURI]}
         setMachinePos={(machineId: string, pos: [number, number]) => {
           console.log("calling setStore", machineId, pos);
