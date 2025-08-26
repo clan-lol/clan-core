@@ -1,17 +1,17 @@
 import { Meta, StoryObj } from "@kachurun/storybook-solid";
 
-import { SelectStepper, SelectStepperProps } from "./SelectStepper";
+import { TagSelect, TagSelectProps } from "./TagSelect";
 import { Tag } from "../Tag/Tag";
 import Icon from "../Icon/Icon";
 
 const meta = {
   title: "Components/Custom/SelectStepper",
-  component: SelectStepper,
-} satisfies Meta<SelectStepperProps<string>>;
+  component: TagSelect,
+} satisfies Meta<TagSelectProps<string>>;
 
 export default meta;
 
-type Story = StoryObj<SelectStepperProps<string>>;
+type Story = StoryObj<TagSelectProps<string>>;
 
 const Item = (item: string) => (
   <Tag

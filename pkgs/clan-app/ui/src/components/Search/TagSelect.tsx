@@ -1,11 +1,11 @@
 import Icon from "../Icon/Icon";
 import { Typography } from "../Typography/Typography";
 import { For, JSX, Show } from "solid-js";
-import styles from "./SelectStepper.module.css";
+import styles from "./TagSelect.module.css";
 import { Combobox } from "@kobalte/core/combobox";
 import { Button } from "../Button/Button";
 
-export interface SelectStepperProps<T> {
+export interface TagSelectProps<T> {
   // Define any props needed for the SelectStepper component
   values: T[];
   options: T[];
@@ -14,7 +14,7 @@ export interface SelectStepperProps<T> {
   renderItem: (item: T) => JSX.Element;
 }
 
-export function SelectStepper<T>(props: SelectStepperProps<T>) {
+export function TagSelect<T>(props: TagSelectProps<T>) {
   return (
     <div class={styles.dummybg}>
       <div class="flex flex-col gap-1.5">
