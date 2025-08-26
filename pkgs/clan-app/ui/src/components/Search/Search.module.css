@@ -80,8 +80,7 @@
 
 .searchContent {
   @apply px-3;
-  height: var(--container-height, 14.5rem);
-  padding-bottom: 4rem;
+  height: calc(var(--container-height, 14.5rem) - 4rem);
 }
 
 @keyframes contentHide {
