@@ -2,7 +2,7 @@ import logging
 from collections.abc import Callable
 
 from clan_cli.vars import graph
-from clan_cli.vars.generator import Generator, GeneratorKey
+from clan_cli.vars.generator import Generator
 from clan_cli.vars.graph import minimal_closure, requested_closure
 from clan_cli.vars.migration import check_can_migrate, migrate_files
 
@@ -123,37 +123,38 @@ def run_generators(
         executing the generator.
 
     """
+    if isinstance(generators, list):
+        # List of generator names - use them exactly as provided
+        if len(generators) == 0:
+            return
+        all_generators = get_generators(machines, full_closure=True)
+        generator_objects = [g for g in all_generators if g.key.name in generators]
+    else:
+        # None or single string - use get_generators with closure parameter
+        generator_objects = get_generators(
+            machines,
+            full_closure=full_closure,
+            generator_name=generators,
+        )
+
+    # If prompt function provided, ask all prompts
+    # TODO: make this more lazy and ask for every generator on execution
+    if callable(prompt_values):
+        prompt_values = {
+            generator.name: prompt_values(generator) for generator in generator_objects
+        }
+    # execute health check
     for machine in machines:
-        if isinstance(generators, list):
-            # List of generator names - use them exactly as provided
-            if len(generators) == 0:
-                return
-            # Create GeneratorKeys for this specific machine
-            generator_keys = {
-                GeneratorKey(machine=machine.name, name=name) for name in generators
-            }
-            all_generators = get_generators([machine], full_closure=True)
-            generator_objects = [g for g in all_generators if g.key in generator_keys]
-        else:
-            # None or single string - use get_generators with closure parameter
-            generator_objects = get_generators(
-                [machine],
-                full_closure=full_closure,
-                generator_name=generators,
-            )
+        _ensure_healthy(machine=machine)
 
-        # If prompt function provided, ask all prompts
-        # TODO: make this more lazy and ask for every generator on execution
-        if callable(prompt_values):
-            prompt_values = {
-                generator.name: prompt_values(generator)
-                for generator in generator_objects
-            }
-        # execute health check
-        _ensure_healthy(machine=machine, generators=generator_objects)
-
-        # execute generators
-        for generator in generator_objects:
+    # execute generators
+    for generator in generator_objects:
+        generator_machines = (
+            machines
+            if generator.machine is None
+            else [Machine(name=generator.machine, flake=machines[0].flake)]
+        )
+        for machine in generator_machines:
             if check_can_migrate(machine, generator):
                 migrate_files(machine, generator)
             else:
