@@ -44,6 +44,12 @@ const ConfigureAdressSchema = v.object({
     v.string("Please set a target host."),
     v.nonEmpty("Please set a target host."),
   ),
+  port: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => (val === "" ? undefined : val)),
+    ),
+  ),
 });
 
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
@@ -56,6 +62,7 @@ const ConfigureAddress = () => {
     validate: valiForm(ConfigureAdressSchema),
     initialValues: {
       targetHost: store.install?.targetHost,
+      port: store.install?.port,
     },
   });
 
@@ -69,7 +76,11 @@ const ConfigureAddress = () => {
     event,
   ) => {
     console.log("targetHost set", values);
-    set("install", (s) => ({ ...s, targetHost: values.targetHost }));
+    set("install", (s) => ({
+      ...s,
+      targetHost: values.targetHost,
+      port: values.port,
+    }));
 
     // Here you would typically trigger the ISO creation process
     stepSignal.next();
@@ -81,10 +92,18 @@ const ConfigureAddress = () => {
       return;
     }
 
+    const portValue = getValue(formStore, "port");
+    const port = portValue ? parseInt(portValue, 10) : undefined;
+
     setLoading(true);
     const call = client.fetch("check_machine_ssh_login", {
       remote: {
         address,
+        ...(port && { port }),
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
       },
     });
     const result = await call.result;
@@ -117,6 +136,25 @@ const ConfigureAddress = () => {
                     input={{
                       ...props,
                       placeholder: "i.e. flash-installer.local",
+                    }}
+                  />
+                )}
+              </Field>
+              <Field name="port">
+                {(field, props) => (
+                  <TextInput
+                    {...field}
+                    label="SSH Port"
+                    description="SSH port (default: 22)"
+                    value={field.value}
+                    orientation="horizontal"
+                    validationState={
+                      getError(formStore, "port") ? "invalid" : "valid"
+                    }
+                    input={{
+                      ...props,
+                      placeholder: "22",
+                      type: "number",
                     }}
                   />
                 )}
@@ -172,11 +210,20 @@ const CheckHardware = () => {
   const handleUpdateSummary = async () => {
     setUpdatingHardwareReport(true);
 
+    const port = store.install.port
+      ? parseInt(store.install.port, 10)
+      : undefined;
+
     try {
       // TODO: Debounce
       const call = client.fetch("run_machine_hardware_info", {
         target_host: {
           address: store.install.targetHost,
+          ...(port && { port }),
+          ssh_options: {
+            StrictHostKeyChecking: "no",
+            UserKnownHostsFile: "/dev/null",
+          },
         },
         opts: {
           machine: {
@@ -583,6 +630,10 @@ const InstallSummary = () => {
     }));
     await runGenerators.result; // Wait for the generators to run
 
+    const port = store.install.port
+      ? parseInt(store.install.port, 10)
+      : undefined;
+
     const runInstall = client.fetch("run_machine_install", {
       opts: {
         machine: {
@@ -594,6 +645,11 @@ const InstallSummary = () => {
       },
       target_host: {
         address: store.install.targetHost,
+        ...(port && { port }),
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
       },
     });
     set("install", (s) => ({
@@ -618,6 +674,14 @@ const InstallSummary = () => {
             <Orienter orientation="horizontal">
               <Display label="Address" value={store.install.targetHost} />
             </Orienter>
+            {store.install.port && (
+              <>
+                <Divider orientation="horizontal" />
+                <Orienter orientation="horizontal">
+                  <Display label="SSH Port" value={store.install.port} />
+                </Orienter>
+              </>
+            )}
           </Fieldset>
           <Fieldset legend="Disk">
             <Orienter orientation="horizontal">
