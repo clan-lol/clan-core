@@ -173,6 +173,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.tabs.link
+    - content.action.edit
   icon:
     repo: fontawesome/brands/git
   custom_dir: overrides
