@@ -314,11 +314,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
               if (pos === null) {
                 // Remove the machine entry if pos is null
-                delete s.sceneData[ctx.clanURI][machineId];
+                Reflect.deleteProperty(s.sceneData[ctx.clanURI], machineId);
 
-                // Optional: cleanup empty clan entries
                 if (Object.keys(s.sceneData[ctx.clanURI]).length === 0) {
-                  delete s.sceneData[ctx.clanURI];
+                  Reflect.deleteProperty(s.sceneData, ctx.clanURI);
                 }
               } else {
                 // Set or update the machine position
