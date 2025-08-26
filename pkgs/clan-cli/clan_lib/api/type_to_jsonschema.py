@@ -138,9 +138,10 @@ def type_to_dict(
                 if "null" not in pv["type"]:
                     required.add(pn)
 
-            elif pv.get("oneOf") is not None:
-                if "null" not in [i.get("type") for i in pv.get("oneOf", [])]:
-                    required.add(pn)
+            elif pv.get("oneOf") is not None and "null" not in [
+                i.get("type") for i in pv.get("oneOf", [])
+            ]:
+                required.add(pn)
 
         required_fields = {
             f.name

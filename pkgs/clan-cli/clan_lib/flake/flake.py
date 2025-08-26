@@ -677,14 +677,12 @@ class FlakeCacheEntry:
             result_dict: dict[str, Any] = {}
             for key in keys_to_select:
                 value = self.value[key].select(selectors[1:])
-                if self.value[key].exists:
-                    # Skip empty dicts when the original value is None
-                    if not (
-                        isinstance(value, dict)
-                        and len(value) == 0
-                        and self.value[key].value is None
-                    ):
-                        result_dict[key] = value
+                if self.value[key].exists and not (
+                    isinstance(value, dict)
+                    and len(value) == 0
+                    and self.value[key].value is None
+                ):
+                    result_dict[key] = value
             return result_dict
 
         # return a KeyError if we cannot fetch the key

@@ -1118,14 +1118,17 @@ class Win32Implementation(BaseImplementation):
                 # Icon pressed
                 self.activate_callback()
 
-            elif l_param in (
-                self.NIN_BALLOONHIDE,
-                self.NIN_BALLOONTIMEOUT,
-                self.NIN_BALLOONUSERCLICK,
+            elif (
+                l_param
+                in (
+                    self.NIN_BALLOONHIDE,
+                    self.NIN_BALLOONTIMEOUT,
+                    self.NIN_BALLOONUSERCLICK,
+                )
+                and not config.sections["ui"]["trayicon"]
             ):
-                if not config.sections["ui"]["trayicon"]:
-                    # Notification dismissed, but user has disabled tray icon
-                    self._remove_notify_icon()
+                # Notification dismissed, but user has disabled tray icon
+                self._remove_notify_icon()
 
         elif msg == self.WM_COMMAND:
             # Menu item pressed
