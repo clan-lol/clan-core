@@ -19,7 +19,9 @@ span.tag {
 
   &.has-action {
     @apply pr-1.5;
+  }
 
+  &.is-interactive {
     &:hover {
       @apply bg-def-acc-3;
     }

@@ -2,18 +2,19 @@ import "./Tag.css";
 
 import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
-import { createSignal, Show } from "solid-js";
-import Icon, { IconVariant } from "../Icon/Icon";
+import { createSignal, JSX } from "solid-js";
 
-export interface TagAction {
-  icon: IconVariant;
-  onClick: () => void;
+interface IconActionProps {
+  inverted: boolean;
+  handleActionClick: () => void;
 }
 
-export interface TagProps {
-  label: string;
-  action?: TagAction;
+export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
+  children?: JSX.Element;
+  icon?: (state: IconActionProps) => JSX.Element;
   inverted?: boolean;
+  interactive?: boolean;
+  class?: string;
 }
 
 export const Tag = (props: TagProps) => {
@@ -23,7 +24,6 @@ export const Tag = (props: TagProps) => {
 
   const handleActionClick = () => {
     setIsActive(true);
-    props.action?.onClick();
     setTimeout(() => setIsActive(false), 150);
   };
 
@@ -32,23 +32,18 @@ export const Tag = (props: TagProps) => {
       class={cx("tag", {
         inverted: inverted(),
         active: isActive(),
-        "has-action": props.action,
+        "has-icon": props.icon,
+        "is-interactive": props.interactive,
+        class: props.class,
       })}
-      aria-label={props.label}
-      aria-readonly={!props.action}
     >
       <Typography hierarchy="label" size="xs" inverted={inverted()}>
-        {props.label}
+        {props.children}
       </Typography>
-      <Show when={props.action}>
-        <Icon
-          role="button"
-          icon={props.action!.icon}
-          size="0.5rem"
-          inverted={inverted()}
-          onClick={handleActionClick}
-        />
-      </Show>
+      {props.icon?.({
+        inverted: inverted(),
+        handleActionClick,
+      })}
     </span>
   );
 };
