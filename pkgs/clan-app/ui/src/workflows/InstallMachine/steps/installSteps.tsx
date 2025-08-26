@@ -11,7 +11,7 @@ import {
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
-import { InstallSteps, InstallStoreType, PromptValues } from "../install";
+import { InstallSteps, InstallStoreType, PromptValues } from "../InstallMachine";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert } from "@/src/components/Alert/Alert";
 import { createSignal, For, Match, Show, Switch } from "solid-js";

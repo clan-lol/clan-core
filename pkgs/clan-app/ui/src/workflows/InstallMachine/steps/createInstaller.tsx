@@ -6,7 +6,7 @@ import {
   valiForm,
 } from "@modular-forms/solid";
 import * as v from "valibot";
-import { InstallSteps, InstallStoreType } from "../install";
+import { InstallSteps, InstallStoreType } from "../InstallMachine";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Select } from "@/src/components/Select/Select";
