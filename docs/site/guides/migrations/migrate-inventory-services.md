@@ -254,7 +254,7 @@ The following table shows the migration status of each deprecated clanModule:
 | `data-mesher`            | ✅ [Migrated](../../reference/clanServices/data-mesher.md)        |                                                                  |
 | `deltachat`              | ❌ Removed                                                        |                                                                  |
 | `disk-id`                | ❌ Removed                                                        |                                                                  |
-| `dyndns`                 | [Being Migrated](https://git.clan.lol/clan/clan-core/pulls/4390)  |                                                                  |
+| `dyndns`                 | ✅ [Migrated](../../reference/clanServices/dyndns.md)             |                                                                  |
 | `ergochat`               | ❌ Removed                                                        |                                                                  |
 | `garage`                 | ✅ [Migrated](../../reference/clanServices/garage.md)             |                                                                  |
 | `golem-provider`         | ❌ Removed                                                        |                                                                  |
@@ -263,18 +263,18 @@ The following table shows the migration status of each deprecated clanModule:
 | `iwd`                    | ❌ Removed                                                        | Use [wifi service](../../reference/clanServices/wifi.md) instead |
 | `localbackup`            | ✅ [Migrated](../../reference/clanServices/localbackup.md)        |                                                                  |
 | `localsend`              | ❌ Removed                                                        |                                                                  |
-| `machine-id`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
+| `machine-id`             | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
 | `matrix-synapse`         | ✅ [Migrated](../../reference/clanServices/matrix-synapse.md)     |                                                                  |
 | `moonlight`              | ❌ Removed                                                        |                                                                  |
 | `mumble`                 | ❌ Removed                                                        |                                                                  |
 | `mycelium`               | ✅ [Migrated](../../reference/clanServices/mycelium.md)           |                                                                  |
 | `nginx`                  | ❌ Removed                                                        |                                                                  |
 | `packages`               | ✅ [Migrated](../../reference/clanServices/packages.md)           |                                                                  |
-| `postgresql`             | ❌ Removed                                                        | Now an [option](../../reference/clan.core/settings.md)           |
+| `postgresql`             | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
 | `root-password`          | ✅ [Migrated](../../reference/clanServices/users.md)              | See [migration guide](../../reference/clanServices/users.md#migration-from-root-password-module) |
 | `single-disk`            | ❌ Removed                                                        |                                                                  |
 | `sshd`                   | ✅ [Migrated](../../reference/clanServices/sshd.md)               |                                                                  |
-| `state-version`          | ✅ [Migrated](../../reference/clanServices/state-version.md)      |                                                                  |
+| `state-version`          | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
 | `static-hosts`           | ❌ Removed                                                        |                                                                  |
 | `sunshine`               | ❌ Removed                                                        |                                                                  |
 | `syncthing-static-peers` | ❌ Removed                                                        |                                                                  |
