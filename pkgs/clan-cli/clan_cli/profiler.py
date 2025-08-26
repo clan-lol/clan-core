@@ -100,7 +100,6 @@ def profile(func: Callable) -> Callable:
     """
 
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        global PROFS
         profiler = PROFS[func]
 
         try:

@@ -108,15 +108,12 @@ def set_should_cancel(should_cancel: Callable[[], bool]) -> None:
 
 def get_async_ctx() -> AsyncContext:
     """Retrieve the current AsyncContext, creating a new one if none exists."""
-    global ASYNC_CTX_THREAD_LOCAL
-
     if not hasattr(ASYNC_CTX_THREAD_LOCAL, "async_ctx"):
         ASYNC_CTX_THREAD_LOCAL.async_ctx = AsyncContext()
     return ASYNC_CTX_THREAD_LOCAL.async_ctx
 
 
 def set_async_ctx(ctx: AsyncContext) -> None:
-    global ASYNC_CTX_THREAD_LOCAL
     ASYNC_CTX_THREAD_LOCAL.async_ctx = ctx
 
 

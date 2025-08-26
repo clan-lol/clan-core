@@ -91,7 +91,6 @@ def get_system_file(
 
 def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
     def returns(data: SuccessDataClass | ErrorDataClass) -> None:
-        global RESULT
         RESULT[op_key] = data
 
     def on_file_select(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
