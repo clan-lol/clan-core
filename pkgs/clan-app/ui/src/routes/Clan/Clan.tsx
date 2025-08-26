@@ -304,20 +304,25 @@ const ClanSceneController = (props: RouteSectionProps) => {
         onCreate={onCreate}
         clanURI={ctx.clanURI}
         sceneStore={() => store.sceneData?.[ctx.clanURI]}
-        setMachinePos={(machineId: string, pos: [number, number]) => {
+        setMachinePos={(machineId: string, pos: [number, number] | null) => {
           console.log("calling setStore", machineId, pos);
           setStore(
             produce((s) => {
-              if (!s.sceneData) {
-                s.sceneData = {};
-              }
-              if (!s.sceneData[ctx.clanURI]) {
-                s.sceneData[ctx.clanURI] = {};
-              }
-              if (!s.sceneData[ctx.clanURI][machineId]) {
-                s.sceneData[ctx.clanURI][machineId] = { position: pos };
+              if (!s.sceneData) s.sceneData = {};
+
+              if (!s.sceneData[ctx.clanURI]) s.sceneData[ctx.clanURI] = {};
+
+              if (pos === null) {
+                // Remove the machine entry if pos is null
+                delete s.sceneData[ctx.clanURI][machineId];
+
+                // Optional: cleanup empty clan entries
+                if (Object.keys(s.sceneData[ctx.clanURI]).length === 0) {
+                  delete s.sceneData[ctx.clanURI];
+                }
               } else {
-                s.sceneData[ctx.clanURI][machineId].position = pos;
+                // Set or update the machine position
+                s.sceneData[ctx.clanURI][machineId] = { position: pos };
               }
             }),
           );

@@ -37,7 +37,7 @@ export function CubeScene(props: {
   selectedIds: Accessor<Set<string>>;
   onSelect: (v: Set<string>) => void;
   sceneStore: Accessor<SceneData>;
-  setMachinePos: (machineId: string, pos: [number, number]) => void;
+  setMachinePos: (machineId: string, pos: [number, number] | null) => void;
   isLoading: boolean;
   clanURI: string;
 }) {
@@ -552,22 +552,10 @@ export function CubeScene(props: {
             description="Add new Service"
             name="modules"
             icon="Modules"
-            onClick={() => {
-              if (positionMode() === "grid") {
-                setPositionMode("circle");
-                setWorldMode("view");
-                grid.visible = false;
-              } else {
-                setPositionMode("grid");
-                grid.visible = true;
-              }
-              renderLoop.requestRender();
-            }}
           />
           <ToolbarButton
             icon="Reload"
             name="Reload"
-            title="Reload"
             description="Reload machines"
             onClick={() => machinesQuery.refetch()}
           />
