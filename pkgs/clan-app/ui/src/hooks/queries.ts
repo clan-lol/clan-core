@@ -456,3 +456,28 @@ export const useMachineGenerators = (
     },
   }));
 };
+
+export type ServiceModulesQuery = ReturnType<typeof useServiceModules>;
+export type ServiceModules = SuccessData<"list_service_modules">;
+export const useServiceModules = (clanUri: string) => {
+  const client = useApiClient();
+  return useQuery(() => ({
+    queryKey: ["clans", encodeBase64(clanUri), "service_modules"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_modules", {
+        flake: {
+          identifier: clanUri,
+        },
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
