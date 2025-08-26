@@ -7,71 +7,7 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 exclude = "clan_cli.nixpkgs"
 
-[tool.ruff]
-target-version = "py313"
-line-length = 88
-lint.select = [ "ALL" ]
-lint.ignore = [
-  "ANN401",
-  "C901",
-  "COM812",
-  "D100",
-  "D101",
-  "D102",
-  "D103",
-  "D104",
-  "D105",
-  "D107",
-  "D200",
-  "D203",
-  "D213",
-  "D401",
-  "D415",
-  "E402",
-  "E501",
-  "E731",
-  "ERA001",
-  "FBT001",
-  "FBT002",
-  "FIX",
-  "G001",
-  "G004",
-  "ISC001",
-  "PLR0911",
-  "PLR2004",
-  "PT023",
-  "S603",
-  "S607",
-  "T201",
-  "TD",
-  "INP001",
 
-  # Maybe we can fix those
-  "D205",
-  "D400",
-  "PLR0912",
-  "PLR0913",
-  "PLR0915",
-  "FBT003",
-]
-
-[tool.ruff.lint.per-file-ignores]
-"*_test.py" = [
-  "SLF001",
-  "S101",
-  "S105"
-]
-"test_*.py" = [
-  "SLF001",
-  "S101",
-  "S105"
-]
-"*/tests/*.py" = [
-  "S101"
-]
-"*/fixtures/*.py" = [
-  "S101"
-]
 
 [tool.ruff]
 target-version = "py313"
@@ -117,4 +53,15 @@ lint.ignore = [
   "PLR0913", # too-many-arguments
   "PLR0915", # too-many-statements
   "FBT003",  # boolean-positional-value-in-call
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files (covers test_*.py, *_test.py, and files in tests/ directories)
+"{test_*,*_test,**/tests/*}.py" = [
+  "SLF001",  # private-member-access
+  "S101",    # assert
+  "S105"     # hardcoded-password-string
+]
+"**/fixtures/*.py" = [
+  "S101"     # assert
 ]
