@@ -13,7 +13,7 @@ const ChoiceLocalOrRemote = () => {
         onClick={() => stepSignal.setActiveStep("local:choice")}
       />
       <NavSection
-        label="The Machine is remote and i have ssh access to it"
+        label="The machine is remote and I have ssh access to it"
         onClick={() => stepSignal.setActiveStep("install:address")}
       />
     </div>

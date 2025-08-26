@@ -75,7 +75,7 @@ export function CubeScene(props: {
   });
 
   // Grid configuration
-  const GRID_SIZE = 2;
+  const GRID_SIZE = 1;
 
   const BASE_SIZE = 0.9; // Height of the cube above the ground
   const CUBE_SIZE = BASE_SIZE / 1.5; //
