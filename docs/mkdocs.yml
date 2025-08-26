@@ -2,7 +2,7 @@ site_name: Clan Documentation
 site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: "_>"
-edit_uri: _edit/main/docs/docs/
+edit_uri: _edit/main/docs/site/
 
 validation:
   omitted_files: warn
@@ -173,6 +173,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.tabs.link
+    - content.action.edit
   icon:
     repo: fontawesome/brands/git
   custom_dir: overrides
