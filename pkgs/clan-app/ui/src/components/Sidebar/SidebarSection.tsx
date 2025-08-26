@@ -17,7 +17,6 @@ export const SidebarSection = (props: SidebarSectionProps) => {
           hierarchy="label"
           size="xs"
           family="mono"
-          weight="light"
           transform="uppercase"
           color="tertiary"
           inverted={true}

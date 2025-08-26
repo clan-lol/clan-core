@@ -1,9 +1,5 @@
 /* Body */
 .typography {
-  &.weight-light {
-    font-weight: 300;
-  }
-
   &.weight-normal {
     font-weight: 400;
   }
