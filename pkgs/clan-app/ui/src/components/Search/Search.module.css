@@ -66,11 +66,11 @@
   border: 1px solid #2b4647;
 
   background:
-    linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.18) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
     linear-gradient(
       180deg,
-      var(--clr-bg-inv-3, rgba(43, 70, 71, 0.79)) 0%,
-      var(--clr-bg-inv-4, rgba(32, 54, 55, 0.79)) 100%
+      theme(colors.bg.inv.2) 0%,
+      theme(colors.bg.inv.3) 100%
     );
 
   box-shadow:
@@ -80,8 +80,7 @@
 
 .searchContent {
   @apply px-3;
-  height: var(--container-height, 14.5rem);
-  padding-bottom: 4rem;
+  height: calc(var(--container-height, 14.5rem) - 4rem);
 }
 
 @keyframes contentHide {

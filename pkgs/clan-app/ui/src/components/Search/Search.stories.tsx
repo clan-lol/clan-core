@@ -117,6 +117,27 @@ export const Default: Story = {
   },
 };
 
+export const Loading: Story = {
+  args: {
+    // Test with lots of modules
+    loading: true,
+    options: [],
+    renderItem: () => <span></span>,
+  },
+  render: (args: SearchProps<Module>) => {
+    return (
+      <div class="absolute bottom-1/3 w-3/4 px-3">
+        <Search<Module>
+          {...args}
+          onChange={(module) => {
+            // Go to the module configuration
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 type MachineOrTag =
   | {
       value: string;
