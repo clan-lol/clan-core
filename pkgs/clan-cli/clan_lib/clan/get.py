@@ -38,8 +38,7 @@ def get_clan_details(flake: Flake) -> InventoryMeta:
 
 @API.register
 def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
-    """
-    Get attributes for each field of the clan.
+    """Get attributes for each field of the clan.
 
     This function checks which fields of the 'clan' resource are readonly and provides a reason if so.
 
@@ -48,8 +47,8 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
 
     Returns:
         dict[str, FieldSchema]: A map from field-names to { 'readonly' (bool) and 'reason' (str or None ) }
-    """
 
+    """
     inventory_store = InventoryStore(flake)
     write_info = inventory_store.get_writeability()
 
