@@ -199,7 +199,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
             disabled={removeDisabled()}
             onClick={onRemove}
           >
-            Remove
+            Remove Clan
           </Button>
         </div>
       </div>
