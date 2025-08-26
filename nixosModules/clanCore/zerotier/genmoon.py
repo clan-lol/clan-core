@@ -6,9 +6,12 @@ import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+# Constants
+REQUIRED_ARGS = 4
+
 
 def main() -> None:
-    if len(sys.argv) != 4:
+    if len(sys.argv) != REQUIRED_ARGS:
         print("Usage: genmoon.py <moon.json> <endpoint.json> <moons.d>")
         sys.exit(1)
     moon_json_path = sys.argv[1]

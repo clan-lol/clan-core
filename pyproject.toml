@@ -38,7 +38,6 @@ lint.ignore = [
   "G001",    # logging-string-format
   "G004",    # logging-f-string
   "PLR0911", # too-many-return-statements
-  "PLR2004", # magic-value-comparison
   "PT023",   # pytest-incorrect-mark-parentheses-style
   "S603",    # subprocess-without-shell-equals-true
   "S607",    # start-process-with-partial-path
@@ -60,7 +59,8 @@ lint.ignore = [
 "{test_*,*_test,**/tests/*}.py" = [
   "SLF001",  # private-member-access
   "S101",    # assert
-  "S105"     # hardcoded-password-string
+  "S105",    # hardcoded-password-string
+  "PLR2004"  # magic-value-comparison
 ]
 "**/fixtures/*.py" = [
   "S101"     # assert

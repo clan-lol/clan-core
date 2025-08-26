@@ -10,6 +10,10 @@ from typing import Any
 
 # Ensure you have a logger set up for logging exceptions
 log = logging.getLogger(__name__)
+
+# Constants for path trimming and profiler configuration
+MAX_PATH_LEVELS = 4
+
 explanation = """
 cProfile Output Columns Explanation:
 
@@ -86,8 +90,8 @@ class ProfilerStore:
 
 def trim_path_to_three_levels(path: str) -> str:
     parts = path.split(os.path.sep)
-    if len(parts) > 4:
-        return os.path.sep.join(parts[-4:])
+    if len(parts) > MAX_PATH_LEVELS:
+        return os.path.sep.join(parts[-MAX_PATH_LEVELS:])
     return path
 
 

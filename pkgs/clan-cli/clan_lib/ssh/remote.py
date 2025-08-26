@@ -22,6 +22,9 @@ from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.socks_wrapper import SocksWrapper
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
+# Constants for URL parsing
+EXPECTED_URL_PARTS = 2  # Expected parts when splitting on '?' or '='
+
 if TYPE_CHECKING:
     from clan_lib.network.check import ConnectionOptions
 
@@ -483,7 +486,9 @@ def _parse_ssh_uri(
     address = address.removeprefix("ssh://")
 
     parts = address.split("?", maxsplit=1)
-    endpoint, maybe_options = parts if len(parts) == 2 else (parts[0], "")
+    endpoint, maybe_options = (
+        parts if len(parts) == EXPECTED_URL_PARTS else (parts[0], "")
+    )
 
     parts = endpoint.split("@")
     match len(parts):
@@ -506,7 +511,7 @@ def _parse_ssh_uri(
         if len(o) == 0:
             continue
         parts = o.split("=", maxsplit=1)
-        if len(parts) != 2:
+        if len(parts) != EXPECTED_URL_PARTS:
             msg = (
                 f"Invalid option in host `{address}`: option `{o}` does not have "
                 f"a value (i.e. expected something like `name=value`)"

@@ -6,6 +6,10 @@ from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 from clan_lib.ssh.host import Host
 
+# Safety constants for upload paths
+MIN_SAFE_DEPTH = 3  # Minimum path depth for safety
+MIN_EXCEPTION_DEPTH = 2  # Minimum depth for allowed exceptions
+
 
 def upload(
     host: Host,
@@ -28,11 +32,11 @@ def upload(
         depth = len(remote_dest.parts) - 1
 
         # General rule: destination must be at least 3 levels deep for safety.
-        is_too_shallow = depth < 3
+        is_too_shallow = depth < MIN_SAFE_DEPTH
 
         # Exceptions: Allow depth 2 if the path starts with /tmp/, /root/, or /etc/.
         # This allows destinations like /tmp/mydir or /etc/conf.d, but not /tmp or /etc directly.
-        is_allowed_exception = depth >= 2 and (
+        is_allowed_exception = depth >= MIN_EXCEPTION_DEPTH and (
             str(remote_dest).startswith("/tmp/")  # noqa: S108 - Path validation check
             or str(remote_dest).startswith("/root/")
             or str(remote_dest).startswith("/etc/")

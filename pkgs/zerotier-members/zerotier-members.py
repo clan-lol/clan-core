@@ -8,13 +8,17 @@ from pathlib import Path
 
 ZEROTIER_STATE_DIR = Path("/var/lib/zerotier-one")
 
+# ZeroTier constants
+ZEROTIER_NETWORK_ID_LENGTH = 16  # ZeroTier network ID length
+HTTP_OK = 200  # HTTP success status code
+
 
 class ClanError(Exception):
     pass
 
 
 def compute_zerotier_ip(network_id: str, identity: str) -> ipaddress.IPv6Address:
-    if len(network_id) != 16:
+    if len(network_id) != ZEROTIER_NETWORK_ID_LENGTH:
         msg = f"network_id must be 16 characters long, got {network_id}"
         raise ClanError(msg)
     try:
@@ -88,7 +92,7 @@ def allow_member(args: argparse.Namespace) -> None:
         {"X-ZT1-AUTH": token},
     )
     resp = conn.getresponse()
-    if resp.status != 200:
+    if resp.status != HTTP_OK:
         msg = f"the zerotier daemon returned this error: {resp.status} {resp.reason}"
         raise ClanError(msg)
     print(resp.status, resp.reason)

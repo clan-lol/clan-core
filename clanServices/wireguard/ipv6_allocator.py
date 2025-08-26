@@ -12,6 +12,11 @@ import ipaddress
 import sys
 from pathlib import Path
 
+# Constants for argument count validation
+MIN_ARGS_BASE = 4
+MIN_ARGS_CONTROLLER = 5
+MIN_ARGS_PEER = 5
+
 
 def hash_string(s: str) -> str:
     """Generate SHA256 hash of string."""
@@ -77,7 +82,7 @@ def generate_peer_suffix(peer_name: str) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) < 4:
+    if len(sys.argv) < MIN_ARGS_BASE:
         print(
             "Usage: ipv6_allocator.py <output_dir> <instance_name> <controller|peer> <machine_name>",
         )
@@ -91,7 +96,7 @@ def main() -> None:
     base_network = generate_ula_prefix(instance_name)
 
     if node_type == "controller":
-        if len(sys.argv) < 5:
+        if len(sys.argv) < MIN_ARGS_CONTROLLER:
             print("Controller name required")
             sys.exit(1)
 
@@ -107,7 +112,7 @@ def main() -> None:
         (output_dir / "prefix").write_text(prefix_str)
 
     elif node_type == "peer":
-        if len(sys.argv) < 5:
+        if len(sys.argv) < MIN_ARGS_PEER:
             print("Peer name required")
             sys.exit(1)
 

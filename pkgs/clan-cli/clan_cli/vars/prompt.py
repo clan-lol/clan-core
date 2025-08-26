@@ -14,6 +14,12 @@ log = logging.getLogger(__name__)
 # This is for simulating user input in tests.
 MOCK_PROMPT_RESPONSE: None = None
 
+# ASCII control character constants
+CTRL_D_ASCII = 4  # EOF character
+CTRL_C_ASCII = 3  # Interrupt character
+DEL_ASCII = 127  # Delete character
+BACKSPACE_ASCII = 8  # Backspace character
+
 
 class PromptType(enum.Enum):
     LINE = "line"
@@ -80,14 +86,14 @@ def get_multiline_hidden_input() -> str:
             char = sys.stdin.read(1)
 
             # Check for Ctrl-D (ASCII value 4 or EOF)
-            if not char or ord(char) == 4:
+            if not char or ord(char) == CTRL_D_ASCII:
                 # Add last line if not empty
                 if current_line:
                     lines.append("".join(current_line))
                 break
 
             # Check for Ctrl-C (KeyboardInterrupt)
-            if ord(char) == 3:
+            if ord(char) == CTRL_C_ASCII:
                 raise KeyboardInterrupt
 
             # Handle Enter key
@@ -98,7 +104,7 @@ def get_multiline_hidden_input() -> str:
                 sys.stdout.write("\r\n")
                 sys.stdout.flush()
             # Handle backspace
-            elif ord(char) == 127 or ord(char) == 8:
+            elif ord(char) == DEL_ASCII or ord(char) == BACKSPACE_ASCII:
                 if current_line:
                     current_line.pop()
             # Regular character

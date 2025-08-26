@@ -31,6 +31,9 @@ from .types import VALID_SECRET_NAME, secret_name_type
 
 log = logging.getLogger(__name__)
 
+# Minimum number of keys required to keep a secret group
+MIN_KEYS_FOR_GROUP_REMOVAL = 2
+
 
 def list_generators_secrets(generators_path: Path) -> list[Path]:
     paths: list[Path] = []
@@ -328,7 +331,7 @@ def disallow_member(
 
     keys = collect_keys_for_path(group_folder.parent)
 
-    if len(keys) < 2:
+    if len(keys) < MIN_KEYS_FOR_GROUP_REMOVAL:
         msg = f"Cannot remove {name} from {group_folder.parent.name}. No keys left. Use 'clan secrets remove {name}' to remove the secret."
         raise ClanError(msg)
     target.unlink()

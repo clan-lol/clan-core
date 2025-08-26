@@ -22,6 +22,11 @@ from typing import (
 
 from clan_lib.api.serde import dataclass_to_dict
 
+# Annotation constants
+TUPLE_KEY_VALUE_PAIR_LENGTH = (
+    2  # Expected length for tuple annotations like ("key", value)
+)
+
 
 class JSchemaTypeError(Exception):
     pass
@@ -63,7 +68,10 @@ def apply_annotations(schema: dict[str, Any], annotations: list[Any]) -> dict[st
         if isinstance(annotation, dict):
             # Assuming annotation is a dict that can directly apply to the schema
             schema.update(annotation)
-        elif isinstance(annotation, tuple) and len(annotation) == 2:
+        elif (
+            isinstance(annotation, tuple)
+            and len(annotation) == TUPLE_KEY_VALUE_PAIR_LENGTH
+        ):
             # Assuming a tuple where first element is a keyword (like 'minLength') and the second is the value
             schema[annotation[0]] = annotation[1]
         elif isinstance(annotation, str):

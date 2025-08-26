@@ -8,6 +8,10 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
+# Constants for log parsing
+EXPECTED_FILENAME_PARTS = 2  # date_second_str, file_op_key
+MIN_PATH_PARTS_FOR_LOGGING = 3  # date/[groups...]/func/file
+
 
 @dataclass(frozen=True)
 class LogGroupConfig:
@@ -559,7 +563,7 @@ class LogManager:
                     # Parse filename to get op_key and time
                     filename_stem = log_file_path.stem
                     parts = filename_stem.split("_", 1)
-                    if len(parts) == 2:
+                    if len(parts) == EXPECTED_FILENAME_PARTS:
                         date_second_str, file_op_key = parts
 
                         if file_op_key == op_key:
@@ -571,7 +575,9 @@ class LogManager:
                                 relative_to_base = log_file_path.relative_to(base_dir)
                                 path_parts = relative_to_base.parts
 
-                                if len(path_parts) >= 3:  # date/[groups...]/func/file
+                                if (
+                                    len(path_parts) >= MIN_PATH_PARTS_FOR_LOGGING
+                                ):  # date/[groups...]/func/file
                                     date_day = path_parts[0]
                                     func_name = path_parts[
                                         -2

@@ -7,6 +7,13 @@ from clan_lib.nix import nix_shell
 
 from . import API
 
+# Avahi output parsing constants
+MIN_NEW_SERVICE_PARTS = (
+    6  # Minimum parts for new service discovery (+;interface;protocol;name;type;domain)
+)
+MIN_RESOLVED_SERVICE_PARTS = 9  # Minimum parts for resolved service (=;interface;protocol;name;type;domain;host;ip;port)
+TXT_RECORD_INDEX = 9  # Index where TXT record appears in resolved service output
+
 
 @dataclass
 class Host:
@@ -40,7 +47,7 @@ def parse_avahi_output(output: str) -> DNSInfo:
         parts = line.split(";")
         # New service discovered
         # print(parts)
-        if parts[0] == "+" and len(parts) >= 6:
+        if parts[0] == "+" and len(parts) >= MIN_NEW_SERVICE_PARTS:
             interface, protocol, name, type_, domain = parts[1:6]
 
             name = decode_escapes(name)
@@ -58,7 +65,7 @@ def parse_avahi_output(output: str) -> DNSInfo:
             )
 
         # Resolved more data for already discovered services
-        elif parts[0] == "=" and len(parts) >= 9:
+        elif parts[0] == "=" and len(parts) >= MIN_RESOLVED_SERVICE_PARTS:
             interface, protocol, name, type_, domain, host, ip, port = parts[1:9]
 
             name = decode_escapes(name)
@@ -67,8 +74,10 @@ def parse_avahi_output(output: str) -> DNSInfo:
                 dns_info.services[name].host = decode_escapes(host)
                 dns_info.services[name].ip = ip
                 dns_info.services[name].port = port
-                if len(parts) > 9:
-                    dns_info.services[name].txt = decode_escapes(parts[9])
+                if len(parts) > TXT_RECORD_INDEX:
+                    dns_info.services[name].txt = decode_escapes(
+                        parts[TXT_RECORD_INDEX]
+                    )
             else:
                 dns_info.services[name] = Host(
                     interface=parts[1],
@@ -79,7 +88,9 @@ def parse_avahi_output(output: str) -> DNSInfo:
                     host=decode_escapes(parts[6]),
                     ip=parts[7],
                     port=parts[8],
-                    txt=decode_escapes(parts[9]) if len(parts) > 9 else None,
+                    txt=decode_escapes(parts[TXT_RECORD_INDEX])
+                    if len(parts) > TXT_RECORD_INDEX
+                    else None,
                 )
 
     return dns_info
