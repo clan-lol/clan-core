@@ -19,7 +19,7 @@ def get_machine_vars(machine: Machine) -> list[Var]:
 
     all_vars = []
 
-    generators = get_generators(machine=machine, full_closure=True)
+    generators = get_generators(machines=[machine], full_closure=True)
     for generator in generators:
         for var in generator.files:
             if var.secret:

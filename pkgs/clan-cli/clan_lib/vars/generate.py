@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 @API.register
 def get_generators(
-    machine: Machine,
+    machines: list[Machine],
     full_closure: bool,
     generator_name: str | None = None,
     include_previous_values: bool = False,
@@ -22,7 +22,7 @@ def get_generators(
     """Get generators for a machine, with optional closure computation.
 
     Args:
-        machine: The machine to get generators for.
+        machines: The machines to get generators for.
         full_closure: If True, include all dependency generators. If False, only include missing ones.
         generator_name: Name of a specific generator to get, or None for all generators.
         include_previous_values: If True, populate prompts with their previous values.
@@ -33,7 +33,12 @@ def get_generators(
     """
     from clan_cli.vars import graph
 
-    vars_generators = Generator.get_machine_generators(machine.name, machine.flake)
+    machine_names = [machine.name for machine in machines]
+    vars_generators = Generator.get_machine_generators(
+        machine_names,
+        machines[0].flake,
+        include_previous_values=include_previous_values,
+    )
     generators = {generator.key: generator for generator in vars_generators}
 
     result_closure = []
@@ -44,16 +49,11 @@ def get_generators(
             result_closure = graph.all_missing_closure(generators)
     # specific generator selected
     elif full_closure:
-        gen_key = GeneratorKey(machine=machine.name, name=generator_name)
-        result_closure = requested_closure([gen_key], generators)
+        roots = [key for key in generators if key.name == generator_name]
+        result_closure = requested_closure(roots, generators)
     else:
-        gen_key = GeneratorKey(machine=machine.name, name=generator_name)
-        result_closure = minimal_closure([gen_key], generators)
-
-    if include_previous_values:
-        for generator in result_closure:
-            for prompt in generator.prompts:
-                prompt.previous_value = generator.get_previous_value(machine, prompt)
+        roots = [key for key in generators if key.name == generator_name]
+        result_closure = minimal_closure(roots, generators)
 
     return result_closure
 
@@ -66,7 +66,7 @@ def _ensure_healthy(
     Fails if any of the generators' health checks fail.
     """
     if generators is None:
-        generators = Generator.get_machine_generators(machine.name, machine.flake)
+        generators = Generator.get_machine_generators([machine.name], machine.flake)
 
     pub_healtcheck_msg = machine.public_vars_store.health_check(
         machine.name,
@@ -133,12 +133,12 @@ def run_generators(
             generator_keys = {
                 GeneratorKey(machine=machine.name, name=name) for name in generators
             }
-            all_generators = get_generators(machine, full_closure=True)
+            all_generators = get_generators([machine], full_closure=True)
             generator_objects = [g for g in all_generators if g.key in generator_keys]
         else:
             # None or single string - use get_generators with closure parameter
             generator_objects = get_generators(
-                machine,
+                [machine],
                 full_closure=full_closure,
                 generator_name=generators,
             )

@@ -433,12 +433,14 @@ export const useMachineGenerators = (
     ],
     queryFn: async () => {
       const call = client.fetch("get_generators", {
-        machine: {
-          name: machineName,
-          flake: {
-            identifier: clanUri,
+        machines: [
+          {
+            name: machineName,
+            flake: {
+              identifier: clanUri,
+            },
           },
-        },
+        ],
         full_closure: true, // TODO: Make this configurable
         // TODO: Make this configurable
         include_previous_values: true,

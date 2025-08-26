@@ -891,7 +891,7 @@ def test_api_set_prompts(
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     generators = get_generators(
-        machine=machine,
+        machines=[machine],
         full_closure=True,
         include_previous_values=True,
     )

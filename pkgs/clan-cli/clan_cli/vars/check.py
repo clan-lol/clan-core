@@ -40,7 +40,7 @@ def vars_status(
     invalid_generators = []
     from clan_cli.vars.generator import Generator
 
-    generators = Generator.get_machine_generators(machine.name, machine.flake)
+    generators = Generator.get_machine_generators([machine.name], machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

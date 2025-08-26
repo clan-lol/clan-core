@@ -76,90 +76,111 @@ class Generator:
     @classmethod
     def get_machine_generators(
         cls: type["Generator"],
-        machine_name: str,
+        machine_names: list[str],
         flake: "Flake",
         include_previous_values: bool = False,
     ) -> list["Generator"]:
         """Get all generators for a machine from the flake.
 
         Args:
-            machine_name (str): The name of the machine.
-            flake (Flake): The flake to get the generators from.
+            machine_names: The names of the machines.
+            flake: The flake to get the generators from.
             include_previous_values: Whether to include previous values in the generators.
 
         Returns:
             list[Generator]: A list of (unsorted) generators for the machine.
 
         """
-        # Get all generator metadata in one select (safe fields only)
-        generators_data = flake.select_machine(
-            machine_name,
-            "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts}",
-        )
-        if not generators_data:
-            return []
+        from clan_lib.nix import nix_config
 
-        # Get all file metadata in one select
-        files_data = flake.select_machine(
-            machine_name,
-            "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}",
-        )
+        config = nix_config()
+        system = config["system"]
 
-        from clan_lib.machines.machines import Machine
+        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts}"
+        files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
 
-        machine = Machine(name=machine_name, flake=flake)
-        pub_store = machine.public_vars_store
-        sec_store = machine.secret_vars_store
+        # precache all machines generators and files to avoid multiple calls to nix
+        all_selectors = []
+        for machine_name in machine_names:
+            all_selectors += [
+                f'clanInternals.machines."{system}"."{machine_name}".{generators_selector}',
+                f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
+            ]
+        flake.precache(all_selectors)
 
         generators = []
-        for gen_name, gen_data in generators_data.items():
-            # Build files from the files_data
-            files = []
-            gen_files = files_data.get(gen_name, {})
-            for file_name, file_data in gen_files.items():
-                var = Var(
-                    id=f"{gen_name}/{file_name}",
-                    name=file_name,
-                    secret=file_data["secret"],
-                    deploy=file_data["deploy"],
-                    owner=file_data["owner"],
-                    group=file_data["group"],
-                    mode=(
-                        file_data["mode"]
-                        if isinstance(file_data["mode"], int)
-                        else int(file_data["mode"], 8)
-                    ),
-                    needed_for=file_data["neededFor"],
-                    _store=pub_store if not file_data["secret"] else sec_store,
-                )
-                files.append(var)
 
-            # Build prompts
-            prompts = [Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()]
-
-            generator = cls(
-                name=gen_name,
-                share=gen_data["share"],
-                files=files,
-                dependencies=[
-                    GeneratorKey(machine=machine_name, name=dep)
-                    for dep in gen_data["dependencies"]
-                ],
-                migrate_fact=gen_data.get("migrateFact"),
-                prompts=prompts,
-                machine=machine_name,
-                _flake=flake,
+        for machine_name in machine_names:
+            # Get all generator metadata in one select (safe fields only)
+            generators_data = flake.select_machine(
+                machine_name,
+                generators_selector,
             )
-            generators.append(generator)
+            if not generators_data:
+                return []
 
-        # TODO: This should be done in a non-mutable way.
-        if include_previous_values:
-            for generator in generators:
-                for prompt in generator.prompts:
-                    prompt.previous_value = generator.get_previous_value(
-                        machine,
-                        prompt,
+            # Get all file metadata in one select
+            files_data = flake.select_machine(
+                machine_name,
+                files_selector,
+            )
+
+            from clan_lib.machines.machines import Machine
+
+            machine = Machine(name=machine_name, flake=flake)
+            pub_store = machine.public_vars_store
+            sec_store = machine.secret_vars_store
+
+            for gen_name, gen_data in generators_data.items():
+                # Build files from the files_data
+                files = []
+                gen_files = files_data.get(gen_name, {})
+                for file_name, file_data in gen_files.items():
+                    var = Var(
+                        id=f"{gen_name}/{file_name}",
+                        name=file_name,
+                        secret=file_data["secret"],
+                        deploy=file_data["deploy"],
+                        owner=file_data["owner"],
+                        group=file_data["group"],
+                        mode=(
+                            file_data["mode"]
+                            if isinstance(file_data["mode"], int)
+                            else int(file_data["mode"], 8)
+                        ),
+                        needed_for=file_data["neededFor"],
+                        _store=pub_store if not file_data["secret"] else sec_store,
                     )
+                    files.append(var)
+
+                # Build prompts
+                prompts = [
+                    Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()
+                ]
+
+                generator = cls(
+                    name=gen_name,
+                    share=gen_data["share"],
+                    files=files,
+                    dependencies=[
+                        GeneratorKey(machine=machine_name, name=dep)
+                        for dep in gen_data["dependencies"]
+                    ],
+                    migrate_fact=gen_data.get("migrateFact"),
+                    prompts=prompts,
+                    machine=machine_name,
+                    _flake=flake,
+                )
+                generators.append(generator)
+
+            # TODO: This should be done in a non-mutable way.
+            if include_previous_values:
+                for generator in generators:
+                    for prompt in generator.prompts:
+                        prompt.previous_value = generator.get_previous_value(
+                            machine,
+                            prompt,
+                        )
 
         return generators
 
@@ -231,7 +252,7 @@ class Generator:
         """
         from clan_lib.errors import ClanError
 
-        generators = self.get_machine_generators(machine.name, machine.flake)
+        generators = self.get_machine_generators([machine.name], machine.flake)
         result: dict[str, dict[str, bytes]] = {}
 
         for dep_key in set(self.dependencies):

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
     from clan_cli.vars.generator import Generator
 
-    generators = Generator.get_machine_generators(machine.name, machine.flake)
+    generators = Generator.get_machine_generators([machine.name], machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

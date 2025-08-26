@@ -228,7 +228,7 @@ def test_clan_create_api(
     # Invalidate cache because of new inventory
     clan_dir_flake.invalidate_cache()
 
-    generators = get_generators(machine=machine, full_closure=True)
+    generators = get_generators(machines=[machine], full_closure=True)
     collected_prompt_values = {}
     for generator in generators:
         prompt_values = {}
