@@ -59,7 +59,7 @@ class ApiBridge(ABC):
                         f"{middleware.__class__.__name__} => {request.method_name}",
                     )
                     middleware.process(context)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     # If middleware fails, handle error
                     self.send_api_error_response(
                         request.op_key or "unknown",

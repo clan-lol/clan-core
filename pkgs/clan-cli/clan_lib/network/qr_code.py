@@ -29,6 +29,7 @@ class QRCodeData:
 
     @contextmanager
     def get_best_remote(self) -> Iterator[Remote]:
+        errors = []
         for address in self.addresses:
             try:
                 log.debug(f"Establishing connection via {address}")
@@ -39,8 +40,13 @@ class QRCodeData:
                     if ping_time is not None:
                         log.info(f"reachable via {address} after connection")
                         yield address.remote
-            except Exception as e:
-                log.debug(f"Failed to establish connection via {address}: {e}")
+            except ClanError as e:
+                errors.append((address, e))
+        if not errors:
+            msg = "No reachable remote found in QR code data: " + ", ".join(
+                f"{addr.remote} ({err})" for addr, err in errors
+            )
+            raise ClanError(msg)
 
 
 def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:

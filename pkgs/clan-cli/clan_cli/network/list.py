@@ -1,6 +1,7 @@
 import argparse
 import logging
 
+from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.network.network import networks_from_flake
 
@@ -54,7 +55,7 @@ def list_command(args: argparse.Namespace) -> None:
         try:
             is_running = network.is_running()
             running_status = "Yes" if is_running else "No"
-        except Exception:
+        except ClanError:
             running_status = "Error"
 
         print(
