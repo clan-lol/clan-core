@@ -29,7 +29,7 @@ def list_command(args: argparse.Namespace) -> None:
         print("├── <builtin>")
         for builtin_idx, (name, template) in enumerate(builtin_template_set.items()):
             description = template.get("description", "no description")
-            is_last_template = builtin_idx == len(builtin_template_set.items()) - 1
+            is_last_template = builtin_idx == len(builtin_template_set) - 1
             if not is_last_template:
                 print(f"│   ├── {name}: {description}")
             else:
@@ -51,7 +51,7 @@ def list_command(args: argparse.Namespace) -> None:
                 print(f"└── inputs.{input_name}:")
 
             for custom_idx, (name, template) in enumerate(custom_templates.items()):
-                is_last_template = custom_idx == len(custom_templates.items()) - 1
+                is_last_template = custom_idx == len(custom_templates) - 1
                 if not is_last_template:
                     print(
                         f"{prefix}   ├── {name}: {template.get('description', 'no description')}",
