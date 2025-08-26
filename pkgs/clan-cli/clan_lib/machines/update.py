@@ -244,7 +244,7 @@ def run_machine_update(
                     "Mobile machine detected, applying workaround deployment method",
                 )
             ret = _build_host.run(
-                ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
+                ["nixos-rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
