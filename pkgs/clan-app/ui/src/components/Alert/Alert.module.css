@@ -5,10 +5,6 @@
     @apply pl-3;
   }
 
-  &.hasIcon svg.icon {
-    @apply relative top-0.5;
-  }
-
   &.hasDismiss {
     @apply pr-3;
   }
@@ -34,6 +30,10 @@
 
   &.noPadding {
     @apply p-0;
+  }
+
+  svg {
+    @apply relative top-0.5;
   }
 }
 
