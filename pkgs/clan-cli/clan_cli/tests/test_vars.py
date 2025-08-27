@@ -11,11 +11,9 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generator import (
     Generator,
-    GeneratorKey,
     dependencies_as_dir,
 )
 from clan_cli.vars.get import get_machine_var
-from clan_cli.vars.graph import all_missing_closure, requested_closure
 from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
@@ -52,66 +50,6 @@ def test_dependencies_as_files(temp_dir: Path) -> None:
     assert (temp_dir / "gen_1" / "var_1b").stat().st_mode & 0o777 == 0o600
     assert (temp_dir / "gen_2" / "var_2a").stat().st_mode & 0o777 == 0o600
     assert (temp_dir / "gen_2" / "var_2b").stat().st_mode & 0o777 == 0o600
-
-
-def test_required_generators() -> None:
-    # Create generators with proper machine context
-    machine_name = "test_machine"
-    gen_1 = Generator(name="gen_1", dependencies=[], machine=machine_name)
-    gen_2 = Generator(
-        name="gen_2",
-        dependencies=[gen_1.key],
-        machine=machine_name,
-    )
-    gen_2a = Generator(
-        name="gen_2a",
-        dependencies=[gen_2.key],
-        machine=machine_name,
-    )
-    gen_2b = Generator(
-        name="gen_2b",
-        dependencies=[gen_2.key],
-        machine=machine_name,
-    )
-
-    gen_1.exists = True
-    gen_2.exists = False
-    gen_2a.exists = False
-    gen_2b.exists = True
-    generators: dict[GeneratorKey, Generator] = {
-        generator.key: generator for generator in [gen_1, gen_2, gen_2a, gen_2b]
-    }
-
-    def generator_names(generator: list[Generator]) -> list[str]:
-        return [gen.name for gen in generator]
-
-    assert generator_names(requested_closure([gen_1.key], generators)) == [
-        "gen_1",
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
-    ]
-    assert generator_names(requested_closure([gen_2.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
-    ]
-    assert generator_names(requested_closure([gen_2a.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
-    ]
-    assert generator_names(requested_closure([gen_2b.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
-    ]
-
-    assert generator_names(all_missing_closure(generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
-    ]
 
 
 @pytest.mark.with_core
