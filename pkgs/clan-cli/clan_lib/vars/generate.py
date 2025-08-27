@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 from clan_cli.vars import graph
 from clan_cli.vars.generator import Generator
-from clan_cli.vars.graph import minimal_closure, requested_closure
+from clan_cli.vars.graph import requested_closure
 from clan_cli.vars.migration import check_can_migrate, migrate_files
 
 from clan_lib.api import API
@@ -43,16 +43,16 @@ def get_generators(
     result_closure = []
     if generator_name is None:  # all generators selected
         if full_closure:
-            result_closure = graph.full_closure(generators)
+            result_closure = graph.requested_closure(generators.keys(), generators)
         else:
-            result_closure = graph.all_missing_closure(generators)
+            result_closure = graph.all_missing_closure(generators.keys(), generators)
     # specific generator selected
     elif full_closure:
         roots = [key for key in generators if key.name == generator_name]
         result_closure = requested_closure(roots, generators)
     else:
         roots = [key for key in generators if key.name == generator_name]
-        result_closure = minimal_closure(roots, generators)
+        result_closure = graph.all_missing_closure(roots, generators)
 
     return result_closure
 

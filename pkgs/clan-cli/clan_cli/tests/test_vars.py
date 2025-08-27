@@ -156,6 +156,12 @@ def test_generate_public_and_secret_vars(
     vars_text = stringify_all_vars(machine)
     flake_obj = Flake(str(flake.path))
     my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
+    shared_generator = Generator(
+        "my_shared_generator",
+        share=True,
+        machine="my_machine",
+        _flake=flake_obj,
+    )
     dependent_generator = Generator(
         "dependent_generator",
         machine="my_machine",
@@ -260,6 +266,36 @@ def test_generate_public_and_secret_vars(
     ).printable_value
     assert public_value_after_regeneration == public_value_new, (
         "my_generator value should NOT change after regenerating only my_shared_generator"
+    )
+
+    # test that a dependent is generated on a clean slate even when no --regenerate is given
+    # remove all generated vars
+    in_repo_store.delete_store("my_machine")
+    sops_store.delete(shared_generator, "my_shared_value")
+    sops_store.delete_store("my_machine")
+    cli.run(
+        [
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            "--generator",
+            "my_shared_generator",
+        ]
+    )
+    # check that both my_shared_generator and dependent_generator are generated
+    shared_value_clean = get_machine_var(
+        machine,
+        "my_shared_generator/my_shared_value",
+    ).printable_value
+    assert shared_value_clean.startswith("shared"), "Shared value should be generated"
+    assert sops_store.exists(dependent_generator, "my_secret"), (
+        "Dependent generator's secret should be generated"
+    )
+    secret_value_clean = sops_store.get(dependent_generator, "my_secret").decode()
+    assert secret_value_clean == shared_value_clean, (
+        "Dependent generator's secret should match the shared value"
     )
 
 

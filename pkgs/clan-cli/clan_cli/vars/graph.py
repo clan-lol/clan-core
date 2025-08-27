@@ -87,31 +87,27 @@ def toposort_closure(
     return [generators[gen_key] for gen_key in result]
 
 
-# all generators in topological order
-def full_closure(generators: dict[GeneratorKey, Generator]) -> list[Generator]:
-    """From a set of generators, return all generators in topological order.
-    This includes all dependencies and dependents of the generators.
-    Returns all generators in topological order.
-    """
-    return toposort_closure(generators.keys(), generators)
-
-
 # just the missing generators including their dependents
-def all_missing_closure(generators: dict[GeneratorKey, Generator]) -> list[Generator]:
+def all_missing_closure(
+    requested_generators: Iterable[GeneratorKey],
+    generators: dict[GeneratorKey, Generator],
+) -> list[Generator]:
     """From a set of generators, return all incomplete generators in topological order.
 
     incomplete
     : A generator is missing if at least one of its files is missing.
     """
     # collect all generators that are missing from disk
-    closure = {gen_key for gen_key, gen in generators.items() if not gen.exists}
+    closure = {
+        gen_key for gen_key in requested_generators if not generators[gen_key].exists
+    }
     closure = add_dependents(closure, generators)
     return toposort_closure(closure, generators)
 
 
 # only a selected list of generators including their missing dependencies and their dependents
 def requested_closure(
-    requested_generators: list[GeneratorKey],
+    requested_generators: Iterable[GeneratorKey],
     generators: dict[GeneratorKey, Generator],
 ) -> list[Generator]:
     closure = set(requested_generators)
@@ -119,18 +115,3 @@ def requested_closure(
     closure = add_missing_dependencies(closure, generators)
     closure = add_dependents(closure, generators)
     return toposort_closure(closure, generators)
-
-
-# just enough to ensure that the list of selected generators are in a consistent state.
-# empty if nothing is missing.
-def minimal_closure(
-    requested_generators: list[GeneratorKey],
-    generators: dict[GeneratorKey, Generator],
-) -> list[Generator]:
-    closure = set(requested_generators)
-    final_closure = missing_dependency_closure(closure, generators)
-    # add requested generators if not already exist
-    for gen_key in closure:
-        if not generators[gen_key].exists:
-            final_closure.add(gen_key)
-    return toposort_closure(final_closure, generators)
