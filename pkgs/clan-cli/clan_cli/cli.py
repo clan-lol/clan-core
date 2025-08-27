@@ -198,7 +198,7 @@ This subcommand provides an interface to templates provided by clan.
 Examples:
 
   $ clan templates list
-  List all the machines managed by Clan.
+  List all available templates
 
 Usage differs based on the template type
 
@@ -227,6 +227,16 @@ Disk templates
 
   Real world example
   $ clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+
+---
+
+Machine templates
+
+  $ clan templates apply machine [TEMPLATE] [MACHINE_NAME]
+  Will create a new machine [MACHINE_NAME] from the specified [TEMPLATE]
+
+  Real world example
+  $ clan templates apply machine flash-installer my-installer
 """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
