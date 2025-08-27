@@ -123,6 +123,9 @@ def requested_closure(
 
 # just enough to ensure that the list of selected generators are in a consistent state.
 # empty if nothing is missing.
+# Theoretically we could have a more minimal closure that does not include dependents of
+# the requested generators, but this would introduce the potential for previously
+# generated dependents being out of sync.
 def minimal_closure(
     requested_generators: list[GeneratorKey],
     generators: dict[GeneratorKey, Generator],
@@ -133,4 +136,6 @@ def minimal_closure(
     for gen_key in closure:
         if not generators[gen_key].exists:
             final_closure.add(gen_key)
+    # add dependents of final_closure
+    final_closure = add_dependents(final_closure, generators)
     return toposort_closure(final_closure, generators)
