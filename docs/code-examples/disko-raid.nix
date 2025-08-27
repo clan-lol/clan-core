@@ -1,13 +1,11 @@
 {
   lib,
-  config,
   ...
 }:
 let
-  suffix = config.clan.core.vars.generators.disk-id.files.diskId.value;
   mirrorBoot = idx: {
     # suffix is to prevent disk name collisions
-    name = idx + suffix;
+    name = idx;
     type = "disk";
     device = "/dev/disk/by-id/${idx}";
     content = {
