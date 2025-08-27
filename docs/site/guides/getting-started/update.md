@@ -1,12 +1,15 @@
 
-# Update Your Machines
+# Update Machines
 
-Clan CLI enables you to remotely update your machines over SSH. This requires setting up a target address for each target machine.
+The Clan command line interface enables you to update machines remotely over SSH.
+In this guide we will teach you how to set a `targetHost` in Nix, 
+and how to define a remote builder for your machine closures.
 
-### Setting `targetHost`
 
-In your Nix files, set the `targetHost` to the reachable IP address of your new machine. This eliminates the need to specify `--target-host` with every command.
+## Setting `targetHost`
 
+Set the machine’s `targetHost` to the reachable IP address of the new machine.
+This eliminates the need to specify `--target-host` in CLI commands.
 
 ```{.nix title="clan.nix" hl_lines="9"}
 {
@@ -23,15 +26,42 @@ inventory.machines = {
 # [...]
 }
 ```
+
 The use of `root@` in the target address implies SSH access as the `root` user.
 Ensure that the root login is secured and only used when necessary.
 
+## Multiple Target Hosts
 
-### Setting a Build Host
+You can now experiment with a new interface that allows you to define multiple `targetHost` addresses for different VPNs. Learn more and try it out in our [networking guide](../networking.md).
 
-If the machine does not have enough resources to run the NixOS evaluation or build itself,
-it is also possible to specify a build host instead.
-During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
+## Updating Machine Configurations
+
+Execute the following command to update the specified machine:
+
+```bash
+clan machines update jon
+```
+
+All machines can be updated simultaneously by omitting the machine name:
+
+```bash
+clan machines update
+```
+
+---
+
+## Advanced Usage
+
+The following options are only needed for special cases, such as limited resources, mixed environments, or private flakes.
+
+### Setting `buildHost`
+
+If the machine does not have enough resources to run the NixOS **evaluation** or **build** itself,
+it is also possible to specify a `buildHost` instead.
+During an update, clan will ssh into the `buildHost` and run `nixos-rebuild` from there.
+
+!!! Note
+    The `buildHost` option should be set directly within your machine’s Nix configuration, **not** under `inventory.machines`.
 
 
 ```{.nix hl_lines="5" .no-copy}
@@ -45,7 +75,11 @@ buildClan {
 };
 ```
 
-You can also override the build host via the command line:
+### Overriding configuration with CLI flags
+
+`buildHost` / `targetHost`, and other network settings can be temporarily overridden for a single command:
+
+For the full list of flags refer to the [Clan CLI](../../reference/cli/index.md)
 
 ```bash
 # Build on a remote host
@@ -56,23 +90,9 @@ clan machines update jon --build-host local
 ```
 
 !!! Note
-    Make sure that the CPU architecture is the same for the buildHost as for the targetHost.
-    Example:
-        If you want to deploy to a macOS machine, your architecture is an ARM64-Darwin, that means you need a second macOS machine to build it.
+    Make sure the CPU architecture of the `buildHost` matches that of the `targetHost`
 
-### Updating Machine Configurations
-
-Execute the following command to update the specified machine:
-
-```bash
-clan machines update jon
-```
-
-You can also update all configured machines simultaneously by omitting the machine name:
-
-```bash
-clan machines update
-```
+    For example, if deploying to a macOS machine with an ARM64-Darwin architecture, you need a second macOS machine with the same architecture to build it.
 
 
 ### Excluding a machine from `clan machine update`
@@ -96,14 +116,15 @@ This is useful for machines that are not always online or are not part of the re
 ### Uploading Flake Inputs
 
 When updating remote machines, flake inputs are usually fetched by the build host.
-However, if your flake inputs require authentication (e.g., private repositories),
-you can use the `--upload-inputs` flag to upload all inputs from your local machine:
+However, if flake inputs require authentication (e.g., private repositories),
+
+Use the `--upload-inputs` flag to upload all inputs from your local machine:
 
 ```bash
 clan machines update jon --upload-inputs
 ```
 
 This is particularly useful when:
-- Your flake references private Git repositories
-- Authentication credentials are only available on your local machine
+- The flake references private Git repositories
+- Authentication credentials are only available on local machine
 - The build host doesn't have access to certain network resources
