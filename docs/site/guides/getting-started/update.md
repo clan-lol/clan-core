@@ -1,13 +1,10 @@
 
 # Update Machines
 
-Clan CLI lets you update machines remotely over SSH.
+The Clan command line interface enables you to update machines remotely over SSH.
+In this guide we will teach you how to set a `targetHost` in Nix, 
+and how to define a remote builder for your machine closures.
 
-## Clans Network Concept
-
-By default, updates are done via `ssh`. It is possible to choose from different network technologies in [clanServices](../clanServices.md), or define a [custom networking module](../services/community.md) if needed.
-
-For simplicity the following guide uses an explicit `targetHost` to demonstrate how updates work
 
 ## Setting `targetHost`
 
@@ -32,6 +29,10 @@ inventory.machines = {
 
 The use of `root@` in the target address implies SSH access as the `root` user.
 Ensure that the root login is secured and only used when necessary.
+
+## Multiple Target Hosts
+
+You can now experiment with a new interface that allows you to define multiple `targetHost` addresses for different VPNs. Learn more and try it out in our [networking guide](../networking.md).
 
 ## Updating Machine Configurations
 
@@ -59,8 +60,8 @@ If the machine does not have enough resources to run the NixOS **evaluation** or
 it is also possible to specify a `buildHost` instead.
 During an update, clan will ssh into the `buildHost` and run `nixos-rebuild` from there.
 
-!!! Warning
-    `buildHost` is specified directly in `machines.<>` **not** in `inventory.machines`
+!!! Note
+    The `buildHost` option should be set directly within your machine’s Nix configuration, **not** under `inventory.machines`.
 
 
 ```{.nix hl_lines="5" .no-copy}
