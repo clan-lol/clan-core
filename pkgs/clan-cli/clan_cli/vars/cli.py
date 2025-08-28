@@ -15,6 +15,7 @@ from .import_cmd import register_import_parser
 from .keygen import register_keygen_parser
 from .list import register_list_parser
 from .set import register_set_parser
+from .show import register_show_parser
 from .upload import register_upload_parser
 
 
@@ -269,3 +270,29 @@ Examples:
         formatter_class=HelpFormatter,
     )
     register_import_parser(import_parser)
+
+    show_parser = subparser.add_parser(
+        "show",
+        help="show variable ownership across the clan",
+        epilog=(
+            """
+This subcommand displays variable ownership across shared, per-user, and per-machine scopes.
+
+Examples:
+
+  $ clan vars show
+  Show all variables with their scopes and values in tree format.
+
+  $ clan vars show --scope shared
+  Show only shared variables.
+
+  $ clan vars show --user alice
+  Show variables that user "alice" has access to.
+
+  $ clan vars show --machine server1
+  Show variables that machine "server1" has access to.
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    register_show_parser(show_parser)
