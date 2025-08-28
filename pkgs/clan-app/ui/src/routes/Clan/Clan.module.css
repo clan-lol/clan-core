@@ -7,9 +7,7 @@
   @apply min-w-96;
 }
 
-.sidebar {
-  @apply absolute left-4 top-[2.25rem] w-60;
-  @apply min-h-96;
-
-  height: calc(100vh - 7.5rem);
+.sidebarContainer {
+  @apply absolute left-4 top-4 w-60 z-10;
+  height: calc(100vh - 2rem);
 }

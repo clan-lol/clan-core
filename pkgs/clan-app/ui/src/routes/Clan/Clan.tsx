@@ -119,7 +119,9 @@ export const Clan: Component<RouteSectionProps> = (props) => {
         )
       }
     >
-      <Sidebar class={cx(styles.sidebar)} />
+      <div class={styles.sidebarContainer}>
+        <Sidebar />
+      </div>
       {props.children}
       <ClanSceneController {...props} />
     </ClanContext.Provider>
