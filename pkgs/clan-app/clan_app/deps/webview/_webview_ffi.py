@@ -5,6 +5,11 @@ import platform
 from ctypes import CFUNCTYPE, c_char_p, c_int, c_void_p
 from pathlib import Path
 
+# Native handle kinds
+WEBVIEW_NATIVE_HANDLE_KIND_UI_WINDOW = 0
+WEBVIEW_NATIVE_HANDLE_KIND_UI_WIDGET = 1
+WEBVIEW_NATIVE_HANDLE_KIND_BROWSER_CONTROLLER = 2
+
 
 def _encode_c_string(s: str) -> bytes:
     return s.encode("utf-8")
@@ -72,6 +77,10 @@ class _WebviewLibrary:
         self.webview_create.argtypes = [c_int, c_void_p]
         self.webview_create.restype = c_void_p
 
+        self.webview_create_with_app_id = self.lib.webview_create_with_app_id
+        self.webview_create_with_app_id.argtypes = [c_int, c_void_p, c_char_p]
+        self.webview_create_with_app_id.restype = c_void_p
+
         self.webview_destroy = self.lib.webview_destroy
         self.webview_destroy.argtypes = [c_void_p]
 
@@ -104,6 +113,10 @@ class _WebviewLibrary:
 
         self.webview_return = self.lib.webview_return
         self.webview_return.argtypes = [c_void_p, c_char_p, c_int, c_char_p]
+
+        self.webview_get_native_handle = self.lib.webview_get_native_handle
+        self.webview_get_native_handle.argtypes = [c_void_p, c_int]
+        self.webview_get_native_handle.restype = c_void_p
 
         self.binding_callback_t = CFUNCTYPE(None, c_char_p, c_char_p, c_void_p)
 

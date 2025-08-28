@@ -24,18 +24,9 @@ clangStdenv.mkDerivation {
     domain = "git.clan.lol";
     owner = "clan";
     repo = "webview";
-    rev = "ef481aca8e531f6677258ca911c61aaaf71d2214";
-    hash = "sha256-KF9ESpo40z6VXyYsZCLWJAIh0RFe1Zy/Qw4k7cTpoYU=";
+    rev = "0ba936b247106219c363a855763ef06b2535363e";
+    hash = "sha256-pyH5v7+ytkLOlXpW5WrvN0bqPCOnKnna8+1C0DANoDQ=";
   };
-
-  # @Mic92: Where is this revision coming from? I can't see it in any of the branches.
-  # I removed the icon python code for now
-  # src = pkgs.fetchFromGitHub {
-  #   owner = "clan-lol";
-  #   repo = "webview";
-  #   rev = "7d24f0192765b7e08f2d712fae90c046d08f318e";
-  #   hash = "sha256-yokVI9tFiEEU5M/S2xAeJOghqqiCvTelLo8WLKQZsSY=";
-  # };
 
   outputs = [
     "out"

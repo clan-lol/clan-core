@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import platform
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -11,7 +12,10 @@ from typing import TYPE_CHECKING, Any
 from clan_lib.api import MethodRegistry, message_queue
 from clan_lib.api.tasks import WebThread
 
-from ._webview_ffi import _encode_c_string, _webview_lib
+from ._webview_ffi import (
+    _encode_c_string,
+    _webview_lib,
+)
 from .webview_bridge import WebviewBridge
 
 if TYPE_CHECKING:
@@ -32,6 +36,21 @@ class FuncStatus(IntEnum):
     FAILURE = 1
 
 
+class NativeHandleKind(IntEnum):
+    # Top-level window. @c GtkWindow pointer (GTK), @c NSWindow pointer (Cocoa)
+    # or @c HWND (Win32)
+    UI_WINDOW = 0
+
+    # Browser widget. @c GtkWidget pointer (GTK), @c NSView pointer (Cocoa) or
+    # @c HWND (Win32).
+    UI_WIDGET = 1
+
+    # Browser controller. @c WebKitWebView pointer (WebKitGTK), @c WKWebView
+    # pointer (Cocoa/WebKit) or @c ICoreWebView2Controller pointer
+    # (Win32/WebView2).
+    BROWSER_CONTROLLER = 2
+
+
 @dataclass(frozen=True)
 class Size:
     width: int
@@ -46,6 +65,7 @@ class Webview:
     size: Size | None = None
     window: int | None = None
     shared_threads: dict[str, WebThread] | None = None
+    app_id: str | None = None
 
     # initialized later
     _bridge: WebviewBridge | None = None
@@ -56,7 +76,14 @@ class Webview:
     def _create_handle(self) -> None:
         # Initialize the webview handle
         with_debugger = True
-        handle = _webview_lib.webview_create(int(with_debugger), self.window)
+
+        # Use webview_create_with_app_id only on Linux if app_id is provided
+        if self.app_id and platform.system() == "Linux":
+            handle = _webview_lib.webview_create_with_app_id(
+                int(with_debugger), self.window, _encode_c_string(self.app_id)
+            )
+        else:
+            handle = _webview_lib.webview_create(int(with_debugger), self.window)
         callbacks: dict[str, Callable[..., Any]] = {}
 
         # Since we can't use object.__setattr__, we'll initialize differently
@@ -216,6 +243,21 @@ class Webview:
         c_callback = _webview_lib.binding_callback_t(wrapper)
         self._callbacks[name] = c_callback
         _webview_lib.webview_bind(self.handle, _encode_c_string(name), c_callback, None)
+
+    def get_native_handle(
+        self, kind: NativeHandleKind = NativeHandleKind.UI_WINDOW
+    ) -> int | None:
+        """Get the native handle (platform-dependent).
+
+        Args:
+            kind: Handle kind - NativeHandleKind enum value
+
+        Returns:
+            Native handle as integer, or None if failed
+
+        """
+        handle = _webview_lib.webview_get_native_handle(self.handle, kind.value)
+        return handle if handle else None
 
     def unbind(self, name: str) -> None:
         if name in self._callbacks:
