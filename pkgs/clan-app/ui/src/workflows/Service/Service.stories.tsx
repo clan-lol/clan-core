@@ -166,6 +166,9 @@ export const Default: Story = {
 export const SelectRoleMembers: Story = {
   render: () => (
     <ServiceWorkflow
+      handleSubmit={(instance) => {
+        console.log("Submitted instance:", instance);
+      }}
       initialStep="select:members"
       initialStore={{
         currentRole: "peer",

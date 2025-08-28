@@ -18,8 +18,6 @@ import { Search } from "@/src/components/Search/Search";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { Typography } from "@/src/components/Typography/Typography";
-import { Toolbar } from "@/src/components/Toolbar/Toolbar";
-import { ToolbarButton } from "@/src/components/Toolbar/ToolbarButton";
 import { TagSelect } from "@/src/components/Search/TagSelect";
 import { Tag } from "@/src/components/Tag/Tag";
 import { createForm, FieldValues, setValue } from "@modular-forms/solid";
@@ -145,7 +143,6 @@ const ConfigureService = () => {
   const [store, set] = getStepStore<ServiceStoreType>(stepper);
 
   const [formStore, { Form, Field }] = createForm<RolesForm>({
-    // initialValues: props.initialValues,
     initialValues: {
       instanceName: "backup-instance-1",
     },
@@ -157,7 +154,28 @@ const ConfigureService = () => {
   const options = useOptions(tagsQuery, machinesQuery);
 
   const handleSubmit = (values: RolesForm) => {
-    console.log("Create service submitted with values:", values);
+    const roles: Record<string, RoleType> = Object.fromEntries(
+      Object.entries(store.roles).map(([key, value]) => [
+        key,
+        {
+          machines: Object.fromEntries(
+            value.filter((v) => v.type === "machine").map((v) => [v.label, {}]),
+          ),
+          tags: Object.fromEntries(
+            value.filter((v) => v.type === "tag").map((v) => [v.label, {}]),
+          ),
+        },
+      ]),
+    );
+
+    store.handleSubmit({
+      name: values.instanceName,
+      module: {
+        name: store.module.name,
+        input: store.module.input,
+      },
+      roles,
+    });
   };
 
   return (
@@ -185,13 +203,19 @@ const ConfigureService = () => {
             )}
           </Field>
         </div>
-        <Button icon="Close" color="primary" ghost size="s" class="ml-auto" />
+        <Button
+          icon="Close"
+          color="primary"
+          ghost
+          size="s"
+          class="ml-auto"
+          onClick={store.close}
+        />
       </div>
       <div class={styles.content}>
         <For each={Object.keys(store.module.raw?.info.roles || {})}>
           {(role) => {
             const values = store.roles?.[role] || [];
-            console.log("Role members:", role, values, "from", options());
             return (
               <TagSelect<TagType>
                 label={role}
@@ -221,7 +245,9 @@ const ConfigureService = () => {
         </For>
       </div>
       <div class={cx(styles.footer, styles.backgroundAlt)}>
-        <Button hierarchy="secondary">Add Service</Button>
+        <Button hierarchy="secondary" type="submit">
+          Add Service
+        </Button>
       </div>
     </Form>
   );
@@ -269,8 +295,6 @@ const ConfigureRole = () => {
       set("roles", {});
     }
     set("roles", (r) => ({ ...r, [store.currentRole as string]: members }));
-    console.log("Roles form submitted ", members);
-
     stepper.setActiveStep("view:members");
   };
 
@@ -381,6 +405,21 @@ const steps = [
 
 export type ServiceSteps = typeof steps;
 
+// TODO: Ideally we would impot this from a backend model package
+export interface InventoryInstance {
+  name: string;
+  module: {
+    name: string;
+    input: string;
+  };
+  roles: Record<string, RoleType>;
+}
+
+interface RoleType {
+  machines: Record<string, { settings?: unknown }>;
+  tags: Record<string, unknown>;
+}
+
 export interface ServiceStoreType {
   module: {
     name: string;
@@ -390,45 +429,36 @@ export interface ServiceStoreType {
   roles: Record<string, TagType[]>;
   currentRole?: string;
   close: () => void;
+  handleSubmit: (values: InventoryInstance) => void;
 }
 
 interface ServiceWorkflowProps {
   initialStep?: ServiceSteps[number]["id"];
   initialStore?: Partial<ServiceStoreType>;
+  onClose?: () => void;
+  handleSubmit: (values: InventoryInstance) => void;
 }
+
 export const ServiceWorkflow = (props: ServiceWorkflowProps) => {
-  const [show, setShow] = createSignal(false);
   const stepper = createStepper(
     { steps },
     {
       initialStep: props.initialStep || "select:service",
       initialStoreData: {
         ...props.initialStore,
-        close: () => setShow(false),
+        close: () => props.onClose?.(),
+        handleSubmit: props.handleSubmit,
       } satisfies Partial<ServiceStoreType>,
     },
   );
   return (
-    <>
-      <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center">
-        <Show when={show()}>
-          <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
-            <StepperProvider stepper={stepper}>
-              <div class="w-[30rem]">{stepper.currentStep().content()}</div>
-            </StepperProvider>
-          </div>
-        </Show>
-        <div class="flex justify-center space-x-4">
-          <Toolbar>
-            <ToolbarButton
-              onClick={() => setShow(!show())}
-              description="Add new Service"
-              name="modules"
-              icon="Modules"
-            />
-          </Toolbar>
-        </div>
-      </div>
-    </>
+    <div
+      id="add-service"
+      class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2"
+    >
+      <StepperProvider stepper={stepper}>
+        <div class="w-[30rem]">{stepper.currentStep().content()}</div>
+      </StepperProvider>
+    </div>
   );
 };
