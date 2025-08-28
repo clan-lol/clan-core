@@ -5,43 +5,58 @@ import styles from "./TagSelect.module.css";
 import { Combobox } from "@kobalte/core/combobox";
 import { Button } from "../Button/Button";
 
+// Base props common to both modes
 export interface TagSelectProps<T> {
-  // Define any props needed for the SelectStepper component
+  onClick: () => void;
+  label: string;
   values: T[];
   options: T[];
-  onChange: (values: T[]) => void;
-  onClick: () => void;
   renderItem: (item: T) => JSX.Element;
 }
 
-export function TagSelect<T>(props: TagSelectProps<T>) {
+/**
+ * Shallowly interactive field for selecting multiple tags / machines.
+ * It does only handle click and focus interactions
+ * Displays the selected items as tags
+ */
+export function TagSelect<T extends { value: unknown }>(
+  props: TagSelectProps<T>,
+) {
+  const optionValue = "value";
   return (
-    <div class={styles.dummybg}>
-      <div class="flex flex-col gap-1.5">
-        <div class="flex w-full items-center gap-2 px-1.5">
-          <Typography
-            hierarchy="body"
-            weight="medium"
-            class="flex gap-2 uppercase"
-            size="s"
-            inverted
-            color="secondary"
-          >
-            Servers
-          </Typography>
-          <Icon icon="Info" color="tertiary" inverted />
-          <Button icon="Settings" hierarchy="primary" ghost class="ml-auto" />
-        </div>
-        <Combobox<T>
-          multiple
-          value={props.values}
-          onChange={props.onChange}
-          options={props.options}
-          allowsEmptyCollection
-          class="w-full"
+    <div class="flex flex-col gap-1.5">
+      <div class="flex w-full items-center gap-2 px-1.5 py-0">
+        <Typography
+          hierarchy="label"
+          weight="medium"
+          class="flex gap-2 uppercase"
+          size="xs"
+          inverted
+          color="secondary"
         >
-          <Combobox.Control<T> aria-label="Fruits">
-            {(state) => (
+          {props.label}
+        </Typography>
+        <Icon icon="Info" color="tertiary" inverted size={11} />
+        <Button
+          icon="Settings"
+          hierarchy="primary"
+          ghost
+          class="ml-auto"
+          size="xs"
+        />
+      </div>
+      <Combobox<T>
+        multiple
+        optionValue={optionValue}
+        value={props.values}
+        options={props.options}
+        allowsEmptyCollection
+        class="w-full"
+      >
+        <Combobox.Control<T> aria-label="Fruits">
+          {(state) => {
+            console.log("combobox state selected", state.selectedOptions());
+            return (
               <Combobox.Trigger
                 tabIndex={1}
                 class={styles.trigger}
@@ -62,10 +77,10 @@ export function TagSelect<T>(props: TagSelectProps<T>) {
                   <For each={state.selectedOptions()}>{props.renderItem}</For>
                 </div>
               </Combobox.Trigger>
-            )}
-          </Combobox.Control>
-        </Combobox>
-      </div>
+            );
+          }}
+        </Combobox.Control>
+      </Combobox>
     </div>
   );
 }

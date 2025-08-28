@@ -3,6 +3,7 @@ import { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { TagSelect, TagSelectProps } from "./TagSelect";
 import { Tag } from "../Tag/Tag";
 import Icon from "../Icon/Icon";
+import { createSignal } from "solid-js";
 
 const meta = {
   title: "Components/Custom/SelectStepper",
@@ -11,28 +12,51 @@ const meta = {
 
 export default meta;
 
-type Story = StoryObj<TagSelectProps<string>>;
+interface Item {
+  value: string;
+  label: string;
+}
 
-const Item = (item: string) => (
+type Story = StoryObj<TagSelectProps<Item>>;
+
+const Item = (item: Item) => (
   <Tag
     inverted
     icon={(tag) => (
       <Icon icon={"Machine"} size="0.5rem" inverted={tag.inverted} />
     )}
   >
-    {item}
+    {item.label}
   </Tag>
 );
 export const Default: Story = {
   args: {
     renderItem: Item,
-    values: ["foo", "bar"],
-    options: ["foo", "bar", "baz", "qux", "quux"],
-    onChange: (values: string[]) => {
-      console.log("Selected values:", values);
-    },
-    onClick: () => {
-      console.log("Combobox clicked");
-    },
+    label: "Peer",
+    options: [
+      { value: "foo", label: "Foo" },
+      { value: "bar", label: "Bar" },
+      { value: "baz", label: "Baz" },
+      { value: "qux", label: "Qux" },
+      { value: "quux", label: "Quux" },
+      { value: "corge", label: "Corge" },
+      { value: "grault", label: "Grault" },
+    ],
+  } satisfies Partial<TagSelectProps<Item>>,
+  render: (args: TagSelectProps<Item>) => {
+    const [state, setState] = createSignal<Item[]>([]);
+    return (
+      <TagSelect<Item>
+        {...args}
+        values={state()}
+        onClick={() => {
+          console.log("Clicked, current values:");
+          setState(() => [
+            { value: "baz", label: "Baz" },
+            { value: "qux", label: "Qux" },
+          ]);
+        }}
+      />
+    );
   },
 };
