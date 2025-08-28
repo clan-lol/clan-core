@@ -31,6 +31,7 @@ import {
   setHighlightGroups,
 } from "./highlightStore";
 import { createMachineMesh } from "./MachineRepr";
+import { useClanContext } from "@/src/routes/Clan/Clan";
 
 function intersectMachines(
   event: MouseEvent,
@@ -94,12 +95,6 @@ export function useMachineClick() {
   return lastClickedMachine;
 }
 
-/*Gloabl signal*/
-const [worldMode, setWorldMode] = createSignal<
-  "default" | "select" | "service" | "create" | "move"
->("select");
-export { worldMode, setWorldMode };
-
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
   onCreate: () => Promise<{ id: string }>;
@@ -111,6 +106,8 @@ export function CubeScene(props: {
   clanURI: string;
   toolbarPopup?: JSX.Element;
 }) {
+  const ctx = useClanContext();
+
   let container: HTMLDivElement;
   let scene: THREE.Scene;
   let camera: THREE.OrthographicCamera;
@@ -440,7 +437,7 @@ export function CubeScene(props: {
     updateCameraInfo();
 
     createEffect(
-      on(worldMode, (mode) => {
+      on(ctx.worldMode, (mode) => {
         if (mode === "create") {
           actionBase!.visible = true;
         } else {
@@ -466,7 +463,7 @@ export function CubeScene(props: {
     // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
-      if (worldMode() === "create") {
+      if (ctx.worldMode() === "create") {
         props
           .onCreate()
           .then(({ id }) => {
@@ -484,16 +481,16 @@ export function CubeScene(props: {
           .finally(() => {
             if (actionBase) actionBase.visible = false;
 
-            setWorldMode("select");
+            ctx.setWorldMode("select");
           });
       }
-      if (worldMode() === "move") {
+      if (ctx.worldMode() === "move") {
         const currId = menuIntersection().at(0);
         const pos = cursorPosition();
         if (!currId || !pos) return;
 
         props.setMachinePos(currId, pos);
-        setWorldMode("select");
+        ctx.setWorldMode("select");
         clearHighlight("move");
       }
 
@@ -513,13 +510,13 @@ export function CubeScene(props: {
 
         if (!id) return;
 
-        if (worldMode() === "select") props.onSelect(new Set<string>([id]));
+        if (ctx.worldMode() === "select") props.onSelect(new Set<string>([id]));
 
         emitMachineClick(id); // notify subscribers
       } else {
         emitMachineClick(null);
 
-        if (worldMode() === "select") props.onSelect(new Set<string>());
+        if (ctx.worldMode() === "select") props.onSelect(new Set<string>());
       }
     };
 
@@ -561,7 +558,7 @@ export function CubeScene(props: {
       if (e.button === 0) {
         // Left button
 
-        if (worldMode() === "select" && machines.length) {
+        if (ctx.worldMode() === "select" && machines.length) {
           // Disable controls to avoid conflict
           controls.enabled = false;
 
@@ -571,7 +568,7 @@ export function CubeScene(props: {
             // Set machine as flying
             setHighlightGroups({ move: new Set(machines) });
 
-            setWorldMode("move");
+            ctx.setWorldMode("move");
             renderLoop.requestRender();
           }, 500);
           setCancelMove(cancelMove);
@@ -597,14 +594,14 @@ export function CubeScene(props: {
         // Always re-enable controls
         controls.enabled = true;
 
-        if (worldMode() === "move") {
+        if (ctx.worldMode() === "move") {
           // Set machine as not flying
           props.setMachinePos(
             highlightGroups["move"].values().next().value!,
             cursorPosition() || null,
           );
           clearHighlight("move");
-          setWorldMode("select");
+          ctx.setWorldMode("select");
           renderLoop.requestRender();
         }
       }
@@ -691,13 +688,14 @@ export function CubeScene(props: {
 
   const onAddClick = (event: MouseEvent) => {
     setPositionMode("grid");
-    setWorldMode("create");
+    ctx.setWorldMode("create");
     renderLoop.requestRender();
   };
   const onMouseMove = (event: MouseEvent) => {
-    if (!(worldMode() === "create" || worldMode() === "move")) return;
+    if (!(ctx.worldMode() === "create" || ctx.worldMode() === "move")) return;
 
-    const actionRepr = worldMode() === "create" ? actionBase : actionMachine;
+    const actionRepr =
+      ctx.worldMode() === "create" ? actionBase : actionMachine;
     if (!actionRepr) return;
 
     actionRepr.visible = true;
@@ -732,7 +730,7 @@ export function CubeScene(props: {
     }
   };
   const handleMenuSelect = (mode: "move") => {
-    setWorldMode(mode);
+    ctx.setWorldMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
 
     // Find the position of the first selected machine
@@ -752,7 +750,7 @@ export function CubeScene(props: {
   };
 
   createEffect(
-    on(worldMode, (mode) => {
+    on(ctx.worldMode, (mode) => {
       console.log("World mode changed to", mode);
     }),
   );
@@ -775,10 +773,10 @@ export function CubeScene(props: {
       <div
         class={cx(
           "cubes-scene-container",
-          worldMode() === "default" && "cursor-no-drop",
-          worldMode() === "select" && "cursor-pointer",
-          worldMode() === "service" && "cursor-pointer",
-          worldMode() === "create" && "cursor-cell",
+          ctx.worldMode() === "default" && "cursor-no-drop",
+          ctx.worldMode() === "select" && "cursor-pointer",
+          ctx.worldMode() === "service" && "cursor-pointer",
+          ctx.worldMode() === "create" && "cursor-cell",
           isDragging() && "!cursor-grabbing",
         )}
         ref={(el) => (container = el)}
@@ -792,24 +790,24 @@ export function CubeScene(props: {
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() => setWorldMode("select")}
-            selected={worldMode() === "select"}
+            onClick={() => ctx.setWorldMode("select")}
+            selected={ctx.worldMode() === "select"}
           />
           <ToolbarButton
             description="Create new machine"
             name="new-machine"
             icon="NewMachine"
             onClick={onAddClick}
-            selected={worldMode() === "create"}
+            selected={ctx.worldMode() === "create"}
           />
           <Divider orientation="vertical" />
           <ToolbarButton
             description="Add new Service"
             name="modules"
             icon="Services"
-            selected={worldMode() === "service"}
+            selected={ctx.worldMode() === "service"}
             onClick={() => {
-              setWorldMode("service");
+              ctx.setWorldMode("service");
             }}
           />
           <ToolbarButton

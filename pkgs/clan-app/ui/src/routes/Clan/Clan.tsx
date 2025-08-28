@@ -17,13 +17,15 @@ import {
   useClanURI,
   useMachineName,
 } from "@/src/hooks/clan";
-import { CubeScene, setWorldMode, worldMode } from "@/src/scene/cubes";
+import { CubeScene } from "@/src/scene/cubes";
 import {
   ClanDetails,
+  ListServiceInstances,
   MachinesQueryResult,
   useClanDetailsQuery,
   useClanListQuery,
   useMachinesQuery,
+  useServiceInstancesQuery,
 } from "@/src/hooks/queries";
 import { clanURIs, setStore, store } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
@@ -41,18 +43,24 @@ import { useApiClient } from "@/src/hooks/ApiClient";
 import toast from "solid-toast";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
 
+export type WorldMode = "default" | "select" | "service" | "create" | "move";
+
 interface ClanContextProps {
   clanURI: string;
   machinesQuery: MachinesQueryResult;
   activeClanQuery: UseQueryResult<ClanDetails>;
   otherClanQueries: UseQueryResult<ClanDetails>[];
   allClansQueries: UseQueryResult<ClanDetails>[];
+  serviceInstancesQuery: UseQueryResult<ListServiceInstances>;
 
   isLoading(): boolean;
   isError(): boolean;
 
   showAddMachine(): boolean;
   setShowAddMachine(value: boolean): void;
+
+  worldMode(): WorldMode;
+  setWorldMode(mode: WorldMode): void;
 }
 
 function createClanContext(
@@ -60,10 +68,13 @@ function createClanContext(
   machinesQuery: MachinesQueryResult,
   activeClanQuery: UseQueryResult<ClanDetails>,
   otherClanQueries: UseQueryResult<ClanDetails>[],
+  serviceInstancesQuery: UseQueryResult<ListServiceInstances>,
 ) {
+  const [worldMode, setWorldMode] = createSignal<WorldMode>("select");
   const [showAddMachine, setShowAddMachine] = createSignal(false);
+
   const allClansQueries = [activeClanQuery, ...otherClanQueries];
-  const allQueries = [machinesQuery, ...allClansQueries];
+  const allQueries = [machinesQuery, ...allClansQueries, serviceInstancesQuery];
 
   return {
     clanURI,
@@ -71,10 +82,13 @@ function createClanContext(
     activeClanQuery,
     otherClanQueries,
     allClansQueries,
+    serviceInstancesQuery,
     isLoading: () => allQueries.some((q) => q.isLoading),
     isError: () => activeClanQuery.isError,
     showAddMachine,
     setShowAddMachine,
+    setWorldMode,
+    worldMode,
   };
 }
 
@@ -104,12 +118,14 @@ export const Clan: Component<RouteSectionProps> = (props) => {
   );
 
   const machinesQuery = useMachinesQuery(clanURI);
+  const serviceInstancesQuery = useServiceInstancesQuery(clanURI);
 
   const ctx = createClanContext(
     clanURI,
     machinesQuery,
     activeClanQuery,
     otherClanQueries,
+    serviceInstancesQuery,
   );
 
   return (
@@ -217,7 +233,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       console.error("Error creating service instance", result.errors);
     }
     toast.success("Created");
-    setWorldMode("select");
+    ctx.setWorldMode("select");
   };
 
   return (
@@ -254,11 +270,11 @@ const ClanSceneController = (props: RouteSectionProps) => {
         isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
         toolbarPopup={
-          <Show when={worldMode() === "service"}>
+          <Show when={ctx.worldMode() === "service"}>
             <ServiceWorkflow
               handleSubmit={handleSubmitService}
               onClose={() => {
-                setWorldMode("select");
+                ctx.setWorldMode("select");
                 currentPromise()?.resolve({ id: "0" });
               }}
             />

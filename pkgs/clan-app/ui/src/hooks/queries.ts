@@ -25,6 +25,9 @@ export type MachineStatus = MachineState["status"];
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
 
+export type ListServiceModules = SuccessData<"list_service_modules">;
+export type ListServiceInstances = SuccessData<"list_service_instances">;
+
 export interface MachineDetail {
   tags: Tags;
   machine: Machine;
@@ -158,6 +161,54 @@ export const useMachineStateQuery = (clanURI: string, machineName: string) => {
       if (result.status === "error") {
         throw new Error(
           "Error fetching machine status: " + result.errors[0].message,
+        );
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export const useServiceModulesQuery = (clanURI: string) => {
+  const client = useApiClient();
+
+  return useQuery<ListServiceModules>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "service_modules"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_modules", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching service modules: " + result.errors[0].message,
+        );
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export const useServiceInstancesQuery = (clanURI: string) => {
+  const client = useApiClient();
+
+  return useQuery<ListServiceInstances>(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "service_instances"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_instances", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching service instances: " + result.errors[0].message,
         );
       }
 

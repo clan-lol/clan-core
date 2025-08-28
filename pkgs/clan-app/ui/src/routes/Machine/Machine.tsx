@@ -10,6 +10,7 @@ import { SidebarMachineStatus } from "@/src/components/Sidebar/SidebarMachineSta
 import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarSectionInstall";
 
 import styles from "./Machine.module.css";
+import { SectionServices } from "@/src/routes/Machine/SectionServices";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ export const Machine = (props: RouteSectionProps) => {
         />
         <SectionGeneral {...sectionProps} />
         <SectionTags {...sectionProps} />
+        <SectionServices />
       </>
     );
   };

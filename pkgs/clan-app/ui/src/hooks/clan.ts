@@ -30,6 +30,24 @@ export const buildClanPath = (clanURI: string) => {
 export const buildMachinePath = (clanURI: string, name: string) =>
   buildClanPath(clanURI) + "/machines/" + name;
 
+export const buildServicePath = (props: {
+  clanURI: string;
+  machineName?: string;
+  id: string;
+  module: {
+    input?: string | null | undefined;
+    name: string;
+  };
+}) => {
+  const { clanURI, machineName, id, module } = props;
+  const result =
+    (machineName
+      ? buildMachinePath(clanURI, machineName)
+      : buildClanPath(clanURI)) +
+    `/services/${module.input ?? "clan"}/${module.name}`;
+  return id == module.name ? result : result + "/" + id;
+};
+
 export const navigateToClan = (navigate: Navigator, clanURI: string) => {
   const path = buildClanPath(clanURI);
   console.log("Navigating to clan", clanURI, path);
@@ -64,7 +82,21 @@ export const machineNameParam = (params: Params) => {
   return params.machineName;
 };
 
+export const inputParam = (params: Params) => params.input;
+export const nameParam = (params: Params) => params.name;
+export const idParam = (params: Params) => params.id;
+
 export const useMachineName = (): string => machineNameParam(useParams());
+export const useInputParam = (): string => inputParam(useParams());
+export const useNameParam = (): string => nameParam(useParams());
+
+export const maybeUseIdParam = (): string | null => {
+  const params = useParams();
+  if (params.id === undefined) {
+    return null;
+  }
+  return idParam(params);
+};
 
 export const maybeUseMachineName = (): string | null => {
   const params = useParams();
