@@ -5,6 +5,7 @@ import { SceneData } from "../stores/clan";
 import { MachinesQueryResult } from "../hooks/queries";
 import { ObjectRegistry } from "./ObjectRegistry";
 import { renderLoop } from "./RenderLoop";
+import { highlightGroups } from "./highlightStore";
 
 function keyFromPos(pos: [number, number]): string {
   return `${pos[0]},${pos[1]}`;
@@ -79,6 +80,7 @@ export class MachineManager {
               new THREE.Vector2(data.position[0], data.position[1]),
               id,
               selectedIds,
+              highlightGroups,
             );
             this.machines.set(id, repr);
             scene.add(repr.group);
