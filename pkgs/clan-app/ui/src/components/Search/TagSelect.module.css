@@ -1,22 +1,3 @@
-.dummybg {
-  padding: 1rem;
-  width: 20rem;
-  min-height: 10rem;
-  border-radius: 8px;
-  border: 1px solid #2e4a4b;
-  background:
-    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
-    linear-gradient(
-      180deg,
-      theme(colors.bg.inv.2) 0%,
-      theme(colors.bg.inv.3) 100%
-    );
-
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
 .trigger {
   @apply rounded-md bg-inv-4 w-full min-h-11;
 

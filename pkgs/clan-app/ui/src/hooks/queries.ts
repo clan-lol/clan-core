@@ -42,6 +42,7 @@ export const DefaultQueryClient = new QueryClient({
   },
 });
 
+export type MachinesQuery = ReturnType<typeof useMachinesQuery>;
 export const useMachinesQuery = (clanURI: string) => {
   const client = useApiClient();
 
@@ -113,6 +114,27 @@ export const useMachineQuery = (clanURI: string, machineName: string) => {
         machine: machine.data,
         fieldsSchema: writeSchema.data,
       };
+    },
+  }));
+};
+
+export type TagsQuery = ReturnType<typeof useTags>;
+export const useTags = (clanURI: string) => {
+  const client = useApiClient();
+  return useQuery(() => ({
+    queryKey: ["clans", encodeBase64(clanURI), "tags"],
+    queryFn: async () => {
+      const apiCall = client.fetch("list_tags", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await apiCall.result;
+      if (result.status === "error") {
+        throw new Error("Error fetching tags: " + result.errors[0].message);
+      }
+      return result.data;
     },
   }));
 };

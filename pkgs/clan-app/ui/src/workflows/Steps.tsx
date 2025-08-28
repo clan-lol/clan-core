@@ -35,7 +35,8 @@ export const NextButton = (props: NextButtonProps) => {
   );
 };
 
-export const BackButton = () => {
+type BackButtonProps = ButtonProps & {};
+export const BackButton = (props: BackButtonProps) => {
   const stepSignal = useStepper<InstallSteps>();
   return (
     <Button
@@ -45,6 +46,7 @@ export const BackButton = () => {
       onClick={() => {
         stepSignal.previous();
       }}
+      {...props}
     ></Button>
   );
 };

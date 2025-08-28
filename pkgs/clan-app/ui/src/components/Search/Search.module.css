@@ -29,7 +29,7 @@
 }
 
 .searchHeader {
-  @apply bg-inv-3 flex gap-2 items-center p-2 rounded-md z-50;
+  @apply flex gap-2 items-center p-2 rounded-t-md z-50;
   @apply px-3 pt-3 pb-2;
 }
 
@@ -42,26 +42,27 @@
 }
 
 .searchItem {
+  @apply flex flex-col justify-center overflow-hidden;
+  box-shadow: 0 1px 0 0 theme(colors.border.inv.2);
+
   &[data-highlighted],
   &:focus,
   &:focus-visible,
   &:hover {
-    @apply bg-inv-acc-2;
+    @apply bg-inv-acc-2 rounded-md;
+    box-shadow: unset;
   }
 
   &:active {
-    @apply bg-inv-acc-3;
+    @apply bg-inv-acc-3 rounded-md;
+    box-shadow: unset;
   }
-
-  @apply flex flex-col justify-center;
 }
 
 .searchContainer {
   @apply bg-gradient-to-b from-bg-inv-3 to-bg-inv-4;
 
   @apply rounded-lg;
-
-  height: var(--container-height, 14.5rem);
 
   border: 1px solid #2b4647;
 
@@ -78,9 +79,8 @@
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.searchContent {
-  @apply px-3;
-  height: calc(var(--container-height, 14.5rem) - 3.5rem);
+.listbox {
+  @apply px-3 pt-3.5;
 }
 
 @keyframes contentHide {

@@ -2,9 +2,11 @@ import Icon from "../Icon/Icon";
 import { Button } from "../Button/Button";
 import styles from "./Search.module.css";
 import { Combobox } from "@kobalte/core/combobox";
-import { createMemo, createSignal, For, JSX } from "solid-js";
+import { createMemo, createSignal, For, JSX, Match, Switch } from "solid-js";
 import { createVirtualizer, VirtualizerOptions } from "@tanstack/solid-virtual";
 import { CollectionNode } from "@kobalte/core/*";
+import cx from "classnames";
+import { Loader } from "../Loader/Loader";
 
 export interface Option {
   value: string;
@@ -23,6 +25,10 @@ export interface SearchMultipleProps<T> {
   placeholder?: string;
   virtualizerOptions?: Partial<VirtualizerOptions<Element, Element>>;
   height: string; // e.g. '14.5rem'
+  headerClass?: string;
+  headerChildren?: JSX.Element;
+  loading?: boolean;
+  loadingComponent?: JSX.Element;
 }
 export function SearchMultiple<T extends Option>(
   props: SearchMultipleProps<T>,
@@ -72,7 +78,6 @@ export function SearchMultiple<T extends Option>(
         props.onChange(values);
       }}
       class={styles.searchContainer}
-      style={{ "--container-height": props.height }}
       placement="bottom-start"
       options={props.options}
       optionValue="value"
@@ -89,69 +94,78 @@ export function SearchMultiple<T extends Option>(
       triggerMode="manual"
       noResetInputOnBlur={true}
     >
-      <Combobox.Control<T> class={styles.searchHeader}>
+      <Combobox.Control<T>
+        class={cx(styles.searchHeader, props.headerClass || "bg-inv-3")}
+      >
         {(state) => (
-          <div class={styles.inputContainer}>
-            <Icon icon="Search" color="quaternary" />
-            <Combobox.Input
-              ref={(el) => {
-                inputEl = el;
-              }}
-              class={styles.searchInput}
-              placeholder={props.placeholder}
-              value={inputValue()}
-              onChange={(e) => {
-                setInputValue(e.currentTarget.value);
-              }}
-            />
-            <Button
-              type="reset"
-              hierarchy="primary"
-              size="s"
-              ghost
-              icon="CloseCircle"
-              onClick={() => {
-                state.clear();
-                setInputValue("");
+          <>
+            {props.headerChildren}
+            <div class={styles.inputContainer}>
+              <Icon icon="Search" color="quaternary" />
+              <Combobox.Input
+                ref={(el) => {
+                  inputEl = el;
+                }}
+                class={styles.searchInput}
+                placeholder={props.placeholder}
+                value={inputValue()}
+                onChange={(e) => {
+                  setInputValue(e.currentTarget.value);
+                }}
+              />
+              <Button
+                type="reset"
+                hierarchy="primary"
+                size="s"
+                ghost
+                icon="CloseCircle"
+                onClick={() => {
+                  state.clear();
+                  setInputValue("");
 
-                // Dispatch an input event to notify combobox listeners
-                inputEl.dispatchEvent(
-                  new Event("input", { bubbles: true, cancelable: true }),
-                );
-              }}
-            />
-          </div>
+                  // Dispatch an input event to notify combobox listeners
+                  inputEl.dispatchEvent(
+                    new Event("input", { bubbles: true, cancelable: true }),
+                  );
+                }}
+              />
+            </div>
+          </>
         )}
       </Combobox.Control>
-      <Combobox.Portal>
-        <Combobox.Content
-          class={styles.searchContent}
-          tabIndex={-1}
-          style={{ "--container-height": props.height }}
-        >
-          <Combobox.Listbox<T>
-            ref={(el) => {
-              listboxRef = el;
-            }}
-            style={{
-              height: "100%",
-              width: "100%",
-              overflow: "auto",
-              "overflow-y": "auto",
-            }}
-            scrollToItem={(key) => {
-              const idx = comboboxItems().findIndex(
-                (option) => option.rawValue.value === key,
-              );
-              virtualizer().scrollToIndex(idx);
-            }}
-          >
-            {(items) => {
-              // Update the virtualizer with the filtered items
-              const arr = Array.from(items());
-              setComboboxItems(arr);
+      <Combobox.Listbox<T>
+        ref={(el) => {
+          listboxRef = el;
+        }}
+        style={{
+          height: props.height,
+          width: "100%",
+          overflow: "auto",
+          "overflow-y": "auto",
+        }}
+        scrollToItem={(key) => {
+          const idx = comboboxItems().findIndex(
+            (option) => option.rawValue.value === key,
+          );
+          virtualizer().scrollToIndex(idx);
+        }}
+        class={styles.listbox}
+      >
+        {(items) => {
+          // Update the virtualizer with the filtered items
+          const arr = Array.from(items());
+          setComboboxItems(arr);
 
-              return (
+          return (
+            <Switch>
+              <Match when={props.loading}>
+                {props.loadingComponent ?? (
+                  <div class="flex w-full justify-center py-2">
+                    <Loader />
+                  </div>
+                )}
+              </Match>
+              <Match when={!props.loading}>
                 <div
                   style={{
                     height: `${virtualizer().getTotalSize()}px`,
@@ -191,11 +205,12 @@ export function SearchMultiple<T extends Option>(
                     }}
                   </For>
                 </div>
-              );
-            }}
-          </Combobox.Listbox>
-        </Combobox.Content>
-      </Combobox.Portal>
+              </Match>
+            </Switch>
+          );
+        }}
+      </Combobox.Listbox>
+      {/* </Combobox.Content> */}
     </Combobox>
   );
 }

@@ -1,0 +1,35 @@
+.content {
+  @apply px-3 flex flex-col gap-5 py-6;
+  border: 1px solid #2e4a4b;
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
+    linear-gradient(
+      180deg,
+      theme(colors.bg.inv.2) 0%,
+      theme(colors.bg.inv.3) 100%
+    );
+
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  @apply py-2 pl-3 pr-2 flex gap-2.5 w-full items-center;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #2e4a4b;
+}
+
+.footer {
+  @apply py-3 px-4 flex justify-end w-full;
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid #2e4a4b;
+}
+
+.backgroundAlt {
+  background: linear-gradient(
+    90deg,
+    theme(colors.bg.inv.3) 0%,
+    theme(colors.bg.inv.4) 100%
+  );
+}
