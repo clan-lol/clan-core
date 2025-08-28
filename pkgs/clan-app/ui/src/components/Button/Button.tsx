@@ -68,6 +68,7 @@ export const Button = (props: ButtonProps) => {
         },
       )}
       onClick={props.onClick}
+      disabled={props.disabled || props.loading}
       {...other}
     >
       <Loader
