@@ -4,6 +4,8 @@
   cursor: pointer;
 }
 
+/* <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center">
+        <Show when={show()}> */
 .toolbar-container {
   @apply absolute bottom-10 z-10 w-full;
   @apply flex justify-center items-center;

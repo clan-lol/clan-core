@@ -36,6 +36,11 @@ import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
+import {
+  InventoryInstance,
+  ServiceWorkflow,
+} from "@/src/workflows/Service/Service";
+import { useApiClient } from "@/src/hooks/ApiClient";
 
 interface ClanContextProps {
   clanURI: string;
@@ -179,7 +184,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const navigate = useNavigate();
 
-  const [dialogHandlers, setDialogHandlers] = createSignal<{
+  const [showService, setShowService] = createSignal(false);
+
+  const [showModal, setShowModal] = createSignal(false);
+  const [currentPromise, setCurrentPromise] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
     reject: (err: unknown) => void;
   } | null>(null);
@@ -187,7 +195,15 @@ const ClanSceneController = (props: RouteSectionProps) => {
   const onCreate = async (): Promise<{ id: string }> => {
     return new Promise((resolve, reject) => {
       setShowModal(true);
-      setDialogHandlers({ resolve, reject });
+      setCurrentPromise({ resolve, reject });
+    });
+  };
+
+  const onAddService = async (): Promise<{ id: string }> => {
+    return new Promise((resolve, reject) => {
+      setShowService(true);
+      console.log("setting current promise");
+      setCurrentPromise({ resolve, reject });
     });
   };
 
@@ -216,8 +232,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
     return { id: values.name };
   };
-
-  const [showModal, setShowModal] = createSignal(false);
 
   const [loadingError, setLoadingError] = createSignal<
     { title: string; description: string } | undefined
@@ -265,6 +279,26 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
+  const client = useApiClient();
+  const handleSubmitService = async (instance: InventoryInstance) => {
+    console.log("Create Instance", instance);
+    const call = client.fetch("create_service_instance", {
+      flake: {
+        identifier: ctx.clanURI,
+      },
+      module_ref: instance.module,
+      roles: instance.roles,
+    });
+    const result = await call.result;
+
+    if (result.status === "error") {
+      console.error("Error creating service instance", result.errors);
+    }
+    //
+    currentPromise()?.resolve({ id: "0" });
+    setShowService(false);
+  };
+
   return (
     <>
       <Show when={loadingError()}>
@@ -274,15 +308,15 @@ const ClanSceneController = (props: RouteSectionProps) => {
         <MockCreateMachine
           onClose={() => {
             setShowModal(false);
-            dialogHandlers()?.reject(new Error("User cancelled"));
+            currentPromise()?.reject(new Error("User cancelled"));
           }}
           onSubmit={async (values) => {
             try {
               const result = await sendCreate(values);
-              dialogHandlers()?.resolve(result);
+              currentPromise()?.resolve(result);
               setShowModal(false);
             } catch (err) {
-              dialogHandlers()?.reject(err);
+              currentPromise()?.reject(err);
               setShowModal(false);
             }
           }}
@@ -297,10 +331,22 @@ const ClanSceneController = (props: RouteSectionProps) => {
       </div>
 
       <CubeScene
+        onAddService={onAddService}
         selectedIds={selectedIds}
         onSelect={onMachineSelect}
         isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
+        toolbarPopup={
+          <Show when={showService()}>
+            <ServiceWorkflow
+              handleSubmit={handleSubmitService}
+              onClose={() => {
+                setShowService(false);
+                currentPromise()?.resolve({ id: "0" });
+              }}
+            />
+          </Show>
+        }
         onCreate={onCreate}
         clanURI={ctx.clanURI}
         sceneStore={() => store.sceneData?.[ctx.clanURI]}

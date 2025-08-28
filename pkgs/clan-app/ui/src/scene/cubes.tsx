@@ -1,4 +1,11 @@
-import { createSignal, createEffect, onCleanup, onMount, on } from "solid-js";
+import {
+  createSignal,
+  createEffect,
+  onCleanup,
+  onMount,
+  on,
+  JSX,
+} from "solid-js";
 import "./cubes.css";
 
 import * as THREE from "three";
@@ -34,12 +41,14 @@ function garbageCollectGroup(group: THREE.Group) {
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
   onCreate: () => Promise<{ id: string }>;
+  onAddService: () => Promise<{ id: string }>;
   selectedIds: Accessor<Set<string>>;
   onSelect: (v: Set<string>) => void;
   sceneStore: Accessor<SceneData>;
   setMachinePos: (machineId: string, pos: [number, number] | null) => void;
   isLoading: boolean;
   clanURI: string;
+  toolbarPopup?: JSX.Element;
 }) {
   let container: HTMLDivElement;
   let scene: THREE.Scene;
@@ -213,7 +222,7 @@ export function CubeScene(props: {
     controls = new MapControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.mouseButtons.RIGHT = null;
-    controls.enableRotate = false;
+    // controls.enableRotate = false;
     controls.minZoom = 1.2;
     controls.maxZoom = 3.5;
     controls.addEventListener("change", () => {
@@ -543,6 +552,9 @@ export function CubeScene(props: {
     <>
       <div class="cubes-scene-container" ref={(el) => (container = el)} />
       <div class="toolbar-container">
+        <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
+          {props.toolbarPopup}
+        </div>
         <Toolbar>
           <ToolbarButton
             description="Select machine"
@@ -563,7 +575,8 @@ export function CubeScene(props: {
           <ToolbarButton
             description="Add new Service"
             name="modules"
-            icon="Modules"
+            icon="Services"
+            onClick={props.onAddService}
           />
           <ToolbarButton
             icon="Reload"
