@@ -2,7 +2,15 @@ import Icon from "../Icon/Icon";
 import { Button } from "../Button/Button";
 import styles from "./Search.module.css";
 import { Combobox } from "@kobalte/core/combobox";
-import { createMemo, createSignal, For, JSX, Match, Switch } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  JSX,
+  Match,
+  Switch,
+} from "solid-js";
 import { createVirtualizer, VirtualizerOptions } from "@tanstack/solid-virtual";
 import { CollectionNode } from "@kobalte/core/*";
 import cx from "classnames";
@@ -11,13 +19,16 @@ import { Loader } from "../Loader/Loader";
 export interface Option {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 export interface ItemRenderOptions {
   selected: boolean;
+  disabled: boolean;
 }
 
 export interface SearchMultipleProps<T> {
+  values: T[]; // controlled values
   onChange: (values: T[]) => void;
   options: T[];
   renderItem: (item: T, opts: ItemRenderOptions) => JSX.Element;
@@ -29,12 +40,13 @@ export interface SearchMultipleProps<T> {
   headerChildren?: JSX.Element;
   loading?: boolean;
   loadingComponent?: JSX.Element;
+  divider?: boolean;
 }
 export function SearchMultiple<T extends Option>(
   props: SearchMultipleProps<T>,
 ) {
   // Controlled input value, to allow resetting the input itself
-  const [values, setValues] = createSignal<T[]>(props.initialValues || []);
+  // const [values, setValues] = createSignal<T[]>(props.initialValues || []);
   const [inputValue, setInputValue] = createSignal<string>("");
 
   let inputEl: HTMLInputElement;
@@ -60,21 +72,23 @@ export function SearchMultiple<T extends Option>(
         return item?.rawValue?.value || `item-${index}`;
       },
       estimateSize: () => 42,
-      gap: 6,
+      gap: 0,
       overscan: 5,
       ...props.virtualizerOptions,
     });
 
     return newVirtualizer;
   });
-
+  createEffect(() => {
+    console.log("multi values:", props.values);
+  });
   return (
     <Combobox<T>
       multiple
-      value={values()}
+      value={props.values}
       onChange={(values) => {
-        setValues(() => values);
-        // setInputValue(value ? value.label : "");
+        // setValues(() => values);
+        console.log("onChange", values);
         props.onChange(values);
       }}
       class={styles.searchContainer}
@@ -83,6 +97,7 @@ export function SearchMultiple<T extends Option>(
       optionValue="value"
       optionTextValue="label"
       optionLabel="label"
+      optionDisabled={"disabled"}
       sameWidth={true}
       open={true}
       gutter={7}
@@ -183,11 +198,16 @@ export function SearchMultiple<T extends Option>(
                         return null;
                       }
                       const isSelected = () =>
-                        values().some((v) => v.value === item.rawValue.value);
+                        props.values.some(
+                          (v) => v.value === item.rawValue.value,
+                        );
                       return (
                         <Combobox.Item
                           item={item}
-                          class={styles.searchItem}
+                          class={cx(
+                            styles.searchItem,
+                            props.divider && styles.hasDivider,
+                          )}
                           style={{
                             position: "absolute",
                             top: 0,
@@ -199,6 +219,7 @@ export function SearchMultiple<T extends Option>(
                         >
                           {props.renderItem(item.rawValue, {
                             selected: isSelected(),
+                            disabled: item.disabled,
                           })}
                         </Combobox.Item>
                       );

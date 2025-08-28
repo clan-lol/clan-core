@@ -10,6 +10,7 @@ import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { ApiClientProvider } from "./hooks/ApiClient";
 import { callApi } from "./hooks/api";
 import { DefaultQueryClient } from "@/src/hooks/queries";
+import { Toaster } from "solid-toast";
 
 const root = document.getElementById("app");
 
@@ -25,6 +26,8 @@ if (import.meta.env.DEV) {
 render(
   () => (
     <ApiClientProvider client={{ fetch: callApi }}>
+      {/* Temporary solution */}
+      <Toaster toastOptions={{}} />
       <QueryClientProvider client={DefaultQueryClient}>
         {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
         <Router root={Layout}>{Routes}</Router>

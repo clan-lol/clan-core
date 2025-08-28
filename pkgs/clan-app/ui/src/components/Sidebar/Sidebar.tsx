@@ -2,8 +2,7 @@ import styles from "./Sidebar.module.css";
 import { SidebarHeader } from "@/src/components/Sidebar/SidebarHeader";
 import { SidebarBody } from "@/src/components/Sidebar/SidebarBody";
 import cx from "classnames";
-import { Show, splitProps } from "solid-js";
-import { useMachineName } from "@/src/hooks/clan";
+import { splitProps } from "solid-js";
 
 export interface LinkProps {
   path: string;

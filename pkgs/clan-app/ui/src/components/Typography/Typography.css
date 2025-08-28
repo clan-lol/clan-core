@@ -67,6 +67,12 @@
         line-height: normal;
         letter-spacing: 0.008125rem;
       }
+
+      &.size-xxs {
+        font-size: 0.75rem;
+        line-height: 1;
+        /* letter-spacing: 0.008125rem; */
+      }
     }
 
     &.family-mono {
@@ -88,6 +94,11 @@
         font-size: 0.8125rem;
         line-height: normal;
         letter-spacing: normal;
+      }
+      &.size-xxs {
+        font-size: 0.75rem;
+        line-height: 1;
+        /* letter-spacing: 0.008125rem; */
       }
     }
   }

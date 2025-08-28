@@ -13,6 +13,7 @@ const CUBE_COLOR = 0xe2eff0;
 const CUBE_EMISSIVE = 0x303030;
 
 const CUBE_SELECTED_COLOR = 0x4b6767;
+const HIGHLIGHT_COLOR = 0x00ee66;
 
 const BASE_COLOR = 0xdbeaeb;
 const BASE_EMISSIVE = 0x0c0c0c;
@@ -36,6 +37,7 @@ export class MachineRepr {
     position: THREE.Vector2,
     id: string,
     selectedSignal: Accessor<Set<string>>,
+    highlightGroups: Record<string, Set<string>>, // Reactive store
   ) {
     this.id = id;
     this.geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
@@ -89,23 +91,38 @@ export class MachineRepr {
 
     this.disposeRoot = createRoot((disposeEffects) => {
       createEffect(
-        on(selectedSignal, (selectedIds) => {
-          const isSelected = selectedIds.has(this.id);
-          // Update cube
-          (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
-            isSelected ? CUBE_SELECTED_COLOR : CUBE_COLOR,
-          );
+        on(
+          [selectedSignal, () => Object.entries(highlightGroups)],
+          ([selectedIds, groups]) => {
+            const isSelected = selectedIds.has(this.id);
+            const highlightedGroups = groups
+              .filter(([, ids]) => ids.has(this.id))
+              .map(([name]) => name);
 
-          // Update base
-          (this.baseMesh.material as THREE.MeshPhongMaterial).color.set(
-            isSelected ? BASE_SELECTED_COLOR : BASE_COLOR,
-          );
-          (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
-            isSelected ? BASE_SELECTED_EMISSIVE : BASE_EMISSIVE,
-          );
+            // console.log("MachineRepr effect", id, highlightedGroups);
+            // Update cube
+            (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
+              isSelected ? CUBE_SELECTED_COLOR : CUBE_COLOR,
+            );
 
-          renderLoop.requestRender();
-        }),
+            // Update base
+            (this.baseMesh.material as THREE.MeshPhongMaterial).color.set(
+              isSelected ? BASE_SELECTED_COLOR : BASE_COLOR,
+            );
+
+            // TOOD: Find a different way to show both selected & highlighted
+            // I.e. via outline or pulsing
+            // selected > highlighted > normal
+            (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
+              highlightedGroups.length > 0 ? HIGHLIGHT_COLOR : 0x000000,
+            );
+            // (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
+            //   isSelected ? BASE_SELECTED_EMISSIVE : BASE_EMISSIVE,
+            // );
+
+            renderLoop.requestRender();
+          },
+        ),
       );
 
       return disposeEffects;

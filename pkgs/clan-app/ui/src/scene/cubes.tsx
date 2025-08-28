@@ -38,10 +38,38 @@ function garbageCollectGroup(group: THREE.Group) {
   group.clear(); // Clear the group
 }
 
+// Can be imported by others via wrappers below
+// Global signal for last clicked machine
+const [lastClickedMachine, setLastClickedMachine] = createSignal<string | null>(
+  null,
+);
+
+// Exported so others could also emit the signal if needed
+// And for testing purposes
+export function emitMachineClick(id: string | null) {
+  setLastClickedMachine(id);
+  if (id) {
+    // Clear after a short delay to allow re-clicking the same machine
+    setTimeout(() => {
+      setLastClickedMachine(null);
+    }, 100);
+  }
+}
+
+/** Hook for components to subscribe */
+export function useMachineClick() {
+  return lastClickedMachine;
+}
+
+/*Gloabl signal*/
+const [worldMode, setWorldMode] = createSignal<
+  "default" | "select" | "service" | "create"
+>("default");
+export { worldMode, setWorldMode };
+
 export function CubeScene(props: {
   cubesQuery: MachinesQueryResult;
   onCreate: () => Promise<{ id: string }>;
-  onAddService: () => Promise<{ id: string }>;
   selectedIds: Accessor<Set<string>>;
   onSelect: (v: Set<string>) => void;
   sceneStore: Accessor<SceneData>;
@@ -73,8 +101,6 @@ export function CubeScene(props: {
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
     "grid",
   );
-
-  const [worldMode, setWorldMode] = createSignal<"view" | "create">("view");
 
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
@@ -222,6 +248,7 @@ export function CubeScene(props: {
     controls = new MapControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.mouseButtons.RIGHT = null;
+    // controls.rotateSpeed = -0.8;
     // controls.enableRotate = false;
     controls.minZoom = 1.2;
     controls.maxZoom = 3.5;
@@ -370,7 +397,7 @@ export function CubeScene(props: {
     );
 
     // Click handler:
-    // - Select/deselects a cube in "view" mode
+    // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
     const onClick = (event: MouseEvent) => {
       if (worldMode() === "create") {
@@ -391,7 +418,7 @@ export function CubeScene(props: {
           .finally(() => {
             if (initBase) initBase.visible = false;
 
-            setWorldMode("view");
+            setWorldMode("default");
           });
       }
 
@@ -409,8 +436,13 @@ export function CubeScene(props: {
       if (intersects.length > 0) {
         console.log("Clicked on cube:", intersects);
         const id = intersects[0].object.userData.id;
-        toggleSelection(id);
+
+        if (worldMode() === "select") toggleSelection(id);
+
+        emitMachineClick(id); // notify subscribers
       } else {
+        emitMachineClick(null);
+
         props.onSelect(new Set<string>()); // Clear selection if clicked outside cubes
       }
     };
@@ -560,14 +592,15 @@ export function CubeScene(props: {
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() => setWorldMode("view")}
-            selected={worldMode() === "view"}
+            onClick={() =>
+              setWorldMode((v) => (v === "select" ? "default" : "select"))
+            }
+            selected={worldMode() === "select"}
           />
           <ToolbarButton
             description="Create new machine"
             name="new-machine"
             icon="NewMachine"
-            disabled={positionMode() === "circle"}
             onClick={onAddClick}
             selected={worldMode() === "create"}
           />
@@ -576,7 +609,10 @@ export function CubeScene(props: {
             description="Add new Service"
             name="modules"
             icon="Services"
-            onClick={props.onAddService}
+            selected={worldMode() === "service"}
+            onClick={() => {
+              setWorldMode((v) => (v === "service" ? "default" : "service"));
+            }}
           />
           <ToolbarButton
             icon="Reload"

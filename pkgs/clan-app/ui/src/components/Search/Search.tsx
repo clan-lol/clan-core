@@ -11,17 +11,20 @@ import cx from "classnames";
 export interface Option {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 export interface SearchProps<T> {
   onChange: (value: T | null) => void;
   options: T[];
-  renderItem: (item: T) => JSX.Element;
+  renderItem: (item: T, opts: { disabled: boolean }) => JSX.Element;
   loading?: boolean;
   loadingComponent?: JSX.Element;
   headerClass?: string;
   height: string; // e.g. '14.5rem'
+  divider?: boolean;
 }
+
 export function Search<T extends Option>(props: SearchProps<T>) {
   // Controlled input value, to allow resetting the input itself
   const [value, setValue] = createSignal<T | null>(null);
@@ -65,13 +68,14 @@ export function Search<T extends Option>(props: SearchProps<T>) {
         setInputValue(value ? value.label : "");
         props.onChange(value);
       }}
-      class={styles.searchContainer}
+      class={cx(styles.searchContainer, props.divider && styles.hasDivider)}
       placement="bottom-start"
       options={props.options}
       optionValue="value"
       optionTextValue="label"
       optionLabel="label"
       placeholder="Search a service"
+      optionDisabled={"disabled"}
       sameWidth={true}
       open={true}
       gutter={7}
@@ -181,7 +185,9 @@ export function Search<T extends Option>(props: SearchProps<T>) {
                             transform: `translateY(${virtualRow.start}px)`,
                           }}
                         >
-                          {props.renderItem(item.rawValue)}
+                          {props.renderItem(item.rawValue, {
+                            disabled: item.disabled,
+                          })}
                         </Combobox.Item>
                       );
                     }}

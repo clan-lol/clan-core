@@ -55,8 +55,8 @@ function generateModules(count: number): Module[] {
     modules.push({
       value: `lolcat/module-${i + 1}`,
       label: `Module ${i + 1}`,
-      description: `${greek[i % greek.length]}#${i + 1}`,
-      input: "lolcat",
+      description: `${greek[i % greek.length]}#${i + 1} this is a very long description to test text wrapping in the search component`,
+      input: "lolcat-flake-part-from-nixpkgs-via-nix-via-clan-flake",
     });
   }
 
@@ -78,7 +78,7 @@ export const Default: Story = {
     renderItem: (item: Module) => {
       return (
         <div class="flex items-center justify-between gap-2 rounded-md px-2 py-1 pr-4">
-          <div class="flex size-8 items-center justify-center rounded-md bg-white">
+          <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-white">
             <Icon icon="Code" />
           </div>
           <div class="flex w-full flex-col">
@@ -95,8 +95,12 @@ export const Default: Story = {
               inverted
               class="flex justify-between"
             >
-              <span>{item.description}</span>
-              <span>by {item.input}</span>
+              <span class="inline-block max-w-72 truncate align-middle">
+                {item.description}
+              </span>
+              <span class="inline-block max-w-20 truncate align-middle">
+                by {item.input}
+              </span>
             </Typography>
           </div>
         </div>
@@ -105,7 +109,7 @@ export const Default: Story = {
   },
   render: (args: SearchProps<Module>) => {
     return (
-      <div class="absolute bottom-1/3 w-3/4 px-3">
+      <div class="fixed bottom-10 left-1/2 mb-2 w-[30rem] -translate-x-1/2">
         <Search<Module>
           {...args}
           onChange={(module) => {
@@ -145,11 +149,13 @@ type MachineOrTag =
       value: string;
       label: string;
       type: "machine";
+      disabled?: boolean;
     }
   | {
       members: string[];
       value: string;
       label: string;
+      disabled?: boolean;
       type: "tag";
     };
 
@@ -193,7 +199,13 @@ export const Multiple: Story = {
             </Show>
           </Combobox.ItemIndicator>
           <Combobox.ItemLabel class="flex items-center gap-2">
-            <Typography hierarchy="body" size="s" weight="medium" inverted>
+            <Typography
+              hierarchy="body"
+              size="s"
+              weight="medium"
+              inverted
+              color={opts.disabled ? "quaternary" : "primary"}
+            >
               {item.label}
             </Typography>
             <Show when={item.type === "tag" && item}>
@@ -226,6 +238,7 @@ export const Multiple: Story = {
       <div class="absolute bottom-1/3 w-3/4 px-3">
         <SearchMultiple<MachineOrTag>
           {...args}
+          divider
           height="20rem"
           virtualizerOptions={{
             estimateSize: () => 38,
