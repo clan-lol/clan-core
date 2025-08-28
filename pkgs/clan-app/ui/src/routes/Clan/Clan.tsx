@@ -16,7 +16,7 @@ import {
   useClanURI,
   useMachineName,
 } from "@/src/hooks/clan";
-import { CubeScene } from "@/src/scene/cubes";
+import { CubeScene, setWorldMode, worldMode } from "@/src/scene/cubes";
 import {
   ClanDetails,
   MachinesQueryResult,
@@ -38,10 +38,11 @@ import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 import {
-  InventoryInstance,
   ServiceWorkflow,
+  SubmitServiceHandler,
 } from "@/src/workflows/Service/Service";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import toast from "solid-toast";
 
 interface ClanContextProps {
   clanURI: string;
@@ -208,7 +209,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const onAddService = async (): Promise<{ id: string }> => {
     return new Promise((resolve, reject) => {
-      setShowService(true);
+      setShowService((v) => !v);
       console.log("setting current promise");
       setCurrentPromise({ resolve, reject });
     });
@@ -287,8 +288,16 @@ const ClanSceneController = (props: RouteSectionProps) => {
   );
 
   const client = useApiClient();
-  const handleSubmitService = async (instance: InventoryInstance) => {
-    console.log("Create Instance", instance);
+  const handleSubmitService: SubmitServiceHandler = async (
+    instance,
+    action,
+  ) => {
+    console.log(action, "Instance", instance);
+
+    if (action !== "create") {
+      toast.error("Only creating new services is supported");
+      return;
+    }
     const call = client.fetch("create_service_instance", {
       flake: {
         identifier: ctx.clanURI,
@@ -299,12 +308,25 @@ const ClanSceneController = (props: RouteSectionProps) => {
     const result = await call.result;
 
     if (result.status === "error") {
+      toast.error("Error creating service instance");
       console.error("Error creating service instance", result.errors);
     }
+    toast.success("Created");
     //
     currentPromise()?.resolve({ id: "0" });
     setShowService(false);
   };
+
+  createEffect(
+    on(worldMode, (mode) => {
+      if (mode === "service") {
+        setShowService(true);
+      } else {
+        // todo: request close instead of force close
+        setShowService(false);
+      }
+    }),
+  );
 
   return (
     <>
@@ -338,7 +360,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
       </div>
 
       <CubeScene
-        onAddService={onAddService}
         selectedIds={selectedIds}
         onSelect={onMachineSelect}
         isLoading={ctx.isLoading()}
@@ -349,6 +370,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
               handleSubmit={handleSubmitService}
               onClose={() => {
                 setShowService(false);
+                setWorldMode("default");
                 currentPromise()?.resolve({ id: "0" });
               }}
             />
