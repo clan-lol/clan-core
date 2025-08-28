@@ -9,7 +9,6 @@ import { callApi } from "@/src/hooks/api";
 import { SidebarMachineStatus } from "@/src/components/Sidebar/SidebarMachineStatus";
 import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarSectionInstall";
 
-import cx from "classnames";
 import styles from "./Machine.module.css";
 
 export const Machine = (props: RouteSectionProps) => {
