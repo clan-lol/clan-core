@@ -26,23 +26,37 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
   const resultData: Partial<ResultDataMap> = {
     list_service_modules: [
       {
-        module: { name: "Module A", input: "Input A" },
+        module: { name: "Borgbackup", input: "clan-core" },
         info: {
           manifest: {
-            name: "Module A",
+            name: "Borgbackup",
             description: "This is module A",
           },
           roles: {
-            peer: null,
+            client: null,
             server: null,
           },
         },
       },
       {
-        module: { name: "Module B", input: "Input B" },
+        module: { name: "Zerotier", input: "clan-core" },
         info: {
           manifest: {
-            name: "Module B",
+            name: "Zerotier",
+            description: "This is module B",
+          },
+          roles: {
+            peer: null,
+            moon: null,
+            controller: null,
+          },
+        },
+      },
+      {
+        module: { name: "Admin", input: "clan-core" },
+        info: {
+          manifest: {
+            name: "Admin",
             description: "This is module B",
           },
           roles: {
@@ -51,22 +65,10 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
         },
       },
       {
-        module: { name: "Module C", input: "Input B" },
+        module: { name: "Garage", input: "lo-l" },
         info: {
           manifest: {
-            name: "Module B",
-            description: "This is module B",
-          },
-          roles: {
-            default: null,
-          },
-        },
-      },
-      {
-        module: { name: "Module B", input: "Input A" },
-        info: {
-          manifest: {
-            name: "Module B",
+            name: "Garage",
             description: "This is module B",
           },
           roles: {
@@ -75,6 +77,28 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
         },
       },
     ],
+    list_machines: {
+      jon: {
+        name: "jon",
+        tags: ["all", "nixos", "tag1"],
+      },
+      sara: {
+        name: "sara",
+        tags: ["all", "darwin", "tag2"],
+      },
+      kyra: {
+        name: "kyra",
+        tags: ["all", "darwin", "tag2"],
+      },
+      leila: {
+        name: "leila",
+        tags: ["all", "darwin", "tag2"],
+      },
+    },
+    list_tags: {
+      options: ["desktop", "server", "full", "only", "streaming", "backup"],
+      special: ["all", "nixos", "darwin"],
+    },
   };
 
   return {
@@ -137,4 +161,15 @@ type Story = StoryObj<typeof ServiceWorkflow>;
 
 export const Default: Story = {
   args: {},
+};
+
+export const SelectRoleMembers: Story = {
+  render: () => (
+    <ServiceWorkflow
+      initialStep="select:members"
+      initialStore={{
+        currentRole: "peer",
+      }}
+    />
+  ),
 };
