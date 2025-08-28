@@ -9,7 +9,7 @@ import {
   SearchMultiple,
   SearchMultipleProps,
 } from "./MultipleSearch";
-import { JSX, Show } from "solid-js";
+import { Show } from "solid-js";
 
 const meta = {
   title: "Components/Search",
@@ -72,6 +72,7 @@ export interface Module {
 
 export const Default: Story = {
   args: {
+    height: "14.5rem",
     // Test with lots of modules
     options: generateModules(1000),
     renderItem: (item: Module) => {
@@ -119,6 +120,7 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
+    height: "14.5rem",
     // Test with lots of modules
     loading: true,
     options: [],
@@ -150,19 +152,6 @@ type MachineOrTag =
       label: string;
       type: "tag";
     };
-
-interface WrapIfProps {
-  condition: boolean;
-  wrapper: (children: JSX.Element) => JSX.Element;
-  children: JSX.Element;
-}
-const WrapIf = (props: WrapIfProps) => {
-  if (props.condition) {
-    return props.wrapper(props.children);
-  } else {
-    return props.children;
-  }
-};
 
 const machinesAndTags: MachineOrTag[] = [
   { value: "machine-1", label: "Machine 1", type: "machine" },

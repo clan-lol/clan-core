@@ -6,6 +6,7 @@ import { createMemo, createSignal, For, JSX, Match, Switch } from "solid-js";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { CollectionNode } from "@kobalte/core/*";
 import { Loader } from "../Loader/Loader";
+import cx from "classnames";
 
 export interface Option {
   value: string;
@@ -18,6 +19,8 @@ export interface SearchProps<T> {
   renderItem: (item: T) => JSX.Element;
   loading?: boolean;
   loadingComponent?: JSX.Element;
+  headerClass?: string;
+  height: string; // e.g. '14.5rem'
 }
 export function Search<T extends Option>(props: SearchProps<T>) {
   // Controlled input value, to allow resetting the input itself
@@ -80,7 +83,9 @@ export function Search<T extends Option>(props: SearchProps<T>) {
       triggerMode="manual"
       noResetInputOnBlur={true}
     >
-      <Combobox.Control<T> class={styles.searchHeader}>
+      <Combobox.Control<T>
+        class={cx(styles.searchHeader, props.headerClass || "bg-inv-3")}
+      >
         {(state) => (
           <div class={styles.inputContainer}>
             <Icon icon="Search" color="quaternary" />
@@ -114,85 +119,79 @@ export function Search<T extends Option>(props: SearchProps<T>) {
           </div>
         )}
       </Combobox.Control>
-      <Combobox.Portal>
-        <Combobox.Content class={styles.searchContent} tabIndex={-1}>
-          <Combobox.Listbox<T>
-            ref={(el) => {
-              listboxRef = el;
-            }}
-            style={{
-              height: "100%",
-              width: "100%",
-              overflow: "auto",
-              "overflow-y": "auto",
-            }}
-            scrollToItem={(key) => {
-              const idx = comboboxItems().findIndex(
-                (option) => option.rawValue.value === key,
-              );
-              virtualizer().scrollToIndex(idx);
-            }}
-          >
-            {(items) => {
-              // Update the virtualizer with the filtered items
-              const arr = Array.from(items());
-              setComboboxItems(arr);
+      <Combobox.Listbox<T>
+        ref={(el) => {
+          listboxRef = el;
+        }}
+        style={{
+          height: props.height,
+          width: "100%",
+          overflow: "auto",
+          "overflow-y": "auto",
+        }}
+        class={styles.listbox}
+        scrollToItem={(key) => {
+          const idx = comboboxItems().findIndex(
+            (option) => option.rawValue.value === key,
+          );
+          virtualizer().scrollToIndex(idx);
+        }}
+      >
+        {(items) => {
+          // Update the virtualizer with the filtered items
+          const arr = Array.from(items());
+          setComboboxItems(arr);
 
-              return (
-                <Switch>
-                  <Match when={props.loading}>
-                    {props.loadingComponent ?? (
-                      <div class="flex w-full justify-center py-2">
-                        <Loader />
-                      </div>
-                    )}
-                  </Match>
-                  <Match when={!props.loading}>
-                    <div
-                      style={{
-                        height: `${virtualizer().getTotalSize()}px`,
-                        width: "100%",
-                        position: "relative",
-                      }}
-                    >
-                      <For each={virtualizer().getVirtualItems()}>
-                        {(virtualRow) => {
-                          const item: CollectionNode<T> | undefined =
-                            items().getItem(virtualRow.key as string);
+          return (
+            <Switch>
+              <Match when={props.loading}>
+                {props.loadingComponent ?? (
+                  <div class="flex w-full justify-center py-2">
+                    <Loader />
+                  </div>
+                )}
+              </Match>
+              <Match when={!props.loading}>
+                <div
+                  style={{
+                    height: `${virtualizer().getTotalSize()}px`,
+                    width: "100%",
+                    position: "relative",
+                  }}
+                >
+                  <For each={virtualizer().getVirtualItems()}>
+                    {(virtualRow) => {
+                      const item: CollectionNode<T> | undefined =
+                        items().getItem(virtualRow.key as string);
 
-                          if (!item) {
-                            console.warn(
-                              "Item not found for key:",
-                              virtualRow.key,
-                            );
-                            return null;
-                          }
-                          return (
-                            <Combobox.Item
-                              item={item}
-                              class={styles.searchItem}
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                width: "100%",
-                                height: `${virtualRow.size}px`,
-                                transform: `translateY(${virtualRow.start}px)`,
-                              }}
-                            >
-                              {props.renderItem(item.rawValue)}
-                            </Combobox.Item>
-                          );
-                        }}
-                      </For>
-                    </div>
-                  </Match>
-                </Switch>
-              );
-            }}
-          </Combobox.Listbox>
-        </Combobox.Content>
-      </Combobox.Portal>
+                      if (!item) {
+                        console.warn("Item not found for key:", virtualRow.key);
+                        return null;
+                      }
+                      return (
+                        <Combobox.Item
+                          item={item}
+                          class={styles.searchItem}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                          }}
+                        >
+                          {props.renderItem(item.rawValue)}
+                        </Combobox.Item>
+                      );
+                    }}
+                  </For>
+                </div>
+              </Match>
+            </Switch>
+          );
+        }}
+      </Combobox.Listbox>
     </Combobox>
   );
 }
