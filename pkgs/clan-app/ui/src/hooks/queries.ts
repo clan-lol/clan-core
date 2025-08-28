@@ -504,3 +504,28 @@ export const useServiceModules = (clanUri: string) => {
     },
   }));
 };
+
+export type ServiceInstancesQuery = ReturnType<typeof useServiceInstances>;
+export type ServiceInstances = SuccessData<"list_service_instances">;
+export const useServiceInstances = (clanUri: string) => {
+  const client = useApiClient();
+  return useQuery(() => ({
+    queryKey: ["clans", encodeBase64(clanUri), "service_instances"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_instances", {
+        flake: {
+          identifier: clanUri,
+        },
+      });
+      const result = await call.result;
+
+      if (result.status === "error") {
+        // todo should we create some specific error types?
+        console.error("Error fetching clan details:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data;
+    },
+  }));
+};
