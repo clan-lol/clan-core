@@ -43,19 +43,31 @@
 
 .searchItem {
   @apply flex flex-col justify-center overflow-hidden;
-  box-shadow: 0 1px 0 0 theme(colors.border.inv.2);
 
-  &[data-highlighted],
-  &:focus,
-  &:focus-visible,
-  &:hover {
+  &.hasDivider {
+    box-shadow: 0 1px 0 0 theme(colors.border.inv.2);
+  }
+
+  /* Next element is hovered */
+  &:has(+ &:hover) {
+    box-shadow: unset;
+  }
+
+  &:not([aria-disabled="true"])[data-highlighted],
+  &:not([aria-disabled="true"]):focus,
+  &:not([aria-disabled="true"]):focus-visible,
+  &:not([aria-disabled="true"]):hover {
     @apply bg-inv-acc-2 rounded-md;
     box-shadow: unset;
   }
 
-  &:active {
+  &:not([aria-disabled="true"]):active {
     @apply bg-inv-acc-3 rounded-md;
     box-shadow: unset;
+  }
+
+  &[aria-disabled="true"] {
+    @apply cursor-not-allowed;
   }
 }
 
