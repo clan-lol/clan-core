@@ -14,6 +14,7 @@ import {
   buildMachinePath,
   maybeUseMachineName,
   useClanURI,
+  useMachineName,
 } from "@/src/hooks/clan";
 import { CubeScene } from "@/src/scene/cubes";
 import {
@@ -119,7 +120,11 @@ export const Clan: Component<RouteSectionProps> = (props) => {
         )
       }
     >
-      <div class={styles.sidebarContainer}>
+      <div
+        class={cx(styles.sidebarContainer, {
+          [styles.machineSelected]: useMachineName(),
+        })}
+      >
         <Sidebar />
       </div>
       {props.children}

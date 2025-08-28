@@ -52,18 +52,19 @@ export const Machine = (props: RouteSectionProps) => {
     const sectionProps = { clanURI, machineName, onSubmit, machineQuery };
 
     return (
-      <SidebarPane
-        class={cx(styles.sidebarPane)}
-        title={machineName}
-        onClose={onClose}
-        subHeader={() => (
-          <SidebarMachineStatus clanURI={clanURI} machineName={machineName} />
-        )}
-      >
-        <SidebarSectionInstall clanURI={clanURI} machineName={machineName} />
-        <SectionGeneral {...sectionProps} />
-        <SectionTags {...sectionProps} />
-      </SidebarPane>
+      <div class={styles.sidebarPaneContainer}>
+        <SidebarPane
+          title={machineName}
+          onClose={onClose}
+          subHeader={() => (
+            <SidebarMachineStatus clanURI={clanURI} machineName={machineName} />
+          )}
+        >
+          <SidebarSectionInstall clanURI={clanURI} machineName={machineName} />
+          <SectionGeneral {...sectionProps} />
+          <SectionTags {...sectionProps} />
+        </SidebarPane>
+      </div>
     );
   };
 

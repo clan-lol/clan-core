@@ -1,10 +1,10 @@
 div.sidebar-pane {
-  @apply border-none z-10;
+  @apply flex flex-col border-none z-20 h-full;
 
   animation: sidebarPaneShow 250ms ease-in forwards;
 
   &.open {
-    @apply w-60;
+    @apply w-72;
   }
 
   &.closing {
@@ -90,7 +90,7 @@ div.sidebar-pane {
     @apply opacity-100;
   }
   100% {
-    @apply w-60;
+    @apply w-72;
   }
 }
 

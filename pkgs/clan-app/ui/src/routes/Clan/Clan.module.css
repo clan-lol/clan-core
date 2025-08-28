@@ -10,4 +10,35 @@
 .sidebarContainer {
   @apply absolute left-4 top-4 w-60 z-10;
   height: calc(100vh - 2rem);
+
+  animation: sidebarNoMachine 250ms ease-in-out;
+
+  &.machineSelected {
+    @apply top-16;
+    height: calc(100vh - 8rem);
+
+    animation: sidebarMachine 250ms ease-in-out;
+  }
+}
+
+@keyframes sidebarNoMachine {
+  0% {
+    @apply top-16;
+    height: calc(100vh - 8rem);
+  }
+  100% {
+    @apply top-4;
+    height: calc(100vh - 2rem);
+  }
+}
+
+@keyframes sidebarMachine {
+  0% {
+    @apply top-4;
+    height: calc(100vh - 2rem);
+  }
+  100% {
+    @apply top-16;
+    height: calc(100vh - 8rem);
+  }
 }
