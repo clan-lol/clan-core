@@ -1,5 +1,5 @@
-.sidebarPane {
-  @apply absolute left-[16.5rem] top-[5.5rem] w-64;
+.sidebarPaneContainer {
+  @apply absolute left-[16.5rem] top-4 w-64 z-20;
 
-  height: calc(100vh - 14.5rem);
+  height: calc(100vh - 2rem);
 }
