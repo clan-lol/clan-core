@@ -55,7 +55,6 @@ export function TagSelect<T extends { value: unknown }>(
       >
         <Combobox.Control<T> aria-label="Fruits">
           {(state) => {
-            console.log("combobox state selected", state.selectedOptions());
             return (
               <Combobox.Trigger
                 tabIndex={1}
