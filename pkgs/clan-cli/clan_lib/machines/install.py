@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import time
@@ -25,14 +26,13 @@ log = logging.getLogger(__name__)
 BuildOn = Literal["auto", "local", "remote"]
 
 
-Step = Literal[
-    "generators",
-    "upload-secrets",
-    "nixos-anywhere",
-    "formatting",
-    "rebooting",
-    "installing",
-]
+class Step(str, Enum):
+    GENERATORS = "generators"
+    UPLOAD_SECRETS = "upload-secrets"
+    NIXOS_ANYWHERE = "nixos-anywhere"
+    FORMATTING = "formatting"
+    REBOOTING = "rebooting"
+    INSTALLING = "installing"
 
 
 def notify_install_step(current: Step) -> None:
@@ -93,7 +93,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     )
 
     # Notify the UI about what we are doing
-    notify_install_step("generators")
+    notify_install_step(Step.GENERATORS)
     generate_facts([machine])
     run_generators([machine], generators=None, full_closure=False)
 
@@ -106,7 +106,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         upload_dir.mkdir(parents=True)
 
         # Notify the UI about what we are doing
-        notify_install_step("upload-secrets")
+        notify_install_step(Step.UPLOAD_SECRETS)
         machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
             machine.name,
@@ -214,26 +214,28 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 cmd,
             )
 
-        notify_install_step("nixos-anywhere")
-        run(
-            [*cmd, "--phases", "kexec"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("formatting")
-        run(
-            [*cmd, "--phases", "disko"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("installing")
-        run(
-            [*cmd, "--phases", "install"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("rebooting")
-        run(
-            [*cmd, "--phases", "reboot"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
+        install_steps = {
+            "kexec": Step.NIXOS_ANYWHERE,
+            "disko": Step.FORMATTING,
+            "install": Step.INSTALLING,
+            "reboot": Step.REBOOTING,
+        }
+
+        def run_phase(phase: str) -> None:
+            notification = install_steps.get(phase, Step.NIXOS_ANYWHERE)
+            notify_install_step(notification)
+            run(
+                [*cmd, "--phases", phase],
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+            )
+
+        if opts.phases:
+            phases = [phase.strip() for phase in opts.phases.split(",")]
+            for phase in phases:
+                run_phase(phase)
+        else:
+            for phase in ["kexec", "disko", "install", "reboot"]:
+                run_phase(phase)
 
     if opts.persist_state:
         inventory_store = InventoryStore(machine.flake)
