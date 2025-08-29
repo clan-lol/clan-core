@@ -162,6 +162,10 @@ def list_service_modules(flake: Flake) -> list[Module]:
     """Show information about a module"""
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
+    if "clan-core" not in modules:
+        msg = "Cannot find 'clan-core' input in the flake. Make sure your clan-core input is named 'clan-core'"
+        raise ClanError(msg)
+
     res: list[Module] = []
     for input_name, module_set in modules.items():
         for module_name, module_info in module_set.items():
@@ -331,11 +335,34 @@ def create_service_instance(
     )
 
 
+class InventoryInstanceInfo(TypedDict):
+    module: Module
+    roles: InventoryInstanceRolesType
+
+
 @API.register
-def list_service_instances(
-    flake: Flake,
-) -> dict[str, InventoryInstance]:
-    """Show information about a module"""
+def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
+    """Returns all currently present service instances including their full configuration"""
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
-    return inventory.get("instances", {})
+    service_modules = {
+        (mod["module"]["name"], mod["module"].get("input", "clan-core")): mod
+        for mod in list_service_modules(flake)
+    }
+    instances = inventory.get("instances", {})
+    res: dict[str, InventoryInstanceInfo] = {}
+    for instance_name, instance in instances.items():
+        module_key = (
+            instance.get("module", {})["name"],
+            instance.get("module", {}).get("input")
+            or "clan-core",  # Replace None (or falsey) with "clan-core"
+        )
+        module = service_modules.get(module_key)
+        if module is None:
+            msg = f"Module '{module_key}' for instance '{instance_name}' not found"
+            raise ClanError(msg)
+        res[instance_name] = InventoryInstanceInfo(
+            module=module,
+            roles=instance.get("roles", {}),
+        )
+    return res

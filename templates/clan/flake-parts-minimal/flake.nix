@@ -1,11 +1,11 @@
 {
 
   inputs = {
-    clan.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-    nixpkgs.follows = "clan/nixpkgs";
+    clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+    nixpkgs.follows = "clan-core/nixpkgs";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-parts.inputs.nixpkgs-lib.follows = "clan/nixpkgs";
+    flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
   };
 
   outputs =

@@ -78,8 +78,9 @@ const SelectService = () => {
           instances: Object.entries(serviceInstancesQuery.data)
             .filter(
               ([name, i]) =>
-                i.module?.name === m.module.name &&
-                (!i.module?.input || i.module?.input === m.module.input),
+                i.module.module.name === m.module.name &&
+                (!i.module.module.input ||
+                  i.module.module.input === m.module.input),
             )
             .map(([name, _]) => name),
         })),
