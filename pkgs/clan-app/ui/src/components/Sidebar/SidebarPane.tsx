@@ -9,7 +9,7 @@ export interface SidebarPaneProps {
   class?: string;
   title: string;
   onClose: () => void;
-  subHeader?: () => JSX.Element;
+  subHeader?: JSX.Element;
   children: JSX.Element;
 }
 
@@ -43,7 +43,7 @@ export const SidebarPane = (props: SidebarPaneProps) => {
         </KButton>
       </div>
       <Show when={props.subHeader}>
-        <div class="sub-header">{props.subHeader!()}</div>
+        <div class="sub-header">{props.subHeader}</div>
       </Show>
       <div class="body">{props.children}</div>
     </div>
