@@ -214,26 +214,28 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 cmd,
             )
 
-        notify_install_step("nixos-anywhere")
-        run(
-            [*cmd, "--phases", "kexec"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("formatting")
-        run(
-            [*cmd, "--phases", "disko"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("installing")
-        run(
-            [*cmd, "--phases", "install"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
-        notify_install_step("rebooting")
-        run(
-            [*cmd, "--phases", "reboot"],
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
+        install_steps = {
+            "kexec": "nixos-anywhere",
+            "disko": "formatting",
+            "install": "installing",
+            "reboot": "rebooting",
+        }
+
+        def run_phase(phase: str) -> None:
+            notification = install_steps.get(phase, "nixos-anywhere")
+            notify_install_step(notification)
+            run(
+                [*cmd, "--phases", phase],
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+            )
+
+        if opts.phases:
+            phases = [phase.strip() for phase in opts.phases.split(",")]
+            for phase in phases:
+                run_phase(phase)
+        else:
+            for phase in ["kexec", "disko", "install", "reboot"]:
+                run_phase(phase)
 
     if opts.persist_state:
         inventory_store = InventoryStore(machine.flake)
