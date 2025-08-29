@@ -225,6 +225,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }
     toast.success("Created");
     setShowService(false);
+    setWorldMode("select");
   };
 
   createEffect(
@@ -277,7 +278,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
               handleSubmit={handleSubmitService}
               onClose={() => {
                 setShowService(false);
-                setWorldMode("default");
+                setWorldMode("select");
                 currentPromise()?.resolve({ id: "0" });
               }}
             />

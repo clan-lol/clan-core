@@ -65,7 +65,7 @@ export function useMachineClick() {
 /*Gloabl signal*/
 const [worldMode, setWorldMode] = createSignal<
   "default" | "select" | "service" | "create"
->("default");
+>("select");
 export { worldMode, setWorldMode };
 
 export function CubeScene(props: {
@@ -612,9 +612,7 @@ export function CubeScene(props: {
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() =>
-              setWorldMode((v) => (v === "select" ? "default" : "select"))
-            }
+            onClick={() => setWorldMode("select")}
             selected={worldMode() === "select"}
           />
           <ToolbarButton
@@ -631,7 +629,7 @@ export function CubeScene(props: {
             icon="Services"
             selected={worldMode() === "service"}
             onClick={() => {
-              setWorldMode((v) => (v === "service" ? "default" : "service"));
+              setWorldMode("service");
             }}
           />
           <ToolbarButton
