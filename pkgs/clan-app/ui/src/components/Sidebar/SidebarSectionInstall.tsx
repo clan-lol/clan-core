@@ -1,6 +1,6 @@
 import { createSignal, Show } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
-import { InstallModal } from "@/src/workflows/Install/install";
+import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
 import { useMachineName } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";

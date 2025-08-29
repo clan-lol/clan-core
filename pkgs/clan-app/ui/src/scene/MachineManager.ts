@@ -39,10 +39,10 @@ export class MachineManager {
 
         const actualIds = Object.keys(machinesQueryResult.data);
         const machinePositions = machinePositionsSignal();
-
         // Remove stale
         for (const id of Object.keys(machinePositions)) {
           if (!actualIds.includes(id)) {
+            console.log("Removing stale machine", id);
             setMachinePos(id, null);
           }
         }
@@ -61,10 +61,11 @@ export class MachineManager {
       //
       createEffect(() => {
         const positions = machinePositionsSignal();
+        if (!positions) return;
 
         // Remove machines from scene
         for (const [id, repr] of this.machines) {
-          if (!(id in positions)) {
+          if (!Object.keys(positions).includes(id)) {
             repr.dispose(scene);
             this.machines.delete(id);
           }

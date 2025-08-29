@@ -1,5 +1,5 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
-import { InstallModal } from "./install";
+import { InstallModal } from "./InstallMachine";
 import {
   createMemoryHistory,
   MemoryRouter,
