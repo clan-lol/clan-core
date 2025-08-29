@@ -20,7 +20,8 @@ export const Machine = (props: RouteSectionProps) => {
     navigateToClan(navigate, clanURI);
   };
 
-  const sidebarPane = (machineName: string) => {
+  const sections = () => {
+    const machineName = useMachineName();
     const machineQuery = useMachineQuery(clanURI, machineName);
 
     // we have to update the whole machine model rather than just the sub fields that were changed
@@ -51,25 +52,35 @@ export const Machine = (props: RouteSectionProps) => {
     const sectionProps = { clanURI, machineName, onSubmit, machineQuery };
 
     return (
-      <div class={styles.sidebarPaneContainer}>
-        <SidebarPane
-          title={machineName}
-          onClose={onClose}
-          subHeader={() => (
-            <SidebarMachineStatus clanURI={clanURI} machineName={machineName} />
-          )}
-        >
-          <SidebarSectionInstall clanURI={clanURI} machineName={machineName} />
-          <SectionGeneral {...sectionProps} />
-          <SectionTags {...sectionProps} />
-        </SidebarPane>
-      </div>
+      <>
+        <SidebarSectionInstall
+          clanURI={clanURI}
+          machineName={useMachineName()}
+        />
+        <SectionGeneral {...sectionProps} />
+        <SectionTags {...sectionProps} />
+      </>
     );
   };
 
   return (
-    <Show when={useMachineName()} keyed>
-      {sidebarPane(useMachineName())}
+    <Show when={useMachineName()}>
+      <div class={styles.sidebarPaneContainer}>
+        <SidebarPane
+          title={useMachineName()}
+          onClose={onClose}
+          subHeader={
+            <Show when={useMachineName()} keyed>
+              <SidebarMachineStatus
+                clanURI={clanURI}
+                machineName={useMachineName()}
+              />
+            </Show>
+          }
+        >
+          {sections()}
+        </SidebarPane>
+      </div>
     </Show>
   );
 };
