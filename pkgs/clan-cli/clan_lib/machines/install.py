@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import time
@@ -25,14 +26,13 @@ log = logging.getLogger(__name__)
 BuildOn = Literal["auto", "local", "remote"]
 
 
-Step = Literal[
-    "generators",
-    "upload-secrets",
-    "nixos-anywhere",
-    "formatting",
-    "rebooting",
-    "installing",
-]
+class Step(str, Enum):
+    GENERATORS = "generators"
+    UPLOAD_SECRETS = "upload-secrets"
+    NIXOS_ANYWHERE = "nixos-anywhere"
+    FORMATTING = "formatting"
+    REBOOTING = "rebooting"
+    INSTALLING = "installing"
 
 
 def notify_install_step(current: Step) -> None:
@@ -93,7 +93,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     )
 
     # Notify the UI about what we are doing
-    notify_install_step("generators")
+    notify_install_step(Step.GENERATORS)
     generate_facts([machine])
     run_generators([machine], generators=None, full_closure=False)
 
@@ -106,7 +106,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         upload_dir.mkdir(parents=True)
 
         # Notify the UI about what we are doing
-        notify_install_step("upload-secrets")
+        notify_install_step(Step.UPLOAD_SECRETS)
         machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
             machine.name,
@@ -215,14 +215,14 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             )
 
         install_steps = {
-            "kexec": "nixos-anywhere",
-            "disko": "formatting",
-            "install": "installing",
-            "reboot": "rebooting",
+            "kexec": Step.NIXOS_ANYWHERE,
+            "disko": Step.FORMATTING,
+            "install": Step.INSTALLING,
+            "reboot": Step.REBOOTING,
         }
 
         def run_phase(phase: str) -> None:
-            notification = install_steps.get(phase, "nixos-anywhere")
+            notification = install_steps.get(phase, Step.NIXOS_ANYWHERE)
             notify_install_step(notification)
             run(
                 [*cmd, "--phases", phase],
