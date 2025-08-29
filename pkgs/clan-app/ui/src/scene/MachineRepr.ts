@@ -3,6 +3,9 @@ import { ObjectRegistry } from "./ObjectRegistry";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { FontLoader, FontData } from "three/examples/jsm/Addons";
+import font from "../../.fonts/CommitMono_Regular.json";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -28,6 +31,7 @@ export class MachineRepr {
   private baseMesh: THREE.Mesh;
   private geometry: THREE.BoxGeometry;
   private material: THREE.MeshPhongMaterial;
+  private camera: THREE.Camera;
 
   private disposeRoot: () => void;
 
@@ -38,8 +42,10 @@ export class MachineRepr {
     id: string,
     selectedSignal: Accessor<Set<string>>,
     highlightGroups: Record<string, Set<string>>, // Reactive store
+    camera: THREE.Camera,
   ) {
     this.id = id;
+    this.camera = camera;
     this.geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
     this.material = new THREE.MeshPhongMaterial({
       color: CUBE_COLOR,
@@ -62,7 +68,7 @@ export class MachineRepr {
     this.baseMesh.name = "base";
 
     const label = this.createLabel(id);
-    this.cubeMesh.add(label);
+    // this.cubeMesh.add(label);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
       color: BASE_COLOR, // any color you like
@@ -82,6 +88,7 @@ export class MachineRepr {
     shadowPlane.position.set(0, BASE_HEIGHT + 0.0001, 0);
 
     this.group = new THREE.Group();
+    this.group.add(label);
     this.group.add(this.cubeMesh);
     this.group.add(this.baseMesh);
     this.group.add(shadowPlane);
@@ -161,12 +168,40 @@ export class MachineRepr {
   }
 
   private createLabel(id: string) {
-    const div = document.createElement("div");
-    div.className = "machine-label";
-    div.textContent = id;
-    const label = new CSS2DObject(div);
-    label.position.set(0, CUBE_SIZE + 0.1, 0);
-    return label;
+    // const div = document.createElement("div");
+    // div.className = "machine-label";
+    // div.textContent = id;
+    // const label = new CSS2DObject(div);
+    // label.position.set(0, CUBE_SIZE + 0.1, 0);
+    // return label;
+    const loader = new FontLoader();
+    const final = loader.parse(font as unknown as FontData);
+
+    const geometry = new TextGeometry(id, {
+      font: final,
+      size: 0.1,
+      depth: 0.01,
+      curveSegments: 12,
+      bevelEnabled: false,
+      bevelThickness: 0.01,
+      bevelSize: 0.01,
+      bevelOffset: 0,
+      bevelSegments: 5,
+    });
+
+    const textMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+    const textMesh = new THREE.Mesh(geometry, textMaterial);
+
+    geometry.computeBoundingBox();
+    if (geometry.boundingBox) {
+      const xMid =
+        -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+      geometry.translate(xMid, 0, 0); // shift so it's centered on X
+    }
+    textMesh.position.set(0, CUBE_SIZE + 0.15, 0); // above the cube
+    textMesh.quaternion.copy(this.camera.quaternion);
+    textMesh.userData.isLabel = true;
+    return textMesh;
   }
 
   dispose(scene: THREE.Scene) {

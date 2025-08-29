@@ -433,6 +433,7 @@ export function CubeScene(props: {
       props.cubesQuery,
       props.selectedIds,
       props.setMachinePos,
+      camera,
     );
 
     // Click handler:
