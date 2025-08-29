@@ -8,6 +8,7 @@ import {
   on,
   onMount,
   Show,
+  Signal,
   useContext,
 } from "solid-js";
 import {
@@ -49,6 +50,9 @@ interface ClanContextProps {
 
   isLoading(): boolean;
   isError(): boolean;
+
+  showAddMachine(): boolean;
+  setShowAddMachine(value: boolean): void;
 }
 
 class DefaultClanContext implements ClanContextProps {
@@ -61,6 +65,8 @@ class DefaultClanContext implements ClanContextProps {
   public readonly machinesQuery: MachinesQueryResult;
 
   allQueries: UseQueryResult[];
+
+  showAddMachineSignal: Signal<boolean>;
 
   constructor(
     clanURI: string,
@@ -76,6 +82,8 @@ class DefaultClanContext implements ClanContextProps {
     this.allClansQueries = [activeClanQuery, ...otherClanQueries];
 
     this.allQueries = [machinesQuery, activeClanQuery, ...otherClanQueries];
+
+    this.showAddMachineSignal = createSignal(false);
   }
 
   isLoading(): boolean {
@@ -84,6 +92,16 @@ class DefaultClanContext implements ClanContextProps {
 
   isError(): boolean {
     return this.activeClanQuery.isError;
+  }
+
+  setShowAddMachine(value: boolean) {
+    const [_, setShow] = this.showAddMachineSignal;
+    setShow(value);
+  }
+
+  showAddMachine(): boolean {
+    const [show, _] = this.showAddMachineSignal;
+    return show();
   }
 }
 
@@ -140,7 +158,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const [showService, setShowService] = createSignal(false);
 
-  const [showCreate, setShowCreate] = createSignal(false);
   const [currentPromise, setCurrentPromise] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
     reject: (err: unknown) => void;
@@ -148,7 +165,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const onCreate = async (): Promise<{ id: string }> => {
     return new Promise((resolve, reject) => {
-      setShowCreate(true);
+      ctx.setShowAddMachine(true);
       setCurrentPromise({ resolve, reject });
     });
   };
@@ -243,7 +260,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       <Show when={loadingError()}>
         <ListClansModal error={loadingError()} />
       </Show>
-      <Show when={showCreate()}>
+      <Show when={ctx.showAddMachine()}>
         <AddMachine
           onCreated={async (id) => {
             const promise = currentPromise();
@@ -254,7 +271,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
             }
           }}
           onClose={() => {
-            setShowCreate(false);
+            ctx.setShowAddMachine(false);
           }}
         />
       </Show>

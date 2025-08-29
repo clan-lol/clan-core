@@ -3,12 +3,13 @@ import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, useContext } from "solid-js";
+import { For, Show, useContext } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
 import { ClanContext } from "@/src/routes/Clan/Clan";
+import { Button } from "../Button/Button";
 
 interface MachineProps {
   clanURI: string;
@@ -71,6 +72,15 @@ export const SidebarBody = (props: SidebarProps) => {
   // we want them all to be open by default
   const defaultAccordionValues = ["your-machines", ...sectionLabels];
 
+  const machines = () => {
+    if (!ctx.machinesQuery.isSuccess) {
+      return {};
+    }
+
+    const result = ctx.machinesQuery.data;
+    return Object.keys(result).length > 0 ? result : undefined;
+  };
+
   return (
     <div class="sidebar-body">
       <Accordion
@@ -100,18 +110,42 @@ export const SidebarBody = (props: SidebarProps) => {
             </Accordion.Trigger>
           </Accordion.Header>
           <Accordion.Content class="content">
-            <nav>
-              <For each={Object.entries(ctx.machinesQuery.data || {})}>
-                {([id, machine]) => (
-                  <MachineRoute
-                    clanURI={clanURI}
-                    machineID={id}
-                    name={machine.name || id}
-                    serviceCount={0}
-                  />
-                )}
-              </For>
-            </nav>
+            <Show
+              when={machines()}
+              fallback={
+                <div class="flex w-full flex-col items-center justify-center gap-2.5">
+                  <Typography
+                    hierarchy="body"
+                    size="s"
+                    weight="medium"
+                    inverted
+                  >
+                    No machines yet
+                  </Typography>
+                  <Button
+                    hierarchy="primary"
+                    size="s"
+                    startIcon="Machine"
+                    onClick={() => ctx.setShowAddMachine(true)}
+                  >
+                    Add machine
+                  </Button>
+                </div>
+              }
+            >
+              <nav>
+                <For each={Object.entries(machines()!)}>
+                  {([id, machine]) => (
+                    <MachineRoute
+                      clanURI={clanURI}
+                      machineID={id}
+                      name={machine.name || id}
+                      serviceCount={0}
+                    />
+                  )}
+                </For>
+              </nav>
+            </Show>
           </Accordion.Content>
         </Accordion.Item>
 
