@@ -21,6 +21,7 @@ import { Accessor } from "solid-js";
 import { renderLoop } from "./RenderLoop";
 import { ObjectRegistry } from "./ObjectRegistry";
 import { MachineManager } from "./MachineManager";
+import cx from "classnames";
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -64,7 +65,7 @@ export function useMachineClick() {
 /*Gloabl signal*/
 const [worldMode, setWorldMode] = createSignal<
   "default" | "select" | "service" | "create"
->("default");
+>("select");
 export { worldMode, setWorldMode };
 
 export function CubeScene(props: {
@@ -101,6 +102,8 @@ export function CubeScene(props: {
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
     "grid",
   );
+  // Managed by controls
+  const [isDragging, setIsDragging] = createSignal(false);
 
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
@@ -272,6 +275,13 @@ export function CubeScene(props: {
       bgScene,
       bgCamera,
     );
+
+    controls.addEventListener("start", (e) => {
+      setIsDragging(true);
+    });
+    controls.addEventListener("end", (e) => {
+      setIsDragging(false);
+    });
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xd9f2f7, 0.72);
@@ -582,7 +592,17 @@ export function CubeScene(props: {
 
   return (
     <>
-      <div class="cubes-scene-container" ref={(el) => (container = el)} />
+      <div
+        class={cx(
+          "cubes-scene-container",
+          worldMode() === "default" && "cursor-no-drop",
+          worldMode() === "select" && "cursor-pointer",
+          worldMode() === "service" && "cursor-pointer",
+          worldMode() === "create" && "cursor-cell",
+          isDragging() && "!cursor-grabbing",
+        )}
+        ref={(el) => (container = el)}
+      />
       <div class="toolbar-container">
         <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
           {props.toolbarPopup}
@@ -592,9 +612,7 @@ export function CubeScene(props: {
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() =>
-              setWorldMode((v) => (v === "select" ? "default" : "select"))
-            }
+            onClick={() => setWorldMode("select")}
             selected={worldMode() === "select"}
           />
           <ToolbarButton
@@ -611,11 +629,11 @@ export function CubeScene(props: {
             icon="Services"
             selected={worldMode() === "service"}
             onClick={() => {
-              setWorldMode((v) => (v === "service" ? "default" : "service"));
+              setWorldMode("service");
             }}
           />
           <ToolbarButton
-            icon="Reload"
+            icon="Update"
             name="Reload"
             description="Reload machines"
             onClick={() => machinesQuery.refetch()}

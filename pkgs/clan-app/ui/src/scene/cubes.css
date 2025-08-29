@@ -1,7 +1,6 @@
 .cubes-scene-container {
   width: 100%;
   height: 100vh;
-  cursor: pointer;
 }
 
 /* <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center">
