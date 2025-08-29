@@ -4,7 +4,10 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { StepGeneral } from "@/src/workflows/AddMachine/StepGeneral";
+import {
+  GeneralForm,
+  StepGeneral,
+} from "@/src/workflows/AddMachine/StepGeneral";
 import { Modal } from "@/src/components/Modal/Modal";
 import cx from "classnames";
 import { Dynamic } from "solid-js/web";
@@ -12,8 +15,7 @@ import { Show } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
 import { StepHost } from "@/src/workflows/AddMachine/StepHost";
 import { StepTags } from "@/src/workflows/AddMachine/StepTags";
-import { ApiCall } from "@/src/hooks/api";
-import { StepProgress } from "@/src/workflows/AddMachine/StepProgress";
+import { StepProgress } from "./StepProgress";
 
 interface AddMachineStepperProps {
   onDone: () => void;
@@ -32,21 +34,20 @@ const AddMachineStepper = (props: AddMachineStepperProps) => {
 
 export interface AddMachineProps {
   onClose: () => void;
+  onCreated: (id: string) => void;
   initialStep?: AddMachineSteps[number]["id"];
 }
 
 export interface AddMachineStoreType {
-  general?: {
-    name: string;
-    description: string;
-    machineClass: "nixos" | "darwin";
-  };
-  deploy?: {
+  general: GeneralForm;
+  deploy: {
     targetHost: string;
   };
-  tags?: {
+  tags: {
     tags: string[];
   };
+  onCreated: (id: string) => void;
+  error?: string;
 }
 
 const steps = defineSteps([
@@ -67,6 +68,7 @@ const steps = defineSteps([
   },
   {
     id: "progress",
+    title: "Creating...",
     content: StepProgress,
     isSplash: true,
   },
@@ -79,11 +81,14 @@ export const AddMachine = (props: AddMachineProps) => {
     {
       steps,
     },
-    { initialStep: props.initialStep || "general" },
+    {
+      initialStep: props.initialStep || "general",
+      initialStoreData: { onCreated: props.onCreated },
+    },
   );
 
   const MetaHeader = () => {
-    const title = stepper.currentStep()?.title;
+    const title = stepper.currentStep().title;
     return (
       <Show when={title}>
         <Typography
@@ -113,8 +118,7 @@ export const AddMachine = (props: AddMachineProps) => {
   };
 
   return (
-    <StepperProvider
-      stepper={stepper}>
+    <StepperProvider stepper={stepper}>
       <Modal
         class={cx("w-screen", sizeClasses())}
         title="Add Machine"
@@ -125,7 +129,7 @@ export const AddMachine = (props: AddMachineProps) => {
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        <AddMachineStepper onDone={() => props.onClose} />
+        <AddMachineStepper onDone={() => props.onClose()} />
       </Modal>
     </StepperProvider>
   );

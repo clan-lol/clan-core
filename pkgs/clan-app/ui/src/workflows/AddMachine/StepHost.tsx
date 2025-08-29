@@ -13,8 +13,6 @@ import {
 } from "@/src/workflows/AddMachine/AddMachine";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
-import { Divider } from "@/src/components/Divider/Divider";
-import { TextArea } from "@/src/components/Form/TextArea";
 
 const HostSchema = v.object({
   targetHost: v.pipe(v.string("Name must be a string")),
@@ -52,7 +50,6 @@ export const StepHost = () => {
                     {...field}
                     value={field.value}
                     label="Target"
-                    required
                     orientation="horizontal"
                     input={{
                       ...input,

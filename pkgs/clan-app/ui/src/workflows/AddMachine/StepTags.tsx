@@ -1,4 +1,4 @@
-import { BackButton, NextButton, StepLayout } from "@/src/workflows/Steps";
+import { BackButton, StepLayout } from "@/src/workflows/Steps";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import { createForm, SubmitHandler, valiForm } from "@modular-forms/solid";
@@ -9,6 +9,8 @@ import {
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
+import { useApiClient } from "@/src/hooks/ApiClient";
+import { useClanURI } from "@/src/hooks/clan";
 
 const TagsSchema = v.object({
   tags: v.array(v.string()),
@@ -16,7 +18,7 @@ const TagsSchema = v.object({
 
 type TagsForm = v.InferInput<typeof TagsSchema>;
 
-export const StepTags = () => {
+export const StepTags = (props: { onDone: () => void }) => {
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
 
@@ -25,13 +27,44 @@ export const StepTags = () => {
     initialValues: store.tags,
   });
 
-  const handleSubmit: SubmitHandler<TagsForm> = (values, event) => {
+  const apiClient = useApiClient();
+  const clanURI = useClanURI();
+
+  const handleSubmit: SubmitHandler<TagsForm> = async (values, event) => {
     set("tags", (s) => ({
       ...s,
       ...values,
     }));
 
+    const call = apiClient.fetch("create_machine", {
+      opts: {
+        clan_dir: {
+          identifier: clanURI,
+        },
+        machine: {
+          ...store.general,
+          ...store.tags,
+          deploy: store.deploy,
+        },
+      },
+    });
+
     stepSignal.next();
+
+    const result = await call.result;
+
+    if (result.status == "error") {
+      // setError(result.errors[0].message);
+    }
+
+    if (result.status == "success") {
+      console.log("Machine creation was successful");
+      if (store.general) {
+        store.onCreated(store.general.name);
+      }
+    }
+    console.log("Done creating machine");
+    props.onDone();
   };
 
   return (

@@ -1,6 +1,5 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
-import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
 import {
   createMemoryHistory,
   MemoryRouter,
@@ -8,8 +7,12 @@ import {
 } from "@solidjs/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { ApiClientProvider, Fetcher } from "@/src/hooks/ApiClient";
-import { ApiCall, OperationNames, OperationResponse, SuccessQuery } from "@/src/hooks/api";
-
+import {
+  ApiCall,
+  OperationNames,
+  OperationResponse,
+  SuccessQuery,
+} from "@/src/hooks/api";
 
 type ResultDataMap = {
   [K in OperationNames]: SuccessQuery<K>["data"];
@@ -21,16 +24,16 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
 ): ApiCall<K> => {
   // TODO: Make this configurable for every story
   const resultData: Partial<ResultDataMap> = {
-    "list_machines": {
+    list_machines: {
       pandora: {
-        name: "pandora"
+        name: "pandora",
       },
       enceladus: {
-        name: "enceladus"
+        name: "enceladus",
       },
       dione: {
-        name: "dione"
-      }
+        name: "dione",
+      },
     },
   };
 
@@ -48,7 +51,6 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
     }),
   };
 };
-
 
 const meta: Meta<typeof AddMachine> = {
   title: "workflows/add-machine",
@@ -88,30 +90,30 @@ const meta: Meta<typeof AddMachine> = {
       );
     },
   ],
-}
+};
 
 export default meta;
 
 type Story = StoryObj<typeof AddMachine>;
 
 export const General: Story = {
-  args: {}
+  args: {},
 };
 
 export const Host: Story = {
   args: {
-    initialStep: "host"
-  }
-}
+    initialStep: "host",
+  },
+};
 
 export const Tags: Story = {
   args: {
-    initialStep: "tags"
-  }
-}
+    initialStep: "tags",
+  },
+};
 
 export const Progress: Story = {
   args: {
-    initialStep: "progress"
-  }
-}
+    initialStep: "progress",
+  },
+};

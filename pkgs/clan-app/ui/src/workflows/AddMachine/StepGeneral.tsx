@@ -1,10 +1,10 @@
 import { NextButton, StepLayout } from "@/src/workflows/Steps";
 import * as v from "valibot";
-import { value } from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import {
   clearError,
   createForm,
+  FieldValues,
   getError,
   getErrors,
   setError,
@@ -43,7 +43,11 @@ const GeneralSchema = v.object({
   machineClass: v.pipe(v.string(), v.nonEmpty()),
 });
 
-type GeneralForm = v.InferInput<typeof GeneralSchema>;
+export interface GeneralForm extends FieldValues {
+  machineClass: "nixos" | "darwin";
+  name: string;
+  description?: string;
+}
 
 export const StepGeneral = () => {
   const stepSignal = useStepper<AddMachineSteps>();
@@ -58,17 +62,21 @@ export const StepGeneral = () => {
     }
 
     return Object.keys(machines.data || {});
-  }
+  };
 
   const [formStore, { Form, Field }] = createForm<GeneralForm>({
     validate: valiForm(GeneralSchema),
-    initialValues: { machineClass: "nixos", ...store.general },
+    initialValues: { ...store.general, machineClass: "nixos" },
   });
 
   const handleSubmit: SubmitHandler<GeneralForm> = (values, event) => {
     if (machineNames().includes(values.name)) {
-      setError(formStore, "name", `A machine named '${values.name}' already exists. Please choose a different one.`)
-      return
+      setError(
+        formStore,
+        "name",
+        `A machine named '${values.name}' already exists. Please choose a different one.`,
+      );
+      return;
     }
 
     clearError(formStore, "name");

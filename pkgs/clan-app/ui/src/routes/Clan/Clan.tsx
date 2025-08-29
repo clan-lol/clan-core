@@ -24,16 +24,11 @@ import {
   useClanListQuery,
   useMachinesQuery,
 } from "@/src/hooks/queries";
-import { callApi } from "@/src/hooks/api";
 import { clanURIs, setStore, store } from "@/src/stores/clan";
 import { produce } from "solid-js/store";
-import { Button } from "@/src/components/Button/Button";
 import { Splash } from "@/src/scene/splash";
 import cx from "classnames";
 import styles from "./Clan.module.css";
-import { Modal } from "@/src/components/Modal/Modal";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { createForm, FieldValues, reset } from "@modular-forms/solid";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
@@ -43,6 +38,7 @@ import {
 } from "@/src/workflows/Service/Service";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import toast from "solid-toast";
+import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
 
 interface ClanContextProps {
   clanURI: string;
@@ -134,56 +130,6 @@ export const Clan: Component<RouteSectionProps> = (props) => {
   );
 };
 
-interface CreateFormValues extends FieldValues {
-  name: string;
-}
-
-interface MockProps {
-  onClose: () => void;
-  onSubmit: (formValues: CreateFormValues) => void;
-}
-
-const MockCreateMachine = (props: MockProps) => {
-  const [form, { Form, Field, FieldArray }] = createForm<CreateFormValues>();
-
-  return (
-    <Modal
-      open={true}
-      onClose={() => {
-        reset(form);
-        props.onClose();
-      }}
-      class={cx(styles.createModal)}
-      title="Create Machine"
-    >
-      <Form class="flex flex-col" onSubmit={props.onSubmit}>
-        <Field name="name">
-          {(field, props) => (
-            <>
-              <TextInput
-                {...field}
-                label="Name"
-                size="s"
-                required={true}
-                input={{ ...props, placeholder: "name", autofocus: true }}
-              />
-            </>
-          )}
-        </Field>
-
-        <div class="mt-4 flex w-full items-center justify-end gap-4">
-          <Button size="s" hierarchy="secondary" onClick={props.onClose}>
-            Cancel
-          </Button>
-          <Button size="s" type="submit" hierarchy="primary" onClick={close}>
-            Create
-          </Button>
-        </div>
-      </Form>
-    </Modal>
-  );
-};
-
 const ClanSceneController = (props: RouteSectionProps) => {
   const ctx = useContext(ClanContext);
   if (!ctx) {
@@ -194,7 +140,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const [showService, setShowService] = createSignal(false);
 
-  const [showModal, setShowModal] = createSignal(false);
+  const [showCreate, setShowCreate] = createSignal(false);
   const [currentPromise, setCurrentPromise] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
     reject: (err: unknown) => void;
@@ -202,43 +148,9 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const onCreate = async (): Promise<{ id: string }> => {
     return new Promise((resolve, reject) => {
-      setShowModal(true);
+      setShowCreate(true);
       setCurrentPromise({ resolve, reject });
     });
-  };
-
-  const onAddService = async (): Promise<{ id: string }> => {
-    return new Promise((resolve, reject) => {
-      setShowService((v) => !v);
-      console.log("setting current promise");
-      setCurrentPromise({ resolve, reject });
-    });
-  };
-
-  const sendCreate = async (values: CreateFormValues) => {
-    const api = callApi("create_machine", {
-      opts: {
-        clan_dir: {
-          identifier: ctx.clanURI,
-        },
-        machine: {
-          name: values.name,
-        },
-      },
-    });
-    const res = await api.result;
-    if (res.status === "error") {
-      // TODO: Handle displaying errors
-      console.error("Error creating machine:");
-
-      // Important: rejects the promise
-      throw new Error(res.errors[0].message);
-    }
-
-    // trigger a refetch of the machines query
-    ctx.machinesQuery.refetch();
-
-    return { id: values.name };
   };
 
   const [loadingError, setLoadingError] = createSignal<
@@ -312,8 +224,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
       console.error("Error creating service instance", result.errors);
     }
     toast.success("Created");
-    //
-    currentPromise()?.resolve({ id: "0" });
     setShowService(false);
   };
 
@@ -322,7 +232,7 @@ const ClanSceneController = (props: RouteSectionProps) => {
       if (mode === "service") {
         setShowService(true);
       } else {
-        // todo: request close instead of force close
+        // TODO: request soft close instead of forced close
         setShowService(false);
       }
     }),
@@ -333,21 +243,18 @@ const ClanSceneController = (props: RouteSectionProps) => {
       <Show when={loadingError()}>
         <ListClansModal error={loadingError()} />
       </Show>
-      <Show when={showModal()}>
-        <MockCreateMachine
-          onClose={() => {
-            setShowModal(false);
-            currentPromise()?.reject(new Error("User cancelled"));
-          }}
-          onSubmit={async (values) => {
-            try {
-              const result = await sendCreate(values);
-              currentPromise()?.resolve(result);
-              setShowModal(false);
-            } catch (err) {
-              currentPromise()?.reject(err);
-              setShowModal(false);
+      <Show when={showCreate()}>
+        <AddMachine
+          onCreated={async (id) => {
+            const promise = currentPromise();
+            if (promise) {
+              await ctx.machinesQuery.refetch();
+              promise.resolve({ id });
+              setCurrentPromise(null);
             }
+          }}
+          onClose={() => {
+            setShowCreate(false);
           }}
         />
       </Show>
