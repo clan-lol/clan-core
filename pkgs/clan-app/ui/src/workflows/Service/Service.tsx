@@ -49,11 +49,8 @@ type ModuleItem = ServiceModules["modules"][number];
 
 interface Module {
   value: string;
-  input?: string | null;
   label: string;
-  description: string;
   raw: ModuleItem;
-  instances: string[];
 }
 
 const SelectService = () => {
@@ -70,11 +67,8 @@ const SelectService = () => {
       setModuleOptions(
         serviceModulesQuery.data.modules.map((currService) => ({
           value: `${currService.usage_ref.name}:${currService.usage_ref.input}`,
-          label: currService.info.manifest.name,
-          description: currService.info.manifest.description,
-          input: currService.usage_ref.input,
+          label: currService.usage_ref.name,
           raw: currService,
-          instances: currService.instance_refs,
         })),
       );
     }
@@ -100,14 +94,14 @@ const SelectService = () => {
         // For now:
         // Create a new instance, if there are no instances yet
         // Update the first instance, if there is one
-        if (module.instances.length === 0) {
+        if (module.raw.instance_refs.length === 0) {
           set("action", "create");
         } else {
           if (!serviceInstancesQuery.data) return;
           if (!machinesQuery.data) return;
           set("action", "update");
 
-          const instanceName = module.instances[0];
+          const instanceName = module.raw.instance_refs[0];
           const instance = serviceInstancesQuery.data[instanceName];
           console.log("Editing existing instance", module);
 
@@ -157,7 +151,7 @@ const SelectService = () => {
             </div>
             <div class="flex w-full flex-col">
               <Combobox.ItemLabel class="flex gap-1.5">
-                <Show when={item.instances.length > 0}>
+                <Show when={item.raw.instance_refs.length > 0}>
                   <div class="flex items-center rounded bg-[#76FFA4] px-1 py-0.5">
                     <Typography hierarchy="label" weight="bold" size="xxs">
                       Added
@@ -176,12 +170,12 @@ const SelectService = () => {
                 inverted
                 class="flex justify-between"
               >
-                <span class="inline-block max-w-48 truncate align-middle">
-                  {item.description}
+                <span class="inline-block max-w-80 truncate align-middle">
+                  {item.raw.info.manifest.description}
                 </span>
-                <span class="inline-block max-w-12 truncate align-middle">
+                <span class="inline-block max-w-32 truncate align-middle">
                   <Show when={!item.raw.native} fallback="by clan-core">
-                    by {item.input}
+                    by {item.raw.usage_ref.input}
                   </Show>
                 </span>
               </Typography>
