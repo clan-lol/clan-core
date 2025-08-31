@@ -63,7 +63,6 @@ export const StepTags = (props: { onDone: () => void }) => {
         store.onCreated(store.general.name);
       }
     }
-    console.log("Done creating machine");
     props.onDone();
   };
 

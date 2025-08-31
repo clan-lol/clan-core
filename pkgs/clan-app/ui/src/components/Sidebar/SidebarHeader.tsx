@@ -3,12 +3,12 @@ import Icon from "@/src/components/Icon/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { useNavigate } from "@solidjs/router";
 import { Typography } from "../Typography/Typography";
-import { createSignal, For, Show, Suspense, useContext } from "solid-js";
+import { createSignal, For, Show, Suspense } from "solid-js";
 import { navigateToOnboarding } from "@/src/hooks/clan";
 import { setActiveClanURI } from "@/src/stores/clan";
 import { Button } from "../Button/Button";
-import { ClanContext } from "@/src/routes/Clan/Clan";
 import { ClanSettingsModal } from "@/src/modals/ClanSettingsModal/ClanSettingsModal";
+import { useClanContext } from "@/src/routes/Clan/Clan";
 
 export const SidebarHeader = () => {
   const navigate = useNavigate();
@@ -17,11 +17,7 @@ export const SidebarHeader = () => {
   const [showSettings, setShowSettings] = createSignal(false);
 
   // get information about the current active clan
-  const ctx = useContext(ClanContext);
-
-  if (!ctx) {
-    throw new Error("SidebarContext not found");
-  }
+  const ctx = useClanContext();
 
   const clanChar = () =>
     ctx?.activeClanQuery?.data?.details.name.charAt(0).toUpperCase();

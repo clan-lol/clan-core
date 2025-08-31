@@ -8,8 +8,8 @@ import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
-import { ClanContext } from "@/src/routes/Clan/Clan";
 import { Button } from "../Button/Button";
+import { useClanContext } from "@/src/routes/Clan/Clan";
 
 interface MachineProps {
   clanURI: string;
@@ -59,10 +59,7 @@ const MachineRoute = (props: MachineProps) => {
 export const SidebarBody = (props: SidebarProps) => {
   const clanURI = useClanURI();
 
-  const ctx = useContext(ClanContext);
-  if (!ctx) {
-    throw new Error("ClanContext not found");
-  }
+  const ctx = useClanContext();
 
   const sectionLabels = (props.staticSections || []).map(
     (section) => section.title,
