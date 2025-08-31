@@ -1,11 +1,11 @@
 {
-  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-  inputs.nixpkgs.follows = "clan-core/nixpkgs";
+  inputs.Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+  inputs.nixpkgs.follows = "Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU/nixpkgs";
 
   outputs =
-    { self, clan-core, ... }:
+    { self, Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU, ... }:
     let
-      clan = clan-core.lib.clan ({
+      clan = Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU.lib.clan ({
         inherit self;
         imports = [
           ./clan.nix

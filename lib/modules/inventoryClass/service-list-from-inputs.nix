@@ -23,6 +23,12 @@ let
     };
 in
 {
+  options.staticModules = lib.mkOption {
+    readOnly = true;
+    type = lib.types.raw;
+
+    apply = moduleSet: lib.mapAttrs (inspectModule "<clan-core>") moduleSet;
+  };
   options.modulesPerSource = lib.mkOption {
     # { sourceName :: { moduleName :: {} }}
     readOnly = true;

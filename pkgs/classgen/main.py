@@ -218,13 +218,12 @@ def get_field_def(
     default_factory: str | None = None,
     type_appendix: str = "",
 ) -> tuple[str, str]:
-    if "None" in field_types or default or default_factory:
-        if "None" in field_types:
-            field_types.remove("None")
-        serialised_types = " | ".join(sort_types(field_types)) + type_appendix
+    _field_types = set(field_types)
+    if "None" in _field_types or default or default_factory:
+        serialised_types = " | ".join(sort_types(_field_types)) + type_appendix
         serialised_types = f"{serialised_types}"
     else:
-        serialised_types = " | ".join(sort_types(field_types)) + type_appendix
+        serialised_types = " | ".join(sort_types(_field_types)) + type_appendix
 
     return (field_name, serialised_types)
 

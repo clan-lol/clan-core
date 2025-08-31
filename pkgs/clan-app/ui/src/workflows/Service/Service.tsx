@@ -45,15 +45,12 @@ import {
 } from "@/src/scene/highlightStore";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
 
-type ModuleItem = ServiceModules[number];
+type ModuleItem = ServiceModules["modules"][number];
 
 interface Module {
   value: string;
-  input?: string;
   label: string;
-  description: string;
   raw: ModuleItem;
-  instances: string[];
 }
 
 const SelectService = () => {
@@ -68,21 +65,10 @@ const SelectService = () => {
   createEffect(() => {
     if (serviceModulesQuery.data && serviceInstancesQuery.data) {
       setModuleOptions(
-        serviceModulesQuery.data.map((m) => ({
-          value: `${m.module.name}:${m.module.input}`,
-          label: m.module.name,
-          description: m.info.manifest.description,
-          input: m.module.input,
-          raw: m,
-          // TODO: include the instances that use this module
-          instances: Object.entries(serviceInstancesQuery.data)
-            .filter(
-              ([name, i]) =>
-                i.module.module.name === m.module.name &&
-                (!i.module.module.input ||
-                  i.module.module.input === m.module.input),
-            )
-            .map(([name, _]) => name),
+        serviceModulesQuery.data.modules.map((currService) => ({
+          value: `${currService.usage_ref.name}:${currService.usage_ref.input}`,
+          label: currService.usage_ref.name,
+          raw: currService,
         })),
       );
     }
@@ -97,8 +83,8 @@ const SelectService = () => {
         if (!module) return;
 
         set("module", {
-          name: module.raw.module.name,
-          input: module.raw.module.input,
+          name: module.raw.usage_ref.name,
+          input: module.raw.usage_ref.input,
           raw: module.raw,
         });
         // TODO: Ideally we need to ask
@@ -108,14 +94,14 @@ const SelectService = () => {
         // For now:
         // Create a new instance, if there are no instances yet
         // Update the first instance, if there is one
-        if (module.instances.length === 0) {
+        if (module.raw.instance_refs.length === 0) {
           set("action", "create");
         } else {
           if (!serviceInstancesQuery.data) return;
           if (!machinesQuery.data) return;
           set("action", "update");
 
-          const instanceName = module.instances[0];
+          const instanceName = module.raw.instance_refs[0];
           const instance = serviceInstancesQuery.data[instanceName];
           console.log("Editing existing instance", module);
 
@@ -165,7 +151,7 @@ const SelectService = () => {
             </div>
             <div class="flex w-full flex-col">
               <Combobox.ItemLabel class="flex gap-1.5">
-                <Show when={item.instances.length > 0}>
+                <Show when={item.raw.instance_refs.length > 0}>
                   <div class="flex items-center rounded bg-[#76FFA4] px-1 py-0.5">
                     <Typography hierarchy="label" weight="bold" size="xxs">
                       Added
@@ -184,11 +170,13 @@ const SelectService = () => {
                 inverted
                 class="flex justify-between"
               >
-                <span class="inline-block max-w-32 truncate align-middle">
-                  {item.description}
+                <span class="inline-block max-w-80 truncate align-middle">
+                  {item.raw.info.manifest.description}
                 </span>
-                <span class="inline-block max-w-8 truncate align-middle">
-                  by {item.input}
+                <span class="inline-block max-w-32 truncate align-middle">
+                  <Show when={!item.raw.native} fallback="by clan-core">
+                    by {item.raw.usage_ref.input}
+                  </Show>
                 </span>
               </Typography>
             </div>
@@ -539,7 +527,7 @@ export interface InventoryInstance {
   name: string;
   module: {
     name: string;
-    input?: string;
+    input?: string | null;
   };
   roles: Record<string, RoleType>;
 }
@@ -552,7 +540,7 @@ interface RoleType {
 export interface ServiceStoreType {
   module: {
     name: string;
-    input: string;
+    input?: string | null;
     raw?: ModuleItem;
   };
   roles: Record<string, TagType[]>;

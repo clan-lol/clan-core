@@ -24,59 +24,42 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
 ): ApiCall<K> => {
   // TODO: Make this configurable for every story
   const resultData: Partial<ResultDataMap> = {
-    list_service_modules: [
-      {
-        module: { name: "Borgbackup", input: "clan-core" },
-        info: {
-          manifest: {
-            name: "Borgbackup",
-            description: "This is module A",
-          },
-          roles: {
-            client: null,
-            server: null,
-          },
-        },
-      },
-      {
-        module: { name: "Zerotier", input: "clan-core" },
-        info: {
-          manifest: {
-            name: "Zerotier",
-            description: "This is module B",
-          },
-          roles: {
-            peer: null,
-            moon: null,
-            controller: null,
+    list_service_modules: {
+      core_input_name: "clan-core",
+      modules: [
+        {
+          usage_ref: { name: "Borgbackup", input: null },
+          instance_refs: [],
+          native: true,
+          info: {
+            manifest: {
+              name: "Borgbackup",
+              description: "This is module A",
+            },
+            roles: {
+              client: null,
+              server: null,
+            },
           },
         },
-      },
-      {
-        module: { name: "Admin", input: "clan-core" },
-        info: {
-          manifest: {
-            name: "Admin",
-            description: "This is module B",
-          },
-          roles: {
-            default: null,
-          },
-        },
-      },
-      {
-        module: { name: "Garage", input: "lo-l" },
-        info: {
-          manifest: {
-            name: "Garage",
-            description: "This is module B",
-          },
-          roles: {
-            default: null,
+        {
+          usage_ref: { name: "Zerotier", input: "fublub" },
+          instance_refs: [],
+          native: false,
+          info: {
+            manifest: {
+              name: "Zerotier",
+              description: "This is module B",
+            },
+            roles: {
+              peer: null,
+              moon: null,
+              controller: null,
+            },
           },
         },
-      },
-    ],
+      ],
+    },
     list_machines: {
       jon: {
         name: "jon",

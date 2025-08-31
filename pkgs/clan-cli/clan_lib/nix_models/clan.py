@@ -13,7 +13,7 @@ class Unknown:
 
 
 InventoryInstanceModuleNameType = str
-InventoryInstanceModuleInputType = str
+InventoryInstanceModuleInputType = str | None
 
 class InventoryInstanceModule(TypedDict):
     name: str
@@ -163,7 +163,7 @@ class Template(TypedDict):
 
 
 
-ClanDirectoryType = dict[str, Any] | list[Any] | bool | float | int | str
+ClanDirectoryType = dict[str, Any] | list[Any] | bool | float | int | str | None
 ClanInventoryType = Inventory
 ClanMachinesType = dict[str, Unknown]
 ClanMetaType = Unknown

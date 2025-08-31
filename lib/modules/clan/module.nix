@@ -245,6 +245,8 @@ in
               in
               { config, ... }:
               {
+                staticModules = clan-core.clan.modules;
+
                 distributedServices = clanLib.inventory.mapInstances {
                   inherit (clanConfig) inventory exportsModule;
                   inherit flakeInputs directory;

@@ -11,6 +11,7 @@ from clan_lib.nix_models.clan import (
     InventoryInstanceModule,
     InventoryInstanceModuleType,
     InventoryInstanceRolesType,
+    InventoryInstancesType,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
@@ -60,7 +61,7 @@ class ModuleManifest:
                 raise ValueError(msg)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "ModuleManifest":
+    def from_dict(cls, data: dict[str, Any]) -> "ModuleManifest":
         """Create an instance of this class from a dictionary.
         Drops any keys that are not defined in the dataclass.
         """
@@ -147,110 +148,159 @@ def extract_frontmatter[T](
 
 
 @dataclass
-class ModuleInfo(TypedDict):
+class ModuleInfo:
     manifest: ModuleManifest
     roles: dict[str, None]
 
 
-class Module(TypedDict):
-    module: InventoryInstanceModule
+@dataclass
+class Module:
+    # To use this module specify: InventoryInstanceModule :: { input, name } (foreign key)
+    usage_ref: InventoryInstanceModule
     info: ModuleInfo
+    native: bool
+    instance_refs: list[str]
 
 
-@API.register
-def list_service_modules(flake: Flake) -> list[Module]:
-    """Show information about a module"""
-    modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
+@dataclass
+class ClanModules:
+    modules: list[Module]
+    core_input_name: str
 
-    if "clan-core" not in modules:
-        msg = "Cannot find 'clan-core' input in the flake. Make sure your clan-core input is named 'clan-core'"
-        raise ClanError(msg)
 
-    res: list[Module] = []
-    for input_name, module_set in modules.items():
-        for module_name, module_info in module_set.items():
-            res.append(
-                Module(
-                    module={"name": module_name, "input": input_name},
-                    info=ModuleInfo(
-                        manifest=ModuleManifest.from_dict(
-                            module_info.get("manifest"),
-                        ),
-                        roles=module_info.get("roles", {}),
-                    ),
-                )
-            )
+def find_instance_refs_for_module(
+    instances: InventoryInstancesType,
+    module_ref: InventoryInstanceModule,
+    core_input_name: str,
+) -> list[str]:
+    """Find all usages of a given module by its module_ref
+
+    If the module is native:
+        module_ref.input := None
+        <instance>.module.name := None
+
+    If module is from explicit input
+        <instance>.module.name != None
+        module_ref.input could be None, if explicit input refers to a native module
+
+    """
+    res: list[str] = []
+    for instance_name, instance in instances.items():
+        local_ref = instance.get("module")
+        if not local_ref:
+            continue
+
+        local_name: str = local_ref.get("name", instance_name)
+        local_input: str | None = local_ref.get("input")
+
+        # Normal match
+        if (
+            local_name == module_ref.get("name")
+            and local_input == module_ref.get("input")
+        ) or (local_input == core_input_name and local_name == module_ref.get("name")):
+            res.append(instance_name)
 
     return res
 
 
 @API.register
-def get_service_module(
-    flake: Flake,
-    module_ref: InventoryInstanceModuleType,
-) -> ModuleInfo:
-    """Returns the module information for a given module reference
+def list_service_modules(flake: Flake) -> ClanModules:
+    """Show information about a module"""
+    # inputName.moduleName -> ModuleInfo
+    modules: dict[str, dict[str, Any]] = flake.select(
+        "clanInternals.inventoryClass.modulesPerSource"
+    )
 
-    :param module_ref: The module reference to get the information for
-    :return: Dict of module information
-    :raises ClanError: If the module_ref is invalid or missing required fields
-    """
-    input_name, module_name = check_service_module_ref(flake, module_ref)
+    # moduleName -> ModuleInfo
+    builtin_modules: dict[str, Any] = flake.select(
+        "clanInternals.inventoryClass.staticModules"
+    )
+    inventory_store = InventoryStore(flake)
+    instances = inventory_store.read().get("instances", {})
 
-    avilable_modules = list_service_modules(flake)
-    module_set: list[Module] = [
-        m for m in avilable_modules if m["module"].get("input", None) == input_name
-    ]
+    first_name, first_module = next(iter(builtin_modules.items()))
+    clan_input_name = None
+    for input_name, module_set in modules.items():
+        if first_name in module_set:
+            # Compare the manifest name
+            module_set[first_name]["manifest"]["name"] = first_module["manifest"][
+                "name"
+            ]
+            clan_input_name = input_name
+            break
 
-    if not module_set:
-        msg = f"Module set for input '{input_name}' not found"
+    if clan_input_name is None:
+        msg = "Could not determine the clan-core input name"
         raise ClanError(msg)
 
-    module = next((m for m in module_set if m["module"]["name"] == module_name), None)
+    res: list[Module] = []
+    for input_name, module_set in modules.items():
+        for module_name, module_info in module_set.items():
+            module_ref = InventoryInstanceModule(
+                {
+                    "name": module_name,
+                    "input": None if input_name == clan_input_name else input_name,
+                }
+            )
+            res.append(
+                Module(
+                    instance_refs=find_instance_refs_for_module(
+                        instances, module_ref, clan_input_name
+                    ),
+                    usage_ref=module_ref,
+                    info=ModuleInfo(
+                        roles=module_info.get("roles", {}),
+                        manifest=ModuleManifest.from_dict(module_info["manifest"]),
+                    ),
+                    native=(input_name == clan_input_name),
+                )
+            )
 
-    if module is None:
-        msg = f"Module '{module_name}' not found in input '{input_name}'"
-        raise ClanError(msg)
-
-    return module["info"]
+    return ClanModules(res, clan_input_name)
 
 
-def check_service_module_ref(
+def resolve_service_module_ref(
     flake: Flake,
     module_ref: InventoryInstanceModuleType,
-) -> tuple[str, str]:
+) -> Module:
     """Checks if the module reference is valid
 
     :param module_ref: The module reference to check
     :raises ClanError: If the module_ref is invalid or missing required fields
     """
-    avilable_modules = list_service_modules(flake)
+    service_modules = list_service_modules(flake)
+    avilable_modules = service_modules.modules
 
     input_ref = module_ref.get("input", None)
-    if input_ref is None:
-        msg = "Setting module_ref.input is currently required"
-        raise ClanError(msg)
 
-    module_set = [
-        m for m in avilable_modules if m["module"].get("input", None) == input_ref
-    ]
+    if input_ref is None or input_ref == service_modules.core_input_name:
+        # Take only the native modules
+        module_set = [m for m in avilable_modules if m.native]
+    else:
+        # Match the input ref
+        module_set = [
+            m for m in avilable_modules if m.usage_ref.get("input", None) == input_ref
+        ]
 
-    if module_set is None:
-        inputs = {m["module"].get("input") for m in avilable_modules}
+    if not module_set:
+        inputs = {m.usage_ref.get("input") for m in avilable_modules}
         msg = f"module set for input '{input_ref}' not found"
         msg += f"\nAvilable input_refs: {inputs}"
+        msg += "\nOmit the input field to use the built-in modules\n"
+        msg += "\n".join([m.usage_ref["name"] for m in avilable_modules if m.native])
         raise ClanError(msg)
 
     module_name = module_ref.get("name")
     if not module_name:
         msg = "Module name is required in module_ref"
         raise ClanError(msg)
-    module = next((m for m in module_set if m["module"]["name"] == module_name), None)
+
+    module = next((m for m in module_set if m.usage_ref["name"] == module_name), None)
     if module is None:
         msg = f"module with name '{module_name}' not found"
         raise ClanError(msg)
 
-    return (input_ref, module_name)
+    return module
 
 
 @API.register
@@ -264,7 +314,16 @@ def get_service_module_schema(
     :return: Dict of schemas for the service module roles
     :raises ClanError: If the module_ref is invalid or missing required fields
     """
-    input_name, module_name = check_service_module_ref(flake, module_ref)
+    input_name, module_name = module_ref.get("input"), module_ref["name"]
+    module = resolve_service_module_ref(flake, module_ref)
+
+    if module is None:
+        msg = f"Module '{module_name}' not found in input '{input_name}'"
+        raise ClanError(msg)
+
+    if input_name is None:
+        msg = "Not implemented for: input_name is None"
+        raise ClanError(msg)
 
     return flake.select(
         f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}",
@@ -278,7 +337,8 @@ def create_service_instance(
     roles: InventoryInstanceRolesType,
 ) -> None:
     """Show information about a module"""
-    input_name, module_name = check_service_module_ref(flake, module_ref)
+    input_name, module_name = module_ref.get("input"), module_ref["name"]
+    module = resolve_service_module_ref(flake, module_ref)
 
     inventory_store = InventoryStore(flake)
 
@@ -299,10 +359,10 @@ def create_service_instance(
     all_machines = inventory.get("machines", {})
     available_machine_refs = set(all_machines.keys())
 
-    schema = get_service_module_schema(flake, module_ref)
+    allowed_roles = module.info.roles
     for role_name, role_members in roles.items():
-        if role_name not in schema:
-            msg = f"Role '{role_name}' is not defined in the module schema"
+        if role_name not in allowed_roles:
+            msg = f"Role '{role_name}' is not defined in the module"
             raise ClanError(msg)
 
         machine_refs = role_members.get("machines")
@@ -319,13 +379,21 @@ def create_service_instance(
         # settings = role_members.get("settings", {})
 
     # Create a new instance with the given roles
-    new_instance: InventoryInstance = {
-        "module": {
-            "name": module_name,
-            "input": input_name,
-        },
-        "roles": roles,
-    }
+    if not input_name:
+        new_instance: InventoryInstance = {
+            "module": {
+                "name": module_name,
+            },
+            "roles": roles,
+        }
+    else:
+        new_instance = {
+            "module": {
+                "name": module_name,
+                "input": input_name,
+            },
+            "roles": roles,
+        }
 
     set_value_by_path(inventory, f"instances.{instance_name}", new_instance)
     inventory_store.write(
@@ -335,8 +403,10 @@ def create_service_instance(
     )
 
 
-class InventoryInstanceInfo(TypedDict):
-    module: Module
+@dataclass
+class InventoryInstanceInfo:
+    resolved: Module
+    module: InventoryInstanceModule
     roles: InventoryInstanceRolesType
 
 
@@ -345,24 +415,19 @@ def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
     """Returns all currently present service instances including their full configuration"""
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
-    service_modules = {
-        (mod["module"]["name"], mod["module"].get("input", "clan-core")): mod
-        for mod in list_service_modules(flake)
-    }
+
     instances = inventory.get("instances", {})
     res: dict[str, InventoryInstanceInfo] = {}
     for instance_name, instance in instances.items():
-        module_key = (
-            instance.get("module", {})["name"],
-            instance.get("module", {}).get("input")
-            or "clan-core",  # Replace None (or falsey) with "clan-core"
-        )
-        module = service_modules.get(module_key)
+        persisted_ref = instance.get("module", {"name": instance_name})
+        module = resolve_service_module_ref(flake, persisted_ref)
+
         if module is None:
-            msg = f"Module '{module_key}' for instance '{instance_name}' not found"
+            msg = f"Module for instance '{instance_name}' not found"
             raise ClanError(msg)
         res[instance_name] = InventoryInstanceInfo(
-            module=module,
+            resolved=module,
+            module=persisted_ref,
             roles=instance.get("roles", {}),
         )
     return res
