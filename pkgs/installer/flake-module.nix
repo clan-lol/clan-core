@@ -14,6 +14,8 @@ let
         self.nixosModules.installer
       ];
 
+      # We don't need state-version in a live installer, we can just set nixos.release directly
+      clan.core.settings.state-version.enable = false;
       system.stateVersion = config.system.nixos.release;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
 
