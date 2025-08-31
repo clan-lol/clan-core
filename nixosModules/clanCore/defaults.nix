@@ -10,7 +10,7 @@
     lib.mkIf config.clan.core.enableRecommendedDefaults {
 
       # Enable automatic state-version generation.
-      clan.core.settings.state-version.enable = true;
+      clan.core.settings.state-version.enable = lib.mkDefault true;
 
       # Use systemd during boot as well except:
       # - systems with raids as this currently require manual configuration: https://github.com/NixOS/nixpkgs/issues/210210
