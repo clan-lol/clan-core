@@ -49,7 +49,7 @@ type ModuleItem = ServiceModules[number];
 
 interface Module {
   value: string;
-  input?: string;
+  input?: string | null;
   label: string;
   description: string;
   raw: ModuleItem;
@@ -68,19 +68,20 @@ const SelectService = () => {
   createEffect(() => {
     if (serviceModulesQuery.data && serviceInstancesQuery.data) {
       setModuleOptions(
-        serviceModulesQuery.data.map((m) => ({
-          value: `${m.module.name}:${m.module.input}`,
-          label: m.module.name,
-          description: m.info.manifest.description,
-          input: m.module.input,
-          raw: m,
+        serviceModulesQuery.data.modules.map((currService) => ({
+          value: `${currService.usage_ref.name}:${currService.usage_ref.input}`,
+          label: currService.info.manifest.name,
+          description: currService.info.manifest.description,
+          input: currService.usage_ref.input,
+          raw: currService,
           // TODO: include the instances that use this module
           instances: Object.entries(serviceInstancesQuery.data)
             .filter(
-              ([name, i]) =>
-                i.module.module.name === m.module.name &&
-                (!i.module.module.input ||
-                  i.module.module.input === m.module.input),
+              ([name, instance]) =>
+                instance.resolved.usage_ref.name ===
+                  currService.usage_ref.name &&
+                instance.resolved.usage_ref.input ===
+                  currService.usage_ref.input,
             )
             .map(([name, _]) => name),
         })),

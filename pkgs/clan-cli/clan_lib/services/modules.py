@@ -11,6 +11,7 @@ from clan_lib.nix_models.clan import (
     InventoryInstanceModule,
     InventoryInstanceModuleType,
     InventoryInstanceRolesType,
+    InventoryInstancesType,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
@@ -157,13 +158,49 @@ class Module:
     # To use this module specify: InventoryInstanceModule :: { input, name } (foreign key)
     usage_ref: InventoryInstanceModule
     info: ModuleInfo
-    native: bool  # Equivalent to input == None
+    native: bool
+    instance_refs: list[str]
 
 
 @dataclass
 class ClanModules:
     modules: list[Module]
     core_input_name: str
+
+
+def find_instance_refs_for_module(
+    instances: InventoryInstancesType,
+    module_ref: InventoryInstanceModule,
+    core_input_name: str,
+) -> list[str]:
+    """Find all usages of a given module by its module_ref
+
+    If the module is native:
+        module_ref.input := None
+        <instance>.module.name := None
+
+    If module is from explicit input
+        <instance>.module.name != None
+        module_ref.input could be None, if explicit input refers to a native module
+
+    """
+    res: list[str] = []
+    for instance_name, instance in instances.items():
+        local_ref = instance.get("module")
+        if not local_ref:
+            continue
+
+        local_name: str = local_ref.get("name", instance_name)
+        local_input: str | None = local_ref.get("input")
+
+        # Normal match
+        if (
+            local_name == module_ref.get("name")
+            and local_input == module_ref.get("input")
+        ) or (local_input == core_input_name and local_name == module_ref.get("name")):
+            res.append(instance_name)
+
+    return res
 
 
 @API.register
@@ -178,6 +215,8 @@ def list_service_modules(flake: Flake) -> ClanModules:
     builtin_modules: dict[str, Any] = flake.select(
         "clanInternals.inventoryClass.staticModules"
     )
+    inventory_store = InventoryStore(flake)
+    instances = inventory_store.read().get("instances", {})
 
     first_name, first_module = next(iter(builtin_modules.items()))
     clan_input_name = None
@@ -197,12 +236,18 @@ def list_service_modules(flake: Flake) -> ClanModules:
     res: list[Module] = []
     for input_name, module_set in modules.items():
         for module_name, module_info in module_set.items():
+            module_ref = InventoryInstanceModule(
+                {
+                    "name": module_name,
+                    "input": None if input_name == clan_input_name else input_name,
+                }
+            )
             res.append(
                 Module(
-                    usage_ref={
-                        "name": module_name,
-                        "input": None if input_name == clan_input_name else input_name,
-                    },
+                    instance_refs=find_instance_refs_for_module(
+                        instances, module_ref, clan_input_name
+                    ),
+                    usage_ref=module_ref,
                     info=ModuleInfo(
                         roles=module_info.get("roles", {}),
                         manifest=ModuleManifest.from_dict(module_info["manifest"]),
