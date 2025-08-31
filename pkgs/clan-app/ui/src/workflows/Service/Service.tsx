@@ -45,7 +45,7 @@ import {
 } from "@/src/scene/highlightStore";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
 
-type ModuleItem = ServiceModules[number];
+type ModuleItem = ServiceModules["modules"][number];
 
 interface Module {
   value: string;
@@ -74,16 +74,7 @@ const SelectService = () => {
           description: currService.info.manifest.description,
           input: currService.usage_ref.input,
           raw: currService,
-          // TODO: include the instances that use this module
-          instances: Object.entries(serviceInstancesQuery.data)
-            .filter(
-              ([name, instance]) =>
-                instance.resolved.usage_ref.name ===
-                  currService.usage_ref.name &&
-                instance.resolved.usage_ref.input ===
-                  currService.usage_ref.input,
-            )
-            .map(([name, _]) => name),
+          instances: currService.instance_refs,
         })),
       );
     }
@@ -98,8 +89,8 @@ const SelectService = () => {
         if (!module) return;
 
         set("module", {
-          name: module.raw.module.name,
-          input: module.raw.module.input,
+          name: module.raw.usage_ref.name,
+          input: module.raw.usage_ref.input,
           raw: module.raw,
         });
         // TODO: Ideally we need to ask
@@ -185,11 +176,13 @@ const SelectService = () => {
                 inverted
                 class="flex justify-between"
               >
-                <span class="inline-block max-w-32 truncate align-middle">
+                <span class="inline-block max-w-48 truncate align-middle">
                   {item.description}
                 </span>
-                <span class="inline-block max-w-8 truncate align-middle">
-                  by {item.input}
+                <span class="inline-block max-w-12 truncate align-middle">
+                  <Show when={!item.raw.native} fallback="by clan-core">
+                    by {item.input}
+                  </Show>
                 </span>
               </Typography>
             </div>
@@ -540,7 +533,7 @@ export interface InventoryInstance {
   name: string;
   module: {
     name: string;
-    input?: string;
+    input?: string | null;
   };
   roles: Record<string, RoleType>;
 }
@@ -553,7 +546,7 @@ interface RoleType {
 export interface ServiceStoreType {
   module: {
     name: string;
-    input: string;
+    input?: string | null;
     raw?: ModuleItem;
   };
   roles: Record<string, TagType[]>;
