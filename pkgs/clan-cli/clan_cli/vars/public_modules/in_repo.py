@@ -29,7 +29,7 @@ class FactStore(StoreBase):
         value: bytes,
     ) -> Path | None:
         if not self.flake.is_local:
-            msg = f"in_flake fact storage is only supported for local flakes: {self.flake}"
+            msg = f"Storing var '{var}' in a flake is only supported for local flakes: {self.flake}"
             raise ClanError(msg)
         folder = self.directory(generator, var.name)
         file_path = folder / "value"
