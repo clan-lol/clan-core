@@ -12,6 +12,7 @@ import {
   useContext,
 } from "solid-js";
 import {
+  buildClanPath,
   buildMachinePath,
   maybeUseMachineName,
   useClanURI,
@@ -197,6 +198,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
     const selected = ids.values().next().value;
     if (selected) {
       navigate(buildMachinePath(ctx.clanURI, selected));
+    } else {
+      navigate(buildClanPath(ctx.clanURI));
     }
   };
 

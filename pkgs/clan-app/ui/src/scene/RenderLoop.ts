@@ -98,6 +98,11 @@ class RenderLoop {
       if (obj.userData.isLabel) {
         (obj as THREE.Mesh).quaternion.copy(this.camera.quaternion);
       }
+      // if (obj.userData.isLabel) {
+      //   const camPos = new THREE.Vector3();
+      //   this.camera.getWorldPosition(camPos);
+      //   obj.lookAt(new THREE.Vector3(camPos.x, obj.position.y, camPos.z));
+      // }
     });
 
     this.labelRenderer.render(this.scene, this.camera);

@@ -25,6 +25,7 @@ import { MachineManager } from "./MachineManager";
 import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../components/ContextMenu/ContextMenu";
+import { clearHighlight, setHighlightGroups } from "./highlightStore";
 
 function intersectMachines(
   event: MouseEvent,
@@ -175,12 +176,6 @@ export function CubeScene(props: {
     base.position.set(cube_pos[0], BASE_HEIGHT / 2, cube_pos[2]);
     base.receiveShadow = true;
     return base;
-  }
-
-  function toggleSelection(id: string) {
-    const next = new Set<string>();
-    next.add(id);
-    props.onSelect(next);
   }
 
   const initialCameraPosition = { x: 20, y: 20, z: 20 };
@@ -469,6 +464,7 @@ export function CubeScene(props: {
 
         props.setMachinePos(currId, pos);
         setWorldMode("select");
+        clearHighlight("move");
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
@@ -486,13 +482,13 @@ export function CubeScene(props: {
         console.log("Clicked on cube:", intersects);
         const id = intersects[0].object.userData.id;
 
-        if (worldMode() === "select") toggleSelection(id);
+        if (worldMode() === "select") props.onSelect(new Set<string>([id]));
 
         emitMachineClick(id); // notify subscribers
       } else {
         emitMachineClick(null);
 
-        props.onSelect(new Set<string>()); // Clear selection if clicked outside cubes
+        if (worldMode() === "select") props.onSelect(new Set<string>());
       }
     };
 
@@ -646,6 +642,7 @@ export function CubeScene(props: {
   };
   const handleMenuSelect = (mode: "move") => {
     setWorldMode(mode);
+    setHighlightGroups({ move: new Set(menuIntersection()) });
     console.log("Menu selected, new World mode", worldMode());
   };
 

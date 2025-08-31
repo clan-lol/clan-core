@@ -3,9 +3,9 @@ import { ObjectRegistry } from "./ObjectRegistry";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader, FontData } from "three/examples/jsm/Addons";
-import font from "../../.fonts/CommitMono_Regular.json";
+// @ts-expect-error: No types for troika-three-text
+import { Text } from "troika-three-text";
+import ttf from "../../.fonts/CommitMonoV143-VF.ttf";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -68,7 +68,6 @@ export class MachineRepr {
     this.baseMesh.name = "base";
 
     const label = this.createLabel(id);
-    // this.cubeMesh.add(label);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
       color: BASE_COLOR, // any color you like
@@ -168,34 +167,27 @@ export class MachineRepr {
   }
 
   private createLabel(id: string) {
-    const loader = new FontLoader();
-    const final = loader.parse(font as unknown as FontData);
+    const text = new Text();
+    text.text = id;
+    text.font = ttf;
+    // text.font = ".fonts/CommitMonoV143-VF.woff2"; // <-- normal web font, not JSON
+    text.fontSize = 0.15; // relative to your cube size
+    text.color = 0x000000; // any THREE.Color
+    text.anchorX = "center"; // horizontal centering
+    text.anchorY = "bottom"; // baseline aligns to cube top
+    text.position.set(0, CUBE_SIZE + 0.05, 0);
 
-    const geometry = new TextGeometry(id, {
-      font: final,
-      size: 0.1,
-      depth: 0.01,
-      curveSegments: 12,
-      bevelEnabled: false,
-      bevelThickness: 0.01,
-      bevelSize: 0.01,
-      bevelOffset: 0,
-      bevelSegments: 5,
+    // If you want it to always face camera:
+    text.userData.isLabel = true;
+    text.outlineWidth = 0.005;
+    text.outlineColor = 0x333333;
+    text.quaternion.copy(this.camera.quaternion);
+
+    // Re-render on text changes
+    text.sync(() => {
+      renderLoop.requestRender();
     });
-
-    const textMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
-    const textMesh = new THREE.Mesh(geometry, textMaterial);
-
-    geometry.computeBoundingBox();
-    if (geometry.boundingBox) {
-      const xMid =
-        -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-      geometry.translate(xMid, 0, 0); // shift so it's centered on X
-    }
-    textMesh.position.set(0, CUBE_SIZE + 0.15, 0); // above the cube
-    textMesh.quaternion.copy(this.camera.quaternion);
-    textMesh.userData.isLabel = true;
-    return textMesh;
+    return text;
   }
 
   dispose(scene: THREE.Scene) {
