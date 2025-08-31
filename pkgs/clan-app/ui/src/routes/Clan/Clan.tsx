@@ -8,10 +8,10 @@ import {
   on,
   onMount,
   Show,
-  Signal,
   useContext,
 } from "solid-js";
 import {
+  buildClanPath,
   buildMachinePath,
   maybeUseMachineName,
   useClanURI,
@@ -55,57 +55,38 @@ interface ClanContextProps {
   setShowAddMachine(value: boolean): void;
 }
 
-class DefaultClanContext implements ClanContextProps {
-  public readonly clanURI: string;
+function createClanContext(
+  clanURI: string,
+  machinesQuery: MachinesQueryResult,
+  activeClanQuery: UseQueryResult<ClanDetails>,
+  otherClanQueries: UseQueryResult<ClanDetails>[],
+) {
+  const [showAddMachine, setShowAddMachine] = createSignal(false);
+  const allClansQueries = [activeClanQuery, ...otherClanQueries];
+  const allQueries = [machinesQuery, ...allClansQueries];
 
-  public readonly activeClanQuery: UseQueryResult<ClanDetails>;
-  public readonly otherClanQueries: UseQueryResult<ClanDetails>[];
-  public readonly allClansQueries: UseQueryResult<ClanDetails>[];
-
-  public readonly machinesQuery: MachinesQueryResult;
-
-  allQueries: UseQueryResult[];
-
-  showAddMachineSignal: Signal<boolean>;
-
-  constructor(
-    clanURI: string,
-    machinesQuery: MachinesQueryResult,
-    activeClanQuery: UseQueryResult<ClanDetails>,
-    otherClanQueries: UseQueryResult<ClanDetails>[],
-  ) {
-    this.clanURI = clanURI;
-    this.machinesQuery = machinesQuery;
-
-    this.activeClanQuery = activeClanQuery;
-    this.otherClanQueries = otherClanQueries;
-    this.allClansQueries = [activeClanQuery, ...otherClanQueries];
-
-    this.allQueries = [machinesQuery, activeClanQuery, ...otherClanQueries];
-
-    this.showAddMachineSignal = createSignal(false);
-  }
-
-  isLoading(): boolean {
-    return this.allQueries.some((q) => q.isLoading);
-  }
-
-  isError(): boolean {
-    return this.activeClanQuery.isError;
-  }
-
-  setShowAddMachine(value: boolean) {
-    const [_, setShow] = this.showAddMachineSignal;
-    setShow(value);
-  }
-
-  showAddMachine(): boolean {
-    const [show, _] = this.showAddMachineSignal;
-    return show();
-  }
+  return {
+    clanURI,
+    machinesQuery,
+    activeClanQuery,
+    otherClanQueries,
+    allClansQueries,
+    isLoading: () => allQueries.some((q) => q.isLoading),
+    isError: () => activeClanQuery.isError,
+    showAddMachine,
+    setShowAddMachine,
+  };
 }
 
-export const ClanContext = createContext<ClanContextProps>();
+const ClanContext = createContext<ClanContextProps>();
+
+export const useClanContext = () => {
+  const ctx = useContext(ClanContext);
+  if (!ctx) {
+    throw new Error("ClanContext not found");
+  }
+  return ctx;
+};
 
 export const Clan: Component<RouteSectionProps> = (props) => {
   const clanURI = useClanURI();
@@ -124,17 +105,15 @@ export const Clan: Component<RouteSectionProps> = (props) => {
 
   const machinesQuery = useMachinesQuery(clanURI);
 
+  const ctx = createClanContext(
+    clanURI,
+    machinesQuery,
+    activeClanQuery,
+    otherClanQueries,
+  );
+
   return (
-    <ClanContext.Provider
-      value={
-        new DefaultClanContext(
-          clanURI,
-          machinesQuery,
-          activeClanQuery,
-          otherClanQueries,
-        )
-      }
-    >
+    <ClanContext.Provider value={ctx}>
       <div
         class={cx(styles.sidebarContainer, {
           [styles.machineSelected]: useMachineName(),
@@ -149,10 +128,7 @@ export const Clan: Component<RouteSectionProps> = (props) => {
 };
 
 const ClanSceneController = (props: RouteSectionProps) => {
-  const ctx = useContext(ClanContext);
-  if (!ctx) {
-    throw new Error("ClanContext not found");
-  }
+  const ctx = useClanContext();
 
   const navigate = useNavigate();
 
@@ -197,6 +173,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
     const selected = ids.values().next().value;
     if (selected) {
       navigate(buildMachinePath(ctx.clanURI, selected));
+    } else {
+      navigate(buildClanPath(ctx.clanURI));
     }
   };
 

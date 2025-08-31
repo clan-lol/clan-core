@@ -3,6 +3,9 @@ import { ObjectRegistry } from "./ObjectRegistry";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
+// @ts-expect-error: No types for troika-three-text
+import { Text } from "troika-three-text";
+import ttf from "../../.fonts/CommitMonoV143-VF.ttf";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -28,6 +31,7 @@ export class MachineRepr {
   private baseMesh: THREE.Mesh;
   private geometry: THREE.BoxGeometry;
   private material: THREE.MeshPhongMaterial;
+  private camera: THREE.Camera;
 
   private disposeRoot: () => void;
 
@@ -38,8 +42,10 @@ export class MachineRepr {
     id: string,
     selectedSignal: Accessor<Set<string>>,
     highlightGroups: Record<string, Set<string>>, // Reactive store
+    camera: THREE.Camera,
   ) {
     this.id = id;
+    this.camera = camera;
     this.geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
     this.material = new THREE.MeshPhongMaterial({
       color: CUBE_COLOR,
@@ -62,7 +68,6 @@ export class MachineRepr {
     this.baseMesh.name = "base";
 
     const label = this.createLabel(id);
-    this.cubeMesh.add(label);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
       color: BASE_COLOR, // any color you like
@@ -82,6 +87,7 @@ export class MachineRepr {
     shadowPlane.position.set(0, BASE_HEIGHT + 0.0001, 0);
 
     this.group = new THREE.Group();
+    this.group.add(label);
     this.group.add(this.cubeMesh);
     this.group.add(this.baseMesh);
     this.group.add(shadowPlane);
@@ -161,12 +167,27 @@ export class MachineRepr {
   }
 
   private createLabel(id: string) {
-    const div = document.createElement("div");
-    div.className = "machine-label";
-    div.textContent = id;
-    const label = new CSS2DObject(div);
-    label.position.set(0, CUBE_SIZE + 0.1, 0);
-    return label;
+    const text = new Text();
+    text.text = id;
+    text.font = ttf;
+    // text.font = ".fonts/CommitMonoV143-VF.woff2"; // <-- normal web font, not JSON
+    text.fontSize = 0.15; // relative to your cube size
+    text.color = 0x000000; // any THREE.Color
+    text.anchorX = "center"; // horizontal centering
+    text.anchorY = "bottom"; // baseline aligns to cube top
+    text.position.set(0, CUBE_SIZE + 0.05, 0);
+
+    // If you want it to always face camera:
+    text.userData.isLabel = true;
+    text.outlineWidth = 0.005;
+    text.outlineColor = 0x333333;
+    text.quaternion.copy(this.camera.quaternion);
+
+    // Re-render on text changes
+    text.sync(() => {
+      renderLoop.requestRender();
+    });
+    return text;
   }
 
   dispose(scene: THREE.Scene) {

@@ -5,6 +5,7 @@ import {
   onMount,
   on,
   JSX,
+  Show,
 } from "solid-js";
 import "./cubes.css";
 
@@ -22,6 +23,29 @@ import { renderLoop } from "./RenderLoop";
 import { ObjectRegistry } from "./ObjectRegistry";
 import { MachineManager } from "./MachineManager";
 import cx from "classnames";
+import { Portal } from "solid-js/web";
+import { Menu } from "../components/ContextMenu/ContextMenu";
+import { clearHighlight, setHighlightGroups } from "./highlightStore";
+
+function intersectMachines(
+  event: MouseEvent,
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.Camera,
+  machineManager: MachineManager,
+  raycaster: THREE.Raycaster,
+): string[] {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(
+    Array.from(machineManager.machines.values().map((m) => m.group)),
+  );
+
+  return intersects.map((i) => i.object.userData.id);
+}
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -64,7 +88,7 @@ export function useMachineClick() {
 
 /*Gloabl signal*/
 const [worldMode, setWorldMode] = createSignal<
-  "default" | "select" | "service" | "create"
+  "default" | "select" | "service" | "create" | "move"
 >("select");
 export { worldMode, setWorldMode };
 
@@ -88,7 +112,7 @@ export function CubeScene(props: {
   let controls: MapControls;
   // Raycaster for clicking
   const raycaster = new THREE.Raycaster();
-  let initBase: THREE.Mesh | undefined;
+  let actionBase: THREE.Mesh | undefined;
 
   // Create background scene
   const bgScene = new THREE.Scene();
@@ -111,6 +135,10 @@ export function CubeScene(props: {
     position: { x: 0, y: 0, z: 0 },
     spherical: { radius: 0, theta: 0, phi: 0 },
   });
+  // Context menu state
+  const [contextOpen, setContextOpen] = createSignal(false);
+  const [menuPos, setMenuPos] = createSignal<{ x: number; y: number }>();
+  const [menuIntersection, setMenuIntersection] = createSignal<string[]>([]);
 
   // Grid configuration
   const GRID_SIZE = 1;
@@ -126,8 +154,10 @@ export function CubeScene(props: {
   const BASE_COLOR = 0xecfdff;
   const BASE_EMISSIVE = 0x0c0c0c;
 
-  const CREATE_BASE_COLOR = 0x636363;
+  const ACTION_BASE_COLOR = 0x636363;
+
   const CREATE_BASE_EMISSIVE = 0xc5fad7;
+  const MOVE_BASE_EMISSIVE = 0xb2d7ff;
 
   function createCubeBase(
     cube_pos: [number, number, number],
@@ -146,12 +176,6 @@ export function CubeScene(props: {
     base.position.set(cube_pos[0], BASE_HEIGHT / 2, cube_pos[2]);
     base.receiveShadow = true;
     return base;
-  }
-
-  function toggleSelection(id: string) {
-    const next = new Set<string>();
-    next.add(id);
-    props.onSelect(next);
   }
 
   const initialCameraPosition = { x: 20, y: 20, z: 20 };
@@ -350,15 +374,15 @@ export function CubeScene(props: {
     );
 
     // Important create CubeBase depends on sharedBaseGeometry
-    initBase = createCubeBase(
+    actionBase = createCubeBase(
       [1, BASE_HEIGHT / 2, 1],
       1,
-      CREATE_BASE_COLOR,
+      ACTION_BASE_COLOR,
       CREATE_BASE_EMISSIVE,
     );
-    initBase.visible = false;
+    actionBase.visible = false;
 
-    scene.add(initBase);
+    scene.add(actionBase);
 
     // const spherical = new THREE.Spherical();
     // spherical.setFromVector3(camera.position);
@@ -387,9 +411,9 @@ export function CubeScene(props: {
     createEffect(
       on(worldMode, (mode) => {
         if (mode === "create") {
-          initBase!.visible = true;
+          actionBase!.visible = true;
         } else {
-          initBase!.visible = false;
+          actionBase!.visible = false;
         }
         renderLoop.requestRender();
       }),
@@ -404,6 +428,7 @@ export function CubeScene(props: {
       props.cubesQuery,
       props.selectedIds,
       props.setMachinePos,
+      camera,
     );
 
     // Click handler:
@@ -426,10 +451,20 @@ export function CubeScene(props: {
             console.error("Error creating cube:", error);
           })
           .finally(() => {
-            if (initBase) initBase.visible = false;
+            if (actionBase) actionBase.visible = false;
 
             setWorldMode("default");
           });
+      }
+      if (worldMode() === "move") {
+        console.log("sanpped");
+        const currId = menuIntersection().at(0);
+        const pos = cursorPosition();
+        if (!currId || !pos) return;
+
+        props.setMachinePos(currId, pos);
+        setWorldMode("select");
+        clearHighlight("move");
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
@@ -447,13 +482,13 @@ export function CubeScene(props: {
         console.log("Clicked on cube:", intersects);
         const id = intersects[0].object.userData.id;
 
-        if (worldMode() === "select") toggleSelection(id);
+        if (worldMode() === "select") props.onSelect(new Set<string>([id]));
 
         emitMachineClick(id); // notify subscribers
       } else {
         emitMachineClick(null);
 
-        props.onSelect(new Set<string>()); // Clear selection if clicked outside cubes
+        if (worldMode() === "select") props.onSelect(new Set<string>());
       }
     };
 
@@ -484,18 +519,28 @@ export function CubeScene(props: {
       renderLoop.requestRender();
     };
 
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        const intersection = intersectMachines(
+          e,
+          renderer,
+          camera,
+          machineManager,
+          raycaster,
+        );
+        if (!intersection.length) return;
+        setMenuIntersection(intersection);
+        setMenuPos({ x: e.clientX, y: e.clientY });
+        setContextOpen(true);
+      }
+    };
+
+    renderer.domElement.addEventListener("mousedown", handleMouseDown);
     renderer.domElement.addEventListener("mousemove", onMouseMove);
 
     window.addEventListener("resize", handleResize);
-    // For debugging,
-    // TODO: Remove in production
-    window.addEventListener(
-      "contextmenu",
-      (e) => {
-        e.stopPropagation();
-      },
-      { capture: true },
-    );
 
     // Initial render
     renderLoop.requestRender();
@@ -522,12 +567,12 @@ export function CubeScene(props: {
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", handleResize);
 
-      if (initBase) {
-        initBase.geometry.dispose();
-        if (Array.isArray(initBase.material)) {
-          initBase.material.forEach((material) => material.dispose());
+      if (actionBase) {
+        actionBase.geometry.dispose();
+        if (Array.isArray(actionBase.material)) {
+          actionBase.material.forEach((material) => material.dispose());
         } else {
-          initBase.material.dispose();
+          actionBase.material.dispose();
         }
       }
 
@@ -543,10 +588,18 @@ export function CubeScene(props: {
     renderLoop.requestRender();
   };
   const onMouseMove = (event: MouseEvent) => {
-    if (worldMode() !== "create") return;
-    if (!initBase) return;
+    if (!(worldMode() === "create" || worldMode() === "move")) return;
+    if (!actionBase) return;
 
-    initBase.visible = true;
+    console.log("Mouse move in create/move mode");
+
+    actionBase.visible = true;
+    (actionBase.material as THREE.MeshPhongMaterial).emissive.set(
+      worldMode() === "create" ? CREATE_BASE_EMISSIVE : MOVE_BASE_EMISSIVE,
+    );
+
+    // Calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
 
     const rect = renderer.domElement.getBoundingClientRect();
     const mouse = new THREE.Vector2(
@@ -577,21 +630,37 @@ export function CubeScene(props: {
       }
 
       if (
-        Math.abs(initBase.position.x - snapped.x) > 0.01 ||
-        Math.abs(initBase.position.z - snapped.z) > 0.01
+        Math.abs(actionBase.position.x - snapped.x) > 0.01 ||
+        Math.abs(actionBase.position.z - snapped.z) > 0.01
       ) {
         // Only request render if the position actually changed
-        initBase.position.set(snapped.x, 0, snapped.z);
+        actionBase.position.set(snapped.x, 0, snapped.z);
         setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
         renderLoop.requestRender();
       }
     }
+  };
+  const handleMenuSelect = (mode: "move") => {
+    setWorldMode(mode);
+    setHighlightGroups({ move: new Set(menuIntersection()) });
+    console.log("Menu selected, new World mode", worldMode());
   };
 
   const machinesQuery = useMachinesQuery(props.clanURI);
 
   return (
     <>
+      <Show when={contextOpen()}>
+        <Portal mount={document.body}>
+          <Menu
+            onSelect={handleMenuSelect}
+            intersect={menuIntersection()}
+            x={menuPos()!.x - 10}
+            y={menuPos()!.y - 10}
+            close={() => setContextOpen(false)}
+          />
+        </Portal>
+      </Show>
       <div
         class={cx(
           "cubes-scene-container",

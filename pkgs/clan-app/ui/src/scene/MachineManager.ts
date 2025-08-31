@@ -27,6 +27,7 @@ export class MachineManager {
     machinesQueryResult: MachinesQueryResult,
     selectedIds: Accessor<Set<string>>,
     setMachinePos: (id: string, position: [number, number] | null) => void,
+    camera: THREE.Camera,
   ) {
     this.machinePositionsSignal = machinePositionsSignal;
 
@@ -82,6 +83,7 @@ export class MachineManager {
               id,
               selectedIds,
               highlightGroups,
+              camera,
             );
             this.machines.set(id, repr);
             scene.add(repr.group);

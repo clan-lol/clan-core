@@ -1,7 +1,7 @@
 import { Scene, Camera, WebGLRenderer } from "three";
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
-
+import * as THREE from "three";
 /**
  * Private class to manage the render loop
  * @internal
@@ -93,6 +93,18 @@ class RenderLoop {
 
     this.renderer.render(this.bgScene, this.bgCamera);
     this.renderer.render(this.scene, this.camera);
+
+    this.scene.traverse((obj) => {
+      if (obj.userData.isLabel) {
+        (obj as THREE.Mesh).quaternion.copy(this.camera.quaternion);
+      }
+      // if (obj.userData.isLabel) {
+      //   const camPos = new THREE.Vector3();
+      //   this.camera.getWorldPosition(camPos);
+      //   obj.lookAt(new THREE.Vector3(camPos.x, obj.position.y, camPos.z));
+      // }
+    });
+
     this.labelRenderer.render(this.scene, this.camera);
   }
 
