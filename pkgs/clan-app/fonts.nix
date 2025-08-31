@@ -48,6 +48,10 @@ let
     url = "https://github.com/eigilnikolajsen/commit-mono/raw/0b3b192f035cdc8d1ea8ffb5463cc23d73d0b89f/src/fonts/fontlab/CommitMonoV143-VF.woff2";
     hash = "sha256-80LKbD8ll+bA/NhLPz7WTTzlvbbQrxnRkNZFpVixzyk=";
   };
+  commitMono_ttf = fetchurl {
+    url = "https://github.com/eigilnikolajsen/commit-mono/raw/0b3b192f035cdc8d1ea8ffb5463cc23d73d0b89f/src/fonts/fontlab/CommitMonoV143-VF.ttf";
+    hash = "sha256-mN6akBFjp2mBLDzy8bhtY6mKnO1nINdHqmZSaIQHw08=";
+  };
 
 in
 runCommand "" { } ''
@@ -62,4 +66,5 @@ runCommand "" { } ''
   cp ${archivoSemi.semiBold} $out/ArchivoSemiCondensed-SemiBold.woff2
 
   cp ${commitMono} $out/CommitMonoV143-VF.woff2
+  cp ${commitMono_ttf} $out/CommitMonoV143-VF.ttf
 ''
