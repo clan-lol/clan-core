@@ -168,12 +168,6 @@ export class MachineRepr {
   }
 
   private createLabel(id: string) {
-    // const div = document.createElement("div");
-    // div.className = "machine-label";
-    // div.textContent = id;
-    // const label = new CSS2DObject(div);
-    // label.position.set(0, CUBE_SIZE + 0.1, 0);
-    // return label;
     const loader = new FontLoader();
     const final = loader.parse(font as unknown as FontData);
 

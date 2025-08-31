@@ -644,18 +644,6 @@ export function CubeScene(props: {
       }
     }
   };
-
-  createEffect(() => {
-    if (contextOpen()) {
-      // Disable canvas pointer events so menu can receive events
-      renderer.domElement.style.pointerEvents = "none";
-      labelRenderer.domElement.style.pointerEvents = "none";
-    } else {
-      // Re-enable canvas interactions
-      renderer.domElement.style.pointerEvents = "auto";
-      labelRenderer.domElement.style.pointerEvents = "none"; // keep labels non-interactive
-    }
-  });
   const handleMenuSelect = (mode: "move") => {
     setWorldMode(mode);
     console.log("Menu selected, new World mode", worldMode());
