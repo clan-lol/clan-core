@@ -29,8 +29,8 @@
 
         options.expire = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
-          description = "When the certificate should expire. Defaults to no expiry";
-          default = null;
+          description = "When the certificate should expire.";
+          default = "8760h";
           example = "8760h";
         };
       };
@@ -130,6 +130,7 @@
                         }
                       }
                     ''} ${lib.optionalString (settings.expire != null) "--not-after ${settings.expire}"} \
+                    --not-before=-12h \
                     --no-password --insecure \
                     "Clan Intermediate CA" \
                     $out/intermediate.crt
@@ -231,6 +232,8 @@
               }
             ''} "Clan Root CA" $out/ca.crt $out/ca.key \
               --kty EC --curve P-256 \
+              --not-after=8760h \
+              --not-before=-12h \
               --no-password --insecure
           '';
         };

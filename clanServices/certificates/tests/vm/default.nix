@@ -66,6 +66,12 @@
   testScript = ''
     start_all()
 
+    import time
+
+    time.sleep(3)
+    ca.succeed("systemctl restart acme-order-renew-ca.foo.service ")
+
+    time.sleep(3)
     server.succeed("systemctl restart acme-test.foo.service")
 
     # It takes a while for the correct certs to appear (before that self-signed
