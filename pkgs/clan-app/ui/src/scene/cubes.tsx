@@ -25,7 +25,12 @@ import { MachineManager } from "./MachineManager";
 import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../components/ContextMenu/ContextMenu";
-import { clearHighlight, setHighlightGroups } from "./highlightStore";
+import {
+  clearHighlight,
+  highlightGroups,
+  setHighlightGroups,
+} from "./highlightStore";
+import { createMachineMesh } from "./MachineRepr";
 
 function intersectMachines(
   event: MouseEvent,
@@ -113,6 +118,7 @@ export function CubeScene(props: {
   // Raycaster for clicking
   const raycaster = new THREE.Raycaster();
   let actionBase: THREE.Mesh | undefined;
+  let actionMachine: THREE.Group | undefined;
 
   // Create background scene
   const bgScene = new THREE.Scene();
@@ -128,6 +134,8 @@ export function CubeScene(props: {
   );
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
+
+  const [cancelMove, setCancelMove] = createSignal<NodeJS.Timeout>();
 
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
@@ -300,12 +308,12 @@ export function CubeScene(props: {
       bgCamera,
     );
 
-    controls.addEventListener("start", (e) => {
-      setIsDragging(true);
-    });
-    controls.addEventListener("end", (e) => {
-      setIsDragging(false);
-    });
+    // controls.addEventListener("start", (e) => {
+    //   setIsDragging(true);
+    // });
+    // controls.addEventListener("end", (e) => {
+    //   setIsDragging(false);
+    // });
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xd9f2f7, 0.72);
@@ -383,6 +391,23 @@ export function CubeScene(props: {
     actionBase.visible = false;
 
     scene.add(actionBase);
+
+    function createActionMachine() {
+      const { baseMesh, cubeMesh, material, baseMaterial } =
+        createMachineMesh();
+      const group = new THREE.Group();
+      group.add(baseMesh);
+      group.add(cubeMesh);
+      // group.scale.set(0.75, 0.75, 0.75);
+      material.opacity = 0.6;
+      baseMaterial.opacity = 0.3;
+      baseMaterial.emissive.set(MOVE_BASE_EMISSIVE);
+      // Hide until needed
+      group.visible = false;
+      return group;
+    }
+    actionMachine = createActionMachine();
+    scene.add(actionMachine);
 
     // const spherical = new THREE.Spherical();
     // spherical.setFromVector3(camera.position);
@@ -520,24 +545,69 @@ export function CubeScene(props: {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
+      const intersection = intersectMachines(
+        e,
+        renderer,
+        camera,
+        machineManager,
+        raycaster,
+      );
+      if (e.button === 0) {
+        // Left button
+
+        if (worldMode() === "select" && intersection.length) {
+          // Disable controls to avoid conflict
+          controls.enabled = false;
+
+          // Change cursor to grabbing
+          const cancelMove = setTimeout(() => {
+            setIsDragging(true);
+            // Set machine as flying
+            setHighlightGroups({ move: new Set(intersection) });
+            setWorldMode("move");
+            renderLoop.requestRender();
+          }, 500);
+          setCancelMove(cancelMove);
+        }
+      }
+
       if (e.button === 2) {
         e.preventDefault();
         e.stopPropagation();
-        const intersection = intersectMachines(
-          e,
-          renderer,
-          camera,
-          machineManager,
-          raycaster,
-        );
         if (!intersection.length) return;
         setMenuIntersection(intersection);
         setMenuPos({ x: e.clientX, y: e.clientY });
         setContextOpen(true);
       }
     };
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 0) {
+        console.log("Left mouse up");
+        setIsDragging(false);
+        if (cancelMove()) {
+          clearTimeout(cancelMove()!);
+          setCancelMove(undefined);
+        }
+
+        if (worldMode() === "move") {
+          // Cancel long-press if it wasn't triggered yet
+          // Re-enable controls
+          controls.enabled = true;
+
+          // Set machine as not flying
+          props.setMachinePos(
+            highlightGroups["move"].values().next().value!,
+            cursorPosition() || null,
+          );
+          clearHighlight("move");
+          setWorldMode("select");
+          renderLoop.requestRender();
+        }
+      }
+    };
 
     renderer.domElement.addEventListener("mousedown", handleMouseDown);
+    renderer.domElement.addEventListener("mouseup", handleMouseUp);
     renderer.domElement.addEventListener("mousemove", onMouseMove);
 
     window.addEventListener("resize", handleResize);
@@ -589,14 +659,16 @@ export function CubeScene(props: {
   };
   const onMouseMove = (event: MouseEvent) => {
     if (!(worldMode() === "create" || worldMode() === "move")) return;
-    if (!actionBase) return;
 
     console.log("Mouse move in create/move mode");
 
-    actionBase.visible = true;
-    (actionBase.material as THREE.MeshPhongMaterial).emissive.set(
-      worldMode() === "create" ? CREATE_BASE_EMISSIVE : MOVE_BASE_EMISSIVE,
-    );
+    const actionRepr = worldMode() === "create" ? actionBase : actionMachine;
+    if (!actionRepr) return;
+
+    actionRepr.visible = true;
+    // (actionRepr.material as THREE.MeshPhongMaterial).emissive.set(
+    //   worldMode() === "create" ? CREATE_BASE_EMISSIVE : MOVE_BASE_EMISSIVE,
+    // );
 
     // Calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
@@ -630,11 +702,11 @@ export function CubeScene(props: {
       }
 
       if (
-        Math.abs(actionBase.position.x - snapped.x) > 0.01 ||
-        Math.abs(actionBase.position.z - snapped.z) > 0.01
+        Math.abs(actionRepr.position.x - snapped.x) > 0.01 ||
+        Math.abs(actionRepr.position.z - snapped.z) > 0.01
       ) {
         // Only request render if the position actually changed
-        actionBase.position.set(snapped.x, 0, snapped.z);
+        actionRepr.position.set(snapped.x, 0, snapped.z);
         setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
         renderLoop.requestRender();
       }

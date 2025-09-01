@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { ObjectRegistry } from "./ObjectRegistry";
-import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
 // @ts-expect-error: No types for troika-three-text
@@ -22,6 +21,53 @@ const BASE_COLOR = 0xdbeaeb;
 const BASE_EMISSIVE = 0x0c0c0c;
 const BASE_SELECTED_COLOR = 0x69b0e3;
 const BASE_SELECTED_EMISSIVE = 0x666666; // Emissive color for selected bases
+
+export function createMachineMesh() {
+  const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+  const material = new THREE.MeshPhongMaterial({
+    color: CUBE_COLOR,
+    emissive: CUBE_EMISSIVE,
+    shininess: 100,
+    transparent: true,
+  });
+
+  const cubeMesh = new THREE.Mesh(geometry, material);
+  cubeMesh.castShadow = true;
+  cubeMesh.receiveShadow = true;
+  cubeMesh.name = "cube";
+  cubeMesh.position.set(0, CUBE_HEIGHT / 2 + BASE_HEIGHT, 0);
+
+  const { baseMesh, baseMaterial } = createCubeBase(
+    BASE_COLOR,
+    BASE_EMISSIVE,
+    new THREE.BoxGeometry(BASE_SIZE, BASE_HEIGHT, BASE_SIZE),
+  );
+
+  return {
+    cubeMesh,
+    baseMesh,
+    baseMaterial,
+    geometry,
+    material,
+  };
+}
+
+export function createCubeBase(
+  color: THREE.ColorRepresentation,
+  emissive: THREE.ColorRepresentation,
+  geometry: THREE.BoxGeometry,
+) {
+  const baseMaterial = new THREE.MeshPhongMaterial({
+    color,
+    emissive,
+    transparent: true,
+    opacity: 1,
+  });
+  const baseMesh = new THREE.Mesh(geometry, baseMaterial);
+  baseMesh.position.set(0, BASE_HEIGHT / 2, 0);
+  baseMesh.receiveShadow = false;
+  return { baseMesh, baseMaterial };
+}
 
 export class MachineRepr {
   public id: string;
@@ -46,31 +92,21 @@ export class MachineRepr {
   ) {
     this.id = id;
     this.camera = camera;
-    this.geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-    this.material = new THREE.MeshPhongMaterial({
-      color: CUBE_COLOR,
-      emissive: CUBE_EMISSIVE,
-      shininess: 100,
-    });
 
-    this.cubeMesh = new THREE.Mesh(this.geometry, this.material);
-    this.cubeMesh.castShadow = true;
-    this.cubeMesh.receiveShadow = true;
+    const { baseMesh, cubeMesh, geometry, material } = createMachineMesh();
+    this.cubeMesh = cubeMesh;
     this.cubeMesh.userData = { id };
-    this.cubeMesh.name = "cube";
-    this.cubeMesh.position.set(0, CUBE_HEIGHT / 2 + BASE_HEIGHT, 0);
 
-    this.baseMesh = this.createCubeBase(
-      BASE_COLOR,
-      BASE_EMISSIVE,
-      new THREE.BoxGeometry(BASE_SIZE, BASE_HEIGHT, BASE_SIZE),
-    );
+    this.baseMesh = baseMesh;
     this.baseMesh.name = "base";
+
+    this.geometry = geometry;
+    this.material = material;
 
     const label = this.createLabel(id);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
-      color: BASE_COLOR, // any color you like
+      color: BASE_COLOR,
       roughness: 1,
       metalness: 0,
       transparent: true,
@@ -104,8 +140,6 @@ export class MachineRepr {
             const highlightedGroups = groups
               .filter(([, ids]) => ids.has(this.id))
               .map(([name]) => name);
-
-            // console.log("MachineRepr effect", id, highlightedGroups);
             // Update cube
             (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
               isSelected ? CUBE_SELECTED_COLOR : CUBE_COLOR,
@@ -122,9 +156,6 @@ export class MachineRepr {
             (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
               highlightedGroups.length > 0 ? HIGHLIGHT_COLOR : 0x000000,
             );
-            // (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
-            //   isSelected ? BASE_SELECTED_EMISSIVE : BASE_EMISSIVE,
-            // );
 
             renderLoop.requestRender();
           },
@@ -149,45 +180,60 @@ export class MachineRepr {
     renderLoop.requestRender();
   }
 
-  private createCubeBase(
-    color: THREE.ColorRepresentation,
-    emissive: THREE.ColorRepresentation,
-    geometry: THREE.BoxGeometry,
-  ) {
-    const baseMaterial = new THREE.MeshPhongMaterial({
-      color,
-      emissive,
-      transparent: true,
-      opacity: 1,
-    });
-    const base = new THREE.Mesh(geometry, baseMaterial);
-    base.position.set(0, BASE_HEIGHT / 2, 0);
-    base.receiveShadow = false;
-    return base;
-  }
-
   private createLabel(id: string) {
+    const group = new THREE.Group();
+    // 0x162324
     const text = new Text();
     text.text = id;
     text.font = ttf;
-    // text.font = ".fonts/CommitMonoV143-VF.woff2"; // <-- normal web font, not JSON
-    text.fontSize = 0.15; // relative to your cube size
-    text.color = 0x000000; // any THREE.Color
-    text.anchorX = "center"; // horizontal centering
-    text.anchorY = "bottom"; // baseline aligns to cube top
-    text.position.set(0, CUBE_SIZE + 0.05, 0);
-
-    // If you want it to always face camera:
-    text.userData.isLabel = true;
+    text.fontSize = 0.1;
+    text.color = 0xffffff;
+    text.anchorX = "center";
+    text.anchorY = "middle";
+    text.position.set(0, 0, 0.01);
     text.outlineWidth = 0.005;
-    text.outlineColor = 0x333333;
-    text.quaternion.copy(this.camera.quaternion);
+    text.outlineColor = 0x162324;
 
     // Re-render on text changes
     text.sync(() => {
       renderLoop.requestRender();
     });
-    return text;
+
+    // --- Background (rounded rect) ---
+    const padding = 0.01;
+    // TODO: compute from text.bounds after sync
+    const bgWidth = text.text.length * 0.1 + padding;
+    const bgHeight = 0.1 + 2 * padding;
+
+    const bgGeom = new THREE.PlaneGeometry(bgWidth, bgHeight, 1, 1);
+    const bgMat = new THREE.MeshBasicMaterial({ color: 0x162324 }); // dark gray
+    const bg = new THREE.Mesh(bgGeom, bgMat);
+    bg.position.set(0, 0, -0.01); // slightly behind text
+
+    // --- Arrow (triangle pointing down) ---
+    const arrowShape = new THREE.Shape();
+    arrowShape.moveTo(-0.05, 0);
+    arrowShape.lineTo(0.05, 0);
+    arrowShape.lineTo(0, -0.08);
+    arrowShape.closePath();
+
+    const arrowGeom = new THREE.ShapeGeometry(arrowShape);
+    const arrow = new THREE.Mesh(arrowGeom, bgMat);
+    arrow.position.set(0, -bgHeight / 2, -0.001);
+
+    // --- Group ---
+    group.add(bg);
+    group.add(arrow);
+    group.add(text);
+
+    // Position above cube
+    group.position.set(0, CUBE_SIZE + 0.3, 0);
+
+    // Billboard
+    group.userData.isLabel = true; // Mark as label to receive billboarding update in render loop
+    group.quaternion.copy(this.camera.quaternion);
+
+    return group;
   }
 
   dispose(scene: THREE.Scene) {
@@ -197,11 +243,12 @@ export class MachineRepr {
 
     this.geometry.dispose();
     this.material.dispose();
+
+    this.group.clear();
+
     for (const child of this.cubeMesh.children) {
       if (child instanceof THREE.Mesh)
         (child.material as THREE.Material).dispose();
-
-      if (child instanceof CSS2DObject) child.element.remove();
 
       if (child instanceof THREE.Object3D) child.remove();
     }
