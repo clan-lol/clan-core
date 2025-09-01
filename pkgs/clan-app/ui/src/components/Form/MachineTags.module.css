@@ -1,0 +1,207 @@
+.machineTags {
+  &.horizontal {
+    @apply flex-row gap-2 justify-between;
+  }
+}
+
+.control {
+  @apply flex flex-col size-full gap-2;
+
+  &.horizontal {
+    @apply w-1/2 grow;
+  }
+}
+
+.selectedOptions {
+  @apply flex flex-wrap gap-2 size-full min-h-5;
+}
+
+.trigger {
+  @apply w-full relative;
+}
+
+.icon {
+  @apply absolute left-1.5;
+  top: calc(50% - 0.5rem);
+
+  &.iconSmall {
+    @apply left-[0.3125rem] size-[0.75rem];
+    top: calc(50% - 0.3125rem);
+  }
+}
+
+.input {
+  @apply outline outline-1 outline-def-acc-1 bg-def-1 fg-def-1 w-full;
+  @apply px-[1.625rem] py-1.5 rounded-sm;
+
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: "Archivo", sans-serif;
+  line-height: 1;
+
+  &::placeholder {
+    @apply fg-def-4;
+  }
+
+  &:hover {
+    @apply bg-def-acc-1 outline-def-acc-2;
+  }
+
+  &:not(:read-only):focus-visible {
+    @apply bg-def-1 outline-def-acc-3;
+
+    box-shadow:
+      0 0 0 0.125rem theme(colors.bg.def.1),
+      0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+  }
+
+  &[data-invalid] {
+    @apply outline-semantic-error-4;
+  }
+
+  &[data-disabled] {
+    @apply outline-def-2 fg-def-4 cursor-not-allowed;
+  }
+
+  &[data-readonly] {
+    @apply outline-none border-none bg-inherit;
+    @apply p-0 resize-none;
+  }
+
+  &.inputSmall {
+    @apply px-[1.25rem] py-1;
+    font-size: 0.8125rem;
+
+    &[data-readonly] {
+      @apply p-0;
+    }
+  }
+
+  &.inputInverted {
+    @apply bg-inv-1 fg-inv-1 outline-inv-acc-1;
+
+    &::placeholder {
+      @apply fg-inv-4;
+    }
+
+    &:hover {
+      @apply bg-inv-acc-2 outline-inv-acc-2;
+    }
+
+    &:not(:read-only):focus-visible {
+      @apply bg-inv-acc-4;
+      box-shadow:
+        0 0 0 0.125rem theme(colors.bg.inv.1),
+        0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+    }
+
+    &[data-invalid] {
+      @apply outline-semantic-error-4;
+    }
+
+    &[data-readonly] {
+      @apply outline-none border-none bg-inherit cursor-auto;
+    }
+  }
+
+  &.inputGhost {
+    @apply outline-none;
+
+    &:hover {
+      @apply outline-none;
+    }
+  }
+}
+
+.comboboxContent {
+  @apply rounded-sm bg-def-1 border border-def-2 z-20;
+
+  transform-origin: var(--kb-combobox-content-transform-origin);
+  animation: machineTagsContentHide 250ms ease-in forwards;
+
+  &[data-expanded] {
+    animation: machineTagsContentShow 250ms ease-out;
+  }
+
+  .listbox {
+    overflow-y: auto;
+    max-height: 360px;
+
+    @apply px-2 py-3;
+
+    &:focus {
+      outline: none;
+    }
+
+    .listboxItem {
+      @apply flex items-center justify-between;
+      @apply relative px-2 py-1;
+      @apply select-none outline-none rounded-[0.25rem];
+
+      color: hsl(240 4% 16%);
+      height: 32px;
+
+      &[data-disabled] {
+        color: hsl(240 5% 65%);
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      &[data-highlighted] {
+        @apply outline-none bg-def-4;
+      }
+
+      &.listboxItemInverted {
+        &[data-highlighted] {
+          @apply bg-inv-4;
+        }
+      }
+    }
+
+    .itemIndicator {
+      height: 20px;
+      width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  &.comboboxContentInverted {
+    @apply bg-inv-1 border-inv-2;
+  }
+}
+
+.machineTagsControl {
+  @apply flex flex-col w-full gap-2;
+
+  /*& > div.selected-options {*/
+  /*    @apply flex gap-2 flex-wrap w-full;*/
+  /*}*/
+
+  & > div.input-container {
+    @apply w-full flex gap-2;
+  }
+}
+
+@keyframes machineTagsContentShow {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes machineTagsContentHide {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}

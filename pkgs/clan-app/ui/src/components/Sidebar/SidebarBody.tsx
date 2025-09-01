@@ -3,7 +3,7 @@ import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, Show, useContext } from "solid-js";
+import { For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { buildMachinePath, useClanURI } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
