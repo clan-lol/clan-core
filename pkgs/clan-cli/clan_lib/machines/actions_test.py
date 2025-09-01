@@ -68,6 +68,33 @@ def test_list_inventory_machines(clan_flake: Callable[..., Flake]) -> None:
 
 
 @pytest.mark.with_core
+def test_list_machines_instance_refs(clan_flake: Callable[..., Flake]) -> None:
+    flake = clan_flake(
+        {
+            "inventory": {
+                "machines": {
+                    "jon": {},
+                    "sara": {},
+                },
+                "instances": {
+                    "admin": {
+                        "roles": {"default": {"machines": {"jon": {}}}},
+                    },
+                    "borgbackup": {
+                        "roles": {"default": {"tags": {"all": {}}}},
+                    },
+                },
+            },
+        },
+    )
+
+    machines = list_machines(flake)
+
+    assert machines["sara"].instance_refs == set({"borgbackup"})
+    assert machines["jon"].instance_refs == set({"admin", "borgbackup"})
+
+
+@pytest.mark.with_core
 def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
         # clan.nix, cannot be changed

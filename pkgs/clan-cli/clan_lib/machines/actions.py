@@ -7,6 +7,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import (
+    InventoryInstance,
     InventoryMachine,
 )
 from clan_lib.persist.inventory_store import InventoryStore
@@ -45,7 +46,25 @@ class MachineState(TypedDict):
 class MachineResponse:
     data: InventoryMachine
     # Reference the installed service instances
-    instance_refs: list[str] = field(default_factory=list)
+    instance_refs: set[str] = field(default_factory=set)
+
+
+def machine_instances(
+    machine_name: str,
+    instances: dict[str, InventoryInstance],
+    tag_map: dict[str, set[str]],
+) -> set[str]:
+    res: set[str] = set()
+    for instance_name, instance in instances.items():
+        for role in instance.get("roles", {}).values():
+            if machine_name in role.get("machines", {}):
+                res.add(instance_name)
+
+            for tag in role.get("tags", {}):
+                if tag in tag_map and machine_name in tag_map[tag]:
+                    res.add(instance_name)
+
+    return res
 
 
 @API.register
@@ -59,14 +78,30 @@ def list_machines(
 
     raw_machines = inventory.get("machines", {})
 
+    tag_map: dict[str, set[str]] = {}
+
+    for machine_name, machine in raw_machines.items():
+        for tag in machine.get("tags", []):
+            if tag not in tag_map:
+                tag_map[tag] = set()
+            tag_map[tag].add(machine_name)
+
+    instances = inventory.get("instances", {})
+
     res: dict[str, MachineResponse] = {}
     for machine_name, machine in raw_machines.items():
+        m = MachineResponse(
+            data=InventoryMachine(**machine),
+            instance_refs=machine_instances(machine_name, instances, tag_map),
+        )
+
+        # Check filters
         if opts and opts.filter.tags is not None:
             machine_tags = machine.get("tags", [])
-            if all(ft in machine_tags for ft in opts.filter.tags):
-                res[machine_name] = MachineResponse(data=InventoryMachine(**machine))
-        else:
-            res[machine_name] = MachineResponse(data=InventoryMachine(**machine))
+            if not all(ft in machine_tags for ft in opts.filter.tags):
+                continue
+
+        res[machine_name] = m
 
     return res
 
