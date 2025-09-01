@@ -109,6 +109,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
             title="Clan App",
             size=Size(1280, 1024, SizeHint.NONE),
             shared_threads=shared_threads,
+            app_id="org.clan.app",
         )
 
         API.overwrite_fn(get_system_file)
