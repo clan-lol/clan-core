@@ -62,20 +62,28 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
     },
     list_machines: {
       jon: {
-        name: "jon",
-        tags: ["all", "nixos", "tag1"],
+        data: {
+          name: "jon",
+          tags: ["all", "nixos", "tag1"],
+        },
       },
       sara: {
-        name: "sara",
-        tags: ["all", "darwin", "tag2"],
+        data: {
+          name: "sara",
+          tags: ["all", "darwin", "tag2"],
+        },
       },
       kyra: {
-        name: "kyra",
-        tags: ["all", "darwin", "tag2"],
+        data: {
+          name: "kyra",
+          tags: ["all", "darwin", "tag2"],
+        },
       },
       leila: {
-        name: "leila",
-        tags: ["all", "darwin", "tag2"],
+        data: {
+          name: "leila",
+          tags: ["all", "darwin", "tag2"],
+        },
       },
     },
     list_tags: {

@@ -120,7 +120,7 @@ const SelectService = () => {
                 label: t,
                 type: "tag" as const,
                 members: Object.entries(machinesQuery.data || {})
-                  .filter(([_, m]) => m.tags?.includes(t))
+                  .filter(([_, m]) => m.data.tags?.includes(t))
                   .map(([k]) => k),
               };
             });
@@ -206,7 +206,7 @@ const useOptions = (tagsQuery: TagsQuery, machinesQuery: MachinesQuery) =>
       label: tag,
       value: "t_" + tag,
       members: Object.entries(machines)
-        .filter(([_, v]) => v.tags?.includes(tag))
+        .filter(([_, v]) => v.data.tags?.includes(tag))
         .map(([k]) => k),
     }));
 

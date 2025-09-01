@@ -26,13 +26,19 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
   const resultData: Partial<ResultDataMap> = {
     list_machines: {
       pandora: {
-        name: "pandora",
+        data: {
+          name: "pandora",
+        },
       },
       enceladus: {
-        name: "enceladus",
+        data: {
+          name: "enceladus",
+        },
       },
       dione: {
-        name: "dione",
+        data: {
+          name: "dione",
+        },
       },
     },
   };

@@ -41,28 +41,34 @@ class MachineState(TypedDict):
     # add more info later when retrieving remote state
 
 
+@dataclass
+class MachineResponse:
+    data: InventoryMachine
+    # Reference the installed service instances
+    instance_refs: list[str] = field(default_factory=list)
+
+
 @API.register
 def list_machines(
     flake: Flake,
     opts: ListOptions | None = None,
-) -> dict[str, InventoryMachine]:
+) -> dict[str, MachineResponse]:
     """List machines of a clan"""
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
-    machines = inventory.get("machines", {})
+    raw_machines = inventory.get("machines", {})
 
-    if opts and opts.filter.tags is not None:
-        filtered_machines = {}
-
-        for machine_name, machine in machines.items():
+    res: dict[str, MachineResponse] = {}
+    for machine_name, machine in raw_machines.items():
+        if opts and opts.filter.tags is not None:
             machine_tags = machine.get("tags", [])
             if all(ft in machine_tags for ft in opts.filter.tags):
-                filtered_machines[machine_name] = machine
+                res[machine_name] = MachineResponse(data=InventoryMachine(**machine))
+        else:
+            res[machine_name] = MachineResponse(data=InventoryMachine(**machine))
 
-        return filtered_machines
-
-    return machines
+    return res
 
 
 @API.register
