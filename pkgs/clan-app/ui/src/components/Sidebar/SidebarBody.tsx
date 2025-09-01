@@ -136,7 +136,7 @@ export const SidebarBody = (props: SidebarProps) => {
                     <MachineRoute
                       clanURI={clanURI}
                       machineID={id}
-                      name={machine.name || id}
+                      name={machine.data.name || id}
                       serviceCount={0}
                     />
                   )}

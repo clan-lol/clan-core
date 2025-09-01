@@ -103,7 +103,9 @@ def get_machines_for_update(
         machines_to_update = list(
             filter(
                 requires_explicit_update,
-                instantiate_inventory_to_machines(flake, machines_with_tags).values(),
+                instantiate_inventory_to_machines(
+                    flake, {name: m.data for name, m in machines_with_tags.items()}
+                ).values(),
             ),
         )
         # all machines that are in the clan but not included in the update list
@@ -128,13 +130,13 @@ def get_machines_for_update(
     machines_to_update = []
     valid_names = validate_machine_names(explicit_names, flake)
     for name in valid_names:
-        inventory_machine = machines_with_tags.get(name)
-        if not inventory_machine:
+        machine = machines_with_tags.get(name)
+        if not machine:
             msg = "This is an internal bug"
             raise ClanError(msg)
 
         machines_to_update.append(
-            Machine.from_inventory(name, flake, inventory_machine),
+            Machine.from_inventory(name, flake, machine.data),
         )
 
     return machines_to_update

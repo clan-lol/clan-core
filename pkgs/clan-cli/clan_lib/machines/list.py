@@ -30,7 +30,9 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
     """Like `list_machines`, but returns a full 'machine' instance for each machine."""
     machines = list_machines(flake)
 
-    return instantiate_inventory_to_machines(flake, machines)
+    return instantiate_inventory_to_machines(
+        flake, {name: m.data for name, m in machines.items()}
+    )
 
 
 @dataclass
