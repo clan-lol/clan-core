@@ -56,6 +56,12 @@ class TestFlake(Flake):
         super().__init__(*args, **kwargs)
         self.check_attr = check_attr
 
+    @override
+    def precache(self, selectors: list[str]) -> None:
+        # Precaching is broken since 501d02056222216330b3820d1c252ffdc81b7daf
+        # TODO @DavHau pls fix!
+        pass
+
     def select_machine(self, machine_name: str, selector: str) -> Any:
         """Select a nix attribute for a specific machine.
 
