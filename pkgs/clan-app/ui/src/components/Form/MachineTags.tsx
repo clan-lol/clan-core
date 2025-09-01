@@ -36,7 +36,6 @@ export type MachineTagsProps = FieldProps & {
 
 const uniqueOptions = (options: MachineTag[]) => {
   const record: Record<string, MachineTag> = {};
-  console.log("uniqueOptions", options);
   options.forEach((option) => {
     // we want to preserve the first one we encounter
     // this allows us to prefix the default 'all' tag
@@ -48,11 +47,8 @@ const uniqueOptions = (options: MachineTag[]) => {
 const sortedOptions = (options: MachineTag[]) =>
   options.sort((a, b) => a.value.localeCompare(b.value));
 
-const sortedAndUniqueOptions = (options: MachineTag[]) => {
-  const r = sortedOptions(uniqueOptions(options));
-  console.log("sortedAndUniqueOptions", r);
-  return r;
-};
+const sortedAndUniqueOptions = (options: MachineTag[]) =>
+  sortedOptions(uniqueOptions(options));
 
 export const MachineTags = (props: MachineTagsProps) => {
   const [local, rest] = splitProps(props, ["defaultValue"]);
@@ -161,14 +157,10 @@ export const MachineTags = (props: MachineTagsProps) => {
       input.value = "";
     }
   };
-  createEffect(() => {
-    console.log("availableOptions", availableOptions());
-  });
 
   // Notify when selected options change
   createEffect(
     on(selectedOptions, (options) => {
-      console.log("selectedOptions", options);
       props.onChange(options.map((o) => o.value));
     }),
   );
@@ -195,8 +187,8 @@ export const MachineTags = (props: MachineTagsProps) => {
       optionDisabled="disabled"
       itemComponent={ItemComponent(props.inverted || false)}
       placeholder="Enter a tag name"
-      onChange={(val) => {
-        console.log("Combobox onChange", val);
+      onChange={() => {
+        // noop, we handle this via the selectedOptions signal
       }}
     >
       <Orienter orientation={props.orientation} align={align()}>
