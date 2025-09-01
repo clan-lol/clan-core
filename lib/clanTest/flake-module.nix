@@ -87,6 +87,8 @@ in
       relativeDir = removePrefix "${self}/" (toString config.clan.directory);
 
       update-vars = hostPkgs.writeShellScriptBin "update-vars" ''
+        set -x
+        export PRJ_ROOT=$(git rev-parse --show-toplevel)
         ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
       '';
 
