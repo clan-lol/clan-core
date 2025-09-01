@@ -8,8 +8,25 @@
 
   roles.peer = {
     perInstance =
-      { instanceName, roles, ... }:
       {
+        instanceName,
+        roles,
+        lib,
+        ...
+      }:
+      {
+        exports.networking = {
+          priority = lib.mkDefault 20;
+          # TODO add user space network support to clan-cli
+          module = "clan_lib.network.zerotier";
+          peers = lib.mapAttrs (name: machine: {
+            host.var = {
+              machine = name;
+              generator = "zerotier";
+              file = "zerotier-ip";
+            };
+          }) roles.peer.machines;
+        };
         nixosModule =
           {
             config,
