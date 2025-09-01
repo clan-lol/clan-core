@@ -23,6 +23,53 @@ const BASE_EMISSIVE = 0x0c0c0c;
 const BASE_SELECTED_COLOR = 0x69b0e3;
 const BASE_SELECTED_EMISSIVE = 0x666666; // Emissive color for selected bases
 
+export function createMachineMesh() {
+  const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+  const material = new THREE.MeshPhongMaterial({
+    color: CUBE_COLOR,
+    emissive: CUBE_EMISSIVE,
+    shininess: 100,
+    transparent: true,
+  });
+
+  const cubeMesh = new THREE.Mesh(geometry, material);
+  cubeMesh.castShadow = true;
+  cubeMesh.receiveShadow = true;
+  cubeMesh.name = "cube";
+  cubeMesh.position.set(0, CUBE_HEIGHT / 2 + BASE_HEIGHT, 0);
+
+  const { baseMesh, baseMaterial } = createCubeBase(
+    BASE_COLOR,
+    BASE_EMISSIVE,
+    new THREE.BoxGeometry(BASE_SIZE, BASE_HEIGHT, BASE_SIZE),
+  );
+
+  return {
+    cubeMesh,
+    baseMesh,
+    baseMaterial,
+    geometry,
+    material,
+  };
+}
+
+export function createCubeBase(
+  color: THREE.ColorRepresentation,
+  emissive: THREE.ColorRepresentation,
+  geometry: THREE.BoxGeometry,
+) {
+  const baseMaterial = new THREE.MeshPhongMaterial({
+    color,
+    emissive,
+    transparent: true,
+    opacity: 1,
+  });
+  const baseMesh = new THREE.Mesh(geometry, baseMaterial);
+  baseMesh.position.set(0, BASE_HEIGHT / 2, 0);
+  baseMesh.receiveShadow = false;
+  return { baseMesh, baseMaterial };
+}
+
 export class MachineRepr {
   public id: string;
   public group: THREE.Group;
@@ -46,26 +93,16 @@ export class MachineRepr {
   ) {
     this.id = id;
     this.camera = camera;
-    this.geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-    this.material = new THREE.MeshPhongMaterial({
-      color: CUBE_COLOR,
-      emissive: CUBE_EMISSIVE,
-      shininess: 100,
-    });
 
-    this.cubeMesh = new THREE.Mesh(this.geometry, this.material);
-    this.cubeMesh.castShadow = true;
-    this.cubeMesh.receiveShadow = true;
+    const { baseMesh, cubeMesh, geometry, material } = createMachineMesh();
+    this.cubeMesh = cubeMesh;
     this.cubeMesh.userData = { id };
-    this.cubeMesh.name = "cube";
-    this.cubeMesh.position.set(0, CUBE_HEIGHT / 2 + BASE_HEIGHT, 0);
 
-    this.baseMesh = this.createCubeBase(
-      BASE_COLOR,
-      BASE_EMISSIVE,
-      new THREE.BoxGeometry(BASE_SIZE, BASE_HEIGHT, BASE_SIZE),
-    );
+    this.baseMesh = baseMesh;
     this.baseMesh.name = "base";
+
+    this.geometry = geometry;
+    this.material = material;
 
     const label = this.createLabel(id);
 
@@ -147,23 +184,6 @@ export class MachineRepr {
   public setPosition(position: THREE.Vector2) {
     this.group.position.set(position.x, 0, position.y);
     renderLoop.requestRender();
-  }
-
-  private createCubeBase(
-    color: THREE.ColorRepresentation,
-    emissive: THREE.ColorRepresentation,
-    geometry: THREE.BoxGeometry,
-  ) {
-    const baseMaterial = new THREE.MeshPhongMaterial({
-      color,
-      emissive,
-      transparent: true,
-      opacity: 1,
-    });
-    const base = new THREE.Mesh(geometry, baseMaterial);
-    base.position.set(0, BASE_HEIGHT / 2, 0);
-    base.receiveShadow = false;
-    return base;
   }
 
   private createLabel(id: string) {
