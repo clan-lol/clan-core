@@ -24,7 +24,7 @@ inventory = {
     module.name = "certificates";
     module.input = "self";
 
-    roles.ca.machines.ca.settings.TLDs = [ "foo" ];
+    roles.ca.machines.ca.settings.tlds = [ "foo" ];
     roles.default.machines.client = { };
     roles.default.machines.server = { };
   };

@@ -22,7 +22,7 @@
           '';
         };
 
-        options.TLDs = lib.mkOption {
+        options.tlds = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           description = "Top level domain for this CA. Certificates will be issued and trusted for *.<tld>";
         };
@@ -46,7 +46,7 @@
             ...
           }:
           let
-            domains = map (tld: "ca.${tld}") settings.TLDs;
+            domains = map (tld: "ca.${tld}") settings.tlds;
           in
           {
             security.acme.defaults.email = settings.acmeEmail;
@@ -125,7 +125,7 @@
                         "nameConstraints": {
                           "critical": true,
                           "permittedDNSDomains": [${
-                            (lib.strings.concatStringsSep "," (map (tld: ''"${tld}"'') settings.TLDs))
+                            (lib.strings.concatStringsSep "," (map (tld: ''"${tld}"'') settings.tlds))
                           }]
                         }
                       }
