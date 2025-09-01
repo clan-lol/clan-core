@@ -6,10 +6,10 @@ import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Tag } from "@/src/components/Tag/Tag";
 
-import "./MachineTags.css";
 import { Label } from "@/src/components/Form/Label";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { CollectionNode } from "@kobalte/core";
+import styles from "./MachineTags.module.css";
 
 export interface MachineTag {
   value: string;
@@ -45,20 +45,31 @@ const sortedAndUniqueOptions = (options: MachineTag[]) =>
   sortedOptions(uniqueOptions(options));
 
 // customises how each option is displayed in the dropdown
-const ItemComponent = (props: { item: CollectionNode<MachineTag> }) => {
-  return (
-    <Combobox.Item item={props.item} class="item">
-      <Combobox.ItemLabel>
-        <Typography hierarchy="body" size="xs" weight="bold">
-          {props.item.textValue}
-        </Typography>
-      </Combobox.ItemLabel>
-      <Combobox.ItemIndicator class="item-indicator">
-        <Icon icon="Checkmark" />
-      </Combobox.ItemIndicator>
-    </Combobox.Item>
-  );
-};
+const ItemComponent =
+  (inverted: boolean) => (props: { item: CollectionNode<MachineTag> }) => {
+    return (
+      <Combobox.Item
+        item={props.item}
+        class={cx(styles.listboxItem, {
+          [styles.listboxItemInverted]: inverted,
+        })}
+      >
+        <Combobox.ItemLabel>
+          <Typography
+            hierarchy="body"
+            size="xs"
+            weight="bold"
+            inverted={inverted}
+          >
+            {props.item.textValue}
+          </Typography>
+        </Combobox.ItemLabel>
+        <Combobox.ItemIndicator class={styles.itemIndicator}>
+          <Icon icon="Checkmark" inverted={inverted} />
+        </Combobox.ItemIndicator>
+      </Combobox.Item>
+    );
+  };
 
 export const MachineTags = (props: MachineTagsProps) => {
   // convert default value string[] into MachineTag[]
@@ -112,10 +123,7 @@ export const MachineTags = (props: MachineTagsProps) => {
   return (
     <Combobox<MachineTag>
       multiple
-      class={cx("form-field", "machine-tags", props.size, props.orientation, {
-        inverted: props.inverted,
-        ghost: props.ghost,
-      })}
+      class={cx("form-field", styles.machineTags, props.orientation)}
       {...splitProps(props, ["defaultValue"])[1]}
       defaultValue={defaultValue}
       options={availableOptions()}
@@ -123,7 +131,7 @@ export const MachineTags = (props: MachineTagsProps) => {
       optionTextValue="value"
       optionLabel="value"
       optionDisabled="disabled"
-      itemComponent={ItemComponent}
+      itemComponent={ItemComponent(props.inverted || false)}
       placeholder="Enter a tag name"
       // triggerMode="focus"
       removeOnBackspace={false}
@@ -158,9 +166,11 @@ export const MachineTags = (props: MachineTagsProps) => {
 
         <Combobox.HiddenSelect {...props.input} multiple />
 
-        <Combobox.Control<MachineTag> class="control">
+        <Combobox.Control<MachineTag>
+          class={cx(styles.control, props.orientation)}
+        >
           {(state) => (
-            <div class="selected-options">
+            <div class={styles.selectedOptions}>
               <For each={state.selectedOptions()}>
                 {(option) => (
                   <Tag
@@ -187,18 +197,24 @@ export const MachineTags = (props: MachineTagsProps) => {
                 )}
               </For>
               <Show when={!props.readOnly}>
-                <div class="input-container">
-                  <Combobox.Input onKeyDown={onKeyDown} />
-                  <Combobox.Trigger class="trigger">
-                    <Combobox.Icon class="icon">
-                      <Icon
-                        icon="Expand"
-                        inverted={!props.inverted}
-                        size="100%"
-                      />
-                    </Combobox.Icon>
-                  </Combobox.Trigger>
-                </div>
+                <Combobox.Trigger class={styles.trigger}>
+                  <Icon
+                    icon="Tag"
+                    color="secondary"
+                    inverted={props.inverted}
+                    class={cx(styles.icon, {
+                      [styles.iconSmall]: props.size == "s",
+                    })}
+                  />
+                  <Combobox.Input
+                    onKeyDown={onKeyDown}
+                    class={cx(styles.input, {
+                      [styles.inputSmall]: props.size == "s",
+                      [styles.inputGhost]: props.ghost,
+                      [styles.inputInverted]: props.inverted,
+                    })}
+                  />
+                </Combobox.Trigger>
               </Show>
             </div>
           )}
@@ -206,8 +222,12 @@ export const MachineTags = (props: MachineTagsProps) => {
       </Orienter>
 
       <Combobox.Portal>
-        <Combobox.Content class="machine-tags-content">
-          <Combobox.Listbox class="listbox" />
+        <Combobox.Content
+          class={cx(styles.comboboxContent, {
+            [styles.comboboxContentInverted]: props.inverted,
+          })}
+        >
+          <Combobox.Listbox class={styles.listbox} />
         </Combobox.Content>
       </Combobox.Portal>
     </Combobox>
