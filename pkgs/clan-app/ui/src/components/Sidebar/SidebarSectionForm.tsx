@@ -2,6 +2,7 @@ import { createSignal, JSX, Show } from "solid-js";
 import {
   createForm,
   FieldValues,
+  FormStore,
   getErrors,
   Maybe,
   PartialValues,
@@ -25,6 +26,7 @@ export interface SidebarSectionFormProps<FormValues extends FieldValues> {
   children: (ctx: {
     editing: boolean;
     Field: ReturnType<typeof createForm<FormValues>>[1]["Field"];
+    formStore: FormStore<FormValues>;
   }) => JSX.Element;
 }
 
@@ -51,6 +53,8 @@ export function SidebarSectionForm<
   };
 
   const handleSubmit: SubmitHandler<FormValues> = async (values, event) => {
+    console.log("Submitting SidebarForm", values);
+
     await props.onSubmit(values);
     setEditing(false);
   };
@@ -109,7 +113,7 @@ export function SidebarSectionForm<
               </Typography>
             </div>
           </Show>
-          {props.children({ editing: editing(), Field })}
+          {props.children({ editing: editing(), Field, formStore })}
         </div>
       </div>
     </Form>

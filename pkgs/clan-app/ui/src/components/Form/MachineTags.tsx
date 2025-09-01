@@ -1,6 +1,13 @@
 import { Combobox } from "@kobalte/core/combobox";
 import { FieldProps } from "./Field";
-import { ComponentProps, createSignal, For, Show, splitProps } from "solid-js";
+import {
+  createEffect,
+  on,
+  createSignal,
+  For,
+  Show,
+  splitProps,
+} from "solid-js";
 import Icon from "../Icon/Icon";
 import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
@@ -14,22 +21,22 @@ import styles from "./MachineTags.module.css";
 export interface MachineTag {
   value: string;
   disabled?: boolean;
-  new?: boolean;
 }
 
 export type MachineTagsProps = FieldProps & {
   name: string;
-  input: ComponentProps<"select">;
+  onChange: (values: string[]) => void;
+  defaultValue?: string[];
   readOnly?: boolean;
   disabled?: boolean;
   required?: boolean;
-  defaultValue?: string[];
   defaultOptions?: string[];
   readonlyOptions?: string[];
 };
 
 const uniqueOptions = (options: MachineTag[]) => {
   const record: Record<string, MachineTag> = {};
+  console.log("uniqueOptions", options);
   options.forEach((option) => {
     // we want to preserve the first one we encounter
     // this allows us to prefix the default 'all' tag
@@ -41,40 +48,18 @@ const uniqueOptions = (options: MachineTag[]) => {
 const sortedOptions = (options: MachineTag[]) =>
   options.sort((a, b) => a.value.localeCompare(b.value));
 
-const sortedAndUniqueOptions = (options: MachineTag[]) =>
-  sortedOptions(uniqueOptions(options));
-
-// customises how each option is displayed in the dropdown
-const ItemComponent =
-  (inverted: boolean) => (props: { item: CollectionNode<MachineTag> }) => {
-    return (
-      <Combobox.Item
-        item={props.item}
-        class={cx(styles.listboxItem, {
-          [styles.listboxItemInverted]: inverted,
-        })}
-      >
-        <Combobox.ItemLabel>
-          <Typography
-            hierarchy="body"
-            size="xs"
-            weight="bold"
-            inverted={inverted}
-          >
-            {props.item.textValue}
-          </Typography>
-        </Combobox.ItemLabel>
-        <Combobox.ItemIndicator class={styles.itemIndicator}>
-          <Icon icon="Checkmark" inverted={inverted} />
-        </Combobox.ItemIndicator>
-      </Combobox.Item>
-    );
-  };
+const sortedAndUniqueOptions = (options: MachineTag[]) => {
+  const r = sortedOptions(uniqueOptions(options));
+  console.log("sortedAndUniqueOptions", r);
+  return r;
+};
 
 export const MachineTags = (props: MachineTagsProps) => {
-  // convert default value string[] into MachineTag[]
+  const [local, rest] = splitProps(props, ["defaultValue"]);
+
+  // // convert default value string[] into MachineTag[]
   const defaultValue = sortedAndUniqueOptions(
-    (props.defaultValue || []).map((value) => ({ value })),
+    (local.defaultValue || []).map((value) => ({ value })),
   );
 
   // convert default options string[] into MachineTag[]
@@ -88,6 +73,51 @@ export const MachineTags = (props: MachineTagsProps) => {
     ]),
   );
 
+  const [selectedOptions, setSelectedOptions] =
+    createSignal<MachineTag[]>(defaultValue);
+
+  const handleToggle = (item: CollectionNode<MachineTag>) => () => {
+    setSelectedOptions((current) => {
+      const exists = current.find(
+        (option) => option.value === item.rawValue.value,
+      );
+      if (exists) {
+        return current.filter((option) => option.value !== item.rawValue.value);
+      }
+      return [...current, item.rawValue];
+    });
+  };
+
+  // customises how each option is displayed in the dropdown
+  const ItemComponent =
+    (inverted: boolean) => (props: { item: CollectionNode<MachineTag> }) => {
+      return (
+        <Combobox.Item
+          item={props.item}
+          class={cx(styles.listboxItem, {
+            [styles.listboxItemInverted]: inverted,
+          })}
+          onClick={handleToggle(props.item)}
+        >
+          <Combobox.ItemLabel>
+            <Typography
+              hierarchy="body"
+              size="xs"
+              weight="bold"
+              inverted={inverted}
+            >
+              {props.item.textValue}
+            </Typography>
+          </Combobox.ItemLabel>
+          <Combobox.ItemIndicator class={styles.itemIndicator}>
+            <Icon icon="Checkmark" inverted={inverted} />
+          </Combobox.ItemIndicator>
+        </Combobox.Item>
+      );
+    };
+
+  let selectRef: HTMLSelectElement;
+
   const onKeyDown = (event: KeyboardEvent) => {
     // react when enter is pressed inside of the text input
     if (event.key === "Enter") {
@@ -96,21 +126,52 @@ export const MachineTags = (props: MachineTagsProps) => {
 
       // get the current input value, exiting early if it's empty
       const input = event.currentTarget as HTMLInputElement;
-      if (input.value === "") return;
+      const trimmed = input.value.trim();
+      if (!trimmed) return;
 
-      setAvailableOptions((options) => {
-        return options.map((option) => {
-          return {
-            ...option,
-            new: undefined,
-          };
-        });
+      setAvailableOptions((curr) => {
+        if (curr.find((option) => option.value === trimmed)) {
+          return curr;
+        }
+        return [
+          ...curr,
+          {
+            value: trimmed,
+          },
+        ];
+      });
+      setSelectedOptions((curr) => {
+        if (curr.find((option) => option.value === trimmed)) {
+          return curr;
+        }
+        return [
+          ...curr,
+          {
+            value: trimmed,
+          },
+        ];
       });
 
-      // reset the input value
+      selectRef.dispatchEvent(
+        new Event("input", { bubbles: true, cancelable: true }),
+      );
+      selectRef.dispatchEvent(
+        new Event("change", { bubbles: true, cancelable: true }),
+      );
       input.value = "";
     }
   };
+  createEffect(() => {
+    console.log("availableOptions", availableOptions());
+  });
+
+  // Notify when selected options change
+  createEffect(
+    on(selectedOptions, (options) => {
+      console.log("selectedOptions", options);
+      props.onChange(options.map((o) => o.value));
+    }),
+  );
 
   const align = () => {
     if (props.readOnly) {
@@ -126,6 +187,7 @@ export const MachineTags = (props: MachineTagsProps) => {
       class={cx("form-field", styles.machineTags, props.orientation)}
       {...splitProps(props, ["defaultValue"])[1]}
       defaultValue={defaultValue}
+      value={selectedOptions()}
       options={availableOptions()}
       optionValue="value"
       optionTextValue="value"
@@ -133,28 +195,8 @@ export const MachineTags = (props: MachineTagsProps) => {
       optionDisabled="disabled"
       itemComponent={ItemComponent(props.inverted || false)}
       placeholder="Enter a tag name"
-      // triggerMode="focus"
-      removeOnBackspace={false}
-      defaultFilter={() => true}
-      onInput={(event) => {
-        const input = event.target as HTMLInputElement;
-
-        // as the user types in the input box, we maintain a "new" option
-        // in the list of available options
-        setAvailableOptions((options) => {
-          return [
-            // remove the old "new" entry
-            ...options.filter((option) => !option.new),
-            // add the updated "new" entry
-            { value: input.value, new: true },
-          ];
-        });
-      }}
-      onBlur={() => {
-        // clear the in-progress "new" option from the list of available options
-        setAvailableOptions((options) => {
-          return options.filter((option) => !option.new);
-        });
+      onChange={(val) => {
+        console.log("Combobox onChange", val);
       }}
     >
       <Orienter orientation={props.orientation} align={align()}>
@@ -164,7 +206,12 @@ export const MachineTags = (props: MachineTagsProps) => {
           {...props}
         />
 
-        <Combobox.HiddenSelect {...props.input} multiple />
+        <Combobox.HiddenSelect
+          multiple
+          ref={(el) => {
+            selectRef = el;
+          }}
+        />
 
         <Combobox.Control<MachineTag>
           class={cx(styles.control, props.orientation)}
@@ -187,7 +234,13 @@ export const MachineTags = (props: MachineTagsProps) => {
                           icon={"Close"}
                           size="0.5rem"
                           inverted={inverted}
-                          onClick={() => state.remove(option)}
+                          onClick={() =>
+                            setSelectedOptions((curr) => {
+                              return curr.filter(
+                                (o) => o.value !== option.value,
+                              );
+                            })
+                          }
                         />
                       )
                     }
@@ -220,7 +273,6 @@ export const MachineTags = (props: MachineTagsProps) => {
           )}
         </Combobox.Control>
       </Orienter>
-
       <Combobox.Portal>
         <Combobox.Content
           class={cx(styles.comboboxContent, {
