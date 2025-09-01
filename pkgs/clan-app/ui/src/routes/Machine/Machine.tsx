@@ -20,13 +20,14 @@ export const Machine = (props: RouteSectionProps) => {
     navigateToClan(navigate, clanURI);
   };
 
-  const sections = () => {
+  const Sections = () => {
     const machineName = useMachineName();
     const machineQuery = useMachineQuery(clanURI, machineName);
 
     // we have to update the whole machine model rather than just the sub fields that were changed
     // for that reason we pass in this common submit handler to each machine sub section
     const onSubmit = async (values: Partial<MachineModel>) => {
+      console.log("saving tags", values);
       const call = callApi("set_machine", {
         machine: {
           name: machineName,
@@ -78,7 +79,7 @@ export const Machine = (props: RouteSectionProps) => {
             </Show>
           }
         >
-          {sections()}
+          <Sections />
         </SidebarPane>
       </div>
     </Show>

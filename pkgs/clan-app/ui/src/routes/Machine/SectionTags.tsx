@@ -5,6 +5,7 @@ import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm"
 import { pick } from "@/src/util";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { MachineTags } from "@/src/components/Form/MachineTags";
+import { setValue } from "@modular-forms/solid";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),
@@ -32,7 +33,7 @@ export const SectionTags = (props: SectionTags) => {
 
   const options = () => {
     if (!machineQuery.isSuccess) {
-      return [[], []];
+      return [];
     }
 
     // these are static values or values which have been configured in nix and
@@ -58,7 +59,7 @@ export const SectionTags = (props: SectionTags) => {
         onSubmit={props.onSubmit}
         initialValues={initialValues()}
       >
-        {({ editing, Field }) => (
+        {({ editing, Field, formStore }) => (
           <div class="flex flex-col gap-3">
             <Field name="tags" type="string[]">
               {(field, input) => (
@@ -72,7 +73,10 @@ export const SectionTags = (props: SectionTags) => {
                   defaultValue={field.value}
                   defaultOptions={options()[0]}
                   readonlyOptions={options()[1]}
-                  input={input}
+                  onChange={(newVal) => {
+                    // Workaround for now, until we manage to use native events
+                    setValue(formStore, field.name, newVal);
+                  }}
                 />
               )}
             </Field>

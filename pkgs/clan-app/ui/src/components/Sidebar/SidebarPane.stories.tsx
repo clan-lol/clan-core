@@ -13,6 +13,7 @@ import * as v from "valibot";
 import { splitProps } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
 import { MachineTags } from "@/src/components/Form/MachineTags";
+import { setValue } from "@modular-forms/solid";
 
 type Story = StoryObj<SidebarPaneProps>;
 
@@ -137,18 +138,21 @@ export const Default: Story = {
             console.log("saving tags", values);
           }}
         >
-          {({ editing, Field }) => (
+          {({ editing, Field, formStore }) => (
             <Field name="tags" type="string[]">
-              {(field, input) => (
+              {(field, props) => (
                 <MachineTags
                   {...splitProps(field, ["value"])[1]}
                   size="s"
+                  onChange={(newVal) => {
+                    // Workaround for now, until we manage to use native events
+                    setValue(formStore, field.name, newVal);
+                  }}
                   inverted
                   required
                   readOnly={!editing}
                   orientation="horizontal"
                   defaultValue={field.value}
-                  input={input}
                 />
               )}
             </Field>

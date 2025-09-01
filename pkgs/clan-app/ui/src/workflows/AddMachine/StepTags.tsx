@@ -1,7 +1,12 @@
 import { BackButton, StepLayout } from "@/src/workflows/Steps";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
-import { createForm, SubmitHandler, valiForm } from "@modular-forms/solid";
+import {
+  createForm,
+  setValue,
+  SubmitHandler,
+  valiForm,
+} from "@modular-forms/solid";
 import {
   AddMachineSteps,
   AddMachineStoreType,
@@ -78,9 +83,12 @@ export const StepTags = (props: { onDone: () => void }) => {
                     {...field}
                     required
                     orientation="horizontal"
-                    defaultValue={field.value}
+                    defaultValue={field.value || []}
                     defaultOptions={[]}
-                    input={input}
+                    onChange={(newVal) => {
+                      // Workaround for now, until we manage to use native events
+                      setValue(formStore, field.name, newVal);
+                    }}
                   />
                 )}
               </Field>
