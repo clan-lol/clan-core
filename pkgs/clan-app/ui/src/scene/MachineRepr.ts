@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { ObjectRegistry } from "./ObjectRegistry";
-import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
 // @ts-expect-error: No types for troika-three-text
@@ -107,7 +106,7 @@ export class MachineRepr {
     const label = this.createLabel(id);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
-      color: BASE_COLOR, // any color you like
+      color: BASE_COLOR,
       roughness: 1,
       metalness: 0,
       transparent: true,
@@ -141,8 +140,6 @@ export class MachineRepr {
             const highlightedGroups = groups
               .filter(([, ids]) => ids.has(this.id))
               .map(([name]) => name);
-
-            // console.log("MachineRepr effect", id, highlightedGroups);
             // Update cube
             (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
               isSelected ? CUBE_SELECTED_COLOR : CUBE_COLOR,
@@ -159,9 +156,6 @@ export class MachineRepr {
             (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
               highlightedGroups.length > 0 ? HIGHLIGHT_COLOR : 0x000000,
             );
-            // (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
-            //   isSelected ? BASE_SELECTED_EMISSIVE : BASE_EMISSIVE,
-            // );
 
             renderLoop.requestRender();
           },
@@ -187,27 +181,59 @@ export class MachineRepr {
   }
 
   private createLabel(id: string) {
+    const group = new THREE.Group();
+    // 0x162324
     const text = new Text();
     text.text = id;
     text.font = ttf;
-    // text.font = ".fonts/CommitMonoV143-VF.woff2"; // <-- normal web font, not JSON
-    text.fontSize = 0.15; // relative to your cube size
-    text.color = 0x000000; // any THREE.Color
-    text.anchorX = "center"; // horizontal centering
-    text.anchorY = "bottom"; // baseline aligns to cube top
-    text.position.set(0, CUBE_SIZE + 0.05, 0);
-
-    // If you want it to always face camera:
-    text.userData.isLabel = true;
+    text.fontSize = 0.1;
+    text.color = 0xffffff;
+    text.anchorX = "center";
+    text.anchorY = "middle";
+    text.position.set(0, 0, 0.01);
     text.outlineWidth = 0.005;
-    text.outlineColor = 0x333333;
-    text.quaternion.copy(this.camera.quaternion);
+    text.outlineColor = 0x162324;
 
     // Re-render on text changes
     text.sync(() => {
       renderLoop.requestRender();
     });
-    return text;
+
+    // --- Background (rounded rect) ---
+    const padding = 0.01;
+    // TODO: compute from text.bounds after sync
+    const bgWidth = text.text.length * 0.1 + padding;
+    const bgHeight = 0.1 + 2 * padding;
+
+    const bgGeom = new THREE.PlaneGeometry(bgWidth, bgHeight, 1, 1);
+    const bgMat = new THREE.MeshBasicMaterial({ color: 0x162324 }); // dark gray
+    const bg = new THREE.Mesh(bgGeom, bgMat);
+    bg.position.set(0, 0, -0.01); // slightly behind text
+
+    // --- Arrow (triangle pointing down) ---
+    const arrowShape = new THREE.Shape();
+    arrowShape.moveTo(-0.05, 0);
+    arrowShape.lineTo(0.05, 0);
+    arrowShape.lineTo(0, -0.08);
+    arrowShape.closePath();
+
+    const arrowGeom = new THREE.ShapeGeometry(arrowShape);
+    const arrow = new THREE.Mesh(arrowGeom, bgMat);
+    arrow.position.set(0, -bgHeight / 2, -0.001);
+
+    // --- Group ---
+    group.add(bg);
+    group.add(arrow);
+    group.add(text);
+
+    // Position above cube
+    group.position.set(0, CUBE_SIZE + 0.3, 0);
+
+    // Billboard
+    group.userData.isLabel = true; // Mark as label to receive billboarding update in render loop
+    group.quaternion.copy(this.camera.quaternion);
+
+    return group;
   }
 
   dispose(scene: THREE.Scene) {
@@ -217,11 +243,12 @@ export class MachineRepr {
 
     this.geometry.dispose();
     this.material.dispose();
+
+    this.group.clear();
+
     for (const child of this.cubeMesh.children) {
       if (child instanceof THREE.Mesh)
         (child.material as THREE.Material).dispose();
-
-      if (child instanceof CSS2DObject) child.element.remove();
 
       if (child instanceof THREE.Object3D) child.remove();
     }
