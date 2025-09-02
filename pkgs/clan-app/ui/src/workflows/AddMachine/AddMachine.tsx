@@ -111,10 +111,7 @@ export const AddMachine = (props: AddMachineProps) => {
       return defaultClass;
     }
 
-    switch (currentStep.id) {
-      default:
-        return defaultClass;
-    }
+    return defaultClass;
   };
 
   return (

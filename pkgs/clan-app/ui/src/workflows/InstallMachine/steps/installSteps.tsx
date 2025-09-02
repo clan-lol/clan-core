@@ -59,7 +59,7 @@ const ConfigureAdressSchema = v.object({
 
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
 
-const ConfigureAddress = () => {
+export const ConfigureAddress = (props: { next?: string }) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -134,7 +134,7 @@ const ConfigureAddress = () => {
                   <TextInput
                     {...field}
                     label="IP Address"
-                    description="Hostname of the installation target"
+                    description="Hostname of the machine"
                     value={field.value}
                     required
                     orientation="horizontal"
@@ -197,7 +197,9 @@ const ConfigureAddress = () => {
                 !isReachable() ||
                 isReachable() !== getValue(formStore, "targetHost")
               }
-              fallback={<NextButton type="submit">Next</NextButton>}
+              fallback={
+                <NextButton type="submit">{props.next || "next"}</NextButton>
+              }
             >
               <Button
                 endIcon="ArrowRight"
@@ -234,6 +236,14 @@ const CheckHardware = () => {
     createSignal(false);
 
   const handleUpdateSummary = async () => {
+    if (!store.install.targetHost) {
+      console.error(
+        "Target host not set, this is required for updating hardware report",
+      );
+      setUpdatingHardwareReport(false);
+      return;
+    }
+
     setUpdatingHardwareReport(true);
 
     const port = store.install.port
@@ -409,7 +419,7 @@ const ConfigureDisk = () => {
   );
 };
 
-const ConfigureData = () => {
+export const ConfigureData = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -523,7 +533,7 @@ const PromptsFields = (props: PromptsFieldsProps) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class="h-full">
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
@@ -583,7 +593,7 @@ const PromptsFields = (props: PromptsFieldsProps) => {
   );
 };
 
-const Display = (props: { value: string; label: string }) => {
+const Display = (props: { value?: string; label: string }) => {
   return (
     <>
       <Typography hierarchy="label" size="xs" color="primary" weight="bold">
@@ -606,7 +616,15 @@ const InstallSummary = () => {
   const handleInstall = async () => {
     // Here you would typically trigger the installation process
     console.log("Installation started");
+    if (!store.install.mainDisk) {
+      console.error("Main disk not set");
+      return;
+    }
 
+    if (!store.install.targetHost) {
+      console.error("Target host not set, this is required for installing");
+      return;
+    }
     stepSignal.setActiveStep("install:progress");
 
     const setDisk = client.fetch("set_machine_disk_schema", {
@@ -717,7 +735,7 @@ const InstallSummary = () => {
             </Orienter>
             <Divider orientation="horizontal" />
             <Orienter orientation="horizontal">
-              <Display label="Main Disk" value={store.install.mainDisk} />
+              <Display label="Main Disk" value={store.install?.mainDisk} />
             </Orienter>
           </Fieldset>
         </div>

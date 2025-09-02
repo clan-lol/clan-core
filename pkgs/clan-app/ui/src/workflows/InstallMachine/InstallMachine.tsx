@@ -51,11 +51,11 @@ export interface InstallStoreType {
     progress: ApiCall<"run_machine_flash">;
   };
   install: {
-    targetHost: string;
+    targetHost?: string;
     port?: string;
     password?: string;
     machineName: string;
-    mainDisk: string;
+    mainDisk?: string;
     // ...TODO Vars
     progress: ApiCall<"run_machine_install">;
     promptValues: PromptValues;
