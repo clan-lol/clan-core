@@ -54,6 +54,7 @@ const ConfigureAdressSchema = v.object({
       v.transform((val) => (val === "" ? undefined : val)),
     ),
   ),
+  password: v.optional(v.string()),
 });
 
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
@@ -84,6 +85,7 @@ const ConfigureAddress = () => {
       ...s,
       targetHost: values.targetHost,
       port: values.port,
+      password: values.password,
     }));
 
     // Here you would typically trigger the ISO creation process
@@ -98,12 +100,14 @@ const ConfigureAddress = () => {
 
     const portValue = getValue(formStore, "port");
     const port = portValue ? parseInt(portValue, 10) : undefined;
+    const password = getValue(formStore, "password") || undefined;
 
     setLoading(true);
     const call = client.fetch("check_machine_ssh_login", {
       remote: {
         address,
         ...(port && { port }),
+        password: password,
         ssh_options: {
           StrictHostKeyChecking: "no",
           UserKnownHostsFile: "/dev/null",
@@ -159,6 +163,24 @@ const ConfigureAddress = () => {
                       ...props,
                       placeholder: "22",
                       type: "number",
+                    }}
+                  />
+                )}
+              </Field>
+              <Field name="password">
+                {(field, props) => (
+                  <TextInput
+                    {...field}
+                    label="Password"
+                    description="SSH password (optional)"
+                    value={field.value}
+                    orientation="horizontal"
+                    validationState={
+                      getError(formStore, "port") ? "invalid" : "valid"
+                    }
+                    input={{
+                      ...props,
+                      type: "password",
                     }}
                   />
                 )}
@@ -224,6 +246,7 @@ const CheckHardware = () => {
         target_host: {
           address: store.install.targetHost,
           ...(port && { port }),
+          password: store.install.password,
           ssh_options: {
             StrictHostKeyChecking: "no",
             UserKnownHostsFile: "/dev/null",
@@ -650,6 +673,7 @@ const InstallSummary = () => {
       target_host: {
         address: store.install.targetHost,
         ...(port && { port }),
+        password: store.install.password,
         ssh_options: {
           StrictHostKeyChecking: "no",
           UserKnownHostsFile: "/dev/null",

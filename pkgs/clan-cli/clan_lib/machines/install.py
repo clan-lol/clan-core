@@ -122,9 +122,6 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             phases=["partitioning"],
         )
 
-        if target_host.password:
-            os.environ["SSHPASS"] = target_host.password
-
         cmd = [
             "nixos-anywhere",
             "--flake",
@@ -161,12 +158,14 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 ],
             )
 
+        environ = os.environ.copy()
         if target_host.password:
             cmd += [
                 "--env-password",
                 "--ssh-option",
                 "IdentitiesOnly=yes",
             ]
+            environ["SSHPASS"] = target_host.password
 
         # Always set a nixos-anywhere private key to prevent failures when running
         # 'clan install --phases kexec' followed by 'clan install --phases disko,install,reboot'.
@@ -226,7 +225,12 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             notify_install_step(notification)
             run(
                 [*cmd, "--phases", phase],
-                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+                RunOpts(
+                    log=Log.BOTH,
+                    prefix=machine.name,
+                    needs_user_terminal=True,
+                    env=environ,
+                ),
             )
 
         if opts.phases:

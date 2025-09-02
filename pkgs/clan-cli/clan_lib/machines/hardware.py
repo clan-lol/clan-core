@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -91,6 +92,15 @@ def run_machine_hardware_info(
         str(opts.backend.config_path(machine)),
     ]
 
+    environ = os.environ.copy()
+    if target_host.password:
+        cmd += [
+            "--env-password",
+            "--ssh-option",
+            "IdentitiesOnly=yes",
+        ]
+        environ["SSHPASS"] = target_host.password
+
     if target_host.private_key:
         cmd += ["--ssh-option", f"IdentityFile={target_host.private_key}"]
 
@@ -113,7 +123,9 @@ def run_machine_hardware_info(
 
     run(
         cmd,
-        RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+        RunOpts(
+            log=Log.BOTH, prefix=machine.name, needs_user_terminal=True, env=environ
+        ),
     )
     print(f"Successfully generated: {hw_file}")
 

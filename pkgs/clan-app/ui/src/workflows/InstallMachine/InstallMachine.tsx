@@ -53,6 +53,7 @@ export interface InstallStoreType {
   install: {
     targetHost: string;
     port?: string;
+    password?: string;
     machineName: string;
     mainDisk: string;
     // ...TODO Vars
