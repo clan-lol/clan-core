@@ -48,9 +48,9 @@ let
     url = "https://github.com/eigilnikolajsen/commit-mono/raw/0b3b192f035cdc8d1ea8ffb5463cc23d73d0b89f/src/fonts/fontlab/CommitMonoV143-VF.woff2";
     hash = "sha256-80LKbD8ll+bA/NhLPz7WTTzlvbbQrxnRkNZFpVixzyk=";
   };
-  commitMono_ttf = fetchurl {
-    url = "https://github.com/eigilnikolajsen/commit-mono/raw/0b3b192f035cdc8d1ea8ffb5463cc23d73d0b89f/src/fonts/fontlab/CommitMonoV143-VF.ttf";
-    hash = "sha256-mN6akBFjp2mBLDzy8bhtY6mKnO1nINdHqmZSaIQHw08=";
+  archivoSemi_ttf = fetchurl {
+    url = "https://github.com/Omnibus-Type/Archivo/raw/b5d63988ce19d044d3e10362de730af00526b672/fonts/ttf/ArchivoSemiCondensed-Medium.ttf";
+    hash = "sha256-Kot1CvKqnXW1VZ7zX2wYZEziSA/l9J0gdfKkSdBxZ0w=";
   };
 
 in
@@ -66,5 +66,5 @@ runCommand "" { } ''
   cp ${archivoSemi.semiBold} $out/ArchivoSemiCondensed-SemiBold.woff2
 
   cp ${commitMono} $out/CommitMonoV143-VF.woff2
-  cp ${commitMono_ttf} $out/CommitMonoV143-VF.ttf
+  cp ${archivoSemi_ttf} $out/ArchivoSemiCondensed-Medium.ttf
 ''
