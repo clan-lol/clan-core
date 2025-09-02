@@ -582,18 +582,15 @@ export function CubeScene(props: {
     };
     const handleMouseUp = (e: MouseEvent) => {
       if (e.button === 0) {
-        console.log("Left mouse up");
         setIsDragging(false);
         if (cancelMove()) {
           clearTimeout(cancelMove()!);
           setCancelMove(undefined);
         }
+        // Always re-enable controls
+        controls.enabled = true;
 
         if (worldMode() === "move") {
-          // Cancel long-press if it wasn't triggered yet
-          // Re-enable controls
-          controls.enabled = true;
-
           // Set machine as not flying
           props.setMachinePos(
             highlightGroups["move"].values().next().value!,
