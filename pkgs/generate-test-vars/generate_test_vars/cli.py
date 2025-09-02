@@ -51,16 +51,23 @@ class TestFlake(Flake):
       clan-core#checks.<system>.<test_name>
     """
 
-    def __init__(self, check_attr: str, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, check_attr: str, test_dir: Path, *args: Any, **kwargs: Any
+    ) -> None:
         """Initialize the TestFlake with the check attribute."""
         super().__init__(*args, **kwargs)
         self.check_attr = check_attr
+        self.test_dir = test_dir
 
     @override
     def precache(self, selectors: list[str]) -> None:
         # Precaching is broken since 501d02056222216330b3820d1c252ffdc81b7daf
         # TODO @DavHau pls fix!
         pass
+
+    @property
+    def path(self) -> Path:
+        return self.test_dir
 
     def select_machine(self, machine_name: str, selector: str) -> Any:
         """Select a nix attribute for a specific machine.
@@ -189,7 +196,7 @@ def main() -> None:
     if system.endswith("-darwin"):
         test_system = system.rstrip("darwin") + "linux"
 
-    flake = TestFlake(opts.check_attr, str(opts.repo_root))
+    flake = TestFlake(opts.check_attr, test_dir, str(opts.repo_root))
     machine_names = get_machine_names(
         opts.repo_root,
         opts.check_attr,
@@ -203,6 +210,7 @@ def main() -> None:
     )
 
     # This hack is necessary because the sops store uses flake.path to find the machine keys
+    # This hack does not work because flake.invalidate_cache resets _path
     flake._path = opts.test_dir  # noqa: SLF001
 
     machines = [
@@ -211,6 +219,7 @@ def main() -> None:
     user = "admin"
     admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
     admin_key_path.parent.mkdir(parents=True, exist_ok=True)
+    os.environ["SOPS_AGE_KEY_FILE"] = str(admin_key_path)
     admin_key_path.write_text(
         json.dumps(
             {

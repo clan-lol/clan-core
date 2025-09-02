@@ -94,6 +94,7 @@ nav:
               - reference/clanServices/index.md
               - reference/clanServices/admin.md
               - reference/clanServices/borgbackup.md
+              - reference/clanServices/certificates.md
               - reference/clanServices/coredns.md
               - reference/clanServices/data-mesher.md
               - reference/clanServices/dyndns.md
