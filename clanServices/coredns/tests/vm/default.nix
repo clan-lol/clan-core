@@ -95,18 +95,15 @@
     for m in machines:
         m.wait_for_unit("network-online.target")
 
-    # import time
-    # time.sleep(2333333)
-
     # This should work, but is borken in tests i think? Instead we dig directly
 
     # client.succeed("curl -k -v http://one.foo")
     # client.succeed("curl -k -v http://two.foo")
 
-    answer = client.succeed("dig @192.168.1.2 one.foo")
+    answer = client.succeed("dig @192.168.1.2 -p 1053 one.foo")
     assert "192.168.1.3" in answer, "IP not found"
 
-    answer = client.succeed("dig @192.168.1.2 two.foo")
+    answer = client.succeed("dig @192.168.1.2 -p 1053 two.foo")
     assert "192.168.1.4" in answer, "IP not found"
 
   '';
