@@ -478,11 +478,10 @@ export function CubeScene(props: {
           .finally(() => {
             if (actionBase) actionBase.visible = false;
 
-            setWorldMode("default");
+            setWorldMode("select");
           });
       }
       if (worldMode() === "move") {
-        console.log("sanpped");
         const currId = menuIntersection().at(0);
         const pos = cursorPosition();
         if (!currId || !pos) return;
@@ -502,10 +501,11 @@ export function CubeScene(props: {
       const intersects = raycaster.intersectObjects(
         Array.from(machineManager.machines.values().map((m) => m.group)),
       );
-      console.log("Intersects:", intersects);
       if (intersects.length > 0) {
-        console.log("Clicked on cube:", intersects);
-        const id = intersects[0].object.userData.id;
+        const id = intersects.find((i) => i.object.userData?.id)?.object
+          .userData.id;
+
+        if (!id) return;
 
         if (worldMode() === "select") props.onSelect(new Set<string>([id]));
 
@@ -657,8 +657,6 @@ export function CubeScene(props: {
   const onMouseMove = (event: MouseEvent) => {
     if (!(worldMode() === "create" || worldMode() === "move")) return;
 
-    console.log("Mouse move in create/move mode");
-
     const actionRepr = worldMode() === "create" ? actionBase : actionMachine;
     if (!actionRepr) return;
 
@@ -689,12 +687,25 @@ export function CubeScene(props: {
 
       // Skip snapping if there's already a cube at this position
       if (props.sceneStore()) {
-        const positions = Object.values(props.sceneStore());
+        const positions = Object.entries(props.sceneStore());
         const intersects = positions.some(
-          (p) => p.position[0] === snapped.x && p.position[1] === snapped.z,
+          ([_id, p]) =>
+            p.position[0] === snapped.x && p.position[1] === snapped.z,
         );
-        if (intersects) {
-          return;
+        const movingMachine = Array.from(highlightGroups["move"] || [])[0];
+        const startingPos = positions.find(([_id, p]) => _id === movingMachine);
+        if (startingPos) {
+          const isStartingPos =
+            snapped.x === startingPos[1].position[0] &&
+            snapped.z === startingPos[1].position[1];
+          // If Intersect any other machine and not the one being moved
+          if (!isStartingPos && intersects) {
+            return;
+          }
+        } else {
+          if (intersects) {
+            return;
+          }
         }
       }
 
@@ -712,7 +723,6 @@ export function CubeScene(props: {
   const handleMenuSelect = (mode: "move") => {
     setWorldMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
-    console.log("Menu selected, new World mode", worldMode());
   };
 
   const machinesQuery = useMachinesQuery(props.clanURI);
