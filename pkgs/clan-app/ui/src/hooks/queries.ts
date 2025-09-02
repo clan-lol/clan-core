@@ -152,8 +152,6 @@ export const useMachineStateQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
   return useQuery<MachineState>(() => ({
     queryKey: [...machineKey(clanURI, machineName), "state"],
-    staleTime: 60_000, // 1 minute stale time
-    enabled: false,
     queryFn: async () => {
       const apiCall = client.fetch("get_machine_state", {
         machine: {
