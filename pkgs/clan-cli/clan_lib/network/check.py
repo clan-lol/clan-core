@@ -87,49 +87,36 @@ def check_machine_ssh_reachable(
         f"Checking SSH reachability for {remote.target} on port {remote.port or 22}",
     )
 
-    # Use ssh with ProxyCommand to check through SOCKS5
     cmd = [
-        "ssh",
+        "nc",
     ]
 
-    # If using SOCKS5 proxy, add ProxyCommand
+    # If using SOCKS5 proxy, add -x
     if remote.socks_port:
         cmd.extend(
             [
-                "-o",
-                f"ProxyCommand=nc -X 5 -x localhost:{remote.socks_port} %h %p",
+                "-X",
+                "5",
+                "-x",
+                f"localhost:{remote.socks_port}",
             ],
         )
 
     cmd.extend(
         [
-            "-o",
-            "BatchMode=yes",
-            "-o",
-            "StrictHostKeyChecking=no",
-            "-o",
-            "UserKnownHostsFile=/dev/null",
-            "-o",
-            f"ConnectTimeout={opts.timeout}",
-            "-o",
-            "PreferredAuthentications=none",
-            "-p",
+            "-z",
+            "-w",
+            str(opts.timeout),
+            str(remote.address.strip()),
             str(remote.port or 22),
-            f"dummy@{remote.address.strip()}",
-            "true",
         ],
     )
 
     try:
         res = run(cmd, options=RunOpts(timeout=opts.timeout, check=False))
 
-        # SSH will fail with authentication error if server is reachable
-        # Check for SSH-related errors in stderr
-        if (
-            "Permission denied" in res.stderr
-            or "No supported authentication" in res.stderr
-        ):
-            return  # Server is reachable, auth failed as expected
+        if "succeeded" in res.stderr:
+            return
 
         msg = "Connection failed: SSH server not reachable"
         raise ClanError(msg)
