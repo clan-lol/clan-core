@@ -5,11 +5,7 @@ import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
-import {
-  buildMachinePath,
-  buildServicePath,
-  useClanURI,
-} from "@/src/hooks/clan";
+import { buildMachinePath, buildServicePath } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
 import { Button } from "../Button/Button";
@@ -204,10 +200,6 @@ const Services = () => {
 };
 
 export const SidebarBody = (props: SidebarProps) => {
-  const clanURI = useClanURI();
-
-  const ctx = useClanContext();
-
   const sectionLabels = (props.staticSections || []).map(
     (section) => section.title,
   );

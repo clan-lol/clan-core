@@ -21,7 +21,6 @@ import {
   on,
   onMount,
   For,
-  onCleanup,
 } from "solid-js";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
@@ -127,13 +126,10 @@ const ConfigureService = () => {
     on(
       () => [serviceInstancesQuery.data, machinesQuery.data] as const,
       ([instances, machines]) => {
-        console.log("Effect RUNNING");
         // Wait for all queries to be ready
         if (!instances || !machines) return;
 
         const instance = instances[routerProps.id || routerProps.name];
-
-        console.log("Data ready, instance", instance ?? "NEW");
 
         set("roles", {});
         if (!instance) {
@@ -329,8 +325,8 @@ const ConfigureRole = () => {
     on(lastClickedMachine, (machine) => {
       // const machine = lastClickedMachine();
       const currentMembers = members();
-      console.log("Clicked machine", machine, currentMembers);
       if (!machine) return;
+
       const machineTagName = "m_" + machine;
 
       const existing = currentMembers.find((m) => m.value === machineTagName);
@@ -480,10 +476,6 @@ export const ServiceWorkflow = (props: ServiceWorkflowProps) => {
     if (stepper.currentStep().id !== "select:members") {
       clearAllHighlights();
     }
-  });
-
-  onCleanup(() => {
-    console.log("cleanup");
   });
 
   return (

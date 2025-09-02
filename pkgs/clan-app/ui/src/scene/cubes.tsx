@@ -512,6 +512,7 @@ export function CubeScene(props: {
 
         if (ctx.worldMode() === "select") props.onSelect(new Set<string>([id]));
 
+        console.log("Clicked on machine", id);
         emitMachineClick(id); // notify subscribers
       } else {
         emitMachineClick(null);

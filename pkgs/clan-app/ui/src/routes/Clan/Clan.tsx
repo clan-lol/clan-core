@@ -36,11 +36,8 @@ import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 
-import { useApiClient } from "@/src/hooks/ApiClient";
-import toast from "solid-toast";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
 import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
-import { SubmitServiceHandler } from "@/src/workflows/Service/models";
 
 export type WorldMode = "default" | "select" | "service" | "create" | "move";
 
@@ -198,6 +195,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
+  const location = useLocation();
+
   return (
     <>
       <Show when={loadingError()}>
@@ -237,7 +236,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
               when={location.pathname.includes("/services/")}
               fallback={
                 <SelectService
-                  // handleSubmit={handleSubmitService}
                   onClose={() => {
                     ctx.setWorldMode("select");
                   }}

@@ -6,6 +6,7 @@ import { buildClanPath } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { useQueryClient } from "@tanstack/solid-query";
 import { clanKey } from "@/src/hooks/queries";
+import { onMount } from "solid-js";
 
 export const Service = (props: RouteSectionProps) => {
   const ctx = useClanContext();
@@ -15,6 +16,10 @@ export const Service = (props: RouteSectionProps) => {
   const client = useApiClient();
 
   const queryClient = useQueryClient();
+
+  onMount(() => {
+    ctx.setWorldMode("service");
+  });
 
   const handleSubmit: SubmitServiceHandler = async (instance, action) => {
     console.log("Service submitted", instance, action);
