@@ -24,6 +24,8 @@ export const Machine = (props: RouteSectionProps) => {
     const machineName = useMachineName();
     const machineQuery = useMachineQuery(clanURI, machineName);
 
+    console.log("machineName", machineName);
+
     // we have to update the whole machine model rather than just the sub fields that were changed
     // for that reason we pass in this common submit handler to each machine sub section
     const onSubmit = async (values: Partial<MachineModel>) => {
@@ -79,7 +81,7 @@ export const Machine = (props: RouteSectionProps) => {
             </Show>
           }
         >
-          <Sections />
+          {Sections()}
         </SidebarPane>
       </div>
     </Show>
