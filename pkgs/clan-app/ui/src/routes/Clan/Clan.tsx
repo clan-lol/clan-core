@@ -132,8 +132,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
 
   const navigate = useNavigate();
 
-  const [showService, setShowService] = createSignal(false);
-
   const [currentPromise, setCurrentPromise] = createSignal<{
     resolve: ({ id }: { id: string }) => void;
     reject: (err: unknown) => void;
@@ -219,20 +217,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
       console.error("Error creating service instance", result.errors);
     }
     toast.success("Created");
-    setShowService(false);
     setWorldMode("select");
   };
-
-  createEffect(
-    on(worldMode, (mode) => {
-      if (mode === "service") {
-        setShowService(true);
-      } else {
-        // TODO: request soft close instead of forced close
-        setShowService(false);
-      }
-    }),
-  );
 
   return (
     <>
@@ -268,11 +254,10 @@ const ClanSceneController = (props: RouteSectionProps) => {
         isLoading={ctx.isLoading()}
         cubesQuery={ctx.machinesQuery}
         toolbarPopup={
-          <Show when={showService()}>
+          <Show when={worldMode() === "service"}>
             <ServiceWorkflow
               handleSubmit={handleSubmitService}
               onClose={() => {
-                setShowService(false);
                 setWorldMode("select");
                 currentPromise()?.resolve({ id: "0" });
               }}

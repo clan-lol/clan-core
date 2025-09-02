@@ -38,7 +38,7 @@ function intersectMachines(
   camera: THREE.Camera,
   machineManager: MachineManager,
   raycaster: THREE.Raycaster,
-): string[] {
+) {
   const rect = renderer.domElement.getBoundingClientRect();
   const mouse = new THREE.Vector2(
     ((event.clientX - rect.left) / rect.width) * 2 - 1,
@@ -49,7 +49,10 @@ function intersectMachines(
     Array.from(machineManager.machines.values().map((m) => m.group)),
   );
 
-  return intersects.map((i) => i.object.userData.id);
+  return {
+    machines: intersects.map((i) => i.object.userData.id),
+    intersection: intersects,
+  };
 }
 
 function garbageCollectGroup(group: THREE.Group) {
@@ -129,6 +132,8 @@ export function CubeScene(props: {
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
 
+  let machineManager: MachineManager;
+
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
     "grid",
   );
@@ -137,6 +142,7 @@ export function CubeScene(props: {
 
   const [cancelMove, setCancelMove] = createSignal<NodeJS.Timeout>();
 
+  // TODO: Unify this with actionRepr position
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
   const [cameraInfo, setCameraInfo] = createSignal({
@@ -446,7 +452,7 @@ export function CubeScene(props: {
 
     const registry = new ObjectRegistry();
 
-    const machineManager = new MachineManager(
+    machineManager = new MachineManager(
       scene,
       registry,
       props.sceneStore,
@@ -478,11 +484,10 @@ export function CubeScene(props: {
           .finally(() => {
             if (actionBase) actionBase.visible = false;
 
-            setWorldMode("default");
+            setWorldMode("select");
           });
       }
       if (worldMode() === "move") {
-        console.log("sanpped");
         const currId = menuIntersection().at(0);
         const pos = cursorPosition();
         if (!currId || !pos) return;
@@ -502,10 +507,11 @@ export function CubeScene(props: {
       const intersects = raycaster.intersectObjects(
         Array.from(machineManager.machines.values().map((m) => m.group)),
       );
-      console.log("Intersects:", intersects);
       if (intersects.length > 0) {
-        console.log("Clicked on cube:", intersects);
-        const id = intersects[0].object.userData.id;
+        const id = intersects.find((i) => i.object.userData?.id)?.object
+          .userData.id;
+
+        if (!id) return;
 
         if (worldMode() === "select") props.onSelect(new Set<string>([id]));
 
@@ -545,7 +551,7 @@ export function CubeScene(props: {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      const intersection = intersectMachines(
+      const { machines, intersection } = intersectMachines(
         e,
         renderer,
         camera,
@@ -555,7 +561,7 @@ export function CubeScene(props: {
       if (e.button === 0) {
         // Left button
 
-        if (worldMode() === "select" && intersection.length) {
+        if (worldMode() === "select" && machines.length) {
           // Disable controls to avoid conflict
           controls.enabled = false;
 
@@ -563,7 +569,8 @@ export function CubeScene(props: {
           const cancelMove = setTimeout(() => {
             setIsDragging(true);
             // Set machine as flying
-            setHighlightGroups({ move: new Set(intersection) });
+            setHighlightGroups({ move: new Set(machines) });
+
             setWorldMode("move");
             renderLoop.requestRender();
           }, 500);
@@ -575,25 +582,22 @@ export function CubeScene(props: {
         e.preventDefault();
         e.stopPropagation();
         if (!intersection.length) return;
-        setMenuIntersection(intersection);
+        setMenuIntersection(machines);
         setMenuPos({ x: e.clientX, y: e.clientY });
         setContextOpen(true);
       }
     };
     const handleMouseUp = (e: MouseEvent) => {
       if (e.button === 0) {
-        console.log("Left mouse up");
         setIsDragging(false);
         if (cancelMove()) {
           clearTimeout(cancelMove()!);
           setCancelMove(undefined);
         }
+        // Always re-enable controls
+        controls.enabled = true;
 
         if (worldMode() === "move") {
-          // Cancel long-press if it wasn't triggered yet
-          // Re-enable controls
-          controls.enabled = true;
-
           // Set machine as not flying
           props.setMachinePos(
             highlightGroups["move"].values().next().value!,
@@ -652,6 +656,39 @@ export function CubeScene(props: {
     });
   });
 
+  const snapToGrid = (point: THREE.Vector3) => {
+    if (!props.sceneStore) return;
+    // Snap to grid
+    const snapped = new THREE.Vector3(
+      Math.round(point.x / GRID_SIZE) * GRID_SIZE,
+      0,
+      Math.round(point.z / GRID_SIZE) * GRID_SIZE,
+    );
+
+    // Skip snapping if there's already a cube at this position
+    const positions = Object.entries(props.sceneStore());
+    const intersects = positions.some(
+      ([_id, p]) => p.position[0] === snapped.x && p.position[1] === snapped.z,
+    );
+    const movingMachine = Array.from(highlightGroups["move"] || [])[0];
+    const startingPos = positions.find(([_id, p]) => _id === movingMachine);
+    if (startingPos) {
+      const isStartingPos =
+        snapped.x === startingPos[1].position[0] &&
+        snapped.z === startingPos[1].position[1];
+      // If Intersect any other machine and not the one being moved
+      if (!isStartingPos && intersects) {
+        return;
+      }
+    } else {
+      if (intersects) {
+        return;
+      }
+    }
+
+    return snapped;
+  };
+
   const onAddClick = (event: MouseEvent) => {
     setPositionMode("grid");
     setWorldMode("create");
@@ -659,8 +696,6 @@ export function CubeScene(props: {
   };
   const onMouseMove = (event: MouseEvent) => {
     if (!(worldMode() === "create" || worldMode() === "move")) return;
-
-    console.log("Mouse move in create/move mode");
 
     const actionRepr = worldMode() === "create" ? actionBase : actionMachine;
     if (!actionRepr) return;
@@ -683,24 +718,8 @@ export function CubeScene(props: {
     if (intersects.length > 0) {
       const point = intersects[0].point;
 
-      // Snap to grid
-      const snapped = new THREE.Vector3(
-        Math.round(point.x / GRID_SIZE) * GRID_SIZE,
-        0,
-        Math.round(point.z / GRID_SIZE) * GRID_SIZE,
-      );
-
-      // Skip snapping if there's already a cube at this position
-      if (props.sceneStore()) {
-        const positions = Object.values(props.sceneStore());
-        const intersects = positions.some(
-          (p) => p.position[0] === snapped.x && p.position[1] === snapped.z,
-        );
-        if (intersects) {
-          return;
-        }
-      }
-
+      const snapped = snapToGrid(point);
+      if (!snapped) return;
       if (
         Math.abs(actionRepr.position.x - snapped.x) > 0.01 ||
         Math.abs(actionRepr.position.z - snapped.z) > 0.01
@@ -715,8 +734,28 @@ export function CubeScene(props: {
   const handleMenuSelect = (mode: "move") => {
     setWorldMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
-    console.log("Menu selected, new World mode", worldMode());
+
+    // Find the position of the first selected machine
+    // Set the actionMachine position to that
+    const firstId = menuIntersection()[0];
+    if (firstId) {
+      const machine = machineManager.machines.get(firstId);
+      if (machine && actionMachine) {
+        actionMachine.position.set(
+          machine.group.position.x,
+          0,
+          machine.group.position.z,
+        );
+        setCursorPosition([machine.group.position.x, machine.group.position.z]);
+      }
+    }
   };
+
+  createEffect(
+    on(worldMode, (mode) => {
+      console.log("World mode changed to", mode);
+    }),
+  );
 
   const machinesQuery = useMachinesQuery(props.clanURI);
 
