@@ -20,6 +20,9 @@ export const MachineStatus = (props: MachineStatusProps) => {
   // we will use css transform in the typography component to capitalize
   const statusText = () => props.status?.replaceAll("_", " ");
 
+  // our implementation of machine status in the backend needs more time to bake, so for now we only display if a
+  // machine is not installed
+
   return (
     <Switch>
       <Match when={!status()}>
@@ -28,9 +31,6 @@ export const MachineStatus = (props: MachineStatusProps) => {
       <Match when={status()}>
         <Badge
           class={cx("machine-status", {
-            online: status() == "online",
-            offline: status() == "offline",
-            "out-of-sync": status() == "out_of_sync",
             "not-installed": status() == "not_installed",
           })}
           textValue={status()}
