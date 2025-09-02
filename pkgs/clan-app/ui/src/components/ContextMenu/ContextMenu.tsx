@@ -37,6 +37,11 @@ export const Menu = (props: {
         "pointer-events": "auto",
       }}
       class={styles.list}
+      onContextMenu={(e) => {
+        // Prevent default context menu
+        e.preventDefault();
+        e.stopPropagation();
+      }}
     >
       <li
         class={styles.item}
