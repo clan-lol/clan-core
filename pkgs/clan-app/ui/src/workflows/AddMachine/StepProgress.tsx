@@ -22,7 +22,7 @@ export const StepProgress = (props: StepProgressProps) => {
         when={store.error}
         fallback={
           <>
-            <Loader class="size-8" />
+            <Loader size="l" />
             <Typography hierarchy="body" size="s" weight="medium" family="mono">
               {store.general?.name} is being created
             </Typography>
