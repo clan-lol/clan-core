@@ -41,7 +41,7 @@ export interface AddMachineProps {
 export interface AddMachineStoreType {
   general: GeneralForm;
   deploy: {
-    targetHost: string;
+    targetHost?: string;
   };
   tags: {
     tags: string[];
