@@ -1,4 +1,5 @@
 { ... }:
+
 {
   _class = "clan.service";
   manifest.name = "coredns";
@@ -25,6 +26,12 @@
           # TODO: Set a default
           description = "IP for the DNS to listen on";
         };
+
+        options.dnsPort = lib.mkOption {
+          type = lib.types.int;
+          default = 1053;
+          description = "Port of the clan-internal DNS server";
+        };
       };
 
     perInstance =
@@ -42,8 +49,8 @@
           }:
           {
 
-            networking.firewall.allowedTCPPorts = [ 53 ];
-            networking.firewall.allowedUDPPorts = [ 53 ];
+            networking.firewall.allowedTCPPorts = [ settings.dnsPort ];
+            networking.firewall.allowedUDPPorts = [ settings.dnsPort ];
 
             services.coredns =
               let
@@ -74,16 +81,22 @@
               in
               {
                 enable = true;
-                config = ''
-                  . {
-                      forward . 1.1.1.1
-                      cache 30
-                  }
+                config =
 
-                  ${settings.tld} {
-                      file ${zonefile}
-                  }
-                '';
+                  let
+                    dnsPort = builtins.toString settings.dnsPort;
+                  in
+
+                  ''
+                    .:${dnsPort} {
+                        forward . 1.1.1.1
+                        cache 30
+                    }
+
+                    ${settings.tld}:${dnsPort} {
+                        file ${zonefile}
+                    }
+                  '';
               };
           };
       };
@@ -107,10 +120,16 @@
           # TODO: Set a default
           description = "IP on which the services will listen";
         };
+
+        options.dnsPort = lib.mkOption {
+          type = lib.types.int;
+          default = 1053;
+          description = "Port of the clan-internal DNS server";
+        };
       };
 
     perInstance =
-      { roles, ... }:
+      { roles, settings, ... }:
       {
         nixosModule =
           { lib, ... }:
@@ -147,7 +166,7 @@
                 ];
                 stub-zone = map (m: {
                   name = "${roles.server.machines.${m}.settings.tld}.";
-                  stub-addr = "${roles.server.machines.${m}.settings.ip}";
+                  stub-addr = "${roles.server.machines.${m}.settings.ip}@${builtins.toString settings.dnsPort}";
                 }) (lib.attrNames roles.server.machines);
               };
             };
