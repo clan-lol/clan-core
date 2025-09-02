@@ -24,6 +24,9 @@
 let
   pyDeps = ps: [
     ps.argcomplete # Enables shell completions
+
+    # uncomment web-pdb for debugging:
+    # (pkgs.callPackage ./python-deps.nix {}).web-pdb
   ];
   devDeps = ps: [
     ps.ipython

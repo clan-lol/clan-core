@@ -95,8 +95,9 @@ class SecretStore(StoreBase):
         key_dir = sops_users_folder(self.flake.path) / user
         return self.key_has_access(key_dir, generator, secret_name)
 
-    def machine_has_access(self, generator: Generator, secret_name: str) -> bool:
-        machine = self.get_machine(generator)
+    def machine_has_access(
+        self, generator: Generator, secret_name: str, machine: str
+    ) -> bool:
         self.ensure_machine_key(machine)
         key_dir = sops_machines_folder(self.flake.path) / machine
         return self.key_has_access(key_dir, generator, secret_name)
@@ -156,8 +157,8 @@ class SecretStore(StoreBase):
                         continue
                 if file.secret and self.exists(generator, file.name):
                     if file.deploy:
-                        self.ensure_machine_has_access(generator, file.name)
-                    needs_update, msg = self.needs_fix(generator, file.name)
+                        self.ensure_machine_has_access(generator, file.name, machine)
+                    needs_update, msg = self.needs_fix(generator, file.name, machine)
                     if needs_update:
                         outdated.append((generator.name, file.name, msg))
         if file_name and not file_found:
@@ -177,8 +178,8 @@ class SecretStore(StoreBase):
         generator: Generator,
         var: Var,
         value: bytes,
+        machine: str,
     ) -> Path | None:
-        machine = self.get_machine(generator)
         self.ensure_machine_key(machine)
         secret_folder = self.secret_path(generator, var.name)
         # create directory if it doesn't exist
@@ -277,9 +278,10 @@ class SecretStore(StoreBase):
         secret_folder = self.secret_path(generator, name)
         return (secret_folder / "secret").exists()
 
-    def ensure_machine_has_access(self, generator: Generator, name: str) -> None:
-        machine = self.get_machine(generator)
-        if self.machine_has_access(generator, name):
+    def ensure_machine_has_access(
+        self, generator: Generator, name: str, machine: str
+    ) -> None:
+        if self.machine_has_access(generator, name, machine):
             return
         secret_folder = self.secret_path(generator, name)
         add_secret(
@@ -313,8 +315,9 @@ class SecretStore(StoreBase):
 
         return keys
 
-    def needs_fix(self, generator: Generator, name: str) -> tuple[bool, str | None]:
-        machine = self.get_machine(generator)
+    def needs_fix(
+        self, generator: Generator, name: str, machine: str
+    ) -> tuple[bool, str | None]:
         secret_path = self.secret_path(generator, name)
         current_recipients = sops.get_recipients(secret_path)
         wanted_recipients = self.collect_keys_for_secret(machine, secret_path)
@@ -373,9 +376,8 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
-                gen_machine = self.get_machine(generator)
                 for group in self.flake.select_machine(
-                    gen_machine,
+                    machine,
                     "config.clan.core.sops.defaultGroups",
                 ):
                     allow_member(

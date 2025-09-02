@@ -32,8 +32,8 @@ class SecretStore(StoreBase):
         generator: Generator,
         var: Var,
         value: bytes,
+        machine: str,
     ) -> Path | None:
-        machine = self.get_machine(generator)
         secret_file = self.get_dir(machine) / generator.name / var.name
         secret_file.parent.mkdir(parents=True, exist_ok=True)
         secret_file.write_bytes(value)

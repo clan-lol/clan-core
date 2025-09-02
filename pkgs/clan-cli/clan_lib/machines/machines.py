@@ -95,9 +95,14 @@ class Machine:
 
     @cached_property
     def secret_vars_store(self) -> StoreBase:
+        from clan_cli.vars.secret_modules import password_store  # noqa: PLC0415
+
         secret_module = self.select("config.clan.core.vars.settings.secretModule")
         module = importlib.import_module(secret_module)
-        return module.SecretStore(flake=self.flake)
+        store = module.SecretStore(flake=self.flake)
+        if isinstance(store, password_store.SecretStore):
+            store.init_pass_command(machine=self.name)
+        return store
 
     @cached_property
     def public_vars_store(self) -> StoreBase:

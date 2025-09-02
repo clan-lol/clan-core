@@ -21,20 +21,20 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, flake: Flake) -> None:
+    def __init__(self, flake: Flake, pass_cmd: str | None = None) -> None:
         super().__init__(flake)
         self.entry_prefix = "clan-vars"
         self._store_dir: Path | None = None
+        self._pass_cmd = pass_cmd
 
     @property
     def store_name(self) -> str:
         return "password_store"
 
-    def store_dir(self, machine: str) -> Path:
+    def store_dir(self) -> Path:
         """Get the password store directory, cached per machine."""
         if not self._store_dir:
             result = self._run_pass(
-                machine,
                 "git",
                 "rev-parse",
                 "--show-toplevel",
@@ -46,7 +46,8 @@ class SecretStore(StoreBase):
             self._store_dir = Path(result.stdout.strip().decode())
         return self._store_dir
 
-    def _pass_command(self, machine: str) -> str:
+    def init_pass_command(self, machine: str) -> None:
+        """Initialize the password store command based on the machine's configuration."""
         out_path = self.flake.select_machine(
             machine,
             "config.clan.core.vars.password-store.passPackage.outPath",
@@ -63,7 +64,8 @@ class SecretStore(StoreBase):
         if main_program:
             binary_path = Path(out_path) / "bin" / main_program
             if binary_path.exists():
-                return str(binary_path)
+                self._pass_cmd = str(binary_path)
+                return
 
         # Look for common password store binaries
         bin_dir = Path(out_path) / "bin"
@@ -71,27 +73,34 @@ class SecretStore(StoreBase):
             for binary in ["pass", "passage"]:
                 binary_path = bin_dir / binary
                 if binary_path.exists():
-                    return str(binary_path)
+                    self._pass_cmd = str(binary_path)
+                    return
 
             # If only one binary exists, use it
             binaries = [f for f in bin_dir.iterdir() if f.is_file()]
             if len(binaries) == 1:
-                return str(binaries[0])
+                self._pass_cmd = str(binaries[0])
+                return
 
         msg = "Could not find password store binary in package"
         raise ValueError(msg)
+
+    def _pass_command(self) -> str:
+        if not self._pass_cmd:
+            msg = "Password store command not initialized. This should be set during SecretStore initialization."
+            raise ValueError(msg)
+        return self._pass_cmd
 
     def entry_dir(self, generator: Generator, name: str) -> Path:
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(
         self,
-        machine: str,
         *args: str,
         input: bytes | None = None,  # noqa: A002
         check: bool = True,
     ) -> subprocess.CompletedProcess[bytes]:
-        cmd = [self._pass_command(machine), *args]
+        cmd = [self._pass_command(), *args]
         # We need bytes support here, so we can not use clan cmd.
         # If you change this to run( add bytes support to it first!
         # otherwise we mangle binary secrets (which is annoying to debug)
@@ -107,39 +116,35 @@ class SecretStore(StoreBase):
         generator: Generator,
         var: Var,
         value: bytes,
+        machine: str,  # noqa: ARG002
     ) -> Path | None:
-        machine = self.get_machine(generator)
         pass_call = ["insert", "-m", str(self.entry_dir(generator, var.name))]
-        self._run_pass(machine, *pass_call, input=value, check=True)
+        self._run_pass(*pass_call, input=value, check=True)
         return None  # we manage the files outside of the git repo
 
     def get(self, generator: Generator, name: str) -> bytes:
-        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
-        return self._run_pass(machine, "show", pass_name).stdout
+        return self._run_pass("show", pass_name).stdout
 
     def exists(self, generator: Generator, name: str) -> bool:
-        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
         # Check if the file exists with either .age or .gpg extension
-        store_dir = self.store_dir(machine)
+        store_dir = self.store_dir()
         age_file = store_dir / f"{pass_name}.age"
         gpg_file = store_dir / f"{pass_name}.gpg"
         return age_file.exists() or gpg_file.exists()
 
     def delete(self, generator: Generator, name: str) -> Iterable[Path]:
-        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
-        self._run_pass(machine, "rm", "--force", pass_name, check=True)
+        self._run_pass("rm", "--force", pass_name, check=True)
         return []
 
     def delete_store(self, machine: str) -> Iterable[Path]:
         machine_dir = Path(self.entry_prefix) / "per-machine" / machine
         # Check if the directory exists in the password store before trying to delete
-        result = self._run_pass(machine, "ls", str(machine_dir), check=False)
+        result = self._run_pass("ls", str(machine_dir), check=False)
         if result.returncode == 0:
             self._run_pass(
-                machine,
                 "rm",
                 "--force",
                 "--recursive",
@@ -150,7 +155,6 @@ class SecretStore(StoreBase):
 
     def generate_hash(self, machine: str) -> bytes:
         result = self._run_pass(
-            machine,
             "git",
             "log",
             "-1",

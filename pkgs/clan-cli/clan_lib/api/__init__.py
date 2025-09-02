@@ -1,6 +1,7 @@
 import importlib
 import logging
 import pkgutil
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
@@ -214,6 +215,8 @@ API.register(get_system_file)
         for name, func in self._registry.items():
             hints = get_type_hints(func)
 
+            print("Generating schema for function:", name, file=sys.stderr)
+
             try:
                 serialized_hints = {
                     key: type_to_dict(
@@ -235,6 +238,15 @@ API.register(get_system_file)
                     for t in return_type["oneOf"]
                     if ("error" in t["properties"]["status"]["enum"])
                 )
+
+            # TODO: improve error handling in this function
+            if "oneOf" not in return_type:
+                msg = (
+                    f"Return type of function '{name}' is not a union type. Expected a union of Success and Error types."
+                    # @DavHau: no idea wy exactly this leads to the "oneOf" ot being present, but this should help
+                    "Hint: When using dataclasses as return types, ensure they don't contain public fields with non-serializable types"
+                )
+                raise JSchemaTypeError(msg)
 
             return_type["oneOf"][1] = {"$ref": "#/$defs/error"}
 

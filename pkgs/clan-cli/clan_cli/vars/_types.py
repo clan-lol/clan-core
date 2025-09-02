@@ -42,11 +42,7 @@ class StoreBase(ABC):
         """Get machine name from generator, asserting it's not None for now."""
         if generator.machine is None:
             if generator.share:
-                # Shared generators don't need a machine for most operations
-                # but some operations (like SOPS key management) might still need one
-                # This is a temporary workaround - we should handle this better
-                msg = f"Shared generator '{generator.name}' requires a machine context for this operation"
-                raise ClanError(msg)
+                return "__shared"
             msg = f"Generator '{generator.name}' has no machine associated"
             raise ClanError(msg)
         return generator.machine
@@ -62,6 +58,7 @@ class StoreBase(ABC):
         generator: "Generator",
         var: "Var",
         value: bytes,
+        machine: str,
     ) -> Path | None:
         """Override this method to implement the actual creation of the file"""
 
@@ -140,16 +137,20 @@ class StoreBase(ABC):
         generator: "Generator",
         var: "Var",
         value: bytes,
+        machine: str,
         is_migration: bool = False,
     ) -> list[Path]:
         changed_files: list[Path] = []
 
         # if generator was switched from shared to per-machine or vice versa,
         # remove the old var first
-        if self.exists(
-            gen := dataclasses.replace(generator, share=not generator.share), var.name
-        ):
-            changed_files += self.delete(gen, var.name)
+        prev_generator = dataclasses.replace(
+            generator,
+            share=not generator.share,
+            machine=machine if generator.share else None,
+        )
+        if self.exists(prev_generator, var.name):
+            changed_files += self.delete(prev_generator, var.name)
 
         if self.exists(generator, var.name):
             if self.is_secret_store:
@@ -161,7 +162,7 @@ class StoreBase(ABC):
         else:
             old_val = None
             old_val_str = "<not set>"
-        new_file = self._set(generator, var, value)
+        new_file = self._set(generator, var, value, machine)
         action_str = "Migrated" if is_migration else "Updated"
         log_info: Callable
         if generator.machine is None:
@@ -169,8 +170,8 @@ class StoreBase(ABC):
         else:
             from clan_lib.machines.machines import Machine  # noqa: PLC0415
 
-            machine = Machine(name=generator.machine, flake=self.flake)
-            log_info = machine.info
+            machine_obj = Machine(name=generator.machine, flake=self.flake)
+            log_info = machine_obj.info
         if self.is_secret_store:
             log.info(f"{action_str} secret var {generator.name}/{var.name}\n")
         elif value != old_val:

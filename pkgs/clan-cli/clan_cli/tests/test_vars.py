@@ -431,20 +431,22 @@ def test_generated_shared_secret_sops(
     generator_m1 = Generator(
         "my_shared_generator",
         share=True,
-        machine="machine1",
         _flake=machine1.flake,
     )
     generator_m2 = Generator(
         "my_shared_generator",
         share=True,
-        machine="machine2",
         _flake=machine2.flake,
     )
 
     assert m1_sops_store.exists(generator_m1, "my_shared_secret")
     assert m2_sops_store.exists(generator_m2, "my_shared_secret")
-    assert m1_sops_store.machine_has_access(generator_m1, "my_shared_secret")
-    assert m2_sops_store.machine_has_access(generator_m2, "my_shared_secret")
+    assert m1_sops_store.machine_has_access(
+        generator_m1, "my_shared_secret", "machine1"
+    )
+    assert m2_sops_store.machine_has_access(
+        generator_m2, "my_shared_secret", "machine2"
+    )
 
 
 @pytest.mark.with_core
@@ -499,6 +501,7 @@ def test_generate_secret_var_password_store(
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     assert check_vars(machine.name, machine.flake)
     store = password_store.SecretStore(flake=flake_obj)
+    store.init_pass_command(machine="my_machine")
     my_generator = Generator(
         "my_generator",
         share=False,
@@ -745,6 +748,74 @@ def test_shared_vars_must_never_depend_on_machine_specific_vars(
 
 
 @pytest.mark.with_core
+def test_shared_vars_regeneration(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure that is a shared generator gets generated on one machine, dependents of that
+    shared generator on other machines get re-generated as well.
+    """
+    flake = flake_with_sops
+
+    machine1_config = flake.machines["machine1"]
+    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_generator["share"] = True
+    shared_generator["files"]["my_value"]["secret"] = False
+    shared_generator["script"] = 'echo "$RANDOM" > "$out"/my_value'
+    child_generator = machine1_config["clan"]["core"]["vars"]["generators"][
+        "child_generator"
+    ]
+    child_generator["share"] = False
+    child_generator["files"]["my_value"]["secret"] = False
+    child_generator["dependencies"] = ["shared_generator"]
+    child_generator["script"] = 'cat "$in"/shared_generator/my_value > "$out"/my_value'
+    # machine 2 is equivalent to machine 1
+    flake.machines["machine2"] = machine1_config
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
+    machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
+    in_repo_store_1 = in_repo.FactStore(machine1.flake)
+    in_repo_store_2 = in_repo.FactStore(machine2.flake)
+    # Create generators with machine context for testing
+    child_gen_m1 = Generator(
+        "child_generator", share=False, machine="machine1", _flake=machine1.flake
+    )
+    child_gen_m2 = Generator(
+        "child_generator", share=False, machine="machine2", _flake=machine2.flake
+    )
+    # generate for machine 1
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
+    # generate for machine 2
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
+    # child value should be the same on both machines
+    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
+        child_gen_m2, "my_value"
+    ), "Child values should be the same after initial generation"
+
+    # regenerate on all machines
+    cli.run(
+        ["vars", "generate", "--flake", str(flake.path), "--regenerate"],
+    )
+    # ensure child value after --regenerate is the same on both machines
+    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
+        child_gen_m2, "my_value"
+    ), "Child values should be the same after regenerating all machines"
+
+    # regenerate for machine 1
+    cli.run(
+        ["vars", "generate", "--flake", str(flake.path), "machine1", "--regenerate"]
+    )
+    # ensure child value after --regenerate is the same on both machines
+    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
+        child_gen_m2, "my_value"
+    ), "Child values should be the same after regenerating machine1"
+
+
+@pytest.mark.with_core
 def test_multi_machine_shared_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
@@ -816,8 +887,8 @@ def test_multi_machine_shared_vars(
     assert new_value_1 != m1_value
     # ensure that both machines still have access to the same secret
     assert new_secret_1 == new_secret_2
-    assert sops_store_1.machine_has_access(generator_m1, "my_secret")
-    assert sops_store_2.machine_has_access(generator_m2, "my_secret")
+    assert sops_store_1.machine_has_access(generator_m1, "my_secret", "machine1")
+    assert sops_store_2.machine_has_access(generator_m2, "my_secret", "machine2")
 
 
 @pytest.mark.with_core

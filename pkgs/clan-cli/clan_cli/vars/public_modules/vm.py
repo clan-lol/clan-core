@@ -45,8 +45,8 @@ class FactStore(StoreBase):
         generator: Generator,
         var: Var,
         value: bytes,
+        machine: str,
     ) -> Path | None:
-        machine = self.get_machine(generator)
         fact_path = self.get_dir(machine) / generator.name / var.name
         fact_path.parent.mkdir(parents=True, exist_ok=True)
         fact_path.write_bytes(value)

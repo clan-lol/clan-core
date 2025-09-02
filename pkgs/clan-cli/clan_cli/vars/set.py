@@ -25,7 +25,7 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
     else:
         _machine = machine
     _var = get_machine_var(_machine, var) if isinstance(var, str) else var
-    paths = _var.set(value)
+    paths = _var.set(value, _machine.name)
     if paths:
         commit_files(
             paths,

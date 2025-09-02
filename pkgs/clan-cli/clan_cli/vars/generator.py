@@ -2,9 +2,9 @@ import logging
 import os
 import shutil
 import sys
+from collections.abc import Iterable
 from contextlib import ExitStack
 from dataclasses import dataclass, field
-from functools import cached_property
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
@@ -15,7 +15,6 @@ from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 from clan_lib.nix import nix_config, nix_shell, nix_test_store
 
-from .check import check_vars
 from .prompt import Prompt, ask
 from .var import Var
 
@@ -60,9 +59,12 @@ class Generator:
     dependencies: list[GeneratorKey] = field(default_factory=list)
 
     migrate_fact: str | None = None
+    validation_hash: str | None = None
 
     machine: str | None = None
     _flake: "Flake | None" = None
+    _public_store: "StoreBase | None" = None
+    _secret_store: "StoreBase | None" = None
 
     @property
     def key(self) -> GeneratorKey:
@@ -71,20 +73,28 @@ class Generator:
     def __hash__(self) -> int:
         return hash(self.key)
 
-    @cached_property
+    @property
     def exists(self) -> bool:
-        if self.machine is None:
-            msg = "Machine cannot be None"
+        """Check if all files for this generator exist in their respective stores."""
+        if self._public_store is None or self._secret_store is None:
+            msg = "Stores must be set to check existence"
             raise ClanError(msg)
-        if self._flake is None:
-            msg = "Flake cannot be None"
-            raise ClanError(msg)
-        return check_vars(self.machine, self._flake, generator_name=self.name)
+
+        # Check if all files exist
+        for file in self.files:
+            store = self._secret_store if file.secret else self._public_store
+            if not store.exists(self, file.name):
+                return False
+
+        # Also check if validation hashes are up to date
+        return self._secret_store.hash_is_valid(
+            self
+        ) and self._public_store.hash_is_valid(self)
 
     @classmethod
     def get_machine_generators(
         cls: type["Generator"],
-        machine_names: list[str],
+        machine_names: Iterable[str],
         flake: "Flake",
         include_previous_values: bool = False,
     ) -> list["Generator"]:
@@ -102,7 +112,7 @@ class Generator:
         config = nix_config()
         system = config["system"]
 
-        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts}"
+        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts,validationHash}"
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
 
         # precache all machines generators and files to avoid multiple calls to nix
@@ -123,7 +133,7 @@ class Generator:
                 generators_selector,
             )
             if not generators_data:
-                return []
+                continue
 
             # Get all file metadata in one select
             files_data = flake.select_machine(
@@ -162,18 +172,30 @@ class Generator:
                     Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()
                 ]
 
+                share = gen_data["share"]
+
                 generator = cls(
                     name=gen_name,
-                    share=gen_data["share"],
+                    share=share,
                     files=files,
                     dependencies=[
-                        GeneratorKey(machine=machine_name, name=dep)
+                        GeneratorKey(
+                            machine=None
+                            if generators_data[dep]["share"]
+                            else machine_name,
+                            name=dep,
+                        )
                         for dep in gen_data["dependencies"]
                     ],
                     migrate_fact=gen_data.get("migrateFact"),
+                    validation_hash=gen_data.get("validationHash"),
                     prompts=prompts,
-                    machine=machine_name,
+                    # only set machine for machine-specific generators
+                    # this is essential for the graph algorithms to work correctly
+                    machine=None if share else machine_name,
                     _flake=flake,
+                    _public_store=pub_store,
+                    _secret_store=sec_store,
                 )
                 generators.append(generator)
 
@@ -204,14 +226,10 @@ class Generator:
             return sec_store.get(self, prompt.name).decode()
         return None
 
-    def final_script(self) -> Path:
-        if self.machine is None:
-            msg = "Machine cannot be None"
-            raise ClanError(msg)
+    def final_script(self, machine: "Machine") -> Path:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
             machine.select(
                 f'config.clan.core.vars.generators."{self.name}".finalScript',
@@ -222,16 +240,7 @@ class Generator:
         return output
 
     def validation(self) -> str | None:
-        if self.machine is None:
-            msg = "Machine cannot be None"
-            raise ClanError(msg)
-        if self._flake is None:
-            msg = "Flake cannot be None"
-            raise ClanError(msg)
-        machine = Machine(name=self.machine, flake=self._flake)
-        return machine.select(
-            f'config.clan.core.vars.generators."{self.name}".validationHash',
-        )
+        return self.validation_hash
 
     def decrypt_dependencies(
         self,
@@ -254,11 +263,6 @@ class Generator:
         result: dict[str, dict[str, bytes]] = {}
 
         for dep_key in set(self.dependencies):
-            # For now, we only support dependencies from the same machine
-            if dep_key.machine != machine.name:
-                msg = f"Cross-machine dependencies are not supported. Generator {self.name} depends on {dep_key.name} from machine {dep_key.machine}"
-                raise ClanError(msg)
-
             result[dep_key.name] = {}
 
             dep_generator = next(
@@ -390,7 +394,7 @@ class Generator:
                     value = get_prompt_value(prompt.name)
                     prompt_file.write_text(value)
 
-            final_script = self.final_script()
+            final_script = self.final_script(machine)
 
             if sys.platform == "linux" and bwrap.bubblewrap_works():
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
@@ -430,6 +434,7 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
+                        machine.name,
                     )
                     secret_changed = True
                 else:
@@ -437,6 +442,7 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
+                        machine.name,
                     )
                     public_changed = True
                 files_to_commit.extend(file_paths)

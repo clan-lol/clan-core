@@ -35,6 +35,7 @@
                   pkgs.stdenv.drvPath
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
+                  (import ../installation/facter-report.nix pkgs.hostPlatform.system)
                 ]
                 ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
                 closureInfo = pkgs.closureInfo { rootPaths = dependencies; };

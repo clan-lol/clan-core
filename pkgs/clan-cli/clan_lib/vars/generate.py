@@ -8,9 +8,12 @@ from clan_cli.vars.migration import check_can_migrate, migrate_files
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
+from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
+
+debug_condition = False
 
 
 @API.register
@@ -32,27 +35,46 @@ def get_generators(
         List of generators based on the specified selection and closure mode.
 
     """
-    machine_names = [machine.name for machine in machines]
-    vars_generators = Generator.get_machine_generators(
-        machine_names,
+    if not machines:
+        msg = "At least one machine must be provided"
+        raise ClanError(msg)
+
+    all_machines = list_machines(machines[0].flake).keys()
+    requested_machines = [machine.name for machine in machines]
+
+    all_generators_list = Generator.get_machine_generators(
+        all_machines,
         machines[0].flake,
         include_previous_values=include_previous_values,
     )
-    generators = {generator.key: generator for generator in vars_generators}
+    requested_generators_list = Generator.get_machine_generators(
+        requested_machines,
+        machines[0].flake,
+        include_previous_values=include_previous_values,
+    )
+
+    all_generators = {generator.key: generator for generator in all_generators_list}
+    requested_generators = {
+        generator.key: generator for generator in requested_generators_list
+    }
 
     result_closure = []
     if generator_name is None:  # all generators selected
         if full_closure:
-            result_closure = graph.requested_closure(generators.keys(), generators)
+            result_closure = graph.requested_closure(
+                requested_generators.keys(), all_generators
+            )
         else:
-            result_closure = graph.all_missing_closure(generators.keys(), generators)
+            result_closure = graph.all_missing_closure(
+                requested_generators.keys(), all_generators
+            )
     # specific generator selected
     elif full_closure:
-        roots = [key for key in generators if key.name == generator_name]
-        result_closure = requested_closure(roots, generators)
+        roots = [key for key in requested_generators if key.name == generator_name]
+        result_closure = requested_closure(roots, all_generators)
     else:
-        roots = [key for key in generators if key.name == generator_name]
-        result_closure = graph.all_missing_closure(roots, generators)
+        roots = [key for key in requested_generators if key.name == generator_name]
+        result_closure = graph.all_missing_closure(roots, all_generators)
 
     return result_closure
 
@@ -123,6 +145,9 @@ def run_generators(
         executing the generator.
 
     """
+    if not machines:
+        msg = "At least one machine must be provided"
+        raise ClanError(msg)
     if isinstance(generators, list):
         # List of generator names - use them exactly as provided
         if len(generators) == 0:
@@ -143,23 +168,23 @@ def run_generators(
         prompt_values = {
             generator.name: prompt_values(generator) for generator in generator_objects
         }
+
     # execute health check
     for machine in machines:
         _ensure_healthy(machine=machine)
 
     # execute generators
     for generator in generator_objects:
-        generator_machines = (
-            machines
+        machine = (
+            machines[0]
             if generator.machine is None
-            else [Machine(name=generator.machine, flake=machines[0].flake)]
+            else Machine(name=generator.machine, flake=machines[0].flake)
         )
-        for machine in generator_machines:
-            if check_can_migrate(machine, generator):
-                migrate_files(machine, generator)
-            else:
-                generator.execute(
-                    machine=machine,
-                    prompt_values=prompt_values.get(generator.name, {}),
-                    no_sandbox=no_sandbox,
-                )
+        if check_can_migrate(machine, generator):
+            migrate_files(machine, generator)
+        else:
+            generator.execute(
+                machine=machine,
+                prompt_values=prompt_values.get(generator.name, {}),
+                no_sandbox=no_sandbox,
+            )

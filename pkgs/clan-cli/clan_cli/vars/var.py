@@ -52,14 +52,14 @@ class Var:
         except UnicodeDecodeError:
             return "<binary blob>"
 
-    def set(self, value: bytes) -> list[Path]:
+    def set(self, value: bytes, machine: str) -> list[Path]:
         if self._store is None:
             msg = "Store cannot be None"
             raise ClanError(msg)
         if self._generator is None:
             msg = "Generator cannot be None"
             raise ClanError(msg)
-        return self._store.set(self._generator, self, value)
+        return self._store.set(self._generator, self, value, machine)
 
     @property
     def exists(self) -> bool:
