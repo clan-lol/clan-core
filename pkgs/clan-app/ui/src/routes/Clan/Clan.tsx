@@ -1,4 +1,4 @@
-import { RouteSectionProps, useNavigate } from "@solidjs/router";
+import { RouteSectionProps, useLocation, useNavigate } from "@solidjs/router";
 import {
   Component,
   createContext,
@@ -35,33 +35,14 @@ import styles from "./Clan.module.css";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { UseQueryResult } from "@tanstack/solid-query";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
-import {
-  ServiceWorkflow,
-  SubmitServiceHandler,
-} from "@/src/workflows/Service/Service";
+
 import { useApiClient } from "@/src/hooks/ApiClient";
 import toast from "solid-toast";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
+import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
+import { SubmitServiceHandler } from "@/src/workflows/Service/models";
 
 export type WorldMode = "default" | "select" | "service" | "create" | "move";
-
-interface ClanContextProps {
-  clanURI: string;
-  machinesQuery: MachinesQueryResult;
-  activeClanQuery: UseQueryResult<ClanDetails>;
-  otherClanQueries: UseQueryResult<ClanDetails>[];
-  allClansQueries: UseQueryResult<ClanDetails>[];
-  serviceInstancesQuery: UseQueryResult<ListServiceInstances>;
-
-  isLoading(): boolean;
-  isError(): boolean;
-
-  showAddMachine(): boolean;
-  setShowAddMachine(value: boolean): void;
-
-  worldMode(): WorldMode;
-  setWorldMode(mode: WorldMode): void;
-}
 
 function createClanContext(
   clanURI: string,
@@ -72,6 +53,9 @@ function createClanContext(
 ) {
   const [worldMode, setWorldMode] = createSignal<WorldMode>("select");
   const [showAddMachine, setShowAddMachine] = createSignal(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const allClansQueries = [activeClanQuery, ...otherClanQueries];
   const allQueries = [machinesQuery, ...allClansQueries, serviceInstancesQuery];
@@ -87,12 +71,18 @@ function createClanContext(
     isError: () => activeClanQuery.isError,
     showAddMachine,
     setShowAddMachine,
+    navigateToRoot: () => {
+      if (location.pathname === buildClanPath(clanURI)) return;
+      navigate(buildClanPath(clanURI), { replace: true });
+    },
     setWorldMode,
     worldMode,
   };
 }
 
-const ClanContext = createContext<ClanContextProps>();
+const ClanContext = createContext<
+  ReturnType<typeof createClanContext> | undefined
+>();
 
 export const useClanContext = () => {
   const ctx = useContext(ClanContext);
@@ -208,34 +198,6 @@ const ClanSceneController = (props: RouteSectionProps) => {
     }),
   );
 
-  const client = useApiClient();
-  const handleSubmitService: SubmitServiceHandler = async (
-    instance,
-    action,
-  ) => {
-    console.log(action, "Instance", instance);
-
-    if (action !== "create") {
-      toast.error("Only creating new services is supported");
-      return;
-    }
-    const call = client.fetch("create_service_instance", {
-      flake: {
-        identifier: ctx.clanURI,
-      },
-      module_ref: instance.module,
-      roles: instance.roles,
-    });
-    const result = await call.result;
-
-    if (result.status === "error") {
-      toast.error("Error creating service instance");
-      console.error("Error creating service instance", result.errors);
-    }
-    toast.success("Created");
-    ctx.setWorldMode("select");
-  };
-
   return (
     <>
       <Show when={loadingError()}>
@@ -271,13 +233,19 @@ const ClanSceneController = (props: RouteSectionProps) => {
         cubesQuery={ctx.machinesQuery}
         toolbarPopup={
           <Show when={ctx.worldMode() === "service"}>
-            <ServiceWorkflow
-              handleSubmit={handleSubmitService}
-              onClose={() => {
-                ctx.setWorldMode("select");
-                currentPromise()?.resolve({ id: "0" });
-              }}
-            />
+            <Show
+              when={location.pathname.includes("/services/")}
+              fallback={
+                <SelectService
+                  // handleSubmit={handleSubmitService}
+                  onClose={() => {
+                    ctx.setWorldMode("select");
+                  }}
+                />
+              }
+            >
+              {props.children}
+            </Show>
           </Show>
         }
         onCreate={onCreate}

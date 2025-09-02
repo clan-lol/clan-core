@@ -1,6 +1,6 @@
 import { callApi } from "@/src/hooks/api";
 import { addClanURI, setActiveClanURI } from "@/src/stores/clan";
-import { Params, Navigator, useParams } from "@solidjs/router";
+import { Params, Navigator, useParams, useSearchParams } from "@solidjs/router";
 
 export const encodeBase64 = (value: string) => window.btoa(value);
 export const decodeBase64 = (value: string) => window.atob(value);
@@ -32,20 +32,43 @@ export const buildMachinePath = (clanURI: string, name: string) =>
 
 export const buildServicePath = (props: {
   clanURI: string;
-  machineName?: string;
   id: string;
   module: {
-    input?: string | null | undefined;
     name: string;
+    input?: string | null | undefined;
   };
 }) => {
-  const { clanURI, machineName, id, module } = props;
+  const { clanURI, id, module } = props;
+
+  const moduleName = encodeBase64(module.name);
+  const idEncoded = encodeBase64(id);
+
   const result =
-    (machineName
-      ? buildMachinePath(clanURI, machineName)
-      : buildClanPath(clanURI)) +
-    `/services/${module.input ?? "clan"}/${module.name}`;
-  return id == module.name ? result : result + "/" + id;
+    buildClanPath(clanURI) +
+    `/services/${moduleName}/${idEncoded}` +
+    (module.input ? `?input=${module.input}` : "");
+
+  return result;
+};
+
+export const useServiceParams = () => {
+  const params = useParams<{
+    name?: string;
+    id?: string;
+  }>();
+
+  const [search] = useSearchParams<{ input?: string }>();
+
+  if (!params.name || !params.id) {
+    console.error("Service params not found", params, window.location.pathname);
+    throw new Error("Service params not found");
+  }
+
+  return {
+    name: decodeBase64(params.name),
+    id: decodeBase64(params.id),
+    input: search.input,
+  };
 };
 
 export const navigateToClan = (navigate: Navigator, clanURI: string) => {

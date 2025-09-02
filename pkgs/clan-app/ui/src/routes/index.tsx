@@ -35,14 +35,10 @@ export const Routes: RouteDefinition[] = [
               {
                 path: "/",
               },
-              {
-                path: "/services/:input/:name/:id?",
-                component: Service,
-              },
             ],
           },
           {
-            path: "/services/:input/:name/:id?",
+            path: "/services/:name/:id",
             component: Service,
           },
         ],

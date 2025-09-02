@@ -807,6 +807,7 @@ export function CubeScene(props: {
             icon="Services"
             selected={ctx.worldMode() === "service"}
             onClick={() => {
+              ctx.navigateToRoot();
               ctx.setWorldMode("service");
             }}
           />
