@@ -160,6 +160,9 @@ export const SelectRoleMembers: Story = {
       handleSubmit={(instance) => {
         console.log("Submitted instance:", instance);
       }}
+      onClose={() => {
+        console.log("Closed");
+      }}
       initialStep="select:members"
       initialStore={{
         currentRole: "peer",

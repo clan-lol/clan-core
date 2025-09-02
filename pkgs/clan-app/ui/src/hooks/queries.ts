@@ -25,6 +25,9 @@ export type MachineStatus = MachineState["status"];
 export type ListMachines = SuccessData<"list_machines">;
 export type MachineDetails = SuccessData<"get_machine_details">;
 
+export type ListServiceModules = SuccessData<"list_service_modules">;
+export type ListServiceInstances = SuccessData<"list_service_instances">;
+
 export interface MachineDetail {
   tags: Tags;
   machine: Machine;
@@ -47,7 +50,7 @@ export const useMachinesQuery = (clanURI: string) => {
   const client = useApiClient();
 
   return useQuery<ListMachines>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machines"],
+    queryKey: [...clanKey(clanURI), "machines"],
     queryFn: async () => {
       const api = client.fetch("list_machines", {
         flake: {
@@ -64,10 +67,16 @@ export const useMachinesQuery = (clanURI: string) => {
   }));
 };
 
+export const machineKey = (clanUri: string, machineName: string) => [
+  ...clanKey(clanUri),
+  "machine",
+  encodeBase64(machineName),
+];
+
 export const useMachineQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
   return useQuery<MachineDetail>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machine", machineName],
+    queryKey: [machineKey(clanURI, machineName)],
     queryFn: async () => {
       const [tagsCall, machineCall, schemaCall] = [
         client.fetch("list_tags", {
@@ -122,7 +131,7 @@ export type TagsQuery = ReturnType<typeof useTags>;
 export const useTags = (clanURI: string) => {
   const client = useApiClient();
   return useQuery(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "tags"],
+    queryKey: [...clanKey(clanURI), "tags"],
     queryFn: async () => {
       const apiCall = client.fetch("list_tags", {
         flake: {
@@ -142,8 +151,9 @@ export const useTags = (clanURI: string) => {
 export const useMachineStateQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
   return useQuery<MachineState>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machine", machineName, "state"],
+    queryKey: [...machineKey(clanURI, machineName), "state"],
     staleTime: 60_000, // 1 minute stale time
+    enabled: false,
     queryFn: async () => {
       const apiCall = client.fetch("get_machine_state", {
         machine: {
@@ -166,13 +176,61 @@ export const useMachineStateQuery = (clanURI: string, machineName: string) => {
   }));
 };
 
+export const useServiceModulesQuery = (clanURI: string) => {
+  const client = useApiClient();
+
+  return useQuery<ListServiceModules>(() => ({
+    queryKey: [...clanKey(clanURI), "service_modules"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_modules", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching service modules: " + result.errors[0].message,
+        );
+      }
+
+      return result.data;
+    },
+  }));
+};
+
+export const useServiceInstancesQuery = (clanURI: string) => {
+  const client = useApiClient();
+
+  return useQuery<ListServiceInstances>(() => ({
+    queryKey: [...clanKey(clanURI), "service_instances"],
+    queryFn: async () => {
+      const call = client.fetch("list_service_instances", {
+        flake: {
+          identifier: clanURI,
+        },
+      });
+
+      const result = await call.result;
+      if (result.status === "error") {
+        throw new Error(
+          "Error fetching service instances: " + result.errors[0].message,
+        );
+      }
+
+      return result.data;
+    },
+  }));
+};
+
 export const useMachineDetailsQuery = (
   clanURI: string,
   machineName: string,
 ) => {
   const client = useApiClient();
   return useQuery<MachineDetails>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "machine_detail", machineName],
+    queryKey: [machineKey(clanURI, machineName), "details"],
     queryFn: async () => {
       const call = client.fetch("get_machine_details", {
         machine: {
@@ -202,7 +260,7 @@ export const ClanDetailsPersister = experimental_createQueryPersister({
 export const useClanDetailsQuery = (clanURI: string) => {
   const client = useApiClient();
   return useQuery<ClanDetails>(() => ({
-    queryKey: ["clans", encodeBase64(clanURI), "details"],
+    queryKey: [...clanKey(clanURI), "details"],
     persister: ClanDetailsPersister.persisterFn,
     queryFn: async () => {
       const args = {
@@ -253,7 +311,8 @@ export const useClanListQuery = (
 
   return useQueries(() => ({
     queries: clanURIs.map((clanURI) => {
-      const queryKey = ["clans", encodeBase64(clanURI), "details"];
+      // @BMG: Is duplicating query key intentional?
+      const queryKey = [...clanKey(clanURI), "details"];
 
       return {
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -322,7 +381,7 @@ export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
 export const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
   const client = useApiClient();
   return useQuery<MachineFlashOptions>(() => ({
-    queryKey: ["clans", "machine_flash_options"],
+    queryKey: ["flash_options"],
     queryFn: async () => {
       const call = client.fetch("get_machine_flash_options", {});
       const result = await call.result;
@@ -486,7 +545,7 @@ export type ServiceModules = SuccessData<"list_service_modules">;
 export const useServiceModules = (clanUri: string) => {
   const client = useApiClient();
   return useQuery(() => ({
-    queryKey: ["clans", encodeBase64(clanUri), "service_modules"],
+    queryKey: [...clanKey(clanUri), "service_modules"],
     queryFn: async () => {
       const call = client.fetch("list_service_modules", {
         flake: {
@@ -506,12 +565,14 @@ export const useServiceModules = (clanUri: string) => {
   }));
 };
 
+export const clanKey = (clanUri: string) => ["clans", encodeBase64(clanUri)];
+
 export type ServiceInstancesQuery = ReturnType<typeof useServiceInstances>;
 export type ServiceInstances = SuccessData<"list_service_instances">;
 export const useServiceInstances = (clanUri: string) => {
   const client = useApiClient();
   return useQuery(() => ({
-    queryKey: ["clans", encodeBase64(clanUri), "service_instances"],
+    queryKey: [...clanKey(clanUri), "service_instances"],
     queryFn: async () => {
       const call = client.fetch("list_service_instances", {
         flake: {

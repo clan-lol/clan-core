@@ -1,0 +1,41 @@
+.sectionServices {
+  @apply overflow-hidden flex flex-col;
+  @apply bg-inv-4 rounded-md;
+
+  nav * {
+    @apply outline-none;
+  }
+
+  nav > a {
+    @apply block w-full px-2 py-1.5 min-h-7 my-2 rounded-md;
+
+    &:first-child {
+      @apply mt-0;
+    }
+
+    &:last-child {
+      @apply mb-0;
+    }
+
+    &:focus-visible {
+      background: linear-gradient(
+        90deg,
+        theme(colors.secondary.900),
+        60%,
+        theme(colors.secondary.600) 100%
+      );
+    }
+
+    &:hover {
+      @apply bg-inv-acc-2;
+    }
+
+    &:active {
+      @apply bg-inv-acc-3;
+    }
+
+    &.active {
+      @apply bg-inv-acc-2;
+    }
+  }
+}

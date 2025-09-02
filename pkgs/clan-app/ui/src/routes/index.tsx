@@ -2,6 +2,7 @@ import type { RouteDefinition } from "@solidjs/router/dist/types";
 import { Onboarding } from "@/src/routes/Onboarding/Onboarding";
 import { Clan } from "@/src/routes/Clan/Clan";
 import { Machine } from "@/src/routes/Machine/Machine";
+import { Service } from "@/src/routes/Service/Service";
 
 export const Routes: RouteDefinition[] = [
   {
@@ -30,6 +31,15 @@ export const Routes: RouteDefinition[] = [
           {
             path: "/machines/:machineName",
             component: Machine,
+            children: [
+              {
+                path: "/",
+              },
+            ],
+          },
+          {
+            path: "/services/:name/:id",
+            component: Service,
           },
         ],
       },

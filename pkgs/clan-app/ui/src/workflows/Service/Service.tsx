@@ -4,10 +4,9 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { useClanURI } from "@/src/hooks/clan";
+import { useClanURI, useServiceParams } from "@/src/hooks/clan";
 import {
   MachinesQuery,
-  ServiceModules,
   TagsQuery,
   useMachinesQuery,
   useServiceInstances,
@@ -18,18 +17,15 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  For,
-  JSX,
   Show,
   on,
   onMount,
+  For,
 } from "solid-js";
-import { Search } from "@/src/components/Search/Search";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { Typography } from "@/src/components/Typography/Typography";
-import { TagSelect } from "@/src/components/Search/TagSelect";
-import { Tag } from "@/src/components/Tag/Tag";
+
 import { createForm, FieldValues } from "@modular-forms/solid";
 import styles from "./Service.module.css";
 import { TextInput } from "@/src/components/Form/TextInput";
@@ -40,152 +36,16 @@ import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
 import { useMachineClick } from "@/src/scene/cubes";
 import {
   clearAllHighlights,
-  highlightGroups,
   setHighlightGroups,
 } from "@/src/scene/highlightStore";
-import { useClickOutside } from "@/src/hooks/useClickOutside";
-
-type ModuleItem = ServiceModules["modules"][number];
-
-interface Module {
-  value: string;
-  label: string;
-  raw: ModuleItem;
-}
-
-const SelectService = () => {
-  const clanURI = useClanURI();
-  const stepper = useStepper<ServiceSteps>();
-
-  const serviceModulesQuery = useServiceModules(clanURI);
-  const serviceInstancesQuery = useServiceInstances(clanURI);
-  const machinesQuery = useMachinesQuery(clanURI);
-
-  const [moduleOptions, setModuleOptions] = createSignal<Module[]>([]);
-  createEffect(() => {
-    if (serviceModulesQuery.data && serviceInstancesQuery.data) {
-      setModuleOptions(
-        serviceModulesQuery.data.modules.map((currService) => ({
-          value: `${currService.usage_ref.name}:${currService.usage_ref.input}`,
-          label: currService.usage_ref.name,
-          raw: currService,
-        })),
-      );
-    }
-  });
-  const [store, set] = getStepStore<ServiceStoreType>(stepper);
-
-  return (
-    <Search<Module>
-      loading={serviceModulesQuery.isLoading}
-      height="13rem"
-      onChange={(module) => {
-        if (!module) return;
-
-        set("module", {
-          name: module.raw.usage_ref.name,
-          input: module.raw.usage_ref.input,
-          raw: module.raw,
-        });
-        // TODO: Ideally we need to ask
-        // - create new
-        // - update existing (and select which one)
-
-        // For now:
-        // Create a new instance, if there are no instances yet
-        // Update the first instance, if there is one
-        if (module.raw.instance_refs.length === 0) {
-          set("action", "create");
-        } else {
-          if (!serviceInstancesQuery.data) return;
-          if (!machinesQuery.data) return;
-          set("action", "update");
-
-          const instanceName = module.raw.instance_refs[0];
-          const instance = serviceInstancesQuery.data[instanceName];
-          console.log("Editing existing instance", module);
-
-          for (const role of Object.keys(instance.roles || {})) {
-            const tags = Object.keys(instance.roles?.[role].tags || {});
-            const machines = Object.keys(instance.roles?.[role].machines || {});
-
-            const machineTags = machines.map((m) => ({
-              value: "m_" + m,
-              label: m,
-              type: "machine" as const,
-            }));
-            const tagsTags = tags.map((t) => {
-              return {
-                value: "t_" + t,
-                label: t,
-                type: "tag" as const,
-                members: Object.entries(machinesQuery.data || {})
-                  .filter(([_, m]) => m.data.tags?.includes(t))
-                  .map(([k]) => k),
-              };
-            });
-            console.log("Members for role", role, [
-              ...machineTags,
-              ...tagsTags,
-            ]);
-            if (!store.roles) {
-              set("roles", {});
-            }
-            const roleMembers = [...machineTags, ...tagsTags].sort((a, b) =>
-              a.label.localeCompare(b.label),
-            );
-            set("roles", role, roleMembers);
-            console.log("set", store.roles);
-          }
-          // Initialize the roles with the existing members
-        }
-
-        stepper.next();
-      }}
-      options={moduleOptions()}
-      renderItem={(item, opts) => {
-        return (
-          <div class="flex items-center justify-between gap-2 overflow-hidden rounded-md px-2 py-1 pr-4">
-            <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-white">
-              <Icon icon="Code" />
-            </div>
-            <div class="flex w-full flex-col">
-              <Combobox.ItemLabel class="flex gap-1.5">
-                <Show when={item.raw.instance_refs.length > 0}>
-                  <div class="flex items-center rounded bg-[#76FFA4] px-1 py-0.5">
-                    <Typography hierarchy="label" weight="bold" size="xxs">
-                      Added
-                    </Typography>
-                  </div>
-                </Show>
-                <Typography hierarchy="body" size="s" weight="medium" inverted>
-                  {item.label}
-                </Typography>
-              </Combobox.ItemLabel>
-              <Typography
-                hierarchy="body"
-                size="xxs"
-                weight="normal"
-                color="quaternary"
-                inverted
-                class="flex justify-between"
-              >
-                <span class="inline-block max-w-80 truncate align-middle">
-                  {item.raw.info.manifest.description}
-                </span>
-                <span class="inline-block max-w-32 truncate align-middle">
-                  <Show when={!item.raw.native} fallback="by clan-core">
-                    by {item.raw.usage_ref.input}
-                  </Show>
-                </span>
-              </Typography>
-            </div>
-          </div>
-        );
-      }}
-    />
-  );
-};
+import {
+  getRoleMembers,
+  RoleType,
+  ServiceStoreType,
+  SubmitServiceHandler,
+} from "./models";
+import { TagSelect } from "@/src/components/Search/TagSelect";
+import { Tag } from "@/src/components/Tag/Tag";
 
 const useOptions = (tagsQuery: TagsQuery, machinesQuery: MachinesQuery) =>
   createMemo<TagType[]>(() => {
@@ -215,22 +75,78 @@ const useOptions = (tagsQuery: TagsQuery, machinesQuery: MachinesQuery) =>
     );
   });
 
+const sanitizeModuleInput = (
+  input: string | undefined,
+  core_input_name: string,
+) => {
+  if (!input) return null;
+
+  if (input === core_input_name) return null;
+
+  return input;
+};
+
 interface RolesForm extends FieldValues {
   roles: Record<string, string[]>;
   instanceName: string;
 }
 const ConfigureService = () => {
   const stepper = useStepper<ServiceSteps>();
+  const clanURI = useClanURI();
+  const machinesQuery = useMachinesQuery(clanURI);
+  const serviceModulesQuery = useServiceModules(clanURI);
+  const serviceInstancesQuery = useServiceInstances(clanURI);
+  const routerProps = useServiceParams();
+
   const [store, set] = getStepStore<ServiceStoreType>(stepper);
 
   const [formStore, { Form, Field }] = createForm<RolesForm>({
     initialValues: {
       // Default to the module name, until we support multiple instances
-      instanceName: store.module.name,
+      instanceName: routerProps.id,
     },
   });
 
-  const machinesQuery = useMachinesQuery(useClanURI());
+  const selectedModule = createMemo(() => {
+    if (!serviceModulesQuery.data) return undefined;
+    return serviceModulesQuery.data.modules.find(
+      (m) =>
+        m.usage_ref.name === routerProps.name &&
+        // left side is string | null
+        // right side is string | undefined
+        m.usage_ref.input ===
+          sanitizeModuleInput(
+            routerProps.input,
+            serviceModulesQuery.data.core_input_name,
+          ),
+    );
+  });
+
+  createEffect(
+    on(
+      () => [serviceInstancesQuery.data, machinesQuery.data] as const,
+      ([instances, machines]) => {
+        // Wait for all queries to be ready
+        if (!instances || !machines) return;
+
+        const instance = instances[routerProps.id || routerProps.name];
+
+        set("roles", {});
+        if (!instance) {
+          set("action", "create");
+          return;
+        }
+
+        for (const role of Object.keys(instance.roles || {})) {
+          // Get Role members
+          const roleMembers = getRoleMembers(instance, machines, role);
+          set("roles", role, roleMembers);
+        }
+        set("action", "update");
+      },
+    ),
+  );
+
   const tagsQuery = useTags(useClanURI());
 
   const options = useOptions(tagsQuery, machinesQuery);
@@ -249,13 +165,15 @@ const ConfigureService = () => {
         },
       ]),
     );
-
     store.handleSubmit(
       {
         name: values.instanceName,
         module: {
-          name: store.module.name,
-          input: store.module.input,
+          name: routerProps.name,
+          input: sanitizeModuleInput(
+            routerProps.input,
+            serviceModulesQuery.data?.core_input_name || "clan-core",
+          ),
         },
         roles,
       },
@@ -271,7 +189,7 @@ const ConfigureService = () => {
         </div>
         <div class="flex flex-col">
           <Typography hierarchy="body" size="s" weight="medium" inverted>
-            {store.module.name}
+            {routerProps.name}
           </Typography>
           <Field name="instanceName">
             {(field, input) => (
@@ -294,54 +212,71 @@ const ConfigureService = () => {
           ghost
           size="s"
           class="ml-auto"
-          onClick={store.close}
+          onClick={() => store.close()}
         />
       </div>
       <div class={styles.content}>
-        <For each={Object.keys(store.module.raw?.info.roles || {})}>
-          {(role) => {
-            const values = store.roles?.[role] || [];
-            return (
-              <TagSelect<TagType>
-                label={role}
-                renderItem={(item: TagType) => (
-                  <Tag
-                    inverted
-                    icon={(tag) => (
-                      <Icon
-                        icon={item.type === "machine" ? "Machine" : "Tag"}
-                        size="0.5rem"
-                        inverted={tag.inverted}
-                      />
-                    )}
-                  >
-                    {item.label}
-                  </Tag>
-                )}
-                values={values}
-                options={options()}
-                onClick={() => {
-                  set("currentRole", role);
-                  stepper.next();
-                }}
-              />
-            );
-          }}
-        </For>
+        <Show
+          when={serviceModulesQuery.data && store.roles}
+          fallback={<div>Loading...</div>}
+        >
+          <For each={Object.keys(selectedModule()?.info.roles || {})}>
+            {(role) => {
+              const values = store.roles?.[role] || [];
+              return (
+                <TagSelect<TagType>
+                  label={role}
+                  renderItem={(item: TagType) => (
+                    <Tag
+                      inverted
+                      icon={(tag) => (
+                        <Icon
+                          icon={item.type === "machine" ? "Machine" : "Tag"}
+                          size="0.5rem"
+                          inverted={tag.inverted}
+                        />
+                      )}
+                    >
+                      {item.label}
+                    </Tag>
+                  )}
+                  values={values}
+                  options={options()}
+                  onClick={() => {
+                    set("currentRole", role);
+                    stepper.next();
+                  }}
+                />
+              );
+            }}
+          </For>
+        </Show>
       </div>
       <div class={cx(styles.footer, styles.backgroundAlt)}>
-        <BackButton ghost hierarchy="primary" class="mr-auto" />
-
-        <Button hierarchy="secondary" type="submit">
-          <Show when={store.action === "create"}>Add Service</Show>
-          <Show when={store.action === "update"}>Save Changes</Show>
+        <Button
+          hierarchy="secondary"
+          type="submit"
+          loading={!serviceInstancesQuery.data}
+        >
+          <Show when={serviceInstancesQuery.data}>
+            {(d) => (
+              <>
+                <Show
+                  when={Object.keys(d()).includes(routerProps.id)}
+                  fallback={"Add Service"}
+                >
+                  Save Changes
+                </Show>
+              </>
+            )}
+          </Show>
         </Button>
       </div>
     </Form>
   );
 };
 
-type TagType =
+export type TagType =
   | {
       value: string;
       label: string;
@@ -362,31 +297,36 @@ const ConfigureRole = () => {
     store.roles?.[store.currentRole || ""] || [],
   );
 
+  const clanUri = useClanURI();
+  const machinesQuery = useMachinesQuery(clanUri);
+
   const lastClickedMachine = useMachineClick();
 
-  createEffect(() => {
-    console.log("Current role", store.currentRole, members());
-    clearAllHighlights();
-    setHighlightGroups({
-      [store.currentRole as string]: new Set(
-        members().flatMap((m) => {
-          if (m.type === "machine") return m.label;
+  createEffect(
+    on(members, (m) => {
+      clearAllHighlights();
+      setHighlightGroups({
+        [store.currentRole as string]: new Set(
+          m.flatMap((m) => {
+            if (m.type === "machine") return m.label;
 
-          return m.members;
-        }),
-      ),
-    });
+            return m.members;
+          }),
+        ),
+      });
+    }),
+  );
 
-    console.log("now", highlightGroups);
+  onMount(() => {
+    setHighlightGroups(() => ({}));
   });
-  onMount(() => setHighlightGroups(() => ({})));
 
   createEffect(
     on(lastClickedMachine, (machine) => {
       // const machine = lastClickedMachine();
       const currentMembers = members();
-      console.log("Clicked machine", machine, currentMembers);
       if (!machine) return;
+
       const machineTagName = "m_" + machine;
 
       const existing = currentMembers.find((m) => m.value === machineTagName);
@@ -403,7 +343,6 @@ const ConfigureRole = () => {
     }),
   );
 
-  const machinesQuery = useMachinesQuery(useClanURI());
   const tagsQuery = useTags(useClanURI());
 
   const options = useOptions(tagsQuery, machinesQuery);
@@ -428,12 +367,7 @@ const ConfigureRole = () => {
             headerClass={cx(styles.backgroundAlt, "flex flex-col gap-2.5")}
             headerChildren={
               <div class="flex w-full gap-2.5">
-                <BackButton
-                  ghost
-                  size="xs"
-                  hierarchy="primary"
-                  // onClick={() => clearAllHighlights()}
-                />
+                <BackButton ghost size="xs" hierarchy="primary" />
                 <Typography
                   hierarchy="body"
                   size="s"
@@ -506,10 +440,6 @@ const ConfigureRole = () => {
 
 const steps = [
   {
-    id: "select:service",
-    content: SelectService,
-  },
-  {
     id: "view:members",
     content: ConfigureService,
   },
@@ -522,79 +452,34 @@ const steps = [
 
 export type ServiceSteps = typeof steps;
 
-// TODO: Ideally we would impot this from a backend model package
-export interface InventoryInstance {
-  name: string;
-  module: {
-    name: string;
-    input?: string | null;
-  };
-  roles: Record<string, RoleType>;
-}
-
-interface RoleType {
-  machines: Record<string, { settings?: unknown }>;
-  tags: Record<string, unknown>;
-}
-
-export interface ServiceStoreType {
-  module: {
-    name: string;
-    input?: string | null;
-    raw?: ModuleItem;
-  };
-  roles: Record<string, TagType[]>;
-  currentRole?: string;
-  close: () => void;
-  handleSubmit: SubmitServiceHandler;
-  action: "create" | "update";
-}
-
-export type SubmitServiceHandler = (
-  values: InventoryInstance,
-  action: "create" | "update",
-) => void | Promise<void>;
-
 interface ServiceWorkflowProps {
   initialStep?: ServiceSteps[number]["id"];
   initialStore?: Partial<ServiceStoreType>;
-  onClose?: () => void;
+  onClose: () => void;
   handleSubmit: SubmitServiceHandler;
-  rootProps?: JSX.HTMLAttributes<HTMLDivElement>;
 }
 
 export const ServiceWorkflow = (props: ServiceWorkflowProps) => {
   const stepper = createStepper(
     { steps },
     {
-      initialStep: props.initialStep || "select:service",
+      initialStep: props.initialStep || "view:members",
       initialStoreData: {
         ...props.initialStore,
-        close: () => props.onClose?.(),
+        close: props.onClose,
         handleSubmit: props.handleSubmit,
       } satisfies Partial<ServiceStoreType>,
     },
   );
+
   createEffect(() => {
     if (stepper.currentStep().id !== "select:members") {
       clearAllHighlights();
     }
   });
 
-  let ref: HTMLDivElement;
-  useClickOutside(
-    () => ref,
-    () => {
-      if (stepper.currentStep().id === "select:service") props.onClose?.();
-    },
-  );
   return (
-    <div
-      ref={(e) => (ref = e)}
-      id="add-service"
-      class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2"
-      {...props.rootProps}
-    >
+    <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
       <StepperProvider stepper={stepper}>
         <div class="w-[30rem]">{stepper.currentStep().content()}</div>
       </StepperProvider>
