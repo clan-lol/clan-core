@@ -16,6 +16,7 @@ import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { useClanURI } from "@/src/hooks/clan";
+import { removeEmptyStrings } from "@/src/util";
 
 const TagsSchema = v.object({
   tags: v.array(v.string()),
@@ -41,16 +42,20 @@ export const StepTags = (props: { onDone: () => void }) => {
       ...values,
     }));
 
+    const machine = removeEmptyStrings({
+      ...store.general,
+      ...store.tags,
+      deploy: store.deploy,
+    });
+
+    console.log("machine", machine);
+
     const call = apiClient.fetch("create_machine", {
       opts: {
         clan_dir: {
           identifier: clanURI,
         },
-        machine: {
-          ...store.general,
-          ...store.tags,
-          deploy: store.deploy,
-        },
+        machine,
       },
     });
 
