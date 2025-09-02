@@ -4,7 +4,7 @@ import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
 // @ts-expect-error: No types for troika-three-text
 import { Text } from "troika-three-text";
-import ttf from "../../.fonts/CommitMonoV143-VF.ttf";
+import ttf from "../../.fonts/ArchivoSemiCondensed-Medium.ttf";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -67,6 +67,24 @@ export function createCubeBase(
   baseMesh.position.set(0, BASE_HEIGHT / 2, 0);
   baseMesh.receiveShadow = false;
   return { baseMesh, baseMaterial };
+}
+
+// Function to build rounded rect shape
+export function roundedRectShape(w: number, h: number, r: number) {
+  const shape = new THREE.Shape();
+  const x = -w / 2;
+  const y = -h / 2;
+
+  shape.moveTo(x + r, y);
+  shape.lineTo(x + w - r, y);
+  shape.quadraticCurveTo(x + w, y, x + w, y + r);
+  shape.lineTo(x + w, y + h - r);
+  shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  shape.lineTo(x + r, y + h);
+  shape.quadraticCurveTo(x, y + h, x, y + h - r);
+  shape.lineTo(x, y + r);
+  shape.quadraticCurveTo(x, y, x + r, y);
+  return shape;
 }
 
 export class MachineRepr {
@@ -200,21 +218,25 @@ export class MachineRepr {
     });
 
     // --- Background (rounded rect) ---
-    const padding = 0.01;
+    const padding = 0.04;
     // TODO: compute from text.bounds after sync
-    const bgWidth = text.text.length * 0.1 + padding;
+    const bgWidth = text.text.length * 0.07 + padding;
     const bgHeight = 0.1 + 2 * padding;
+    const radius = 0.02;
 
-    const bgGeom = new THREE.PlaneGeometry(bgWidth, bgHeight, 1, 1);
-    const bgMat = new THREE.MeshBasicMaterial({ color: 0x162324 }); // dark gray
+    const bgShape = roundedRectShape(bgWidth, bgHeight, radius);
+    const bgGeom = new THREE.ShapeGeometry(bgShape);
+    const bgMat = new THREE.MeshBasicMaterial({ color: 0x162324 });
     const bg = new THREE.Mesh(bgGeom, bgMat);
-    bg.position.set(0, 0, -0.01); // slightly behind text
+    bg.position.set(0, 0, -0.01);
+
+    // bg.position.set(0, 0, -0.01); // slightly behind text
 
     // --- Arrow (triangle pointing down) ---
     const arrowShape = new THREE.Shape();
     arrowShape.moveTo(-0.05, 0);
     arrowShape.lineTo(0.05, 0);
-    arrowShape.lineTo(0, -0.08);
+    arrowShape.lineTo(0, -0.05);
     arrowShape.closePath();
 
     const arrowGeom = new THREE.ShapeGeometry(arrowShape);
