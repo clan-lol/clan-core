@@ -6,11 +6,11 @@ import { SectionGeneral } from "./SectionGeneral";
 import { Machine as MachineModel, useMachineQuery } from "@/src/hooks/queries";
 import { SectionTags } from "@/src/routes/Machine/SectionTags";
 import { callApi } from "@/src/hooks/api";
-import { SidebarMachineStatus } from "@/src/components/Sidebar/SidebarMachineStatus";
 import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarSectionInstall";
 
 import styles from "./Machine.module.css";
 import { SectionServices } from "@/src/routes/Machine/SectionServices";
+import { SidebarSectionUpdate } from "@/src/components/Sidebar/SidebarSectionUpdate";
 
 export const Machine = (props: RouteSectionProps) => {
   const navigate = useNavigate();
@@ -61,6 +61,10 @@ export const Machine = (props: RouteSectionProps) => {
           clanURI={clanURI}
           machineName={useMachineName()}
         />
+        <SidebarSectionUpdate
+          clanURI={clanURI}
+          machineName={useMachineName()}
+        />
         <SectionGeneral {...sectionProps} />
         <SectionTags {...sectionProps} />
         <SectionServices />
@@ -74,14 +78,17 @@ export const Machine = (props: RouteSectionProps) => {
         <SidebarPane
           title={useMachineName()}
           onClose={onClose}
-          subHeader={
-            <Show when={useMachineName()} keyed>
-              <SidebarMachineStatus
-                clanURI={clanURI}
-                machineName={useMachineName()}
-              />
-            </Show>
-          }
+          // the implementation of remote machine status in the backend needs more time to bake, so for now we remove it and
+          // present the user with the ability to install or update a machines based on `installedAt` in the inventory.json
+          //
+          // subHeader={
+          //   <Show when={useMachineName()} keyed>
+          //     <SidebarMachineStatus
+          //       clanURI={clanURI}
+          //       machineName={useMachineName()}
+          //     />
+          //   </Show>
+          // }
         >
           {Sections()}
         </SidebarPane>
