@@ -2,9 +2,9 @@ import * as THREE from "three";
 import { ObjectRegistry } from "./ObjectRegistry";
 import { Accessor, createEffect, createRoot, on } from "solid-js";
 import { renderLoop } from "./RenderLoop";
-// @ts-expect-error: No types for troika-three-text
-import { Text } from "troika-three-text";
-import ttf from "../../.fonts/ArchivoSemiCondensed-Medium.ttf";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { FontLoader } from "three/examples/jsm/Addons";
+import jsonfont from "three/examples/fonts/helvetiker_regular.typeface.json";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -201,26 +201,49 @@ export class MachineRepr {
   private createLabel(id: string) {
     const group = new THREE.Group();
     // 0x162324
-    const text = new Text();
-    text.text = id;
-    text.font = ttf;
-    text.fontSize = 0.1;
-    text.color = 0xffffff;
-    text.anchorX = "center";
-    text.anchorY = "middle";
-    text.position.set(0, 0, 0.01);
-    text.outlineWidth = 0.005;
-    text.outlineColor = 0x162324;
+    // const text = new Text();
+    // text.text = id;
+    // text.font = ttf;
+    // text.fontSize = 0.1;
+    // text.color = 0xffffff;
+    // text.anchorX = "center";
+    // text.anchorY = "middle";
+    // text.position.set(0, 0, 0.01);
+    // text.outlineWidth = 0.005;
+    // text.outlineColor = 0x162324;
+    //   text.sync(() => {
+    //     renderLoop.requestRender();
+    //   });
 
-    // Re-render on text changes
-    text.sync(() => {
-      renderLoop.requestRender();
+    const textMaterial = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
     });
+    const textGeo = new TextGeometry(id, {
+      font: new FontLoader().parse(jsonfont),
+      size: 0.09,
+      depth: 0.001,
+      curveSegments: 12,
+      bevelEnabled: false,
+    });
+
+    const text = new THREE.Mesh(textGeo, textMaterial);
+    textGeo.computeBoundingBox();
+
+    const bbox = textGeo.boundingBox;
+    if (bbox) {
+      const xMid = -0.5 * (bbox.max.x - bbox.min.x);
+      // const yMid = -0.5 * (bbox.max.y - bbox.min.y);
+      // const zMid = -0.5 * (bbox.max.z - bbox.min.z);
+
+      // Translate geometry so center is at origin / baseline aligned with y=0
+      textGeo.translate(xMid, -0.035, 0);
+    }
 
     // --- Background (rounded rect) ---
     const padding = 0.04;
-    // TODO: compute from text.bounds after sync
-    const bgWidth = text.text.length * 0.07 + padding;
+    const textWidth = bbox ? bbox.max.x - bbox.min.x : 1;
+    const bgWidth = textWidth + 10 * padding;
+    // const bgWidth = text.text.length * 0.07 + padding;
     const bgHeight = 0.1 + 2 * padding;
     const radius = 0.02;
 
@@ -229,8 +252,6 @@ export class MachineRepr {
     const bgMat = new THREE.MeshBasicMaterial({ color: 0x162324 });
     const bg = new THREE.Mesh(bgGeom, bgMat);
     bg.position.set(0, 0, -0.01);
-
-    // bg.position.set(0, 0, -0.01); // slightly behind text
 
     // --- Arrow (triangle pointing down) ---
     const arrowShape = new THREE.Shape();

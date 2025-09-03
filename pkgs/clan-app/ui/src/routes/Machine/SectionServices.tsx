@@ -18,8 +18,8 @@ export const SectionServices = () => {
       return [];
     }
 
-    return (ctx.machinesQuery.data[machineName].instance_refs ?? []).map(
-      (id) => {
+    return (ctx.machinesQuery.data[machineName].instance_refs ?? [])
+      .map((id) => {
         const instance = ctx.serviceInstancesQuery.data?.[id];
         if (!instance) {
           throw new Error(`Service instance ${id} not found`);
@@ -31,8 +31,8 @@ export const SectionServices = () => {
           instance,
           label: module.name == id ? module.name : `${module.name} (${id})`,
         };
-      },
-    );
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   return (
