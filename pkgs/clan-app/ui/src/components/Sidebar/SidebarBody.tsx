@@ -10,6 +10,7 @@ import { useMachineStateQuery } from "@/src/hooks/queries";
 import { SidebarProps } from "./Sidebar";
 import { Button } from "../Button/Button";
 import { useClanContext } from "@/src/routes/Clan/Clan";
+import { Instance } from "@/src/workflows/Service/models";
 
 interface MachineProps {
   clanURI: string;
@@ -129,22 +130,42 @@ const Machines = () => {
 
 export const ServiceRoute = (props: {
   clanURI: string;
-  machineName?: string;
   label: string;
   id: string;
-  module: { input?: string | null | undefined; name: string };
+  instance: Instance;
 }) => (
-  <A href={buildServicePath(props)} replace={true}>
+  <A
+    href={buildServicePath({
+      clanURI: props.clanURI,
+      id: props.id,
+      module: props.instance.module,
+    })}
+    replace={true}
+  >
     <div class="flex w-full flex-col gap-2">
-      <Typography
-        hierarchy="label"
-        size="s"
-        weight="bold"
-        color="primary"
-        inverted
-      >
-        {props.label}
-      </Typography>
+      <div class="flex flex-row items-center justify-between">
+        <Typography
+          hierarchy="label"
+          size="xs"
+          weight="bold"
+          color="primary"
+          inverted
+        >
+          {props.id}
+        </Typography>
+      </div>
+      <div class="flex w-full flex-row items-center gap-1">
+        <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
+        <Typography
+          hierarchy="label"
+          family="mono"
+          size="s"
+          inverted
+          color="primary"
+        >
+          {props.instance.resolved.usage_ref.name}
+        </Typography>
+      </div>
     </div>
   </A>
 );
@@ -165,8 +186,12 @@ const Services = () => {
         const moduleName = instance.module.name;
 
         const label = moduleName == id ? moduleName : `${moduleName} (${id})`;
-
-        return { id, label, module: instance.module };
+        console.log("Service instance", id, instance, label);
+        return {
+          id,
+          label,
+          instance: instance,
+        };
       },
     );
   };
@@ -191,7 +216,14 @@ const Services = () => {
       <Accordion.Content class="content">
         <nav>
           <For each={serviceInstances()}>
-            {(instance) => <ServiceRoute clanURI={ctx.clanURI} {...instance} />}
+            {(mapped) => (
+              <ServiceRoute
+                clanURI={ctx.clanURI}
+                id={mapped.id}
+                label={mapped.label}
+                instance={mapped.instance}
+              />
+            )}
           </For>
         </nav>
       </Accordion.Content>
