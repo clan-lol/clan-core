@@ -19,10 +19,10 @@ For machines with public IPs or DNS names, use the `internet` service to configu
           # Direct SSH with fallback support
           internet = {
             roles.default.machines.server1 = {
-              settings.address = "server1.example.com";
+              settings.host = "server1.example.com";
             };
             roles.default.machines.server2 = {
-              settings.address = "192.168.1.100";
+              settings.host = "192.168.1.100";
             };
           };
 
@@ -50,7 +50,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
           # Priority 1: Try direct connection first
           internet = {
             roles.default.machines.publicserver = {
-              settings.address = "public.example.com";
+              settings.host = "public.example.com";
             };
           };
 
