@@ -13,6 +13,7 @@ import { installSteps } from "./steps/installSteps";
 import { ApiCall } from "@/src/hooks/api";
 
 import cx from "classnames";
+import { useClanContext } from "@/src/routes/Clan/Clan";
 
 interface InstallStepperProps {
   onDone: () => void;
@@ -66,6 +67,8 @@ export interface InstallStoreType {
 export type PromptValues = Record<string, Record<string, string>>;
 
 export const InstallModal = (props: InstallModalProps) => {
+  const ctx = useClanContext();
+
   const stepper = createStepper(
     {
       steps,
@@ -107,22 +110,27 @@ export const InstallModal = (props: InstallModalProps) => {
     }
   };
 
+  const onClose = async () => {
+    // refresh some queries
+    await ctx.machinesQuery.refetch();
+    await ctx.serviceInstancesQuery.refetch();
+
+    props.onClose?.();
+  };
+
   return (
     <StepperProvider stepper={stepper}>
       <Modal
         class={cx("w-screen", sizeClasses())}
         title="Install machine"
-        onClose={() => {
-          console.log("Install modal closed");
-          props.onClose?.();
-        }}
+        onClose={onClose}
         open={props.open}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        <InstallStepper onDone={() => props.onClose?.()} />
+        <InstallStepper onDone={onClose} />
       </Modal>
     </StepperProvider>
   );
