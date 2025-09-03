@@ -151,10 +151,12 @@ export const ServiceRoute = (props: {
           color="primary"
           inverted
         >
-          {props.id}
+          {props.label}
         </Typography>
+        <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
       </div>
-      <div class="flex w-full flex-row items-center gap-1">
+      {/* Same subtitle as Machine */}
+      {/* <div class="flex w-full flex-row items-center gap-1">
         <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
         <Typography
           hierarchy="label"
@@ -165,7 +167,7 @@ export const ServiceRoute = (props: {
         >
           {props.instance.resolved.usage_ref.name}
         </Typography>
-      </div>
+      </div> */}
     </div>
   </A>
 );
@@ -181,8 +183,8 @@ const Services = () => {
       return [];
     }
 
-    return Object.entries(ctx.serviceInstancesQuery.data).map(
-      ([id, instance]) => {
+    return Object.entries(ctx.serviceInstancesQuery.data)
+      .map(([id, instance]) => {
         const moduleName = instance.module.name;
 
         const label = moduleName == id ? moduleName : `${moduleName} (${id})`;
@@ -191,8 +193,8 @@ const Services = () => {
           label,
           instance: instance,
         };
-      },
-    );
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   return (
