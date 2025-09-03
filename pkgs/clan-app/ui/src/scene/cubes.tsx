@@ -602,10 +602,11 @@ export function CubeScene(props: {
 
         if (ctx.worldMode() === "move") {
           // Set machine as not flying
-          props.setMachinePos(
-            highlightGroups["move"].values().next().value!,
-            cursorPosition() || null,
-          );
+          const pos = actionMachine!.position.toArray();
+          props.setMachinePos(highlightGroups["move"].values().next().value!, [
+            pos[0], // x
+            pos[2], // z
+          ]);
           clearHighlight("move");
           ctx.setWorldMode("select");
           renderLoop.requestRender();
