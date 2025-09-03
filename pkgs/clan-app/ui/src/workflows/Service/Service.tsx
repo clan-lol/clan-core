@@ -128,7 +128,6 @@ const ConfigureService = () => {
       ([instances, machines]) => {
         // Wait for all queries to be ready
         if (!instances || !machines) return;
-
         const instance = instances[routerProps.id || routerProps.name];
 
         set("roles", {});
@@ -146,6 +145,15 @@ const ConfigureService = () => {
       },
     ),
   );
+
+  const currentModuleRoles = createMemo(() => {
+    const module = selectedModule();
+    if (!module) return [];
+    return Object.keys(module.info.roles).map((role) => ({
+      role,
+      members: store.roles?.[role] || [],
+    }));
+  });
 
   const tagsQuery = useTags(useClanURI());
 
@@ -220,12 +228,11 @@ const ConfigureService = () => {
           when={serviceModulesQuery.data && store.roles}
           fallback={<div>Loading...</div>}
         >
-          <For each={Object.keys(selectedModule()?.info.roles || {})}>
+          <For each={currentModuleRoles()}>
             {(role) => {
-              const values = store.roles?.[role] || [];
               return (
                 <TagSelect<TagType>
-                  label={role}
+                  label={role.role}
                   renderItem={(item: TagType) => (
                     <Tag
                       inverted
@@ -240,10 +247,10 @@ const ConfigureService = () => {
                       {item.label}
                     </Tag>
                   )}
-                  values={values}
+                  values={role.members}
                   options={options()}
                   onClick={() => {
-                    set("currentRole", role);
+                    set("currentRole", role.role);
                     stepper.next();
                   }}
                 />
