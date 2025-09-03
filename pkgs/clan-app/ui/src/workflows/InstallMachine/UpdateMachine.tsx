@@ -27,7 +27,7 @@ interface UpdateStepperProps {
 const UpdateStepper = (props: UpdateStepperProps) => {
   const stepSignal = useStepper<UpdateSteps>();
 
-  const [store, _set] = getStepStore<InstallStoreType>(stepSignal);
+  const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
   const [alert, setAlert] = createSignal<AlertProps>();
 
@@ -62,6 +62,8 @@ const UpdateStepper = (props: UpdateStepperProps) => {
         },
       },
     });
+    // For cancel
+    set("install", "progress", call);
 
     const result = await call.result;
 
@@ -294,7 +296,7 @@ export const UpdateModal = (props: UpdateModalProps) => {
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        <UpdateStepper onDone={() => props.onClose} />
+        <UpdateStepper onDone={() => props.onClose?.()} />
       </Modal>
     </StepperProvider>
   );
