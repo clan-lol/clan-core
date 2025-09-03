@@ -186,7 +186,7 @@ export const MachineTags = (props: MachineTagsProps) => {
       optionLabel="value"
       optionDisabled="disabled"
       itemComponent={ItemComponent(props.inverted || false)}
-      placeholder="Enter a tag name"
+      placeholder="Start typing a name and press enter"
       onChange={() => {
         // noop, we handle this via the selectedOptions signal
       }}
