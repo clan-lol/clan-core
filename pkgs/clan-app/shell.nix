@@ -91,6 +91,8 @@ mkShell {
     pushd "$CLAN_CORE_PATH/pkgs/clan-app/ui"
     export NODE_PATH="$(pwd)/node_modules"
     export PATH="$NODE_PATH/.bin:$(pwd)/bin:$PATH"
+
+    rm -rf .fonts || true
     cp -r ${self'.packages.fonts} .fonts
     chmod -R +w .fonts
     mkdir -p api
