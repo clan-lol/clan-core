@@ -564,8 +564,13 @@ export function CubeScene(props: {
           controls.enabled = false;
 
           // Change cursor to grabbing
+          // LongPress, if not canceled, enters move mode
           const cancelMove = setTimeout(() => {
             setIsDragging(true);
+            const pos =
+              machineManager.machines.get(machines[0])?.group.position ||
+              new THREE.Vector3(0, 0, 0);
+            actionMachine?.position.set(pos.x, 0, pos.z);
             // Set machine as flying
             setHighlightGroups({ move: new Set(machines) });
 
