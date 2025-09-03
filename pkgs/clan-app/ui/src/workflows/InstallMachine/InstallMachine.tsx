@@ -13,7 +13,6 @@ import { installSteps } from "./steps/installSteps";
 import { ApiCall } from "@/src/hooks/api";
 
 import cx from "classnames";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 
 interface InstallStepperProps {
   onDone: () => void;
@@ -67,8 +66,6 @@ export interface InstallStoreType {
 export type PromptValues = Record<string, Record<string, string>>;
 
 export const InstallModal = (props: InstallModalProps) => {
-  const ctx = useClanContext();
-
   const stepper = createStepper(
     {
       steps,
@@ -111,10 +108,6 @@ export const InstallModal = (props: InstallModalProps) => {
   };
 
   const onClose = async () => {
-    // refresh some queries
-    await ctx.machinesQuery.refetch();
-    await ctx.serviceInstancesQuery.refetch();
-
     props.onClose?.();
   };
 

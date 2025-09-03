@@ -20,14 +20,15 @@ export const SectionServices = () => {
 
     return (ctx.machinesQuery.data[machineName].instance_refs ?? []).map(
       (id) => {
-        const module = ctx.serviceInstancesQuery.data?.[id].module;
-        if (!module) {
-          throw new Error(`Service instance ${id} has no module`);
+        const instance = ctx.serviceInstancesQuery.data?.[id];
+        if (!instance) {
+          throw new Error(`Service instance ${id} not found`);
         }
+        const module = instance.module;
 
         return {
           id,
-          module,
+          instance,
           label: module.name == id ? module.name : `${module.name} (${id})`,
         };
       },
@@ -41,11 +42,7 @@ export const SectionServices = () => {
           <nav>
             <For each={services()}>
               {(instance) => (
-                <ServiceRoute
-                  clanURI={ctx.clanURI}
-                  machineName={useMachineName()}
-                  {...instance}
-                />
+                <ServiceRoute clanURI={ctx.clanURI} {...instance} />
               )}
             </For>
           </nav>

@@ -19,7 +19,6 @@ import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { useClanURI } from "@/src/hooks/clan";
 import { AlertProps } from "@/src/components/Alert/Alert";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 
 // TODO: Deduplicate
 interface UpdateStepperProps {
@@ -238,8 +237,6 @@ export type UpdateSteps = typeof steps;
 export type PromptValues = Record<string, Record<string, string>>;
 
 export const UpdateModal = (props: UpdateModalProps) => {
-  const ctx = useClanContext();
-
   const stepper = createStepper(
     {
       steps,
@@ -285,10 +282,6 @@ export const UpdateModal = (props: UpdateModalProps) => {
   };
 
   const onClose = async () => {
-    // refresh some queries
-    await ctx.machinesQuery.refetch();
-    await ctx.serviceInstancesQuery.refetch();
-
     props.onClose?.();
   };
 

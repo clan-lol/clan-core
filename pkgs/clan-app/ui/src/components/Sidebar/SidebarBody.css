@@ -1,13 +1,14 @@
 div.sidebar-body {
-  @apply py-4 px-2 h-full;
+  @apply py-4 px-2;
+  /* full - (y padding) */
+  height: calc(100% - 2rem);
+
   @apply border border-inv-3 rounded-bl-md rounded-br-md;
 
+  /* TODO: This is weird, we shouldn't disable native browser features, a11y impacts incomming */
   &::-webkit-scrollbar {
     display: none;
   }
-
-  overflow-y: auto;
-  scrollbar-width: none;
 
   background:
     linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),
@@ -20,13 +21,14 @@ div.sidebar-body {
   @apply backdrop-blur-sm;
 
   .accordion {
-    @apply w-full mb-4;
+    @apply w-full mb-4 h-full flex flex-col justify-start gap-4;
 
     &:last-child {
       @apply mb-0;
     }
 
     & > .item {
+      max-height: 50%;
       &:last-child {
         @apply mb-0;
       }
@@ -58,8 +60,12 @@ div.sidebar-body {
       }
 
       & > .content {
-        @apply overflow-hidden flex flex-col;
+        @apply flex flex-col;
         @apply py-3 px-1.5 bg-inv-4 rounded-md mb-4;
+
+        max-height: calc(100% - 24px);
+        overflow-y: auto;
+        scrollbar-width: none;
 
         animation: slideAccordionUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
 

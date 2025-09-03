@@ -4,6 +4,7 @@ import { useMachineName } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
+import { useClanContext } from "@/src/routes/Clan/Clan";
 
 export interface SidebarSectionUpdateProps {
   clanURI: string;
@@ -11,6 +12,7 @@ export interface SidebarSectionUpdateProps {
 }
 
 export const SidebarSectionUpdate = (props: SidebarSectionUpdateProps) => {
+  const ctx = useClanContext();
   const query = useMachineStateQuery(props.clanURI, props.machineName);
 
   const [showUpdate, setShowUpdate] = createSignal(false);
@@ -29,7 +31,13 @@ export const SidebarSectionUpdate = (props: SidebarSectionUpdateProps) => {
           <UpdateModal
             open={showUpdate()}
             machineName={useMachineName()}
-            onClose={() => setShowUpdate(false)}
+            onClose={async () => {
+              // refresh some queries
+              ctx.machinesQuery.refetch();
+              ctx.serviceInstancesQuery.refetch();
+
+              setShowUpdate(false);
+            }}
           />
         </Show>
       </div>

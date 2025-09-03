@@ -43,6 +43,8 @@ export interface Module {
 
 type ValueOf<T> = T[keyof T];
 
+export type Instance = ValueOf<NonNullable<ServiceInstancesQuery["data"]>>;
+
 /**
  * Collect all members (machines and tags) for a given role in a service instance
  *
@@ -50,7 +52,7 @@ type ValueOf<T> = T[keyof T];
  *
  */
 export function getRoleMembers(
-  instance: ValueOf<NonNullable<ServiceInstancesQuery["data"]>>,
+  instance: Instance,
   all_machines: NonNullable<MachinesQuery["data"]>,
   role: string,
 ) {
