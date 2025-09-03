@@ -1,4 +1,4 @@
-fieldset {
+.fieldset {
   @apply flex flex-col w-full;
 
   legend {

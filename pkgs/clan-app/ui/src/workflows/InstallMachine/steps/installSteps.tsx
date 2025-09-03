@@ -18,7 +18,7 @@ import {
 } from "../InstallMachine";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert, AlertProps } from "@/src/components/Alert/Alert";
-import { createSignal, For, Match, Show, Switch, JSX } from "solid-js";
+import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -576,32 +576,6 @@ const PromptsFields = (props: PromptsFieldsProps) => {
                           const [inputType, setInputType] =
                             createSignal(defaultInputType);
 
-                          let endComponent:
-                            | ((props: { inverted?: boolean }) => JSX.Element)
-                            | undefined = undefined;
-
-                          if (defaultInputType === "password") {
-                            endComponent = (props) => (
-                              <KButton
-                                onClick={() => {
-                                  setInputType((type) =>
-                                    type === "password" ? "text" : "password",
-                                  );
-                                }}
-                              >
-                                <Icon
-                                  icon={
-                                    inputType() == "password"
-                                      ? "EyeClose"
-                                      : "EyeOpen"
-                                  }
-                                  color="quaternary"
-                                  inverted={props.inverted}
-                                />
-                              </KButton>
-                            );
-                          }
-
                           return (
                             <TextInput
                               {...f}
@@ -609,7 +583,29 @@ const PromptsFields = (props: PromptsFieldsProps) => {
                                 fieldInfo.prompt.display?.label ||
                                 fieldInfo.prompt.name
                               }
-                              endComponent={endComponent}
+                              endComponent={(local) => (
+                                <Show when={defaultInputType === "password"}>
+                                  <KButton
+                                    onClick={() => {
+                                      setInputType((type) =>
+                                        type === "password"
+                                          ? "text"
+                                          : "password",
+                                      );
+                                    }}
+                                  >
+                                    <Icon
+                                      icon={
+                                        inputType() == "password"
+                                          ? "EyeClose"
+                                          : "EyeOpen"
+                                      }
+                                      color="quaternary"
+                                      inverted={local.inverted}
+                                    />
+                                  </KButton>
+                                </Show>
+                              )}
                               description={fieldInfo.prompt.description}
                               value={f.value || fieldInfo.value || ""}
                               required={fieldInfo.prompt.display?.required}

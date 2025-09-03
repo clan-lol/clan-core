@@ -35,10 +35,10 @@ export const Fieldset = (props: FieldsetProps) => {
       : props.children;
 
   return (
-    <fieldset
+    <div
       role="group"
-      class={cx({ inverted: props.inverted })}
-      disabled={props.disabled || false}
+      class={cx("fieldset", { inverted: props.inverted })}
+      aria-disabled={props.disabled || undefined}
     >
       {props.legend && (
         <legend>
@@ -69,6 +69,6 @@ export const Fieldset = (props: FieldsetProps) => {
           </Typography>
         </div>
       )}
-    </fieldset>
+    </div>
   );
 };

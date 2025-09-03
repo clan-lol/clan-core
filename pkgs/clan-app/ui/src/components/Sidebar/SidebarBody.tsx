@@ -186,7 +186,6 @@ const Services = () => {
         const moduleName = instance.module.name;
 
         const label = moduleName == id ? moduleName : `${moduleName} (${id})`;
-        console.log("Service instance", id, instance, label);
         return {
           id,
           label,
