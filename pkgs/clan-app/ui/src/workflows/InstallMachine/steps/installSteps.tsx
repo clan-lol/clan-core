@@ -18,7 +18,7 @@ import {
 } from "../InstallMachine";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Alert, AlertProps } from "@/src/components/Alert/Alert";
-import { createSignal, For, Match, Show, Switch } from "solid-js";
+import { createSignal, For, Match, Show, Switch, JSX } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
@@ -35,6 +35,7 @@ import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { Loader } from "@/src/components/Loader/Loader";
+import { Button as KButton } from "@kobalte/core/button";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -566,35 +567,68 @@ const PromptsFields = (props: PromptsFieldsProps) => {
                       <Field
                         name={`promptValues.${fieldInfo.generator}.${fieldInfo.prompt.name}`}
                       >
-                        {(f, props) => (
-                          <TextInput
-                            {...f}
-                            label={
-                              fieldInfo.prompt.display?.label ||
-                              fieldInfo.prompt.name
-                            }
-                            description={fieldInfo.prompt.description}
-                            value={f.value || fieldInfo.value || ""}
-                            required={fieldInfo.prompt.display?.required}
-                            orientation="horizontal"
-                            validationState={
-                              getError(
-                                formStore,
-                                `promptValues.${fieldInfo.generator}.${fieldInfo.prompt.name}`,
-                              )
-                                ? "invalid"
-                                : "valid"
-                            }
-                            input={{
-                              type: fieldInfo.prompt.prompt_type.includes(
-                                "hidden",
-                              )
-                                ? "password"
-                                : "text",
-                              ...props,
-                            }}
-                          />
-                        )}
+                        {(f, props) => {
+                          const defaultInputType =
+                            fieldInfo.prompt.prompt_type.includes("hidden")
+                              ? "password"
+                              : "text";
+
+                          const [inputType, setInputType] =
+                            createSignal(defaultInputType);
+
+                          let endComponent:
+                            | ((props: { inverted?: boolean }) => JSX.Element)
+                            | undefined = undefined;
+
+                          if (defaultInputType === "password") {
+                            endComponent = (props) => (
+                              <KButton
+                                onClick={() => {
+                                  setInputType((type) =>
+                                    type === "password" ? "text" : "password",
+                                  );
+                                }}
+                              >
+                                <Icon
+                                  icon={
+                                    inputType() == "password"
+                                      ? "EyeClose"
+                                      : "EyeOpen"
+                                  }
+                                  color="quaternary"
+                                  inverted={props.inverted}
+                                />
+                              </KButton>
+                            );
+                          }
+
+                          return (
+                            <TextInput
+                              {...f}
+                              label={
+                                fieldInfo.prompt.display?.label ||
+                                fieldInfo.prompt.name
+                              }
+                              endComponent={endComponent}
+                              description={fieldInfo.prompt.description}
+                              value={f.value || fieldInfo.value || ""}
+                              required={fieldInfo.prompt.display?.required}
+                              orientation="horizontal"
+                              validationState={
+                                getError(
+                                  formStore,
+                                  `promptValues.${fieldInfo.generator}.${fieldInfo.prompt.name}`,
+                                )
+                                  ? "invalid"
+                                  : "valid"
+                              }
+                              input={{
+                                type: inputType(),
+                                ...props,
+                              }}
+                            />
+                          );
+                        }}
                       </Field>
                     )}
                   </For>

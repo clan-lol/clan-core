@@ -76,6 +76,19 @@ div.form-field {
       @apply absolute left-2 top-1/2 transform -translate-y-1/2;
       @apply w-[0.875rem] h-[0.875rem] pointer-events-none;
     }
+
+    & > .start-component {
+      @apply absolute left-2 top-1/2 transform -translate-y-1/2;
+    }
+
+    & > .end-component {
+      @apply absolute right-2 top-1/2 transform -translate-y-1/2;
+    }
+
+    & > .start-component,
+    & > .end-component {
+      @apply size-fit;
+    }
   }
 
   &.s {
@@ -101,7 +114,7 @@ div.form-field {
       }
 
       & > .icon {
-        @apply w-[0.6875rem] h-[0.6875rem] transform -translate-y-1/2;
+        @apply w-[0.6875rem] h-[0.6875rem];
       }
     }
   }

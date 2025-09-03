@@ -75,7 +75,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
           {
             name: "gritty.foo",
             description: "Name of the gritty",
-            prompt_type: "line",
+            prompt_type: "hidden",
             display: {
               helperText: null,
               label: "(2) Password",
@@ -113,7 +113,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
           {
             name: "gritty.foo",
             description: "Name of the gritty",
-            prompt_type: "line",
+            prompt_type: "hidden",
             display: {
               helperText: null,
               label: "(5) Password",
