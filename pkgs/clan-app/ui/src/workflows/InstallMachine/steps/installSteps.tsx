@@ -34,6 +34,7 @@ import {
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
+import { Loader } from "@/src/components/Loader/Loader";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -431,7 +432,22 @@ export const ConfigureData = () => {
   return (
     <>
       <Show when={generatorsQuery.isLoading}>
-        Checking credentials & data...
+        <div class="relative flex w-full flex-col items-center justify-end ">
+          <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 pt-4">
+            <Loader />
+            <Typography
+              hierarchy="title"
+              size="default"
+              weight="bold"
+              color="inherit"
+            >
+              Credentials & Data
+            </Typography>
+            <Typography hierarchy="label" size="default" color="secondary">
+              Loading Machine Generators ...
+            </Typography>
+          </div>
+        </div>
       </Show>
       <Show when={generatorsQuery.data}>
         {(generators) => <PromptsFields generators={generators()} />}
