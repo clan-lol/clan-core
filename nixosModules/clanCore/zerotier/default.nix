@@ -189,8 +189,12 @@ in
       clan.core.vars.generators.zerotier = {
         migrateFact = "zerotier";
         files.zerotier-ip.secret = false;
+        files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
         files.zerotier-network-id.secret = false;
-        files.zerotier-identity-secret = { };
+        files.zerotier-network-id.restartUnits = [ "zerotierone.service" ];
+        files.zerotier-identity-secret = {
+          restartUnits = [ "zerotierone.service" ];
+        };
         runtimeInputs = [
           config.services.zerotierone.package
           pkgs.python3
@@ -211,7 +215,10 @@ in
       clan.core.vars.generators.zerotier = {
         migrateFact = "zerotier";
         files.zerotier-ip.secret = false;
-        files.zerotier-identity-secret = { };
+        files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
+        files.zerotier-identity-secret = {
+          restartUnits = [ "zerotierone.service" ];
+        };
         runtimeInputs = [
           config.services.zerotierone.package
           pkgs.python3
