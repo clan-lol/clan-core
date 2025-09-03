@@ -5,7 +5,7 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { ConfigureAddress, ConfigureData } from "./steps/installSteps";
 
@@ -16,6 +16,9 @@ import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
+import { useApiClient } from "@/src/hooks/ApiClient";
+import { useClanURI } from "@/src/hooks/clan";
+import { AlertProps } from "@/src/components/Alert/Alert";
 
 // TODO: Deduplicate
 interface UpdateStepperProps {
@@ -24,21 +27,77 @@ interface UpdateStepperProps {
 const UpdateStepper = (props: UpdateStepperProps) => {
   const stepSignal = useStepper<UpdateSteps>();
 
+  const [store, _set] = getStepStore<InstallStoreType>(stepSignal);
+
+  const [alert, setAlert] = createSignal<AlertProps>();
+
+  const clanURI = useClanURI();
+
+  const client = useApiClient();
+  const handleUpdate = async () => {
+    console.log("Starting update for", store.install.machineName);
+
+    if (!store.install.targetHost) {
+      console.error("No target host specified, API requires it");
+      return;
+    }
+
+    const port = store.install.port
+      ? parseInt(store.install.port, 10)
+      : undefined;
+
+    const call = client.fetch("run_machine_update", {
+      machine: {
+        flake: { identifier: clanURI },
+        name: store.install.machineName,
+      },
+      build_host: null,
+      target_host: {
+        address: store.install.targetHost,
+        port,
+        password: store.install.password,
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
+      },
+    });
+
+    const result = await call.result;
+
+    if (result.status === "error") {
+      console.error("Update failed", result.errors);
+      setAlert(() => ({
+        type: "error",
+        title: "Update failed",
+        description: result.errors[0].message,
+      }));
+      stepSignal.previous();
+      return;
+    }
+    if (result.status === "success") {
+      stepSignal.next();
+      return;
+    }
+  };
+
   return (
     <Dynamic
       component={stepSignal.currentStep().content}
       onDone={props.onDone}
       next="update"
+      stepFinished={handleUpdate}
+      alert={alert()}
     />
   );
 };
 
 export interface UpdateModalProps {
   machineName: string;
+  open: boolean;
   initialStep?: UpdateSteps[number]["id"];
   mount?: Node;
   onClose?: () => void;
-  open: boolean;
 }
 
 export const UpdateHeader = (props: { machineName: string }) => {
