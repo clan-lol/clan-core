@@ -1,6 +1,8 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
 import cx from "classnames";
 import { TextInput, TextInputProps } from "@/src/components/Form/TextInput";
+import Icon from "../Icon/Icon";
+import { Button } from "@kobalte/core/button";
 
 const Examples = (props: TextInputProps) => (
   <div class="flex flex-col gap-8">
@@ -83,16 +85,38 @@ export const Tooltip: Story = {
   },
 };
 
-export const Icon: Story = {
+export const WithIcon: Story = {
   args: {
     ...Tooltip.args,
-    icon: "Checkmark",
+    startComponent: () => <Icon icon="EyeClose" color="quaternary" inverted />,
+  },
+};
+
+export const WithStartComponent: Story = {
+  args: {
+    ...Tooltip.args,
+    startComponent: (props: { inverted?: boolean }) => (
+      <Button>
+        <Icon icon="EyeClose" color="quaternary" {...props} />
+      </Button>
+    ),
+  },
+};
+
+export const WithEndComponent: Story = {
+  args: {
+    ...Tooltip.args,
+    endComponent: (props: { inverted?: boolean }) => (
+      <Button>
+        <Icon icon="EyeOpen" color="quaternary" {...props} />
+      </Button>
+    ),
   },
 };
 
 export const Ghost: Story = {
   args: {
-    ...Icon.args,
+    ...WithIcon.args,
     ghost: true,
   },
 };
@@ -106,14 +130,14 @@ export const Invalid: Story = {
 
 export const Disabled: Story = {
   args: {
-    ...Icon.args,
+    ...WithIcon.args,
     disabled: true,
   },
 };
 
 export const ReadOnly: Story = {
   args: {
-    ...Icon.args,
+    ...WithIcon.args,
     readOnly: true,
     defaultValue: "14/05/02",
   },
