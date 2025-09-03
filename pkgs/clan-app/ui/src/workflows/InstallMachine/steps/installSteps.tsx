@@ -17,7 +17,7 @@ import {
   PromptValues,
 } from "../InstallMachine";
 import { TextInput } from "@/src/components/Form/TextInput";
-import { Alert } from "@/src/components/Alert/Alert";
+import { Alert, AlertProps } from "@/src/components/Alert/Alert";
 import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Orienter } from "@/src/components/Form/Orienter";
@@ -60,7 +60,11 @@ const ConfigureAdressSchema = v.object({
 
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
 
-export const ConfigureAddress = (props: { next?: string }) => {
+export const ConfigureAddress = (props: {
+  next?: string;
+  stepFinished: () => void;
+  alert?: AlertProps;
+}) => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -89,8 +93,8 @@ export const ConfigureAddress = (props: { next?: string }) => {
       password: values.password,
     }));
 
-    // Here you would typically trigger the ISO creation process
     stepSignal.next();
+    props.stepFinished?.();
   };
 
   const tryReachable = async () => {
@@ -129,6 +133,7 @@ export const ConfigureAddress = (props: { next?: string }) => {
       <StepLayout
         body={
           <div class="flex flex-col gap-2">
+            <Show when={props.alert}>{(alert) => <Alert {...alert()} />}</Show>
             <Fieldset>
               <Field name="targetHost">
                 {(field, props) => (
@@ -256,7 +261,7 @@ const CheckHardware = () => {
       const call = client.fetch("run_machine_hardware_info", {
         target_host: {
           address: store.install.targetHost,
-          ...(port && { port }),
+          port,
           password: store.install.password,
           ssh_options: {
             StrictHostKeyChecking: "no",
@@ -706,7 +711,7 @@ const InstallSummary = () => {
       },
       target_host: {
         address: store.install.targetHost,
-        ...(port && { port }),
+        port,
         password: store.install.password,
         ssh_options: {
           StrictHostKeyChecking: "no",
