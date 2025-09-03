@@ -56,6 +56,11 @@
           systemd.services.telegraf-json = {
             enable = true;
             wantedBy = [ "multi-user.target" ];
+            after = [ "telegraf.service" ];
+            wants = [ "telegraf.service" ];
+            serviceConfig = {
+              Restart = "on-failure";
+            };
             script = "${pkgs.miniserve}/bin/miniserve -p 9990 ${jsonpath} --auth-file ${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}";
           };
 
