@@ -19,6 +19,7 @@ import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { useClanURI } from "@/src/hooks/clan";
 import { AlertProps } from "@/src/components/Alert/Alert";
+import usbLogo from "@/logos/usb-stick-min.png?url";
 
 // TODO: Deduplicate
 interface UpdateStepperProps {
@@ -135,11 +136,7 @@ const UpdateProgress = () => {
 
   return (
     <div class="relative flex size-full flex-col items-center justify-end bg-inv-4">
-      <img
-        src="/logos/usb-stick-min.png"
-        alt="usb logo"
-        class="absolute top-2 z-0"
-      />
+      <img src={usbLogo} alt="usb logo" class="absolute top-2 z-0" />
       <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 fg-inv-1">
         <Typography
           hierarchy="title"

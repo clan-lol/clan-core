@@ -36,6 +36,7 @@ import { useApiClient } from "@/src/hooks/ApiClient";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
+import usbLogo from "@/logos/usb-stick-min.png?url";
 
 export const InstallHeader = (props: { machineName: string }) => {
   return (
@@ -829,11 +830,7 @@ const InstallProgress = () => {
 
   return (
     <div class="relative flex size-full flex-col items-center justify-end bg-inv-4">
-      <img
-        src="/logos/usb-stick-min.png"
-        alt="usb logo"
-        class="absolute top-2 z-0"
-      />
+      <img src={usbLogo} alt="usb logo" class="absolute top-2 z-0" />
       <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 fg-inv-1">
         <Typography
           hierarchy="title"

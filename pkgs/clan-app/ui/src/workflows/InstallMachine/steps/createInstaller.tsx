@@ -20,6 +20,7 @@ import { useSystemStorageOptions } from "@/src/hooks/queries";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { onMount } from "solid-js";
 import cx from "classnames";
+import usbLogo from "@/logos/usb-stick-min.png?url";
 
 const Prose = () => (
   <StepLayout
@@ -335,11 +336,7 @@ const FlashProgress = () => {
         "relative flex size-full flex-col items-center justify-end bg-inv-4",
       )}
     >
-      <img
-        src="/logos/usb-stick-min.png"
-        alt="usb logo"
-        class="absolute top-4 z-0"
-      />
+      <img src={usbLogo} alt="usb logo" class="absolute top-4 z-0" />
       <div class="z-10 mb-6 flex w-full max-w-md flex-col items-center gap-2 fg-inv-1">
         <Typography
           hierarchy="title"
