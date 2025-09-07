@@ -27,7 +27,7 @@
     # The lines below will define a zerotier network and add all machines as 'peer' to it.
     # !!! Manual steps required:
     #   - Define a controller machine for the zerotier network.
-    #   - Deploy the controller machine first to initilize the network.
+    #   - Deploy the controller machine first to initialize the network.
     zerotier = {
       # Replace with the name (string) of your machine that you will use as zerotier-controller
       # See: https://docs.zerotier.com/controller/
