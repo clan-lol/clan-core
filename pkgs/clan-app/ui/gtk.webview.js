@@ -38,7 +38,7 @@ fs.readFile(manifestPath, { encoding: "utf8" }, (err, data) => {
   assets.forEach((asset) => {
     // console.log(asset);
     if (asset.src === "index.html") {
-      asset.css.forEach((cssEntry) => {
+      asset.css?.forEach((cssEntry) => {
         // css to be processed
 
         const css = fs.readFileSync(`dist/${cssEntry}`, "utf8");

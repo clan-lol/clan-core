@@ -30,6 +30,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./"), // Adjust the path as needed
     },
   },
+  base: "./",
   optimizeDeps: {
     include: ["debug", "extend"],
   },
@@ -48,7 +49,18 @@ export default defineConfig({
   },
   build: {
     target: "safari11",
+    modulePreload: false,
     //  assetsDi
     manifest: true,
+    // Inline everything: TODO
+    // Detect file:///assets requests and point to the correct directory in webview
+    rollupOptions: {
+      output: {
+        format: "iife",
+        // entryFileName: ""
+        // inlineDynamicImports: true,
+      },
+    },
+    // assetsInlineLimit: 0,
   },
 });
