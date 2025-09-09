@@ -11,7 +11,7 @@ For architectural concepts and design principles, see the [Concepts guide](vars-
 
 This guide assumes
 - Clan is set up already (see [Getting Started](../guides/getting-started/index.md))
-- a machine has been added to the clan (see [Adding Machines](./more-machines.md))
+- a machine has been added to the clan (see [Adding Machines](getting-started/add-machines.md))
 
 This section will walk you through the following steps:
 
@@ -117,7 +117,7 @@ If we just imported the `root-password.nix` from above into more machines, clan 
 If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
 ```nix
 {config, pkgs, ...}: {
-  clan.vars.generators.root-password = {
+  clan.core.vars.generators.root-password = {
     share = true;
     # ...
   }

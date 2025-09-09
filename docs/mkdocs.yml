@@ -63,19 +63,17 @@ nav:
       - ClanServices: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
-      - Mesh VPN: guides/mesh-vpn.md
-      - Backup & Restore: guides/backups.md
       - Vars:
+          - Overview: guides/vars-overview.md
           - Getting Started: guides/vars-backend.md
           - Concepts: guides/vars-concepts.md
           - Advanced Examples: guides/vars-advanced-examples.md
           - Troubleshooting: guides/vars-troubleshooting.md
-      - Facts Backend: guides/secrets.md
-      - Adding more machines: guides/more-machines.md
-      - Target Host: guides/target-host.md
-      - Inventory:
-          - Inventory: guides/inventory.md
-      - Secure Boot: guides/secure-boot.md
+      - Age Plugins: guides/age-plugins.md
+      - Secrets management: guides/secrets.md
+      - Networking: guides/networking.md
+      - Zerotier VPN: guides/mesh-vpn.md
+      - How to disable Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
       - macOS: guides/macos.md
       - Contributing:
