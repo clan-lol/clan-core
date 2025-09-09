@@ -21,7 +21,7 @@ The following tutorial will walk through setting up a Backup service where the t
 
 ## Services
 
-The inventory defines `services`. Membership of `machines` is defined via `roles` exclusively.
+The inventory defines `instances` of clan services. Membership of `machines` is defined via `roles` exclusively.
 
 See each [modules documentation](../reference/clanServices/index.md) for its available roles.
 
@@ -31,9 +31,8 @@ A service can be added to one or multiple machines via `Roles`. Clan's `Role` in
 
 Each service can still be customized and configured according to the modules options.
 
-- Per instance configuration via `services.<serviceName>.<instanceName>.config`
-- Per role configuration via `services.<serviceName>.<instanceName>.roles.<roleName>.config`
-- Per machine configuration via `services.<serviceName>.<instanceName>.machines.<machineName>.config`
+- Per role configuration via `inventory.instances.<instanceName>.roles.<roleName>.settings`
+- Per machine configuration via `inventory.instances.<instanceName>.roles.<roleName>.machines.<machineName>.settings`
 
 ### Setting up the Backup Service
 
@@ -44,16 +43,17 @@ Each service can still be customized and configured according to the modules opt
 
     See also: [Multiple Service Instances](#multiple-service-instances)
 
-    ```{.nix hl_lines="6-7"}
-    clan-core.lib.clan {
-        inventory = {
-            services = {
-                borgbackup.instance_1 = {
-                    # Machines can be added here.
-                    roles.client.machines = [ "jon" ];
-                    roles.server.machines = [ "backup_server" ];
-                };
+    ```{.nix hl_lines="9-10"}
+    {
+        inventory.instances.instance_1 = {
+            module =  {
+                name = "borgbackup";
+                input = "clan-core";
             };
+
+            # Machines can be added here.
+            roles.client.machines."jon" {};
+            roles.server.machines."backup_server" = {};
         };
     }
     ```
@@ -66,8 +66,8 @@ It is possible to add services to multiple machines via tags as shown
 
 !!! Example "Tags Example"
 
-    ```{.nix hl_lines="5 8 14"}
-    clan-core.lib.clan {
+    ```{.nix hl_lines="5 8 18"}
+    {
         inventory = {
             machines = {
                 "jon" = {
@@ -76,13 +76,16 @@ It is possible to add services to multiple machines via tags as shown
                 "sara" = {
                     tags = [ "backup" ];
                 };
-                # ...
             };
-            services = {
-                borgbackup.instance_1 = {
-                    roles.client.tags = [ "backup" ];
-                    roles.server.machines = [ "backup_server" ];
+
+            instances.instance_1 = {
+                module =  {
+                    name = "borgbackup";
+                    input = "clan-core";
                 };
+
+                roles.client.tags =  [ "backup" ];
+                roles.server.machines."backup_server" = {};
             };
         };
     }
@@ -98,22 +101,34 @@ It is possible to add services to multiple machines via tags as shown
 
     In this example `backup_server` has role `client` and `server` in different instances.
 
-    ```{.nix hl_lines="11 14"}
-    clan-core.lib.clan {
+    ```{.nix hl_lines="17 26"}
+    {
         inventory = {
             machines = {
                 "jon" = {};
                 "backup_server" = {};
-                "backup_backup_server" = {}
+                "backup_backup_server" = {};
             };
-            services = {
-                borgbackup.instance_1 = {
-                    roles.client.machines = [ "jon" ];
-                    roles.server.machines = [ "backup_server" ];
+
+            instances = {
+                instance_1 = {
+                    module =  {
+                        name = "borgbackup";
+                        input = "clan-core";
+                    };
+
+                    roles.client.machines."jon" = {};
+                    roles.server.machines."backup_server" = {};
                 };
-                borgbackup.instance_2 = {
-                    roles.client.machines = [ "backup_server" ];
-                    roles.server.machines = [ "backup_backup_server" ];
+
+                instance_2 = {
+                    module =  {
+                        name = "borgbackup";
+                        input = "clan-core";
+                    };
+
+                    roles.client.machines."backup_server" = {};
+                    roles.server.machines."backup_backup_server" = {};
                 };
             };
         };
