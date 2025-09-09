@@ -303,6 +303,27 @@ def complete_templates_clan(
     return []
 
 
+def complete_templates_machine(
+    _prefix: str,
+    parsed_args: argparse.Namespace,
+    **_kwargs: Any,
+) -> Iterable[str]:
+    """Provides completion functionality for machine templates"""
+    flake = (
+        clan_dir_result
+        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
+        is not None
+        else "."
+    )
+
+    list_all_templates = list_templates(Flake(flake))
+    machine_template_list = list_all_templates.builtins.get("machine")
+    if machine_template_list:
+        machine_templates = list(machine_template_list)
+        return dict.fromkeys(machine_templates, "machine")
+    return []
+
+
 def complete_vars_for_machine(
     _prefix: str,
     parsed_args: argparse.Namespace,
