@@ -63,6 +63,12 @@ nav:
       - ClanServices: guides/clanServices.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
+      - Vars:
+          - Overview: guides/vars-overview.md
+          - Getting Started: guides/vars-backend.md
+          - Concepts: guides/vars-concepts.md
+          - Advanced Examples: guides/vars-advanced-examples.md
+          - Troubleshooting: guides/vars-troubleshooting.md
       - Age Plugins: guides/age-plugins.md
       - Secrets management: guides/secrets.md
       - Networking: guides/networking.md
