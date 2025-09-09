@@ -8,7 +8,7 @@
     user-alice = {
       module = {
         name = "users";
-        input = "clan";
+        input = "clan-core";
       };
       roles.default.tags.all = { };
       roles.default.settings = {
@@ -35,7 +35,7 @@
     user-bob = {
       module = {
         name = "users";
-        input = "clan";
+        input = "clan-core";
       };
       roles.default.machines.bobs-laptop = { };
       roles.default.settings.user = "bob";

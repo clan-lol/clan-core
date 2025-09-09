@@ -1,4 +1,3 @@
-
 This guide explains how to set up and manage
 [BorgBackup](https://borgbackup.readthedocs.io/) for secure, efficient backups
 in a clan network. BorgBackup provides:
@@ -18,7 +17,7 @@ inventory.instances = {
   borgbackup = {
     module = {
       name = "borgbackup";
-      input = "clan";
+      input = "clan-core";
     };
     roles.client.machines."jon".settings = {
       destinations."storagebox" = {
@@ -177,7 +176,7 @@ storagebox::username@username.your-storagebox.de:/./borgbackup::jon-storagebox-2
 
 ### Restoring backups
 
-For restoring a backup you have two options. 
+For restoring a backup you have two options.
 
 #### Full restoration
 
@@ -194,6 +193,3 @@ To restore only a specific service (e.g., `linkding`):
 ```bash
 clan backups restore --service linkding jon borgbackup storagebox::u444061@u444061.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T06:02:35
 ```
-
-
-

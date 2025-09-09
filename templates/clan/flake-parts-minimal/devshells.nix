@@ -9,7 +9,7 @@ _: {
       devShells = {
         default = pkgs.mkShellNoCC {
           packages = [
-            inputs'.clan.packages.default
+            inputs'.clan-core.packages.default
           ];
         };
       };
