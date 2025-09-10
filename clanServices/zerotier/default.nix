@@ -45,7 +45,7 @@
             It will be reachable under the given stable endpoints.
           '';
           example = ''
-            [ 1.2.3.4" "10.0.0.3/9993" "2001:abcd:abcd::3/9993" ]
+            [ "1.2.3.4" "10.0.0.3/9993" "2001:abcd:abcd::3/9993" ]
           '';
         };
 
