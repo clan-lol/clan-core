@@ -8,6 +8,7 @@ HostKeyCheck = Literal[
     "strict",  # Strictly check ssh host keys, prompt for unknown ones
     "ask",  # Ask for confirmation on first use
     "accept-new",  # Trust on ssh keys on first use
+    "tofu",  # Trust on ssh keys on first use
     "none",  # Do not check ssh host keys
 ]
 
