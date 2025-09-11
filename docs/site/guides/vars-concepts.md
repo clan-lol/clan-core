@@ -1,6 +1,6 @@
 # Understanding Clan Vars - Concepts & Architecture
 
-This guide explains the architecture and design principles behind the vars system. For a hands-on tutorial, see the [Getting Started guide](vars-backend.md).
+This guide explains the architecture and design principles behind the vars system. 
 
 ## Architecture Overview
 
@@ -121,9 +121,3 @@ Compared to manual secret management, vars provides:
 - **User prompts**: Gather input when needed
 - **Easy regeneration**: Update secrets with a single command
 
-## Next Steps
-
-- [Practical Tutorial](vars-backend.md) - Step-by-step guide
-- [Advanced Examples](vars-advanced-examples.md) - Real-world patterns
-- [Troubleshooting](vars-troubleshooting.md) - Common issues
-- [Reference](../reference/clan.core/vars.md) - Complete API

@@ -1,6 +1,7 @@
 # Advanced Vars Examples
 
-This guide demonstrates complex, real-world patterns for the vars system. For basic usage, see the [Getting Started guide](vars-backend.md).
+This guide demonstrates complex, real-world patterns for the vars system. 
+
 
 ## Certificate Authority with Intermediate Certificates
 
