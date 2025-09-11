@@ -30,7 +30,7 @@ In the Clan ecosystem, security is paramount. Learn how to handle secrets effect
 
 The Clan project thrives on community contributions. We welcome everyone to contribute and collaborate:
 
-- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/contributing/contributing/)<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
+- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/guides/contributing/CONTRIBUTING/)<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
 
 ## Join the revolution
 
