@@ -1,27 +1,19 @@
+The `clan vars` subcommand is a powerful tool for managing machine-specific variables in a declarative and reproducible way. This guide will walk you through its usage, from setting up a generator to sharing and updating variables across machines.
 
-!!! Note
-    This guide demonstrates the vars system for managing secrets and generated files
+For a detailed API reference, see the [vars module documentation](../reference/clan.core/vars.md).
 
+In this guide, you will learn how to:
 
-Defining a linux user's password via the nixos configuration previously required running `mkpasswd ...` and then copying the hash back into the nix configuration.
+1. Declare a `generator` in the machine's NixOS configuration.
+2. Inspect the status of variables using the Clan CLI.
+3. Generate variables interactively.
+4. Observe the changes made to your repository.
+5. Update the machine configuration.
+6. Share the root password between multiple machines.
+7. Change the root password when needed.
 
-In this example, we will guide you through automating that interaction using clan `vars`.
+By the end of this guide, you will have a clear understanding of how to use `clan vars` to manage sensitive data, such as passwords, in a secure and efficient manner.
 
-For architectural concepts and design principles, see the [Concepts guide](vars-concepts.md). For the complete API reference, see the [vars module documentation](../reference/clan.core/vars.md).
-
-This guide assumes
-- Clan is set up already (see [Getting Started](../guides/getting-started/index.md))
-- a machine has been added to the clan (see [Adding Machines](getting-started/add-machines.md))
-
-This section will walk you through the following steps:
-
-1. declare a `generator` in the machine's nixos configuration
-2. inspect the status via the Clan CLI
-3. generate the vars
-4. observe the changes
-5. update the machine
-6. share the root password between machines
-7. change the password
 
 ## Declare the generator
 
@@ -144,12 +136,3 @@ Updated var root-password/password-hash
   new: $6$OyoQtDVzeemgh8EQ$zRK...
 ```
 
-
-## Further Reading
-
-- [Understanding Vars Concepts](vars-concepts.md) - Learn about the architecture and core concepts
-- [Advanced Examples](vars-advanced-examples.md) - Complex real-world examples including certificates, SSH keys, and more
-- [Troubleshooting Guide](vars-troubleshooting.md) - Common issues and solutions
-- [Migration Guide](migrations/migration-facts-vars.md) - Migrate from legacy facts system
-- [Reference Documentation for `clan.core.vars` NixOS options](../reference/clan.core/vars.md)
-- [Reference Documentation for the `clan vars` CLI command](../reference/cli/vars.md)

@@ -1,6 +1,6 @@
 # Troubleshooting Vars
 
-Quick reference for diagnosing and fixing vars issues. For basic usage, see the [Getting Started guide](vars-backend.md).
+Quick reference for diagnosing and fixing vars issues.
 
 ## Common Issues
 
@@ -240,8 +240,11 @@ clan vars list my-machine
 **Solution**: Ensure your user/machine has the correct age keys configured. Clan manages encryption keys automatically based on the configured users and machines in your flake.
 
 Check that:
+
 1. Your machine is properly configured in the flake
+  
 2. Your user has access to the machine's secrets
+   
 3. The age key is available in the expected location
 
 ### Password Store Issues
@@ -261,6 +264,9 @@ If these solutions don't resolve your issue:
 1. Check the [clan-core issue tracker](https://git.clan.lol/clan/clan-core/issues)
 2. Ask in the Clan community channels
 3. Provide:
-   - The generator configuration
-   - The exact error message
-   - Output of `clan --debug vars generate`
+  
+     - The generator configuration
+
+     - The exact error message
+
+     - Output of `clan --debug vars generate`

@@ -61,8 +61,6 @@ nav:
           - Continuous Integration: guides/getting-started/flake-check.md
           - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
       - ClanServices: guides/clanServices.md
-      - Backup & Restore: guides/backups.md
-      - Disk Encryption: guides/disk-encryption.md
       - Vars:
           - Overview: guides/vars-overview.md
           - Getting Started: guides/vars-backend.md
@@ -70,6 +68,8 @@ nav:
           - Advanced Examples: guides/vars-advanced-examples.md
           - Troubleshooting: guides/vars-troubleshooting.md
       - Age Plugins: guides/age-plugins.md
+      - Backup & Restore: guides/backups.md
+      - Disk Encryption: guides/disk-encryption.md
       - Secrets management: guides/secrets.md
       - Networking: guides/networking.md
       - Zerotier VPN: guides/mesh-vpn.md
@@ -89,7 +89,6 @@ nav:
           - Disk id: guides/migrations/disk-id.md
   - Concepts:
       - Inventory: concepts/inventory.md
-      - Generators: concepts/generators.md
       - Autoincludes: concepts/autoincludes.md
       - Templates: concepts/templates.md
   - Reference:
@@ -224,4 +223,4 @@ plugins:
   - redoc-tag
   - redirects:
       redirect_maps:
-        guides/getting-started/secrets.md: concepts/generators.md
+        guides/getting-started/secrets.md: guides/vars-overview.md

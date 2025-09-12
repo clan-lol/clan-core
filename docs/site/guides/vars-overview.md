@@ -16,9 +16,13 @@ users.users.root.hashedPasswordFile = "/tmp/root-password-hash";
 ```
 
 This approach has several problems:
+
 - **Not reproducible**: Manual steps vary between team members
+
 - **Hard to maintain**: Updating secrets requires remembering manual commands  
+
 - **Deployment friction**: Secrets must be managed outside of your configuration
+
 - **Team collaboration issues**: Sharing credentials securely is complex
 
 ### After Vars: Declarative Generation
@@ -85,46 +89,21 @@ The vars system has three main components:
 
 ### 1. **Generators**
 Define how to create files from inputs:
+
 - **Prompts**: Values requested from users
+
 - **Scripts**: Generation logic  
+
 - **Dependencies**: Other generators this depends on
+
 - **Outputs**: Files that get created
 
 ### 2. **Storage Backends**
 Handle secret storage and deployment:
+
 - **sops**: Encrypted files in git (recommended)
+
 - **password-store**: GPG/age-based secret storage
-- **vm**: For development/testing
-
-### 3. **Integration**
-Seamless NixOS integration:
-- File paths available at build time
-- Automatic deployment to machines
-- Service restarts on changes
-
-## Learning Path
-
-Ready to get started? Follow this recommended path:
-
-### 1. **🚀 Hands-On Tutorial**
-[Vars Getting Started Guide](vars-backend.md)
-Start here for a practical walkthrough with password generation.
-
-### 2. **🏗️ Understand the Design**  
-[Vars Concepts & Architecture](vars-concepts.md)
-Deep dive into design principles and advanced patterns.
-
-### 3. **💡 Real-World Examples**
-[Advanced Examples](vars-advanced-examples.md)
-Complex scenarios including certificates, SSH keys, and databases.
-
-### 4. **🔧 Troubleshooting**
-[Troubleshooting Guide](vars-troubleshooting.md)
-Solutions for common issues and debugging techniques.
-
-### 5. **📚 Complete Reference**
-- [NixOS Module Options](../reference/clan.core/vars.md)
-- [CLI Commands](../reference/cli/vars.md)
 
 ## Quick Start Example
 
@@ -164,6 +143,3 @@ clan machines update my-machine
 
 If you're currently using the legacy facts system, see our [Migration Guide](migrations/migration-facts-vars.md) for step-by-step instructions on upgrading to vars.
 
----
-
-**Ready to start?** Head to the [Getting Started Guide](vars-backend.md) for your first hands-on experience with the vars system.
