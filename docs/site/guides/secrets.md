@@ -1,5 +1,5 @@
-This article provides an overview over the underlying secrets system which is used by [Vars](../concepts/generators.md).
-Under most circumstances you should use [Vars](../concepts/generators.md) directly instead.
+This article provides an overview over the underlying secrets system which is used by [Vars](../guides/vars-overview.md).
+Under most circumstances you should use [Vars](../guides/vars-overview.md) directly instead.
 
 Consider using `clan secrets` only for managing admin users and groups, as well as a debugging tool.
 
@@ -292,15 +292,14 @@ The following diagrams illustrates how a user can provide a secret (i.e. a Passw
 
 ```plantuml
 @startuml
-!include C4_Container.puml
 
-Person(user, "User", "Someone who manages secrets")
-ContainerDb(secret, "Secret")
-Container(machine, "Machine", "A Machine. i.e. Needs the Secret for a given Service." )
+actor "User" as user
+database "Secret" as secret
+rectangle "Machine" as machine
 
-Rel_R(user, secret, "Encrypt", "", "Pubkeys: User, Machine")
-Rel_L(secret, user, "Decrypt", "",  "user privkey")
-Rel_R(secret, machine, "Decrypt", "", "machine privkey" )
+user -right-> secret : Encrypt\n(Pubkeys: User, Machine)
+secret -left-> user : Decrypt\n(user privkey)
+secret -right-> machine : Decrypt\n(machine privkey)
 
 @enduml
 ```
@@ -316,19 +315,18 @@ Common use cases:
 
 ```plantuml
 @startuml
-!include C4_Container.puml
 
-System_Boundary(c1, "Group") {
-    Person(user1, "User A", "has access")
-    Person(user2, "User B", "has access")
+rectangle "Group" {
+    actor "User A" as user1
+    actor "User B" as user2
 }
 
-ContainerDb(secret, "Secret")
-Container(machine, "Machine", "A Machine. i.e. Needs the Secret for a given Service." )
+database "Secret" as secret
+rectangle "Machine" as machine
 
-Rel_R(c1, secret, "Encrypt", "", "Pubkeys: User A, User B, Machine")
-Rel_R(secret, machine, "Decrypt", "", "machine privkey" )
-
+user1 -right-> secret : Encrypt
+user2 -right-> secret : (Pubkeys: User A, User B, Machine)
+secret -right-> machine : Decrypt\n(machine privkey)
 
 @enduml
 ```
@@ -347,19 +345,17 @@ Common use cases:
 
 ```plantuml
 @startuml
-!include C4_Container.puml
-!include C4_Deployment.puml
 
-Person(user, "User", "Someone who manages secrets")
-ContainerDb(secret, "Secret")
-System_Boundary(c1, "Group") {
-    Container(machine1, "Machine A", "Both machines need the same secret" )
-    Container(machine2, "Machine B", "Both machines need the same secret" )
+actor "User" as user
+database "Secret" as secret
+rectangle "Group" {
+    rectangle "Machine A" as machine1
+    rectangle "Machine B" as machine2
 }
 
-Rel_R(user, secret, "Encrypt", "", "Pubkeys: machine A, machine B, User")
-Rel(secret, c1, "Decrypt", "", "Both machine A or B can decrypt using their private key" )
-
+user -right-> secret : Encrypt\n(Pubkeys: machine A, machine B, User)
+secret -down-> machine1 : Decrypt
+secret -down-> machine2 : (Both machines can decrypt\nusing their private key)
 
 @enduml
 ```
