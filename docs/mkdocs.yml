@@ -62,12 +62,13 @@ nav:
           - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
       - ClanServices: guides/clanServices.md
       - Vars:
-          - Overview: guides/vars-overview.md
-          - Getting Started: guides/vars-backend.md
-          - Concepts: guides/vars-concepts.md
-          - Advanced Examples: guides/vars-advanced-examples.md
-          - Troubleshooting: guides/vars-troubleshooting.md
-      - Age Plugins: guides/age-plugins.md
+          - Overview: guides/vars/vars-overview.md
+          - Getting Started: guides/vars/vars-backend.md
+          - Concepts: guides/vars/vars-concepts.md
+          - Sops Backend:
+              - Yubikeys & Age Plugins: guides/vars/sops/age-plugins.md
+          - Advanced Examples: guides/vars/vars-advanced-examples.md
+          - Troubleshooting: guides/vars/vars-troubleshooting.md
       - Backup & Restore: guides/backups.md
       - Disk Encryption: guides/disk-encryption.md
       - Secrets management: guides/secrets.md
@@ -223,4 +224,4 @@ plugins:
   - redoc-tag
   - redirects:
       redirect_maps:
-        guides/getting-started/secrets.md: guides/vars-overview.md
+        guides/getting-started/secrets.md: guides/vars/vars-overview.md

@@ -51,7 +51,7 @@
         ;
 
       privateInputs =
-        if builtins.pathExists (./. + ".skip-private-inputs") then
+        if builtins.pathExists (./. + "/.skip-private-inputs") then
           { }
         else
           (import ./devFlake/flake-compat.nix {
