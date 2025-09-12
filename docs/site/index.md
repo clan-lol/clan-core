@@ -55,7 +55,7 @@ Explore the underlying principles of Clan
 
 <div class="grid cards" markdown>
 
--   [Vars](./guides/vars-overview.md)
+-   [Vars](./guides/vars/vars-overview.md)
 
     ---
 

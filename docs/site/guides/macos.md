@@ -7,7 +7,7 @@ This guide explains how to manage macOS machines using Clan.
 Currently, Clan supports the following features for macOS:
 
 - `clan machines update` for existing [nix-darwin](https://github.com/nix-darwin/nix-darwin) installations
-- Support for [vars](../guides/vars-overview.md)
+- Support for [vars](../guides/vars/vars-overview.md)
 
 ## Add Your Machine to Your Clan Flake
 

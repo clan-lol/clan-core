@@ -205,25 +205,31 @@
       # };
 
       packages = {
-        docs-options = privateInputs.nuschtos.packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch {
-          inherit baseHref;
-          title = "Clan Options";
-          # scopes = mapAttrsToList mkScope serviceModules;
-          scopes = [
-            {
+        docs-options =
+          if privateInputs ? nuschtos then
+            privateInputs.nuschtos.packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch {
               inherit baseHref;
-              name = "Flake Options (clan.nix file)";
-              modules = docModules;
-              urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+              title = "Clan Options";
+              # scopes = mapAttrsToList mkScope serviceModules;
+              scopes = [
+                {
+                  inherit baseHref;
+                  name = "Flake Options (clan.nix file)";
+                  modules = docModules;
+                  urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+                }
+                {
+                  name = "Machine Options (clan.core NixOS options)";
+                  optionsJSON = "${coreOptions}/share/doc/nixos/options.json";
+                  urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
+                }
+              ];
             }
-            {
-              name = "Machine Options (clan.core NixOS options)";
-              optionsJSON = "${coreOptions}/share/doc/nixos/options.json";
-              urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
-
-            }
-          ];
-        };
+          else
+            pkgs.stdenv.mkDerivation {
+              name = "empty";
+              buildCommand = "echo 'This is an empty derivation' > $out";
+            };
       };
     };
 }
