@@ -1,4 +1,5 @@
-site_name: Clan Documentation
+site_name: Documentation
+site_name: Documentation
 site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: "_>"
@@ -60,69 +61,113 @@ nav:
           - Update Machine: guides/getting-started/update.md
           - Continuous Integration: guides/getting-started/flake-check.md
           - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
-      - ClanServices: guides/clanServices.md
+      - Inventory:
+          - Overview: guides/inventory/autoincludes.md
+          - Clan Services: guides/inventory/clanServices.md
+          - Concepts: guides/inventory/inventory.md
+  - Getting Started:
+      - Overview: index.md
+      - Creating Your First Clan: guides/getting-started/index.md
+      - Add Machines: guides/getting-started/add-machines.md
+      - Add User: guides/getting-started/add-user.md
+      - Add Services: guides/getting-started/add-services.md
+      - Deploy to Physical Machine:
+          - Create USB Installer: guides/getting-started/create-installer.md
+          - Deploy Physical Machine: guides/getting-started/hardware-report-physical.md
+      - Deploy to Virtual Machine: guides/getting-started/hardware-report-virtual.md
+      - Configure Disk Config: guides/getting-started/choose-disk.md
+      - Update Machine: guides/getting-started/update.md
+      - Continuous Integration: guides/getting-started/flake-check.md
+      - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
+  - Guides:
+      - Inventory:
+          - Introduction to Inventory: guides/inventory/inventory.md
+          - Minimal Example: guides/inventory/minimal-example.md
+
+      - Clan Services:
+          - Introduction to Clan Services: guides/services/index.md
+          - Official Clan Services: guides/services/official.md
+          - Community Clan Services: guides/services/community.md
+          - Write Your Own Clan Service: guides/services/write-your-own.md
       - Vars:
-          - Overview: guides/vars/vars-overview.md
-          - Getting Started: guides/vars/vars-backend.md
-          - Concepts: guides/vars/vars-concepts.md
-          - Sops Backend:
-              - Yubikeys & Age Plugins: guides/vars/sops/age-plugins.md
+          - Introduction to Vars: guides/vars/vars-overview.md
+          - Minimal Example: guides/vars/vars-backend.md
+          - Diving deeper: guides/vars/vars-concepts.md
           - Advanced Examples: guides/vars/vars-advanced-examples.md
           - Troubleshooting: guides/vars/vars-troubleshooting.md
+          - Managing Users (OLD): guides/secrets.md
+      - Networking:
+          - Overview: guides/networking/networking.md
+          - Zerotier VPN: guides/networking/mesh-vpn.md
       - Backup & Restore: guides/backups.md
+          - Sops Backend:
+              - Yubikeys & Age Plugins: guides/vars/sops/age-plugins.md
+          - Managing Users (OLD): guides/secrets.md
+      - Networking:
+          - Introduction to Networking: guides/networking/networking.md
+          - Zerotier VPN: guides/networking/mesh-vpn.md
+      - Disko Templates:
+          - Introduction to Disko Templates: guides/disko-templates/index.md
+          - Official Disko Templates: guides/disko-templates/official.md
+          - Community Disko Templates: guides/disko-templates/community.md
+          - Write Your Own Disko Template: guides/disko-templates/write-your-own.md
+      - Backups:
+          - Introduction to Backups: guides/backups.md
+          - Minimal Example: guides/backups/minimal.md
+          - Diving deeper: guides/backups/concepts.md
+          - Advanced Examples: guides/backups/advanced-examples.md
+          - Troubleshooting: guides/backups/troubleshooting.md
+      - Flake-parts: guides/flake-parts.md
+      - macOS:
+        - Introduction to macOS: guides/macos.md
+        - Example: guides/macos/example.md
+      # Should be part of the respective sections above
+      # machines, disko, clan
+      # - Templates: concepts/templates.md
+      - Migrations:
+          - clan modules --> clan services: guides/migrations/migrate-inventory-services.md
+          - Facts --> Vars: guides/migrations/migration-facts-vars.md
+          - Disk id: guides/migrations/disk-id.md
       - Disk Encryption: guides/disk-encryption.md
-      - Secrets management: guides/secrets.md
-      - Networking: guides/networking.md
-      - Zerotier VPN: guides/mesh-vpn.md
-      - How to disable Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
       - Nixos-rebuild: guides/nixos-rebuild.md
       - macOS: guides/macos.md
-      - Contributing:
-          - Contributing: guides/contributing/CONTRIBUTING.md
-          - Debugging: guides/contributing/debugging.md
-          - Testing: guides/contributing/testing.md
-
-      - Writing a Service Module: guides/services/community.md
-      - Writing a Disko Template: guides/disko-templates/community.md
-      - Nixos-rebuild: guides/nixos-rebuild.md
-      - Migrations:
-          - Migrate from clan modules to services: guides/migrations/migrate-inventory-services.md
-          - Facts Vars Migration: guides/migrations/migration-facts-vars.md
-          - Disk id: guides/migrations/disk-id.md
-  - Concepts:
-      - Inventory: concepts/inventory.md
-      - Autoincludes: concepts/autoincludes.md
       - Templates: concepts/templates.md
+      - Disable Secure Boot: guides/secure-boot.md
+      - Contributing:
+          - Getting Started: guides/contributing/CONTRIBUTING.md
+          - Debugging: guides/contributing/debugging.md
+          - Hacking: guides/contributing/CONTRIBUTING.md
+          - Advanced Debugging: guides/contributing/debugging.md
+          - Testing: guides/contributing/testing.md
   - Reference:
       - Overview: reference/index.md
-      - Browse Options: "/options"
-      - Services:
-          - Overview:
-              - reference/clanServices/index.md
-              - reference/clanServices/admin.md
-              - reference/clanServices/borgbackup.md
-              - reference/clanServices/certificates.md
-              - reference/clanServices/coredns.md
-              - reference/clanServices/data-mesher.md
-              - reference/clanServices/dyndns.md
-              - reference/clanServices/emergency-access.md
-              - reference/clanServices/garage.md
-              - reference/clanServices/hello-world.md
-              - reference/clanServices/importer.md
-              - reference/clanServices/localbackup.md
-              - reference/clanServices/matrix-synapse.md
-              - reference/clanServices/mycelium.md
-              - reference/clanServices/monitoring.md
-              - reference/clanServices/packages.md
-              - reference/clanServices/sshd.md
-              - reference/clanServices/syncthing.md
-              - reference/clanServices/trusted-nix-caches.md
-              - reference/clanServices/users.md
-              - reference/clanServices/wifi.md
-              - reference/clanServices/wireguard.md
-              - reference/clanServices/zerotier.md
-          - API: reference/clanServices/clan-service-author-interface.md
+      - Clan Service API: reference/clanServices/clan-service-author-interface.md
+
+      - clan.core (Machine Options):
+          - Overview: reference/clan.core/index.md
+          - reference/clan.core/backups.md
+          - reference/clan.core/deployment.md
+          - reference/clan.core/facts.md
+          - reference/clan.core/networking.md
+          - reference/clan.core/postgresql.md
+          - reference/clan.core/settings.md
+          - reference/clan.core/sops.md
+          - reference/clan.core/state.md
+          - reference/clan.core/vars.md
+      - Clan Service API: reference/clanServices/clan-service-author-interface.md
+
+      - clan.core (Machine Options):
+          - Overview: reference/clan.core/index.md
+          - reference/clan.core/backups.md
+          - reference/clan.core/deployment.md
+          - reference/clan.core/facts.md
+          - reference/clan.core/networking.md
+          - reference/clan.core/postgresql.md
+          - reference/clan.core/settings.md
+          - reference/clan.core/sops.md
+          - reference/clan.core/state.md
+          - reference/clan.core/vars.md
 
       - CLI:
           - Overview: reference/cli/index.md
@@ -141,19 +186,8 @@ nav:
           - reference/cli/vars.md
           - reference/cli/vms.md
 
-      - clan.core (NixOS Options):
-          - Overview: reference/clan.core/index.md
-          - reference/clan.core/backups.md
-          - reference/clan.core/deployment.md
-          - reference/clan.core/facts.md
-          - reference/clan.core/networking.md
-          - reference/clan.core/postgresql.md
-          - reference/clan.core/settings.md
-          - reference/clan.core/sops.md
-          - reference/clan.core/state.md
-          - reference/clan.core/vars.md
-
-      - Developer-api: api.md
+      - HTTP API: api.md
+      - HTTP API: api.md
 
       - Decisions:
           - Architecture Decisions: decisions/README.md
@@ -164,7 +198,60 @@ nav:
           - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
       - Glossary: reference/glossary.md
-  - Browse Options: "/options"
+  - Clan Services:
+      - reference/clanServices/index.md
+      - reference/clanServices/admin.md
+      - reference/clanServices/borgbackup.md
+      - reference/clanServices/certificates.md
+      - reference/clanServices/coredns.md
+      - reference/clanServices/data-mesher.md
+      - reference/clanServices/dyndns.md
+      - reference/clanServices/emergency-access.md
+      - reference/clanServices/garage.md
+      - reference/clanServices/hello-world.md
+      - reference/clanServices/importer.md
+      - reference/clanServices/localbackup.md
+      - reference/clanServices/matrix-synapse.md
+      - reference/clanServices/mycelium.md
+      - reference/clanServices/monitoring.md
+      - reference/clanServices/packages.md
+      - reference/clanServices/sshd.md
+      - reference/clanServices/syncthing.md
+      - reference/clanServices/trusted-nix-caches.md
+      - reference/clanServices/users.md
+      - reference/clanServices/wifi.md
+      - reference/clanServices/wireguard.md
+      - reference/clanServices/zerotier.md
+
+  - Clan Options: "/options"
+  - Services:
+      - Introduction to ClanServices: reference/clanServices/index.md
+      - Official:
+        - reference/clanServices/admin.md
+        - reference/clanServices/borgbackup.md
+        - reference/clanServices/certificates.md
+        - reference/clanServices/coredns.md
+        - reference/clanServices/data-mesher.md
+        - reference/clanServices/dyndns.md
+        - reference/clanServices/emergency-access.md
+        - reference/clanServices/garage.md
+        - reference/clanServices/hello-world.md
+        - reference/clanServices/importer.md
+        - reference/clanServices/localbackup.md
+        - reference/clanServices/matrix-synapse.md
+        - reference/clanServices/mycelium.md
+        - reference/clanServices/monitoring.md
+        - reference/clanServices/packages.md
+        - reference/clanServices/sshd.md
+        - reference/clanServices/syncthing.md
+        - reference/clanServices/trusted-nix-caches.md
+        - reference/clanServices/users.md
+        - reference/clanServices/wifi.md
+        - reference/clanServices/wireguard.md
+        - reference/clanServices/zerotier.md
+      - Community: community/services/index.md
+
+  - Clan Options: "/options"
 
 docs_dir: site
 site_dir: out
