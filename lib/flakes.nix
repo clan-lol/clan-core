@@ -23,7 +23,7 @@
         // {
           nodes =
             flakeLock.nodes
-            // (lib.flip lib.mapAttrs flakeInputs (
+            // (lib.mapAttrs (
               name: _:
               # remove follows and let 'nix flake lock' re-compute it later
               # (lib.removeAttrs flakeLock.nodes.${name} ["inputs"])
@@ -38,7 +38,7 @@
                   type = "path";
                 };
               }
-            ));
+            ) flakeInputs);
         };
       lockAttrs = inputsToPaths flakeLock;
     in

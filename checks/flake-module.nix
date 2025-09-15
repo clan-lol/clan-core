@@ -12,7 +12,6 @@ let
     elem
     filter
     filterAttrs
-    flip
     genAttrs
     hasPrefix
     pathExists
@@ -45,7 +44,7 @@ in
   flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
     system:
     let
-      checks = flip filterAttrs self.checks.${system} (
+      checks = filterAttrs (
         name: _check:
         !(hasPrefix "nixos-test-" name)
         && !(hasPrefix "nixos-" name)
@@ -57,7 +56,7 @@ in
           "clan-core-for-checks"
           "clan-deps"
         ])
-      );
+      ) self.checks.${system};
     in
     inputs.nixpkgs.legacyPackages.${system}.runCommand "fast-flake-checks-${system}"
       { passthru.checks = checks; }

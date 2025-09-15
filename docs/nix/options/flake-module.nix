@@ -13,7 +13,6 @@
     let
       inherit (lib)
         mapAttrsToList
-        flip
         mapAttrs
         mkOption
         types
@@ -43,8 +42,7 @@
 
       loadFile = file: if builtins.pathExists file then builtins.readFile file else "";
 
-      settingsModules =
-        module: flip mapAttrs (getRoles module) (_roleName: roleConfig: roleConfig.interface);
+      settingsModules = module: mapAttrs (_roleName: roleConfig: roleConfig.interface) (getRoles module);
 
       # Map each letter to its capitalized version
       capitalizeChar =
@@ -115,7 +113,7 @@
             instances.${name} = lib.mkOption {
               inherit description;
               type = types.submodule {
-                options.roles = flip mapAttrs (settingsModules module) (
+                options.roles = mapAttrs (
                   roleName: roleSettingsModule:
                   mkOption {
                     type = types.submodule {
@@ -138,7 +136,7 @@
                       ];
                     };
                   }
-                );
+                ) (settingsModules module);
               };
             };
           };

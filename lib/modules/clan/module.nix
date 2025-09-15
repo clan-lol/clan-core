@@ -8,7 +8,6 @@
 }:
 let
   inherit (lib)
-    flip
     mapAttrs'
     ;
 
@@ -77,19 +76,15 @@ let
     config.outputs.moduleForMachine
   );
 
-  nixosModules = flip mapAttrs' nixosModules' (
-    name: machineModule: {
-      name = "clan-machine-${name}";
-      value = machineModule;
-    }
-  );
+  nixosModules = mapAttrs' (name: machineModule: {
+    name = "clan-machine-${name}";
+    value = machineModule;
+  }) nixosModules';
 
-  darwinModules = flip mapAttrs' darwinModules' (
-    name: machineModule: {
-      name = "clan-machine-${name}";
-      value = machineModule;
-    }
-  );
+  darwinModules = mapAttrs' (name: machineModule: {
+    name = "clan-machine-${name}";
+    value = machineModule;
+  }) darwinModules';
 
   nixosConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "nixos") configurations;
   darwinConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "darwin") configurations;
