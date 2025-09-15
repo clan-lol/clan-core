@@ -1,3 +1,7 @@
+# This module describes
+# - clanInternals.inventoryClass.inventory
+# - clan.inventory
+# Which is the public interface for the inventory system
 {
   lib,
   clanLib,
