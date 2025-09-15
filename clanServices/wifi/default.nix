@@ -29,6 +29,15 @@ in
                   default = true;
                   description = "Automatically try to join this wifi network";
                 };
+                keyMgmt = lib.mkOption {
+                  type = lib.types.str;
+                  default = "wpa-psk";
+                  description = ''
+                    Key management used for the connection. 
+                    One of "none" (WEP or no password protection), "ieee8021x" (Dynamic WEP), "owe" (Opportunistic Wireless Encryption), "wpa-psk" (WPA2 + WPA3 personal), 
+                    "sae" (WPA3 personal only), "wpa-eap" (WPA2 + WPA3 enterprise) or "wpa-eap-suite-b-192" (WPA3 enterprise only).
+                  '';
+                };
               };
             }
           )
@@ -80,7 +89,7 @@ in
                 wifi.mode = "infrastructure";
                 wifi.ssid = "$ssid_${name}";
                 wifi-security.psk = "$pw_${name}";
-                wifi-security.key-mgmt = "wpa-psk";
+                wifi-security.key-mgmt = networkCfg.keyMgmt;
               }
             );
 
