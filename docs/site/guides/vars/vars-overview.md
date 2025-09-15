@@ -1,4 +1,3 @@
-# Vars System Overview
 
 The vars system is clan's declarative solution for managing generated files, secrets, and dynamic configuration in your NixOS deployments. It eliminates the manual steps of generating credentials, certificates, and other dynamic values by automating these processes within your infrastructure-as-code workflow.
 
@@ -19,7 +18,7 @@ This approach has several problems:
 
 - **Not reproducible**: Manual steps vary between team members
 
-- **Hard to maintain**: Updating secrets requires remembering manual commands  
+- **Hard to maintain**: Updating secrets requires remembering manual commands
 
 - **Deployment friction**: Secrets must be managed outside of your configuration
 
@@ -38,7 +37,7 @@ clan.core.vars.generators.root-password = {
   runtimeInputs = [ pkgs.mkpasswd ];
 };
 
-users.users.root.hashedPasswordFile = 
+users.users.root.hashedPasswordFile =
   config.clan.core.vars.generators.root-password.files.hash.path;
 ```
 
@@ -92,7 +91,7 @@ Define how to create files from inputs:
 
 - **Prompts**: Values requested from users
 
-- **Scripts**: Generation logic  
+- **Scripts**: Generation logic
 
 - **Dependencies**: Other generators this depends on
 
@@ -123,9 +122,9 @@ Here's a complete example showing password generation and usage:
     '';
     runtimeInputs = [ pkgs.mkpasswd ];
   };
-  
+
   users.users.myuser = {
-    hashedPasswordFile = 
+    hashedPasswordFile =
       config.clan.core.vars.generators.user-password.files.hash.path;
   };
 }

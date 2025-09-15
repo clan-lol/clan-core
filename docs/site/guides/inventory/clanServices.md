@@ -1,5 +1,3 @@
-# Using the Inventory
-
 Clan's inventory system is a composable way to define and deploy services across
 machines.
 

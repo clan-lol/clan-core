@@ -3,7 +3,7 @@
 Now that you have created a machine, added some services, and set up secrets, this guide will walk you through how to deploy it.
 
 
-### Step 0. Prerequisites
+### Prerequisites
 - [x] RAM > 2GB
 - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
 - [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
@@ -45,7 +45,7 @@ This is an example of the booted installer.
 │ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
 │ │Multicast DNS: nixos-installer.local                                             │ │
 │ └─────────────────────────────────────────────────────────────────────────────────┘ │
-│ Press 'Ctrl-C' for console access                                                   │ 
+│ Press 'Ctrl-C' for console access                                                   │
 │                                                                                     │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -75,12 +75,12 @@ This is an example of the booted installer.
 
 There are two ways to deploy your machine:
 
+### Generating a Hardware Report
+
+The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
 
 === "Password"
-    ### Generating a Hardware Report
-
-    The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
-
+    **Password**
 
     ```terminal
     clan machines install [MACHINE] \
@@ -90,11 +90,10 @@ There are two ways to deploy your machine:
     ```
 
 === "QR Code"
-    ### Generating a Hardware Report
+    **QR Code**
 
-    The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
+    **Using a JSON String or File Path**:
 
-    #### Using a JSON String or File Path
     Copy the JSON string contained in the QR Code and provide its path or paste it directly:
     ```terminal
     clan machines install [MACHINE] --json [JSON] \
@@ -102,7 +101,8 @@ There are two ways to deploy your machine:
         --phases kexec
     ```
 
-    #### Using an Image Containing the QR Code
+    **Using an Image Containing the QR Code**:
+
     Provide the path to an image file containing the QR code displayed by the installer:
     ```terminal
     clan machines install [MACHINE] --png [PATH] \
