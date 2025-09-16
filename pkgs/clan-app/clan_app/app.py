@@ -12,13 +12,13 @@ from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
 from clan_app.api.file_gtk import get_clan_folder, get_system_file
-from clan_app.api.middleware import (
+from clan_app.deps.http.http_server import HttpApiServer
+from clan_app.deps.webview.webview import Size, SizeHint, Webview
+from clan_app.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
     MethodExecutionMiddleware,
 )
-from clan_app.deps.http.http_server import HttpApiServer
-from clan_app.deps.webview.webview import Size, SizeHint, Webview
 
 log = logging.getLogger(__name__)
 

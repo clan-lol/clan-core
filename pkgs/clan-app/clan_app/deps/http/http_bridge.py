@@ -21,7 +21,7 @@ from clan_lib.async_run import (
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
 if TYPE_CHECKING:
-    from clan_app.api.middleware import Middleware
+    from clan_app.middleware.base import Middleware
 
 log = logging.getLogger(__name__)
 

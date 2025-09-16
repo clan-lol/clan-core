@@ -1,6 +1,6 @@
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from clan_lib.api import dataclass_to_dict
@@ -9,6 +9,8 @@ from clan_lib.api.tasks import WebThread
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
 if TYPE_CHECKING:
+    from clan_app.middleware.base import Middleware
+
     from .webview import Webview
 
 log = logging.getLogger(__name__)
@@ -19,7 +21,8 @@ class WebviewBridge(ApiBridge):
     """Webview-specific implementation of the API bridge."""
 
     webview: "Webview"
-    threads: dict[str, WebThread]  # Inherited from ApiBridge
+    middleware_chain: tuple["Middleware", ...]
+    threads: dict[str, WebThread] = field(default_factory=dict)
 
     def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""

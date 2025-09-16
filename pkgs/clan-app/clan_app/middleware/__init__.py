@@ -1,4 +1,4 @@
-"""Middleware components for the webview API bridge."""
+"""Middleware components shared by API bridge implementations."""
 
 from .argument_parsing import ArgumentParsingMiddleware
 from .base import Middleware, MiddlewareContext
