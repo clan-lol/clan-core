@@ -87,16 +87,16 @@
             ./clanServices/flake-module.nix
             ./devShell.nix
             ./docs/nix/flake-module.nix
-            ./flakeModules/flake-module.nix
             ./flakeModules/demo_iso.nix
+            ./flakeModules/flake-module.nix
             ./lib/filter-clan-core/flake-module.nix
             ./lib/flake-module.nix
             ./lib/flake-parts/clan-nixos-test.nix
             ./nixosModules/clanCore/vars/flake-module.nix
             ./nixosModules/flake-module.nix
+            ./pkgs/clan-cli/clan_cli/tests/flake-module.nix
             ./pkgs/flake-module.nix
             ./templates/flake-module.nix
-            ./pkgs/clan-cli/clan_cli/tests/flake-module.nix
           ]
         ++ [
           (if pathExists ./flakeModules/clan.nix then import ./flakeModules/clan.nix inputs.self else { })
