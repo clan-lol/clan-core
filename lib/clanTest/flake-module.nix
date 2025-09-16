@@ -26,7 +26,6 @@ in
 
       inherit (lib)
         filterAttrs
-        flip
         hasPrefix
         intersectAttrs
         mapAttrs'
@@ -58,16 +57,14 @@ in
       clanFlakeResult =
         if config.clan.test.fromFlake != null then importFlake config.clan.test.fromFlake else config.clan;
 
-      machineModules' = flip filterAttrs clanFlakeResult.nixosModules (
+      machineModules' = filterAttrs (
         name: _module: hasPrefix "clan-machine-" name
-      );
+      ) clanFlakeResult.nixosModules;
 
-      machineModules = flip mapAttrs' machineModules' (
-        name: machineModule: {
-          name = removePrefix "clan-machine-" name;
-          value = machineModule;
-        }
-      );
+      machineModules = mapAttrs' (name: machineModule: {
+        name = removePrefix "clan-machine-" name;
+        value = machineModule;
+      }) machineModules';
 
       machinesCross = lib.genAttrs [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ] (
         system:

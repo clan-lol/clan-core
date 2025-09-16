@@ -159,6 +159,7 @@ in
       inherit
         servicesEval
         importedModuleWithInstances
+        # Exposed for testing
         grouped
         allMachines
         importedModulesEvaluated
