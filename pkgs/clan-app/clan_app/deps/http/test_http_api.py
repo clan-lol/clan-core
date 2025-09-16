@@ -10,11 +10,11 @@ import pytest
 from clan_lib.api import MethodRegistry, tasks
 from clan_lib.async_run import is_async_cancelled
 
-from clan_app.api.middleware import (
+from clan_app.deps.http.http_server import HttpApiServer
+from clan_app.middleware import (
     ArgumentParsingMiddleware,
     MethodExecutionMiddleware,
 )
-from clan_app.deps.http.http_server import HttpApiServer
 
 log = logging.getLogger(__name__)
 

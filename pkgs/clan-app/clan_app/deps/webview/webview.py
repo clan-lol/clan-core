@@ -19,7 +19,7 @@ from ._webview_ffi import (
 from .webview_bridge import WebviewBridge
 
 if TYPE_CHECKING:
-    from clan_app.api.middleware import Middleware
+    from clan_app.middleware.base import Middleware
 
 log = logging.getLogger(__name__)
 

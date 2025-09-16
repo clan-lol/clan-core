@@ -9,7 +9,7 @@ from clan_lib.api.tasks import WebThread
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
 if TYPE_CHECKING:
-    from clan_app.api.middleware import Middleware
+    from clan_app.middleware.base import Middleware
 
     from .webview import Webview
 

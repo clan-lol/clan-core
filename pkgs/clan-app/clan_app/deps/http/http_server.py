@@ -8,7 +8,7 @@ from clan_lib.api import MethodRegistry
 from clan_lib.api.tasks import WebThread
 
 if TYPE_CHECKING:
-    from clan_app.api.middleware import Middleware
+    from clan_app.middleware.base import Middleware
 
 from .http_bridge import HttpBridge
 

@@ -9,7 +9,7 @@ from clan_lib.api.tasks import WebThread
 from clan_lib.async_run import set_current_thread_opkey, set_should_cancel
 
 if TYPE_CHECKING:
-    from .middleware import Middleware
+    from clan_app.middleware.base import Middleware
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class ApiBridge(Protocol):
 
     def process_request(self, request: BackendRequest) -> None:
         """Process an API request through the middleware chain."""
-        from .middleware import MiddlewareContext  # noqa: PLC0415
+        from clan_app.middleware.base import MiddlewareContext  # noqa: PLC0415
 
         with ExitStack() as stack:
             context = MiddlewareContext(
