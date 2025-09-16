@@ -17,9 +17,47 @@ rec {
     ./jsonschema/flake-module.nix
     ./types/flake-module.nix
   ];
-  flake.clanLib = import ./default.nix {
-    inherit lib inputs self;
-  };
+  flake.clanLib =
+    let
+      clanLib = import ./default.nix {
+        inherit lib inputs self;
+      };
+    in
+    # Extend clanLib here by lib.clan
+    # This allows clanLib to stay agnostic from flakes or clan-core
+    lib.fix (
+      lib.extends (final: _: {
+        buildClan =
+          module:
+          lib.warn ''
+            ==================== DEPRECATION NOTICE ====================
+            Please migrate
+            from: 'clan = inputs.<clan-core>.lib.buildClan'
+            to  : 'clan = inputs.<clan-core>.lib.clan'
+            in your flake.nix.
+
+            Please also migrate
+            from: 'inherit (clan) nixosConfigurations clanInternals; '
+            to  : "
+                    inherit (clan.config) nixosConfigurations clanInternals;
+                    clan = clan.config;
+                  "
+            in your flake.nix.
+
+            Reason:
+            - Improves consistency between flake-parts and non-flake-parts users.
+
+            - It also allows us to use the top level attribute 'clan' to expose
+              attributes that can be used for cross-clan functionality.
+            ============================================================
+          '' (final.clan module).config;
+        clan = import ./clan {
+          inherit lib;
+          clan-core = self;
+        };
+      }) clanLib.__unfix__
+    );
+
   # TODO: remove this legacy alias
   flake.lib = flake.clanLib;
 
