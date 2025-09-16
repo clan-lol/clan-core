@@ -12,13 +12,13 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Inventory](./guides/inventory.md)
+-   [Inventory](./guides/inventory/inventory.md)
 
     ---
 
     Learn how about inventory
 
--   [Vars](./guides/vars.md)
+-   [Vars](./guides/vars/vars-overview.md)
 
     ---
 
@@ -48,7 +48,7 @@ hide:
 
     Search all options
 
--   [Services](./reference/cli/index.md)
+-   [Services](./reference/clanServices/index.md)
 
     ---
 

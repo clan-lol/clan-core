@@ -1,5 +1,5 @@
-This article provides an overview over the underlying secrets system which is used by [Vars](../guides/vars/vars-overview.md).
-Under most circumstances you should use [Vars](../guides/vars/vars-overview.md) directly instead.
+This article provides an overview over the underlying secrets system which is used by [Vars](./vars/vars-overview.md).
+Under most circumstances you should use [Vars](./vars/vars-overview.md) directly instead.
 
 Consider using `clan secrets` only for managing admin users and groups, as well as a debugging tool.
 

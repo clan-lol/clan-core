@@ -68,7 +68,7 @@ inventory.instances = {
 ## Module Settings
 
 Each role might expose configurable options. See clan's [clanServices
-reference](../reference/clanServices/index.md) for all available options.
+reference](../../reference/clanServices/index.md) for all available options.
 
 Settings can be set in per-machine or per-role. The latter is applied to all
 machines that are assigned to that role.
@@ -155,13 +155,13 @@ inventory.instances = {
 
 You can use services exposed by Clan's core module library, `clan-core`.
 
-🔗 See: [List of Available Services in clan-core](../reference/clanServices/index.md)
+🔗 See: [List of Available Services in clan-core](../../reference/clanServices/index.md)
 
 ## Defining Your Own Service
 
 You can also author your own `clanService` modules.
 
-🔗 Learn how to write your own service: [Authoring a service](../guides/services/community.md)
+🔗 Learn how to write your own service: [Authoring a service](../services/community.md)
 
 You might expose your service module from your flake — this makes it easy for other people to also use your module in their clan.
 
@@ -177,7 +177,7 @@ ______________________________________________________________________
 
 ## What's Next?
 
-- [Author your own clanService →](../guides/services/community.md)
-- [Migrate from clanModules →](../guides/migrations/migrate-inventory-services.md)
+- [Author your own clanService →](../services/community.md)
+- [Migrate from clanModules →](../migrations/migrate-inventory-services.md)
 
 <!-- TODO: * [Understand the architecture →](../explanation/clan-architecture.md) -->

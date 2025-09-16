@@ -2,11 +2,11 @@
 
 Machines can be added using the following methods
 
-- Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](../../concepts/autoincludes.md))
+- Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](../inventory/autoincludes.md))
 - Imperative via cli command: `clan machines create`
 - Editing nix expressions in flake.nix See [`clan-core.lib.clan`](/options/?scope=Flake Options (clan.nix file))
 
-See the complete [list](../../concepts/autoincludes.md) of auto-loaded files.
+See the complete [list](../inventory/autoincludes.md) of auto-loaded files.
 
 ## Create a machine
 
