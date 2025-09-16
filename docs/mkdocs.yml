@@ -76,6 +76,7 @@ nav:
       - Zerotier VPN: guides/mesh-vpn.md
       - How to disable Secure Boot: guides/secure-boot.md
       - Flake-parts: guides/flake-parts.md
+      - Nixos-rebuild: guides/nixos-rebuild.md
       - macOS: guides/macos.md
       - Contributing:
           - Contributing: guides/contributing/CONTRIBUTING.md
@@ -84,6 +85,7 @@ nav:
 
       - Writing a Service Module: guides/services/community.md
       - Writing a Disko Template: guides/disko-templates/community.md
+      - Nixos-rebuild: guides/nixos-rebuild.md
       - Migrations:
           - Migrate from clan modules to services: guides/migrations/migrate-inventory-services.md
           - Facts Vars Migration: guides/migrations/migration-facts-vars.md
