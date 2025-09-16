@@ -37,7 +37,6 @@ pkgs.stdenv.mkDerivation {
   ++ (with pkgs.python3Packages; [
     mkdocs
     mkdocs-material
-    mkdocs-macros
     mkdocs-redoc-tag
     mkdocs-redirects
   ]);
