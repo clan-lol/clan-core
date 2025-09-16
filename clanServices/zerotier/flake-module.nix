@@ -5,7 +5,7 @@
   ...
 }:
 let
-  module = lib.modules.importApply ./default.nix { };
+  module = ./default.nix;
 in
 {
   clan.modules.zerotier = module;

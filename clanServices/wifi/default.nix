@@ -1,4 +1,3 @@
-{ packages }:
 { lib, ... }:
 let
   inherit (lib)
