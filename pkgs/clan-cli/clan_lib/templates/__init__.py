@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 
 from clan_lib.dirs import clan_templates
+from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix_models.clan import ClanTemplatesType
 
@@ -35,8 +36,7 @@ def list_templates(flake: Flake | None) -> TemplateList:
         builtin_templates = flake.select("clanInternals.templates")
 
         return TemplateList(builtin_templates, custom_templates)
-
-    except (AttributeError, KeyError, Exception):
+    except ClanError:
         log.debug(
             "Failed to get templates from clan inputs, "
             "falling back to clan-core builtin templates",

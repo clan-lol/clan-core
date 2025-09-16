@@ -32,7 +32,7 @@ def get_machine_flash_options() -> FlashOptions:
 
 
 def list_languages() -> list[str]:
-    cmd = nix_build([f"{nixpkgs_source()}#legacyPackages.x86_64-linux.glibcLocales"])
+    cmd = nix_build([f"{nixpkgs_source()}#glibcLocales"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find glibc locales"))
     locale_file = Path(result.stdout.strip()) / "share" / "i18n" / "SUPPORTED"
 
@@ -57,7 +57,7 @@ def list_languages() -> list[str]:
 
 
 def list_keymaps() -> list[str]:
-    cmd = nix_build([f"{nixpkgs_source()}#legacyPackages.x86_64-linux.kbd"])
+    cmd = nix_build([f"{nixpkgs_source()}#kbd.out"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find kbdinfo"))
     keymaps_dir = Path(result.stdout.strip()) / "share" / "keymaps"
 

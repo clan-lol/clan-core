@@ -4,7 +4,6 @@
 # The test for this module in ./tests/vm/default.nix shows an example of how
 # the service is used.
 
-{ packages }:
 { ... }:
 {
   _class = "clan.service";
@@ -34,20 +33,17 @@
         settings,
 
         # The name of this instance of the service
-        instanceName,
 
         # The current machine
-        machine,
 
         # All roles of this service, with their assigned machines
-        roles,
         ...
       }:
       {
         # Analog to 'perSystem' of flake-parts.
         # For every instance of this service we will add a nixosModule to a morning-machine
         nixosModule =
-          { config, ... }:
+          { ... }:
           {
             # Interaction examples what you could do here:
             # - Get some settings of this machine

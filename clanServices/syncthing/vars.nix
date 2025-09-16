@@ -11,7 +11,9 @@
       pkgs.syncthing
     ];
     script = ''
-      syncthing generate --config "$out"
+      export TMPDIR=/tmp
+      TEMPORARY=$(mktemp -d)
+      syncthing generate --config "$out" --data "$TEMPORARY"
       mv "$out"/key.pem "$out"/key
       mv "$out"/cert.pem "$out"/cert
       cat "$out"/config.xml | grep -oP '(?<=<device id=")[^"]+' | uniq > "$out"/id

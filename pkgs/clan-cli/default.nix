@@ -227,8 +227,8 @@ pythonRuntime.pkgs.buildPythonApplication {
               ../../nixosModules/clanCore/zerotier/generate.py
 
               # needed by flash list tests
-              nixpkgs.legacyPackages.x86_64-linux.kbd
-              nixpkgs.legacyPackages.x86_64-linux.glibcLocales
+              pkgs.kbd
+              pkgs.glibcLocales
 
               # Pre-built VMs for impure tests
               pkgs.stdenv.drvPath

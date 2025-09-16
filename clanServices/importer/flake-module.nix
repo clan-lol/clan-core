@@ -1,6 +1,6 @@
-{ lib, ... }:
+{ ... }:
 {
   clan.modules = {
-    importer = lib.modules.importApply ./default.nix { };
+    importer = ./default.nix;
   };
 }

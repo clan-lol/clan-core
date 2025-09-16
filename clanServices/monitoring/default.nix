@@ -1,4 +1,3 @@
-{ packages }:
 { ... }:
 {
   _class = "clan.service";
