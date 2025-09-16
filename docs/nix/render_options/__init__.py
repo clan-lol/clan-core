@@ -326,7 +326,7 @@ Each `clanService`:
 
     See [Migration Guide](../../guides/migrations/migrate-inventory-services.md) for help on migrating.
 
-Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/clanServices.md).
+Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/inventory/clanServices.md).
 """
 
     with indexfile.open("w") as of:

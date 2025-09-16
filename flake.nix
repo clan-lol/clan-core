@@ -50,10 +50,13 @@
         pathExists
         ;
 
-      privateInputs = if builtins.pathExists (./. + "/.skip-private-inputs") then { } else { };
-      # (import ./devFlake/flake-compat.nix {
-      #   src = ./devFlake;
-      # }).outputs;
+      privateInputs =
+        if builtins.pathExists (./. + "/.skip-private-inputs") then
+          { }
+        else
+          (import ./devFlake/flake-compat.nix {
+            src = ./devFlake;
+          }).outputs;
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
