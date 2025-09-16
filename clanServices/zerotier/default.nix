@@ -16,10 +16,10 @@
       }:
       {
         exports.networking = {
-          priority = lib.mkDefault 20;
+          priority = lib.mkDefault 900;
           # TODO add user space network support to clan-cli
           module = "clan_lib.network.zerotier";
-          peers = lib.mapAttrs (name: machine: {
+          peers = lib.mapAttrs (name: _machine: {
             host.var = {
               machine = name;
               generator = "zerotier";
