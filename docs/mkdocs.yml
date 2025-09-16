@@ -87,6 +87,7 @@ nav:
       - Backups:
           - Introduction to Backups: guides/backups.md
       - Flake-parts: guides/flake-parts.md
+      - NixOs Rebuild: guides/nixos-rebuild.md
       - macOS:
           - Managing macOS Machines: guides/macos.md
       # Should be part of the respective sections above

@@ -77,7 +77,7 @@ hide:
     <p>Built on NixOS, Clan provides a declarative interface for managing machines</strong> with automated <a href="./guides/secrets.md">secret management</a>, easy <a href="./guides/mesh-vpn.md">mesh VPN connectivity</a>, and <a href="./guides/backups.md">automated backups</a>.</p>
     <p>Whether you're running a homelab or maintaining critical computing infrastructure, Clan will help reduce maintenance burden</strong> by allowing a git repository to define your whole network</strong> of computers.</p>
     <p>In combination with <a href="https://github.com/Mic92/sops-nix">sops-nix</a>, <a href="https://github.com/nix-community/nixos-anywhere">nixos-anywhere</a> and <a href="https://github.com/nix-community/disko">disko</a>, Clan makes it possible to have collaborative infrastructure</strong>.</p>
-    <p>At the heart of Clan are <a href="./reference/clanServices/index.md">Clan Services</a> - the core concept that enables you to add functionality across multiple machines in your network. While Clan ships with essential core services, you can <a href="./guides/clanServices.md">create custom services</a> tailored to your specific needs.</p>
+    <p>At the heart of Clan are <a href="./reference/clanServices/index.md">Clan Services</a> - the core concept that enables you to add functionality across multiple machines in your network. While Clan ships with essential core services, you can <a href="./guides/inventory/clanServices.md">create custom services</a> tailored to your specific needs.</p>
   </div>
   <label class="clamp-more" for="clan-readmore"></label>
 </div>
@@ -121,7 +121,7 @@ hide:
 
     command line interface
 
--   [Clan Options](./options)
+-   [Clan Options](/options)
 
     ---
 
