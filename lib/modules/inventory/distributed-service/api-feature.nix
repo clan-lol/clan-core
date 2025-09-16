@@ -4,7 +4,6 @@
 { clanLib, prefix }:
 let
   converter = clanLib.jsonschema {
-    includeDefaults = true;
   };
 in
 { lib, config, ... }:

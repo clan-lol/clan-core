@@ -4,13 +4,9 @@
   lib ? (import <nixpkgs> { }).lib,
   slib ? (import ./. { inherit lib; } { }),
 }:
-let
-  filterSchema =
-    schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema;
-in
 {
   testParseOptions = {
-    expr = filterSchema (slib.parseModule ./example-interface.nix);
+    expr = (slib.parseModule ./example-interface.nix);
     expected = builtins.fromJSON (builtins.readFile ./example-schema.json);
   };
 
@@ -31,7 +27,7 @@ in
       };
     in
     {
-      expr = filterSchema (slib.parseOptions evaled.options { });
+      expr = (slib.parseOptions evaled.options { });
       expected = {
         "$schema" = "http://json-schema.org/draft-07/schema#";
         additionalProperties = false;
@@ -64,7 +60,7 @@ in
       };
     in
     {
-      expr = filterSchema (
+      expr = (
         slib.parseOptions
           (lib.evalModules {
             modules = [
