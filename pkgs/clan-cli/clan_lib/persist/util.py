@@ -249,7 +249,7 @@ def calc_patches(
     data_dyn = flatten_data(persisted)
 
     all_keys = set(data_all) | set(data_all_updated)
-    patchset = {}
+    patchset: dict[str, Any] = {}
 
     delete_set = find_deleted_paths(all_values, update, parent_key="")
 
