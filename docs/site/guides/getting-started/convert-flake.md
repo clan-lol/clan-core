@@ -171,7 +171,7 @@ Clan needs to know where it can reach your hosts. For testing purpose set
 }
 ```
 
-See our guide on for properly [configuring machines networking](../networking.md)
+See our guide on for properly [configuring machines networking](../networking/networking.md)
 
 ## Next Steps
 

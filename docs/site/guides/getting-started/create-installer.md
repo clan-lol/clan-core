@@ -152,7 +152,7 @@ sudo umount /dev/sdb1
 
 ## Boot From USB Stick
 
-- To use, boot from the Clan USB drive with **secure boot turned off**. For step by step instructions go to [Disabling Secure Boot](../../guides/secure-boot.md)
+- To use, boot from the Clan USB drive with **secure boot turned off**. For step by step instructions go to [Disabling Secure Boot](../secure-boot.md)
 
 ## (Optional) Connect to Wifi Manually
 
