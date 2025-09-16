@@ -206,13 +206,13 @@ def parse_args() -> Options:
     )
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.DEBUG)
-    os.environ["CLAN_NO_COMMIT"] = "1"
-    opts = parse_args()
-    test_dir = opts.test_dir
-
-    if opts.clean:
+def generate_test_vars(
+    clean: bool,
+    repo_root: Path,
+    test_dir: Path,
+    check_attr: str,
+) -> None:
+    if clean:
         shutil.rmtree(test_dir / "vars", ignore_errors=True)
         shutil.rmtree(test_dir / "sops", ignore_errors=True)
 
@@ -222,10 +222,10 @@ def main() -> None:
     if system.endswith("-darwin"):
         test_system = system.rstrip("darwin") + "linux"
 
-    flake = TestFlake(opts.check_attr, test_dir, str(opts.repo_root))
+    flake = TestFlake(check_attr, test_dir, str(repo_root))
     machine_names = get_machine_names(
-        opts.repo_root,
-        opts.check_attr,
+        repo_root,
+        check_attr,
         test_system,
     )
 
@@ -233,16 +233,16 @@ def main() -> None:
 
     flake.precache(
         [
-            f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            f"checks.{test_system}.{check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ],
     )
 
     # This hack is necessary because the sops store uses flake.path to find the machine keys
     # This hack does not work because flake.invalidate_cache resets _path
-    flake._path = opts.test_dir  # noqa: SLF001
+    flake._path = test_dir  # noqa: SLF001
 
     machines = [
-        TestMachine(name, flake, test_dir, opts.check_attr) for name in machine_names
+        TestMachine(name, flake, test_dir, check_attr) for name in machine_names
     ]
     user = "admin"
     admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
@@ -285,6 +285,18 @@ def main() -> None:
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
         run_generators(list(machines), prompt_values=mocked_prompts)
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.DEBUG)
+    os.environ["CLAN_NO_COMMIT"] = "1"
+    args = parse_args()
+    generate_test_vars(
+        clean=args.clean,
+        repo_root=args.repo_root,
+        test_dir=args.repo_root / args.test_dir,
+        check_attr=args.check_attr,
+    )
 
 
 if __name__ == "__main__":

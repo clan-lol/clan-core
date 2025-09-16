@@ -28,6 +28,10 @@
             "pkgs/zerotierone"
             "pkgs/minifakeroot"
             "pkgs/clan-cli/clan_cli/tests/flake-module.nix"
+
+            # needed for test_generate_test_vars.py
+            "checks/service-dummy-test"
+            "checks/flake-module.nix"
           ];
         };
       };
