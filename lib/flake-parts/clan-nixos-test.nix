@@ -24,7 +24,7 @@ in
       in
       {
         options.clan.nixosTests = mkOption {
-          description = "Clan NixOS tests configuration";
+          description = "Unstable interface! Clan NixOS tests configuration";
           type = types.attrsOf types.unspecified;
           default = { };
         };
