@@ -9,7 +9,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from clan_cli.vars.generator import Generator
 from clan_cli.vars.prompt import PromptType
@@ -19,6 +19,12 @@ from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
 from clan_lib.vars.generate import run_generators
+
+if TYPE_CHECKING:
+    from clan_lib.machines.actions import (
+        ListOptions,
+        MachineResponse,
+    )
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +92,26 @@ class TestFlake(Flake):
 
         full_selector = f'checks."{test_system}".{self.check_attr}.machinesCross.{system}."{machine_name}".{selector}'
         return self.select(full_selector)
+
+    # we don't want to evaluate all machines of the flake. Only the ones defined in the test
+    def set_machine_names(self, machine_names: list[str]) -> None:
+        """Set the machine names for this flake instance to fake the machines defined by the test"""
+        self._machine_names = machine_names
+
+    def list_machines(
+        self,
+        opts: "ListOptions | None" = None,  # noqa: ARG002
+    ) -> "dict[str, MachineResponse]":
+        """List machines of a clan"""
+        from clan_lib.machines.actions import (  # noqa: PLC0415
+            InventoryMachine,
+            MachineResponse,
+        )
+
+        res = {}
+        for name in self._machine_names:
+            res[name] = MachineResponse(data=InventoryMachine())
+        return res
 
 
 class TestMachine(Machine):
@@ -180,13 +206,13 @@ def parse_args() -> Options:
     )
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.DEBUG)
-    os.environ["CLAN_NO_COMMIT"] = "1"
-    opts = parse_args()
-    test_dir = opts.test_dir
-
-    if opts.clean:
+def generate_test_vars(
+    clean: bool,
+    repo_root: Path,
+    test_dir: Path,
+    check_attr: str,
+) -> None:
+    if clean:
         shutil.rmtree(test_dir / "vars", ignore_errors=True)
         shutil.rmtree(test_dir / "sops", ignore_errors=True)
 
@@ -196,25 +222,27 @@ def main() -> None:
     if system.endswith("-darwin"):
         test_system = system.rstrip("darwin") + "linux"
 
-    flake = TestFlake(opts.check_attr, test_dir, str(opts.repo_root))
+    flake = TestFlake(check_attr, test_dir, str(repo_root))
     machine_names = get_machine_names(
-        opts.repo_root,
-        opts.check_attr,
+        repo_root,
+        check_attr,
         test_system,
     )
 
+    flake.set_machine_names(machine_names)
+
     flake.precache(
         [
-            f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            f"checks.{test_system}.{check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ],
     )
 
     # This hack is necessary because the sops store uses flake.path to find the machine keys
     # This hack does not work because flake.invalidate_cache resets _path
-    flake._path = opts.test_dir  # noqa: SLF001
+    flake._path = test_dir  # noqa: SLF001
 
     machines = [
-        TestMachine(name, flake, test_dir, opts.check_attr) for name in machine_names
+        TestMachine(name, flake, test_dir, check_attr) for name in machine_names
     ]
     user = "admin"
     admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
@@ -257,6 +285,18 @@ def main() -> None:
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
         run_generators(list(machines), prompt_values=mocked_prompts)
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.DEBUG)
+    os.environ["CLAN_NO_COMMIT"] = "1"
+    args = parse_args()
+    generate_test_vars(
+        clean=args.clean,
+        repo_root=args.repo_root,
+        test_dir=args.repo_root / args.test_dir,
+        check_attr=args.check_attr,
+    )
 
 
 if __name__ == "__main__":

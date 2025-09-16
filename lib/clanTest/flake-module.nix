@@ -77,9 +77,7 @@ in
         ) machineModules
       );
 
-      update-vars-script = "${
-        self.packages.${hostPkgs.system}.generate-test-vars
-      }/bin/generate-test-vars";
+      update-vars-script = "${self.packages.${hostPkgs.system}.clan-cli}/bin/clan-generate-test-vars";
 
       relativeDir = removePrefix "${self}/" (toString config.clan.directory);
 

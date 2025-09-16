@@ -8,7 +8,6 @@ from clan_cli.vars.migration import check_can_migrate, migrate_files
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
-from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -39,7 +38,7 @@ def get_generators(
         msg = "At least one machine must be provided"
         raise ClanError(msg)
 
-    all_machines = list_machines(machines[0].flake).keys()
+    all_machines = machines[0].flake.list_machines().keys()
     requested_machines = [machine.name for machine in machines]
 
     all_generators_list = Generator.get_machine_generators(
