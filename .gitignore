@@ -52,3 +52,5 @@ pkgs/clan-app/ui/.fonts
 *.gif
 *.mp4
 *.mkv
+
+.jj

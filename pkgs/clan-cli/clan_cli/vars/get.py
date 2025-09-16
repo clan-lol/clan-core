@@ -29,10 +29,10 @@ def get_machine_var(machine: Machine, var_id: str) -> Var:
         if var.id.startswith(var_id):
             results.append(var)
     if len(results) == 0:
-        msg = f"No var found for search string: {var_id}"
+        msg = f"Couldn't find var: {var_id} for machine: {machine}"
         raise ClanError(msg)
     if len(results) > 1:
-        error = f"Found multiple vars for {var_id}:\n  - " + "\n  - ".join(
+        error = f"Found multiple vars in {machine} for {var_id}:\n  - " + "\n  - ".join(
             [str(var) for var in results],
         )
         raise ClanError(error)
