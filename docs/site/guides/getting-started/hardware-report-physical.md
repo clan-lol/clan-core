@@ -112,3 +112,5 @@ The following command will generate a hardware report with [nixos-facter](https:
 
 
 If you are using our template `[MACHINE]` would be `jon`
+
+[Next Step (Choose Disk Format)](./choose-disk.md){ .md-button .md-button--primary }
