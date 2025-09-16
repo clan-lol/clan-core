@@ -34,7 +34,6 @@ lib.fix (
     # ------------------------------------
     # ClanLib functions
     inventory = clanLib.callLib ./modules/inventory { };
-    modules = clanLib.callLib ./modules/inventory/frontmatter { };
     test = clanLib.callLib ./test { };
     flake-inputs = clanLib.callLib ./flake-inputs.nix { };
     # Custom types
