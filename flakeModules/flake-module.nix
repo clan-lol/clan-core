@@ -10,7 +10,8 @@
   flake.flakeModules = {
     clan = import ./clan.nix self;
     default = config.flake.flakeModules.clan;
-    testModule = import ../lib/flake-parts/clan-nixos-test.nix {
+    # testModule is an unstable interface and can change at any time.
+    testModule = lib.modules.importApply ../lib/flake-parts/clan-nixos-test.nix {
       inherit
         self
         inputs
