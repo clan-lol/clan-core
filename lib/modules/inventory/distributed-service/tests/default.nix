@@ -13,7 +13,7 @@ let
     (evalModules {
       # Static modules
       modules = [
-        clanLib.inventory.interface
+        clanLib.inventory.inventoryModule
         {
           _file = "test file";
           tags.all = [ ];

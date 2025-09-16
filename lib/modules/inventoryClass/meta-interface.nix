@@ -1,3 +1,6 @@
+# This file is imported into:
+# - clan.meta
+# - clan.inventory.meta
 { lib, ... }:
 let
   types = lib.types;

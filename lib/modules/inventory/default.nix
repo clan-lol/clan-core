@@ -7,10 +7,10 @@ let
 in
 {
   inherit (services) mapInstances;
-  interface = {
-    _file = "clanLib.inventory.interface";
+  inventoryModule = {
+    _file = "clanLib.inventory.module";
     imports = [
-      ../inventoryClass/interface.nix
+      ../inventoryClass/inventory.nix
     ];
     _module.args = { inherit clanLib; };
   };
