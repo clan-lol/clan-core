@@ -56,6 +56,7 @@
           includedRuntimeDeps = [
             "age"
             "git"
+            "nix"
           ];
           inherit (self) nixosConfigurations;
         };
