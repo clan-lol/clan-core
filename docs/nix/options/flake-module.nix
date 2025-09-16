@@ -40,8 +40,6 @@
           prefix = [ ];
         }).config.manifest;
 
-      loadFile = file: if builtins.pathExists file then builtins.readFile file else "";
-
       settingsModules = module: mapAttrs (_roleName: roleConfig: roleConfig.interface) (getRoles module);
 
       # Map each letter to its capitalized version
@@ -97,7 +95,7 @@
 
             **${manifest.description}**
 
-            ${loadFile (module._file + "/../README.md")}
+            ${lib.optionalString (manifest ? readme) manifest.readme}
 
             ${
               if manifest.categories != [ ] then
