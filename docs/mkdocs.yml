@@ -222,7 +222,6 @@ extra:
 
 plugins:
   - search
-  - macros
   - redoc-tag
   - redirects:
       redirect_maps:
