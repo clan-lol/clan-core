@@ -92,7 +92,7 @@ nav:
           - Managing macOS Machines: guides/macos.md
       # Should be part of the respective sections above
       # machines, disko, clan
-      # - Templates: concepts/templates.md
+      - Templates: concepts/templates.md
       - Migrations:
           - clan modules --> clan services: guides/migrations/migrate-inventory-services.md
           - Facts --> Vars: guides/migrations/migration-facts-vars.md
@@ -103,8 +103,6 @@ nav:
           - Hacking: guides/contributing/CONTRIBUTING.md
           - Advanced Debugging: guides/contributing/debugging.md
           - Testing: guides/contributing/testing.md
-  - Concepts:
-      - Templates: concepts/templates.md
 
   - Reference:
       - Overview: reference/index.md
@@ -152,7 +150,6 @@ nav:
           - reference/cli/vars.md
           - reference/cli/vms.md
 
-      - HTTP API: api.md
       - HTTP API: api.md
 
       - Decisions:
