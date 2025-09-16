@@ -4,9 +4,9 @@ This folder is supposed to contain clan specific nix functions.
 
 Such as:
 
-- build-clan function
+- clan function
 - select
-- build-inventory function
+- inventory function
 - json-schema-converter
 
 ## Structure
@@ -34,7 +34,7 @@ A single feature-set/module may be organized like this:
 Every bigger feature should live in a subfolder with the feature name.
 It should contain two files:
 
-- `impl.nix`
+- `default.nix`
 - `test.nix`
 - Everything else may be adopted as needed.
 
@@ -44,29 +44,19 @@ Example filetree
 ```sh
 .
 ├── default.nix
-├── build-clan
+├── clan
 │   ├── default.nix
 │   └── test.nix
 └── inventory
-    ├── default.nix
     ├── services-subfeature
     │   ├── default.nix
     │   └── test.nix
     ├── instances-subfeature # <- We immediately see that this feature is not tested on itself.
     │   └── default.nix
+    ├── default.nix
     └── test.nix
-```
-
-```nix
-# default.nix
-{lib, clanLib, ...}:
-{
-    inventory.resolveTags = import ./resolveTags { inherit lib clanLib; };
-}
 ```
 
 ## Testing
 
 For testing we use [nix-unit](https://github.com/nix-community/nix-unit)
-
-TODO: define a helper that automatically hooks up `tests` in `flake.legacyPackages` and a corresponding buildable `checks` attribute
