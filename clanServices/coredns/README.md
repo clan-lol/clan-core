@@ -8,7 +8,7 @@ The service consists of two roles:
 - A `server` role: This is the DNS-server that will be queried when trying to
   resolve clan-internal services. It defines the top-level domain.
 - A `default` role: This does two things. First, it sets up the nameservers so
-  thatclan-internal queries are resolved via the `server` machine, while
+  that clan-internal queries are resolved via the `server` machine, while
   external queries are resolved as normal via DHCP. Second, it allows exposing
   services (see example below).
 
