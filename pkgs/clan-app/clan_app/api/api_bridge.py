@@ -1,9 +1,8 @@
 import logging
 import threading
-from abc import ABC, abstractmethod
 from contextlib import ExitStack
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Protocol
 
 from clan_lib.api import ApiError, ApiResponse, ErrorDataClass
 from clan_lib.api.tasks import WebThread
@@ -30,16 +29,13 @@ class BackendResponse:
     _op_key: str
 
 
-@dataclass
-class ApiBridge(ABC):
+class ApiBridge(Protocol):
     """Generic interface for API bridges that can handle method calls from different sources."""
 
     middleware_chain: tuple["Middleware", ...]
-    threads: dict[str, WebThread] = field(default_factory=dict)
+    threads: dict[str, WebThread]
 
-    @abstractmethod
-    def send_api_response(self, response: BackendResponse) -> None:
-        """Send response back to the client."""
+    def send_api_response(self, response: BackendResponse) -> None: ...
 
     def process_request(self, request: BackendRequest) -> None:
         """Process an API request through the middleware chain."""
