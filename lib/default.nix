@@ -3,7 +3,7 @@
   # TODO: Get rid of self here.
   # DONT add any new functions that depend on self here.
   # If a lib function depends on a piece in clan-core add that piece to the function arguments
-  self,
+  self ? throw "'self' should not be used in lib/default.nix, dont depend on it. It will be removed in short notice.",
   ...
 }:
 # Produces the
@@ -48,5 +48,8 @@ lib.fix (
 
     # flakes
     flakes = clanLib.callLib ./flakes.nix { };
+
+    # TODO: Flatten our lib functions like this:
+    resolveModule = clanLib.callLib ./resolve-module { };
   }
 )

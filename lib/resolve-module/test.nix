@@ -1,9 +1,10 @@
 # Run: nix-unit ./test-resolve-module.nix
 {
   lib ? import <nixpkgs/lib>,
+  clanLib ? import ../default.nix { inherit lib; },
 }:
 let
-  resolveModule = import ./resolveModule.nix { inherit lib; };
+  resolveModule = clanLib.resolveModule;
 
   fromSpec =
     moduleSpec:
