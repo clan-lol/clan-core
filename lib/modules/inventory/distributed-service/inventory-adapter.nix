@@ -14,9 +14,6 @@
   clanLib,
   ...
 }:
-let
-  resolveModule = import ./resolveModule.nix { inherit lib; };
-in
 {
   mapInstances =
     {
@@ -36,7 +33,7 @@ in
       importedModuleWithInstances = lib.mapAttrs (
         instanceName: instance:
         let
-          resolvedModule = resolveModule {
+          resolvedModule = clanLib.resolveModule {
             moduleSpec = instance.module;
             inherit flakeInputs clanCoreModules;
           };
