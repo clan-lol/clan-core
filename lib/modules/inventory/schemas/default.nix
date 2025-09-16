@@ -6,8 +6,7 @@
   ...
 }:
 let
-  jsonLib = self.clanLib.jsonschema { inherit includeDefaults; };
-  includeDefaults = true;
+  jsonLib = self.clanLib.jsonschema { };
 
   opts = (flakeOptions.flake.type.getSubOptions [ "flake" ]);
   clanOpts = opts.clan.type.getSubOptions [ "clan" ];

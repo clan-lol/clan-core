@@ -6,7 +6,6 @@
     "functionTo"
     "package"
   ],
-  includeDefaults ? true,
   filterSchema ?
     schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema,
   header ? {
@@ -61,7 +60,7 @@ rec {
         inherit specialArgs;
       };
     in
-    (_parseOptions evaled.options { });
+    filterSchema (_parseOptions evaled.options { });
 
   # get default value from option
 
@@ -70,9 +69,7 @@ rec {
   # - Value is "<thunk>" (string literal) if the option has a defaultText attribute. This means we cannot evaluate default safely
   getDefaultFrom =
     opt:
-    if !includeDefaults then
-      { }
-    else if opt ? defaultText then
+    if opt ? defaultText then
       {
         # dont add default to jsonschema. It seems to alter the type
         # default = "<thunk>";
