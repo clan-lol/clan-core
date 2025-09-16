@@ -6,7 +6,6 @@
     ./clan-vm-manager/flake-module.nix
     ./installer/flake-module.nix
     ./icon-update/flake-module.nix
-    ./generate-test-vars/flake-module.nix
     ./clan-core-flake/flake-module.nix
     ./clan-app/flake-module.nix
     ./testing/flake-module.nix

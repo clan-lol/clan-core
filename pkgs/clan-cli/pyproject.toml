@@ -6,8 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "clan"
 description = "clan cli tool"
 dynamic = ["version"]
-scripts = { clan = "clan_cli.cli:main" }
 license = { text = "MIT" }
+
+[project.scripts]
+clan = "clan_cli.cli:main"
+clan-generate-test-vars = "clan_cli.generate_test_vars.cli:main"
 
 [project.urls]
 Homepage = "https://clan.lol/"
@@ -15,7 +18,7 @@ Documentation = "https://docs.clan.lol/"
 Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]
-include = ["clan_lib*", "clan_cli*"]
+include = ["clan_lib*", "clan_cli*", "generate_test_vars*"]
 exclude = ["clan_lib.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
