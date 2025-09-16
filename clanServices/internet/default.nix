@@ -31,7 +31,6 @@
       {
         roles,
         lib,
-        settings,
         ...
       }:
       {

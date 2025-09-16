@@ -49,7 +49,7 @@ in
             ssid_path =
               network_name: config.clan.core.vars.generators."wifi.${network_name}".files.network-name.path;
 
-            secret_generator = name: value: {
+            secret_generator = name: _value: {
               name = "wifi.${name}";
               value = {
                 prompts.network-name.type = "line";

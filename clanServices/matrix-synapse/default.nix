@@ -144,7 +144,7 @@
               };
             }
             // lib.mapAttrs' (
-              name: user:
+              _name: user:
               lib.nameValuePair "matrix-password-${user.name}" {
                 files."matrix-password-${user.name}" = { };
                 migrateFact = "matrix-password-${user.name}";
