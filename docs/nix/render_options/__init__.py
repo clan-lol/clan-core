@@ -40,7 +40,6 @@ from clan_lib.services.modules import (
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])
 CLAN_CORE_DOCS = Path(os.environ["CLAN_CORE_DOCS"])
-BUILD_CLAN_PATH = os.environ.get("BUILD_CLAN_PATH")
 
 # Options how to author clan.modules
 # perInstance, perMachine, ...
