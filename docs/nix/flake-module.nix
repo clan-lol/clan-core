@@ -11,7 +11,7 @@
       ...
     }:
     let
-      buildClanOptions = self'.legacyPackages.clan-internals-docs;
+      clanOptions = self'.legacyPackages.clan-internals-docs;
       # Simply evaluated options (JSON)
       # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = pkgs.callPackage ./get-module-docs.nix {
@@ -74,7 +74,7 @@
             export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_SERVICE_INTERFACE=${self'.legacyPackages.clan-service-module-interface}/share/doc/nixos/options.json
 
-            export BUILD_CLAN_PATH=${buildClanOptions}/share/doc/nixos/options.json
+            export BUILD_CLAN_PATH=${clanOptions}/share/doc/nixos/options.json
 
             mkdir $out
 
