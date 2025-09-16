@@ -9,7 +9,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from clan_cli.vars.generator import Generator
 from clan_cli.vars.prompt import PromptType
@@ -19,6 +19,12 @@ from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
 from clan_lib.vars.generate import run_generators
+
+if TYPE_CHECKING:
+    from clan_lib.machines.actions import (
+        ListOptions,
+        MachineResponse,
+    )
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +92,26 @@ class TestFlake(Flake):
 
         full_selector = f'checks."{test_system}".{self.check_attr}.machinesCross.{system}."{machine_name}".{selector}'
         return self.select(full_selector)
+
+    # we don't want to evaluate all machines of the flake. Only the ones defined in the test
+    def set_machine_names(self, machine_names: list[str]) -> None:
+        """Set the machine names for this flake instance to fake the machines defined by the test"""
+        self._machine_names = machine_names
+
+    def list_machines(
+        self,
+        opts: "ListOptions | None" = None,  # noqa: ARG002
+    ) -> "dict[str, MachineResponse]":
+        """List machines of a clan"""
+        from clan_lib.machines.actions import (  # noqa: PLC0415
+            InventoryMachine,
+            MachineResponse,
+        )
+
+        res = {}
+        for name in self._machine_names:
+            res[name] = MachineResponse(data=InventoryMachine())
+        return res
 
 
 class TestMachine(Machine):
@@ -202,6 +228,8 @@ def main() -> None:
         opts.check_attr,
         test_system,
     )
+
+    flake.set_machine_names(machine_names)
 
     flake.precache(
         [

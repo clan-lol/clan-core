@@ -9,7 +9,7 @@ from functools import cache
 from hashlib import sha1
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import select_source, user_cache_dir
@@ -21,6 +21,12 @@ from clan_lib.nix import (
     nix_metadata,
     nix_test_store,
 )
+
+if TYPE_CHECKING:
+    from clan_lib.machines.actions import (
+        ListOptions,
+        MachineResponse,
+    )
 
 log = logging.getLogger(__name__)
 
@@ -1101,6 +1107,15 @@ class Flake:
 
         full_selector = f'clanInternals.machines."{system}"."{machine_name}".{selector}'
         return self.select(full_selector)
+
+    def list_machines(
+        self,
+        opts: "ListOptions | None" = None,
+    ) -> "dict[str, MachineResponse]":
+        """List machines of a clan"""
+        from clan_lib.machines.actions import list_machines  # noqa: PLC0415
+
+        return list_machines(self, opts)
 
 
 def require_flake(flake: Flake | None) -> Flake:
