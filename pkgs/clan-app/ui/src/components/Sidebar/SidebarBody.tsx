@@ -102,7 +102,7 @@ const Machines = () => {
               <Button
                 hierarchy="primary"
                 size="s"
-                startIcon="Machine"
+                icon="Machine"
                 onClick={() => ctx.setShowAddMachine(true)}
               >
                 Add machine

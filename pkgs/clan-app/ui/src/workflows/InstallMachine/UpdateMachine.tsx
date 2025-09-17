@@ -158,8 +158,9 @@ const UpdateProgress = () => {
         </Typography>
         <Button
           hierarchy="primary"
-          class="mt-3 w-fit"
+          elasticity="fit"
           size="s"
+          in="UpdateProgress"
           onClick={handleCancel}
         >
           Cancel
@@ -180,7 +181,7 @@ const UpdateDone = (props: UpdateDoneProps) => {
     <div class="flex size-full flex-col items-center justify-center bg-inv-4">
       <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
-          <Icon icon="Checkmark" class="size-9" />
+          <Icon icon="Checkmark" in="WorkflowPanelTitle" />
         </div>
         <Typography
           hierarchy="title"

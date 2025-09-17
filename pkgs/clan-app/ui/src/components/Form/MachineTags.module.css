@@ -20,16 +20,6 @@
   @apply w-full relative;
 }
 
-.icon {
-  @apply absolute left-1.5;
-  top: calc(50% - 0.5rem);
-
-  &.iconSmall {
-    @apply left-[0.3125rem] size-[0.75rem];
-    top: calc(50% - 0.3125rem);
-  }
-}
-
 .input {
   @apply outline outline-1 outline-def-acc-1 bg-def-1 fg-def-1 w-full;
   @apply px-[1.625rem] py-1.5 rounded-sm;

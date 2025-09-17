@@ -1,0 +1,37 @@
+.primary {
+  @apply fg-def-1;
+
+  &.inverted {
+    @apply fg-inv-1;
+  }
+}
+.secondary {
+  @apply fg-def-2;
+
+  &.inverted {
+    @apply fg-inv-2;
+  }
+}
+.tertiary {
+  @apply fg-def-3;
+
+  &.inverted {
+    @apply fg-inv-3;
+  }
+}
+.quaternary {
+  @apply fg-def-4;
+
+  &.inverted {
+    @apply fg-inv-4;
+  }
+}
+.error {
+  @apply fg-semantic-error-4;
+  &.inverted {
+    @apply fg-semantic-error-1;
+  }
+}
+.inherit {
+  @apply text-inherit;
+}

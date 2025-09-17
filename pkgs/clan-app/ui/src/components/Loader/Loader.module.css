@@ -53,6 +53,16 @@
   animation: moveLoaderChild 1.8s ease-in-out infinite;
 }
 
+.loader.in-Button {
+  /* FIXME: using hidden prevents transition from working, but without it, flex
+  creates a gap for it */
+  @apply hidden w-0 opacity-0  transition-all duration-500 ease-linear;
+
+  &.loading {
+    @apply block w-4 opacity-100 mr-[revert];
+  }
+}
+
 @keyframes moveLoaderWrapper {
   0% {
     transform: translate(0%, 0%) rotate(-45deg);

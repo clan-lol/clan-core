@@ -1,0 +1,32 @@
+.icon.in-Button {
+  width: 1rem;
+  height: 1rem;
+}
+.icon.in-Button-primary {
+  @apply fg-inv-1;
+}
+.icon.in-Button-secondary {
+  @apply fg-def-1;
+}
+.icon.in-Button-s {
+  width: 0.8125rem;
+  height: 0.8125rem;
+}
+.icon.in-Button-xs {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+.icon.in-WorkflowPanelTitle {
+  @apply size-9;
+}
+.icon.in-MachineTags {
+  @apply absolute left-1.5;
+  top: calc(50% - 0.5rem);
+}
+.icon.in-MachineTags-s {
+  @apply left-[0.3125rem] size-[0.75rem];
+  top: calc(50% - 0.3125rem);
+}
+.icon.in-ConfigureRole {
+  @apply ml-auto;
+}

@@ -1,14 +1,16 @@
-import { splitProps, type JSX } from "solid-js";
+import { mergeProps, splitProps, type JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "../Typography/Typography";
 import { Button as KobalteButton } from "@kobalte/core/button";
 
-import "./Button.css";
+import styles from "./Button.module.css";
 import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
+import { getInClasses, joinByDash, keepTruthy } from "@/src/util";
 
 export type Size = "default" | "s" | "xs";
 export type Hierarchy = "primary" | "secondary";
+export type Elasticity = "default" | "fit";
 
 export type Action = () => Promise<void>;
 
@@ -19,79 +21,78 @@ export interface ButtonProps
   ghost?: boolean;
   children?: JSX.Element;
   icon?: IconVariant;
-  startIcon?: IconVariant;
   endIcon?: IconVariant;
-  class?: string;
   loading?: boolean;
+  elasticity?: Elasticity;
+  in?:
+    | "HostFileInput-horizontal"
+    | "TagSelect"
+    | "UpdateProgress"
+    | "InstallProgress"
+    | "FlashProgress"
+    | "CheckHardware"
+    | "ConfigureService";
 }
 
-const iconSizes: Record<Size, string> = {
-  default: "1rem",
-  s: "0.8125rem",
-  xs: "0.625rem",
-};
-
 export const Button = (props: ButtonProps) => {
-  const [local, other] = splitProps(props, [
-    "children",
-    "hierarchy",
-    "size",
-    "ghost",
-    "icon",
-    "startIcon",
-    "endIcon",
-    "class",
-    "loading",
-  ]);
-
-  const size = local.size || "default";
-  const hierarchy = local.hierarchy || "primary";
-
-  const iconSize = iconSizes[local.size || "default"];
-
-  const loadingClass =
-    "w-4 opacity-100 mr-[revert] transition-all duration-500 ease-linear";
-  const idleClass =
-    "hidden w-0 opacity-0 top-0 left-0 -mr-2 transition-all duration-500 ease-linear";
+  const [local, other] = splitProps(
+    mergeProps(
+      { size: "default", hierarchy: "primary", elasticity: "default" } as const,
+      props,
+    ),
+    [
+      "children",
+      "hierarchy",
+      "size",
+      "ghost",
+      "icon",
+      "endIcon",
+      "loading",
+      "elasticity",
+      "disabled",
+      "in",
+      "onClick",
+    ],
+  );
 
   return (
     <KobalteButton
       class={cx(
-        local.class,
-        "button", // default button class
-        size,
-        hierarchy,
+        styles.button, // default button class
+        local.size != "default" && styles[local.size],
+        styles[local.hierarchy],
+        local.elasticity != "default" && local.elasticity,
+        getInClasses(styles, local.in),
         {
-          icon: local.icon,
-          loading: props.loading,
-          ghost: local.ghost,
+          [styles.iconOnly]: local.icon && !local.children,
+          [styles.hasIcon]: local.icon && local.children,
+          [styles.hasEndIcon]: local.endIcon && local.children,
+          [styles.loading]: local.loading,
+          [styles.ghost]: local.ghost,
         },
       )}
-      onClick={props.onClick}
-      disabled={props.disabled || props.loading}
+      onClick={local.onClick}
+      disabled={local.disabled || local.loading}
       {...other}
     >
-      <Loader
-        hierarchy={hierarchy}
-        class={cx({
-          [idleClass]: !props.loading,
-          [loadingClass]: props.loading,
-        })}
-      />
+      <Loader hierarchy={local.hierarchy} loading={local.loading} in="Button" />
 
-      {local.startIcon && (
-        <Icon icon={local.startIcon} class="icon-start" size={iconSize} />
+      {local.icon && (
+        <Icon
+          icon={local.icon}
+          in={keepTruthy(
+            "Button",
+            joinByDash("Button", local.hierarchy),
+            local.size == "default" ? "" : joinByDash("Button", local.size),
+          )}
+        />
       )}
 
-      {local.icon && !local.children && (
-        <Icon icon={local.icon} class="icon" size={iconSize} />
-      )}
-
-      {local.children && !local.icon && (
+      {local.children && (
         <Typography
-          class="label"
+          class={styles.typography}
           hierarchy="label"
-          size={local.size || "default"}
+          size={local.size}
           inverted={local.hierarchy === "primary"}
           weight="bold"
           tag="span"
@@ -100,8 +101,15 @@ export const Button = (props: ButtonProps) => {
         </Typography>
       )}
 
-      {local.endIcon && (
-        <Icon icon={local.endIcon} class="icon-end" size={iconSize} />
+      {local.endIcon && local.children && (
+        <Icon
+          icon={local.endIcon}
+          in={keepTruthy(
+            "Button",
+            joinByDash("Button", local.hierarchy),
+            local.size == "default" ? "" : joinByDash("Button", local.size),
+          )}
+        />
       )}
     </KobalteButton>
   );

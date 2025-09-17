@@ -349,8 +349,9 @@ const FlashProgress = () => {
         <LoadingBar />
         <Button
           hierarchy="primary"
-          class="mt-2 w-fit"
+          elasticity="fit"
           size="s"
+          in="FlashProgress"
           onClick={handleCancel}
         >
           Cancel
@@ -365,7 +366,7 @@ const FlashDone = () => {
     <div class="flex size-full flex-col items-center justify-end bg-inv-4">
       <div class="flex size-full max-w-md flex-col items-center justify-center gap-3 pt-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
-          <Icon icon="Checkmark" class="size-9" />
+          <Icon icon="Checkmark" in="WorkflowPanelTitle" />
         </div>
         <Typography
           hierarchy="title"

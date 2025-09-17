@@ -300,10 +300,10 @@ const CheckHardware = () => {
               <Button
                 disabled={hardwareQuery.isLoading || updatingHardwareReport()}
                 hierarchy="secondary"
-                startIcon="Report"
-                onClick={handleUpdateSummary}
-                class="flex gap-3"
+                icon="Report"
                 loading={hardwareQuery.isFetching || updatingHardwareReport()}
+                in="CheckHardware"
+                onClick={handleUpdateSummary}
               >
                 Update hardware report
               </Button>
@@ -882,8 +882,9 @@ const InstallProgress = () => {
         </Typography>
         <Button
           hierarchy="primary"
-          class="mt-3 w-fit"
+          elasticity="fit"
           size="s"
+          in="InstallProgress"
           onClick={handleCancel}
         >
           Cancel
@@ -904,7 +905,7 @@ const InstallDone = (props: InstallDoneProps) => {
     <div class="flex size-full flex-col items-center justify-center bg-inv-4">
       <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
         <div class="rounded-full bg-semantic-success-4">
-          <Icon icon="Checkmark" class="size-9" />
+          <Icon icon="Checkmark" in="WorkflowPanelTitle" />
         </div>
         <Typography
           hierarchy="title"

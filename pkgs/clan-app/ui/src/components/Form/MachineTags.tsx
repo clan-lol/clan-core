@@ -17,6 +17,7 @@ import { Label } from "@/src/components/Form/Label";
 import { Orienter } from "@/src/components/Form/Orienter";
 import { CollectionNode } from "@kobalte/core";
 import styles from "./MachineTags.module.css";
+import { keepTruthy } from "@/src/util";
 
 export interface MachineTag {
   value: string;
@@ -247,9 +248,10 @@ export const MachineTags = (props: MachineTagsProps) => {
                     icon="Tag"
                     color="secondary"
                     inverted={props.inverted}
-                    class={cx(styles.icon, {
-                      [styles.iconSmall]: props.size == "s",
-                    })}
+                    in={keepTruthy(
+                      "MachineTags",
+                      props.size == "s" && "MachineTags-s",
+                    )}
                   />
                   <Combobox.Input
                     onKeyDown={onKeyDown}

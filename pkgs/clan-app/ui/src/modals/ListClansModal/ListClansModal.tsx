@@ -68,7 +68,7 @@ export const ListClansModal = (props: ListClansModalProps) => {
             hierarchy="secondary"
             ghost
             size="s"
-            startIcon="Plus"
+            icon="Plus"
             onClick={() => {
               props.onClose?.();
               navigateToOnboarding(navigate, true);

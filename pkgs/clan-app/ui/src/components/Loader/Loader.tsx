@@ -1,4 +1,5 @@
 // Loader.tsx
+import { mergeProps } from "solid-js";
 import styles from "./Loader.module.css";
 import cx from "classnames";
 
@@ -6,23 +7,28 @@ export type Hierarchy = "primary" | "secondary";
 
 export interface LoaderProps {
   hierarchy?: Hierarchy;
-  class?: string;
   size?: "default" | "l" | "xl";
+  loading?: boolean;
+  in?: "Button";
 }
 
 export const Loader = (props: LoaderProps) => {
-  const size = () => props.size || "default";
+  const local = mergeProps(
+    { hierarchy: "primary", size: "default", loading: false } as const,
+    props,
+  );
 
   return (
     <div
       class={cx(
         styles.loader,
-        styles[props.hierarchy || "primary"],
-        props.class,
+        styles[local.hierarchy],
+        local.in ? styles[`in-${local.in}` as `in-${typeof local.in}`] : "",
         {
-          [styles.sizeDefault]: size() === "default",
-          [styles.sizeLarge]: size() === "l",
-          [styles.sizeExtraLarge]: size() === "xl",
+          [styles.sizeDefault]: local.size === "default",
+          [styles.sizeLarge]: local.size === "l",
+          [styles.sizeExtraLarge]: local.size === "xl",
+          [styles.loading]: local.loading,
         },
       )}
     >

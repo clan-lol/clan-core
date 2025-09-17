@@ -71,16 +71,17 @@ const background = (props: { state: State; form: FormStore<SetupForm> }) => {
       <div class={styles.backgroundLayer2} />
       <div class={styles.backgroundLayer3} />
       <Logo variant="Clan" inverted />
-      <Button
-        class={styles.listClans}
-        hierarchy="primary"
-        ghost
-        size="s"
-        startIcon="Grid"
-        onClick={() => setShowModal(true)}
-      >
-        All Clans
-      </Button>
+      <div class={styles.listClans}>
+        <Button
+          hierarchy="primary"
+          ghost
+          size="s"
+          icon="Grid"
+          onClick={() => setShowModal(true)}
+        >
+          All Clans
+        </Button>
+      </div>
       <Show when={showModal()}>
         <ListClansModal onClose={() => setShowModal(false)} />
       </Show>

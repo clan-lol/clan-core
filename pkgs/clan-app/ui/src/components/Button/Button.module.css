@@ -8,11 +8,11 @@
   &.s {
     @apply h-[1.625rem] px-3 py-1.5 rounded-[0.125rem];
 
-    &:has(> .icon-start):has(> .label) {
+    &.hasIcon {
       @apply pl-2;
     }
 
-    &:has(> .icon-end):has(> .label) {
+    &.hasEndIcon {
       @apply pr-2;
     }
   }
@@ -20,11 +20,11 @@
   &.xs {
     @apply h-[1.125rem] gap-0.5 p-2 rounded-[0.125rem];
 
-    &:has(> .icon-start):has(> .label) {
+    &.hasIcon {
       @apply pl-1.5;
     }
 
-    &:has(> .icon-end):has(> .label) {
+    &.hasEndIcon {
       @apply pr-1.5;
     }
   }
@@ -62,10 +62,6 @@
 
     &:disabled {
       @apply bg-def-acc-3 border-solid border-def-3 fg-def-3 shadow-none;
-    }
-
-    & > .icon {
-      @apply fg-inv-1;
     }
   }
 
@@ -108,25 +104,21 @@
     &:disabled {
       @apply bg-def-2 border-solid border-def-2 fg-def-3 shadow-none;
     }
-
-    & > .icon {
-      @apply fg-def-1;
-
-      &.icon-loading {
-        color: #0051ff;
-      }
-    }
   }
 
-  &.icon {
+  &.fit {
+    @apply w-fit;
+  }
+
+  &.iconOnly {
     @apply p-2;
   }
 
-  &:has(> .icon-start):has(> .label) {
+  &.hasIcon {
     @apply pl-3.5;
   }
 
-  &:has(> .icon-end):has(> .label) {
+  &.hasEndIcon {
     @apply pr-3.5;
   }
 
@@ -134,9 +126,32 @@
     @apply cursor-wait;
   }
 
-  & > span.typography {
+  & > .typography {
     @apply max-w-full overflow-hidden whitespace-nowrap text-ellipsis;
   }
+}
+
+.button.in-HostFileInput-horizontal {
+  @apply max-w-[18rem];
+  @apply grow;
+}
+.button.in-TagSelect {
+  @apply ml-auto;
+}
+.button.in-UpdateProgress {
+  @apply mt-3;
+}
+.button.in-InstallProgress {
+  @apply mt-3;
+}
+.button.in-FlashProgress {
+  @apply mt-2;
+}
+.button.in-CheckHardware {
+  @apply gap-3;
+}
+.button.in-ConfigureService {
+  @apply ml-auto;
 }
 
 /* button group */
