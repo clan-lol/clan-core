@@ -1,0 +1,67 @@
+.onboarding {
+  @apply absolute top-0 left-0;
+  @apply flex items-center justify-center;
+  @apply min-h-screen w-full;
+}
+
+.background {
+  svg[data-logo-name="Clan"] {
+    @apply w-16;
+    @apply absolute bottom-28 left-1/2 transform -translate-x-1/2;
+  }
+}
+
+.backgroundLayer1 {
+  @apply -z-30;
+  background:
+    url("./background.png") 0 -69.032px / 100% 119.049% no-repeat,
+    url("./background.png") 50% / cover no-repeat;
+}
+
+.backgroundLayer2 {
+  @apply -z-20;
+  background: #103131;
+  mix-blend-mode: screen;
+}
+
+.backgroundLayer3 {
+  @apply -z-10;
+  background: #749095;
+  mix-blend-mode: soft-light;
+}
+
+.backgroundLayer1,
+.backgroundLayer2,
+.backgroundLayer3 {
+  @apply absolute top-0 left-0 w-full h-full;
+}
+
+.listClans {
+  @apply absolute bottom-28 right-0 transform -translate-x-1/2;
+}
+
+.container {
+  @apply flex flex-col items-center justify-evenly gap-y-20 size-fit;
+}
+
+.welcome {
+  @apply flex flex-col w-80 gap-y-6;
+}
+.welcomeSeparator {
+  @apply grid grid-cols-3 grid-rows-1 gap-x-4 items-center;
+}
+
+.setup {
+  @apply flex flex-col w-[33rem] gap-y-5;
+  @apply pt-10 px-8 pb-8 bg-def-1 rounded-lg;
+
+  form {
+    @apply flex flex-col gap-y-5;
+  }
+}
+.setupHeader {
+  @apply flex items-center justify-start gap-x-2;
+}
+.setupFormControls {
+  @apply flex justify-end pt-6;
+}
