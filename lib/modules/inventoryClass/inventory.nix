@@ -84,7 +84,7 @@ in
             - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
             - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-            For further information see: [Module Authoring Guide](../../guides/authoring/clanServices/index.md).
+            For further information see: [Module Authoring Guide](../../guides/services/community.md).
 
         ???+ example
             ```nix

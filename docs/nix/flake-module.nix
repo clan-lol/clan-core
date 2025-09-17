@@ -72,6 +72,7 @@
             # A file that contains the links to all clanModule docs
             export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_SERVICE_INTERFACE=${self'.legacyPackages.clan-service-module-interface}/share/doc/nixos/options.json
+            export CLAN_OPTIONS_PATH=${self'.legacyPackages.clan-options}/share/doc/nixos/options.json
 
             mkdir $out
 

@@ -24,7 +24,7 @@ in
       };
     in
     {
-      legacyPackages.clan-internals-docs = jsonDocs.optionsJSON;
+      legacyPackages.clan-options = jsonDocs.optionsJSON;
 
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-build-clan
       legacyPackages.evalTests-build-clan = import ./tests.nix {

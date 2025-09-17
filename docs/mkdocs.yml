@@ -103,19 +103,9 @@ nav:
 
   - Reference:
       - Overview: reference/index.md
-      - Clan Service API: reference/clanServices/clan-service-author-interface.md
+      - Clan Options: reference/options/clan.md
+      - Clan Inventory Options: reference/options/clan_inventory.md
 
-      - clan.core (Machine Options):
-          - Overview: reference/clan.core/index.md
-          - reference/clan.core/backups.md
-          - reference/clan.core/deployment.md
-          - reference/clan.core/facts.md
-          - reference/clan.core/networking.md
-          - reference/clan.core/postgresql.md
-          - reference/clan.core/settings.md
-          - reference/clan.core/sops.md
-          - reference/clan.core/state.md
-          - reference/clan.core/vars.md
       - Clan Service API: reference/clanServices/clan-service-author-interface.md
 
       - clan.core (Machine Options):
