@@ -11,7 +11,6 @@
           ...
         }:
         let
-          jsonpath = "/tmp/telegraf.json";
           auth_user = "prometheus";
         in
         {
@@ -59,9 +58,22 @@
             after = [ "telegraf.service" ];
             wants = [ "telegraf.service" ];
             serviceConfig = {
+              LoadCredential = [
+                "auth_file_path:${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}"
+              ];
+              Environment = [
+                "AUTH_FILE_PATH=%d/auth_file_path"
+              ];
               Restart = "on-failure";
+              User = "telegraf";
+              Group = "telegraf";
             };
-            script = "${pkgs.miniserve}/bin/miniserve -p 9990 ${jsonpath} --auth-file ${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}";
+            script = "${pkgs.miniserve}/bin/miniserve -p 9990 /var/lib/telegraf/telegraf.json --auth-file \"$AUTH_FILE_PATH\"";
+          };
+
+          users.users.telegraf = {
+            home = "/var/lib/telegraf";
+            createHome = true;
           };
 
           services.telegraf = {
@@ -107,7 +119,7 @@
               };
 
               outputs.file = {
-                files = [ jsonpath ];
+                files = [ "/var/lib/telegraf/telegraf.json" ];
                 data_format = "json";
                 json_timestamp_units = "1s";
               };
