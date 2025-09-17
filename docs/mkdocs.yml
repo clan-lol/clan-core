@@ -71,9 +71,6 @@ nav:
           - Introduction to Vars: guides/vars/vars-overview.md
           - Minimal Example: guides/vars/vars-backend.md
           - Diving deeper: guides/vars/vars-concepts.md
-          - Introduction to Vars: guides/vars/vars-overview.md
-          - Minimal Example: guides/vars/vars-backend.md
-          - Diving deeper: guides/vars/vars-concepts.md
           - Advanced Examples: guides/vars/vars-advanced-examples.md
           - Troubleshooting: guides/vars/vars-troubleshooting.md
           - Sops Backend:
