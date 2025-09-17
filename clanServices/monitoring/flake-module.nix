@@ -1,4 +1,6 @@
 {
+  lib,
+  self,
   ...
 }:
 let
