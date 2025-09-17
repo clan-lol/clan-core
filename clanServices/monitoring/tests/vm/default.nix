@@ -54,6 +54,7 @@
 
       peer1.wait_for_unit("network-online.target")
       peer1.wait_for_unit("telegraf.service")
+
       peer1.wait_for_unit("telegraf-json.service")
       peer1.succeed("curl http://localhost:9990")
       peer1.succeed("curl http://localhost:9273/metrics")
