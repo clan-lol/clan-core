@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from pathlib import Path
 from typing import TypedDict
 
@@ -43,17 +44,26 @@ def list_languages() -> list[str]:
     with locale_file.open() as f:
         lines = f.readlines()
 
-    languages = []
+    langs: set[str] = set()
+    base = r"[A-Za-z0-9]*_[A-Za-z0-9]*.UTF-8"
+    pattern = re.compile(base)
     for line in lines:
-        if line.startswith("#"):
-            continue
-        if "SUPPORTED-LOCALES" in line:
-            continue
-        # Split by '/' and take the first part
-        language = line.split("/")[0].strip()
-        languages.append(language)
+        s = line.strip()
 
-    return languages
+        if not s:
+            continue
+        if s.startswith("#"):
+            continue
+        if "SUPPORTED-LOCALES" in s:
+            continue
+
+        tok = s.removesuffix("\\").strip()
+        tok = tok.split("/")[0]
+
+        if pattern.match(tok):
+            langs.add(tok)
+
+    return sorted(langs)
 
 
 def list_keymaps() -> list[str]:

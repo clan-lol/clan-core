@@ -24,6 +24,8 @@
   "qemu",
   "qrencode",
   "rsync",
+  "kbd",
+  "glibcLocales",
   "shellcheck-minimal",
   "sops",
   "sshpass",

@@ -193,7 +193,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli ./clan_lib
+          python -m pytest -m "not impure and not with_core" -n "$jobs"  ./clan_cli ./clan_lib
           touch $out
         '';
   }
@@ -227,7 +227,7 @@ pythonRuntime.pkgs.buildPythonApplication {
               ../../nixosModules/clanCore/zerotier/generate.py
 
               # needed by flash list tests
-              pkgs.kbd
+              pkgs.kbd.out
               pkgs.glibcLocales
 
               # Pre-built VMs for impure tests
@@ -272,7 +272,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
           # Run all tests with core marker
-          python -m pytest -m "not impure and with_core" -n $jobs ./clan_cli ./clan_lib
+          python -m pytest -m "not impure and with_core" -n "$jobs" ./clan_cli ./clan_lib
           touch $out
         '';
   };
