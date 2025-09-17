@@ -27,6 +27,7 @@
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -40,6 +41,7 @@ from clan_lib.services.modules import (
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])
 CLAN_CORE_DOCS = Path(os.environ["CLAN_CORE_DOCS"])
+CLAN_OPTIONS_PATH = Path(os.environ["CLAN_OPTIONS_PATH"])
 
 # Options how to author clan.modules
 # perInstance, perMachine, ...
@@ -441,6 +443,84 @@ Typically needed by module authors to define roles, behavior and metadata for di
         of.write(output)
 
 
+def produce_inventory_docs() -> None:
+    if not CLAN_OPTIONS_PATH:
+        msg = f"Environment variables are not set correctly: CLAN_OPTIONS_PATH={CLAN_OPTIONS_PATH}. Expected a path to the optionsJSON"
+        raise ClanError(msg)
+
+    if not OUT:
+        msg = f"Environment variables are not set correctly: $out={OUT}"
+        raise ClanError(msg)
+
+    output = """# Inventory
+This provides an overview of the available options of the `inventory` model.
+
+It can be set via the `inventory` attribute of the [`clan`](./clan.md#inventory) function, or via the [`clan.inventory`](./clan.md#inventory) attribute of flake-parts.
+
+"""
+    # Inventory options are already included under the clan attribute
+    # We just omitted them in the clan docs, because we want a separate output for the inventory model
+    with Path(CLAN_OPTIONS_PATH).open() as f:
+        options: dict[str, dict[str, Any]] = json.load(f)
+
+        clan_root_option = options_to_tree(options)
+        # Find the inventory options
+        inventory_opt: None | Option = None
+        for opt in clan_root_option.suboptions:
+            if opt.name == "inventory":
+                inventory_opt = opt
+                break
+
+        if not inventory_opt:
+            print("No inventory options found.")
+            sys.exit(1)
+        # Render the inventory options
+        # This for loop excludes the root node
+        for option in inventory_opt.suboptions:
+            output += options_docs_from_tree(option, init_level=2)
+
+    outfile = Path(OUT) / "options/clan_inventory.md"
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+    with Path.open(outfile, "w") as of:
+        of.write(output)
+
+
+def produce_clan_options_docs() -> None:
+    if not CLAN_OPTIONS_PATH:
+        msg = f"Environment variables are not set correctly: CLAN_OPTIONS_PATH={CLAN_OPTIONS_PATH}. Expected a path to the optionsJSON"
+        raise ClanError(msg)
+
+    if not OUT:
+        msg = f"Environment variables are not set correctly: $out={OUT}"
+        raise ClanError(msg)
+
+    output = """# Clan Options
+This provides an overview of the available options
+
+Those can be set via [`clan-core.lib.clan`](./clan.md#inventory) function,
+or via the [`clan`](./clan.md) attribute of flake-parts.
+
+"""
+    # Inventory options are already included under the clan attribute
+    # We just omitted them in the clan docs, because we want a separate output for the inventory model
+    with Path(CLAN_OPTIONS_PATH).open() as f:
+        options: dict[str, dict[str, Any]] = json.load(f)
+
+        clan_root_option = options_to_tree(options)
+        # Render the inventory options
+        # This for loop excludes the root node
+        # Exclude inventory options
+        for option in clan_root_option.suboptions:
+            if "inventory" in option.name:
+                continue
+            output += options_docs_from_tree(option, init_level=2)
+
+    outfile = Path(OUT) / "options/clan.md"
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+    with Path.open(outfile, "w") as of:
+        of.write(output)
+
+
 @dataclass
 class Option:
     name: str
@@ -555,6 +635,7 @@ def options_docs_from_tree(
 
 if __name__ == "__main__":
     produce_clan_core_docs()
-
+    produce_inventory_docs()
+    produce_clan_options_docs()
     produce_clan_service_author_docs()
     produce_clan_service_docs()
