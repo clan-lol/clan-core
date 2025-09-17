@@ -1,8 +1,19 @@
 { lib, ... }:
 {
+  /**
+    A custom type for deferred modules that guarantee to be JSON serializable.
+
+    This type guarantees that the module is serializable by checking all definitions.
+    Nix doesn't allow to raise a nice error if the module is not serializable.
+
+    It applies the following restrictions:
+
+    - Enforces that there is only one definition.
+    - Enforces that the definition is JSON serializable
+    - Disallows nested imports
+  */
   uniqueDeferredSerializableModule = lib.fix (
     self:
-
     let
       checkDef =
         _loc: def:
