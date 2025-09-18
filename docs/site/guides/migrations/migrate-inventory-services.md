@@ -353,7 +353,7 @@ roles.client.extraModules = [ self.nixosModules.borgbackup ];
 
 # Or inline module definition
 roles.client.extraModules = [
-  { config, ... }: {
+  {
     # Your module configuration here
   }
 ];
