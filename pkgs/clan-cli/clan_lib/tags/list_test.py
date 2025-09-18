@@ -3,6 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from clan_lib.flake import Flake
+from clan_lib.nix_models.clan import InventoryMachineTagsType
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import get_value_by_path, set_value_by_path
 from clan_lib.tags.list import list_tags
@@ -45,7 +46,9 @@ def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
 
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    curr_tags = get_value_by_path(inventory, "machines.jon.tags", [])
+    curr_tags = get_value_by_path(
+        inventory, "machines.jon.tags", [], InventoryMachineTagsType
+    )
     new_tags = ["managed1", "managed2"]
     set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])
     inventory_store.write(inventory, message="Test add tags via API")

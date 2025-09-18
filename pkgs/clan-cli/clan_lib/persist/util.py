@@ -441,7 +441,15 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
 type DictLike = dict[str, Any] | Any
 
 
-def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
+V = TypeVar("V")
+
+
+def get_value_by_path(
+    d: DictLike,
+    path: str,
+    fallback: V | None = None,
+    expected_type: type[V] | None = None,  # noqa: ARG001
+) -> V:
     """Get the value at a specific dot-separated path in a nested dictionary.
 
     If the path does not exist, it returns fallback.
@@ -455,9 +463,9 @@ def get_value_by_path(d: DictLike, path: str, fallback: Any = None) -> Any:
         current = current.setdefault(key, {})
 
     if isinstance(current, dict):
-        return current.get(keys[-1], fallback)
+        return cast("V", current.get(keys[-1], fallback))
 
-    return fallback
+    return cast("V", fallback)
 
 
 def set_value_by_path(d: DictLike, path: str, content: Any) -> None:
