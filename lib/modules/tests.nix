@@ -75,7 +75,7 @@ in
     in
     {
       inherit eval;
-      expr = eval.config.clanInternals.inventory.meta;
+      expr = eval.config.clanInternals.inventoryClass.inventory.meta;
       expected = {
         description = null;
         icon = null;

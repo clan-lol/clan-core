@@ -255,10 +255,6 @@ in
           ];
         };
 
-      # TODO: remove this after a month or so
-      # This is here for backwards compatibility for older CLI versions
-      inventory = config.inventory;
-
       # TODO: unify this interface
       # We should have only clan.modules. (consistent with clan.templates)
 
