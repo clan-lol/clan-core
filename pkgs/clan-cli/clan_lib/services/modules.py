@@ -434,7 +434,7 @@ def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
 
 
 @API.register
-def update_service_instance(
+def set_service_instance(
     flake: Flake, instance_ref: str, roles: InventoryInstanceRolesType
 ) -> None:
     """Update the roles of a service instance
