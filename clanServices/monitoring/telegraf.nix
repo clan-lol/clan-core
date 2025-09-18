@@ -32,11 +32,35 @@
             9990
           ];
 
-          clan.core.vars.generators."telegraf" = {
+          clan.core.vars.generators."telegraf-certs" = {
+            files.crt = {
+              restartUnits = [ "telegraf.service" ];
+              deploy = true;
+              secret = false;
+            };
+            files.key = {
+              mode = "0600";
+              restartUnits = [ "telegraf.service" ];
+            };
 
+            runtimeInputs = [
+              pkgs.openssl
+            ];
+
+            script = ''
+              openssl req -x509 -nodes -newkey rsa:4096 \
+                -keyout "$out"/key \
+                -out "$out"/crt \
+                -subj "/C=US/ST=CA/L=San Francisco/O=Example Corp/OU=IT/CN=example.com"
+            '';
+          };
+
+          clan.core.vars.generators."telegraf" = {
             files.password.restartUnits = [ "telegraf.service" ];
             files.password-env.restartUnits = [ "telegraf.service" ];
             files.miniserve-auth.restartUnits = [ "telegraf.service" ];
+
+            dependencies = [ "telegraf-certs" ];
 
             runtimeInputs = [
               pkgs.coreutils
@@ -60,16 +84,33 @@
             serviceConfig = {
               LoadCredential = [
                 "auth_file_path:${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}"
+                "telegraf_crt_path:${config.clan.core.vars.generators.telegraf-certs.files.crt.path}"
+                "telegraf_key_path:${config.clan.core.vars.generators.telegraf-certs.files.key.path}"
               ];
               Environment = [
                 "AUTH_FILE_PATH=%d/auth_file_path"
+                "CRT_PATH=%d/telegraf_crt_path"
+                "KEY_PATH=%d/telegraf_key_path"
               ];
               Restart = "on-failure";
               User = "telegraf";
               Group = "telegraf";
               RuntimeDirectory = "telegraf-www";
             };
-            script = "${pkgs.miniserve}/bin/miniserve -p 9990 /run/telegraf-www --auth-file \"$AUTH_FILE_PATH\"";
+            script = "${pkgs.miniserve}/bin/miniserve -p 9990 /run/telegraf-www --auth-file \"$AUTH_FILE_PATH\" --tls-cert \"$CRT_PATH\" --tls-key \"$KEY_PATH\"";
+          };
+
+          systemd.services.telegraf = {
+            serviceConfig = {
+              LoadCredential = [
+                "telegraf_crt_path:${config.clan.core.vars.generators.telegraf-certs.files.crt.path}"
+                "telegraf_key_path:${config.clan.core.vars.generators.telegraf-certs.files.key.path}"
+              ];
+              Environment = [
+                "CRT_PATH=%d/telegraf_crt_path"
+                "KEY_PATH=%d/telegraf_key_path"
+              ];
+            };
           };
 
           services.telegraf = {
@@ -77,6 +118,7 @@
             environmentFiles = [
               (builtins.toString config.clan.core.vars.generators.telegraf.files.password-env.path)
             ];
+
             extraConfig = {
               agent.interval = "60s";
               inputs = {
@@ -112,6 +154,8 @@
                 metric_version = 2;
                 basic_username = "${auth_user}";
                 basic_password = "$${BASIC_AUTH_PWD}";
+                tls_cert = "$${CRT_PATH}";
+                tls_key = "$${KEY_PATH}";
               };
 
               outputs.file = {

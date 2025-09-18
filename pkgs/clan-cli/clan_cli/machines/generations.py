@@ -153,7 +153,7 @@ def generations_command(args: argparse.Namespace) -> None:
                     ).override(host_key_check=host_key_check)
             else:
                 try:
-                    with get_best_remote(machine, only_vpns=True) as remote:
+                    with get_best_remote(machine) as _remote:
                         target_host = machine.target_host().override(
                             host_key_check=host_key_check
                         )
