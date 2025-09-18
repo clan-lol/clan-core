@@ -659,10 +659,9 @@ def test_delete_top_level() -> None:
 
 def test_delete_key_not_found() -> None:
     data = {"foo": {"bar": 1}}
-    # Trying to delete a non-existing key "foo.baz"
-    with pytest.raises(KeyError) as excinfo:
-        delete_by_path(data, "foo.baz")
-    assert "Cannot delete. Path 'foo.baz'" in str(excinfo.value)
+    # Trying to delete a non-existing key "foo.baz" - should return empty dict
+    result = delete_by_path(data, "foo.baz")
+    assert result == {}
     # Data should remain unchanged
     assert data == {"foo": {"bar": 1}}
 
@@ -690,10 +689,9 @@ def test_delete_empty_path() -> None:
 
 def test_delete_non_existent_path_deep() -> None:
     data = {"foo": {"bar": {"baz": 123}}}
-    # non-existent deep path
-    with pytest.raises(KeyError) as excinfo:
-        delete_by_path(data, "foo.bar.qux")
-    assert "not found" in str(excinfo.value)
+    # non-existent deep path - should return empty dict
+    result = delete_by_path(data, "foo.bar.qux")
+    assert result == {}
     # Data remains unchanged
     assert data == {"foo": {"bar": {"baz": 123}}}
 
