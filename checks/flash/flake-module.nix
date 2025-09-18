@@ -46,6 +46,7 @@
         pkgs.buildPackages.xorg.lndir
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.FileSlurp
+        pkgs.bubblewrap
 
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
@@ -74,7 +75,7 @@
               substituters = lib.mkForce [ ];
               hashed-mirrors = null;
               connect-timeout = lib.mkForce 3;
-              flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
+              flake-registry = "";
               experimental-features = [
                 "nix-command"
                 "flakes"

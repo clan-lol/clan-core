@@ -112,6 +112,7 @@
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
+                    pkgs.bubblewrap
                     (import ../installation/facter-report.nix pkgs.hostPlatform.system)
                   ]
                   ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
