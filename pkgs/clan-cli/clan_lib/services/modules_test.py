@@ -5,15 +5,14 @@ import pytest
 from clan_cli.tests.fixtures_flakes import nested_dict
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
-from clan_lib.nix_models.clan import Inventory
 from clan_lib.services.modules import (
     list_service_instances,
     list_service_modules,
-    update_service_instance,
+    set_service_instance,
 )
 
 if TYPE_CHECKING:
-    from clan_lib.nix_models.clan import Clan
+    from clan_lib.nix_models.clan import Clan, Inventory
 
 
 @pytest.mark.with_core
@@ -152,7 +151,7 @@ def test_update_service_instance(
 
     # Wrong instance
     with pytest.raises(ClanError) as excinfo:
-        update_service_instance(
+        set_service_instance(
             flake,
             "admin",
             {},
@@ -161,7 +160,7 @@ def test_update_service_instance(
 
     # Wrong roles
     with pytest.raises(ClanError) as excinfo:
-        update_service_instance(
+        set_service_instance(
             flake,
             "hello-world",
             {"default": {"machines": {}}},
@@ -169,7 +168,7 @@ def test_update_service_instance(
     assert "Role 'default' cannot be used" in str(excinfo.value)
 
     # Remove 'settings' from jon machine
-    update_service_instance(
+    set_service_instance(
         flake,
         "hello-world",
         {
@@ -197,7 +196,7 @@ def test_update_service_instance(
     }
 
     # Remove jon
-    update_service_instance(
+    set_service_instance(
         flake,
         "hello-world",
         {
