@@ -36,7 +36,7 @@ def get_metrics(
 
     """
     # Example: fetch Prometheus metrics with basic auth
-    url = f"http://{target_host.address}:9990"
+    url = f"http://{target_host.address}:9990/telegraf.json"
     username = "prometheus"
     var_name = "telegraf/password"
     password_var = get_machine_var(machine, var_name)

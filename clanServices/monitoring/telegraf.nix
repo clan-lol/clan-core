@@ -56,7 +56,7 @@
             enable = true;
             wantedBy = [ "multi-user.target" ];
             after = [ "telegraf.service" ];
-            wants = [ "telegraf.service" ];
+            requires = [ "telegraf.service" ];
             serviceConfig = {
               LoadCredential = [
                 "auth_file_path:${config.clan.core.vars.generators.telegraf.files.miniserve-auth.path}"
@@ -67,13 +67,9 @@
               Restart = "on-failure";
               User = "telegraf";
               Group = "telegraf";
+              RuntimeDirectory = "telegraf-www";
             };
-            script = "${pkgs.miniserve}/bin/miniserve -p 9990 /var/lib/telegraf/telegraf.json --auth-file \"$AUTH_FILE_PATH\"";
-          };
-
-          users.users.telegraf = {
-            home = "/var/lib/telegraf";
-            createHome = true;
+            script = "${pkgs.miniserve}/bin/miniserve -p 9990 /run/telegraf-www --auth-file \"$AUTH_FILE_PATH\"";
           };
 
           services.telegraf = {
@@ -119,7 +115,7 @@
               };
 
               outputs.file = {
-                files = [ "/var/lib/telegraf/telegraf.json" ];
+                files = [ "/run/telegraf-www/telegraf.json" ];
                 data_format = "json";
                 json_timestamp_units = "1s";
               };
