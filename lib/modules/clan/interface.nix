@@ -338,12 +338,6 @@ in
             };
           };
 
-          # TODO: remove all dependents in python, delete this option
-          inventory = lib.mkOption {
-            type = lib.types.raw;
-            apply = lib.warn "The 'clanInternals.inventory' option is deprecated, use 'clanInternals.inventoryClass' instead.";
-          };
-
           secrets = lib.mkOption { type = lib.types.raw; };
 
           templates = lib.mkOption { type = lib.types.raw; };
