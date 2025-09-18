@@ -56,12 +56,12 @@
       peer1.wait_for_unit("telegraf.service")
 
       peer1.wait_for_unit("telegraf-json.service")
-      peer1.succeed("curl http://localhost:9990")
+      peer1.succeed("curl http://localhost:9990/telegraf.json")
       peer1.succeed("curl http://localhost:9273/metrics")
 
       # Fetch the basic auth password from the secret file
       password = peer1.succeed("cat /var/run/secrets/vars/telegraf/password")
-      url = f"http://192.168.1.1:9990"
+      url = f"http://192.168.1.1:9990/telegraf.json"
       credentials = f"prometheus:{password}"
       print("Using credentials:", credentials)
       time.sleep(10)  # wait a bit for telegraf to collect some data
@@ -75,13 +75,12 @@
       # Look for the nixos_systems metric in the json output
       found_system = False
       for line in response:
-        line_str = line.decode("utf-8").strip()
-        line = json.loads(line_str)
-        if line["name"] == "nixos_systems":
-            found_system = True
-            print("Found nixos_systems metric in json output")
-            break
-        print(line)
+          line_str = line.decode("utf-8").strip()
+          line = json.loads(line_str)
+          if line["name"] == "nixos_systems":
+              found_system = True
+              print("Found nixos_systems metric in json output")
+              break
       assert found_system, "nixos_systems metric not found in json output"
 
       # TODO: I would like to test the python code here but it's not working yet
