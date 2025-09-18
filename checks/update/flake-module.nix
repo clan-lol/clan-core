@@ -67,6 +67,15 @@
         ];
       };
 
+      nix.settings = {
+        flake-registry = "";
+        # required for setting the `flake-registry`
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+      };
+
       # Define the mounts that exist in the container to prevent them from being stopped
       fileSystems = {
         "/" = {

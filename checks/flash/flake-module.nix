@@ -91,7 +91,7 @@
               substituters = lib.mkForce [ ];
               hashed-mirrors = null;
               connect-timeout = lib.mkForce 3;
-              flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
+              flake-registry = "";
               experimental-features = [
                 "nix-command"
                 "flakes"
