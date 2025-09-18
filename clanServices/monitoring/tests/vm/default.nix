@@ -14,9 +14,6 @@
         module.input = "self";
 
         roles.telegraf.machines.peer1 = { };
-        roles.telegraf.settings = {
-          allowAllInterfaces = true;
-        };
       };
     };
   };

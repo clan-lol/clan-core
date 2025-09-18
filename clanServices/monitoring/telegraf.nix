@@ -14,20 +14,17 @@
           auth_user = "prometheus";
         in
         {
+          warnings =
+            lib.optionals (settings.allowAllInterfaces != null) [
+              "monitoring.settings.allowAllInterfaces is deprecated and and has no effect. Please remove it from your inventory."
+              "The monitoring service will now always listen on all interfaces over https."
+            ]
+            ++ (lib.optionals (settings.interfaces != null) [
+              "monitoring.settings.interfaces is deprecated and and has no effect. Please remove it from your inventory."
+              "The monitoring service will now always listen on all interfaces over https."
+            ]);
 
-          networking.firewall.interfaces = lib.mkIf (settings.allowAllInterfaces == false) (
-            builtins.listToAttrs (
-              map (name: {
-                inherit name;
-                value.allowedTCPPorts = [
-                  9273
-                  9990
-                ];
-              }) settings.interfaces
-            )
-          );
-
-          networking.firewall.allowedTCPPorts = lib.mkIf (settings.allowAllInterfaces == true) [
+          networking.firewall.allowedTCPPorts = [
             9273
             9990
           ];
