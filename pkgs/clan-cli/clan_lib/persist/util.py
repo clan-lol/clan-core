@@ -431,9 +431,11 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
     last_key = keys[-1]
     try:
         value = current.pop(last_key)
-    except KeyError as exc:
-        msg = f"Cannot delete. Path '{path}' not found in data '{d}'"
-        raise KeyError(msg) from exc
+    except KeyError:
+        # Possibly data was already deleted
+        # msg = f"Canot delete. Path '{path}' not found in data '{d}'"
+        # raise KeyError(msg) from exc
+        return {}
     else:
         return {last_key: value}
 
