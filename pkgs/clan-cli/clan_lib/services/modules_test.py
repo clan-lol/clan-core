@@ -3,8 +3,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.tests.fixtures_flakes import nested_dict
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
-from clan_lib.services.modules import list_service_instances, list_service_modules
+from clan_lib.nix_models.clan import Inventory
+from clan_lib.services.modules import (
+    list_service_instances,
+    list_service_modules,
+    update_service_instance,
+)
 
 if TYPE_CHECKING:
     from clan_lib.nix_models.clan import Clan
@@ -103,3 +109,115 @@ def test_list_service_modules(
     assert sshd_service
     assert sshd_service.usage_ref == {"name": "sshd", "input": None}
     assert set(sshd_service.instance_refs) == set({})
+
+
+@pytest.mark.with_core
+def test_update_service_instance(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    # Data that can be mutated via API calls
+    mutable_inventory_json: Inventory = {
+        "instances": {
+            "hello-world": {
+                "roles": {
+                    "morning": {
+                        "machines": {
+                            "jon": {
+                                "settings": {  # type: ignore[typeddict-item]
+                                    "greeting": "jon",
+                                },
+                            },
+                            "sara": {
+                                "settings": {  # type: ignore[typeddict-item]
+                                    "greeting": "sara",
+                                },
+                            },
+                        },
+                        "tags": {
+                            "all": {},
+                        },
+                        "settings": {  # type: ignore[typeddict-item]
+                            "greeting": "hello",
+                        },
+                    }
+                }
+            }
+        }
+    }
+    flake = clan_flake({}, mutable_inventory_json=mutable_inventory_json)
+
+    # Ensure preconditions
+    instances = list_service_instances(flake)
+    assert set(instances.keys()) == {"hello-world"}
+
+    # Wrong instance
+    with pytest.raises(ClanError) as excinfo:
+        update_service_instance(
+            flake,
+            "admin",
+            {},
+        )
+    assert "Instance 'admin' not found" in str(excinfo.value)
+
+    # Wrong roles
+    with pytest.raises(ClanError) as excinfo:
+        update_service_instance(
+            flake,
+            "hello-world",
+            {"default": {"machines": {}}},
+        )
+    assert "Role 'default' cannot be used" in str(excinfo.value)
+
+    # Remove 'settings' from jon machine
+    update_service_instance(
+        flake,
+        "hello-world",
+        {
+            "morning": {
+                "machines": {
+                    "jon": {},  # Unset the machine settings
+                    "sara": {
+                        "settings": {  # type: ignore[typeddict-item]
+                            "greeting": "sara",
+                        },
+                    },
+                },
+            }
+        },
+    )
+
+    updated_instances = list_service_instances(flake)
+    updated_machines = (
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+    )
+
+    assert updated_machines == {
+        "jon": {"settings": {}},
+        "sara": {"settings": {"greeting": "sara"}},
+    }
+
+    # Remove jon
+    update_service_instance(
+        flake,
+        "hello-world",
+        {
+            "morning": {
+                "machines": {
+                    "sara": {
+                        "settings": {  # type: ignore[typeddict-item]
+                            "greeting": "sara",
+                        },
+                    },
+                },
+            }
+        },
+    )
+
+    updated_instances = list_service_instances(flake)
+    updated_machines = (
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+    )
+
+    assert updated_machines == {
+        "sara": {"settings": {"greeting": "sara"}},
+    }

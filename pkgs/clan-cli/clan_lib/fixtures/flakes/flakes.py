@@ -28,6 +28,10 @@ def offline_template(tmp_path_factory: Any, offline_session_flake_hook: Any) -> 
     with (clan_json_file).open("w") as f:
         f.write(r"""{ }""")
 
+    inventory_json_file = dst_dir / "inventory.json"
+    with (inventory_json_file).open("w") as f:
+        f.write(r"""{ }""")
+
     # expensive call ~6 seconds
     # Run in session scope to avoid repeated calls
     offline_session_flake_hook(dst_dir)
@@ -56,7 +60,11 @@ def clan_flake(
     tmp_path: Path,
     patch_clan_template: Any,  # noqa: ARG001
 ) -> Callable[[Clan | None, str | None], Flake]:
-    def factory(clan: Clan | None = None, raw: str | None = None) -> Flake:
+    def factory(
+        clan: Clan | None = None,
+        raw: str | None = None,
+        mutable_inventory_json: str | None = None,
+    ) -> Flake:
         # TODO: Make more options configurable
         if clan is None and raw is None:
             msg = "Either 'clan' or 'raw' must be provided to create a Flake."
@@ -77,6 +85,10 @@ def clan_flake(
         if raw is not None:
             with (dest / "clan.nix").open("w") as f:
                 f.write(raw)
+
+        if mutable_inventory_json is not None:
+            with (dest / "inventory.json").open("w") as f:
+                f.write(json.dumps(mutable_inventory_json))
 
         return Flake(str(dest))
 

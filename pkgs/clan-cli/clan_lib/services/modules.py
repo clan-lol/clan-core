@@ -14,7 +14,7 @@ from clan_lib.nix_models.clan import (
     InventoryInstancesType,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import set_value_by_path
+from clan_lib.persist.util import get_value_by_path, set_value_by_path
 
 
 class CategoryInfo(TypedDict):
@@ -431,3 +431,64 @@ def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
             roles=instance.get("roles", {}),
         )
     return res
+
+
+@API.register
+def update_service_instance(
+    flake: Flake, instance_ref: str, roles: InventoryInstanceRolesType
+) -> None:
+    """Update the roles of a service instance
+
+    :param instance_ref: The name of the instance to update
+    :param roles: The roles to update
+
+
+    :raises ClanError: If the instance_ref is invalid or missing required fields
+    """
+    inventory_store = InventoryStore(flake)
+    inventory = inventory_store.read()
+
+    instance: InventoryInstance | None = get_value_by_path(
+        inventory, f"instances.{instance_ref}", None
+    )
+
+    if instance is None:
+        msg = f"Instance '{instance_ref}' not found"
+        raise ClanError(msg)
+
+    module_ref = instance.get("module")
+    if module_ref is None:
+        msg = f"Instance '{instance_ref}' seems invalid: Missing module reference"
+        raise ClanError(msg)
+
+    module = resolve_service_module_ref(flake, module_ref)
+    allowed_roles = module.info.roles.keys()
+
+    for role_name in roles:
+        if role_name not in allowed_roles:
+            msg = f"Role '{role_name}' cannot be used in the module"
+            description = f"Allowed roles: {', '.join(allowed_roles)}"
+            raise ClanError(msg, description=description)
+
+    for role_name, role_cfg in roles.items():
+        if forbidden_keys := {"extraModules"} & role_cfg.keys():
+            msg = f"Role '{role_name}' cannot contain {', '.join(f"'{k}'" for k in forbidden_keys)} directly"
+            raise ClanError(msg)
+
+        static = get_value_by_path(
+            instance, f"roles.{role_name}", {}, expected_type=InventoryInstanceRolesType
+        )
+
+        # override settings, machines only if passed
+        merged = {
+            **static,
+            **role_cfg,
+        }
+
+        set_value_by_path(
+            inventory, f"instances.{instance_ref}.roles.{role_name}", merged
+        )
+
+    inventory_store.write(
+        inventory, message=f"Update service instance '{instance_ref}'"
+    )
