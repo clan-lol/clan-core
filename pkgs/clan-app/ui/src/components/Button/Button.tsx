@@ -90,12 +90,11 @@ export const Button = (props: ButtonProps) => {
 
       {local.children && (
         <Typography
-          class={styles.typography}
           hierarchy="label"
           size={local.size}
           inverted={local.hierarchy === "primary"}
           weight="bold"
-          tag="span"
+          in="Button"
         >
           {local.children}
         </Typography>

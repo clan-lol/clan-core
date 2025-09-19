@@ -1,4 +1,4 @@
-import "./SidebarBody.css";
+import styles from "./SidebarBody.module.css";
 import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
@@ -75,23 +75,29 @@ const Machines = () => {
   };
 
   return (
-    <Accordion.Item class="item" value="machines">
-      <Accordion.Header class="header">
-        <Accordion.Trigger class="trigger">
+    <Accordion.Item class={styles.accordionItem} value="machines">
+      <Accordion.Header class={styles.accordionHeader}>
+        <Accordion.Trigger class={styles.accordionTrigger}>
           <Typography
-            class="section-title"
             hierarchy="label"
             family="mono"
             size="xs"
             inverted
             color="tertiary"
+            transform="uppercase"
           >
             Your Machines
           </Typography>
-          <Icon icon="CaretDown" color="tertiary" inverted size="0.75rem" />
+          <Icon
+            icon="CaretDown"
+            color="tertiary"
+            inverted
+            size="0.75rem"
+            in="SidebarBody-AccordionTrigger"
+          />
         </Accordion.Trigger>
       </Accordion.Header>
-      <Accordion.Content class="content">
+      <Accordion.Content class={styles.accordionContent}>
         <Show
           when={machines()}
           fallback={
@@ -198,23 +204,29 @@ const Services = () => {
   };
 
   return (
-    <Accordion.Item class="item" value="services">
-      <Accordion.Header class="header">
-        <Accordion.Trigger class="trigger">
+    <Accordion.Item class={styles.accordionItem} value="services">
+      <Accordion.Header class={styles.accordionHeader}>
+        <Accordion.Trigger class={styles.accordionTrigger}>
           <Typography
-            class="section-title"
             hierarchy="label"
             family="mono"
             size="xs"
             inverted
             color="tertiary"
+            transform="uppercase"
           >
             Services
           </Typography>
-          <Icon icon="CaretDown" color="tertiary" inverted size="0.75rem" />
+          <Icon
+            icon="CaretDown"
+            color="tertiary"
+            inverted
+            size="0.75rem"
+            in="SidebarBody-AccordionTrigger"
+          />
         </Accordion.Trigger>
       </Accordion.Header>
-      <Accordion.Content class="content">
+      <Accordion.Content class={styles.accordionContent}>
         <nav>
           <For each={serviceInstances()}>
             {(mapped) => (
@@ -242,9 +254,9 @@ export const SidebarBody = (props: SidebarProps) => {
   const defaultAccordionValues = ["machines", "services", ...sectionLabels];
 
   return (
-    <div class="sidebar-body">
+    <div class={styles.sidebarBody}>
       <Accordion
-        class="accordion"
+        class={styles.accordion}
         multiple
         defaultValue={defaultAccordionValues}
       >
@@ -253,16 +265,16 @@ export const SidebarBody = (props: SidebarProps) => {
 
         <For each={props.staticSections}>
           {(section) => (
-            <Accordion.Item class="item" value={section.title}>
-              <Accordion.Header class="header">
-                <Accordion.Trigger class="trigger">
+            <Accordion.Item class={styles.accordionItem} value={section.title}>
+              <Accordion.Header class={styles.accordionHeader}>
+                <Accordion.Trigger class={styles.accordionTrigger}>
                   <Typography
-                    class="section-title"
                     hierarchy="label"
                     family="mono"
                     size="xs"
                     inverted
                     color="tertiary"
+                    transform="uppercase"
                   >
                     {section.title}
                   </Typography>
@@ -271,10 +283,11 @@ export const SidebarBody = (props: SidebarProps) => {
                     color="tertiary"
                     inverted
                     size="0.75rem"
+                    in="SidebarBody-AccordionTrigger"
                   />
                 </Accordion.Trigger>
               </Accordion.Header>
-              <Accordion.Content class="content">
+              <Accordion.Content class={styles.accordionContent}>
                 <nav>
                   <For each={section.links || []}>
                     {(link) => (

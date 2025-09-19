@@ -37,7 +37,6 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
                   <Show when={!props.colors}>
                     <Typography
                       hierarchy={props.hierarchy}
-                      //@ts-expect-error: difficult to generify for the story
                       size={size}
                       weight={weight}
                       family={props.family}
@@ -51,7 +50,6 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
                         <>
                           <Typography
                             hierarchy={props.hierarchy}
-                            //@ts-expect-error: difficult to generify for the story
                             size={size}
                             weight={weight}
                             color={color}

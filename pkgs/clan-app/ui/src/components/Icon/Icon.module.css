@@ -30,3 +30,9 @@
 .icon.in-ConfigureRole {
   @apply ml-auto;
 }
+.icon.in-SidebarBody-AccordionTrigger {
+  transition: transform 300ms cubic-bezier(0.87, 0, 0.13, 1);
+}
+[data-expanded] > .icon.in-SidebarBody-AccordionTrigger {
+  transform: rotate(180deg);
+}

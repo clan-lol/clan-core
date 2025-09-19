@@ -841,13 +841,7 @@ const InstallProgress = () => {
           Machine is being installed
         </Typography>
         <LoadingBar />
-        <Typography
-          hierarchy="label"
-          size="default"
-          class=""
-          color="secondary"
-          inverted
-        >
+        <Typography hierarchy="label" color="secondary" inverted>
           <Switch fallback={"Waiting for preparation to start..."}>
             <Match when={store.install.prepareStep === "disk"}>
               Configuring disk schema ...

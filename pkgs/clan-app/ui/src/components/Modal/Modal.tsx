@@ -67,10 +67,10 @@ export const Modal = (props: ModalProps) => {
                   <>
                     <div class={styles.modal_header}>
                       <Typography
-                        class={styles.modal_title}
                         hierarchy="label"
                         family="mono"
                         size="xs"
+                        in="Modal-title"
                       >
                         {props.title}
                       </Typography>

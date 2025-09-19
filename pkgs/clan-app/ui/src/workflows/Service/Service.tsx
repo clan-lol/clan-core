@@ -385,7 +385,7 @@ const ConfigureRole = () => {
                   size="s"
                   weight="medium"
                   inverted
-                  class="capitalize"
+                  transform="capitalize"
                 >
                   Select {store.currentRole}
                 </Typography>
