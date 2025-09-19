@@ -1,4 +1,68 @@
-from clan_lib.persist.static_data import calculate_static_data
+from clan_lib.persist.static_data import calculate_static_data, flatten_data_structured
+
+
+def test_flatten_data_structured() -> None:
+    data = {
+        "name": "example",
+        "settings": {
+            "optionA": True,
+            "optionB": {
+                "subOption1": 10,
+                "subOption2": 20,
+            },
+            "emptyDict": {},
+        },
+        "listSetting": [1, 2, 3],
+    }
+
+    expected_flat = {
+        ("name",): "example",
+        ("settings", "optionA"): True,
+        ("settings", "optionB", "subOption1"): 10,
+        ("settings", "optionB", "subOption2"): 20,
+        ("settings", "emptyDict"): {},
+        ("listSetting",): [1, 2, 3],
+    }
+
+    flattened = flatten_data_structured(data)
+    assert flattened == expected_flat
+
+
+def test_flatten_data_structured_empty() -> None:
+    data: dict = {}
+    expected_flat: dict = {}
+    flattened = flatten_data_structured(data)
+    assert flattened == expected_flat
+
+
+def test_flatten_data_structured_nested_empty() -> None:
+    data: dict = {
+        "level1": {
+            "level2": {
+                "level3": {},
+            },
+        },
+    }
+    expected_flat: dict = {
+        ("level1", "level2", "level3"): {},
+    }
+    flattened = flatten_data_structured(data)
+    assert flattened == expected_flat
+
+
+def test_flatten_data_dot_in_keys() -> None:
+    data = {
+        "key.foo": "value1",
+        "key": {
+            "foo": "value2",
+        },
+    }
+    expected_flat = {
+        ("key.foo",): "value1",
+        ("key", "foo"): "value2",
+    }
+    flattened = flatten_data_structured(data)
+    assert flattened == expected_flat
 
 
 def test_calculate_static_data_basic() -> None:
