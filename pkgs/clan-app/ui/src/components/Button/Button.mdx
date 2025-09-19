@@ -8,14 +8,14 @@ import * as ButtonStories from "./Button.stories";
 
 Buttons have a simple hierarchy, `primary` or `secondary`, and two sizes, `default` and `s`.
 
-A `Button` can also have a label with a `startIcon`, an `endIcon` or both:
+A `Button` can also have a label with a `icon`, an `endIcon` or both:
 
 ```tsx
 <Button hierarchy="primary">Label</>
 <Button hierarchy="secondary" size="s">Label</>
-<Button hierarchy="primary" startIcon="Flash">Label</>
+<Button hierarchy="primary" icon="Flash">Label</>
 <Button hierarchy="primary" size="s" endIcon="Flash">Label</>
-<Button hierarchy="primary" startIcon="Flash" endIcon="Flash">Label</>
+<Button hierarchy="primary" icon="Flash" endIcon="Flash">Label</>
 ```
 
 To create a `Button` which is just an icon:

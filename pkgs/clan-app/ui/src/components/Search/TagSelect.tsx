@@ -41,8 +41,8 @@ export function TagSelect<T extends { value: unknown }>(
           icon="Settings"
           hierarchy="primary"
           ghost
-          class="ml-auto"
           size="xs"
+          in="TagSelect"
         />
       </div>
       <Combobox<T>

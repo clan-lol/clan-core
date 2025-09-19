@@ -88,7 +88,7 @@ export function SidebarSectionForm<
               <Button
                 hierarchy="primary"
                 size="xs"
-                startIcon="Checkmark"
+                icon="Checkmark"
                 ghost
                 type="submit"
               >

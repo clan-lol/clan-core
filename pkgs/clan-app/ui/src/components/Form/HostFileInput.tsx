@@ -85,14 +85,17 @@ export const HostFileInput = (props: HostFileInputProps) => {
           <Button
             hierarchy="secondary"
             size={styleProps.size}
-            startIcon="Folder"
+            icon="Folder"
             onClick={selectFile}
             disabled={props.disabled || props.readOnly}
-            class={cx(
-              styleProps.orientation === "vertical"
-                ? styles.vertical_button
-                : styles.horizontal_button,
-            )}
+            elasticity={
+              styleProps.orientation === "vertical" ? "fit" : undefined
+            }
+            in={
+              styleProps.orientation == "horizontal"
+                ? `HostFileInput-${styleProps.orientation}`
+                : undefined
+            }
           >
             {props.placeholder || "No Selection"}
           </Button>
@@ -115,14 +118,17 @@ export const HostFileInput = (props: HostFileInputProps) => {
             </Tooltip.Portal>
             <Tooltip.Trigger
               as={Button}
-              class={cx(
-                props.orientation === "vertical"
-                  ? styles.vertical_button
-                  : styles.horizontal_button,
-              )}
+              elasticity={
+                styleProps.orientation === "vertical" ? "fit" : undefined
+              }
+              in={
+                styleProps.orientation == "horizontal"
+                  ? `HostFileInput-${styleProps.orientation}`
+                  : undefined
+              }
               hierarchy="secondary"
               size={styleProps.size}
-              startIcon="Folder"
+              icon="Folder"
               onClick={selectFile}
               disabled={props.disabled || props.readOnly}
             >

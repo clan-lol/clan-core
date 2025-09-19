@@ -12,7 +12,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "@solidjs/router";
-import "./Onboarding.css";
+import styles from "./Onboarding.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
@@ -66,21 +66,22 @@ const background = (props: { state: State; form: FormStore<SetupForm> }) => {
   const [showModal, setShowModal] = createSignal(false);
 
   return (
-    <div class="background">
-      <div class="layer-1" />
-      <div class="layer-2" />
-      <div class="layer-3" />
+    <div class={styles.background}>
+      <div class={styles.backgroundLayer1} />
+      <div class={styles.backgroundLayer2} />
+      <div class={styles.backgroundLayer3} />
       <Logo variant="Clan" inverted />
-      <Button
-        class="list-clans"
-        hierarchy="primary"
-        ghost
-        size="s"
-        startIcon="Grid"
-        onClick={() => setShowModal(true)}
-      >
-        All Clans
-      </Button>
+      <div class={styles.listClans}>
+        <Button
+          hierarchy="primary"
+          ghost
+          size="s"
+          icon="Grid"
+          onClick={() => setShowModal(true)}
+        >
+          All Clans
+        </Button>
+      </div>
       <Show when={showModal()}>
         <ListClansModal onClose={() => setShowModal(false)} />
       </Show>
@@ -113,7 +114,7 @@ const welcome = (props: {
   };
 
   return (
-    <div class="welcome">
+    <div class={styles.welcome}>
       <Typography
         hierarchy="headline"
         size="xxl"
@@ -144,7 +145,7 @@ const welcome = (props: {
       >
         Start building
       </Button>
-      <div class="separator">
+      <div class={styles.welcomeSeparator}>
         <Divider orientation="horizontal" />
         <Typography
           hierarchy="body"
@@ -285,9 +286,9 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
   };
 
   return (
-    <main id="welcome">
+    <main class={styles.onboarding}>
       {background({ form: setupForm, state: state() })}
-      <div class="container">
+      <div class={styles.container}>
         <Switch>
           <Match when={state() === "welcome"}>
             {welcome({
@@ -298,8 +299,8 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
           </Match>
 
           <Match when={state() === "setup"}>
-            <div class="setup">
-              <div class="header">
+            <div class={styles.setup}>
+              <div class={styles.setupHeader}>
                 <Button
                   hierarchy="secondary"
                   ghost={true}
@@ -377,7 +378,7 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                   </Field>
                 </Fieldset>
 
-                <div class="form-controls">
+                <div class={styles.setupFormControls}>
                   <Button
                     type="submit"
                     hierarchy="primary"

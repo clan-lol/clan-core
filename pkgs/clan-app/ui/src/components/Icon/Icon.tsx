@@ -1,5 +1,5 @@
 import cx from "classnames";
-import { Component, JSX, splitProps } from "solid-js";
+import { Component, JSX, mergeProps, splitProps } from "solid-js";
 
 import Address from "@/icons/address.svg";
 import AI from "@/icons/ai.svg";
@@ -55,8 +55,10 @@ import User from "@/icons/user.svg";
 import WarningFilled from "@/icons/warning-filled.svg";
 
 import { Dynamic } from "solid-js/web";
-
-import { Color, fgClass } from "../colors";
+import styles from "./Icon.module.css";
+import { Color } from "../colors";
+import colorsStyles from "../colors.module.css";
+import { getInClasses } from "@/src/util";
 
 const icons = {
   Address,
@@ -119,42 +121,52 @@ const viewBoxes: Partial<Record<IconVariant, string>> = {
   ClanIcon: "0 0 72 89",
 };
 
+type In =
+  | "Button"
+  | "Button-primary"
+  | "Button-secondary"
+  | "Button-s"
+  | "Button-xs"
+  | "MachineTags"
+  | "MachineTags-s"
+  | "ConfigureRole"
+  // TODO: better name
+  | "WorkflowPanelTitle";
 export interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
   icon: IconVariant;
-  class?: string;
   size?: number | string;
   color?: Color;
   inverted?: boolean;
+  in?: In | In[];
 }
 
 const Icon: Component<IconProps> = (props) => {
-  const [local, iconProps] = splitProps(props, [
-    "icon",
-    "color",
-    "class",
-    "size",
-    "inverted",
-  ]);
-
-  const IconComponent = () => icons[local.icon];
-
+  const [local, iconProps] = splitProps(
+    mergeProps({ color: "primary", size: "1em" } as const, props),
+    ["icon", "color", "size", "inverted", "in"],
+  );
+  const component = () => icons[local.icon];
   // we need to adjust the view box for certain icons
-  const viewBox = () => viewBoxes[local.icon] ?? "0 0 48 48";
-
-  return IconComponent() ? (
+  const viewBox = () => viewBoxes[local.icon] || "0 0 48 48";
+  return (
     <Dynamic
-      component={IconComponent()}
-      class={cx("icon", local.class, fgClass(local.color, local.inverted), {
-        inverted: local.inverted,
-      })}
+      component={component()}
+      class={cx(
+        styles.icon,
+        colorsStyles[local.color],
+        getInClasses(styles, local.in),
+        {
+          [colorsStyles.inverted]: local.inverted,
+        },
+      )}
       data-icon-name={local.icon}
-      width={local.size || "1em"}
-      height={local.size || "1em"}
+      width={local.size}
+      height={local.size}
       viewBox={viewBox()}
       ref={iconProps.ref}
       {...iconProps}
     />
-  ) : undefined;
+  );
 };
 
 export default Icon;

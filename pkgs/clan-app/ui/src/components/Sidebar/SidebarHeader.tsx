@@ -98,7 +98,7 @@ export const SidebarHeader = () => {
                     hierarchy="secondary"
                     ghost
                     size="xs"
-                    startIcon="Plus"
+                    icon="Plus"
                     onClick={() => navigateToOnboarding(navigate, true)}
                   >
                     Add

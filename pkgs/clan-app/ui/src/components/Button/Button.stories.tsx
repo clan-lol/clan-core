@@ -52,17 +52,12 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
       </div>
 
       <div>
-        <Button data-testid="default-start-icon" {...props} startIcon="Flash">
+        <Button data-testid="default-start-icon" {...props} icon="Flash">
           Label
         </Button>
       </div>
       <div>
-        <Button
-          data-testid="small-start-icon"
-          {...props}
-          startIcon="Flash"
-          size="s"
-        >
+        <Button data-testid="small-start-icon" {...props} icon="Flash" size="s">
           Label
         </Button>
       </div>
@@ -70,7 +65,7 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         <Button
           data-testid="xsmall-start-icon"
           {...props}
-          startIcon="Flash"
+          icon="Flash"
           size="xs"
         >
           Label
@@ -80,7 +75,7 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         <Button
           data-testid="default-disabled-start-icon"
           {...props}
-          startIcon="Flash"
+          icon="Flash"
           disabled={true}
         >
           Disabled
@@ -90,7 +85,7 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         <Button
           data-testid="small-disabled-start-icon"
           {...props}
-          startIcon="Flash"
+          icon="Flash"
           size="s"
           disabled={true}
         >
@@ -102,7 +97,7 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
         <Button
           data-testid="xsmall-disabled-start-icon"
           {...props}
-          startIcon="Flash"
+          icon="Flash"
           size="xs"
           disabled={true}
         >

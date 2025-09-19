@@ -219,7 +219,7 @@ const ConfigureService = () => {
           color="primary"
           ghost
           size="s"
-          class="ml-auto"
+          in="ConfigureService"
           onClick={() => store.close()}
         />
       </div>
@@ -419,10 +419,10 @@ const ConfigureRole = () => {
                   </Show>
                 </Combobox.ItemLabel>
                 <Icon
-                  class="ml-auto"
                   icon={item.type === "machine" ? "Machine" : "Tag"}
                   color="quaternary"
                   inverted
+                  in="ConfigureRole"
                 />
               </div>
             )}

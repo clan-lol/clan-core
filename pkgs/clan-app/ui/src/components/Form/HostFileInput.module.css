@@ -1,11 +1,3 @@
-.vertical_button {
-  @apply w-fit;
-}
-
-.horizontal_button {
-  @apply grow max-w-[18rem];
-}
-
 /* Vendored from tooltip */
 .tooltipContent {
   @apply z-50 px-2 py-0.5 bg-inv-4 rounded-[0.125rem] leading-none;

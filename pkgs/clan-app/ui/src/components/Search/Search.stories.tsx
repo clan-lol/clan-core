@@ -189,6 +189,7 @@ export const Multiple: Story = {
     // Test with lots of modules
     options: machinesAndTags,
     placeholder: "Search for Machine or Tags",
+    values: [],
     renderItem: (item: MachineOrTag, opts: ItemRenderOptions) => {
       console.log("Rendering item:", item, "opts", opts);
       return (
@@ -223,12 +224,13 @@ export const Multiple: Story = {
               )}
             </Show>
           </Combobox.ItemLabel>
-          <Icon
-            class="ml-auto"
-            icon={item.type === "machine" ? "Machine" : "Tag"}
-            color="quaternary"
-            inverted
-          />
+          <div class="ml-auto">
+            <Icon
+              icon={item.type === "machine" ? "Machine" : "Tag"}
+              color="quaternary"
+              inverted
+            />
+          </div>
         </div>
       );
     },

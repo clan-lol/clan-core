@@ -195,7 +195,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
           <Button
             hierarchy="primary"
             size="s"
-            startIcon="Trash"
+            icon="Trash"
             disabled={removeDisabled()}
             onClick={onRemove}
           >
