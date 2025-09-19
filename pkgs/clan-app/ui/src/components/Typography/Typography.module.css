@@ -13,18 +13,16 @@
   }
 
   &.body {
+    font-size: 1rem;
+    line-height: 1.32;
+    letter-spacing: 0.005rem;
+
     &.family-regular {
       font-family: "Archivo", sans-serif;
     }
 
     &.family-condensed {
       font-family: "Archivo SemiCondensed", sans-serif;
-    }
-
-    &.size-default {
-      font-size: 1rem;
-      line-height: 1.32;
-      letter-spacing: 0.005rem;
     }
 
     &.size-s {
@@ -50,11 +48,9 @@
     &.family-condensed {
       font-family: "Archivo SemiCondensed", sans-serif;
 
-      &.size-default {
-        font-size: 1rem;
-        line-height: normal;
-        letter-spacing: 0.02rem;
-      }
+      font-size: 1rem;
+      line-height: normal;
+      letter-spacing: 0.02rem;
 
       &.size-s {
         font-size: 0.875rem;
@@ -78,11 +74,9 @@
     &.family-mono {
       font-family: "Commit Mono", monospace;
 
-      &.size-default {
-        font-size: 1rem;
-        line-height: normal;
-        letter-spacing: normal;
-      }
+      font-size: 1rem;
+      line-height: normal;
+      letter-spacing: normal;
 
       &.size-s {
         font-size: 0.875rem;
@@ -104,14 +98,12 @@
   }
 
   &.title {
+    font-size: 1.125rem;
+    line-height: 124%;
+    letter-spacing: 0.03375rem;
+
     &.family-regular {
       font-family: "Archivo", sans-serif;
-    }
-
-    &.size-default {
-      font-size: 1.125rem;
-      line-height: 124%;
-      letter-spacing: 0.03375rem;
     }
 
     &.size-m {
@@ -128,14 +120,12 @@
   }
 
   &.headline {
+    font-size: 1.5rem;
+    line-height: 116%;
+    letter-spacing: 0.015rem;
+
     &.family-regular {
       font-family: "Archivo", sans-serif;
-    }
-
-    &.size-default {
-      font-size: 1.5rem;
-      line-height: 116%;
-      letter-spacing: 0.015rem;
     }
 
     &.size-m {
@@ -164,14 +154,12 @@
   }
 
   &.teaser {
+    font-size: 3rem;
+    line-height: normal;
+    letter-spacing: -0.06rem;
+
     &.family-regular {
       font-family: "Archivo", sans-serif;
-    }
-
-    &.size-default {
-      font-size: 3rem;
-      line-height: normal;
-      letter-spacing: -0.06rem;
     }
   }
 
@@ -186,4 +174,31 @@
   &.align-right {
     text-align: right;
   }
+
+  &.uppercase {
+    text-transform: uppercase;
+  }
+  &.lowercase {
+    text-transform: lowercase;
+  }
+  &.capitalize {
+    text-transform: capitalize;
+  }
+}
+
+.typography.in-Button {
+  @apply max-w-full overflow-hidden whitespace-nowrap text-ellipsis;
+}
+
+.typography.in-Modal-title {
+  @apply mx-auto;
+}
+.typography.in-TagSelect-label {
+  @apply flex gap-2;
+}
+.typography.in-Select-item-label {
+  @apply flex w-full items-center;
+}
+.typography.in-SelectService-item-description {
+  @apply flex justify-between;
 }

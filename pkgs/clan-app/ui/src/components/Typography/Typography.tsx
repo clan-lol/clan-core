@@ -1,135 +1,99 @@
-import { type JSX } from "solid-js";
+import { mergeProps, type ValidComponent, type JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import cx from "classnames";
-import "./Typography.css";
-import { Color, fgClass } from "@/src/components/colors";
+import styles from "./Typography.module.css";
+import { Color } from "@/src/components/colors";
+import colorsStyles from "../colors.module.css";
+import { getInClasses } from "@/src/util";
 
-export type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";
 export type Family = "regular" | "condensed" | "mono";
 export type Transform = "uppercase" | "lowercase" | "capitalize";
-
-// type Size = "default" | "xs" | "s" | "m" | "l";
-interface SizeForHierarchy {
-  body: {
-    default: string;
-    s: string;
-    xs: string;
-    xxs: string;
-  };
-  label: {
-    default: string;
-    s: string;
-    xs: string;
-    xxs: string;
-  };
-  headline: {
-    default: string;
-    m: string;
-    l: string;
-    xl: string;
-    xxl: string;
-  };
-  title: {
-    default: string;
-    m: string;
-    l: string;
-  };
-  teaser: {
-    default: string;
-  };
+export interface SizeForHierarchy {
+  body: "default" | "s" | "xs" | "xxs";
+  headline: "default" | "m" | "l" | "xl" | "xxl";
+  title: "default" | "m" | "l";
+  label: "default" | "s" | "xs" | "xxs";
+  teaser: "default";
+}
+export interface TagForHierarchy {
+  body: "span" | "p" | "div";
+  headline: "h1" | "h2" | "h3" | "h4";
+  title: "h1" | "h2" | "h3" | "h4";
+  label: "span" | "div";
+  teaser: "h1" | "h2" | "h3" | "h4";
 }
 
-export type AllowedSizes<H extends Hierarchy> = keyof SizeForHierarchy[H];
-
-const sizeHierarchyMap: SizeForHierarchy = {
-  body: {
-    default: cx("size-default"),
-    s: cx("size-s"),
-    xs: cx("size-xs"),
-    xxs: cx("size-xxs"),
-  },
-  headline: {
-    default: cx("size-default"),
-    m: cx("size-m"),
-    l: cx("size-l"),
-    xl: cx("size-xl"),
-    xxl: cx("size-xxl"),
-  },
-  title: {
-    default: cx("size-default"),
-    // xs: cx("size-xs"),
-    // s: cx("size-s"),
-    m: cx("size-m"),
-    l: cx("size-l"),
-  },
-  label: {
-    default: cx("size-default"),
-    s: cx("size-s"),
-    xs: cx("size-xs"),
-    xxs: cx("size-xxs"),
-  },
-  teaser: {
-    default: cx("size-default"),
-  },
-};
-
-const defaultFamilyMap: Record<Hierarchy, Family> = {
+const defaultFamilyMap = {
   body: "condensed",
-  label: "condensed",
-  title: "regular",
   headline: "regular",
+  title: "regular",
+  label: "condensed",
   teaser: "regular",
-};
+} as const;
 
-const weightMap: Record<Weight, string> = {
-  normal: "weight-normal",
-  medium: "weight-medium",
-  bold: "weight-bold",
-};
-
-interface _TypographyProps<H extends Hierarchy> {
+const defaultTagMap = {
+  body: "p",
+  headline: "h1",
+  title: "h2",
+  label: "span",
+  teaser: "h3",
+} as const;
+export interface TypographyProps<H extends Hierarchy> {
   hierarchy: H;
-  size: AllowedSizes<H>;
-  color?: Color;
   children: JSX.Element;
+  size?: SizeForHierarchy[H];
+  color?: Color;
   weight?: Weight;
   family?: Family;
   inverted?: boolean;
-  tag?: Tag;
-  class?: string;
+  tag?: TagForHierarchy[H];
   transform?: Transform;
   align?: "left" | "center" | "right";
+  in?:
+    | "Button"
+    | "Modal-title"
+    | "TagSelect-label"
+    | "Select-item-label"
+    | "SelectService-item-description";
 }
 
-export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
-  const family = () =>
-    `family-${props.family || defaultFamilyMap[props.hierarchy]}`;
-  const hierarchy = () => props.hierarchy || "body";
-  const size = () => sizeHierarchyMap[props.hierarchy][props.size] as string;
-  const weight = () => weightMap[props.weight || "normal"];
-  const color = () => fgClass(props.color, props.inverted);
-  const align = () => `align-${props.align || "left"}`;
+export const Typography = <H extends Hierarchy>(props: TypographyProps<H>) => {
+  const local = mergeProps(
+    {
+      size: "default",
+      color: "primary",
+      weight: "normal",
+      family: defaultFamilyMap[props.hierarchy],
+      align: "left",
+      tag: defaultTagMap[props.hierarchy],
+    } as const,
+    props,
+  );
 
   return (
     <Dynamic
+      component={local.tag as ValidComponent}
       class={cx(
-        "typography",
-        hierarchy(),
-        family(),
-        weight(),
-        size(),
-        color(),
-        align(),
-        props.transform,
-        props.class,
+        styles.typography,
+        styles[local.hierarchy],
+        styles[`family-${local.family}`],
+        styles[`weight-${local.weight}`],
+        local.size != "default" &&
+          styles[
+            `size-${local.size as Exclude<SizeForHierarchy[H], "default">}`
+          ],
+        styles[`align-${local.align}`],
+        local.transform && styles[local.transform],
+        colorsStyles[local.color],
+        {
+          [colorsStyles.inverted]: local.inverted,
+        },
+        getInClasses(styles, local.in),
       )}
-      component={props.tag || "span"}
     >
-      {props.children}
+      {local.children}
     </Dynamic>
   );
 };
-
-export type TypographyProps = _TypographyProps<Hierarchy>;

@@ -19,10 +19,6 @@
   border-bottom: solid 1px theme(colors.border.def.2);
 }
 
-.modal_title {
-  @apply mx-auto;
-}
-
 .modal_body {
   overflow-y: auto;
   @apply rounded-b-md p-4 pt-4 bg-def-1 flex-grow;

@@ -29,10 +29,11 @@ export function TagSelect<T extends { value: unknown }>(
         <Typography
           hierarchy="label"
           weight="medium"
-          class="flex gap-2 uppercase"
           size="xs"
           inverted
           color="secondary"
+          transform="uppercase"
+          in="TagSelect-label"
         >
           {props.label}
         </Typography>

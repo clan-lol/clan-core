@@ -131,7 +131,8 @@ type In =
   | "MachineTags-s"
   | "ConfigureRole"
   // TODO: better name
-  | "WorkflowPanelTitle";
+  | "WorkflowPanelTitle"
+  | "SidebarBody-AccordionTrigger";
 export interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
   icon: IconVariant;
   size?: number | string;
@@ -153,8 +154,8 @@ const Icon: Component<IconProps> = (props) => {
       component={component()}
       class={cx(
         styles.icon,
-        colorsStyles[local.color],
         getInClasses(styles, local.in),
+        colorsStyles[local.color],
         {
           [colorsStyles.inverted]: local.inverted,
         },

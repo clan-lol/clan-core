@@ -98,7 +98,7 @@ export const SelectService = (props: FlyoutProps) => {
                     weight="normal"
                     color="quaternary"
                     inverted
-                    class="flex justify-between"
+                    in="SelectService-item-description"
                   >
                     <span class="inline-block max-w-80 truncate align-middle">
                       {item.raw.info.manifest.description}

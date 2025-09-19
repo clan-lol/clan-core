@@ -38,17 +38,13 @@ const Prose = () => (
             >
               Local Setup
             </Typography>
-            <Typography
-              hierarchy="headline"
-              size="default"
-              weight="bold"
-              color="inherit"
-              class="text-balance"
-            >
-              Here's what you
-              <br />
-              need to do
-            </Typography>
+            <div class="text-balance">
+              <Typography hierarchy="headline" weight="bold" color="inherit">
+                Here's what you
+                <br />
+                need to do
+              </Typography>
+            </div>
           </div>
         </div>
         <div class="flex flex-col gap-4 px-4">

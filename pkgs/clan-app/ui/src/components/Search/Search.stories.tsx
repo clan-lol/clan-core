@@ -75,6 +75,7 @@ export const Default: Story = {
     height: "14.5rem",
     // Test with lots of modules
     options: generateModules(1000),
+    // FIXME: replace with a component
     renderItem: (item: Module) => {
       return (
         <div class="flex items-center justify-between gap-2 rounded-md px-2 py-1 pr-4">
@@ -93,7 +94,6 @@ export const Default: Story = {
               weight="normal"
               color="quaternary"
               inverted
-              class="flex justify-between"
             >
               <span class="inline-block max-w-72 truncate align-middle">
                 {item.description}

@@ -113,7 +113,7 @@ export const Select = (props: SelectProps) => {
               size="s"
               weight="bold"
               family="condensed"
-              class="flex w-full items-center"
+              in="Select-item-label"
             >
               {props.item.rawValue.label}
             </Typography>
@@ -129,8 +129,8 @@ export const Select = (props: SelectProps) => {
               size="s"
               weight="bold"
               family="condensed"
-              class="flex w-full items-center"
               color="secondary"
+              in="Select-item-label"
             >
               Loading...
             </Typography>
@@ -144,8 +144,8 @@ export const Select = (props: SelectProps) => {
                 size="s"
                 weight="normal"
                 family="condensed"
-                class="flex w-full items-center"
                 color="secondary"
+                in="Select-item-label"
               >
                 {props.noOptionsText || "No options available"}
               </Typography>
@@ -157,7 +157,7 @@ export const Select = (props: SelectProps) => {
                 size="s"
                 weight="bold"
                 family="condensed"
-                class="flex w-full items-center"
+                in="Select-item-label"
               >
                 {props.placeholder}
               </Typography>
@@ -186,7 +186,7 @@ export const Select = (props: SelectProps) => {
                 size="s"
                 weight="bold"
                 family="condensed"
-                class="flex w-full items-center"
+                in="Select-item-label"
               >
                 {state.selectedOption().label}
               </Typography>
@@ -219,7 +219,7 @@ export const Select = (props: SelectProps) => {
                       hierarchy="body"
                       size="xs"
                       weight="bold"
-                      class="flex w-full items-center"
+                      in="Select-item-label"
                     >
                       {state.selectedOption().label}
                     </Typography>
