@@ -1,9 +1,24 @@
 from typing import Any
 
-from clan_lib.persist.util import flatten_data, list_difference
+from clan_lib.errors import ClanError
+from clan_lib.persist.util import list_difference
+
+PathTuple = tuple[str, ...]
 
 
-def flatten_data_structured(data: dict, parent_path: tuple = ()) -> dict[tuple[str, ...], Any]:
+def path_to_string(path: PathTuple) -> str:
+    """Convert tuple path to string for display/error messages."""
+    return ".".join(str(p) for p in path)
+
+
+def path_starts_with(path: PathTuple, prefix: PathTuple) -> bool:
+    """Check if path starts with prefix tuple."""
+    return len(path) >= len(prefix) and path[: len(prefix)] == prefix
+
+
+def flatten_data_structured(
+    data: dict, parent_path: PathTuple = ()
+) -> dict[PathTuple, Any]:
     """Flatten data using tuple keys instead of string concatenation.
     This eliminates ambiguity between literal dots in keys vs nested structure.
 
@@ -36,7 +51,7 @@ def flatten_data_structured(data: dict, parent_path: tuple = ()) -> dict[tuple[s
 
 def calculate_static_data(
     all_values: dict[str, Any], persisted: dict[str, Any]
-) -> dict[tuple[str, ...], Any]:
+) -> dict[PathTuple, Any]:
     """Calculate the static (read-only) data by finding what exists in all_values
     but not in persisted data.
 

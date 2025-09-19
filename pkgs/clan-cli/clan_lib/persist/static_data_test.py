@@ -87,8 +87,8 @@ def test_calculate_static_data_basic() -> None:
 
     expected_static = {
         ("settings", "optionB"): False,
-        ("settings","listSetting"): [1, 4],
-        ("staticOnly",): "staticValue"
+        ("settings", "listSetting"): [1, 4],
+        ("staticOnly",): "staticValue",
     }
 
     static_data = calculate_static_data(all_values, persisted)
