@@ -1,4 +1,4 @@
-import "./SidebarHeader.css";
+import styles from "./SidebarHeader.module.css";
 import Icon from "@/src/components/Icon/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { useNavigate } from "@solidjs/router";
@@ -30,7 +30,7 @@ export const SidebarHeader = () => {
       .sort((a, b) => a.details.name.localeCompare(b.details.name));
 
   return (
-    <div class="sidebar-header">
+    <div class={styles.sidebarHeader}>
       <Show when={ctx.activeClanQuery.isSuccess && showSettings()}>
         <ClanSettingsModal
           model={ctx.activeClanQuery.data!}
@@ -42,9 +42,9 @@ export const SidebarHeader = () => {
       </Show>
       <Suspense fallback={"Loading..."}>
         <DropdownMenu open={open()} onOpenChange={setOpen} sameWidth={true}>
-          <DropdownMenu.Trigger class="dropdown-trigger">
-            <div class="clan-label">
-              <div class="clan-icon">
+          <DropdownMenu.Trigger class={styles.dropDownTrigger}>
+            <div class={styles.clanLabel}>
+              <div class={styles.clanIcon}>
                 <Typography
                   hierarchy="label"
                   size="s"
@@ -68,9 +68,9 @@ export const SidebarHeader = () => {
             </DropdownMenu.Icon>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content class="sidebar-dropdown-content">
+            <DropdownMenu.Content class={styles.dropDownContent}>
               <DropdownMenu.Item
-                class="dropdown-item"
+                class={styles.dropdownItem}
                 onSelect={() => setShowSettings(true)}
               >
                 <Icon
@@ -83,8 +83,8 @@ export const SidebarHeader = () => {
                   Settings
                 </Typography>
               </DropdownMenu.Item>
-              <DropdownMenu.Group class="dropdown-group">
-                <DropdownMenu.GroupLabel class="dropdown-group-label">
+              <DropdownMenu.Group class={styles.dropdownGroup}>
+                <DropdownMenu.GroupLabel class={styles.dropdownGroupLabel}>
                   <Typography
                     hierarchy="label"
                     family="mono"
@@ -104,12 +104,12 @@ export const SidebarHeader = () => {
                     Add
                   </Button>
                 </DropdownMenu.GroupLabel>
-                <div class="dropdown-group-items">
+                <div class={styles.dropdownGroupItems}>
                   <For each={clanList()}>
                     {(clan) => (
                       <Suspense fallback={"Loading..."}>
                         <DropdownMenu.Item
-                          class="dropdown-item"
+                          class={styles.dropdownItem}
                           onSelect={() => {
                             setActiveClanURI(clan.uri);
                           }}

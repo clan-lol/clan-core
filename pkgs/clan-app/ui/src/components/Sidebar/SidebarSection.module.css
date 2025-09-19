@@ -1,0 +1,12 @@
+.sidebarSection {
+  @apply flex flex-col gap-2 w-full h-full;
+}
+.header {
+  @apply flex items-center justify-between px-1.5;
+}
+.controls {
+  @apply flex items-center justify-end h-4;
+}
+.content {
+  @apply w-full h-fit px-1.5 py-3 rounded-md bg-inv-4;
+}
