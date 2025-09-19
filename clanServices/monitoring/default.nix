@@ -10,15 +10,15 @@
       { lib, ... }:
       {
         options.allowAllInterfaces = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "If true, Telegraf will listen on all interfaces. Otherwise, it will only listen on the interfaces specified in `interfaces`";
+          type = lib.types.nullOr lib.types.bool;
+          default = null;
+          description = "Deprecated. Has no effect.";
         };
 
         options.interfaces = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [ "zt+" ];
-          description = "List of interfaces to expose the metrics to";
+          type = lib.types.nullOr (lib.types.listOf lib.types.str);
+          default = null;
+          description = "Deprecated. Has no effect.";
         };
       };
   };
