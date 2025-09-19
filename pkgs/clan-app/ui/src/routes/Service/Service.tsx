@@ -21,21 +21,32 @@ export const Service = (props: RouteSectionProps) => {
     ctx.setWorldMode("service");
   });
 
-  const handleSubmit: SubmitServiceHandler = async (instance, action) => {
-    console.log("Service submitted", instance, action);
+  const handleClose = () => {
+    console.log("Service closed, navigating back");
+    navigate(buildClanPath(ctx.clanURI), { replace: true });
+    ctx.setWorldMode("select");
+  };
 
-    if (action !== "create") {
-      console.warn("Updating service instances is not supported yet");
-      return;
+  const handleSubmit: SubmitServiceHandler = async (instance, action) => {
+    let call;
+    if (action === "update") {
+      call = client.fetch("set_service_instance", {
+        flake: {
+          identifier: ctx.clanURI,
+        },
+        instance_ref: instance.name,
+        roles: instance.roles,
+      });
+    } else {
+      call = client.fetch("create_service_instance", {
+        flake: {
+          identifier: ctx.clanURI,
+        },
+        module_ref: instance.module,
+        roles: instance.roles,
+      });
     }
 
-    const call = client.fetch("create_service_instance", {
-      flake: {
-        identifier: ctx.clanURI,
-      },
-      module_ref: instance.module,
-      roles: instance.roles,
-    });
     const result = await call.result;
 
     if (result.status === "error") {
@@ -46,13 +57,7 @@ export const Service = (props: RouteSectionProps) => {
       queryKey: clanKey(ctx.clanURI),
     });
 
-    ctx.setWorldMode("select");
-  };
-
-  const handleClose = () => {
-    console.log("Service closed, navigating back");
-    navigate(buildClanPath(ctx.clanURI), { replace: true });
-    ctx.setWorldMode("select");
+    handleClose();
   };
 
   return <ServiceWorkflow handleSubmit={handleSubmit} onClose={handleClose} />;

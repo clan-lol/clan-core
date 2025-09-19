@@ -129,19 +129,21 @@ const ConfigureService = () => {
         // Wait for all queries to be ready
         if (!instances || !machines) return;
         const instance = instances[routerProps.id || routerProps.name];
+        // Init once
+        if (!store.roles) {
+          set("roles", {});
+          if (!instance) {
+            set("action", "create");
+            return;
+          }
 
-        set("roles", {});
-        if (!instance) {
-          set("action", "create");
-          return;
+          for (const role of Object.keys(instance.roles || {})) {
+            // Get Role members
+            const roleMembers = getRoleMembers(instance, machines, role);
+            set("roles", role, roleMembers);
+          }
+          set("action", "update");
         }
-
-        for (const role of Object.keys(instance.roles || {})) {
-          // Get Role members
-          const roleMembers = getRoleMembers(instance, machines, role);
-          set("roles", role, roleMembers);
-        }
-        set("action", "update");
       },
     ),
   );
@@ -360,7 +362,10 @@ const ConfigureRole = () => {
     if (!store.roles) {
       set("roles", {});
     }
-    set("roles", (r) => ({ ...r, [store.currentRole as string]: members() }));
+    set("roles", (r) => ({
+      ...r,
+      [store.currentRole as string]: members(),
+    }));
     stepper.setActiveStep("view:members");
   };
 
