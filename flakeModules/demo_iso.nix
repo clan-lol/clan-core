@@ -45,29 +45,33 @@ let
     '';
   };
 
-  morphModule = {
-    imports = [
-      (
-        { modulesPath, ... }:
-        {
-          imports = [ "${modulesPath}/image/images.nix" ];
-        }
-      )
-    ];
-    image.modules.iso.isoImage.squashfsCompression = "zstd -Xcompression-level 1";
-    networking.networkmanager.enable = true;
-    services.getty.autologinUser = "root";
-    programs.bash.interactiveShellInit = ''
-      if [[ "$(tty)" =~ /dev/(tty1|hvc0|ttyS0)$ ]]; then
-        # workaround for https://github.com/NixOS/nixpkgs/issues/219239
-        systemctl restart systemd-vconsole-setup.service
+  morphModule =
+    { config, ... }:
+    {
+      imports = [
+        (
+          { modulesPath, ... }:
+          {
+            imports = [ "${modulesPath}/image/images.nix" ];
+          }
+        )
+      ];
+      image.modules.iso.isoImage.squashfsCompression = "zstd -Xcompression-level 1";
+      networking.networkmanager.enable = true;
+      services.getty.autologinUser = "root";
+      programs.bash.interactiveShellInit = ''
+        if [[ "$(tty)" =~ /dev/(tty1|hvc0|ttyS0)$ ]]; then
+          # workaround for https://github.com/NixOS/nixpkgs/issues/219239
+          systemctl restart systemd-vconsole-setup.service
 
-        reset
+          reset
 
-        ${clan_welcome}/bin/clan_welcome
-      fi
-    '';
-  };
+          ${clan_welcome}/bin/clan_welcome
+        fi
+      '';
+
+      system.stateVersion = config.system.nixos.release;
+    };
 in
 {
   clan.templates.machine.demo-template = {
