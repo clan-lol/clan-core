@@ -19,6 +19,8 @@ let
       system.stateVersion = config.system.nixos.release;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
 
+      users.users.root.initialHashedPassword = lib.mkForce null;
+
       boot.loader.grub.efiSupport = lib.mkDefault true;
       boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
       disko.devices = {
