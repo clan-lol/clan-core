@@ -172,6 +172,7 @@ nav:
           - reference/clanServices/users.md
           - reference/clanServices/wifi.md
           - reference/clanServices/wireguard.md
+          - reference/clanServices/yggdrasil.md
           - reference/clanServices/zerotier.md
       - Community: community/services/index.md
 
