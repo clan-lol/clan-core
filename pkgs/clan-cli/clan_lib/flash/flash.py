@@ -43,6 +43,48 @@ class Disk:
 installer_machine = Machine(name="flash-installer", flake=Flake(str(clan_core_flake())))
 
 
+def build_system_config_nix(system_config: SystemConfig) -> dict[str, Any]:
+    """Translate ``SystemConfig`` to the structure expected by disko-install."""
+    system_config_nix: dict[str, Any] = {}
+
+    if system_config.language:
+        languages = list_languages()
+        if system_config.language not in languages:
+            msg = (
+                f"Language '{system_config.language}' is not a valid language. "
+                "Run 'clan flash list languages' to see a list of possible languages."
+            )
+            raise ClanError(msg)
+        system_config_nix["i18n"] = {"defaultLocale": system_config.language}
+
+    if system_config.keymap:
+        keymaps = list_keymaps()
+        if system_config.keymap not in keymaps:
+            msg = (
+                f"Keymap '{system_config.keymap}' is not a valid keymap. "
+                "Run 'clan flash list keymaps' to see a list of possible keymaps."
+            )
+            raise ClanError(msg)
+        system_config_nix["console"] = {"keyMap": system_config.keymap}
+        system_config_nix["services"] = {
+            "xserver": {"xkb": {"layout": system_config.keymap}},
+        }
+
+    if system_config.ssh_keys_path:
+        root_keys = []
+        for key_path in (Path(x) for x in system_config.ssh_keys_path):
+            try:
+                root_keys.append(key_path.read_text())
+            except OSError as e:
+                msg = f"Cannot read SSH public key file: {key_path}: {e}"
+                raise ClanError(msg) from e
+        system_config_nix["users"] = {
+            "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}},
+        }
+
+    return system_config_nix
+
+
 # TODO: unify this with machine install
 @API.register
 def run_machine_flash(
@@ -79,43 +121,11 @@ def run_machine_flash(
     with pause_automounting(devices, machine, request_graphical=graphical):
         if extra_args is None:
             extra_args = []
-        system_config_nix: dict[str, Any] = {}
 
         generate_facts([machine])
         run_generators([machine], generators=None, full_closure=False)
 
-        if system_config.language:
-            if system_config.language not in list_languages():
-                msg = (
-                    f"Language '{system_config.language}' is not a valid language. "
-                    f"Run 'clan flash list languages' to see a list of possible languages."
-                )
-                raise ClanError(msg)
-            system_config_nix["i18n"] = {"defaultLocale": system_config.language}
-
-        if system_config.keymap:
-            if system_config.keymap not in list_keymaps():
-                msg = (
-                    f"Keymap '{system_config.keymap}' is not a valid keymap. "
-                    f"Run 'clan flash list keymaps' to see a list of possible keymaps."
-                )
-                raise ClanError(msg)
-            system_config_nix["console"] = {"keyMap": system_config.keymap}
-            system_config_nix["services"] = {
-                "xserver": {"xkb": {"layout": system_config.keymap}},
-            }
-
-        if system_config.ssh_keys_path:
-            root_keys = []
-            for key_path in (Path(x) for x in system_config.ssh_keys_path):
-                try:
-                    root_keys.append(key_path.read_text())
-                except OSError as e:
-                    msg = f"Cannot read SSH public key file: {key_path}: {e}"
-                    raise ClanError(msg) from e
-            system_config_nix["users"] = {
-                "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}},
-            }
+        system_config_nix = build_system_config_nix(system_config)
 
         for generator in Generator.get_machine_generators(
             [machine.name], machine.flake

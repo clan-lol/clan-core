@@ -29,9 +29,20 @@
         imports = [ self.nixosModules.test-install-machine-without-system ];
 
         clan.core.vars.generators.test = lib.mkForce { };
-
         disko.devices.disk.main.preCreateHook = lib.mkForce "";
+
+        # Every option here should match the options set through `clan flash write`
+        # if you get a mass rebuild on the disko derivation, this means you need to
+        # adjust something here. Also make sure that the injected json in clan flash write
+        # is up to date.
+        i18n.defaultLocale = "de_DE.UTF-8";
+        console.keyMap = "de";
+        services.xserver.xkb.layout = "de";
+        users.users.root.openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target\n"
+        ];
       };
+
   };
 
   perSystem =
@@ -44,6 +55,8 @@
       dependencies = [
         pkgs.disko
         pkgs.buildPackages.xorg.lndir
+        pkgs.glibcLocales
+        pkgs.kbd.out
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.FileSlurp
 
@@ -83,10 +96,10 @@
           };
           testScript = ''
             start_all()
-
+            machine.succeed("echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target' > ./test_id_ed25519.pub")
             # Some distros like to automount disks with spaces
             machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
-            machine.succeed("clan flash write --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
+            machine.succeed("clan flash write --ssh-pubkey ./test_id_ed25519.pub --keymap de --language de_DE.UTF-8 --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
       };
