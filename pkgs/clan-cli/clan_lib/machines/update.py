@@ -122,7 +122,7 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
 def run_machine_update(
     machine: Machine,
     target_host: Remote | LocalHost,
-    build_host: Remote | LocalHost | None,
+    build_host: Remote | LocalHost | None = None,
     upload_inputs: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
