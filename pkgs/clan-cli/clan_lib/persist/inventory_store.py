@@ -13,13 +13,21 @@ from clan_lib.nix_models.clan import (
     InventoryMetaType,
     InventoryTagsType,
 )
+from clan_lib.persist.static_data import (
+    PathTuple,
+    WriteabilityResult,
+    calc_patches,
+    delete_by_path_tuple,
+    determine_writeability,
+    set_value_by_path_tuple,
+)
 
 from .util import (
-    calc_patches,
-    delete_by_path,
-    determine_writeability,
     path_match,
-    set_value_by_path,
+    # calc_patches,
+    # delete_by_path,
+    # determine_writeability,
+    # set_value_by_path,
 )
 
 
@@ -79,7 +87,7 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 
 @dataclass
 class WriteInfo:
-    writeables: dict[str, set[str]]
+    writeables: WriteabilityResult
     data_eval: "InventorySnapshot"
     data_disk: "InventorySnapshot"
 
@@ -229,12 +237,12 @@ class InventoryStore:
         """
         return self._load_merged_inventory()
 
-    def delete(self, delete_set: set[str], commit: bool = True) -> None:
+    def delete(self, delete_set: set[PathTuple], commit: bool = True) -> None:
         """Delete keys from the inventory"""
         data_disk = dict(self._get_persisted())
 
         for delete_path in delete_set:
-            delete_by_path(data_disk, delete_path)
+            delete_by_path_tuple(data_disk, delete_path)
 
         with self.inventory_file.open("w") as f:
             json.dump(data_disk, f, indent=2)
@@ -265,10 +273,10 @@ class InventoryStore:
 
         persisted = dict(write_info.data_disk)
         for patch_path, data in patchset.items():
-            set_value_by_path(persisted, patch_path, data)
+            set_value_by_path_tuple(persisted, patch_path, data)
 
         for delete_path in delete_set:
-            delete_by_path(persisted, delete_path)
+            delete_by_path_tuple(persisted, delete_path)
 
         def post_write() -> None:
             if commit:

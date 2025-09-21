@@ -35,7 +35,7 @@ def delete_machine(machine: Machine) -> None:
     inventory_store = InventoryStore(machine.flake)
     try:
         inventory_store.delete(
-            {f"machines.{machine.name}"},
+            {("machines", machine.name)},
         )
     except KeyError as exc:
         # louis@(2025-03-09): test infrastructure does not seem to set the
