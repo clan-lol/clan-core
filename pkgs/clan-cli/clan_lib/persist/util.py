@@ -129,13 +129,15 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
 
 
 def list_difference(all_items: list, filter_items: list) -> list:
-    """Unmerge the current list. Given a previous list.
+    """Applys a filter to a list and returns the items in all_items that are not in filter_items
 
-    Returns:
-        The other list.
+    Example:
+    all_items = [1, 2, 3, 4]
+    filter_items = [3, 4]
+
+    list_difference(all_items, filter_items) == [1, 2]
 
     """
-    # Unmerge the lists
     return [value for value in all_items if value not in filter_items]
 
 
@@ -159,7 +161,7 @@ def find_deleted_paths(
     """
     deleted_paths = set()
 
-    # Iterate over keys in persisted
+    # Iterate over keys in all_data
     for key, p_value in curr.items():
         current_path = f"{parent_key}.{key}" if parent_key else key
         # Check if this key exists in update
