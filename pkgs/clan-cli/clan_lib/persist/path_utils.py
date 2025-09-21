@@ -95,11 +95,12 @@ def delete_by_path_tuple(d: dict[str, Any], path: PathTuple) -> Any:
     last_key = keys[-1]
     try:
         value = current.pop(last_key)
-    except KeyError as exc:
+    except KeyError:
+        # TODO(@hsjobeki): It should be save to raise an error here.
         # Possibly data was already deleted
-        msg = f"Canot delete. Path '{path}' not found in data '{d}'"
-        raise KeyError(msg) from exc
-        # return {}
+        # msg = f"Canot delete. Path '{path}' not found in data '{d}'"
+        # raise KeyError(msg) from exc
+        return {}
     else:
         return {last_key: value}
 
