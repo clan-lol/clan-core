@@ -14,7 +14,7 @@ from clan_lib.nix_models.clan import (
     InventoryInstancesType,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import get_value_by_path, set_value_by_path
+from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
 
 
 class CategoryInfo(TypedDict):

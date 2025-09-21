@@ -13,18 +13,14 @@ from clan_lib.nix_models.clan import (
     InventoryMetaType,
     InventoryTagsType,
 )
-from clan_lib.persist.static_data import (
+from clan_lib.persist.patch_engine import calc_patches
+from clan_lib.persist.path_utils import (
     PathTuple,
-    WriteabilityResult,
-    calc_patches,
     delete_by_path_tuple,
-    determine_writeability,
+    path_match,
     set_value_by_path_tuple,
 )
-
-from .util import (
-    path_match,
-)
+from clan_lib.persist.writability import WriteabilityResult, determine_writeability
 
 
 def unwrap_known_unknown(value: Any) -> Any:

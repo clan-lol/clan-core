@@ -11,7 +11,8 @@ from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
 from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import merge_objects, set_value_by_path
+from clan_lib.persist.patch_engine import merge_objects
+from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.templates.handler import clan_template
 from clan_lib.validator.hostname import hostname
 

@@ -10,7 +10,7 @@ import pytest
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import delete_by_path, set_value_by_path
+from clan_lib.persist.path_utils import delete_by_path, set_value_by_path
 
 
 class MockFlake:
