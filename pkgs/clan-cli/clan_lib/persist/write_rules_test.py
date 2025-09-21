@@ -1,4 +1,4 @@
-from clan_lib.persist.writability import determine_writeability
+from clan_lib.persist.write_rules import compute_write_map
 
 
 def test_write_simple() -> None:
@@ -12,7 +12,7 @@ def test_write_simple() -> None:
 
     default: dict = {"foo": {}}
     data: dict = {}
-    res = determine_writeability(prios, default, data)
+    res = compute_write_map(prios, default, data)
 
     assert res == {
         "writeable": {("foo", "bar"), ("foo",), ("foo.bar",)},
@@ -32,7 +32,7 @@ def test_write_inherited() -> None:
     }
 
     data: dict = {}
-    res = determine_writeability(prios, {"foo": {"bar": {}}}, data)
+    res = compute_write_map(prios, {"foo": {"bar": {}}}, data)
 
     assert res == {
         "writeable": {("foo",), ("foo", "bar"), ("foo", "bar", "baz")},
@@ -52,7 +52,7 @@ def test_non_write_inherited() -> None:
     }
 
     data: dict = {}
-    res = determine_writeability(prios, {}, data)
+    res = compute_write_map(prios, {}, data)
 
     assert res == {
         "writeable": set(),
@@ -74,7 +74,7 @@ def test_write_list() -> None:
             "b",
         ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
     }
-    res = determine_writeability(prios, default, data)
+    res = compute_write_map(prios, default, data)
     assert res == {
         "writeable": {("foo",)},
         "non_writeable": set(),
@@ -98,7 +98,7 @@ def test_write_because_written() -> None:
 
     # Given the following data. {}
     # Check that the non-writeable paths are correct.
-    res = determine_writeability(prios, {"foo": {"bar": {}}}, {})
+    res = compute_write_map(prios, {"foo": {"bar": {}}}, {})
     assert res == {
         "writeable": {("foo",), ("foo", "bar")},
         "non_writeable": {("foo", "bar", "baz"), ("foo", "bar", "foobar")},
@@ -111,7 +111,7 @@ def test_write_because_written() -> None:
             },
         },
     }
-    res = determine_writeability(prios, {}, data)
+    res = compute_write_map(prios, {}, data)
     assert res == {
         "writeable": {("foo",), ("foo", "bar"), ("foo", "bar", "baz")},
         "non_writeable": {("foo", "bar", "foobar")},

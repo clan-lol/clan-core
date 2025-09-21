@@ -20,7 +20,7 @@ from clan_lib.persist.path_utils import (
     path_match,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.writability import WriteabilityResult, determine_writeability
+from clan_lib.persist.write_rules import WriteMap, compute_write_map
 
 
 def unwrap_known_unknown(value: Any) -> Any:
@@ -79,7 +79,7 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 
 @dataclass
 class WriteInfo:
-    writeables: WriteabilityResult
+    writeables: WriteMap
     data_eval: "InventorySnapshot"
     data_disk: "InventorySnapshot"
 
@@ -194,7 +194,7 @@ class InventoryStore:
         """
         return self._flake.select("clanInternals.inventoryClass.introspection")
 
-    def _write_info(self) -> WriteInfo:
+    def _write_map(self) -> WriteInfo:
         """Get the paths of the writeable keys in the inventory
 
         Load the inventory and determine the writeable keys
@@ -205,20 +205,20 @@ class InventoryStore:
         data_eval: InventorySnapshot = self._load_merged_inventory()
         data_disk: InventorySnapshot = self._get_persisted()
 
-        writeables = determine_writeability(
+        write_map = compute_write_map(
             current_priority,
             dict(data_eval),
             dict(data_disk),
         )
 
-        return WriteInfo(writeables, data_eval, data_disk)
+        return WriteInfo(write_map, data_eval, data_disk)
 
-    def get_writeability(self) -> Any:
+    def get_write_map(self) -> Any:
         """Get the writeability of the inventory
 
         :return: A dictionary with the writeability of all paths
         """
-        write_info = self._write_info()
+        write_info = self._write_map()
         return write_info.writeables
 
     def read(self) -> InventorySnapshot:
@@ -255,7 +255,7 @@ class InventoryStore:
         """Write the inventory to the flake directory
         and commit it to git with the given message
         """
-        write_info = self._write_info()
+        write_info = self._write_map()
         patchset, delete_set = calc_patches(
             dict(write_info.data_disk),
             dict(update),

@@ -6,14 +6,14 @@ from clan_lib.persist.path_utils import PathTuple, path_to_string
 WRITABLE_PRIORITY_THRESHOLD = 100  # Values below this are not writeable
 
 
-class WriteabilityResult(TypedDict):
+class WriteMap(TypedDict):
     writeable: set[PathTuple]
     non_writeable: set[PathTuple]
 
 
 def is_writeable_path(
     key: PathTuple,
-    writeables: WriteabilityResult,
+    writeables: WriteMap,
 ) -> bool:
     """Recursively check if a key is writeable.
 
@@ -35,7 +35,7 @@ def is_writeable_path(
 
 def is_writeable_key(
     key: str,
-    writeables: WriteabilityResult,
+    writeables: WriteMap,
 ) -> bool:
     """Recursively check if a key is writeable.
 
@@ -99,14 +99,14 @@ def _determine_writeability_recursive(
     current_path: PathTuple = (),
     inherited_priority: int | None = None,
     parent_non_writeable: bool = False,
-    results: WriteabilityResult | None = None,
-) -> WriteabilityResult:
+    results: WriteMap | None = None,
+) -> WriteMap:
     """Recursively determine writeability for all paths in the priority structure.
 
     This is internal recursive function. Use 'determine_writeability' as entry point.
     """
     if results is None:
-        results = WriteabilityResult(writeable=set(), non_writeable=set())
+        results = WriteMap(writeable=set(), non_writeable=set())
 
     for key, value in priorities.items():
         # Skip metadata keys
@@ -168,9 +168,9 @@ def _determine_writeability_recursive(
     return results
 
 
-def determine_writeability(
+def compute_write_map(
     priorities: dict[str, Any], all_values: dict[str, Any], persisted: dict[str, Any]
-) -> WriteabilityResult:
+) -> WriteMap:
     """Determine writeability for all paths based on priorities and current data.
 
     - Priority-based writeability: Values with priority < 100 are not writeable

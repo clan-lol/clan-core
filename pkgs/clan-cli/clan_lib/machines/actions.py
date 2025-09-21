@@ -18,7 +18,7 @@ from clan_lib.persist.path_utils import (
     list_difference,
     set_value_by_path,
 )
-from clan_lib.persist.writability import is_writeable_key
+from clan_lib.persist.write_rules import is_writeable_key
 
 
 @dataclass
@@ -170,7 +170,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_writeability()
+    write_info = inventory_store.get_write_map()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 

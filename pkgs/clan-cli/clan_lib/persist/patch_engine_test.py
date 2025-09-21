@@ -14,7 +14,7 @@ from clan_lib.persist.path_utils import (
     set_value_by_path,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.writability import determine_writeability
+from clan_lib.persist.write_rules import compute_write_map
 
 # --- calculate_static_data ---
 
@@ -176,7 +176,7 @@ def test_update_simple() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {
         "writeable": {("foo",), ("foo", "bar")},
@@ -212,7 +212,7 @@ def test_update_add_empty_dict() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     update = deepcopy(data_eval)
 
@@ -253,7 +253,7 @@ def test_update_many() -> None:
 
     data_disk = {"foo": {"bar": "baz", "nested": {"x": "x"}}}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {
         "writeable": {
@@ -309,7 +309,7 @@ def test_update_parent_non_writeable() -> None:
         },
     }
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {
         "writeable": set(),
@@ -338,7 +338,7 @@ def test_remove_non_writable_attrs() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     update: dict = {
         "foo": {
@@ -367,7 +367,7 @@ def test_update_list() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
@@ -412,7 +412,7 @@ def test_update_list_duplicates() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
@@ -436,7 +436,7 @@ def test_dont_persist_defaults() -> None:
         "config": {"foo": "bar"},
     }
     data_disk: dict[str, Any] = {}
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
     assert writeables == {
         "writeable": {("config",), ("enabled",)},
         "non_writeable": set(),
@@ -470,7 +470,7 @@ def test_set_null() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=determine_writeability(
+        writeables=compute_write_map(
             {"__prio": 100, "foo": {"__prio": 100}},
             data_eval,
             data_disk,
@@ -493,7 +493,7 @@ def test_machine_delete() -> None:
     }
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
     assert writeables == {"writeable": {("machines",)}, "non_writeable": set()}
 
     # Delete machine "bar"  from the inventory
@@ -522,7 +522,7 @@ def test_update_mismatching_update_type() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
@@ -549,7 +549,7 @@ def test_delete_key() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
@@ -588,7 +588,7 @@ def test_delete_key_intermediate() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
@@ -622,7 +622,7 @@ def test_delete_key_non_writeable() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {"writeable": set(), "non_writeable": {("foo",)}}
 
