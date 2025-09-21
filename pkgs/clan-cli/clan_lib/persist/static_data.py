@@ -362,7 +362,7 @@ def find_duplicates(string_list: list[str]) -> list[str]:
     return [item for item, freq in count.items() if freq > 1]
 
 
-def is_writeable_key(
+def is_writeable_path(
     key: PathTuple,
     writeables: WriteabilityResult,
 ) -> bool:
@@ -386,7 +386,7 @@ def is_writeable_key(
 
 def validate_writeability(path: PathTuple, writeables: WriteabilityResult) -> None:
     """Validate that a path is writeable."""
-    if not is_writeable_key(path, writeables):
+    if not is_writeable_path(path, writeables):
         msg = f"Path '{path_to_string(path)}' is readonly. - It seems its value is statically defined in nix."
         raise ClanError(msg)
 

@@ -24,10 +24,6 @@ from clan_lib.persist.static_data import (
 
 from .util import (
     path_match,
-    # calc_patches,
-    # delete_by_path,
-    # determine_writeability,
-    # set_value_by_path,
 )
 
 

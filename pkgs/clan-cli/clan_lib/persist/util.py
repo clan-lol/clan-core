@@ -209,7 +209,9 @@ def is_writeable_key(
     key: str,
     writeables: dict[str, set[str]],
 ) -> bool:
-    """Recursively check if a key is writeable.
+    """@deprecated use 'static_data.is_writeable_path' instead.
+
+    Recursively check if a key is writeable.
     key "machines.machine1.deploy.targetHost" is specified but writeability is only defined for "machines"
     We pop the last key and check if the parent key is writeable/non-writeable.
     """
