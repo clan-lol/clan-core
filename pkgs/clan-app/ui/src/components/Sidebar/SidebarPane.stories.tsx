@@ -158,7 +158,7 @@ export const Default: Story = {
             </Field>
           )}
         </SidebarSectionForm>
-        <SidebarSection title="Simple" class="flex flex-col">
+        <SidebarSection title="Simple">
           <Typography tag="h2" hierarchy="title" size="m" inverted>
             Static Content
           </Typography>

@@ -1,18 +1,17 @@
-import { JSX } from "solid-js";
-import "./SidebarSection.css";
+import { JSX, Show } from "solid-js";
+import styles from "./SidebarSection.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import cx from "classnames";
 
 export interface SidebarSectionProps {
   title: string;
-  class?: string;
+  controls?: JSX.Element;
   children: JSX.Element;
 }
 
 export const SidebarSection = (props: SidebarSectionProps) => {
   return (
-    <div class={cx("sidebar-section", props.class)}>
-      <div class="header">
+    <div class={styles.sidebarSection}>
+      <div class={styles.header}>
         <Typography
           hierarchy="label"
           size="xs"
@@ -23,8 +22,11 @@ export const SidebarSection = (props: SidebarSectionProps) => {
         >
           {props.title}
         </Typography>
+        <Show when={props.controls}>
+          <div class={styles.controls}>{props.controls}</div>
+        </Show>
       </div>
-      <div class="content">{props.children}</div>
+      <div class={styles.content}>{props.children}</div>
     </div>
   );
 };

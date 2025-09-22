@@ -15,8 +15,8 @@ import { GenericSchema, GenericSchemaAsync } from "valibot";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 
-import "./SidebarSection.css";
 import { Loader } from "../../components/Loader/Loader";
+import { SidebarSection } from "./SidebarSection";
 
 export interface SidebarSectionFormProps<FormValues extends FieldValues> {
   title: string;
@@ -71,31 +71,24 @@ export function SidebarSectionForm<
 
   return (
     <Form onSubmit={handleSubmit}>
-      <div class="sidebar-section">
-        <div class="header">
-          <Typography
-            hierarchy="label"
-            size="xs"
-            family="mono"
-            transform="uppercase"
-            color="tertiary"
-            inverted
-          >
-            {props.title}
-          </Typography>
-          <div class="controls h-4">
-            {editing() && !formStore.submitting && (
-              <Button
-                hierarchy="primary"
-                size="xs"
-                icon="Checkmark"
-                ghost
-                type="submit"
-              >
-                Save
-              </Button>
-            )}
-            {editing() && formStore.submitting && <Loader />}
+      <SidebarSection
+        title={props.title}
+        controls={
+          <>
+            {editing() &&
+              (formStore.submitting ? (
+                <Loader />
+              ) : (
+                <Button
+                  hierarchy="primary"
+                  size="xs"
+                  icon="Checkmark"
+                  ghost
+                  type="submit"
+                >
+                  Save
+                </Button>
+              ))}
             <Button
               hierarchy="primary"
               ghost
@@ -103,19 +96,18 @@ export function SidebarSectionForm<
               icon={editing() ? "Close" : "Edit"}
               onClick={editOrClose}
             />
+          </>
+        }
+      >
+        <Show when={editing() && formStore.dirty && errorMessage()}>
+          <div class="mb-2.5" role="alert" aria-live="assertive">
+            <Typography hierarchy="body" size="xs" inverted color="error">
+              {errorMessage()}
+            </Typography>
           </div>
-        </div>
-        <div class="content">
-          <Show when={editing() && formStore.dirty && errorMessage()}>
-            <div class="mb-2.5" role="alert" aria-live="assertive">
-              <Typography hierarchy="body" size="xs" inverted color="error">
-                {errorMessage()}
-              </Typography>
-            </div>
-          </Show>
-          {props.children({ editing: editing(), Field, formStore })}
-        </div>
-      </div>
+        </Show>
+        {props.children({ editing: editing(), Field, formStore })}
+      </SidebarSection>
     </Form>
   );
 }
