@@ -6,8 +6,6 @@ from clan_lib.persist.path_utils import (
     PathTuple,
     flatten_data_structured,
     list_difference,
-    path_starts_with,
-    path_to_string,
     should_skip_path,
 )
 from clan_lib.persist.validate import (
@@ -127,11 +125,12 @@ def calc_patches(
     delete_paths = find_deleted_paths_structured(all_values, update)
 
     # Validate deletions don't affect static data
-    for delete_path in delete_paths:
-        for static_path in static_data:
-            if path_starts_with(static_path, delete_path):
-                msg = f"Cannot delete path '{path_to_string(delete_path)}' - Readonly path '{path_to_string(static_path)}' is set via .nix file"
-                raise ClanError(msg)
+    # TODO: We currently cannot validate this properly.
+    # for delete_path in delete_paths:
+    #     for static_path in static_data:
+    #         if path_starts_with(static_path, delete_path):
+    #             msg = f"Cannot delete path '{path_to_string(delete_path)}' - Readonly path '{path_to_string(static_path)}' is set via .nix file"
+    #             raise ClanError(msg)
 
     # Get all paths that might need processing
     all_paths: set[PathTuple] = set(all_values_flat) | set(update_flat)
