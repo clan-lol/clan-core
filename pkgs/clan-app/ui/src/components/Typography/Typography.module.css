@@ -189,7 +189,15 @@
 .typography.in-Button {
   @apply max-w-full overflow-hidden whitespace-nowrap text-ellipsis;
 }
+.typography.in-Label {
+  [data-required]:not([data-readonly]) &::after {
+    @apply fg-def-4 ml-1;
 
+    content: "*";
+    font-family: "Commit Mono", monospace;
+    font-size: 0.6875rem;
+  }
+}
 .typography.in-Modal-title {
   @apply mx-auto;
 }
