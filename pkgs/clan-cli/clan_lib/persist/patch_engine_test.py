@@ -1,229 +1,209 @@
-# Functions to test
 from copy import deepcopy
 from typing import Any
 
 import pytest
 
 from clan_lib.errors import ClanError
-from clan_lib.persist.util import (
+from clan_lib.persist.patch_engine import (
     calc_patches,
-    delete_by_path,
-    determine_writeability,
-    list_difference,
+    calculate_static_data,
     merge_objects,
-    path_match,
+)
+from clan_lib.persist.path_utils import (
+    delete_by_path,
     set_value_by_path,
+    set_value_by_path_tuple,
 )
+from clan_lib.persist.write_rules import compute_write_map
+
+# --- calculate_static_data ---
 
 
-@pytest.mark.parametrize(
-    ("path", "whitelist", "expected"),
-    [
-        # Exact matches
-        (["a", "b", "c"], [["a", "b", "c"]], True),
-        (["a", "b"], [["a", "b"]], True),
-        ([], [[]], True),
-        # Wildcard matches
-        (["a", "b", "c"], [["a", "*", "c"]], True),
-        (["a", "x", "c"], [["a", "*", "c"]], True),
-        (["a", "b", "c"], [["*", "b", "c"]], True),
-        (["a", "b", "c"], [["a", "b", "*"]], True),
-        (["a", "b", "c"], [["*", "*", "*"]], True),
-        # Multiple patterns - one matches
-        (["a", "b", "c"], [["x", "y", "z"], ["a", "*", "c"]], True),
-        (["x", "y", "z"], [["a", "*", "c"], ["x", "y", "z"]], True),
-        # Length mismatch
-        (["a", "b", "c"], [["a", "b"]], False),
-        (["a", "b"], [["a", "b", "c"]], False),
-        # Non-matching
-        (["a", "b", "c"], [["a", "b", "x"]], False),
-        (["a", "b", "c"], [["a", "x", "x"]], False),
-        (["a", "b", "c"], [["x", "x", "x"]], False),
-        # Empty whitelist
-        (["a"], [], False),
-        # Wildcards and exact mixed
-        (
-            ["instances", "inst1", "roles", "roleA", "settings"],
-            [["instances", "*", "roles", "*", "settings"]],
-            True,
-        ),
-        # Partial wildcard - length mismatch should fail
-        (
-            ["instances", "inst1", "roles", "roleA"],
-            [["instances", "*", "roles", "*", "settings"]],
-            False,
-        ),
-        # Empty path, no patterns
-        ([], [], False),
-    ],
-)
-def test_path_match(
-    path: list[str],
-    whitelist: list[list[str]],
-    expected: bool,
-) -> None:
-    assert path_match(path, whitelist) == expected
-
-
-# --------- Patching tests ---------
-def test_patch_nested() -> None:
-    orig = {"a": 1, "b": {"a": 2.1, "b": 2.2}, "c": 3}
-
-    set_value_by_path(orig, "b.b", "foo")
-
-    # Should only update the nested value
-    assert orig == {"a": 1, "b": {"a": 2.1, "b": "foo"}, "c": 3}
-
-
-def test_patch_nested_dict() -> None:
-    orig = {"a": 1, "b": {"a": 2.1, "b": 2.2}, "c": 3}
-
-    # This should update the whole "b" dict
-    # Which also removes all other keys
-    set_value_by_path(orig, "b", {"b": "foo"})
-
-    # Should only update the nested value
-    assert orig == {"a": 1, "b": {"b": "foo"}, "c": 3}
-
-
-def test_create_missing_paths() -> None:
-    orig = {"a": 1}
-
-    set_value_by_path(orig, "b.c", "foo")
-
-    # Should only update the nested value
-    assert orig == {"a": 1, "b": {"c": "foo"}}
-
-    orig = {}
-    set_value_by_path(orig, "a.b.c", "foo")
-
-    assert orig == {"a": {"b": {"c": "foo"}}}
-
-
-# --------- Write tests ---------
-#
-
-
-def test_write_simple() -> None:
-    prios = {
-        "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "bar": {"__prio": 1000},  # <- writeable: mkDefault "foo.bar"
+def test_calculate_static_data_basic() -> None:
+    all_values = {
+        "name": "example",
+        "version": 1,
+        "settings": {
+            "optionA": True,
+            "optionB": False,
+            "listSetting": [1, 2, 3, 4],
+        },
+        "staticOnly": "staticValue",
+    }
+    persisted = {
+        "name": "example",
+        "version": 1,
+        "settings": {
+            "optionA": True,
+            "listSetting": [2, 3],
         },
     }
 
-    default: dict = {"foo": {}}
-    data: dict = {}
-    res = determine_writeability(prios, default, data)
+    expected_static = {
+        ("settings", "optionB"): False,
+        ("settings", "listSetting"): [1, 4],
+        ("staticOnly",): "staticValue",
+    }
 
-    assert res == {"writeable": {"foo", "foo.bar"}, "non_writeable": set({})}
+    static_data = calculate_static_data(all_values, persisted)
+    assert static_data == expected_static
 
 
-def test_write_inherited() -> None:
-    prios = {
-        "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "bar": {
-                # Inherits prio from parent <- writeable: "foo.bar"
-                "baz": {"__prio": 1000},  # <- writeable: "foo.bar.baz"
+def test_calculate_static_data_no_static() -> None:
+    all_values = {
+        "name": "example",
+        "version": 1,
+        "settings": {
+            "optionA": True,
+            "listSetting": [1, 2, 3],
+        },
+    }
+    persisted = {
+        "name": "example",
+        "version": 1,
+        "settings": {
+            "optionA": True,
+            "listSetting": [1, 2, 3],
+        },
+    }
+
+    expected_static: dict = {}
+
+    static_data = calculate_static_data(all_values, persisted)
+    assert static_data == expected_static
+
+
+# See: https://git.clan.lol/clan/clan-core/issues/5231
+# Uncomment this test if the issue is resolved
+# def test_calculate_static_data_no_static_sets() -> None:
+#     all_values = {
+#         "instance": {
+#             "hello": {
+#                 "roles": {
+#                     "default": {
+#                         "machines": {
+#                             "jon": {
+#                                 # Default
+#                                 "settings": {
+
+#                                 }
+#                             }
+#                         }
+#                     }
+#                 }
+#             }
+#         }
+#     }
+#     persisted = {
+#         "instance": {
+#             "hello": {
+#                 "roles": {
+#                     "default": {
+#                         "machines": {
+#                             "jon": {
+
+#                             }
+#                         }
+#                     }
+#                 }
+#             }
+#         }
+#     }
+
+#     expected_static: dict = {}
+
+#     static_data = calculate_static_data(all_values, persisted)
+#     assert static_data == expected_static
+
+
+def test_calculate_static_data_all_static() -> None:
+    all_values = {
+        "name": "example",
+        "version": 1,
+        "settings": {
+            "optionA": True,
+            "listSetting": [1, 2, 3],
+        },
+        "staticOnly": "staticValue",
+    }
+    persisted: dict = {}
+
+    expected_static = {
+        ("name",): "example",
+        ("version",): 1,
+        ("settings", "optionA"): True,
+        ("settings", "listSetting"): [1, 2, 3],
+        ("staticOnly",): "staticValue",
+    }
+
+    static_data = calculate_static_data(all_values, persisted)
+    assert static_data == expected_static
+
+
+def test_calculate_static_data_empty_all_values() -> None:
+    # This should never happen in practice, but we test it for completeness.
+    # Maybe this should emit a warning in the future?
+    all_values: dict = {}
+    persisted = {
+        "name": "example",
+        "version": 1,
+    }
+
+    expected_static: dict = {}
+
+    static_data = calculate_static_data(all_values, persisted)
+    assert static_data == expected_static
+
+
+def test_calculate_nested_dicts() -> None:
+    all_values = {
+        "level1": {
+            "level2": {
+                "staticKey": "staticValue",
+                "persistedKey": "persistedValue",
+            },
+            "anotherStatic": 42,
+        },
+        "topLevelStatic": True,
+    }
+    persisted = {
+        "level1": {
+            "level2": {
+                "persistedKey": "persistedValue",
             },
         },
     }
 
-    data: dict = {}
-    res = determine_writeability(prios, {"foo": {"bar": {}}}, data)
-    assert res == {
-        "writeable": {"foo", "foo.bar", "foo.bar.baz"},
-        "non_writeable": set(),
+    expected_static = {
+        ("level1", "level2", "staticKey"): "staticValue",
+        ("level1", "anotherStatic"): 42,
+        ("topLevelStatic",): True,
     }
 
+    static_data = calculate_static_data(all_values, persisted)
+    assert static_data == expected_static
 
-def test_non_write_inherited() -> None:
-    prios = {
-        "foo": {
-            "__prio": 50,  # <- non writeable: mkForce "foo" = {...}
-            "bar": {
-                # Inherits prio from parent <- non writeable
-                "baz": {"__prio": 1000},  # <- non writeable: mkDefault "foo.bar.baz"
-            },
+
+def test_dot_in_keys() -> None:
+    all_values = {
+        "key.foo": "staticValue",
+        "key": {
+            "foo": "anotherStaticValue",
         },
     }
+    persisted: dict = {}
 
-    data: dict = {}
-    res = determine_writeability(prios, {}, data)
-    assert res == {
-        "writeable": set(),
-        "non_writeable": {"foo", "foo.bar", "foo.bar.baz"},
+    expected_static = {
+        ("key.foo",): "staticValue",
+        ("key", "foo"): "anotherStaticValue",
     }
 
+    static_data = calculate_static_data(all_values, persisted)
 
-def test_write_list() -> None:
-    prios = {
-        "foo": {
-            "__prio": 100,
-        },
-    }
-
-    data: dict = {}
-    default: dict = {
-        "foo": [
-            "a",
-            "b",
-        ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
-    }
-    res = determine_writeability(prios, default, data)
-    assert res == {
-        "writeable": {"foo"},
-        "non_writeable": set(),
-    }
+    assert static_data == expected_static
 
 
-def test_write_because_written() -> None:
-    prios = {
-        "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "bar": {
-                # Inherits prio from parent <- writeable
-                "baz": {"__prio": 100},  # <- non writeable usually
-                "foobar": {"__prio": 100},  # <- non writeable
-            },
-        },
-    }
-
-    # Given the following data. {}
-    # Check that the non-writeable paths are correct.
-    res = determine_writeability(prios, {"foo": {"bar": {}}}, {})
-    assert res == {
-        "writeable": {"foo", "foo.bar"},
-        "non_writeable": {"foo.bar.baz", "foo.bar.foobar"},
-    }
-
-    data: dict = {
-        "foo": {
-            "bar": {
-                "baz": "foo",  # <- written. Since we created the data, we know we can write to it
-            },
-        },
-    }
-    res = determine_writeability(prios, {}, data)
-    assert res == {
-        "writeable": {"foo", "foo.bar", "foo.bar.baz"},
-        "non_writeable": {"foo.bar.foobar"},
-    }
-
-
-# --------- List unmerge tests ---------
-
-
-def test_list_unmerge() -> None:
-    all_machines = ["machineA", "machineB"]
-    inventory = ["machineB"]
-
-    nix_machines = list_difference(all_machines, inventory)
-    assert nix_machines == ["machineA"]
-
-
-# --------- Write tests ---------
+# --------- calc_patches ---------
 
 
 def test_update_simple() -> None:
@@ -239,25 +219,28 @@ def test_update_simple() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo", "foo.bar"}, "non_writeable": {"foo.nix"}}
-
+    assert writeables == {
+        "writeable": {("foo",), ("foo", "bar")},
+        "non_writeable": {("foo", "nix")},
+    }
     update = {
         "foo": {
             "bar": "new value",  # <- user sets this value
-            "nix": "this is set in nix",  # <- user didnt touch this value
             # If the user would have set this value, it would trigger an error
+            "nix": "this is set in nix",  # <- user didnt touch this value
         },
     }
-    patchset, _ = calc_patches(
+    patchset, delete_set = calc_patches(
         data_disk,
         update,
         all_values=data_eval,
         writeables=writeables,
     )
 
-    assert patchset == {"foo.bar": "new value"}
+    assert patchset == {("foo", "bar"): "new value"}
+    assert delete_set == set()
 
 
 def test_update_add_empty_dict() -> None:
@@ -272,20 +255,21 @@ def test_update_add_empty_dict() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     update = deepcopy(data_eval)
 
-    set_value_by_path(update, "foo.mimi", {})
+    set_value_by_path_tuple(update, ("foo", "mimi"), {})
 
-    patchset, _ = calc_patches(
+    patchset, delete_set = calc_patches(
         data_disk,
         update,
         all_values=data_eval,
         writeables=writeables,
     )
 
-    assert patchset == {"foo.mimi": {}}  # this is what gets persisted
+    assert patchset == {("foo", "mimi"): {}}  # this is what gets persisted
+    assert delete_set == set()
 
 
 def test_update_many() -> None:
@@ -312,11 +296,16 @@ def test_update_many() -> None:
 
     data_disk = {"foo": {"bar": "baz", "nested": {"x": "x"}}}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
     assert writeables == {
-        "writeable": {"foo.nested", "foo", "foo.bar", "foo.nested.x"},
-        "non_writeable": {"foo.nix", "foo.nested.y"},
+        "writeable": {
+            ("foo",),
+            ("foo", "bar"),
+            ("foo", "nested"),
+            ("foo", "nested", "x"),
+        },
+        "non_writeable": {("foo", "nix"), ("foo", "nested", "y")},
     }
 
     update = {
@@ -329,7 +318,7 @@ def test_update_many() -> None:
             },
         },
     }
-    patchset, _ = calc_patches(
+    patchset, delete_set = calc_patches(
         data_disk,
         update,
         all_values=data_eval,
@@ -337,9 +326,10 @@ def test_update_many() -> None:
     )
 
     assert patchset == {
-        "foo.bar": "new value for bar",
-        "foo.nested.x": "new value for x",
+        ("foo", "bar"): "new value for bar",
+        ("foo", "nested", "x"): "new value for x",
     }
+    assert delete_set == set()
 
 
 def test_update_parent_non_writeable() -> None:
@@ -362,9 +352,12 @@ def test_update_parent_non_writeable() -> None:
         },
     }
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": set(), "non_writeable": {"foo", "foo.bar"}}
+    assert writeables == {
+        "writeable": set(),
+        "non_writeable": {("foo",), ("foo", "bar")},
+    }
 
     update = {
         "foo": {
@@ -374,7 +367,34 @@ def test_update_parent_non_writeable() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert "Key 'foo.bar' is not writeable." in str(error.value)
+    assert "Path 'foo.bar' is readonly." in str(error.value)
+
+
+# TODO: Resolve the issue https://git.clan.lol/clan/clan-core/issues/5231
+# def test_remove_non_writable_attrs() -> None:
+#     prios = {
+#         "foo": {
+#             "__prio": 100,  # <- writeable: "foo"
+#         },
+#     }
+
+#     data_eval: dict = {"foo": {"bar": {}, "baz": {}}}
+
+#     data_disk: dict = {}
+
+#     writeables = compute_write_map(prios, data_eval, data_disk)
+
+#     update: dict = {
+#         "foo": {
+#             "bar": {},  # <- user leaves this value
+#             # User removed "baz"
+#         },
+#     }
+
+#     with pytest.raises(ClanError) as error:
+#         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+
+#     assert "Cannot delete path 'foo.baz'" in str(error.value)
 
 
 def test_update_list() -> None:
@@ -391,9 +411,9 @@ def test_update_list() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo"}, "non_writeable": set()}
+    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
     # Add "C" to the list
     update = {"foo": ["A", "B", "C"]}  # User wants to add "C"
@@ -405,7 +425,7 @@ def test_update_list() -> None:
         writeables=writeables,
     )
 
-    assert patchset == {"foo": ["B", "C"]}
+    assert patchset == {("foo",): ["B", "C"]}
 
     # "foo": ["A", "B"]
     # Remove "B" from the list
@@ -419,7 +439,7 @@ def test_update_list() -> None:
         writeables=writeables,
     )
 
-    assert patchset == {"foo": []}
+    assert patchset == {("foo",): []}
 
 
 def test_update_list_duplicates() -> None:
@@ -436,9 +456,9 @@ def test_update_list_duplicates() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo"}, "non_writeable": set()}
+    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
     # Add "A" to the list
     update = {"foo": ["A", "B", "A"]}  # User wants to add duplicate "A"
@@ -446,7 +466,7 @@ def test_update_list_duplicates() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert "Key 'foo' contains list duplicates: ['A']" in str(error.value)
+    assert "Path 'foo' contains list duplicates: ['A']" in str(error.value)
 
 
 def test_dont_persist_defaults() -> None:
@@ -460,8 +480,11 @@ def test_dont_persist_defaults() -> None:
         "config": {"foo": "bar"},
     }
     data_disk: dict[str, Any] = {}
-    writeables = determine_writeability(prios, data_eval, data_disk)
-    assert writeables == {"writeable": {"config", "enabled"}, "non_writeable": set()}
+    writeables = compute_write_map(prios, data_eval, data_disk)
+    assert writeables == {
+        "writeable": {("config",), ("enabled",)},
+        "non_writeable": set(),
+    }
 
     update = deepcopy(data_eval)
     set_value_by_path(update, "config.foo", "foo")
@@ -472,8 +495,33 @@ def test_dont_persist_defaults() -> None:
         all_values=data_eval,
         writeables=writeables,
     )
-    assert patchset == {"config.foo": "foo"}
+    assert patchset == {("config", "foo"): "foo"}
     assert delete_set == set()
+
+
+def test_set_null() -> None:
+    data_eval: dict = {
+        "foo": {},
+        "bar": {},
+    }
+    data_disk = data_eval
+
+    # User set Foo to null
+    # User deleted bar
+    update = {"foo": None}
+
+    patchset, delete_set = calc_patches(
+        data_disk,
+        update,
+        all_values=data_eval,
+        writeables=compute_write_map(
+            {"__prio": 100, "foo": {"__prio": 100}},
+            data_eval,
+            data_disk,
+        ),
+    )
+    assert patchset == {("foo",): None}
+    assert delete_set == {("bar",)}
 
 
 def test_machine_delete() -> None:
@@ -489,8 +537,8 @@ def test_machine_delete() -> None:
     }
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
-    assert writeables == {"writeable": {"machines"}, "non_writeable": set()}
+    writeables = compute_write_map(prios, data_eval, data_disk)
+    assert writeables == {"writeable": {("machines",)}, "non_writeable": set()}
 
     # Delete machine "bar"  from the inventory
     update = deepcopy(data_eval)
@@ -504,7 +552,7 @@ def test_machine_delete() -> None:
     )
 
     assert patchset == {}
-    assert delete_set == {"machines.bar"}
+    assert delete_set == {("machines", "bar")}
 
 
 def test_update_mismatching_update_type() -> None:
@@ -518,9 +566,9 @@ def test_update_mismatching_update_type() -> None:
 
     data_disk: dict = {}
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo"}, "non_writeable": set()}
+    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
     # set foo to an int but it is a list
     update: dict = {"foo": 1}
@@ -529,7 +577,7 @@ def test_update_mismatching_update_type() -> None:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
     assert (
-        "Type mismatch for key 'foo'. Cannot update <class 'list'> with <class 'int'>"
+        "Type mismatch for path 'foo'. Cannot update <class 'list'> with <class 'int'>"
         in str(error.value)
     )
 
@@ -545,9 +593,9 @@ def test_delete_key() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo"}, "non_writeable": set()}
+    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
     # remove all keys from foo
     update: dict = {"foo": {}}
@@ -559,8 +607,8 @@ def test_delete_key() -> None:
         writeables=writeables,
     )
 
-    assert patchset == {"foo": {}}
-    assert delete_set == {"foo.bar"}
+    assert patchset == {("foo",): {}}
+    assert delete_set == {("foo", "bar")}
 
 
 def test_delete_key_intermediate() -> None:
@@ -584,9 +632,9 @@ def test_delete_key_intermediate() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {"foo"}, "non_writeable": set()}
+    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
 
     # remove all keys from foo
 
@@ -598,7 +646,7 @@ def test_delete_key_intermediate() -> None:
     )
 
     assert patchset == {}
-    assert delete_set == {"foo.bar"}
+    assert delete_set == {("foo", "bar")}
 
 
 def test_delete_key_non_writeable() -> None:
@@ -618,85 +666,18 @@ def test_delete_key_non_writeable() -> None:
 
     data_disk = data_eval
 
-    writeables = determine_writeability(prios, data_eval, data_disk)
+    writeables = compute_write_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": set(), "non_writeable": {"foo"}}
+    assert writeables == {"writeable": set(), "non_writeable": {("foo",)}}
 
     # remove all keys from foo
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert "is not writeable" in str(error.value)
+    assert "Path 'foo' is readonly." in str(error.value)
 
 
-def test_delete_atom() -> None:
-    data = {"foo": {"bar": 1}}
-    # Removes the key "foo.bar"
-    # Returns the deleted key-value pair { "bar": 1 }
-    entry = delete_by_path(data, "foo.bar")
-
-    assert entry == {"bar": 1}
-    assert data == {"foo": {}}
-
-
-def test_delete_intermediate() -> None:
-    data = {"a": {"b": {"c": {"d": 42}}}}
-    # Removes "a.b.c.d"
-    entry = delete_by_path(data, "a.b.c")
-
-    assert entry == {"c": {"d": 42}}
-    # Check all intermediate dictionaries remain intact
-    assert data == {"a": {"b": {}}}
-
-
-def test_delete_top_level() -> None:
-    data = {"x": 100, "y": 200}
-    # Deletes top-level key
-    entry = delete_by_path(data, "x")
-    assert entry == {"x": 100}
-    assert data == {"y": 200}
-
-
-def test_delete_key_not_found() -> None:
-    data = {"foo": {"bar": 1}}
-    # Trying to delete a non-existing key "foo.baz" - should return empty dict
-    result = delete_by_path(data, "foo.baz")
-    assert result == {}
-    # Data should remain unchanged
-    assert data == {"foo": {"bar": 1}}
-
-
-def test_delete_intermediate_not_dict() -> None:
-    data = {"foo": "not a dict"}
-    # Trying to go deeper into a non-dict value
-    with pytest.raises(KeyError) as excinfo:
-        delete_by_path(data, "foo.bar")
-    assert "not found or not a dictionary" in str(excinfo.value)
-    # Data should remain unchanged
-    assert data == {"foo": "not a dict"}
-
-
-def test_delete_empty_path() -> None:
-    data = {"foo": {"bar": 1}}
-    # Attempting to delete with an empty path
-    with pytest.raises(KeyError) as excinfo:
-        delete_by_path(data, "")
-    # Depending on how you handle empty paths, you might raise an error or handle it differently.
-    # If you do raise an error, check the message.
-    assert "Cannot delete. Path is empty" in str(excinfo.value)
-    assert data == {"foo": {"bar": 1}}
-
-
-def test_delete_non_existent_path_deep() -> None:
-    data = {"foo": {"bar": {"baz": 123}}}
-    # non-existent deep path - should return empty dict
-    result = delete_by_path(data, "foo.bar.qux")
-    assert result == {}
-    # Data remains unchanged
-    assert data == {"foo": {"bar": {"baz": 123}}}
-
-
-### Merge Objects Tests ###
+# --- test merge_objects ---
 
 
 def test_merge_objects_empty() -> None:

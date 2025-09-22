@@ -11,7 +11,8 @@ from clan_lib.git import commit_file
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import merge_objects, set_value_by_path
+from clan_lib.persist.patch_engine import merge_objects
+from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.templates.handler import machine_template
 
 from clan_cli.completions import add_dynamic_completer, complete_tags

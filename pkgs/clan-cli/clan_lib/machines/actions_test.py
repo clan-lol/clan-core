@@ -16,7 +16,7 @@ from clan_lib.nix_models.clan import (
     Unknown,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import get_value_by_path, set_value_by_path
+from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
 
 from .actions import (
     MachineState,
@@ -164,10 +164,7 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
         with pytest.raises(ClanError) as exc_info:
             set_machine(Machine("jon", flake), machine_jon)
 
-        assert (
-            "Key 'machines.jon.description' is not writeable. It seems its value is statically defined in nix."
-            in str(exc_info.value)
-        )
+        assert "Path 'machines.jon.description' is readonly" in str(exc_info.value)
 
         # Assert _write should not be called
         mock_write.assert_not_called()
@@ -213,8 +210,11 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     with pytest.raises(ClanError) as exc_info:
         set_jon(invalid_tags)
 
-    assert "Key 'machines.jon.tags' doesn't contain items ['nix1', 'nix2']" in str(
-        exc_info.value,
+    assert (
+        "Path 'machines.jon.tags' doesn't contain static items ['nix1', 'nix2']"
+        in str(
+            exc_info.value,
+        )
     )
 
 

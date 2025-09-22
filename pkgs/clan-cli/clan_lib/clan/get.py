@@ -5,8 +5,9 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import FieldSchema
 from clan_lib.nix_models.clan import InventoryMeta
+from clan_lib.persist.introspection import retrieve_typed_field_names
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import is_writeable_key, retrieve_typed_field_names
+from clan_lib.persist.write_rules import is_writeable_key
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(flake)
-    write_info = inventory_store.get_writeability()
+    write_info = inventory_store.get_write_map()
 
     field_names = retrieve_typed_field_names(InventoryMeta)
 

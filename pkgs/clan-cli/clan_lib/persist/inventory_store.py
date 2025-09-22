@@ -13,14 +13,14 @@ from clan_lib.nix_models.clan import (
     InventoryMetaType,
     InventoryTagsType,
 )
-
-from .util import (
-    calc_patches,
-    delete_by_path,
-    determine_writeability,
+from clan_lib.persist.patch_engine import calc_patches
+from clan_lib.persist.path_utils import (
+    PathTuple,
+    delete_by_path_tuple,
     path_match,
-    set_value_by_path,
+    set_value_by_path_tuple,
 )
+from clan_lib.persist.write_rules import WriteMap, compute_write_map
 
 
 def unwrap_known_unknown(value: Any) -> Any:
@@ -79,7 +79,7 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 
 @dataclass
 class WriteInfo:
-    writeables: dict[str, set[str]]
+    writeables: WriteMap
     data_eval: "InventorySnapshot"
     data_disk: "InventorySnapshot"
 
@@ -194,7 +194,7 @@ class InventoryStore:
         """
         return self._flake.select("clanInternals.inventoryClass.introspection")
 
-    def _write_info(self) -> WriteInfo:
+    def _write_map(self) -> WriteInfo:
         """Get the paths of the writeable keys in the inventory
 
         Load the inventory and determine the writeable keys
@@ -205,20 +205,20 @@ class InventoryStore:
         data_eval: InventorySnapshot = self._load_merged_inventory()
         data_disk: InventorySnapshot = self._get_persisted()
 
-        writeables = determine_writeability(
+        write_map = compute_write_map(
             current_priority,
             dict(data_eval),
             dict(data_disk),
         )
 
-        return WriteInfo(writeables, data_eval, data_disk)
+        return WriteInfo(write_map, data_eval, data_disk)
 
-    def get_writeability(self) -> Any:
+    def get_write_map(self) -> Any:
         """Get the writeability of the inventory
 
         :return: A dictionary with the writeability of all paths
         """
-        write_info = self._write_info()
+        write_info = self._write_map()
         return write_info.writeables
 
     def read(self) -> InventorySnapshot:
@@ -229,12 +229,12 @@ class InventoryStore:
         """
         return self._load_merged_inventory()
 
-    def delete(self, delete_set: set[str], commit: bool = True) -> None:
+    def delete(self, delete_set: set[PathTuple], commit: bool = True) -> None:
         """Delete keys from the inventory"""
         data_disk = dict(self._get_persisted())
 
         for delete_path in delete_set:
-            delete_by_path(data_disk, delete_path)
+            delete_by_path_tuple(data_disk, delete_path)
 
         with self.inventory_file.open("w") as f:
             json.dump(data_disk, f, indent=2)
@@ -255,7 +255,7 @@ class InventoryStore:
         """Write the inventory to the flake directory
         and commit it to git with the given message
         """
-        write_info = self._write_info()
+        write_info = self._write_map()
         patchset, delete_set = calc_patches(
             dict(write_info.data_disk),
             dict(update),
@@ -265,10 +265,10 @@ class InventoryStore:
 
         persisted = dict(write_info.data_disk)
         for patch_path, data in patchset.items():
-            set_value_by_path(persisted, patch_path, data)
+            set_value_by_path_tuple(persisted, patch_path, data)
 
         for delete_path in delete_set:
-            delete_by_path(persisted, delete_path)
+            delete_by_path_tuple(persisted, delete_path)
 
         def post_write() -> None:
             if commit:

@@ -4,7 +4,7 @@ from clan_lib.api import API
 from clan_lib.flake import Flake
 from clan_lib.nix_models.clan import InventoryMeta as Meta
 from clan_lib.persist.inventory_store import InventorySnapshot, InventoryStore
-from clan_lib.persist.util import set_value_by_path
+from clan_lib.persist.path_utils import set_value_by_path
 
 
 @dataclass

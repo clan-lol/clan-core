@@ -15,7 +15,7 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import set_value_by_path
+from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars.generate import run_generators

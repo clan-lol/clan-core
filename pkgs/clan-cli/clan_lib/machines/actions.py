@@ -11,14 +11,14 @@ from clan_lib.nix_models.clan import (
     InventoryMachine,
     InventoryMachineTagsType,
 )
+from clan_lib.persist.introspection import retrieve_typed_field_names
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import (
+from clan_lib.persist.path_utils import (
     get_value_by_path,
-    is_writeable_key,
     list_difference,
-    retrieve_typed_field_names,
     set_value_by_path,
 )
+from clan_lib.persist.write_rules import is_writeable_key
 
 
 @dataclass
@@ -170,7 +170,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_writeability()
+    write_info = inventory_store.get_write_map()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 
