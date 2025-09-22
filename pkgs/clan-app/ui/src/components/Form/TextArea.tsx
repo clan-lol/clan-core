@@ -12,6 +12,7 @@ import { createEffect, createSignal, splitProps } from "solid-js";
 import "./TextInput.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
+import { keepTruthy } from "@/src/util";
 
 export type TextAreaProps = FieldProps &
   TextFieldRootProps & {
@@ -117,6 +118,9 @@ export const TextArea = (props: TextAreaProps) => {
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
+          in={keepTruthy(
+            props.orientation == "horizontal" && "Orienter-horizontal",
+          )}
           {...props}
         />
         <TextField.TextArea

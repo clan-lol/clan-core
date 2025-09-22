@@ -1,4 +1,4 @@
-div.orienter {
+.orienter {
   @apply flex flex-col gap-2 w-full;
 
   &.vertical {
@@ -6,10 +6,6 @@ div.orienter {
 
   &.horizontal {
     @apply flex-row justify-between gap-0;
-
-    & > div.form-label {
-      @apply w-1/2 shrink;
-    }
   }
 
   &.align-center {

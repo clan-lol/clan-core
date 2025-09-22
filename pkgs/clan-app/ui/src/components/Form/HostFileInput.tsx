@@ -14,6 +14,7 @@ import { Orienter } from "./Orienter";
 import { createSignal, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
+import { keepTruthy } from "@/src/util";
 
 export type HostFileInputProps = FieldProps &
   TextFieldRootProps & {
@@ -40,8 +41,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
     }
   };
 
-  const [styleProps, otherProps] = splitProps(props, [
-    "class",
+  const [local, other] = splitProps(props, [
     "size",
     "orientation",
     "inverted",
@@ -49,51 +49,40 @@ export const HostFileInput = (props: HostFileInputProps) => {
   ]);
 
   return (
-    <TextField
-      class={cx(
-        styleProps.class,
-        "form-field",
-        styleProps.size,
-        styleProps.orientation,
-        {
-          inverted: styleProps.inverted,
-          ghost: styleProps.ghost,
-        },
-      )}
-      {...otherProps}
-    >
+    <TextField {...other}>
       <Orienter
-        orientation={styleProps.orientation}
-        align={styleProps.orientation == "horizontal" ? "center" : "start"}
+        orientation={local.orientation}
+        align={local.orientation == "horizontal" ? "center" : "start"}
       >
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
+          in={keepTruthy(
+            local.orientation == "horizontal" && "Orienter-horizontal",
+          )}
           {...props}
         />
 
         <TextField.Input
-          {...props.input}
           hidden={true}
           value={value()}
           ref={(el: HTMLInputElement) => {
             actualInputElement = el; // Capture for local use
           }}
+          {...props.input}
         />
 
         {!value() && (
           <Button
             hierarchy="secondary"
-            size={styleProps.size}
+            size={local.size}
             icon="Folder"
             onClick={selectFile}
-            disabled={props.disabled || props.readOnly}
-            elasticity={
-              styleProps.orientation === "vertical" ? "fit" : undefined
-            }
+            disabled={other.disabled || other.readOnly}
+            elasticity={local.orientation === "vertical" ? "fit" : undefined}
             in={
-              styleProps.orientation == "horizontal"
-                ? `HostFileInput-${styleProps.orientation}`
+              local.orientation == "horizontal"
+                ? `HostFileInput-${local.orientation}`
                 : undefined
             }
           >
@@ -104,12 +93,16 @@ export const HostFileInput = (props: HostFileInputProps) => {
         {value() && (
           <Tooltip placement="top">
             <Tooltip.Portal>
-              <Tooltip.Content class={styles.tooltipContent}>
+              <Tooltip.Content
+                class={cx(styles.tooltipContent, {
+                  [styles.inverted]: local.inverted,
+                })}
+              >
                 <Typography
                   hierarchy="body"
                   size="xs"
                   weight="medium"
-                  inverted={!styleProps.inverted}
+                  inverted={!local.inverted}
                 >
                   {value()}
                 </Typography>
@@ -118,16 +111,14 @@ export const HostFileInput = (props: HostFileInputProps) => {
             </Tooltip.Portal>
             <Tooltip.Trigger
               as={Button}
-              elasticity={
-                styleProps.orientation === "vertical" ? "fit" : undefined
-              }
+              elasticity={local.orientation === "vertical" ? "fit" : undefined}
               in={
-                styleProps.orientation == "horizontal"
-                  ? `HostFileInput-${styleProps.orientation}`
+                local.orientation == "horizontal"
+                  ? `HostFileInput-${local.orientation}`
                   : undefined
               }
               hierarchy="secondary"
-              size={styleProps.size}
+              size={local.size}
               icon="Folder"
               onClick={selectFile}
               disabled={props.disabled || props.readOnly}

@@ -2,11 +2,19 @@ import { Select as KSelect, SelectPortalProps } from "@kobalte/core/select";
 import Icon from "../Icon/Icon";
 import { Orienter } from "../Form/Orienter";
 import { Label, LabelProps } from "../Form/Label";
-import { createEffect, createSignal, JSX, Show, splitProps } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSX,
+  mergeProps,
+  Show,
+  splitProps,
+} from "solid-js";
 import styles from "./Select.module.css";
 import { Typography } from "../Typography/Typography";
 import cx from "classnames";
 import { useModalContext } from "../Modal/Modal";
+import { keepTruthy } from "@/src/util";
 
 export interface Option {
   value: string;
@@ -46,13 +54,19 @@ export type SelectProps = {
 );
 
 export const Select = (props: SelectProps) => {
-  const [root, selectProps] = splitProps(
-    props,
+  const [root, selectProps, rest] = splitProps(
+    mergeProps(
+      {
+        orientation: "horizontal",
+        noOptionsText: "No options available",
+      } as const,
+      props,
+    ),
     ["name", "placeholder", "required", "disabled"],
     ["placeholder", "ref", "onInput", "onChange", "onBlur"],
   );
 
-  const zIndex = () => props.zIndex ?? 40;
+  const zIndex = () => rest.zIndex ?? 40;
 
   const [getValue, setValue] = createSignal<Option>();
 
@@ -61,29 +75,29 @@ export const Select = (props: SelectProps) => {
   // Internal loading state for async options
   const [loading, setLoading] = createSignal(false);
   createEffect(async () => {
-    if (props.getOptions) {
+    if (rest.getOptions) {
       setLoading(true);
       try {
-        const options = await props.getOptions();
+        const options = await rest.getOptions();
         setResolvedOptions(options);
       } finally {
         setLoading(false);
       }
-    } else if (props.options) {
-      setResolvedOptions(props.options);
+    } else if (rest.options) {
+      setResolvedOptions(rest.options);
     }
   });
 
-  const options = () => props.options ?? resolvedOptions();
+  const options = () => rest.options ?? resolvedOptions();
 
   createEffect(() => {
     console.log("options,", options());
-    setValue(options().find((option) => props.value === option.value));
+    setValue(options().find((option) => rest.value === option.value));
   });
 
   const modalContext = useModalContext();
   const defaultMount =
-    props.portalProps?.mount || modalContext?.portalRef || document.body;
+    rest.portalProps?.mount || modalContext?.portalRef || document.body;
 
   createEffect(() => {
     console.debug("Select component mounted at:", defaultMount);
@@ -101,7 +115,7 @@ export const Select = (props: SelectProps) => {
       optionValue="value"
       optionTextValue="label"
       optionDisabled="disabled"
-      validationState={props.error ? "invalid" : "valid"}
+      validationState={rest.error ? "invalid" : "valid"}
       itemComponent={(props) => (
         <KSelect.Item item={props.item} class="flex gap-1 p-2">
           <KSelect.ItemIndicator>
@@ -147,11 +161,11 @@ export const Select = (props: SelectProps) => {
                 color="secondary"
                 in="Select-item-label"
               >
-                {props.noOptionsText || "No options available"}
+                {rest.noOptionsText}
               </Typography>
             }
           >
-            <Show when={props.placeholder}>
+            <Show when={root.placeholder}>
               <Typography
                 hierarchy="label"
                 size="s"
@@ -159,19 +173,22 @@ export const Select = (props: SelectProps) => {
                 family="condensed"
                 in="Select-item-label"
               >
-                {props.placeholder}
+                {root.placeholder}
               </Typography>
             </Show>
           </Show>
         </Show>
       }
     >
-      <Orienter orientation={props.orientation || "horizontal"}>
+      <Orienter orientation={rest.orientation}>
         <Label
-          {...props.label}
+          {...rest.label}
           labelComponent={KSelect.Label}
           descriptionComponent={KSelect.Description}
-          validationState={props.error ? "invalid" : "valid"}
+          validationState={rest.error ? "invalid" : "valid"}
+          in={keepTruthy(
+            rest.orientation == "horizontal" && "Orienter-horizontal",
+          )}
         />
         <KSelect.HiddenSelect {...selectProps} />
         <KSelect.Trigger
@@ -201,9 +218,9 @@ export const Select = (props: SelectProps) => {
           </KSelect.Icon>
         </KSelect.Trigger>
       </Orienter>
-      <KSelect.Portal mount={defaultMount} {...props.portalProps}>
+      <KSelect.Portal mount={defaultMount} {...rest.portalProps}>
         <KSelect.Content
-          class={styles.options_content}
+          class={styles.optionsContent}
           style={{ "--z-index": zIndex() }}
         >
           <KSelect.Listbox>
@@ -238,7 +255,7 @@ export const Select = (props: SelectProps) => {
         </KSelect.Content>
       </KSelect.Portal>
       {/* TODO: Display error next to the problem */}
-      {/* <KSelect.ErrorMessage>{props.error}</KSelect.ErrorMessage> */}
+      {/* <KSelect.ErrorMessage>{rest.error}</KSelect.ErrorMessage> */}
     </KSelect>
   );
 };

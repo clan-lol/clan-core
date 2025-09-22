@@ -5,17 +5,17 @@
     @apply mb-2.5 w-full;
   }
 
-  div.fields {
+  .fields {
     @apply flex flex-col gap-4 w-full rounded-md;
     @apply px-4 py-5 bg-def-2;
   }
 
-  div.error {
-    @apply w-full;
+  .error {
+    @apply w-full py-2;
   }
 
   &.inverted {
-    div.fields {
+    .fields {
       @apply bg-inv-2;
     }
   }

@@ -177,7 +177,7 @@ export const MachineTags = (props: MachineTagsProps) => {
   return (
     <Combobox<MachineTag>
       multiple
-      class={cx("form-field", styles.machineTags, props.orientation)}
+      class={cx(styles.machineTags, props.orientation)}
       {...splitProps(props, ["defaultValue"])[1]}
       defaultValue={defaultValue}
       value={selectedOptions()}
@@ -196,6 +196,9 @@ export const MachineTags = (props: MachineTagsProps) => {
         <Label
           labelComponent={Combobox.Label}
           descriptionComponent={Combobox.Description}
+          in={keepTruthy(
+            props.orientation == "horizontal" && "Orienter-horizontal",
+          )}
           {...props}
         />
 

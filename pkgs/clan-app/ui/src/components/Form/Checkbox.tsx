@@ -13,6 +13,7 @@ import styles from "./Checkbox.module.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
 import { Match, mergeProps, splitProps, Switch } from "solid-js";
+import { keepTruthy } from "@/src/util";
 
 export type CheckboxProps = FieldProps &
   KCheckboxRootProps & {
@@ -62,6 +63,9 @@ export const Checkbox = (props: CheckboxProps) => {
           <Label
             labelComponent={KCheckbox.Label}
             descriptionComponent={KCheckbox.Description}
+            in={keepTruthy(
+              local.orientation == "horizontal" && "Orienter-horizontal",
+            )}
             {...props}
           />
           <KCheckbox.Input {...local.input} />

@@ -47,7 +47,7 @@
   }
 }
 
-.options_content {
+.optionsContent {
   z-index: var(--z-index);
 
   @apply bg-def-1 px-1 py-3 rounded-[4px] -mt-8 pt-10 -mx-1;

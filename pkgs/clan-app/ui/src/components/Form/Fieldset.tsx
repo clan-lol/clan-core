@@ -1,5 +1,5 @@
-import "./Fieldset.css";
-import { JSX, splitProps } from "solid-js";
+import styles from "./Fieldset.module.css";
+import { JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
 import { FieldProps } from "./Field";
@@ -21,23 +21,15 @@ export type FieldsetProps = Pick<FieldProps, "orientation" | "inverted"> & {
 };
 
 export const Fieldset = (props: FieldsetProps) => {
-  const [fieldProps] = splitProps(props, [
-    "orientation",
-    "inverted",
-    "disabled",
-    "error",
-    "children",
-  ]);
-
   const children = () =>
     typeof props.children === "function"
-      ? props.children(fieldProps)
+      ? props.children(props)
       : props.children;
 
   return (
     <div
       role="group"
-      class={cx("fieldset", { inverted: props.inverted })}
+      class={cx(styles.fieldset, { [styles.inverted]: props.inverted })}
       aria-disabled={props.disabled || undefined}
     >
       {props.legend && (
@@ -55,9 +47,9 @@ export const Fieldset = (props: FieldsetProps) => {
           </Typography>
         </legend>
       )}
-      <div class="fields">{children()}</div>
+      <div class={styles.fields}>{children()}</div>
       {props.error && (
-        <div class="error" role="alert">
+        <div class={styles.error} role="alert">
           <Typography
             hierarchy="body"
             size="xxs"
