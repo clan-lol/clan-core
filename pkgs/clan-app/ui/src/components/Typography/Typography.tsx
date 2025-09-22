@@ -53,6 +53,7 @@ export interface TypographyProps<H extends Hierarchy> {
   align?: "left" | "center" | "right";
   in?:
     | "Button"
+    | "Label"
     | "Modal-title"
     | "TagSelect-label"
     | "Select-item-label"

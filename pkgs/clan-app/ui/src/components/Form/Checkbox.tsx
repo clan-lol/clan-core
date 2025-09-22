@@ -1,19 +1,18 @@
 import {
   CheckboxInputProps as KCheckboxInputProps,
   CheckboxRootProps as KCheckboxRootProps,
+  Checkbox as KCheckbox,
 } from "@kobalte/core/checkbox";
-
-import { Checkbox as KCheckbox } from "@kobalte/core";
 
 import Icon from "@/src/components/Icon/Icon";
 
 import cx from "classnames";
 import { Label } from "./Label";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
-import "./Checkbox.css";
+import styles from "./Checkbox.module.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
-import { Match, splitProps, Switch } from "solid-js";
+import { Match, mergeProps, splitProps, Switch } from "solid-js";
 
 export type CheckboxProps = FieldProps &
   KCheckboxRootProps & {
@@ -21,24 +20,15 @@ export type CheckboxProps = FieldProps &
   };
 
 export const Checkbox = (props: CheckboxProps) => {
-  // we need to separate output the input otherwise it interferes with prop binding
-  const [_, rootProps] = splitProps(props, ["input"]);
-
-  const [styleProps, otherRootProps] = splitProps(rootProps, [
-    "class",
-    "size",
-    "orientation",
-    "inverted",
-    "ghost",
-  ]);
-
-  const alignment = () =>
-    (props.orientation || "vertical") == "vertical" ? "start" : "center";
+  const [local, other] = splitProps(
+    mergeProps({ size: "default", orientation: "vertical" } as const, props),
+    ["size", "orientation", "inverted", "ghost", "input"],
+  );
 
   const iconChecked = (
     <Icon
       icon="Checkmark"
-      inverted={props.inverted}
+      inverted={local.inverted}
       color="secondary"
       size="100%"
     />
@@ -47,50 +37,45 @@ export const Checkbox = (props: CheckboxProps) => {
   const iconUnchecked = (
     <Icon
       icon="Close"
-      inverted={props.inverted}
+      inverted={local.inverted}
       color="secondary"
       size="100%"
     />
   );
 
   return (
-    <KCheckbox.Root
+    <KCheckbox
       class={cx(
-        styleProps.class,
-        "form-field",
-        "checkbox",
-        styleProps.size,
-        styleProps.orientation,
+        styles.checkbox,
+        local.size != "default" && styles[local.size],
         {
-          inverted: styleProps.inverted,
-          ghost: styleProps.ghost,
+          [styles.inverted]: local.inverted,
         },
       )}
-      {...otherRootProps}
+      {...other}
     >
       {(state) => (
-        <Orienter orientation={styleProps.orientation} align={alignment()}>
+        <Orienter
+          orientation={local.orientation}
+          align={local.orientation == "vertical" ? "start" : "center"}
+        >
           <Label
             labelComponent={KCheckbox.Label}
             descriptionComponent={KCheckbox.Description}
             {...props}
           />
-          <KCheckbox.Input {...props.input} />
-          <KCheckbox.Control class="checkbox-control">
+          <KCheckbox.Input {...local.input} />
+          <KCheckbox.Control class={styles.checkboxControl}>
             <Switch>
-              <Match when={!props.readOnly}>
+              <Match when={!other.readOnly}>
                 <KCheckbox.Indicator>{iconChecked}</KCheckbox.Indicator>
               </Match>
-              <Match when={props.readOnly && state.checked()}>
-                {iconChecked}
-              </Match>
-              <Match when={props.readOnly && !state.checked()}>
-                {iconUnchecked}
-              </Match>
+              <Match when={state.checked()}>{iconChecked}</Match>
+              <Match when={true}>{iconUnchecked}</Match>
             </Switch>
           </KCheckbox.Control>
         </Orienter>
       )}
-    </KCheckbox.Root>
+    </KCheckbox>
   );
 };

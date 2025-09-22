@@ -49,6 +49,7 @@ export const Label = (props: LabelProps) => {
             color={props.validationState == "invalid" ? "error" : "primary"}
             weight={props.labelWeight || "bold"}
             inverted={props.inverted}
+            in="Label"
           >
             {props.label}
           </Typography>

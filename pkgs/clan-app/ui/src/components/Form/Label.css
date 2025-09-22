@@ -13,15 +13,4 @@ div.form-label {
   & > label {
     @apply flex items-center gap-1;
   }
-
-  & > span[data-required]:not(span[data-readonly]),
-  & > label[data-required]:not(label[data-readonly]) {
-    .typography::after {
-      @apply fg-def-4 ml-1;
-
-      content: "*";
-      font-family: "Commit Mono", monospace;
-      font-size: 0.6875rem;
-    }
-  }
 }
