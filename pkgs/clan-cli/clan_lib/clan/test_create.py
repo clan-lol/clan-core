@@ -124,10 +124,7 @@ def test_create_cannot_set_name(tmp_path: Path, offline_flake_hook: Any) -> None
     with pytest.raises(ClanError) as exc_info:
         create_clan(opts)
 
-    assert (
-        "Key 'meta.name' is not writeable. It seems its value is statically defined in nix."
-        in str(exc_info.value)
-    )
+    assert "Path 'meta.name' is readonly" in str(exc_info.value)
 
 
 @pytest.mark.with_core

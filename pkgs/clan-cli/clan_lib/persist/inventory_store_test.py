@@ -120,10 +120,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     invalid_data = {"protected": "foo"}
     with pytest.raises(ClanError) as e:
         store.write(invalid_data, "test", commit=False)  # type: ignore[arg-type]
-    assert (
-        str(e.value)
-        == "Key 'protected' is not writeable. It seems its value is statically defined in nix."
-    )
+    assert "Path 'protected' is readonly" in str(e.value)
 
     # Test the data is not touched
     assert store.read() == data
@@ -255,10 +252,7 @@ def test_manipulate_list(setup_test_files: Path) -> None:
 
     with pytest.raises(ClanError) as e:
         store.write(data, "test", commit=False)
-    assert (
-        str(e.value)
-        == "Key 'empty' contains list duplicates: ['a'] - List values must be unique."
-    )
+    assert "Path 'empty' contains list duplicates: ['a']" in str(e.value)
 
     assert store.read() == {"empty": [], "predefined": ["a", "b"]}
 
@@ -287,7 +281,4 @@ def test_static_list_items(setup_test_files: Path) -> None:
     with pytest.raises(ClanError) as e:
         store.write(data, "test", commit=False)
 
-    assert (
-        str(e.value)
-        == "Key 'predefined' doesn't contain items ['a'] - Deleting them is not possible, they are static values set via a .nix file"
-    )
+    assert "Path 'predefined' doesn't contain static items ['a']" in str(e.value)
