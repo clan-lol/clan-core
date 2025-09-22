@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { mergeProps, Show } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import Icon from "@/src/components/Icon/Icon";
@@ -6,7 +6,9 @@ import { TextField } from "@kobalte/core/text-field";
 import { Checkbox } from "@kobalte/core/checkbox";
 import { Combobox } from "@kobalte/core/combobox";
 import { Select } from "@kobalte/core/select";
-import "./Label.css";
+import styles from "./Label.module.css";
+import cx from "classnames";
+import { getInClasses } from "@/src/util";
 
 export type Size = "default" | "s";
 
@@ -22,6 +24,7 @@ export type DescriptionComponent =
   | typeof Combobox.Description
   | typeof Select.Description;
 
+type In = "Orienter-horizontal";
 export interface LabelProps {
   labelComponent: LabelComponent;
   descriptionComponent: DescriptionComponent;
@@ -34,52 +37,57 @@ export interface LabelProps {
   inverted?: boolean;
   readOnly?: boolean;
   validationState?: "valid" | "invalid";
+  in?: In | In[];
 }
 
 export const Label = (props: LabelProps) => {
+  const local = mergeProps(
+    { size: "default", labelWeight: "bold", validationState: "valid" } as const,
+    props,
+  );
   const descriptionSize = () => (props.size == "default" ? "s" : "xs");
 
   return (
-    <Show when={props.label}>
-      <div class="form-label">
-        <props.labelComponent>
+    <Show when={local.label}>
+      <div class={cx(styles.label, getInClasses(styles, local.in))}>
+        <local.labelComponent>
           <Typography
             hierarchy="label"
-            size={props.size || "default"}
-            color={props.validationState == "invalid" ? "error" : "primary"}
-            weight={props.labelWeight || "bold"}
-            inverted={props.inverted}
+            size={local.size}
+            color={local.validationState == "invalid" ? "error" : "primary"}
+            weight={local.labelWeight}
+            inverted={local.inverted}
             in="Label"
           >
-            {props.label}
+            {local.label}
           </Typography>
-          {props.tooltip && (
+          {local.tooltip && (
             <Tooltip
               placement="top"
-              inverted={props.inverted}
-              description={props.tooltip}
+              inverted={local.inverted}
+              description={local.tooltip}
             >
               <Icon
                 icon="Info"
                 color="tertiary"
-                inverted={props.inverted}
-                size={props.size == "default" ? "0.85em" : "0.75rem"}
+                inverted={local.inverted}
+                size={local.size == "default" ? "0.85em" : "0.75rem"}
               />
             </Tooltip>
           )}
-        </props.labelComponent>
-        {props.description && (
-          <props.descriptionComponent>
+        </local.labelComponent>
+        {local.description && (
+          <local.descriptionComponent>
             <Typography
               hierarchy="body"
               size={descriptionSize()}
               color="secondary"
               weight="normal"
-              inverted={props.inverted}
+              inverted={local.inverted}
             >
-              {props.description}
+              {local.description}
             </Typography>
-          </props.descriptionComponent>
+          </local.descriptionComponent>
         )}
       </div>
     </Show>

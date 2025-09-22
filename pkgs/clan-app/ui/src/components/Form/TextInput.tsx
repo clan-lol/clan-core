@@ -18,6 +18,7 @@ import {
   onMount,
   splitProps,
 } from "solid-js";
+import { keepTruthy } from "@/src/util";
 
 export type TextInputProps = FieldProps &
   TextFieldRootProps & {
@@ -88,6 +89,9 @@ export const TextInput = (props: TextInputProps) => {
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
+          in={keepTruthy(
+            props.orientation == "horizontal" && "Orienter-horizontal",
+          )}
           {...props}
         />
         <div class="input-container">

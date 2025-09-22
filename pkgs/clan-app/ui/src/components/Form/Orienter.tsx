@@ -1,7 +1,7 @@
 import cx from "classnames";
-import { JSX } from "solid-js";
+import { JSX, mergeProps } from "solid-js";
 
-import "./Orienter.css";
+import styles from "./Orienter.module.css";
 
 export interface OrienterProps {
   orientation?: "vertical" | "horizontal";
@@ -10,11 +10,17 @@ export interface OrienterProps {
 }
 
 export const Orienter = (props: OrienterProps) => {
-  const alignment = () => `align-${props.align || "center"}`;
+  const local = mergeProps({ align: "center" } as const, props);
 
   return (
-    <div class={cx("orienter", alignment(), props.orientation)}>
-      {props.children}
+    <div
+      class={cx(
+        styles.orienter,
+        styles[`align-${local.align}`],
+        local.orientation && styles[local.orientation],
+      )}
+    >
+      {local.children}
     </div>
   );
 };

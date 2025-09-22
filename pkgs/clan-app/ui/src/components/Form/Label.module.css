@@ -1,4 +1,4 @@
-div.form-label {
+.label {
   @apply flex flex-col gap-1 w-full;
 
   & > span,
@@ -13,4 +13,7 @@ div.form-label {
   & > label {
     @apply flex items-center gap-1;
   }
+}
+.label.in-Orienter-horizontal {
+  @apply w-1/2 shrink;
 }
