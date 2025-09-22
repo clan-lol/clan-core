@@ -7,38 +7,50 @@ import {
 import cx from "classnames";
 import { Label } from "./Label";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
-import { createEffect, createSignal, splitProps } from "solid-js";
+import { createEffect, createSignal, mergeProps, splitProps } from "solid-js";
 
-import "./TextInput.css";
+import styles from "./TextField.module.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
 import { keepTruthy } from "@/src/util";
 
 export type TextAreaProps = FieldProps &
   TextFieldRootProps & {
-    input: PolymorphicProps<"textarea", TextFieldTextAreaProps<"input">> & {
-      autoResize?: boolean;
-      minRows?: number;
-      maxRows?: number;
-    };
+    input: PolymorphicProps<"textarea", TextFieldTextAreaProps<"input">>;
+    autoResize?: boolean;
+    minRows?: number;
+    maxRows?: number;
   };
 
 export const TextArea = (props: TextAreaProps) => {
+  const withDefaults = mergeProps(
+    { size: "default", minRows: 1, maxRows: Infinity } as const,
+    props,
+  );
+  const [local, other] = splitProps(withDefaults, [
+    "autoResize",
+    "minRows",
+    "maxRows",
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+    "input",
+  ]);
+
   let textareaRef: HTMLTextAreaElement;
 
   const [lineHeight, setLineHeight] = createSignal(0);
 
   const autoResize = () => {
-    const input = props.input;
-
-    if (!(textareaRef && input.autoResize && lineHeight() > 0)) return;
+    if (!(textareaRef && local.autoResize && lineHeight() > 0)) return;
 
     // Reset height to auto to get accurate scrollHeight
     textareaRef.style.height = "auto";
 
     // Calculate min and max heights based on rows
-    const minHeight = (input.minRows || 1) * lineHeight();
-    const maxHeight = input.maxRows ? input.maxRows * lineHeight() : Infinity;
+    const minHeight = local.minRows * lineHeight();
+    const maxHeight = local.maxRows * lineHeight();
 
     // Set the height based on content, respecting min/max
     const newHeight = Math.min(
@@ -53,7 +65,7 @@ export const TextArea = (props: TextAreaProps) => {
 
   // Set up auto-resize effect
   createEffect(() => {
-    if (textareaRef && props.input.autoResize) {
+    if (textareaRef && local.autoResize) {
       // Get computed line height
       const computedStyle = window.getComputedStyle(textareaRef);
       const computedLineHeight = parseFloat(computedStyle.lineHeight);
@@ -68,31 +80,13 @@ export const TextArea = (props: TextAreaProps) => {
 
   // Watch for value changes to trigger resize
   createEffect(() => {
-    if (props.input.autoResize && textareaRef) {
+    if (local.autoResize && textareaRef) {
       // Access the value to create a dependency
-      const _ = props.value || props.defaultValue || "";
+      const _ = other.value || other.defaultValue;
       // Trigger resize on the next tick to ensure DOM is updated
       setTimeout(autoResize, 0);
     }
   });
-
-  const input = props.input;
-
-  // TextField.Textarea already has an `autoResize` prop
-  // We filter our props out to avoid conflicting behaviour
-  const [_, textareaProps] = splitProps(input, [
-    "autoResize",
-    "minRows",
-    "maxRows",
-  ]);
-
-  const [styleProps, otherProps] = splitProps(props, [
-    "class",
-    "size",
-    "orientation",
-    "inverted",
-    "ghost",
-  ]);
 
   return (
     <TextField
@@ -102,46 +96,44 @@ export const TextArea = (props: TextAreaProps) => {
         textareaRef = el.querySelector("textarea")! as HTMLTextAreaElement;
       }}
       class={cx(
-        styleProps.class,
-        "form-field",
-        "textarea",
-        styleProps.size,
-        styleProps.orientation,
+        styles.textField,
+        local.size != "default" && styles[local.size],
+        local.orientation == "horizontal" && styles[local.orientation],
         {
-          inverted: styleProps.inverted,
-          ghost: styleProps.ghost,
+          [styles.inverted]: local.inverted,
+          [styles.ghost]: local.ghost,
         },
       )}
-      {...otherProps}
+      {...other}
     >
-      <Orienter orientation={styleProps.orientation} align={"start"}>
+      <Orienter orientation={local.orientation} align={"start"}>
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
           in={keepTruthy(
             props.orientation == "horizontal" && "Orienter-horizontal",
           )}
-          {...props}
+          {...withDefaults}
         />
         <TextField.TextArea
-          class={cx(input.class, {
-            "auto-resize": input.autoResize,
+          class={cx({
+            [styles.autoResize]: local.autoResize,
           })}
           onInput={(e) => {
             autoResize();
 
-            if (!input.onInput) {
+            if (!local.input.onInput) {
               return;
             }
 
             // Call original onInput if it exists
-            if (typeof input.onInput === "function") {
-              input.onInput(e);
-            } else if (Array.isArray(input.onInput)) {
-              input.onInput.forEach((handler) => handler(e));
+            if (typeof local.input.onInput === "function") {
+              local.input.onInput(e);
+            } else if (Array.isArray(local.input.onInput)) {
+              local.input.onInput.forEach((handler) => handler(e));
             }
           }}
-          {...textareaProps}
+          {...local.input}
         />
       </Orienter>
     </TextField>

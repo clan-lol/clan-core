@@ -21,10 +21,17 @@ export type CheckboxProps = FieldProps &
   };
 
 export const Checkbox = (props: CheckboxProps) => {
-  const [local, other] = splitProps(
-    mergeProps({ size: "default", orientation: "vertical" } as const, props),
-    ["size", "orientation", "inverted", "ghost", "input"],
+  const withDefaults = mergeProps(
+    { size: "default", orientation: "vertical" } as const,
+    props,
   );
+  const [local, other] = splitProps(withDefaults, [
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+    "input",
+  ]);
 
   const iconChecked = (
     <Icon
@@ -66,7 +73,7 @@ export const Checkbox = (props: CheckboxProps) => {
             in={keepTruthy(
               local.orientation == "horizontal" && "Orienter-horizontal",
             )}
-            {...props}
+            {...withDefaults}
           />
           <KCheckbox.Input {...local.input} />
           <KCheckbox.Control class={styles.checkboxControl}>
