@@ -79,6 +79,7 @@ nav:
       - Networking:
           - Introduction to Networking: guides/networking/networking.md
           - Zerotier VPN: guides/networking/mesh-vpn.md
+      - Nixpkgs Flake Input: guides/nixpkgs-flake-input/index.md
       - Disko Templates:
           - Community Disko Templates: guides/disko-templates/community.md
       - Backups:
