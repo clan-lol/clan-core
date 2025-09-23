@@ -121,6 +121,8 @@ class Generator:
             all_selectors += [
                 f'clanInternals.machines."{system}"."{machine_name}".{generators_selector}',
                 f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
+                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.publicModule',
+                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.secretModule',
             ]
         flake.precache(all_selectors)
 
