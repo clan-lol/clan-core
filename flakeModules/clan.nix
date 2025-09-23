@@ -22,26 +22,41 @@ in
       default = config.flake.clan.clanInternals;
     };
     # The clan module
-    clan = lib.mkOption {
-      description = "Clan module. Define your clan inside here";
-      default = { };
-      type = types.submoduleWith {
-        class = "clan";
-        specialArgs =
-          # TODO: make these explizit options and deduplicate with lib.clan function
-          let
-            nixpkgs = inputs.nixpkgs or clan-core.inputs.nixpkgs;
-            nix-darwin = inputs.nix-darwin or clan-core.inputs.nix-darwin;
-          in
-          {
+    clan =
+      # TODO: make these explizit options and deduplicate with lib.clan function
+      let
+        nixpkgs = inputs.nixpkgs or clan-core.inputs.nixpkgs;
+        nix-darwin = inputs.nix-darwin or clan-core.inputs.nix-darwin;
+      in
+      lib.mkOption {
+        description = "Clan module. Define your clan inside here";
+        default = { };
+        type = types.submoduleWith {
+          class = "clan";
+          specialArgs = {
             inherit self;
             inherit nixpkgs nix-darwin;
           };
-        modules = [
-          clan-core.modules.clan.default
-        ];
+          modules = [
+            clan-core.modules.clan.default
+          ];
+        };
+        apply =
+          config:
+          # TOOD:
+          # - allow to disable version check?
+          # - self-incrementing version?
+          if !lib.versionAtLeast nixpkgs.lib.version "25.11" then
+            throw ''
+              Nixpkgs version: ${nixpkgs.lib.version} is incompatible with clan-core. (>= 25.11 is required)
+              ---
+              Your version of 'nixpkgs' seems too old for clan-core.
+              Please read: https://docs.clan.lol/guides/nixpkgs-flake-input
+              ---
+            ''
+          else
+            config;
       };
-    };
 
     # Mapped flake toplevel outputs
     darwinConfigurations = lib.mkOption {
