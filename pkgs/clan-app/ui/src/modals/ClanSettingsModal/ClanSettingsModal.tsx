@@ -1,4 +1,3 @@
-import cx from "classnames";
 import styles from "./ClanSettingsModal.module.css";
 import { Modal } from "@/src/components/Modal/Modal";
 import { ClanDetails } from "@/src/hooks/queries";
@@ -104,7 +103,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
 
   return (
     <Modal
-      class={cx(styles.modal)}
+      class={styles.modal}
       open
       title="Settings"
       onClose={props.onClose}
@@ -112,7 +111,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
         <Form onSubmit={handleSubmit}>{props.children}</Form>
       )}
       metaHeader={() => (
-        <div class={cx(styles.header)}>
+        <div class={styles.header}>
           <Typography
             hierarchy="label"
             family="mono"
@@ -127,7 +126,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
         </div>
       )}
     >
-      <div class={cx(styles.content)}>
+      <div class={styles.content}>
         <Show when={errorMessage()}>
           <Alert type="error" title="Error" description={errorMessage()} />
         </Show>
@@ -164,11 +163,11 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                   "A description of this Clan",
                 )}
                 orientation="horizontal"
+                autoResize={true}
+                minRows={2}
+                maxRows={4}
                 input={{
                   ...input,
-                  autoResize: true,
-                  minRows: 2,
-                  maxRows: 4,
                   placeholder: "No description",
                 }}
               />
@@ -176,21 +175,22 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
           </Field>
         </Fieldset>
 
-        <div class={cx(styles.remove)}>
-          <TextInput
-            class={cx(styles.clanInput)}
-            orientation="horizontal"
-            onChange={setRemoveValue}
-            input={{
-              value: removeValue(),
-              placeholder: "Enter the name of this Clan",
-              onKeyDown: (event) => {
-                if (event.key == "Enter" && !removeDisabled()) {
-                  onRemove();
-                }
-              },
-            }}
-          />
+        <div class={styles.remove}>
+          <div class={styles.clanInput}>
+            <TextInput
+              orientation="horizontal"
+              onChange={setRemoveValue}
+              input={{
+                value: removeValue(),
+                placeholder: "Enter the name of this Clan",
+                onKeyDown: (event) => {
+                  if (event.key == "Enter" && !removeDisabled()) {
+                    onRemove();
+                  }
+                },
+              }}
+            />
+          </div>
 
           <Button
             hierarchy="primary"

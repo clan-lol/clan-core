@@ -121,11 +121,11 @@ export const AutoResize: Story = {
     description:
       "This textarea automatically adjusts its height based on content",
     tooltip: "Try typing multiple lines to see it grow",
+    autoResize: true,
+    minRows: 2,
+    maxRows: 10,
     input: {
       placeholder: "Start typing to see the textarea grow...",
-      autoResize: true,
-      minRows: 2,
-      maxRows: 10,
     },
   },
 };
@@ -134,10 +134,10 @@ export const AutoResizeNoMax: Story = {
   args: {
     label: "Auto-resize without max height",
     description: "This textarea grows indefinitely with content",
+    autoResize: true,
+    minRows: 3,
     input: {
       placeholder: "This will grow as much as needed...",
-      autoResize: true,
-      minRows: 3,
     },
   },
 };

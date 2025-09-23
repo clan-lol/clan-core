@@ -11,7 +11,7 @@ import styles from "./HostFileInput.module.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
-import { createSignal, splitProps } from "solid-js";
+import { createSignal, mergeProps, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
 import { keepTruthy } from "@/src/util";
@@ -24,7 +24,14 @@ export type HostFileInputProps = FieldProps &
   };
 
 export const HostFileInput = (props: HostFileInputProps) => {
-  const [value, setValue] = createSignal<string>(props.value || "");
+  const withDefaults = mergeProps({ value: "" } as const, props);
+  const [local, other] = splitProps(withDefaults, [
+    "size",
+    "orientation",
+    "inverted",
+    "ghost",
+  ]);
+  const [value, setValue] = createSignal<string>(other.value);
 
   let actualInputElement: HTMLInputElement | undefined;
 
@@ -41,13 +48,6 @@ export const HostFileInput = (props: HostFileInputProps) => {
     }
   };
 
-  const [local, other] = splitProps(props, [
-    "size",
-    "orientation",
-    "inverted",
-    "ghost",
-  ]);
-
   return (
     <TextField {...other}>
       <Orienter
@@ -60,7 +60,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
           in={keepTruthy(
             local.orientation == "horizontal" && "Orienter-horizontal",
           )}
-          {...props}
+          {...withDefaults}
         />
 
         <TextField.Input

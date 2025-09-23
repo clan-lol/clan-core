@@ -52,7 +52,8 @@ const sortedAndUniqueOptions = (options: MachineTag[]) =>
   sortedOptions(uniqueOptions(options));
 
 export const MachineTags = (props: MachineTagsProps) => {
-  const [local, rest] = splitProps(props, ["defaultValue"]);
+  const withDefaults = props;
+  const [local, rest] = splitProps(withDefaults, ["defaultValue"]);
 
   // // convert default value string[] into MachineTag[]
   const defaultValue = sortedAndUniqueOptions(
@@ -199,7 +200,7 @@ export const MachineTags = (props: MachineTagsProps) => {
           in={keepTruthy(
             props.orientation == "horizontal" && "Orienter-horizontal",
           )}
-          {...props}
+          {...withDefaults}
         />
 
         <Combobox.HiddenSelect

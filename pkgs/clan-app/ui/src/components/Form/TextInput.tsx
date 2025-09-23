@@ -3,11 +3,10 @@ import {
   TextFieldInputProps,
   TextFieldRootProps,
 } from "@kobalte/core/text-field";
-import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 
 import cx from "classnames";
 import { Label } from "./Label";
-import "./TextInput.css";
+import styles from "./TextField.module.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
@@ -15,6 +14,7 @@ import {
   Component,
   createEffect,
   createSignal,
+  mergeProps,
   onMount,
   splitProps,
 } from "solid-js";
@@ -22,19 +22,21 @@ import { keepTruthy } from "@/src/util";
 
 export type TextInputProps = FieldProps &
   TextFieldRootProps & {
-    icon?: IconVariant;
     input?: PolymorphicProps<"input", TextFieldInputProps<"input">>;
     startComponent?: Component<Pick<FieldProps, "inverted">>;
     endComponent?: Component<Pick<FieldProps, "inverted">>;
   };
 
 export const TextInput = (props: TextInputProps) => {
-  const [styleProps, otherProps] = splitProps(props, [
-    "class",
+  const withDefaults = mergeProps({ size: "default" } as const, props);
+  const [local, other] = splitProps(withDefaults, [
     "size",
     "orientation",
     "inverted",
     "ghost",
+    "input",
+    "startComponent",
+    "endComponent",
   ]);
 
   let inputRef: HTMLInputElement | undefined;
@@ -73,50 +75,35 @@ export const TextInput = (props: TextInputProps) => {
   return (
     <TextField
       class={cx(
-        styleProps.class,
-        "form-field",
-        "text",
-        styleProps.size,
-        styleProps.orientation,
+        styles.textField,
+        local.size != "default" && styles[local.size],
+        local.orientation == "horizontal" && styles[local.orientation],
         {
-          inverted: styleProps.inverted,
-          ghost: styleProps.ghost,
+          [styles.inverted]: local.inverted,
+          [styles.ghost]: local.ghost,
         },
       )}
-      {...otherProps}
+      {...other}
     >
-      <Orienter orientation={styleProps.orientation}>
+      <Orienter orientation={local.orientation}>
         <Label
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
           in={keepTruthy(
             props.orientation == "horizontal" && "Orienter-horizontal",
           )}
-          {...props}
+          {...withDefaults}
         />
-        <div class="input-container">
-          {props.startComponent && !props.readOnly && (
-            <div ref={startComponentRef} class="start-component">
-              {props.startComponent({ inverted: props.inverted })}
+        <div class={styles.inputContainer}>
+          {local.startComponent && !other.readOnly && (
+            <div ref={startComponentRef} class={styles.startComponent}>
+              {local.startComponent({ inverted: local.inverted })}
             </div>
           )}
-          {props.icon && !props.readOnly && (
-            <Icon
-              icon={props.icon}
-              inverted={styleProps.inverted}
-              color={props.disabled ? "tertiary" : "quaternary"}
-            />
-          )}
-          <TextField.Input
-            ref={inputRef}
-            {...props.input}
-            class={cx({
-              "has-icon": props.icon && !props.readOnly,
-            })}
-          />
-          {props.endComponent && !props.readOnly && (
-            <div ref={endComponentRef} class="end-component">
-              {props.endComponent({ inverted: props.inverted })}
+          <TextField.Input ref={inputRef} {...local.input} />
+          {local.endComponent && !other.readOnly && (
+            <div ref={endComponentRef} class={styles.endComponent}>
+              {local.endComponent({ inverted: local.inverted })}
             </div>
           )}
         </div>

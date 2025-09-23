@@ -126,11 +126,11 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
                   readOnly={readOnly(editing, "description")}
                   tooltip={tooltipText("description", fieldsSchema()!)}
                   orientation="horizontal"
+                  autoResize={true}
+                  minRows={2}
+                  maxRows={4}
                   input={{
                     ...input,
-                    autoResize: true,
-                    minRows: 2,
-                    maxRows: 4,
                     placeholder: "No description",
                   }}
                 />
