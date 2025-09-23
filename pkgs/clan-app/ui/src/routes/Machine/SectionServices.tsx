@@ -19,10 +19,11 @@ export const SectionServices = () => {
     }
 
     return (ctx.machinesQuery.data[machineName].instance_refs ?? [])
-      .map((id) => {
+      .flatMap((id) => {
         const instance = ctx.serviceInstancesQuery.data?.[id];
         if (!instance) {
-          throw new Error(`Service instance ${id} not found`);
+          console.error(`Service instance ${id} not found`);
+          return [];
         }
         const module = instance.module;
 
