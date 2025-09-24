@@ -1,4 +1,4 @@
-span.tag {
+.tag {
   @apply flex items-center gap-1 w-fit px-2 py-[0.1875rem] rounded-full;
   @apply bg-def-4;
 
@@ -17,11 +17,11 @@ span.tag {
     @apply bg-inv-1;
   }
 
-  &.has-action {
+  &.hasAction {
     @apply pr-1.5;
   }
 
-  &.is-interactive {
+  &.interactive {
     &:hover {
       @apply bg-def-acc-3;
     }
@@ -30,10 +30,7 @@ span.tag {
       @apply bg-inv-acc-3;
     }
   }
-
-  & > .icon {
-    &:hover {
-      @apply cursor-pointer;
-    }
+  .action {
+    @apply cursor-pointer;
   }
 }
