@@ -220,6 +220,22 @@
                   clan_cmd = [
                       "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
                       "machines",
+                      "update-hardware-config",
+                      "--debug",
+                      "--flake", str(flake_dir),
+                      "--yes", "test-install-machine-without-system",
+                      "--host-key-check", "none",
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE']
+                  ]
+                  subprocess.run(clan_cmd, check=True)
+
+
+                  # Run clan install from host using port forwarding
+                  clan_cmd = [
+                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "machines",
                       "install",
                       "--phases", "disko,install",
                       "--debug",

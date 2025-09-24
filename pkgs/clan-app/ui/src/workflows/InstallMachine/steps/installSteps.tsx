@@ -260,7 +260,7 @@ const CheckHardware = () => {
 
     try {
       // TODO: Debounce
-      const call = client.fetch("run_machine_hardware_info", {
+      const call = client.fetch("run_machine_hardware_info_kexec", {
         target_host: {
           address: store.install.targetHost,
           port,
