@@ -1,0 +1,9 @@
+.cubesSceneContainer {
+  width: 100%;
+  height: 100vh;
+}
+
+.toolbarContainer {
+  @apply absolute bottom-10 z-30 left-1/2;
+  @apply flex justify-center items-center;
+}

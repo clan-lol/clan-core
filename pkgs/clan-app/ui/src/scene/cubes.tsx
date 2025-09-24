@@ -7,7 +7,7 @@ import {
   JSX,
   Show,
 } from "solid-js";
-import "./cubes.css";
+import styles from "./cubes.module.css";
 
 import * as THREE from "three";
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
@@ -779,7 +779,7 @@ export function CubeScene(props: {
       </Show>
       <div
         class={cx(
-          "cubes-scene-container",
+          styles.cubesSceneContainer,
           ctx.worldMode() === "default" && "cursor-no-drop",
           ctx.worldMode() === "select" && "cursor-pointer",
           ctx.worldMode() === "service" && "cursor-pointer",
@@ -788,7 +788,7 @@ export function CubeScene(props: {
         )}
         ref={(el) => (container = el)}
       />
-      <div class="toolbar-container">
+      <div class={styles.toolbarContainer}>
         <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
           {props.toolbarPopup}
         </div>
