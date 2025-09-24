@@ -160,7 +160,7 @@ Examples:
   The backup to restore for the machine [MACHINE] with the configured [PROVIDER]
   with the name [NAME].
 
-For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/guides/backups")}.
+For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/guides/backups/backup-intro")}.
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -510,7 +510,7 @@ Examples:
   $ clan state list [MACHINE]
   List state of the machines managed by Clan.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/backups")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/backups/backup-intro")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
