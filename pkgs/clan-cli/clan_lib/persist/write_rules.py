@@ -51,6 +51,8 @@ def get_priority(value: Any) -> int | None:
     """Extract priority from a value, handling both dict and non-dict cases."""
     if isinstance(value, dict) and "__prio" in value:
         return value["__prio"]
+    if isinstance(value, dict) and "__this" in value:
+        return value["__this"]["prio"]
     return None
 
 
@@ -110,6 +112,9 @@ def _determine_writeability_recursive(
 
     for key, value in priorities.items():
         # Skip metadata keys
+        if key == "__this":
+            continue
+        # Backwards compatibility
         if key == "__prio":
             continue
 

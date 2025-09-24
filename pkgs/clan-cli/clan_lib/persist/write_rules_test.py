@@ -1,13 +1,49 @@
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
+
+import pytest
+
+from clan_lib.flake.flake import Flake
+from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.write_rules import compute_write_map
+
+if TYPE_CHECKING:
+    from clan_lib.nix_models.clan import Clan
+
+
+# Integration test
+@pytest.mark.with_core
+def test_write_integration(clan_flake: Callable[..., Flake]) -> None:
+    clan_nix: Clan = {}
+    flake = clan_flake(clan_nix)
+    inventory_store = InventoryStore(flake)
+    # downcast into a dict
+    data_eval = cast("dict", inventory_store.read())
+    prios = flake.select("clanInternals.inventoryClass.introspection")
+
+    res = compute_write_map(prios, data_eval, {})
+
+    # We should be able to write to these top-level keys
+    assert ("machines",) in res["writeable"]
+    assert ("instances",) in res["writeable"]
+    assert ("meta",) in res["writeable"]
+
+    # Managed by nix
+    assert ("assertions",) in res["non_writeable"]
+
+
+# New style __this.prio
 
 
 def test_write_simple() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "bar": {"__prio": 1000},  # <- writeable: mkDefault "foo.bar"
+            "__this": {
+                "prio": 100,  # <- writeable: "foo"
+            },
+            "bar": {"__this": {"prio": 1000}},  # <- writeable: mkDefault "foo.bar"
         },
-        "foo.bar": {"__prio": 1000},
+        "foo.bar": {"__this": {"prio": 1000}},
     }
 
     default: dict = {"foo": {}}
@@ -18,6 +54,9 @@ def test_write_simple() -> None:
         "writeable": {("foo", "bar"), ("foo",), ("foo.bar",)},
         "non_writeable": set(),
     }
+
+
+# Compatibility test for old __prio style
 
 
 def test_write_inherited() -> None:

@@ -10,6 +10,31 @@ let
     ]
   );
 
+  /**
+    Takes a set of options as returned by `configuration`
+
+    Returns a recursive structure that contains '__this' along with attribute names that map to the same structure.
+
+    Within the reserved attribute '__this' the following attributes are available:
+
+    - prio: The highest priority this option was defined with
+    - files: A list of files this option was defined in
+    - type: The type of this option (e.g. "string", "attrsOf
+    - total: Whether this is a total object. Meaning all attributes are fixed. No additional attributes can be added. Or one of them removed.
+
+    Example Result:
+    {
+      foo = {
+        __this = { ... };
+        bar = {
+          __this = { ... };
+        };
+        baz = {
+          __this = { ... };
+        };
+      };
+    }
+  */
   getPrios =
     {
       options,
@@ -20,76 +45,59 @@ let
     lib.mapAttrs (
       _: opt:
       let
-        prio = {
-          __prio = opt.highestPrio;
+        definitionInfo = {
+          __this = {
+            prio = opt.highestPrio or null;
+            files = opt.files or [ ];
+            type = opt.type.name or null;
+            total = opt.type.name or null == "submodule";
+          };
         };
-        filteredSubOptions = filterOptions (opt.type.getSubOptions opt.loc);
 
-        zipDefs = builtins.zipAttrsWith (_: vs: vs);
+        # TODO: respect freeformType
+        submodulePrios = getPrios { options = filterOptions opt.valueMeta.configuration.options; };
 
-        prioPerValue =
-          { type, defs }:
-          lib.mapAttrs (
-            attrName: prioSet:
-            let
-              # Evaluate the submodule
-              # Remove once: https://github.com/NixOS/nixpkgs/pull/391544 lands
-              # This is currently a workaround to get the submodule options
-              # It also has a certain loss of information, on nested attrsOf, which is rare, but not ideal.
-              options = filteredSubOptions;
-              modules = (
-                [
-                  {
-                    inherit options;
-                    _file = "<artifical submodule>";
-                  }
-                ]
-                ++ map (config: { inherit config; }) defs.${attrName}
-              );
-              submoduleEval = lib.evalModules {
-                inherit modules;
-              };
-            in
-            (lib.optionalAttrs (prioSet ? highestPrio) {
-              __prio = prioSet.highestPrio;
-            })
-            // (
-              if type.nestedTypes.elemType.name == "submodule" then
-                getPrios { options = submoduleEval.options; }
-              else
-                # Nested attrsOf
-                (lib.optionalAttrs
-                  (type.nestedTypes.elemType.name == "attrsOf" || type.nestedTypes.elemType.name == "lazyAttrsOf")
-                  (
-                    prioPerValue {
-                      type = type.nestedTypes.elemType;
-                      defs = zipDefs defs.${attrName};
-                    } prioSet.value
-                  )
-                )
-            )
-          );
+        /**
+          Maps attrsOf and lazyAttrsOf
+        */
+        handleAttrsOf = attrs: lib.mapAttrs (_: handleMeta) attrs;
 
-        submodulePrios =
+        /**
+          Maps attrsOf and lazyAttrsOf
+        */
+        handleListOf = list: { __list = lib.map handleMeta list; };
+
+        /**
+          Unwraps the valueMeta of an option based on its type
+        */
+        handleMeta =
+          meta:
           let
-            modules = (opt.definitions ++ opt.type.getSubModules);
-            submoduleEval = lib.evalModules {
-              inherit modules;
-            };
+            hasType = meta ? _internal.type;
+            type = meta._internal.type;
           in
-          getPrios { options = filterOptions submoduleEval.options; };
-
+          if !hasType then
+            { }
+          else if type.name == "submodule" then
+            # TODO: handle types
+            getPrios { options = filterOptions meta.configuration.options; }
+          else if type.name == "attrsOf" || type.name == "lazyAttrsOf" then
+            handleAttrsOf meta.attrs
+          # TODO: Add index support in nixpkgs first
+          # else if type.name == "listOf" then
+          #   handleListOf meta.list
+          else
+            throw "Yet Unsupported type: ${type.name}";
       in
       if opt ? type && opt.type.name == "submodule" then
-        (prio) // submodulePrios
+        (definitionInfo) // submodulePrios
       else if opt ? type && (opt.type.name == "attrsOf" || opt.type.name == "lazyAttrsOf") then
-        prio
-        // (prioPerValue {
-          type = opt.type;
-          defs = zipDefs opt.definitions;
-        } (lib.modules.mergeAttrDefinitionsWithPrio opt))
+        definitionInfo // (handleAttrsOf opt.valueMeta.attrs)
+      # TODO: Add index support in nixpkgs, otherwise we cannot
+      else if opt ? type && (opt.type.name == "listOf") then
+        definitionInfo // (handleListOf opt.valueMeta.list)
       else if opt ? type && opt._type == "option" then
-        prio
+        definitionInfo
       else
         getPrios { options = opt; }
     ) filteredOptions;
