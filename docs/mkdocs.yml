@@ -66,6 +66,7 @@ nav:
       - Services:
           - Introduction to Services: guides/services/introduction-to-services.md
           - Author Your Own Service: guides/services/community.md
+          - Internal Services with SSL: guides/internal-ssl-services.md
       - Vars:
           - Introduction to Vars: guides/vars/vars-overview.md
           - Minimal Example: guides/vars/vars-backend.md
