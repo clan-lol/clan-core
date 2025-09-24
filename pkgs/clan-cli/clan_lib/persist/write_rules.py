@@ -112,10 +112,7 @@ def _determine_writeability_recursive(
 
     for key, value in priorities.items():
         # Skip metadata keys
-        if key == "__this":
-            continue
-        # Backwards compatibility
-        if key == "__prio":
+        if key in {"__this", "__list", "__prio"}:
             continue
 
         path = (*current_path, key)
