@@ -64,6 +64,8 @@ class Remote:
     def override(
         self,
         *,
+        user: str | None = None,
+        address: str | None = None,
         host_key_check: HostKeyCheck | None = None,
         private_key: Path | None = None,
         password: str | None = None,
@@ -75,8 +77,8 @@ class Remote:
     ) -> "Remote":
         """Returns a new Remote instance with the same data but with a different host_key_check."""
         return Remote(
-            address=self.address,
-            user=self.user,
+            address=address or self.address,
+            user=user or self.user,
             command_prefix=command_prefix or self.command_prefix,
             port=port or self.port,
             private_key=private_key if private_key is not None else self.private_key,

@@ -555,8 +555,8 @@ def main() -> None:
         else:
             log.error(e)  # noqa: TRY400
         sys.exit(1)
-    except KeyboardInterrupt as ex:
-        log.warning("Interrupted by user", exc_info=ex)
+    except KeyboardInterrupt:
+        log.warning("Interrupted by user")
         sys.exit(1)
 
 

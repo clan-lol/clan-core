@@ -69,7 +69,7 @@ class HardwareGenerateOptions:
 
 
 @API.register
-def run_machine_hardware_info(
+def run_machine_hardware_info_init(
     opts: HardwareGenerateOptions,
     target_host: Remote,
 ) -> HardwareConfig:
@@ -131,6 +131,80 @@ def run_machine_hardware_info(
 
     # try to evaluate the machine
     # If it fails, the hardware-configuration.nix file is invalid
+    commit_file(
+        hw_file,
+        opts.machine.flake.path,
+        f"machines/{opts.machine.name}/{hw_file.name}: update hardware configuration",
+    )
+    try:
+        get_machine_target_platform(opts.machine)
+        if backup_file:
+            backup_file.unlink(missing_ok=True)
+    except ClanCmdError as e:
+        log.exception("Failed to evaluate hardware-configuration.nix")
+        # Restore the backup file
+        print(f"Restoring backup file {backup_file}")
+        if backup_file:
+            backup_file.replace(hw_file)
+        # TODO: Undo the commit
+
+        msg = "Invalid hardware-configuration.nix file"
+        raise ClanError(
+            msg,
+            description=f"Configuration at '{hw_file}' is invalid. Please check the file and try again.",
+        ) from e
+
+    return opts.backend
+
+
+@API.register
+def run_machine_hardware_info_update(
+    opts: HardwareGenerateOptions,
+    target_host: Remote,
+) -> HardwareConfig:
+    """Generate hardware information for a machine
+    and place the resulting *.nix file in the machine's directory.
+    """
+    machine = opts.machine
+
+    hw_file = opts.backend.config_path(opts.machine)
+    hw_file.parent.mkdir(parents=True, exist_ok=True)
+
+    if opts.backend == HardwareConfig.NIXOS_FACTER:
+        config_command = ["nixos-facter"]
+    else:
+        config_command = [
+            "nixos-generate-config",
+            # Filesystems are managed by disko
+            "--no-filesystems",
+            "--show-hardware-config",
+        ]
+
+    with target_host.host_connection() as ssh, ssh.become_root() as sudo_ssh:
+        out = sudo_ssh.run(config_command, opts=RunOpts(check=False))
+    if out.returncode != 0:
+        if "nixos-facter" in out.stderr and "not found" in out.stderr:
+            machine.error(str(out.stderr))
+            msg = (
+                "Please use our custom nixos install images from https://github.com/nix-community/nixos-images/releases/tag/nixos-unstable. "
+                "nixos-factor only works on nixos / clan systems currently."
+            )
+            raise ClanError(msg)
+
+        machine.error(str(out))
+        msg = f"Failed to inspect {opts.machine}. Address: {target_host.target}"
+        raise ClanError(msg)
+
+    backup_file = None
+    if hw_file.exists():
+        backup_file = hw_file.with_suffix(".bak")
+        hw_file.replace(backup_file)
+    hw_file.write_text(out.stdout)
+    print(f"Successfully generated: {hw_file}")
+
+    # try to evaluate the machine
+    # If it fails, the hardware-configuration.nix file is invalid
+
     commit_file(
         hw_file,
         opts.machine.flake.path,
