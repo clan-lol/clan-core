@@ -54,7 +54,7 @@
                   authorizedKeys = [ (builtins.readFile (borgbackupIpMachinePath machineName)) ];
                   # };
                   # }) machinesWithKey;
-                }) roles.client.machines;
+                }) (roles.client.machines or { });
               in
               hosts;
           };
@@ -187,7 +187,7 @@
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
                         } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
                       };
-                    }) (builtins.attrNames roles.server.machines);
+                    }) (builtins.attrNames (roles.server.machines or { }));
                   in
                   (builtins.listToAttrs destinations);
 
