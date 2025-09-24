@@ -220,7 +220,7 @@
                   clan_cmd = [
                       "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
                       "machines",
-                      "update-hardware-config",
+                      "init-hardware-config",
                       "--debug",
                       "--flake", str(flake_dir),
                       "--yes", "test-install-machine-without-system",

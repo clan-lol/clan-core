@@ -4,7 +4,7 @@ import argparse
 from .create import register_create_parser
 from .delete import register_delete_parser
 from .generations import register_generations_parser
-from .hardware import register_kexec_hardware_config, register_update_hardware_config
+from .hardware import register_init_hardware_config, register_update_hardware_config
 from .install import register_install_parser
 from .list import register_list_parser
 from .morph import register_morph_parser
@@ -89,8 +89,8 @@ Examples:
     )
     register_list_parser(list_parser)
 
-    kexec_hardware_config_parser = subparser.add_parser(
-        "kexec-hardware-config",
+    init_hardware_config_parser = subparser.add_parser(
+        "init-hardware-config",
         help="Generate hardware specifics for a machine",
         description="""
 
@@ -106,7 +106,7 @@ The target must be a Linux based system reachable via SSH.
             """
 Examples:
 
-  $ clan machines kexec-hardware-config [MACHINE] --target-host root@<ip>
+  $ clan machines init-hardware-config [MACHINE] --target-host root@<ip>
   Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 
 For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration
@@ -114,7 +114,7 @@ For more detailed information, visit: https://docs.clan.lol/guides/getting-start
 """
         ),
     )
-    register_kexec_hardware_config(kexec_hardware_config_parser)
+    register_init_hardware_config(init_hardware_config_parser)
 
     update_hardware_config_parser = subparser.add_parser(
         "update-hardware-config",
@@ -127,7 +127,7 @@ For more detailed information, visit: https://docs.clan.lol/guides/getting-start
             """
         Examples:
 
-        $ clan machines kexec-hardware-config [MACHINE] --target-host root@<ip>
+        $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
         Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 
         For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration

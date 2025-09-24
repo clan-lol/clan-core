@@ -7,7 +7,7 @@ from clan_lib.flake import require_flake
 from clan_lib.machines.hardware import (
     HardwareConfig,
     HardwareGenerateOptions,
-    run_machine_hardware_info_kexec,
+    run_machine_hardware_info_init,
     run_machine_hardware_info_update,
 )
 from clan_lib.machines.machines import Machine
@@ -60,7 +60,7 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
     run_machine_hardware_info_update(opts, target_host)
 
 
-def kexec_hardware_config_command(args: argparse.Namespace) -> None:
+def init_hardware_config_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
     validate_machine_names([args.machine], flake)
     machine = Machine(flake=flake, name=args.machine)
@@ -97,11 +97,11 @@ def kexec_hardware_config_command(args: argparse.Namespace) -> None:
             log.info("Aborted.")
             return
 
-    run_machine_hardware_info_kexec(opts, target_host)
+    run_machine_hardware_info_init(opts, target_host)
 
 
-def register_kexec_hardware_config(parser: argparse.ArgumentParser) -> None:
-    parser.set_defaults(func=kexec_hardware_config_command)
+def register_init_hardware_config(parser: argparse.ArgumentParser) -> None:
+    parser.set_defaults(func=init_hardware_config_command)
     machine_parser = parser.add_argument(
         "machine",
         help="the name of the machine",

@@ -69,7 +69,7 @@ class HardwareGenerateOptions:
 
 
 @API.register
-def run_machine_hardware_info_kexec(
+def run_machine_hardware_info_init(
     opts: HardwareGenerateOptions,
     target_host: Remote,
 ) -> HardwareConfig:
