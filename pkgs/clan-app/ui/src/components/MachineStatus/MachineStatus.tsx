@@ -1,5 +1,4 @@
-import "./MachineStatus.css";
-
+import styles from "./MachineStatus.module.css";
 import { Badge } from "@kobalte/core/badge";
 import cx from "classnames";
 import { Match, Show, Switch } from "solid-js";
@@ -14,8 +13,7 @@ export interface MachineStatusProps {
 }
 
 export const MachineStatus = (props: MachineStatusProps) => {
-  const status = () => props.status;
-
+  // FIXME: this will break i18n in the future
   // remove the '_' from the enum
   // we will use css transform in the typography component to capitalize
   const statusText = () => props.status?.replaceAll("_", " ");
@@ -25,15 +23,17 @@ export const MachineStatus = (props: MachineStatusProps) => {
 
   return (
     <Switch>
-      <Match when={!status()}>
+      <Match when={!props.status}>
         <Loader />
       </Match>
-      <Match when={status()}>
+      <Match when={props.status}>
         <Badge
-          class={cx("machine-status", {
-            "not-installed": status() == "not_installed",
+          class={cx(styles.machineStatus, {
+            [styles.online]: props.status == "online",
+            [styles.offline]: props.status == "offline",
+            [styles.outOfSync]: props.status == "out_of_sync",
           })}
-          textValue={status()}
+          textValue={props.status}
         >
           {props.label && (
             <Typography
@@ -47,10 +47,10 @@ export const MachineStatus = (props: MachineStatusProps) => {
             </Typography>
           )}
           <Show
-            when={status() != "not_installed"}
+            when={props.status != "not_installed"}
             fallback={<Icon icon="Offline" inverted={true} />}
           >
-            <div class="indicator" />
+            <div class={styles.indicator} />
           </Show>
         </Badge>
       </Match>

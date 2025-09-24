@@ -1,4 +1,4 @@
-span.machine-status {
+.machineStatus {
   @apply flex items-center gap-1.5;
 
   .indicator {
@@ -13,7 +13,7 @@ span.machine-status {
     background-color: theme(colors.fg.semantic.error.1);
   }
 
-  &.out-of-sync > .indicator {
+  &.outOfSync > .indicator {
     background-color: theme(colors.fg.inv.3);
   }
 }
