@@ -106,8 +106,8 @@
               let
                 closureInfo = pkgs.closureInfo {
                   rootPaths = [
-                    self.packages.${pkgs.system}.clan-cli
-                    self.checks.${pkgs.system}.clan-core-for-checks
+                    self.packages.${pkgs.hostPlatform.system}.clan-cli
+                    self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks
                     self.clanInternals.machines.${pkgs.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
@@ -123,7 +123,7 @@
                   imports = [ self.nixosModules.test-update-machine ];
                 };
                 extraPythonPackages = _p: [
-                  self.legacyPackages.${pkgs.system}.nixosTestLib
+                  self.legacyPackages.${pkgs.hostPlatform.system}.nixosTestLib
                 ];
 
                 testScript = ''
@@ -145,7 +145,7 @@
                       # Prepare test flake and Nix store
                       flake_dir = prepare_test_flake(
                           temp_dir,
-                          "${self.checks.x86_64-linux.clan-core-for-checks}",
+                          "${self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks}",
                           "${closureInfo}"
                       )
                       (flake_dir / ".clan-flake").write_text("")  # Ensure .clan-flake exists
@@ -215,7 +215,7 @@
                             "--to",
                             "ssh://root@192.168.1.1",
                             "--no-check-sigs",
-                            f"${self.packages.${pkgs.system}.clan-cli}",
+                            f"${self.packages.${pkgs.hostPlatform.system}.clan-cli}",
                             "--extra-experimental-features", "nix-command flakes",
                             "--from", f"{os.environ["TMPDIR"]}/store"
                         ],
@@ -232,7 +232,7 @@
                           "-o", "UserKnownHostsFile=/dev/null",
                           "-o", "StrictHostKeyChecking=no",
                           f"root@192.168.1.1",
-                          "${self.packages.${pkgs.system}.clan-cli}/bin/clan",
+                          "${self.packages.${pkgs.hostPlatform.system}.clan-cli}/bin/clan",
                           "machines",
                           "update",
                           "--debug",
@@ -260,7 +260,7 @@
 
                       # Run clan update command
                       subprocess.run([
-                          "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                          "${self.packages.${pkgs.hostPlatform.system}.clan-cli-full}/bin/clan",
                           "machines",
                           "update",
                           "--debug",
@@ -287,7 +287,7 @@
 
                       # Run clan update command with --build-host
                       subprocess.run([
-                          "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                          "${self.packages.${pkgs.hostPlatform.system}.clan-cli-full}/bin/clan",
                           "machines",
                           "update",
                           "--debug",
