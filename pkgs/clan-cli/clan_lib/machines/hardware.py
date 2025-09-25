@@ -66,6 +66,7 @@ class HardwareGenerateOptions:
     machine: Machine
     backend: HardwareConfig = HardwareConfig.NIXOS_FACTER
     password: str | None = None
+    debug: bool = False
 
 
 @API.register
@@ -114,6 +115,9 @@ def run_machine_hardware_info_init(
     if hw_file.exists():
         backup_file = hw_file.with_suffix(".bak")
         hw_file.replace(backup_file)
+
+    if opts.debug:
+        cmd += ["--debug"]
 
     cmd += [target_host.target]
     cmd = nix_shell(
