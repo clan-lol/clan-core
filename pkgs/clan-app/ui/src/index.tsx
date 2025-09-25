@@ -29,7 +29,7 @@ render(
       {/* Temporary solution */}
       <Toaster toastOptions={{}} />
       <QueryClientProvider client={DefaultQueryClient}>
-        {import.meta.env.DEV && <SolidQueryDevtools initialIsOpen={true} />}
+        <SolidQueryDevtools initialIsOpen={true} />
         <Router root={Layout}>{Routes}</Router>
       </QueryClientProvider>
     </ApiClientProvider>
