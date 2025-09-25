@@ -18,5 +18,8 @@
   inputs.clan-core-for-checks.url = "git+https://git.clan.lol/clan/clan-core?ref=main&shallow=1";
   inputs.clan-core-for-checks.flake = false;
 
+  inputs.test-fixtures.url = "git+https://git.clan.lol/clan/test-fixtures";
+  inputs.test-fixtures.inputs.nixpkgs.follows = "nixpkgs-dev";
+
   outputs = inputs: inputs;
 }

@@ -28,7 +28,7 @@
     lib.map (
       system:
       lib.nameValuePair "test-install-machine-${system}" {
-        facter.reportPath = import ./facter-report.nix system;
+        facter.reportPath = privateInputs.test-fixtures + /nixos-vm-facter-json/${system}.json;
 
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
@@ -151,7 +151,6 @@
         let
           closureInfo = pkgs.closureInfo {
             rootPaths = [
-              privateInputs.clan-core-for-checks
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.initialRamdisk
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
@@ -160,7 +159,7 @@
               pkgs.buildPackages.xorg.lndir
             ]
             ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-            ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
+            ++ builtins.map (i: i.outPath) (builtins.attrValues privateInputs);
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
