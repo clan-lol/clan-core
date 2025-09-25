@@ -147,28 +147,11 @@ let
     ];
     doCheck = false;
   };
-
-  # Common closure info
-  closureInfo = pkgs.closureInfo {
-    rootPaths = [
-      self.checks.x86_64-linux.clan-core-for-checks
-      self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
-      self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.initialRamdisk
-      self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
-      self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
-      pkgs.stdenv.drvPath
-      pkgs.bash.drvPath
-      pkgs.buildPackages.xorg.lndir
-    ]
-    ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
-  };
-
 in
 {
   inherit
     target
     baseTestMachine
     nixosTestLib
-    closureInfo
     ;
 }
