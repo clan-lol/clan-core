@@ -1,33 +1,29 @@
+Clan supports integration with [flake-parts](https://flake.parts/), a framework for constructing your `flake.nix` using modules. Follow these steps to integrate Clan with flake-parts:
 
-Clan supports integration with [flake-parts](https://flake.parts/), a framework for constructing your `flake.nix` using modules.
+## Step 1: Update Your Flake Inputs
 
-To construct your Clan using flake-parts, follow these steps:
-
-## Update Your Flake Inputs
-
-To begin, you'll need to add `flake-parts` as a new dependency in your flake's inputs. This is alongside the already existing dependencies, such as `clan-core` and `nixpkgs`. Here's how you can update your `flake.nix` file:
+Add `flake-parts` as a dependency in your `flake.nix` file alongside existing dependencies like `clan-core` and `nixpkgs`. Here's an example:
 
 ```nix
 # flake.nix
 inputs = {
   nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
 
-  # New flake-parts input
+  # Add flake-parts
   flake-parts.url = "github:hercules-ci/flake-parts";
   flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
 
   clan-core = {
     url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-    inputs.nixpkgs.follows = "nixpkgs"; # Don't do this if your machines are on nixpkgs stable.
-    # New
-    inputs.flake-parts.follows = "flake-parts";
+    inputs.nixpkgs.follows = "nixpkgs"; # Avoid this if using nixpkgs stable.
+    inputs.flake-parts.follows = "flake-parts"; # New
   };
-}
+};
 ```
 
-## Import the Clan flake-parts Module
+## Step 2: Import the Clan flake-parts Module
 
-After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](/options) available within `mkFlake`.
+Next, import the Clan flake-parts module to make the [Clan options](/options) available within `mkFlake`:
 
 ```nix
 {
@@ -43,9 +39,9 @@ After updating your flake inputs, the next step is to import the Clan flake-part
 }
 ```
 
-## Configure Clan Settings and Define Machines
+## Step 3: Configure Clan Settings and Define Machines
 
-Next you'll need to configure Clan wide settings and define machines, here's an example of how `flake.nix` should look:
+Configure Clan-wide settings and define machines. Here's an example `flake.nix`:
 
 ```nix
 {
@@ -62,24 +58,22 @@ Next you'll need to configure Clan wide settings and define machines, here's an 
       ];
 
       # Define your Clan
-      # See: https://docs.clan.lol/reference/nix-api/clan/
       clan = {
-        # Clan wide settings
-        meta.name = ""; # This is required and must be unique
+        meta.name = ""; # Required and must be unique
 
         machines = {
           jon = {
             imports = [
               ./modules/firefox.nix
-              # ... more modules
+              # Add more modules as needed
             ];
 
             nixpkgs.hostPlatform = "x86_64-linux";
 
-            # Set this for Clan commands to work remotely over SSH like `clan machines update`
+            # Enable remote Clan commands over SSH
             clan.core.networking.targetHost = "root@jon";
 
-            # remote> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            # Disk configuration
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
             };
@@ -90,7 +84,4 @@ Next you'll need to configure Clan wide settings and define machines, here's an 
 }
 ```
 
-For detailed information about configuring `flake-parts` and the available options within Clan,
-refer to the [Clan module](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix) documentation.
-
----
+For more details on configuring `flake-parts` and available Clan options, refer to the [Clan module documentation](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix).

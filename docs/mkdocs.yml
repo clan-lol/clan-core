@@ -63,7 +63,6 @@ nav:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md
           - File Autoincludes: guides/inventory/autoincludes.md
-
       - Clan Services:
           - Inventory Guide: guides/inventory/clanServices.md
           - Author Your Own Service: guides/services/community.md
@@ -76,24 +75,26 @@ nav:
           - Sops Backend:
               - Yubikeys & Age Plugins: guides/vars/sops/age-plugins.md
           - Managing Users (OLD): guides/secrets.md
+      - Backups:
+          - Introduction to Backups: guides/backups/backup-intro.md
+          - Minimal Example: guides/backups/minimal-example.md
+          - Digging Deeper: guides/backups/digging-deeper.md
+          - Advanced Example: guides/backups/advanced-example.md
       - Networking:
           - Introduction to Networking: guides/networking/networking.md
           - Zerotier VPN: guides/networking/mesh-vpn.md
       - Nixpkgs Flake Input: guides/nixpkgs-flake-input/index.md
-      - Disko Templates:
-          - Community Disko Templates: guides/disko-templates/community.md
-      - Backups:
-          - Introduction to Backups: guides/backups.md
       - Flake-parts: guides/flake-parts.md
       - NixOS Rebuild: guides/nixos-rebuild.md
-      - macOS:
-          - Managing macOS Machines: guides/macos.md
+      - macOS: guides/macos.md
       # Should be part of the respective sections above
       # machines, disko, clan
-      - Templates: concepts/templates.md
+      - Templates:
+          - Introduction to Templates: concepts/templates.md
+          - Community Disko Templates: guides/disko-templates/community.md
       - Migrations:
-          - clan modules --> clan services: guides/migrations/migrate-inventory-services.md
-          - Facts --> Vars: guides/migrations/migration-facts-vars.md
+          - clan modules to clan services: guides/migrations/migrate-inventory-services.md
+          - Facts to Vars: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md
       - Disk Encryption: guides/disk-encryption.md
       - Disable Secure Boot: guides/secure-boot.md
