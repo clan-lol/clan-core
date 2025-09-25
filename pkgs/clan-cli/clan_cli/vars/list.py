@@ -2,9 +2,9 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.vars.generator import Generator
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
-from clan_lib.vars.generate import get_generators
 
 from .generator import Var
 
@@ -12,6 +12,15 @@ log = logging.getLogger(__name__)
 
 
 def get_machine_vars(machine: Machine) -> list[Var]:
+    """Get all vars for a machine.
+
+    Args:
+        machine: The machine to get vars for.
+
+    Returns:
+        List of all vars for the machine with their current values and metadata.
+
+    """
     # TODO: We dont have machine level store / this granularity yet
     # We should move the store definition to the flake, as there can be only one store per clan
     pub_store = machine.public_vars_store
@@ -19,7 +28,9 @@ def get_machine_vars(machine: Machine) -> list[Var]:
 
     all_vars = []
 
-    generators = get_generators(machines=[machine], full_closure=True)
+    # Only load the specific machine's generators for better performance
+    generators = Generator.get_machine_generators([machine.name], machine.flake)
+
     for generator in generators:
         for var in generator.files:
             if var.secret:
