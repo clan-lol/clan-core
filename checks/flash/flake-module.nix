@@ -28,6 +28,9 @@
       {
         imports = [ self.nixosModules.test-install-machine-without-system ];
 
+        # We don't want our system to define any `vars` generators as these can't
+        # be generated as the flake is inside `/nix/store`.
+        clan.core.settings.state-version.enable = false;
         clan.core.vars.generators.test = lib.mkForce { };
         disko.devices.disk.main.preCreateHook = lib.mkForce "";
 
