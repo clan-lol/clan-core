@@ -67,6 +67,15 @@
         ];
       };
 
+      nix.settings = {
+        flake-registry = "";
+        # required for setting the `flake-registry`
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+      };
+
       # Define the mounts that exist in the container to prevent them from being stopped
       fileSystems = {
         "/" = {
@@ -112,6 +121,7 @@
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
+                    pkgs.bubblewrap
                     (import ../installation/facter-report.nix pkgs.hostPlatform.system)
                   ]
                   ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
