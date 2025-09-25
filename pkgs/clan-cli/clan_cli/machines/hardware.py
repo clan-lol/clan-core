@@ -30,6 +30,7 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
         machine=machine,
         password=args.password,
         backend=HardwareConfig(args.backend),
+        debug=args.debug,
     )
 
     if args.target_host:
@@ -68,6 +69,7 @@ def init_hardware_config_command(args: argparse.Namespace) -> None:
         machine=machine,
         password=args.password,
         backend=HardwareConfig(args.backend),
+        debug=args.debug,
     )
 
     if args.target_host:
