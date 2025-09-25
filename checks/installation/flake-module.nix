@@ -1,8 +1,8 @@
 {
+  config,
   self,
   lib,
   privateInputs,
-
   ...
 }:
 {
@@ -14,26 +14,29 @@
   # you can get a new one by adding
   # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
   # to the installation test.
-  clan.machines.test-install-machine-without-system = {
-    fileSystems."/".device = lib.mkDefault "/dev/vda";
-    boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
-    imports = [
-      self.nixosModules.test-install-machine-without-system
-    ];
-  };
-
-  clan.machines.test-install-machine-with-system =
-    { pkgs, ... }:
-    {
-      # https://git.clan.lol/clan/test-fixtures
-      facter.reportPath = import ./facter-report.nix pkgs.hostPlatform.system;
-
+  clan.machines = {
+    test-install-machine-without-system = {
       fileSystems."/".device = lib.mkDefault "/dev/vda";
       boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
-      imports = [ self.nixosModules.test-install-machine-without-system ];
+      imports = [
+        self.nixosModules.test-install-machine-without-system
+      ];
     };
+  }
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-${system}" {
+        facter.reportPath = import ./facter-report.nix system;
+
+        fileSystems."/".device = lib.mkDefault "/dev/vda";
+        boot.loader.grub.device = lib.mkDefault "/dev/vda";
+
+        imports = [ self.nixosModules.test-install-machine-without-system ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ));
 
   flake.nixosModules = {
     test-install-machine-without-system =
@@ -149,15 +152,15 @@
           closureInfo = pkgs.closureInfo {
             rootPaths = [
               privateInputs.clan-core-for-checks
-              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
-              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.initialRamdisk
-              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
+              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
+              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.initialRamdisk
+              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
               pkgs.stdenv.drvPath
               pkgs.bash.drvPath
               pkgs.buildPackages.xorg.lndir
-              (import ./facter-report.nix pkgs.hostPlatform.system)
             ]
-            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+            ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
@@ -205,7 +208,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 
@@ -286,7 +289,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 

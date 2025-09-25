@@ -1,4 +1,4 @@
-{ self, ... }:
+{ self, config, ... }:
 {
   # Machine for update test
   clan.machines.test-update-machine = {
@@ -105,6 +105,7 @@
   perSystem =
     {
       pkgs,
+      lib,
       ...
     }:
     {
@@ -122,9 +123,11 @@
                     pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
                     pkgs.bubblewrap
-                    (import ../installation/facter-report.nix pkgs.hostPlatform.system)
                   ]
-                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+                  ++ builtins.map (import ../installation/facter-report.nix) (
+                    lib.filter (lib.hasSuffix "linux") config.systems
+                  );
                 };
               in
               self.clanLib.test.containerTest {
