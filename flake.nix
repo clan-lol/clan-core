@@ -56,7 +56,7 @@
         else
           (import ./devFlake/flake-compat.nix {
             src = ./devFlake;
-          }).outputs;
+          }).outputs.inputs;
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
