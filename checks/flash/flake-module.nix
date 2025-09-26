@@ -67,9 +67,11 @@
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript.drvPath
-        (import ../installation/facter-report.nix pkgs.hostPlatform.system)
       ]
-      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+      ++ builtins.map (import ../installation/facter-report.nix) (
+        lib.filter (lib.hasSuffix "linux") config.systems
+      );
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
