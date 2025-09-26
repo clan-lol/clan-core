@@ -1,127 +1,109 @@
-div.creating {
-  @apply flex flex-col items-center justify-center;
+.cubeConstruction {
+  width: 400px;
+  height: 400px;
+  perspective: 1000px;
+}
+.scene {
+  position: relative;
+  top: 100px;
+  left: 65px;
+  width: 200px;
+  height: 200px;
 
-  div.scene {
-    width: 400px;
-    height: 400px;
-    perspective: 1000px;
-    /*background: red;*/
+  transform: rotate3d(-1.5, -2, 0.5, 45deg);
+  transform-style: preserve-3d;
+}
+.cube {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  transform-style: preserve-3d;
+}
 
-    & > .frame {
-      position: relative;
-      top: 100px;
-      left: 65px;
-      width: 200px;
-      height: 200px;
-      /*background: green;*/
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.56) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border: 1px #10191a solid;
+  opacity: 1;
 
-      /*transform: rotate3d(-2, -2, 1, 45deg);*/
-      transform: rotate3d(-1.5, -2, 0.5, 45deg);
-      transform-style: preserve-3d;
+  &.front {
+    transform: rotateY(0deg) translateZ(50px);
+  }
 
-      & > .cube {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 200px;
-        height: 200px;
-        transform-style: preserve-3d;
+  &.right {
+    transform: rotateY(90deg) translateZ(50px);
+  }
 
-        .cube-face {
-          position: absolute;
-          width: 100px;
-          height: 100px;
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.56) 0%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          border: 1px #10191a solid;
+  &.back {
+    transform: rotateY(180deg) translateZ(50px);
+  }
 
-          opacity: 1;
+  &.left {
+    transform: rotateY(-90deg) translateZ(50px);
+  }
 
-          &.front {
-            transform: rotateY(0deg) translateZ(50px);
-          }
+  &.top {
+    transform: rotateX(90deg) translateZ(50px);
+  }
 
-          &.right {
-            transform: rotateY(90deg) translateZ(50px);
-          }
-
-          &.back {
-            transform: rotateY(180deg) translateZ(50px);
-          }
-
-          &.left {
-            transform: rotateY(-90deg) translateZ(50px);
-          }
-
-          &.top {
-            transform: rotateX(90deg) translateZ(50px);
-          }
-
-          &.bottom {
-            transform: rotateX(-90deg) translateZ(50px);
-          }
-        }
-
-        &.state-1 {
-          animation: anim-cube-1-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-1-1 {
-          transform: translateZ(-120px);
-          animation: anim-cube-1-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-2 {
-          left: 120px;
-          animation: anim-cube-2-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-2-2 {
-          left: 120px;
-          transform: translateZ(-120px);
-          animation: anim-cube-2-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-3 {
-          top: 120px;
-          animation: anim-cube-3-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-3-3 {
-          top: 120px;
-          transform: translateZ(-120px);
-          animation: anim-cube-3-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-4 {
-          top: 120px;
-          left: 120px;
-          animation: anim-cube-4-1 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-
-        &.state-4-4 {
-          top: 120px;
-          left: 120px;
-          transform: translateZ(-120px);
-          animation: anim-cube-4-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)
-            infinite;
-        }
-      }
-    }
+  &.bottom {
+    transform: rotateX(-90deg) translateZ(50px);
   }
 }
 
-@keyframes anim-cube-1-1 {
+.cube1Front {
+  animation: cube1Front 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube1Rear {
+  transform: translateZ(-120px);
+  animation: cube1Rear 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube2Front {
+  left: 120px;
+  animation: cube2Front 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube2Rear {
+  left: 120px;
+  transform: translateZ(-120px);
+  animation: cube2Rear 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube3Front {
+  top: 120px;
+  animation: cube3Front 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube3Rear {
+  top: 120px;
+  transform: translateZ(-120px);
+  animation: cube3Rear 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube4Front {
+  top: 120px;
+  left: 120px;
+  animation: cube4Front 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+.cube4Rear {
+  top: 120px;
+  left: 120px;
+  transform: translateZ(-120px);
+  animation: anim-cube-4-2 8s 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+@keyframes cube1Front {
   /* STEP 1 */
   0% {
     left: 0px;
@@ -191,7 +173,68 @@ div.creating {
   }
 }
 
-@keyframes anim-cube-2-1 {
+@keyframes cube1Rear {
+  /* STEP 1 */
+  0% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  2.083% {
+    left: -40px;
+    transform: translateZ(-120px);
+  }
+  16.666% {
+    left: -40px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 2 */
+  18.749% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  33.332% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  /* STEP 3 */
+  35.415% {
+    left: 0px;
+    transform: translateZ(-200px);
+  }
+  49.998% {
+    left: 0px;
+    transform: translateZ(-200px);
+  }
+  /* STEP 4 */
+  52.081% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  66.664% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  /* Step 5 */
+  68.747% {
+    left: -60px;
+    transform: translateZ(-180px);
+  }
+  83.33% {
+    left: -60px;
+    transform: translateZ(-180px);
+  }
+  /* Step 6 */
+  85.413% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+  100% {
+    left: 0px;
+    transform: translateZ(-120px);
+  }
+}
+
+@keyframes cube2Front {
   /* STEP 1 */
   0% {
     left: 120px;
@@ -261,7 +304,7 @@ div.creating {
   }
 }
 
-@keyframes anim-cube-3-1 {
+@keyframes cube3Front {
   /* STEP 1 */
   0% {
     top: 120px;
@@ -331,7 +374,7 @@ div.creating {
   }
 }
 
-@keyframes anim-cube-4-1 {
+@keyframes cube4Front {
   /* STEP 1 */
   0% {
     top: 120px;
@@ -405,68 +448,7 @@ div.creating {
   }
 }
 
-@keyframes anim-cube-1-2 {
-  /* STEP 1 */
-  0% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  2.083% {
-    left: -40px;
-    transform: translateZ(-120px);
-  }
-  16.666% {
-    left: -40px;
-    transform: translateZ(-120px);
-  }
-  /* STEP 2 */
-  18.749% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  33.332% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  /* STEP 3 */
-  35.415% {
-    left: 0px;
-    transform: translateZ(-200px);
-  }
-  49.998% {
-    left: 0px;
-    transform: translateZ(-200px);
-  }
-  /* STEP 4 */
-  52.081% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  66.664% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  /* Step 5 */
-  68.747% {
-    left: -60px;
-    transform: translateZ(-180px);
-  }
-  83.33% {
-    left: -60px;
-    transform: translateZ(-180px);
-  }
-  /* Step 6 */
-  85.413% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-  100% {
-    left: 0px;
-    transform: translateZ(-120px);
-  }
-}
-
-@keyframes anim-cube-2-2 {
+@keyframes cube2Rear {
   /* STEP 1 */
   0% {
     left: 120px;
@@ -527,7 +509,7 @@ div.creating {
   }
 }
 
-@keyframes anim-cube-3-2 {
+@keyframes cube3Rear {
   /* STEP 1 */
   0% {
     top: 120px;

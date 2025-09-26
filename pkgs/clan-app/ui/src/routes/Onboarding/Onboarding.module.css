@@ -65,3 +65,10 @@
 .setupFormControls {
   @apply flex justify-end pt-6;
 }
+
+.creating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
