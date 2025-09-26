@@ -147,20 +147,15 @@ const ConfigureImage = () => {
           <div class="flex flex-col gap-2">
             <Fieldset>
               <Field name="ssh_key">
-                {(field, input) => (
+                {(field, props) => (
                   <HostFileInput
+                    {...props}
                     description="Public Key for connecting to the machine"
-                    onSelectFile={onSelectFile}
-                    {...field}
-                    value={field.value}
                     label="Public Key"
                     orientation="horizontal"
                     placeholder="Select SSH Key"
+                    initialFolder="~/.ssh"
                     required={true}
-                    validationState={
-                      getError(formStore, "ssh_key") ? "invalid" : "valid"
-                    }
-                    input={input}
                   />
                 )}
               </Field>
