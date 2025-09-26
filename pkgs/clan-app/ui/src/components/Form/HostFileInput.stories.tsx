@@ -57,12 +57,7 @@ export type Story = StoryObj<typeof meta>;
 
 export const Bare: Story = {
   args: {
-    onSelectFile: async () => {
-      return "/home/github/clans/my-clan/foo/bar/baz/fizz/buzz";
-    },
-    input: {
-      placeholder: "e.g. 11/06/89",
-    },
+    placeholder: "e.g. 11/06/89",
   },
 };
 

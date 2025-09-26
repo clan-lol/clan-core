@@ -64,11 +64,7 @@ export const Default: Story = {
           label="Bio"
           input={{ placeholder: "Tell us a bit about yourself", rows: 8 }}
         />
-        <HostFileInput
-          {...props}
-          label="Profile pic"
-          onSelectFile={async () => "/home/foo/bar/baz/fizz/buzz/bla/bizz"}
-        />
+        <HostFileInput {...props} name="profile_pic" label="Profile pic" />
         <Checkbox {...props} label="Accept Terms" required={true} />
       </>
     ),

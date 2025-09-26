@@ -1,92 +1,114 @@
-import {
-  TextField,
-  TextFieldInputProps,
-  TextFieldRootProps,
-} from "@kobalte/core/text-field";
+import { TextField } from "@kobalte/core/text-field";
 
 import cx from "classnames";
 import { Label } from "./Label";
 import { Button } from "../Button/Button";
 import styles from "./HostFileInput.module.css";
-import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
-import { createSignal, mergeProps, splitProps } from "solid-js";
+import { createSignal, JSX, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
 import { keepTruthy } from "@/src/util";
+import { callApi } from "@/src/hooks/api";
 
-export type HostFileInputProps = FieldProps &
-  TextFieldRootProps & {
-    onSelectFile: () => Promise<string>;
-    input?: PolymorphicProps<"input", TextFieldInputProps<"input">>;
-    placeholder?: string;
-  };
+export type HostFileInputProps = FieldProps & {
+  name: string;
+  windowTitle?: string;
+  required?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  initialFolder?: string;
+  readOnly?: boolean;
+  defaultValue?: string;
+  ref?: (element: HTMLInputElement) => void;
+  onInput?: JSX.EventHandler<
+    HTMLInputElement | HTMLTextAreaElement,
+    InputEvent
+  >;
+  onChange?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, Event>;
+  onBlur?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, FocusEvent>;
+};
 
 export const HostFileInput = (props: HostFileInputProps) => {
-  const withDefaults = mergeProps({ value: "" } as const, props);
-  const [local, other] = splitProps(withDefaults, [
-    "size",
-    "orientation",
-    "inverted",
-    "ghost",
-  ]);
-  const [value, setValue] = createSignal<string>(other.value);
+  const [rootProps, inputProps, local, labelProps] = splitProps(
+    props,
+    ["name", "defaultValue", "required", "disabled"],
+    ["onInput", "onChange", "onBlur"],
+    ["windowTitle", "initialFolder", "readOnly", "ref", "placeholder"],
+  );
 
-  let actualInputElement: HTMLInputElement | undefined;
+  let inputElement!: HTMLInputElement;
+  const [value, setValue] = createSignal(rootProps.defaultValue || "");
 
-  const selectFile = async () => {
-    try {
-      console.log("selecting file", props.onSelectFile);
-      setValue(await props.onSelectFile());
-      actualInputElement?.dispatchEvent(
-        new Event("input", { bubbles: true, cancelable: true }),
-      );
-    } catch (error) {
-      console.log("Error selecting file", error);
-      // todo work out how to display the error
+  const onSelectFile = async () => {
+    if (local.readOnly) {
+      return;
     }
+    const req = callApi("get_system_file", {
+      file_request: {
+        mode: "select_folder",
+        title: local.windowTitle || labelProps.label,
+        initial_folder: local.initialFolder,
+      },
+    });
+
+    const resp = await req.result;
+
+    // TOOD: When a user clicks cancel button in the file picker, an error will
+    // be return, the backend should provide more data so we can target the
+    // cancellation specifically and not swallow other errors
+    if (resp.status === "error") {
+      return;
+    }
+
+    setValue(resp.data![0]);
+    inputElement.dispatchEvent(
+      new Event("input", { bubbles: true, cancelable: true }),
+    );
   };
 
   return (
-    <TextField {...other}>
+    <TextField {...rootProps} value={value()}>
       <Orienter
-        orientation={local.orientation}
-        align={local.orientation == "horizontal" ? "center" : "start"}
+        orientation={labelProps.orientation}
+        align={labelProps.orientation == "horizontal" ? "center" : "start"}
       >
         <Label
+          {...labelProps}
           labelComponent={TextField.Label}
           descriptionComponent={TextField.Description}
           in={keepTruthy(
-            local.orientation == "horizontal" && "Orienter-horizontal",
+            labelProps.orientation == "horizontal" && "Orienter-horizontal",
           )}
-          {...withDefaults}
         />
 
         <TextField.Input
+          {...inputProps}
           hidden={true}
-          value={value()}
           ref={(el: HTMLInputElement) => {
-            actualInputElement = el; // Capture for local use
+            inputElement = el;
+            local.ref?.(el);
           }}
-          {...props.input}
         />
 
         {!value() && (
           <Button
             hierarchy="secondary"
-            size={local.size}
+            size={labelProps.size}
             icon="Folder"
-            onClick={selectFile}
-            disabled={other.disabled || other.readOnly}
-            elasticity={local.orientation === "vertical" ? "fit" : undefined}
+            onClick={onSelectFile}
+            disabled={rootProps.disabled || local.readOnly}
+            elasticity={
+              labelProps.orientation === "vertical" ? "fit" : undefined
+            }
             in={
-              local.orientation == "horizontal"
-                ? `HostFileInput-${local.orientation}`
+              labelProps.orientation == "horizontal"
+                ? `HostFileInput-${labelProps.orientation}`
                 : undefined
             }
           >
-            {props.placeholder || "No Selection"}
+            {local.placeholder || "No Selection"}
           </Button>
         )}
 
@@ -95,14 +117,14 @@ export const HostFileInput = (props: HostFileInputProps) => {
             <Tooltip.Portal>
               <Tooltip.Content
                 class={cx(styles.tooltipContent, {
-                  [styles.inverted]: local.inverted,
+                  [styles.inverted]: labelProps.inverted,
                 })}
               >
                 <Typography
                   hierarchy="body"
                   size="xs"
                   weight="medium"
-                  inverted={!local.inverted}
+                  inverted={!labelProps.inverted}
                 >
                   {value()}
                 </Typography>
@@ -111,17 +133,19 @@ export const HostFileInput = (props: HostFileInputProps) => {
             </Tooltip.Portal>
             <Tooltip.Trigger
               as={Button}
-              elasticity={local.orientation === "vertical" ? "fit" : undefined}
+              elasticity={
+                labelProps.orientation === "vertical" ? "fit" : undefined
+              }
               in={
-                local.orientation == "horizontal"
-                  ? `HostFileInput-${local.orientation}`
+                labelProps.orientation == "horizontal"
+                  ? `HostFileInput-${labelProps.orientation}`
                   : undefined
               }
               hierarchy="secondary"
-              size={local.size}
+              size={labelProps.size}
               icon="Folder"
-              onClick={selectFile}
-              disabled={props.disabled || props.readOnly}
+              onClick={onSelectFile}
+              disabled={rootProps.disabled || local.readOnly}
             >
               {value()}
             </Tooltip.Trigger>

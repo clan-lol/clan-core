@@ -34,7 +34,6 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { callApi } from "@/src/hooks/api";
 import { Creating } from "./Creating";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
@@ -51,12 +50,7 @@ const SetupSchema = v.object({
     ),
   ),
   description: v.pipe(v.string(), v.nonEmpty("Please describe your clan.")),
-  directory: v.pipe(
-    // initial value is undefined, and I can't see how to handle this better in valibot, so for now when the type
-    // is incorrect we treat it as empty
-    v.string("Please select a directory."),
-    v.nonEmpty("Please select a directory."),
-  ),
+  directory: v.pipe(v.string(), v.nonEmpty("Please select a directory.")),
 });
 
 type SetupForm = v.InferInput<typeof SetupSchema>;
@@ -195,35 +189,7 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
 
   const formError = () => {
     const formErrors = getErrors(setupForm);
-    return (
-      formErrors.name ||
-      formErrors.description ||
-      formErrors.directory ||
-      undefined
-    );
-  };
-
-  const onSelectFile = async () => {
-    const req = callApi("get_system_file", {
-      file_request: {
-        mode: "select_folder",
-        title: "Select a folder for you new Clan",
-      },
-    });
-
-    const resp = await req.result;
-
-    if (resp.status === "error") {
-      // just throw the first error, I can't imagine why there would be multiple
-      // errors for this call
-      throw new Error(resp.errors[0].message);
-    }
-
-    if (resp.status === "success" && resp.data) {
-      return resp.data[0];
-    }
-
-    throw new Error("No data returned from api call");
+    return formErrors.name || formErrors.description || formErrors.directory;
   };
 
   const client = useApiClient();
@@ -317,16 +283,14 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                     type="error"
                     icon="Info"
                     title="Form error"
-                    description={formError() || ""}
+                    description={formError()}
                   />
                 )}
                 <Fieldset name="meta">
                   <Field name="name">
                     {(field, input) => (
                       <TextInput
-                        {...field}
                         label="Name"
-                        value={field.value}
                         required
                         orientation="horizontal"
                         validationState={
@@ -343,8 +307,6 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
                   <Field name="description">
                     {(field, input) => (
                       <TextArea
-                        {...field}
-                        value={field.value}
                         label="Description"
                         required
                         orientation="horizontal"
@@ -361,18 +323,13 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
 
                 <Fieldset name="location">
                   <Field name="directory">
-                    {(field, input) => (
+                    {(field, props) => (
                       <HostFileInput
-                        onSelectFile={onSelectFile}
-                        {...field}
-                        value={field.value}
+                        {...props}
+                        windowTitle="Select a folder for you new Clan"
                         label="Select directory"
                         orientation="horizontal"
                         required={true}
-                        validationState={
-                          getError(setupForm, "directory") ? "invalid" : "valid"
-                        }
-                        input={input}
                       />
                     )}
                   </Field>
