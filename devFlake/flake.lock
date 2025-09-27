@@ -3,10 +3,10 @@
     "clan-core-for-checks": {
       "flake": false,
       "locked": {
-        "lastModified": 1758899212,
-        "narHash": "sha256-Q0j+kor78CnLt7dVEVdcrHWWYlZtAP9ZwdNtKBzCoko=",
+        "lastModified": 1758917207,
+        "narHash": "sha256-RAEpdkFG8wthc4TC4b3cOcMQxhJgf9Wc6/eHsHxAwfs=",
         "ref": "main",
-        "rev": "cc23fe4e2de318f7c0f5ae158ebe83ba225f4909",
+        "rev": "01b018866d2099ab443838a5d6c6a75f7a38927a",
         "shallow": true,
         "type": "git",
         "url": "https://git.clan.lol/clan/clan-core"
