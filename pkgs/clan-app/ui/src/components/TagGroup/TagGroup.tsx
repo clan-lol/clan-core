@@ -1,21 +1,20 @@
-import "./TagGroup.css";
+import styles from "./TagGroup.module.css";
 import cx from "classnames";
-import { For } from "solid-js";
+import { For, mergeProps } from "solid-js";
 import { Tag } from "@/src/components/Tag/Tag";
 
 export interface TagGroupProps {
-  class?: string;
   labels: string[];
   inverted?: boolean;
 }
 
 export const TagGroup = (props: TagGroupProps) => {
-  const inverted = () => props.inverted || false;
+  const local = mergeProps({ inverted: false } as const, props);
 
   return (
-    <div class={cx("tag-group", props.class, { inverted: inverted() })}>
+    <div class={cx(styles.tagGroup, { inverted: local.inverted })}>
       <For each={props.labels}>
-        {(label) => <Tag inverted={inverted()}>{label}</Tag>}
+        {(label) => <Tag inverted={local.inverted}>{label}</Tag>}
       </For>
     </div>
   );

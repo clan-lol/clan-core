@@ -1,3 +1,3 @@
-div.tag-group {
+.tagGroup {
   @apply flex flex-wrap gap-x-1.5 gap-y-2;
 }

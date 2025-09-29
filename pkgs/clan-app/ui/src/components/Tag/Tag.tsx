@@ -1,8 +1,8 @@
-import "./Tag.css";
+import styles from "./Tag.module.css";
 
 import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
-import { createSignal, JSX } from "solid-js";
+import { createSignal, JSX, mergeProps, Show } from "solid-js";
 
 interface IconActionProps {
   inverted: boolean;
@@ -14,11 +14,10 @@ export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   icon?: (state: IconActionProps) => JSX.Element;
   inverted?: boolean;
   interactive?: boolean;
-  class?: string;
 }
 
 export const Tag = (props: TagProps) => {
-  const inverted = () => props.inverted || false;
+  const local = mergeProps({ inverted: false }, props);
 
   const [isActive, setIsActive] = createSignal(false);
 
@@ -27,23 +26,27 @@ export const Tag = (props: TagProps) => {
     setTimeout(() => setIsActive(false), 150);
   };
 
+  const icon = () =>
+    props.icon?.({
+      inverted: local.inverted,
+      handleActionClick,
+    });
+
   return (
     <span
-      class={cx("tag", {
-        inverted: inverted(),
-        active: isActive(),
-        "has-icon": props.icon,
-        "is-interactive": props.interactive,
-        class: props.class,
+      class={cx(styles.tag, {
+        [styles.inverted]: local.inverted,
+        [styles.active]: isActive(),
+        [styles.hasAction]: icon(),
+        [styles.interactive]: props.interactive,
       })}
     >
-      <Typography hierarchy="label" size="xs" inverted={inverted()}>
+      <Typography hierarchy="label" size="xs" inverted={local.inverted}>
         {props.children}
       </Typography>
-      {props.icon?.({
-        inverted: inverted(),
-        handleActionClick,
-      })}
+      <Show when={icon()}>
+        <span class={styles.action}>{icon()}</span>
+      </Show>
     </span>
   );
 };
