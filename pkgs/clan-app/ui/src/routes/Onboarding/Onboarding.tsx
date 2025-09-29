@@ -34,9 +34,10 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { Creating } from "./Creating";
 import { useApiClient } from "@/src/hooks/ApiClient";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
+import { Tooltip } from "@/src/components/Tooltip/Tooltip";
+import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -349,7 +350,16 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
           </Match>
 
           <Match when={state() === "creating"}>
-            <Creating />
+            <div class={styles.creating}>
+              <Tooltip
+                open={true}
+                placement="top"
+                description={"Your Clan is being created"}
+              >
+                <div></div>
+              </Tooltip>
+              <CubeConstruction />
+            </div>
           </Match>
         </Switch>
       </div>
