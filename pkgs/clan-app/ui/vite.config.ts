@@ -27,7 +27,9 @@ function regenPythonApiOnFileChange() {
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./"), // Adjust the path as needed
+      "@": path.resolve(__dirname, "./"),
+      // Different script can be used based on different env vars
+      "@api/clan/client": path.resolve(__dirname, "./src/api/clan/client-call"),
     },
   },
   base: "./",

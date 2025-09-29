@@ -16,7 +16,7 @@ import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import { useApiClient } from "@/src/hooks/ApiClient";
+import * as api from "@/src/api";
 import { useClanURI } from "@/src/hooks/clan";
 import { AlertProps } from "@/src/components/Alert/Alert";
 import usbLogo from "@/logos/usb-stick-min.png?url";
@@ -34,54 +34,43 @@ const UpdateStepper = (props: UpdateStepperProps) => {
 
   const clanURI = useClanURI();
 
-  const client = useApiClient();
   const handleUpdate = async () => {
     console.log("Starting update for", store.install.machineName);
 
-    if (!store.install.targetHost) {
+    const targetHost = store.install.targetHost;
+    if (!targetHost) {
       console.error("No target host specified, API requires it");
       return;
     }
-
     const port = store.install.port
       ? parseInt(store.install.port, 10)
       : undefined;
 
-    const call = client.fetch("run_machine_update", {
-      machine: {
-        flake: { identifier: clanURI },
+    const abortController = new AbortController();
+    set("install", "progress", abortController);
+    try {
+      await api.clan.updateMachine({
+        clan: clanURI,
         name: store.install.machineName,
-      },
-      build_host: null,
-      target_host: {
-        address: store.install.targetHost,
+        targetHost,
         port,
         password: store.install.password,
-        ssh_options: {
-          StrictHostKeyChecking: "no",
-          UserKnownHostsFile: "/dev/null",
-        },
-      },
-    });
-    // For cancel
-    set("install", "progress", call);
-
-    const result = await call.result;
-
-    if (result.status === "error") {
-      console.error("Update failed", result.errors);
+        signal: abortController.signal,
+      });
+    } catch (err) {
+      if (abortController.signal.aborted) {
+        return;
+      }
       setAlert(() => ({
         type: "error",
         title: "Update failed",
-        description: result.errors[0].message,
+        description: String(err),
       }));
       stepSignal.previous();
       return;
     }
-    if (result.status === "success") {
-      stepSignal.next();
-      return;
-    }
+
+    stepSignal.next();
   };
 
   return (
@@ -125,10 +114,7 @@ const UpdateProgress = () => {
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
   const handleCancel = async () => {
-    const progress = store.install.progress;
-    if (progress) {
-      await progress.cancel();
-    }
+    store.install.progress.abort();
     stepSignal.previous();
   };
   const updateState =

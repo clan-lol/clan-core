@@ -38,6 +38,7 @@ import { useApiClient } from "@/src/hooks/ApiClient";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
+import * as api from "@/src/api";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -200,56 +201,22 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
     event,
   ) => {
     const path = `${directory}/${name}`;
-
-    const req = client.fetch("create_clan", {
-      opts: {
-        dest: path,
-        // todo allow users to select a template
-        template: "minimal",
-        initial: {
-          name,
-          description,
-        },
-      },
-    });
-
     setState("creating");
-
-    const resp = await req.result;
-
-    // Set up default services
-    await client.fetch("create_service_instance", {
-      flake: {
-        identifier: path,
-      },
-      module_ref: {
-        name: "admin",
-        input: "clan-core",
-      },
-      roles: {
-        default: {
-          tags: {
-            all: {},
-          },
-        },
-      },
-    }).result;
-
-    await client.fetch("create_secrets_user", {
-      flake_dir: path,
-    }).result;
-
-    if (resp.status === "error") {
-      setWelcomeError(resp.errors[0].message);
+    try {
+      await api.clan.createClan({
+        name,
+        path,
+        description,
+      });
+    } catch (err) {
+      setWelcomeError(String(err));
       setState("welcome");
       return;
     }
 
-    if (resp.status === "success") {
-      addClanURI(path);
-      setActiveClanURI(path);
-      navigateToClan(navigate, path);
-    }
+    addClanURI(path);
+    setActiveClanURI(path);
+    navigateToClan(navigate, path);
   };
 
   return (
