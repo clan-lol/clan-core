@@ -2,9 +2,6 @@ import { Modal } from "../../components/Modal/Modal";
 import cx from "classnames";
 import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import { Button } from "@/src/components/Button/Button";
-import { navigateToOnboarding } from "@/src/hooks/clan";
-import { useNavigate } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { activeClanURI, clanURIs, setActiveClanURI } from "@/src/stores/clan";
 import { useClanListQuery } from "@/src/hooks/queries";
@@ -20,8 +17,6 @@ export interface ListClansModalProps {
 }
 
 export const ListClansModal = (props: ListClansModalProps) => {
-  const navigate = useNavigate();
-
   const query = useClanListQuery(clanURIs());
 
   // we only want clans we could interrogate successfully
@@ -63,19 +58,6 @@ export const ListClansModal = (props: ListClansModalProps) => {
           >
             Your Clans
           </Typography>
-
-          <Button
-            hierarchy="secondary"
-            ghost
-            size="s"
-            icon="Plus"
-            onClick={() => {
-              props.onClose?.();
-              navigateToOnboarding(navigate, true);
-            }}
-          >
-            Add Clan
-          </Button>
         </div>
         <ul class={cx(styles.clans)}>
           <For each={clanList()}>
