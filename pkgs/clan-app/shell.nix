@@ -113,15 +113,27 @@ mkShell {
     # todo darwin support needs some work
     (lib.optionalString stdenv.hostPlatform.isLinux ''
       # configure playwright for storybook snapshot testing
-      export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+      # we only want webkit as that matches what the app is rendered with
+
       export PLAYWRIGHT_BROWSERS_PATH=${
         playwright-driver.browsers.override {
           withFfmpeg = false;
           withFirefox = false;
+          withWebkit = true;
           withChromium = false;
-          withChromiumHeadlessShell = true;
+          withChromiumHeadlessShell = false;
         }
       }
-      export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"
+
+      # stop playwright from trying to validate it has downloaded the necessary browsers
+      # we are providing them manually via nix
+
+      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+
+      # playwright browser drivers are versioned e.g. webkit-2191
+      # this helps us avoid having to update the playwright js dependency everytime we update nixpkgs and vice versa
+      # see vitest.config.js for corresponding launch configuration
+
+      export PLAYWRIGHT_WEBKIT_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "pw_run.sh")
     '');
 }
