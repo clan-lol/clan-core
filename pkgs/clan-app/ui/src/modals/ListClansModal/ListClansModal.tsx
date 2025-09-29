@@ -63,19 +63,6 @@ export const ListClansModal = (props: ListClansModalProps) => {
           >
             Your Clans
           </Typography>
-
-          <Button
-            hierarchy="secondary"
-            ghost
-            size="s"
-            icon="Plus"
-            onClick={() => {
-              props.onClose?.();
-              navigateToOnboarding(navigate, true);
-            }}
-          >
-            Add Clan
-          </Button>
         </div>
         <ul class={cx(styles.clans)}>
           <For each={clanList()}>
