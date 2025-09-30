@@ -183,7 +183,6 @@ class Webview:
         """Create and initialize the WebviewBridge with current middleware."""
         # Use shared_threads if provided, otherwise let WebviewBridge use its default
         if self.shared_threads is not None:
-            log.warning("create_bridge: Shared threads id: %s", id(self.shared_threads))
             bridge = WebviewBridge(
                 webview=self,
                 middleware_chain=tuple(self._middleware),
