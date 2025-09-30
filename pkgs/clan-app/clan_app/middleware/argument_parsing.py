@@ -23,7 +23,6 @@ class ArgumentParsingMiddleware(Middleware):
             for k, v in context.request.args.items():
                 # Get the expected argument type from the API
                 arg_class = self.api.get_method_argtype(context.request.method_name, k)
-
                 # Convert dictionary to dataclass instance
                 reconciled_arguments[k] = from_dict(arg_class, v)
 

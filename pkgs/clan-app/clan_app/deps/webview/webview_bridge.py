@@ -46,13 +46,11 @@ class WebviewBridge(ApiBridge):
     ) -> None:
         """Handle a call from webview's JavaScript bridge."""
         try:
-            op_key = op_key_bytes.decode()
+            webview_op_key = op_key_bytes.decode()
             raw_args = json.loads(request_data.decode())
-
             # Parse the webview-specific request format
             header = {}
             args = {}
-
             if len(raw_args) == 1:
                 request = raw_args[0]
                 header = request.get("header", {})
@@ -75,16 +73,14 @@ class WebviewBridge(ApiBridge):
                 method_name=method_name,
                 args=args,
                 header=header,
-                op_key=op_key,
+                op_key=webview_op_key,
             )
 
         except Exception as e:
-            msg = (
-                f"Error while handling webview call {method_name} with op_key {op_key}"
-            )
+            msg = f"Error while handling webview call {method_name} with op_key {webview_op_key}"
             log.exception(msg)
             self.send_api_error_response(
-                op_key,
+                webview_op_key,
                 str(e),
                 ["webview_bridge", method_name],
             )
@@ -93,6 +89,6 @@ class WebviewBridge(ApiBridge):
         # Process in a separate thread using the inherited method
         self.process_request_in_thread(
             api_request,
-            thread_name="WebviewThread",
+            thread_name=f"WebviewThread-{method_name}",
             wait_for_completion=False,
         )

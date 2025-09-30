@@ -70,8 +70,31 @@ class Webview:
     # initialized later
     _bridge: WebviewBridge | None = None
     _handle: Any | None = None
-    _callbacks: dict[str, Callable[..., Any]] = field(default_factory=dict)
+    __callbacks: dict[str, Callable[..., Any]] = field(default_factory=dict)
     _middleware: list["Middleware"] = field(default_factory=list)
+
+    @property
+    def callbacks(self) -> dict[str, Callable[..., Any]]:
+        return self.__callbacks
+
+    @callbacks.setter
+    def callbacks(self, value: dict[str, Callable[..., Any]]) -> None:
+        del value  # Unused
+        msg = "Cannot set callbacks directly"
+        raise AttributeError(msg)
+
+    def delete_callback(self, name: str) -> None:
+        if name in self.callbacks:
+            del self.__callbacks[name]
+        else:
+            msg = f"Callback {name} does not exist. Cannot delete."
+            raise RuntimeError(msg)
+
+    def add_callback(self, name: str, callback: Callable[..., Any]) -> None:
+        if name in self.callbacks:
+            msg = f"Callback {name} already exists. Cannot add."
+            raise RuntimeError(msg)
+        self.__callbacks[name] = callback
 
     def _create_handle(self) -> None:
         # Initialize the webview handle
@@ -84,12 +107,10 @@ class Webview:
             )
         else:
             handle = _webview_lib.webview_create(int(with_debugger), self.window)
-        callbacks: dict[str, Callable[..., Any]] = {}
 
         # Since we can't use object.__setattr__, we'll initialize differently
         # by storing in __dict__ directly (this works for init=False fields)
         self._handle = handle
-        self._callbacks = callbacks
 
         if self.title:
             self.set_title(self.title)
@@ -162,6 +183,7 @@ class Webview:
         """Create and initialize the WebviewBridge with current middleware."""
         # Use shared_threads if provided, otherwise let WebviewBridge use its default
         if self.shared_threads is not None:
+            log.warning("create_bridge: Shared threads id: %s", id(self.shared_threads))
             bridge = WebviewBridge(
                 webview=self,
                 middleware_chain=tuple(self._middleware),
@@ -193,7 +215,7 @@ class Webview:
 
     def destroy(self) -> None:
         """Destroy the webview."""
-        for name in list(self._callbacks.keys()):
+        for name in list(self.callbacks.keys()):
             self.unbind(name)
         _webview_lib.webview_terminate(self.handle)
         _webview_lib.webview_destroy(self.handle)
@@ -217,11 +239,8 @@ class Webview:
             )
             c_callback = _webview_lib.binding_callback_t(wrapper)
 
-            if name in self._callbacks:
-                msg = f"Callback {name} already exists. Skipping binding."
-                raise RuntimeError(msg)
+            self.add_callback(name, c_callback)
 
-            self._callbacks[name] = c_callback
             _webview_lib.webview_bind(
                 self.handle,
                 _encode_c_string(name),
@@ -241,7 +260,7 @@ class Webview:
             self.return_(seq.decode(), 0 if success else 1, json.dumps(result))
 
         c_callback = _webview_lib.binding_callback_t(wrapper)
-        self._callbacks[name] = c_callback
+        self.add_callback(name, c_callback)
         _webview_lib.webview_bind(self.handle, _encode_c_string(name), c_callback, None)
 
     def get_native_handle(
@@ -260,9 +279,9 @@ class Webview:
         return handle if handle else None
 
     def unbind(self, name: str) -> None:
-        if name in self._callbacks:
+        if name in self.callbacks:
             _webview_lib.webview_unbind(self.handle, _encode_c_string(name))
-            del self._callbacks[name]
+            self.delete_callback(name)
 
     def return_(self, seq: str, status: int, result: str) -> None:
         _webview_lib.webview_return(
