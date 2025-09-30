@@ -1,5 +1,6 @@
 import logging
 import threading
+import traceback
 import uuid
 from contextlib import ExitStack
 from dataclasses import dataclass
@@ -43,10 +44,14 @@ class ApiBridge(Protocol):
         from clan_app.middleware.base import MiddlewareContext  # noqa: PLC0415
 
         with ExitStack() as stack:
+            # Capture the current call stack up to this point
+            original_stack = traceback.format_stack()
+
             context = MiddlewareContext(
                 request=request,
                 bridge=self,
                 exit_stack=stack,
+                original_traceback=original_stack,
             )
 
             # Process through middleware chain
@@ -56,11 +61,23 @@ class ApiBridge(Protocol):
                         f"{middleware.__class__.__name__} => {request.method_name}",
                     )
                     middleware.process(context)
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
+                    from clan_app.middleware.base import (  # noqa: PLC0415
+                        MiddlewareError,
+                    )
+
                     # If middleware fails, handle error
+                    log.exception(f"Middleware {middleware.__class__.__name__} failed")
+
+                    error_msg = str(e)
+
+                    if isinstance(e, MiddlewareError):
+                        # If it's already a MiddlewareError, use it directly
+                        error_msg = e.method_message
+
                     self.send_api_error_response(
                         request.op_key or "unknown",
-                        str(e),
+                        error_msg,
                         ["middleware_error"],
                     )
                     return
