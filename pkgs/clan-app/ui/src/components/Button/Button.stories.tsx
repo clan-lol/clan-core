@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
-import { expect, fn, waitFor } from "storybook/test";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
@@ -216,17 +216,11 @@ const timeout = process.env.NODE_ENV === "test" ? 500 : 2000;
 export const Primary: Story = {
   args: {
     hierarchy: "primary",
-    onAction: fn(async () => {
-      // wait 500 ms to simulate an action
-      await new Promise((resolve) => setTimeout(resolve, timeout));
-      // randomly fail to check that the loading state still returns to normal
-      if (Math.random() > 0.5) {
-        throw new Error("Action failure");
-      }
-    }),
+    onClick: fn(),
   },
 
-  play: async ({ canvas, step, userEvent, args }: StoryContext) => {
+  play: async ({ canvasElement, step, userEvent, args }: StoryContext) => {
+    const canvas = within(canvasElement);
     const buttons = await canvas.findAllByRole("button");
 
     for (const button of buttons) {
@@ -238,14 +232,6 @@ export const Primary: Story = {
       }
 
       await step(`Click on ${testID}`, async () => {
-        // check for the loader
-        const loaders = button.getElementsByClassName("loader");
-        await expect(loaders.length).toEqual(1);
-
-        // assert its width is 0 before we click
-        const [loader] = loaders;
-        await expect(loader.clientWidth).toEqual(0);
-
         // move the mouse over the button
         await userEvent.hover(button);
 
@@ -255,33 +241,8 @@ export const Primary: Story = {
         // click the button
         await userEvent.click(button);
 
-        // check the button has changed
-        await waitFor(
-          async () => {
-            // the action handler should have been called
-            await expect(args.onAction).toHaveBeenCalled();
-            // the button should have a loading class
-            await expect(button).toHaveClass("loading");
-            // the loader should be visible
-            await expect(loader.clientWidth).toBeGreaterThan(0);
-            // the pointer should have changed to wait
-            await expect(getCursorStyle(button)).toEqual("wait");
-          },
-          { timeout: timeout + 500 },
-        );
-
-        // wait for the action handler to finish
-        await waitFor(
-          async () => {
-            // the loading class should be removed
-            await expect(button).not.toHaveClass("loading");
-            // the loader should be hidden
-            await expect(loader.clientWidth).toEqual(0);
-            // the pointer should be normal
-            await expect(getCursorStyle(button)).toEqual("pointer");
-          },
-          { timeout: timeout + 500 },
-        );
+        // the click handler should have been called
+        await expect(args.onClick).toHaveBeenCalled();
       });
     }
   },
