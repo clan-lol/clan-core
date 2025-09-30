@@ -283,6 +283,29 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             )
             return None
 
+    def _parse_request_data(
+        self,
+        request_data: dict[str, Any],
+        gen_op_key: str,
+    ) -> tuple[dict[str, Any], dict[str, Any], str]:
+        """Parse and validate request data components."""
+        header = request_data.get("header", {})
+        if not isinstance(header, dict):
+            msg = f"Expected header to be a dict, got {type(header)}"
+            raise TypeError(msg)
+
+        body = request_data.get("body", {})
+        if not isinstance(body, dict):
+            msg = f"Expected body to be a dict, got {type(body)}"
+            raise TypeError(msg)
+
+        op_key = header.get("op_key", gen_op_key)
+        if not isinstance(op_key, str):
+            msg = f"Expected op_key to be a string, got {type(op_key)}"
+            raise TypeError(msg)
+
+        return header, body, op_key
+
     def _handle_api_request(
         self,
         method_name: str,
@@ -314,41 +337,6 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             return
 
         self._process_api_request_in_thread(api_request)
-
-    def _parse_request_data(
-        self,
-        request_data: dict[str, Any],
-        gen_op_key: str,
-    ) -> tuple[dict[str, Any], dict[str, Any], str]:
-        """Parse and validate request data components."""
-        header = request_data.get("header", {})
-        if not isinstance(header, dict):
-            msg = f"Expected header to be a dict, got {type(header)}"
-            raise TypeError(msg)
-
-        body = request_data.get("body", {})
-        if not isinstance(body, dict):
-            msg = f"Expected body to be a dict, got {type(body)}"
-            raise TypeError(msg)
-
-        op_key = header.get("op_key", gen_op_key)
-        if not isinstance(op_key, str):
-            msg = f"Expected op_key to be a string, got {type(op_key)}"
-            raise TypeError(msg)
-
-        return header, body, op_key
-
-    def _validate_operation_key(self, op_key: str) -> None:
-        """Validate that the operation key is valid and not in use."""
-        try:
-            uuid.UUID(op_key)
-        except ValueError as e:
-            msg = f"op_key '{op_key}' is not a valid UUID"
-            raise TypeError(msg) from e
-
-        if op_key in self.threads:
-            msg = f"Operation key '{op_key}' is already in use. Please try again."
-            raise ValueError(msg)
 
     def process_request_in_thread(
         self,

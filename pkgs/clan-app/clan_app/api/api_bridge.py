@@ -1,5 +1,6 @@
 import logging
 import threading
+import uuid
 from contextlib import ExitStack
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
@@ -108,7 +109,13 @@ class ApiBridge(Protocol):
             timeout: Timeout in seconds when waiting for completion
 
         """
-        op_key = request.op_key or "unknown"
+        op_key = request.header.get("op_key", request.op_key)
+        if not isinstance(op_key, str):
+            msg = f"Expected op_key to be a string, got {type(op_key)}"
+            raise TypeError(msg)
+
+        # Validate operation key
+        self._validate_operation_key(op_key)
 
         def thread_task(stop_event: threading.Event) -> None:
             set_should_cancel(lambda: stop_event.is_set())
@@ -144,3 +151,15 @@ class ApiBridge(Protocol):
                     "Request timeout",
                     ["api_bridge", request.method_name],
                 )
+
+    def _validate_operation_key(self, op_key: str) -> None:
+        """Validate that the operation key is valid and not in use."""
+        try:
+            uuid.UUID(op_key)
+        except ValueError as e:
+            msg = f"op_key '{op_key}' is not a valid UUID"
+            raise TypeError(msg) from e
+
+        if op_key in self.threads:
+            msg = f"Operation key '{op_key}' is already in use. Please try again."
+            raise ValueError(msg)
