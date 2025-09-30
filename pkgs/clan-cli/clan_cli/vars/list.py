@@ -42,18 +42,16 @@ def get_machine_vars(machine: Machine) -> list[Var]:
     return all_vars
 
 
-def stringify_vars(_vars: list[Var]) -> str:
-    return "\n".join([str(var) for var in _vars])
-
-
 def stringify_all_vars(machine: Machine) -> str:
-    return stringify_vars(get_machine_vars(machine))
+    all_vars = get_machine_vars(machine)
+    return "\n".join([str(var) for var in all_vars])
 
 
 def list_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
     machine = Machine(name=args.machine, flake=flake)
-    print(stringify_all_vars(machine))
+    all_vars = get_machine_vars(machine)
+    print("\n".join([str(var) for var in all_vars]))
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
