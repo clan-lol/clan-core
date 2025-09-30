@@ -5,7 +5,7 @@ from clan_lib.api import MethodRegistry
 
 from clan_app.api.api_bridge import BackendResponse
 
-from .base import Middleware, MiddlewareContext
+from .base import Middleware, MiddlewareContext, MiddlewareError
 
 log = logging.getLogger(__name__)
 
@@ -31,11 +31,12 @@ class MethodExecutionMiddleware(Middleware):
             context.bridge.send_api_response(response)
 
         except Exception as e:
-            log.exception(
-                f"Error while handling result of {context.request.method_name}",
+            # Create enhanced exception with original calling context
+            enhanced_error = MiddlewareError(
+                f"Error in method '{context.request.method_name}'",
+                context.original_traceback,
+                e,
             )
-            context.bridge.send_api_error_response(
-                context.request.op_key or "unknown",
-                str(e),
-                ["method_execution", context.request.method_name],
-            )
+
+            # Chain the exceptions to preserve both tracebacks
+            raise enhanced_error from e

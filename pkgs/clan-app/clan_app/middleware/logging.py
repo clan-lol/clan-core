@@ -1,5 +1,7 @@
 import io
 import logging
+import os
+import sys
 import types
 from dataclasses import dataclass
 from typing import Any
@@ -8,7 +10,7 @@ from clan_lib.async_run import AsyncContext, get_async_ctx, set_async_ctx
 from clan_lib.custom_logger import RegisteredHandler, setup_logging
 from clan_lib.log_manager import LogManager
 
-from .base import Middleware, MiddlewareContext
+from .base import Middleware, MiddlewareContext, MiddlewareError
 
 log = logging.getLogger(__name__)
 
@@ -43,15 +45,15 @@ class LoggingMiddleware(Middleware):
             ).get_file_path()
 
         except Exception as e:
-            log.exception(
-                f"Error while handling request header of {context.request.method_name}",
+            # Create enhanced exception with original calling context
+            enhanced_error = MiddlewareError(
+                f"Error in method '{context.request.method_name}'",
+                context.original_traceback,
+                e,
             )
-            context.bridge.send_api_error_response(
-                context.request.op_key or "unknown",
-                str(e),
-                ["header_middleware", context.request.method_name],
-            )
-            return
+
+            # Chain the exceptions to preserve both tracebacks
+            raise enhanced_error from e
 
         # Register logging context manager
         class LoggingContextManager:
@@ -91,12 +93,18 @@ class LoggingMiddleware(Middleware):
                 exc_val: BaseException | None,
                 exc_tb: types.TracebackType | None,
             ) -> None:
+                orig_stderr = None
                 if self.handler:
                     self.handler.root_logger.removeHandler(self.handler.new_handler)
                     self.handler.new_handler.close()
                 if self.original_ctx:
                     set_async_ctx(self.original_ctx)
+                    orig_stderr = self.original_ctx.stderr
                 if self.log_f:
+                    # Replace the file descriptor instead of closing it
+                    stderr = orig_stderr or sys.stderr
+                    new_fd = stderr.fileno()
+                    os.dup2(self.log_f.fileno(), new_fd)
                     self.log_f.close()
 
         # Register the logging context manager

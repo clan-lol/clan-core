@@ -5,7 +5,7 @@ from clan_lib.api import MethodRegistry, from_dict
 
 from clan_app.api.api_bridge import BackendRequest
 
-from .base import Middleware, MiddlewareContext
+from .base import Middleware, MiddlewareContext, MiddlewareError
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +27,6 @@ class ArgumentParsingMiddleware(Middleware):
                 reconciled_arguments[k] = from_dict(arg_class, v)
 
             # Create a new request with reconciled arguments
-
             updated_request = BackendRequest(
                 method_name=context.request.method_name,
                 args=reconciled_arguments,
@@ -37,12 +36,12 @@ class ArgumentParsingMiddleware(Middleware):
             context.request = updated_request
 
         except Exception as e:
-            log.exception(
-                f"Error while parsing arguments for {context.request.method_name}",
+            # Create enhanced exception with original calling context
+            enhanced_error = MiddlewareError(
+                f"Error in method '{context.request.method_name}'",
+                context.original_traceback,
+                e,
             )
-            context.bridge.send_api_error_response(
-                context.request.op_key or "unknown",
-                str(e),
-                ["argument_parsing", context.request.method_name],
-            )
-            raise
+
+            # Chain the exceptions to preserve both tracebacks
+            raise enhanced_error from e
