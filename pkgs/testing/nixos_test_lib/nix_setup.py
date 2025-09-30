@@ -10,15 +10,14 @@ NIX_STORE_BIN = "@nix-store@"
 XARGS_BIN = "@xargs@"
 
 
-def setup_nix_in_nix(closure_info: str | None) -> None:
+def setup_nix_in_nix(temp_dir: str, closure_info: str | None) -> None:
     """Set up Nix store inside test environment
 
     Args:
+        temp_dir: Temporary directory
         closure_info: Path to closure info directory containing store-paths file,
             or None if no closure info
     """
-    tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))  # noqa: S108
-
     # Remove NIX_REMOTE if present (we don't have any nix daemon running)
     if "NIX_REMOTE" in os.environ:
         del os.environ["NIX_REMOTE"]
@@ -27,19 +26,19 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
     os.environ["NIX_CONFIG"] = "substituters = \ntrusted-public-keys = "
 
     # Set up environment variables for test environment
-    os.environ["HOME"] = str(tmpdir)
-    os.environ["NIX_STATE_DIR"] = f"{tmpdir}/nix"
-    os.environ["NIX_CONF_DIR"] = f"{tmpdir}/etc"
+    os.environ["HOME"] = str(temp_dir)
+    os.environ["NIX_STATE_DIR"] = f"{temp_dir}/nix"
+    os.environ["NIX_CONF_DIR"] = f"{temp_dir}/etc"
     os.environ["IN_NIX_SANDBOX"] = "1"
-    os.environ["CLAN_TEST_STORE"] = f"{tmpdir}/store"
-    os.environ["LOCK_NIX"] = f"{tmpdir}/nix_lock"
+    os.environ["CLAN_TEST_STORE"] = f"{temp_dir}/store"
+    os.environ["LOCK_NIX"] = f"{temp_dir}/nix_lock"
 
     # Create necessary directories
-    Path(f"{tmpdir}/nix").mkdir(parents=True, exist_ok=True)
-    Path(f"{tmpdir}/etc").mkdir(parents=True, exist_ok=True)
-    Path(f"{tmpdir}/store").mkdir(parents=True, exist_ok=True)
-    Path(f"{tmpdir}/store/nix/store").mkdir(parents=True, exist_ok=True)
-    Path(f"{tmpdir}/store/nix/var/nix/gcroots").mkdir(parents=True, exist_ok=True)
+    Path(f"{temp_dir}/nix").mkdir(parents=True, exist_ok=True)
+    Path(f"{temp_dir}/etc").mkdir(parents=True, exist_ok=True)
+    Path(f"{temp_dir}/store").mkdir(parents=True, exist_ok=True)
+    Path(f"{temp_dir}/store/nix/store").mkdir(parents=True, exist_ok=True)
+    Path(f"{temp_dir}/store/nix/var/nix/gcroots").mkdir(parents=True, exist_ok=True)
 
     # Set up Nix store if closure info is provided
     if closure_info and Path(closure_info).exists():
@@ -60,7 +59,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
                         "--recursive",
                         "--reflink=auto",  # Use copy-on-write if available
                         "--target-directory",
-                        f"{tmpdir}/store/nix/store",
+                        f"{temp_dir}/store/nix/store",
                     ],
                     stdin=f,
                     check=True,
@@ -71,7 +70,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
             if registration_file.exists():
                 with registration_file.open() as f:
                     subprocess.run(  # noqa: S603
-                        [NIX_STORE_BIN, "--load-db", "--store", f"{tmpdir}/store"],
+                        [NIX_STORE_BIN, "--load-db", "--store", f"{temp_dir}/store"],
                         input=f.read(),
                         text=True,
                         check=True,
@@ -92,7 +91,7 @@ def prepare_test_flake(
         Path to the test flake directory
     """
     # Set up Nix store
-    setup_nix_in_nix(closure_info)
+    setup_nix_in_nix(temp_dir, closure_info)
 
     # Copy test flake
     flake_dir = Path(temp_dir) / "test-flake"
