@@ -1,12 +1,9 @@
 import argparse
 import json
-import logging
 from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
 from typing import Any
-
-logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -261,8 +258,6 @@ def generate_dataclass(
         nested_class_name = f"""{class_name if class_name != root_class and not prop_info.get("title") else ""}{title_sanitized}"""
 
         if not prop_type and not union_variants and not enum_variants:
-            msg = f"Type not found for property {prop} {prop_info}.\nConverting to unknown type.\n"
-            logger.warning(msg)
             prop_type = "Unknown"
 
         if union_variants:
