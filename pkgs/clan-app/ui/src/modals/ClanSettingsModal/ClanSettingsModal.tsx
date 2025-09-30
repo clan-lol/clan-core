@@ -22,9 +22,9 @@ import { Alert } from "@/src/components/Alert/Alert";
 import { removeClanURI } from "@/src/stores/clan";
 
 const schema = v.object({
-  name: v.pipe(v.optional(v.string())),
-  description: v.nullish(v.string()),
-  icon: v.pipe(v.nullish(v.string())),
+  name: v.string(),
+  description: v.optional(v.string()),
+  icon: v.optional(v.string()),
 });
 
 export interface ClanSettingsModalProps {
