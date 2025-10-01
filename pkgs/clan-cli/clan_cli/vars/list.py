@@ -23,8 +23,6 @@ def get_machine_vars(machine: Machine) -> list[Var]:
     """
     # TODO: We dont have machine level store / this granularity yet
     # We should move the store definition to the flake, as there can be only one store per clan
-    pub_store = machine.public_vars_store
-    sec_store = machine.secret_vars_store
 
     all_vars = []
 
@@ -34,9 +32,9 @@ def get_machine_vars(machine: Machine) -> list[Var]:
     for generator in generators:
         for var in generator.files:
             if var.secret:
-                var.store(sec_store)
+                var.store(machine.secret_vars_store)
             else:
-                var.store(pub_store)
+                var.store(machine.public_vars_store)
             var.generator(generator)
             all_vars.append(var)
     return all_vars
