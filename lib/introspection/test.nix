@@ -314,12 +314,17 @@ in
               }
             );
           };
+        }
+        {
+          config.foo.nested = lib.mkForce {
+            # <- 50 prio
+            "bar" = 2;
+          };
+        }
+        {
           config.foo = {
-            "nested" = {
-              "bar" = 2; # <- 100 prio ?
-            };
-            "other" = {
-              "bar" = lib.mkForce 2; # <- 50 prio ?
+            "other" = lib.mkForce {
+              "bar" = 2; # <- 50 prio
             };
           };
         }
@@ -330,11 +335,19 @@ in
       expected = {
         foo = {
           __this = {
-            files = [ "<unknown-file>" ];
+            files = [
+              "<unknown-file>"
+              "<unknown-file>"
+            ];
             prio = 100;
             total = false;
           };
           nested = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 50;
+              total = true;
+            };
             bar = {
               __this = {
                 files = [ "<unknown-file>" ];
@@ -344,10 +357,15 @@ in
             };
           };
           other = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 50;
+              total = true;
+            };
             bar = {
               __this = {
                 files = [ "<unknown-file>" ];
-                prio = 50;
+                prio = 100;
                 total = false;
               };
             };
@@ -401,7 +419,17 @@ in
             total = false;
           };
           a = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 100;
+              total = false;
+            };
             b = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
@@ -411,6 +439,11 @@ in
               };
             };
             c = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
@@ -421,7 +454,17 @@ in
             };
           };
           x = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 100;
+              total = false;
+            };
             y = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
@@ -431,6 +474,11 @@ in
               };
             };
             z = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
@@ -443,7 +491,6 @@ in
         };
       };
     };
-
   test_attrsOf_submodule_default =
     let
       evaluated = eval [
@@ -496,6 +543,14 @@ in
             total = false;
           };
           jon = {
+            __this = {
+              files = [
+                "<unknown-file>"
+                "inventory.json"
+              ];
+              prio = 100;
+              total = true;
+            };
             fludl = {
               __this = {
                 files = [ "<unknown-file>" ];
