@@ -1264,6 +1264,41 @@ def test_share_mode_switch_regenerates_secret(
 
 
 @pytest.mark.with_core
+def test_cache_misses_for_vars_list(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+) -> None:
+    """Test that listing vars results in exactly one cache miss."""
+    config = flake.machines["my_machine"]
+    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+
+    # Set up a simple generator
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["script"] = 'echo -n "test" > "$out"/my_value'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # # Generate the vars first
+    # cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Create a fresh machine object to ensure clean cache state
+    machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
+
+    # Record initial cache misses
+    initial_cache_misses = machine.flake._cache_misses
+
+    # List all vars - this should result in exactly one cache miss
+    stringify_all_vars(machine)
+
+    # Assert we had exactly one cache miss for the efficient lookup
+    assert machine.flake._cache_misses == initial_cache_misses + 1, (
+        f"Expected exactly 1 cache miss for vars list, got {machine.flake._cache_misses - initial_cache_misses}"
+    )
+
+
+@pytest.mark.with_core
 def test_dynamic_invalidation(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,

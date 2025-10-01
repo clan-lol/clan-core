@@ -792,6 +792,7 @@ class Flake:
     _cache: FlakeCache | None = field(init=False, default=None)
     _path: Path | None = field(init=False, default=None)
     _is_local: bool | None = field(init=False, default=None)
+    _cache_misses: int = field(init=False, default=0)
 
     @classmethod
     def from_json(
@@ -1062,6 +1063,8 @@ class Flake:
         ]
 
         if not_fetched_selectors:
+            # Increment cache miss counter for each selector that wasn't cached
+            self._cache_misses += 1
             self.get_from_nix(not_fetched_selectors)
 
     def select(
@@ -1087,6 +1090,7 @@ class Flake:
         if not self._cache.is_cached(selector):
             log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
             log.debug(f"Cache miss for {selector}")
+            self._cache_misses += 1
             self.get_from_nix([selector])
         else:
             log.debug(f"$ clan select {shlex.quote(selector)}")
