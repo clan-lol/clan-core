@@ -225,12 +225,13 @@
                         [
                             "${pkgs.nix}/bin/nix",
                             "copy",
+                            "--from",
+                            f"{temp_dir}/store",
                             "--to",
                             "ssh://root@192.168.1.1",
                             "--no-check-sigs",
                             f"${self.packages.${pkgs.hostPlatform.system}.clan-cli}",
                             "--extra-experimental-features", "nix-command flakes",
-                            "--from", f"{os.environ["TMPDIR"]}/store"
                         ],
                         check=True,
                         env={
