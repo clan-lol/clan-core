@@ -45,17 +45,28 @@ let
     lib.mapAttrs (
       _: opt:
       let
+        headType =
+          let
+            typeName = opt.type.name or null;
+          in
+          if typeName == "nullOr" then opt.type.nestedTypes.name or null else typeName;
+        nullable = opt.type.name or null == "nullOr";
+
         definitionInfo = {
           __this = {
             prio = opt.highestPrio or null;
             files = opt.files or [ ];
-            type = opt.type.name or null;
+            inherit headType nullable;
             total = opt.type.name or null == "submodule";
           };
         };
 
         # TODO: respect freeformType
-        submodulePrios = getPrios { options = filterOptions opt.valueMeta.configuration.options; };
+        submodulePrios = getPrios {
+          options =
+            filterOptions
+              opt.valueMeta.configuration.options or (throw "Please use a newer nixpkgs version >=25.11");
+        };
 
         /**
           Maps attrsOf and lazyAttrsOf
