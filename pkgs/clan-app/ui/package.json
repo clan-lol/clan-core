@@ -16,9 +16,9 @@
     "knip": "knip --fix",
     "storybook-build": "storybook build",
     "storybook-dev": "storybook dev -p 6006",
-    "test-storybook": "vitest run --project storybook",
+    "test-storybook": "vitest run --project storybook --reporter verbose",
     "test-storybook-update-snapshots": "vitest run --project storybook --update",
-    "test-storybook-static": "npm run storybook-build && concurrently -k -s first -n 'SB,TEST' -c 'magenta,blue' 'http-server storybook-static --port 6006 --silent' 'wait-on tcp:127.0.0.1:6006 && npm run test-storybook'"
+    "test-storybook-static": "npm run storybook-build && concurrently -k -s first -n 'SB,TEST' -c 'magenta,blue' 'http-server storybook-static -a 127.0.0.1 -p 6006 --silent' 'wait-on tcp:127.0.0.1:6006 && npm run test-storybook'"
   },
   "license": "MIT",
   "devDependencies": {

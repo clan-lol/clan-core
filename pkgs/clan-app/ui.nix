@@ -4,8 +4,12 @@
   importNpmLock,
   clan-ts-api,
   fonts,
+  ps,
+  playwright-driver,
+  wget,
+  strace,
 }:
-buildNpmPackage (_finalAttrs: {
+buildNpmPackage (finalAttrs: {
   pname = "clan-app-ui";
   version = "0.0.1";
   nodejs = nodejs_22;
@@ -32,36 +36,38 @@ buildNpmPackage (_finalAttrs: {
   # todo figure out why this fails only inside of Nix
   # Something about passing orientation in any of the Form stories is causing the browser to crash
   # `npm run test-storybook-static` works fine in the devshell
-  #
-  #  passthru = rec {
-  #    storybook = buildNpmPackage {
-  #      pname = "${finalAttrs.pname}-storybook";
-  #      inherit (finalAttrs)
-  #        version
-  #        nodejs
-  #        src
-  #        npmDeps
-  #        npmConfigHook
-  #        preBuild
-  #        ;
-  #
-  #      nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
-  #        ps
-  #      ];
-  #
-  #      npmBuildScript = "test-storybook-static";
-  #
-  #      env = finalAttrs.env // {
-  #        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
-  #        PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
-  #          withChromiumHeadlessShell = true;
-  #        }}";
-  #        PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "ubuntu-24.04";
-  #      };
-  #
-  #      postBuild = ''
-  #        mv storybook-static $out
-  #      '';
-  #    };
-  #  };
+
+  passthru = rec {
+    storybook = buildNpmPackage {
+      pname = "${finalAttrs.pname}-storybook";
+      inherit (finalAttrs)
+        version
+        nodejs
+        src
+        npmDeps
+        npmConfigHook
+        ;
+
+      nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
+        ps
+      ];
+
+      npmBuildScript = "test-storybook-static";
+
+      env = {
+        PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
+          withChromiumHeadlessShell = true;
+        }}";
+        PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+      };
+
+      preBuild = finalAttrs.preBuild + ''
+        export PLAYWRIGHT_CHROMIUM_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "headless_shell")
+      '';
+
+      postBuild = ''
+        mv storybook-static $out
+      '';
+    };
+  };
 })

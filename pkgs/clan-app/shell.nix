@@ -121,7 +121,7 @@ mkShell {
           withFirefox = false;
           withWebkit = true;
           withChromium = false;
-          withChromiumHeadlessShell = false;
+          withChromiumHeadlessShell = true;
         }
       }
 
@@ -134,6 +134,6 @@ mkShell {
       # this helps us avoid having to update the playwright js dependency everytime we update nixpkgs and vice versa
       # see vitest.config.js for corresponding launch configuration
 
-      export PLAYWRIGHT_WEBKIT_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "pw_run.sh")
+      export PLAYWRIGHT_CHROMIUM_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "headless_shell")
     '');
 }

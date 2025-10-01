@@ -13,6 +13,8 @@ const dirname =
 
 import viteConfig from "./vite.config";
 
+const browser = process.env.BROWSER || "chromium";
+
 export default mergeConfig(
   viteConfig,
   defineConfig({
@@ -42,9 +44,10 @@ export default mergeConfig(
               provider: "playwright",
               instances: [
                 {
-                  browser: "webkit",
+                  browser: "chromium",
                   launch: {
-                    executablePath: process.env.PLAYWRIGHT_WEBKIT_EXECUTABLE,
+                    // we specify this explicitly to avoid the version matching that playwright tries to do
+                    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
                   },
                 },
               ],
