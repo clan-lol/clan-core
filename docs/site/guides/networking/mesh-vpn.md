@@ -97,7 +97,12 @@ The status should be "ONLINE":
 ```
 
 ## Further
-We chose zerotier because in our tests it was a straight forwards solution to bootstrap.
+Currently **Zerotier** is the only mesh-vpn that is fully integrated into clan.
+In the future we plan to add additional network technologies like tinc, head/tailscale
+Currently we support yggdrassil and mycelium through usage of the inventory, 
+though it is not yet integrated into the networking module.
+
+We chose ZeroTier because in our tests it was a straight forward solution to bootstrap.
 It allows you to selfhost a controller and the controller doesn't need to be globally reachable.
 Which made it a good fit for starting the project.
 
@@ -127,7 +132,7 @@ $ sudo zerotier-cli info
 
 #### Manually Authorize a Machine on the Controller
 
-=== "with ZerotierIP"
+=== "with ZeroTierIP"
 
       ```bash
       $ sudo zerotier-members allow --member-ip <IP>
@@ -135,7 +140,7 @@ $ sudo zerotier-cli info
 
       Substitute `<IP>` with the ZeroTier IP obtained previously.
 
-=== "with ZerotierID"
+=== "with ZeroTierID"
 
       ```bash
       $ sudo zerotier-members allow <ID>
