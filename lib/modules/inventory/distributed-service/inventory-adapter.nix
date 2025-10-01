@@ -140,6 +140,12 @@
               imports = [
                 # Import the resolved module.
                 # i.e. clan.modules.admin
+                {
+                  options.module = lib.mkOption {
+                    type = lib.types.raw;
+                    default = (builtins.head instances).instance.module;
+                  };
+                }
                 (builtins.head instances).instance.resolvedModule
               ] # Include all the instances that correlate to the resolved module
               ++ (builtins.map (v: {

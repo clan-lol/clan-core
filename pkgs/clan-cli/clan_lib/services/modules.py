@@ -147,10 +147,16 @@ def extract_frontmatter[T](
     )
 
 
+@dataclass(frozen=True, eq=True)
+class Role:
+    name: str
+    description: str | None = None
+
+
 @dataclass
 class ModuleInfo:
     manifest: ModuleManifest
-    roles: dict[str, None]
+    roles: dict[str, Role]
 
 
 @dataclass
@@ -242,6 +248,9 @@ def list_service_modules(flake: Flake) -> ClanModules:
                     "input": None if input_name == clan_input_name else input_name,
                 }
             )
+
+            roles = module_info.get("roles", {})
+
             res.append(
                 Module(
                     instance_refs=find_instance_refs_for_module(
@@ -249,7 +258,13 @@ def list_service_modules(flake: Flake) -> ClanModules:
                     ),
                     usage_ref=module_ref,
                     info=ModuleInfo(
-                        roles=module_info.get("roles", {}),
+                        roles={
+                            rname: Role(
+                                name=rname,
+                                description=roles[rname].get("description", None),
+                            )
+                            for rname in roles
+                        },
                         manifest=ModuleManifest.from_dict(module_info["manifest"]),
                     ),
                     native=(input_name == clan_input_name),
@@ -462,7 +477,8 @@ def set_service_instance(
         raise ClanError(msg)
 
     module = resolve_service_module_ref(flake, module_ref)
-    allowed_roles = module.info.roles.keys()
+
+    allowed_roles = list(module.info.roles)
 
     for role_name in roles:
         if role_name not in allowed_roles:

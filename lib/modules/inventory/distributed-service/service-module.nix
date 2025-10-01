@@ -381,6 +381,13 @@ in
                 roleName = name;
               in
               {
+                options.description = mkOption {
+                  type = lib.types.nullOr types.str;
+                  description = "A short description of the role '${name}', explaining it's effect on the supplied machine.";
+                  example = "Connects the supplied machine as a '${name}' to the 'example' service.";
+                  default = null;
+                };
+
                 options.interface = mkOption {
                   description = ''
                     Abstract interface of the role.
@@ -959,8 +966,21 @@ in
               (
                 let
                   failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
+                  formatModule =
+                    if config.module.input != null then
+                      "${config.module.input}/${config.module.name}"
+                    else
+                      "<clan-core>/${config.module.name}";
+                  warningsWithNull = lib.mapAttrsToList (
+                    roleName: roleConfig:
+                    if (roleConfig.description == null) then
+                      "Missing description for role '${roleName}' of clanService '${formatModule}'"
+                    else
+                      null
+                  ) config.roles;
                 in
                 {
+                  warnings = (lib.filter (v: v != null) warningsWithNull);
                   assertions = lib.attrValues failedAssertions;
                 }
               )

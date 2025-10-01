@@ -9,7 +9,7 @@
   # TODO: a client can only be in one instance, add constraint
 
   roles.server = {
-
+    description = "A borgbackup server that stores the backups of clients.";
     interface =
       { lib, ... }:
       {
@@ -62,6 +62,7 @@
   };
 
   roles.client = {
+    description = "A borgbackup client that backs up to one or more borgbackup servers.";
     interface =
       {
         lib,
