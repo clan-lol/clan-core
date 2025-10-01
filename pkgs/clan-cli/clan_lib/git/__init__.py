@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -5,6 +6,8 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.locked_open import locked_open
 from clan_lib.nix import nix_shell
+
+log = logging.getLogger(__name__)
 
 
 def commit_file(
@@ -88,6 +91,9 @@ def _commit_file_to_git(
                 ),
             )
 
+            relative_path = file_path.relative_to(repo_dir)
+            log.debug(f"Adding {relative_path} to git")
+
         # check if there is a diff
         cmd = nix_shell(
             ["git"],
@@ -120,3 +126,14 @@ def _commit_file_to_git(
                 error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}",
             ),
         )
+
+        # Provide user feedback about successful commit
+        if len(file_paths) == 1:
+            relative_path = file_paths[0].relative_to(repo_dir)
+            log.info(f"Committed {relative_path} to git")
+        else:
+            relative_paths = [
+                file_path.relative_to(repo_dir) for file_path in file_paths
+            ]
+            files_str = ", ".join(str(path) for path in relative_paths)
+            log.info(f"Committed {len(file_paths)} files to git: {files_str}")
