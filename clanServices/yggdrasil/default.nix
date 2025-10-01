@@ -88,7 +88,7 @@
               enable = true;
               openMulticastPort = true;
               # We don't need this option, because we persist our keys with
-              # vars by ourselfs. This option creates an unnessesary additional
+              # vars by ourselves. This option creates an unnecesary additional
               # systemd service to save/load the keys and should be removed
               # from the NixOS module entirely, as it can be replaced by the
               # (at the time of writing undocumented) PrivateKeyPath= setting.
