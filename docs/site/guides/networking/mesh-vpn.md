@@ -1,4 +1,3 @@
-
 This guide provides detailed instructions for configuring
 [ZeroTier VPN](https://zerotier.com) within Clan. Follow the
 outlined steps to set up a machine as a VPN controller (`<CONTROLLER>`) and to
@@ -98,10 +97,6 @@ The status should be "ONLINE":
 ```
 
 ## Further
-
-Currently you can only use **Zerotier** as networking technology because this is the first network stack we aim to support.
-In the future we plan to add additional network technologies like tinc, head/tailscale, yggdrassil and mycelium.
-
 We chose zerotier because in our tests it was a straight forwards solution to bootstrap.
 It allows you to selfhost a controller and the controller doesn't need to be globally reachable.
 Which made it a good fit for starting the project.
