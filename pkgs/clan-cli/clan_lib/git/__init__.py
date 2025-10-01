@@ -132,4 +132,8 @@ def _commit_file_to_git(
             relative_path = file_paths[0].relative_to(repo_dir)
             log.info(f"Committed {relative_path} to git")
         else:
-            log.info(f"Committed {len(file_paths)} files to git")
+            relative_paths = [
+                file_path.relative_to(repo_dir) for file_path in file_paths
+            ]
+            files_str = ", ".join(str(path) for path in relative_paths)
+            log.info(f"Committed {len(file_paths)} files to git: {files_str}")
