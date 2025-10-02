@@ -129,9 +129,20 @@ class InventoryStore:
         self._allowed_path_transforms = _allowed_path_transforms
 
         if _keys is None:
-            _keys = list(InventorySnapshot.__annotations__.keys())
+            _keys = self.default_keys()
 
         self._keys = _keys
+
+    @classmethod
+    def default_keys(cls) -> list[str]:
+        return list(InventorySnapshot.__annotations__.keys())
+
+    @classmethod
+    def default_selectors(cls) -> list[str]:
+        return [
+            f"clanInternals.inventoryClass.inventory.{key}"
+            for key in cls.default_keys()
+        ]
 
     def _load_merged_inventory(self) -> InventorySnapshot:
         """Loads the evaluated inventory.

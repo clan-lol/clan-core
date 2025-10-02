@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,17 @@ from clan_lib.vars.generate import (
     get_generators,
     run_generators,
 )
+
+
+def invalidate_flake_cache(flake_path: Path) -> None:
+    """Force flake cache invalidation by modifying the git repository.
+
+    This adds a dummy file to git which changes the NAR hash of the flake,
+    forcing a cache invalidation.
+    """
+    dummy_file = flake_path / f".cache_invalidation_{time.time()}"
+    dummy_file.write_text("invalidate")
+    run(["git", "add", str(dummy_file)])
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
@@ -1264,37 +1276,71 @@ def test_share_mode_switch_regenerates_secret(
 
 
 @pytest.mark.with_core
-def test_cache_misses_for_vars_list(
+def test_cache_misses_for_vars_operations(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
 ) -> None:
-    """Test that listing vars results in exactly one cache miss."""
+    """Test that vars operations result in minimal cache misses."""
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
 
-    # Set up a simple generator
+    # Set up a simple generator with a public value
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = 'echo -n "test" > "$out"/my_value'
+    my_generator["script"] = 'echo -n "test_value" > "$out"/my_value'
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
 
-    # # Generate the vars first
-    # cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-
     # Create a fresh machine object to ensure clean cache state
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
 
-    # Record initial cache misses
-    initial_cache_misses = machine.flake._cache_misses
+    # Test 1: Running vars generate with a fresh cache should result in exactly 3 cache misses
+    # Expected cache misses:
+    # 1. One for getting the list of generators
+    # 2. One for getting the final script of our test generator (my_generator)
+    # 3. One for getting the final script of the state version generator (added by default)
+    # TODO: The third cache miss is undesired in tests. disable state version module for tests
 
-    # List all vars - this should result in exactly one cache miss
+    run_generators(
+        machines=[machine],
+        generators=None,  # Generate all
+    )
+
+    # Print stack traces if we have more than 3 cache misses
+    if machine.flake._cache_misses != 3:
+        machine.flake.print_cache_miss_analysis(
+            title="Cache miss analysis for vars generate"
+        )
+
+    assert machine.flake._cache_misses == 3, (
+        f"Expected exactly 3 cache misses for vars generate, got {machine.flake._cache_misses}"
+    )
+
+    # Verify the value was generated correctly
+    var_value = get_machine_var(machine, "my_generator/my_value")
+    assert var_value.printable_value == "test_value"
+
+    # Test 2: List all vars should result in exactly 1 cache miss
+    # Force cache invalidation (this also resets cache miss tracking)
+    invalidate_flake_cache(flake.path)
+    machine.flake.invalidate_cache()
+
     stringify_all_vars(machine)
+    assert machine.flake._cache_misses == 1, (
+        f"Expected exactly 1 cache miss for vars list, got {machine.flake._cache_misses}"
+    )
 
-    # Assert we had exactly one cache miss for the efficient lookup
-    assert machine.flake._cache_misses == initial_cache_misses + 1, (
-        f"Expected exactly 1 cache miss for vars list, got {machine.flake._cache_misses - initial_cache_misses}"
+    # Test 3: Getting a specific var with a fresh cache should result in exactly 1 cache miss
+    # Force cache invalidation (this also resets cache miss tracking)
+    invalidate_flake_cache(flake.path)
+    machine.flake.invalidate_cache()
+
+    var_value = get_machine_var(machine, "my_generator/my_value")
+    assert var_value.printable_value == "test_value"
+
+    assert machine.flake._cache_misses == 1, (
+        f"Expected exactly 1 cache miss for vars get with fresh cache, got {machine.flake._cache_misses}"
     )
 
 

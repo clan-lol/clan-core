@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shlex
+import traceback
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from functools import cache
@@ -792,7 +793,7 @@ class Flake:
     _cache: FlakeCache | None = field(init=False, default=None)
     _path: Path | None = field(init=False, default=None)
     _is_local: bool | None = field(init=False, default=None)
-    _cache_misses: int = field(init=False, default=0)
+    _cache_miss_stack_traces: list[str] = field(init=False, default_factory=list)
 
     @classmethod
     def from_json(
@@ -813,6 +814,34 @@ class Flake:
         if not isinstance(other, Flake):
             return NotImplemented
         return self.identifier == other.identifier
+
+    def _record_cache_miss(self, selector_info: str) -> None:
+        """Record a cache miss with its stack trace."""
+        stack_trace = "".join(traceback.format_stack())
+        self._cache_miss_stack_traces.append(f"{selector_info}\n{stack_trace}")
+
+    @property
+    def _cache_misses(self) -> int:
+        """Get the count of cache misses from the stack trace list."""
+        return len(self._cache_miss_stack_traces)
+
+    def print_cache_miss_analysis(self, title: str = "Cache miss analysis") -> None:
+        """Print detailed analysis of cache misses with stack traces.
+
+        Args:
+            title: Title for the analysis output
+
+        """
+        if not self._cache_miss_stack_traces:
+            return
+
+        print(f"\n=== {title} ===")
+        print(f"Total cache misses: {len(self._cache_miss_stack_traces)}")
+        print("\nStack traces for all cache misses:")
+        for i, trace in enumerate(self._cache_miss_stack_traces, 1):
+            print(f"\n--- Cache miss #{i} ---")
+            print(trace)
+        print("=" * 50)
 
     @property
     def is_local(self) -> bool:
@@ -886,10 +915,13 @@ class Flake:
         """Invalidate the cache and reload it.
 
         This method is used to refresh the cache by reloading it from the flake.
+        Also resets cache miss tracking.
         """
         self.prefetch()
 
         self._cache = FlakeCache()
+        # Reset cache miss tracking when invalidating cache
+        self._cache_miss_stack_traces.clear()
         if self.hash is None:
             msg = "Hash cannot be None"
             raise ClanError(msg)
@@ -1063,8 +1095,10 @@ class Flake:
         ]
 
         if not_fetched_selectors:
-            # Increment cache miss counter for each selector that wasn't cached
-            self._cache_misses += 1
+            # Record cache miss with stack trace
+            self._record_cache_miss(
+                f"Cache miss for selectors: {not_fetched_selectors}"
+            )
             self.get_from_nix(not_fetched_selectors)
 
     def select(
@@ -1090,7 +1124,8 @@ class Flake:
         if not self._cache.is_cached(selector):
             log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
             log.debug(f"Cache miss for {selector}")
-            self._cache_misses += 1
+            # Record cache miss with stack trace
+            self._record_cache_miss(f"Cache miss for selector: {selector}")
             self.get_from_nix([selector])
         else:
             log.debug(f"$ clan select {shlex.quote(selector)}")
