@@ -11,6 +11,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.peer = {
+    description = "A peer in the syncthing cluster that syncs files with other peers.";
     interface =
       { lib, ... }:
       {

@@ -7,7 +7,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
-
+    description = "Placeholder role to apply the trusted-nix-caches service";
     perInstance =
       { ... }:
       {

@@ -62,7 +62,7 @@
   };
 
   roles.client = {
-    description = "A borgbackup client that backs up to one or more borgbackup servers.";
+    description = "A borgbackup client that backs up to all borgbackup server roles.";
     interface =
       {
         lib,

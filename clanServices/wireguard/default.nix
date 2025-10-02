@@ -146,6 +146,7 @@ in
 
   # Peer options and configuration
   roles.peer = {
+    description = "A peer that connects to one or more controllers.";
     interface =
       { lib, ... }:
       {
@@ -261,6 +262,7 @@ in
 
   # Controller options and configuration
   roles.controller = {
+    description = "A controller that routes peer traffic. Must be publicly reachable.";
     interface =
       { lib, ... }:
       {

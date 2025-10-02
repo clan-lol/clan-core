@@ -2,11 +2,12 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/dyndns";
-  manifest.description = "A dynamic DNS service to update domain IPs";
+  manifest.description = "A dynamic DNS service to auto update domain IPs";
   manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
+    description = "Placeholder role to apply the dyndns service";
     interface =
       { lib, ... }:
       {

@@ -2,13 +2,14 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/mycelium";
-  manifest.description = "End-2-end encrypted IPv6 overlay network";
+  manifest.description = "End-2-end encrypted P2P IPv6 overlay network";
   manifest.categories = [
     "System"
     "Network"
   ];
 
   roles.peer = {
+    description = "A peer in the mycelium network";
     interface =
       { lib, ... }:
       {

@@ -101,6 +101,7 @@ in
   manifest.readme = builtins.readFile ./README.md;
 
   roles.admin = {
+    description = "A data-mesher admin node that bootstraps the network and can sign new nodes into the network.";
     interface =
       { lib, ... }:
       {
@@ -177,6 +178,7 @@ in
   };
 
   roles.signer = {
+    description = "A data-mesher signer node that can sign new nodes into the network.";
     interface = sharedInterface;
     perInstance =
       {
@@ -208,6 +210,7 @@ in
   };
 
   roles.peer = {
+    description = "A data-mesher peer node that connects to the network.";
     interface = sharedInterface;
     perInstance =
       {

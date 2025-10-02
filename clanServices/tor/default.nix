@@ -2,13 +2,17 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/tor";
-  manifest.description = "Onion routing, use Hidden services to connect your machines";
+  manifest.description = "Part of the clan networking abstraction to define how to reach machines through the Tor network, if used has the lowest priority";
   manifest.categories = [
     "System"
     "Network"
   ];
 
   roles.client = {
+    description = ''
+      Enables a continuosly running Tor proxy on the machine, allowing access to other machines via the Tor network.
+      If not enabled, a Tor proxy will be started automatically when required.
+    '';
     perInstance =
       {
         ...
@@ -31,6 +35,7 @@
   };
 
   roles.server = {
+    description = "Sets up a Tor onion service for the machine, thus making it reachable over Tor.";
     # interface =
     #   { lib, ... }:
     #   {

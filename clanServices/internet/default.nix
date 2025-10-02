@@ -2,12 +2,13 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/internet";
-  manifest.description = "direct access (or via ssh jumphost) to machines";
+  manifest.description = "Part of the clan networking abstraction to define how to reach machines from outside the clan network over the internet, if defined has the highest priority";
   manifest.categories = [
     "System"
     "Network"
   ];
   roles.default = {
+    description = "Placeholder role to apply the internet service";
     interface =
       { lib, ... }:
       {
