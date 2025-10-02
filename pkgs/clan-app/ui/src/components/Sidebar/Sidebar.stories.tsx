@@ -7,11 +7,9 @@ import {
 } from "@solidjs/router";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { Suspense } from "solid-js";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import { addClanURI, resetStore } from "@/src/stores/clan";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { encodeBase64 } from "@/src/hooks/clan";
-import { ApiClientProvider } from "@/src/hooks/ApiClient";
 import {
   ApiCall,
   OperationArgs,

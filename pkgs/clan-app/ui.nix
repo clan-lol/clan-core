@@ -6,8 +6,6 @@
   fonts,
   ps,
   playwright-driver,
-  wget,
-  strace,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clan-app-ui";

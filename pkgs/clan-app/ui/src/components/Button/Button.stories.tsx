@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
-import { expect, fn, waitFor, within } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;

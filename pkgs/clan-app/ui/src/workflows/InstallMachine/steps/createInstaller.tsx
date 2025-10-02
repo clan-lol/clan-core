@@ -1,7 +1,6 @@
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import {
   createForm,
-  getError,
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
