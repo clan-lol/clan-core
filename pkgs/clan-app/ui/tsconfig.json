@@ -15,7 +15,8 @@
     "allowJs": true,
     "isolatedModules": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@api/clan/client": ["./src/api/clan/client-call"]
     }
   }
 }

@@ -57,7 +57,7 @@ export interface InstallStoreType {
     machineName: string;
     mainDisk?: string;
     // ...TODO Vars
-    progress: ApiCall<"run_machine_install" | "run_machine_update">;
+    progress: AbortController;
     promptValues: PromptValues;
     prepareStep: "disk" | "generators" | "install";
   };

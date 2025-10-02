@@ -33,6 +33,7 @@ import {
 } from "@/src/hooks/queries";
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
+import * as api from "@/src/api";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
@@ -731,32 +732,28 @@ const InstallSummary = () => {
       ? parseInt(store.install.port, 10)
       : undefined;
 
-    const runInstall = client.fetch("run_machine_install", {
-      opts: {
-        machine: {
-          name: store.install.machineName,
-          flake: {
-            identifier: clanUri,
-          },
-        },
-      },
-      target_host: {
-        address: store.install.targetHost,
+    const abortController = new AbortController();
+    set("install", "progress", abortController);
+
+    try {
+      await api.clan.installMachine({
+        clan: clanUri,
+        name: store.install.machineName,
+        targetHost: store.install.targetHost,
         port,
         password: store.install.password,
-        ssh_options: {
-          StrictHostKeyChecking: "no",
-          UserKnownHostsFile: "/dev/null",
-        },
-      },
-    });
+        signal: abortController.signal,
+      });
+    } catch (err) {
+      if (abortController.signal.aborted) {
+        return;
+      }
+      // TODO: show other errors
+    }
     set("install", (s) => ({
       ...s,
       prepareStep: "install",
-      progress: runInstall,
     }));
-
-    await runInstall.result;
 
     stepSignal.setActiveStep("install:done");
   };
@@ -818,10 +815,7 @@ const InstallProgress = () => {
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
   const handleCancel = async () => {
-    const progress = store.install.progress;
-    if (progress) {
-      await progress.cancel();
-    }
+    store.install.progress.abort();
     stepSignal.previous();
   };
   const installState = useNotifyOrigin<ProcessMessage<unknown, InstallTopic>>(
