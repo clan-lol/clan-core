@@ -9,6 +9,7 @@ from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.persist.inventory_store import InventoryStore
 
 log = logging.getLogger(__name__)
 
@@ -37,18 +38,22 @@ def get_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
-
-    all_machines = machines[0].flake.list_machines().keys()
+    flake = machines[0].flake
+    flake.precache(
+        InventoryStore.default_selectors()
+        + Generator.get_machine_selectors(m.name for m in machines)
+    )
+    all_machines = flake.list_machines().keys()
     requested_machines = [machine.name for machine in machines]
 
     all_generators_list = Generator.get_machine_generators(
         all_machines,
-        machines[0].flake,
+        flake,
         include_previous_values=include_previous_values,
     )
     requested_generators_list = Generator.get_machine_generators(
         requested_machines,
-        machines[0].flake,
+        flake,
         include_previous_values=include_previous_values,
     )
 

@@ -92,6 +92,36 @@ class Generator:
         ) and self._public_store.hash_is_valid(self)
 
     @classmethod
+    def get_machine_selectors(
+        cls: type["Generator"],
+        machine_names: Iterable[str],
+    ) -> list[str]:
+        """Get all selectors needed to fetch generators and files for the given machines.
+
+        Args:
+            machine_names: The names of the machines.
+
+        Returns:
+            list[str]: A list of selectors to fetch all generators and files for the machines.
+
+        """
+        config = nix_config()
+        system = config["system"]
+
+        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts,validationHash}"
+        files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
+
+        all_selectors = []
+        for machine_name in machine_names:
+            all_selectors += [
+                f'clanInternals.machines."{system}"."{machine_name}".{generators_selector}',
+                f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
+                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.publicModule',
+                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.secretModule',
+            ]
+        return all_selectors
+
+    @classmethod
     def get_machine_generators(
         cls: type["Generator"],
         machine_names: Iterable[str],
@@ -109,22 +139,9 @@ class Generator:
             list[Generator]: A list of (unsorted) generators for the machine.
 
         """
-        config = nix_config()
-        system = config["system"]
-
         generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts,validationHash}"
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
-
-        # precache all machines generators and files to avoid multiple calls to nix
-        all_selectors = []
-        for machine_name in machine_names:
-            all_selectors += [
-                f'clanInternals.machines."{system}"."{machine_name}".{generators_selector}',
-                f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
-                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.publicModule',
-                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.secretModule',
-            ]
-        flake.precache(all_selectors)
+        flake.precache(cls.get_machine_selectors(machine_names))
 
         generators = []
 
