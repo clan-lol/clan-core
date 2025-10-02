@@ -9,6 +9,36 @@
 }:
 let
   types = lib.types;
+
+  checkType = types.attrsOf (
+    types.submodule {
+      # Skip entire evaluation of this check
+      options.ignore = lib.mkOption {
+        type = types.bool;
+        default = false;
+        description = "Ignores this check entirely";
+      };
+
+      # Can only be defined once
+      options.assertion = lib.mkOption {
+        type = types.bool;
+        readOnly = true;
+        description = ''
+          The assertion that must hold true.
+
+          If false, the message is shown.
+        '';
+      };
+      # Message shown when the assertion is false
+      options.message = lib.mkOption {
+        type = types.str;
+        description = "Message shown when the assertion is false";
+      };
+
+      # TODO: add severity levels?
+      # Fail, Warn, Log
+    }
+  );
 in
 {
   options = {
@@ -18,6 +48,17 @@ in
       visible = false;
       default = [ ];
     };
+
+    # id :: { assertion, message }
+    checks = lib.mkOption {
+      type = checkType;
+      default = { };
+      description = ''
+        Assertions that must hold true when evaluating the clan.
+        When the assertion fails, the message is shown and the evaluation is aborted.
+      '';
+    };
+
     self = lib.mkOption {
       type = types.raw;
       default = self;
