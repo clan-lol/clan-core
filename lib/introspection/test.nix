@@ -13,21 +13,48 @@ let
       };
     in
     evaledConfig;
+
+  # Return only used attributes, for test stability
+  stableView =
+    set:
+    let
+      mapProps =
+        attrs:
+        lib.intersectAttrs {
+          files = null;
+          prio = null;
+          total = null;
+        } attrs;
+    in
+    lib.mapAttrs (
+      name: value:
+      if name == "__this" then
+        mapProps value
+      else if name == "__list" then
+        [ ]
+      else if lib.isAttrs value then
+        stableView value
+      else
+        value
+    ) set;
+
 in
 {
   test_default = {
-    expr = slib.getPrios {
-      options =
-        (eval [
-          {
-            options.foo.bar = lib.mkOption {
-              type = lib.types.bool;
-              description = "Test Description";
-              default = true;
-            };
-          }
-        ]).options;
-    };
+    expr = stableView (
+      slib.getPrios {
+        options =
+          (eval [
+            {
+              options.foo.bar = lib.mkOption {
+                type = lib.types.bool;
+                description = "Test Description";
+                default = true;
+              };
+            }
+          ]).options;
+      }
+    );
     expected = {
       foo = {
         bar = {
@@ -35,23 +62,24 @@ in
             files = [ "<unknown-file>" ];
             prio = 1500;
             total = false;
-            type = "bool";
           };
         };
       };
     };
   };
   test_no_default = {
-    expr = slib.getPrios {
-      options =
-        (eval [
-          {
-            options.foo.bar = lib.mkOption {
-              type = lib.types.bool;
-            };
-          }
-        ]).options;
-    };
+    expr = stableView (
+      slib.getPrios {
+        options =
+          (eval [
+            {
+              options.foo.bar = lib.mkOption {
+                type = lib.types.bool;
+              };
+            }
+          ]).options;
+      }
+    );
     expected = {
       foo = {
         bar = {
@@ -59,7 +87,6 @@ in
             files = [ ];
             prio = 9999;
             total = false;
-            type = "bool";
           };
         };
       };
@@ -67,36 +94,36 @@ in
   };
 
   test_submodule = {
-    expr = slib.getPrios {
-      options =
-        (eval [
-          {
-            options.foo = lib.mkOption {
-              type = lib.types.submodule {
-                options = {
-                  bar = lib.mkOption {
-                    type = lib.types.bool;
+    expr = stableView (
+      slib.getPrios {
+        options =
+          (eval [
+            {
+              options.foo = lib.mkOption {
+                type = lib.types.submodule {
+                  options = {
+                    bar = lib.mkOption {
+                      type = lib.types.bool;
+                    };
                   };
                 };
               };
-            };
-          }
-        ]).options;
-    };
+            }
+          ]).options;
+      }
+    );
     expected = {
       foo = {
         __this = {
           files = [ ];
           prio = 9999;
           total = true;
-          type = "submodule";
         };
         bar = {
           __this = {
             files = [ ];
             prio = 9999;
             total = false;
-            type = "bool";
           };
         };
       };
@@ -142,9 +169,11 @@ in
     in
     {
       inherit evaluated;
-      expr = slib.getPrios {
-        options = evaluated.options;
-      };
+      expr = stableView (
+        slib.getPrios {
+          options = evaluated.options;
+        }
+      );
       expected = {
         foo = {
           __this = {
@@ -154,14 +183,12 @@ in
             ];
             prio = 100;
             total = true;
-            type = "submodule";
           };
           default = {
             __this = {
               files = [ "default" ];
               prio = 1000;
               total = false;
-              type = "bool";
             };
           };
           normal = {
@@ -169,7 +196,6 @@ in
               files = [ "normal" ];
               prio = 100;
               total = false;
-              type = "bool";
             };
           };
           optionDefault = {
@@ -177,7 +203,6 @@ in
               files = [ "option" ];
               prio = 1500;
               total = false;
-              type = "bool";
             };
           };
           unset = {
@@ -185,7 +210,6 @@ in
               files = [ ];
               prio = 9999;
               total = false;
-              type = "bool";
             };
           };
         };
@@ -217,23 +241,23 @@ in
     in
     {
       inherit evaluated;
-      expr = slib.getPrios {
-        options = evaluated.options;
-      };
+      expr = stableView (
+        slib.getPrios {
+          options = evaluated.options;
+        }
+      );
       expected = {
         foo = {
           __this = {
             files = [ "<unknown-file>" ];
             prio = 100;
             total = true;
-            type = "submodule";
           };
           bar = {
             __this = {
               files = [ "<unknown-file>" ];
               prio = 100;
               total = false;
-              type = "bool";
             };
           };
         };
@@ -290,44 +314,59 @@ in
               }
             );
           };
+        }
+        {
+          config.foo.nested = lib.mkForce {
+            # <- 50 prio
+            "bar" = 2;
+          };
+        }
+        {
           config.foo = {
-            "nested" = {
-              "bar" = 2; # <- 100 prio ?
-            };
-            "other" = {
-              "bar" = lib.mkForce 2; # <- 50 prio ?
+            "other" = lib.mkForce {
+              "bar" = 2; # <- 50 prio
             };
           };
         }
       ];
     in
     {
-      expr = slib.getPrios { options = evaluated.options; };
+      expr = stableView (slib.getPrios { options = evaluated.options; });
       expected = {
         foo = {
           __this = {
-            files = [ "<unknown-file>" ];
+            files = [
+              "<unknown-file>"
+              "<unknown-file>"
+            ];
             prio = 100;
             total = false;
-            type = "attrsOf";
           };
           nested = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 50;
+              total = true;
+            };
             bar = {
               __this = {
                 files = [ "<unknown-file>" ];
                 prio = 100;
                 total = false;
-                type = "int";
               };
             };
           };
           other = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 50;
+              total = true;
+            };
             bar = {
               __this = {
                 files = [ "<unknown-file>" ];
-                prio = 50;
+                prio = 100;
                 total = false;
-                type = "int";
               };
             };
           };
@@ -371,55 +410,80 @@ in
     in
     {
       inherit evaluated;
-      expr = slib.getPrios { options = evaluated.options; };
+      expr = stableView (slib.getPrios { options = evaluated.options; });
       expected = {
         foo = {
           __this = {
             files = [ "<unknown-file>" ];
             prio = 100;
             total = false;
-            type = "attrsOf";
           };
           a = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 100;
+              total = false;
+            };
             b = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
                   prio = 100;
                   total = false;
-                  type = "int";
                 };
               };
             };
             c = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
                   prio = 100;
                   total = false;
-                  type = "int";
                 };
               };
             };
           };
           x = {
+            __this = {
+              files = [ "<unknown-file>" ];
+              prio = 100;
+              total = false;
+            };
             y = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
                   prio = 100;
                   total = false;
-                  type = "int";
                 };
               };
             };
             z = {
+              __this = {
+                files = [ "<unknown-file>" ];
+                prio = 100;
+                total = true;
+              };
               bar = {
                 __this = {
                   files = [ "<unknown-file>" ];
                   prio = 100;
                   total = false;
-                  type = "int";
                 };
               };
             };
@@ -427,7 +491,6 @@ in
         };
       };
     };
-
   test_attrsOf_submodule_default =
     let
       evaluated = eval [
@@ -468,7 +531,7 @@ in
     in
     {
       inherit evaluated;
-      expr = slib.getPrios { options = evaluated.options; };
+      expr = stableView (slib.getPrios { options = evaluated.options; });
       expected = {
         machines = {
           __this = {
@@ -478,15 +541,21 @@ in
             ];
             prio = 100;
             total = false;
-            type = "attrsOf";
           };
           jon = {
+            __this = {
+              files = [
+                "<unknown-file>"
+                "inventory.json"
+              ];
+              prio = 100;
+              total = true;
+            };
             fludl = {
               __this = {
                 files = [ "<unknown-file>" ];
                 prio = 1500;
                 total = true;
-                type = "submodule";
               };
             };
             prim = {
@@ -494,7 +563,6 @@ in
                 files = [ "inventory.json" ];
                 prio = 100;
                 total = false;
-                type = "int";
               };
             };
             settings = {
@@ -502,13 +570,75 @@ in
                 files = [ "<unknown-file>" ];
                 prio = 1500;
                 total = true;
-                type = "submodule";
               };
             };
           };
         };
       };
     };
+
+  test_listof_submodule_list =
+    let
+      evaluated = eval [
+        {
+          options.list = lib.mkOption {
+            type = lib.types.listOf (
+              lib.types.submodule {
+                options = {
+                  foo = lib.mkOption { };
+                };
+              }
+            );
+          };
+        }
+        ({
+          _file = "inventory.json";
+          list = [
+            # Incomplete entry, should not break introspection
+            { }
+            { }
+          ];
+        })
+        ({
+          _file = "clan.nix";
+          list = [
+            { }
+            { }
+          ];
+        })
+      ];
+    in
+    {
+      inherit evaluated;
+      expr = (slib.getPrios { options = evaluated.options; });
+      expected = {
+        list = {
+          __list = lib.genList (_: {
+            foo = {
+              __this = {
+                files = [ ];
+                headType = "unspecified";
+                nullable = false;
+                prio = 9999;
+                total = false;
+              };
+            };
+          }) 4;
+
+          __this = {
+            files = [
+              "clan.nix"
+              "inventory.json"
+            ];
+            headType = "listOf";
+            nullable = false;
+            prio = 100;
+            total = false;
+          };
+        };
+      };
+    };
+
   test_listOf_submodule_default =
     let
       evaluated = eval [
@@ -554,63 +684,10 @@ in
     in
     {
       inherit evaluated;
-      expr = slib.getPrios { options = evaluated.options; };
+      expr = stableView (slib.getPrios { options = evaluated.options; });
       expected = {
         machines = {
-          __list = [
-            {
-              fludl = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 1500;
-                  total = true;
-                  type = "submodule";
-                };
-              };
-              prim = {
-                __this = {
-                  files = [ "clan.nix" ];
-                  prio = 100;
-                  total = false;
-                  type = "int";
-                };
-              };
-              settings = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 1500;
-                  total = true;
-                  type = "submodule";
-                };
-              };
-            }
-            {
-              fludl = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 1500;
-                  total = true;
-                  type = "submodule";
-                };
-              };
-              prim = {
-                __this = {
-                  files = [ "inventory.json" ];
-                  prio = 100;
-                  total = false;
-                  type = "int";
-                };
-              };
-              settings = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 1500;
-                  total = true;
-                  type = "submodule";
-                };
-              };
-            }
-          ];
+          __list = [ ];
           __this = {
             files = [
               "clan.nix"
@@ -618,7 +695,6 @@ in
             ];
             prio = 100;
             total = false;
-            type = "listOf";
           };
         };
       };
