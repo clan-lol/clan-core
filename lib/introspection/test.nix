@@ -576,6 +576,69 @@ in
         };
       };
     };
+
+  test_listof_submodule_list =
+    let
+      evaluated = eval [
+        {
+          options.list = lib.mkOption {
+            type = lib.types.listOf (
+              lib.types.submodule {
+                options = {
+                  foo = lib.mkOption { };
+                };
+              }
+            );
+          };
+        }
+        ({
+          _file = "inventory.json";
+          list = [
+            # Incomplete entry, should not break introspection
+            { }
+            { }
+          ];
+        })
+        ({
+          _file = "clan.nix";
+          list = [
+            { }
+            { }
+          ];
+        })
+      ];
+    in
+    {
+      inherit evaluated;
+      expr = (slib.getPrios { options = evaluated.options; });
+      expected = {
+        list = {
+          __list = lib.genList (_: {
+            foo = {
+              __this = {
+                files = [ ];
+                headType = "unspecified";
+                nullable = false;
+                prio = 9999;
+                total = false;
+              };
+            };
+          }) 4;
+
+          __this = {
+            files = [
+              "clan.nix"
+              "inventory.json"
+            ];
+            headType = "listOf";
+            nullable = false;
+            prio = 100;
+            total = false;
+          };
+        };
+      };
+    };
+
   test_listOf_submodule_default =
     let
       evaluated = eval [

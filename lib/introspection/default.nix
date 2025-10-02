@@ -125,7 +125,7 @@ let
         /**
           Maps attrsOf and lazyAttrsOf
         */
-        handleListOf = list: { __list = lib.map handleMeta { meta = list; }; };
+        handleListOf = list: { __list = lib.map (item: handleMeta { meta = item; }) list; };
 
         /**
           Unwraps the valueMeta of an option based on its type
