@@ -13,7 +13,7 @@
 }
 ```
 
-Now the folder `~/syncthing/documents` will be shared with all your machines.
+Now the folder `~/syncthing/documents` will be shared and kept in sync with all your machines.
 
 
 ## Documentation 

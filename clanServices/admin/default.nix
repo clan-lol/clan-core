@@ -1,14 +1,14 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/admin";
-  manifest.description = "Convenient Administration for the Clan App";
+  manifest.description = "Adds a root user with ssh access";
   manifest.categories = [ "Utility" ];
 
   roles.default = {
+    description = "Placeholder role to apply the admin service";
     interface =
       { lib, ... }:
       {
-
         options = {
           allowedKeys = lib.mkOption {
             default = { };

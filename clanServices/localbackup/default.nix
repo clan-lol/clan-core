@@ -2,11 +2,12 @@
 {
   _class = "clan.service";
   manifest.name = "localbackup";
-  manifest.description = "Automatically backups current machine to local directory.";
+  manifest.description = "Automatically backups current machine to local directory or a mounted drive.";
   manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
+    description = "Placeholder role to apply the localbackup service";
     interface =
       { lib, ... }:
       {

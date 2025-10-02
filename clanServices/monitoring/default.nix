@@ -6,6 +6,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.telegraf = {
+    description = "Placeholder role to apply the telegraf monitoring agent";
     interface =
       { lib, ... }:
       {

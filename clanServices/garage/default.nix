@@ -6,7 +6,7 @@
   manifest.categories = [ "System" ];
 
   roles.default = {
-
+    description = "Placeholder role to apply the garage service";
     perInstance.nixosModule =
       {
         config,

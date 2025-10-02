@@ -45,13 +45,15 @@ inventory = {
       # Add the default role to all machines, including `client`
       roles.default.tags.all = { };
 
-      # DNS server
+      # DNS server queries to http://<name>.foo are resolved here
       roles.server.machines."dnsserver".settings = {
         ip = "192.168.1.2";
         tld = "foo";
       };
 
       # First service
+      # Registers http://one.foo will resolve to 192.168.1.3
+      # underlying service runs on server01
       roles.default.machines."server01".settings = {
         ip = "192.168.1.3";
         services = [ "one" ];

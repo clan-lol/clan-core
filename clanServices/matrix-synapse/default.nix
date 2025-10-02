@@ -6,6 +6,7 @@
   manifest.categories = [ "Social" ];
 
   roles.default = {
+    description = "Placeholder role to apply the matrix-synapse service";
     interface =
       { lib, ... }:
       {

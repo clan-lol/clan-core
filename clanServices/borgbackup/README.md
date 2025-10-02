@@ -9,7 +9,7 @@ inventory.instances = {
     };
     roles.client.machines."jon".settings = {
       destinations."storagebox" = {
-        repo = "username@$hostname:/./borgbackup";
+        repo = "username@hostname:/./borgbackup";
         rsh = ''ssh -oPort=23 -i /run/secrets/vars/borgbackup/borgbackup.ssh'';
       };
     };

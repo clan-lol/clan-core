@@ -9,8 +9,11 @@ in
 {
   _class = "clan.service";
   manifest.name = "wifi";
+  manifest.description = "Pre configure wifi networks to connect to";
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
+    description = "Placeholder role to apply the wifi service";
     interface = {
       options.networks = lib.mkOption {
         type = lib.types.attrsOf (
@@ -42,7 +45,18 @@ in
           )
         );
         default = { };
-        description = "Wifi networks to predefine";
+        example = {
+          home = { };
+          guest = {
+            autoConnect = false;
+            keyMgmt = "wpa-eap";
+          };
+        };
+        description = ''
+          List of wifi networks to configure for connection.
+          Each attribute name is an internal identifier (not the SSID).
+          For each network, you will be prompted to enter the SSID and password as secrets.
+        '';
       };
     };
 

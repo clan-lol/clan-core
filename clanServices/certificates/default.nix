@@ -2,12 +2,12 @@
 {
   _class = "clan.service";
   manifest.name = "certificates";
-  manifest.description = "Sets up a certificates internal to your Clan";
+  manifest.description = "Sets up a PKI certificate chain using step-ca";
   manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.ca = {
-
+    description = "A certificate authority that issues and signs certificates for other machines.";
     interface =
       { lib, ... }:
       {
@@ -184,6 +184,7 @@
 
   # Empty role, so we can add non-ca machins to the instance to trust the CA
   roles.default = {
+    description = "A machine that trusts the CA and can get certificates issued by it.";
     interface =
       { lib, ... }:
       {

@@ -8,7 +8,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.server = {
-
+    description = "A DNS server that resolves services in the clan network.";
     interface =
       { lib, ... }:
       {
@@ -103,6 +103,7 @@
   };
 
   roles.default = {
+    description = "A machine that registers the 'server' role as resolver and registers services under the configured TLD in the resolver.";
     interface =
       { lib, ... }:
       {

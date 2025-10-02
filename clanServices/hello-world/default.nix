@@ -14,6 +14,7 @@
   # defined in this file directly (e.g. the "morning" role) or split up into a
   # separate file (e.g. the "evening" role)
   roles.morning = {
+    description = "A morning greeting machine";
     interface =
       { lib, ... }:
       {
@@ -67,6 +68,7 @@
   # the interface here, so we can see all settings of the service in one place,
   # but you can also move it to the respective file
   roles.evening = {
+    description = "An evening greeting machine";
     interface =
       { lib, ... }:
       {

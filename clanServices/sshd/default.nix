@@ -10,13 +10,13 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.client = {
+    description = "Installs the SSH CA public key into known_hosts for the configured domains, so this machine can verify servers’ host certificates without TOFU prompts.";
     interface =
       { lib, ... }:
       {
         options.certificate = {
           searchDomains = lib.mkOption {
             type = lib.types.listOf lib.types.str;
-            default = [ ];
             example = [ "mydomain.com" ];
             description = ''
               List of domains to include in the certificate.
@@ -38,7 +38,6 @@
             ...
           }:
           {
-
             clan.core.vars.generators.openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
               share = true;
               files.id_ed25519.deploy = false;
@@ -64,11 +63,12 @@
   };
 
   roles.server = {
+    description = "Runs sshd with persistent host keys and (if certificate.searchDomains is set) a CA‑signed host certificate for <machine>.<domain>, enabling TOFU‑less verification by clients that trust the CA.";
     interface =
       { lib, ... }:
       {
         options = {
-          hostKeys.rsa.enable = lib.mkEnableOption "Generate RSA host key";
+          hostKeys.rsa.enable = lib.mkEnableOption "Also generates an RSA host key";
 
           certificate = {
             searchDomains = lib.mkOption {

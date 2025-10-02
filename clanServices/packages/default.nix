@@ -8,6 +8,7 @@
   ];
 
   roles.default = {
+    description = "Placeholder role to apply the packages service";
     interface =
       { lib, ... }:
       {

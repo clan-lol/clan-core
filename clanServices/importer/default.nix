@@ -6,5 +6,7 @@
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
 
-  roles.default = { };
+  roles.default = {
+    description = "Placeholder role to apply the importer service";
+  };
 }

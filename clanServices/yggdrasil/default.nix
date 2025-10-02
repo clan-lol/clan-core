@@ -5,6 +5,7 @@
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
 
   roles.default = {
+    description = "Placeholder role to apply the yggdrasil service";
     interface =
       { lib, ... }:
       {
