@@ -164,7 +164,20 @@ let
       else
         getPrios { options = opt; }
     ) filteredOptions;
+
+  getPriosLegacy = import ./getPriosLegacy.nix { inherit lib; };
+
+  wrap =
+    {
+      options,
+    }:
+    # Test _module.check for valueMeta
+    # This option should always exist if options comes from a module evaluation
+    if options._module.check ? valueMeta then
+      getPrios { inherit options; }
+    else
+      getPriosLegacy { inherit options; };
 in
 {
-  inherit getPrios;
+  getPrios = wrap;
 }
