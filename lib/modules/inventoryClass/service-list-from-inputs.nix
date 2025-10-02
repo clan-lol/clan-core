@@ -19,7 +19,7 @@ let
     in
     {
       manifest = eval.config.manifest;
-      roles = lib.mapAttrs (_n: _v: { }) eval.config.roles;
+      roles = lib.mapAttrs (_n: v: { inherit (v) description; }) eval.config.roles;
     };
 in
 {

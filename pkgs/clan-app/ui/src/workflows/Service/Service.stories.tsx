@@ -37,8 +37,14 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
               description: "This is module A",
             },
             roles: {
-              client: null,
-              server: null,
+              client: {
+                name: "client",
+                description: null,
+              },
+              server: {
+                name: "server",
+                description: null,
+              },
             },
           },
         },
@@ -52,9 +58,18 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
               description: "This is module B",
             },
             roles: {
-              peer: null,
-              moon: null,
-              controller: null,
+              peer: {
+                name: "peer",
+                description: null,
+              },
+              moon: {
+                name: "moon",
+                description: null,
+              },
+              controller: {
+                name: "controller",
+                description: null,
+              },
             },
           },
         },

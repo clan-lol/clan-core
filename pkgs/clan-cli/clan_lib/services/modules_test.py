@@ -62,6 +62,13 @@ def test_list_service_instances(
     assert instances["baz"].resolved.usage_ref.get("input") is None
     assert instances["baz"].resolved.usage_ref.get("name") == "sshd"
 
+    borgbackup_service = next(
+        m for m in service_modules.modules if m.usage_ref.get("name") == "borgbackup"
+    )
+    # Module has roles with descriptions
+    assert borgbackup_service.info.roles["client"].description is not None
+    assert borgbackup_service.info.roles["server"].description is not None
+
 
 @pytest.mark.with_core
 def test_list_service_modules(
