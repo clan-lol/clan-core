@@ -17,6 +17,7 @@
         options.certificate = {
           searchDomains = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+            default = [ ];
             example = [ "mydomain.com" ];
             description = ''
               List of domains to include in the certificate.
@@ -68,7 +69,7 @@
       { lib, ... }:
       {
         options = {
-          hostKeys.rsa.enable = lib.mkEnableOption "Also generates an RSA host key";
+          hostKeys.rsa.enable = lib.mkEnableOption "generating a RSA host key";
 
           certificate = {
             searchDomains = lib.mkOption {
@@ -96,9 +97,7 @@
             ...
           }:
           {
-
             clan.core.vars.generators = {
-
               openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
                 share = true;
                 files.id_ed25519.deploy = false;
