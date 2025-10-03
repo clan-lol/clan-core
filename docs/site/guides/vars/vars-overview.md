@@ -140,5 +140,5 @@ clan machines update my-machine
 
 ## Migration from Facts
 
-If you're currently using the legacy facts system, see our [Migration Guide](/guides/migrations/migration-facts-vars.md) for step-by-step instructions on upgrading to vars.
+If you're currently using the legacy facts system, see our [Migration Guide](../../guides/migrations/migration-facts-vars.md) for step-by-step instructions on upgrading to vars.
 

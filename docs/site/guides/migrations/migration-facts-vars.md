@@ -2,10 +2,10 @@
 
 For a high level overview about `vars` see our [blog post](https://clan.lol/blog/vars/).
 
-This guide will help you migrate your modules that still use our [`facts`](/guides/migrations/migration-facts-vars.md) backend
-to the [`vars`](/guides/vars/vars-overview.md) backend.
+This guide will help you migrate your modules that still use our [`facts`](../../guides/migrations/migration-facts-vars.md) backend
+to the [`vars`](../../guides/vars/vars-overview.md) backend.
 
-The `vars` [module](/reference/clan.core/vars.md) and the clan [command](/reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
+The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
 
 ## Keep Existing Values
 

@@ -1,6 +1,6 @@
 The `clan vars` subcommand is a powerful tool for managing machine-specific variables in a declarative and reproducible way. This guide will walk you through its usage, from setting up a generator to sharing and updating variables across machines.
 
-For a detailed API reference, see the [vars module documentation](/reference/clan.core/vars.md).
+For a detailed API reference, see the [vars module documentation](../../reference/clan.core/vars.md).
 
 In this guide, you will learn how to:
 

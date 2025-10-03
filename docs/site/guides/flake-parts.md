@@ -23,7 +23,7 @@ inputs = {
 
 ## Step 2: Import the Clan flake-parts Module
 
-Next, import the Clan flake-parts module to make the [Clan options](/options) available within `mkFlake`:
+Next, import the Clan flake-parts module to make the [Clan options](../reference/options/clan.md) available within `mkFlake`:
 
 ```nix
 {
