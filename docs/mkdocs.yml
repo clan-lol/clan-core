@@ -47,18 +47,18 @@ exclude_docs: |
 nav:
   - Getting Started:
       - Overview: index.md
-      - Creating Your First Clan: guides/getting-started/index.md
-      - Add Machines: guides/getting-started/add-machines.md
-      - Add User: guides/getting-started/add-user.md
-      - Add Services: guides/getting-started/add-services.md
+      - guides/getting-started/creating-your-first-clan.md
+      - guides/getting-started/add-machines.md
+      - guides/getting-started/add-users.md
+      - guides/getting-started/add-services.md
       - Deploy to Physical Machine:
-          - Create USB Installer: guides/getting-started/create-installer.md
-          - Deploy Physical Machine: guides/getting-started/hardware-report-physical.md
-      - Deploy to Virtual Machine: guides/getting-started/hardware-report-virtual.md
-      - Configure Disk Config: guides/getting-started/choose-disk.md
-      - Update Machine: guides/getting-started/update.md
-      - Continuous Integration: guides/getting-started/flake-check.md
-      - Convert Existing NixOS Config: guides/getting-started/convert-flake.md
+          - guides/getting-started/deploy-to-physical-machine/flash-installer.md
+          - guides/getting-started/deploy-to-physical-machine/install-machine.md
+      - guides/getting-started/deploy-to-virtual-machine.md
+      - guides/getting-started/configure-disk.md
+      - guides/getting-started/update-machines.md
+      - guides/getting-started/continuous-integration.md
+      - guides/getting-started/convert-existing-NixOS-configuration.md
   - Guides:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md

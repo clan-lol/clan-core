@@ -1,4 +1,3 @@
-
 # Update Machines
 
 The Clan command line interface enables you to update machines remotely over SSH.

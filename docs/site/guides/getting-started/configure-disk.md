@@ -1,5 +1,3 @@
-# Configure Disk Config
-
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
 To see what disk templates are available run:
@@ -64,9 +62,9 @@ You can have a look and customize it if needed.
 
 ## Deploy the machine
 
-**Finally deployment time!** 
+**Finally deployment time!**
 
-This command is destructive and will format your disk and install NixOS on it! It is equivalent to appending `--phases kexec,disko,install,reboot`. 
+This command is destructive and will format your disk and install NixOS on it! It is equivalent to appending `--phases kexec,disko,install,reboot`.
 
 
 ```bash

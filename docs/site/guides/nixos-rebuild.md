@@ -64,5 +64,5 @@ nixos-rebuild switch --flake .#my-machine --target-host root@target-ip --build-h
 
 ## Related Documentation
 
-- [Update Your Machines](getting-started/update.md) - Using clan's update command
-- [Variables (Vars)](vars/vars-overview.md) - Understanding the vars system
+- [Update Your Machines](/guides/getting-started/update-machine.md) - Using clan's update command
+- [Variables (Vars)](/guides/vars/vars-overview.md) - Understanding the vars system

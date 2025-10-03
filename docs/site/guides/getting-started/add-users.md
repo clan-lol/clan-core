@@ -1,5 +1,3 @@
-# How to add users
-
 !!! Note "Under construction"
 
 The users concept of clan is not done yet. This guide outlines some solutions from our community.
