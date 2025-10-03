@@ -1,5 +1,3 @@
-# Clan as library
-
 ## Status
 
 Accepted

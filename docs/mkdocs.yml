@@ -142,13 +142,13 @@ nav:
       - HTTP API: api.md
 
       - Decisions:
-          - Architecture Decisions: decisions/README.md
-          - 01-clanModules: decisions/01-ClanModules.md
-          - 02-clan-api: decisions/02-clan-api.md
-          - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
-          - 04-fetching-nix-from-python: decisions/04-fetching-nix-from-python.md
-          - 05-deployment-parameters: decisions/05-deployment-parameters.md
-          - Template: decisions/_template.md
+          - decisions/Architecture-decisions.md
+          - decisions/01-Clan-Modules.md
+          - decisions/02-clan-as-library.md
+          - decisions/03-adr-numbering-process.md
+          - decisions/04-fetching-nix-from-python.md
+          - decisions/05-deployment-parameters.md
+          - decisions/template.md
       - Glossary: reference/glossary.md
   - Services:
       - Introduction to ClanServices: reference/clanServices/index.md

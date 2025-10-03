@@ -455,7 +455,7 @@ def produce_inventory_docs() -> None:
     output = """# Inventory
 This provides an overview of the available options of the `inventory` model.
 
-It can be set via the `inventory` attribute of the [`clan`](./clan.md#inventory) function, or via the [`clan.inventory`](./clan.md#inventory) attribute of flake-parts.
+It can be set via the `inventory` attribute of the [`clan`](/reference/options/clan_inventory.md) function, or via the [`clan.inventory`](/reference/options/clan_inventory.md) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute
