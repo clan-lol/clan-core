@@ -44,13 +44,13 @@ pkgs.stdenv.mkDerivation {
     pushd docs
 
     mkdir -p ./site/reference/cli
-    cp -af ${module-docs}/* ./site/reference/
+    cp -af ${module-docs}/services/* ./site/services/
+    cp -af ${module-docs}/reference/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
 
-    mkdir -p ./site/reference/internal
     cp -af ${clan-lib-openapi} ./site/openapi.json
 
-    chmod -R +w ./site/reference
+    chmod -R +w ./site
     echo "Generated API documentation in './site/reference/' "
 
     rm -rf ./site/options

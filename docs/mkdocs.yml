@@ -108,8 +108,6 @@ nav:
       - Clan Options: reference/options/clan.md
       - Clan Inventory Options: reference/options/clan_inventory.md
 
-      - Clan Service API: reference/clanServices/clan-service-author-interface.md
-
       - clan.core (Machine Options):
           - Overview: reference/clan.core/index.md
           - reference/clan.core/backups.md
@@ -139,6 +137,8 @@ nav:
           - reference/cli/vars.md
           - reference/cli/vms.md
 
+      - Clan Service API: reference/clan-service-author-interface.md
+
       - HTTP API: api.md
 
       - Decisions:
@@ -151,32 +151,33 @@ nav:
           - decisions/template.md
       - Glossary: reference/glossary.md
   - Services:
-      - Introduction to ClanServices: reference/clanServices/index.md
+      - Introduction to ClanServices: services/official/index.md
+      # Generated list from the list of official services
       - Official:
-          - reference/clanServices/admin.md
-          - reference/clanServices/borgbackup.md
-          - reference/clanServices/certificates.md
-          - reference/clanServices/coredns.md
-          - reference/clanServices/data-mesher.md
-          - reference/clanServices/dyndns.md
-          - reference/clanServices/emergency-access.md
-          - reference/clanServices/garage.md
-          - reference/clanServices/hello-world.md
-          - reference/clanServices/importer.md
-          - reference/clanServices/localbackup.md
-          - reference/clanServices/matrix-synapse.md
-          - reference/clanServices/mycelium.md
-          - reference/clanServices/monitoring.md
-          - reference/clanServices/packages.md
-          - reference/clanServices/sshd.md
-          - reference/clanServices/syncthing.md
-          - reference/clanServices/trusted-nix-caches.md
-          - reference/clanServices/users.md
-          - reference/clanServices/wifi.md
-          - reference/clanServices/wireguard.md
-          - reference/clanServices/yggdrasil.md
-          - reference/clanServices/zerotier.md
-      - Community: community/services/index.md
+          - services/official/admin.md
+          - services/official/borgbackup.md
+          - services/official/certificates.md
+          - services/official/coredns.md
+          - services/official/data-mesher.md
+          - services/official/dyndns.md
+          - services/official/emergency-access.md
+          - services/official/garage.md
+          - services/official/hello-world.md
+          - services/official/importer.md
+          - services/official/localbackup.md
+          - services/official/matrix-synapse.md
+          - services/official/mycelium.md
+          - services/official/monitoring.md
+          - services/official/packages.md
+          - services/official/sshd.md
+          - services/official/syncthing.md
+          - services/official/trusted-nix-caches.md
+          - services/official/users.md
+          - services/official/wifi.md
+          - services/official/wireguard.md
+          - services/official/yggdrasil.md
+          - services/official/zerotier.md
+      - services/community.md
 
   - Search Clan Options: "/options"
 
