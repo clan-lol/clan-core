@@ -85,7 +85,7 @@ hide:
 
 ---
 
-[Get started](/guides/getting-started/creating-your-first-clan){ .md-button .md-button--primary }
+[Get started](/getting-started/creating-your-first-clan.md){ .md-button .md-button--primary }
 [View on Gitea](https://git.clan.lol/clan/clan-core){ .md-button }
 
 ## Guides

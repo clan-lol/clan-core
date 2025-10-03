@@ -47,18 +47,18 @@ exclude_docs: |
 nav:
   - Getting Started:
       - Overview: index.md
-      - guides/getting-started/creating-your-first-clan.md
-      - guides/getting-started/add-machines.md
-      - guides/getting-started/add-users.md
-      - guides/getting-started/add-services.md
+      - getting-started/creating-your-first-clan.md
+      - getting-started/add-machines.md
+      - getting-started/add-users.md
+      - getting-started/add-services.md
       - Deploy to Physical Machine:
-          - guides/getting-started/deploy-to-physical-machine/flash-installer.md
-          - guides/getting-started/deploy-to-physical-machine/install-machine.md
-      - guides/getting-started/deploy-to-virtual-machine.md
-      - guides/getting-started/configure-disk.md
-      - guides/getting-started/update-machines.md
-      - guides/getting-started/continuous-integration.md
-      - guides/getting-started/convert-existing-NixOS-configuration.md
+          - getting-started/deploy-to-physical-machine/flash-installer.md
+          - getting-started/deploy-to-physical-machine/install-machine.md
+      - getting-started/deploy-to-virtual-machine.md
+      - getting-started/configure-disk.md
+      - getting-started/update-machines.md
+      - getting-started/continuous-integration.md
+      - getting-started/convert-existing-NixOS-configuration.md
   - Guides:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md
