@@ -1,5 +1,3 @@
-# deployment parameters: evalHost, buildHost, targetHost
-
 ## Status
 
 accepted

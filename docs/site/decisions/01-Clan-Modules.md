@@ -1,5 +1,3 @@
-# Clan service modules
-
 ## Status
 
 Accepted

@@ -1,5 +1,3 @@
-# ADR Numbering process
-
 ## Status
 
 Proposed after some conversation between @lassulus, @Mic92, & @lopter.
