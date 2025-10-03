@@ -5,7 +5,7 @@
 This section explains how to author a clan service module.
 We discussed the initial architecture in [01-clan-service-modules](/decisions/01-Clan-Modules.md) and decided to rework the format.
 
-For the full specification and current state see: **[Service Author Reference](/reference/clanServices/clan-service-author-interface.md)**
+For the full specification and current state see: **[Service Author Reference](/reference/options/clan_service.md)**
 
 ### A Minimal module
 
@@ -47,7 +47,7 @@ The imported module file must fulfill at least the following requirements:
 }
 ```
 
-For more attributes see: **[Service Author Reference](/reference/clanServices/clan-service-author-interface.md)**
+For more attributes see: **[Service Author Reference](/reference/options/clan_service.md)**
 
 ### Adding functionality to the module
 
@@ -300,6 +300,6 @@ instnaces.machine-type = {
 
 ## Further Reading
 
-- [Reference Documentation for Service Authors](/reference/clanServices/clan-service-author-interface.md)
+- [Reference Documentation for Service Authors](/reference/options/clan_service.md)
 - [Migration Guide from ClanModules to ClanServices](/guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](/decisions/01-Clan-Modules.md)

@@ -439,7 +439,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
         # for option in options_tree.suboptions:
         output += options_docs_from_tree(options_tree, init_level=2)
 
-    outfile = Path(OUT) / "reference" / "clan-service-author-interface.md"
+    outfile = Path(OUT) / "reference/options" / "clan_service.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
@@ -454,7 +454,7 @@ def produce_inventory_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
-    output = """# Inventory
+    output = """# Inventory Submodule
 This provides an overview of the available options of the `inventory` model.
 
 It can be set via the `inventory` attribute of the [`clan`](/reference/options/clan_inventory.md) function, or via the [`clan.inventory`](/reference/options/clan_inventory.md) attribute of flake-parts.
@@ -514,6 +514,12 @@ or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
         # Exclude inventory options
         for option in clan_root_option.suboptions:
             if "inventory" in option.name:
+                output += """## Inventory
+
+Attribute: `inventory`
+
+See: [Inventory Submodule](/reference/options/clan_inventory.md)
+"""
                 continue
             output += options_docs_from_tree(option, init_level=2)
 

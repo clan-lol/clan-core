@@ -105,8 +105,10 @@ nav:
 
   - Reference:
       - Overview: reference/index.md
-      - Clan Options: reference/options/clan.md
-      - Clan Inventory Options: reference/options/clan_inventory.md
+      - Options:
+          - reference/options/clan.md
+          - reference/options/clan_inventory.md
+          - reference/options/clan_service.md
 
       - clan.core (Machine Options):
           - Overview: reference/clan.core/index.md
@@ -137,7 +139,6 @@ nav:
           - reference/cli/vars.md
           - reference/cli/vms.md
 
-      - Clan Service API: reference/clan-service-author-interface.md
 
       - HTTP API: api.md
 
