@@ -1,10 +1,10 @@
 Machines can be added using the following methods
 
-- Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](../inventory/autoincludes.md))
+- Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](/guides/inventory/autoincludes.md))
 - Imperative via cli command: `clan machines create`
 - Editing nix expressions in flake.nix See [`clan-core.lib.clan`](/options/?scope=Flake Options (clan.nix file))
 
-See the complete [list](../inventory/autoincludes.md) of auto-loaded files.
+See the complete [list](/guides/inventory/autoincludes.md) of auto-loaded files.
 
 ## Create a machine
 
@@ -18,8 +18,6 @@ See the complete [list](../inventory/autoincludes.md) of auto-loaded files.
         };
 
         # Additional NixOS configuration can be added here.
-        # machines/jon/configuration.nix will be automatically imported.
-        # See: https://docs.clan.lol/guides/more-machines/#automatic-registration
         machines = {
             # jon = { config, ... }: {
             #   environment.systemPackages = [ pkgs.asciinema ];

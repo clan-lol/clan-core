@@ -179,7 +179,7 @@ Examples:
   Will create a new clan flake in the specified directory and create it if it
   doesn't exist yet. The flake will be created from a default template.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/creating-your-first-clan")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -253,7 +253,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/deploy-to-physical-machine/flash-installer")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/deploy-to-physical-machine/flash-installer")}
             """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -280,7 +280,7 @@ Examples:
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/deploy-to-physical-machine/install-machine")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deploy-to-physical-machine/install-machine")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -411,7 +411,7 @@ Examples:
   If the `--target-host` flag is omitted will try to find host information by
   checking the deployment configuration inside the specified machine.
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/update-machines")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/update-machines")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
