@@ -95,4 +95,4 @@ We are going to make three changes:
 
 These steps are only needed for existing configurations that depend on the `diskId` module.
 
-For newer machines clan offers simple *disk templates* via its [templates cli](../../reference/cli/templates.md)
+For newer machines clan offers simple *disk templates* via its [templates cli](/reference/cli/templates.md)

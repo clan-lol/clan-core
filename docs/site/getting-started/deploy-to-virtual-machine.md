@@ -2,7 +2,7 @@
 ## Prerequisites
 - [x] RAM > 2GB
 - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-- [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
+- [x] **Machine configuration**: See our basic [adding and configuring machine guide](/getting-started/add-machines.md)
 
 
 Clan supports any cloud machine if it is reachable via SSH and supports `kexec`.

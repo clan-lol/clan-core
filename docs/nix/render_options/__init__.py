@@ -235,7 +235,7 @@ def produce_clan_core_docs() -> None:
             if module_type is not None and "submodule" not in module_type:
                 continue
             core_outputs[indexfile] += (
-                f"      - [{submodule_name}](./{submodule_name}.md)\n"
+                f"      - [{submodule_name}](/reference/clan.core/{submodule_name}.md)\n"
             )
 
         core_outputs[indexfile] += options_head
@@ -325,9 +325,9 @@ Each `clanService`:
 !!! Note
     `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
 
-    See [Migration Guide](../../guides/migrations/migrate-inventory-services.md) for help on migrating.
+    See [Migration Guide](/guides/migrations/migrate-inventory-services.md) for help on migrating.
 
-Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/inventory/clanServices.md).
+Learn how to use `clanServices` in practice in the [Using clanServices guide](/guides/inventory/clanServices.md).
 """
 
     with indexfile.open("w") as of:
@@ -422,7 +422,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
 !!! Note
     This is not a user-facing documentation, but rather meant as a reference for *module authors*
 
-    See: [clanService Authoring Guide](../../guides/services/community.md)
+    See: [clanService Authoring Guide](/guides/services/community.md)
 """
     # Inventory options are already included under the clan attribute
     # We just omitted them in the clan docs, because we want a separate output for the inventory model
@@ -497,7 +497,7 @@ def produce_clan_options_docs() -> None:
     output = """# Clan Options
 This provides an overview of the available options
 
-Those can be set via [`clan-core.lib.clan`](/reference/options/clan.md#inventory) function,
+Those can be set via [`clan-core.lib.clan`](/reference/options/clan.md) function,
 or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
 
 """

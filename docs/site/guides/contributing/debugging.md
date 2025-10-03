@@ -26,7 +26,7 @@ pkgs.mkShell {
 
 ## Debugging nixos-anywhere
 
-If you encounter a bug in a complex shell script such as `nixos-anywhere`, start by replacing the `nixos-anywhere` command with a local checkout of the project, look in the [contribution](./CONTRIBUTING.md) section for an example. 
+If you encounter a bug in a complex shell script such as `nixos-anywhere`, start by replacing the `nixos-anywhere` command with a local checkout of the project, look in the [contribution](/guides/CONTRIBUTING.md) section for an example.
 
 ## The Debug Flag
 
