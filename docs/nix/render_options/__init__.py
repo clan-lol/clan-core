@@ -235,7 +235,7 @@ def produce_clan_core_docs() -> None:
             if module_type is not None and "submodule" not in module_type:
                 continue
             core_outputs[indexfile] += (
-                f"      - [{submodule_name}](/reference/clan.core/{submodule_name}.md)\n"
+                f"      - [{submodule_name}](../../reference/clan.core/{submodule_name}.md)\n"
             )
 
         core_outputs[indexfile] += options_head
@@ -327,9 +327,9 @@ Each `clanService`:
 !!! Note
     `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
 
-    See [Migration Guide](/guides/migrations/migrate-inventory-services.md) for help on migrating.
+    See [Migration Guide](../../guides/migrations/migrate-inventory-services.md) for help on migrating.
 
-Learn how to use `clanServices` in practice in the [Using clanServices guide](/guides/inventory/clanServices.md).
+Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/inventory/clanServices.md).
 """
 
     with indexfile.open("w") as of:
@@ -424,7 +424,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
 !!! Note
     This is not a user-facing documentation, but rather meant as a reference for *module authors*
 
-    See: [clanService Authoring Guide](/guides/services/community.md)
+    See: [clanService Authoring Guide](../../guides/services/community.md)
 """
     # Inventory options are already included under the clan attribute
     # We just omitted them in the clan docs, because we want a separate output for the inventory model
@@ -439,7 +439,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
         # for option in options_tree.suboptions:
         output += options_docs_from_tree(options_tree, init_level=2)
 
-    outfile = Path(OUT) / "reference" / "clan-service-author-interface.md"
+    outfile = Path(OUT) / "reference/options" / "clan_service.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
@@ -454,10 +454,10 @@ def produce_inventory_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
-    output = """# Inventory
+    output = """# Inventory Submodule
 This provides an overview of the available options of the `inventory` model.
 
-It can be set via the `inventory` attribute of the [`clan`](/reference/options/clan_inventory.md) function, or via the [`clan.inventory`](/reference/options/clan_inventory.md) attribute of flake-parts.
+It can be set via the `inventory` attribute of the [`clan`](../../reference/options/clan_inventory.md) function, or via the [`clan.inventory`](../../reference/options/clan_inventory.md) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute
@@ -499,8 +499,8 @@ def produce_clan_options_docs() -> None:
     output = """# Clan Options
 This provides an overview of the available options
 
-Those can be set via [`clan-core.lib.clan`](/reference/options/clan.md) function,
-or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
+Those can be set via [`clan-core.lib.clan`](../../reference/options/clan.md) function,
+or via the [`clan`](../../reference/options/clan.md) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute
@@ -514,6 +514,12 @@ or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
         # Exclude inventory options
         for option in clan_root_option.suboptions:
             if "inventory" in option.name:
+                output += """## Inventory
+
+Attribute: `inventory`
+
+See: [Inventory Submodule](../../reference/options/clan_inventory.md)
+"""
                 continue
             output += options_docs_from_tree(option, init_level=2)
 

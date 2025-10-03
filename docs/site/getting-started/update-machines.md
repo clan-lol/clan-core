@@ -31,7 +31,7 @@ Ensure that the root login is secured and only used when necessary.
 
 ## Multiple Target Hosts
 
-You can now experiment with a new interface that allows you to define multiple `targetHost` addresses for different VPNs. Learn more and try it out in our [networking guide](/guides/networking/networking.md).
+You can now experiment with a new interface that allows you to define multiple `targetHost` addresses for different VPNs. Learn more and try it out in our [networking guide](../guides/networking/networking.md).
 
 ## Updating Machine Configurations
 
@@ -78,7 +78,7 @@ clan {
 
 `buildHost` / `targetHost`, and other network settings can be temporarily overridden for a single command:
 
-For the full list of flags refer to the [Clan CLI](/reference/cli/index.md)
+For the full list of flags refer to the [Clan CLI](../reference/cli/index.md)
 
 ```bash
 # Build on a remote host

@@ -3,15 +3,15 @@
 The users concept of clan is not done yet. This guide outlines some solutions from our community.
 Defining users can be done in many different ways. We want to highlight two approaches:
 
-- Using clan's [users](/reference/clanServices/users.md) service.
+- Using clan's [users](../services/official/users.md) service.
 - Using a custom approach.
 
-## Adding Users using the [users](/reference/clanServices/users.md) service
+## Adding Users using the [users](../services/official/users.md) service
 
 To add a first *user* this guide will be leveraging two things:
 
-- [clanServices](/reference/clanServices/index.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
-- [clanServices/users](/reference/clanServices/users.md): Implements logic for adding a single user perInstance.
+- [services](../services/official/index.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
+- [services/users](../services/official/users.md): Implements logic for adding a single user perInstance.
 
 The example shows how to add a user called `jon`:
 
@@ -49,7 +49,7 @@ The example shows how to add a user called `jon`:
 
 The `users` service creates a `/home/jon` directory, allows `jon` to sign in and will take care of the user's password.
 
-For more information see [clanService/users](/reference/clanServices/users.md)
+For more information see [services/users](../services/official/users.md)
 
 ## Using a custom approach
 

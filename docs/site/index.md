@@ -85,26 +85,26 @@ hide:
 
 ---
 
-[Get started](/getting-started/creating-your-first-clan.md){ .md-button .md-button--primary }
+[Get started](./getting-started/creating-your-first-clan.md){ .md-button .md-button--primary }
 [View on Gitea](https://git.clan.lol/clan/clan-core){ .md-button }
 
 ## Guides
 
 <div class="grid cards" markdown>
 
--   [Inventory](/guides/inventory/inventory.md)
+-   [Inventory](./guides/inventory/inventory.md)
 
     ---
 
     Learn how about inventory
 
--   [Vars](/guides/vars/vars-overview.md)
+-   [Vars](./guides/vars/vars-overview.md)
 
     ---
 
     Learn how to use vars
 
--   [macOS](/guides/macos.md)
+-   [macOS](./guides/macos.md)
 
     ---
 
@@ -116,7 +116,7 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [CLI](/reference/cli/index.md)
+-   [CLI](./reference/cli/index.md)
 
     ---
 
@@ -128,7 +128,7 @@ hide:
 
     Search all options
 
--   [Services](/reference/clanServices/index.md)
+-   [Services](./services/official/index.md)
 
     ---
 
