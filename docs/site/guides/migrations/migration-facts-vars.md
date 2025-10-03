@@ -1,11 +1,11 @@
-# Migrate modules from `facts` to `vars`.
+# Migrate modules from `facts` to `vars`
 
 For a high level overview about `vars` see our [blog post](https://clan.lol/blog/vars/).
 
-This guide will help you migrate your modules that still use our [`facts`](../secrets.md) backend
-to the [`vars`](../vars/vars-overview.md) backend.
+This guide will help you migrate your modules that still use our [`facts`](/guides/migrations/migration-facts-vars.md) backend
+to the [`vars`](/guides/vars/vars-overview.md) backend.
 
-The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
+The `vars` [module](/reference/clan.core/vars.md) and the clan [command](/reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
 
 ## Keep Existing Values
 
@@ -33,7 +33,6 @@ vars.generators.vaultwarden = {
 
 And this would read as follows: The vaultwarden `vars` module generates the admin file.
 
-
 ## Prompts
 
 Because prompts can be a necessity for certain systems `vars` have a shorthand for defining them.
@@ -46,7 +45,9 @@ facts.services.forgejo-api = {
     generator.script = "cp $prompt_value > $secret/token";
 };
 ```
+
 To have analogous functionality in `vars`:
+
 ```nix
 vars.generators.forgejo-api = {
     prompts.token = {
@@ -55,6 +56,7 @@ vars.generators.forgejo-api = {
     };
 };
 ```
+
 This does not only simplify prompting, it also now allows us to define multiple prompts in one generator.
 A more analogous way to the `fact` method is available, in case the module author needs more flexibility with the prompt input:
 
@@ -92,8 +94,8 @@ facts.services.syncthing = {
 };
 ```
 
-
 This would be the corresponding `vars` module, which also will migrate existing facts.
+
 ```nix
 vars.generators.syncthing = {
   migrateFact = "syncthing";
@@ -116,10 +118,10 @@ vars.generators.syncthing = {
   '';
 };
 ```
+
 Most of the usage patterns stay the same, but `vars` have a more ergonomic interface.
 There are not two different ways to define files anymore (public/secret).
 Now files are defined under the `files` attribute and are secret by default.
-
 
 ## Happy Migration
 

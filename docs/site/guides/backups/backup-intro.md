@@ -4,7 +4,7 @@ This guide explains how to use the Clan backup and state management interface to
 
 ## State Management
 
-Clan backups are based on the concept of [states](../../reference/clan.core/state.md). A state is a Nix attribute set, defined as `clan.core.state.<name> = {};`, which specifies the files or directories to back up.
+Clan backups are based on the concept of [states](/reference/clan.core/state.md). A state is a Nix attribute set, defined as `clan.core.state.<name> = {};`, which specifies the files or directories to back up.
 
 For example, if you have a clan service called `linkding`, you can define the folders to back up as follows:
 

@@ -1,5 +1,5 @@
-This article provides an overview over the underlying secrets system which is used by [Vars](./vars/vars-overview.md).
-Under most circumstances you should use [Vars](./vars/vars-overview.md) directly instead.
+This article provides an overview over the underlying secrets system which is used by [Vars](/guides/vars/vars-overview.md).
+Under most circumstances you should use [Vars](/guides/vars/vars-overview.md) directly instead.
 
 Consider using `clan secrets` only for managing admin users and groups, as well as a debugging tool.
 
@@ -11,7 +11,7 @@ Clan enables encryption of secrets (such as passwords & keys) ensuring security 
 
 By default, Clan uses the [sops](https://github.com/getsops/sops) format
 and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
-Clan can also be configured to be used with other secret store [backends](../reference/clan.core/vars.md#clan.core.vars.settings.secretStore).
+Clan can also be configured to be used with other secret store [backends](/reference/clan.core/vars.md#clan.core.vars.settings.secretStore).
 
 ## Create Your Admin Keypair
 
