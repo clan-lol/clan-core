@@ -273,8 +273,10 @@ def produce_clan_core_docs() -> None:
                 core_outputs[outfile] += output
 
         for outfile, output in core_outputs.items():
-            (Path(OUT) / outfile).parent.mkdir(parents=True, exist_ok=True)
-            with (Path(OUT) / outfile).open("w") as of:
+            (Path(OUT) / "reference" / outfile).parent.mkdir(
+                parents=True, exist_ok=True
+            )
+            with (Path(OUT) / "reference" / outfile).open("w") as of:
                 of.write(output)
 
 
@@ -307,7 +309,7 @@ def produce_clan_service_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
-    indexfile = Path(OUT) / "clanServices/index.md"
+    indexfile = Path(OUT) / "services/official" / "index.md"
     indexfile.parent.mkdir(
         parents=True,
         exist_ok=True,
@@ -368,7 +370,7 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](/g
                 replace_prefix=f"clan.{module_name}",
             )
 
-        outfile = Path(OUT) / f"clanServices/{module_name}.md"
+        outfile = Path(OUT) / "services/official" / f"{module_name}.md"
         outfile.parent.mkdir(
             parents=True,
             exist_ok=True,
@@ -437,7 +439,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
         # for option in options_tree.suboptions:
         output += options_docs_from_tree(options_tree, init_level=2)
 
-    outfile = Path(OUT) / "clanServices/clan-service-author-interface.md"
+    outfile = Path(OUT) / "reference" / "clan-service-author-interface.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
@@ -479,7 +481,7 @@ It can be set via the `inventory` attribute of the [`clan`](/reference/options/c
         for option in inventory_opt.suboptions:
             output += options_docs_from_tree(option, init_level=2)
 
-    outfile = Path(OUT) / "options/clan_inventory.md"
+    outfile = Path(OUT) / "reference/options" / "clan_inventory.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
@@ -515,7 +517,7 @@ or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
                 continue
             output += options_docs_from_tree(option, init_level=2)
 
-    outfile = Path(OUT) / "options/clan.md"
+    outfile = Path(OUT) / "reference/options" / "clan.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
