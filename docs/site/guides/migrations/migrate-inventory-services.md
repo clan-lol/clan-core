@@ -157,7 +157,7 @@ instances = {
 
 ### Move `services` entries to `instances`
 
-Check if a service that you use has been migrated [In our reference](../../services/official/index.md)
+Check if a service that you use has been migrated [In our reference](../../services/definition.md)
 
 In your inventory, move it from:
 
@@ -380,4 +380,4 @@ instances = {
 
 * [Inventory Concept](../../guides/inventory/inventory.md)
 * [Authoring a 'clan.service' module](../../guides/services/community.md)
-* [ClanServices](../../guides/inventory/clanServices.md)
+* [ClanServices](../../guides/services/introduction-to-services.md)

@@ -1,11 +1,11 @@
-Clan's inventory system is a composable way to define and deploy services across
+Clan's services are a modular way to define and deploy services across
 machines.
 
-This guide shows how to **instantiate** a `clanService`, explains how service
-definitions are structured in your inventory, and how to pick or create services
+This guide shows how to **instantiate** a **service**, explains how service
+definitions are structured and how to pick or create services
 from modules exposed by flakes.
 
-The term **Multi-host-modules** was introduced previously in the [nixus
+A similar term: **Multi-host-modules** was introduced previously in the [nixus
 repository](https://github.com/infinisil/nixus) and represents a similar
 concept.
 
@@ -68,7 +68,7 @@ inventory.instances = {
 ## Module Settings
 
 Each role might expose configurable options. See clan's [clanServices
-reference](../../services/official/index.md) for all available options.
+reference](../../services/definition.md) for all available options.
 
 Settings can be set in per-machine or per-role. The latter is applied to all
 machines that are assigned to that role.
@@ -155,7 +155,7 @@ inventory.instances = {
 
 You can use services exposed by Clan's core module library, `clan-core`.
 
-🔗 See: [List of Available Services in clan-core](../../services/official/index.md)
+🔗 See: [List of Available Services in clan-core](../../services/definition.md)
 
 ## Defining Your Own Service
 

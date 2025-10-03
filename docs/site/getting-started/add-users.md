@@ -10,7 +10,7 @@ Defining users can be done in many different ways. We want to highlight two appr
 
 To add a first *user* this guide will be leveraging two things:
 
-- [services](../services/official/index.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
+- [services](../services/definition.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
 - [services/users](../services/official/users.md): Implements logic for adding a single user perInstance.
 
 The example shows how to add a user called `jon`:
