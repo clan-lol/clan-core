@@ -309,32 +309,6 @@ def produce_clan_service_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
-    indexfile = Path(OUT) / "services/official" / "index.md"
-    indexfile.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-    index = "# Clan Services\n\n"
-    index += """
-**`clanServices`** are modular building blocks that simplify the configuration and orchestration of multi-host services.
-
-Each `clanService`:
-
-* Is a module of class **`clan.service`**
-* Can define **roles** (e.g., `client`, `server`)
-* Uses **`inventory.instances`** to configure where and how it is deployed
-
-!!! Note
-    `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
-
-    See [Migration Guide](../../guides/migrations/migrate-inventory-services.md) for help on migrating.
-
-Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/inventory/clanServices.md).
-"""
-
-    with indexfile.open("w") as of:
-        of.write(index)
-
     with Path(CLAN_MODULES_VIA_SERVICE).open() as f3:
         service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
 

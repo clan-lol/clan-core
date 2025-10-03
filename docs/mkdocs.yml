@@ -151,7 +151,7 @@ nav:
           - decisions/template.md
       - Glossary: reference/glossary.md
   - Services:
-      - Introduction to ClanServices: services/official/index.md
+      - services/definition.md
       # Generated list from the list of official services
       - Official:
           - services/official/admin.md

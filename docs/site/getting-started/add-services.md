@@ -38,7 +38,7 @@ To learn more: [Guide about clanService](../guides/services/introduction-to-serv
 }
 ```
 
-1. See [services/official](../services/official/index.md) for all available services and how to configure them.
+1. See [services/official](../services/definition.md) for all available services and how to configure them.
    Or read [guides/services](../guides/services/community.md) if you want to bring your own
 
 2. Replace `__YOUR_CONTROLLER_` with the *name* of your machine.
