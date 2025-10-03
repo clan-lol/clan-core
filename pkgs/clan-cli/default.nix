@@ -246,7 +246,8 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.unzip
               pkgs.libxslt
               pkgs.getconf
-              pkgs.chroot-realpath
+              # REMOVEME: once we drop support for 25.11
+              (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
 
               nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
               nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
