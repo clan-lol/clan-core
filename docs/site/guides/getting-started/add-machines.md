@@ -1,5 +1,3 @@
-# How to add machines
-
 Machines can be added using the following methods
 
 - Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](../inventory/autoincludes.md))

@@ -1,10 +1,8 @@
-# Convert existing NixOS configurations
-
 This guide will help you convert your existing NixOS configurations into a Clan.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend reading the [Getting Started](./index.md) guide first.
+    unexpected issues. We recommend reading the [Getting Started](/guides/getting-started/creating-your-first-clan.md) guide first.
 
     Once you have a working setup and understand the concepts transfering your NixOS configurations over is easy.
 

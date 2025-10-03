@@ -5,7 +5,7 @@ This guide provides an example setup for a single-disk ZFS system with native en
     This configuration only applies to `systemd-boot` enabled systems and **requires** UEFI booting.
 
 !!! Info "Secure Boot"
-    This guide is compatible with systems that have [secure boot disabled](./secure-boot.md). If you encounter boot issues, check if secure boot needs to be disabled in your UEFI settings.
+    This guide is compatible with systems that have [secure boot disabled](/guides/secure-boot.md). If you encounter boot issues, check if secure boot needs to be disabled in your UEFI settings.
 
 Replace the highlighted lines with your own disk-id.
 You can find our your disk-id by executing:

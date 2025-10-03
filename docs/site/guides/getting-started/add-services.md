@@ -1,5 +1,3 @@
-# How to add services
-
 A service in clan is a self-contained, reusable unit of system configuration that provides a specific piece of functionality across one or more machines.
 
 Think of it as a recipe for running a tool — like automatic backups, VPN networking, monitoring, etc.

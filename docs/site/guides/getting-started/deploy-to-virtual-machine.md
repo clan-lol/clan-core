@@ -1,7 +1,3 @@
-# Generate a VM Hardware Report
-
-Now that you have created a machine, added some services, and set up secrets, this guide will walk you through how to deploy it.
-
 
 ## Prerequisites
 - [x] RAM > 2GB

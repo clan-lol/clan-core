@@ -1,6 +1,4 @@
-# :material-clock-fast: Getting Started
-
-Ready to manage your fleet of machines? 
+Ready to manage your fleet of machines?
 
 We will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
 
@@ -43,7 +41,7 @@ Make sure you have the following:
 ## Create a New Clan
 
 1. Navigate to your desired directory:
-    
+
     ```shellSession
     cd <your-directory>
     ```
@@ -76,7 +74,7 @@ my-clan/
 ```
 
 !!! note "Templates"
-    This is the structure for the `default` template. 
+    This is the structure for the `default` template.
 
     Use `clan templates list` and `clan templates --help` for available templates & more. Keep in mind that the exact files may change as templates evolve.
 
@@ -121,7 +119,7 @@ Name: __CHANGE_ME__
 Description: None
 ```
 
-This confirms your setup is working correctly. 
+This confirms your setup is working correctly.
 
 You can now change the default name by editing the `meta.name` field in your `clan.nix` file.
 

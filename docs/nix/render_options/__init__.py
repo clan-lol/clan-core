@@ -497,8 +497,8 @@ def produce_clan_options_docs() -> None:
     output = """# Clan Options
 This provides an overview of the available options
 
-Those can be set via [`clan-core.lib.clan`](./clan.md#inventory) function,
-or via the [`clan`](./clan.md) attribute of flake-parts.
+Those can be set via [`clan-core.lib.clan`](/reference/options/clan.md#inventory) function,
+or via the [`clan`](/reference/options/clan.md) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute

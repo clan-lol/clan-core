@@ -48,7 +48,7 @@ Examples:
   $ clan machines update machine1 machine2 --tags production
   Will update only machine1 and machine2 if they both have the "production" tag.
 
-For more detailed information, visit: https://docs.clan.lol/guides/getting-started/update
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/update-machines
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -108,9 +108,6 @@ Examples:
 
   $ clan machines init-hardware-config [MACHINE] --target-host root@<ip>
   Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
-
-For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration
-
 """
         ),
     )
@@ -129,9 +126,6 @@ For more detailed information, visit: https://docs.clan.lol/guides/getting-start
 
         $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
         Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
-
-        For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration
-
         """
         ),
     )
@@ -160,8 +154,10 @@ Examples:
   Will install the specified machine [MACHINE] to the host exposed by
   the deployment information of the [JSON] deployment string.
 
-For information on how to set up the installer see: https://docs.clan.lol/guides/getting-started/create-installer/
-For more detailed information, visit: https://docs.clan.lol/guides/getting-started/hardware-report-physical
+Further references:
+
+- https://docs.clan.lol/guides/getting-started/deploy-to-physical-machine/
+- https://docs.clan.lol/guides/getting-started/deploy-to-virtual-machine/
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
