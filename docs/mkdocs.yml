@@ -99,9 +99,9 @@ nav:
       - Disk Encryption: guides/disk-encryption.md
       - Disable Secure Boot: guides/secure-boot.md
       - Contributing:
-          - Hacking: guides/contributing/CONTRIBUTING.md
-          - Advanced Debugging: guides/contributing/debugging.md
-          - Testing: guides/contributing/testing.md
+          - guides/contributing/CONTRIBUTING.md
+          - guides/contributing/debugging.md
+          - guides/contributing/testing.md
 
   - Reference:
       - Overview: reference/index.md
