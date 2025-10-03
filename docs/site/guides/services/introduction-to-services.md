@@ -1,11 +1,11 @@
-Clan's inventory system is a composable way to define and deploy services across
+Clan's services are a modular way to define and deploy services across
 machines.
 
-This guide shows how to **instantiate** a `clanService`, explains how service
-definitions are structured in your inventory, and how to pick or create services
+This guide shows how to **instantiate** a **service**, explains how service
+definitions are structured and how to pick or create services
 from modules exposed by flakes.
 
-The term **Multi-host-modules** was introduced previously in the [nixus
+A similar term: **Multi-host-modules** was introduced previously in the [nixus
 repository](https://github.com/infinisil/nixus) and represents a similar
 concept.
 

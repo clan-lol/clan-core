@@ -380,4 +380,4 @@ instances = {
 
 * [Inventory Concept](../../guides/inventory/inventory.md)
 * [Authoring a 'clan.service' module](../../guides/services/community.md)
-* [ClanServices](../../guides/inventory/clanServices.md)
+* [ClanServices](../../guides/services/introduction-to-services.md)

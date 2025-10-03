@@ -8,7 +8,7 @@ In Clan Services are multi-Host & role-based:
 
 - You can use tags instead of explicit machine names.
 
-To learn more: [Guide about clanService](../guides/inventory/clanServices.md)
+To learn more: [Guide about clanService](../guides/services/introduction-to-services.md)
 
 !!! Important
     It is recommended to add at least one networking service such as `zerotier` that allows to reach all your clan machines from your setup computer across the globe.
@@ -38,8 +38,8 @@ To learn more: [Guide about clanService](../guides/inventory/clanServices.md)
 }
 ```
 
-1. See [reference/clanServices](../services/official/index.md) for all available services and how to configure them.
-   Or read [authoring/clanServices](../guides/services/community.md) if you want to bring your own
+1. See [services/official](../services/official/index.md) for all available services and how to configure them.
+   Or read [guides/services](../guides/services/community.md) if you want to bring your own
 
 2. Replace `__YOUR_CONTROLLER_` with the *name* of your machine.
 
