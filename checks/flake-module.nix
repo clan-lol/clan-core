@@ -86,6 +86,7 @@ in
 
             # Container Tests
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
+            nixos-systemd-abstraction = self.clanLib.test.containerTest ./systemd-abstraction nixosTestArgs;
             nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
             nixos-test-extra-python-packages = self.clanLib.test.containerTest ./test-extra-python-packages nixosTestArgs;

@@ -97,12 +97,13 @@ let
   sourceWithoutTests = cliSource (
     nixFilter.filter {
       root = ./.;
-      include = [
+      exclude = [
+        # exclude if
         (
           _root: path: _type:
-          (builtins.match ".*/test_[^/]+\.py" path) == null
-          && (builtins.match ".*/[^/]+_test\.py" path) == null
-          # && (builtins.match ".*/tests/.+" path) == null
+          (builtins.match ".*/test_[^/]+\.py" path) != null # matches test_*.py
+          && (builtins.match ".*/[^/]+_test\.py" path) != null # matches *_test.py
+          && (builtins.match ".*/container_test\.py" path) == null # doesn't match container_test.py
         )
       ];
     }
@@ -194,7 +195,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          python -m pytest -m "not impure and not with_core" -n "$jobs" \
+          python -m pytest -m "not service_runner and not impure and not with_core" -n "$jobs" \
             ./clan_cli  \
             ./clan_lib  \
             --cov ./clan_cli \
@@ -281,7 +282,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
           # Run all tests with core marker
-          python -m pytest -m "not impure and with_core" -n "$jobs" \
+          python -m pytest -m "not service_runner and not impure and with_core" -n "$jobs" \
             ./clan_cli  \
             ./clan_lib  \
             --cov ./clan_cli \

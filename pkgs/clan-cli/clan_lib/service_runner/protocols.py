@@ -2,11 +2,11 @@
 
 import platform
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from clan_lib.errors import ClanError
 
-from .systemd_user import ServiceStatus
+from .systemd_user import GroupedServiceInfo, ServiceInfo, ServiceStatus
 
 
 @runtime_checkable
@@ -18,9 +18,10 @@ class ServiceManagerProtocol(Protocol):
         name: str,
         command: list[str],
         working_dir: Path | None = None,
-        extra_env_vars: dict[str, str] | None = None,
+        env_vars: dict[str, str] | None = None,
         description: str | None = None,
         autostart: bool = False,
+        group: str | None = None,
     ) -> str:
         """Start a service with the given configuration.
 
@@ -28,9 +29,10 @@ class ServiceManagerProtocol(Protocol):
             name: Service identifier
             command: Command and arguments to run
             working_dir: Working directory for the service
-            extra_env_vars: Additional environment variables
+            env_vars: Environment variables for the service
             description: Human-readable service description
             autostart: Whether to enable service on boot
+            group: Optional group name for service grouping
 
         Returns:
             Service name/identifier
@@ -41,17 +43,14 @@ class ServiceManagerProtocol(Protocol):
         """
         ...
 
-    def stop_service(self, name: str) -> bool:
+    def stop_service(self, name: str) -> None:
         """Stop and remove a service.
 
         Args:
             name: Service identifier
 
-        Returns:
-            True if successful, False otherwise
-
         Raises:
-            ClanError: If name is empty
+            ClanError: If name is empty or operation fails
 
         """
         ...
@@ -71,17 +70,14 @@ class ServiceManagerProtocol(Protocol):
         """
         ...
 
-    def restart_service(self, name: str) -> bool:
+    def restart_service(self, name: str) -> None:
         """Restart a service.
 
         Args:
             name: Service identifier
 
-        Returns:
-            True if successful, False otherwise
-
         Raises:
-            ClanError: If name is empty
+            ClanError: If name is empty or operation fails
 
         """
         ...
@@ -102,11 +98,38 @@ class ServiceManagerProtocol(Protocol):
         """
         ...
 
-    def list_running_services(self) -> list[dict[str, Any]]:
+    def list_running_services(self) -> list[ServiceInfo]:
         """List all services managed by this backend.
 
         Returns:
             List of service information dictionaries
+
+        """
+        ...
+
+    def list_services_by_group(self, group: str) -> list[GroupedServiceInfo]:
+        """List all services in the specified group.
+
+        Args:
+            group: Group name to filter by
+
+        Returns:
+            List of service information dictionaries for the group
+
+        Raises:
+            ClanError: If group name is empty
+
+        """
+        ...
+
+    def stop_services_by_group(self, group: str) -> None:
+        """Stop all services in the specified group.
+
+        Args:
+            group: Group name to stop services for
+
+        Raises:
+            ClanError: If group name is empty or operation fails
 
         """
         ...
