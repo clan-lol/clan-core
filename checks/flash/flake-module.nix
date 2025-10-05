@@ -13,8 +13,6 @@
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
-        # We need to use `mkForce` because we inherit from `test-install-machine`
-        # which currently hardcodes `nixpkgs.hostPlatform`
         nixpkgs.hostPlatform = lib.mkForce system;
 
         imports = [ self.nixosModules.test-flash-machine ];
@@ -68,10 +66,7 @@
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript.drvPath
       ]
-      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-      ++ builtins.map (import ../installation/facter-report.nix) (
-        lib.filter (lib.hasSuffix "linux") config.systems
-      );
+      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {

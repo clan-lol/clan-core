@@ -1,6 +1,5 @@
 {
   self,
-  config,
   ...
 }:
 {
@@ -30,17 +29,14 @@
 
           nodes = {
             actual =
-              { pkgs, lib, ... }:
+              { pkgs, ... }:
               let
                 dependencies = [
                   pkgs.stdenv.drvPath
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
                 ]
-                ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-                ++ builtins.map (import ../installation/facter-report.nix) (
-                  lib.filter (lib.hasSuffix "linux") config.systems
-                );
+                ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
                 closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
               in
 

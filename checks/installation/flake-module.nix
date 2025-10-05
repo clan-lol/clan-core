@@ -28,12 +28,20 @@
     lib.map (
       system:
       lib.nameValuePair "test-install-machine-${system}" {
-        facter.reportPath = import ./facter-report.nix system;
+        imports = [
+          self.nixosModules.test-install-machine-without-system
+          (
+            if privateInputs ? test-fixtures then
+              {
+                facter.reportPath = privateInputs.test-fixtures + /nixos-vm-facter-json/${system}.json;
+              }
+            else
+              { nixpkgs.hostPlatform = system; }
+          )
+        ];
 
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
-        imports = [ self.nixosModules.test-install-machine-without-system ];
       }
     ) (lib.filter (lib.hasSuffix "linux") config.systems)
   ));
@@ -159,8 +167,7 @@
               pkgs.bash.drvPath
               pkgs.buildPackages.xorg.lndir
             ]
-            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-            ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
+            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {

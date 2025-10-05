@@ -56,55 +56,59 @@
         else
           (import ./devFlake/flake-compat.nix {
             src = ./devFlake;
-          }).outputs;
+          }).outputs.inputs;
     in
-    flake-parts.lib.mkFlake { inherit inputs; } (
-      { ... }:
+    flake-parts.lib.mkFlake
       {
-        _module.args = {
+        inherit inputs;
+        specialArgs = {
           inherit privateInputs;
         };
-        clan = {
-          meta.name = "clan-core";
-          inventory = {
-            machines = {
-              "test-darwin-machine" = {
-                machineClass = "darwin";
+      }
+      (
+        { ... }:
+        {
+          clan = {
+            meta.name = "clan-core";
+            inventory = {
+              machines = {
+                "test-darwin-machine" = {
+                  machineClass = "darwin";
+                };
               };
             };
           };
-        };
-        systems = import systems;
-        imports = [
-          flake-parts.flakeModules.modules
-        ]
-        ++
-          # only importing existing paths allows to minimize the flake for test
-          # by removing files
-          filter pathExists [
-            ./checks/flake-module.nix
-            ./clanModules/flake-module.nix
-            ./clanServices/flake-module.nix
-            ./devShell.nix
-            ./docs/nix/flake-module.nix
-            ./flakeModules/demo_iso.nix
-            ./flakeModules/flake-module.nix
-            ./lib/filter-clan-core/flake-module.nix
-            ./lib/flake-module.nix
-            ./lib/flake-parts/clan-nixos-test.nix
-            ./nixosModules/clanCore/vars/flake-module.nix
-            ./nixosModules/flake-module.nix
-            ./pkgs/clan-cli/clan_cli/tests/flake-module.nix
-            ./pkgs/flake-module.nix
-            ./templates/flake-module.nix
+          systems = import systems;
+          imports = [
+            flake-parts.flakeModules.modules
           ]
-        ++ [
-          (if pathExists ./flakeModules/clan.nix then import ./flakeModules/clan.nix inputs.self else { })
-        ]
-        # Make treefmt-nix optional
-        # This only works if you set inputs.clan-core.inputs.treefmt-nix.follows
-        # to a non-empty input that doesn't export a flakeModule
-        ++ optional (pathExists ./formatter.nix && inputs.treefmt-nix ? flakeModule) ./formatter.nix;
-      }
-    );
+          ++
+            # only importing existing paths allows to minimize the flake for test
+            # by removing files
+            filter pathExists [
+              ./checks/flake-module.nix
+              ./clanModules/flake-module.nix
+              ./clanServices/flake-module.nix
+              ./devShell.nix
+              ./docs/nix/flake-module.nix
+              ./flakeModules/demo_iso.nix
+              ./flakeModules/flake-module.nix
+              ./lib/filter-clan-core/flake-module.nix
+              ./lib/flake-module.nix
+              ./lib/flake-parts/clan-nixos-test.nix
+              ./nixosModules/clanCore/vars/flake-module.nix
+              ./nixosModules/flake-module.nix
+              ./pkgs/clan-cli/clan_cli/tests/flake-module.nix
+              ./pkgs/flake-module.nix
+              ./templates/flake-module.nix
+            ]
+          ++ [
+            (if pathExists ./flakeModules/clan.nix then import ./flakeModules/clan.nix inputs.self else { })
+          ]
+          # Make treefmt-nix optional
+          # This only works if you set inputs.clan-core.inputs.treefmt-nix.follows
+          # to a non-empty input that doesn't export a flakeModule
+          ++ optional (pathExists ./formatter.nix && inputs.treefmt-nix ? flakeModule) ./formatter.nix;
+        }
+      );
 }
