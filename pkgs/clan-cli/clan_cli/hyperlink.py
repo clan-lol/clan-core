@@ -32,7 +32,9 @@ def help_hyperlink(description: str, url: str) -> str:
 
 def docs_hyperlink(description: str, url: str) -> str:
     """Returns a markdown hyperlink"""
-    url = url.replace("https://docs.clan.lol", "/")
+    # Attention: this code assumes the URL maps directly to the filetree structure of the docs
+    # We should probably enforce this
+    url = url.replace("https://docs.clan.lol", "../..")
     url = url.replace("index.html", "index")
     url += ".md"
     return f"[{description}]({url})"
