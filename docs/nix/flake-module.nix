@@ -88,8 +88,12 @@
           ;
       };
       devShells.docs = self'.packages.docs.overrideAttrs (_old: {
-        nativeBuildInputs =
-          self'.devShells.default.nativeBuildInputs ++ self'.packages.docs.nativeBuildInputs;
+        nativeBuildInputs = [
+          # Run: htmlproofer --disable-external
+          pkgs.html-proofer
+        ]
+        ++ self'.devShells.default.nativeBuildInputs
+        ++ self'.packages.docs.nativeBuildInputs;
         shellHook = ''
           ${self'.devShells.default.shellHook}
           git_root=$(git rev-parse --show-toplevel)
@@ -113,5 +117,17 @@
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { inherit (config.packages) docs; };
         inherit module-docs;
       };
+      checks.docs-integrity =
+        pkgs.runCommand "docs-integrity"
+          {
+            nativeBuildInputs = [ pkgs.html-proofer ];
+          }
+          ''
+            # External links should be avoided in the docs, because they often break
+            # and we cannot statically control them. Thus we disable checking them
+            htmlproofer --disable-external ${self'.packages.docs}
+
+            touch $out
+          '';
     };
 }
