@@ -28,12 +28,20 @@
     lib.map (
       system:
       lib.nameValuePair "test-install-machine-${system}" {
-        facter.reportPath = privateInputs.test-fixtures + /nixos-vm-facter-json/${system}.json;
+        imports = [
+          self.nixosModules.test-install-machine-without-system
+          (
+            if privateInputs ? test-fixtures then
+              {
+                facter.reportPath = privateInputs.test-fixtures + /nixos-vm-facter-json/${system}.json;
+              }
+            else
+              { nixpkgs.hostPlatform = system; }
+          )
+        ];
 
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
-        imports = [ self.nixosModules.test-install-machine-without-system ];
       }
     ) (lib.filter (lib.hasSuffix "linux") config.systems)
   ));
@@ -151,6 +159,7 @@
         let
           closureInfo = pkgs.closureInfo {
             rootPaths = [
+              privateInputs.clan-core-for-checks
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.initialRamdisk
               self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
@@ -158,8 +167,7 @@
               pkgs.bash.drvPath
               pkgs.buildPackages.xorg.lndir
             ]
-            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-            ++ builtins.map (i: i.outPath) (builtins.attrValues privateInputs);
+            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {

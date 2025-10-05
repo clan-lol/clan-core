@@ -1,4 +1,4 @@
-{ self, privateInputs, ... }:
+{ self, ... }:
 {
   # Machine for update test
   clan.machines.test-update-machine = {
@@ -123,8 +123,7 @@
                     pkgs.buildPackages.xorg.lndir
                     pkgs.bubblewrap
                   ]
-                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-                  ++ builtins.map (i: i.outPath) (builtins.attrValues privateInputs);
+                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
                 };
               in
               self.clanLib.test.containerTest {
