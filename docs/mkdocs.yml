@@ -233,7 +233,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/clan-lol/clan-core
     - icon: fontawesome/solid/rss
-      link: /feed_rss_created.xml
+      link: https://clan.lol/feed.xml
 
 plugins:
   - search
