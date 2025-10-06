@@ -46,4 +46,90 @@ inventory.instances = {
 
 ## Step Foo
 
+Miscellaneous Symbols
+    ☀ ☁ ☂ ☃ ☄ ★ ☆ ☇ ☈ ☉ ☊ ☋ ☌ ☍ ☎ ☏ ☐ ☑ ☒ ☓ ☚ ☛ ☜ ☝ ☞ ☟ ☠ ☡ ☢ ☣ ☤ ☥ ☦ ☧ ☨ ☩ ☪ ☫ ☬ ☭ ☮ ☯ ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷ ☸ ☹ ☺ ☻ ☼ ☽ ☾ ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆ ♇ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♔ ♕ ♖ ♗ ♘ ♙ ♚ ♛ ♜ ♝ ♞ ♟ ♠ ♡ ♢ ♣ ♤ ♥ ♦ ♧ ♨ ♩ ♪ ♫ ♬ ♭ ♮ ♯
+
 ## Step Bar
+
+↑
+Duplicate heading, should still be linked
+
+This is a divider
+
+---
+
+---
+
+:::note[Note about nature]
+
+Respect the nature of things
+
+:::
+
+::::important[Its important]
+
+Follow this and your life will be happy
+
+:::note
+nested note probably a bad idea
+
+but technically valid
+:::
+
+::::
+
+:::danger[Attention Footgun]
+
+Please don't erase your disk
+
+```nix
+erase = false;
+```
+
+:::
+
+:::tip[Outsmart]
+
+Lets be really clever
+
+- List
+- Inside
+
+:::
+
+This is a table
+
+| A/B | A | ¬A |
+| - | - | - |
+| B | AB | B |
+| ¬B | A | 0 |
+
+## GFM
+
+### Autolink literals
+
+www.example.com, https://example.com, and contact@example.com.
+
+### Footnote
+
+A note[^1]
+
+[^1]: Big note.
+
+### Strikethrough
+
+~one~ or ~~two~~ tildes.
+
+### Table
+
+| a | b  |  c |  d  |
+| - | :- | -: | :-: |
+| 1 | 2  | 3  |  4  |
+
+### Tasklist
+
+* [ ] to do
+* [x] done
+
+- item
+- normal

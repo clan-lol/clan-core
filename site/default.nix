@@ -21,5 +21,9 @@ buildNpmPackage {
     cp -r ${module-docs}/reference/* src/routes/docs/reference
 
     chmod +w -R src/routes/docs/reference
+
+    mkdir -p static/icons
+    cp -af ${../pkgs/clan-app/ui/icons}/* ./static/icons
+    chmod +w -R static/icons
   '';
 }
