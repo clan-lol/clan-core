@@ -15,7 +15,6 @@ let
       networking.useNetworkd = true;
       services.openssh.enable = true;
       services.openssh.settings.UseDns = false;
-      services.openssh.settings.PasswordAuthentication = false;
       system.nixos.variant_id = "installer";
       environment.systemPackages = [
         pkgs.nixos-facter
