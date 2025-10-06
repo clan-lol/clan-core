@@ -7,6 +7,8 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeShiki from "@shikijs/rehype";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
 
@@ -31,6 +33,8 @@ export default defineConfig({
             },
           })
           .use(rehypeStringify)
+          .use(rehypeSlug)
+          .use(rehypeAutolinkHeadings)
           .process(String(code));
 
         const parsed = await unified()

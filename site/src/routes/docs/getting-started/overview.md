@@ -12,6 +12,8 @@ const abc = 1 + "2";
 const abc = 1 + "2";
 ```
 
-## Step Foo
+## `choices.<name>.foo`
+
+## Step Bar
 
 ## Step Bar
