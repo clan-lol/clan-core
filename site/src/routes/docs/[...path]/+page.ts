@@ -9,7 +9,7 @@ const articles = import.meta.glob<{
 }>("../**/*.md");
 
 export async function load({ params }) {
-  const article = articles[`../${params.path}.md`];
+  const article = articles[`../${params.path.slice(0, -"/".length)}.md`];
   if (!article) {
     error(404, "");
   }
