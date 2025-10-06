@@ -6,6 +6,7 @@ import { VFile } from "vfile";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import rehypeShiki from "@shikijs/rehype";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
 
@@ -23,6 +24,12 @@ export default defineConfig({
         const html = await unified()
           .use(remarkParse)
           .use(remarkRehype)
+          .use(rehypeShiki, {
+            themes: {
+              light: "vitesse-light",
+              dark: "vitesse-dark",
+            },
+          })
           .use(rehypeStringify)
           .process(String(code));
 
@@ -36,7 +43,6 @@ export default defineConfig({
           .use(rehypeStringify)
           .process(file);
 
-        console.log("toc", parsed);
         return `
 export default ${JSON.stringify(String(html))};
 export const frontmatter = ${JSON.stringify(file.data.matter)};
