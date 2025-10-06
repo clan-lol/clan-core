@@ -1,7 +1,7 @@
 import logging
 
 import pytest
-from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 
 from clan_lib.flake.flake import (
     Flake,
@@ -199,8 +199,7 @@ def test_out_path_in_multiselect_raises_exception() -> None:
 
 @pytest.mark.with_core
 def test_conditional_all_selector(flake: ClanFlake) -> None:
-    m1 = flake.machines["machine1"]
-    m1["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    flake.machines["machine1"] = create_test_machine_config()
     flake.refresh()
 
     flake1 = Flake(str(flake.path))

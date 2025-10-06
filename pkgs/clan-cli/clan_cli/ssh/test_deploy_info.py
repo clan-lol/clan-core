@@ -8,7 +8,7 @@ from clan_lib.network.qr_code import read_qr_image, read_qr_json
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
-from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 
 
@@ -123,8 +123,7 @@ def test_ssh_shell_from_deploy(
 ) -> None:
     host = hosts[0]
 
-    machine1_config = flake.machines["m1_machine"]
-    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    machine1_config = flake.machines["m1_machine"] = create_test_machine_config()
     machine1_config["clan"]["networking"]["targetHost"] = host.ssh_url()
     flake.refresh()
 

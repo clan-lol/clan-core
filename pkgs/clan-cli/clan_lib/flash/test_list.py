@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 import pytest
-from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import ClanSelectError, Flake
@@ -48,8 +48,9 @@ def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
 
         result = build_system_config_nix(sys_config)
 
-        config = flake.machines["my_machine"]
-        config["nixpkgs"]["hostPlatform"] = nix_config()["system"]
+        config = flake.machines["my_machine"] = create_test_machine_config(
+            nix_config()["system"]
+        )
         config["boot"]["loader"]["grub"]["devices"] = ["/dev/vda"]
         config["fileSystems"]["/"]["device"] = "/dev/vda"
         config.update(result)

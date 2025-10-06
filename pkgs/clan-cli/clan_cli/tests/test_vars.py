@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from clan_cli.tests.age_keys import SopsSetup
-from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generator import (
@@ -93,8 +93,7 @@ def test_generate_public_and_secret_vars(
     """
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
@@ -320,8 +319,7 @@ def test_generate_secret_var_sops_with_default_group(
 ) -> None:
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
     first_generator = config["clan"]["core"]["vars"]["generators"]["first_generator"]
     first_generator["files"]["my_secret"]["secret"] = True
@@ -415,16 +413,14 @@ def test_generated_shared_secret_sops(
 ) -> None:
     flake = flake_with_sops
 
-    m1_config = flake.machines["machine1"]
-    m1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
     shared_generator = m1_config["clan"]["core"]["vars"]["generators"][
         "my_shared_generator"
     ]
     shared_generator["share"] = True
     shared_generator["files"]["my_shared_secret"]["secret"] = True
     shared_generator["script"] = 'echo hello > "$out"/my_shared_secret'
-    m2_config = flake.machines["machine2"]
-    m2_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
     m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
         shared_generator.copy()
     )
@@ -467,8 +463,7 @@ def test_generate_secret_var_password_store(
     flake: ClanFlake,
     test_root: Path,
 ) -> None:
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     clan_vars = config["clan"]["core"]["vars"]
     clan_vars["settings"]["secretStore"] = "password-store"
     # Create a second secret so that when we delete the first one,
@@ -603,8 +598,7 @@ def test_generate_secret_for_multiple_machines(
 
     local_system = nix_config()["system"]
 
-    machine1_config = flake.machines["machine1"]
-    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
     machine1_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "my_generator"
     ]
@@ -613,9 +607,8 @@ def test_generate_secret_for_multiple_machines(
     machine1_generator["script"] = (
         'echo machine1 > "$out"/my_secret && echo machine1 > "$out"/my_value'
     )
-    machine2_config = flake.machines["machine2"]
     # Test that we can generate secrets for other platforms
-    machine2_config["nixpkgs"]["hostPlatform"] = (
+    machine2_config = flake.machines["machine2"] = create_test_machine_config(
         "aarch64-linux" if local_system == "x86_64-linux" else "x86_64-linux"
     )
 
@@ -661,8 +654,7 @@ def test_prompt(
     flake = flake_with_sops
 
     # Configure the machine and generator
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
 
     # Define output files - these will contain the prompt responses
@@ -736,8 +728,7 @@ def test_shared_vars_must_never_depend_on_machine_specific_vars(
     """Ensure that shared vars never depend on machine specific vars."""
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["share"] = True
     my_generator["files"]["my_value"]["secret"] = False
@@ -769,8 +760,7 @@ def test_shared_vars_regeneration(
     """
     flake = flake_with_sops
 
-    machine1_config = flake.machines["machine1"]
-    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
     shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "shared_generator"
     ]
@@ -841,8 +831,7 @@ def test_multi_machine_shared_vars(
     """
     flake = flake_with_sops
 
-    machine1_config = flake.machines["machine1"]
-    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
     shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "shared_generator"
     ]
@@ -908,8 +897,7 @@ def test_api_set_prompts(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
 ) -> None:
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["prompts"]["prompt1"]["type"] = "line"
     my_generator["prompts"]["prompt1"]["persist"] = True
@@ -952,7 +940,7 @@ def test_api_set_prompts(
     # get_generators should bind the store
     assert generators[0].files[0]._store is not None
 
-    assert len(generators) == 2
+    assert len(generators) == 1
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"
     assert generators[0].prompts[0].previous_value == "input2"
@@ -966,8 +954,7 @@ def test_stdout_of_generate(
 ) -> None:
     flake_ = flake_with_sops
 
-    config = flake_.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake_.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["script"] = 'echo -n hello > "$out"/my_value'
@@ -1043,8 +1030,7 @@ def test_migration(
 ) -> None:
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_service = config["clan"]["core"]["facts"]["services"]["my_service"]
     my_service["public"]["my_value"] = {}
     my_service["secret"]["my_secret"] = {}
@@ -1101,8 +1087,7 @@ def test_fails_when_files_are_left_from_other_backend(
 ) -> None:
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_secret_generator = config["clan"]["core"]["vars"]["generators"][
         "my_secret_generator"
     ]
@@ -1166,8 +1151,7 @@ def test_invalidation(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
 ) -> None:
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
@@ -1203,8 +1187,7 @@ def test_share_mode_switch_regenerates_secret(
     """
     flake = flake_with_sops
 
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
 
     # Create a generator with share=false initially
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -1281,8 +1264,7 @@ def test_cache_misses_for_vars_operations(
     flake: ClanFlake,
 ) -> None:
     """Test that vars operations result in minimal cache misses."""
-    config = flake.machines["my_machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my_machine"] = create_test_machine_config()
 
     # Set up a simple generator with a public value
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -1313,8 +1295,8 @@ def test_cache_misses_for_vars_operations(
             title="Cache miss analysis for vars generate"
         )
 
-    assert machine.flake._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for vars generate, got {machine.flake._cache_misses}"
+    assert machine.flake._cache_misses == 2, (
+        f"Expected exactly 2 cache misses for vars generate, got {machine.flake._cache_misses}"
     )
 
     # Verify the value was generated correctly
@@ -1354,8 +1336,7 @@ def test_dynamic_invalidation(
     clan_flake = Flake(str(flake.path))
     machine = Machine(name="my_machine", flake=clan_flake)
 
-    config = flake.machines[machine.name]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines[machine.name] = create_test_machine_config()
 
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False

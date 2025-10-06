@@ -5,6 +5,7 @@ from clan_cli.machines.update import register_update_parser
 from clan_cli.secrets.folders import sops_machines_folder
 from clan_cli.tests import fixtures_flakes
 from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
+from clan_cli.tests.fixtures_flakes import create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_lib.errors import ClanError
@@ -178,8 +179,7 @@ def test_machine_delete(
     )
 
     # define some vars generator for `my-machine`:
-    config = flake.machines["my-machine"]
-    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    config = flake.machines["my-machine"] = create_test_machine_config()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True

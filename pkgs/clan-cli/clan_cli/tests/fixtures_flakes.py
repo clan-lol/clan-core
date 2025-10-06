@@ -45,6 +45,26 @@ def nested_dict() -> defaultdict:
     return defaultdict(def_value)
 
 
+def create_test_machine_config(host_platform: str = "x86_64-linux") -> defaultdict:
+    """Helper factory for creating machine configurations in tests.
+
+    Sets common defaults:
+    - nixpkgs.hostPlatform (defaults to x86_64-linux)
+    - clan.core.settings.state-version.enable = false (to reduce vars operations)
+
+    Args:
+        host_platform: The platform to use (default: "x86_64-linux")
+
+    Returns:
+        A nested_dict with the defaults applied
+
+    """
+    config = nested_dict()
+    config["nixpkgs"]["hostPlatform"] = host_platform
+    config["clan"]["core"]["settings"]["state-version"]["enable"] = False
+    return config
+
+
 # Substitutes strings in a file.
 # This can be used on the flake.nix or default.nix of a machine
 def substitute(

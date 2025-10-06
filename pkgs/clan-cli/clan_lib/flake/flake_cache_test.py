@@ -4,7 +4,7 @@ from sys import platform
 from unittest.mock import patch
 
 import pytest
-from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 
 from clan_lib.flake.flake import (
     Flake,
@@ -20,8 +20,7 @@ from clan_lib.flake.flake import (
 
 @pytest.mark.with_core
 def test_flake_caching(flake: ClanFlake) -> None:
-    m1 = flake.machines["machine1"]
-    m1["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    m1 = flake.machines["machine1"] = create_test_machine_config()
     flake.machines["machine2"] = m1.copy()
     flake.machines["machine3"] = m1.copy()
     flake.refresh()
@@ -37,8 +36,7 @@ def test_flake_caching(flake: ClanFlake) -> None:
 
 @pytest.mark.with_core
 def test_cache_persistance(flake: ClanFlake) -> None:
-    m1 = flake.machines["machine1"]
-    m1["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    flake.machines["machine1"] = create_test_machine_config()
     flake.refresh()
 
     flake1 = Flake(str(flake.path))
