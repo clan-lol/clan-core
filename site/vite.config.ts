@@ -6,6 +6,8 @@ import { VFile } from "vfile";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { toc } from "mdast-util-toc";
+import type { Nodes } from "mdast";
 
 export default defineConfig({
   plugins: [
@@ -22,11 +24,23 @@ export default defineConfig({
           .use(remarkParse)
           .use(remarkRehype)
           .use(rehypeStringify)
-          .process(String(file));
+          .process(String(code));
 
+        const parsed = await unified()
+          .use(remarkParse)
+          .use(() => (tree) => {
+            const result = toc(tree as Nodes);
+            return result.map;
+          })
+          .use(remarkRehype)
+          .use(rehypeStringify)
+          .process(file);
+
+        console.log("toc", parsed);
         return `
 export default ${JSON.stringify(String(html))};
-export const frontmatter = ${JSON.stringify(file.data.matter)};`;
+export const frontmatter = ${JSON.stringify(file.data.matter)};
+export const toc = ${JSON.stringify(String(parsed))};`;
       },
     },
   ],
