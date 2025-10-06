@@ -2,10 +2,7 @@ import { error } from "@sveltejs/kit";
 import type { Component } from "svelte";
 
 const articles = import.meta.glob<{
-  metadata: {
-    layout?: string;
-  };
-  default: Component;
+  default: string;
 }>("../**/*.md");
 
 export async function load({ params }) {
@@ -14,11 +11,8 @@ export async function load({ params }) {
     error(404, "");
   }
 
-  const { metadata, default: Content } = await article();
+  const content = await article();
   return {
-    Content,
-    metadata: {
-      ...metadata,
-    },
+    content: content.default,
   };
 }

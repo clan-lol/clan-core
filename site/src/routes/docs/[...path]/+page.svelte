@@ -1,6 +1,6 @@
 <script lang="ts">
   let { data } = $props();
-  let { Content, metadata } = data;
+  let { content } = data;
 </script>
 
-<Content />
+{@html content}
