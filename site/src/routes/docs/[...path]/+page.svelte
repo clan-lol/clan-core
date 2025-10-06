@@ -1,13 +1,12 @@
 <script lang="ts">
   let { data } = $props();
-  let { content, toc, frontmatter } = data;
 </script>
 
 <div class="toc">
-{@html toc}
+{@html data.toc}
 </div>
-{@html content}
-{JSON.stringify(frontmatter)}
+{@html data.content}
+{JSON.stringify(data.frontmatter)}
 
 <style>
   .toc :global(p) {
