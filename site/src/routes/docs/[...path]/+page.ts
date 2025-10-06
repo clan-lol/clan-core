@@ -3,6 +3,8 @@ import type { Component } from "svelte";
 
 const articles = import.meta.glob<{
   default: string;
+  frontmatter: {};
+  toc: {};
 }>("../**/*.md");
 
 export async function load({ params }) {
@@ -11,8 +13,10 @@ export async function load({ params }) {
     error(404, "");
   }
 
-  const content = await article();
+  const { frontmatter, toc, default: content } = await article();
   return {
-    content: content.default,
+    content,
+    frontmatter,
+    toc,
   };
 }

@@ -14,17 +14,26 @@
     "lint": "prettier --check ."
   },
   "devDependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.43.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.0",
     "mdsvex": "^0.12.6",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "remark-stringify": "^11.0.0",
+    "remark-toc": "^9.0.0",
     "svelte": "^5.39.5",
     "svelte-check": "^4.3.2",
+    "to-vfile": "^8.0.0",
     "typescript": "^5.9.2",
-    "vite": "^7.1.7",
-    "@fontsource-variable/geist": "^5.2.8"
-  },
-  "dependencies": {}
+    "unified": "^11.0.5",
+    "vfile": "^6.0.3",
+    "vfile-matter": "^5.0.1",
+    "vite": "^7.1.7"
+  }
 }
