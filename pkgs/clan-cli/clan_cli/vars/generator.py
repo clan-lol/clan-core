@@ -245,15 +245,19 @@ class Generator:
             return sec_store.get(self, prompt.name).decode()
         return None
 
+    def final_script_selector(self, machine_name: str) -> str:
+        if self._flake is None:
+            msg = "Flake cannot be None"
+            raise ClanError(msg)
+        return self._flake.machine_selector(
+            machine_name, f'config.clan.core.vars.generators."{self.name}".finalScript'
+        )
+
     def final_script(self, machine: "Machine") -> Path:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        output = Path(
-            machine.select(
-                f'config.clan.core.vars.generators."{self.name}".finalScript',
-            ),
-        )
+        output = Path(self._flake.select(self.final_script_selector(machine.name)))
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
         return output

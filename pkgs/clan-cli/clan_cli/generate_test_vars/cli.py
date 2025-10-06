@@ -75,13 +75,14 @@ class TestFlake(Flake):
     def path(self) -> Path:
         return self.test_dir
 
-    def select_machine(self, machine_name: str, selector: str) -> Any:
-        """Select a nix attribute for a specific machine.
+    def machine_selector(self, machine_name: str, selector: str) -> str:
+        """Create a selector for a specific machine.
 
         Args:
             machine_name: The name of the machine
             selector: The attribute selector string relative to the machine config
-            apply: Optional function to apply to the result
+        Returns:
+            The full selector string for the machine
 
         """
         config = nix_config()
@@ -89,9 +90,7 @@ class TestFlake(Flake):
         test_system = system
         if system.endswith("-darwin"):
             test_system = system.rstrip("darwin") + "linux"
-
-        full_selector = f'checks."{test_system}".{self.check_attr}.machinesCross.{system}."{machine_name}".{selector}'
-        return self.select(full_selector)
+        return f'checks."{test_system}".{self.check_attr}.machinesCross."{system}"."{machine_name}".{selector}'
 
     # we don't want to evaluate all machines of the flake. Only the ones defined in the test
     def set_machine_names(self, machine_names: list[str]) -> None:
