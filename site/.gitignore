@@ -17,3 +17,8 @@ node_modules
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+# Generated docs
+src/routes/docs/reference/options
+src/routes/docs/reference/clan.core

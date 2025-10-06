@@ -96,6 +96,7 @@
               ./clanServices/flake-module.nix
               ./devShell.nix
               ./docs/nix/flake-module.nix
+              ./site/flake-module.nix
               ./flakeModules/demo_iso.nix
               ./flakeModules/flake-module.nix
               ./lib/filter-clan-core/flake-module.nix
