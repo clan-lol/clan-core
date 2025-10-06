@@ -11,6 +11,12 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
+import {
+  transformerNotationDiff,
+  transformerNotationHighlight,
+  transformerRenderIndentGuides,
+  transformerMetaHighlight,
+} from "@shikijs/transformers";
 
 export default defineConfig({
   plugins: [
@@ -31,6 +37,14 @@ export default defineConfig({
               light: "vitesse-light",
               dark: "vitesse-dark",
             },
+            transformers: [
+              transformerNotationDiff({
+                matchAlgorithm: "v3",
+              }),
+              transformerNotationHighlight(),
+              transformerRenderIndentGuides(),
+              transformerMetaHighlight(),
+            ],
           })
           .use(rehypeStringify)
           .use(rehypeSlug)

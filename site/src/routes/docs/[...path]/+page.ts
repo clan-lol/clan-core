@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import type { Component } from "svelte";
 
 const articles = import.meta.glob<{
   default: string;
