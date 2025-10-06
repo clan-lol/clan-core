@@ -7,6 +7,9 @@ b: 2
 
 ```js
 const abc = 1 + "2";
+const abc = 1 + "2";
+const abc = 1 + "2";
+const abc = 1 + "2";
 ```
 
 ## Step Foo
