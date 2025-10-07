@@ -8,7 +8,6 @@
     {#each paths as path}
       <li><a href={`/docs/${path}`}>{path}</a></li>
     {/each}
-    <li><a href="/">Home</a></li>
   </nav>
   <div class="content">
     {@render children()}
@@ -18,5 +17,9 @@
 <style>
   .container {
     display: flex;
+  }
+  nav {
+    width: 300px;
+    flex: none;
   }
 </style>

@@ -1,3 +1,7 @@
+---
+title: Add Machines
+---
+
 Machines can be added using the following methods
 
 - Create a file `machines/{machine_name}/configuration.nix` (See: [File Autoincludes](../guides/inventory/autoincludes.md))

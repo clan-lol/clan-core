@@ -38,8 +38,8 @@ export default function (): PluginOption {
         .use(remarkRehype)
         .use(rehypeShiki, {
           themes: {
-            light: "vitesse-light",
-            dark: "vitesse-dark",
+            light: "nord",
+            dark: "nord",
           },
           transformers: [
             transformerNotationDiff({
@@ -53,7 +53,7 @@ export default function (): PluginOption {
         .use(rehypeStringify)
         .use(rehypeSlug)
         .use(rehypeAutolinkHeadings)
-        .process(String(code));
+        .process(String(file));
 
       const parsed = await unified()
         .use(remarkParse)
@@ -63,7 +63,7 @@ export default function (): PluginOption {
         })
         .use(remarkRehype)
         .use(rehypeStringify)
-        .process(file);
+        .process(String(file));
 
       return `
 export const content = ${JSON.stringify(String(html))};
