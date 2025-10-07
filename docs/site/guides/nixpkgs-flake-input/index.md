@@ -5,11 +5,11 @@
 ## Option 1: Follow `clan-core`
 
 - **Pros**:
-  - Recommended for most users.
-  - Verified by our CI and widely used by others.
+    - Recommended for most users.
+    - Verified by our CI and widely used by others.
 - **Cons**:
-  - Coupled to version bumps in `clan-core`.
-  - Upstream features and packages may take longer to land.
+    - Coupled to version bumps in `clan-core`.
+    - Upstream features and packages may take longer to land.
 
 Example:
 
@@ -24,10 +24,10 @@ inputs = {
 ## Option 2: Use Your Own `nixpkgs` Version
 
 - **Pros**:
-  - Faster access to new upstream features and packages.
+    - Faster access to new upstream features and packages.
 - **Cons**:
-  - Recommended for advanced users.
-  - Not covered by our CI — you’re on the frontier.
+    - Recommended for advanced users.
+    - Not covered by our CI — you’re on the frontier.
 
 Example:
 
