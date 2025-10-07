@@ -71,9 +71,9 @@ export async function normalizeNavLink(
 
   if (!("items" in navLink)) {
     if ("slug" in navLink) {
-      const article = articles[`/docs/${navLink.slug}`];
+      const article = articles[navLink.slug];
       if (!article) {
-        throw new Error(`Doc not found: ${navLink}`);
+        throw new Error(`Doc not found: ${navLink.slug}`);
       }
       return {
         label: navLink.label ?? (await article()).frontmatter.title,

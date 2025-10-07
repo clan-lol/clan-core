@@ -20,14 +20,14 @@
 <style>
   .container {
     display: flex;
-    padding-left: 30px;
   }
   .content {
-    flex: 1;
-    max-width: 800px;
-    margin-left: calc(50vw - 400px - 300px);
+    padding: 0 15px;
+    width: 100vw;
+    word-break: break-word;
   }
   .toc {
+    display: none;
     flex: none;
   }
 </style>

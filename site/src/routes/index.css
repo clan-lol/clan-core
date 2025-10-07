@@ -1,6 +1,16 @@
 @import "@fontsource-variable/geist";
 
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 body {
   font-family: "Geist Variable";
   font-size: 16px;
+  margin: 0;
 }

@@ -38,8 +38,8 @@ export default function (): PluginOption {
         .use(remarkRehype)
         .use(rehypeShiki, {
           themes: {
-            light: "nord",
-            dark: "nord",
+            light: "catppuccin-latte",
+            dark: "catppuccin-macchiato",
           },
           transformers: [
             transformerNotationDiff({

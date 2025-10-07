@@ -40,6 +40,7 @@
     display: flex;
   }
   nav {
+    display: none;
     width: 300px;
     flex: none;
   }
