@@ -67,6 +67,57 @@ nix build .#checks.x86_64-linux.{test-attr-name}
 ```
 (replace `{test-attr-name}` with the name of the test)
 
+### Testing services with vars
+
+Services that define their own vars (using `clan.core.vars.generators`) require generating test vars before running the tests.
+
+#### Understanding the `clan.directory` setting
+
+The `clan.directory` option is critical for vars generation and loading in tests. This setting determines:
+
+1. **Where vars are generated**: When you run `update-vars`, it creates `vars/` and `sops/` directories inside the path specified by `clan.directory`
+2. **Where vars are loaded from**: During test execution, machines look for their vars and secrets relative to `clan.directory`
+
+#### Generating test vars
+
+For services that define vars, you must first run:
+
+```shellSession
+nix run .#checks.x86_64-linux.{test-attr-name}.update-vars
+```
+
+This generates the necessary var files in the directory specified by `clan.directory`. After running this command, you can run the test normally:
+
+```shellSession
+nix run .#checks.x86_64-linux.{test-attr-name}
+```
+
+#### Example: service-dummy-test
+
+The `service-dummy-test` is a good example of a test that uses vars. To run it:
+
+```shellSession
+# First, generate the test vars
+nix run .#checks.x86_64-linux.service-dummy-test.update-vars
+
+# Then run the test
+nix run .#checks.x86_64-linux.service-dummy-test
+```
+
+#### Common issues
+
+If `update-vars` fails, you may need to ensure that:
+- **`clan.directory` is set correctly**: It should point to the directory where you want vars to be generated (typically `clan.directory = ./.;` in your test definition)
+- **Your test defines machines**: Machines must be defined in `clan.inventory.machines` or through the inventory system
+- **Machine definitions are complete**: Each machine should have the necessary service configuration that defines the vars generators
+
+**If vars are not found during test execution:**
+- Verify that `clan.directory` points to the same location where you ran `update-vars`
+- Check that the `vars/` and `sops/` directories exist in that location
+- Ensure the generated files match the machines and generators defined in your test
+
+You can reference `/checks/service-dummy-test/` to see a complete working example of a test with vars, including the correct directory structure.
+
 ### Debugging VM tests
 
 The following techniques can be used to debug a VM test:
