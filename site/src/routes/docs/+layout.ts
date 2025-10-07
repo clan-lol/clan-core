@@ -1,8 +1,8 @@
-const articles = import.meta.glob("./**/*.md");
+import { navLinks } from "./settings";
+import { normalizeNavLinks } from "./utils";
 
 export function load() {
-  const paths = Object.keys(articles).map(
-    (key) => key.slice("./".length, -".md".length) + "/",
-  );
-  return { paths };
+  return {
+    navLinks: normalizeNavLinks(navLinks),
+  };
 }
