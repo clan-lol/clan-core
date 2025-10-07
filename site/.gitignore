@@ -22,6 +22,7 @@ vite.config.ts.timestamp-*
 # Generated docs
 src/routes/docs/reference/options
 src/routes/docs/reference/clan.core
+src/routes/docs/services/official
 
 # Icons and other assets
 static/icons

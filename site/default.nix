@@ -18,7 +18,11 @@ buildNpmPackage {
 
   preBuild = ''
     # Copy generated reference docs
+    mkdir -p src/routes/docs/reference
     cp -r ${module-docs}/reference/* src/routes/docs/reference
+
+    mkdir -p src/routes/docs/services
+    cp -r ${module-docs}/services/* src/routes/docs/services
 
     chmod +w -R src/routes/docs/reference
 
