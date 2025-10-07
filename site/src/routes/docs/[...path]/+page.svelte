@@ -4,8 +4,18 @@
   let { data } = $props();
 </script>
 
-<div class="toc">
-{@html data.toc}
+<div class="container">
+  <div class="content">
+    {@html data.content}
+  </div>
+  <div class="toc">
+    {@html data.toc}
+  </div>
 </div>
-{@html data.content}
-{JSON.stringify(data.frontmatter)}
+
+<!-- {JSON.stringify(data.frontmatter)} -->
+<style>
+  .container {
+    display: flex;
+  }
+</style>

@@ -3,10 +3,20 @@
   let { paths } = data;
 </script>
 
-<nav>
-  {#each paths as path}
-    <li><a href={`/docs/${path}`}>{path}</a></li>
-  {/each}
-  <li><a href="/">Home</a></li>
-</nav>
-{@render children()}
+<div class="container">
+  <nav>
+    {#each paths as path}
+      <li><a href={`/docs/${path}`}>{path}</a></li>
+    {/each}
+    <li><a href="/">Home</a></li>
+  </nav>
+  <div class="content">
+    {@render children()}
+  </div>
+</div>
+
+<style>
+  .container {
+    display: flex;
+  }
+</style>
