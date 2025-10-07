@@ -4,7 +4,7 @@ export const articles = Object.fromEntries(
       content: string;
       frontmatter: Record<string, any>;
       toc: string;
-    }>("./**/*.md", { eager: true }),
+    }>("./**/*.md"),
   ).map(([key, fn]) => [key.slice("./".length, -".md".length), fn]),
 );
 
@@ -13,6 +13,7 @@ export type NavLink =
   | {
       label: string;
       items: NavLink[];
+      collapsed?: boolean;
       badge?: Badge;
     }
   | {
@@ -25,6 +26,7 @@ export type NormalizedNavLink =
   | {
       label: string;
       items: NormalizedNavLink[];
+      collapsed: boolean;
       badge?: NormalizedBadge;
     }
   | {
@@ -40,18 +42,22 @@ export type NormalizedBadge = {
   variant: "caution" | "normal";
 };
 
-export function normalizeNavLinks(navLinks: NavLink[]): NormalizedNavLink[] {
-  return navLinks.map(normalizeNavLink);
+export async function normalizeNavLinks(
+  navLinks: NavLink[],
+): Promise<NormalizedNavLink[]> {
+  return await Promise.all(navLinks.map(normalizeNavLink));
 }
 
-export function normalizeNavLink(navLink: NavLink): NormalizedNavLink {
+export async function normalizeNavLink(
+  navLink: NavLink,
+): Promise<NormalizedNavLink> {
   if (typeof navLink === "string") {
     const article = articles[navLink];
     if (!article) {
       throw new Error(`Doc not found: ${navLink}`);
     }
     return {
-      label: article.frontmatter.title,
+      label: (await article()).frontmatter.title,
       slug: `/docs/${navLink}`,
     };
   }
@@ -63,15 +69,16 @@ export function normalizeNavLink(navLink: NavLink): NormalizedNavLink {
     }
     return {
       ...navLink,
-      label: navLink.label ?? article.frontmatter.title,
+      label: navLink.label ?? (await article()).frontmatter.title,
       badge: normalizeBadge(navLink.badge),
     };
   }
 
   return {
     ...navLink,
+    collapsed: !!navLink.collapsed,
     badge: normalizeBadge(navLink.badge),
-    items: navLink.items.map(normalizeNavLink),
+    items: await Promise.all(navLink.items.map(normalizeNavLink)),
   };
 }
 

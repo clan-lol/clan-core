@@ -6,12 +6,14 @@
 {#snippet navLinkSnippet(navLink: NormalizedNavLink)}
   {#if "items" in navLink}
     <li>
-      <span class="label group">{navLink.label}</span>
-      <ul>
-        {#each navLink.items as item}
-          {@render navLinkSnippet(item)}
-        {/each}
-      </ul>
+      <details open={!navLink.collapsed}>
+        <summary><span class="label group">{navLink.label}</span></summary>
+        <ul>
+          {#each navLink.items as item}
+            {@render navLinkSnippet(item)}
+          {/each}
+        </ul>
+      </details>
     </li>
   {:else}
     <li>
@@ -40,5 +42,10 @@
   nav {
     width: 300px;
     flex: none;
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
   }
 </style>

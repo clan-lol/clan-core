@@ -1,8 +1,8 @@
 import { navLinks } from "./settings";
 import { normalizeNavLinks } from "./utils";
 
-export function load() {
+export async function load() {
   return {
-    navLinks: normalizeNavLinks(navLinks),
+    navLinks: await normalizeNavLinks(navLinks),
   };
 }
