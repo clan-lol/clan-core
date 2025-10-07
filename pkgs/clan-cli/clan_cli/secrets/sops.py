@@ -355,7 +355,10 @@ def get_public_age_key_from_private_key(privkey: str) -> str:
     cmd = nix_shell(["age"], ["age-keygen", "-y"])
 
     error_msg = "Failed to get public key for age private key. Is the key malformed?"
-    res = run(cmd, RunOpts(input=privkey.encode(), error_msg=error_msg))
+    res = run(
+        cmd,
+        RunOpts(input=privkey.encode(), error_msg=error_msg, sensitive_input=True),
+    )
     return res.stdout.rstrip(os.linesep).rstrip()
 
 
