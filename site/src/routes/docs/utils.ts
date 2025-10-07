@@ -20,6 +20,11 @@ export type NavLink =
       label?: string;
       slug: string;
       badge?: Badge;
+    }
+  | {
+      label: string;
+      link: string;
+      badge?: Badge;
     };
 
 export type NormalizedNavLink =
@@ -31,8 +36,9 @@ export type NormalizedNavLink =
     }
   | {
       label: string;
-      slug: string;
+      link: string;
       badge?: NormalizedBadge;
+      external: boolean;
     };
 
 export type Badge = string | NormalizedBadge;
@@ -58,19 +64,28 @@ export async function normalizeNavLink(
     }
     return {
       label: (await article()).frontmatter.title,
-      slug: `/docs/${navLink}`,
+      link: `/docs/${navLink}`,
+      external: false,
     };
   }
 
   if (!("items" in navLink)) {
-    const article = articles[navLink.slug];
-    if (!article) {
-      throw new Error(`Doc not found: ${navLink}`);
+    if ("slug" in navLink) {
+      const article = articles[`/docs/${navLink.slug}`];
+      if (!article) {
+        throw new Error(`Doc not found: ${navLink}`);
+      }
+      return {
+        label: navLink.label ?? (await article()).frontmatter.title,
+        link: `/docs/${navLink.slug}`,
+        badge: normalizeBadge(navLink.badge),
+        external: false,
+      };
     }
     return {
       ...navLink,
-      label: navLink.label ?? (await article()).frontmatter.title,
       badge: normalizeBadge(navLink.badge),
+      external: /^https?:\/\//.test(navLink.link),
     };
   }
 

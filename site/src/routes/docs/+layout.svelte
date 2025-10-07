@@ -17,7 +17,7 @@
     </li>
   {:else}
     <li>
-      <a href={navLink.slug}>{navLink.label}</a>
+      <a href={navLink.link}>{navLink.label}</a>
     </li>
   {/if}
 {/snippet}
