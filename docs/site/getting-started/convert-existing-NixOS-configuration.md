@@ -4,14 +4,14 @@ This guide will help you convert your existing NixOS configurations into a Clan.
     Migrating instead of starting new can be trickier and might lead to bugs or
     unexpected issues. We recommend reading the [Getting Started](../getting-started/creating-your-first-clan.md) guide first.
 
-    Once you have a working setup and understand the concepts transfering your NixOS configurations over is easy.
+    Once you have a working setup and understand the concepts transferring your NixOS configurations over is easy.
 
 ## Back up your existing configuration
 
 Before you start, it is strongly recommended to back up your existing
 configuration in any form you see fit. If you use version control to manage
 your configuration changes, it is also a good idea to follow the migration
-guide in a separte branch until everything works as expected.
+guide in a separate branch until everything works as expected.
 
 ## Starting Point
 
