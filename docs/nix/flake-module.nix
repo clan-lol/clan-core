@@ -121,6 +121,7 @@
         pkgs.runCommand "docs-integrity"
           {
             nativeBuildInputs = [ pkgs.html-proofer ];
+            LANG = "C.UTF-8";
           }
           ''
             # External links should be avoided in the docs, because they often break
