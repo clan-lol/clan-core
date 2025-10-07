@@ -149,6 +149,13 @@ let
           # TODO: Add index support in nixpkgs first
           # else if type.name == "listOf" then
           #   handleListOf meta.list
+          else if type.name == "either" then
+            # For either(oneOf) types, we skip introspection as we cannot
+            # determine which branch of the union was taken without more context
+            # This *should* be safe, as it can currently mostly be triggered through
+            # The `extraModules` setting of inventory modules and seems to be better
+            # than just aborting entirely.
+            { }
           else
             throw "Yet Unsupported type: ${type.name}";
       in
