@@ -77,6 +77,8 @@
                 };
               };
             };
+            # Allows downstream users to inject "unsupported" nixpkgs versions
+            checks.minNixpkgsVersion.ignore = true;
           };
           systems = import systems;
           imports = [
