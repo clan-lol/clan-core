@@ -14,7 +14,7 @@ export const navLinks: NavLink[] = [
       },
       {
         label: "Options",
-        items: ["reference/options/clan"],
+        autogenerate: { directory: "reference/options" },
       },
     ],
   },
