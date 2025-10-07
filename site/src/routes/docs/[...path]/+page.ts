@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
 
 const articles = import.meta.glob<{
-  default: string;
+  content: string;
   frontmatter: {};
   toc: {};
 }>("../**/*.md");
@@ -12,10 +12,6 @@ export async function load({ params }) {
     error(404, "");
   }
 
-  const { frontmatter, toc, default: content } = await article();
-  return {
-    content,
-    frontmatter,
-    toc,
-  };
+  const { frontmatter, toc, content } = await article();
+  return { frontmatter, toc, content };
 }

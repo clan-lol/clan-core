@@ -151,7 +151,7 @@ export default defineConfig({
           .process(file);
 
         return `
-export default ${JSON.stringify(String(html))};
+export const content = ${JSON.stringify(String(html))};
 export const frontmatter = ${JSON.stringify(file.data.matter)};
 export const toc = ${JSON.stringify(String(parsed))};`;
       },
