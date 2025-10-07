@@ -303,3 +303,4 @@ instnaces.machine-type = {
 - [Reference Documentation for Service Authors](../../reference/options/clan_service.md)
 - [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](../../decisions/01-Clan-Modules.md)
+- [Testing Guide for Services with Vars](../contributing/testing.md#testing-services-with-vars)
