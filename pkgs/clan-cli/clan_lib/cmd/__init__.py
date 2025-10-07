@@ -294,6 +294,8 @@ class RunOpts:
     # This is needed for GUI applications
     graphical_perm: bool = False
     trace: bool = True
+    # Mark input as sensitive to prevent it from being logged (e.g., private keys, passwords)
+    sensitive_input: bool = False
 
 
 def cmd_with_root(cmd: list[str], graphical: bool = False) -> list[str]:
@@ -349,7 +351,10 @@ def run(
 
     if cmdlog.isEnabledFor(logging.DEBUG) and options.trace:
         if options.input and isinstance(options.input, bytes):
-            if any(
+            # Always redact sensitive input (e.g., private keys, passwords)
+            if options.sensitive_input:
+                filtered_input = "<<REDACTED>>"
+            elif any(
                 not ch.isprintable() for ch in options.input.decode("ascii", "replace")
             ):
                 filtered_input = "<<binary_blob>>"
