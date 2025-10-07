@@ -11,6 +11,7 @@ import remarkDirective from "remark-directive";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
+import path from "path";
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -32,6 +33,7 @@ export default function (): PluginOption {
       matter(file, { strip: true });
       const html = await unified()
         .use(remarkParse)
+        .use(link_migration)
         .use(remarkGfm)
         .use(remarkDirective)
         .use(styleDirectives)
@@ -145,6 +147,32 @@ function styleDirectives() {
           ...contentChildren,
         ];
       }
+    });
+  };
+}
+
+/**
+ * Rewrites relative links in mkDocs files to point to /docs/...
+ *
+ * For this to work the relative link must start at the docs root
+ */
+function link_migration() {
+  const pathPrefix = "/docs";
+  return (tree) => {
+    visit(tree, ["link", "definition"], (node) => {
+      // Skip external links
+      if (!node.url || node.url.match(/^(https?:)?\/\//)) return;
+
+      // Links pointing to /docs already
+      if (node.url.startsWith(pathPrefix + "/")) return;
+      // Skip anchors
+      if (node.url.startsWith("#")) return;
+
+      const cleanUrl = node.url
+        // Remove repeated leading ../  or ./
+        .replace(/^(\.\.\/|\.\/)+/, "")
+        .replace(/\.md$/, "");
+      node.url = path.posix.join(pathPrefix, cleanUrl);
     });
   };
 }
