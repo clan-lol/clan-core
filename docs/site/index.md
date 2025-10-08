@@ -124,7 +124,7 @@ trivial change
 
     command line interface
 
--   [Clan Options](/options)
+-   [Clan Options](./reference/options/clan.md)
 
     ---
 

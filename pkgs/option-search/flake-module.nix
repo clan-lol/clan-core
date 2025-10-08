@@ -24,7 +24,7 @@
 
       serviceModules = self.clan.modules;
 
-      baseHref = "/options/";
+      baseHref = "/option-search/";
 
       getRoles =
         module:
