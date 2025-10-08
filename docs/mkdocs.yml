@@ -58,7 +58,7 @@ nav:
       - getting-started/configure-disk.md
       - getting-started/update-machines.md
       - getting-started/continuous-integration.md
-      - getting-started/convert-existing-NixOS-configuration.md
+      - Convert existing NixOS configurations: getting-started/convert-existing-NixOS-configuration.md
   - Guides:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md
