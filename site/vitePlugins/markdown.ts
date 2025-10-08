@@ -1,7 +1,9 @@
 import { matter } from "vfile-matter";
-import { unified } from "unified";
+import { unified, type Processor } from "unified";
 import { VFile } from "vfile";
-import remarkParse from "remark-parse";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { toHast } from "mdast-util-to-hast";
+import { toHtml } from "hast-util-to-html";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeShiki from "@shikijs/rehype";
@@ -28,11 +30,9 @@ export default function (): PluginOption {
     async transform(code, id) {
       if (id.slice(-3) !== ".md") return;
 
-      // TODO: move VFile into unified
-      const file = new VFile(code);
-      matter(file, { strip: true });
-      const html = await unified()
+      const file = await unified()
         .use(remarkParse)
+        .use(remarkToc)
         .use(link_migration)
         .use(remarkGfm)
         .use(remarkDirective)
@@ -55,23 +55,35 @@ export default function (): PluginOption {
         .use(rehypeStringify)
         .use(rehypeSlug)
         .use(rehypeAutolinkHeadings)
-        .process(String(file));
-
-      const parsed = await unified()
-        .use(remarkParse)
-        .use(() => (tree) => {
-          const result = toc(tree as Nodes);
-          return result.map;
-        })
-        .use(remarkRehype)
-        .use(rehypeStringify)
-        .process(String(file));
+        .process(code);
 
       return `
-export const content = ${JSON.stringify(String(html))};
+export const content = ${JSON.stringify(String(file))};
 export const frontmatter = ${JSON.stringify(file.data.matter)};
-export const toc = ${JSON.stringify(String(parsed))};`;
+export const toc = ${JSON.stringify(file.data.toc)};`;
     },
+  };
+}
+
+function remarkParse(this: Processor) {
+  this.parser = (document, file) => {
+    matter(file, { strip: true });
+    return fromMarkdown(String(file));
+  };
+}
+function remarkToc() {
+  return (tree: Nodes, file: VFile) => {
+    const { map } = toc(tree);
+    if (!map) {
+      file.data.toc = "";
+      return;
+    }
+    // Remove the extranuous p element in each toc entry
+    map.spread = false;
+    map.children.forEach((child) => {
+      child.spread = false;
+    });
+    file.data.toc = toHtml(toHast(map));
   };
 }
 
