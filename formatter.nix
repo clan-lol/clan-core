@@ -52,8 +52,6 @@
         "checks/secrets/sops/groups/group/machines/machine"
         "checks/syncthing/introducer/introducer_device_id"
         "checks/syncthing/introducer/introducer_test_api"
-        "docs/site/static/asciinema-player/asciinema-player.css"
-        "docs/site/static/asciinema-player/asciinema-player.min.js"
         "nixosModules/clanCore/vars/secret/sops/eval-tests/populated/vars/my_machine/my_generator/my_secret"
         "pkgs/clan-cli/clan_cli/tests/data/gnupg.conf"
         "pkgs/clan-cli/clan_cli/tests/data/password-store/.gpg-id"
@@ -93,9 +91,6 @@
           "*.vue"
           "*.yaml"
           "*.yml"
-        ];
-        excludes = [
-          "*/asciinema-player/*"
         ];
       };
       treefmt.programs.mypy.directories = {
