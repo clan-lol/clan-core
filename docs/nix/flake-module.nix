@@ -43,15 +43,6 @@
             mypy --strict $out/bin/render-options
           '';
 
-      asciinema-player-js = pkgs.fetchurl {
-        url = "https://github.com/asciinema/asciinema-player/releases/download/v3.7.0/asciinema-player.min.js";
-        sha256 = "sha256-Ymco/+FinDr5YOrV72ehclpp4amrczjo5EU3jfr/zxs=";
-      };
-      asciinema-player-css = pkgs.fetchurl {
-        url = "https://github.com/asciinema/asciinema-player/releases/download/v3.7.0/asciinema-player.css";
-        sha256 = "sha256-GZMeZFFGvP5GMqqh516mjJKfQaiJ6bL38bSYOXkaohc=";
-      };
-
       module-docs =
         pkgs.runCommand "rendered"
           {
@@ -111,8 +102,6 @@
             ;
           inherit (inputs) nixpkgs;
           inherit module-docs;
-          inherit asciinema-player-js;
-          inherit asciinema-player-css;
         };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { inherit (config.packages) docs; };
         inherit module-docs;

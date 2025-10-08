@@ -3,8 +3,6 @@
   module-docs,
   clan-cli-docs,
   clan-lib-openapi,
-  asciinema-player-js,
-  asciinema-player-css,
   roboto,
   fira-code,
   docs-options,
@@ -56,10 +54,6 @@ pkgs.stdenv.mkDerivation {
     rm -rf ./site/options
     cp -r ${docs-options} ./site/options
     chmod -R +w ./site/options
-
-    mkdir -p ./site/static/asciinema-player
-    ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js
-    ln -snf ${asciinema-player-css} ./site/static/asciinema-player/asciinema-player.css
 
     # Link to fonts
     ln -snf ${roboto}/share/fonts/truetype/Roboto-Regular.ttf ./site/static/
