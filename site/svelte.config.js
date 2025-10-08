@@ -15,6 +15,9 @@ const config = {
       handleHttpError: "warn",
       handleMissingId: "warn",
     },
+    alias: {
+      "~": new URL("src", import.meta.url).pathname,
+    },
   },
   extensions: [".svelte"],
 };

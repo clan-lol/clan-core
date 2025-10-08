@@ -1,34 +1,35 @@
 <script lang="ts">
-  import type { NavLink } from "./utils";
+  import type { NavLink } from ".";
   let { children, data } = $props();
+  let docs = $derived(data.docs!);
 </script>
 
-{#snippet navLinkSnippet(navLink: NavLink)}
-  {#if "items" in navLink}
+{#snippet navLinks(nLinks: NavLink[])}
+  <ul>
+    {#each nLinks as nLink}
+      {@render navLink(nLink)}
+    {/each}
+  </ul>
+{/snippet}
+
+{#snippet navLink(nLink: NavLink)}
+  {#if "items" in nLink}
     <li>
-      <details open={!navLink.collapsed}>
-        <summary><span class="label group">{navLink.label}</span></summary>
-        <ul>
-          {#each navLink.items as item}
-            {@render navLinkSnippet(item)}
-          {/each}
-        </ul>
+      <details open={!nLink.collapsed}>
+        <summary><span class="label group">{nLink.label}</span></summary>
+        {@render navLinks(nLink.items)}
       </details>
     </li>
   {:else}
     <li>
-      <a href={navLink.link}>{navLink.label}</a>
+      <a href={nLink.link}>{nLink.label}</a>
     </li>
   {/if}
 {/snippet}
 
 <div class="container">
   <nav>
-    <ul>
-      {#each data.navLinks as navLink}
-        {@render navLinkSnippet(navLink)}
-      {/each}
-    </ul>
+    {@render navLinks(docs.navLinks)}
   </nav>
   <div class="content">
     {@render children()}
@@ -41,8 +42,12 @@
   }
   nav {
     display: none;
-    width: 300px;
-    flex: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
   }
 
   summary {
