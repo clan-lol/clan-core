@@ -699,4 +699,44 @@ in
         };
       };
     };
+
+  test_listOf_either =
+    let
+      evaluated = eval [
+        {
+          options.extraModules = lib.mkOption {
+            description = "List of modules that can be strings, paths, or attrsets";
+            default = [ ];
+            type = lib.types.listOf (
+              lib.types.oneOf [
+                lib.types.str
+                lib.types.path
+                (lib.types.attrsOf lib.types.anything)
+              ]
+            );
+          };
+        }
+        ({
+          _file = "config.nix";
+          extraModules = [
+            "modules/common.nix"
+            ./some/path.nix
+            { config = { }; }
+          ];
+        })
+      ];
+      result = slib.getPrios { options = evaluated.options; };
+    in
+    {
+      inherit evaluated;
+      # Test that either types in list items return empty objects
+      # This is a behavioral test and not necessarily the correct
+      # behavior. But this is better than crashing on people directly.
+      expr = result.extraModules.__list;
+      expected = [
+        { }
+        { }
+        { }
+      ];
+    };
 }
