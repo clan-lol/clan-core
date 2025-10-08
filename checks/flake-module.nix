@@ -120,7 +120,7 @@ in
             ) (self.darwinConfigurations or { })
             // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") (
               if system == "aarch64-darwin" then
-                lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs" && n != "docs-options") packagesToBuild
+                lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs" && n != "option-search") packagesToBuild
               else
                 packagesToBuild
             )

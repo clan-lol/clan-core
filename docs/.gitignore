@@ -1,6 +1,6 @@
 /site/reference
 /site/services/official
 /site/static
-/site/options
+/site/option-search
 /site/openapi.json
 !/site/static/extra.css

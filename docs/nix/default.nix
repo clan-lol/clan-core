@@ -5,7 +5,7 @@
   clan-lib-openapi,
   roboto,
   fira-code,
-  docs-options,
+  option-search,
   ...
 }:
 let
@@ -51,9 +51,9 @@ pkgs.stdenv.mkDerivation {
     chmod -R +w ./site
     echo "Generated API documentation in './site/reference/' "
 
-    rm -rf ./site/options
-    cp -r ${docs-options} ./site/options
-    chmod -R +w ./site/options
+    rm -rf ./site/option-search
+    cp -r ${option-search} ./site/option-search
+    chmod -R +w ./site/option-search
 
     # Link to fonts
     ln -snf ${roboto}/share/fonts/truetype/Roboto-Regular.ttf ./site/static/
