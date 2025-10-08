@@ -13,6 +13,8 @@ import remarkDirective from "remark-directive";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
+import type { Element } from "hast";
+import * as config from "../src/config";
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -38,6 +40,7 @@ export default function (): PluginOption {
         .use(styleDirectives)
         .use(remarkRehype)
         .use(rehypeShiki, {
+          defaultColor: false,
           themes: {
             light: "catppuccin-latte",
             dark: "catppuccin-macchiato",
@@ -49,6 +52,9 @@ export default function (): PluginOption {
             transformerNotationHighlight(),
             transformerRenderIndentGuides(),
             transformerMetaHighlight(),
+            transformerLineNumbers({
+              minLines: config.markdown.minLineNumberLines,
+            }),
           ],
         })
         .use(rehypeStringify)
@@ -174,11 +180,35 @@ function linkMigration() {
         return;
       }
       // Skip external links, links pointing to /docs already and anchors
-      if (!node.url || /^(https?:)?\/\/|^\/docs|^#/.test(node.url)) return;
+      if (!node.url || /^(https?:)?\/\/|^#/.test(node.url)) return;
 
       // Remove repeated leading ../  or ./
-      const cleanUrl = node.url.replace(/^(\.\.\/|\.\/)+|\.md$/g, "");
-      node.url = `/docs/${cleanUrl}`;
+      const cleanUrl = node.url.replace(/^\.\.?|((\.\.?)\/)+|\.md$/g, "");
+      if (!cleanUrl.startsWith("/")) {
+        throw new Error(`invalid doc link: ${cleanUrl}`);
+      }
+      node.url = `${config.docs.base}/${cleanUrl}`;
     });
+  };
+}
+
+function transformerLineNumbers({ minLines }: { minLines: number }) {
+  return {
+    pre(pre: Element) {
+      const code = pre.children?.[0] as Element | undefined;
+      if (!code) {
+        return;
+      }
+      const lines = code.children.reduce((lines, node) => {
+        if (node.type !== "element" || node.properties.class != "line") {
+          return lines;
+        }
+        return lines + 1;
+      }, 0);
+      if (lines < minLines) {
+        return;
+      }
+      pre.properties.class += " line-numbers";
+    },
   };
 }

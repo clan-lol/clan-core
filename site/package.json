@@ -21,6 +21,7 @@
     "@sveltejs/kit": "^2.43.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.0",
     "cssnano": "^7.1.1",
+    "hast": "^0.0.2",
     "hast-util-to-html": "^9.0.5",
     "hastscript": "^9.0.1",
     "mdast": "^2.3.2",

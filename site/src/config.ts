@@ -25,3 +25,7 @@ export const docs = {
     },
   ] as RawNavLink[],
 };
+
+export const markdown = {
+  minLineNumberLines: 4,
+};
