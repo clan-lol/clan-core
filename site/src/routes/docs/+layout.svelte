@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { NormalizedNavLink } from "./utils";
+  import type { NavLink } from "./utils";
   let { children, data } = $props();
 </script>
 
-{#snippet navLinkSnippet(navLink: NormalizedNavLink)}
+{#snippet navLinkSnippet(navLink: NavLink)}
   {#if "items" in navLink}
     <li>
       <details open={!navLink.collapsed}>

@@ -1,6 +1,6 @@
-import type { NavLink } from "./utils";
+import type { RawNavLink } from "./utils";
 
-export const navLinks: NavLink[] = [
+export const navLinks: RawNavLink[] = [
   {
     label: "Getting Started",
     items: ["getting-started/add-machines"],

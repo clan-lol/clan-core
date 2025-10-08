@@ -8,61 +8,59 @@ export const articles = Object.fromEntries(
   ).map(([key, fn]) => [key.slice("./".length, -".md".length), fn]),
 );
 
-export type NavLink =
+export type RawNavLink =
   | string
   | {
       label: string;
-      items: NavLink[];
+      items: RawNavLink[];
       collapsed?: boolean;
-      badge?: Badge;
+      badge?: RawBadge;
     }
   | {
       label: string;
       autogenerate: { directory: string };
       collapsed?: boolean;
-      badge?: Badge;
+      badge?: RawBadge;
     }
   | {
       label?: string;
       slug: string;
-      badge?: Badge;
+      badge?: RawBadge;
     }
   | {
       label: string;
       link: string;
-      badge?: Badge;
+      badge?: RawBadge;
     };
 
-export type NormalizedNavLink =
+export type NavLink =
   | {
       label: string;
-      items: NormalizedNavLink[];
+      items: NavLink[];
       collapsed: boolean;
-      badge?: NormalizedBadge;
+      badge?: Badge;
     }
   | {
       label: string;
       link: string;
-      badge?: NormalizedBadge;
+      badge?: Badge;
       external: boolean;
     };
 
-export type Badge = string | NormalizedBadge;
+export type RawBadge = string | Badge;
 
-export type NormalizedBadge = {
+export type Badge = {
   text: string;
   variant: "caution" | "normal";
 };
 
 export async function normalizeNavLinks(
-  navLinks: NavLink[],
-): Promise<NormalizedNavLink[]> {
+  navLinks: RawNavLink[],
+): Promise<NavLink[]> {
   return await Promise.all(navLinks.map(normalizeNavLink));
 }
 
-export async function normalizeNavLink(
-  navLink: NavLink,
-): Promise<NormalizedNavLink> {
+export async function normalizeNavLink(navLink: RawNavLink): Promise<NavLink> {
   if (typeof navLink === "string") {
     const article = articles[navLink];
     if (!article) {
@@ -122,7 +120,7 @@ export async function normalizeNavLink(
     }
     if (titleMissing) throw new Error("Aborting due to errors.");
 
-    const items: NormalizedNavLink[] = await Promise.all(
+    const items: NavLink[] = await Promise.all(
       frontmatters
         .sort((a, b) => {
           const orderA = a.frontmatter.order;
@@ -162,9 +160,7 @@ export async function normalizeNavLink(
   };
 }
 
-export function normalizeBadge(
-  badge: Badge | undefined,
-): NormalizedBadge | undefined {
+export function normalizeBadge(badge: RawBadge | undefined): Badge | undefined {
   if (!badge) {
     return undefined;
   }
