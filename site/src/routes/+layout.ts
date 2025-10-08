@@ -9,6 +9,9 @@ export async function load({ url }) {
     ? url.pathname.slice(0, -1)
     : url.pathname;
   return {
-    docs: path != config.docs.base ? null : await new Docs().init(),
+    docs:
+      path != config.docs.base && !path.startsWith(`${config.docs.base}/`)
+        ? null
+        : await new Docs().init(),
   };
 }

@@ -4,24 +4,36 @@
 
   import favicon from "$lib/assets/favicon.svg";
   import type { NavLink } from "./docs";
+  import { onNavigate } from "$app/navigation";
 
   const { data, children } = $props();
+  let menuOpen = $state(false);
+  onNavigate(() => {
+    menuOpen = false;
+    console.log(menuOpen);
+  });
 </script>
 
 <svelte:head>
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-<nav>
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href={config.blog.base}>Blog</a></li>
-    <li>
-      <a href={config.docs.base}>Docs</a>
-      {#if data.docs}{@render navLinks(data.docs.navLinks)}{/if}
-    </li>
-  </ul>
-</nav>
+<div class="global-bar">
+  <span class="logo">Logo</span>
+  <nav>
+    <div class={["menu", menuOpen && "open"]}>
+      <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href={config.blog.base}>Blog</a></li>
+        <li>
+          <a href={config.docs.base}>Docs</a>
+          {#if data.docs}{@render navLinks(data.docs.navLinks)}{/if}
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>
 <main>
   {@render children?.()}
 </main>
@@ -50,28 +62,32 @@
 {/snippet}
 
 <style>
-  nav {
-    height: var(--globalNavHeight);
+  .global-bar {
+    height: var(--globalBarHeight);
     display: flex;
+    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid;
     padding: 0 var(--pagePadding);
   }
+  .menu > ul {
+    visibility: hidden;
+    position: fixed;
+    left: 0;
+    top: var(--globalBarHeight);
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+  }
+  .menu.open > ul {
+    visibility: visible;
+  }
   ul {
-    display: flex;
     list-style: none;
     padding: 0;
     margin: 0;
-
-    ul {
-      display: none;
-    }
   }
   li {
-    padding-left: 2em;
-
-    &:first-child {
-      padding-left: 0;
-    }
+    padding-left: 1em;
   }
 </style>
