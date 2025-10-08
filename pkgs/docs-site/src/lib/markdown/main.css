@@ -1,3 +1,6 @@
+@import url("./shiki.css");
+@import url("./admonition.css");
+
 code {
   font-family:
     ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,

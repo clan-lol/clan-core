@@ -1,16 +1,16 @@
-import * as config from "~/config";
+import config from "~/config";
 
 export class Docs {
   articles: Record<string, () => Promise<Article>> = {};
   navLinks: NavLink[] = [];
   async init() {
     this.articles = Object.fromEntries(
-      Object.entries(import.meta.glob<Article>("./**/*.md")).map(
-        ([key, fn]) => [key.slice("./".length, -".md".length), fn],
+      Object.entries(import.meta.glob<Article>("../routes/docs/**/*.md")).map(
+        ([key, fn]) => [key.slice("../routes/docs/".length, -".md".length), fn],
       ),
     );
     this.navLinks = await Promise.all(
-      config.docs.navLinks.map((navLink) => this.#normalizeNavLink(navLink)),
+      config.navLinks.map((navLink) => this.#normalizeNavLink(navLink)),
     );
     return this;
   }
@@ -23,7 +23,7 @@ export class Docs {
       }
       return {
         label: (await article()).frontmatter.title,
-        link: `${config.docs.base}/${navLink}`,
+        link: `/${navLink}`,
         external: false,
       };
     }
@@ -46,7 +46,7 @@ export class Docs {
       }
       return {
         label: navLink.label ?? (await article()).frontmatter.title,
-        link: `${config.docs.base}/${navLink.slug}`,
+        link: `/${navLink.slug}`,
         badge: normalizeBadge(navLink.badge),
         external: false,
       };
@@ -98,7 +98,7 @@ export class Docs {
           .map((item) =>
             this.#normalizeNavLink({
               label: item.frontmatter.title,
-              link: `${config.docs.base}/${item.key}`,
+              link: `/${item.key}`,
             }),
           ),
       );

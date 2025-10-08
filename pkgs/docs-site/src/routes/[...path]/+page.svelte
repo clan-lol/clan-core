@@ -1,7 +1,5 @@
 <script lang="ts">
-  import "./markdown.css";
-  import "./shiki.css";
-  import "./admonition.css";
+  import "$lib/markdown/main.css";
   let { data } = $props();
 </script>
 
@@ -16,7 +14,6 @@
   </div>
 </div>
 
-<!-- {JSON.stringify(data.frontmatter)} -->
 <style>
   .container {
     display: flex;

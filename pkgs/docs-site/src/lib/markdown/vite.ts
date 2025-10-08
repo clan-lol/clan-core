@@ -14,7 +14,6 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { toc } from "mdast-util-toc";
 import type { Nodes } from "mdast";
 import type { Element } from "hast";
-import * as config from "../src/config";
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -25,7 +24,17 @@ import { visit } from "unist-util-visit";
 import { h } from "hastscript";
 import type { PluginOption } from "vite";
 
-export default function (): PluginOption {
+export type Options = {
+  codeLightTheme?: string;
+  codeDarkTheme?: string;
+  minLineNumberLines?: number;
+};
+
+export default function ({
+  codeLightTheme = "catppuccin-latte",
+  codeDarkTheme = "catppuccin-macchiato",
+  minLineNumberLines = 4,
+}: Options = {}): PluginOption {
   return {
     name: "markdown-loader",
     async transform(code, id) {
@@ -42,8 +51,8 @@ export default function (): PluginOption {
         .use(rehypeShiki, {
           defaultColor: false,
           themes: {
-            light: "catppuccin-latte",
-            dark: "catppuccin-macchiato",
+            light: codeLightTheme,
+            dark: codeDarkTheme,
           },
           transformers: [
             transformerNotationDiff({
@@ -53,7 +62,7 @@ export default function (): PluginOption {
             transformerRenderIndentGuides(),
             transformerMetaHighlight(),
             transformerLineNumbers({
-              minLines: config.markdown.minLineNumberLines,
+              minLines: minLineNumberLines,
             }),
           ],
         })
@@ -187,7 +196,7 @@ function linkMigration() {
       if (!cleanUrl.startsWith("/")) {
         throw new Error(`invalid doc link: ${cleanUrl}`);
       }
-      node.url = `${config.docs.base}/${cleanUrl}`;
+      node.url = `/docs/${cleanUrl}`;
     });
   };
 }

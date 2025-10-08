@@ -1,10 +1,6 @@
-import type { RawNavLink } from "./routes/docs";
+import type { RawNavLink } from "$lib";
 
-export const blog = {
-  base: "/blog",
-};
-export const docs = {
-  base: "/docs",
+export default {
   navLinks: [
     {
       label: "Getting Started",
@@ -24,8 +20,4 @@ export const docs = {
       ],
     },
   ] as RawNavLink[],
-};
-
-export const markdown = {
-  minLineNumberLines: 4,
 };

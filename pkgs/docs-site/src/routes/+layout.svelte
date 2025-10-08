@@ -1,16 +1,14 @@
 <script lang="ts">
-  import * as config from "~/config";
+  import favicon from "$lib/assets/favicon.svg";
+  import type { NavLink } from "$lib";
+  import { onNavigate } from "$app/navigation";
   import "./index.css";
 
-  import favicon from "$lib/assets/favicon.svg";
-  import type { NavLink } from "./docs";
-  import { onNavigate } from "$app/navigation";
-
   const { data, children } = $props();
+  const docs = $derived(data.docs);
   let menuOpen = $state(false);
   onNavigate(() => {
     menuOpen = false;
-    console.log(menuOpen);
   });
 </script>
 
@@ -19,18 +17,11 @@
 </svelte:head>
 
 <div class="global-bar">
-  <span class="logo">Logo</span>
+  <span class="logo">Clan Docs</span>
   <nav>
     <div class={["menu", menuOpen && "open"]}>
       <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href={config.blog.base}>Blog</a></li>
-        <li>
-          <a href={config.docs.base}>Docs</a>
-          {#if data.docs}{@render navLinks(data.docs.navLinks)}{/if}
-        </li>
-      </ul>
+      {@render navLinks(docs.navLinks)}
     </div>
   </nav>
 </div>
