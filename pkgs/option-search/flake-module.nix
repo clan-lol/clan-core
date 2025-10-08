@@ -24,7 +24,7 @@
 
       serviceModules = self.clan.modules;
 
-      baseHref = "/options/";
+      baseHref = "/option-search/";
 
       getRoles =
         module:
@@ -118,7 +118,7 @@
                       _file = "docs flake-module";
                       imports = [
                         { _module.args = { inherit clanLib; }; }
-                        (import ../../../lib/modules/inventoryClass/roles-interface.nix {
+                        (import ../../lib/modules/inventoryClass/roles-interface.nix {
                           nestedSettingsOption = mkOption {
                             type = types.raw;
                             description = ''
@@ -201,7 +201,7 @@
       # };
 
       packages = {
-        docs-options =
+        option-search =
           if privateInputs ? nuschtos then
             privateInputs.nuschtos.packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch {
               inherit baseHref;

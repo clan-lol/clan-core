@@ -70,6 +70,8 @@ hide:
   .clamp-toggle:checked ~ .clamp-more::after { content: "Read less"; }
 </style>
 
+trivial change
+
 <div class="clamp-wrap" style="--lines: 3;">
   <input type="checkbox" id="clan-readmore" class="clamp-toggle" />
   <div class="clamp-content">
@@ -122,7 +124,7 @@ hide:
 
     command line interface
 
--   [Clan Options](/options)
+-   [Clan Options](./reference/options/clan.md)
 
     ---
 

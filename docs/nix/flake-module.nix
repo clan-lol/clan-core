@@ -1,8 +1,5 @@
 { inputs, self, ... }:
 {
-  imports = [
-    ./options/flake-module.nix
-  ];
   perSystem =
     {
       config,
@@ -96,7 +93,7 @@
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (self'.packages)
             clan-cli-docs
-            docs-options
+            option-search
             inventory-api-docs
             clan-lib-openapi
             ;
