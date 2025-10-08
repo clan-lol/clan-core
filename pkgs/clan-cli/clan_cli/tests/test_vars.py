@@ -1336,6 +1336,46 @@ def test_cache_misses_for_vars_operations(
 
 
 @pytest.mark.with_core
+def test_shared_generator_conflicting_definition_raises_error(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that vars generation raises an error when two machines have different
+    definitions for the same shared generator.
+    """
+    flake = flake_with_sops
+
+    # Create machine1 with a shared generator
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen1 = machine1_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_gen1["share"] = True
+    shared_gen1["files"]["file1"]["secret"] = False
+    shared_gen1["script"] = 'echo "test" > "$out"/file1'
+
+    # Create machine2 with the same shared generator but different files
+    machine2_config = flake.machines["machine2"] = create_test_machine_config()
+    shared_gen2 = machine2_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_gen2["share"] = True
+    shared_gen2["files"]["file2"]["secret"] = False  # Different file name
+    shared_gen2["script"] = 'echo "test" > "$out"/file2'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Attempting to generate vars for both machines should raise an error
+    # because they have conflicting definitions for the same shared generator
+    with pytest.raises(
+        ClanError,
+        match=".*differ.*",
+    ):
+        cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+
+@pytest.mark.with_core
 def test_dynamic_invalidation(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,

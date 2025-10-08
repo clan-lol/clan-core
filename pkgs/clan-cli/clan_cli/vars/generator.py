@@ -144,6 +144,9 @@ class Generator:
         flake.precache(cls.get_machine_selectors(machine_names))
 
         generators = []
+        shared_generators_raw: dict[
+            str, tuple[str, dict, dict]
+        ] = {}  # name -> (machine_name, gen_data, files_data)
 
         for machine_name in machine_names:
             # Get all generator metadata in one select (safe fields only)
@@ -165,6 +168,38 @@ class Generator:
             sec_store = machine.secret_vars_store
 
             for gen_name, gen_data in generators_data.items():
+                # Check for conflicts in shared generator definitions using raw data
+                if gen_data["share"]:
+                    if gen_name in shared_generators_raw:
+                        prev_machine, prev_gen_data, prev_files_data = (
+                            shared_generators_raw[gen_name]
+                        )
+                        # Compare raw data
+                        prev_gen_files = prev_files_data.get(gen_name, {})
+                        curr_gen_files = files_data.get(gen_name, {})
+                        # Build list of differences with details
+                        differences = []
+                        if prev_gen_files != curr_gen_files:
+                            differences.append("files")
+                        if prev_gen_data.get("prompts") != gen_data.get("prompts"):
+                            differences.append("prompts")
+                        if prev_gen_data.get("dependencies") != gen_data.get(
+                            "dependencies"
+                        ):
+                            differences.append("dependencies")
+                        if prev_gen_data.get("validationHash") != gen_data.get(
+                            "validationHash"
+                        ):
+                            differences.append("validation_hash")
+                        if differences:
+                            msg = f"Machines {prev_machine} and {machine_name} have different definitions for shared generator '{gen_name}' (differ in: {', '.join(differences)})"
+                            raise ClanError(msg)
+                    else:
+                        shared_generators_raw[gen_name] = (
+                            machine_name,
+                            gen_data,
+                            files_data,
+                        )
                 # Build files from the files_data
                 files = []
                 gen_files = files_data.get(gen_name, {})
@@ -216,6 +251,7 @@ class Generator:
                     _public_store=pub_store,
                     _secret_store=sec_store,
                 )
+
                 generators.append(generator)
 
             # TODO: This should be done in a non-mutable way.
