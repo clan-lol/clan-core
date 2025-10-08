@@ -17,7 +17,7 @@
     "@fontsource-variable/geist": "^5.2.8",
     "@shikijs/rehype": "^3.13.0",
     "@shikijs/transformers": "^3.13.0",
-    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/adapter-auto": "^6.1.1",
     "@sveltejs/kit": "^2.43.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.0",
     "hast-util-to-html": "^9.0.5",
