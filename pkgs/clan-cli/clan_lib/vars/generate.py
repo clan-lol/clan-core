@@ -177,13 +177,25 @@ def run_generators(
     for machine in machines:
         _ensure_healthy(machine=machine)
 
+    # get the flake via any machine (they are all the same)
+    flake = machines[0].flake
+
+    def get_generator_machine(generator: Generator) -> Machine:
+        if generator.machine is None:
+            # return first machine if generator is not tied to a specific one
+            return machines[0]
+        return Machine(name=generator.machine, flake=flake)
+
+    # preheat the select cache, to reduce repeated calls during execution
+    selectors = []
+    for generator in generator_objects:
+        machine = get_generator_machine(generator)
+        selectors.append(generator.final_script_selector(machine.name))
+    flake.precache(selectors)
+
     # execute generators
     for generator in generator_objects:
-        machine = (
-            machines[0]
-            if generator.machine is None
-            else Machine(name=generator.machine, flake=machines[0].flake)
-        )
+        machine = get_generator_machine(generator)
         if check_can_migrate(machine, generator):
             migrate_files(machine, generator)
         else:

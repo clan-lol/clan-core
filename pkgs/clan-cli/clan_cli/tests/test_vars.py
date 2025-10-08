@@ -1264,65 +1264,74 @@ def test_cache_misses_for_vars_operations(
     flake: ClanFlake,
 ) -> None:
     """Test that vars operations result in minimal cache misses."""
+    # Set up first machine with two generators
     config = flake.machines["my_machine"] = create_test_machine_config()
 
-    # Set up a simple generator with a public value
-    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
-    my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = 'echo -n "test_value" > "$out"/my_value'
+    # Set up two generators with public values
+    gen1 = config["clan"]["core"]["vars"]["generators"]["gen1"]
+    gen1["files"]["value1"]["secret"] = False
+    gen1["script"] = 'echo -n "test_value1" > "$out"/value1'
+
+    gen2 = config["clan"]["core"]["vars"]["generators"]["gen2"]
+    gen2["files"]["value2"]["secret"] = False
+    gen2["script"] = 'echo -n "test_value2" > "$out"/value2'
+
+    # Add a second machine with the same generator configuration
+    flake.machines["other_machine"] = config.copy()
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
 
-    # Create a fresh machine object to ensure clean cache state
-    machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
+    # Create fresh machine objects to ensure clean cache state
+    flake_obj = Flake(str(flake.path))
+    machine1 = Machine(name="my_machine", flake=flake_obj)
+    machine2 = Machine(name="other_machine", flake=flake_obj)
 
-    # Test 1: Running vars generate with a fresh cache should result in exactly 3 cache misses
-    # Expected cache misses:
-    # 1. One for getting the list of generators
-    # 2. One for getting the final script of our test generator (my_generator)
-    # 3. One for getting the final script of the state version generator (added by default)
-    # TODO: The third cache miss is undesired in tests. disable state version module for tests
+    # Test 1: Running vars generate for BOTH machines simultaneously should still result in exactly 2 cache misses
+    # Even though we have:
+    # - 2 machines (my_machine and other_machine)
+    # - 2 generators per machine (gen1 and gen2)
+    # We still only get 2 cache misses when generating for both machines:
+    # 1. One for getting the list of generators for both machines
+    # 2. One batched evaluation for getting all generator scripts for both machines
+    # The key insight: the system should batch ALL evaluations across ALL machines into a single nix eval
 
     run_generators(
-        machines=[machine],
+        machines=[machine1, machine2],
         generators=None,  # Generate all
     )
 
-    # Print stack traces if we have more than 3 cache misses
-    if machine.flake._cache_misses != 3:
-        machine.flake.print_cache_miss_analysis(
+    # Print stack traces if we have more than 2 cache misses
+    if flake_obj._cache_misses != 2:
+        flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for vars generate"
         )
 
-    assert machine.flake._cache_misses == 2, (
-        f"Expected exactly 2 cache misses for vars generate, got {machine.flake._cache_misses}"
+    assert flake_obj._cache_misses == 2, (
+        f"Expected exactly 2 cache misses for vars generate, got {flake_obj._cache_misses}"
     )
-
-    # Verify the value was generated correctly
-    var_value = get_machine_var(machine, "my_generator/my_value")
-    assert var_value.printable_value == "test_value"
 
     # Test 2: List all vars should result in exactly 1 cache miss
     # Force cache invalidation (this also resets cache miss tracking)
     invalidate_flake_cache(flake.path)
-    machine.flake.invalidate_cache()
+    flake_obj.invalidate_cache()
 
-    stringify_all_vars(machine)
-    assert machine.flake._cache_misses == 1, (
-        f"Expected exactly 1 cache miss for vars list, got {machine.flake._cache_misses}"
+    stringify_all_vars(machine1)
+    assert flake_obj._cache_misses == 1, (
+        f"Expected exactly 1 cache miss for vars list, got {flake_obj._cache_misses}"
     )
 
     # Test 3: Getting a specific var with a fresh cache should result in exactly 1 cache miss
     # Force cache invalidation (this also resets cache miss tracking)
     invalidate_flake_cache(flake.path)
-    machine.flake.invalidate_cache()
+    flake_obj.invalidate_cache()
 
-    var_value = get_machine_var(machine, "my_generator/my_value")
-    assert var_value.printable_value == "test_value"
+    # Only test gen1 for the get operation
+    var_value = get_machine_var(machine1, "gen1/value1")
+    assert var_value.printable_value == "test_value1"
 
-    assert machine.flake._cache_misses == 1, (
-        f"Expected exactly 1 cache miss for vars get with fresh cache, got {machine.flake._cache_misses}"
+    assert flake_obj._cache_misses == 1, (
+        f"Expected exactly 1 cache miss for vars get with fresh cache, got {flake_obj._cache_misses}"
     )
 
 
