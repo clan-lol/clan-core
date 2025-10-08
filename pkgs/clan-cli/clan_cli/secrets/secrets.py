@@ -158,8 +158,10 @@ def encrypt_secret(
     admin_keys = sops.ensure_admin_public_keys(flake_dir)
 
     if not admin_keys:
-        # TODO double check the correct command to run
-        msg = "No keys found. Please run 'clan secrets add-key' to add a key."
+        msg = (
+            "No admin keys found.\n\n"
+            "Please run 'clan vars keygen' to generate and set up keys."
+        )
         raise ClanError(msg)
 
     username = next(iter(admin_keys)).username
