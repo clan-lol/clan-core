@@ -40,12 +40,15 @@ class StoreBase(ABC):
 
     def get_machine(self, generator: "Generator") -> str:
         """Get machine name from generator, asserting it's not None for now."""
-        if generator.machine is None:
-            if generator.share:
-                return "__shared"
+        if generator.share:
+            return "__shared"
+        if not generator.machines:
             msg = f"Generator '{generator.name}' has no machine associated"
             raise ClanError(msg)
-        return generator.machine
+        if len(generator.machines) != 1:
+            msg = f"Generator '{generator.name}' has {len(generator.machines)} machines, expected exactly 1"
+            raise ClanError(msg)
+        return generator.machines[0]
 
     # get a single fact
     @abstractmethod
@@ -147,7 +150,7 @@ class StoreBase(ABC):
         prev_generator = dataclasses.replace(
             generator,
             share=not generator.share,
-            machine=machine if generator.share else None,
+            machines=[] if not generator.share else [machine],
         )
         if self.exists(prev_generator, var.name):
             changed_files += self.delete(prev_generator, var.name)
@@ -165,12 +168,12 @@ class StoreBase(ABC):
         new_file = self._set(generator, var, value, machine)
         action_str = "Migrated" if is_migration else "Updated"
         log_info: Callable
-        if generator.machine is None:
+        if generator.share:
             log_info = log.info
         else:
             from clan_lib.machines.machines import Machine  # noqa: PLC0415
 
-            machine_obj = Machine(name=generator.machine, flake=self.flake)
+            machine_obj = Machine(name=generator.machines[0], flake=self.flake)
             log_info = machine_obj.info
         if self.is_secret_store:
             log.info(f"{action_str} secret var {generator.name}/{var.name}\n")
