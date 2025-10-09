@@ -1,6 +1,4 @@
----
-title: Add Machines
----
+# Add Machines
 
 Machines can be added using the following methods
 
@@ -42,8 +40,8 @@ See the complete [list](../guides/inventory/autoincludes.md) of auto-loaded file
 ### Configuring a machine
 
 !!! Note
-    The option: `inventory.machines.<name>` is used to define metadata about the machine
-    That includes for example `deploy.targethost` `machineClass` or `tags`
+The option: `inventory.machines.<name>` is used to define metadata about the machine
+That includes for example `deploy.targethost` `machineClass` or `tags`
 
     The option: `machines.<name>` is used to add extra *nixosConfiguration* to a machine
 
@@ -75,7 +73,7 @@ This example demonstrates what is needed based on a machine called `jon`:
 ```
 
 1. Tags can be used to automatically add this machine to services later on. - You dont need to set this now.
-2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
+2. Add your _ssh key_ here - That will ensure you can always login to your machine via _ssh_ in case something goes wrong.
 
 ### (Optional) Create a `configuration.nix`
 
@@ -103,8 +101,8 @@ git mv ./machines/jon ./machines/<your-machine-name>
 
 Since your Clan configuration lives inside a Git repository, remember:
 
-* Only files tracked by Git (`git add`) are recognized.
-* Whenever you add, rename, or remove files, run:
+- Only files tracked by Git (`git add`) are recognized.
+- Whenever you add, rename, or remove files, run:
 
 ```bash
 git add ./machines/<your-machine-name>

@@ -4,18 +4,18 @@ export default {
   navLinks: [
     {
       label: "Getting Started",
-      items: ["getting-started/add-machines"],
+      items: ["/getting-started/add-machines"],
     },
     {
       label: "Reference",
       items: [
         {
           label: "Overview",
-          slug: "reference/overview",
+          slug: "/reference/overview",
         },
         {
           label: "Options",
-          autogenerate: { directory: "reference/options" },
+          autogenerate: { directory: "/reference/options" },
         },
       ],
     },
