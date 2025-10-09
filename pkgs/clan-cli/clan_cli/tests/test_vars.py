@@ -432,7 +432,6 @@ def test_generated_shared_secret_sops(
     assert check_vars(machine1.name, machine1.flake)
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
     assert check_vars(machine2.name, machine2.flake)
-    assert check_vars(machine2.name, machine2.flake)
     m1_sops_store = sops.SecretStore(machine1.flake)
     m2_sops_store = sops.SecretStore(machine2.flake)
     # Create generators with machine context for testing

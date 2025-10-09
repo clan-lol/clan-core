@@ -93,21 +93,21 @@ def _ensure_healthy(
     if generators is None:
         generators = Generator.get_machine_generators([machine.name], machine.flake)
 
-    pub_healtcheck_msg = machine.public_vars_store.health_check(
+    public_health_check_msg = machine.public_vars_store.health_check(
         machine.name,
         generators,
     )
-    sec_healtcheck_msg = machine.secret_vars_store.health_check(
+    secret_health_check_msg = machine.secret_vars_store.health_check(
         machine.name,
         generators,
     )
 
-    if pub_healtcheck_msg or sec_healtcheck_msg:
+    if public_health_check_msg or secret_health_check_msg:
         msg = f"Health check failed for machine {machine.name}:\n"
-        if pub_healtcheck_msg:
-            msg += f"Public vars store: {pub_healtcheck_msg}\n"
-        if sec_healtcheck_msg:
-            msg += f"Secret vars store: {sec_healtcheck_msg}"
+        if public_health_check_msg:
+            msg += f"Public vars store: {public_health_check_msg}\n"
+        if secret_health_check_msg:
+            msg += f"Secret vars store: {secret_health_check_msg}"
         raise ClanError(msg)
 
 
