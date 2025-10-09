@@ -5,6 +5,7 @@
   import { browser } from "$app/environment";
   const { data } = $props();
   const toc = $state(data.toc);
+  let tocOpen = $state(false);
 
   let tocEl: HTMLElement;
   let tocLabelTextEl: HTMLElement;
@@ -139,14 +140,18 @@
 <div class="container">
   <div class="toc">
     <h2 class="toc-title" bind:this={tocEl}>
-      <div class="toc-label">
+      <button class="toc-label" onclick={() => (tocOpen = !tocOpen)}>
         <span class="toc-label-text" bind:this={tocLabelTextEl}>
-          {currentHeading?.content || "Table of contents"}
+          {(!tocOpen && currentHeading?.content) || "Table of contents"}
         </span>
-        <span class="toc-label-arrow">v</span>
-      </div>
+        <span class="toc-label-arrow"></span>
+      </button>
     </h2>
-    {@render tocLinks(toc)}
+    {#if tocOpen}
+      <ul class="toc-menu">
+        {@render tocLinks(toc)}
+      </ul>
+    {/if}
   </div>
   <div class="content">
     {@html data.content}
@@ -154,20 +159,20 @@
 </div>
 
 {#snippet tocLinks(headings: Heading[])}
-  {#if headings.length != 0}
-    <ul>
-      {#each headings as heading}
-        {@render tocLink(heading)}
-      {/each}
-    </ul>
-  {/if}
+  {#each headings as heading}
+    {@render tocLink(heading)}
+  {/each}
 {/snippet}
 
 {#snippet tocLink(heading: Heading)}
   <li>
     <details open>
       <summary>{heading.content}</summary>
-      {@render tocLinks(heading.children)}
+      {#if heading.children.length != 0}
+        <ul>
+          {@render tocLinks(heading.children)}
+        </ul>
+      {/if}
     </details>
   </li>
 {/snippet}
@@ -185,10 +190,12 @@
       padding: 15px 20px;
       background: #e5e5e5;
     }
-
-    > :global(ul) {
-      display: none;
-    }
+  }
+  button {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    font: inherit;
   }
   .toc-title {
     display: flex;
@@ -200,6 +207,28 @@
   }
   .toc-label-text {
     transform-origin: left center;
+  }
+  .toc-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 15px 20px;
+    background: #fff;
+    list-style: none;
+    box-shadow: 0 3px 5px #00000020;
+
+    ul {
+      list-style: none;
+      padding: 0 15px;
+    }
+    li {
+      padding: 3px 0;
+    }
+    summary:not(:has(+ ul)) {
+      list-style: none;
+    }
   }
   .content {
     padding: 0 15px;
