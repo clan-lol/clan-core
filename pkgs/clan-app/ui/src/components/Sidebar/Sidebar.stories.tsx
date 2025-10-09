@@ -160,47 +160,47 @@ const mockFetcher = <K extends OperationNames>(
     },
   }) satisfies ApiCall<K>;
 
-export const Default: Story = {
-  args: {},
-  decorators: [
-    (Story: StoryObj) => {
-      const queryClient = new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: false,
-            staleTime: Infinity,
-          },
-        },
-      });
-
-      Object.entries(queryData).forEach(([clanURI, clan]) => {
-        queryClient.setQueryData(
-          ["clans", encodeBase64(clanURI), "details"],
-          clan.details,
-        );
-
-        const machines = clan.machines || {};
-
-        queryClient.setQueryData(
-          ["clans", encodeBase64(clanURI), "machines"],
-          machines,
-        );
-
-        Object.entries(machines).forEach(([name, machine]) => {
-          queryClient.setQueryData(
-            ["clans", encodeBase64(clanURI), "machine", name, "state"],
-            machine.state,
-          );
-        });
-      });
-
-      return (
-        <ApiClientProvider client={{ fetch: mockFetcher }}>
-          <QueryClientProvider client={queryClient}>
-            <Story />
-          </QueryClientProvider>
-        </ApiClientProvider>
-      );
-    },
-  ],
-};
+// export const Default: Story = {
+//   args: {},
+//   decorators: [
+//     (Story: StoryObj) => {
+//       const queryClient = new QueryClient({
+//         defaultOptions: {
+//           queries: {
+//             retry: false,
+//             staleTime: Infinity,
+//           },
+//         },
+//       });
+//
+//       Object.entries(queryData).forEach(([clanURI, clan]) => {
+//         queryClient.setQueryData(
+//           ["clans", encodeBase64(clanURI), "details"],
+//           clan.details,
+//         );
+//
+//         const machines = clan.machines || {};
+//
+//         queryClient.setQueryData(
+//           ["clans", encodeBase64(clanURI), "machines"],
+//           machines,
+//         );
+//
+//         Object.entries(machines).forEach(([name, machine]) => {
+//           queryClient.setQueryData(
+//             ["clans", encodeBase64(clanURI), "machine", name, "state"],
+//             machine.state,
+//           );
+//         });
+//       });
+//
+//       return (
+//         <ApiClientProvider client={{ fetch: mockFetcher }}>
+//           <QueryClientProvider client={queryClient}>
+//             <Story />
+//           </QueryClientProvider>
+//         </ApiClientProvider>
+//       );
+//     },
+//   ],
+// };

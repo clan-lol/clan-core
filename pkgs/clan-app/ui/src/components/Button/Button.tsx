@@ -57,6 +57,7 @@ export const Button = (props: ButtonProps) => {
 
   return (
     <KobalteButton
+      role="button"
       class={cx(
         styles.button, // default button class
         local.size != "default" && styles[local.size],
