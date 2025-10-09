@@ -61,14 +61,22 @@ class Generator:
     migrate_fact: str | None = None
     validation_hash: str | None = None
 
-    machine: str | None = None
+    machines: list[str] = field(default_factory=list)
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
 
     @property
     def key(self) -> GeneratorKey:
-        return GeneratorKey(machine=self.machine, name=self.name)
+        if self.share:
+            # must be a shared generator
+            machine = None
+        elif len(self.machines) != 1:
+            msg = f"Shared generator {self.name} must have exactly one machine, but has {len(self.machines)}: {', '.join(self.machines)}"
+            raise ClanError(msg)
+        else:
+            machine = self.machines[0]
+        return GeneratorKey(machine=machine, name=self.name)
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -143,7 +151,7 @@ class Generator:
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
         flake.precache(cls.get_machine_selectors(machine_names))
 
-        generators = []
+        generators: list[Generator] = []
         shared_generators_raw: dict[
             str, tuple[str, dict, dict]
         ] = {}  # name -> (machine_name, gen_data, files_data)
@@ -244,15 +252,27 @@ class Generator:
                     migrate_fact=gen_data.get("migrateFact"),
                     validation_hash=gen_data.get("validationHash"),
                     prompts=prompts,
-                    # only set machine for machine-specific generators
-                    # this is essential for the graph algorithms to work correctly
-                    machine=None if share else machine_name,
+                    # shared generators can have multiple machines, machine-specific have one
+                    machines=[machine_name],
                     _flake=flake,
                     _public_store=pub_store,
                     _secret_store=sec_store,
                 )
 
-                generators.append(generator)
+                if share:
+                    # For shared generators, check if we already created it
+                    existing = next(
+                        (g for g in generators if g.name == gen_name and g.share), None
+                    )
+                    if existing:
+                        # Just append the machine to the existing generator
+                        existing.machines.append(machine_name)
+                    else:
+                        # Add the new shared generator
+                        generators.append(generator)
+                else:
+                    # Always add per-machine generators
+                    generators.append(generator)
 
             # TODO: This should be done in a non-mutable way.
             if include_previous_values:

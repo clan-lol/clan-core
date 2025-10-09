@@ -49,28 +49,28 @@ def test_required_generators() -> None:
     gen_1 = Generator(
         name="gen_1",
         dependencies=[],
-        machine=machine_name,
+        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         name="gen_2",
         dependencies=[gen_1.key],
-        machine=machine_name,
+        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2a = Generator(
         name="gen_2a",
         dependencies=[gen_2.key],
-        machine=machine_name,
+        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2b = Generator(
         name="gen_2b",
         dependencies=[gen_2.key],
-        machine=machine_name,
+        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
@@ -118,21 +118,22 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     shared_gen = Generator(
         name="shared_gen",
         dependencies=[],
-        machine=None,  # Shared generator
+        share=True,  # Mark as shared generator
+        machines=[machine_1, machine_2],  # Shared across both machines
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_1 = Generator(
         name="gen_1",
         dependencies=[shared_gen.key],
-        machine=machine_1,
+        machines=[machine_1],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         name="gen_2",
         dependencies=[shared_gen.key],
-        machine=machine_2,
+        machines=[machine_2],
         _public_store=public_store,
         _secret_store=secret_store,
     )
