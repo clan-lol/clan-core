@@ -288,7 +288,7 @@ of their type.
 In the inventory we the assign machines to a type, e.g. by using tags
 
 ```nix title="flake.nix"
-instnaces.machine-type = {
+instances.machine-type = {
   module.input = "self";
   module.name = "@pinpox/machine-type";
   roles.desktop.tags.desktop = { };
