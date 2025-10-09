@@ -2,28 +2,24 @@
   extraPythonPackages ? (_ps: [ ]),
   python3Packages,
   python3,
-  buildPythonApplication,
-  setuptools,
   util-linux,
   systemd,
   nix,
-  colorama,
-  junit-xml,
   mkShell,
 }:
 let
-  package = buildPythonApplication {
+  package = python3Packages.buildPythonApplication {
     pname = "test-driver";
     version = "0.0.1";
     propagatedBuildInputs = [
       util-linux
       systemd
-      colorama
-      junit-xml
+      python3Packages.colorama
+      python3Packages.junit-xml
       nix
     ]
     ++ extraPythonPackages python3Packages;
-    nativeBuildInputs = [ setuptools ];
+    nativeBuildInputs = [ python3Packages.setuptools ];
     format = "pyproject";
     src = ./.;
     passthru.devShell = mkShell {
