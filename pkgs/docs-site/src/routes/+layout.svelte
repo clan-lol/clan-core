@@ -21,7 +21,9 @@
   <nav>
     <div class={["menu", menuOpen && "open"]}>
       <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
-      {@render navLinks(docs.navLinks)}
+      <ul>
+        {@render navLinks(docs.navLinks)}
+      </ul>
     </div>
   </nav>
 </div>
@@ -30,11 +32,9 @@
 </main>
 
 {#snippet navLinks(nLinks: NavLink[])}
-  <ul>
-    {#each nLinks as nLink}
-      {@render navLink(nLink)}
-    {/each}
-  </ul>
+  {#each nLinks as nLink}
+    {@render navLink(nLink)}
+  {/each}
 {/snippet}
 
 {#snippet navLink(nLink: NavLink)}
@@ -42,7 +42,9 @@
     <li>
       <details open={!nLink.collapsed}>
         <summary><span class="label group">{nLink.label}</span></summary>
-        {@render navLinks(nLink.items)}
+        <ul>
+          {@render navLinks(nLink.items)}
+        </ul>
       </details>
     </li>
   {:else}
@@ -61,25 +63,27 @@
     border-bottom: 1px solid;
     padding: 0 var(--pagePadding);
   }
-  .menu > ul {
-    visibility: hidden;
-    position: fixed;
-    left: 0;
-    z-index: 10;
-    top: var(--globalBarHeight);
-    width: 100vw;
-    height: 100vh;
-    background: #fff;
-  }
-  .menu.open > ul {
-    visibility: visible;
+  .menu {
+    & > ul {
+      visibility: hidden;
+      position: fixed;
+      left: 0;
+      z-index: 10;
+      top: var(--globalBarHeight);
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+    }
+    &.open > ul {
+      visibility: visible;
+    }
+    li {
+      padding-left: 1em;
+    }
   }
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-  li {
-    padding-left: 1em;
   }
 </style>
