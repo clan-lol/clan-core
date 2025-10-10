@@ -4,7 +4,7 @@
   import { visitHeadings, type Heading } from "$lib/docs";
   import { browser } from "$app/environment";
   const { data } = $props();
-  const toc = $state(data.toc);
+  const headings = $state(data.toc);
   let tocOpen = $state(false);
 
   let tocEl: HTMLElement;
@@ -17,7 +17,7 @@
     let current: Heading | null = null;
     // This can run before the IntersectionObserver runs, where element is
     // still not available
-    visitHeadings(toc, (heading) => {
+    visitHeadings(headings, (heading) => {
       if (!heading.element?.classList.contains("current")) {
         return;
       }
@@ -25,7 +25,7 @@
     });
     let headingAnimation: Animation | undefined;
     let tocAnimation: Animation | undefined;
-    visitHeadings(toc, (heading) => {
+    visitHeadings(headings, (heading) => {
       if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
         headingAnimation?.cancel();
         tocAnimation?.cancel();
@@ -48,7 +48,7 @@
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          visitHeadings(toc, (heading) => {
+          visitHeadings(headings, (heading) => {
             if (heading.id != entry.target.id) {
               return;
             }
@@ -67,10 +67,10 @@
         rootMargin: `${-(tocEl.offsetHeight + 2)}px 0 0`,
       },
     );
-    const headings = document.querySelectorAll(
+    const els = document.querySelectorAll(
       ".content h1, .content h2, .content h3",
     );
-    for (const heading of headings) {
+    for (const heading of els) {
       observer.observe(heading);
     }
   });
@@ -129,6 +129,22 @@
       tocAnimation,
     };
   }
+
+  function scrollToHeading(ev: Event, id: string) {
+    ev.preventDefault();
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+    });
+    tocOpen = false;
+  }
+  function scrollToTop(ev: Event) {
+    ev.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    tocOpen = false;
+  }
 </script>
 
 <div class="container">
@@ -143,7 +159,12 @@
     </h2>
     {#if tocOpen}
       <ul class="toc-menu">
-        {@render tocLinks(toc)}
+        <li>
+          <a href={`#${data.toc[0].id}`} onclick={scrollToTop}
+            >{data.toc[0].content}</a
+          >
+        </li>
+        {@render tocLinks(data.toc[0].children)}
       </ul>
     {/if}
   </div>
@@ -184,14 +205,17 @@
 
 {#snippet tocLink(heading: Heading)}
   <li>
-    <details open>
-      <summary>{heading.content}</summary>
-      {#if heading.children.length != 0}
-        <ul>
-          {@render tocLinks(heading.children)}
-        </ul>
-      {/if}
-    </details>
+    <a
+      href={`#${heading.id}`}
+      onclick={(ev) => {
+        scrollToHeading(ev, heading.id);
+      }}>{heading.content}</a
+    >
+    {#if heading.children.length != 0}
+      <ul>
+        {@render tocLinks(heading.children)}
+      </ul>
+    {/if}
   </li>
 {/snippet}
 
