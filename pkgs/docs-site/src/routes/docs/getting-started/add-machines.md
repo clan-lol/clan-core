@@ -12,43 +12,44 @@ See the complete [list](../guides/inventory/autoincludes.md) of auto-loaded file
 
 === "clan.nix (declarative)"
 
-    ```{.nix hl_lines="3-4"}
-    {
-        inventory.machines = {
-            # Define a machine
-            jon = { };
-        };
+```nix {3-4}
+{
+    inventory.machines = {
+        # Define a machine
+        jon = { };
+    };
 
-        # Additional NixOS configuration can be added here.
-        machines = {
-            # jon = { config, ... }: {
-            #   environment.systemPackages = [ pkgs.asciinema ];
-            # };
-        };
-    }
-    ```
+    # Additional NixOS configuration can be added here.
+    machines = {
+        # jon = { config, ... }: {
+        #   environment.systemPackages = [ pkgs.asciinema ];
+        # };
+    };
+}
+```
 
 === "CLI (imperative)"
 
-    ```sh
-    clan machines create jon
-    ```
+```sh
+clan machines create jon
+```
 
-    The imperative command might create a machine folder in `machines/jon`
-    And might persist information in `inventory.json`
+The imperative command might create a machine folder in `machines/jon`
+And might persist information in `inventory.json`
 
 ### Configuring a machine
 
-!!! Note
+:::note
 The option: `inventory.machines.<name>` is used to define metadata about the machine
 That includes for example `deploy.targethost` `machineClass` or `tags`
 
-    The option: `machines.<name>` is used to add extra *nixosConfiguration* to a machine
+The option: `machines.<name>` is used to add extra _nixosConfiguration_ to a machine
+:::
 
 Add the following to your `clan.nix` file for each machine.
 This example demonstrates what is needed based on a machine called `jon`:
 
-```{.nix .annotate title="clan.nix" hl_lines="3-6 15-19"}
+```nix {3-6,15-19}
 {
     inventory.machines = {
         jon = {
