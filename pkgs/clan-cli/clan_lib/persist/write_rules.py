@@ -100,7 +100,7 @@ def _determine_writeability_recursive(
     persisted: dict[str, Any],
     current_path: PathTuple = (),
     inherited_priority: int | None = None,
-    parent_non_writeable: bool = False,
+    parent_redonly: bool = False,
     results: WriteMap | None = None,
 ) -> WriteMap:
     """Recursively determine writeability for all paths in the priority structure.
@@ -125,7 +125,7 @@ def _determine_writeability_recursive(
 
         # Check if this should be non-writeable due to inheritance
         force_non_writeable = should_inherit_non_writeable(
-            effective_priority, parent_non_writeable
+            effective_priority, parent_redonly
         )
 
         if force_non_writeable:
@@ -138,7 +138,7 @@ def _determine_writeability_recursive(
                     {},  # Doesn't matter since all children will be non-writeable
                     path,
                     effective_priority,
-                    parent_non_writeable=True,
+                    parent_redonly=True,
                     results=results,
                 )
         else:
@@ -163,7 +163,7 @@ def _determine_writeability_recursive(
                     persisted.get(key, {}),
                     path,
                     effective_priority,
-                    parent_non_writeable=False,
+                    parent_redonly=False,
                     results=results,
                 )
 
