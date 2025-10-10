@@ -392,19 +392,20 @@ in
             );
           };
           config.foo = {
-            a.b = {
-              bar = 1;
-            };
-            a.c = {
-              bar = 1;
-            };
-            x.y = {
-              bar = 1;
-            };
-            x.z = {
-              bar = 1;
-            };
+            # Statically define "foo.a.c"
+            # This cannot be deleted
+            a.c = { };
           };
+          imports = [
+            {
+              _file = "inventory.json";
+              config.foo = {
+                a.c = {
+                  bar = 1;
+                };
+              };
+            }
+          ];
         }
       ];
     in
@@ -414,74 +415,34 @@ in
       expected = {
         foo = {
           __this = {
-            files = [ "<unknown-file>" ];
+            files = [
+              "inventory.json"
+              "<unknown-file>"
+            ];
             prio = 100;
             total = false;
           };
           a = {
             __this = {
-              files = [ "<unknown-file>" ];
+              files = [
+                "inventory.json"
+                "<unknown-file>"
+              ];
               prio = 100;
               total = false;
-            };
-            b = {
-              __this = {
-                files = [ "<unknown-file>" ];
-                prio = 100;
-                total = true;
-              };
-              bar = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 100;
-                  total = false;
-                };
-              };
             };
             c = {
               __this = {
-                files = [ "<unknown-file>" ];
+                files = [
+                  "inventory.json"
+                  "<unknown-file>"
+                ];
                 prio = 100;
                 total = true;
               };
               bar = {
                 __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 100;
-                  total = false;
-                };
-              };
-            };
-          };
-          x = {
-            __this = {
-              files = [ "<unknown-file>" ];
-              prio = 100;
-              total = false;
-            };
-            y = {
-              __this = {
-                files = [ "<unknown-file>" ];
-                prio = 100;
-                total = true;
-              };
-              bar = {
-                __this = {
-                  files = [ "<unknown-file>" ];
-                  prio = 100;
-                  total = false;
-                };
-              };
-            };
-            z = {
-              __this = {
-                files = [ "<unknown-file>" ];
-                prio = 100;
-                total = true;
-              };
-              bar = {
-                __this = {
-                  files = [ "<unknown-file>" ];
+                  files = [ "inventory.json" ];
                   prio = 100;
                   total = false;
                 };
