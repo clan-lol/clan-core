@@ -119,6 +119,9 @@ def run_machine_hardware_info_init(
     if opts.debug:
         cmd += ["--debug"]
 
+    # Add nix options to nixos-anywhere
+    cmd.extend(opts.machine.flake.nix_options or [])
+
     cmd += [target_host.target]
     cmd = nix_shell(
         ["nixos-anywhere"],
