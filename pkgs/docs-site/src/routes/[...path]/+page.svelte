@@ -87,12 +87,6 @@
     const ghostInner = heading.querySelector("&>span")!;
     const fromRect = ghostInner.getBoundingClientRect();
     const toRect = tocLabelTextEl.getBoundingClientRect();
-    console.log(
-      fromRect,
-      toRect,
-      fromRect.left - toRect.left,
-      fromRect.top - toRect.top,
-    );
     ghost.classList.add("heading-ghost");
     heading.parentNode!.insertBefore(ghost, heading.nextSibling);
     const headingAnimation = ghostInner.animate(
@@ -156,6 +150,30 @@
   <div class="content">
     {@html data.content}
   </div>
+  <footer>
+    {#if data.frontmatter.previous}
+      <a class="pointer previous" href={data.frontmatter.previous.link}>
+        <div class="pointer-arrow">&lt;</div>
+        <div>
+          <div class="pointer-label">Previous</div>
+          <div class="pointer-title">{data.frontmatter.previous.label}</div>
+        </div>
+      </a>
+    {:else}
+      <div class="pointer previous"></div>
+    {/if}
+    {#if data.frontmatter.next}
+      <a class="pointer next" href={data.frontmatter.next.link}>
+        <div>
+          <div class="pointer-label">Next</div>
+          <div class="pointer-title">{data.frontmatter.next.label}</div>
+        </div>
+        <div class="pointer-arrow">&gt;</div>
+      </a>
+    {:else}
+      <div class="pointer previous"></div>
+    {/if}
+  </footer>
 </div>
 
 {#snippet tocLinks(headings: Heading[])}
@@ -244,5 +262,36 @@
         opacity: 0;
       }
     }
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 20px 15px;
+  }
+  .pointer {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    box-shadow: 0 2px 5px #00000030;
+    border-radius: 8px;
+    padding: 20px;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .pointer:empty {
+    box-shadow: none;
+  }
+  .pointer.next {
+    text-align: right;
+    justify-content: end;
+  }
+  .pointer-title {
+    font-size: 32px;
+  }
+  .pointer-label {
+    font-size: 16px;
   }
 </style>

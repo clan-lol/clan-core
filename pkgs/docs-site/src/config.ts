@@ -1,7 +1,7 @@
-import type { RawNavLink } from "$lib";
+import type { RawNavItem } from "$lib";
 
 export default {
-  navLinks: [
+  navItems: [
     {
       label: "Getting Started",
       items: ["/getting-started/add-machines"],
@@ -23,5 +23,5 @@ export default {
       label: "Test",
       link: "/test/overview",
     },
-  ] as RawNavLink[],
+  ] as RawNavItem[],
 };

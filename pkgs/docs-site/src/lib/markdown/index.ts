@@ -1,9 +1,11 @@
 export type Markdown = {
   content: string;
-  frontmatter: Record<string, any> & {
-    title: string;
-  };
+  frontmatter: Frontmatter;
   toc: Heading[];
+};
+
+export type Frontmatter = Record<string, any> & {
+  title: string;
 };
 
 export type Heading = {

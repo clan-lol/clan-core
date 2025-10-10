@@ -1,6 +1,6 @@
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
-  import type { NavLink } from "$lib";
+  import type { NavItem } from "$lib";
   import { onNavigate } from "$app/navigation";
   import { onMount } from "svelte";
   import type {
@@ -66,7 +66,7 @@
     <div class={["menu", menuOpen && "open"]}>
       <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
       <ul>
-        {@render navLinks(docs.navLinks)}
+        {@render navItems(docs.navItems)}
       </ul>
     </div>
   </nav>
@@ -75,25 +75,25 @@
   {@render children?.()}
 </main>
 
-{#snippet navLinks(nLinks: NavLink[])}
-  {#each nLinks as nLink}
-    {@render navLink(nLink)}
+{#snippet navItems(items: NavItem[])}
+  {#each items as item}
+    {@render navItem(item)}
   {/each}
 {/snippet}
 
-{#snippet navLink(nLink: NavLink)}
-  {#if "items" in nLink}
+{#snippet navItem(item: NavItem)}
+  {#if "items" in item}
     <li>
-      <details open={!nLink.collapsed}>
-        <summary><span class="label group">{nLink.label}</span></summary>
+      <details open={!item.collapsed}>
+        <summary><span class="label group">{item.label}</span></summary>
         <ul>
-          {@render navLinks(nLink.items)}
+          {@render navItems(item.items)}
         </ul>
       </details>
     </li>
   {:else}
     <li>
-      <a href={nLink.link}>{nLink.label}</a>
+      <a href={item.link}>{item.label}</a>
     </li>
   {/if}
 {/snippet}
