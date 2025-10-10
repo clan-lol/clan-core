@@ -2,6 +2,11 @@
   import favicon from "$lib/assets/favicon.svg";
   import type { NavLink } from "$lib";
   import { onNavigate } from "$app/navigation";
+  import { onMount } from "svelte";
+  import type {
+    Pagefind,
+    PagefindSearchFragment,
+  } from "vite-plugin-pagefind/types";
   import "./index.css";
 
   const { data, children } = $props();
@@ -9,6 +14,26 @@
   let menuOpen = $state(false);
   onNavigate(() => {
     menuOpen = false;
+    query = "";
+  });
+  let pagefind: Pagefind | undefined;
+  let query = $state("");
+  let searchResults: PagefindSearchFragment[] = $state([]);
+  onMount(async () => {
+    // @ts-expect-error
+    pagefind = await import("/pagefind/pagefind.js");
+    pagefind!.init();
+  });
+  $effect(() => {
+    (async () => {
+      query;
+      const search = await pagefind?.debouncedSearch(query);
+      if (search) {
+        searchResults = await Promise.all(
+          search.results.slice(0, 5).map((r) => r.data()),
+        );
+      }
+    })();
   });
 </script>
 
@@ -19,6 +44,25 @@
 <div class="global-bar">
   <span class="logo">Clan Docs</span>
   <nav>
+    <div class="search">
+      <input type="search" bind:value={query} />
+      {#if searchResults.length > 0}
+        <ul>
+          {#each searchResults as searchResult}
+            <li class="search-result">
+              <div class="search-result-title">
+                <a href={searchResult.url.slice(0, -".html".length)}
+                  >{searchResult.meta.title}</a
+                >
+              </div>
+              <div class="search-result-excerpt">
+                {@html searchResult.excerpt}
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
     <div class={["menu", menuOpen && "open"]}>
       <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
       <ul>
@@ -63,6 +107,27 @@
     border-bottom: 1px solid;
     padding: 0 var(--pagePadding);
   }
+  .search {
+    & > ul {
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: var(--globalBarHeight);
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+    }
+  }
+  .search-result {
+    padding: 15px;
+    border-bottom: 1px solid #a3a3a3;
+  }
+  .search-result-title {
+    padding: 0 0 15px;
+  }
+  .search-result-excerpt {
+    color: #666;
+  }
   .menu {
     & > ul {
       visibility: hidden;
@@ -80,6 +145,11 @@
     li {
       padding-left: 1em;
     }
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
   }
   ul {
     list-style: none;

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && pagefind --site build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -17,7 +17,7 @@
     "@fontsource-variable/geist": "^5.2.8",
     "@shikijs/rehype": "^3.13.0",
     "@shikijs/transformers": "^3.13.0",
-    "@sveltejs/adapter-auto": "^6.1.1",
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.43.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.0",
     "@types/node": "^24.7.0",
@@ -31,6 +31,7 @@
     "mdast-util-from-markdown": "^2.0.2",
     "mdast-util-to-hast": "^13.2.0",
     "mdast-util-toc": "^7.1.0",
+    "pagefind": "^1.4.0",
     "postcss-preset-env": "^10.4.0",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
@@ -49,6 +50,7 @@
     "unist-util-visit": "^5.0.0",
     "vfile": "^6.0.3",
     "vfile-matter": "^5.0.1",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "vite-plugin-pagefind": "^1.0.7"
   }
 }
