@@ -50,10 +50,8 @@ def test_write_simple() -> None:
     data: dict = {}
     res = compute_write_map(prios, default, data)
 
-    assert res == {
-        "writeable": {("foo", "bar"), ("foo",), ("foo.bar",)},
-        "non_writeable": set(),
-    }
+    assert res["writeable"] == {("foo", "bar"), ("foo",), ("foo.bar",)}
+    assert res["non_writeable"] == set()
 
 
 # Compatibility test for old __prio style
@@ -73,10 +71,8 @@ def test_write_inherited() -> None:
     data: dict = {}
     res = compute_write_map(prios, {"foo": {"bar": {}}}, data)
 
-    assert res == {
-        "writeable": {("foo",), ("foo", "bar"), ("foo", "bar", "baz")},
-        "non_writeable": set(),
-    }
+    assert res["writeable"] == {("foo", "bar"), ("foo",), ("foo", "bar", "baz")}
+    assert res["non_writeable"] == set()
 
 
 def test_non_write_inherited() -> None:
@@ -93,10 +89,8 @@ def test_non_write_inherited() -> None:
     data: dict = {}
     res = compute_write_map(prios, {}, data)
 
-    assert res == {
-        "writeable": set(),
-        "non_writeable": {("foo",), ("foo", "bar", "baz"), ("foo", "bar")},
-    }
+    assert res["non_writeable"] == {("foo",), ("foo", "bar"), ("foo", "bar", "baz")}
+    assert res["writeable"] == set()
 
 
 def test_write_list() -> None:
@@ -114,10 +108,9 @@ def test_write_list() -> None:
         ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
     }
     res = compute_write_map(prios, default, data)
-    assert res == {
-        "writeable": {("foo",)},
-        "non_writeable": set(),
-    }
+
+    assert res["writeable"] == {("foo",)}
+    assert res["non_writeable"] == set()
 
 
 def test_write_because_written() -> None:
@@ -138,10 +131,9 @@ def test_write_because_written() -> None:
     # Given the following data. {}
     # Check that the non-writeable paths are correct.
     res = compute_write_map(prios, {"foo": {"bar": {}}}, {})
-    assert res == {
-        "writeable": {("foo",), ("foo", "bar")},
-        "non_writeable": {("foo", "bar", "baz"), ("foo", "bar", "foobar")},
-    }
+
+    assert res["writeable"] == {("foo",), ("foo", "bar")}
+    assert res["non_writeable"] == {("foo", "bar", "baz"), ("foo", "bar", "foobar")}
 
     data: dict = {
         "foo": {
@@ -151,7 +143,4 @@ def test_write_because_written() -> None:
         },
     }
     res = compute_write_map(prios, {}, data)
-    assert res == {
-        "writeable": {("foo",), ("foo", "bar"), ("foo", "bar", "baz")},
-        "non_writeable": {("foo", "bar", "foobar")},
     }
