@@ -15,7 +15,7 @@ from clan_lib.persist.validate import (
     validate_type_compatibility,
     validate_writeability,
 )
-from clan_lib.persist.write_rules import WriteMap
+from clan_lib.persist.write_rules import AttributeMap
 
 
 def find_deleted_paths_structured(
@@ -88,7 +88,7 @@ def calc_patches(
     persisted: dict[str, Any],
     update: dict[str, Any],
     all_values: dict[str, Any],
-    writeables: WriteMap,
+    writeables: AttributeMap,
 ) -> tuple[dict[PathTuple, Any], set[PathTuple]]:
     """Calculate the patches to apply to the inventory using structured paths.
 

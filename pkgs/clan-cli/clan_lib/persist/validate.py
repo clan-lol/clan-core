@@ -7,7 +7,7 @@ from clan_lib.persist.path_utils import (
     path_starts_with,
     path_to_string,
 )
-from clan_lib.persist.write_rules import WriteMap, is_writeable_path
+from clan_lib.persist.write_rules import AttributeMap, is_writeable_path
 
 
 def validate_no_static_deletion(
@@ -29,7 +29,7 @@ def validate_no_static_deletion(
                 raise ClanError(msg)
 
 
-def validate_writeability(path: PathTuple, writeables: WriteMap) -> None:
+def validate_writeability(path: PathTuple, writeables: AttributeMap) -> None:
     """Validate that a path is writeable."""
     if not is_writeable_path(path, writeables):
         msg = f"Path '{path_to_string(path)}' is readonly. - It seems its value is statically defined in nix."

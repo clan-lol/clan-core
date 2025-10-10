@@ -20,7 +20,7 @@ from clan_lib.persist.path_utils import (
     path_match,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.write_rules import WriteMap, compute_write_map
+from clan_lib.persist.write_rules import AttributeMap, compute_write_map
 
 
 def unwrap_known_unknown(value: Any) -> Any:
@@ -79,7 +79,7 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 
 @dataclass
 class WriteInfo:
-    writeables: WriteMap
+    writeables: AttributeMap
     data_eval: "InventorySnapshot"
     data_disk: "InventorySnapshot"
 
