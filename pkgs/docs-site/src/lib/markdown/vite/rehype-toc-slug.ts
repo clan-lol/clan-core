@@ -20,8 +20,8 @@ export default function rehypeTocSlug({
     const toc: Heading[] = [];
     let h1Exist = false;
     const parentHeadings: Heading[] = [];
-    const frontmatter: Record<string, any> = file.data.frontmatter
-      ? file.data.frontmatter
+    const frontmatter: Record<string, any> = file.data.matter
+      ? file.data.matter
       : {};
     frontmatter.title = "";
     visit(tree, "element", (node) => {
