@@ -65,6 +65,7 @@
     visibility: hidden;
     position: fixed;
     left: 0;
+    z-index: 10;
     top: var(--globalBarHeight);
     width: 100vw;
     height: 100vh;
