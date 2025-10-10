@@ -1,11 +1,11 @@
 .shiki {
   margin: 0 -15px;
-  padding: 15px;
+  padding: 15px 0;
+  background-color: var(--shiki-light-bg);
 
   &,
   & span {
     color: var(--shiki-light);
-    background-color: var(--shiki-light-bg);
     font-style: var(--shiki-light-font-style);
     font-weight: var(--shiki-light-font-weight);
     text-decoration: var(--shiki-light-text-decoration);
@@ -29,6 +29,7 @@
   }
   .line {
     width: 100%;
+    padding: 0 15px;
     display: inline-block;
   }
 
