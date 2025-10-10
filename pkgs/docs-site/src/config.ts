@@ -19,5 +19,9 @@ export default {
         },
       ],
     },
+    {
+      label: "Test",
+      link: "/test/overview",
+    },
   ] as RawNavLink[],
 };
