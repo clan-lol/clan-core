@@ -18,6 +18,7 @@ import transformerLineNumbers from "./shiki-transformer-line-numbers";
 import remarkParse from "./remark-parse";
 import remarkAdmonition from "./remark-admonition";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
+import remarkLinkMigration from "./link-migration";
 
 export type Options = {
   codeLightTheme?: string;
@@ -39,6 +40,7 @@ export default function ({
 
       const file = await unified()
         .use(remarkParse)
+        .use(remarkLinkMigration)
         .use(remarkGfm)
         .use(remarkDirective)
         .use(remarkAdmonition)

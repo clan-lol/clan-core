@@ -6,7 +6,7 @@ import type { Nodes } from "mdast";
  *
  * For this to work the relative link must start at the docs root
  */
-export default function linkMigration() {
+export default function remarkLinkMigration() {
   return (tree: Nodes) => {
     visit(tree, ["link", "definition"], (node) => {
       if (node.type !== "link" && node.type !== "definition") {
@@ -20,7 +20,7 @@ export default function linkMigration() {
       if (!cleanUrl.startsWith("/")) {
         throw new Error(`invalid doc link: ${cleanUrl}`);
       }
-      node.url = `/docs/${cleanUrl}`;
+      node.url = `/docs${cleanUrl}`;
     });
   };
 }
