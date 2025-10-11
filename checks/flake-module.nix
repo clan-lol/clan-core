@@ -20,19 +20,7 @@ let
 in
 {
   imports =
-    let
-      clanCoreModulesDir = ../nixosModules/clanCore;
-      getClanCoreTestModules =
-        let
-          moduleNames = attrNames (builtins.readDir clanCoreModulesDir);
-          testPaths = map (
-            moduleName: clanCoreModulesDir + "/${moduleName}/tests/flake-module.nix"
-          ) moduleNames;
-        in
-        filter pathExists testPaths;
-    in
-    getClanCoreTestModules
-    ++ filter pathExists [
+    filter pathExists [
       ./devshell/flake-module.nix
       ./flash/flake-module.nix
       ./installation/flake-module.nix
@@ -40,6 +28,10 @@ in
       ./morph/flake-module.nix
       ./nixos-documentation/flake-module.nix
       ./dont-depend-on-repo-root.nix
+      # clan core submodule tests
+      ../nixosModules/clanCore/machine-id/tests/flake-module.nix
+      ../nixosModules/clanCore/postgresql/tests/flake-module.nix
+      ../nixosModules/clanCore/state-version/tests/flake-module.nix
     ];
   flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
     system:
