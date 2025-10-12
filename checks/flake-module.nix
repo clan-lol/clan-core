@@ -19,20 +19,19 @@ let
   nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
 in
 {
-  imports =
-    filter pathExists [
-      ./devshell/flake-module.nix
-      ./flash/flake-module.nix
-      ./installation/flake-module.nix
-      ./update/flake-module.nix
-      ./morph/flake-module.nix
-      ./nixos-documentation/flake-module.nix
-      ./dont-depend-on-repo-root.nix
-      # clan core submodule tests
-      ../nixosModules/clanCore/machine-id/tests/flake-module.nix
-      ../nixosModules/clanCore/postgresql/tests/flake-module.nix
-      ../nixosModules/clanCore/state-version/tests/flake-module.nix
-    ];
+  imports = filter pathExists [
+    ./devshell/flake-module.nix
+    ./flash/flake-module.nix
+    ./installation/flake-module.nix
+    ./update/flake-module.nix
+    ./morph/flake-module.nix
+    ./nixos-documentation/flake-module.nix
+    ./dont-depend-on-repo-root.nix
+    # clan core submodule tests
+    ../nixosModules/clanCore/machine-id/tests/flake-module.nix
+    ../nixosModules/clanCore/postgresql/tests/flake-module.nix
+    ../nixosModules/clanCore/state-version/tests/flake-module.nix
+  ];
   flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
     system:
     let

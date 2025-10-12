@@ -36,6 +36,10 @@ lib.fix (
 
       # TODO: Flatten our lib functions like this:
       resolveModule = clanLib.callLib ./resolve-module { };
+
+      fs = {
+        inherit (builtins) pathExists readDir;
+      };
     };
   in
   f
