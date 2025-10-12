@@ -133,12 +133,12 @@ in
       }
     )
     {
-      # TODO: Figure out why this causes infinite recursion
-      inventory = lib.optionalAttrs (builtins.pathExists "${directory}/machines") ({
+      # Note: we use clanLib.fs here, so that we can override it in tests
+      inventory = lib.optionalAttrs (clanLib.fs.pathExists "${directory}/machines") ({
         imports = lib.mapAttrsToList (name: _t: {
           _file = "${directory}/machines/${name}";
           machines.${name} = { };
-        }) ((lib.filterAttrs (_: t: t == "directory") (builtins.readDir "${directory}/machines")));
+        }) ((lib.filterAttrs (_: t: t == "directory") (clanLib.fs.readDir "${directory}/machines")));
       });
     }
     {
