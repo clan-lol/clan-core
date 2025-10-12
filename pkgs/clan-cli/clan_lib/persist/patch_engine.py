@@ -88,20 +88,19 @@ def calc_patches(
     persisted: dict[str, Any],
     update: dict[str, Any],
     all_values: dict[str, Any],
-    writeables: AttributeMap,
+    attribute_props: AttributeMap,
 ) -> tuple[dict[PathTuple, Any], set[PathTuple]]:
     """Calculate the patches to apply to the inventory using structured paths.
 
     Given its current state and the update to apply.
     Calulates the necessary SET patches and DELETE paths.
-    While validating writeability rules.
+    While validating persistence rules.
 
     Args:
         persisted: The current mutable state of the inventory
         update: The update to apply
         all_values: All values in the inventory (static + mutable merged)
-        writeables: The writeable keys. Use 'determine_writeability'.
-                   Example: {'writeable': {'foo', 'foo.bar'}, 'non_writeable': {'foo.nix'}}
+        attribute_props: Persistence attribute map, see: 'compute_attribute_map'
 
     Returns:
         Tuple of (SET patches dict, DELETE paths set)
@@ -156,7 +155,7 @@ def calc_patches(
 
         # Validate the change is allowed
         validate_no_static_deletion(path, new_value, static_data)
-        validate_writeability(path, writeables)
+        validate_writeability(path, attribute_props)
         validate_type_compatibility(path, old_value, new_value)
         validate_list_uniqueness(path, new_value)
 

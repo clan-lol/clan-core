@@ -5,7 +5,7 @@ import pytest
 
 from clan_lib.flake.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.write_rules import compute_write_map
+from clan_lib.persist.write_rules import PersistenceAttribute, compute_attribute_map
 
 if TYPE_CHECKING:
     from clan_lib.nix_models.clan import Clan
@@ -21,15 +21,16 @@ def test_write_integration(clan_flake: Callable[..., Flake]) -> None:
     data_eval = cast("dict", inventory_store.read())
     prios = flake.select("clanInternals.inventoryClass.introspection")
 
-    res = compute_write_map(prios, data_eval, {})
+    res = compute_attribute_map(prios, data_eval, {})
 
     # We should be able to write to these top-level keys
-    assert ("machines",) in res["writeable"]
-    assert ("instances",) in res["writeable"]
-    assert ("meta",) in res["writeable"]
+    assert PersistenceAttribute.WRITE in res[("machines",)]
+    assert PersistenceAttribute.WRITE in res[("instances",)]
+    assert PersistenceAttribute.WRITE in res[("meta",)]
 
-    # Managed by nix
-    assert ("assertions",) in res["non_writeable"]
+    # # Managed by nix
+    assert PersistenceAttribute.WRITE not in res[("assertions",)]
+    assert PersistenceAttribute.READONLY in res[("assertions",)]
 
 
 # New style __this.prio
@@ -48,13 +49,18 @@ def test_write_simple() -> None:
 
     default: dict = {"foo": {}}
     data: dict = {}
-    res = compute_write_map(prios, default, data)
+    res = compute_attribute_map(prios, default, data)
 
-    assert res["writeable"] == {("foo", "bar"), ("foo",), ("foo.bar",)}
-    assert res["non_writeable"] == set()
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        # Can be deleted, because it has a parent.
+        # The parent doesnt set "total", so we assume its not total.
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo.bar",): {PersistenceAttribute.WRITE},
+    }
 
 
-# Compatibility test for old __prio style
+# ---- Compatibility tests ---- #
 
 
 def test_write_inherited() -> None:
@@ -69,10 +75,16 @@ def test_write_inherited() -> None:
     }
 
     data: dict = {}
-    res = compute_write_map(prios, {"foo": {"bar": {}}}, data)
+    res = compute_attribute_map(prios, {"foo": {"bar": {}}}, data)
 
-    assert res["writeable"] == {("foo", "bar"), ("foo",), ("foo", "bar", "baz")}
-    assert res["non_writeable"] == set()
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "bar", "baz"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+    }
 
 
 def test_non_write_inherited() -> None:
@@ -87,10 +99,13 @@ def test_non_write_inherited() -> None:
     }
 
     data: dict = {}
-    res = compute_write_map(prios, {}, data)
+    res = compute_attribute_map(prios, {}, data)
 
-    assert res["non_writeable"] == {("foo",), ("foo", "bar"), ("foo", "bar", "baz")}
-    assert res["writeable"] == set()
+    assert res == {
+        ("foo",): {PersistenceAttribute.READONLY},
+        ("foo", "bar"): {PersistenceAttribute.READONLY},
+        ("foo", "bar", "baz"): {PersistenceAttribute.READONLY},
+    }
 
 
 def test_write_list() -> None:
@@ -107,10 +122,11 @@ def test_write_list() -> None:
             "b",
         ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
     }
-    res = compute_write_map(prios, default, data)
+    res = compute_attribute_map(prios, default, data)
 
-    assert res["writeable"] == {("foo",)}
-    assert res["non_writeable"] == set()
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
 
 
 def test_write_because_written() -> None:
@@ -130,11 +146,18 @@ def test_write_because_written() -> None:
 
     # Given the following data. {}
     # Check that the non-writeable paths are correct.
-    res = compute_write_map(prios, {"foo": {"bar": {}}}, {})
+    res = compute_attribute_map(prios, {"foo": {"bar": {}}}, {})
 
-    assert res["writeable"] == {("foo",), ("foo", "bar")}
-    assert res["non_writeable"] == {("foo", "bar", "baz"), ("foo", "bar", "foobar")}
-
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "bar", "baz"): {
+            PersistenceAttribute.READONLY,
+        },
+        ("foo", "bar", "foobar"): {
+            PersistenceAttribute.READONLY,
+        },
+    }
     data: dict = {
         "foo": {
             "bar": {
@@ -142,5 +165,90 @@ def test_write_because_written() -> None:
             },
         },
     }
-    res = compute_write_map(prios, {}, data)
+    res = compute_attribute_map(prios, {}, data)
+
+    assert res[("foo", "bar", "baz")] == {
+        PersistenceAttribute.WRITE,
+        PersistenceAttribute.DELETE,
+    }
+
+
+### --- NEW API ---
+
+
+def test_static_object() -> None:
+    introspection = {
+        "foo": {
+            "__this": {
+                "files": ["inventory.json", "<unknown-file>"],
+                "prio": 100,
+                "total": False,
+            },
+            "a": {
+                "__this": {
+                    "files": ["inventory.json", "<unknown-file>"],
+                    "prio": 100,
+                    "total": False,
+                },
+                "c": {
+                    "__this": {
+                        "files": ["inventory.json", "<unknown-file>"],
+                        "prio": 100,
+                        "total": False,
+                    },
+                    "bar": {
+                        "__this": {
+                            "files": ["inventory.json"],
+                            "prio": 100,
+                            "total": False,
+                        }
+                    },
+                },
+            },
+        }
+    }
+    data_eval: dict = {"foo": {"a": {"c": {"bar": 1}}}}
+    persisted: dict = {"foo": {"a": {"c": {"bar": 1}}}}
+
+    res = compute_attribute_map(introspection, data_eval, persisted)
+    assert res == {
+        # We can extend "foo", "foo.a", "foo.a.c"
+        # That means the user could define "foo.b"
+        # But they cannot delete "foo.a" or its static subkeys "foo.a.c"
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "a"): {PersistenceAttribute.WRITE},
+        ("foo", "a", "c"): {PersistenceAttribute.WRITE},
+        # We can delete "bar"
+        ("foo", "a", "c", "bar"): {
+            PersistenceAttribute.DELETE,
+            PersistenceAttribute.WRITE,
+        },
+    }
+
+
+def test_attributes_totality() -> None:
+    introspection = {
+        "foo": {
+            "__this": {
+                "files": ["inventory.json"],
+                "prio": 100,
+                "total": True,
+            },
+            "a": {  # Cannot delete "a" because parent is total
+                "__this": {
+                    "files": ["inventory.json", "<unknown-file>"],
+                    "prio": 100,
+                    "total": False,
+                },
+            },
+        }
+    }
+    data_eval: dict = {"foo": {"a": {}}}
+    persisted: dict = {"foo": {"a": {}}}
+
+    res = compute_attribute_map(introspection, data_eval, persisted)
+
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "a"): {PersistenceAttribute.WRITE},
     }
