@@ -14,7 +14,7 @@ from clan_lib.persist.path_utils import (
     set_value_by_path,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.write_rules import compute_write_map
+from clan_lib.persist.write_rules import PersistenceAttribute, compute_attribute_map
 
 # --- calculate_static_data ---
 
@@ -219,11 +219,12 @@ def test_update_simple() -> None:
 
     data_disk: dict = {}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {
-        "writeable": {("foo",), ("foo", "bar")},
-        "non_writeable": {("foo", "nix")},
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "nix"): {PersistenceAttribute.READONLY},
     }
     update = {
         "foo": {
@@ -236,7 +237,7 @@ def test_update_simple() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {("foo", "bar"): "new value"}
@@ -255,7 +256,7 @@ def test_update_add_empty_dict() -> None:
 
     data_disk: dict = {}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    writeables = compute_attribute_map(prios, data_eval, data_disk)
 
     update = deepcopy(data_eval)
 
@@ -265,7 +266,7 @@ def test_update_add_empty_dict() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=writeables,
     )
 
     assert patchset == {("foo", "mimi"): {}}  # this is what gets persisted
@@ -296,16 +297,19 @@ def test_update_many() -> None:
 
     data_disk = {"foo": {"bar": "baz", "nested": {"x": "x"}}}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {
-        "writeable": {
-            ("foo",),
-            ("foo", "bar"),
-            ("foo", "nested"),
-            ("foo", "nested", "x"),
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "nested"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "nested", "x"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
         },
-        "non_writeable": {("foo", "nix"), ("foo", "nested", "y")},
+        # Readonly
+        ("foo", "nix"): {PersistenceAttribute.READONLY},
+        ("foo", "nested", "y"): {PersistenceAttribute.READONLY},
     }
 
     update = {
@@ -322,7 +326,7 @@ def test_update_many() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {
@@ -352,11 +356,11 @@ def test_update_parent_non_writeable() -> None:
         },
     }
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {
-        "writeable": set(),
-        "non_writeable": {("foo",), ("foo", "bar")},
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.READONLY},
+        ("foo", "bar"): {PersistenceAttribute.READONLY},
     }
 
     update = {
@@ -365,7 +369,9 @@ def test_update_parent_non_writeable() -> None:
         },
     }
     with pytest.raises(ClanError) as error:
-        calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
 
     assert "Path 'foo.bar' is readonly." in str(error.value)
 
@@ -411,9 +417,11 @@ def test_update_list() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
 
     # Add "C" to the list
     update = {"foo": ["A", "B", "C"]}  # User wants to add "C"
@@ -422,7 +430,7 @@ def test_update_list() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {("foo",): ["B", "C"]}
@@ -436,7 +444,7 @@ def test_update_list() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {("foo",): []}
@@ -456,15 +464,19 @@ def test_update_list_duplicates() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
 
     # Add "A" to the list
     update = {"foo": ["A", "B", "A"]}  # User wants to add duplicate "A"
 
     with pytest.raises(ClanError) as error:
-        calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
 
     assert "Path 'foo' contains list duplicates: ['A']" in str(error.value)
 
@@ -480,10 +492,10 @@ def test_dont_persist_defaults() -> None:
         "config": {"foo": "bar"},
     }
     data_disk: dict[str, Any] = {}
-    writeables = compute_write_map(prios, data_eval, data_disk)
-    assert writeables == {
-        "writeable": {("config",), ("enabled",)},
-        "non_writeable": set(),
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    assert attribute_props == {
+        ("enabled",): {PersistenceAttribute.WRITE},
+        ("config",): {PersistenceAttribute.WRITE},
     }
 
     update = deepcopy(data_eval)
@@ -493,7 +505,7 @@ def test_dont_persist_defaults() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
     assert patchset == {("config", "foo"): "foo"}
     assert delete_set == set()
@@ -514,7 +526,7 @@ def test_set_null() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=compute_write_map(
+        attribute_props=compute_attribute_map(
             {"__prio": 100, "foo": {"__prio": 100}},
             data_eval,
             data_disk,
@@ -537,8 +549,10 @@ def test_machine_delete() -> None:
     }
     data_disk = data_eval
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
-    assert writeables == {"writeable": {("machines",)}, "non_writeable": set()}
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    assert attribute_props == {
+        ("machines",): {PersistenceAttribute.WRITE},
+    }
 
     # Delete machine "bar"  from the inventory
     update = deepcopy(data_eval)
@@ -548,7 +562,7 @@ def test_machine_delete() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {}
@@ -566,15 +580,19 @@ def test_update_mismatching_update_type() -> None:
 
     data_disk: dict = {}
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
 
     # set foo to an int but it is a list
     update: dict = {"foo": 1}
 
     with pytest.raises(ClanError) as error:
-        calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
 
     assert (
         "Type mismatch for path 'foo'. Cannot update <class 'list'> with <class 'int'>"
@@ -593,9 +611,11 @@ def test_delete_key() -> None:
 
     data_disk = data_eval
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
 
     # remove all keys from foo
     update: dict = {"foo": {}}
@@ -604,7 +624,7 @@ def test_delete_key() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {("foo",): {}}
@@ -632,17 +652,18 @@ def test_delete_key_intermediate() -> None:
 
     data_disk = data_eval
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": {("foo",)}, "non_writeable": set()}
-
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
     # remove all keys from foo
 
     patchset, delete_set = calc_patches(
         data_disk,
         update,
         all_values=data_eval,
-        writeables=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {}
@@ -666,13 +687,17 @@ def test_delete_key_non_writeable() -> None:
 
     data_disk = data_eval
 
-    writeables = compute_write_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
 
-    assert writeables == {"writeable": set(), "non_writeable": {("foo",)}}
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.READONLY},
+    }
 
     # remove all keys from foo
     with pytest.raises(ClanError) as error:
-        calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
 
     assert "Path 'foo' is readonly." in str(error.value)
 

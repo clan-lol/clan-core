@@ -1,4 +1,5 @@
-from typing import Any, TypedDict
+from enum import Enum
+from typing import Any
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.path_utils import PathTuple, path_to_string
@@ -6,14 +7,18 @@ from clan_lib.persist.path_utils import PathTuple, path_to_string
 WRITABLE_PRIORITY_THRESHOLD = 100  # Values below this are not writeable
 
 
-class WriteMap(TypedDict):
-    writeable: set[PathTuple]
-    non_writeable: set[PathTuple]
+class PersistenceAttribute(Enum):
+    WRITE = "write"
+    READONLY = "readonly"
+    DELETE = "delete"  # can be deleted
+
+
+type AttributeMap = dict[PathTuple, set[PersistenceAttribute]]
 
 
 def is_writeable_path(
     key: PathTuple,
-    writeables: WriteMap,
+    attributes: AttributeMap,
 ) -> bool:
     """Recursively check if a key is writeable.
 
@@ -23,10 +28,12 @@ def is_writeable_path(
     remaining = key
     while remaining:
         current_path = remaining
-        if current_path in writeables["writeable"]:
-            return True
-        if current_path in writeables["non_writeable"]:
-            return False
+        if current_path in attributes:
+            if PersistenceAttribute.WRITE in attributes[current_path]:
+                return True
+            if PersistenceAttribute.READONLY in attributes[current_path]:
+                return False
+        # Check the parent path
         remaining = remaining[:-1]
 
     msg = f"Cannot determine writeability for key '{key}'"
@@ -35,7 +42,7 @@ def is_writeable_path(
 
 def is_writeable_key(
     key: str,
-    writeables: WriteMap,
+    attributes: AttributeMap,
 ) -> bool:
     """Recursively check if a key is writeable.
 
@@ -44,7 +51,7 @@ def is_writeable_key(
     In case of ambiguity use is_writeable_path with tuple keys.
     """
     items = key.split(".")
-    return is_writeable_path(tuple(items), writeables)
+    return is_writeable_path(tuple(items), attributes)
 
 
 def get_priority(value: Any) -> int | None:
@@ -94,21 +101,43 @@ def is_key_writeable(
     return is_mergeable_type(value_in_all) or exists_in_persisted
 
 
-def _determine_writeability_recursive(
+def get_inventory_exclusive(value: dict) -> bool | None:
+    if "__this" not in value:
+        return None
+
+    definition_locations = value.get("__this", {}).get("files")
+    if not definition_locations:
+        return None
+
+    return (
+        len(definition_locations) == 1 and definition_locations[0] == "inventory.json"
+    )
+
+
+def get_totality(value: dict) -> bool:
+    if "__this" not in value:
+        return False
+    return value.get("__this", {}).get("total", False)
+
+
+def _determine_props_recursive(
     priorities: dict[str, Any],
     all_values: dict[str, Any],
     persisted: dict[str, Any],
     current_path: PathTuple = (),
     inherited_priority: int | None = None,
-    parent_non_writeable: bool = False,
-    results: WriteMap | None = None,
-) -> WriteMap:
+    parent_redonly: bool = False,
+    results: AttributeMap | None = None,
+    parent_total: bool = True,
+) -> AttributeMap:
     """Recursively determine writeability for all paths in the priority structure.
 
     This is internal recursive function. Use 'determine_writeability' as entry point.
+
+    results: AttributeMap that accumulates results, returned at the end.
     """
     if results is None:
-        results = WriteMap(writeable=set(), non_writeable=set())
+        results = {}
 
     for key, value in priorities.items():
         # Skip metadata keys
@@ -117,6 +146,16 @@ def _determine_writeability_recursive(
 
         path = (*current_path, key)
 
+        # If the value is defined only in inventory.json, we might be able to delete it.
+        # If we don't know (None), decide to allow deletion as well. (Backwards compatibility)
+        # Unless there is a default that applies instead, when removed. Currently we cannot test that.
+        # So we assume exclusive values can be removed. In reality we might need to check defaults too. (TODO)
+        # Total parents prevent deletion of immediate children.
+        is_inventory_exclusive = get_inventory_exclusive(value)
+        if not parent_total and (
+            is_inventory_exclusive or is_inventory_exclusive is None
+        ):
+            results.setdefault(path, set()).add(PersistenceAttribute.DELETE)
         # Determine priority for this key
         key_priority = get_priority(value)
         effective_priority = (
@@ -125,21 +164,23 @@ def _determine_writeability_recursive(
 
         # Check if this should be non-writeable due to inheritance
         force_non_writeable = should_inherit_non_writeable(
-            effective_priority, parent_non_writeable
+            effective_priority, parent_redonly
         )
 
         if force_non_writeable:
-            results["non_writeable"].add(path)
+            results.setdefault(path, set()).clear()
+            results.setdefault(path, set()).add(PersistenceAttribute.READONLY)
             # All children are also non-writeable
             if isinstance(value, dict):
-                _determine_writeability_recursive(
+                _determine_props_recursive(
                     value,
                     all_values.get(key, {}),
                     {},  # Doesn't matter since all children will be non-writeable
                     path,
                     effective_priority,
-                    parent_non_writeable=True,
+                    parent_redonly=True,
                     results=results,
+                    parent_total=value.get("__this", {}).get("total", False),
                 )
         else:
             # Determine writeability based on rules
@@ -151,28 +192,31 @@ def _determine_writeability_recursive(
             value_in_all = all_values.get(key)
 
             if is_key_writeable(effective_priority, exists_in_persisted, value_in_all):
-                results["writeable"].add(path)
+                # TODO: Distinguish between different write types?
+                results.setdefault(path, set()).add(PersistenceAttribute.WRITE)
             else:
-                results["non_writeable"].add(path)
+                results.setdefault(path, set()).clear()
+                results.setdefault(path, set()).add(PersistenceAttribute.READONLY)
 
             # Recurse into children
             if isinstance(value, dict):
-                _determine_writeability_recursive(
+                _determine_props_recursive(
                     value,
                     all_values.get(key, {}),
                     persisted.get(key, {}),
                     path,
                     effective_priority,
-                    parent_non_writeable=False,
+                    parent_redonly=False,
                     results=results,
+                    parent_total=get_totality(value),
                 )
 
     return results
 
 
-def compute_write_map(
+def compute_attribute_map(
     priorities: dict[str, Any], all_values: dict[str, Any], persisted: dict[str, Any]
-) -> WriteMap:
+) -> AttributeMap:
     """Determine writeability for all paths based on priorities and current data.
 
     - Priority-based writeability: Values with priority < 100 are not writeable
@@ -188,4 +232,4 @@ def compute_write_map(
         Dict with sets of writeable and non-writeable paths using tuple keys
 
     """
-    return _determine_writeability_recursive(priorities, all_values, persisted)
+    return _determine_props_recursive(priorities, all_values, persisted)
