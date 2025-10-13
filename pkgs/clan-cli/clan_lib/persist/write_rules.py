@@ -139,10 +139,17 @@ def _determine_props_recursive(
     if results is None:
         results = {}
 
-    for key, value in priorities.items():
+    if not isinstance(all_values, dict):
+        # Nothing to do for non-dict values
+        # they are handled at parent level
+        return results
+
+    for key in all_values:
+        value = priorities.get(key, {})
+
         # Skip metadata keys
-        if key in {"__this", "__list", "__prio"}:
-            continue
+        # if key in {"__this", "__list", "__prio"}:
+        #     continue
 
         path = (*current_path, key)
 
@@ -170,7 +177,7 @@ def _determine_props_recursive(
         if force_non_writeable:
             results.setdefault(path, set()).clear()
             results.setdefault(path, set()).add(PersistenceAttribute.READONLY)
-            # All children are also non-writeable
+            # All children are also non-writeable, we are done here.
             if isinstance(value, dict):
                 _determine_props_recursive(
                     value,
@@ -199,6 +206,8 @@ def _determine_props_recursive(
                 results.setdefault(path, set()).add(PersistenceAttribute.READONLY)
 
             # Recurse into children
+            # TODO: Dont need to recurse?
+            # if the current value is READONLY all children are readonly as well
             if isinstance(value, dict):
                 _determine_props_recursive(
                     value,
@@ -214,7 +223,7 @@ def _determine_props_recursive(
     return results
 
 
-def compute_attribute_map(
+def compute_attribute_persistence(
     priorities: dict[str, Any], all_values: dict[str, Any], persisted: dict[str, Any]
 ) -> AttributeMap:
     """Determine writeability for all paths based on priorities and current data.
@@ -232,4 +241,14 @@ def compute_attribute_map(
         Dict with sets of writeable and non-writeable paths using tuple keys
 
     """
+    persistence_unsupported = set(all_values.keys()) - set(priorities.keys())
+    if persistence_unsupported:
+        msg = (
+            f"Persistence priorities are not defined for top-level keys: "
+            f"{', '.join(sorted(persistence_unsupported))}. "
+            f"Either remove them from the python inventory model or extend support of"
+            f" persistence properties in 'clanInternals.inventoryClass.introspection'."
+        )
+        raise ClanError(msg)
+
     return _determine_props_recursive(priorities, all_values, persisted)

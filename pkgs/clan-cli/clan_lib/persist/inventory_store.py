@@ -11,7 +11,6 @@ from clan_lib.nix_models.clan import (
     InventoryInstancesType,
     InventoryMachinesType,
     InventoryMetaType,
-    InventoryTagsType,
 )
 from clan_lib.persist.patch_engine import calc_patches
 from clan_lib.persist.path_utils import (
@@ -20,7 +19,7 @@ from clan_lib.persist.path_utils import (
     path_match,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.write_rules import AttributeMap, compute_attribute_map
+from clan_lib.persist.write_rules import AttributeMap, compute_attribute_persistence
 
 
 def unwrap_known_unknown(value: Any) -> Any:
@@ -102,7 +101,6 @@ class InventorySnapshot(TypedDict):
     machines: NotRequired[InventoryMachinesType]
     instances: NotRequired[InventoryInstancesType]
     meta: NotRequired[InventoryMetaType]
-    tags: NotRequired[InventoryTagsType]
 
 
 class InventoryStore:
@@ -216,7 +214,7 @@ class InventoryStore:
         data_eval: InventorySnapshot = self._load_merged_inventory()
         data_disk: InventorySnapshot = self._get_persisted()
 
-        write_map = compute_attribute_map(
+        write_map = compute_attribute_persistence(
             current_priority,
             dict(data_eval),
             dict(data_disk),
