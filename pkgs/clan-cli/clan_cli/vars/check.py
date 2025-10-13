@@ -3,6 +3,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.vars.secret_modules import sops
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
@@ -25,6 +26,26 @@ class VarStatus:
         self.missing_public_vars = missing_public_vars
         self.unfixed_secret_vars = unfixed_secret_vars
         self.invalid_generators = invalid_generators
+
+    def text(self) -> str:
+        log = ""
+        if self.missing_secret_vars:
+            log += "Missing secret vars:\n"
+            for var in self.missing_secret_vars:
+                log += f"  - {var.id}\n"
+        if self.missing_public_vars:
+            log += "Missing public vars:\n"
+            for var in self.missing_public_vars:
+                log += f"  - {var.id}\n"
+        if self.unfixed_secret_vars:
+            log += "Unfixed secret vars:\n"
+            for var in self.unfixed_secret_vars:
+                log += f"  - {var.id}\n"
+        if self.invalid_generators:
+            log += "Invalid generators (outdated invalidation hash):\n"
+            for gen in self.invalid_generators:
+                log += f"  - {gen}\n"
+        return log if log else "All vars are present and valid."
 
 
 def vars_status(
@@ -66,15 +87,32 @@ def vars_status(
                         f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing.",
                     )
                     missing_secret_vars.append(file)
+                if (
+                    isinstance(machine.secret_vars_store, sops.SecretStore)
+                    and generator.share
+                    and file.exists
+                    and not machine.secret_vars_store.machine_has_access(
+                        generator=generator,
+                        secret_name=file.name,
+                        machine=machine.name,
+                    )
+                ):
+                    msg = (
+                        f"Secret var '{generator.name}/{file.name}' is marked for deployment to machine '{machine.name}', but the machine does not have access to it.\n"
+                        f"Run 'clan vars generate {machine.name}' to fix this.\n"
+                    )
+                    machine.info(msg)
+                    missing_secret_vars.append(file)
+
                 else:
-                    msg = machine.secret_vars_store.health_check(
+                    health_msg = machine.secret_vars_store.health_check(
                         machine=machine.name,
                         generators=[generator],
                         file_name=file.name,
                     )
-                    if msg:
+                    if health_msg is not None:
                         machine.info(
-                            f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} needs update: {msg}",
+                            f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} needs update: {health_msg}",
                         )
                         unfixed_secret_vars.append(file)
 
@@ -106,6 +144,7 @@ def check_vars(
     generator_name: None | str = None,
 ) -> bool:
     status = vars_status(machine_name, flake, generator_name=generator_name)
+    log.info(f"Check results for machine '{machine_name}': \n{status.text()}")
     return not (
         status.missing_secret_vars
         or status.missing_public_vars
