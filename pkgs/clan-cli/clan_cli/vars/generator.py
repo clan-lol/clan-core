@@ -259,6 +259,10 @@ class Generator:
                     _secret_store=sec_store,
                 )
 
+                # link generator to its files
+                for file in files:
+                    file.generator(generator)
+
                 if share:
                     # For shared generators, check if we already created it
                     existing = next(

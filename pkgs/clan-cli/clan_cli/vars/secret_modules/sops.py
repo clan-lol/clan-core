@@ -98,7 +98,8 @@ class SecretStore(StoreBase):
     def machine_has_access(
         self, generator: Generator, secret_name: str, machine: str
     ) -> bool:
-        self.ensure_machine_key(machine)
+        if not has_machine(self.flake.path, machine):
+            return False
         key_dir = sops_machines_folder(self.flake.path) / machine
         return self.key_has_access(key_dir, generator, secret_name)
 
@@ -156,8 +157,6 @@ class SecretStore(StoreBase):
                     else:
                         continue
                 if file.secret and self.exists(generator, file.name):
-                    if file.deploy:
-                        self.ensure_machine_has_access(generator, file.name, machine)
                     needs_update, msg = self.needs_fix(generator, file.name, machine)
                     if needs_update:
                         outdated.append((generator.name, file.name, msg))
@@ -283,6 +282,7 @@ class SecretStore(StoreBase):
     ) -> None:
         if self.machine_has_access(generator, name, machine):
             return
+        self.ensure_machine_key(machine)
         secret_folder = self.secret_path(generator, name)
         add_secret(
             self.flake.path,
