@@ -1,16 +1,16 @@
-# Clan service: sshd
-What it does
+
+## What it does
 - Generates and persists SSH host keys via `vars`.
-- Optionally issues CA‑signed host certificates for servers.
-- Installs the `server` CA public key into `clients` `known_hosts` for TOFU‑less verification.
+- Optionally issues CA-signed host certificates for servers.
+- Installs the `server` CA public key into `clients` `known_hosts` for TOFU-less verification.
 
 
-When to use it
-- Zero‑TOFU SSH for dynamic fleets: admins/CI can connect to frequently rebuilt hosts (e.g., server-1.example.com) without prompts or per‑host `known_hosts` churn.
+## When to use it
+- Zero-TOFU SSH for dynamic fleets: admins/CI can connect to frequently rebuilt hosts (e.g., server-1.example.com) without prompts or per-host `known_hosts` churn.
 
-Roles
-- Server: runs sshd, presents a CA‑signed host certificate for `<machine>.<domain>`.
-- Client: trusts the CA for the given domains to verify servers’ certificates.
+### Roles
+- Server: runs sshd, presents a CA-signed host certificate for `<machine>.<domain>`.
+- Client: trusts the CA for the given domains to verify servers' certificates.
   Tip: assign both roles to a machine if it should both present a cert and verify others.
 
 Quick start (with host certificates)
@@ -80,12 +80,13 @@ Admins should trust only production; CI should trust prod and staging. Servers a
   };
 }
 ```
-- Admin -> server1.prod.example.com: zero‑TOFU (verified via cert).
+### Explanation
+- Admin -> server1.prod.example.com: zero-TOFU (verified via cert).
 - Admin -> server1.staging.example.com: falls back to TOFU (or is blocked by policy).
-- CI -> either prod or staging: zero‑TOFU for both.
-Note: server and client searchDomains don’t have to be identical; they only need to overlap for the hostnames you actually use.
+- CI -> either prod or staging: zero-TOFU for both.
+Note: server and client searchDomains don't have to be identical; they only need to overlap for the hostnames you actually use.
 
-Notes
+### Notes
 - Connect using a name that matches a cert principal (e.g., `server1.example.com`); wildcards are not allowed inside the certificate.
 - CA private key stays in `vars` (not deployed); only the CA public key is distributed.
 - Logins still require your user SSH keys on the server (passwords are disabled).

@@ -2,7 +2,7 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/sshd";
-  manifest.description = "Enables secure remote access to the machine over SSH";
+  manifest.description = "Enables secure remote access to the machine over SSH with automatic host key management and optional CA-signed host certificates.";
   manifest.categories = [
     "System"
     "Network"
