@@ -3,6 +3,8 @@
 :root {
   --pagePadding: 15px;
   --globalBarHeight: 60px;
+  --fgInvertedColor: #fff;
+  --bgInvertedColor: #203637;
 }
 
 html {

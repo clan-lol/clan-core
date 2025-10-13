@@ -7,7 +7,7 @@
     Pagefind,
     PagefindSearchFragment,
   } from "vite-plugin-pagefind/types";
-  import "./index.css";
+  import "./global.css";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);
@@ -104,8 +104,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid;
     padding: 0 var(--pagePadding);
+    color: var(--fgInvertedColor);
+    background: var(--bgInvertedColor);
   }
   .search {
     & > ul {
