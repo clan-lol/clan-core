@@ -164,13 +164,25 @@
   config = lib.mkIf (config.clan.core.secrets != { }) {
     clan.core.facts.services = lib.mapAttrs' (
       name: service:
-      lib.warn "clan.core.secrets.${name} is deprecated, use clan.core.facts.services.${name} instead" (
-        lib.nameValuePair name ({
-          secret = service.secrets;
-          public = service.facts;
-          generator = service.generator;
-        })
-      )
+      lib.warn
+        ''
+          ###############################################################################
+          #                                                                             #
+          # clan.core.secrets.${name} clan.core.facts.services.${name} is deprecated    #
+          # in favor of "vars"                                                          #
+          #                                                                             #
+          # Refer to https://docs.clan.lol/guides/migrations/migration-facts-vars/      #
+          # for migration instructions.                                                 #
+          #                                                                             #
+          ###############################################################################
+        ''
+        (
+          lib.nameValuePair name ({
+            secret = service.secrets;
+            public = service.facts;
+            generator = service.generator;
+          })
+        )
     ) config.clan.core.secrets;
   };
 }
