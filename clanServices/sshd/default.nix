@@ -180,7 +180,8 @@
               settings.PasswordAuthentication = false;
 
               settings.HostCertificate = lib.mkIf (
-                settings.certificate.searchDomains != [ ]
+                config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".exists
+                && settings.certificate.searchDomains != [ ]
               ) config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
 
               hostKeys = [
