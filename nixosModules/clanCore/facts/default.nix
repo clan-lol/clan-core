@@ -6,7 +6,17 @@
 }:
 {
   config.warnings = lib.optionals (config.clan.core.facts.services != { }) [
-    "Facts are deprecated, please migrate them to vars instead, see: https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+    ''
+      ###############################################################################
+      #                                                                             #
+      # Facts are deprecated please migrate any usages to vars instead              #
+      #                                                                             #
+      #                                                                             #
+      # Refer to https://docs.clan.lol/guides/migrations/migration-facts-vars/      #
+      # for migration instructions.                                                 #
+      #                                                                             #
+      ###############################################################################
+    ''
   ];
 
   options.clan.core.facts = {
