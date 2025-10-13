@@ -294,21 +294,22 @@ in
                 '';
                 type = types.listOf (
                   types.enum [
-                    "AudioVideo"
                     "Audio"
-                    "Video"
+                    "AudioVideo"
+                    "Desktop"
                     "Development"
                     "Education"
                     "Game"
                     "Graphics"
-                    "Social"
                     "Network"
                     "Office"
                     "Science"
-                    "System"
                     "Settings"
-                    "Utility"
+                    "Social"
+                    "System"
                     "Uncategorized"
+                    "Utility"
+                    "Video"
                   ]
                 );
               };

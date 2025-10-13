@@ -165,6 +165,7 @@ nav:
           - services/official/garage.md
           - services/official/hello-world.md
           - services/official/importer.md
+          - services/official/kde.md
           - services/official/localbackup.md
           - services/official/matrix-synapse.md
           - services/official/mycelium.md
