@@ -17,11 +17,7 @@ export type ArticleSibling = {
   label: string;
   link: string;
 };
-export type Heading = MarkdownHeading & {
-  scrolledPast: number;
-  element: Element;
-  children: Heading[];
-};
+export type Heading = MarkdownHeading;
 export class Docs {
   #allArticles: Record<string, () => Promise<Markdown>> = {};
   #loadedArticles: Record<string, Article> = {};
@@ -185,30 +181,28 @@ export class Docs {
         previous,
         next,
       },
-      toc: normalizeHeadings(md.toc),
+      toc: md.toc,
     };
   }
 }
 
-export function visitHeadings(
-  headings: Heading[],
-  visit: (heading: Heading, parents: Heading[]) => false | void,
+export function visit<T extends { children: T[] }>(
+  items: T[],
+  fn: (item: T, parents: T[]) => false | void,
 ): void {
-  _visitHeadings(headings, [], visit);
+  _visit(items, [], fn);
 }
 
-function _visitHeadings(
-  headings: Heading[],
-  parents: Heading[],
-  visit: (heading: Heading, parents: Heading[]) => false | void,
+function _visit<T extends { children: T[] }>(
+  items: T[],
+  parents: T[],
+  fn: (item: T, parents: T[]) => false | void,
 ): false | void {
-  for (const heading of headings) {
-    if (visit(heading, parents) === false) {
+  for (const item of items) {
+    if (fn(item, parents) === false) {
       return false;
     }
-    if (
-      _visitHeadings(heading.children, [...parents, heading], visit) === false
-    ) {
+    if (_visit(item.children, [...parents, item], fn) === false) {
       return false;
     }
   }
@@ -299,12 +293,4 @@ function _visitNavItems(
       }
     }
   }
-}
-
-function normalizeHeadings(headings: MarkdownHeading[]): Heading[] {
-  return headings.map((heading) => ({
-    ...heading,
-    scrolledPast: 0,
-    children: normalizeHeadings(heading.children),
-  })) as Heading[];
 }

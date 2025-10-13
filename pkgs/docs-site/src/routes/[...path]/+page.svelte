@@ -1,79 +1,75 @@
 <script lang="ts">
   import "$lib/markdown/main.css";
-  import { onMount } from "svelte";
-  import { visitHeadings, type Heading } from "$lib/docs";
-  import { browser } from "$app/environment";
+  import { visit, type Heading as ArticleHeading } from "$lib/docs";
   const { data } = $props();
-  const headings = $state(data.toc);
-  let tocOpen = $state(false);
 
+  type Heading = ArticleHeading & {
+    scrolledPast: number;
+    element: Element;
+    children: Heading[];
+  };
+
+  const headings = $derived(normalizeHeadings(data.toc));
+  let tocOpen = $state(false);
   let tocEl: HTMLElement;
   let tocLabelTextEl: HTMLElement;
-  let currentHeading = $derived.by(() => {
-    if (!browser) {
-      return null;
+  let contentEl: HTMLElement;
+  let currentHeading: Heading | null = $state(null);
+  let observer: IntersectionObserver | undefined;
+  $effect(() => {
+    data.content;
+    observer?.disconnect();
+    observer = new IntersectionObserver(onIntersectionChange, {
+      threshold: 1,
+      rootMargin: `${-(tocEl.offsetHeight + 2)}px 0 0`,
+    });
+    const els = contentEl.querySelectorAll("h1, h2, h3");
+    for (const el of els) {
+      observer.observe(el);
     }
-    let last: Heading | null = null;
-    let current: Heading | null = null;
-    // This can run before the IntersectionObserver runs, where element is
-    // still not available
-    visitHeadings(headings, (heading) => {
-      if (!heading.element?.classList.contains("current")) {
-        return;
-      }
+  });
+
+  function normalizeHeadings(headings: ArticleHeading[]): Heading[] {
+    return headings.map((heading) => ({
+      ...heading,
+      scrolledPast: 0,
+      children: normalizeHeadings(heading.children),
+    })) as Heading[];
+  }
+
+  function onIntersectionChange(entries: IntersectionObserverEntry[]) {
+    // Record each heading's scrolledPast
+    for (const entry of entries) {
+      visit(headings, (heading) => {
+        if (heading.id != entry.target.id) {
+          return;
+        }
+        heading.element = entry.target;
+        heading.scrolledPast =
+          entry.intersectionRatio < 1 &&
+          entry.boundingClientRect.top < entry.rootBounds!.top
+            ? entry.rootBounds!.top - entry.boundingClientRect.top
+            : 0;
+        return false;
+      })!;
+    }
+    visit(headings, (heading) => {
       heading.element.classList.remove("current");
     });
-    let headingAnimation: Animation | undefined;
-    let tocAnimation: Animation | undefined;
-    visitHeadings(headings, (heading) => {
+    let last: Heading | null = null;
+    let current: Heading | null = null;
+    // Find the last heading with scrolledPast > 0
+    visit(headings, (heading) => {
       if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
-        headingAnimation?.cancel();
-        tocAnimation?.cancel();
         current = last;
-        // let ghost: HTMLElement;
-        // ({ ghost, headingAnimation, tocAnimation } = animateHeading(
-        //   current.element,
-        //   "toToc",
-        // ));
         current.element.classList.add("current");
         // headingAnimation.finished.then(() => ghost.remove());
         return false;
       }
       last = heading;
     });
-    return current;
-  }) as Heading | null;
-
-  onMount(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          visitHeadings(headings, (heading) => {
-            if (heading.id != entry.target.id) {
-              return;
-            }
-            heading.element = entry.target;
-            heading.scrolledPast =
-              entry.intersectionRatio < 1 &&
-              entry.boundingClientRect.top < entry.rootBounds!.top
-                ? entry.rootBounds!.top - entry.boundingClientRect.top
-                : 0;
-            return false;
-          })!;
-        }
-      },
-      {
-        threshold: 1,
-        rootMargin: `${-(tocEl.offsetHeight + 2)}px 0 0`,
-      },
-    );
-    const els = document.querySelectorAll(
-      ".content h1, .content h2, .content h3",
-    );
-    for (const heading of els) {
-      observer.observe(heading);
-    }
-  });
+    currentHeading = current;
+  }
 
   function animateHeading(
     heading: Element,
@@ -164,11 +160,11 @@
             >{data.toc[0].content}</a
           >
         </li>
-        {@render tocLinks(data.toc[0].children)}
+        {@render tocLinks(headings)}
       </ul>
     {/if}
   </div>
-  <div class="content">
+  <div class="content" bind:this={contentEl}>
     {@html data.content}
   </div>
   <footer>
@@ -268,9 +264,6 @@
     li {
       padding: 3px 0;
     }
-    summary:not(:has(+ ul)) {
-      list-style: none;
-    }
   }
   .content {
     padding: 0 15px;
@@ -313,7 +306,7 @@
     justify-content: end;
   }
   .pointer-title {
-    font-size: 32px;
+    font-size: 26px;
   }
   .pointer-label {
     font-size: 16px;
