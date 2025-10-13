@@ -119,6 +119,13 @@ def run_machine_hardware_info_init(
     if opts.debug:
         cmd += ["--debug"]
 
+    # REMOVEME when nixos-anywhere > 1.12.0
+    # In 1.12.0 and earlier, nixos-anywhere doesn't pass Nix options when attempting to get substituters
+    # which leads to the installation test failing with the error of not being able to substitute flake-parts
+    # see: https://github.com/nix-community/nixos-anywhere/pull/596
+    if "CLAN_TEST_STORE" in environ:
+        cmd += ["--no-use-machine-substituters"]
+
     # Add nix options to nixos-anywhere
     cmd.extend(opts.machine.flake.nix_options or [])
 
