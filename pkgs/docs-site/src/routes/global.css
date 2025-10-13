@@ -3,12 +3,18 @@
 :root {
   --pagePadding: 15px;
   --globalBarHeight: 60px;
+  --fgColor: #000;
   --fgInvertedColor: #fff;
   --bgInvertedColor: #203637;
 }
 
 html {
   box-sizing: border-box;
+
+  &.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+  }
 }
 *,
 *:before,

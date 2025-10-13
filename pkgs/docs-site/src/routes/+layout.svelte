@@ -35,6 +35,12 @@
       }
     })();
   });
+
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    window.scrollTo({ top: 0 });
+    document.documentElement.classList.toggle("no-scroll", menuOpen);
+  }
 </script>
 
 <svelte:head>
@@ -64,7 +70,7 @@
       {/if}
     </div>
     <div class={["menu", menuOpen && "open"]}>
-      <button onclick={() => (menuOpen = !menuOpen)}>Menu</button>
+      <button onclick={toggleMenu}>Menu</button>
       <ul>
         {@render navItems(docs.navItems)}
       </ul>
@@ -130,6 +136,7 @@
     color: #666;
   }
   .menu {
+    color: var(--fgColor);
     & > ul {
       visibility: hidden;
       position: fixed;
