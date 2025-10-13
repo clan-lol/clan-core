@@ -304,11 +304,10 @@ const FlashProgress = () => {
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
   onMount(async () => {
-    const result = await store.flash.progress.result;
-    if (result.status == "success") {
-      console.log("Flashing Success");
+    const result = await store.flash?.progress?.result;
+    if (result?.status == "success") {
+      stepSignal.next();
     }
-    stepSignal.next();
   });
 
   const handleCancel = async () => {

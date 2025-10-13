@@ -40,7 +40,14 @@ export default mergeConfig(
               enabled: true,
               headless: true,
               provider: "playwright",
-              instances: [{ browser: "chromium" }],
+              instances: [
+                {
+                  browser: "webkit",
+                  launch: {
+                    executablePath: process.env.PLAYWRIGHT_WEBKIT_EXECUTABLE,
+                  },
+                },
+              ],
             },
             // This setup file applies Storybook project annotations for Vitest
             // More info at: https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest#setprojectannotations

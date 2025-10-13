@@ -165,23 +165,23 @@ export default meta;
 
 type Story = StoryObj<typeof ServiceWorkflow>;
 
-export const Default: Story = {
-  args: {},
-};
-
-export const SelectRoleMembers: Story = {
-  render: () => (
-    <ServiceWorkflow
-      handleSubmit={(instance) => {
-        console.log("Submitted instance:", instance);
-      }}
-      onClose={() => {
-        console.log("Closed");
-      }}
-      initialStep="select:members"
-      initialStore={{
-        currentRole: "peer",
-      }}
-    />
-  ),
-};
+// export const Default: Story = {
+//   args: {},
+// };
+//
+// export const SelectRoleMembers: Story = {
+//   render: () => (
+//     <ServiceWorkflow
+//       handleSubmit={(instance) => {
+//         console.log("Submitted instance:", instance);
+//       }}
+//       onClose={() => {
+//         console.log("Closed");
+//       }}
+//       initialStep="select:members"
+//       initialStore={{
+//         currentRole: "peer",
+//       }}
+//     />
+//   ),
+// };

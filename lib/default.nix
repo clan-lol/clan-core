@@ -28,7 +28,6 @@ lib.fix (
       # Plain imports.
       introspection = import ./introspection { inherit lib; };
       jsonschema = import ./jsonschema { inherit lib; };
-      facts = import ./facts.nix { inherit lib; };
       docs = import ./docs.nix { inherit lib; };
 
       # flakes
@@ -36,6 +35,10 @@ lib.fix (
 
       # TODO: Flatten our lib functions like this:
       resolveModule = clanLib.callLib ./resolve-module { };
+
+      fs = {
+        inherit (builtins) pathExists readDir;
+      };
     };
   in
   f

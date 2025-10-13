@@ -5,6 +5,7 @@ from clan_cli.vars import graph
 from clan_cli.vars.generator import Generator
 from clan_cli.vars.graph import requested_closure
 from clan_cli.vars.migration import check_can_migrate, migrate_files
+from clan_cli.vars.secret_modules import sops
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
@@ -152,15 +153,15 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
+    all_generators = get_generators(machines, full_closure=True)
     if isinstance(generators, list):
         # List of generator names - use them exactly as provided
         if len(generators) == 0:
             return
-        all_generators = get_generators(machines, full_closure=True)
-        generator_objects = [g for g in all_generators if g.key.name in generators]
+        generators_to_run = [g for g in all_generators if g.key.name in generators]
     else:
         # None or single string - use get_generators with closure parameter
-        generator_objects = get_generators(
+        generators_to_run = get_generators(
             machines,
             full_closure=full_closure,
             generator_name=generators,
@@ -170,12 +171,29 @@ def run_generators(
     # TODO: make this more lazy and ask for every generator on execution
     if callable(prompt_values):
         prompt_values = {
-            generator.name: prompt_values(generator) for generator in generator_objects
+            generator.name: prompt_values(generator) for generator in generators_to_run
         }
 
     # execute health check
     for machine in machines:
         _ensure_healthy(machine=machine)
+
+    # ensure all selected machines have access to all selected shared generators
+    for machine in machines:
+        # This is only relevant for the sops store
+        # TODO: improve store abstraction to use Protocols and introduce a proper SecretStore interface
+        if not isinstance(machine.secret_vars_store, sops.SecretStore):
+            continue
+        for generator in all_generators:
+            if generator.share:
+                for file in generator.files:
+                    if not file.secret or not file.exists:
+                        continue
+                    machine.secret_vars_store.ensure_machine_has_access(
+                        generator,
+                        file.name,
+                        machine.name,
+                    )
 
     # get the flake via any machine (they are all the same)
     flake = machines[0].flake
@@ -188,13 +206,13 @@ def run_generators(
 
     # preheat the select cache, to reduce repeated calls during execution
     selectors = []
-    for generator in generator_objects:
+    for generator in generators_to_run:
         machine = get_generator_machine(generator)
         selectors.append(generator.final_script_selector(machine.name))
     flake.precache(selectors)
 
     # execute generators
-    for generator in generator_objects:
+    for generator in generators_to_run:
         machine = get_generator_machine(generator)
         if check_can_migrate(machine, generator):
             migrate_files(machine, generator)

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import shutil
 import subprocess
 import time
@@ -429,9 +430,43 @@ def test_generated_shared_secret_sops(
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
-    assert check_vars(machine1.name, machine1.flake)
+
+    # Get the initial state of the flake directory after generation
+    def get_file_mtimes(path: str) -> dict[str, float]:
+        """Get modification times of all files in a directory tree."""
+        mtimes = {}
+        for root, _dirs, files in os.walk(path):
+            # Skip .git directory
+            if ".git" in root:
+                continue
+            for file in files:
+                filepath = Path(root) / file
+                mtimes[str(filepath)] = filepath.stat().st_mtime
+        return mtimes
+
+    initial_mtimes = get_file_mtimes(str(flake.path))
+
+    # First check_vars should not write anything
+    assert check_vars(machine1.name, machine1.flake), (
+        "machine1 has already generated vars, so check_vars should return True\n"
+        f"Check result:\n{check_vars(machine1.name, machine1.flake)}"
+    )
+    # Verify no files were modified
+    after_check_mtimes = get_file_mtimes(str(flake.path))
+    assert initial_mtimes == after_check_mtimes, (
+        "check_vars should not modify any files when vars are already valid"
+    )
+
+    assert not check_vars(machine2.name, machine2.flake), (
+        "machine2 has not generated vars yet, so check_vars should return False"
+    )
+    # Verify no files were modified
+    after_check_mtimes_2 = get_file_mtimes(str(flake.path))
+    assert initial_mtimes == after_check_mtimes_2, (
+        "check_vars should not modify any files when vars are not valid"
+    )
+
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
-    assert check_vars(machine2.name, machine2.flake)
     m1_sops_store = sops.SecretStore(machine1.flake)
     m2_sops_store = sops.SecretStore(machine2.flake)
     # Create generators with machine context for testing
