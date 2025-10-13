@@ -184,6 +184,13 @@ class SystemdUserService:
         service_name = self._service_name(name)
         self._check_executable(command)
 
+        # Stop and reset any existing service (allows redefining failed/running services)
+        self._systemctl("stop", service_name)
+        run(
+            ["systemctl", "--user", "reset-failed", f"{service_name}.service"],
+            RunOpts(check=False),
+        )
+
         if autostart:
             if group:
                 self._create_target_file(group)
@@ -223,10 +230,7 @@ class SystemdUserService:
 
             cmd.extend(command)
 
-            result = run(cmd, RunOpts(check=False))
-            if result.returncode != 0:
-                msg = f"Failed to start service: {result.stderr}"
-                raise ClanError(msg)
+            result = run(cmd, RunOpts(error_msg="Failed to start service"))
 
         return name
 

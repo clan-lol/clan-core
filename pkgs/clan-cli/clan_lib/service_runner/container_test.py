@@ -301,14 +301,12 @@ def test_start_service_twice_transient(service_manager: ServiceManagerProtocol) 
     status = service_manager.get_status("simple-service")
     assert status == "running"
 
-    # Try to start the same service again - this should fail
-    # systemd won't allow starting a unit with the same name
-    with pytest.raises(ClanError, match="Failed to start service"):
-        service_manager.start_service(
-            name="simple-service",
-            command=["sleep", "300"],
-            autostart=False,
-        )
+    # Try to start the same service again - this shouldn't fail
+    service_manager.start_service(
+        name="simple-service",
+        command=["sleep", "300"],
+        autostart=False,
+    )
 
     # Original service should still be running
     status = service_manager.get_status("simple-service")
