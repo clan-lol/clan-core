@@ -13,6 +13,7 @@ from typing import (
     NewType,
     NotRequired,
     Required,
+    TypeAliasType,
     TypeVar,
     Union,
     get_args,
@@ -238,6 +239,12 @@ def type_to_dict(
     if isinstance(t, NewType):
         origtype = t.__supertype__
         return type_to_dict(origtype, scope, type_map)
+
+    if isinstance(t, TypeAliasType):
+        # Handle PEP 695 type aliases (type X = Y syntax)
+        return type_to_dict(
+            t.__value__, scope, type_map, narrow_unsupported_union_types
+        )
 
     if hasattr(t, "__origin__"):  # Check if it's a generic type
         origin = get_origin(t)

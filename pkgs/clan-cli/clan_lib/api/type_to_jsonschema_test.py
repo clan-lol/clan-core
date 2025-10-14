@@ -320,3 +320,62 @@ def test_open_typed_dict() -> None:
         "additionalProperties": False,
         "required": ["name"],
     }
+
+
+def test_type_alias() -> None:
+    # Test simple type alias
+    type UserId = int
+
+    assert type_to_dict(UserId) == {
+        "type": "integer",
+    }
+
+    # Test union type alias
+    type InputName = str | None
+
+    assert type_to_dict(InputName) == {
+        "oneOf": [
+            {"type": "string"},
+            {"type": "null"},
+        ],
+    }
+
+    # Test complex type alias with list
+    type ServiceName = str
+    type ServiceNames = list[ServiceName]
+
+    assert type_to_dict(ServiceNames) == {
+        "type": "array",
+        "items": {"type": "string"},
+    }
+
+    # Test type alias in a dataclass field
+    type Readme = str | None
+
+    @dataclass
+    class ServiceReadmeCollection:
+        input_name: str | None
+        readmes: dict[str, Readme]
+
+    assert type_to_dict(ServiceReadmeCollection) == {
+        "type": "object",
+        "properties": {
+            "input_name": {
+                "oneOf": [
+                    {"type": "string"},
+                    {"type": "null"},
+                ],
+            },
+            "readmes": {
+                "type": "object",
+                "additionalProperties": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "null"},
+                    ],
+                },
+            },
+        },
+        "additionalProperties": False,
+        "required": ["input_name", "readmes"],
+    }
