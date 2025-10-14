@@ -48,7 +48,7 @@ norecursedirs = ["clan_cli/tests/helpers", "clan_lib/nixpkgs"]
 #  machines. In the CI pipeline we run these tests in a separate derivation
 #  depending on clan-core. All other tests do not need to depend on clan-core
 #  and can be cached more effectively.
-markers = ["impure", "with_core"]
+markers = ["impure", "with_core", "service_runner"]
 filterwarnings = "default::ResourceWarning"
 python_files = ["test_*.py", "*_test.py"]
 
