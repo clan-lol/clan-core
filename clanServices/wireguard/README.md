@@ -85,22 +85,27 @@ graph TB
 ### Basic Setup with Single Controller
 
 ```nix
-# In your flake.nix or inventory
+# In your clan.nix
 {
-  services.wireguard.server1 = {
-    roles.controller = {
-      # Public endpoint where this controller can be reached
-      endpoint = "vpn.example.com";
-      # Optional: Change the UDP port (default: 51820)
-      port = 51820;
+  instances = {
+    wireguard = {
+      module.name = "wireguard";
+      module.input = "clan-core";
+      roles.controller = {
+        machines.server1 = {};
+        settings = {
+          # Public endpoint where this controller can be reached
+          endpoint = "vpn.example.com";
+          # Optional: Change the UDP port (default: 51820)
+          port = 51820;
+        };
+      };
+      roles.peer = {
+        # No configuration needed if only one controller exists
+        machines.laptop1 = {};
+      };
     };
-  };
-
-  services.wireguard.laptop1 = {
-    roles.peer = {
-      # No configuration needed if only one controller exists
-    };
-  };
+  }
 }
 ```
 
@@ -108,24 +113,21 @@ graph TB
 
 ```nix
 {
-  services.wireguard.server1 = {
-    roles.controller = {
-      endpoint = "vpn1.example.com";
+  instances = {
+    wireguard = {
+      module.name = "wireguard";
+      module.input = "clan-core";
+      roles.controller.machines = {
+        server1.settings.endpoint = "vpn1.example.com";
+        server2.settings.endpoint = "vpn2.example.com";
+        server3.settings.endpoint = "vpn3.example.com";
+      };
+      roles.peer.machines.laptop1 = {
+        # Must specify which controller subnet is exposed as the default in /etc/hosts, when multiple controllers exist
+        settings.controller = "server1";
+      };
     };
-  };
-
-  services.wireguard.server2 = {
-    roles.controller = {
-      endpoint = "vpn2.example.com";
-    };
-  };
-
-  services.wireguard.laptop1 = {
-    roles.peer = {
-      # Must specify which controller subnet is exposed as the default in /etc/hosts, when multiple controllers exist
-      controller = "server1";
-    };
-  };
+  }
 }
 ```
 
