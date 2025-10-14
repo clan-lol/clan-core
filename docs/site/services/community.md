@@ -1,4 +1,4 @@
-Services provided by the community
+Services provided by the community, with no stability guarantees! 
 
 <div class="grid cards" markdown>
 
@@ -27,6 +27,28 @@ Services provided by the community
     manually assigned. For a IPv6 service that also supports multiple
     controllers in a mesh topology, see the official
     [clan wireguard service](https://docs.clan.lol/services/official/wireguard/)
+
+-  [Vaultwarden](https://github.com/Qubasa/infra/blob/main/modules/vaultwarden)
+  
+    ---
+
+    Sets up the centralized open source password manager backend [vaultwarden](https://github.com/dani-garcia/vaultwarden) for [bitwarden](https://bitwarden.com/de-de/). 
+
+
+-  [Easytier Mesh VPN](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/easytier)
+
+    ---
+
+    Sets up the [EasyTier Mesh VPN](https://github.com/EasyTier/EasyTier), uses WirGuard under the hood.
+
+
+- [Nix Cache](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/nix-cache)
+
+    ---
+
+    Sets up a nix cache to share the nix store between machines in your network 
+
+
 
 </div>
 
