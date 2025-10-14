@@ -38,6 +38,7 @@ let
       ps.pytest-subprocess
       ps.pytest-xdist
       ps.pytest-timeout
+      ps.pytest-cov
     ]
     ++ (pyDeps ps);
   pythonRuntimeWithDeps = pythonRuntime.withPackages (ps: pyDeps ps);
@@ -193,8 +194,15 @@ pythonRuntime.pkgs.buildPythonApplication {
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          python -m pytest -m "not impure and not with_core" -n "$jobs"  ./clan_cli ./clan_lib
-          touch $out
+          python -m pytest -m "not impure and not with_core" -n "$jobs" \
+            ./clan_cli  \
+            ./clan_lib  \
+            --cov ./clan_cli \
+            --cov ./clan_lib \
+            --cov-report=html --cov-report=term
+
+          mkdir -p $out
+          cp -r . $out
         '';
   }
   // lib.optionalAttrs (!stdenv.isDarwin) {
@@ -273,8 +281,15 @@ pythonRuntime.pkgs.buildPythonApplication {
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
           # Run all tests with core marker
-          python -m pytest -m "not impure and with_core" -n "$jobs" ./clan_cli ./clan_lib
-          touch $out
+          python -m pytest -m "not impure and with_core" -n "$jobs" \
+            ./clan_cli  \
+            ./clan_lib  \
+            --cov ./clan_cli \
+            --cov ./clan_lib \
+            --cov-report=html --cov-report=term
+
+          mkdir -p $out
+          cp -r . $out
         '';
   };
 
