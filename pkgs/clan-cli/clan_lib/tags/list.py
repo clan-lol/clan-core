@@ -41,7 +41,7 @@ def list_tags(flake: Flake) -> TagList:
             for tag in role_tags:
                 tags.add(tag)
 
-    global_tags = inventory_store.get_readonly_raw().get("tags", {})
+    global_tags = inventory_store.get_readonly_raw({"tags"}).get("tags", {})
 
     for tag in global_tags:
         if tag not in tags:

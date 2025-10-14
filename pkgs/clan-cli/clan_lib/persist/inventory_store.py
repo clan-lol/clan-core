@@ -109,7 +109,7 @@ class InventoryStore:
         flake: FlakeInterface,
         inventory_file_name: str = "inventory.json",
         _allowed_path_transforms: list[str] | None = None,
-        _keys: list[str] | None = None,
+        _keys: set[str] | None = None,
     ) -> None:
         """InventoryStore constructor
 
@@ -132,8 +132,8 @@ class InventoryStore:
         self._keys = _keys
 
     @classmethod
-    def default_keys(cls) -> list[str]:
-        return list(InventorySnapshot.__annotations__.keys())
+    def default_keys(cls) -> set[str]:
+        return set(InventorySnapshot.__annotations__.keys())
 
     @classmethod
     def default_selectors(cls) -> list[str]:
@@ -152,7 +152,7 @@ class InventoryStore:
         - Contains all machines
         - and more
         """
-        raw_value = self.get_readonly_raw()
+        raw_value = self.get_readonly_raw(self._keys)
         if self._keys:
             filtered = cast(
                 "InventorySnapshot",
@@ -162,8 +162,8 @@ class InventoryStore:
             filtered = cast("InventorySnapshot", raw_value)
         return sanitize(filtered, self._allowed_path_transforms, [])
 
-    def get_readonly_raw(self) -> Inventory:
-        attrs = "{" + ",".join(self._keys) + "}"
+    def get_readonly_raw(self, keys: set[str]) -> Inventory:
+        attrs = "{" + ",".join(keys) + "}"
         return self._flake.select(f"clanInternals.inventoryClass.inventory.{attrs}")
 
     def _get_persisted(self) -> InventorySnapshot:

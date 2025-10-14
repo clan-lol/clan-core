@@ -425,7 +425,7 @@ def complete_tags(
                 flake = "."
 
             inventory_store = InventoryStore(Flake(str(flake)))
-            inventory = inventory_store.get_readonly_raw()
+            inventory = inventory_store.get_readonly_raw(inventory_store.default_keys())
             if "tags" in inventory:
                 tags.extend(inventory["tags"].keys())
 
@@ -442,7 +442,7 @@ def complete_tags(
             else:
                 flake = "."
             inventory_store = InventoryStore(Flake(str(flake)))
-            inventory = inventory_store.get_readonly_raw()
+            inventory = inventory_store.get_readonly_raw(inventory_store.default_keys())
             machine_tags_result = inventory.get("machines")
             if machine_tags_result is None:
                 return
