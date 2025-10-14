@@ -210,6 +210,41 @@ def find_instance_refs_for_module(
     return res
 
 
+type ServiceName = str
+type Readme = str | None
+type ServiceReadmes = dict[ServiceName, Readme]
+type InputName = str | None
+
+
+@dataclass(frozen=True)
+class ServiceReadmeCollection:
+    input_name: str | None
+    readmes: ServiceReadmes
+
+
+@API.register
+def get_service_readmes(
+    input_name: InputName,
+    service_names: list[ServiceName],
+    flake: Flake,
+) -> ServiceReadmeCollection:
+    """Get the README content for a service module"""
+    query_param = "modulesPerSource"
+
+    if input_name is None:
+        query_param = "staticModules"
+
+    service_queries = "{" + ",".join(service_names) + "}"
+
+    query = (
+        f"clanInternals.inventoryClass.{query_param}.{service_queries}.manifest.readme"
+    )
+
+    readmes = flake.select(query)
+
+    return ServiceReadmeCollection(input_name=input_name, readmes=readmes)
+
+
 @API.register
 def list_service_modules(flake: Flake) -> ClanModules:
     """Show information about a module"""

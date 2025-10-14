@@ -6,6 +6,7 @@ from clan_cli.tests.fixtures_flakes import nested_dict
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.services.modules import (
+    get_service_readmes,
     list_service_instances,
     list_service_modules,
     set_service_instance,
@@ -68,6 +69,27 @@ def test_list_service_instances(
     # Module has roles with descriptions
     assert borgbackup_service.info.roles["client"].description is not None
     assert borgbackup_service.info.roles["server"].description is not None
+
+
+@pytest.mark.with_core
+def test_get_service_readmes(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    clan_config: Clan = {"inventory": {}}
+    flake = clan_flake(clan_config)
+
+    service_modules = list_service_modules(flake)
+    service_names = [m.usage_ref["name"] for m in service_modules.modules]
+
+    collection = get_service_readmes(
+        input_name=None,
+        service_names=service_names,
+        flake=flake,
+    )
+
+    assert collection.input_name is None
+    assert collection.readmes["borgbackup"]
+    assert len(collection.readmes["borgbackup"]) > 10
 
 
 @pytest.mark.with_core
