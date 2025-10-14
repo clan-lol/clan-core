@@ -88,6 +88,7 @@ in
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
             nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
+            nixos-test-extra-python-packages = self.clanLib.test.containerTest ./test-extra-python-packages nixosTestArgs;
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
             wireguard = import ./wireguard nixosTestArgs;

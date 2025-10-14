@@ -5,7 +5,7 @@
   ...
 }:
 let
-  testDriver = hostPkgs.python3.pkgs.callPackage ./package.nix {
+  testDriver = hostPkgs.callPackage ./package.nix {
     inherit (config) extraPythonPackages;
     inherit (hostPkgs.pkgs) util-linux systemd nix;
   };
