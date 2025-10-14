@@ -15,6 +15,7 @@
   onNavigate(() => {
     menuOpen = false;
     query = "";
+    document.documentElement.classList.remove("no-scroll");
   });
   let pagefind: Pagefind | undefined;
   let query = $state("");
