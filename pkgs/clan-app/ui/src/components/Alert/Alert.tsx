@@ -38,7 +38,6 @@ export const Alert = (props: AlertProps) => {
       <div class={styles.alertContent}>
         <Typography
           hierarchy="body"
-          family="condensed"
           size={titleSize()}
           weight="bold"
           color="inherit"
@@ -46,12 +45,7 @@ export const Alert = (props: AlertProps) => {
           {props.title}
         </Typography>
         <Show when={props.description}>
-          <Typography
-            hierarchy="body"
-            family="condensed"
-            size={bodySize()}
-            color="inherit"
-          >
+          <Typography hierarchy="body" size={bodySize()} color="inherit">
             {props.description}
           </Typography>
         </Show>
