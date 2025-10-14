@@ -156,11 +156,11 @@
     {#if tocOpen}
       <ul class="toc-menu">
         <li>
-          <a href={`#${data.toc[0].id}`} onclick={scrollToTop}
-            >{data.toc[0].content}</a
+          <a href={`#${headings[0].id}`} onclick={scrollToTop}
+            >{headings[0].content}</a
           >
         </li>
-        {@render tocLinks(headings)}
+        {@render tocLinks(headings[0].children)}
       </ul>
     {/if}
   </div>
@@ -234,6 +234,7 @@
     background: transparent;
     border: 0;
     font: inherit;
+    color: inherit;
   }
   .toc-title {
     display: flex;
