@@ -331,7 +331,7 @@ def produce_clan_service_docs() -> None:
 
         output += "\n---\n\n## Roles\n"
 
-        output += f"The {module_name} module has the following roles:\n\n"
+        output += f"The {module_name} service has the following roles:\n\n"
 
         for role_name in module_info["roles"]:
             output += f"- {role_name}\n"
