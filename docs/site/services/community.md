@@ -6,9 +6,9 @@ Services provided by the community
 
     ---
 
-    Allows [KDE](https://kde.org) or [Sway](https://swaywm.org/) via roles. The
-    service will also set up a display manager or greeter as needed and allows
-    using multiple desktop environments or compositors at once.
+    Allows setting up [KDE](https://kde.org) or [Sway](https://swaywm.org/) via
+    roles. The service will also set up a display manager or greeter as needed
+    and allows using multiple desktop environments or compositors at once.
 
 
 </div>
