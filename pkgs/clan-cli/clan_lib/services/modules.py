@@ -39,6 +39,7 @@ class ModuleManifest:
             "Audio": {"color": "#CFCFC4", "description": "Audio"},
             "Video": {"color": "#FFD1DC", "description": "Video"},
             "Development": {"color": "#F49AC2", "description": "Development"},
+            "Desktop": {"color": "#F4eeaa", "description": "Desktop Environment"},
             "Education": {"color": "#B39EB5", "description": "Education"},
             "Game": {"color": "#FFB347", "description": "Game"},
             "Graphics": {"color": "#FF6961", "description": "Graphics"},
