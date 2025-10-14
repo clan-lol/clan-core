@@ -29,7 +29,7 @@
       };
 
     perInstance =
-      { settings, ... }:
+      { settings, roles, ... }:
       {
         nixosModule =
           {
@@ -38,8 +38,19 @@
             pkgs,
             ...
           }:
+          let
+            uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
+            # Collect searchDomains from all servers in this instance
+            allServerSearchDomains = lib.flatten (
+              lib.mapAttrsToList (_name: machineConfig: machineConfig.settings.certificate.searchDomains or [ ]) (
+                roles.server.machines or { }
+              )
+            );
+            # Merge client's searchDomains with all servers' searchDomains
+            searchDomains = uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
+          in
           {
-            clan.core.vars.generators.openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
+            clan.core.vars.generators.openssh-ca = lib.mkIf (searchDomains != [ ]) {
               share = true;
               files.id_ed25519.deploy = false;
               files."id_ed25519.pub" = {
@@ -54,9 +65,9 @@
               '';
             };
 
-            programs.ssh.knownHosts.ssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
+            programs.ssh.knownHosts.ssh-ca = lib.mkIf (searchDomains != [ ]) {
               certAuthority = true;
-              extraHostNames = builtins.map (domain: "*.${domain}") settings.certificate.searchDomains;
+              extraHostNames = builtins.map (domain: "*.${domain}") searchDomains;
               publicKey = config.clan.core.vars.generators.openssh-ca.files."id_ed25519.pub".value;
             };
           };
