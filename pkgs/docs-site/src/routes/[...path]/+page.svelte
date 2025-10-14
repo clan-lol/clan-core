@@ -1,6 +1,7 @@
 <script lang="ts">
   import "$lib/markdown/main.css";
   import { visit, type Heading as ArticleHeading } from "$lib/docs";
+  import { tick } from "svelte";
   const { data } = $props();
 
   type Heading = ArticleHeading & {
@@ -13,8 +14,12 @@
   let tocOpen = $state(false);
   let tocEl: HTMLElement;
   let tocLabelTextEl: HTMLElement;
+  let tocLabelGhostEl: HTMLElement | null = $state(null);
+  let tocLabelArrowEl: HTMLElement;
   let contentEl: HTMLElement;
   let currentHeading: Heading | null = $state(null);
+  let previousHeading: Heading | null = $state(null);
+  let animatingHeading = $state(true);
   let observer: IntersectionObserver | undefined;
   $effect(() => {
     data.content;
@@ -23,7 +28,7 @@
       threshold: 1,
       rootMargin: `${-(tocEl.offsetHeight + 2)}px 0 0`,
     });
-    const els = contentEl.querySelectorAll("h1, h2, h3");
+    const els = contentEl.querySelectorAll("h1,h2,h3,h4,h5,h6");
     for (const el of els) {
       observer.observe(el);
     }
@@ -37,7 +42,7 @@
     })) as Heading[];
   }
 
-  function onIntersectionChange(entries: IntersectionObserverEntry[]) {
+  async function onIntersectionChange(entries: IntersectionObserverEntry[]) {
     // Record each heading's scrolledPast
     for (const entry of entries) {
       visit(headings, (heading) => {
@@ -53,77 +58,117 @@
         return false;
       })!;
     }
-    visit(headings, (heading) => {
-      heading.element.classList.remove("current");
-    });
     let last: Heading | null = null;
     let current: Heading | null = null;
     // Find the last heading with scrolledPast > 0
     visit(headings, (heading) => {
       if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
         current = last;
-        current.element.classList.add("current");
-        // headingAnimation.finished.then(() => ghost.remove());
         return false;
       }
       last = heading;
     });
-    currentHeading = current;
+    current = current as Heading | null;
+    if (current?.id != currentHeading?.id) {
+      if (current) {
+        const animation = animateCurrentHeading(current, "toToc");
+        await animation;
+      } else {
+        currentHeading = null;
+      }
+    }
   }
 
-  function animateHeading(
-    heading: Element,
+  async function animateCurrentHeading(
+    heading: Heading,
     direction: "toToc" | "fromToc",
-  ): {
-    ghost: HTMLElement;
-    headingAnimation: Animation;
-    tocAnimation: Animation;
-  } {
-    const ghost = heading.cloneNode(true) as HTMLElement;
-    const ghostInner = heading.querySelector("&>span")!;
-    const fromRect = ghostInner.getBoundingClientRect();
+  ): Promise<void> {
+    previousHeading = currentHeading;
+    currentHeading = heading;
+    const headingGhost = heading.element.cloneNode(true) as HTMLElement;
+    const headingGhostInner = headingGhost.querySelector("&>span")!;
+    headingGhost.classList.add("is-ghost");
+    headingGhost.removeAttribute("id");
+    headingGhost.style.top = `${tocEl.offsetHeight}px`;
+    heading.element.parentNode!.insertBefore(headingGhost, heading.element);
+    visit(headings, (heading) => {
+      heading.element.classList.remove("is-current");
+    });
+    heading.element.classList.add("is-current");
+    animatingHeading = true;
+    await tick();
+    const fromRect = headingGhostInner.getBoundingClientRect();
     const toRect = tocLabelTextEl.getBoundingClientRect();
-    ghost.classList.add("heading-ghost");
-    heading.parentNode!.insertBefore(ghost, heading.nextSibling);
-    const headingAnimation = ghostInner.animate(
-      [
-        {
-          top: `${fromRect.top}px`,
-          left: `${fromRect.left}px`,
-          transform: `scale(1, 1)`,
-          opacity: 1,
-        },
-        {
-          top: `${toRect.top}px`,
-          left: `${toRect.left}px`,
-          transform: `scale(${toRect.width / fromRect.width}, ${toRect.height / fromRect.height})`,
-          opacity: 0,
-        },
-      ],
+
+    const headingGhostAnimation = headingGhostInner.animate(
       {
-        duration: 20000,
+        transform: [
+          `translate(0, 0) scale(1, 1)`,
+          `translate(${toRect.left - fromRect.left}px, ${toRect.top - fromRect.top}px) scale(${toRect.width / fromRect.width}, ${toRect.height / fromRect.height})`,
+        ],
+        opacity: [1, 0],
+      },
+      {
+        duration: 300,
+        easing: "ease-out",
       },
     );
     const tocAnimation = tocLabelTextEl.animate(
-      [
-        {
-          transform: `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px) scale(${fromRect.width / toRect.width}, ${fromRect.height / toRect.height})`,
-          opacity: 1,
-        },
-        {
-          transform: `translate(0, 0) scale(1, 1)`,
-          opacity: 1,
-        },
-      ],
       {
-        duration: 20000,
+        transform: [
+          `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px) scale(${fromRect.width / toRect.width}, ${fromRect.height / toRect.height})`,
+          `translate(0, 0) scale(1, 1)`,
+        ],
+        opacity: [0, 1],
+      },
+      {
+        duration: 300,
+        easing: "ease-out",
       },
     );
-    return {
-      ghost,
-      headingAnimation,
-      tocAnimation,
-    };
+    tocLabelGhostEl = tocLabelGhostEl!;
+    const tocGhostAnimation = tocLabelGhostEl.animate(
+      { opacity: [1, 0] },
+      { duration: 300 },
+    );
+    const tocGhostRect = tocLabelGhostEl.getBoundingClientRect();
+    const tocArrowAnimation = tocLabelArrowEl.animate(
+      {
+        transform: [
+          `translateX(${tocGhostRect.width - toRect.width}px)`,
+          `translateX(0)`,
+        ],
+      },
+      { duration: 300 },
+    );
+    await headingGhostAnimation.finished;
+    headingGhost.remove();
+    tocLabelGhostEl.remove();
+    // const tocAnimation = tocLabelTextEl.animate(
+    //   [
+    //     {
+    //       transform: `translate(${fromRect.left - toRect.left}px, ${fromRect.top - toRect.top}px) scale(${fromRect.width / toRect.width}, ${fromRect.height / toRect.height})`,
+    //       opacity: 1,
+    //     },
+    //     {
+    //       transform: `translate(0, 0) scale(1, 1)`,
+    //       opacity: 1,
+    //     },
+    //   ],
+    //   {
+    //     duration: 20000,
+    //   },
+    // );
+    // return {
+    //   finished: headingAnimation.finished.then((animation) => {
+    //     ghost.remove();
+    //     return animation;
+    //   }),
+    //   cancel() {
+    //     headingAnimation.cancel();
+    //     // tocAnimation.cancel();
+    //   },
+    // };
   }
 
   function scrollToHeading(ev: Event, id: string) {
@@ -150,7 +195,12 @@
         <span class="toc-label-text" bind:this={tocLabelTextEl}>
           {(!tocOpen && currentHeading?.content) || "Table of contents"}
         </span>
-        <span class="toc-label-arrow"></span>
+        {#if animatingHeading}
+          <span class="toc-label-ghost" bind:this={tocLabelGhostEl}>
+            {previousHeading?.content || "Table of contents"}
+          </span>
+        {/if}
+        <span class="toc-label-arrow" bind:this={tocLabelArrowEl}>v</span>
       </button>
     </h2>
     {#if tocOpen}
@@ -244,8 +294,12 @@
     display: flex;
     gap: 5px;
   }
-  .toc-label-text {
-    transform-origin: left center;
+  .toc-label-text,
+  .toc-label-ghost {
+    transform-origin: left top;
+  }
+  .toc-label-ghost {
+    position: absolute;
   }
   .toc-menu {
     position: absolute;
@@ -271,13 +325,45 @@
     width: 100vw;
 
     :global {
-      .heading-ghost {
-        transform-origin: left center;
-        z-index: 999;
-        margin: 0;
-      }
-      & :is(h1, h2, h3).current {
-        opacity: 0;
+      & :is(h1, h2, h3, h4, h5, h6) {
+        margin-left: calc(-1 * var(--pagePadding));
+        display: flex;
+        align-items: center;
+        &.is-current {
+          opacity: 0;
+        }
+        &.is-ghost {
+          position: fixed;
+          z-index: 1;
+          margin: 0;
+          left: 0;
+
+          > span {
+            transform-origin: left top;
+          }
+        }
+        a {
+          text-decoration: none;
+        }
+        .icon {
+          display: flex;
+          align-items: center;
+        }
+        .icon::before {
+          content: "🔗";
+          font-size: 14px;
+          visibility: hidden;
+        }
+        &:hover {
+          .icon::before {
+            visibility: visible;
+          }
+          &.is-ghost {
+            .icon::before {
+              visibility: hidden;
+            }
+          }
+        }
       }
     }
   }
