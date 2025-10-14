@@ -126,7 +126,6 @@ export const Select = (props: SelectProps) => {
               hierarchy="label"
               size="s"
               weight="bold"
-              family="condensed"
               in="Select-item-label"
             >
               {props.item.rawValue.label}
@@ -142,7 +141,6 @@ export const Select = (props: SelectProps) => {
               hierarchy="label"
               size="s"
               weight="bold"
-              family="condensed"
               color="secondary"
               in="Select-item-label"
             >
@@ -157,7 +155,6 @@ export const Select = (props: SelectProps) => {
                 hierarchy="label"
                 size="s"
                 weight="normal"
-                family="condensed"
                 color="secondary"
                 in="Select-item-label"
               >
@@ -170,7 +167,6 @@ export const Select = (props: SelectProps) => {
                 hierarchy="label"
                 size="s"
                 weight="bold"
-                family="condensed"
                 in="Select-item-label"
               >
                 {root.placeholder}
@@ -202,7 +198,6 @@ export const Select = (props: SelectProps) => {
                 hierarchy="label"
                 size="s"
                 weight="bold"
-                family="condensed"
                 in="Select-item-label"
               >
                 {state.selectedOption().label}

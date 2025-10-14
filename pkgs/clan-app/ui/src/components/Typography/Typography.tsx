@@ -8,7 +8,7 @@ import { getInClasses } from "@/src/util";
 
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";
-export type Family = "regular" | "condensed" | "mono";
+export type Family = "regular" | "mono";
 export type Transform = "uppercase" | "lowercase" | "capitalize";
 export interface SizeForHierarchy {
   body: "default" | "s" | "xs" | "xxs";
@@ -26,10 +26,10 @@ export interface TagForHierarchy {
 }
 
 const defaultFamilyMap = {
-  body: "condensed",
+  body: "regular",
   headline: "regular",
   title: "regular",
-  label: "condensed",
+  label: "regular",
   teaser: "regular",
 } as const;
 

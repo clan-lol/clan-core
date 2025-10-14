@@ -18,11 +18,7 @@
     letter-spacing: 0.005rem;
 
     &.family-regular {
-      font-family: "Archivo", sans-serif;
-    }
-
-    &.family-condensed {
-      font-family: "Archivo SemiCondensed", sans-serif;
+      font-family: "Geist", sans-serif;
     }
 
     &.size-s {
@@ -45,34 +41,8 @@
   }
 
   &.label {
-    &.family-condensed {
-      font-family: "Archivo SemiCondensed", sans-serif;
-
-      font-size: 1rem;
-      line-height: normal;
-      letter-spacing: 0.02rem;
-
-      &.size-s {
-        font-size: 0.875rem;
-        line-height: normal;
-        letter-spacing: 0.0175rem;
-      }
-
-      &.size-xs {
-        font-size: 0.8125rem;
-        line-height: normal;
-        letter-spacing: 0.008125rem;
-      }
-
-      &.size-xxs {
-        font-size: 0.75rem;
-        line-height: 1;
-        /* letter-spacing: 0.008125rem; */
-      }
-    }
-
     &.family-mono {
-      font-family: "Commit Mono", monospace;
+      font-family: "Geist Mono", monospace;
 
       font-size: 1rem;
       line-height: normal;
@@ -103,7 +73,7 @@
     letter-spacing: 0.03375rem;
 
     &.family-regular {
-      font-family: "Archivo", sans-serif;
+      font-family: "Geist", sans-serif;
     }
 
     &.size-m {
@@ -125,7 +95,7 @@
     letter-spacing: 0.015rem;
 
     &.family-regular {
-      font-family: "Archivo", sans-serif;
+      font-family: "Geist", sans-serif;
     }
 
     &.size-m {
@@ -159,7 +129,7 @@
     letter-spacing: -0.06rem;
 
     &.family-regular {
-      font-family: "Archivo", sans-serif;
+      font-family: "Geist", sans-serif;
     }
   }
 
@@ -194,7 +164,7 @@
     @apply fg-def-4 ml-1;
 
     content: "*";
-    font-family: "Commit Mono", monospace;
+    font-family: "Geist Mono", monospace;
     font-size: 0.6875rem;
   }
 }

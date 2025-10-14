@@ -6,24 +6,19 @@ import * as TypographyStories from "./Typography.stories";
 
 # Typography
 
-There are two fonts being used within our typography system:
+There is one font being used within our typography system:
 
-- [Archivo] in its _Standard_ and _Semi Condensed_ forms
-- [Fira Code] for mono-spaced content
+- [Geist] for all content
+- Geist-Mono for mono-spaced content
 
 ## UI Components
 
 When creating UI components that a user will interact with,
 you **must use** `Label` or `Label Mono`.
 
-<DocsStory of={TypographyStories.LabelCondensed} />
-
 <DocsStory of={TypographyStories.LabelMono} />
 
 ## Layout & Prose
-
-For layout components and general prose, you must use the non-condensed forms of `Body`, `Title`, `Headline` and
-`Teaser`.
 
 <DocsStory of={TypographyStories.Body} />
 <DocsStory of={TypographyStories.Title} />
@@ -46,5 +41,4 @@ Each color also has an inverted counterpart.
 
 <DocsStory of={TypographyStories.ColorsInverted} />
 
-[Archivo]: https://github.com/Omnibus-Type/Archivo
-[Fira Code]: https://github.com/tonsky/FiraCode
+[Geist]: https://github.com/vercel/geist-font
