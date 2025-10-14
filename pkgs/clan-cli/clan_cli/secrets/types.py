@@ -22,7 +22,13 @@ def secret_name_type(arg_value: str) -> str:
 
 
 def public_or_private_age_key_type(arg_value: str) -> str:
-    if Path(arg_value).is_file():
+    try:
+        is_file = Path(arg_value).is_file()
+    except OSError:
+        # Handle "File name too long" errors when age keys are passed directly
+        is_file = False
+
+    if is_file:
         arg_value = Path(arg_value).read_text().strip()
     elif arg_value.startswith("AGE-PLUGIN-"):
         msg = (
