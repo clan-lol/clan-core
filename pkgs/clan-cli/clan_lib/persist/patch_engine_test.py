@@ -14,7 +14,10 @@ from clan_lib.persist.path_utils import (
     set_value_by_path,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.write_rules import PersistenceAttribute, compute_attribute_map
+from clan_lib.persist.write_rules import (
+    PersistenceAttribute,
+    compute_attribute_persistence,
+)
 
 # --- calculate_static_data ---
 
@@ -219,7 +222,7 @@ def test_update_simple() -> None:
 
     data_disk: dict = {}
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -256,7 +259,7 @@ def test_update_add_empty_dict() -> None:
 
     data_disk: dict = {}
 
-    writeables = compute_attribute_map(prios, data_eval, data_disk)
+    writeables = compute_attribute_persistence(prios, data_eval, data_disk)
 
     update = deepcopy(data_eval)
 
@@ -297,7 +300,7 @@ def test_update_many() -> None:
 
     data_disk = {"foo": {"bar": "baz", "nested": {"x": "x"}}}
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -356,7 +359,7 @@ def test_update_parent_non_writeable() -> None:
         },
     }
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.READONLY},
@@ -380,7 +383,8 @@ def test_update_parent_non_writeable() -> None:
 # def test_remove_non_writable_attrs() -> None:
 #     prios = {
 #         "foo": {
-#             "__prio": 100,  # <- writeable: "foo"
+#             "__this": {"total": True, "prio": 100},
+#             # We cannot delete children because "foo" is total
 #         },
 #     }
 
@@ -388,7 +392,7 @@ def test_update_parent_non_writeable() -> None:
 
 #     data_disk: dict = {}
 
-#     writeables = compute_write_map(prios, data_eval, data_disk)
+#     attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
 #     update: dict = {
 #         "foo": {
@@ -398,7 +402,9 @@ def test_update_parent_non_writeable() -> None:
 #     }
 
 #     with pytest.raises(ClanError) as error:
-#         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
+#         calc_patches(
+#             data_disk, update, all_values=data_eval, attribute_props=attribute_props
+#         )
 
 #     assert "Cannot delete path 'foo.baz'" in str(error.value)
 
@@ -417,7 +423,7 @@ def test_update_list() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -464,7 +470,7 @@ def test_update_list_duplicates() -> None:
 
     data_disk = {"foo": ["B"]}
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -483,19 +489,26 @@ def test_update_list_duplicates() -> None:
 
 def test_dont_persist_defaults() -> None:
     """Default values should not be persisted to disk if not explicitly requested by the user."""
-    prios = {
+    introspection = {
         "enabled": {"__prio": 1500},
-        "config": {"__prio": 100},
+        "config": {
+            "__prio": 100,
+            "foo": {  # <- default in the 'config' submodule
+                "__prio": 1500,
+            },
+        },
     }
     data_eval = {
         "enabled": True,
         "config": {"foo": "bar"},
     }
     data_disk: dict[str, Any] = {}
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(introspection, data_eval, data_disk)
+
     assert attribute_props == {
         ("enabled",): {PersistenceAttribute.WRITE},
         ("config",): {PersistenceAttribute.WRITE},
+        ("config", "foo"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
     }
 
     update = deepcopy(data_eval)
@@ -526,8 +539,8 @@ def test_set_null() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        attribute_props=compute_attribute_map(
-            {"__prio": 100, "foo": {"__prio": 100}},
+        attribute_props=compute_attribute_persistence(
+            {"__prio": 100, "foo": {"__prio": 100}, "bar": {"__prio": 100}},
             data_eval,
             data_disk,
         ),
@@ -549,9 +562,24 @@ def test_machine_delete() -> None:
     }
     data_disk = data_eval
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
     assert attribute_props == {
         ("machines",): {PersistenceAttribute.WRITE},
+        ("machines", "foo"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("machines", "foo", "name"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("machines", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("machines", "bar", "name"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("machines", "naz"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("machines", "naz", "name"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
     }
 
     # Delete machine "bar"  from the inventory
@@ -580,7 +608,7 @@ def test_update_mismatching_update_type() -> None:
 
     data_disk: dict = {}
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -611,10 +639,11 @@ def test_delete_key() -> None:
 
     data_disk = data_eval
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
     }
 
     # remove all keys from foo
@@ -652,10 +681,36 @@ def test_delete_key_intermediate() -> None:
 
     data_disk = data_eval
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "bar"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "bar", "name"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("foo", "bar", "info"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("foo", "bar", "other"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("foo", "other"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "other", "name"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("foo", "other", "info"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("foo", "other", "other"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
     }
     # remove all keys from foo
 
@@ -687,10 +742,16 @@ def test_delete_key_non_writeable() -> None:
 
     data_disk = data_eval
 
-    attribute_props = compute_attribute_map(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
+    # TOOD: Collapse these paths, by early stopping the recursion in
+    # compute_attribute_persistence
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.READONLY},
+        ("foo", "bar"): {PersistenceAttribute.READONLY},
+        ("foo", "bar", "name"): {PersistenceAttribute.READONLY},
+        ("foo", "bar", "info"): {PersistenceAttribute.READONLY},
+        ("foo", "bar", "other"): {PersistenceAttribute.READONLY},
     }
 
     # remove all keys from foo

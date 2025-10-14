@@ -5,7 +5,10 @@ import pytest
 
 from clan_lib.flake.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.write_rules import PersistenceAttribute, compute_attribute_map
+from clan_lib.persist.write_rules import (
+    PersistenceAttribute,
+    compute_attribute_persistence,
+)
 
 if TYPE_CHECKING:
     from clan_lib.nix_models.clan import Clan
@@ -21,16 +24,12 @@ def test_write_integration(clan_flake: Callable[..., Flake]) -> None:
     data_eval = cast("dict", inventory_store.read())
     prios = flake.select("clanInternals.inventoryClass.introspection")
 
-    res = compute_attribute_map(prios, data_eval, {})
+    res = compute_attribute_persistence(prios, data_eval, {})
 
     # We should be able to write to these top-level keys
     assert PersistenceAttribute.WRITE in res[("machines",)]
     assert PersistenceAttribute.WRITE in res[("instances",)]
     assert PersistenceAttribute.WRITE in res[("meta",)]
-
-    # # Managed by nix
-    assert PersistenceAttribute.WRITE not in res[("assertions",)]
-    assert PersistenceAttribute.READONLY in res[("assertions",)]
 
 
 # New style __this.prio
@@ -47,9 +46,9 @@ def test_write_simple() -> None:
         "foo.bar": {"__this": {"prio": 1000}},
     }
 
-    default: dict = {"foo": {}}
-    data: dict = {}
-    res = compute_attribute_map(prios, default, data)
+    all_values: dict = {"foo": {"bar": "baz"}, "foo.bar": {}}
+    persisted: dict = {}
+    res = compute_attribute_persistence(prios, all_values, persisted)
 
     assert res == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -74,8 +73,8 @@ def test_write_inherited() -> None:
         },
     }
 
-    data: dict = {}
-    res = compute_attribute_map(prios, {"foo": {"bar": {}}}, data)
+    persisted: dict = {}
+    res = compute_attribute_persistence(prios, {"foo": {"bar": {"baz": {}}}}, persisted)
 
     assert res == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -99,7 +98,7 @@ def test_non_write_inherited() -> None:
     }
 
     data: dict = {}
-    res = compute_attribute_map(prios, {}, data)
+    res = compute_attribute_persistence(prios, {"foo": {"bar": {"baz": {}}}}, data)
 
     assert res == {
         ("foo",): {PersistenceAttribute.READONLY},
@@ -122,7 +121,7 @@ def test_write_list() -> None:
             "b",
         ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
     }
-    res = compute_attribute_map(prios, default, data)
+    res = compute_attribute_persistence(prios, default, data)
 
     assert res == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -144,9 +143,10 @@ def test_write_because_written() -> None:
         },
     }
 
+    data_eval: dict = {"foo": {"bar": {"baz": 1, "foobar": 1}}}
     # Given the following data. {}
     # Check that the non-writeable paths are correct.
-    res = compute_attribute_map(prios, {"foo": {"bar": {}}}, {})
+    res = compute_attribute_persistence(prios, data_eval, {})
 
     assert res == {
         ("foo",): {PersistenceAttribute.WRITE},
@@ -165,7 +165,7 @@ def test_write_because_written() -> None:
             },
         },
     }
-    res = compute_attribute_map(prios, {}, data)
+    res = compute_attribute_persistence(prios, data_eval, data)
 
     assert res[("foo", "bar", "baz")] == {
         PersistenceAttribute.WRITE,
@@ -210,7 +210,7 @@ def test_static_object() -> None:
     data_eval: dict = {"foo": {"a": {"c": {"bar": 1}}}}
     persisted: dict = {"foo": {"a": {"c": {"bar": 1}}}}
 
-    res = compute_attribute_map(introspection, data_eval, persisted)
+    res = compute_attribute_persistence(introspection, data_eval, persisted)
     assert res == {
         # We can extend "foo", "foo.a", "foo.a.c"
         # That means the user could define "foo.b"
@@ -246,7 +246,7 @@ def test_attributes_totality() -> None:
     data_eval: dict = {"foo": {"a": {}}}
     persisted: dict = {"foo": {"a": {}}}
 
-    res = compute_attribute_map(introspection, data_eval, persisted)
+    res = compute_attribute_persistence(introspection, data_eval, persisted)
 
     assert res == {
         ("foo",): {PersistenceAttribute.WRITE},

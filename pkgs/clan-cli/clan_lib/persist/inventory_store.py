@@ -11,7 +11,6 @@ from clan_lib.nix_models.clan import (
     InventoryInstancesType,
     InventoryMachinesType,
     InventoryMetaType,
-    InventoryTagsType,
 )
 from clan_lib.persist.patch_engine import calc_patches
 from clan_lib.persist.path_utils import (
@@ -20,7 +19,7 @@ from clan_lib.persist.path_utils import (
     path_match,
     set_value_by_path_tuple,
 )
-from clan_lib.persist.write_rules import AttributeMap, compute_attribute_map
+from clan_lib.persist.write_rules import AttributeMap, compute_attribute_persistence
 
 
 def unwrap_known_unknown(value: Any) -> Any:
@@ -102,7 +101,6 @@ class InventorySnapshot(TypedDict):
     machines: NotRequired[InventoryMachinesType]
     instances: NotRequired[InventoryInstancesType]
     meta: NotRequired[InventoryMetaType]
-    tags: NotRequired[InventoryTagsType]
 
 
 class InventoryStore:
@@ -111,7 +109,7 @@ class InventoryStore:
         flake: FlakeInterface,
         inventory_file_name: str = "inventory.json",
         _allowed_path_transforms: list[str] | None = None,
-        _keys: list[str] | None = None,
+        _keys: set[str] | None = None,
     ) -> None:
         """InventoryStore constructor
 
@@ -134,8 +132,8 @@ class InventoryStore:
         self._keys = _keys
 
     @classmethod
-    def default_keys(cls) -> list[str]:
-        return list(InventorySnapshot.__annotations__.keys())
+    def default_keys(cls) -> set[str]:
+        return set(InventorySnapshot.__annotations__.keys())
 
     @classmethod
     def default_selectors(cls) -> list[str]:
@@ -154,7 +152,7 @@ class InventoryStore:
         - Contains all machines
         - and more
         """
-        raw_value = self.get_readonly_raw()
+        raw_value = self.get_readonly_raw(self._keys)
         if self._keys:
             filtered = cast(
                 "InventorySnapshot",
@@ -164,8 +162,8 @@ class InventoryStore:
             filtered = cast("InventorySnapshot", raw_value)
         return sanitize(filtered, self._allowed_path_transforms, [])
 
-    def get_readonly_raw(self) -> Inventory:
-        attrs = "{" + ",".join(self._keys) + "}"
+    def get_readonly_raw(self, keys: set[str]) -> Inventory:
+        attrs = "{" + ",".join(keys) + "}"
         return self._flake.select(f"clanInternals.inventoryClass.inventory.{attrs}")
 
     def _get_persisted(self) -> InventorySnapshot:
@@ -216,7 +214,7 @@ class InventoryStore:
         data_eval: InventorySnapshot = self._load_merged_inventory()
         data_disk: InventorySnapshot = self._get_persisted()
 
-        write_map = compute_attribute_map(
+        write_map = compute_attribute_persistence(
             current_priority,
             dict(data_eval),
             dict(data_disk),

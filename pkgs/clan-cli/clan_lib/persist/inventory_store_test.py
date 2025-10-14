@@ -102,7 +102,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     store = InventoryStore(
         flake=MockFlake(nix_file),
         inventory_file_name=json_file.name,
-        _keys=["foo", "protected"],
+        _keys={"foo", "protected"},
     )
     store._flake.invalidate_cache()
     data = store.read()  # type: ignore[assignment]
@@ -147,7 +147,7 @@ def test_simple_deferred(setup_test_files: Path) -> None:
         inventory_file_name=json_file.name,
         # Needed to allow auto-transforming deferred modules
         _allowed_path_transforms=["foo.*"],
-        _keys=["foo"],  # disable toplevel filtering
+        _keys={"foo"},  # disable toplevel filtering
     )
 
     data = store.read()
@@ -228,7 +228,7 @@ def test_manipulate_list(setup_test_files: Path) -> None:
     store = InventoryStore(
         flake=MockFlake(nix_file),
         inventory_file_name=json_file.name,
-        _keys=["empty", "predefined"],
+        _keys={"empty", "predefined"},
     )
 
     data = store.read()
@@ -270,7 +270,7 @@ def test_static_list_items(setup_test_files: Path) -> None:
     store = InventoryStore(
         flake=MockFlake(nix_file),
         inventory_file_name=json_file.name,
-        _keys=["empty", "predefined"],
+        _keys={"empty", "predefined"},
     )
 
     data = store.read()
