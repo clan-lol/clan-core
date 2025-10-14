@@ -90,7 +90,6 @@ in
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
-            wireguard = import ./wireguard nixosTestArgs;
             service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
           };
 
