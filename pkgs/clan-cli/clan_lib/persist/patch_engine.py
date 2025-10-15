@@ -90,9 +90,6 @@ def calc_patches(
     update_flat = flatten_data_structured(update)
     all_values_flat = flatten_data_structured(all_values)
 
-    # Early validation: ensure we're not trying to modify static-only paths
-    # validate_no_static_modification(update_flat, static_data)
-
     # Find paths marked for deletion
     delete_paths = find_deleted_paths_structured(all_values, update)
 
@@ -133,7 +130,6 @@ Please report this issue at https://git.clan.lol/clan/clan-core/issues
             continue
 
         # Validate the change is allowed
-        # validate_no_static_deletion(path, new_value, static_data)
         validate_writeability(path, attribute_props)
         validate_type_compatibility(path, old_value, new_value)
         validate_list_uniqueness(path, new_value)

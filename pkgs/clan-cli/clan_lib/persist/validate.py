@@ -10,25 +10,6 @@ from clan_lib.persist.path_utils import (
 from clan_lib.persist.write_rules import AttributeMap, is_writeable_path
 
 
-def validate_no_static_deletion(
-    path: PathTuple, new_value: Any, static_data: dict[PathTuple, Any]
-) -> None:
-    """Validate that we're not trying to delete static data."""
-    # Check if we're trying to delete a path that exists in static data
-    if path in static_data and new_value is None:
-        msg = f"Path '{path_to_string(path)}' is readonly - since its defined via a .nix file"
-        raise ClanError(msg)
-
-    # For lists, check if we're trying to remove static items
-    if isinstance(new_value, list) and path in static_data:
-        static_items = static_data[path]
-        if isinstance(static_items, list):
-            missing_static = [item for item in static_items if item not in new_value]
-            if missing_static:
-                msg = f"Path '{path_to_string(path)}' doesn't contain static items {missing_static} - They are readonly - since they are defined via a .nix file"
-                raise ClanError(msg)
-
-
 def validate_writeability(path: PathTuple, writeables: AttributeMap) -> None:
     """Validate that a path is writeable."""
     if not is_writeable_path(path, writeables):
