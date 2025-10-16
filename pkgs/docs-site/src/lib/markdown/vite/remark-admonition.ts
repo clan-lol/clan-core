@@ -1,6 +1,5 @@
 import { visit } from "unist-util-visit";
-import { h } from "hastscript";
-import type { Root } from "mdast";
+import type { Paragraph, Text, Root } from "mdast";
 
 const names = ["note", "important", "danger", "tip"];
 
@@ -13,63 +12,41 @@ export default function remarkAdmonition() {
       }
 
       const data = (node.data ||= {});
-      const hast = h(node.name, node.attributes || {});
       data.hName = "div";
       data.hProperties = {
-        className: `admonition ${hast.tagName}`,
+        className: `md-admonition is-${node.name}`,
       };
+      let title: string;
+      if (node.children?.[0].data?.directiveLabel) {
+        const p = node.children.shift() as Paragraph;
+        title = (p.children[0] as Text).value;
+      } else {
+        title = node.name;
+      }
 
-      // Detect whether first child is a label paragraph
-      const hasCustomTitle = node.children?.[0]?.data?.directiveLabel;
-
-      // For custom title: use the existing paragraph node (will be converted to HAST)
-      // For fallback: create a new paragraph with text
-      const titleNode = hasCustomTitle
-        ? node.children[0]
-        : {
-            type: "paragraph" as const,
-            children: [
-              {
-                type: "text" as const,
-                value: node.name,
-              },
-            ],
-          };
-
-      // Remove label paragraph from children if it exists
-      const contentChildren = hasCustomTitle
-        ? node.children.slice(1)
-        : node.children;
-
-      // Synthetic icon node
-      const iconNode = {
-        type: "text" as const,
-        value: "",
-        data: {
-          hName: "span",
-          hProperties: {
-            className: ["admonition-icon"],
-            "data-icon": hast.tagName,
-          },
-        },
-      };
-
-      // Create new children array with title wrapped in div
-      // The remark-rehype plugin will convert these MDAST nodes to HAST
       node.children = [
-        // Title node
         {
           type: "paragraph",
           data: {
             hName: "div",
-            hProperties: { className: ["admonition-title"] },
+            hProperties: { className: ["md-admonition-title"] },
           },
-          children:
-            titleNode.type === "paragraph"
-              ? [iconNode, ...titleNode.children]
-              : [iconNode, titleNode],
+          children: [
+            {
+              type: "text",
+              data: {
+                hName: "span",
+                hProperties: { className: ["md-admonition-icon"] },
+              },
+              value: "",
+            },
+            {
+              type: "text",
+              value: title,
+            },
+          ],
         },
-        ...contentChildren,
+        ...node.children,
       ];
     });
   };
