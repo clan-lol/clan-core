@@ -7,6 +7,8 @@
     "System"
     "Network"
   ];
+  manifest.readme = builtins.readFile ./README.md;
+
   roles.default = {
     description = "Placeholder role to apply the internet service";
     interface =
