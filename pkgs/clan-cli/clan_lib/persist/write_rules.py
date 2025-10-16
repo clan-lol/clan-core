@@ -105,13 +105,12 @@ def get_inventory_exclusive(value: dict, inventory_file_name: str) -> bool | Non
     if "__this" not in value:
         return None
 
-    definition_locations = value.get("__this", {}).get("files")
+    definition_locations: list[str] = value.get("__this", {}).get("files")
     if not definition_locations:
         return None
 
-    return (
-        len(definition_locations) == 1
-        and definition_locations[0] == inventory_file_name
+    return len(definition_locations) == 1 and definition_locations[0].endswith(
+        inventory_file_name
     )
 
 
