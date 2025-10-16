@@ -32,7 +32,7 @@
     observer?.disconnect();
     observer = new IntersectionObserver(onIntersectionChange, {
       threshold: 1,
-      rootMargin: `${-tocEl.offsetHeight}px 0 0`,
+      rootMargin: `${-tocEl.offsetHeight}px 0px 0px`,
     });
     const els = contentEl.querySelectorAll("h1,h2,h3,h4,h5,h6");
     for (const el of els) {
