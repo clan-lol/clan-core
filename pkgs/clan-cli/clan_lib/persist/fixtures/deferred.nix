@@ -9,6 +9,8 @@ let
         };
       }
       {
+        # Mutable data
+        _file = "deferred.json";
         foo = {
           a = { };
           b = { };
@@ -16,7 +18,9 @@ let
       }
 
       # Merge the "inventory.json"
-      (builtins.fromJSON (builtins.readFile ./deferred.json))
+      (lib.modules.setDefaultModuleLocation "deferred.json" (
+        builtins.fromJSON (builtins.readFile ./deferred.json)
+      ))
     ];
   };
 in

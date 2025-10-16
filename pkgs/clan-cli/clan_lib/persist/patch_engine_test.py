@@ -6,7 +6,6 @@ import pytest
 from clan_lib.errors import ClanError
 from clan_lib.persist.patch_engine import (
     calc_patches,
-    calculate_static_data,
     merge_objects,
 )
 from clan_lib.persist.path_utils import (
@@ -18,195 +17,6 @@ from clan_lib.persist.write_rules import (
     PersistenceAttribute,
     compute_attribute_persistence,
 )
-
-# --- calculate_static_data ---
-
-
-def test_calculate_static_data_basic() -> None:
-    all_values = {
-        "name": "example",
-        "version": 1,
-        "settings": {
-            "optionA": True,
-            "optionB": False,
-            "listSetting": [1, 2, 3, 4],
-        },
-        "staticOnly": "staticValue",
-    }
-    persisted = {
-        "name": "example",
-        "version": 1,
-        "settings": {
-            "optionA": True,
-            "listSetting": [2, 3],
-        },
-    }
-
-    expected_static = {
-        ("settings", "optionB"): False,
-        ("settings", "listSetting"): [1, 4],
-        ("staticOnly",): "staticValue",
-    }
-
-    static_data = calculate_static_data(all_values, persisted)
-    assert static_data == expected_static
-
-
-def test_calculate_static_data_no_static() -> None:
-    all_values = {
-        "name": "example",
-        "version": 1,
-        "settings": {
-            "optionA": True,
-            "listSetting": [1, 2, 3],
-        },
-    }
-    persisted = {
-        "name": "example",
-        "version": 1,
-        "settings": {
-            "optionA": True,
-            "listSetting": [1, 2, 3],
-        },
-    }
-
-    expected_static: dict = {}
-
-    static_data = calculate_static_data(all_values, persisted)
-    assert static_data == expected_static
-
-
-# See: https://git.clan.lol/clan/clan-core/issues/5231
-# Uncomment this test if the issue is resolved
-# def test_calculate_static_data_no_static_sets() -> None:
-#     all_values = {
-#         "instance": {
-#             "hello": {
-#                 "roles": {
-#                     "default": {
-#                         "machines": {
-#                             "jon": {
-#                                 # Default
-#                                 "settings": {
-
-#                                 }
-#                             }
-#                         }
-#                     }
-#                 }
-#             }
-#         }
-#     }
-#     persisted = {
-#         "instance": {
-#             "hello": {
-#                 "roles": {
-#                     "default": {
-#                         "machines": {
-#                             "jon": {
-
-#                             }
-#                         }
-#                     }
-#                 }
-#             }
-#         }
-#     }
-
-#     expected_static: dict = {}
-
-#     static_data = calculate_static_data(all_values, persisted)
-#     assert static_data == expected_static
-
-
-def test_calculate_static_data_all_static() -> None:
-    all_values = {
-        "name": "example",
-        "version": 1,
-        "settings": {
-            "optionA": True,
-            "listSetting": [1, 2, 3],
-        },
-        "staticOnly": "staticValue",
-    }
-    persisted: dict = {}
-
-    expected_static = {
-        ("name",): "example",
-        ("version",): 1,
-        ("settings", "optionA"): True,
-        ("settings", "listSetting"): [1, 2, 3],
-        ("staticOnly",): "staticValue",
-    }
-
-    static_data = calculate_static_data(all_values, persisted)
-    assert static_data == expected_static
-
-
-def test_calculate_static_data_empty_all_values() -> None:
-    # This should never happen in practice, but we test it for completeness.
-    # Maybe this should emit a warning in the future?
-    all_values: dict = {}
-    persisted = {
-        "name": "example",
-        "version": 1,
-    }
-
-    expected_static: dict = {}
-
-    static_data = calculate_static_data(all_values, persisted)
-    assert static_data == expected_static
-
-
-def test_calculate_nested_dicts() -> None:
-    all_values = {
-        "level1": {
-            "level2": {
-                "staticKey": "staticValue",
-                "persistedKey": "persistedValue",
-            },
-            "anotherStatic": 42,
-        },
-        "topLevelStatic": True,
-    }
-    persisted = {
-        "level1": {
-            "level2": {
-                "persistedKey": "persistedValue",
-            },
-        },
-    }
-
-    expected_static = {
-        ("level1", "level2", "staticKey"): "staticValue",
-        ("level1", "anotherStatic"): 42,
-        ("topLevelStatic",): True,
-    }
-
-    static_data = calculate_static_data(all_values, persisted)
-    assert static_data == expected_static
-
-
-def test_dot_in_keys() -> None:
-    all_values = {
-        "key.foo": "staticValue",
-        "key": {
-            "foo": "anotherStaticValue",
-        },
-    }
-    persisted: dict = {}
-
-    expected_static = {
-        ("key.foo",): "staticValue",
-        ("key", "foo"): "anotherStaticValue",
-    }
-
-    static_data = calculate_static_data(all_values, persisted)
-
-    assert static_data == expected_static
-
-
-# --------- calc_patches ---------
 
 
 def test_update_simple() -> None:
@@ -379,34 +189,79 @@ def test_update_parent_non_writeable() -> None:
     assert "Path 'foo.bar' is readonly." in str(error.value)
 
 
-# TODO: Resolve the issue https://git.clan.lol/clan/clan-core/issues/5231
-# def test_remove_non_writable_attrs() -> None:
-#     prios = {
-#         "foo": {
-#             "__this": {"total": True, "prio": 100},
-#             # We cannot delete children because "foo" is total
-#         },
-#     }
+def test_calculate_static_data_no_static_sets() -> None:
+    all_values: dict = {
+        "instance": {
+            "hello": {
+                "static": {},
+            }
+        }
+    }
+    persisted: dict = {"instance": {"hello": {}}}
+    attribute_props = {
+        ("instance",): {PersistenceAttribute.WRITE},
+        ("instance", "hello"): {
+            PersistenceAttribute.WRITE,
+            PersistenceAttribute.DELETE,
+        },
+        ("instance", "hello", "static"): {PersistenceAttribute.WRITE},
+    }
 
-#     data_eval: dict = {"foo": {"bar": {}, "baz": {}}}
+    update: dict = {
+        "instance": {
+            # static is a key that is defined in nix, and cannot be deleted
+            # It needs to be present.
+            "hello": {}  # Error: "static" cannot be deleted
+        }
+    }
 
-#     data_disk: dict = {}
+    with pytest.raises(ClanError) as error:
+        calc_patches(
+            persisted=persisted,
+            all_values=all_values,
+            update=update,
+            attribute_props=attribute_props,
+        )
 
-#     attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
+    assert "Cannot delete path 'instance.hello.static'" in str(error.value)
 
-#     update: dict = {
-#         "foo": {
-#             "bar": {},  # <- user leaves this value
-#             # User removed "baz"
-#         },
-#     }
 
-#     with pytest.raises(ClanError) as error:
-#         calc_patches(
-#             data_disk, update, all_values=data_eval, attribute_props=attribute_props
-#         )
+# Same as above, but using legacy priorities
+# This allows deletion, but is slightly wrong.
+# The correct behavior requires nixos >= 25.11
+def test_calculate_static_data_no_static_sets_legacy() -> None:
+    prios = {
+        "instance": {
+            "__prio": 100,  # <- writeable: "foo"
+            "hello": {
+                "__prio": 100,
+                "static": {"__prio": 100},
+            },
+        },
+    }
 
-#     assert "Cannot delete path 'foo.baz'" in str(error.value)
+    all_values: dict = {
+        "instance": {
+            "hello": {
+                "static": {},
+            }
+        }
+    }
+    persisted: dict = {"instance": {"hello": {}}}
+
+    attribute_props = compute_attribute_persistence(prios, all_values, persisted)
+
+    update: dict = {
+        "instance": {
+            "hello": {},  # <- user removes "static"
+        },
+    }
+
+    updates, deletes = calc_patches(
+        persisted, update, all_values=all_values, attribute_props=attribute_props
+    )
+    assert updates == {("instance", "hello"): {}}
+    assert deletes == {("instance", "hello", "static")}
 
 
 def test_update_list() -> None:
@@ -454,6 +309,37 @@ def test_update_list() -> None:
     )
 
     assert patchset == {("foo",): []}
+
+
+def test_list_delete_static() -> None:
+    prios = {
+        "foo": {
+            "__prio": 100,  # <- writeable: "foo"
+        },
+    }
+
+    data_eval = {
+        #  [ "A" ]  is defined in nix.
+        "foo": ["A", "B"],
+    }
+
+    data_disk = {"foo": ["B"]}
+
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
+
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
+
+    # Try to remove "A" from the list
+    update = {"foo": ["B"]}
+
+    with pytest.raises(ClanError) as error:
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
+
+    assert "Path 'foo' doesn't contain static items ['A']" in str(error.value)
 
 
 def test_update_list_duplicates() -> None:
@@ -526,27 +412,29 @@ def test_dont_persist_defaults() -> None:
 
 def test_set_null() -> None:
     data_eval: dict = {
-        "foo": {},
-        "bar": {},
+        "root": {
+            "foo": {},
+            "bar": {},
+        }
     }
     data_disk = data_eval
 
     # User set Foo to null
     # User deleted bar
-    update = {"foo": None}
+    update = {"root": {"foo": None}}
 
     patchset, delete_set = calc_patches(
         data_disk,
         update,
         all_values=data_eval,
         attribute_props=compute_attribute_persistence(
-            {"__prio": 100, "foo": {"__prio": 100}, "bar": {"__prio": 100}},
+            {"root": {"__prio": 100, "foo": {"__prio": 100}, "bar": {"__prio": 100}}},
             data_eval,
             data_disk,
         ),
     )
-    assert patchset == {("foo",): None}
-    assert delete_set == {("bar",)}
+    assert patchset == {("root", "foo"): None}
+    assert delete_set == {("root", "bar")}
 
 
 def test_machine_delete() -> None:
@@ -760,7 +648,7 @@ def test_delete_key_non_writeable() -> None:
             data_disk, update, all_values=data_eval, attribute_props=attribute_props
         )
 
-    assert "Path 'foo' is readonly." in str(error.value)
+    assert "Cannot delete path 'foo.bar'" in str(error.value)
 
 
 # --- test merge_objects ---

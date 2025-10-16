@@ -101,16 +101,16 @@ def is_key_writeable(
     return is_mergeable_type(value_in_all) or exists_in_persisted
 
 
-def get_inventory_exclusive(value: dict) -> bool | None:
+def get_inventory_exclusive(value: dict, inventory_file_name: str) -> bool | None:
     if "__this" not in value:
         return None
 
-    definition_locations = value.get("__this", {}).get("files")
+    definition_locations: list[str] = value.get("__this", {}).get("files")
     if not definition_locations:
         return None
 
-    return (
-        len(definition_locations) == 1 and definition_locations[0] == "inventory.json"
+    return len(definition_locations) == 1 and definition_locations[0].endswith(
+        inventory_file_name
     )
 
 
@@ -129,6 +129,8 @@ def _determine_props_recursive(
     parent_redonly: bool = False,
     results: AttributeMap | None = None,
     parent_total: bool = True,
+    *,
+    inventory_file_name: str,
 ) -> AttributeMap:
     """Recursively determine writeability for all paths in the priority structure.
 
@@ -158,7 +160,7 @@ def _determine_props_recursive(
         # Unless there is a default that applies instead, when removed. Currently we cannot test that.
         # So we assume exclusive values can be removed. In reality we might need to check defaults too. (TODO)
         # Total parents prevent deletion of immediate children.
-        is_inventory_exclusive = get_inventory_exclusive(value)
+        is_inventory_exclusive = get_inventory_exclusive(value, inventory_file_name)
         if not parent_total and (
             is_inventory_exclusive or is_inventory_exclusive is None
         ):
@@ -187,7 +189,8 @@ def _determine_props_recursive(
                     effective_priority,
                     parent_redonly=True,
                     results=results,
-                    parent_total=value.get("__this", {}).get("total", False),
+                    parent_total=get_totality(value),
+                    inventory_file_name=inventory_file_name,
                 )
         else:
             # Determine writeability based on rules
@@ -218,13 +221,18 @@ def _determine_props_recursive(
                     parent_redonly=False,
                     results=results,
                     parent_total=get_totality(value),
+                    inventory_file_name=inventory_file_name,
                 )
 
     return results
 
 
 def compute_attribute_persistence(
-    priorities: dict[str, Any], all_values: dict[str, Any], persisted: dict[str, Any]
+    priorities: dict[str, Any],
+    all_values: dict[str, Any],
+    persisted: dict[str, Any],
+    *,
+    inventory_file_name: str = "inventory.json",
 ) -> AttributeMap:
     """Determine writeability for all paths based on priorities and current data.
 
@@ -236,6 +244,7 @@ def compute_attribute_persistence(
         priorities: The priority structure defining writeability rules. See: 'clanInternals.inventoryClass.introspection'
         all_values: All values in the inventory, See: 'clanInternals.inventoryClass.allValues'
         persisted: The current mutable state of the inventory, see: 'readFile inventory.json'
+        inventory_file_name: The name of the inventory file, defaults to "inventory.json"
 
     Returns:
         Dict with sets of writeable and non-writeable paths using tuple keys
@@ -251,4 +260,6 @@ def compute_attribute_persistence(
         )
         raise ClanError(msg)
 
-    return _determine_props_recursive(priorities, all_values, persisted)
+    return _determine_props_recursive(
+        priorities, all_values, persisted, inventory_file_name=inventory_file_name
+    )

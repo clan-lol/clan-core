@@ -252,3 +252,45 @@ def test_attributes_totality() -> None:
         ("foo",): {PersistenceAttribute.WRITE},
         ("foo", "a"): {PersistenceAttribute.WRITE},
     }
+
+
+def test_totality_simple() -> None:
+    introspection = {
+        "foo": {  # Foo is non-total all keys are potententially deleteable
+            "__this": {
+                "files": ["<unknown-file>"],
+                "headType": "attrsOf",
+                "nullable": False,
+                "prio": 100,
+                "total": False,
+            },
+            "a": {  # Can delete "a" because it is defined somewhere else
+                "__this": {
+                    "files": ["inventory.json", "<unknown-file>"],
+                    "headType": "deferredModule",
+                    "nullable": False,
+                    "prio": 100,
+                    "total": False,
+                }
+            },
+            "b": {  # Can remove "b" because it is only defined in inventory.json
+                "__this": {
+                    "files": ["inventory.json"],
+                    "headType": "deferredModule",
+                    "nullable": False,
+                    "prio": 100,
+                    "total": False,
+                }
+            },
+        }
+    }
+    data_eval: dict = {"foo": {"a": {}, "b": {}}}
+    persisted: dict = {"foo": {"a": {}, "b": {}}}
+
+    res = compute_attribute_persistence(introspection, data_eval, persisted)
+
+    assert res == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "a"): {PersistenceAttribute.WRITE},
+        ("foo", "b"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+    }
