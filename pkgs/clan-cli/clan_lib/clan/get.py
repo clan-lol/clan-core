@@ -51,13 +51,13 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(flake)
-    write_info = inventory_store.get_attribute_props()
+    attribute_props = inventory_store.get_attribute_props()
 
     field_names = retrieve_typed_field_names(InventoryMeta)
 
     return {
         field: {
-            "readonly": is_readonly_key(f"meta.{field}", write_info),
+            "readonly": is_readonly_key(f"meta.{field}", attribute_props),
             # TODO: Provide a meaningful reason
             "reason": None,
             "readonly_members": [],

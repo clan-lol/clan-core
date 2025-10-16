@@ -265,15 +265,15 @@ class InventoryStore:
         """Write the inventory to the flake directory
         and commit it to git with the given message
         """
-        write_info = self._get_persistence_info()
+        persistence_info = self._get_persistence_info()
         patchset, delete_set = calc_patches(
-            dict(write_info.data_disk),
+            dict(persistence_info.data_disk),
             dict(update),
-            dict(write_info.data_eval),
-            write_info.attribute_props,
+            dict(persistence_info.data_eval),
+            persistence_info.attribute_props,
         )
 
-        persisted = dict(write_info.data_disk)
+        persisted = dict(persistence_info.data_disk)
         for patch_path, data in patchset.items():
             set_value_by_path_tuple(persisted, patch_path, data)
 

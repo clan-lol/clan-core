@@ -170,7 +170,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_attribute_props()
+    attribute_props = inventory_store.get_attribute_props()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 
@@ -197,7 +197,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
                 if field in protected_fields
                 else is_readonly_key(
                     f"machines.{machine.name}.{field}",
-                    write_info,
+                    attribute_props,
                 )
             ),
             # TODO: Provide a meaningful reason

@@ -249,13 +249,15 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     persisted = inventory_store._get_persisted()
     assert get_value_by_path(persisted, "machines.jon.tags", []) == new_tags
 
-    write_info = get_machine_fields_schema(Machine("jon", flake))
+    attribute_props = get_machine_fields_schema(Machine("jon", flake))
 
     # {'tags': {'writable': True, 'reason': None}, 'machineClass': {'writable': False, 'reason': None}, 'name': {'writable': False, 'reason': None}, 'description': {'writable': True, 'reason': None}, 'deploy.buildHost': {'writable': True, 'reason': None}, 'icon': {'writable': True, 'reason': None}, 'deploy.targetHost': {'writable': True, 'reason': None}}
     writeable_fields = {
-        field for field, info in write_info.items() if not info["readonly"]
+        field for field, info in attribute_props.items() if not info["readonly"]
     }
-    read_only_fields = {field for field, info in write_info.items() if info["readonly"]}
+    read_only_fields = {
+        field for field, info in attribute_props.items() if info["readonly"]
+    }
 
     assert writeable_fields == {
         "tags",
@@ -267,7 +269,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     }
     assert read_only_fields == {"machineClass", "name"}
 
-    assert write_info["tags"]["readonly_members"] == ["nix1", "all", "nixos"]
+    assert attribute_props["tags"]["readonly_members"] == ["nix1", "all", "nixos"]
 
 
 @pytest.mark.with_core
