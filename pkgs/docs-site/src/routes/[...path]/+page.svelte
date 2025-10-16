@@ -1,7 +1,6 @@
 <script lang="ts">
   import "$lib/markdown/main.css";
   import { visit, type Heading as ArticleHeading } from "$lib/docs";
-  import { tick } from "svelte";
   const { data } = $props();
 
   type Heading = ArticleHeading & {
@@ -15,30 +14,13 @@
   const headings = $derived(normalizeHeadings(data.toc));
   let tocOpen = $state(false);
   let tocEl: HTMLElement;
-  let tocLabelTextEl: HTMLElement;
-  let tocLabelGhostEl: HTMLElement | null = $state(null);
-  let tocLabelArrowEl: HTMLElement;
   let contentEl: HTMLElement;
   let currentHeading: Heading | null = $state(null);
-  let previousHeading: Heading | null = $state(null);
-  let isTocAnimating: "toToc" | "fromToc" | false = $state(false);
   let observer: IntersectionObserver | undefined;
   const defaultTocContent = "Table of contents";
   const currentTocContent = $derived.by(() => {
     if (tocOpen) {
       return defaultTocContent;
-    }
-    if (isTocAnimating == "toToc") {
-      return currentHeading!.content;
-    }
-    if (isTocAnimating == "fromToc") {
-      return previousHeading!.content;
-    }
-    return currentHeading?.content || defaultTocContent;
-  });
-  const ghostTocContent = $derived.by(() => {
-    if (isTocAnimating == "toToc") {
-      return previousHeading?.content || defaultTocContent;
     }
     return currentHeading?.content || defaultTocContent;
   });
@@ -92,126 +74,7 @@
       }
       last = heading;
     });
-    current = current as Heading | null;
-    let controller: AbortController | undefined;
-    if (current?.id != currentHeading?.id) {
-      previousHeading = currentHeading;
-      currentHeading = current;
-      controller?.abort();
-      controller = new AbortController();
-      await animateCurrentHeading({ signal: controller.signal });
-    }
-  }
-
-  async function animateCurrentHeading({
-    signal,
-  }: {
-    signal: AbortSignal;
-  }): Promise<void> {
-    let animatingHeading: Heading;
-    if (!previousHeading) {
-      // Impossible situation
-      if (!currentHeading) return;
-      isTocAnimating = "toToc";
-    } else if (!currentHeading) {
-      isTocAnimating = "fromToc";
-    } else {
-      isTocAnimating =
-        currentHeading.index > previousHeading.index ? "toToc" : "fromToc";
-    }
-    if (isTocAnimating == "toToc") {
-      animatingHeading = currentHeading!;
-      currentHeading!.element.classList.add("is-scrolledPast");
-    } else {
-      animatingHeading = previousHeading!;
-    }
-    const ghostHeadingEl = animatingHeading.element.cloneNode(
-      true,
-    ) as HTMLElement;
-    const ghostHeadingInnerEl = ghostHeadingEl.querySelector("&>span")!;
-    ghostHeadingEl.classList.add("is-ghost");
-    ghostHeadingEl.classList.remove("is-scrolledPast");
-    ghostHeadingEl.removeAttribute("id");
-    ghostHeadingEl.style.top = `${isTocAnimating == "toToc" ? tocEl.offsetHeight : animatingHeading.element.getBoundingClientRect().top}px`;
-    animatingHeading.element.parentNode!.insertBefore(
-      ghostHeadingEl,
-      animatingHeading.element,
-    );
-    await tick();
-    const headingRect = ghostHeadingInnerEl.getBoundingClientRect();
-    const tocRect = tocLabelTextEl.getBoundingClientRect();
-
-    const ghostHeadingAnimation = ghostHeadingInnerEl.animate(
-      {
-        transform:
-          isTocAnimating == "toToc"
-            ? [
-                `translate(0, 0) scale(1, 1)`,
-                `translate(${tocRect.left - headingRect.left}px, ${tocRect.top - headingRect.top}px) scale(${tocRect.width / headingRect.width}, ${tocRect.height / headingRect.height})`,
-              ]
-            : [
-                `translate(${tocRect.left - headingRect.left}px, ${tocRect.top - headingRect.top}px) scale(${tocRect.width / headingRect.width}, ${tocRect.height / headingRect.height})`,
-                `translate(0, 0) scale(1, 1)`,
-              ],
-        opacity: [1, 0],
-      },
-      {
-        duration: 250,
-        easing: "ease-out",
-      },
-    );
-    const tocAnimation = tocLabelTextEl.animate(
-      {
-        transform:
-          isTocAnimating == "toToc"
-            ? [
-                `translate(${headingRect.left - tocRect.left}px, ${headingRect.top - tocRect.top}px) scale(${headingRect.width / tocRect.width}, ${headingRect.height / tocRect.height})`,
-                `translate(0, 0) scale(1, 1)`,
-              ]
-            : [
-                `translate(0, 0) scale(1, 1)`,
-                `translate(${headingRect.left - tocRect.left}px, ${headingRect.top - tocRect.top}px) scale(${headingRect.width / tocRect.width}, ${headingRect.height / tocRect.height})`,
-              ],
-        opacity: [0, 1],
-      },
-      {
-        duration: 250,
-        easing: "ease-out",
-      },
-    );
-    tocLabelGhostEl = tocLabelGhostEl!;
-    const tocGhostAnimation = tocLabelGhostEl.animate(
-      { opacity: isTocAnimating == "toToc" ? [1, 0] : [0, 1] },
-      { duration: 250 },
-    );
-    const tocGhostRect = tocLabelGhostEl.getBoundingClientRect();
-    const tocArrowAnimation = tocLabelArrowEl.animate(
-      {
-        transform:
-          isTocAnimating == "toToc"
-            ? [
-                `translateX(${tocGhostRect.width - tocRect.width}px)`,
-                `translateX(0)`,
-              ]
-            : [
-                `translateX(0)`,
-                `translateX(${tocGhostRect.width - tocRect.width}px)`,
-              ],
-      },
-      { duration: 250 },
-    );
-    signal.addEventListener("abort", () => {
-      tocAnimation.cancel();
-      tocGhostAnimation.cancel();
-      tocArrowAnimation.cancel();
-    });
-    await ghostHeadingAnimation.finished;
-    if (isTocAnimating == "fromToc") {
-      previousHeading!.element.classList.remove("is-scrolledPast");
-    }
-    ghostHeadingEl.remove();
-    tocLabelGhostEl.remove();
-    isTocAnimating = false;
+    currentHeading = current;
   }
 
   function scrollToHeading(ev: Event, heading: Heading) {
@@ -235,17 +98,10 @@
   <div class="toc">
     <h2 class="toc-title" bind:this={tocEl}>
       <button class="toc-label" onclick={() => (tocOpen = !tocOpen)}>
-        <span class="toc-label-text" bind:this={tocLabelTextEl}>
+        <span>
           {currentTocContent}
         </span>
-        {#if isTocAnimating}
-          <span class="toc-label-ghost" bind:this={tocLabelGhostEl}>
-            {ghostTocContent}
-          </span>
-        {/if}
         <svg
-          class="toc-label-arrow"
-          bind:this={tocLabelArrowEl}
           fill="none"
           height="24"
           stroke="currentColor"
@@ -350,13 +206,6 @@
     display: flex;
     gap: 3px;
     align-items: center;
-  }
-  .toc-label-text,
-  .toc-label-ghost {
-    transform-origin: left top;
-  }
-  .toc-label-ghost {
-    position: absolute;
   }
   .toc-menu {
     position: absolute;
