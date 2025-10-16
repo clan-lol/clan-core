@@ -92,7 +92,6 @@ in
             nixos-test-extra-python-packages = self.clanLib.test.containerTest ./test-extra-python-packages nixosTestArgs;
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
-            wireguard = import ./wireguard nixosTestArgs;
             service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
           };
 
