@@ -27,6 +27,7 @@
         modules.new-service = {
           _class = "clan.service";
           manifest.name = "new-service";
+          manifest.readme = "Just a sample readme to not trigger the warning.";
           roles.peer = {
             description = "A peer that uses the new-service to generate some files.";
           };

@@ -4,6 +4,7 @@
   manifest.name = "clan-core/matrix-synapese";
   manifest.description = "A federated messaging server with end-to-end encryption.";
   manifest.categories = [ "Social" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
     description = "Placeholder role to apply the matrix-synapse service";

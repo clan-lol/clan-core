@@ -3,6 +3,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
     description = "Placeholder role to apply the yggdrasil service";

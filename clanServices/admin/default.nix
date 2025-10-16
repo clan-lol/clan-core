@@ -3,6 +3,7 @@
   manifest.name = "clan-core/admin";
   manifest.description = "Adds a root user with ssh access";
   manifest.categories = [ "Utility" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
     description = "Placeholder role to apply the admin service";

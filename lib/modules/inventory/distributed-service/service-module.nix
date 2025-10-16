@@ -979,9 +979,12 @@ in
                     else
                       null
                   ) config.roles;
+                  manifestWarnings = lib.optionals (config.manifest.readme == null || config.manifest.readme == "") [
+                    "Missing manifest.readme for clanService '${formatModule}'"
+                  ];
                 in
                 {
-                  warnings = (lib.filter (v: v != null) warningsWithNull);
+                  warnings = (lib.filter (v: v != null) warningsWithNull ++ manifestWarnings);
                   assertions = lib.attrValues failedAssertions;
                 }
               )

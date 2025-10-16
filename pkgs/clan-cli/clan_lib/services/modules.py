@@ -1,3 +1,4 @@
+import logging
 import re
 import tomllib
 from dataclasses import dataclass, field, fields
@@ -15,6 +16,8 @@ from clan_lib.nix_models.clan import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
+
+log = logging.getLogger(__name__)
 
 
 class CategoryInfo(TypedDict):
@@ -241,6 +244,11 @@ def get_service_readmes(
     )
 
     readmes = flake.select(query)
+
+    for name, content in readmes.items():
+        if content is None or content.strip() == "":
+            readmes[name] = None
+            log.error(f"Service '{name}' is missing manifest.readme field")
 
     return ServiceReadmeCollection(input_name=input_name, readmes=readmes)
 
