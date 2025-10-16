@@ -12,9 +12,9 @@ from clan_lib.persist.path_utils import (
 from clan_lib.persist.validate import (
     validate_list_uniqueness,
     validate_no_static_deletion,
+    validate_not_readonly,
     validate_patch_conflicts,
     validate_type_compatibility,
-    validate_writeability,
 )
 from clan_lib.persist.write_rules import AttributeMap, PersistenceAttribute
 
@@ -131,7 +131,7 @@ Please report this issue at https://git.clan.lol/clan/clan-core/issues
             continue
 
         # Validate the change is allowed
-        validate_writeability(path, attribute_props)
+        validate_not_readonly(path, attribute_props)
         validate_type_compatibility(path, old_value, new_value)
         validate_list_uniqueness(path, new_value)
 
