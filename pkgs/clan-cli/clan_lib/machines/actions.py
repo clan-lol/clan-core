@@ -18,7 +18,7 @@ from clan_lib.persist.path_utils import (
     list_difference,
     set_value_by_path,
 )
-from clan_lib.persist.write_rules import is_writeable_key
+from clan_lib.persist.write_rules import is_readonly_key
 
 
 @dataclass
@@ -170,7 +170,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_write_map()
+    attribute_props = inventory_store.get_attribute_props()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 
@@ -195,9 +195,9 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
             "readonly": (
                 True
                 if field in protected_fields
-                else not is_writeable_key(
+                else is_readonly_key(
                     f"machines.{machine.name}.{field}",
-                    write_info,
+                    attribute_props,
                 )
             ),
             # TODO: Provide a meaningful reason

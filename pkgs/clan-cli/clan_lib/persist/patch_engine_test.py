@@ -69,7 +69,7 @@ def test_update_add_empty_dict() -> None:
 
     data_disk: dict = {}
 
-    writeables = compute_attribute_persistence(prios, data_eval, data_disk)
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
     update = deepcopy(data_eval)
 
@@ -79,7 +79,7 @@ def test_update_add_empty_dict() -> None:
         data_disk,
         update,
         all_values=data_eval,
-        attribute_props=writeables,
+        attribute_props=attribute_props,
     )
 
     assert patchset == {("foo", "mimi"): {}}  # this is what gets persisted
