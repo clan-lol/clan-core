@@ -11,6 +11,7 @@ from clan_lib.persist.path_utils import (
 )
 from clan_lib.persist.validate import (
     validate_list_uniqueness,
+    validate_no_static_deletion,
     validate_patch_conflicts,
     validate_type_compatibility,
     validate_writeability,
@@ -140,6 +141,7 @@ Please report this issue at https://git.clan.lol/clan/clan-core/issues
             static_items = list_difference(
                 old_value or [], persisted_flat.get(path, [])
             )
+            validate_no_static_deletion(path, new_value, static_items)
             patch_value = list_difference(new_value, static_items)
 
         patches[path] = patch_value

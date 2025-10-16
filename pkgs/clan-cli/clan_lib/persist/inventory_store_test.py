@@ -11,6 +11,7 @@ from clan_lib.errors import ClanError
 from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import delete_by_path, set_value_by_path
+from clan_lib.persist.write_rules import PersistenceAttribute
 
 
 class MockFlake:
@@ -120,16 +121,18 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     invalid_data = {"protected": "foo"}
     with pytest.raises(ClanError) as e:
         store.write(invalid_data, "test", commit=False)  # type: ignore[arg-type]
-    assert "Path 'protected' is readonly" in str(e.value)
+    assert "Cannot delete path 'foo'" in str(e.value)
 
     # Test the data is not touched
     assert store.read() == data
     assert store._get_persisted() == {"foo": "foo"}
 
     # Remove the foo key from the persisted data
-    # Technically data = { } should also work
+    # Cannot remove keys at the root level (root is always a total submodule)
     data = {"protected": "protected"}  # type: ignore[typeddict-unknown-key]
-    store.write(data, "test", commit=False)  # type: ignore[arg-type]
+    with pytest.raises(ClanError) as e:
+        store.write(data, "test", commit=False)  # type: ignore[arg-type]
+    assert "Cannot delete path 'foo'" in str(e.value)
 
 
 @pytest.mark.with_core
@@ -149,6 +152,13 @@ def test_simple_deferred(setup_test_files: Path) -> None:
         _allowed_path_transforms=["foo.*"],
         _keys={"foo"},  # disable toplevel filtering
     )
+
+    attribute_props = store._write_map().writeables
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+        ("foo", "a"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+        ("foo", "b"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},
+    }
 
     data = store.read()
     assert data == {"foo": {"a": {}, "b": {}}}

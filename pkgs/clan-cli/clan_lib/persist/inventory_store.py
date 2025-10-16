@@ -218,6 +218,7 @@ class InventoryStore:
             current_priority,
             dict(data_eval),
             dict(data_disk),
+            inventory_file_name=self.inventory_file.name,
         )
 
         return WriteInfo(write_map, data_eval, data_disk)

@@ -311,6 +311,37 @@ def test_update_list() -> None:
     assert patchset == {("foo",): []}
 
 
+def test_list_delete_static() -> None:
+    prios = {
+        "foo": {
+            "__prio": 100,  # <- writeable: "foo"
+        },
+    }
+
+    data_eval = {
+        #  [ "A" ]  is defined in nix.
+        "foo": ["A", "B"],
+    }
+
+    data_disk = {"foo": ["B"]}
+
+    attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
+
+    assert attribute_props == {
+        ("foo",): {PersistenceAttribute.WRITE},
+    }
+
+    # Try to remove "A" from the list
+    update = {"foo": ["B"]}
+
+    with pytest.raises(ClanError) as error:
+        calc_patches(
+            data_disk, update, all_values=data_eval, attribute_props=attribute_props
+        )
+
+    assert "Path 'foo' doesn't contain static items ['A']" in str(error.value)
+
+
 def test_update_list_duplicates() -> None:
     prios = {
         "foo": {
