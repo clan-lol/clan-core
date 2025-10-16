@@ -203,7 +203,9 @@ def test_update_service_instance(
         {
             "morning": {
                 "machines": {
-                    "jon": {},  # Unset the machine settings
+                    "jon": {
+                        "settings": {}  # type: ignore[typeddict-item]
+                    },
                     "sara": {
                         "settings": {  # type: ignore[typeddict-item]
                             "greeting": "sara",
