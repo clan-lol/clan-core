@@ -18,7 +18,7 @@ from clan_lib.persist.path_utils import (
     list_difference,
     set_value_by_path,
 )
-from clan_lib.persist.write_rules import is_writeable_key
+from clan_lib.persist.write_rules import is_readonly_key
 
 
 @dataclass
@@ -195,7 +195,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
             "readonly": (
                 True
                 if field in protected_fields
-                else not is_writeable_key(
+                else is_readonly_key(
                     f"machines.{machine.name}.{field}",
                     write_info,
                 )

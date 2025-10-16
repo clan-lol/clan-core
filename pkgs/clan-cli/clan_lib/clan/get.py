@@ -7,7 +7,7 @@ from clan_lib.machines.actions import FieldSchema
 from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.introspection import retrieve_typed_field_names
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.write_rules import is_writeable_key
+from clan_lib.persist.write_rules import is_readonly_key
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
 
     return {
         field: {
-            "readonly": not is_writeable_key(f"meta.{field}", write_info),
+            "readonly": is_readonly_key(f"meta.{field}", write_info),
             # TODO: Provide a meaningful reason
             "reason": None,
             "readonly_members": [],

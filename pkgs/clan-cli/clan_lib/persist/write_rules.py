@@ -16,7 +16,7 @@ class PersistenceAttribute(Enum):
 type AttributeMap = dict[PathTuple, set[PersistenceAttribute]]
 
 
-def is_writeable_path(
+def is_readonly_path(
     key: PathTuple,
     attributes: AttributeMap,
 ) -> bool:
@@ -30,9 +30,9 @@ def is_writeable_path(
         current_path = remaining
         if current_path in attributes:
             if PersistenceAttribute.WRITE in attributes[current_path]:
-                return True
-            if PersistenceAttribute.READONLY in attributes[current_path]:
                 return False
+            if PersistenceAttribute.READONLY in attributes[current_path]:
+                return True
         # Check the parent path
         remaining = remaining[:-1]
 
@@ -40,7 +40,7 @@ def is_writeable_path(
     raise ClanError(msg)
 
 
-def is_writeable_key(
+def is_readonly_key(
     key: str,
     attributes: AttributeMap,
 ) -> bool:
@@ -51,7 +51,7 @@ def is_writeable_key(
     In case of ambiguity use is_writeable_path with tuple keys.
     """
     items = key.split(".")
-    return is_writeable_path(tuple(items), attributes)
+    return is_readonly_path(tuple(items), attributes)
 
 
 def get_priority(value: Any) -> int | None:
