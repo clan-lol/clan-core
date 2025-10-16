@@ -4,6 +4,7 @@
   manifest.name = "clan-core/garage";
   manifest.description = "S3-compatible object store for small self-hosted geo-distributed deployments";
   manifest.categories = [ "System" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
     description = "Placeholder role to apply the garage service";

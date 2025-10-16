@@ -9,6 +9,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/hello-word";
   manifest.description = "This is a test";
+  manifest.readme = builtins.readFile ./README.md;
 
   # This service provides two roles: "morning" and "evening". Roles can be
   # defined in this file directly (e.g. the "morning" role) or split up into a

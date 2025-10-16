@@ -1,20 +1,24 @@
-## Usage
+This service configures Syncthing to continuously synchronize a folder peer-to-peer across your machines.
+
+Example configuration:
 
 ```nix
 {
-      instances.syncthing = {
-        roles.peer.tags.all = { };
-        roles.peer.settings.folders = {
-          documents = {
-            path = "~/syncthing/documents";
-          };
-        };
+  instances.syncthing = {
+    roles.peer.tags.all = { };
+    roles.peer.settings.folders = {
+      documents = {
+        path = "/home/youruser/syncthing/documents";
       };
+    };
+  };
 }
 ```
 
-Now the folder `~/syncthing/documents` will be shared and kept in sync with all your machines.
+Notes:
+- Each key under `folders` is a folder ID (an arbitrary identifier for Syncthing).
+- Prefer absolute paths (example shown). `~` may work in some environments but can be ambiguous in service contexts.
 
 
-## Documentation 
-Extensive documentation is available on the [Syncthing](https://docs.syncthing.net/) website.
+## Documentation
+See the official Syncthing docs: https://docs.syncthing.net/

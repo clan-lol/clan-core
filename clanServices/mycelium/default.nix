@@ -7,6 +7,7 @@
     "System"
     "Network"
   ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.peer = {
     description = "A peer in the mycelium network";
