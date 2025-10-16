@@ -81,6 +81,7 @@ in
         description = null;
         icon = null;
         name = "test";
+        tld = "clan";
       };
     };
 

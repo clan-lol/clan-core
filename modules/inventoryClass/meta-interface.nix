@@ -31,6 +31,20 @@ let
         Under construction, will be used for the UI
       '';
     };
+    tld = lib.mkOption {
+      type = types.strMatching "[a-z]+";
+      default = "clan";
+      example = "ccc";
+      description = ''
+        Top level domain (TLD) of the clan. It should be set to a valid, but
+        not already existing TLD.
+
+        It will be used to provide clan-internal services and resolve each host of the
+        clan with:
+
+        <hostname>.<tld>
+      '';
+    };
   };
 in
 {

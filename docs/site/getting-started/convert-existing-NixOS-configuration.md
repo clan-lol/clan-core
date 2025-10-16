@@ -88,6 +88,7 @@ For the provide flake example, your flake should now look like this:
       self = self; # this needs to point at the repository root
       specialArgs = {};
       meta.name = throw "Change me to something unique";
+      meta.tld = throw "Change me to something unique";
 
       machines = {
         berlin = {

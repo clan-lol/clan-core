@@ -10,10 +10,11 @@ and how to define a remote builder for your machine closures.
 Set the machine’s `targetHost` to the reachable IP address of the new machine.
 This eliminates the need to specify `--target-host` in CLI commands.
 
-```{.nix title="clan.nix" hl_lines="9"}
+```{.nix title="clan.nix" hl_lines="10"}
 {
 # Ensure this is unique among all clans you want to use.
 meta.name = "my-clan";
+meta.tld = "ccc";
 
 inventory.machines = {
     # Define machines here.

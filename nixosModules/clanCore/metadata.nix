@@ -106,6 +106,15 @@ in
             # Set by the flake, so it's read-only in the machine
             readOnly = true;
           };
+          tld = lib.mkOption {
+            default = "clan";
+            type = lib.types.str;
+            description = ''
+              the TLD for the clan
+            '';
+            # Set by the flake, so it's read-only in the machine
+            readOnly = true;
+          };
           machine = mkOption {
             description = ''
               Settings of the machine.
