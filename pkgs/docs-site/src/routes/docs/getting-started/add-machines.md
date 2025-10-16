@@ -10,7 +10,9 @@ See the complete [list](../guides/inventory/autoincludes.md) of auto-loaded file
 
 ## Create a machine
 
-=== "clan.nix (declarative)"
+::::tabs
+
+:::tab[clan.nix (declarative)]
 
 ```nix {3-4}
 {
@@ -28,7 +30,9 @@ See the complete [list](../guides/inventory/autoincludes.md) of auto-loaded file
 }
 ```
 
-=== "CLI (imperative)"
+:::
+
+:::tab[CLI (imperative)]
 
 ```sh
 clan machines create jon
@@ -36,6 +40,23 @@ clan machines create jon
 
 The imperative command might create a machine folder in `machines/jon`
 And might persist information in `inventory.json`
+:::
+::::
+
+::::tabs
+
+:::tab[file name test]
+
+```nix
+{
+    inventory.machines = {
+        # Define a machine
+        jon = { };
+    };
+}
+```
+
+::::
 
 ### Configuring a machine
 

@@ -1,7 +1,7 @@
 @import "@fontsource-variable/geist";
 
 :root {
-  --pagePadding: 15px;
+  --pageMargin: 15px;
   --globalBarHeight: 60px;
   --fgColor: #000;
   --fgInvertedColor: #fff;

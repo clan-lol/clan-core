@@ -17,6 +17,7 @@ import rehypeTocSlug from "./rehype-toc-slug";
 import transformerLineNumbers from "./shiki-transformer-line-numbers";
 import remarkParse from "./remark-parse";
 import remarkAdmonition from "./remark-admonition";
+import remarkTabs from "./remark-tabs";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
 import remarkLinkMigration from "./link-migration";
 
@@ -44,6 +45,7 @@ export default function ({
         .use(remarkGfm)
         .use(remarkDirective)
         .use(remarkAdmonition)
+        .use(remarkTabs)
         .use(remarkRehype)
         .use(rehypeTocSlug, {
           tocMaxDepth,

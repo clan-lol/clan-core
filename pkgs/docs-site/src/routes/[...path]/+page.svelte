@@ -1,6 +1,7 @@
 <script lang="ts">
   import "$lib/markdown/main.css";
   import { visit, type Heading as ArticleHeading } from "$lib/docs";
+  import { onMount } from "svelte";
   const { data } = $props();
 
   type Heading = ArticleHeading & {
@@ -37,6 +38,36 @@
     for (const el of els) {
       observer.observe(el);
     }
+  });
+
+  onMount(() => {
+    const onClick = (ev: MouseEvent) => {
+      const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
+      if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
+        return;
+      }
+      const tabsEl = targetTabEl.closest(".md-tabs")!;
+      const tabEls = tabsEl.querySelectorAll(".md-tabs-tab")!;
+      const tabIndex = Array.from(tabEls).indexOf(targetTabEl);
+      if (tabIndex == -1) {
+        return;
+      }
+      const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
+      const tabContentEl = tabContentEls[tabIndex];
+      if (!tabContentEl) {
+        return;
+      }
+      tabEls.forEach((tabEl) => tabEl.classList.remove("is-active"));
+      targetTabEl.classList.add("is-active");
+      tabContentEls.forEach((tabContentEl) =>
+        tabContentEl.classList.remove("is-active"),
+      );
+      tabContentEl.classList.add("is-active");
+    };
+    document.addEventListener("click", onClick);
+    return () => {
+      document.removeEventListener("click", onClick);
+    };
   });
 
   function normalizeHeadings(headings: ArticleHeading[]): Heading[] {
@@ -232,7 +263,7 @@
 
     :global {
       & :is(h1, h2, h3, h4, h5, h6) {
-        margin-left: calc(-1 * var(--pagePadding));
+        margin-left: calc(-1 * var(--pageMargin));
         display: flex;
         align-items: center;
         &.is-scrolledPast {

@@ -111,7 +111,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 var(--pagePadding);
+    padding: 0 var(--pageMargin);
     color: var(--fgInvertedColor);
     background: var(--bgInvertedColor);
   }

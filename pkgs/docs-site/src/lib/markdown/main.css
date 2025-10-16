@@ -1,5 +1,6 @@
 @import url("./shiki.css");
 @import url("./admonition.css");
+@import url("./tabs.css");
 
 code {
   font-family:
