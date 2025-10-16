@@ -51,7 +51,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(flake)
-    write_info = inventory_store.get_write_map()
+    write_info = inventory_store.get_attribute_props()
 
     field_names = retrieve_typed_field_names(InventoryMeta)
 

@@ -77,8 +77,8 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 
 
 @dataclass
-class WriteInfo:
-    writeables: AttributeMap
+class PersistenceInfo:
+    attribute_props: AttributeMap
     data_eval: "InventorySnapshot"
     data_disk: "InventorySnapshot"
 
@@ -184,7 +184,7 @@ class InventoryStore:
 
         return inventory
 
-    def _get_inventory_current_priority(self) -> dict:
+    def _get_introspection(self) -> dict:
         """Returns the current priority of the inventory values
 
         machines = {
@@ -203,33 +203,33 @@ class InventoryStore:
         """
         return self._flake.select("clanInternals.inventoryClass.introspection")
 
-    def _write_map(self) -> WriteInfo:
+    def _get_persistence_info(self) -> PersistenceInfo:
         """Get the paths of the writeable keys in the inventory
 
         Load the inventory and determine the writeable keys
         Performs 2 nix evaluations to get the current priority and the inventory
         """
-        current_priority = self._get_inventory_current_priority()
+        current_priority = self._get_introspection()
 
         data_eval: InventorySnapshot = self._load_merged_inventory()
         data_disk: InventorySnapshot = self._get_persisted()
 
-        write_map = compute_attribute_persistence(
+        attribute_props = compute_attribute_persistence(
             current_priority,
             dict(data_eval),
             dict(data_disk),
             inventory_file_name=self.inventory_file.name,
         )
 
-        return WriteInfo(write_map, data_eval, data_disk)
+        return PersistenceInfo(attribute_props, data_eval, data_disk)
 
-    def get_write_map(self) -> Any:
+    def get_attribute_props(self) -> Any:
         """Get the writeability of the inventory
 
         :return: A dictionary with the writeability of all paths
         """
-        write_info = self._write_map()
-        return write_info.writeables
+        persistence_info = self._get_persistence_info()
+        return persistence_info.attribute_props
 
     def read(self) -> InventorySnapshot:
         """Accessor to the merged inventory
@@ -265,12 +265,12 @@ class InventoryStore:
         """Write the inventory to the flake directory
         and commit it to git with the given message
         """
-        write_info = self._write_map()
+        write_info = self._get_persistence_info()
         patchset, delete_set = calc_patches(
             dict(write_info.data_disk),
             dict(update),
             dict(write_info.data_eval),
-            write_info.writeables,
+            write_info.attribute_props,
         )
 
         persisted = dict(write_info.data_disk)

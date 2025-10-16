@@ -153,7 +153,7 @@ def test_simple_deferred(setup_test_files: Path) -> None:
         _keys={"foo"},  # disable toplevel filtering
     )
 
-    attribute_props = store._write_map().writeables
+    attribute_props = store._get_persistence_info().attribute_props
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.WRITE},
         ("foo", "a"): {PersistenceAttribute.WRITE, PersistenceAttribute.DELETE},

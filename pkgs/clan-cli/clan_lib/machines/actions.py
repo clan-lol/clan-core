@@ -170,7 +170,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
 
     """
     inventory_store = InventoryStore(machine.flake)
-    write_info = inventory_store.get_write_map()
+    write_info = inventory_store.get_attribute_props()
 
     field_names = retrieve_typed_field_names(InventoryMachine)
 
