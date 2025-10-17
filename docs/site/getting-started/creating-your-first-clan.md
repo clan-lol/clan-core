@@ -90,7 +90,23 @@ cd my-clan
 Now, activate the environment using one of the following methods.
 
 === "Automatic (direnv, recommended)"
-    **Prerequisite**: You must have [nix-direnv](https://github.com/nix-community/nix-direnv) installed.
+
+    First you need to install [direnv](https://github.com/direnv/direnv) to allow auto-loading `.envrc` bash files on `cd`  
+    ```bash
+    nix profile install nixpkgs#direnv
+    ```
+
+    Ontop of that you need the [nix-direnv](https://github.com/nix-community/nix-direnv) addon.
+    ```bash
+    nix profile install nixpkgs#nix-direnv
+    ```
+
+   - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
+     You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
+
+    ```bash
+    echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
+    ```
 
     Run `direnv allow` to automatically load the environment whenever you enter this directory.
     ```shellSession
