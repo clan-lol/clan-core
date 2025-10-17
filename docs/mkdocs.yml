@@ -164,6 +164,7 @@ nav:
           - services/official/emergency-access.md
           - services/official/garage.md
           - services/official/hello-world.md
+          - services/official/internet.md
           - services/official/importer.md
           - services/official/kde.md
           - services/official/localbackup.md
@@ -174,6 +175,7 @@ nav:
           - services/official/sshd.md
           - services/official/syncthing.md
           - services/official/trusted-nix-caches.md
+          - services/official/tor.md
           - services/official/users.md
           - services/official/wifi.md
           - services/official/wireguard.md

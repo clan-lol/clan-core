@@ -1,3 +1,11 @@
+🚧🚧🚧 Experimental 🚧🚧🚧
+
+Use at your own risk.
+
+We are still refining its interfaces, instability and breakages are expected.
+
+---
+
 This module is part of Clan's [networking interface](https://docs.clan.lol/guides/networking/networking/).
 
 Clan's networking module automatically manages connections across available network transports and falls back intelligently. When you run `clan ssh` or `clan machines update`, Clan attempts each configured network in priority order until a connection succeeds.
