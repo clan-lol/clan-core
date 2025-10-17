@@ -313,10 +313,6 @@ def produce_clan_service_docs() -> None:
         service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
 
     for module_name, module_info in service_links.items():
-        # Skip specific modules that are not ready for documentation
-        if module_name in ["internet", "tor"]:
-            continue
-
         output = f"# {module_name}\n\n"
         # output += f"`clan.modules.{module_name}`\n"
         output += f"*{module_info['manifest']['description']}*\n"
