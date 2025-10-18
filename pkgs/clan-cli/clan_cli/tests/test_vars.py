@@ -420,7 +420,11 @@ def test_generated_shared_secret_sops(
     ]
     shared_generator["share"] = True
     shared_generator["files"]["my_shared_secret"]["secret"] = True
-    shared_generator["script"] = 'echo hello > "$out"/my_shared_secret'
+    shared_generator["files"]["no_deploy_secret"]["secret"] = True
+    shared_generator["files"]["no_deploy_secret"]["deploy"] = False
+    shared_generator["script"] = (
+        'echo hello > "$out"/my_shared_secret; echo no_hello > "$out"/no_deploy_secret'
+    )
     m2_config = flake.machines["machine2"] = create_test_machine_config()
     m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
         shared_generator.copy()
@@ -482,12 +486,20 @@ def test_generated_shared_secret_sops(
     )
 
     assert m1_sops_store.exists(generator_m1, "my_shared_secret")
+    assert m1_sops_store.exists(generator_m1, "no_deploy_secret")
     assert m2_sops_store.exists(generator_m2, "my_shared_secret")
+    assert m2_sops_store.exists(generator_m2, "no_deploy_secret")
     assert m1_sops_store.machine_has_access(
         generator_m1, "my_shared_secret", "machine1"
     )
     assert m2_sops_store.machine_has_access(
         generator_m2, "my_shared_secret", "machine2"
+    )
+    assert not m1_sops_store.machine_has_access(
+        generator_m1, "no_deploy_secret", "machine1"
+    )
+    assert not m2_sops_store.machine_has_access(
+        generator_m2, "no_deploy_secret", "machine2"
     )
 
 

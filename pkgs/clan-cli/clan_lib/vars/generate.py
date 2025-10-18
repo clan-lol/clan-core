@@ -187,7 +187,7 @@ def run_generators(
         for generator in all_generators:
             if generator.share:
                 for file in generator.files:
-                    if not file.secret or not file.exists:
+                    if not file.secret or not file.exists or not file.deploy:
                         continue
                     machine.secret_vars_store.ensure_machine_has_access(
                         generator,

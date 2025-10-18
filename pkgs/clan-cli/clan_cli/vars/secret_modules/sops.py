@@ -354,7 +354,10 @@ class SecretStore(StoreBase):
             ClanError: If the specified file_name is not found
 
         """
-        from clan_cli.secrets.secrets import update_keys  # noqa: PLC0415
+        from clan_cli.secrets.secrets import (  # noqa: PLC0415
+            disallow_member,
+            update_keys,
+        )
 
         if generators is None:
             from clan_cli.vars.generator import Generator  # noqa: PLC0415
@@ -388,6 +391,12 @@ class SecretStore(StoreBase):
                         do_update_keys=False,
                         age_plugins=age_plugins,
                     )
+
+                # Cleanup: if this is a shared var not marked for deployment
+                if generator.share and not file.deploy:
+                    machine_link = secret_path / "machines" / machine
+                    if machine_link.exists():
+                        disallow_member(secret_path / "machines", machine, age_plugins)
 
                 update_keys(
                     secret_path,
