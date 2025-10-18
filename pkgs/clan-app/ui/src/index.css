@@ -36,6 +36,36 @@
   src: url(../.fonts/GeistMono-SemiBold.woff2) format("woff2");
 }
 
+:root {
+  /* Font weight axis */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Font size axis */
+  --font-size-xs: 0.625rem; /* 12px */
+  --font-size-s: 0.875rem; /* 14px */
+  --font-size-default: 1rem; /* 16px */
+  --font-size-m: 1.125rem; /* 18px */
+  --font-size-l: 1.25rem; /* 20px */
+  --font-size-xl: 1.375rem; /* 22px */
+  --font-size-xxl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.75rem; /* 28px */
+  --font-size-4xl: 2rem; /* 32px */
+  /* ... */
+  --font-size-7xl: 2.875rem; /* 52px */
+
+  --line-height-headline: 1.16; /* Headline */
+  --line-height-title: 1.24; /* Title */
+  --line-height-body: 1.32; /* Body */
+
+  --letter-spacing-tight: -0.02em; /* Teaser */
+  --letter-spacing-normal: 0em; /* Body */
+  --letter-spacing-wide: 0.02em; /* Title */
+
+  --font-mono: "Geist Mono", monospace;
+}
+
 html {
   font-family: "Geist", "sans-serif";
   overflow-x: hidden;
