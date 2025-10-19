@@ -97,11 +97,6 @@ let
             inherit (v) settings;
           }).config;
       }) role.machines;
-      settings =
-        (evalMachineSettings {
-          inherit roleName instanceName;
-          inherit (role) settings;
-        }).config;
     }) instance.roles;
 in
 {
@@ -446,15 +441,12 @@ in
                             };
                             # ...
                           };
-                          settings = {
-                            timeout = 30;
-                          };
                         };
                         # ...
                       };
                       ```
 
-                    - `settings`: The settings of the role, as defined in `instances`
+                    - `settings`: The settings of the current machine, as defined in `instances`
                       ```nix
                       {
                         timeout = 30;

@@ -123,9 +123,6 @@ in
     };
     expected = {
       instanceName = "instance_foo";
-      settings = {
-        timeout = "foo-peer-jon";
-      };
       machine = {
         name = "jon";
         roles = [
@@ -137,11 +134,8 @@ in
         controller = {
           machines = {
             jon = {
-              settings = {
-              };
+              settings = { };
             };
-          };
-          settings = {
           };
         };
         peer = {
@@ -152,10 +146,10 @@ in
               };
             };
           };
-          settings = {
-            timeout = "foo-peer";
-          };
         };
+      };
+      settings = {
+        timeout = "foo-peer-jon";
       };
     };
   };

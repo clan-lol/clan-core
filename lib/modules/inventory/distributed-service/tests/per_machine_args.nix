@@ -70,8 +70,6 @@ let
       roles.peer.tags.all = { };
     };
   };
-
-  filterInternals = lib.filterAttrs (n: _v: !lib.hasPrefix "_" n);
 in
 
 {
@@ -89,7 +87,8 @@ in
       # instance = instance_foo
       # roles = peer
       # machines = jon
-      specificMachineSettings = filterInternals res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
+      specificMachineSettings =
+        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
 
       hasRoleSettings =
         res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
@@ -100,16 +99,21 @@ in
       # instance = instance_foo
       # roles = peer
       # machines = *
-      specificRoleSettings = filterInternals res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.settings;
+      specificRoleSettings =
+        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
     };
-    expected = {
+    expected = rec {
       hasMachineSettings = true;
+      hasRoleSettings = false;
       specificMachineSettings = {
         timeout = "foo-peer-jon";
       };
-      hasRoleSettings = true;
       specificRoleSettings = {
-        timeout = "foo-peer";
+        machines = {
+          jon = {
+            settings = specificMachineSettings;
+          };
+        };
       };
     };
   };
