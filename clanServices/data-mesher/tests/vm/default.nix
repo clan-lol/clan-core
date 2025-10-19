@@ -2,7 +2,7 @@
   ...
 }:
 {
-  name = "service-data-mesher";
+  name = "data-mesher";
 
   clan = {
     directory = ./.;

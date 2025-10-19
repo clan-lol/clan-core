@@ -9,7 +9,7 @@ in
   perSystem =
     { ... }:
     {
-      clan.nixosTests.service-data-mesher = {
+      clan.nixosTests.data-mesher = {
         imports = [ ./tests/vm/default.nix ];
         clan.modules."@clan/data-mesher" = module;
       };
