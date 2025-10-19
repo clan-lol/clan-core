@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "service-mycelium";
+  name = "mycelium";
 
   clan = {
     test.useContainers = false;
