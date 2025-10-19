@@ -13,7 +13,7 @@ let
   ];
 in
 {
-  name = "service-wireguard";
+  name = "wireguard";
 
   clan = {
     directory = ./.;
