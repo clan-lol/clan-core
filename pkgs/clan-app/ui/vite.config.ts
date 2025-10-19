@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import wyw from "@wyw-in-js/vite";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
 import { patchCssModules } from "vite-css-modules";
@@ -42,6 +43,7 @@ export default defineConfig({
     For more info see https://github.com/thetarnav/solid-devtools/tree/main/packages/extension#readme
     */
     solidPlugin(),
+    wyw(),
     solidSvg(),
     regenPythonApiOnFileChange(),
     patchCssModules({ generateSourceTypes: true }),

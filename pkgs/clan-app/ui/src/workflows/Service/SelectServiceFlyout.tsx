@@ -8,6 +8,13 @@ import { Module } from "./models";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
+import { css } from "@linaria/core";
+
+// TODO: Move this to typography styles
+const tag = css`
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+`;
 
 interface FlyoutProps {
   onClose: () => void;
@@ -78,9 +85,7 @@ export const SelectService = (props: FlyoutProps) => {
                   <Combobox.ItemLabel class="flex gap-1.5">
                     <Show when={item.raw.instance_refs.length > 0}>
                       <div class="flex items-center rounded bg-[#76FFA4] px-1 py-0.5">
-                        <Typography hierarchy="label" weight="bold" size="xxs">
-                          Added
-                        </Typography>
+                        <span class={tag}>Added</span>
                       </div>
                     </Show>
                     <Typography
