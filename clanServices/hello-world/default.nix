@@ -35,10 +35,13 @@
         settings,
 
         # The name of this instance of the service
+        instanceName,
 
         # The current machine
+        machine,
 
         # All roles of this service, with their assigned machines
+        roles,
         ...
       }:
       {
