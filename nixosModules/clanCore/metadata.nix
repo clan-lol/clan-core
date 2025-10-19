@@ -107,8 +107,7 @@ in
             readOnly = true;
           };
           tld = lib.mkOption {
-            default = "clan";
-            type = lib.types.str;
+            type = types.strMatching "[a-z]+";
             description = ''
               the TLD for the clan
             '';
