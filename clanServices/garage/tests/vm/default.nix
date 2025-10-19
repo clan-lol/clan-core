@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "service-garage";
+  name = "garage";
 
   clan = {
     directory = ./.;
