@@ -1,5 +1,5 @@
 {
-  name = "service-syncthing-service";
+  name = "syncthing-service";
 
   clan = {
     directory = ./.;
