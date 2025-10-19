@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "service-sshd";
+  name = "sshd";
 
   clan = {
     directory = ./.;

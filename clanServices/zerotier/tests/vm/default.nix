@@ -1,5 +1,5 @@
 {
-  name = "service-zerotier";
+  name = "zerotier";
 
   clan = {
     directory = ./.;

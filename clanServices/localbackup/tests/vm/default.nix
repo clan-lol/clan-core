@@ -1,6 +1,6 @@
 { ... }:
 {
-  name = "service-localbackup";
+  name = "localbackup";
 
   clan = {
     directory = ./.;

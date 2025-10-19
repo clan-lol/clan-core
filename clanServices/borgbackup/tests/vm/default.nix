@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "service-borgbackup";
+  name = "borgbackup";
 
   clan = {
     directory = ./.;

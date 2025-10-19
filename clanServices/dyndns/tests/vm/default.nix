@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "service-dyndns";
+  name = "dyndns";
 
   clan = {
     directory = ./.;
