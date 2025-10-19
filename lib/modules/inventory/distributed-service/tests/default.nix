@@ -79,7 +79,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = res.importedModulesEvaluated ? "self-simple-module";
+      expr = res.importedModulesEvaluated ? "<clan-core>-simple-module";
       expected = true;
       inherit res;
     };
@@ -133,8 +133,8 @@ in
       # We might change the attribute name in the future
       expr = lib.mapAttrs (_n: v: builtins.length v) res.grouped;
       expected = {
-        self-A = 2;
-        self-B = 1;
+        "<clan-core>-A" = 2;
+        "<clan-core>-B" = 1;
       };
     };
 

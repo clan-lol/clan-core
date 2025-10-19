@@ -95,7 +95,7 @@
       grouped = lib.foldlAttrs (
         acc: instanceName: instance:
         let
-          inputName = if instance.module.input == null then "self" else instance.module.input;
+          inputName = if instance.module.input == null then "<clan-core>" else instance.module.input;
           id = inputName + "-" + instance.module.name;
         in
         acc
