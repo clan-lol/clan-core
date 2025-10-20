@@ -35,7 +35,7 @@ buildNpmPackage (finalAttrs: {
   # Something about passing orientation in any of the Form stories is causing the browser to crash
   # `npm run test-storybook-static` works fine in the devshell
 
-  passthru = rec {
+  passthru = {
     storybook = buildNpmPackage {
       pname = "${finalAttrs.pname}-storybook";
       inherit (finalAttrs)
@@ -50,22 +50,18 @@ buildNpmPackage (finalAttrs: {
         ps
       ];
 
-      npmBuildScript = "test-storybook-static";
+      npmBuildScript = "test-storybook";
 
       env = {
         PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
-          withChromiumHeadlessShell = true;
+          withFfmpeg = false;
+          withFirefox = false;
+          withWebkit = true;
+          withChromium = false;
+          withChromiumHeadlessShell = false;
         }}";
         PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
       };
-
-      preBuild = finalAttrs.preBuild + ''
-        export PLAYWRIGHT_CHROMIUM_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "headless_shell")
-      '';
-
-      postBuild = ''
-        mv storybook-static $out
-      '';
     };
   };
 })

@@ -12,7 +12,7 @@
   fetchzip,
   process-compose,
   json2ts,
-  playwright-driver,
+  playwright,
   luakit,
   self',
 }:
@@ -108,32 +108,23 @@ mkShell {
     export PC_CONFIG_FILES="$CLAN_CORE_PATH/pkgs/clan-app/process-compose.yaml"
 
     echo -e "${GREEN}To launch a qemu VM for testing, run:\n  start-vm <number of VMs>${NC}"
-  ''
-  +
-    # todo darwin support needs some work
-    (lib.optionalString stdenv.hostPlatform.isLinux ''
-      # configure playwright for storybook snapshot testing
-      # we only want webkit as that matches what the app is rendered with
 
-      export PLAYWRIGHT_BROWSERS_PATH=${
-        playwright-driver.browsers.override {
-          withFfmpeg = false;
-          withFirefox = false;
-          withWebkit = true;
-          withChromium = false;
-          withChromiumHeadlessShell = true;
-        }
+    # configure playwright for storybook snapshot testing
+    # we only want webkit as that matches what the app is rendered with
+
+    export PLAYWRIGHT_BROWSERS_PATH=${
+      playwright.browsers.override {
+        withFfmpeg = false;
+        withFirefox = false;
+        withWebkit = true;
+        withChromium = false;
+        withChromiumHeadlessShell = false;
       }
+    }
 
-      # stop playwright from trying to validate it has downloaded the necessary browsers
-      # we are providing them manually via nix
+    # stop playwright from trying to validate it has downloaded the necessary browsers
+    # we are providing them manually via nix
 
-      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
-
-      # playwright browser drivers are versioned e.g. webkit-2191
-      # this helps us avoid having to update the playwright js dependency everytime we update nixpkgs and vice versa
-      # see vitest.config.js for corresponding launch configuration
-
-      export PLAYWRIGHT_CHROMIUM_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "headless_shell")
-    '');
+    export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+  '';
 }
