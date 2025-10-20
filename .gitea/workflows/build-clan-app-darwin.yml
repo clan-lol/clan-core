@@ -17,4 +17,4 @@ jobs:
 
       - name: Build clan-app for x86_64-darwin
         run: |
-          nix build .#packages.x86_64-darwin.clan-app --system x86_64-darwin --log-format bar-with-logs
+          nix build .#packages.x86_64-darwin.clan-app --log-format bar-with-logs
