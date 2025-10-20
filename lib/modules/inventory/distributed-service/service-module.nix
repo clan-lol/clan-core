@@ -188,6 +188,14 @@ in
                                             evalMachineSettings instance.name role.name machine.name role.config.settings
                                               machine.config.settings;
                                           type = types.raw;
+                                          description = ''
+                                            Final evaluated settings of the curent-machine
+
+                                            This contains the merged and evaluated settings of the role interface,
+                                            the role settings and the machine settings.
+
+                                            Type: 'configuration' as returned by 'lib.evalModules'
+                                          '';
                                         };
                                       }
                                     )
