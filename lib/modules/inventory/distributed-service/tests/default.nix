@@ -55,6 +55,7 @@ in
 {
   extraModules = import ./extraModules.nix { inherit clanLib; };
   exports = import ./exports.nix { inherit lib clanLib; };
+  settings = import ./settings.nix { inherit lib callInventoryAdapter; };
   resolve_module_spec = import ./import_module_spec.nix { inherit lib callInventoryAdapter; };
   test_simple =
     let

@@ -22,19 +22,15 @@ let
 
     - roleName: The name of the role
     - instanceName: The name of the instance
-    - settings: The settings of the machine. Leave empty to get the role settings
+    - : The settings of the machine. Leave empty to get the role settings
+    - modules: The settings of the machine. Leave empty to get the role settings
 
     Returns: evalModules result
 
     The caller is responsible to use .config or .extendModules
   */
   evalMachineSettings =
-    {
-      roleName,
-      instanceName,
-      machineName ? null,
-      settings,
-    }:
+    instanceName: roleName: machineName: roleSettings: machineSettings:
     lib.evalModules {
       # Prefix for better error reporting
       # This prints the path where the option should be defined rather than the plain path within settings
@@ -66,13 +62,8 @@ let
         (lib.setDefaultModuleLocation "Via clan.service module: roles.${roleName}.interface"
           config.roles.${roleName}.interface
         )
-        (lib.setDefaultModuleLocation "instances.${instanceName}.roles.${roleName}.settings"
-          config.instances.${instanceName}.roles.${roleName}.settings
-        )
-        settings
-        # Dont set the module location here
-        # This should already be set by the tags resolver
-        # config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings
+        (lib.setDefaultModuleLocation "Via clan.service module: instances.${instanceName}.roles.${roleName}.settings" roleSettings)
+        machineSettings
       ];
     };
 
@@ -90,12 +81,9 @@ let
   applySettings =
     instanceName: instance:
     lib.mapAttrs (roleName: role: {
-      machines = lib.mapAttrs (machineName: v: {
+      machines = lib.mapAttrs (machineName: _v: {
         settings =
-          (evalMachineSettings {
-            inherit roleName instanceName machineName;
-            inherit (v) settings;
-          }).config;
+          config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.finalSettings.config;
       }) role.machines;
     }) instance.roles;
 in
@@ -137,7 +125,7 @@ in
         elemType = submoduleWith {
           modules = [
             (
-              { name, ... }:
+              { name, ... }@instance:
               {
                 options.roles = mkOption {
                   description = ''
@@ -167,51 +155,63 @@ in
                     placeholder = "roleName";
                     elemType = submoduleWith {
                       modules = [
-                        ({
-                          # instances.{instanceName}.roles.{roleName}.machines
-                          options.machines = mkOption {
-                            description = ''
-                              Machines of the role.
+                        (
+                          { name, ... }@role:
+                          {
+                            # instances.{instanceName}.roles.{roleName}.machines
+                            options.machines = mkOption {
+                              description = ''
+                                Machines of the role.
 
-                              A machine is a physical or virtual machine that is part of the instance.
-                              The `<machineName>` must match the name of any machine defined in the clan.
+                                A machine is a physical or virtual machine that is part of the instance.
+                                The `<machineName>` must match the name of any machine defined in the clan.
 
-                              For example:
+                                For example:
 
-                              - 'machines.my-machine = { ...; }' for a machine that is part of the instance
-                              - 'machines.my-other-machine = { ...; }' for another machine that is part of the instance
-                            '';
-                            type = attrsWith {
-                              placeholder = "machineName";
-                              elemType = submoduleWith {
-                                modules = [
-                                  (m: {
-                                    options.settings = mkOption {
-                                      type = types.raw;
-                                      description = "Settings of '${name}-machine': ${m.name or "<machineName>"}.";
-                                      default = { };
-                                    };
-                                  })
-                                ];
+                                - 'machines.my-machine = { ...; }' for a machine that is part of the instance
+                                - 'machines.my-other-machine = { ...; }' for another machine that is part of the instance
+                              '';
+                              type = attrsWith {
+                                placeholder = "machineName";
+                                elemType = submoduleWith {
+                                  modules = [
+                                    (
+                                      { name, ... }@machine:
+                                      {
+                                        options.settings = mkOption {
+                                          type = types.raw;
+                                          description = "Settings of '${name}-machine': ${machine.name or "<machineName>"}.";
+                                          default = { };
+                                        };
+                                        options.finalSettings = mkOption {
+                                          default =
+                                            evalMachineSettings instance.name role.name machine.name role.config.settings
+                                              machine.config.settings;
+                                          type = types.raw;
+                                        };
+                                      }
+                                    )
+                                  ];
+                                };
                               };
                             };
-                          };
 
-                          # instances.{instanceName}.roles.{roleName}.settings
-                          # options._settings = mkOption { };
-                          # options._settingsViaTags = mkOption { };
-                          # A deferred module that combines _settingsViaTags with _settings
-                          options.settings = mkOption {
-                            type = types.raw;
-                            description = "Settings of 'role': ${name}";
-                            default = { };
-                          };
+                            # instances.{instanceName}.roles.{roleName}.settings
+                            # options._settings = mkOption { };
+                            # options._settingsViaTags = mkOption { };
+                            # A deferred module that combines _settingsViaTags with _settings
+                            options.settings = mkOption {
+                              type = types.raw;
+                              description = "Settings of 'role': ${name}";
+                              default = { };
+                            };
 
-                          options.extraModules = lib.mkOption {
-                            default = [ ];
-                            type = types.listOf (types.either types.deferredModule types.str);
-                          };
-                        })
+                            options.extraModules = lib.mkOption {
+                              default = [ ];
+                              type = types.listOf (types.either types.deferredModule types.str);
+                            };
+                          }
+                        )
                       ];
                     };
                   };
@@ -549,16 +549,10 @@ in
                             roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
                           };
                           settings =
-                            (evalMachineSettings {
-                              inherit roleName instanceName machineName;
-                              settings =
-                                config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
-                            }).config;
-                          extendSettings = extendEval (evalMachineSettings {
-                            inherit roleName instanceName machineName;
-                            settings =
-                              config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
-                          });
+                            config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.finalSettings.config;
+                          extendSettings =
+                            extendEval
+                              config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.finalSettings;
                         };
                       modules = [ v ];
                     }).config;
@@ -589,10 +583,8 @@ in
               <instanceName> = {
                 roles = {
                   <roleName> = {
-                    # Per-machine settings
+                    # Resolved per-machine settings
                     machines = { <machineName> = { settings = { ... }; }; }; };
-                    # Per-role settings
-                    settings = { ... };
                 };
               };
             };
