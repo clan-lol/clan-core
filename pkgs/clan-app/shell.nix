@@ -14,9 +14,11 @@
   json2ts,
   playwright,
   luakit,
+  jq,
   self',
 }:
 let
+  RED = "\\033[1;31m";
   GREEN = "\\033[1;32m";
   NC = "\\033[0m";
 
@@ -100,7 +102,7 @@ mkShell {
     chmod -R +w api
     popd
 
-    # configure process-compose
+    # configure process-compospe
     if test -f "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"; then
       source "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"
     fi
@@ -112,19 +114,35 @@ mkShell {
     # configure playwright for storybook snapshot testing
     # we only want webkit as that matches what the app is rendered with
 
-    export PLAYWRIGHT_BROWSERS_PATH=${
-      playwright.browsers.override {
-        withFfmpeg = false;
-        withFirefox = false;
-        withWebkit = true;
-        withChromium = false;
-        withChromiumHeadlessShell = false;
+
+    playwright_ver=$(${jq}/bin/jq --raw-output .devDependencies.playwright ${./ui/package.json})
+    if [[ $playwright_ver != '${playwright.version}' ]]; then
+      echo >&2 -en '${RED}'
+      echo >&2 "Error: playwright npm package version ($playwright_ver) is different from that from the nixpkgs (${playwright.version})"
+      echo >&2 "Run this command to update the npm package version"
+      echo >&2
+      echo >&2 "  npm i -D --save-exact playwright@${playwright.version}"
+      echo >&2
+      echo >&2 -en '${NC}'
+    else
+      export PLAYWRIGHT_BROWSERS_PATH=${
+        playwright.browsers.override {
+          withFfmpeg = false;
+          withFirefox = false;
+          withWebkit = true;
+          withChromium = false;
+          withChromiumHeadlessShell = false;
+        }
       }
-    }
 
-    # stop playwright from trying to validate it has downloaded the necessary browsers
-    # we are providing them manually via nix
+      # This is needed to disable revisionOverrides in browsers.json which
+      # the playwright nix package does not support
+      # https://github.com/NixOS/nixpkgs/blob/f9c3b27aa3f9caac6717973abcc549dbde16bdd4/pkgs/development/web/playwright/driver.nix#L261
+      export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=nixos
 
-    export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+      # stop playwright from trying to validate it has downloaded the necessary browsers
+      # we are providing them manually via nix
+      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+    fi
   '';
 }

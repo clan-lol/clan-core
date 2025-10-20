@@ -1,9 +1,11 @@
+{ lib, ... }:
 {
   perSystem =
     {
       self',
       pkgs,
       config,
+      system,
       ...
     }:
     {
@@ -41,6 +43,11 @@
         inherit (config.packages) clan-ts-api;
       };
 
-      checks = config.packages.clan-app.tests // config.packages.clan-app-ui.tests;
+      checks =
+        config.packages.clan-app.tests
+        # Clan's darwin CI is a sandbox too limiting to spawn a headless brwoser
+        // lib.optionalAttrs (!lib.hasSuffix system "darwin") {
+          inherit (config.packages.clan-app-ui.tests) clan-app-ui-storybook;
+        };
     };
 }

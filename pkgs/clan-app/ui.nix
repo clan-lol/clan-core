@@ -5,7 +5,8 @@
   clan-ts-api,
   fonts,
   ps,
-  playwright-driver,
+  jq,
+  playwright,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clan-app-ui";
@@ -49,12 +50,13 @@ buildNpmPackage (finalAttrs: {
 
         nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
           ps
+          jq
         ];
 
         npmBuildScript = "test-storybook";
 
         env = {
-          PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
+          PLAYWRIGHT_BROWSERS_PATH = "${playwright.browsers.override {
             withFfmpeg = false;
             withFirefox = false;
             withWebkit = true;
@@ -62,7 +64,22 @@ buildNpmPackage (finalAttrs: {
             withChromiumHeadlessShell = false;
           }}";
           PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+          # This is needed to disable revisionOverrides in browsers.json which
+          # the playwright nix package does not support:
+          # https://github.com/NixOS/nixpkgs/blob/f9c3b27aa3f9caac6717973abcc549dbde16bdd4/pkgs/development/web/playwright/driver.nix#L261
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "nixos";
         };
+        preBuild = finalAttrs.preBuild + ''
+          playwright_ver=$(jq --raw-output .devDependencies.playwright ${./ui/package.json})
+          if [[ $playwright_ver != '${playwright.version}' ]]; then
+            echo >&2 "playwright npm package version ($playwright_ver) is different from that from the nixpkgs (${playwright.version})"
+            echo >&2 "Run this command to update the npm package version"
+            echo >&2
+            echo >&2 "  npm i -D --save-exact playwright@${playwright.version}"
+            echo >&2
+            exit 1
+          fi
+        '';
       };
     };
   };
