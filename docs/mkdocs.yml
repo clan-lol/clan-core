@@ -140,6 +140,7 @@ nav:
           - reference/cli/vars.md
           - reference/cli/vms.md
 
+      - clanLib: reference/clanLib/index.md
       - HTTP API: api.md
 
       - Decisions:
