@@ -90,6 +90,7 @@ def vars_status(
                 if (
                     isinstance(machine.secret_vars_store, sops.SecretStore)
                     and generator.share
+                    and file.deploy
                     and file.exists
                     and not machine.secret_vars_store.machine_has_access(
                         generator=generator,
