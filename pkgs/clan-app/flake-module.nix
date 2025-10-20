@@ -41,6 +41,6 @@
         inherit (config.packages) clan-ts-api;
       };
 
-      checks = config.packages.clan-app.tests;
+      checks = config.packages.clan-app.tests // config.packages.clan-app-ui.tests;
     };
 }

@@ -36,31 +36,33 @@ buildNpmPackage (finalAttrs: {
   # `npm run test-storybook-static` works fine in the devshell
 
   passthru = {
-    storybook = buildNpmPackage {
-      pname = "${finalAttrs.pname}-storybook";
-      inherit (finalAttrs)
-        version
-        nodejs
-        src
-        npmDeps
-        npmConfigHook
-        ;
+    tests = {
+      "${finalAttrs.pname}-storybook" = buildNpmPackage {
+        pname = "${finalAttrs.pname}-storybook";
+        inherit (finalAttrs)
+          version
+          nodejs
+          src
+          npmDeps
+          npmConfigHook
+          ;
 
-      nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
-        ps
-      ];
+        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
+          ps
+        ];
 
-      npmBuildScript = "test-storybook";
+        npmBuildScript = "test-storybook";
 
-      env = {
-        PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
-          withFfmpeg = false;
-          withFirefox = false;
-          withWebkit = true;
-          withChromium = false;
-          withChromiumHeadlessShell = false;
-        }}";
-        PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+        env = {
+          PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
+            withFfmpeg = false;
+            withFirefox = false;
+            withWebkit = true;
+            withChromium = false;
+            withChromiumHeadlessShell = false;
+          }}";
+          PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+        };
       };
     };
   };
