@@ -27,14 +27,16 @@ in
         placeholder = "mappedServiceName";
         elemType = submoduleWith {
           class = "clan.service";
+          specialArgs = {
+            exports = config.exports;
+            directory = directory;
+            clanLib = specialArgs.clanLib;
+          };
           modules = [
             (
               { name, ... }:
               {
                 _module.args._ctx = [ name ];
-                _module.args.exports = config.exports;
-                _module.args.directory = directory;
-
               }
             )
             ./service-module.nix
