@@ -167,7 +167,7 @@ in
       '';
       type = types.submoduleWith {
         specialArgs = {
-          inherit (config) machines;
+          inherit (config) machines clanLib;
         };
         modules = [
           {
