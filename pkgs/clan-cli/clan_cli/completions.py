@@ -23,6 +23,9 @@ from .secrets.users import list_users
 This module provides dynamic completions.
 The completions should feel fast.
 We target a maximum of 1second on our average machine.
+
+Note: All completion functions have 'prefix' as their first parameter (required
+by argcomplete's API) but don't use it internally.
 """
 
 
@@ -44,7 +47,7 @@ def clan_dir(flake: str | None) -> str | None:
 
 
 def complete_machines(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -77,7 +80,7 @@ def complete_machines(
 
 
 def complete_services_for_machine(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -121,7 +124,7 @@ def complete_services_for_machine(
 
 
 def complete_backup_providers_for_machine(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -164,7 +167,7 @@ def complete_backup_providers_for_machine(
 
 
 def complete_state_services_for_machine(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -207,7 +210,7 @@ def complete_state_services_for_machine(
 
 
 def complete_secrets(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -225,7 +228,7 @@ def complete_secrets(
 
 
 def complete_users(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -243,7 +246,7 @@ def complete_users(
 
 
 def complete_groups(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -262,7 +265,7 @@ def complete_groups(
 
 
 def complete_templates_disko(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -283,7 +286,7 @@ def complete_templates_disko(
 
 
 def complete_templates_clan(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -304,7 +307,7 @@ def complete_templates_clan(
 
 
 def complete_templates_machine(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -325,7 +328,7 @@ def complete_templates_machine(
 
 
 def complete_vars_for_machine(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -366,7 +369,7 @@ def complete_vars_for_machine(
 
 
 def complete_target_host(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
@@ -407,7 +410,7 @@ def complete_target_host(
 
 
 def complete_tags(
-    _prefix: str,
+    prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
