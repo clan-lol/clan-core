@@ -478,6 +478,17 @@ def complete_tags(
     return dict.fromkeys(tags, "tag")
 
 
+def complete_build_host(
+    prefix: str,  # noqa: ARG001
+    _parsed_args: argparse.Namespace,
+    **_kwargs: Any,
+) -> Iterable[str]:
+    """Provides completion functionality for build host.
+    Returns 'localhost' as a suggestion while allowing arbitrary SSH addresses.
+    """
+    return dict.fromkeys(["localhost"], "build_host")
+
+
 def add_dynamic_completer(
     action: argparse.Action,
     completer: Callable[..., Iterable[str]],

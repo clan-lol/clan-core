@@ -20,6 +20,7 @@ from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
     add_dynamic_completer,
+    complete_build_host,
     complete_machines,
     complete_tags,
 )
@@ -238,7 +239,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Address of the machine to update, in the format of user@host:1234.",
     )
-    parser.add_argument(
+    build_host_parser = parser.add_argument(
         "--build-host",
         type=str,
         help=(
@@ -246,6 +247,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
             "Pass 'localhost' to build on the local machine, or an ssh address like user@host:1234\n"
         ),
     )
+    add_dynamic_completer(build_host_parser, complete_build_host)
     parser.add_argument(
         "--upload-inputs",
         action="store_true",
