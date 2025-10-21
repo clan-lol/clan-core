@@ -10,12 +10,11 @@ in
 rec {
   # TODO: automatically generate this from the directory conventions
   imports = [
-    ./modules/flake-module.nix
     ./clanTest/flake-module.nix
     ./introspection/flake-module.nix
-    ./modules/inventory/flake-module.nix
     ./jsonschema/flake-module.nix
     ./types/flake-module.nix
+    ./inventory/flake-module.nix
   ];
   flake.clanLib =
     let
