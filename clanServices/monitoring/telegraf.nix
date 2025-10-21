@@ -44,8 +44,10 @@
               pkgs.openssl
             ];
 
+            # TODO: Implement automated certificate rotation instead of using a 100-year expiration
             script = ''
               openssl req -x509 -nodes -newkey rsa:4096 \
+                -days 36500 \
                 -keyout "$out"/key \
                 -out "$out"/crt \
                 -subj "/C=US/ST=CA/L=San Francisco/O=Example Corp/OU=IT/CN=example.com"
