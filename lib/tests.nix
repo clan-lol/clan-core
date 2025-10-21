@@ -105,7 +105,7 @@ in
         self = {
           inputs = { };
         };
-        directory = ../../.;
+        directory = ../.;
         meta.name = "test-clan-core";
       };
     in
@@ -123,7 +123,7 @@ in
         self = {
           inputs = { };
         };
-        directory = ../../.;
+        directory = ../.;
         meta.name = "test-clan-core";
       };
     in
