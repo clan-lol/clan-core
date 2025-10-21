@@ -1,8 +1,10 @@
 clanServices/.* @pinpox @kenji
 
 lib/test/container-test-driver/.* @DavHau @mic92
-lib/modules/inventory/.* @hsjobeki
-lib/modules/inventoryClass/.* @hsjobeki
+lib/inventory/.* @hsjobeki
+lib/inventoryClass/.* @hsjobeki
+
+modules/.* @hsjobeki
 
 pkgs/clan-app/ui/.* @hsjobeki @brianmcgee
 pkgs/clan-app/clan_app/.* @qubasa @hsjobeki

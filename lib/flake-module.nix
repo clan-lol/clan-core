@@ -10,12 +10,11 @@ in
 rec {
   # TODO: automatically generate this from the directory conventions
   imports = [
-    ./modules/flake-module.nix
     ./clanTest/flake-module.nix
     ./introspection/flake-module.nix
-    ./modules/inventory/flake-module.nix
     ./jsonschema/flake-module.nix
     ./types/flake-module.nix
+    ./inventory/flake-module.nix
   ];
   flake.clanLib =
     let
@@ -78,9 +77,6 @@ rec {
           ../lib
           (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../.)
           ../flakeModules
-          # ../../nixosModules/clanCore
-          # ../../machines
-          # ../../inventory.json
         ];
       };
     in
@@ -97,6 +93,36 @@ rec {
             --show-trace \
             ${inputOverrides} \
             --flake ${inventoryTestsSrc}#legacyPackages.${system}.eval-tests-resolve-module
+
+          touch $out
+        '';
+      };
+
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-build-clan
+      legacyPackages.evalTests-build-clan = import ./tests.nix {
+        inherit lib;
+        clan-core = self;
+      };
+      checks = {
+        eval-lib-build-clan = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+          export HOME="$(realpath .)"
+
+          nix-unit --eval-store "$HOME" \
+            --extra-experimental-features flakes \
+            --show-trace \
+            ${inputOverrides} \
+            --flake ${
+              self.filter {
+                include = [
+                  "flakeModules"
+                  "inventory.json"
+                  "lib"
+                  "machines"
+                  "nixosModules"
+                  "modules"
+                ];
+              }
+            }#legacyPackages.${system}.evalTests-build-clan
 
           touch $out
         '';

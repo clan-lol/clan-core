@@ -2,7 +2,7 @@
   lib ? import <nixpkgs/lib>,
 }:
 let
-  clanLibOrig = (import ./.. { inherit lib; }).__unfix__;
+  clanLibOrig = (import ./. { inherit lib; }).__unfix__;
   clanLibWithFs =
     { virtual_fs }:
     lib.fix (
@@ -11,19 +11,19 @@ let
         let
           clan-core = {
             clanLib = final;
-            modules.clan.default = lib.modules.importApply ./clan { inherit clan-core; };
+            modules.clan.default = lib.modules.importApply ../modules/clan { inherit clan-core; };
 
             # Note: Can add other things to "clan-core"
             # ... Not needed for this test
           };
         in
         {
-          clan = import ../clan {
+          clan = import ./clan {
             inherit lib clan-core;
           };
 
           # Override clanLib.fs for unit-testing against a virtual filesystem
-          fs = import ../clanTest/virtual-fs.nix { inherit lib; } {
+          fs = import ./clanTest/virtual-fs.nix { inherit lib; } {
             inherit rootPath virtual_fs;
             # Example of a passthru
             # passthru = [

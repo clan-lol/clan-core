@@ -62,6 +62,9 @@
               # Core libraries
               (root + "/lib")
 
+              # modules directory
+              (root + "/modules")
+
               # User-provided fileset
               fileset
             ];

@@ -13,16 +13,17 @@ in
     let
       # Common filtered source for inventory tests
       inventoryTestsSrc = lib.fileset.toSource {
-        root = ../../../..;
+        root = ../../..;
         fileset = lib.fileset.unions [
-          ../../../../flake.nix
-          ../../../../flake.lock
-          (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../../../..)
-          ../../../../flakeModules
-          ../../../../lib
-          ../../../../nixosModules/clanCore
-          ../../../../machines
-          ../../../../inventory.json
+          ../../../flake.nix
+          ../../../flake.lock
+          (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../../..)
+          ../../../flakeModules
+          ../../../lib
+          ../../../nixosModules/clanCore
+          ../../../machines
+          ../../../inventory.json
+          ../../../modules
         ];
       };
     in
