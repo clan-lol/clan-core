@@ -68,6 +68,7 @@
       (
         { ... }:
         {
+          debug = true;
           clan = {
             meta.name = "clan-core";
             inventory = {

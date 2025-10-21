@@ -77,9 +77,6 @@ rec {
           ../lib
           (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../.)
           ../flakeModules
-          # ../../nixosModules/clanCore
-          # ../../machines
-          # ../../inventory.json
         ];
       };
     in
@@ -122,6 +119,7 @@ rec {
                   "lib"
                   "machines"
                   "nixosModules"
+                  "modules"
                 ];
               }
             }#legacyPackages.${system}.evalTests-build-clan

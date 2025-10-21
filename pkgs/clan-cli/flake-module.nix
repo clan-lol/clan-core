@@ -21,6 +21,7 @@
             "clanModules"
             "flakeModules"
             "lib"
+            "modules"
             "nixosModules"
             "flake.lock"
             "templates"
