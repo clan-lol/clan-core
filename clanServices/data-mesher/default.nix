@@ -1,4 +1,7 @@
-{ ... }:
+{
+  clanLib,
+  ...
+}:
 let
   sharedInterface =
     { lib, ... }:
@@ -51,15 +54,15 @@ let
       builtins.foldl' (
         urls: name:
         let
-          ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
+          ip = clanLib.vars.getPublicValue {
+            flake = config.clan.core.settings.directory;
+            machine = name;
+            generator = "zerotier";
+            file = "zerotier-ip";
+            default = null;
+          };
         in
-        if builtins.pathExists ipPath then
-          let
-            ip = builtins.readFile ipPath;
-          in
-          urls ++ [ "[${ip}]:${builtins.toString settings.network.port}" ]
-        else
-          urls
+        if ip != null then urls ++ [ "[${ip}]:${builtins.toString settings.network.port}" ] else urls
       ) [ ] (builtins.attrNames ((roles.admin.machines or { }) // (roles.signer.machines or { })))
     );
 
@@ -156,9 +159,14 @@ in
                   readHostKey =
                     machine:
                     let
-                      path = "${config.clan.core.settings.directory}/vars/per-machine/${machine}/data-mesher-host-key/public_key/value";
+                      publicKey = clanLib.vars.getPublicValue {
+                        flake = config.clan.core.settings.directory;
+                        inherit machine;
+                        generator = "data-mesher-host-key";
+                        file = "public_key";
+                      };
                     in
-                    builtins.elemAt (lib.splitString "\n" (builtins.readFile path)) 1;
+                    builtins.elemAt (lib.splitString "\n" publicKey) 1;
                 in
                 {
                   enable = true;
