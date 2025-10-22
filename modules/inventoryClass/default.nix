@@ -26,6 +26,39 @@ let
       roles = lib.mapAttrs (_n: v: { inherit (v) description; }) eval.config.roles;
     };
 
+  exposedInventory = lib.intersectAttrs {
+    meta = null;
+    machines = null;
+    instances = null;
+    tags = null;
+  } config.inventory;
+
+  filterAttrsRecursive' =
+    path: pred: set:
+    lib.listToAttrs (
+      lib.concatMap (
+        name:
+        let
+          v = set.${name};
+        in
+        if pred path v then
+          [
+            (lib.nameValuePair name (
+              if lib.isAttrs v then filterAttrsRecursive' (path ++ [ name ]) pred v else v
+            ))
+          ]
+        else
+          [ ]
+      ) (lib.attrNames set)
+    );
+
+  filteredInventory = filterAttrsRecursive' [ ] (
+    # Remove extraModules from serialization,
+    # identified by: prefix + pathLength + name
+    # inventory.instances.*.roles.*.extraModules
+    path: _value:
+    lib.length path <= 5 || lib.head path != "instances" || (lib.elemAt path 5) != "extraModules"
+  ) exposedInventory;
 in
 {
   options = {
@@ -41,6 +74,11 @@ in
     };
     inventory = mkOption {
       type = types.raw;
+    };
+    inventorySerialization = mkOption {
+      type = types.raw;
+      readOnly = true;
+      default = filteredInventory;
     };
     directory = mkOption {
       type = types.path;
