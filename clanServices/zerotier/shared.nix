@@ -1,4 +1,5 @@
 {
+  clanLib,
   lib,
   config,
   pkgs,
@@ -8,20 +9,26 @@
 }:
 let
   controllerMachine = builtins.head (lib.attrNames roles.controller.machines or { });
-  networkIdPath = "${config.clan.core.settings.directory}/vars/per-machine/${controllerMachine}/zerotier/zerotier-network-id/value";
-  networkId = if builtins.pathExists networkIdPath then builtins.readFile networkIdPath else null;
+  networkId = clanLib.vars.getPublicValue {
+    flake = config.clan.core.settings.directory;
+    machine = controllerMachine;
+    generator = "zerotier";
+    file = "zerotier-network-id";
+    default = null;
+  };
   moons = lib.attrNames (roles.moon.machines or { });
   moonIps = builtins.foldl' (
     ips: name:
-    if
-      builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
-    then
-      ips
-      ++ [
-        (builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value")
-      ]
-    else
-      ips
+    let
+      moonIp = clanLib.vars.getPublicValue {
+        flake = config.clan.core.settings.directory;
+        machine = name;
+        generator = "zerotier";
+        file = "zerotier-ip";
+        default = null;
+      };
+    in
+    if moonIp != null then ips ++ [ moonIp ] else ips
   ) [ ] moons;
 in
 {

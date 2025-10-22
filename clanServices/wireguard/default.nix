@@ -54,7 +54,10 @@
       - For other controllers: The controller's /56 subnet
 */
 
-{ ... }:
+{
+  clanLib,
+  ...
+}:
 let
   # Shared module for extraHosts configuration
   extraHostsModule =
@@ -74,10 +77,12 @@ let
           controllerHosts = lib.mapAttrsToList (
             name: _value:
             let
-              prefix = builtins.readFile (
-                config.clan.core.settings.directory
-                + "/vars/per-machine/${name}/wireguard-network-${instanceName}/prefix/value"
-              );
+              prefix = clanLib.vars.getPublicValue {
+                flake = config.clan.core.settings.directory;
+                machine = name;
+                generator = "wireguard-network-${instanceName}";
+                file = "prefix";
+              };
               # Controller IP is always ::1 in their subnet
               ip = prefix + "::1";
             in
@@ -88,20 +93,24 @@ let
           peerHosts = lib.mapAttrsToList (
             peerName: peerValue:
             let
-              peerSuffix = builtins.readFile (
-                config.clan.core.settings.directory
-                + "/vars/per-machine/${peerName}/wireguard-network-${instanceName}/suffix/value"
-              );
+              peerSuffix = clanLib.vars.getPublicValue {
+                flake = config.clan.core.settings.directory;
+                machine = peerName;
+                generator = "wireguard-network-${instanceName}";
+                file = "suffix";
+              };
               # Determine designated controller
               designatedController =
                 if (builtins.length (builtins.attrNames roles.controller.machines) == 1) then
                   (builtins.head (builtins.attrNames roles.controller.machines))
                 else
                   peerValue.settings.controller;
-              controllerPrefix = builtins.readFile (
-                config.clan.core.settings.directory
-                + "/vars/per-machine/${designatedController}/wireguard-network-${instanceName}/prefix/value"
-              );
+              controllerPrefix = clanLib.vars.getPublicValue {
+                flake = config.clan.core.settings.directory;
+                machine = designatedController;
+                generator = "wireguard-network-${instanceName}";
+                file = "prefix";
+              };
               peerIP = controllerPrefix + ":" + peerSuffix;
             in
             "${peerIP} ${peerName}.${domain}"
@@ -220,10 +229,12 @@ in
                 lib.mapAttrsToList (
                   ctrlName: _:
                   let
-                    controllerPrefix = builtins.readFile (
-                      config.clan.core.settings.directory
-                      + "/vars/per-machine/${ctrlName}/wireguard-network-${instanceName}/prefix/value"
-                    );
+                    controllerPrefix = clanLib.vars.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = ctrlName;
+                      generator = "wireguard-network-${instanceName}";
+                      file = "prefix";
+                    };
                     peerIP = controllerPrefix + ":" + peerSuffix;
                   in
                   "${peerIP}/56"
@@ -234,20 +245,22 @@ in
 
               # Connect to all controllers
               peers = lib.mapAttrsToList (name: value: {
-                publicKey = (
-                  builtins.readFile (
-                    config.clan.core.settings.directory
-                    + "/vars/per-machine/${name}/wireguard-keys-${instanceName}/publickey/value"
-                  )
-                );
+                publicKey = clanLib.vars.getPublicValue {
+                  flake = config.clan.core.settings.directory;
+                  machine = name;
+                  generator = "wireguard-keys-${instanceName}";
+                  file = "publickey";
+                };
 
                 # Allow each controller's /56 subnet
                 allowedIPs = [
                   "${
-                    builtins.readFile (
-                      config.clan.core.settings.directory
-                      + "/vars/per-machine/${name}/wireguard-network-${instanceName}/prefix/value"
-                    )
+                    clanLib.vars.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "wireguard-network-${instanceName}";
+                      file = "prefix";
+                    }
                   }::/56"
                 ];
 
@@ -349,25 +362,29 @@ in
                 if allPeers ? ${name} then
                   # For peers: they now have our entire /56 subnet
                   {
-                    publicKey = (
-                      builtins.readFile (
-                        config.clan.core.settings.directory
-                        + "/vars/per-machine/${name}/wireguard-keys-${instanceName}/publickey/value"
-                      )
-                    );
+                    publicKey = clanLib.vars.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "wireguard-keys-${instanceName}";
+                      file = "publickey";
+                    };
 
                     # Allow the peer's /96 range in ALL controller subnets
                     allowedIPs = lib.mapAttrsToList (
                       ctrlName: _:
                       let
-                        controllerPrefix = builtins.readFile (
-                          config.clan.core.settings.directory
-                          + "/vars/per-machine/${ctrlName}/wireguard-network-${instanceName}/prefix/value"
-                        );
-                        peerSuffix = builtins.readFile (
-                          config.clan.core.settings.directory
-                          + "/vars/per-machine/${name}/wireguard-network-${instanceName}/suffix/value"
-                        );
+                        controllerPrefix = clanLib.vars.getPublicValue {
+                          flake = config.clan.core.settings.directory;
+                          machine = ctrlName;
+                          generator = "wireguard-network-${instanceName}";
+                          file = "prefix";
+                        };
+                        peerSuffix = clanLib.vars.getPublicValue {
+                          flake = config.clan.core.settings.directory;
+                          machine = name;
+                          generator = "wireguard-network-${instanceName}";
+                          file = "suffix";
+                        };
                       in
                       "${controllerPrefix}:${peerSuffix}/96"
                     ) roles.controller.machines;
@@ -377,19 +394,21 @@ in
                 else
                   # For other controllers: use their /56 subnet
                   {
-                    publicKey = (
-                      builtins.readFile (
-                        config.clan.core.settings.directory
-                        + "/vars/per-machine/${name}/wireguard-keys-${instanceName}/publickey/value"
-                      )
-                    );
+                    publicKey = clanLib.vars.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "wireguard-keys-${instanceName}";
+                      file = "publickey";
+                    };
 
                     allowedIPs = [
                       "${
-                        builtins.readFile (
-                          config.clan.core.settings.directory
-                          + "/vars/per-machine/${name}/wireguard-network-${instanceName}/prefix/value"
-                        )
+                        clanLib.vars.getPublicValue {
+                          flake = config.clan.core.settings.directory;
+                          machine = name;
+                          generator = "wireguard-network-${instanceName}";
+                          file = "prefix";
+                        }
                       }::/56"
                     ];
 

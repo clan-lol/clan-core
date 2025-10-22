@@ -30,6 +30,8 @@ lib.fix (
       jsonschema = import ./jsonschema { inherit lib; };
       docs = import ./docs.nix { inherit lib; };
 
+      vars = import ./vars.nix { inherit lib; };
+
       # flakes
       flakes = clanLib.callLib ./flakes.nix { };
 
