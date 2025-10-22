@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Generic, NotRequired, Required, TypedDict, TypeVar
+from typing import Any, ForwardRef, Generic, NotRequired, Required, TypedDict, TypeVar
 
 import pytest
 
@@ -379,3 +379,63 @@ def test_type_alias() -> None:
         "additionalProperties": False,
         "required": ["input_name", "readmes"],
     }
+
+
+def test_string_type_annotation_jsonvalue() -> None:
+    # Test that "JSONValue" string type annotation returns permissive schema
+    result = type_to_dict("JSONValue")
+    assert result == {}, "JSONValue should return empty schema allowing any type"
+
+
+def test_string_type_annotation_error() -> None:
+    # Test that other string type annotations raise an error
+    with pytest.raises(JSchemaTypeError) as exc_info:
+        type_to_dict("SomeUnknownType")
+    assert "String type annotation 'SomeUnknownType' cannot be resolved" in str(
+        exc_info.value
+    )
+
+
+def test_forwardref_resolution() -> None:
+    # Create a ForwardRef that references a built-in type
+    forward_ref = ForwardRef("int")
+    forward_ref.__forward_module__ = "builtins"
+
+    result = type_to_dict(forward_ref)
+    assert result == {"type": "integer"}
+
+    # Test ForwardRef to str
+    forward_ref_str = ForwardRef("str")
+    forward_ref_str.__forward_module__ = "builtins"
+
+    result_str = type_to_dict(forward_ref_str)
+    assert result_str == {"type": "string"}
+
+
+def test_forwardref_resolution_from_module() -> None:
+    # Create a ForwardRef that references a complex type from typing module
+    forward_ref = ForwardRef("list[str]")
+    forward_ref.__forward_module__ = "builtins"
+
+    # This test verifies that we can resolve complex type expressions
+    result = type_to_dict(forward_ref)
+    assert result == {"type": "array", "items": {"type": "string"}}
+
+
+def test_forwardref_without_module() -> None:
+    # Test that ForwardRef without module info raises an error
+    forward_ref = ForwardRef("SomeType")
+
+    with pytest.raises(JSchemaTypeError) as exc_info:
+        type_to_dict(forward_ref)
+    assert "ForwardRef without module or type name" in str(exc_info.value)
+
+
+def test_forwardref_invalid_type() -> None:
+    # Test that ForwardRef with invalid type name raises an error
+    forward_ref = ForwardRef("NonExistentType")
+    forward_ref.__forward_module__ = "builtins"
+
+    with pytest.raises(JSchemaTypeError) as exc_info:
+        type_to_dict(forward_ref)
+    assert "Could not resolve ForwardRef" in str(exc_info.value)

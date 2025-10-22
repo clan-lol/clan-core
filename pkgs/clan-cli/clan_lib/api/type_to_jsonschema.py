@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import importlib
 import inspect
 import pathlib
 from dataclasses import MISSING
@@ -9,6 +10,7 @@ from types import NoneType, UnionType
 from typing import (
     Annotated,
     Any,
+    ForwardRef,
     Literal,
     NewType,
     NotRequired,
@@ -117,6 +119,18 @@ def type_to_dict(
         type_map = {}
     if t is None:
         return {"type": "null"}
+
+    # Handle string type annotations (forward references represented as strings)
+    if isinstance(t, str):
+        # Special case for JSONValue which represents arbitrary JSON values
+        # This is a recursive type that can't be fully represented in JSON Schema without $ref
+        if t == "JSONValue":
+            # Return a permissive schema that allows any JSON-compatible value
+            # This matches the intent of JSONValue = str | int | float | bool | None | list[JSONValue] | dict[str, JSONValue]
+            return {}  # Empty schema allows any type
+
+        msg = f"{scope} - String type annotation '{t}' cannot be resolved. This may indicate a forward reference or recursive type."
+        raise JSchemaTypeError(msg)
 
     if inspect.isclass(t) and t.__name__ == "Unknown":
         # Empty should represent unknown
@@ -335,5 +349,31 @@ def type_to_dict(
 
         msg = f"{scope} - Basic type '{t!s}' is not supported"
         raise JSchemaTypeError(msg)
+
+    # Handle ForwardRef types by resolving them to their actual types
+    if isinstance(t, ForwardRef):
+        # Get the module name and type name from the forward ref
+        module_name = getattr(t, "__forward_module__", None)
+        type_name = getattr(t, "__forward_arg__", None)
+
+        if module_name and type_name:
+            try:
+                # Import the module to get its namespace
+                module = importlib.import_module(module_name)
+                namespace = {**vars(module), "__builtins__": __builtins__}
+
+                # Evaluate the type string in the namespace (handles both module types and builtins)
+                resolved_type = eval(type_name, namespace)  # noqa: S307
+                return type_to_dict(
+                    resolved_type, scope, type_map, narrow_unsupported_union_types
+                )
+
+            except (ImportError, NameError, AttributeError, SyntaxError) as e:
+                msg = f"{scope} - Could not resolve ForwardRef('{type_name}', module='{module_name}'): {e}"
+                raise JSchemaTypeError(msg) from e
+
+        msg = f"{scope} - ForwardRef without module or type name: {t}"
+        raise JSchemaTypeError(msg)
+
     msg = f"{scope} - Type '{t!s}' is not supported"
     raise JSchemaTypeError(msg)
