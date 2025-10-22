@@ -81,11 +81,13 @@ class InventoryMachine(TypedDict):
 InventoryMetaNameType = str
 InventoryMetaDescriptionType = str | None
 InventoryMetaIconType = str | None
+InventoryMetaTldType = str
 
 class InventoryMeta(TypedDict):
     name: str
     description: NotRequired[InventoryMetaDescriptionType]
     icon: NotRequired[InventoryMetaIconType]
+    tld: NotRequired[InventoryMetaTldType]
 
 
 
