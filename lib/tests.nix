@@ -212,6 +212,57 @@ in
       };
     };
 
+  test_get_var_machine =
+    let
+      varsLib = import ./vars.nix { };
+    in
+    {
+      expr = varsLib.getPublicValue {
+        backend = "in_repo";
+        default = "test";
+        shared = false;
+        generator = "test-generator";
+        machine = "test-machine";
+        file = "test-file";
+        flake = ./vars-test-flake;
+      };
+      expected = "foo-machine";
+    };
+
+  test_get_var_shared =
+    let
+      varsLib = import ./vars.nix { };
+    in
+    {
+      expr = varsLib.getPublicValue {
+        backend = "in_repo";
+        default = "test";
+        shared = true;
+        generator = "test-generator";
+        machine = "test-machine";
+        file = "test-file";
+        flake = ./vars-test-flake;
+      };
+      expected = "foo-shared";
+    };
+
+  test_get_var_default =
+    let
+      varsLib = import ./vars.nix { };
+    in
+    {
+      expr = varsLib.getPublicValue {
+        backend = "in_repo";
+        default = "test-default";
+        shared = true;
+        generator = "test-generator-wrong";
+        machine = "test-machine";
+        file = "test-file";
+        flake = ./vars-test-flake;
+      };
+      expected = "test-default";
+    };
+
   test_clan_all_machines_laziness =
     let
       eval = clan {
