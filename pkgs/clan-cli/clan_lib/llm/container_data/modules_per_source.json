@@ -1,0 +1,454 @@
+{
+  "clan-core": {
+    "admin": {
+      "manifest": {
+        "categories": ["Utility"],
+        "description": "Adds a root user with ssh access",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/admin",
+        "readme": "The admin service aggregates components that allow an administrator to log in to and manage the machine.\n\nThe following configuration:\n\n1. Enables OpenSSH with root login and adds an SSH public key named`myusersKey` to the machine's authorized_keys via the `allowedKeys` setting.\n\n2. Automatically generates a password for the root user.\n\n```nix\ninstances = {\n    admin = {\n        roles.default.tags = {\n            all = {  };\n        };\n        roles.default.settings = {\n            allowedKeys = {\n                myusersKey = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFDNnynMbFWatSFdANzbJ8iiEKL7+9ZpDaMLrWRQjyH lhebendanz@wintux\";\n            };\n        };\n    };\n};\n```\n\n\n\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the admin service"
+        }
+      }
+    },
+    "borgbackup": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "Efficient, deduplicating backup program with optional compression and secure encryption.",
+        "features": {
+          "API": true
+        },
+        "name": "borgbackup",
+        "readme": "## Usage\n\n```nix\ninventory.instances = {\n  borgbackup = {\n    module = {\n      name = \"borgbackup\";\n      input = \"clan-core\";\n    };\n    roles.client.machines.\"jon\".settings = {\n      destinations.\"storagebox\" = {\n        repo = \"username@hostname:/./borgbackup\";\n        rsh = ''ssh -oPort=23 -i /run/secrets/vars/borgbackup/borgbackup.ssh'';\n      };\n    };\n    roles.server.machines = { };\n  };\n};\n```\n\nThe input should be named according to your flake input. Jon is configured as a\nclient machine with a destination pointing to a Hetzner Storage Box.\n\n## Overview\n\nThis guide explains how to set up and manage\n[BorgBackup](https://borgbackup.readthedocs.io/) for secure, efficient backups\nin a clan network. BorgBackup provides:\n\n- Space efficient storage of backups with deduplication\n- Secure, authenticated encryption\n- Compression: lz4, zstd, zlib, lzma or none\n- Mountable backups with FUSE\n- Easy installation on multiple platforms: Linux, macOS, BSD, \u2026\n- Free software (BSD license).\n- Backed by a large and active open-source community.\n\n## Roles\n\n### 1. Client\n\nClients are machines that create and send backups to various destinations. Each\nclient can have multiple backup destinations configured.\n\n### 2. Server\n\nServers act as backup repositories, receiving and storing backups from client\nmachines. They can be dedicated backup servers within your clan network.\n\n## Backup destinations\n\nThis service allows you to perform backups to multiple `destinations`.\nDestinations can be:\n\n- **Local**: Local disk storage\n- **Server**: Your own borgbackup server (using the `server` role)\n- **Third-party services**: Such as Hetzner's Storage Box\n\nFor a more comprehensive guide on backups look into the guide section.\n"
+      },
+      "roles": {
+        "client": {
+          "description": "A borgbackup client that backs up to all borgbackup server roles."
+        },
+        "server": {
+          "description": "A borgbackup server that stores the backups of clients."
+        }
+      }
+    },
+    "certificates": {
+      "manifest": {
+        "categories": ["Network"],
+        "description": "Sets up a PKI certificate chain using step-ca",
+        "features": {
+          "API": true
+        },
+        "name": "certificates",
+        "readme": "This service sets up a certificate authority (CA) that can issue certificates to\nother machines in your clan. For this the `ca` role is used.\nIt additionally provides a `default` role, that can be applied to all machines\nin your clan and will make sure they trust your CA.\n\n## Example Usage\n\nThe following configuration would add a CA for the top level domain `.foo`. If\nthe machine `server` now hosts a webservice at `https://something.foo`, it will\nget a certificate from `ca` which is valid inside your clan. The machine\n`client` will trust this certificate if it makes a request to\n`https://something.foo`.\n\nThis clan service can be combined with the `coredns` service for easy to deploy,\nSSL secured clan-internal service hosting.\n\n```nix\ninventory = {\n  machines.ca = { };\n  machines.client = { };\n  machines.server = { };\n\n  instances.\"certificates\" = {\n    module.name = \"certificates\";\n    module.input = \"self\";\n\n    roles.ca.machines.ca.settings.tlds = [ \"foo\" ];\n    roles.default.machines.client = { };\n    roles.default.machines.server = { };\n  };\n};\n```\n"
+      },
+      "roles": {
+        "ca": {
+          "description": "A certificate authority that issues and signs certificates for other machines."
+        },
+        "default": {
+          "description": "A machine that trusts the CA and can get certificates issued by it."
+        }
+      }
+    },
+    "coredns": {
+      "manifest": {
+        "categories": ["Network"],
+        "description": "Clan-internal DNS and service exposure",
+        "features": {
+          "API": true
+        },
+        "name": "coredns",
+        "readme": "This module enables hosting clan-internal services easily, which can be resolved\ninside your VPN. This allows defining a custom top-level domain (e.g. `.clan`)\nand exposing endpoints from a machine to others, which will be\naccessible under `http://<service>.clan` in your browser.\n\nThe service consists of two roles:\n\n- A `server` role: This is the DNS-server that will be queried when trying to\n  resolve clan-internal services. It defines the top-level domain.\n- A `default` role: This does two things. First, it sets up the nameservers so\n  that clan-internal queries are resolved via the `server` machine, while\n  external queries are resolved as normal via DHCP. Second, it allows exposing\n  services (see example below).\n\n## Example Usage\n\nHere the machine `dnsserver` is designated as internal DNS-server for the TLD\n`.foo`. `server01` will host an application that shall be reachable at\n`http://one.foo` and `server02` is going to be reachable at `http://two.foo`.\n`client` is any other machine that is part of the clan but does not host any\nservices.\n\nWhen `client` tries to resolve `http://one.foo`, the DNS query will be\nrouted to `dnsserver`, which will answer with `192.168.1.3`. If it tries to\nresolve some external domain (e.g. `https://clan.lol`), the query will not be\nrouted to `dnsserver` but resolved as before, via the nameservers advertised by\nDHCP.\n\n```nix\ninventory = {\n\n  machines = {\n    dnsserver = { }; # 192.168.1.2\n    server01 = { };  # 192.168.1.3\n    server02 = { };  # 192.168.1.4\n    client = { };    # 192.168.1.5\n  };\n\n  instances = {\n    coredns = {\n\n      module.name = \"@clan/coredns\";\n      module.input = \"self\";\n\n      # Add the default role to all machines, including `client`\n      roles.default.tags.all = { };\n\n      # DNS server queries to http://<name>.foo are resolved here\n      roles.server.machines.\"dnsserver\".settings = {\n        ip = \"192.168.1.2\";\n        tld = \"foo\";\n      };\n\n      # First service\n      # Registers http://one.foo will resolve to 192.168.1.3\n      # underlying service runs on server01\n      roles.default.machines.\"server01\".settings = {\n        ip = \"192.168.1.3\";\n        services = [ \"one\" ];\n      };\n\n      # Second service\n      roles.default.machines.\"server02\".settings = {\n        ip = \"192.168.1.4\";\n        services = [ \"two\" ];\n      };\n    };\n  };\n};\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "A machine that registers the 'server' role as resolver and registers services under the configured TLD in the resolver."
+        },
+        "server": {
+          "description": "A DNS server that resolves services in the clan network."
+        }
+      }
+    },
+    "data-mesher": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "Set up data-mesher",
+        "features": {
+          "API": true
+        },
+        "name": "data-mesher",
+        "readme": "This service will set up data-mesher.\n\n## Usage\n\n```nix\ninventory.instances = {\n  data-mesher = {\n    module = {\n      name = \"data-mesher\";\n      input = \"clan-core\";\n    };\n    roles.admin.machines.server0 = {\n      settings = {\n        bootstrapNodes = {\n          node1 = \"192.168.1.1:7946\";\n          node2 = \"192.168.1.2:7946\";\n        };\n\n        network = {\n          hostTTL = \"24h\";\n          interface = \"tailscale0\";\n        };\n      };\n    };\n    roles.peer.machines.server1 = { };\n    roles.signer.machines.server2 = { };\n  };\n}\n```\n"
+      },
+      "roles": {
+        "admin": {
+          "description": "A data-mesher admin node that bootstraps the network and can sign new nodes into the network."
+        },
+        "peer": {
+          "description": "A data-mesher peer node that connects to the network."
+        },
+        "signer": {
+          "description": "A data-mesher signer node that can sign new nodes into the network."
+        }
+      }
+    },
+    "dyndns": {
+      "manifest": {
+        "categories": ["Network"],
+        "description": "A dynamic DNS service to auto update domain IPs",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/dyndns",
+        "readme": "\nA Dynamic-DNS (DDNS) service continuously keeps one or more DNS records in sync with the current public IP address of your machine.  \nIn *clan* this service is backed by [qdm12/ddns-updater](https://github.com/qdm12/ddns-updater).\n\n> Info  \n> ddns-updater itself is **heavily opinionated and version-specific**. Whenever you need the exhaustive list of flags or\n> provider-specific fields refer to its *versioned* documentation \u2013 **not** the GitHub README\n---\n\n# 1. Configuration model\n\nInternally ddns-updater consumes a single file named `config.json`.  \nA minimal configuration for the registrar *Namecheap* looks like:\n\n```json\n{\n  \"settings\": [\n    {\n      \"provider\": \"namecheap\",\n      \"domain\": \"sub.example.com\",\n      \"password\": \"e5322165c1d74692bfa6d807100c0310\"\n    }\n  ]\n}\n```\n\nAnother example for *Porkbun*:\n\n```json\n{\n  \"settings\": [\n    {\n      \"provider\": \"porkbun\",\n      \"domain\": \"domain.com\",\n      \"api_key\": \"sk1_\u2026\",\n      \"secret_api_key\": \"pk1_\u2026\",\n      \"ip_version\": \"ipv4\",\n      \"ipv6_suffix\": \"\"\n    }\n  ]\n}\n```\n\nWhen you write a `clan.nix` the **common** fields (`provider`, `domain`, `period`, \u2026) are already exposed as typed\n*Nix options*.  \nRegistrar-specific or very new keys can be passed through an open attribute set called **extraSettings**.\n\n---\n\n# 2. Full Porkbun example\n\nManage three records \u2013 `@`, `home` and `test` \u2013 of the domain\n`jon.blog` and refresh them every 15 minutes:\n\n```nix title=\"clan.nix\" hl_lines=\"10-11\"\ninventory.instances = {\n  dyndns = {\n    roles.default.machines.\"jon\" = { };\n    roles.default.settings = {\n      period   = 15;                # minutes\n      settings = {\n        \"all-jon-blog\" = {\n          provider         = \"porkbun\";\n          domain           = \"jon.blog\";\n\n          # (1) tell the secret-manager which key we are going to store\n          secret_field_name = \"secret_api_key\";\n\n          # everything below is copied verbatim into config.json\n          extraSettings = {\n            host         = \"@,home,test\";   # (2) comma-separated list of sub-domains\n            ip_version   = \"ipv4\";\n            ipv6_suffix  = \"\";\n            api_key      = \"pk1_4bb2b231275a02fdc23b7e6f3552s01S213S\"; # (3) public \u2013 safe to commit\n          };\n        };\n      };\n    };\n  };\n};\n```\n\n1. `secret_field_name` tells the *vars-generator* to store the entered secret under the specified JSON field name in the configuration.\n2. ddns-updater allows multiple hosts by separating them with a comma.\n3. The `api_key` above is *public*; the corresponding **private key** is retrieved through `secret_field_name`.\n\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the dyndns service"
+        }
+      }
+    },
+    "emergency-access": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "Set recovery password for emergency access to machine to debug boot issues",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/emergency-access",
+        "readme": "This service will automatically set the emergency access password if your system fails to boot.\n\n## Usage\n\n```nix\ninventory.instances = {\n  emergency-access = {\n    module = {\n      name = \"emergency-access\";\n      input = \"clan-core\";\n    };\n\n    roles.default.tags.nixos = { };\n  };\n}\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the emergency-access service"
+        }
+      }
+    },
+    "garage": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "S3-compatible object store for small self-hosted geo-distributed deployments",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/garage",
+        "readme": "[Garage](https://garagehq.deuxfleurs.fr/) is an open-source, S3-compatible distributed object storage service for self-hosting.\n\nThis module provisions a single-instance S3 bucket. To customize its behavior, set `services.garage.settings` in your Nix configuration.\n\nExample configuration:\n```\ninstances = {\n    garage = {\n        roles.default.machines.\"server\" = {};\n    };\n};\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the garage service"
+        }
+      }
+    },
+    "hello-world": {
+      "manifest": {
+        "categories": ["Uncategorized"],
+        "description": "This is a test",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/hello-word",
+        "readme": "This a test README just to appease the eval warnings if we don't have one"
+      },
+      "roles": {
+        "evening": {
+          "description": "An evening greeting machine"
+        },
+        "morning": {
+          "description": "A morning greeting machine"
+        }
+      }
+    },
+    "importer": {
+      "manifest": {
+        "categories": ["Utility"],
+        "description": "Convenient, structured module imports for hosts.",
+        "features": {
+          "API": true
+        },
+        "name": "importer",
+        "readme": "The importer module allows users to configure importing modules in a flexible and structured way.\nIt exposes the `extraModules` functionality of the inventory, without any added configuration.\n\n## Usage\n\n```nix\ninventory.instances = {\n\n  zone1 = {\n    module.name = \"@clan/importer\";\n    roles.default.tags.zone1 = {};\n    roles.default.extraModules = [ \"modules/zone1.nix\" ];\n  };\n\n  base = {\n    module.name = \"@clan/importer\";\n    roles.default.tags.all = {};\n    roles.default.extraModules = [ \"modules/base.nix\" ];\n  };\n\n};\n```\n\nThis will import the module `modules/base.nix` to all machines that have the `all` tag,\nwhich by default is every machine managed by the clan.\nAnd also import for all machines tagged with `zone1` the module at `modules/zone1.nix`.\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the importer service"
+        }
+      }
+    },
+    "internet": {
+      "manifest": {
+        "categories": ["System", "Network"],
+        "description": "Part of the clan networking abstraction to define how to reach machines from outside the clan network over the internet, if defined has the highest priority",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/internet",
+        "readme": "This module is part of Clan's [networking interface](https://docs.clan.lol/guides/networking/networking/).\n\nClan's networking module automatically manages connections across available network transports and falls back intelligently. When you run `clan ssh` or `clan machines update`, Clan attempts each configured network in priority order until a connection succeeds.\n\nThe example below shows how to configure a domain so server1 is reachable over the clearnet. By default, the `internet` module has the highest priority among networks.\n\n```nix\n  inventory.instances = {\n        # Direct SSH with fallback support\n        internet = {\n            roles.default.machines.server1 = {\n                settings.host = \"server1.example.com\";\n            };\n            roles.default.machines.server2 = {\n                settings.host = \"192.168.1.100\";\n            };\n        };\n};\n```"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the internet service"
+        }
+      }
+    },
+    "kde": {
+      "manifest": {
+        "categories": ["Desktop"],
+        "description": "Sets up a graphical desktop environment",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/kde",
+        "readme": "This module sets up the [KDE Plasma](https://kde.org) Desktop environment.\n\n!!! Note \"Customisation\"\n    This service intentionally does not provide any settings or customisation\n    options, as desktop preferences are highly subjective. Clan currently\n    supports only this default desktop configuration. Any additional\n    customisation can be done via the `extraModules` option. Furthermore, if you\n    want to use a different desktop environment or compositor (e.g. Gnome or\n    sway), we encourage you to to build your own\n    [Clan Service](https://docs.clan.lol/guides/services/community/) or have a\n    look at the [Community Services](https://docs.clan.lol/services/community/).\n\n## Example Usage\n\n```nix\ninventory = {\n  instances = {\n    kde = {\n\n      # Deploy on all machines\n      roles.default.tags.all = { };\n\n      # Or individual hosts\n      roles.default.machines.laptop = { };\n    };\n  };\n};\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "KDE/Plasma (wayland): Full-featured desktop environment with modern Qt-based interface"
+        }
+      }
+    },
+    "localbackup": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "Automatically backups current machine to local directory or a mounted drive.",
+        "features": {
+          "API": true
+        },
+        "name": "localbackup",
+        "readme": "## Features\n\n- Creates incremental snapshots using rsnapshot\n- Supports multiple backup targets\n- Mount/unmount hooks for external storage\n- Pre/post backup hooks for custom scripts\n- Configurable snapshot retention\n- Automatic state folder detection\n\n## Usage\n\nEnable the localbackup service and configure backup targets:\n\n```nix\ninstances = {\n  localbackup = {\n    module.name = \"@clan/localbackup\";\n    module.input = \"self\";\n    roles.default.machines.\"machine\".settings = {\n      targets.external= {\n        directory = \"/mnt/backup\";\n        mountpoint = \"/mnt/backup\";\n      };\n    };\n  };\n};\n```\n\n## Commands\n\nThe service provides these commands:\n\n- `localbackup-create`: Create a new backup\n- `localbackup-list`: List available backups\n- `localbackup-restore`: Restore from backup (requires NAME and FOLDERS environment variables)\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the localbackup service"
+        }
+      }
+    },
+    "matrix-synapse": {
+      "manifest": {
+        "categories": ["Social"],
+        "description": "A federated messaging server with end-to-end encryption.",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/matrix-synapese",
+        "readme": "This NixOS module installs and configures Synapse \u2014 a federated Matrix homeserver with end-to-end encryption \u2014 and optionally provides the Element web client.\n\nThe example below demonstrates a minimal setup that includes:\n\n- Element web client.\n- Synapse backed by PostgreSQL and nginx.\n- An admin user and an additional regular user.\n\nExample configuration:\n\n```nix\ninstances = {\n    matrix-synapse = {\n        roles.default.machines.\"jon\".settings = {\n            acmeEmail = \"admins@clan.lol\";\n            server_tld = \"clan.test\";\n            app_domain = \"matrix.clan.test\";\n            users.admin.admin = true;\n            users.someuser = { };\n        };\n    };\n};\n```"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the matrix-synapse service"
+        }
+      }
+    },
+    "monitoring": {
+      "manifest": {
+        "categories": ["Uncategorized"],
+        "description": "Monitoring service for the nodes in your clan",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/monitoring",
+        "readme": "## Usage\n\n```\ninventory.instances = {\n    monitoring = {\n      module.name = \"monitoring\";\n      roles.telegraf.tags.all = {\n        settings.interfaces = [ \"wg-clan\" ];\n      };\n    };\n  };\n```\n\nThis service will eventually set up a monitoring stack for your clan. For now,\nonly a telegraf role is implemented, which exposes the currently deployed\nversion of your configuration, so it can be used to check for required updates.\n\n"
+      },
+      "roles": {
+        "telegraf": {
+          "description": "Placeholder role to apply the telegraf monitoring agent"
+        }
+      }
+    },
+    "mycelium": {
+      "manifest": {
+        "categories": ["System", "Network"],
+        "description": "End-2-end encrypted P2P IPv6 overlay network",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/mycelium",
+        "readme": "\n[Mycelium](https://github.com/threefoldtech/mycelium) is an end-to-end encrypted IPv6 overlay network that spans the globe.\n\n## Features\n- Locality-aware routing: finds the shortest path between nodes.\n- All traffic is end-to-end encrypted.\n- Can route traffic via friend nodes and is location-aware.\n- Automatic rerouting if a physical link goes down.\n- IPv6 addresses are derived from private keys.\n- A simple, reliable message bus is implemented on top of Mycelium.\n- Supports multiple transports (QUIC, TCP, \u2026). Hole punching for QUIC is in progress to enable true P2P connectivity behind NATs.\n- Designed for planetary-scale scalability; previous overlay networks reached practical limits, and Mycelium focuses on scaling.\n- Can run without a TUN device and be used solely as a reliable message bus.\n\nExample configuration below connects all your machines to the Mycelium network:\n```nix\nmycelium = {\n    roles.peer.tags.all = {};\n};\n```\n"
+      },
+      "roles": {
+        "peer": {
+          "description": "A peer in the mycelium network"
+        }
+      }
+    },
+    "packages": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "Define package sets from nixpkgs and install them on one or more machines",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/packages",
+        "readme": "This service is meant to be consumed by the UI / API, and exposes a JSON serializable interface to add packages to a machine over the inventory.\n\nThe example below demonstrates installing the \"cbonsai\" application to a machine named \"server.\n\n```\ninstances.packages = {\n    roles.default.machines.\"server\".settings = {\n        packages = [ \"cbonsai\" ];\n    };\n};\n```"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the packages service"
+        }
+      }
+    },
+    "sshd": {
+      "manifest": {
+        "categories": ["System", "Network"],
+        "description": "Enables secure remote access to the machine over SSH with automatic host key management and optional CA-signed host certificates.",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/sshd",
+        "readme": "\n## What it does\n- Generates and persists SSH host keys via `vars`.\n- Optionally issues CA-signed host certificates for servers.\n- Installs the `server` CA public key into `clients` `known_hosts` for TOFU-less verification.\n\n\n## When to use it\n- Zero-TOFU SSH for dynamic fleets: admins/CI can connect to frequently rebuilt hosts (e.g., server-1.example.com) without prompts or per-host `known_hosts` churn.\n\n### Roles\n- Server: runs sshd, presents a CA-signed host certificate for `<machine>.<domain>`.\n- Client: trusts the CA for the given domains to verify servers' certificates.\n  Tip: assign both roles to a machine if it should both present a cert and verify others.\n\nQuick start (with host certificates)\nUseful if you never want to get a prompt about trusting the ssh fingerprint.\n```nix\n{\n  inventory.instances = {\n    sshd-with-certs = {\n      module = { name = \"sshd\"; input = \"clan-core\"; };\n      # Servers present certificates for <machine>.example.com\n      roles.server.tags.all = { };\n      roles.server.settings = {\n        certificate.searchDomains = [ \"example.com\" ];\n        # Optional: also add RSA host keys\n        # hostKeys.rsa.enable = true;\n      };\n      # Clients trust the CA for *.example.com\n      roles.client.tags.all = { };\n      roles.client.settings = {\n        certificate.searchDomains = [ \"example.com\" ];\n      };\n    };\n  };\n}\n```\n\nBasic: only add persistent host keys (ed25519), no certificates\nUseful if you want to get an ssh \"trust this server\" prompt once and then never again. \n```nix\n{\n  inventory.instances = {\n    sshd-basic = {\n      module = {\n        name = \"sshd\";\n        input = \"clan-core\";\n      };\n      roles.server.tags.all = { };\n    };\n  };\n}\n```\n\nExample: selective trust per environment\nAdmins should trust only production; CI should trust prod and staging. Servers are reachable under both domains.\n```nix\n{\n  inventory.instances = {\n    sshd-env-scoped = {\n      module = { name = \"sshd\"; input = \"clan-core\"; };\n\n      # Servers present certs for both prod and staging FQDNs\n      roles.server.tags.all = { };\n      roles.server.settings = {\n        certificate.searchDomains = [ \"prod.example.com\" \"staging.example.com\" ];\n      };\n\n      # Admin laptop: trust prod only\n      roles.client.machines.\"admin-laptop\".settings = {\n        certificate.searchDomains = [ \"prod.example.com\" ];\n      };\n\n      # CI runner: trust prod and staging\n      roles.client.machines.\"ci-runner-1\".settings = {\n        certificate.searchDomains = [ \"prod.example.com\" \"staging.example.com\" ];\n      };\n    };\n  };\n}\n```\n### Explanation\n- Admin -> server1.prod.example.com: zero-TOFU (verified via cert).\n- Admin -> server1.staging.example.com: falls back to TOFU (or is blocked by policy).\n- CI -> either prod or staging: zero-TOFU for both.\nNote: server and client searchDomains don't have to be identical; they only need to overlap for the hostnames you actually use.\n\n### Notes\n- Connect using a name that matches a cert principal (e.g., `server1.example.com`); wildcards are not allowed inside the certificate.\n- CA private key stays in `vars` (not deployed); only the CA public key is distributed.\n- Logins still require your user SSH keys on the server (passwords are disabled)."
+      },
+      "roles": {
+        "client": {
+          "description": "Installs the SSH CA public key into known_hosts for the configured domains, so this machine can verify servers\u2019 host certificates without TOFU prompts."
+        },
+        "server": {
+          "description": "Runs sshd with persistent host keys and (if certificate.searchDomains is set) a CA\u2011signed host certificate for <machine>.<domain>, enabling TOFU\u2011less verification by clients that trust the CA."
+        }
+      }
+    },
+    "syncthing": {
+      "manifest": {
+        "categories": ["Utility", "System", "Network"],
+        "description": "Syncthing is a continuous file synchronization program with automatic peer discovery",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/syncthing",
+        "readme": "This service configures Syncthing to continuously synchronize a folder peer-to-peer across your machines.\n\nExample configuration:\n\n```nix\n{\n  instances.syncthing = {\n    roles.peer.tags.all = { };\n    roles.peer.settings.folders = {\n      documents = {\n        path = \"/home/youruser/syncthing/documents\";\n      };\n    };\n  };\n}\n```\n\nNotes:\n- Each key under `folders` is a folder ID (an arbitrary identifier for Syncthing).\n- Prefer absolute paths (example shown). `~` may work in some environments but can be ambiguous in service contexts.\n\n\n## Documentation\nSee the official Syncthing docs: https://docs.syncthing.net/\n"
+      },
+      "roles": {
+        "peer": {
+          "description": "A peer in the syncthing cluster that syncs files with other peers."
+        }
+      }
+    },
+    "tor": {
+      "manifest": {
+        "categories": ["System", "Network"],
+        "description": "Part of the clan networking abstraction to define how to reach machines through the Tor network, if used has the lowest priority",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/tor",
+        "readme": "This module is part of Clan's [networking interface](https://docs.clan.lol/guides/networking/networking/).\n\nClan's networking module automatically manages connections across available network transports and falls back intelligently. When you run `clan ssh` or `clan machines update`, Clan attempts each configured network in priority order until a connection succeeds.\n\nThe example below configures all your nixos machines to be reachable over the Tor network. By default, the `tor` module has the lowest priority among networks, as it's the slowest.\n\n```nix\n  inventory.instances = {\n        # Fallback: Secure connections via Tor\n        tor = {\n            roles.server.tags.nixos = { };\n        };\n};\n```"
+      },
+      "roles": {
+        "client": {
+          "description": "Enables a continuosly running Tor proxy on the machine, allowing access to other machines via the Tor network.\nIf not enabled, a Tor proxy will be started automatically when required.\n"
+        },
+        "server": {
+          "description": "Sets up a Tor onion service for the machine, thus making it reachable over Tor."
+        }
+      }
+    },
+    "trusted-nix-caches": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "This module sets the `clan.lol` and `nix-community` cache up as a trusted cache.",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/trusted-nix-caches",
+        "readme": "Sets up nix to trust and use the clan cache\n\n## Usage\n\n```nix\ninventory.instances = {\n  clan-cache = {\n    module = {\n      name = \"trusted-nix-caches\";\n      input = \"clan-core\";\n    };\n    roles.default.machines.draper = { };\n  };\n}\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the trusted-nix-caches service"
+        }
+      }
+    },
+    "users": {
+      "manifest": {
+        "categories": ["System"],
+        "description": "An instance of this module will create a user account on the added machines,\nalong with a generated password that is constant across machines and user settings.\n",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/user",
+        "readme": "## Usage\n\n```nix\n{\n  inventory.instances = {\n    # Deploy user alice on all machines. Don't prompt for password (will be\n    # auto-generated).\n    user-alice = {\n      module = {\n        name = \"users\";\n        input = \"clan-core\";\n      };\n      roles.default.tags.all = { };\n      roles.default.settings = {\n        user = \"alice\";\n        prompt = false;\n      };\n    };\n\n    # Deploy user Carol on all machines. Prompt only once and use the\n    # same password on all machines. (`share = true`)\n    user-carol = {\n      module = {\n        name = \"users\";\n        input = \"clan\";\n      };\n      roles.default.tags.all = { };\n      roles.default.settings = {\n        user = \"carol\";\n        share = true;\n      };\n    };\n\n    # Deploy user bob only on his laptop. Prompt for a password.\n    user-bob = {\n      module = {\n        name = \"users\";\n        input = \"clan-core\";\n      };\n      roles.default.machines.bobs-laptop = { };\n      roles.default.settings.user = \"bob\";\n    };\n  };\n}\n```\n\n## Migration from `root-password` module\n\nThe deprecated `clan.root-password` module has been replaced by the `users` module. Here's how to migrate:\n\n### 1. Update your flake configuration\n\nReplace the `root-password` module import with a `users` service instance:\n\n```nix\n# OLD - Remove this from your nixosModules:\nimports = [\n  self.inputs.clan-core.clanModules.root-password\n];\n\n# NEW - Add to inventory.instances or machines/flake-module.nix:\ninstances = {\n  users-root = {\n    module.name = \"users\";\n    module.input = \"clan-core\";\n    roles.default.tags.nixos = { };\n    roles.default.settings = {\n      user = \"root\";\n      prompt = false;  # Set to true if you want to be prompted\n      groups = [ ];\n    };\n  };\n};\n```\n\n### 2. Migrate vars\n\nThe vars structure has changed from `root-password` to `user-password-root`:\n\n```bash\n# For each machine, rename the vars directories:\ncd vars/per-machine/<machine-name>/\nmv root-password user-password-root\nmv user-password-root/password-hash user-password-root/user-password-hash\nmv user-password-root/password user-password-root/user-password\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the user service"
+        }
+      }
+    },
+    "wifi": {
+      "manifest": {
+        "categories": ["Uncategorized"],
+        "description": "Pre configure wifi networks to connect to",
+        "features": {
+          "API": true
+        },
+        "name": "wifi",
+        "readme": "This module allows you to pre-configure WiFi networks for automatic connection.  \nEach attribute in `settings.network` serves as an internal identifier, not the actual SSID.  \nAfter defining your networks, you will be prompted for the SSID and password for each one.\n\nThis module leverages NetworkManager for managing connections.\n\n```nix\ninstances = {\n    wifi = {\n        module.name = \"wifi\";\n        module.input = \"clan-core\";\n\n        roles.default = {\n            machines.\"jon\" = {\n                settings.networks.home = { };\n                settings.networks.work = { keyMgmt = \"wpa-eap\"; };\n            };\n        };\n    };\n};\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the wifi service"
+        }
+      }
+    },
+    "wireguard": {
+      "manifest": {
+        "categories": ["System", "Network"],
+        "description": "Wireguard-based VPN mesh network with automatic IPv6 address allocation",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/wireguard",
+        "readme": "# Wireguard VPN Service\n\nThis service provides a Wireguard-based VPN mesh network with automatic IPv6 address allocation and routing between clan machines.\n\n## Overview\n\nThe wireguard service creates a secure mesh network between clan machines using two roles:\n- **Controllers**: Machines with public endpoints that act as connection points and routers\n- **Peers**: Machines that connect through controllers to access the network\n\n## Requirements\n\n- Controllers must have a publicly accessible endpoint (domain name or static IP)\n- Peers must be in networks where UDP traffic is not blocked (uses port 51820 by default, configurable)\n\n## Features\n\n- Automatic IPv6 address allocation using ULA (Unique Local Address) prefixes\n- Full mesh connectivity between all machines\n- Automatic key generation and distribution\n- IPv6 forwarding on controllers for inter-peer communication\n- Support for multiple controllers for redundancy\n\n## Network Architecture\n\n### IPv6 Address Allocation\n- Base network: `/40` ULA prefix (deterministically generated from instance name)\n- Controllers: Each gets a `/56` subnet from the base `/40`\n- Peers: Each gets a unique 64-bit host suffix that is used in ALL controller subnets\n\n### Addressing Design\n- Each peer generates a unique host suffix (e.g., `:8750:a09b:0:1`)\n- This suffix is appended to each controller's `/56` prefix to create unique addresses\n- Example: peer1 with suffix `:8750:a09b:0:1` gets:\n  - `fd51:19c1:3b:f700:8750:a09b:0:1` in controller1's subnet\n  - `fd51:19c1:c1:aa00:8750:a09b:0:1` in controller2's subnet\n- Controllers allow each peer's `/96` subnet for routing flexibility\n\n### Connectivity\n- Peers use a single WireGuard interface with multiple IPs (one per controller subnet)\n- Controllers connect to ALL other controllers and ALL peers on a single interface\n- Controllers have IPv6 forwarding enabled to route traffic between peers\n- All traffic between peers flows through controllers\n- Symmetric routing is maintained as each peer has consistent IPs across all controllers\n\n### Example Network Topology\n\n```mermaid\ngraph TB\n    subgraph Controllers\n        C1[controller1<br/>endpoint: vpn1.example.com<br/>fd51:19c1:3b:f700::/56]\n        C2[controller2<br/>endpoint: vpn2.example.com<br/>fd51:19c1:c1:aa00::/56]\n    end\n    \n    subgraph Peers\n        P1[peer1<br/>designated: controller1]\n        P2[peer2<br/>designated: controller2]\n        P3[peer3<br/>designated: controller1]\n    end\n    \n    %% Controllers connect to each other\n    C1 <--> C2\n    \n    %% All peers connect to all controllers\n    P1 <--> C1\n    P1 <--> C2\n    P2 <--> C1\n    P2 <--> C2\n    P3 <--> C1\n    P3 <--> C2\n    \n    %% Peer-to-peer traffic flows through controllers\n    P1 -.->|via controllers| P3\n    P1 -.->|via controllers| P2\n    P2 -.->|via controllers| P3\n    \n    classDef controller fill:#f9f,stroke:#333,stroke-width:4px\n    classDef peer fill:#bbf,stroke:#333,stroke-width:2px\n    class C1,C2 controller\n    class P1,P2,P3 peer\n```\n\n## Configuration\n\n### Basic Setup with Single Controller\n\n```nix\n# In your clan.nix\n{\n  instances = {\n    wireguard = {\n      module.name = \"wireguard\";\n      module.input = \"clan-core\";\n      roles.controller = {\n        machines.server1 = {};\n        settings = {\n          # Public endpoint where this controller can be reached\n          endpoint = \"vpn.example.com\";\n          # Optional: Change the UDP port (default: 51820)\n          port = 51820;\n        };\n      };\n      roles.peer = {\n        # No configuration needed if only one controller exists\n        machines.laptop1 = {};\n      };\n    };\n  }\n}\n```\n\n### Multiple Controllers Setup\n\n```nix\n{\n  instances = {\n    wireguard = {\n      module.name = \"wireguard\";\n      module.input = \"clan-core\";\n      roles.controller.machines = {\n        server1.settings.endpoint = \"vpn1.example.com\";\n        server2.settings.endpoint = \"vpn2.example.com\";\n        server3.settings.endpoint = \"vpn3.example.com\";\n      };\n      roles.peer.machines.laptop1 = {\n        # Must specify which controller subnet is exposed as the default in /etc/hosts, when multiple controllers exist\n        settings.controller = \"server1\";\n      };\n    };\n  }\n}\n```\n\n### Advanced Options\n\n\n### Automatic Hostname Resolution\n\nThe wireguard service automatically adds entries to `/etc/hosts` for all machines in the network. Each machine is accessible via its hostname in the format `<machine-name>.<instance-name>`.\n\nFor example, with an instance named `vpn`:\n- `server1.vpn` - resolves to server1's IPv6 address\n- `laptop1.vpn` - resolves to laptop1's IPv6 address\n\nThis allows machines to communicate using hostnames instead of IPv6 addresses:\n\n```bash\n# Ping another machine by hostname\nping6 server1.vpn\n\n# SSH to another machine\nssh user@laptop1.vpn\n```\n\n## Troubleshooting\n\n### Check Wireguard Status\n```bash\nsudo wg show\n```\n\n### Verify IP Addresses\n```bash\nip addr show dev <instance-name>\n```\n\n### Check Routing\n```bash\nip -6 route show dev <instance-name>\n```\n\n### Interface Fails to Start: \"Address already in use\"\n\nIf you see this error in your logs:\n```\nwireguard: Could not bring up interface, ignoring: Address already in use\n```\n\nThis means the configured port (default: 51820) is already in use by another service or wireguard instance. Solutions:\n\n1. **Check for conflicting wireguard instances:**\n   ```bash\n   sudo wg show\n   sudo ss -ulnp | grep 51820\n   ```\n\n2. **Use a different port:**\n   ```nix\n   services.wireguard.myinstance = {\n     roles.controller = {\n       endpoint = \"vpn.example.com\";\n       port = 51821;  # Use a different port\n     };\n   };\n   ```\n\n3. **Ensure unique ports across multiple instances:**\n   If you have multiple wireguard instances on the same machine, each must use a different port.\n\n### Key Management\n\nKeys are automatically generated and stored in the clan vars system. To regenerate keys:\n\n```bash\n# Regenerate keys for a specific machine and instance\nclan vars generate --service wireguard-keys-<instance-name> --regenerate --machine <machine-name>\n\n# Apply the new keys\nclan machines update <machine-name>\n```\n\n## Security Considerations\n\n- All traffic is encrypted using Wireguard's modern cryptography\n- Private keys never leave the machines they're generated on\n- Public keys are distributed through the clan vars system\n- Controllers must have publicly accessible endpoints\n- Firewall rules are automatically configured for the Wireguard ports\n\n"
+      },
+      "roles": {
+        "controller": {
+          "description": "A controller that routes peer traffic. Must be publicly reachable."
+        },
+        "peer": {
+          "description": "A peer that connects to one or more controllers."
+        }
+      }
+    },
+    "yggdrasil": {
+      "manifest": {
+        "categories": ["Uncategorized"],
+        "description": "Yggdrasil encrypted IPv6 routing overlay network",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/yggdrasil",
+        "readme": "This module sets up [yggdrasil](https://yggdrasil-network.github.io/) across your clan. \n\nYggdrasil is designed to be a future-proof and decentralised alternative to\nthe structured routing protocols commonly used today on the internet. Inside your clan, it will allow you to reach all of your machines.\n\n## Example Usage\n\nWhile you can specify statically configured peers for each host, yggdrasil does auto-discovery of local peers.\n\n```nix\ninventory = {\n\n  machines = {\n    peer1 = { };\n    peer2 = { };\n  };\n\n  instances = {\n    yggdrasil = {\n\n      # Deploy on all machines\n      roles.default.tags.all = { };\n\n      # Or individual hosts\n      roles.default.machines.peer1 = { };\n      roles.default.machines.peer2 = { };\n    };\n  };\n};\n```\n"
+      },
+      "roles": {
+        "default": {
+          "description": "Placeholder role to apply the yggdrasil service"
+        }
+      }
+    },
+    "zerotier": {
+      "manifest": {
+        "categories": ["Utility"],
+        "description": "Zerotier Mesh VPN Service for secure P2P networking between machines",
+        "features": {
+          "API": true
+        },
+        "name": "clan-core/zerotier",
+        "readme": "## Usage\n\n```\ninventory.instances = {\n  zerotier = {\n    module = {\n      name = \"zerotier\";\n      input = \"clan-core\";\n    };\n    roles.peer.tags.all = { };\n    roles.controller.machines.jon = { };\n    roles.moon.machines.sara.settings.stableEndpoints = [ \"77.52.165.46\" ];\n  };\n```\n\nThe input should be named according to your flake input.\nAll machines will be peers and connected to the zerotier network.\nJon is the controller machine, which will will accept other machines into the network.\nSara is a moon and sets the `stableEndpoint` setting with a publicly reachable IP, the moon is optional.\n\n## Overview\n\nThis guide explains how to set up and manage a [ZeroTier VPN](https://zerotier.com) for a clan network. Each VPN requires a single controller and can support multiple peers and optional moons for better connectivity.\n\n## Roles\n\n### 1. Controller\n\nThe [Controller](https://docs.zerotier.com/controller/) manages network membership and is responsible for admitting new peers.\nWhen a new node is added to the clan, the controller must be updated to ensure it has the latest member list.\n\n- **Key Points:**\n  - Must be online to admit new machines to the VPN.\n  - Existing nodes can continue to communicate even when the controller is offline.\n\n### 2. Moons\n\n[Moons](https://docs.zerotier.com/roots) act as relay nodes,\nproviding direct connectivity to peers via their public IP addresses.\nThey enable devices that are not publicly reachable to join the VPN by routing through these nodes.\n\n- **Configuration Notes:**\n  - Each moon must define its public IP address.\n  - Ensures connectivity for devices behind NAT or restrictive firewalls.\n\n### 3. Peers\n\nPeers are standard nodes in the VPN.\nThey connect to other peers, moons, and the controller as needed.\n\n- **Purpose:**\n  - General role for all machines that are neither controllers nor moons.\n  - Ideal for most clan members devices.\n"
+      },
+      "roles": {
+        "controller": {
+          "description": "Manages network membership and is responsible for admitting new peers to your Zerotier network."
+        },
+        "moon": {
+          "description": "A moon acts as a relay node to connect other nodes in the zerotier network that are not publicly reachable. Each moon must be publicly reachable."
+        },
+        "peer": {
+          "description": "A peer that connects to your private Zerotier network."
+        }
+      }
+    }
+  },
+  "self": {}
+}

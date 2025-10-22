@@ -3,10 +3,13 @@ from collections.abc import Callable
 import pytest
 from clan_cli.tests.fixtures_flakes import nested_dict
 from clan_lib.flake.flake import Flake
-from clan_lib.services.llm import LLMFunctionSchema, clan_module_to_llm_function
-from clan_lib.services.modules import (
-    list_service_modules,
+from clan_lib.llm.llm import (
+    OpenAIFunctionSchema,
+    aggregate_openai_function_schemas,
+    llm_final_decision_to_inventory_instances,
 )
+from clan_lib.llm.schemas import FunctionCallType, clan_module_to_openai_spec
+from clan_lib.services.modules import list_service_modules
 
 
 @pytest.mark.with_core
@@ -25,6 +28,23 @@ def test_clan_module_to_llm_func(
     config["inventory"]["instances"]["bar"]["module"]["input"] = None
     config["inventory"]["instances"]["bar"]["module"]["name"] = "sshd"
 
+    config["inventory"]["machines"] = {
+        "machine1": {
+            "tags": ["production", "backup"],
+        },
+        "machine2": {
+            "tags": ["client"],
+        },
+        "machine3": {
+            "tags": ["client"],
+        },
+    }
+    config["inventory"]["tags"] = {
+        "production": [],
+        "backup": [],
+        "client": [],
+    }
+
     # Omit input
     config["inventory"]["instances"]["baz"]["module"]["name"] = "sshd"
     # external input
@@ -42,11 +62,11 @@ def test_clan_module_to_llm_func(
     available_machines = ["machine1", "machine2", "server1"]
     available_tags = ["production", "backup", "client"]
 
-    generated_tool_func = clan_module_to_llm_function(
+    generated_tool_func = clan_module_to_openai_spec(
         borgbackup_service, available_tags, available_machines
     )
 
-    expected_tool_func: LLMFunctionSchema = {
+    expected_tool_func: OpenAIFunctionSchema = {
         "type": "function",
         "name": "borgbackup",
         "description": "Efficient, deduplicating backup program with optional compression and secure encryption.",
@@ -55,13 +75,7 @@ def test_clan_module_to_llm_func(
             "properties": {
                 "module": {
                     "type": "object",
-                    "properties": {
-                        # "input": {
-                        #     "type": "string",
-                        #     "description": "Source / Input name of the module, e.g. 'clan-core' or null for built-in modules",
-                        #     "enum": ["Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU"],
-                        # }
-                    },
+                    "properties": {},
                 },
                 "roles": {
                     "type": "object",
@@ -79,7 +93,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Machines for this role with empty configuration objects",
+                                    "description": 'Machines to assign this role to. Format: each machine name is a key with an empty object {} as value. Example: {"wintux": {}, "gchq-local": {}}',
                                 },
                                 "tags": {
                                     "type": "object",
@@ -90,7 +104,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Tags for this role with empty configuration objects",
+                                    "description": 'Tags to assign this role to. Format: each tag name is a key with an empty object {} as value. Example: {"all": {}, "nixos": {}}',
                                 },
                             },
                             "additionalProperties": False,
@@ -108,7 +122,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Machines for this role with empty configuration objects",
+                                    "description": 'Machines to assign this role to. Format: each machine name is a key with an empty object {} as value. Example: {"wintux": {}, "gchq-local": {}}',
                                 },
                                 "tags": {
                                     "type": "object",
@@ -119,7 +133,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Tags for this role with empty configuration objects",
+                                    "description": 'Tags to assign this role to. Format: each tag name is a key with an empty object {} as value. Example: {"all": {}, "nixos": {}}',
                                 },
                             },
                             "additionalProperties": False,
@@ -141,11 +155,11 @@ def test_clan_module_to_llm_func(
     )
     assert certificate_service is not None
 
-    generated_tool_func2 = clan_module_to_llm_function(
+    generated_tool_func2 = clan_module_to_openai_spec(
         certificate_service, available_tags, available_machines
     )
 
-    expected_tool_func2: LLMFunctionSchema = {
+    expected_tool_func2: OpenAIFunctionSchema = {
         "type": "function",
         "name": "certificates",
         "description": "Sets up a PKI certificate chain using step-ca",
@@ -172,7 +186,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Machines for this role with empty configuration objects",
+                                    "description": 'Machines to assign this role to. Format: each machine name is a key with an empty object {} as value. Example: {"wintux": {}, "gchq-local": {}}',
                                 },
                                 "tags": {
                                     "type": "object",
@@ -183,7 +197,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Tags for this role with empty configuration objects",
+                                    "description": 'Tags to assign this role to. Format: each tag name is a key with an empty object {} as value. Example: {"all": {}, "nixos": {}}',
                                 },
                             },
                             "additionalProperties": False,
@@ -201,7 +215,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Machines for this role with empty configuration objects",
+                                    "description": 'Machines to assign this role to. Format: each machine name is a key with an empty object {} as value. Example: {"wintux": {}, "gchq-local": {}}',
                                 },
                                 "tags": {
                                     "type": "object",
@@ -212,7 +226,7 @@ def test_clan_module_to_llm_func(
                                         }
                                     },
                                     "additionalProperties": False,
-                                    "description": "Tags for this role with empty configuration objects",
+                                    "description": 'Tags to assign this role to. Format: each tag name is a key with an empty object {} as value. Example: {"all": {}, "nixos": {}}',
                                 },
                             },
                             "additionalProperties": False,
@@ -228,3 +242,48 @@ def test_clan_module_to_llm_func(
     }
 
     assert generated_tool_func2 == expected_tool_func2
+
+    aggregate = aggregate_openai_function_schemas(flake)
+
+    assert len(aggregate.tools) >= 2
+
+
+def test_llm_final_decision_to_inventory_conversion() -> None:
+    """Test conversion of LLM final decision to inventory format."""
+    final_decision: list[FunctionCallType] = [
+        {
+            "id": "toolu_01XHjHUMzZVTcDCqaYQJEWu5",
+            "call_id": "toolu_01XHjHUMzZVTcDCqaYQJEWu5",
+            "type": "function_call",
+            "name": "matrix-synapse",
+            "arguments": '{"roles": {"default": {"machines": {"gchq-local": {}}}}}',
+        },
+        {
+            "id": "toolu_01TsjKZ87J3fi6RNzNzu33ff",
+            "call_id": "toolu_01TsjKZ87J3fi6RNzNzu33ff",
+            "type": "function_call",
+            "name": "monitoring",
+            "arguments": '{"module": { "input": "qubasas-clan" }, "roles": {"telegraf": {"tags": {"all": {}}}}}',
+        },
+    ]
+    assert isinstance(final_decision, list)
+
+    expected = [
+        {
+            "module": {
+                "input": None,
+                "name": "matrix-synapse",
+            },
+            "roles": {"default": {"machines": {"gchq-local": {}}}},
+        },
+        {
+            "module": {
+                "input": "qubasas-clan",
+                "name": "monitoring",
+            },
+            "roles": {"telegraf": {"tags": {"all": {}}}},
+        },
+    ]
+
+    result = llm_final_decision_to_inventory_instances(final_decision)
+    assert result == expected

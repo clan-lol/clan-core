@@ -1,0 +1,46 @@
+{
+  "instances": {},
+  "meta": {
+    "description": null,
+    "icon": null,
+    "name": "Qubasas_Clan"
+  },
+  "machines": {
+    "gchq-local": {
+      "deploy": {
+        "buildHost": null,
+        "targetHost": null
+      },
+      "description": null,
+      "icon": null,
+      "installedAt": 1756814302,
+      "machineClass": "nixos",
+      "name": "gchq-local",
+      "tags": ["all", "nixos"]
+    },
+    "qube-email": {
+      "deploy": {
+        "buildHost": null,
+        "targetHost": null
+      },
+      "description": null,
+      "icon": null,
+      "installedAt": 1756814302,
+      "machineClass": "nixos",
+      "name": "qube-email",
+      "tags": ["all", "nixos"]
+    },
+    "wintux": {
+      "deploy": {
+        "buildHost": null,
+        "targetHost": null
+      },
+      "description": null,
+      "icon": null,
+      "installedAt": 1756814302,
+      "machineClass": "nixos",
+      "name": "wintux",
+      "tags": ["all", "nixos"]
+    }
+  }
+}

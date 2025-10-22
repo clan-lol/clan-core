@@ -36,5 +36,6 @@
   "virtiofsd",
   "waypipe",
   "zbar",
-  "zenity"
+  "zenity",
+  "ollama"
 ]
