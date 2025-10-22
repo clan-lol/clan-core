@@ -237,7 +237,7 @@ def get_service_readmes(
     if input_name is None:
         query_param = "staticModules"
 
-    service_queries = "{" + ",".join(service_names) + "}"
+    service_queries = "{" + ",".join(sorted(service_names)) + "}"
 
     query = (
         f"clanInternals.inventoryClass.{query_param}.{service_queries}.manifest.readme"
