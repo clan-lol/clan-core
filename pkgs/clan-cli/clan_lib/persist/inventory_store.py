@@ -163,7 +163,7 @@ class InventoryStore:
         return sanitize(filtered, self._allowed_path_transforms, [])
 
     def get_readonly_raw(self, keys: set[str]) -> Inventory:
-        attrs = "{" + ",".join(keys) + "}"
+        attrs = "{" + ",".join(sorted(keys)) + "}"
         return self._flake.select(f"clanInternals.inventoryClass.inventory.{attrs}")
 
     def _get_persisted(self) -> InventorySnapshot:
