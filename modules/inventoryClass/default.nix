@@ -32,15 +32,18 @@ in
     flakeInputs = mkOption {
       type = types.raw;
     };
-
-    directory = mkOption {
-      type = types.path;
+    exportsModule = mkOption {
+      type = types.raw;
     };
+
     distributedServices = mkOption {
       type = types.raw;
     };
     inventory = mkOption {
       type = types.raw;
+    };
+    directory = mkOption {
+      type = types.path;
     };
     machines = mkOption {
       type = types.attrsOf (submodule ({

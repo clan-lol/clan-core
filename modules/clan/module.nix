@@ -231,18 +231,20 @@ in
             ../inventoryClass/default.nix
             {
               inherit inventory directory flakeInputs;
+              exportsModule = config.exportsModule;
             }
             (
-              let
-                clanConfig = config;
-              in
               { config, ... }:
               {
                 staticModules = clan-core.clan.modules;
 
                 distributedServices = clanLib.inventory.mapInstances {
-                  inherit (clanConfig) inventory exportsModule;
-                  inherit flakeInputs directory;
+                  inherit (config)
+                    inventory
+                    directory
+                    flakeInputs
+                    exportsModule
+                    ;
                   clanCoreModules = clan-core.clan.modules;
                   prefix = [ "distributedServices" ];
                 };
