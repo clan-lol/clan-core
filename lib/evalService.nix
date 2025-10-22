@@ -17,9 +17,9 @@ lib.evalModules {
   specialArgs._ctx = prefix;
   modules = [
     # Base module
-    ./service-module.nix
+    ./inventory/distributed-service/service-module.nix
     # Feature modules
-    (lib.modules.importApply ./api-feature.nix {
+    (lib.modules.importApply ./inventory/distributed-service/api-feature.nix {
       inherit clanLib prefix;
     })
   ]

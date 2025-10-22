@@ -16,10 +16,10 @@ lib.fix (
       */
       callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
-      evalService = clanLib.callLib ./modules/inventory/distributed-service/evalService.nix { };
+      evalService = clanLib.callLib ./evalService.nix { };
       # ------------------------------------
       # ClanLib functions
-      inventory = clanLib.callLib ./modules/inventory { };
+      inventory = clanLib.callLib ./inventory { };
       test = clanLib.callLib ./test { };
       flake-inputs = clanLib.callLib ./flake-inputs.nix { };
       # Custom types

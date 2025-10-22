@@ -68,6 +68,7 @@
       (
         { ... }:
         {
+          debug = true;
           clan = {
             meta.name = "clan-core";
             inventory = {
@@ -98,6 +99,7 @@
               ./lib/filter-clan-core/flake-module.nix
               ./lib/flake-module.nix
               ./lib/flake-parts/clan-nixos-test.nix
+              ./modules/flake-module.nix
               ./nixosModules/clanCore/vars/flake-module.nix
               ./nixosModules/flake-module.nix
               ./pkgs/clan-cli/clan_cli/tests/flake-module.nix

@@ -10,7 +10,7 @@ in
   inventoryModule = {
     _file = "clanLib.inventory.module";
     imports = [
-      ../inventoryClass/inventory.nix
+      ../../modules/inventoryClass/inventory.nix
     ];
     _module.args = { inherit clanLib; };
   };
