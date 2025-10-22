@@ -62,6 +62,6 @@ in
       peer1.succeed("chmod 640 /var/log/journal/*/user-1000.journal*")
 
       # Run tests as text-user (environment variables are set automatically)
-      peer1.succeed("su - text-user -c 'pytest -s -n0 ${cli}/${cli.pythonRuntime.sitePackages}/clan_lib/service_runner'")
+      peer1.succeed("su - text-user -c 'pytest -p no:cacheprovider -o addopts="" -s -n0 ${cli.passthru.sourceWithTests}/clan_lib/service_runner'")
     '';
 }

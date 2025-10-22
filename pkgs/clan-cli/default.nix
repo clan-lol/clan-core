@@ -103,7 +103,6 @@ let
           _root: path: _type:
           (builtins.match ".*/test_[^/]+\.py" path) != null # matches test_*.py
           && (builtins.match ".*/[^/]+_test\.py" path) != null # matches *_test.py
-          && (builtins.match ".*/container_test\.py" path) == null # doesn't match container_test.py
         )
       ];
     }
@@ -301,6 +300,7 @@ pythonRuntime.pkgs.buildPythonApplication {
   passthru.runtimeDependenciesMap = bundledRuntimeDependenciesMap;
   passthru.testRuntimeDependencies = testRuntimeDependencies;
   passthru.testRuntimeDependenciesMap = testRuntimeDependenciesMap;
+  passthru.sourceWithTests = sourceWithTests;
 
   # Nixpkgs doesn't get copied from `src` as it's not in `package-data` in `pyproject.toml`
   # as it significantly slows down the build so we copy it again here
