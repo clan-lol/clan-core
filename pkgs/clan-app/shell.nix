@@ -128,8 +128,8 @@ mkShell {
       export PLAYWRIGHT_BROWSERS_PATH=${
         playwright.browsers.override {
           withFfmpeg = false;
-          withFirefox = false;
-          withWebkit = true;
+          withFirefox = true;
+          withWebkit = false;
           withChromium = false;
           withChromiumHeadlessShell = false;
         }
@@ -142,7 +142,7 @@ mkShell {
 
       # stop playwright from trying to validate it has downloaded the necessary browsers
       # we are providing them manually via nix
-      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
     fi
   '';
 }

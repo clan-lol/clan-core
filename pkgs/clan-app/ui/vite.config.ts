@@ -94,7 +94,16 @@ export default defineConfig({
             provider: "playwright",
             instances: [
               {
-                browser: "webkit",
+                // Ideally we should use webkit to match clan-app, but inside a
+                // sandboxed nix build, webkit takes forever to finish
+                // launching. Chromium randomly closes itself during testing, as
+                // reported here:
+                // https://github.com/vitest-dev/vitest/discussions/7981
+                //
+                // Firefox is the only browser that can reliably finish the
+                // tests. We want to test storybook only, and the differences
+                // between browsers are probably neglegible to us
+                browser: "firefox",
               },
             ],
           },

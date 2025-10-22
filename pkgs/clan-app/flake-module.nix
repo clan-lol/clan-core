@@ -22,7 +22,6 @@
           clan-ts-api = config.packages.clan-ts-api;
           fonts = config.packages.fonts;
         };
-
       };
       #        //
       # todo add darwin support
@@ -45,8 +44,8 @@
 
       checks =
         config.packages.clan-app.tests
-        # Clan's darwin CI is a sandbox too limiting to spawn a headless brwoser
-        // lib.optionalAttrs (!lib.hasSuffix system "darwin") {
+        # Sandboxed Darwin nix build can't spawn a headless brwoser
+        // lib.optionalAttrs (!lib.hasSuffix "darwin" system) {
           inherit (config.packages.clan-app-ui.tests) clan-app-ui-storybook;
         };
     };

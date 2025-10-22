@@ -58,8 +58,8 @@ buildNpmPackage (finalAttrs: {
         env = {
           PLAYWRIGHT_BROWSERS_PATH = "${playwright.browsers.override {
             withFfmpeg = false;
-            withFirefox = false;
-            withWebkit = true;
+            withFirefox = true;
+            withWebkit = false;
             withChromium = false;
             withChromiumHeadlessShell = false;
           }}";
@@ -68,6 +68,7 @@ buildNpmPackage (finalAttrs: {
           # the playwright nix package does not support:
           # https://github.com/NixOS/nixpkgs/blob/f9c3b27aa3f9caac6717973abcc549dbde16bdd4/pkgs/development/web/playwright/driver.nix#L261
           PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "nixos";
+          DEBUG = "vitest:*";
         };
         preBuild = finalAttrs.preBuild + ''
           playwright_ver=$(jq --raw-output .devDependencies.playwright ${./ui/package.json})

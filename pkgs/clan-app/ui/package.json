@@ -15,7 +15,7 @@
     "storybook": "storybook",
     "knip": "knip --fix",
     "storybook-dev": "storybook dev -p 6006",
-    "test-storybook": "vitest run --project storybook --reporter verbose",
+    "test-storybook": "vitest run --project storybook",
     "test-storybook-update-snapshots": "vitest run --project storybook --update"
   },
   "license": "MIT",
