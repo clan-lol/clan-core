@@ -229,11 +229,8 @@ in
           };
           imports = [
             ../inventoryClass/default.nix
-            (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
-              inherit flakeInputs clanLib;
-            })
             {
-              inherit inventory directory;
+              inherit inventory directory flakeInputs;
             }
             (
               let
@@ -252,7 +249,6 @@ in
                 machines = config.distributedServices.allMachines;
               }
             )
-            ../inventoryClass/inventory-introspection.nix
           ];
         };
 
