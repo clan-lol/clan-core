@@ -1,4 +1,7 @@
-{ ... }:
+{
+  clanLib,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/zerotier";
@@ -39,6 +42,7 @@
             imports = [
               (import ./shared.nix {
                 inherit
+                  clanLib
                   instanceName
                   roles
                   config
@@ -90,6 +94,7 @@
             imports = [
               (import ./shared.nix {
                 inherit
+                  clanLib
                   instanceName
                   roles
                   config
@@ -142,6 +147,7 @@
             imports = [
               (import ./shared.nix {
                 inherit
+                  clanLib
                   instanceName
                   roles
                   config
@@ -160,15 +166,16 @@
                   );
                   networkIps = builtins.foldl' (
                     ips: name:
-                    if
-                      builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
-                    then
-                      ips
-                      ++ [
-                        (builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value")
-                      ]
-                    else
-                      ips
+                    let
+                      ztIp = clanLib.vars.getPublicValue {
+                        flake = config.clan.core.settings.directory;
+                        machine = name;
+                        generator = "zerotier";
+                        file = "zerotier-ip";
+                        default = null;
+                      };
+                    in
+                    if ztIp != null then ips ++ [ ztIp ] else ips
                   ) [ ] machines;
                   allHostIPs = settings.allowedIps ++ networkIps;
                 in
