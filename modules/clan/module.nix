@@ -228,31 +228,29 @@ in
             inherit clanLib;
           };
           imports = [
-            ../inventoryClass/builder/default.nix
-            (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
-              inherit flakeInputs clanLib;
-            })
+            ../inventoryClass/default.nix
             {
-              inherit inventory directory;
+              inherit inventory directory flakeInputs;
+              exportsModule = config.exportsModule;
             }
             (
-              let
-                clanConfig = config;
-              in
               { config, ... }:
               {
                 staticModules = clan-core.clan.modules;
 
                 distributedServices = clanLib.inventory.mapInstances {
-                  inherit (clanConfig) inventory exportsModule;
-                  inherit flakeInputs directory;
+                  inherit (config)
+                    inventory
+                    directory
+                    flakeInputs
+                    exportsModule
+                    ;
                   clanCoreModules = clan-core.clan.modules;
                   prefix = [ "distributedServices" ];
                 };
                 machines = config.distributedServices.allMachines;
               }
             )
-            ../inventoryClass/inventory-introspection.nix
           ];
         };
 
