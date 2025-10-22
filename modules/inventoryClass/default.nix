@@ -2,7 +2,6 @@
 let
   inherit (lib) types mkOption;
   submodule = m: types.submoduleWith { modules = [ m ]; };
-
 in
 {
   options = {

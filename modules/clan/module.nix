@@ -228,7 +228,7 @@ in
             inherit clanLib;
           };
           imports = [
-            ../inventoryClass/builder/default.nix
+            ../inventoryClass/default.nix
             (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
               inherit flakeInputs clanLib;
             })
