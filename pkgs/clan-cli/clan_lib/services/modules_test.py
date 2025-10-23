@@ -316,3 +316,34 @@ def test_delete_static_service_instance(
 
     # TODO: improve error message
     assert "Cannot delete path 'instances.static" in str(excinfo.value)
+
+
+@pytest.mark.with_core
+def test_inline_extra_modules(clan_flake: Callable[..., Flake]) -> None:
+    """ExtraModules are excluded from serialization to allow arbitrary inlining"""
+    # Data that can be mutated via API calls
+    mutable_inventory_json: Inventory = {
+        "instances": {
+            "static": {"module": {"name": "admin"}},
+        }
+    }
+    nix = r"""
+    {
+        inventory.instances.static = {
+            roles.default.extraModules = [
+                (_: { }) # non-serializable inline module
+            ];
+        };
+    }
+    """
+
+    flake = clan_flake(
+        {},
+        raw=nix,
+        mutable_inventory_json=mutable_inventory_json,
+    )
+
+    # Ensure preconditions
+    instances = list_service_instances(flake)
+
+    assert set(instances.keys()) == {"static"}

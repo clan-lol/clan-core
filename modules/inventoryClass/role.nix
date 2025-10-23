@@ -73,15 +73,8 @@ in
             }
             ```
       '';
-      apply = value: if lib.isString value then value else builtins.seq (builtins.toJSON value) value;
       default = [ ];
-      type = types.listOf (
-        types.oneOf [
-          types.str
-          types.path
-          (types.attrsOf types.anything)
-        ]
-      );
+      type = types.listOf types.deferredModule;
     };
   };
 }
