@@ -15,7 +15,11 @@ from clan_lib.nix_models.clan import (
     InventoryInstancesType,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
+from clan_lib.persist.path_utils import (
+    delete_by_path_tuple,
+    get_value_by_path,
+    set_value_by_path,
+)
 
 log = logging.getLogger(__name__)
 
@@ -493,6 +497,37 @@ def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
 
 
 @API.register
+def delete_service_instance(
+    flake: Flake,
+    instance_ref: str,
+) -> None:
+    """Deletes an instance
+
+    :param instance_ref: The name of the instance to update
+
+    :raises ClanError: If the instance_ref is invalid or cannot be deleted
+    """
+    inventory_store = InventoryStore(flake)
+    inventory = inventory_store.read()
+
+    instance: InventoryInstance | None = get_value_by_path(
+        inventory, f"instances.{instance_ref}", None
+    )
+
+    if instance is None:
+        msg = f"Instance '{instance_ref}' not found"
+        raise ClanError(msg)
+
+    delete_by_path_tuple(inventory, ("instances", f"{instance_ref}"))
+
+    # TODO: improve error message
+    # "Cannot delete path 'instances.static"
+    inventory_store.write(
+        inventory, message=f"Delete service instance '{instance_ref}'"
+    )
+
+
+@API.register
 def set_service_instance(
     flake: Flake, instance_ref: str, roles: InventoryInstanceRolesType
 ) -> None:
@@ -540,6 +575,8 @@ def set_service_instance(
         )
 
         # override settings, machines only if passed
+        # TODO: refactor after extraModules removal
+        # in https://git.clan.lol/clan/clan-core/pulls/5634
         merged = {
             **static,
             **role_cfg,

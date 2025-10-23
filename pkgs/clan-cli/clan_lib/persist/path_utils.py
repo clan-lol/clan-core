@@ -67,7 +67,7 @@ def set_value_by_path_tuple(d: DictLike, path: PathTuple, content: Any) -> None:
     current[keys[-1]] = content
 
 
-def delete_by_path_tuple(d: dict[str, Any], path: PathTuple) -> Any:
+def delete_by_path_tuple(d: DictLike, path: PathTuple) -> Any:
     """Deletes the nested entry specified by a dot-separated path from the dictionary using pop().
 
     :param data: The dictionary to modify.
@@ -126,6 +126,7 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
 V = TypeVar("V")
 
 
+# TODO: Use PathTuple
 def get_value_by_path(
     d: DictLike,
     path: str,
