@@ -67,20 +67,5 @@
     "solid-toast": "^0.5.0",
     "three": "^0.176.0",
     "valibot": "^1.1.0"
-  },
-  "optionalDependencies": {
-    "@esbuild/darwin-arm64": "^0.25.4",
-    "@esbuild/darwin-x64": "^0.25.4",
-    "@esbuild/linux-arm64": "^0.25.4",
-    "@esbuild/linux-x64": "^0.25.4"
-  },
-  "overrides": {
-    "vite": {
-      "rollup": "npm:@rollup/wasm-node@^4.34.9"
-    },
-    "@rollup/rollup-darwin-x64": "npm:@rollup/wasm-node@^4.34.9",
-    "@rollup/rollup-linux-x64": "npm:@rollup/wasm-node@^4.34.9",
-    "@rollup/rollup-darwin-arm64": "npm:@rollup/wasm-node@^4.34.9",
-    "@rollup/rollup-linux-arm64": "npm:@rollup/wasm-node@^4.34.9"
   }
 }
