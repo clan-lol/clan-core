@@ -115,7 +115,7 @@ in
     meta = lib.mkOption {
       type = lib.types.submoduleWith {
         modules = [
-          ./meta-interface.nix
+          ./meta.nix
         ];
       };
     };
@@ -359,7 +359,7 @@ in
                                   inherit clanLib;
                                 };
                               }
-                              (import ./roles-interface.nix { })
+                              (import ./role.nix { })
                             ];
                           }
                         );
