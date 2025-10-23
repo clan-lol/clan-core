@@ -102,7 +102,7 @@ mkShell {
     chmod -R +w api
     popd
 
-    # configure process-compospe
+    # configure process-compose
     if test -f "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"; then
       source "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"
     fi
