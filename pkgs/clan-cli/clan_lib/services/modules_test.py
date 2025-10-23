@@ -6,6 +6,7 @@ from clan_cli.tests.fixtures_flakes import nested_dict
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.services.modules import (
+    delete_service_instance,
     get_service_readmes,
     list_service_instances,
     list_service_modules,
@@ -251,3 +252,67 @@ def test_update_service_instance(
     assert updated_machines == {
         "sara": {"settings": {"greeting": "sara"}},
     }
+
+
+@pytest.mark.with_core
+def test_delete_service_instance(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    # Data that can be mutated via API calls
+    mutable_inventory_json: Inventory = {
+        "instances": {
+            "to-remain": {"module": {"name": "admin"}},
+            "to-delete": {"module": {"name": "admin"}},
+        }
+    }
+
+    flake = clan_flake({}, mutable_inventory_json=mutable_inventory_json)
+
+    # Ensure preconditions
+    instances = list_service_instances(flake)
+    assert set(instances.keys()) == {"to-delete", "to-remain"}
+
+    # Raises for non-existing instance
+    with pytest.raises(ClanError) as excinfo:
+        delete_service_instance(flake, "non-existing-instance")
+    assert "Instance 'non-existing-instance' not found" in str(excinfo.value)
+
+    # Deletes instance
+    delete_service_instance(flake, "to-delete")
+
+    updated_instances = list_service_instances(flake)
+    assert set(updated_instances.keys()) == {"to-remain"}
+
+
+@pytest.mark.with_core
+def test_delete_static_service_instance(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    # Data that can be mutated via API calls
+    mutable_inventory_json: Inventory = {
+        "instances": {
+            "static": {"module": {"name": "admin"}},
+        }
+    }
+
+    flake = clan_flake(
+        {
+            "inventory": {
+                "instances": {
+                    "static": {"roles": {"default": {}}},
+                }
+            }
+        },
+        mutable_inventory_json=mutable_inventory_json,
+    )
+
+    # Ensure preconditions
+    instances = list_service_instances(flake)
+    assert set(instances.keys()) == {"static"}
+
+    # Raises for non-existing instance
+    with pytest.raises(ClanError) as excinfo:
+        delete_service_instance(flake, "static")
+
+    # TODO: improve error message
+    assert "Cannot delete path 'instances.static" in str(excinfo.value)
