@@ -14,7 +14,7 @@ import Icon from "../Icon/Icon";
 import cx from "classnames";
 import { Dynamic } from "solid-js/web";
 
-export interface ModalContextType {
+interface ModalContextType {
   portalRef: HTMLDivElement;
 }
 

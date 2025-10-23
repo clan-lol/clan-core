@@ -39,7 +39,7 @@ import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
 import usbLogo from "@/logos/usb-stick-min.png?url";
 
-export const InstallHeader = (props: { machineName: string }) => {
+const InstallHeader = (props: { machineName: string }) => {
   return (
     <Typography hierarchy="label" size="default">
       Installing: {props.machineName}

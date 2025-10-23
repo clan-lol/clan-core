@@ -29,7 +29,7 @@ const InstallStepper = (props: InstallStepperProps) => {
   );
 };
 
-export interface InstallModalProps {
+interface InstallModalProps {
   machineName: string;
   initialStep?: InstallSteps[number]["id"];
   mount?: Node;

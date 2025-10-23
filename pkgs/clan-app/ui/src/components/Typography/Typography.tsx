@@ -9,15 +9,15 @@ import { getInClasses } from "@/src/util";
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";
 export type Family = "regular" | "mono";
-export type Transform = "uppercase" | "lowercase" | "capitalize";
-export interface SizeForHierarchy {
+type Transform = "uppercase" | "lowercase" | "capitalize";
+interface SizeForHierarchy {
   body: "default" | "s" | "xs" | "xxs";
   headline: "default" | "m" | "l" | "xl" | "xxl";
   title: "default" | "m" | "l";
   label: "default" | "s" | "xs" | "xxs";
   teaser: "default";
 }
-export interface TagForHierarchy {
+interface TagForHierarchy {
   body: "span" | "p" | "div";
   headline: "h1" | "h2" | "h3" | "h4";
   title: "h1" | "h2" | "h3" | "h4";
@@ -40,7 +40,7 @@ const defaultTagMap = {
   label: "span",
   teaser: "h3",
 } as const;
-export interface TypographyProps<H extends Hierarchy> {
+interface TypographyProps<H extends Hierarchy> {
   hierarchy: H;
   children: JSX.Element;
   size?: SizeForHierarchy[H];

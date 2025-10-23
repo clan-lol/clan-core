@@ -44,7 +44,7 @@ window.notifyBus = (msg: ProcessMessage) => {
  *
  * consider using useNotify for reactive usage on solidjs
  */
-export function _subscribeNotify<T extends ProcessMessage>(
+function _subscribeNotify<T extends ProcessMessage>(
   filter: (msg: T) => boolean,
   callback: (msg: T) => void,
 ) {
@@ -65,7 +65,7 @@ export function _subscribeNotify<T extends ProcessMessage>(
  * The signal has the value of the last message where filter was true
  * null in case no message was recieved yet
  */
-export function useNotify<T extends ProcessMessage = ProcessMessage>(
+function useNotify<T extends ProcessMessage = ProcessMessage>(
   filter: (msg: T) => boolean = () => true as boolean,
 ) {
   const [message, setMessage] = createSignal<T | null>(null);

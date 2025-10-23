@@ -7,13 +7,13 @@ import {
 } from "solid-js";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
 
-export interface StepBase {
+interface StepBase {
   id: string;
 }
 
-export type Step<ExtraFields = unknown> = StepBase & ExtraFields;
+type Step<ExtraFields = unknown> = StepBase & ExtraFields;
 
-export interface StepOptions<Id, StoreType> {
+interface StepOptions<Id, StoreType> {
   initialStep: Id;
   initialStoreData?: StoreType;
 }
@@ -95,10 +95,7 @@ export function createStepper<
 }
 
 type StoreTuple<T> = [get: Store<T>, set: SetStoreFunction<T>];
-export interface StepperReturn<
-  T extends readonly Step[],
-  StepId = T[number]["id"],
-> {
+interface StepperReturn<T extends readonly Step[], StepId = T[number]["id"]> {
   _store: never;
   activeStep: Accessor<StepId>;
   setActiveStep: (id: StepId) => void;

@@ -7,7 +7,7 @@ import styles from "./SidebarSectionInstall.module.css";
 import { Alert } from "../Alert/Alert";
 import { useClanContext } from "@/src/routes/Clan/Clan";
 
-export interface SidebarSectionInstallProps {
+interface SidebarSectionInstallProps {
   clanURI: string;
   machineName: string;
 }

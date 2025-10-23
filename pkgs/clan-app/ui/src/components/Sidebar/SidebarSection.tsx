@@ -2,7 +2,7 @@ import { JSX, Show } from "solid-js";
 import styles from "./SidebarSection.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 
-export interface SidebarSectionProps {
+interface SidebarSectionProps {
   title: string;
   controls?: JSX.Element;
   children: JSX.Element;

@@ -8,7 +8,7 @@ import { CollectionNode } from "@kobalte/core/*";
 import { Loader } from "../Loader/Loader";
 import cx from "classnames";
 
-export interface Option {
+interface Option {
   value: string;
   label: string;
   disabled?: boolean;

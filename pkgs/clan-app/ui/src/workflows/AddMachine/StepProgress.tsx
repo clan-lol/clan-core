@@ -8,7 +8,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Show } from "solid-js";
 import { Alert } from "@/src/components/Alert/Alert";
 
-export interface StepProgressProps {
+interface StepProgressProps {
   onDone: () => void;
 }
 

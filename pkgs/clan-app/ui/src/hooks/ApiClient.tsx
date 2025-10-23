@@ -1,7 +1,7 @@
 import { createContext, JSX, useContext } from "solid-js";
 import { ApiCall, OperationArgs, OperationNames } from "./api";
 
-export interface ApiClient {
+interface ApiClient {
   fetch: Fetcher;
 }
 

@@ -80,7 +80,7 @@ const [lastClickedMachine, setLastClickedMachine] = createSignal<string | null>(
 
 // Exported so others could also emit the signal if needed
 // And for testing purposes
-export function emitMachineClick(id: string | null) {
+function emitMachineClick(id: string | null) {
   setLastClickedMachine(id);
   if (id) {
     // Clear after a short delay to allow re-clicking the same machine

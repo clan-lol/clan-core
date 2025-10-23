@@ -8,11 +8,11 @@ import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
 import { getInClasses, joinByDash, keepTruthy } from "@/src/util";
 
-export type Size = "default" | "s" | "xs";
-export type Hierarchy = "primary" | "secondary";
-export type Elasticity = "default" | "fit";
+type Size = "default" | "s" | "xs";
+type Hierarchy = "primary" | "secondary";
+type Elasticity = "default" | "fit";
 
-export type Action = () => Promise<void>;
+type Action = () => Promise<void>;
 
 export interface ButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

@@ -462,7 +462,7 @@ const steps = [
   { id: "settings", content: () => <div>Adjust settings here.</div> },
 ] as const;
 
-export type ServiceSteps = typeof steps;
+type ServiceSteps = typeof steps;
 
 interface ServiceWorkflowProps {
   initialStep?: ServiceSteps[number]["id"];

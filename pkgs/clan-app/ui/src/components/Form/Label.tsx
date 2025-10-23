@@ -10,15 +10,15 @@ import styles from "./Label.module.css";
 import cx from "classnames";
 import { getInClasses } from "@/src/util";
 
-export type Size = "default" | "s";
+type Size = "default" | "s";
 
-export type LabelComponent =
+type LabelComponent =
   | typeof TextField.Label
   | typeof Checkbox.Label
   | typeof Combobox.Label
   | typeof Select.Label;
 
-export type DescriptionComponent =
+type DescriptionComponent =
   | typeof TextField.Description
   | typeof Checkbox.Description
   | typeof Combobox.Description

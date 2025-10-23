@@ -16,7 +16,7 @@ import cx from "classnames";
 import { useModalContext } from "../Modal/Modal";
 import { keepTruthy } from "@/src/util";
 
-export interface Option {
+interface Option {
   value: string;
   label: string;
   disabled?: boolean;

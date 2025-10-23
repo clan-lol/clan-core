@@ -39,7 +39,7 @@ import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
 import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
 
-export type WorldMode = "default" | "select" | "service" | "create" | "move";
+type WorldMode = "default" | "select" | "service" | "create" | "move";
 
 function createClanContext(
   clanURI: string,
