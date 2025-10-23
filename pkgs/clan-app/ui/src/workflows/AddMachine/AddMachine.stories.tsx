@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
 import {
   createMemoryHistory,
@@ -62,7 +62,7 @@ const meta: Meta<typeof AddMachine> = {
   title: "workflows/add-machine",
   component: AddMachine,
   decorators: [
-    (Story: StoryObj, context: StoryContext) => {
+    (Story) => {
       const Routes: RouteDefinition[] = [
         {
           path: "/clans/:clanURI",

@@ -1,17 +1,16 @@
-import { TagProps } from "@/src/components/Tag/Tag";
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 import { fn } from "storybook/test";
-import { Modal, ModalProps } from "@/src/components/Modal/Modal";
+import { Modal } from "@/src/components/Modal/Modal";
 import { Fieldset, FieldsetFieldProps } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { TextArea } from "@/src/components/Form/TextArea";
 import { Checkbox } from "@/src/components/Form/Checkbox";
 import { Button } from "../Button/Button";
 
-const meta: Meta<ModalProps> = {
+const meta: Meta<typeof Modal> = {
   title: "Components/Modal",
   component: Modal,
-  render: (args: ModalProps) => (
+  render: (args) => (
     <Modal
       {...args}
       children={
@@ -68,7 +67,7 @@ const meta: Meta<ModalProps> = {
 
 export default meta;
 
-type Story = StoryObj<TagProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

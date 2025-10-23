@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import cx from "classnames";
 import {
   HostFileInput,
@@ -31,17 +31,17 @@ const Examples = (props: HostFileInputProps) => (
   </div>
 );
 
-const meta = {
+const meta: Meta<typeof Examples> = {
   title: "Components/Form/HostFileInput",
   component: Examples,
   decorators: [
-    (Story: StoryObj, context: StoryContext<HostFileInputProps>) => {
+    (Story, { args }) => {
       return (
         <div
           class={cx({
-            "w-[600px]": (context.args.orientation || "vertical") == "vertical",
-            "w-[1024px]": context.args.orientation == "horizontal",
-            "bg-inv-acc-3": context.args.inverted,
+            "w-[600px]": (args.orientation || "vertical") == "vertical",
+            "w-[1024px]": args.orientation == "horizontal",
+            "bg-inv-acc-3": args.inverted,
           })}
         >
           <Story />
@@ -49,7 +49,7 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<HostFileInputProps>;
+};
 
 export default meta;
 

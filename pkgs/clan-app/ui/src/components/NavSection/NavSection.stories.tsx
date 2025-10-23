@@ -1,14 +1,11 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import {
-  NavSection,
-  NavSectionProps,
-} from "@/src/components/NavSection/NavSection";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { NavSection } from "@/src/components/NavSection/NavSection";
 
-const meta: Meta<NavSectionProps> = {
+const meta: Meta<typeof NavSection> = {
   title: "Components/NavSection",
   component: NavSection,
   decorators: [
-    (Story: StoryObj) => (
+    (Story) => (
       <div class="w-96">
         <Story />
       </div>
@@ -18,7 +15,7 @@ const meta: Meta<NavSectionProps> = {
 
 export default meta;
 
-type Story = StoryObj<NavSectionProps>;
+type Story = StoryObj<typeof NavSection>;
 
 export const Default: Story = {
   args: {

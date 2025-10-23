@@ -1,18 +1,18 @@
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
-import { Tooltip, TooltipProps } from "@/src/components/Tooltip/Tooltip";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
+import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
 
-const meta: Meta<TooltipProps> = {
+const meta: Meta<typeof Tooltip> = {
   title: "Components/Tooltip",
   component: Tooltip,
   decorators: [
-    (Story: StoryObj<TooltipProps>) => (
+    (Story) => (
       <div class="p-16">
         <Story />
       </div>
     ),
   ],
-  render: (args: TooltipProps) => (
+  render: (args) => (
     <div class="p-16">
       <Tooltip
         {...args}
@@ -33,7 +33,7 @@ const meta: Meta<TooltipProps> = {
 
 export default meta;
 
-type Story = StoryObj<TooltipProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

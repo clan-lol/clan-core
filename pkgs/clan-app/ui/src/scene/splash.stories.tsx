@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Splash } from "./splash";
 
 const meta: Meta = {

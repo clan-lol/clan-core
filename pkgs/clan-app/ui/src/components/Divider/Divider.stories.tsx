@@ -1,14 +1,14 @@
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
-import { Divider, DividerProps } from "@/src/components/Divider/Divider";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
+import { Divider } from "@/src/components/Divider/Divider";
 
-const meta: Meta<DividerProps> = {
+const meta: Meta<typeof Divider> = {
   title: "Components/Divider",
   component: Divider,
 };
 
 export default meta;
 
-type Story = StoryObj<DividerProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
@@ -30,7 +30,7 @@ export const Vertical: Story = {
     orientation: "vertical",
   },
   decorators: [
-    (Story: Story) => (
+    (Story) => (
       <div class="h-32 w-full">
         <Story />
       </div>
@@ -43,5 +43,5 @@ export const VerticalInverted: Story = {
     inverted: true,
     ...Vertical.args,
   },
-  decorators: [...Vertical.decorators],
+  decorators: Vertical.decorators,
 };

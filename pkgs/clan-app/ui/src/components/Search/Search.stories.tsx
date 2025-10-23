@@ -1,24 +1,20 @@
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-import { Search, SearchProps } from "./Search";
+import { Search } from "./Search";
 import Icon from "../Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { Typography } from "../Typography/Typography";
-import {
-  ItemRenderOptions,
-  SearchMultiple,
-  SearchMultipleProps,
-} from "./MultipleSearch";
+import { ItemRenderOptions, SearchMultiple } from "./MultipleSearch";
 import { Show } from "solid-js";
 
-const meta = {
+const meta: Meta<typeof Search> = {
   title: "Components/Search",
   component: Search,
-} satisfies Meta<SearchProps<unknown>>;
+};
 
 export default meta;
 
-type Story = StoryObj<SearchProps<unknown>>;
+type Story = StoryObj<typeof meta>;
 
 // To test the virtualizer, we can generate a list of modules
 function generateModules(count: number): Module[] {
@@ -107,7 +103,7 @@ export const Default: Story = {
       );
     },
   },
-  render: (args: SearchProps<Module>) => {
+  render: (args) => {
     return (
       <div class="fixed bottom-10 left-1/2 mb-2 w-[30rem] -translate-x-1/2">
         <Search<Module>
@@ -130,7 +126,7 @@ export const Loading: Story = {
     options: [],
     renderItem: () => <span></span>,
   },
-  render: (args: SearchProps<Module>) => {
+  render: (args) => {
     return (
       <div class="absolute bottom-1/3 w-3/4 px-3">
         <Search<Module>
@@ -235,7 +231,7 @@ export const Multiple: Story = {
       );
     },
   },
-  render: (args: SearchMultipleProps<MachineOrTag>) => {
+  render: (args) => {
     return (
       <div class="absolute bottom-1/3 w-3/4 px-3">
         <SearchMultiple<MachineOrTag>

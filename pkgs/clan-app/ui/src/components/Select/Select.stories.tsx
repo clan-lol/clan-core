@@ -1,18 +1,13 @@
-import { TagProps } from "@/src/components/Tag/Tag";
-import { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-import { Select, SelectProps } from "./Select";
+import { Select } from "./Select";
 import { Fieldset } from "../Form/Fieldset";
 
-// const meta: Meta<SelectProps> = {
-//   title: "Components/Select",
-//   component: Select,
-// };
-const meta = {
+const meta: Meta<typeof Select> = {
   title: "Components/Form/Select",
   component: Select,
   decorators: [
-    (Story: StoryObj, context: StoryContext<SelectProps>) => {
+    (Story) => {
       return (
         <div class={`w-[600px]`}>
           <Fieldset>
@@ -22,11 +17,11 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<SelectProps>;
+};
 
 export default meta;
 
-type Story = StoryObj<TagProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

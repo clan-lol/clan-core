@@ -1,4 +1,4 @@
-import type { Preview } from "@kachurun/storybook-solid-vite";
+import type { Preview } from "storybook-solidjs-vite";
 
 import "../src/index.css";
 import "./preview.css";

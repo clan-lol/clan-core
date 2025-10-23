@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import {
   createMemoryHistory,
   MemoryRouter,
@@ -134,7 +134,7 @@ const meta: Meta<typeof UpdateModal> = {
   title: "workflows/update",
   component: UpdateModal,
   decorators: [
-    (Story: StoryObj, context: StoryContext) => {
+    (Story) => {
       const Routes: RouteDefinition[] = [
         {
           path: "/clans/:clanURI",
@@ -174,14 +174,12 @@ export default meta;
 type Story = StoryObj<typeof UpdateModal>;
 
 export const Init: Story = {
-  description: "Welcome step for the update workflow",
   args: {
     open: true,
     machineName: "Jon",
   },
 };
 export const Address: Story = {
-  description: "Welcome step for the update workflow",
   args: {
     open: true,
     machineName: "Jon",
@@ -189,7 +187,6 @@ export const Address: Story = {
   },
 };
 export const UpdateProgress: Story = {
-  description: "Welcome step for the update workflow",
   args: {
     open: true,
     machineName: "Jon",
