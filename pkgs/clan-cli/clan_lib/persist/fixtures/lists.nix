@@ -25,7 +25,7 @@ let
   };
 in
 {
-  clanInternals.inventoryClass.inventory = eval.config;
+  clanInternals.inventoryClass.inventorySerialization = eval.config;
   clanInternals.inventoryClass.introspection = clanLib.introspection.getPrios {
     options = eval.options;
   };
