@@ -138,7 +138,7 @@ class InventoryStore:
     @classmethod
     def default_selectors(cls) -> list[str]:
         return [
-            f"clanInternals.inventoryClass.inventory.{key}"
+            f"clanInternals.inventoryClass.inventorySerialization.{key}"
             for key in cls.default_keys()
         ]
 
@@ -146,7 +146,7 @@ class InventoryStore:
         """Loads the evaluated inventory.
         After all merge operations with eventual nix code in buildClan.
 
-        Evaluates clanInternals.inventoryClass.inventory with nix. Which is performant.
+        Evaluates clanInternals.inventoryClass.inventorySerialization with nix. Which is performant.
 
         - Contains all clan metadata
         - Contains all machines
@@ -164,7 +164,9 @@ class InventoryStore:
 
     def get_readonly_raw(self, keys: set[str]) -> Inventory:
         attrs = "{" + ",".join(sorted(keys)) + "}"
-        return self._flake.select(f"clanInternals.inventoryClass.inventory.{attrs}")
+        return self._flake.select(
+            f"clanInternals.inventoryClass.inventorySerialization.{attrs}"
+        )
 
     def _get_persisted(self) -> InventorySnapshot:
         """Load the inventory FILE from the flake directory
