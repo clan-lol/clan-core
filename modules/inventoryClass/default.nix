@@ -40,12 +40,11 @@ let
         name:
         let
           v = set.${name};
+          loc = path ++ [ name ];
         in
-        if pred path v then
+        if pred loc v then
           [
-            (lib.nameValuePair name (
-              if lib.isAttrs v then filterAttrsRecursive' (path ++ [ name ]) pred v else v
-            ))
+            (lib.nameValuePair name (if lib.isAttrs v then filterAttrsRecursive' loc pred v else v))
           ]
         else
           [ ]
@@ -56,8 +55,7 @@ let
     # Remove extraModules from serialization,
     # identified by: prefix + pathLength + name
     # inventory.instances.*.roles.*.extraModules
-    path: _value:
-    lib.length path <= 5 || lib.head path != "instances" || (lib.elemAt path 5) != "extraModules"
+    path: _value: !(lib.length path == 5 && ((lib.last path)) == "extraModules")
   ) exposedInventory;
 in
 {
