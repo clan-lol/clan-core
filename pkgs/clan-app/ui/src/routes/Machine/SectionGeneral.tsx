@@ -22,7 +22,7 @@ type FieldNames = "name" | "description" | "machineClass";
 
 type FormValues = v.InferInput<typeof schema>;
 
-export interface SectionGeneralProps {
+interface SectionGeneralProps {
   clanURI: string;
   machineName: string;
   onSubmit: (values: FormValues) => Promise<void>;

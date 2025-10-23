@@ -16,16 +16,16 @@ export interface ClanDetails {
   fieldsSchema: SuccessData<"get_clan_details_schema">;
 }
 
-export type Tags = SuccessData<"list_tags">;
+type Tags = SuccessData<"list_tags">;
 export type Machine = SuccessData<"get_machine">;
 
-export type MachineState = SuccessData<"get_machine_state">;
+type MachineState = SuccessData<"get_machine_state">;
 export type MachineStatus = MachineState["status"];
 
-export type ListMachines = SuccessData<"list_machines">;
-export type MachineDetails = SuccessData<"get_machine_details">;
+type ListMachines = SuccessData<"list_machines">;
+type MachineDetails = SuccessData<"get_machine_details">;
 
-export type ListServiceModules = SuccessData<"list_service_modules">;
+type ListServiceModules = SuccessData<"list_service_modules">;
 export type ListServiceInstances = SuccessData<"list_service_instances">;
 
 export interface MachineDetail {
@@ -35,7 +35,7 @@ export interface MachineDetail {
 }
 
 export type MachinesQueryResult = UseQueryResult<ListMachines>;
-export type ClanListQueryResult = UseQueryResult<ClanDetails>[];
+type ClanListQueryResult = UseQueryResult<ClanDetails>[];
 
 export const DefaultQueryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +67,7 @@ export const useMachinesQuery = (clanURI: string) => {
   }));
 };
 
-export const machineKey = (clanUri: string, machineName: string) => [
+const machineKey = (clanUri: string, machineName: string) => [
   ...clanKey(clanUri),
   "machine",
   encodeBase64(machineName),
@@ -174,7 +174,7 @@ export const useMachineStateQuery = (clanURI: string, machineName: string) => {
   }));
 };
 
-export const useServiceModulesQuery = (clanURI: string) => {
+const useServiceModulesQuery = (clanURI: string) => {
   const client = useApiClient();
 
   return useQuery<ListServiceModules>(() => ({
@@ -222,10 +222,7 @@ export const useServiceInstancesQuery = (clanURI: string) => {
   }));
 };
 
-export const useMachineDetailsQuery = (
-  clanURI: string,
-  machineName: string,
-) => {
+const useMachineDetailsQuery = (clanURI: string, machineName: string) => {
   const client = useApiClient();
   return useQuery<MachineDetails>(() => ({
     queryKey: [machineKey(clanURI, machineName), "details"],
@@ -251,7 +248,7 @@ export const useMachineDetailsQuery = (
   }));
 };
 
-export const ClanDetailsPersister = experimental_createQueryPersister({
+const ClanDetailsPersister = experimental_createQueryPersister({
   storage: ClanDetailsStore,
 });
 
@@ -373,10 +370,10 @@ export const useClanListQuery = (
   }));
 };
 
-export type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
-export type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
+type MachineFlashOptions = SuccessData<"get_machine_flash_options">;
+type MachineFlashOptionsQuery = UseQueryResult<MachineFlashOptions>;
 
-export const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
+const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
   const client = useApiClient();
   return useQuery<MachineFlashOptions>(() => ({
     queryKey: ["flash_options"],
@@ -395,8 +392,8 @@ export const useMachineFlashOptions = (): MachineFlashOptionsQuery => {
   }));
 };
 
-export type SystemStorageOptions = SuccessData<"list_system_storage_devices">;
-export type SystemStorageOptionsQuery = UseQueryResult<SystemStorageOptions>;
+type SystemStorageOptions = SuccessData<"list_system_storage_devices">;
+type SystemStorageOptionsQuery = UseQueryResult<SystemStorageOptions>;
 
 export const useSystemStorageOptions = (): SystemStorageOptionsQuery => {
   const client = useApiClient();
@@ -417,10 +414,8 @@ export const useSystemStorageOptions = (): SystemStorageOptionsQuery => {
   }));
 };
 
-export type MachineHardwareSummary =
-  SuccessData<"get_machine_hardware_summary">;
-export type MachineHardwareSummaryQuery =
-  UseQueryResult<MachineHardwareSummary>;
+type MachineHardwareSummary = SuccessData<"get_machine_hardware_summary">;
+type MachineHardwareSummaryQuery = UseQueryResult<MachineHardwareSummary>;
 
 export const useMachineHardwareSummary = (
   clanUri: string,
@@ -457,8 +452,8 @@ export const useMachineHardwareSummary = (
   }));
 };
 
-export type MachineDiskSchema = SuccessData<"get_machine_disk_schemas">;
-export type MachineDiskSchemaQuery = UseQueryResult<MachineDiskSchema>;
+type MachineDiskSchema = SuccessData<"get_machine_disk_schemas">;
+type MachineDiskSchemaQuery = UseQueryResult<MachineDiskSchema>;
 
 export const useMachineDiskSchemas = (
   clanUri: string,
@@ -496,7 +491,7 @@ export const useMachineDiskSchemas = (
 };
 
 export type MachineGenerators = SuccessData<"get_generators">;
-export type MachineGeneratorsQuery = UseQueryResult<MachineGenerators>;
+type MachineGeneratorsQuery = UseQueryResult<MachineGenerators>;
 
 export const useMachineGenerators = (
   clanUri: string,
@@ -538,7 +533,7 @@ export const useMachineGenerators = (
   }));
 };
 
-export type ServiceModulesQuery = ReturnType<typeof useServiceModules>;
+type ServiceModulesQuery = ReturnType<typeof useServiceModules>;
 export type ServiceModules = SuccessData<"list_service_modules">;
 export const useServiceModules = (clanUri: string) => {
   const client = useApiClient();
@@ -566,7 +561,7 @@ export const useServiceModules = (clanUri: string) => {
 export const clanKey = (clanUri: string) => ["clans", encodeBase64(clanUri)];
 
 export type ServiceInstancesQuery = ReturnType<typeof useServiceInstances>;
-export type ServiceInstances = SuccessData<"list_service_instances">;
+type ServiceInstances = SuccessData<"list_service_instances">;
 export const useServiceInstances = (clanUri: string) => {
   const client = useApiClient();
   return useQuery(() => ({

@@ -3,7 +3,7 @@ import { mergeProps } from "solid-js";
 import styles from "./Loader.module.css";
 import cx from "classnames";
 
-export type Hierarchy = "primary" | "secondary";
+type Hierarchy = "primary" | "secondary";
 
 export interface LoaderProps {
   hierarchy?: Hierarchy;

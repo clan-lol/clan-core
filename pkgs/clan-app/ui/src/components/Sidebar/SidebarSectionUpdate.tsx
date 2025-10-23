@@ -6,7 +6,7 @@ import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
 import { useClanContext } from "@/src/routes/Clan/Clan";
 
-export interface SidebarSectionUpdateProps {
+interface SidebarSectionUpdateProps {
   clanURI: string;
   machineName: string;
 }

@@ -14,7 +14,7 @@ export interface ServiceStoreType {
 }
 
 // TODO: Ideally we would impot this from a backend model package
-export interface InventoryInstance {
+interface InventoryInstance {
   name: string;
   module: {
     name: string;
@@ -33,7 +33,7 @@ export type SubmitServiceHandler = (
   action: "create" | "update",
 ) => void | Promise<void>;
 
-export type ModuleItem = ServiceModules["modules"][number];
+type ModuleItem = ServiceModules["modules"][number];
 
 export interface Module {
   value: string;

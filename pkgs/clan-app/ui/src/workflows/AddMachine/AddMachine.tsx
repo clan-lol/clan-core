@@ -32,7 +32,7 @@ const AddMachineStepper = (props: AddMachineStepperProps) => {
   );
 };
 
-export interface AddMachineProps {
+interface AddMachineProps {
   onClose: () => void;
   onCreated: (id: string) => void;
   initialStep?: AddMachineSteps[number]["id"];

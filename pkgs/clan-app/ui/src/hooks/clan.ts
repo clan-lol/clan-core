@@ -3,7 +3,7 @@ import { addClanURI, setActiveClanURI } from "@/src/stores/clan";
 import { Params, Navigator, useParams, useSearchParams } from "@solidjs/router";
 
 export const encodeBase64 = (value: string) => window.btoa(value);
-export const decodeBase64 = (value: string) => window.atob(value);
+const decodeBase64 = (value: string) => window.atob(value);
 
 export const selectClanFolder = async () => {
   const req = callApi("get_clan_folder", {});
@@ -80,7 +80,7 @@ export const navigateToClan = (navigate: Navigator, clanURI: string) => {
 export const navigateToOnboarding = (navigate: Navigator, addClan: boolean) =>
   navigate(`/${addClan ? "?addClan=true" : ""}`);
 
-export const navigateToMachine = (
+const navigateToMachine = (
   navigate: Navigator,
   clanURI: string,
   name: string,
@@ -90,7 +90,7 @@ export const navigateToMachine = (
   navigate(path);
 };
 
-export const clanURIParam = (params: Params) => {
+const clanURIParam = (params: Params) => {
   try {
     return decodeBase64(params.clanURI);
   } catch (e) {
@@ -101,19 +101,19 @@ export const clanURIParam = (params: Params) => {
 
 export const useClanURI = () => clanURIParam(useParams());
 
-export const machineNameParam = (params: Params) => {
+const machineNameParam = (params: Params) => {
   return params.machineName;
 };
 
-export const inputParam = (params: Params) => params.input;
-export const nameParam = (params: Params) => params.name;
-export const idParam = (params: Params) => params.id;
+const inputParam = (params: Params) => params.input;
+const nameParam = (params: Params) => params.name;
+const idParam = (params: Params) => params.id;
 
 export const useMachineName = (): string => machineNameParam(useParams());
-export const useInputParam = (): string => inputParam(useParams());
-export const useNameParam = (): string => nameParam(useParams());
+const useInputParam = (): string => inputParam(useParams());
+const useNameParam = (): string => nameParam(useParams());
 
-export const maybeUseIdParam = (): string | null => {
+const maybeUseIdParam = (): string | null => {
   const params = useParams();
   if (params.id === undefined) {
     return null;

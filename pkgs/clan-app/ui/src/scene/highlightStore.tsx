@@ -7,7 +7,7 @@ const [highlightGroups, setHighlightGroups] = createStore<
 >({});
 
 // Add highlight
-export function highlight(group: string, nodeId: string) {
+function highlight(group: string, nodeId: string) {
   setHighlightGroups(group, (prev = new Set()) => {
     const next = new Set(prev);
     next.add(nodeId);
@@ -16,7 +16,7 @@ export function highlight(group: string, nodeId: string) {
 }
 
 // Remove highlight
-export function unhighlight(group: string, nodeId: string) {
+function unhighlight(group: string, nodeId: string) {
   setHighlightGroups(group, (prev = new Set()) => {
     const next = new Set(prev);
     next.delete(nodeId);

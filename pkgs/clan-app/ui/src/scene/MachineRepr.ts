@@ -52,7 +52,7 @@ export function createMachineMesh() {
   };
 }
 
-export function createCubeBase(
+function createCubeBase(
   color: THREE.ColorRepresentation,
   emissive: THREE.ColorRepresentation,
   geometry: THREE.BoxGeometry,
@@ -70,7 +70,7 @@ export function createCubeBase(
 }
 
 // Function to build rounded rect shape
-export function roundedRectShape(w: number, h: number, r: number) {
+function roundedRectShape(w: number, h: number, r: number) {
   const shape = new THREE.Shape();
   const x = -w / 2;
   const y = -h / 2;

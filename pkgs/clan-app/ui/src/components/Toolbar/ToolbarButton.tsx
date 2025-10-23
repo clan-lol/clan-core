@@ -5,7 +5,7 @@ import Icon, { IconVariant } from "@/src/components/Icon/Icon";
 import type { JSX } from "solid-js";
 import { Tooltip } from "../Tooltip/Tooltip";
 
-export interface ToolbarButtonProps
+interface ToolbarButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: IconVariant;
   description: JSX.Element;

@@ -8,7 +8,7 @@ import { useClanListQuery } from "@/src/hooks/queries";
 import { Alert } from "@/src/components/Alert/Alert";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 
-export interface ListClansModalProps {
+interface ListClansModalProps {
   onClose?: () => void;
   error?: {
     title: string;

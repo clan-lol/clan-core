@@ -19,7 +19,7 @@ import { CollectionNode } from "@kobalte/core";
 import styles from "./MachineTags.module.css";
 import { keepTruthy } from "@/src/util";
 
-export interface MachineTag {
+interface MachineTag {
   value: string;
   disabled?: boolean;
 }

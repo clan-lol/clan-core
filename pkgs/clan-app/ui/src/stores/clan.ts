@@ -3,7 +3,7 @@ import { makePersisted } from "@solid-primitives/storage";
 
 export type SceneData = Record<string, { position: [number, number] }>;
 
-export interface ClanStoreType {
+interface ClanStoreType {
   clanURIs: string[];
   activeClanURI?: string;
   sceneData: Record<string, SceneData>;

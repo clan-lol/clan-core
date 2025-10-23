@@ -18,7 +18,7 @@ import { Button } from "@/src/components/Button/Button";
 import { Loader } from "../../components/Loader/Loader";
 import { SidebarSection } from "./SidebarSection";
 
-export interface SidebarSectionFormProps<FormValues extends FieldValues> {
+interface SidebarSectionFormProps<FormValues extends FieldValues> {
   title: string;
   schema: GenericSchema<FormValues> | GenericSchemaAsync<FormValues>;
   initialValues: PartialValues<FormValues>;

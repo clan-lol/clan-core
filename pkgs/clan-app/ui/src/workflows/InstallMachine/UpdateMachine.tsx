@@ -84,7 +84,7 @@ const UpdateStepper = (props: UpdateStepperProps) => {
   );
 };
 
-export interface UpdateModalProps {
+interface UpdateModalProps {
   machineName: string;
   open: boolean;
   initialStep?: UpdateSteps[number]["id"];
@@ -92,7 +92,7 @@ export interface UpdateModalProps {
   onClose?: () => void;
 }
 
-export const UpdateHeader = (props: { machineName: string }) => {
+const UpdateHeader = (props: { machineName: string }) => {
   return (
     <Typography hierarchy="label" size="default">
       Update: {props.machineName}
@@ -206,8 +206,8 @@ const steps = [
   },
 ] as const;
 
-export type UpdateSteps = typeof steps;
-export type PromptValues = Record<string, Record<string, string>>;
+type UpdateSteps = typeof steps;
+type PromptValues = Record<string, Record<string, string>>;
 
 export const UpdateModal = (props: UpdateModalProps) => {
   const stepper = createStepper(

@@ -4,12 +4,12 @@ import { SidebarBody } from "@/src/components/Sidebar/SidebarBody";
 import cx from "classnames";
 import { splitProps } from "solid-js";
 
-export interface LinkProps {
+interface LinkProps {
   path: string;
   label?: string;
 }
 
-export interface SectionProps {
+interface SectionProps {
   title: string;
   links: LinkProps[];
 }

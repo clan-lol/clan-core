@@ -3,7 +3,7 @@ import { JSX, mergeProps } from "solid-js";
 
 import styles from "./Orienter.module.css";
 
-export interface OrienterProps {
+interface OrienterProps {
   orientation?: "vertical" | "horizontal";
   align?: "center" | "start";
   children: JSX.Element;
