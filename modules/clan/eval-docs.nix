@@ -1,19 +1,20 @@
 {
   pkgs,
   lib,
-  clan-core,
+  clanModule,
+  clanLib,
 }:
 let
   eval = lib.evalModules {
     modules = [
-      clan-core.modules.clan.default
+      clanModule
     ];
   };
 
   evalDocs = pkgs.nixosOptionsDoc {
     options = eval.options;
     warningsAreErrors = false;
-    transformOptions = clan-core.clanLib.docs.stripStorePathsFromDeclarations;
+    transformOptions = clanLib.docs.stripStorePathsFromDeclarations;
   };
 in
 {
