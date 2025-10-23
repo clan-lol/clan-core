@@ -1,14 +1,14 @@
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-import { TagSelect, TagSelectProps } from "./TagSelect";
+import { TagSelect } from "./TagSelect";
 import { Tag } from "../Tag/Tag";
 import Icon from "../Icon/Icon";
 import { createSignal } from "solid-js";
 
-const meta = {
+const meta: Meta<typeof TagSelect> = {
   title: "Components/Custom/SelectStepper",
   component: TagSelect,
-} satisfies Meta<TagSelectProps<string>>;
+};
 
 export default meta;
 
@@ -17,7 +17,7 @@ interface Item {
   label: string;
 }
 
-type Story = StoryObj<TagSelectProps<Item>>;
+type Story = StoryObj<typeof meta>;
 
 const Item = (item: Item) => (
   <Tag
@@ -42,8 +42,8 @@ export const Default: Story = {
       { value: "corge", label: "Corge" },
       { value: "grault", label: "Grault" },
     ],
-  } satisfies Partial<TagSelectProps<Item>>,
-  render: (args: TagSelectProps<Item>) => {
+  },
+  render: (args) => {
     const [state, setState] = createSignal<Item[]>([]);
     return (
       <TagSelect<Item>

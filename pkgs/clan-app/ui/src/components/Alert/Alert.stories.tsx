@@ -1,7 +1,6 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Alert, AlertProps } from "@/src/components/Alert/Alert";
 import { expect, fn } from "storybook/test";
-import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const AlertExamples = (props: AlertProps) => (
   <div class="grid w-fit grid-cols-2 gap-8">
@@ -20,14 +19,14 @@ const AlertExamples = (props: AlertProps) => (
   </div>
 );
 
-const meta: Meta<AlertProps> = {
+const meta: Meta<typeof AlertExamples> = {
   title: "Components/Alert",
   component: AlertExamples,
 };
 
 export default meta;
 
-type Story = StoryObj<AlertProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Info: Story = {
   args: {
@@ -92,10 +91,13 @@ export const InfoDismiss: Story = {
   args: {
     ...Info.args,
     onDismiss: fn(),
-    play: async ({ canvas, step, userEvent, args }: StoryContext) => {
-      await userEvent.click(canvas.getByRole("button"));
-      await expect(args.onDismiss).toHaveBeenCalled();
-    },
+  },
+  render(args) {
+    return <Alert {...args} />;
+  },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.click(canvas.getByRole("button"));
+    await expect(args.onDismiss).toHaveBeenCalled();
   },
 };
 

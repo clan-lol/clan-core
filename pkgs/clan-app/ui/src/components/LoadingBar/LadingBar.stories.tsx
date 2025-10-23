@@ -1,11 +1,11 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { LoadingBar } from "./LoadingBar";
 
-const meta: Meta = {
+const meta: Meta<typeof LoadingBar> = {
   title: "Components/LoadingBar",
   component: LoadingBar,
   decorators: [
-    (Story: StoryObj, context: StoryContext<unknown>) => {
+    (Story) => {
       return (
         <div class={"flex w-fit items-center justify-center bg-slate-500 p-10"}>
           <Story />
@@ -17,6 +17,6 @@ const meta: Meta = {
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};

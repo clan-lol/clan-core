@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { ServiceWorkflow } from "./Service";
 import {
   createMemoryHistory,
@@ -126,7 +126,7 @@ const meta: Meta<typeof ServiceWorkflow> = {
   title: "workflows/service",
   component: ServiceWorkflow,
   decorators: [
-    (Story: StoryObj, context: StoryContext) => {
+    (Story) => {
       const Routes: RouteDefinition[] = [
         {
           path: "/clans/:clanURI",
@@ -163,7 +163,7 @@ const meta: Meta<typeof ServiceWorkflow> = {
 
 export default meta;
 
-type Story = StoryObj<typeof ServiceWorkflow>;
+type Story = StoryObj<typeof meta>;
 
 // export const Default: Story = {
 //   args: {},

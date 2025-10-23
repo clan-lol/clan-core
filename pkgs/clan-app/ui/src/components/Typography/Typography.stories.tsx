@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
 import { Family, Hierarchy, Typography, Weight } from "./Typography";
 import { Component, For, Show } from "solid-js";
@@ -73,14 +73,14 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
   </table>
 );
 
-const meta: Meta<TypographyExamplesProps> = {
+const meta: Meta<typeof TypographyExamples> = {
   title: "Components/Typography",
   component: TypographyExamples,
 };
 
 export default meta;
 
-type Story = StoryObj<TypographyExamplesProps>;
+type Story = StoryObj<typeof meta>;
 
 export const BodyCondensed: Story = {
   args: {

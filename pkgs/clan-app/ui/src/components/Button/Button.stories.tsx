@@ -1,8 +1,7 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
 import { expect, fn, within } from "storybook/test";
-import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
 
@@ -202,7 +201,7 @@ const ButtonExamples: Component<ButtonProps> = (props) => (
   </>
 );
 
-const meta: Meta<ButtonProps> = {
+const meta: Meta<typeof ButtonExamples> = {
   title: "Components/Button",
   component: ButtonExamples,
 };
@@ -211,15 +210,13 @@ export default meta;
 
 type Story = StoryObj<ButtonProps>;
 
-const timeout = process.env.NODE_ENV === "test" ? 500 : 2000;
-
 export const Primary: Story = {
   args: {
     hierarchy: "primary",
     onClick: fn(),
   },
 
-  play: async ({ canvasElement, step, userEvent, args }: StoryContext) => {
+  play: async ({ canvasElement, step, userEvent, args }) => {
     const canvas = within(canvasElement);
     const buttons = await canvas.findAllByRole("button");
 
@@ -264,7 +261,7 @@ export const GhostPrimary: Story = {
   },
   play: Primary.play,
   decorators: [
-    (Story: StoryObj) => (
+    (Story) => (
       <div class="p-10 bg-def-3">
         <Story />
       </div>

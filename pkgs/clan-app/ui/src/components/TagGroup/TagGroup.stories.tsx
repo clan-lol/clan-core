@@ -1,11 +1,11 @@
-import { TagGroup, TagGroupProps } from "@/src/components/TagGroup/TagGroup";
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { TagGroup } from "@/src/components/TagGroup/TagGroup";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-const meta: Meta<TagGroupProps> = {
+const meta: Meta<typeof TagGroup> = {
   title: "Components/TagGroup",
   component: TagGroup,
   decorators: [
-    (Story: StoryObj) => (
+    (Story) => (
       /* for some reason w-x from tailwind was not working */
       <div style="width: 196px">
         <Story />
@@ -16,7 +16,7 @@ const meta: Meta<TagGroupProps> = {
 
 export default meta;
 
-type Story = StoryObj<TagGroupProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

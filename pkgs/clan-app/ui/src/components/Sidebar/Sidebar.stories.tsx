@@ -1,10 +1,5 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import {
-  createMemoryHistory,
-  MemoryRouter,
-  Route,
-  RouteSectionProps,
-} from "@solidjs/router";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createMemoryHistory, MemoryRouter, Route } from "@solidjs/router";
 import { Sidebar } from "@/src/components/Sidebar/Sidebar";
 import { Suspense } from "solid-js";
 import { addClanURI, resetStore } from "@/src/stores/clan";
@@ -106,7 +101,7 @@ const staticSections = [
   },
 ];
 
-const meta: Meta<RouteSectionProps> = {
+const meta: Meta<typeof Sidebar> = {
   title: "Components/Sidebar",
   component: Sidebar,
   render: () => {
@@ -144,7 +139,7 @@ const meta: Meta<RouteSectionProps> = {
 
 export default meta;
 
-type Story = StoryObj<RouteSectionProps>;
+type Story = StoryObj<typeof meta>;
 
 const mockFetcher = <K extends OperationNames>(
   method: K,

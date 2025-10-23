@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Component, For } from "solid-js";
 import { Logo, LogoProps, LogoVariant } from "./Logo";
 import cx from "classnames";
@@ -11,12 +11,12 @@ const LogoExamples: Component<LogoProps> = (props) => (
   </div>
 );
 
-const meta: Meta<LogoProps> = {
+const meta: Meta<typeof LogoExamples> = {
   title: "Components/Logo",
   component: LogoExamples,
   decorators: [
-    (Story: StoryObj, context: StoryContext<LogoProps>) => (
-      <div class={cx(context.args.inverted || false ? "bg-inv-acc-3" : "")}>
+    (Story, { args }) => (
+      <div class={cx(args.inverted || false ? "bg-inv-acc-3" : "")}>
         <Story />
       </div>
     ),
@@ -25,7 +25,7 @@ const meta: Meta<LogoProps> = {
 
 export default meta;
 
-type Story = StoryObj<LogoProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 

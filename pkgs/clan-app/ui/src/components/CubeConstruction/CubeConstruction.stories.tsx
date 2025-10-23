@@ -1,7 +1,7 @@
 import { CubeConstruction } from "./CubeConstruction";
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-const meta: Meta = {
+const meta: Meta<typeof CubeConstruction> = {
   title: "Components/CubeConstruction",
   component: CubeConstruction,
   globals: {
@@ -12,7 +12,7 @@ const meta: Meta = {
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},

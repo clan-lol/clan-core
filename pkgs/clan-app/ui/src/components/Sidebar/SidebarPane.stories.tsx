@@ -1,8 +1,5 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import {
-  SidebarPane,
-  SidebarPaneProps,
-} from "@/src/components/Sidebar/SidebarPane";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { SidebarPane } from "@/src/components/Sidebar/SidebarPane";
 import { SidebarSection } from "./SidebarSection";
 import { Divider } from "@/src/components/Divider/Divider";
 import { TextInput } from "@/src/components/Form/TextInput";
@@ -14,9 +11,6 @@ import { splitProps } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
-import { StoryContext } from "@kachurun/storybook-solid-vite";
-
-type Story = StoryObj<SidebarPaneProps>;
 
 const profiles = {
   ron: {
@@ -28,17 +22,12 @@ const profiles = {
   },
 };
 
-const meta: Meta<SidebarPaneProps> = {
+const meta: Meta<typeof SidebarPane> = {
   title: "Components/SidebarPane",
   component: SidebarPane,
-  decorators: [
-    (
-        Story: StoryObj<SidebarPaneProps>,
-        context: StoryContext<SidebarPaneProps>,
-      ) =>
-      () => <Story {...context.args} />,
-  ],
 };
+
+type Story = StoryObj<typeof meta>;
 
 export default meta;
 
@@ -51,7 +40,7 @@ export const Default: Story = {
   },
   // We have to provide children within a custom render function to ensure we aren't creating any reactivity outside the
   // solid-js scope.
-  render: (args: SidebarPaneProps) => (
+  render: (args) => (
     <SidebarPane
       {...args}
       children={

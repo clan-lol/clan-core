@@ -1,16 +1,16 @@
-import { Tag, TagProps } from "@/src/components/Tag/Tag";
-import { Meta, type StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import { Tag } from "@/src/components/Tag/Tag";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 import { fn } from "storybook/test";
 import Icon from "../Icon/Icon";
 
-const meta: Meta<TagProps> = {
+const meta: Meta<typeof Tag> = {
   title: "Components/Tag",
   component: Tag,
 };
 
 export default meta;
 
-type Story = StoryObj<TagProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -43,7 +43,7 @@ export const WithAction: Story = {
     icon: IconAction,
     interactive: true,
   },
-  play: async ({ canvas, step, userEvent, args }: StoryContext) => {
+  play: async ({ canvas, step, userEvent, args }) => {
     await userEvent.click(canvas.getByRole("button"));
     // await expect(args.icon.onClick).toHaveBeenCalled();
   },

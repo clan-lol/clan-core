@@ -1,4 +1,4 @@
-import type { Meta, StoryObj, StoryContext } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Component, For } from "solid-js";
 import Icon, { IconProps, IconVariant } from "./Icon";
 import cx from "classnames";
@@ -57,12 +57,12 @@ const IconExamples: Component<IconProps> = (props) => (
   </div>
 );
 
-const meta: Meta<IconProps> = {
+const meta: Meta<typeof IconExamples> = {
   title: "Components/Icon",
   component: IconExamples,
   decorators: [
-    (Story: StoryObj, context: StoryContext<IconProps>) => (
-      <div class={cx(context.args.inverted || false ? "bg-inv-acc-3" : "")}>
+    (Story, { args }) => (
+      <div class={cx(args.inverted || false ? "bg-inv-acc-3" : "")}>
         <Story />
       </div>
     ),
@@ -71,7 +71,7 @@ const meta: Meta<IconProps> = {
 
 export default meta;
 
-type Story = StoryObj<IconProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 

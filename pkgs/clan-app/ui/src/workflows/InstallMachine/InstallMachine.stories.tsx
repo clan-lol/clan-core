@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { InstallModal } from "./InstallMachine";
 import {
   createMemoryHistory,
@@ -161,7 +161,7 @@ const meta: Meta<typeof InstallModal> = {
   title: "workflows/install",
   component: InstallModal,
   decorators: [
-    (Story: StoryObj, context: StoryContext) => {
+    (Story) => {
       const Routes: RouteDefinition[] = [
         {
           path: "/clans/:clanURI",
@@ -198,10 +198,9 @@ const meta: Meta<typeof InstallModal> = {
 
 export default meta;
 
-type Story = StoryObj<typeof InstallModal>;
+type Story = StoryObj<typeof meta>;
 
 export const Init: Story = {
-  description: "Welcome step for the installation workflow",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -209,7 +208,6 @@ export const Init: Story = {
   },
 };
 export const CreateInstallerProse: Story = {
-  description: "Prose step for creating an installer",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -217,7 +215,6 @@ export const CreateInstallerProse: Story = {
   },
 };
 export const CreateInstallerImage: Story = {
-  description: "Configure the image to install",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -225,7 +222,6 @@ export const CreateInstallerImage: Story = {
   },
 };
 export const CreateInstallerDisk: Story = {
-  description: "Select a disk to install the image on",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -233,7 +229,6 @@ export const CreateInstallerDisk: Story = {
   },
 };
 export const CreateInstallerProgress: Story = {
-  description: "Showed while the USB stick is being flashed",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -241,7 +236,6 @@ export const CreateInstallerProgress: Story = {
   },
 };
 export const CreateInstallerDone: Story = {
-  description: "Installation done step",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -249,7 +243,6 @@ export const CreateInstallerDone: Story = {
   },
 };
 export const InstallConfigureAddress: Story = {
-  description: "Installation configure address step",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -257,7 +250,6 @@ export const InstallConfigureAddress: Story = {
   },
 };
 export const InstallCheckHardware: Story = {
-  description: "Installation check hardware step",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -265,7 +257,6 @@ export const InstallCheckHardware: Story = {
   },
 };
 export const InstallSelectDisk: Story = {
-  description: "Select disk to install the system on",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -273,7 +264,6 @@ export const InstallSelectDisk: Story = {
   },
 };
 export const InstallVars: Story = {
-  description: "Fill required credentials and data for the installation",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -281,7 +271,6 @@ export const InstallVars: Story = {
   },
 };
 export const InstallSummary: Story = {
-  description: "Summary of the installation steps",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -289,7 +278,6 @@ export const InstallSummary: Story = {
   },
 };
 export const InstallProgress: Story = {
-  description: "Shown while the installation is in progress",
   args: {
     open: true,
     machineName: "Test Machine",
@@ -297,7 +285,6 @@ export const InstallProgress: Story = {
   },
 };
 export const InstallDone: Story = {
-  description: "Shown after the installation is done",
   args: {
     open: true,
     machineName: "Test Machine",

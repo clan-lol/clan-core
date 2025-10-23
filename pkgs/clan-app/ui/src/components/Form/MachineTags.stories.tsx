@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import { MachineTags, MachineTagsProps } from "./MachineTags";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { MachineTags } from "./MachineTags";
 import { createForm, setValue } from "@modular-forms/solid";
 import { Button } from "../Button/Button";
 
-const meta = {
+const meta: Meta<typeof MachineTags> = {
   title: "Components/MachineTags",
   component: MachineTags,
-} satisfies Meta<MachineTagsProps>;
+};
 
 export default meta;
 

@@ -1,4 +1,4 @@
-import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import {
   Fieldset,
   FieldsetFieldProps,
@@ -18,17 +18,17 @@ const FieldsetExamples = (props: FieldsetProps) => (
   </div>
 );
 
-const meta = {
+const meta: Meta<typeof FieldsetExamples> = {
   title: "Components/Form/Fieldset",
   component: FieldsetExamples,
   decorators: [
-    (Story: StoryObj, context: StoryContext<FieldsetProps>) => {
+    (Story, { args }) => {
       return (
         <div
           class={cx({
-            "w-[600px]": (context.args.orientation || "vertical") == "vertical",
-            "w-[512px]": context.args.orientation == "horizontal",
-            "bg-inv-acc-3": context.args.inverted,
+            "w-[600px]": (args.orientation || "vertical") == "vertical",
+            "w-[512px]": args.orientation == "horizontal",
+            "bg-inv-acc-3": args.inverted,
           })}
         >
           <Story />
@@ -36,7 +36,7 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<FieldsetProps>;
+};
 
 export default meta;
 

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@kachurun/storybook-solid";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { Loader, LoaderProps } from "@/src/components/Loader/Loader";
 
 const LoaderExamples = (props: LoaderProps) => (
@@ -9,14 +9,14 @@ const LoaderExamples = (props: LoaderProps) => (
   </div>
 );
 
-const meta: Meta<LoaderProps> = {
+const meta: Meta<typeof LoaderExamples> = {
   title: "Components/Loader",
   component: LoaderExamples,
 };
 
 export default meta;
 
-type Story = StoryObj<LoaderProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {

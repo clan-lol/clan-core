@@ -1,14 +1,11 @@
-import {
-  MachineStatus,
-  MachineStatusProps,
-} from "@/src/components/MachineStatus/MachineStatus";
-import { Meta, StoryObj } from "@kachurun/storybook-solid";
+import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
+import { Meta, StoryObj } from "storybook-solidjs-vite";
 
-const meta: Meta<MachineStatusProps> = {
+const meta: Meta<typeof MachineStatus> = {
   title: "Components/MachineStatus",
   component: MachineStatus,
   decorators: [
-    (Story: StoryObj) => (
+    (Story) => (
       <div class="p-5 bg-inv-1">
         <Story />
       </div>
@@ -18,7 +15,7 @@ const meta: Meta<MachineStatusProps> = {
 
 export default meta;
 
-type Story = StoryObj<MachineStatusProps>;
+type Story = StoryObj<typeof meta>;
 
 export const Loading: Story = {
   args: {},
