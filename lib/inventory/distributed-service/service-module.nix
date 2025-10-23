@@ -216,7 +216,7 @@ in
 
                             options.extraModules = lib.mkOption {
                               default = [ ];
-                              type = types.listOf (types.either types.deferredModule types.str);
+                              type = types.listOf types.deferredModule;
                             };
                           }
                         )
