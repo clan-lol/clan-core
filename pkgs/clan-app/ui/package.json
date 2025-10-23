@@ -14,11 +14,9 @@
     "vite": "vite",
     "storybook": "storybook",
     "knip": "knip --fix",
-    "storybook-build": "storybook build",
     "storybook-dev": "storybook dev -p 6006",
     "test-storybook": "vitest run --project storybook",
-    "test-storybook-update-snapshots": "vitest run --project storybook --update",
-    "test-storybook-static": "npm run storybook-build && concurrently -k -s first -n 'SB,TEST' -c 'magenta,blue' 'http-server storybook-static --port 6006 --silent' 'wait-on tcp:127.0.0.1:6006 && npm run test-storybook'"
+    "test-storybook-update-snapshots": "vitest run --project storybook --update"
   },
   "license": "MIT",
   "devDependencies": {
@@ -50,7 +48,7 @@
     "jsdom": "^26.1.0",
     "knip": "^5.61.2",
     "markdown-to-jsx": "^7.7.10",
-    "playwright": "~1.55.1",
+    "playwright": "1.54.1",
     "postcss": "^8.4.38",
     "postcss-url": "^10.1.3",
     "prettier": "^3.2.5",

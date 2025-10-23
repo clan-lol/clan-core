@@ -12,11 +12,13 @@
   fetchzip,
   process-compose,
   json2ts,
-  playwright-driver,
+  playwright,
   luakit,
+  jq,
   self',
 }:
 let
+  RED = "\\033[1;31m";
   GREEN = "\\033[1;32m";
   NC = "\\033[0m";
 
@@ -108,32 +110,39 @@ mkShell {
     export PC_CONFIG_FILES="$CLAN_CORE_PATH/pkgs/clan-app/process-compose.yaml"
 
     echo -e "${GREEN}To launch a qemu VM for testing, run:\n  start-vm <number of VMs>${NC}"
-  ''
-  +
-    # todo darwin support needs some work
-    (lib.optionalString stdenv.hostPlatform.isLinux ''
-      # configure playwright for storybook snapshot testing
-      # we only want webkit as that matches what the app is rendered with
 
+    # configure playwright for storybook snapshot testing
+    # we only want webkit as that matches what the app is rendered with
+
+
+    playwright_ver=$(${jq}/bin/jq --raw-output .devDependencies.playwright ${./ui/package.json})
+    if [[ $playwright_ver != '${playwright.version}' ]]; then
+      echo >&2 -en '${RED}'
+      echo >&2 "Error: playwright npm package version ($playwright_ver) is different from that from the nixpkgs (${playwright.version})"
+      echo >&2 "Run this command to update the npm package version"
+      echo >&2
+      echo >&2 "  npm i -D --save-exact playwright@${playwright.version}"
+      echo >&2
+      echo >&2 -en '${NC}'
+    else
       export PLAYWRIGHT_BROWSERS_PATH=${
-        playwright-driver.browsers.override {
+        playwright.browsers.override {
           withFfmpeg = false;
-          withFirefox = false;
-          withWebkit = true;
+          withFirefox = true;
+          withWebkit = false;
           withChromium = false;
           withChromiumHeadlessShell = false;
         }
       }
 
+      # This is needed to disable revisionOverrides in browsers.json which
+      # the playwright nix package does not support
+      # https://github.com/NixOS/nixpkgs/blob/f9c3b27aa3f9caac6717973abcc549dbde16bdd4/pkgs/development/web/playwright/driver.nix#L261
+      export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=nixos
+
       # stop playwright from trying to validate it has downloaded the necessary browsers
       # we are providing them manually via nix
-
-      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
-
-      # playwright browser drivers are versioned e.g. webkit-2191
-      # this helps us avoid having to update the playwright js dependency everytime we update nixpkgs and vice versa
-      # see vitest.config.js for corresponding launch configuration
-
-      export PLAYWRIGHT_WEBKIT_EXECUTABLE=$(find -L "$PLAYWRIGHT_BROWSERS_PATH" -type f -name "pw_run.sh")
-    '');
+      export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
+    fi
+  '';
 }

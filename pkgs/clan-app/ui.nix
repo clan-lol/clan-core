@@ -4,8 +4,11 @@
   importNpmLock,
   clan-ts-api,
   fonts,
+  ps,
+  jq,
+  playwright,
 }:
-buildNpmPackage (_finalAttrs: {
+buildNpmPackage (finalAttrs: {
   pname = "clan-app-ui";
   version = "0.0.1";
   nodejs = nodejs_22;
@@ -32,36 +35,53 @@ buildNpmPackage (_finalAttrs: {
   # todo figure out why this fails only inside of Nix
   # Something about passing orientation in any of the Form stories is causing the browser to crash
   # `npm run test-storybook-static` works fine in the devshell
-  #
-  #  passthru = rec {
-  #    storybook = buildNpmPackage {
-  #      pname = "${finalAttrs.pname}-storybook";
-  #      inherit (finalAttrs)
-  #        version
-  #        nodejs
-  #        src
-  #        npmDeps
-  #        npmConfigHook
-  #        preBuild
-  #        ;
-  #
-  #      nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
-  #        ps
-  #      ];
-  #
-  #      npmBuildScript = "test-storybook-static";
-  #
-  #      env = finalAttrs.env // {
-  #        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
-  #        PLAYWRIGHT_BROWSERS_PATH = "${playwright-driver.browsers.override {
-  #          withChromiumHeadlessShell = true;
-  #        }}";
-  #        PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "ubuntu-24.04";
-  #      };
-  #
-  #      postBuild = ''
-  #        mv storybook-static $out
-  #      '';
-  #    };
-  #  };
+
+  passthru = {
+    tests = {
+      "${finalAttrs.pname}-storybook" = buildNpmPackage {
+        pname = "${finalAttrs.pname}-storybook";
+        inherit (finalAttrs)
+          version
+          nodejs
+          src
+          npmDeps
+          npmConfigHook
+          ;
+
+        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
+          ps
+          jq
+        ];
+
+        npmBuildScript = "test-storybook";
+
+        env = {
+          PLAYWRIGHT_BROWSERS_PATH = "${playwright.browsers.override {
+            withFfmpeg = false;
+            withFirefox = true;
+            withWebkit = false;
+            withChromium = false;
+            withChromiumHeadlessShell = false;
+          }}";
+          PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+          # This is needed to disable revisionOverrides in browsers.json which
+          # the playwright nix package does not support:
+          # https://github.com/NixOS/nixpkgs/blob/f9c3b27aa3f9caac6717973abcc549dbde16bdd4/pkgs/development/web/playwright/driver.nix#L261
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE = "nixos";
+          DEBUG = "vitest:*";
+        };
+        preBuild = finalAttrs.preBuild + ''
+          playwright_ver=$(jq --raw-output .devDependencies.playwright ${./ui/package.json})
+          if [[ $playwright_ver != '${playwright.version}' ]]; then
+            echo >&2 "playwright npm package version ($playwright_ver) is different from that from the nixpkgs (${playwright.version})"
+            echo >&2 "Run this command to update the npm package version"
+            echo >&2
+            echo >&2 "  npm i -D --save-exact playwright@${playwright.version}"
+            echo >&2
+            exit 1
+          fi
+        '';
+      };
+    };
+  };
 })

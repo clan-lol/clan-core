@@ -1,10 +1,5 @@
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
-import {
-  createForm,
-  getError,
-  SubmitHandler,
-  valiForm,
-} from "@modular-forms/solid";
+import { createForm, SubmitHandler, valiForm } from "@modular-forms/solid";
 import * as v from "valibot";
 import { InstallSteps, InstallStoreType } from "../InstallMachine";
 import { Fieldset } from "@/src/components/Form/Fieldset";
