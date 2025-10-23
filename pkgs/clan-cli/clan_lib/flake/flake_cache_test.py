@@ -241,9 +241,9 @@ def test_caching_works(flake: ClanFlake) -> None:
         wraps=my_flake.get_from_nix,
     ) as tracked_build:
         assert tracked_build.call_count == 0
-        my_flake.select("clanInternals.inventoryClass.inventory.meta")
+        my_flake.select("clanInternals.inventoryClass.inventorySerialization.meta")
         assert tracked_build.call_count == 1
-        my_flake.select("clanInternals.inventoryClass.inventory.meta")
+        my_flake.select("clanInternals.inventoryClass.inventorySerialization.meta")
         assert tracked_build.call_count == 1
 
 
