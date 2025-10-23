@@ -118,7 +118,7 @@
                       _file = "docs flake-module";
                       imports = [
                         { _module.args = { inherit clanLib; }; }
-                        (import ../../modules/inventoryClass/roles-interface.nix {
+                        (import ../../modules/inventoryClass/role.nix {
                           nestedSettingsOption = mkOption {
                             type = types.raw;
                             description = ''

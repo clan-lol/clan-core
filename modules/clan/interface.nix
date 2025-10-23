@@ -288,7 +288,7 @@ in
         Global information about the clan.
       '';
       type = types.deferredModuleWith {
-        staticModules = [ ../inventoryClass/meta-interface.nix ];
+        staticModules = [ ../inventoryClass/meta.nix ];
       };
       default = { };
     };
