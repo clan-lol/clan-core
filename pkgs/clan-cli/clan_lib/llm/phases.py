@@ -85,7 +85,8 @@ def get_llm_discovery_phase(
         {"role": "assistant", "content": assistant_context},
     ]
     messages.extend(_strip_conversation_metadata(conversation_history))
-    messages.append(_user_message(user_request))
+    if user_request:
+        messages.append(_user_message(user_request))
 
     # Call LLM with only get_readme tool
     model_config = get_model_config(provider)
@@ -233,7 +234,8 @@ def get_llm_service_selection(
         {"role": "assistant", "content": combined_assistant_context},
     ]
     messages.extend(_strip_conversation_metadata(conversation_history))
-    messages.append(_user_message(user_request))
+    if user_request:
+        messages.append(_user_message(user_request))
 
     model_config = get_model_config(provider)
 
@@ -430,8 +432,8 @@ def get_llm_final_decision(
         {"role": "assistant", "content": combined_assistant_context},
     ]
     messages.extend(_strip_conversation_metadata(conversation_history))
-
-    messages.append(_user_message(user_request))
+    if user_request:
+        messages.append(_user_message(user_request))
 
     # Get full schemas
     model_config = get_model_config(provider)
