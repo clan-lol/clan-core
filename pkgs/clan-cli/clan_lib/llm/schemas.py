@@ -66,18 +66,28 @@ class ChatMessage(TypedDict):
 ConversationHistory = list[ChatMessage]
 
 
-class PendingFinalDecisionState(TypedDict, total=False):
-    service_name: NotRequired[str]
-    service_summary: NotRequired[str]
+class PendingDiscoveryState(TypedDict, total=False):
+    user_request: NotRequired[str]
+
+
+class PendingReadmeFetchState(TypedDict, total=False):
+    readme_requests: NotRequired[list[dict[str, JSONValue]]]
 
 
 class PendingServiceSelectionState(TypedDict, total=False):
     readme_results: NotRequired[list[dict[str, JSONValue]]]
 
 
+class PendingFinalDecisionState(TypedDict, total=False):
+    service_name: NotRequired[str]
+    service_summary: NotRequired[str]
+
+
 class SessionState(TypedDict, total=False):
-    pending_final_decision: NotRequired[PendingFinalDecisionState]
+    pending_discovery: NotRequired[PendingDiscoveryState]
+    pending_readme_fetch: NotRequired[PendingReadmeFetchState]
     pending_service_selection: NotRequired[PendingServiceSelectionState]
+    pending_final_decision: NotRequired[PendingFinalDecisionState]
 
 
 class JSONSchemaProperty(TypedDict, total=False):

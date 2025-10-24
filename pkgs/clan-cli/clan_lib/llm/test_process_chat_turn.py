@@ -16,16 +16,12 @@ from clan_lib.llm.endpoints import (
     parse_ollama_response,
     parse_openai_response,
 )
-from clan_lib.llm.llm import (
-    DiscoveryProgressEvent,
-    FinalDecisionProgressEvent,
-    ReadmeFetchProgressEvent,
-    ServiceSelectionProgressEvent,
-    ServiceSelectionResult,
+from clan_lib.llm.llm_types import ServiceSelectionResult
+from clan_lib.llm.orchestrator import get_llm_turn
+from clan_lib.llm.phases import (
     execute_readme_requests,
     get_llm_final_decision,
     get_llm_service_selection,
-    process_chat_turn,
 )
 from clan_lib.llm.schemas import (
     AiAggregate,
@@ -37,7 +33,42 @@ from clan_lib.llm.schemas import (
 from clan_lib.services.modules import ServiceReadmeCollection
 
 if TYPE_CHECKING:
+    from clan_lib.llm.llm_types import ChatResult
     from clan_lib.llm.schemas import ChatMessage
+
+
+def execute_multi_turn_workflow(
+    user_request: str,
+    flake: Flake,
+    conversation_history: list["ChatMessage"] | None = None,
+    provider: str = "claude",
+    session_state: SessionState | None = None,
+) -> "ChatResult":
+    """Execute the multi-turn workflow, auto-executing all pending operations.
+
+    This simulates the behavior of the CLI auto-execute loop in workflow.py.
+    """
+    result = get_llm_turn(
+        user_request=user_request,
+        flake=flake,
+        conversation_history=conversation_history,
+        provider=provider,  # type: ignore[arg-type]
+        session_state=session_state,
+        execute_next_action=False,
+    )
+
+    # Auto-execute any pending operations
+    while result.next_action:
+        result = get_llm_turn(
+            user_request="",
+            flake=flake,
+            conversation_history=list(result.conversation_history),
+            provider=provider,  # type: ignore[arg-type]
+            session_state=result.session_state,
+            execute_next_action=True,
+        )
+
+    return result
 
 
 @pytest.fixture
@@ -181,16 +212,22 @@ class TestProcessChatTurn:
             # Mock final decision (shouldn't be called, but mock it anyway for safety)
             mock_final.return_value = ([], "")
 
-            # Run process_chat_turn
-            result = process_chat_turn(
+            # Run multi-turn workflow
+            result = execute_multi_turn_workflow(
                 user_request="What VPNs are available?",
                 flake=mock_flake,
                 conversation_history=None,
                 provider="claude",
             )
 
-            # Verify the call was made
+            # Verify the discovery call was made
             assert mock_call.called
+
+            # Verify readme execution was called
+            assert mock_execute.called
+
+            # Verify service selection was called
+            assert mock_selection.called
 
             # Final decision should NOT be called since we return early with clarifying message
             assert not mock_final.called
@@ -262,14 +299,20 @@ class TestProcessChatTurn:
                 final_trace["response"]["message"],
             )
 
-            # Run process_chat_turn with session state
-            result = process_chat_turn(
+            # Run multi-turn workflow with session state
+            result = execute_multi_turn_workflow(
                 user_request="Hmm zerotier please",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
                 session_state=session_state,
             )
+
+            # Verify service selection was called
+            assert mock_selection.called
+
+            # Verify final decision was called
+            assert mock_final.called
 
             # Verify the result
             assert result.requires_user_response is True
@@ -335,14 +378,17 @@ class TestProcessChatTurn:
                 "",
             )
 
-            # Run process_chat_turn
-            result = process_chat_turn(
+            # Run multi-turn workflow
+            result = execute_multi_turn_workflow(
                 user_request="okay then gchq-local as controller and qube-email as moon please everything else as peer",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
                 session_state=session_state,
             )
+
+            # Verify final decision was called
+            assert mock_final.called
 
             # Verify the result
             assert result.requires_user_response is False
@@ -394,19 +440,19 @@ class TestProcessChatTurn:
             )
             mock_final.return_value = ([], "")
 
-            result1 = process_chat_turn(
+            result1 = execute_multi_turn_workflow(
                 user_request="What VPNs are available?",
                 flake=mock_flake,
                 provider="claude",
             )
 
-            # Verify final decision was not called
+            # Verify final decision was not called (since we get clarifying message)
             assert not mock_final.called
 
-            # Verify discovery completed and moved to service selection
+            # Verify discovery completed and service selection asked clarifying question
             assert result1.requires_user_response is True
             assert "VPN" in result1.assistant_message
-            # Session state should have pending_service_selection
+            # Session state should have pending_service_selection (with readme results)
             assert "pending_service_selection" in result1.session_state
 
         # Test Turn 2: Continue with session state
@@ -425,7 +471,7 @@ class TestProcessChatTurn:
             )
             mock_final.return_value = ([], trace_data[3]["response"]["message"])
 
-            result2 = process_chat_turn(
+            result2 = execute_multi_turn_workflow(
                 user_request="Hmm zerotier please",
                 flake=mock_flake,
                 conversation_history=list(result1.conversation_history),
@@ -485,7 +531,7 @@ class TestProcessChatTurn:
             # Return empty function_calls but with a clarifying message
             mock_final.return_value = ([], clarify_trace["response"]["message"])
 
-            result = process_chat_turn(
+            result = execute_multi_turn_workflow(
                 user_request="Set up zerotier with gchq-local as controller",
                 flake=mock_flake,
                 conversation_history=conversation_history,
@@ -535,7 +581,7 @@ class TestProcessChatTurn:
             ]
             mock_final.return_value = ([], "")
 
-            result = process_chat_turn(
+            result = execute_multi_turn_workflow(
                 user_request="I want to set up a VPN",
                 flake=mock_flake,
                 provider="claude",
@@ -624,13 +670,19 @@ class TestProcessChatTurn:
                 ]
             )
 
-            result = process_chat_turn(
+            result = execute_multi_turn_workflow(
                 user_request="Use zerotier with gchq-local as controller, qube-email as moon, rest as peers",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
                 session_state=session_state,
             )
+
+            # Verify service selection was called
+            assert mock_selection.called
+
+            # Verify final decision was called
+            assert mock_final.called
 
             # Verify the function_calls branch in _continue_with_service_selection
             assert result.requires_user_response is False
@@ -1004,15 +1056,16 @@ class TestProcessChatTurnPendingFinalDecision:
             response = create_openai_response([], clarify_trace["response"]["message"])
             mock_call.return_value = response
 
-            result = process_chat_turn(
+            result = get_llm_turn(
                 user_request="gchq-local as controller",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
                 session_state=session_state,
+                execute_next_action=True,  # Execute the pending final decision
             )
 
-            # Verify the if final_message branch at line 425 was taken
+            # Verify the if final_message branch was taken
             assert result.requires_user_response is True
             assert result.assistant_message == clarify_trace["response"]["message"]
 
@@ -1074,12 +1127,13 @@ class TestProcessChatTurnPendingFinalDecision:
             response = create_openai_response(function_calls, "")
             mock_call.return_value = response
 
-            result = process_chat_turn(
+            result = get_llm_turn(
                 user_request="gchq-local as controller, qube-email as moon, rest as peers",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
                 session_state=session_state,
+                execute_next_action=True,  # Execute the pending final decision
             )
 
             # Verify configuration completed
@@ -1092,186 +1146,6 @@ class TestProcessChatTurnPendingFinalDecision:
 
             # No error
             assert result.error is None
-
-
-class TestProgressCallbacks:
-    """Test progress_callback functionality in process_chat_turn."""
-
-    def test_progress_callback_during_readme_fetch(
-        self, trace_data: list[dict[str, Any]], mock_flake: MagicMock
-    ) -> None:
-        """Test that progress_callback is called during README fetching."""
-        # Use trace entry with README requests
-        discovery_trace = trace_data[0]
-        function_calls = discovery_trace["response"]["function_calls"]
-        assert len(function_calls) > 0
-
-        # Track progress events
-        progress_events: list[Any] = []
-
-        def track_progress(event: Any) -> None:
-            progress_events.append(event)
-
-        # Create response with get_readme calls
-        response = create_openai_response(function_calls, "")
-
-        with (
-            patch("clan_lib.llm.phases.call_claude_api", return_value=response),
-            patch("clan_lib.llm.orchestrator.execute_readme_requests") as mock_execute,
-            patch(
-                "clan_lib.llm.orchestrator.get_llm_service_selection"
-            ) as mock_selection,
-            patch("clan_lib.llm.orchestrator.get_llm_final_decision") as mock_final,
-        ):
-            mock_execute.return_value = {
-                None: ServiceReadmeCollection(
-                    input_name=None,
-                    readmes={
-                        "wireguard": "# WireGuard README",
-                        "zerotier": "# ZeroTier README",
-                        "mycelium": "# Mycelium README",
-                        "yggdrasil": "# Yggdrasil README",
-                    },
-                )
-            }
-            mock_selection.return_value = ServiceSelectionResult(
-                selected_service=None,
-                service_summary=None,
-                clarifying_message=trace_data[1]["response"]["message"],
-            )
-            mock_final.return_value = ([], "")
-
-            result = process_chat_turn(
-                user_request="What VPNs are available?",
-                flake=mock_flake,
-                provider="claude",
-                progress_callback=track_progress,
-            )
-
-            # Verify final decision was not called
-            assert not mock_final.called
-
-            # Verify progress events were sent
-            assert len(progress_events) > 0
-
-            # Check for discovery progress events
-            discovery_events = [
-                e for e in progress_events if isinstance(e, DiscoveryProgressEvent)
-            ]
-            assert len(discovery_events) >= 2  # At least start and complete
-
-            # Check for readme fetch progress events
-            fetch_events = [
-                e for e in progress_events if isinstance(e, ReadmeFetchProgressEvent)
-            ]
-            assert len(fetch_events) >= 2  # fetching and complete
-
-            # Verify the fetching event has correct data
-            fetching_event = next(e for e in fetch_events if e.status == "fetching")
-            assert fetching_event.count == len(function_calls)
-            # Service names include "(from built-in)" or "(from <input>)" suffix
-            assert any("wireguard" in name for name in fetching_event.service_names)
-
-            # Verify the complete event
-            complete_event = next(e for e in fetch_events if e.status == "complete")
-            assert complete_event.count == len(function_calls)
-
-            # Result should still be successful
-            assert result.requires_user_response is True
-
-    def test_progress_callback_through_full_workflow(
-        self, trace_data: list[dict[str, Any]], mock_flake: MagicMock
-    ) -> None:
-        """Test progress_callback through entire workflow from discovery to config."""
-        progress_events: list[Any] = []
-
-        def track_progress(event: Any) -> None:
-            progress_events.append(event)
-
-        # Setup for full workflow
-        discovery_response = create_openai_response(
-            trace_data[0]["response"]["function_calls"],
-            trace_data[0]["response"]["message"],
-        )
-
-        with (
-            patch(
-                "clan_lib.llm.phases.call_claude_api", return_value=discovery_response
-            ),
-            patch("clan_lib.llm.orchestrator.execute_readme_requests") as mock_execute,
-            patch(
-                "clan_lib.llm.orchestrator.get_llm_service_selection"
-            ) as mock_selection,
-            patch("clan_lib.llm.orchestrator.get_llm_final_decision") as mock_final,
-            patch("clan_lib.llm.phases.aggregate_ollama_function_schemas") as mock_agg,
-        ):
-            mock_execute.return_value = {
-                None: ServiceReadmeCollection(
-                    input_name=None, readmes={"zerotier": "# ZeroTier README"}
-                )
-            }
-            mock_selection.return_value = ServiceSelectionResult(
-                selected_service="zerotier",
-                service_summary="ZeroTier mesh VPN",
-                clarifying_message="",
-            )
-            # Return configuration
-            final_trace = trace_data[-1]
-            mock_final.return_value = (
-                [
-                    FunctionCallType(
-                        id="call_0",
-                        call_id="call_0",
-                        type="function_call",
-                        name="zerotier",
-                        arguments=json.dumps(
-                            final_trace["response"]["function_calls"][0]["arguments"]
-                        ),
-                    )
-                ],
-                "",
-            )
-            mock_agg.return_value = MagicMock(
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {"name": "zerotier", "description": "ZeroTier VPN"},
-                    }
-                ]
-            )
-
-            result = process_chat_turn(
-                user_request="Setup zerotier with gchq-local as controller",
-                flake=mock_flake,
-                provider="claude",
-                progress_callback=track_progress,
-            )
-
-            # Verify we got progress events for all phases
-            discovery_events = [
-                e for e in progress_events if isinstance(e, DiscoveryProgressEvent)
-            ]
-            fetch_events = [
-                e for e in progress_events if isinstance(e, ReadmeFetchProgressEvent)
-            ]
-            selection_events = [
-                e
-                for e in progress_events
-                if isinstance(e, ServiceSelectionProgressEvent)
-            ]
-            final_events = [
-                e for e in progress_events if isinstance(e, FinalDecisionProgressEvent)
-            ]
-
-            # Should have events from all phases
-            assert len(discovery_events) > 0
-            assert len(fetch_events) > 0
-            assert len(selection_events) > 0
-            assert len(final_events) > 0
-
-            # Result should be successful with config
-            assert result.requires_user_response is False
-            assert len(result.proposed_instances) == 1
 
 
 class TestErrorCases:
@@ -1288,7 +1162,8 @@ class TestErrorCases:
             patch("clan_lib.llm.phases.call_claude_api", return_value=response),
             pytest.raises(ClanAiError, match="did not provide any response"),
         ):
-            process_chat_turn(
+            # Use multi-turn workflow to execute through discovery
+            execute_multi_turn_workflow(
                 user_request="Setup a VPN",
                 flake=mock_flake,
                 provider="claude",
@@ -1304,7 +1179,8 @@ class TestErrorCases:
             ),
             pytest.raises(ValueError, match="Test error"),
         ):
-            process_chat_turn(
+            # Use multi-turn workflow to execute through discovery
+            execute_multi_turn_workflow(
                 user_request="Setup a VPN",
                 flake=mock_flake,
                 provider="claude",
@@ -1326,85 +1202,13 @@ class TestErrorCases:
             ),
             pytest.raises(RuntimeError, match="Network error"),
         ):
-            process_chat_turn(
+            # Use multi-turn workflow to execute through discovery
+            execute_multi_turn_workflow(
                 user_request="Setup zerotier",
                 flake=mock_flake,
                 conversation_history=conversation_history,
                 provider="claude",
             )
-
-    def test_progress_callback_final_decision_reviewing_and_complete(
-        self, trace_data: list[dict[str, Any]], mock_flake: MagicMock
-    ) -> None:
-        """Test FinalDecisionProgressEvent with reviewing and complete statuses."""
-        progress_events: list[Any] = []
-
-        def track_progress(event: Any) -> None:
-            progress_events.append(event)
-
-        # Build conversation history and session state for pending_final_decision
-        conversation_history: list[ChatMessage] = [
-            {"role": "user", "content": "Setup VPN"},
-            {"role": "assistant", "content": "Which service?"},
-            {"role": "user", "content": "Use zerotier"},
-            {"role": "assistant", "content": "Which machine as controller?"},
-        ]
-
-        session_state: SessionState = cast(
-            "SessionState",
-            {
-                "pending_final_decision": {
-                    "service_name": "zerotier",
-                    "service_summary": "ZeroTier mesh VPN",
-                }
-            },
-        )
-
-        # Use final trace with configuration
-        final_trace = trace_data[-1]
-        function_calls = final_trace["response"]["function_calls"]
-
-        with (
-            patch("clan_lib.llm.phases.aggregate_ollama_function_schemas") as mock_agg,
-            patch("clan_lib.llm.phases.call_claude_api") as mock_call,
-        ):
-            mock_agg.return_value = MagicMock(
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {"name": "zerotier", "description": "ZeroTier VPN"},
-                    }
-                ]
-            )
-            response = create_openai_response(function_calls, "")
-            mock_call.return_value = response
-
-            result = process_chat_turn(
-                user_request="gchq-local as controller, qube-email as moon, rest as peers",
-                flake=mock_flake,
-                conversation_history=conversation_history,
-                provider="claude",
-                session_state=session_state,
-                progress_callback=track_progress,
-            )
-
-            # Verify we got FinalDecisionProgressEvent with both statuses
-            final_events = [
-                e for e in progress_events if isinstance(e, FinalDecisionProgressEvent)
-            ]
-            assert len(final_events) >= 2
-
-            # Check for "reviewing" status
-            reviewing_events = [e for e in final_events if e.status == "reviewing"]
-            assert len(reviewing_events) >= 1
-
-            # Check for "complete" status
-            complete_events = [e for e in final_events if e.status == "complete"]
-            assert len(complete_events) >= 1
-
-            # Result should be successful
-            assert result.requires_user_response is False
-            assert len(result.proposed_instances) == 1
 
     def test_service_selection_fails_no_service_selected(
         self, mock_flake: MagicMock
@@ -1443,7 +1247,8 @@ class TestErrorCases:
 
             # Should raise ClanAiError
             with pytest.raises(ClanAiError, match="Failed to select service"):
-                process_chat_turn(
+                # Use multi-turn workflow to execute through service selection
+                execute_multi_turn_workflow(
                     user_request="Setup VPN",
                     flake=mock_flake,
                     provider="claude",
@@ -1680,7 +1485,8 @@ class TestGetLlmFinalDecisionErrors:
 
             # Should raise ClanAiError
             with pytest.raises(ClanAiError, match="LLM did not provide any response"):
-                process_chat_turn(
+                # Use multi-turn workflow to execute through final decision
+                execute_multi_turn_workflow(
                     user_request="gchq-local as controller",
                     flake=mock_flake,
                     conversation_history=conversation_history,

@@ -2,15 +2,85 @@ import contextlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
 from clan_lib.flake.flake import Flake
-from clan_lib.llm.llm import (
-    process_chat_turn,
-)
+from clan_lib.llm.orchestrator import get_llm_turn
 from clan_lib.llm.service import create_llm_model, run_llm_service
 from clan_lib.service_runner import create_service_manager
+
+if TYPE_CHECKING:
+    from clan_lib.llm.llm_types import ChatResult
+    from clan_lib.llm.schemas import ChatMessage, SessionState
+
+
+def get_current_mode(session_state: "SessionState") -> str:
+    """Extract the current mode from session state."""
+    if "pending_service_selection" in session_state:
+        return "SERVICE_SELECTION"
+    if "pending_final_decision" in session_state:
+        return "FINAL_DECISION"
+    return "DISCOVERY"
+
+
+def print_separator(
+    title: str = "", char: str = "=", width: int = 80, double: bool = True
+) -> None:
+    """Print a separator line with optional title."""
+    if double:
+        print(f"\n{char * width}")
+    if title:
+        padding = (width - len(title) - 2) // 2
+        print(f"{char * padding} {title} {char * padding}")
+    if double or title:
+        print(f"{char * width}")
+
+
+def print_meta_info(result: "ChatResult", turn: int, phase: str) -> None:
+    """Print meta information section in a structured format."""
+    mode = get_current_mode(result.session_state)
+    print_separator("META INFORMATION", char="-", width=80, double=False)
+    print(f"  Turn Number:           {turn}")
+    print(f"  Phase:                 {phase}")
+    print(f"  Current Mode:          {mode}")
+    print(f"  Requires User Input:   {result.requires_user_response}")
+    print(f"  Conversation Length:   {len(result.conversation_history)} messages")
+    print(f"  Proposed Instances:    {len(result.proposed_instances)}")
+    print(f"  Has Next Action:       {result.next_action is not None}")
+    print(f"  Session State Keys:    {list(result.session_state.keys())}")
+    if result.error:
+        print(f"  Error:                 {result.error}")
+    print("-" * 80)
+
+
+def print_chat_exchange(
+    user_msg: str | None, assistant_msg: str, session_state: "SessionState"
+) -> None:
+    """Print a chat exchange with role labels and current mode."""
+    mode = get_current_mode(session_state)
+    print_separator("CHAT EXCHANGE", char="-", width=80, double=False)
+
+    if user_msg:
+        print("\n  USER:")
+        print(f"  {user_msg}")
+
+    print(f"\n  ASSISTANT [{mode}]:")
+    # Wrap long messages
+    max_line_length = 76
+    words = assistant_msg.split()
+    current_line = "  "
+    for word in words:
+        if len(current_line) + len(word) + 1 > max_line_length:
+            print(current_line)
+            current_line = "  " + word
+        else:
+            current_line += (" " if len(current_line) > 2 else "") + word
+    if current_line.strip():
+        print(current_line)
+
+    print("\n" + "-" * 80)
 
 
 @pytest.fixture
@@ -47,9 +117,9 @@ def mock_flake() -> MagicMock:
             }
 
         match arg:
-            case "clanInternals.inventoryClass.inventory.{instances,machines,meta}":
+            case "clanInternals.inventoryClass.inventorySerialization.{instances,machines,meta}":
                 return load_json("inventory_instances_machines_meta.json")
-            case "clanInternals.inventoryClass.inventory.{tags}":
+            case "clanInternals.inventoryClass.inventorySerialization.{tags}":
                 return load_json("inventory_tags.json")
             case "clanInternals.inventoryClass.modulesPerSource":
                 return load_json("modules_per_source.json")
@@ -98,6 +168,40 @@ def llm_service() -> Iterator[None]:
             service_manager.stop_service("ollama")
 
 
+def execute_multi_turn_workflow(
+    user_request: str,
+    flake: Flake | MagicMock,
+    conversation_history: list["ChatMessage"] | None = None,
+    provider: str = "ollama",
+    session_state: "SessionState | None" = None,
+) -> "ChatResult":
+    """Execute the multi-turn workflow, auto-executing all pending operations.
+
+    This simulates the behavior of the CLI auto-execute loop in workflow.py.
+    """
+    result = get_llm_turn(
+        user_request=user_request,
+        flake=flake,
+        conversation_history=conversation_history,
+        provider=provider,  # type: ignore[arg-type]
+        session_state=session_state,
+        execute_next_action=False,
+    )
+
+    # Auto-execute any pending operations
+    while result.next_action:
+        result = get_llm_turn(
+            user_request="",
+            flake=flake,
+            conversation_history=list(result.conversation_history),
+            provider=provider,  # type: ignore[arg-type]
+            session_state=result.session_state,
+            execute_next_action=True,
+        )
+
+    return result
+
+
 @pytest.mark.service_runner
 @pytest.mark.usefixtures("mock_nix_shell", "llm_service")
 def test_full_conversation_flow(mock_flake: MagicMock) -> None:
@@ -112,10 +216,9 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
     - Error handling and edge cases
     """
     flake = mock_flake
-    return
     # ========== TURN 1: Discovery Phase - Initial vague request ==========
-    print("\n=== TURN 1: Initial discovery request ===")
-    result = process_chat_turn(
+    print_separator("TURN 1: Discovery Phase", char="=", width=80)
+    result = execute_multi_turn_workflow(
         user_request="What VPN options do I have?",
         flake=flake,
         provider="ollama",
@@ -133,24 +236,25 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
     assert result.conversation_history[-1]["role"] == "assistant"
     assert len(result.assistant_message) > 0, "Assistant should provide a response"
 
-    # Should transition to service selection phase with pending state
-    assert "pending_service_selection" in result.session_state, (
-        "Should have pending service selection"
-    )
-    assert "readme_results" in result.session_state["pending_service_selection"]
+    # After multi-turn execution, we may have either:
+    # - pending_service_selection (if LLM provided options and is waiting for choice)
+    # - pending_final_decision (if LLM directly selected a service)
+    # - no pending state (if LLM asked a clarifying question)
 
     # No instances yet
     assert len(result.proposed_instances) == 0
     assert result.error is None
 
-    print(f"Assistant: {result.assistant_message[:200]}...")
-    print(f"State: {list(result.session_state.keys())}")
-    print(f"History length: {len(result.conversation_history)}")
+    print_chat_exchange(
+        "What VPN options do I have?", result.assistant_message, result.session_state
+    )
+    print_meta_info(result, turn=1, phase="Discovery")
 
     # ========== TURN 2: Service Selection Phase - User makes a choice ==========
-    print("\n=== TURN 2: User selects ZeroTier ===")
-    result = process_chat_turn(
-        user_request="I'll use ZeroTier please",
+    print_separator("TURN 2: Service Selection", char="=", width=80)
+    user_msg_2 = "I'll use ZeroTier please"
+    result = execute_multi_turn_workflow(
+        user_request=user_msg_2,
         flake=flake,
         conversation_history=list(result.conversation_history),
         provider="ollama",
@@ -176,11 +280,8 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
         assert len(result.proposed_instances) > 0
         assert result.proposed_instances[0]["module"]["name"] == "zerotier"
 
-    print(
-        f"Assistant: {result.assistant_message[:200] if result.assistant_message else 'No message'}..."
-    )
-    print(f"State: {list(result.session_state.keys())}")
-    print(f"Requires response: {result.requires_user_response}")
+    print_chat_exchange(user_msg_2, result.assistant_message, result.session_state)
+    print_meta_info(result, turn=2, phase="Service Selection")
 
     # ========== Continue conversation until we reach final decision or completion ==========
     max_turns = 10
@@ -188,22 +289,24 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
 
     while result.requires_user_response and turn_count < max_turns:
         turn_count += 1
-        print(f"\n=== TURN {turn_count}: Continuing conversation ===")
 
         # Determine appropriate response based on current state
         if "pending_service_selection" in result.session_state:
             # Still selecting service
             user_request = "Yes, ZeroTier"
+            phase = "Service Selection (continued)"
         elif "pending_final_decision" in result.session_state:
             # Configuring the service
             user_request = "Set up gchq-local as controller, qube-email as moon, and wintux as peer"
+            phase = "Final Configuration"
         else:
             # Generic continuation
             user_request = "Yes, that sounds good. Use gchq-local as controller."
+            phase = "Continuing Conversation"
 
-        print(f"User: {user_request}")
+        print_separator(f"TURN {turn_count}: {phase}", char="=", width=80)
 
-        result = process_chat_turn(
+        result = execute_multi_turn_workflow(
             user_request=user_request,
             flake=flake,
             conversation_history=list(result.conversation_history),
@@ -221,19 +324,18 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
             result.conversation_history[0]["content"] == "What VPN options do I have?"
         )
 
-        print(
-            f"Assistant: {result.assistant_message[:200] if result.assistant_message else 'No message'}..."
+        print_chat_exchange(
+            user_request, result.assistant_message, result.session_state
         )
-        print(f"State: {list(result.session_state.keys())}")
-        print(f"Requires response: {result.requires_user_response}")
-        print(f"Proposed instances: {len(result.proposed_instances)}")
+        print_meta_info(result, turn=turn_count, phase=phase)
 
         # Check for completion
         if not result.requires_user_response:
-            print("\n=== Conversation completed! ===")
+            print_separator("CONVERSATION COMPLETED", char="=", width=80)
             break
 
     # ========== Final Verification ==========
+    print_separator("FINAL VERIFICATION", char="=", width=80)
     assert turn_count < max_turns, f"Conversation took too many turns ({turn_count})"
 
     # If conversation completed, verify we have valid configuration
@@ -253,22 +355,29 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
             "mycelium",
         ]
 
-        # Should have roles configuration
-        if "roles" in instance:
-            print(f"\nConfiguration roles: {list(instance['roles'].keys())}")
-
         # Should not be in pending state anymore
         assert "pending_service_selection" not in result.session_state
         assert "pending_final_decision" not in result.session_state
 
         assert result.error is None, f"Should not have error: {result.error}"
 
-        print(f"\nFinal instance: {instance['module']['name']}")
-        print(f"Total conversation turns: {turn_count}")
-        print(f"Final history length: {len(result.conversation_history)}")
+        print_separator("FINAL SUMMARY", char="-", width=80, double=False)
+        print("  Status:                SUCCESS")
+        print(f"  Module Name:           {instance['module']['name']}")
+        print(f"  Total Turns:           {turn_count}")
+        print(f"  Final History Length:  {len(result.conversation_history)} messages")
+        if "roles" in instance:
+            roles_list = ", ".join(instance["roles"].keys())
+            print(f"  Configuration Roles:   {roles_list}")
+        print("  Errors:                None")
+        print("-" * 80)
     else:
         # Conversation didn't complete but should have made progress
         assert len(result.conversation_history) > 2
         assert result.error is None
-        print(f"\nConversation in progress after {turn_count} turns")
-        print(f"Current state: {list(result.session_state.keys())}")
+        print_separator("FINAL SUMMARY", char="-", width=80, double=False)
+        print("  Status:                IN PROGRESS")
+        print(f"  Total Turns:           {turn_count}")
+        print(f"  Current State:         {list(result.session_state.keys())}")
+        print(f"  History Length:        {len(result.conversation_history)} messages")
+        print("-" * 80)

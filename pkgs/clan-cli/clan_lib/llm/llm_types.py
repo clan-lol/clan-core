@@ -1,57 +1,28 @@
 """Type definitions and dataclasses for LLM orchestration."""
 
-from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal, TypedDict
 
 from clan_lib.nix_models.clan import InventoryInstance
 
 from .schemas import ChatMessage, SessionState
 
 
-@dataclass(frozen=True)
-class DiscoveryProgressEvent:
-    """Progress event during discovery phase."""
+class NextAction(TypedDict):
+    """Describes the next expensive operation that will be performed.
 
-    service_names: list[str] | None = None
-    stage: Literal["discovery"] = "discovery"
-    status: Literal["analyzing", "complete"] = "analyzing"
+    Attributes:
+        type: The type of operation (discovery, fetch_readmes, service_selection, final_decision)
+        description: Human-readable description of what will happen
+        estimated_duration_seconds: Rough estimate of operation duration
+        details: Phase-specific information (e.g., service names, count)
 
+    """
 
-@dataclass(frozen=True)
-class ReadmeFetchProgressEvent:
-    """Progress event during readme fetching."""
-
-    count: int
-    service_names: list[str]
-    stage: Literal["readme_fetch"] = "readme_fetch"
-    status: Literal["fetching", "complete"] = "fetching"
-
-
-@dataclass(frozen=True)
-class ServiceSelectionProgressEvent:
-    """Progress event during service selection phase."""
-
-    service_names: list[str]
-    stage: Literal["service_selection"] = "service_selection"
-    status: Literal["selecting", "complete"] = "selecting"
-
-
-@dataclass(frozen=True)
-class FinalDecisionProgressEvent:
-    """Progress event during final decision phase."""
-
-    stage: Literal["final_decision"] = "final_decision"
-    status: Literal["reviewing", "complete"] = "reviewing"
-
-
-@dataclass(frozen=True)
-class ConversationProgressEvent:
-    """Progress event for conversation continuation."""
-
-    message: str
-    stage: Literal["conversation"] = "conversation"
-    awaiting_response: bool = True
+    type: Literal["discovery", "fetch_readmes", "service_selection", "final_decision"]
+    description: str
+    estimated_duration_seconds: int
+    details: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -70,17 +41,6 @@ class ServiceSelectionResult:
     clarifying_message: str
 
 
-ProgressEvent = (
-    DiscoveryProgressEvent
-    | ReadmeFetchProgressEvent
-    | ServiceSelectionProgressEvent
-    | FinalDecisionProgressEvent
-    | ConversationProgressEvent
-)
-
-ProgressCallback = Callable[[ProgressEvent], None]
-
-
 @dataclass(frozen=True)
 class ChatResult:
     """Result of a complete chat turn through the multi-stage workflow.
@@ -92,6 +52,7 @@ class ChatResult:
         requires_user_response: True if the assistant asked a question and needs a response
         error: Error message if something went wrong (None on success)
         session_state: Serializable state to pass into the next turn when continuing a workflow
+        next_action: Description of the next operation to be performed (None if workflow complete)
 
     """
 
@@ -100,6 +61,7 @@ class ChatResult:
     assistant_message: str
     requires_user_response: bool
     session_state: SessionState
+    next_action: NextAction | None
     error: str | None = None
 
 

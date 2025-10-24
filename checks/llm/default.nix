@@ -76,7 +76,6 @@ in
       cmd = "su - text-user -c 'pytest -s -n0 -m service_runner -p no:cacheprovider -o addopts="" ${cli.passthru.sourceWithTests}/clan_lib/llm'"
       print("Running tests with command: " + cmd)
 
-
       # Run tests as text-user (environment variables are set automatically)
       peer1.succeed(cmd)
     '';

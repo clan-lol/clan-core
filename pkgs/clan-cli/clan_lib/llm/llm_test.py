@@ -3,12 +3,13 @@ from collections.abc import Callable
 import pytest
 from clan_cli.tests.fixtures_flakes import nested_dict
 from clan_lib.flake.flake import Flake
-from clan_lib.llm.llm import (
+from clan_lib.llm.phases import llm_final_decision_to_inventory_instances
+from clan_lib.llm.schemas import (
+    FunctionCallType,
     OpenAIFunctionSchema,
     aggregate_openai_function_schemas,
-    llm_final_decision_to_inventory_instances,
+    clan_module_to_openai_spec,
 )
-from clan_lib.llm.schemas import FunctionCallType, clan_module_to_openai_spec
 from clan_lib.services.modules import list_service_modules
 
 
