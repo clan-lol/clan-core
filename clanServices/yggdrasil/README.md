@@ -11,7 +11,7 @@ This module sets up [yggdrasil](https://yggdrasil-network.github.io/) across you
 Yggdrasil is designed to be a future-proof and decentralised alternative to the
 structured routing protocols commonly used today on the internet. Inside your
 clan, it will allow you to reach all of your machines.
- 
+
 If you have other services in your inventory which export peers (e.g. the
 `internet` or the services) as [service
 exports](https://docs.clan.lol/reference/options/clan_service/#exports), they

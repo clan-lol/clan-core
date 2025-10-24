@@ -29,12 +29,13 @@
           ];
         };
 
-        options.peers = lib.mkOption {
+        options.extraPeers = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
           description = ''
-            Static peers to configure for this host.
-            If not set, local peers will be auto-discovered
+            Additional static peers to configure for this host. If you use a
+            VPN clan service, it will automatically be added as peers to other hosts.
+            Local peers are also auto-discovered and don't need to be added.
           '';
           example = [
             "tcp://192.168.1.1:6443"
@@ -45,15 +46,66 @@
         };
       };
     perInstance =
-      { settings, ... }:
+      {
+        settings,
+        roles,
+        exports,
+        ...
+      }:
       {
         nixosModule =
           {
             config,
             pkgs,
+            lib,
+            clan-core,
             ...
           }:
+          let
+
+            mkPeers = ip: [
+              # "tcp://${ip}:6443"
+              "quic://${ip}:6443"
+              "ws://${ip}:6443"
+              "tls://${ip}:6443"
+            ];
+
+            select' = clan-core.inputs.nix-select.lib.select;
+
+            # TODO make it nicer @lassulus, @picnoir wants microlens
+            # Get a list of all exported IPs from all VPN modules
+            exportedPeerIPs = builtins.foldl' (
+              acc: e:
+              if e == { } then
+                acc
+              else
+                acc ++ (lib.flatten (builtins.filter (s: s != "") (lib.attrValues (select' "peers.*.plain" e))))
+            ) [ ] (lib.attrValues (select' "instances.*.networking.?peers.*.host.?plain" exports));
+
+            # Construct a list of peers in yggdrasil format
+            exportedPeers = lib.flatten (map mkPeers exportedPeerIPs);
+
+          in
           {
+
+            # Set <yggdrasil ip> <hostname>.<tld> for all hosts.
+            # Networking modules will then add themselves as peers, so we can
+            # always use this to resolve a host via the best possible route,
+            # doing fail-over if needed.
+            networking.extraHosts = lib.strings.concatStringsSep "\n" (
+              lib.filter (n: n != "") (
+                map (
+                  name:
+                  let
+                    ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/yggdrasil/address/value";
+                  in
+                  if builtins.pathExists ipPath then
+                    "${builtins.readFile ipPath} ${name}.${config.clan.core.settings.tld}"
+                  else
+                    ""
+                ) (lib.attrNames roles.default.machines)
+              )
+            );
 
             clan.core.vars.generators.yggdrasil = {
 
@@ -99,7 +151,7 @@
               settings = {
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
-                Peers = settings.peers;
+                Peers = lib.lists.unique (exportedPeers ++ settings.extraPeers);
                 MulticastInterfaces = [
                   # Ethernet is preferred over WIFI
                   {

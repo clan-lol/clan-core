@@ -17,6 +17,13 @@
         roles.default.machines.peer1 = { };
         roles.default.machines.peer2 = { };
       };
+
+      # Peers are set form exports of the internet service
+      instances."internet" = {
+        module.name = "internet";
+        roles.default.machines.peer1.settings.host = "peer1";
+        roles.default.machines.peer2.settings.host = "peer2";
+      };
     };
   };
 
