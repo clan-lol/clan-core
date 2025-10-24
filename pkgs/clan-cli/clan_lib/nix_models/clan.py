@@ -28,7 +28,7 @@ class InventoryInstanceRoleMachine(TypedDict):
 
 
 
-InventoryInstanceRoleExtramodulesType = list[Unknown]
+InventoryInstanceRoleExtramodulesType = list[dict[str, Any] | list[Any] | bool | float | int | str | None]
 InventoryInstanceRoleMachinesType = dict[str, InventoryInstanceRoleMachine]
 InventoryInstanceRoleSettingsType = Unknown
 InventoryInstanceRoleTagsType = dict[str, Any] | list[str]
