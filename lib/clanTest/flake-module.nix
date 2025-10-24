@@ -137,6 +137,12 @@ in
           default = { };
           type = types.submoduleWith {
             specialArgs = {
+              self = throw ''
+                'self' is banned in the use of clan.services
+                Use 'exports' instead: https://docs.clan.lol/reference/options/clan_service/#exports
+                ---
+                If you really need to used 'self' here, that makes the module less portable
+              '';
               inherit (config.clanSettings)
                 clan-core
                 nixpkgs
