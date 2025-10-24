@@ -7,6 +7,7 @@ import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 
 from clan_lib.flake.flake import (
+    ClanSelectError,
     Flake,
     FlakeCache,
     FlakeCacheEntry,
@@ -539,3 +540,15 @@ def test_reinserting_store_path_value() -> None:
     assert isinstance(cache.value, dict)
     assert "outPath" in cache.value
     assert cache.value["outPath"].value == pure_path
+
+
+@pytest.mark.with_core
+def test_get_nonexistant_after_maybe(flake: ClanFlake) -> None:
+    """Test that if a nonexistant value is cached,
+    that the cache miss is not falsely stored as the value.
+    """
+    my_flake = Flake(str(flake.path))
+
+    my_flake.select("?nonExist")
+    with pytest.raises(ClanSelectError):
+        my_flake.select("nonExist")

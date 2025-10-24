@@ -594,6 +594,10 @@ class FlakeCacheEntry:
             if not isinstance(selector.value, str):
                 msg = f"Expected str for STR selector value in select, got {type(selector.value)}"
                 raise ClanError(msg)
+            # If the entry was previously marked as non-existent by a MAYBE selector,
+            # we should raise KeyError for STR selectors
+            if selector.value in self.value and not self.value[selector.value].exists:
+                raise KeyError(selector.value)
             return self.value[selector.value].select(selectors[1:])
 
         # if we are a MAYBE selector, we check if the key exists in the dict
@@ -1130,7 +1134,15 @@ class Flake:
         else:
             log.debug(f"$ clan select {shlex.quote(selector)}")
 
-        return self._cache.select(selector)
+        try:
+            return self._cache.select(selector)
+        except KeyError as e:
+            # Convert KeyError to ClanSelectError for consistency
+            raise ClanSelectError(
+                flake_identifier=self.identifier,
+                selectors=[selector],
+                description=f"Attribute '{e.args[0]}' not found in flake",
+            ) from e
 
     def machine_selector(self, machine_name: str, selector: str) -> str:
         """Create a selector for a specific machine.
