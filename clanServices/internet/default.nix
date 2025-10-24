@@ -16,6 +16,7 @@
         options = {
           host = lib.mkOption {
             type = lib.types.str;
+            default = "";
             description = ''
               ip address or hostname (domain) of the machine
             '';
