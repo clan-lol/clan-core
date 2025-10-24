@@ -570,20 +570,8 @@ def set_service_instance(
             msg = f"Role '{role_name}' cannot contain {', '.join(f"'{k}'" for k in forbidden_keys)} directly"
             raise ClanError(msg)
 
-        static = get_value_by_path(
-            instance, f"roles.{role_name}", {}, expected_type=InventoryInstanceRolesType
-        )
-
-        # override settings, machines only if passed
-        # TODO: refactor after extraModules removal
-        # in https://git.clan.lol/clan/clan-core/pulls/5634
-        merged = {
-            **static,
-            **role_cfg,
-        }
-
         set_value_by_path(
-            inventory, f"instances.{instance_ref}.roles.{role_name}", merged
+            inventory, f"instances.{instance_ref}.roles.{role_name}", role_cfg
         )
 
     inventory_store.write(

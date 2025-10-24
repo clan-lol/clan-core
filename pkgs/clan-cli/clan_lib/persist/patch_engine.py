@@ -105,7 +105,7 @@ Please report this issue at https://git.clan.lol/clan/clan-core/issues
             raise ClanError(msg)
 
         if PersistenceAttribute.DELETE not in attribute_props.get(delete_path, {}):
-            msg = f"Cannot delete path '{path_to_string(delete_path)}' - '{path_to_string(delete_path)}' is set via .nix file"
+            msg = f"Cannot delete path '{path_to_string(delete_path)}' - '{path_to_string(delete_path[-1:])}' is either required; or is set stacially via .nix files."
             raise ClanError(msg)
 
     # Get all paths that might need processing
