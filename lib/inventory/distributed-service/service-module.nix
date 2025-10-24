@@ -483,6 +483,9 @@ in
                           type = types.deferredModule;
                           default = { };
                           description = ''
+                            !!! Danger "Experimental Feature"
+                                This feature is experimental and will change in the future.
+
                             export modules defined in 'perInstance'
                             mapped to their instance name
 
@@ -611,6 +614,9 @@ in
               type = types.deferredModule;
               default = { };
               description = ''
+                !!! Danger "Experimental Feature"
+                    This feature is experimental and will change in the future.
+
                 export modules defined in 'perMachine'
                 mapped to their machine name
 
@@ -712,6 +718,9 @@ in
 
     exports = mkOption {
       description = ''
+        !!! Danger "Experimental Feature"
+            This feature is experimental and will change in the future.
+
         This services exports.
         Gets merged with all other services exports.
 
