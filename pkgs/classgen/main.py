@@ -241,6 +241,11 @@ def generate_dataclass(
         # If we are at the top level, and the attribute name is not explicitly included we only do shallow
         field_name = prop.replace("-", "_")
 
+        # Skip "extraModules"
+        # TODO: Introduce seperate model that is tied to the serialization format
+        if "extraModules" in field_name:
+            continue
+
         # if len(attr_path) == 0 and prop in shallow_attrs:
         #     field_def = field_name, "dict[str, Any]"
         #     fields_with_default.append(field_def)
