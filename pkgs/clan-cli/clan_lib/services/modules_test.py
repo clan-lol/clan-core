@@ -205,7 +205,7 @@ def test_update_service_instance(
             "morning": {
                 "machines": {
                     "jon": {
-                        "settings": {}  # type: ignore[typeddict-item]
+                        "settings": {},  # type: ignore[typeddict-item]
                     },
                     "sara": {
                         "settings": {  # type: ignore[typeddict-item]
@@ -213,6 +213,9 @@ def test_update_service_instance(
                         },
                     },
                 },
+                # Remove tags and settings from role
+                "tags": {},
+                "settings": {},  # type: ignore[typeddict-item]
             }
         },
     )
@@ -240,6 +243,9 @@ def test_update_service_instance(
                         },
                     },
                 },
+                # Remove tags and settings from role
+                "tags": {},
+                "settings": {},  # type: ignore[typeddict-item]
             }
         },
     )
