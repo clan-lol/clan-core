@@ -39,7 +39,6 @@
             ...
           }:
           let
-            uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
             # Collect searchDomains from all servers in this instance
             allServerSearchDomains = lib.flatten (
               lib.mapAttrsToList (_name: machineConfig: machineConfig.settings.certificate.searchDomains or [ ]) (
@@ -47,7 +46,7 @@
               )
             );
             # Merge client's searchDomains with all servers' searchDomains
-            searchDomains = uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
+            searchDomains = lib.uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
           in
           {
             clan.core.vars.generators.openssh-ca = lib.mkIf (searchDomains != [ ]) {
