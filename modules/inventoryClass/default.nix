@@ -81,6 +81,14 @@ in
     directory = mkOption {
       type = types.path;
     };
+    relativeDirectory = mkOption {
+      type = types.str;
+      internal = true;
+      description = ''
+        The relative directory path from the flake root to the clan directory.
+        Empty string if directory equals the flake root.
+      '';
+    };
     machines = mkOption {
       type = types.attrsOf (submodule ({
         options = {

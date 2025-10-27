@@ -156,14 +156,28 @@ def vm_state_dir(flake_url: str, vm_name: str) -> Path:
 
 
 def machines_dir(flake: "Flake") -> Path:
+    # Determine the base path
     if flake.is_local:
-        return flake.path / "machines"
+        base_path = flake.path
+    else:
+        store_path = flake.store_path
+        if store_path is None:
+            msg = "Invalid flake object. Doesn't have a store path"
+            raise ClanError(msg)
+        base_path = Path(store_path)
 
-    store_path = flake.store_path
-    if store_path is None:
-        msg = "Invalid flake object. Doesn't have a store path"
-        raise ClanError(msg)
-    return Path(store_path) / "machines"
+    # Get the clan directory configuration from Nix
+    # This is computed in Nix where store paths are consistent
+    # Returns "" if no custom directory is set
+    # Fall back to "" if the option doesn't exist (backwards compatibility)
+    try:
+        clan_dir = flake.select("clanInternals.inventoryClass.relativeDirectory")
+    except ClanError:
+        # Option doesn't exist in older clan-core versions
+        # Assume no custom directory
+        clan_dir = ""
+
+    return base_path / clan_dir / "machines"
 
 
 def specific_machine_dir(machine: "MachineSpecProtocol") -> Path:
