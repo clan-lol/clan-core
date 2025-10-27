@@ -21,6 +21,7 @@ in
           ../../../flakeModules
           ../../../lib
           ../../../nixosModules/clanCore
+          ../../../nixosModules/machineModules
           ../../../machines
           ../../../inventory.json
           ../../../modules

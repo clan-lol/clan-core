@@ -21,6 +21,7 @@ in
             ../../clanServices/zerotier
             # Required modules
             ../../nixosModules/clanCore
+            ../../nixosModules/machineModules
             # Dependencies like clan-cli
             ../../pkgs/clan-cli
           ];
