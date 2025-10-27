@@ -6,7 +6,7 @@
     inherit (clan-core) clanLib;
   };
   imports = [
+    ./top-level-interface.nix
     ./module.nix
-    ./interface.nix
   ];
 }
