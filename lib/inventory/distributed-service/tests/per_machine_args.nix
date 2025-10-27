@@ -102,17 +102,22 @@ in
       specificRoleSettings =
         res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
     };
-    expected = rec {
+    expected = {
       hasMachineSettings = true;
-      hasRoleSettings = false;
+      hasRoleSettings = true;
       specificMachineSettings = {
         timeout = "foo-peer-jon";
       };
       specificRoleSettings = {
         machines = {
           jon = {
-            settings = specificMachineSettings;
+            settings = {
+              timeout = "foo-peer-jon";
+            };
           };
+        };
+        settings = {
+          timeout = "foo-peer";
         };
       };
     };

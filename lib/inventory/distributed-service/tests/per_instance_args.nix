@@ -137,6 +137,7 @@ in
               settings = { };
             };
           };
+          settings = { };
         };
         peer = {
           machines = {
@@ -145,6 +146,9 @@ in
                 timeout = "foo-peer-jon";
               };
             };
+          };
+          settings = {
+            timeout = "foo-peer";
           };
         };
       };

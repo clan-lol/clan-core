@@ -7,14 +7,10 @@
   ...
 }:
 let
-  inherit (lib) mkOption types;
+  inherit (lib) mkOption types uniqueStrings;
   inherit (types) attrsWith submoduleWith;
 
   errorContext = "Error context: ${lib.concatStringsSep "." _ctx}";
-  # TODO:
-  # Remove once this gets merged upstream; performs in O(n*log(n) instead of O(n^2))
-  # https://github.com/NixOS/nixpkgs/pull/355616/files
-  uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
   /**
     Merges the role- and machine-settings using the role interface
 
@@ -81,6 +77,7 @@ let
   applySettings =
     instanceName: instance:
     lib.mapAttrs (roleName: role: {
+      settings = config.instances.${instanceName}.roles.${roleName}.finalSettings.config;
       machines = lib.mapAttrs (machineName: _v: {
         settings =
           config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.finalSettings.config;
@@ -158,6 +155,29 @@ in
                         (
                           { name, ... }@role:
                           {
+                            options.finalSettings = mkOption {
+                              default = evalMachineSettings instance.name role.name null role.config.settings { };
+                              type = types.raw;
+                              description = ''
+                                Final evaluated settings of the curent-machine
+
+                                This contains the merged and evaluated settings of the role interface,
+                                the role settings and the machine settings.
+
+                                Type: 'configuration' as returned by 'lib.evalModules'
+                              '';
+                              apply = lib.warn ''
+                                === WANRING ===
+                                'roles.<roleName>.settings' do not contain machine specific settings.
+
+                                Prefer `machines.<machineName>.settings` instead. (i.e `perInstance: roles.<roleName>.machines.<machineName>.settings`)
+
+                                If you have a use-case that requires access to the original role settings without machine overrides.
+                                Contact us via matrix (https://matrix.to/#/#clan:clan.lol) or file an issue: https://git.clan.lol
+
+                                This feature will be removed in the next release
+                              '';
+                            };
                             # instances.{instanceName}.roles.{roleName}.machines
                             options.machines = mkOption {
                               description = ''
