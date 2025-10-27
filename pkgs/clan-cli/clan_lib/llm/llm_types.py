@@ -73,19 +73,21 @@ class ModelConfig:
         name: The model identifier/name
         provider: The LLM provider
         timeout: Request timeout in seconds (default: 120)
+        temperature: Sampling temperature for the model (default: None = use API default)
 
     """
 
     name: str
     provider: Literal["openai", "ollama", "claude"]
     timeout: int = 120
+    temperature: float | None = None
 
 
 # Default model configurations for each provider
 DEFAULT_MODELS: dict[Literal["openai", "ollama", "claude"], ModelConfig] = {
     "openai": ModelConfig(name="gpt-4o", provider="openai", timeout=60),
     "claude": ModelConfig(name="claude-sonnet-4-5", provider="claude", timeout=60),
-    "ollama": ModelConfig(name="qwen3:4b-instruct", provider="ollama", timeout=120),
+    "ollama": ModelConfig(name="qwen3:4b-instruct", provider="ollama", timeout=180),
 }
 
 

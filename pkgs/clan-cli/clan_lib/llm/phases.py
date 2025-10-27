@@ -100,6 +100,7 @@ def get_llm_discovery_phase(
             trace_file=trace_file,
             stage="discovery",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             openai_response, provider="openai"
@@ -113,6 +114,7 @@ def get_llm_discovery_phase(
             trace_file=trace_file,
             stage="discovery",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             claude_response, provider="claude"
@@ -127,6 +129,7 @@ def get_llm_discovery_phase(
             stage="discovery",
             max_tokens=300,  # Limit output for discovery phase (get_readme calls or short question)
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_ollama_response(
             ollama_response, provider="ollama"
@@ -249,6 +252,7 @@ def get_llm_service_selection(
             trace_file=trace_file,
             stage="select_service",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             openai_response, provider="openai"
@@ -262,6 +266,7 @@ def get_llm_service_selection(
             trace_file=trace_file,
             stage="select_service",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             claude_response, provider="claude"
@@ -276,6 +281,7 @@ def get_llm_service_selection(
             stage="select_service",
             max_tokens=600,  # Allow space for summary
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_ollama_response(
             ollama_response, provider="ollama"
@@ -447,6 +453,7 @@ def get_llm_final_decision(
             trace_file=trace_file,
             stage="final_decision",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             openai_response, provider="openai"
@@ -462,6 +469,7 @@ def get_llm_final_decision(
             trace_file=trace_file,
             stage="final_decision",
             trace_metadata=trace_metadata,
+            temperature=model_config.temperature,
         )
         function_calls, message_content = parse_openai_response(
             claude_response, provider="claude"
@@ -477,6 +485,7 @@ def get_llm_final_decision(
         stage="final_decision",
         max_tokens=500,  # Limit output to prevent excessive verbosity
         trace_metadata=trace_metadata,
+        temperature=model_config.temperature,
     )
     function_calls, message_content = parse_ollama_response(
         ollama_response, provider="ollama"

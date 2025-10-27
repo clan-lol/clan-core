@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypedDict
 
-from clan_lib.cmd import RunOpts, run
+from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ class SystemdUserService:
         """Run systemctl command with --user flag."""
         return run(
             ["systemctl", "--user", action, f"{service_name}.service"],
-            RunOpts(check=False),
+            RunOpts(check=False, log=Log.NONE),
         )
 
     def _get_property(self, service_name: str, prop: str) -> str:
@@ -240,11 +240,15 @@ class SystemdUserService:
         service_name = self._service_name(name)
 
         result = self._systemctl("stop", service_name)
-        if result.returncode != 0 and "not loaded" not in result.stderr.lower():
+        if (
+            result.returncode != 0
+            and "not loaded" not in result.stderr.lower()
+            and "does not exist" not in result.stderr.lower()
+        ):
             msg = f"Failed to stop service: {result.stderr}"
             raise ClanError(msg)
 
-        self._systemctl("disable", service_name)  # Ignore errors for transient units
+        result = self._systemctl("disable", service_name)
 
         unit_file = self._unit_file_path(name)
         if unit_file.exists():

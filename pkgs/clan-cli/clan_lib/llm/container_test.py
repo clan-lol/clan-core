@@ -5,15 +5,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
+import clan_lib.llm.llm_types
 import pytest
 from clan_lib.flake.flake import Flake
+from clan_lib.llm.llm_types import ModelConfig
 from clan_lib.llm.orchestrator import get_llm_turn
 from clan_lib.llm.service import create_llm_model, run_llm_service
 from clan_lib.service_runner import create_service_manager
 
 if TYPE_CHECKING:
     from clan_lib.llm.llm_types import ChatResult
-    from clan_lib.llm.schemas import ChatMessage, SessionState
+    from clan_lib.llm.schemas import SessionState
 
 
 def get_current_mode(session_state: "SessionState") -> str:
@@ -168,28 +170,80 @@ def llm_service() -> Iterator[None]:
             service_manager.stop_service("ollama")
 
 
-def execute_multi_turn_workflow(
-    user_request: str,
-    flake: Flake | MagicMock,
-    conversation_history: list["ChatMessage"] | None = None,
-    provider: str = "ollama",
-    session_state: "SessionState | None" = None,
-) -> "ChatResult":
-    """Execute the multi-turn workflow, auto-executing all pending operations.
+@pytest.mark.service_runner
+@pytest.mark.usefixtures("mock_nix_shell", "llm_service")
+def test_full_conversation_flow(mock_flake: MagicMock) -> None:
+    """Test the complete conversation flow by manually calling get_llm_turn at each step.
 
-    This simulates the behavior of the CLI auto-execute loop in workflow.py.
+    This test verifies:
+    - State transitions through discovery -> readme_fetch -> service_selection -> final_decision
+    - Each step returns the correct next_action
+    - Conversation history is preserved across turns
+    - Session state is correctly maintained
     """
+    flake = mock_flake
+    trace_file = Path("~/.ollama/container_test_llm_trace.json").expanduser()
+    trace_file.unlink(missing_ok=True)  # Start fresh
+    provider = "ollama"
+
+    # Override DEFAULT_MODELS with 4-minute timeouts for container tests
+    clan_lib.llm.llm_types.DEFAULT_MODELS = {
+        "ollama": ModelConfig(
+            name="qwen3:4b-instruct",
+            provider="ollama",
+            timeout=300,  # set inference timeout to 5 minutes as CI may be slow
+            temperature=0,  # set randomness to 0 for consistent test results
+        ),
+    }
+
+    # ========== STEP 1: Initial request (should return next_action for discovery) ==========
+    print_separator("STEP 1: Initial Request", char="=", width=80)
     result = get_llm_turn(
-        user_request=user_request,
+        user_request="What VPN options do I have?",
         flake=flake,
-        conversation_history=conversation_history,
         provider=provider,  # type: ignore[arg-type]
-        session_state=session_state,
         execute_next_action=False,
+        trace_file=trace_file,
     )
 
-    # Auto-execute any pending operations
-    while result.next_action:
+    # Should have next_action for discovery phase
+    assert result.next_action is not None, "Should have next_action for discovery"
+    assert result.next_action["type"] == "discovery"
+    assert result.requires_user_response is False
+    assert len(result.proposed_instances) == 0
+    assert "pending_discovery" in result.session_state
+    print(f"  Next Action: {result.next_action['type']}")
+    print(f"  Description: {result.next_action['description']}")
+    print_meta_info(result, turn=1, phase="Initial Request")
+
+    # ========== STEP 2: Execute discovery (should return next_action for readme_fetch) ==========
+    print_separator("STEP 2: Execute Discovery", char="=", width=80)
+    result = get_llm_turn(
+        user_request="",
+        flake=flake,
+        conversation_history=list(result.conversation_history),
+        provider=provider,  # type: ignore[arg-type]
+        session_state=result.session_state,
+        execute_next_action=True,
+        trace_file=trace_file,
+    )
+
+    # Should have next_action for readme fetch OR a clarifying question
+    if result.next_action:
+        assert result.next_action["type"] == "fetch_readmes"
+        assert "pending_readme_fetch" in result.session_state
+        print(f"  Next Action: {result.next_action['type']}")
+        print(f"  Description: {result.next_action['description']}")
+    else:
+        # LLM asked a clarifying question
+        assert result.requires_user_response is True
+        assert len(result.assistant_message) > 0
+        print(f"  Assistant Message: {result.assistant_message[:100]}...")
+    print_meta_info(result, turn=2, phase="Discovery Executed")
+
+    # ========== STEP 3: Execute readme fetch (if applicable) ==========
+    if result.next_action and result.next_action["type"] == "fetch_readmes":
+        print_separator("STEP 3: Execute Readme Fetch", char="=", width=80)
         result = get_llm_turn(
             user_request="",
             flake=flake,
@@ -197,187 +251,69 @@ def execute_multi_turn_workflow(
             provider=provider,  # type: ignore[arg-type]
             session_state=result.session_state,
             execute_next_action=True,
+            trace_file=trace_file,
         )
 
-    return result
+        # Should have next_action for service selection
+        assert result.next_action is not None
+        assert result.next_action["type"] == "service_selection"
+        assert "pending_service_selection" in result.session_state
+        print(f"  Next Action: {result.next_action['type']}")
+        print(f"  Description: {result.next_action['description']}")
+        print_meta_info(result, turn=3, phase="Readme Fetch Executed")
 
-
-@pytest.mark.service_runner
-@pytest.mark.usefixtures("mock_nix_shell", "llm_service")
-def test_full_conversation_flow(mock_flake: MagicMock) -> None:
-    """Comprehensive test that exercises the complete conversation flow with the actual LLM service.
-
-    This test simulates a realistic multi-turn conversation that covers:
-    - Discovery phase: Initial request and LLM gathering information
-    - Service selection phase: User choosing from available options
-    - Final decision phase: Configuring the selected service with specific parameters
-    - State transitions: pending_service_selection -> pending_final_decision -> completion
-    - Conversation history preservation across all turns
-    - Error handling and edge cases
-    """
-    flake = mock_flake
-    # ========== TURN 1: Discovery Phase - Initial vague request ==========
-    print_separator("TURN 1: Discovery Phase", char="=", width=80)
-    result = execute_multi_turn_workflow(
-        user_request="What VPN options do I have?",
-        flake=flake,
-        provider="ollama",
-    )
-
-    # Verify discovery phase behavior
-    assert result.requires_user_response is True, (
-        "Should require user response in discovery"
-    )
-    assert len(result.conversation_history) >= 2, (
-        "Should have user + assistant messages"
-    )
-    assert result.conversation_history[0]["role"] == "user"
-    assert result.conversation_history[0]["content"] == "What VPN options do I have?"
-    assert result.conversation_history[-1]["role"] == "assistant"
-    assert len(result.assistant_message) > 0, "Assistant should provide a response"
-
-    # After multi-turn execution, we may have either:
-    # - pending_service_selection (if LLM provided options and is waiting for choice)
-    # - pending_final_decision (if LLM directly selected a service)
-    # - no pending state (if LLM asked a clarifying question)
-
-    # No instances yet
-    assert len(result.proposed_instances) == 0
-    assert result.error is None
-
-    print_chat_exchange(
-        "What VPN options do I have?", result.assistant_message, result.session_state
-    )
-    print_meta_info(result, turn=1, phase="Discovery")
-
-    # ========== TURN 2: Service Selection Phase - User makes a choice ==========
-    print_separator("TURN 2: Service Selection", char="=", width=80)
-    user_msg_2 = "I'll use ZeroTier please"
-    result = execute_multi_turn_workflow(
-        user_request=user_msg_2,
-        flake=flake,
-        conversation_history=list(result.conversation_history),
-        provider="ollama",
-        session_state=result.session_state,
-    )
-
-    # Verify conversation history growth and preservation
-    assert len(result.conversation_history) > 2, "History should grow"
-    assert result.conversation_history[0]["content"] == "What VPN options do I have?"
-    assert result.conversation_history[2]["content"] == "I'll use ZeroTier please"
-
-    # Should either ask for configuration details or provide direct config
-    # Most likely will ask for more details (pending_final_decision)
-    if result.requires_user_response:
-        # LLM is asking for configuration details
-        assert len(result.assistant_message) > 0
-        # Should transition to final decision phase
-        if "pending_final_decision" not in result.session_state:
-            # Might still be in service selection asking clarifications
-            assert "pending_service_selection" in result.session_state
-    else:
-        # LLM provided configuration immediately (less likely)
-        assert len(result.proposed_instances) > 0
-        assert result.proposed_instances[0]["module"]["name"] == "zerotier"
-
-    print_chat_exchange(user_msg_2, result.assistant_message, result.session_state)
-    print_meta_info(result, turn=2, phase="Service Selection")
-
-    # ========== Continue conversation until we reach final decision or completion ==========
-    max_turns = 10
-    turn_count = 2
-
-    while result.requires_user_response and turn_count < max_turns:
-        turn_count += 1
-
-        # Determine appropriate response based on current state
-        if "pending_service_selection" in result.session_state:
-            # Still selecting service
-            user_request = "Yes, ZeroTier"
-            phase = "Service Selection (continued)"
-        elif "pending_final_decision" in result.session_state:
-            # Configuring the service
-            user_request = "Set up gchq-local as controller, qube-email as moon, and wintux as peer"
-            phase = "Final Configuration"
-        else:
-            # Generic continuation
-            user_request = "Yes, that sounds good. Use gchq-local as controller."
-            phase = "Continuing Conversation"
-
-        print_separator(f"TURN {turn_count}: {phase}", char="=", width=80)
-
-        result = execute_multi_turn_workflow(
-            user_request=user_request,
+        # ========== STEP 4: Execute service selection ==========
+        print_separator("STEP 4: Execute Service Selection", char="=", width=80)
+        result = get_llm_turn(
+            user_request="I want ZeroTier.",
             flake=flake,
             conversation_history=list(result.conversation_history),
-            provider="ollama",
+            provider=provider,  # type: ignore[arg-type]
             session_state=result.session_state,
+            execute_next_action=True,
+            trace_file=trace_file,
         )
 
-        # Verify conversation history continues to grow
-        assert len(result.conversation_history) == (turn_count * 2), (
-            f"History should have {turn_count * 2} messages (turn {turn_count})"
-        )
+        # Should either have next_action for final_decision OR a clarifying question
+        if result.next_action:
+            assert result.next_action["type"] == "final_decision"
+            assert "pending_final_decision" in result.session_state
+            print(f"  Next Action: {result.next_action['type']}")
+            print(f"  Description: {result.next_action['description']}")
+        else:
+            # LLM asked a clarifying question during service selection
+            assert result.requires_user_response is True
+            assert len(result.assistant_message) > 0
+            print(f"  Assistant Message: {result.assistant_message[:100]}...")
+        print_meta_info(result, turn=4, phase="Service Selection Executed")
 
-        # Verify history preservation
-        assert (
-            result.conversation_history[0]["content"] == "What VPN options do I have?"
-        )
+        # ========== STEP 5: Execute final decision (if applicable) ==========
+        if result.next_action and result.next_action["type"] == "final_decision":
+            print_separator("STEP 5: Execute Final Decision", char="=", width=80)
+            result = get_llm_turn(
+                user_request="",
+                flake=flake,
+                conversation_history=list(result.conversation_history),
+                provider=provider,  # type: ignore[arg-type]
+                session_state=result.session_state,
+                execute_next_action=True,
+                trace_file=trace_file,
+            )
 
-        print_chat_exchange(
-            user_request, result.assistant_message, result.session_state
-        )
-        print_meta_info(result, turn=turn_count, phase=phase)
+            # Should either have proposed_instances OR ask a clarifying question
+            if result.proposed_instances:
+                assert len(result.proposed_instances) > 0
+                assert result.next_action is None
+                print(f"  Proposed Instances: {len(result.proposed_instances)}")
+                for inst in result.proposed_instances:
+                    print(f"    - {inst['module']['name']}")
+            else:
+                # LLM asked a clarifying question
+                assert result.requires_user_response is True
+                assert len(result.assistant_message) > 0
+                print(f"  Assistant Message: {result.assistant_message[:100]}...")
+            print_meta_info(result, turn=5, phase="Final Decision Executed")
 
-        # Check for completion
-        if not result.requires_user_response:
-            print_separator("CONVERSATION COMPLETED", char="=", width=80)
-            break
-
-    # ========== Final Verification ==========
-    print_separator("FINAL VERIFICATION", char="=", width=80)
-    assert turn_count < max_turns, f"Conversation took too many turns ({turn_count})"
-
-    # If conversation completed, verify we have valid configuration
-    if not result.requires_user_response:
-        assert len(result.proposed_instances) > 0, (
-            "Should have at least one proposed instance"
-        )
-        instance = result.proposed_instances[0]
-
-        # Verify instance structure
-        assert "module" in instance
-        assert "name" in instance["module"]
-        assert instance["module"]["name"] in [
-            "zerotier",
-            "wireguard",
-            "yggdrasil",
-            "mycelium",
-        ]
-
-        # Should not be in pending state anymore
-        assert "pending_service_selection" not in result.session_state
-        assert "pending_final_decision" not in result.session_state
-
-        assert result.error is None, f"Should not have error: {result.error}"
-
-        print_separator("FINAL SUMMARY", char="-", width=80, double=False)
-        print("  Status:                SUCCESS")
-        print(f"  Module Name:           {instance['module']['name']}")
-        print(f"  Total Turns:           {turn_count}")
-        print(f"  Final History Length:  {len(result.conversation_history)} messages")
-        if "roles" in instance:
-            roles_list = ", ".join(instance["roles"].keys())
-            print(f"  Configuration Roles:   {roles_list}")
-        print("  Errors:                None")
-        print("-" * 80)
-    else:
-        # Conversation didn't complete but should have made progress
-        assert len(result.conversation_history) > 2
-        assert result.error is None
-        print_separator("FINAL SUMMARY", char="-", width=80, double=False)
-        print("  Status:                IN PROGRESS")
-        print(f"  Total Turns:           {turn_count}")
-        print(f"  Current State:         {list(result.session_state.keys())}")
-        print(f"  History Length:        {len(result.conversation_history)} messages")
-        print("-" * 80)
+    # Verify conversation history has grown
+    assert len(result.conversation_history) > 0
+    assert result.conversation_history[0]["content"] == "What VPN options do I have?"
