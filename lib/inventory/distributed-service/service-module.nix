@@ -859,7 +859,11 @@ in
                   instanceRes.nixosModule
                 ]
                 ++ (map (
-                  s: if builtins.typeOf s == "string" then "${directory}/${s}" else s
+                  s:
+                  if builtins.typeOf s == "string" then
+                    lib.warn "String types for 'extraModules' will be deprecated - ${s}" "${directory}/${s}"
+                  else
+                    lib.setDefaultModuleLocation "via inventory.instances.${instanceName}.roles.${roleName}" s
                 ) instanceCfg.roles.${roleName}.extraModules);
               };
             }

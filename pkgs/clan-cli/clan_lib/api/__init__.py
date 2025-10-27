@@ -243,7 +243,11 @@ API.register(get_system_file)
             if "oneOf" not in return_type:
                 msg = (
                     f"Return type of function '{name}' is not a union type. Expected a union of Success and Error types."
-                    # @DavHau: no idea wy exactly this leads to the "oneOf" ot being present, but this should help
+                    # If the SuccessData type is unsupported it was dropped by Union narrowing.
+                    # This is probably an antifeature
+                    # Introduced because run_generator wanted to use:
+                    # Callable[[Generator], dict[str, str]]
+                    # In its function signature.
                     "Hint: When using dataclasses as return types, ensure they don't contain public fields with non-serializable types"
                 )
                 raise JSchemaTypeError(msg)

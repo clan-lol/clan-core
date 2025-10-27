@@ -44,12 +44,6 @@ in
       description = ''
         List of additionally imported `.nix` expressions.
 
-        Supported types:
-
-        - **Strings**: Interpreted relative to the 'directory' passed to `lib.clan`.
-        - **Paths**: should be relative to the current file.
-        - **Any**: Nix expression must be serializable to JSON.
-
         !!! Note
             **The import only happens if the machine is part of the service or role.**
 
@@ -74,7 +68,7 @@ in
             ```
       '';
       default = [ ];
-      type = types.listOf types.deferredModule;
+      type = types.listOf types.raw;
     };
   };
 }
