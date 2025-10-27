@@ -3,6 +3,7 @@
   directory,
   meta,
 }:
+# The following is a nixos/darwin module
 {
   _class,
   lib,

@@ -100,7 +100,7 @@ let
           _: machine:
           machine.extendModules {
             modules = [
-              (lib.modules.importApply ../machineModules/overridePkgs.nix {
+              (lib.modules.importApply ../../nixosModules/machineModules/overridePkgs.nix {
                 pkgs = pkgsFor.${system};
               })
             ];
@@ -179,7 +179,7 @@ in
           in
           {
             imports = [
-              (lib.modules.importApply ../machineModules/forName.nix {
+              (lib.modules.importApply ../../nixosModules/machineModules/forName.nix {
                 inherit (config.inventory) meta;
                 inherit
                   name
