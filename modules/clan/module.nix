@@ -222,6 +222,18 @@ in
       inventoryClass =
         let
           flakeInputs = config.self.inputs;
+          # Compute the relative directory path
+          selfStr = toString config.self;
+          dirStr = toString directory;
+          relativeDirectory =
+            if selfStr == dirStr then
+              ""
+            else if lib.hasPrefix selfStr dirStr then
+              lib.removePrefix (selfStr + "/") dirStr
+            else
+              # This shouldn't happen in normal usage, but can occur when
+              # the flake is copied (e.g., in tests). Fall back to empty string.
+              "";
         in
         {
           _module.args = {
@@ -230,7 +242,12 @@ in
           imports = [
             ../inventoryClass/default.nix
             {
-              inherit inventory directory flakeInputs;
+              inherit
+                inventory
+                directory
+                flakeInputs
+                relativeDirectory
+                ;
               exportsModule = config.exportsModule;
             }
             (
