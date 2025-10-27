@@ -167,6 +167,9 @@ in
           { ... }@args:
           let
             _class =
+              # _class was added in https://github.com/NixOS/nixpkgs/pull/395141
+              # Clan relies on it to determine which modules to load
+              # people need to use at least that version of nixpkgs
               args._class or (throw ''
                 Your version of nixpkgs is incompatible with the latest clan.
                 Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
