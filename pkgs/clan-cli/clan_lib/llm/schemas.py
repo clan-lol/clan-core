@@ -231,6 +231,7 @@ class ChatCompletionRequestPayload(TypedDict, total=False):
     messages: list[ChatMessage]
     tools: list[ToolDefinition]
     stream: NotRequired[bool]
+    temperature: NotRequired[float]
 
 
 @dataclass(frozen=True)

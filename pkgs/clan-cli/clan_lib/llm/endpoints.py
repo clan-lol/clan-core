@@ -149,6 +149,7 @@ def call_openai_api(
     trace_file: Path | None = None,
     stage: str = "unknown",
     trace_metadata: dict[str, Any] | None = None,
+    temperature: float | None = None,
 ) -> OpenAIChatCompletionResponse:
     """Call the OpenAI API for chat completion.
 
@@ -160,6 +161,7 @@ def call_openai_api(
         trace_file: Optional path to write trace entries for debugging
         stage: Stage name for trace entries (default: "unknown")
         trace_metadata: Optional metadata to include in trace entries
+        temperature: Sampling temperature (default: None = use API default)
 
     Returns:
         The parsed JSON response from the API
@@ -178,6 +180,8 @@ def call_openai_api(
         "messages": messages,
         "tools": list(tools),
     }
+    if temperature is not None:
+        payload["temperature"] = temperature
     _debug_log_request("openai", messages, tools)
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
@@ -256,6 +260,7 @@ def call_claude_api(
     trace_file: Path | None = None,
     stage: str = "unknown",
     trace_metadata: dict[str, Any] | None = None,
+    temperature: float | None = None,
 ) -> OpenAIChatCompletionResponse:
     """Call the Claude API (via OpenAI-compatible endpoint) for chat completion.
 
@@ -268,6 +273,7 @@ def call_claude_api(
         trace_file: Optional path to write trace entries for debugging
         stage: Stage name for trace entries (default: "unknown")
         trace_metadata: Optional metadata to include in trace entries
+        temperature: Sampling temperature (default: None = use API default)
 
     Returns:
         The parsed JSON response from the API
@@ -293,6 +299,8 @@ def call_claude_api(
         "messages": messages,
         "tools": list(tools),
     }
+    if temperature is not None:
+        payload["temperature"] = temperature
     _debug_log_request("claude", messages, tools)
 
     url = f"{base_url}chat/completions"
@@ -372,6 +380,7 @@ def call_ollama_api(
     stage: str = "unknown",
     max_tokens: int | None = None,
     trace_metadata: dict[str, Any] | None = None,
+    temperature: float | None = None,
 ) -> OllamaChatResponse:
     """Call the Ollama API for chat completion.
 
@@ -384,6 +393,7 @@ def call_ollama_api(
         stage: Stage name for trace entries (default: "unknown")
         max_tokens: Maximum number of tokens to generate (default: None = unlimited)
         trace_metadata: Optional metadata to include in trace entries
+        temperature: Sampling temperature (default: None = use API default)
 
     Returns:
         The parsed JSON response from the API
@@ -399,9 +409,14 @@ def call_ollama_api(
         "tools": list(tools),
     }
 
-    # Add max_tokens limit if specified
+    # Add options for max_tokens and temperature if specified
+    options: dict[str, int | float] = {}
     if max_tokens is not None:
-        payload["options"] = {"num_predict": max_tokens}  # type: ignore[typeddict-item]
+        options["num_predict"] = max_tokens
+    if temperature is not None:
+        options["temperature"] = temperature
+    if options:
+        payload["options"] = options  # type: ignore[typeddict-item]
     _debug_log_request("ollama", messages, tools)
     url = "http://localhost:11434/api/chat"
 
