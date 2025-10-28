@@ -33,20 +33,23 @@
 let
   nixpkgs = self.inputs.nixpkgs or clan-core.inputs.nixpkgs;
   nix-darwin = self.inputs.nix-darwin or clan-core.inputs.nix-darwin;
+  configuration = (
+    lib.evalModules {
+      class = "clan";
+      specialArgs = {
+        inherit
+          self
+          ;
+        inherit
+          nixpkgs
+          nix-darwin
+          ;
+      };
+      modules = [
+        clan-core.modules.clan.default
+        m
+      ];
+    }
+  );
 in
-lib.evalModules {
-  class = "clan";
-  specialArgs = {
-    inherit
-      self
-      ;
-    inherit
-      nixpkgs
-      nix-darwin
-      ;
-  };
-  modules = [
-    clan-core.modules.clan.default
-    m
-  ];
-}
+clan-core.clanLib.checkConfig configuration.config.checks configuration

@@ -212,6 +212,36 @@ in
       };
     };
 
+  test_clan_check_simple_fail =
+    let
+      eval = clan {
+        checks.constFail = {
+          assertion = false;
+          message = "This is a constant failure";
+        };
+      };
+    in
+    {
+      result = eval;
+      expr = eval.config;
+      expectedError.type = "ThrownError";
+      expectedError.msg = "This is a constant failure";
+    };
+  test_clan_check_simple_pass =
+    let
+      eval = clan {
+        checks.constFail = {
+          assertion = true;
+          message = "This is a constant success";
+        };
+      };
+    in
+    {
+      result = eval;
+      expr = lib.seq eval.config 42;
+      expected = 42;
+    };
+
   test_get_var_machine =
     let
       varsLib = import ./vars.nix { };

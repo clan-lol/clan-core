@@ -56,15 +56,8 @@ in
             }
           ];
         };
-        apply =
-          config:
-          lib.deepSeq (lib.mapAttrs (
-            id: check:
-            if check.ignore || check.assertion then
-              null
-            else
-              throw "clan.checks.${id} failed with message\n${check.message}"
-          ) config.checks) config;
+        # Important: !This logic needs to be kept in sync with lib.clan function!
+        apply = config: clan-core.lib.checkConfig config.checks config;
       };
 
     # Mapped flake toplevel outputs
