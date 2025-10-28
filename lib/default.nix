@@ -16,6 +16,8 @@ lib.fix (
       */
       callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
+      checkConfig = clanLib.callLib ./clan/checkConfig.nix { };
+
       evalService = clanLib.callLib ./evalService.nix { };
       # ------------------------------------
       # ClanLib functions
