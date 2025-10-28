@@ -19,5 +19,6 @@
   imports = [
     ./top-level-interface.nix
     ./module.nix
+    ./checks.nix
   ];
 }

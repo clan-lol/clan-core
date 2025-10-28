@@ -53,7 +53,12 @@ in
             };
           };
         }).clan
-          { config.directory = rootPath; };
+          {
+            directory = rootPath;
+            self = {
+              inputs.nixpkgs.lib.version = "25.11";
+            };
+          };
     in
     {
       inherit vclan;
@@ -94,7 +99,12 @@ in
             };
           };
         }).clan
-          { config.directory = rootPath; };
+          {
+            directory = rootPath;
+            self = {
+              inputs.nixpkgs.lib.version = "25.11";
+            };
+          };
     in
     {
       inherit vclan;
