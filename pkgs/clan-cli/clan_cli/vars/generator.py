@@ -66,6 +66,41 @@ class Generator:
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
 
+    @staticmethod
+    def validate_dependencies(
+        generator_name: str,
+        machine_name: str,
+        dependencies: list[str],
+        generators_data: dict[str, dict],
+    ) -> list[GeneratorKey]:
+        """Validate and build dependency keys for a generator.
+
+        Args:
+            generator_name: Name of the generator that has dependencies
+            machine_name: Name of the machine the generator belongs to
+            dependencies: List of dependency generator names
+            generators_data: Dictionary of all available generators for this machine
+
+        Returns:
+            List of GeneratorKey objects
+
+        Raises:
+            ClanError: If a dependency does not exist
+
+        """
+        deps_list = []
+        for dep in dependencies:
+            if dep not in generators_data:
+                msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
+                raise ClanError(msg)
+            deps_list.append(
+                GeneratorKey(
+                    machine=None if generators_data[dep]["share"] else machine_name,
+                    name=dep,
+                )
+            )
+        return deps_list
+
     @property
     def key(self) -> GeneratorKey:
         if self.share:
@@ -240,15 +275,12 @@ class Generator:
                     name=gen_name,
                     share=share,
                     files=files,
-                    dependencies=[
-                        GeneratorKey(
-                            machine=None
-                            if generators_data[dep]["share"]
-                            else machine_name,
-                            name=dep,
-                        )
-                        for dep in gen_data["dependencies"]
-                    ],
+                    dependencies=cls.validate_dependencies(
+                        gen_name,
+                        machine_name,
+                        gen_data["dependencies"],
+                        generators_data,
+                    ),
                     migrate_fact=gen_data.get("migrateFact"),
                     validation_hash=gen_data.get("validationHash"),
                     prompts=prompts,

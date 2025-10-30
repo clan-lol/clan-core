@@ -767,6 +767,28 @@ def test_prompt(
 
 
 @pytest.mark.with_core
+def test_non_existing_dependency_raises_error(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure that a generator with a non-existing dependency raises a clear error."""
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["script"] = 'echo "$RANDOM" > "$out"/my_value'
+    my_generator["dependencies"] = ["non_existing_generator"]
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    with pytest.raises(
+        ClanError,
+        match="Generator 'my_generator' on machine 'my_machine' depends on generator 'non_existing_generator', but 'non_existing_generator' does not exist",
+    ):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+
+@pytest.mark.with_core
 def test_shared_vars_must_never_depend_on_machine_specific_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
