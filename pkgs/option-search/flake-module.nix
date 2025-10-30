@@ -11,151 +11,10 @@
       ...
     }:
     let
-      inherit (lib)
-        mapAttrsToList
-        mapAttrs
-        mkOption
-        types
-        splitString
-        stringLength
-        substring
-        ;
-      inherit (self) clanLib;
-
-      serviceModules = self.clan.modules;
 
       baseHref = "/option-search/";
 
-      getRoles =
-        module:
-        (clanLib.evalService {
-          modules = [ module ];
-          prefix = [ ];
-        }).config.roles;
-
-      getManifest =
-        module:
-        (clanLib.evalService {
-          modules = [ module ];
-          prefix = [ ];
-        }).config.manifest;
-
-      settingsModules = module: mapAttrs (_roleName: roleConfig: roleConfig.interface) (getRoles module);
-
       # Map each letter to its capitalized version
-      capitalizeChar =
-        char:
-        {
-          a = "A";
-          b = "B";
-          c = "C";
-          d = "D";
-          e = "E";
-          f = "F";
-          g = "G";
-          h = "H";
-          i = "I";
-          j = "J";
-          k = "K";
-          l = "L";
-          m = "M";
-          n = "N";
-          o = "O";
-          p = "P";
-          q = "Q";
-          r = "R";
-          s = "S";
-          t = "T";
-          u = "U";
-          v = "V";
-          w = "W";
-          x = "X";
-          y = "Y";
-          z = "Z";
-        }
-        .${char};
-
-      title =
-        name:
-        let
-          # split by -
-          parts = splitString "-" name;
-          # capitalize first letter of each part
-          capitalize = part: (capitalizeChar (substring 0 1 part)) + substring 1 (stringLength part) part;
-          capitalizedParts = map capitalize parts;
-        in
-        builtins.concatStringsSep " " capitalizedParts;
-
-      fakeInstanceOptions =
-        name: module:
-        let
-          manifest = getManifest module;
-          description = ''
-            # ${title name} (Clan Service)
-
-            **${manifest.description}**
-
-            ${lib.optionalString (manifest ? readme) manifest.readme}
-
-            ${
-              if manifest.categories != [ ] then
-                "Categories: " + builtins.concatStringsSep ", " manifest.categories
-              else
-                "No categories defined"
-            }
-
-          '';
-        in
-        {
-          options = {
-            instances.${name} = lib.mkOption {
-              inherit description;
-              type = types.submodule {
-                options.roles = mapAttrs (
-                  roleName: roleSettingsModule:
-                  mkOption {
-                    type = types.submodule {
-                      _file = "docs flake-module";
-                      imports = [
-                        { _module.args = { inherit clanLib; }; }
-                        (import ../../modules/inventoryClass/role.nix {
-                          nestedSettingsOption = mkOption {
-                            type = types.raw;
-                            description = ''
-                              See [instances.${name}.roles.${roleName}.settings](${baseHref}?option_scope=0&option=inventory.instances.${name}.roles.${roleName}.settings)
-                            '';
-                          };
-                          settingsOption = mkOption {
-                            type = types.submoduleWith {
-                              modules = [ roleSettingsModule ];
-                            };
-                          };
-                        })
-                      ];
-                    };
-                  }
-                ) (settingsModules module);
-              };
-            };
-          };
-        };
-
-      docModules = [
-        {
-          inherit self;
-        }
-        self.modules.clan.default
-        {
-          options.inventory = lib.mkOption {
-            type = types.submoduleWith {
-              modules = [
-                { noInstanceOptions = true; }
-              ]
-              ++ mapAttrsToList fakeInstanceOptions serviceModules;
-            };
-          };
-        }
-      ];
 
       baseModule =
         # Module
@@ -208,12 +67,6 @@
               title = "Clan Options";
               # scopes = mapAttrsToList mkScope serviceModules;
               scopes = [
-                {
-                  inherit baseHref;
-                  name = "Flake Options (clan.nix file)";
-                  modules = docModules;
-                  urlPrefix = "https://git.clan.lol/clan/clan-core/src/branch/main/";
-                }
                 {
                   name = "Machine Options (clan.core NixOS options)";
                   optionsJSON = "${coreOptions}/share/doc/nixos/options.json";
