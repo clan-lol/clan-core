@@ -159,10 +159,10 @@
     {
       inherit
         servicesEval
-        importedModuleWithInstances
+        allMachines
         # Exposed for testing
         grouped
-        allMachines
+        importedModuleWithInstances
         ;
     };
 }

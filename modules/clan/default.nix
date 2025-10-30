@@ -19,6 +19,7 @@
   imports = [
     ./top-level-interface.nix
     ./module.nix
+    ./distributed-services.nix
     ./checks.nix
   ];
 }

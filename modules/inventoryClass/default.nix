@@ -67,9 +67,6 @@ in
       type = types.raw;
     };
 
-    distributedServices = mkOption {
-      type = types.raw;
-    };
     inventory = mkOption {
       type = types.raw;
     };
