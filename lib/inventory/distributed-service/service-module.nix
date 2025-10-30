@@ -7,10 +7,14 @@
   ...
 }:
 let
-  inherit (lib) mkOption types uniqueStrings;
+  inherit (lib) mkOption types;
   inherit (types) attrsWith submoduleWith;
 
   errorContext = "Error context: ${lib.concatStringsSep "." _ctx}";
+  # TODO:
+  # Remove once this gets merged upstream; performs in O(n*log(n) instead of O(n^2))
+  # https://github.com/NixOS/nixpkgs/pull/355616/files
+  uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
   /**
     Merges the role- and machine-settings using the role interface
 
