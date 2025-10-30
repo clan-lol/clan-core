@@ -1,4 +1,4 @@
-{ callInventoryAdapter, ... }:
+{ createTestClan, ... }:
 let
   # Authored module
   # A minimal module looks like this
@@ -23,10 +23,13 @@ let
 
   resolve =
     spec:
-    callInventoryAdapter {
-      inherit modules machines;
-      instances."instance_foo" = {
-        module = spec;
+    createTestClan {
+      inherit modules;
+      inventory = {
+        inherit machines;
+        instances."instance_foo" = {
+          module = spec;
+        };
       };
     };
 in
@@ -36,25 +39,16 @@ in
       (resolve {
         name = "A";
         input = "self";
-      }).importedModuleWithInstances.instance_foo.resolvedModule;
-    expected = {
-      _class = "clan.service";
-      manifest = {
-        name = "network";
-      };
-    };
+      }).config._services.mappedServices.self-A.manifest.name;
+    expected = "network";
   };
   test_import_remote_module_by_name = {
     expr =
       (resolve {
         name = "uzzi";
         input = "upstream";
-      }).importedModuleWithInstances.instance_foo.resolvedModule;
-    expected = {
-      _class = "clan.service";
-      manifest = {
-        name = "uzzi-from-upstream";
-      };
-    };
+      }).config._services.mappedServices.upstream-uzzi.manifest.name;
+    expected = "uzzi-from-upstream";
+
   };
 }

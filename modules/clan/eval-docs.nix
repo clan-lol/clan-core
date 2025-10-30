@@ -3,12 +3,16 @@
   lib,
   clanModule,
   clanLib,
+  clan-core,
 }:
 let
   eval = lib.evalModules {
     modules = [
       clanModule
     ];
+    specialArgs = {
+      self = clan-core;
+    };
   };
 
   evalDocs = pkgs.nixosOptionsDoc {

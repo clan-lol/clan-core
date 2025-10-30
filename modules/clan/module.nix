@@ -219,8 +219,6 @@ in
     inherit nixosConfigurations;
     inherit darwinConfigurations;
 
-    exports = config.clanInternals.inventoryClass.distributedServices.servicesEval.config.exports;
-
     clanInternals = {
       inventoryClass =
         let
@@ -254,21 +252,9 @@ in
               exportsModule = config.exportsModule;
             }
             (
-              { config, ... }:
+              { ... }:
               {
                 staticModules = clan-core.clan.modules;
-
-                distributedServices = clanLib.inventory.mapInstances {
-                  inherit (config)
-                    inventory
-                    directory
-                    flakeInputs
-                    exportsModule
-                    ;
-                  clanCoreModules = clan-core.clan.modules;
-                  prefix = [ "distributedServices" ];
-                };
-                machines = config.distributedServices.allMachines;
               }
             )
           ];

@@ -1,6 +1,6 @@
-{ callInventoryAdapter, lib, ... }:
+{ createTestClan, lib, ... }:
 let
-  res = callInventoryAdapter {
+  res = createTestClan {
     modules."A" = {
       _class = "clan.service";
       manifest = {
@@ -21,28 +21,31 @@ let
           };
         };
     };
-    machines = {
-      jon = { };
-      sara = { };
-    };
-    instances."instance_foo" = {
-      module = {
-        name = "A";
-        input = "self";
+    inventory = {
+
+      machines = {
+        jon = { };
+        sara = { };
       };
-      # Settings for both jon and sara
-      roles.peer.settings = {
-        timeout = 40;
+      instances."instance_foo" = {
+        module = {
+          name = "A";
+          input = "self";
+        };
+        # Settings for both jon and sara
+        roles.peer.settings = {
+          timeout = 40;
+        };
+        # Jon overrides timeout
+        roles.peer.machines.jon = {
+          settings.timeout = lib.mkForce 42;
+        };
+        roles.peer.machines.sara = { };
       };
-      # Jon overrides timeout
-      roles.peer.machines.jon = {
-        settings.timeout = lib.mkForce 42;
-      };
-      roles.peer.machines.sara = { };
     };
   };
 
-  config = res.servicesEval.config.mappedServices.self-A;
+  config = res.config._services.mappedServices.self-A;
 
   #
   applySettings =

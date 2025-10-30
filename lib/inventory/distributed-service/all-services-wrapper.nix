@@ -28,16 +28,15 @@ in
         elemType = submoduleWith {
           class = "clan.service";
           specialArgs = {
-            exports = config.exports;
             directory = directory;
             clanLib = specialArgs.clanLib;
+            exports = config.exports;
           };
           modules = [
             (
               { name, ... }:
               {
                 _module.args._ctx = [ name ];
-
               }
             )
             ./service-module.nix
