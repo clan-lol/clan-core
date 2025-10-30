@@ -140,6 +140,9 @@
             pkgs,
             ...
           }:
+          let
+            uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
+          in
           {
             imports = [
               (import ./shared.nix {
@@ -156,7 +159,7 @@
             config = {
               systemd.services.zerotier-inventory-autoaccept =
                 let
-                  machines = lib.uniqueStrings (
+                  machines = uniqueStrings (
                     (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
                     ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
                     ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
