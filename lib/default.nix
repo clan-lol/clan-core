@@ -40,6 +40,9 @@ lib.fix (
       # TODO: Flatten our lib functions like this:
       resolveModule = clanLib.callLib ./resolve-module { };
 
+      # Functions to help define exports
+      exports = clanLib.callLib ./exports.nix { };
+
       fs = {
         inherit (builtins) pathExists readDir;
       };

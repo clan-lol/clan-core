@@ -103,6 +103,11 @@ rec {
         inherit lib;
         clan-core = self;
       };
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-build-clan
+      legacyPackages.eval-exports = import ./new_exports.nix {
+        inherit lib;
+        clan-core = self;
+      };
       checks = {
         eval-lib-build-clan = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"

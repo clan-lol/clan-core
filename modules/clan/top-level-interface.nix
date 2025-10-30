@@ -110,9 +110,7 @@ in
 
     # TODO: make this writable by moving the options from inventoryClass into clan.
     exports = lib.mkOption {
-      readOnly = true;
-      visible = false;
-      internal = true;
+      type = types.lazyAttrsOf (types.submoduleWith { modules = [ config.exportsModule ]; });
     };
 
     exportsModule = lib.mkOption {
