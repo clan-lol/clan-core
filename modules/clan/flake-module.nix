@@ -12,6 +12,7 @@ in
     }:
     let
       jsonDocs = import ./eval-docs.nix {
+        clan-core = self;
         inherit
           pkgs
           lib
