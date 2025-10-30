@@ -37,9 +37,6 @@ in
               { name, ... }:
               {
                 _module.args._ctx = [ name ];
-                _module.args.clanLib = specialArgs.clanLib;
-                _module.args.exports = config.exports;
-                _module.args.directory = directory;
 
               }
             )

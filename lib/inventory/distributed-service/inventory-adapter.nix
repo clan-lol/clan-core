@@ -155,8 +155,6 @@
           }
         ];
       };
-      importedModulesEvaluated = servicesEval.config.mappedServices;
-
     in
     {
       inherit
@@ -165,7 +163,6 @@
         # Exposed for testing
         grouped
         allMachines
-        importedModulesEvaluated
         ;
     };
 }
