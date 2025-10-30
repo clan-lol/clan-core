@@ -41,14 +41,14 @@ let
   # In this case it is 'self-zerotier-redux'
   # This is usually only used internally, but we can use it to test the evaluation of service module in isolation
   # evaluatedService =
-  #   testFlake.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-zerotier-redux.config;
+  #   testFlake.clanInternals.inventoryClass.distributedServices.servicesEval.config.mappedServices.self-zerotier-redux.config;
 in
 {
   test_simple = {
     inherit testFlake;
 
     expr =
-      testFlake.config.clan.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-wifi.config;
+      testFlake.config.clan.clanInternals.inventoryClass.distributedServices.servicesEval.config.mappedServices.self-wifi.config;
     expected = 1;
 
     # expr = {

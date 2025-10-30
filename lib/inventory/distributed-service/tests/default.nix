@@ -81,7 +81,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = res.importedModulesEvaluated ? "<clan-core>-simple-module";
+      expr = res.servicesEval.config.mappedServices ? "<clan-core>-simple-module";
       expected = true;
       inherit res;
     };
@@ -177,7 +177,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.instances;
+      expr = lib.attrNames res.servicesEval.config.mappedServices.self-A.instances;
       expected = [
         "instance_bar"
         "instance_foo"
@@ -233,7 +233,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
+      expr = lib.attrNames res.servicesEval.config.mappedServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -285,7 +285,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
+      expr = lib.attrNames res.servicesEval.config.mappedServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
