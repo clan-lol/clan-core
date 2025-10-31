@@ -58,51 +58,53 @@
         pkgs.buildPackages.xorg.lndir
         pkgs.glibcLocales
         pkgs.kbd.out
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.FileSlurp
+        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
+        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".pkgs.perlPackages.FileSlurp
         pkgs.bubblewrap
 
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript.drvPath
+        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
+        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
+        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript.drvPath
       ]
       ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
       # Skip flash test on aarch64-linux for now as it's too slow
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux && pkgs.hostPlatform.system != "aarch64-linux") {
-        nixos-test-flash = self.clanLib.test.baseTest {
-          name = "flash";
-          nodes.target = {
-            virtualisation.emptyDiskImages = [ 4096 ];
-            virtualisation.memorySize = 4096;
+      checks =
+        lib.optionalAttrs (pkgs.stdenv.isLinux && pkgs.stdenv.hostPlatform.system != "aarch64-linux")
+          {
+            nixos-test-flash = self.clanLib.test.baseTest {
+              name = "flash";
+              nodes.target = {
+                virtualisation.emptyDiskImages = [ 4096 ];
+                virtualisation.memorySize = 4096;
 
-            virtualisation.useNixStoreImage = true;
-            virtualisation.writableStore = true;
+                virtualisation.useNixStoreImage = true;
+                virtualisation.writableStore = true;
 
-            environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
-            environment.etc."install-closure".source = "${closureInfo}/store-paths";
+                environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
+                environment.etc."install-closure".source = "${closureInfo}/store-paths";
 
-            nix.settings = {
-              substituters = lib.mkForce [ ];
-              hashed-mirrors = null;
-              connect-timeout = lib.mkForce 3;
-              flake-registry = "";
-              experimental-features = [
-                "nix-command"
-                "flakes"
-              ];
-            };
+                nix.settings = {
+                  substituters = lib.mkForce [ ];
+                  hashed-mirrors = null;
+                  connect-timeout = lib.mkForce 3;
+                  flake-registry = "";
+                  experimental-features = [
+                    "nix-command"
+                    "flakes"
+                  ];
+                };
+              };
+              testScript = ''
+                start_all()
+                machine.succeed("echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target' > ./test_id_ed25519.pub")
+                # Some distros like to automount disks with spaces
+                machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
+                machine.succeed("clan flash write --ssh-pubkey ./test_id_ed25519.pub --keymap de --language de_DE.UTF-8 --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.stdenv.hostPlatform.system}")
+              '';
+            } { inherit pkgs self; };
           };
-          testScript = ''
-            start_all()
-            machine.succeed("echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target' > ./test_id_ed25519.pub")
-            # Some distros like to automount disks with spaces
-            machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
-            machine.succeed("clan flash write --ssh-pubkey ./test_id_ed25519.pub --keymap de --language de_DE.UTF-8 --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.hostPlatform.system}")
-          '';
-        } { inherit pkgs self; };
-      };
     };
 }
