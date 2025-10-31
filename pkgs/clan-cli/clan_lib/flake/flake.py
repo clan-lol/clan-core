@@ -211,7 +211,7 @@ class ClanSelectError(ClanError):
 
     def __str__(self) -> str:
         if self.description:
-            return f"{self.msg}  Reason: {self.description}"
+            return f"{self.msg}  Reason: {self.description}. Use flag '--debug' to see full nix trace."
         return self.msg
 
     def __repr__(self) -> str:
