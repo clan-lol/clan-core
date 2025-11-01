@@ -1,3 +1,6 @@
+!!! Danger "Experimental"
+    This service is experimental and will change in the future.
+
 This service sets up a certificate authority (CA) that can issue certificates to
 other machines in your clan. For this the `ca` role is used.
 It additionally provides a `default` role, that can be applied to all machines

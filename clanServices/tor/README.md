@@ -1,8 +1,5 @@
-🚧🚧🚧 Experimental 🚧🚧🚧
-
-Use at your own risk.
-
-We are still refining its interfaces, instability and breakages are expected.
+!!! Danger "Experimental"
+    This service is experimental and will change in the future.
 
 ---
 
