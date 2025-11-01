@@ -1,12 +1,9 @@
-🚧🚧🚧 Experimental 🚧🚧🚧
-
-Use at your own risk.
-
-We are still refining its interfaces, instability and breakages are expected.
+!!! Danger "Experimental"
+    This service is experimental and will change in the future.
 
 ---
 
-This module sets up [yggdrasil](https://yggdrasil-network.github.io/) across your clan. 
+This module sets up [yggdrasil](https://yggdrasil-network.github.io/) across your clan.
 
 Yggdrasil is designed to be a future-proof and decentralised alternative to the
 structured routing protocols commonly used today on the internet. Inside your
