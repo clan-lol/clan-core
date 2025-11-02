@@ -51,7 +51,7 @@ Make sure you have the following:
     **Note:** This creates a new directory in your current location
 
     ```shellSession
-    nix run https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli --refresh -- flakes create
+    nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- flakes create
     ```
 
 3. Enter a **name** in the prompt:
