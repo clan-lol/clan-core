@@ -245,7 +245,7 @@ class SecretStore(StoreBase):
                             output_dir / "activation" / generator.name / file.name
                         )
                         out_file.parent.mkdir(parents=True, exist_ok=True)
-                        out_file.write_bytes(self.get(generator, file.name))
+                        out_file.write_bytes(file.value)
         if "partitioning" in phases:
             for generator in vars_generators:
                 for file in generator.files:
@@ -254,7 +254,7 @@ class SecretStore(StoreBase):
                             output_dir / "partitioning" / generator.name / file.name
                         )
                         out_file.parent.mkdir(parents=True, exist_ok=True)
-                        out_file.write_bytes(self.get(generator, file.name))
+                        out_file.write_bytes(file.value)
 
         hash_data = self.generate_hash(machine)
         if hash_data:
