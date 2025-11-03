@@ -150,10 +150,61 @@ Those are very similar to NixOS VM tests, as in they run virtualized nixos machi
 As of now the container test driver is a downstream development in clan-core.
 Basically everything stated under the NixOS VM tests sections applies here, except some limitations.
 
-Limitations:
+### Using Container Tests vs VM Tests
 
-- Cannot run in interactive mode, however while the container test runs, it logs a nsenter command that can be used to log into each of the container.
-- setuid binaries don't work
+Container tests are **enabled by default** for all tests using the clan testing framework.
+They offer significant performance advantages over VM tests:
+
+- **Faster startup**
+- **Lower resource usage**: No full kernel boot or hardware emulation overhead
+
+To control whether a test uses containers or VMs, use the `clan.test.useContainers` option:
+
+```nix
+{
+  clan = {
+    directory = ./.;
+    test.useContainers = true;  # Use containers (default)
+    # test.useContainers = false;  # Use VMs instead
+  };
+}
+```
+
+**When to use VM tests instead of container tests:**
+
+- Testing kernel features, modules, or boot processes
+- Testing hardware-specific features
+- When you need full system isolation
+
+### System Requirements for Container Tests
+
+Container tests require the **`uid-range`** system feature** in the Nix sandbox.
+This feature allows Nix to allocate a range of UIDs for containers to use, enabling `systemd-nspawn` containers to run properly inside the Nix build sandbox.
+
+**Configuration:**
+
+The `uid-range` feature requires the `auto-allocate-uids` setting to be enabled in your Nix configuration.
+
+To verify or enable it, add to your `/etc/nix/nix.conf` or NixOS configuration:
+
+```nix
+settings.experimental-features = [
+    "auto-allocate-uids"
+];
+
+nix.settings.auto-allocate-uids = true;
+nix.settings.system-features = [ "uid-range" ];
+```
+
+**Technical details:**
+
+- Container tests set `requiredSystemFeatures = [ "uid-range" ];` in their derivation (see `lib/test/container-test-driver/driver-module.nix:98`)
+- Without this feature, containers cannot properly manage user namespaces and will fail to start
+
+### Limitations
+
+- Cannot run in interactive mode, however while the container test runs, it logs a nsenter command that can be used to log into each of the containers.
+- Early implementation and limited by features.
 
 ### Where to find examples for NixOS container tests
 
