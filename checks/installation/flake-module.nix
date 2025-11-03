@@ -160,9 +160,9 @@
           closureInfo = pkgs.closureInfo {
             rootPaths = [
               privateInputs.clan-core-for-checks
-              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
-              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.initialRamdisk
-              self.nixosConfigurations."test-install-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
+              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
+              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
+              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
               pkgs.stdenv.drvPath
               pkgs.bash.drvPath
               pkgs.buildPackages.xorg.lndir
@@ -215,7 +215,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks}",
+                      "${self.checks.${pkgs.stdenv.hostPlatform.system}.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 
@@ -296,7 +296,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.checks.${pkgs.hostPlatform.system}.clan-core-for-checks}",
+                      "${self.checks.${pkgs.stdenv.hostPlatform.system}.clan-core-for-checks}",
                       "${closureInfo}"
                   )
 

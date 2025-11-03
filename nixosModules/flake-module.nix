@@ -18,7 +18,7 @@ let
         inputs.data-mesher.nixosModules.data-mesher
       ];
       config = {
-        clan.core.clanPkgs = lib.mkDefault self.packages.${pkgs.hostPlatform.system};
+        clan.core.clanPkgs = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system};
       };
     };
 in

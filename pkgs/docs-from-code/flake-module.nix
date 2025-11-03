@@ -64,6 +64,9 @@
           '';
     in
     {
+      legacyPackages = {
+        inherit jsonDocs clanModulesViaService;
+      };
       packages = {
         inherit module-docs;
       };

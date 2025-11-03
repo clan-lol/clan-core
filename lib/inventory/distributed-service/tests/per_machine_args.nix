@@ -1,4 +1,4 @@
-{ lib, callInventoryAdapter }:
+{ lib, createTestClan }:
 let
   # Authored module
   # A minimal module looks like this
@@ -39,35 +39,39 @@ let
     jon = { };
     sara = { };
   };
-  res = callInventoryAdapter {
-    inherit modules machines;
-    instances."instance_foo" = {
-      module = {
-        name = "A";
-        input = "self";
+  res = createTestClan {
+    inherit modules;
+    inventory = {
+
+      inherit machines;
+      instances."instance_foo" = {
+        module = {
+          name = "A";
+          input = "self";
+        };
+        roles.peer.machines.jon = {
+          settings.timeout = lib.mkForce "foo-peer-jon";
+        };
+        roles.peer = {
+          settings.timeout = "foo-peer";
+        };
       };
-      roles.peer.machines.jon = {
-        settings.timeout = lib.mkForce "foo-peer-jon";
+      instances."instance_bar" = {
+        module = {
+          name = "A";
+          input = "self";
+        };
+        roles.peer.machines.jon = {
+          settings.timeout = "bar-peer-jon";
+        };
       };
-      roles.peer = {
-        settings.timeout = "foo-peer";
+      instances."instance_zaza" = {
+        module = {
+          name = "B";
+          input = null;
+        };
+        roles.peer.tags.all = { };
       };
-    };
-    instances."instance_bar" = {
-      module = {
-        name = "A";
-        input = "self";
-      };
-      roles.peer.machines.jon = {
-        settings.timeout = "bar-peer-jon";
-      };
-    };
-    instances."instance_zaza" = {
-      module = {
-        name = "B";
-        input = null;
-      };
-      roles.peer.tags.all = { };
     };
   };
 in
@@ -79,7 +83,7 @@ in
     inherit res;
     expr = {
       hasMachineSettings =
-        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon
+        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon
         ? settings;
 
       # settings are specific.
@@ -88,10 +92,10 @@ in
       # roles = peer
       # machines = jon
       specificMachineSettings =
-        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
+        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
 
       hasRoleSettings =
-        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
+        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
         ? settings;
 
       # settings are specific.
@@ -100,7 +104,7 @@ in
       # roles = peer
       # machines = *
       specificRoleSettings =
-        res.importedModulesEvaluated.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
+        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
     };
     expected = {
       hasMachineSettings = true;

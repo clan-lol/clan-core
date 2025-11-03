@@ -246,7 +246,7 @@ class SecretStore(StoreBase):
                         )
                         # chmod after in case it doesn't have u+w
                         target_path.touch(mode=0o600)
-                        target_path.write_bytes(self.get(generator, file.name))
+                        target_path.write_bytes(file.value)
                         target_path.chmod(file.mode)
 
         if "partitioning" in phases:
@@ -260,7 +260,7 @@ class SecretStore(StoreBase):
                         )
                         # chmod after in case it doesn't have u+w
                         target_path.touch(mode=0o600)
-                        target_path.write_bytes(self.get(generator, file.name))
+                        target_path.write_bytes(file.value)
                         target_path.chmod(file.mode)
 
     @override

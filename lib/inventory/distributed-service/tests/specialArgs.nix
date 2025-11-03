@@ -1,6 +1,6 @@
-{ callInventoryAdapter, lib, ... }:
+{ createTestClan, lib, ... }:
 let
-  res = callInventoryAdapter {
+  res = createTestClan {
     modules."A" = m: {
       _class = "clan.service";
       config = {
@@ -14,19 +14,21 @@ let
         default = m;
       };
     };
-    machines = {
-      jon = { };
-    };
-    instances."instance_foo" = {
-      module = {
-        name = "A";
-        input = "self";
+    inventory = {
+      machines = {
+        jon = { };
       };
-      roles.peer.machines.jon = { };
+      instances."instance_foo" = {
+        module = {
+          name = "A";
+          input = "self";
+        };
+        roles.peer.machines.jon = { };
+      };
     };
   };
 
-  specialArgs = lib.attrNames res.servicesEval.config.mappedServices.self-A.test.specialArgs;
+  specialArgs = lib.attrNames res.config._services.mappedServices.self-A.test.specialArgs;
 in
 {
   test_simple = {

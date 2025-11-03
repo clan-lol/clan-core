@@ -2,11 +2,7 @@
   lib,
   clanLib,
 }:
-let
-  services = clanLib.callLib ./distributed-service/inventory-adapter.nix { };
-in
 {
-  inherit (services) mapInstances;
   inventoryModule = {
     _file = "clanLib.inventory.module";
     imports = [

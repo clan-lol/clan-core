@@ -2,7 +2,7 @@
 
 let
 
-  cli = self.packages.${pkgs.hostPlatform.system}.clan-cli-full;
+  cli = self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full;
 in
 {
   name = "systemd-abstraction";

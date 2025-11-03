@@ -1,3 +1,28 @@
+/**
+  The templates submodule
+
+  'clan.templates'
+
+  Different kinds supported:
+
+  - clan templates: 'clan.templates.clan'
+  - disko templates: 'clan.templates.disko'
+  - machine templates: 'clan.templates.machine'
+
+  A template has the form:
+
+  ```nix
+  {
+    description: string; # short summary what the template contains
+    path: path; # path to the template
+  }
+  ```
+
+  The clan API copies the template from the given 'path'
+  into a target folder. For example,
+
+  `./machines/<machine-name>` for 'machine' templates.
+*/
 {
   lib,
   ...

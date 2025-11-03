@@ -26,7 +26,7 @@ in
             # The hello-world service being tested
             ../../clanServices/hello-world
             # Required modules
-            ../../nixosModules/clanCore
+            ../../nixosModules
           ];
           testName = "hello-world";
           tests = ./tests/eval-tests.nix;

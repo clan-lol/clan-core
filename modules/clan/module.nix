@@ -100,7 +100,7 @@ let
           _: machine:
           machine.extendModules {
             modules = [
-              (lib.modules.importApply ../machineModules/overridePkgs.nix {
+              (lib.modules.importApply ../../nixosModules/machineModules/overridePkgs.nix {
                 pkgs = pkgsFor.${system};
               })
             ];
@@ -167,6 +167,9 @@ in
           { ... }@args:
           let
             _class =
+              # _class was added in https://github.com/NixOS/nixpkgs/pull/395141
+              # Clan relies on it to determine which modules to load
+              # people need to use at least that version of nixpkgs
               args._class or (throw ''
                 Your version of nixpkgs is incompatible with the latest clan.
                 Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
@@ -176,7 +179,7 @@ in
           in
           {
             imports = [
-              (lib.modules.importApply ../machineModules/forName.nix {
+              (lib.modules.importApply ../../nixosModules/machineModules/forName.nix {
                 inherit (config.inventory) meta;
                 inherit
                   name
@@ -216,8 +219,6 @@ in
     inherit nixosConfigurations;
     inherit darwinConfigurations;
 
-    exports = config.clanInternals.inventoryClass.distributedServices.servicesEval.config.exports;
-
     clanInternals = {
       inventoryClass =
         let
@@ -251,21 +252,9 @@ in
               exportsModule = config.exportsModule;
             }
             (
-              { config, ... }:
+              { ... }:
               {
                 staticModules = clan-core.clan.modules;
-
-                distributedServices = clanLib.inventory.mapInstances {
-                  inherit (config)
-                    inventory
-                    directory
-                    flakeInputs
-                    exportsModule
-                    ;
-                  clanCoreModules = clan-core.clan.modules;
-                  prefix = [ "distributedServices" ];
-                };
-                machines = config.distributedServices.allMachines;
               }
             )
           ];

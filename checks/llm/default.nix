@@ -2,7 +2,7 @@
 
 let
 
-  cli = self.packages.${pkgs.hostPlatform.system}.clan-cli-full;
+  cli = self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full;
 
   ollama-model = pkgs.callPackage ./qwen3-4b-instruct.nix { };
 in
@@ -53,7 +53,7 @@ in
               pytest
               pytest-xdist
               (cli.pythonRuntime.pkgs.toPythonModule cli)
-              self.legacyPackages.${pkgs.hostPlatform.system}.nixosTestLib
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
             ]
           ))
         ];

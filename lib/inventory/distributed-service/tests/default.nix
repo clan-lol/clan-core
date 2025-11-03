@@ -4,63 +4,53 @@
   ...
 }:
 let
-  inherit (lib)
-    evalModules
-    ;
 
-  evalInventory =
-    m:
-    (evalModules {
-      # Static modules
-      modules = [
-        clanLib.inventory.inventoryModule
-        {
-          _file = "test file";
-          tags.all = [ ];
-          tags.nixos = [ ];
-          tags.darwin = [ ];
-        }
-        {
-          modules.test = { };
-        }
-        m
-      ];
-    }).config;
-
-  callInventoryAdapter =
-    inventoryModule:
-    let
-      inventory = evalInventory inventoryModule;
-      flakeInputsFixture = {
-        self.clan.modules = inventoryModule.modules or { };
-        # Example upstream module
-        upstream.clan.modules = {
-          uzzi = {
-            _class = "clan.service";
-            manifest = {
-              name = "uzzi-from-upstream";
-            };
-          };
+  flakeInputsFixture = {
+    upstream.clan.modules = {
+      uzzi = {
+        _class = "clan.service";
+        manifest = {
+          name = "uzzi-from-upstream";
         };
       };
-    in
-    clanLib.inventory.mapInstances {
-      directory = ./.;
-      clanCoreModules = { };
-      flakeInputs = flakeInputsFixture;
-      inherit inventory;
-      exportsModule = { };
     };
+  };
+
+  createTestClan =
+    testClan:
+    let
+      res = clanLib.clan ({
+        # Static / mocked
+        specialArgs = {
+          clan-core = {
+            clan.modules = { };
+          };
+        };
+        self.inputs = flakeInputsFixture // {
+          self.clan = res.config;
+        };
+        directory = ./.;
+        exportsModule = { };
+
+        imports = [
+          testClan
+        ];
+      });
+    in
+    res;
+
 in
 {
   extraModules = import ./extraModules.nix { inherit clanLib; };
   exports = import ./exports.nix { inherit lib clanLib; };
-  settings = import ./settings.nix { inherit lib callInventoryAdapter; };
-  specialArgs = import ./specialArgs.nix { inherit lib callInventoryAdapter; };
-  resolve_module_spec = import ./import_module_spec.nix { inherit lib callInventoryAdapter; };
+  settings = import ./settings.nix { inherit lib createTestClan; };
+  specialArgs = import ./specialArgs.nix { inherit lib createTestClan; };
+  resolve_module_spec = import ./import_module_spec.nix {
+    inherit lib createTestClan;
+  };
   test_simple =
     let
-      res = callInventoryAdapter {
+      res = createTestClan {
         # Authored module
         # A minimal module looks like this
         # It isn't exactly doing anything but it's a valid module that produces an output
@@ -71,7 +61,7 @@ in
           };
         };
         # User config
-        instances."instance_foo" = {
+        inventory.instances."instance_foo" = {
           module = {
             name = "simple-module";
           };
@@ -81,7 +71,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = res.importedModulesEvaluated ? "<clan-core>-simple-module";
+      expr = res.config._services.mappedServices ? "<clan-core>-simple-module";
       expected = true;
       inherit res;
     };
@@ -92,7 +82,7 @@ in
   # All instances should be included within one evaluation to make all of them available
   test_module_grouping =
     let
-      res = callInventoryAdapter {
+      res = createTestClan {
         # Authored module
         # A minimal module looks like this
         # It isn't exactly doing anything but it's a valid module that produces an output
@@ -112,18 +102,19 @@ in
 
           perMachine = { }: { };
         };
+
         # User config
-        instances."instance_foo" = {
+        inventory.instances."instance_foo" = {
           module = {
             name = "A";
           };
         };
-        instances."instance_bar" = {
+        inventory.instances."instance_bar" = {
           module = {
             name = "B";
           };
         };
-        instances."instance_baz" = {
+        inventory.instances."instance_baz" = {
           module = {
             name = "A";
           };
@@ -133,16 +124,16 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.mapAttrs (_n: v: builtins.length v) res.grouped;
-      expected = {
-        "<clan-core>-A" = 2;
-        "<clan-core>-B" = 1;
-      };
+      expr = lib.attrNames res.config._services.mappedServices;
+      expected = [
+        "<clan-core>-A"
+        "<clan-core>-B"
+      ];
     };
 
   test_creates_all_instances =
     let
-      res = callInventoryAdapter {
+      res = createTestClan {
         # Authored module
         # A minimal module looks like this
         # It isn't exactly doing anything but it's a valid module that produces an output
@@ -154,22 +145,24 @@ in
 
           perMachine = { }: { };
         };
-        instances."instance_foo" = {
-          module = {
-            name = "A";
-            input = "self";
+        inventory = {
+          instances."instance_foo" = {
+            module = {
+              name = "A";
+              input = "self";
+            };
           };
-        };
-        instances."instance_bar" = {
-          module = {
-            name = "A";
-            input = "self";
+          instances."instance_bar" = {
+            module = {
+              name = "A";
+              input = "self";
+            };
           };
-        };
-        instances."instance_zaza" = {
-          module = {
-            name = "B";
-            input = null;
+          instances."instance_zaza" = {
+            module = {
+              name = "B";
+              input = null;
+            };
           };
         };
       };
@@ -177,7 +170,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.instances;
+      expr = lib.attrNames res.config._services.mappedServices.self-A.instances;
       expected = [
         "instance_bar"
         "instance_foo"
@@ -187,7 +180,7 @@ in
   # Membership via roles
   test_add_machines_directly =
     let
-      res = callInventoryAdapter {
+      res = createTestClan {
         # Authored module
         # A minimal module looks like this
         # It isn't exactly doing anything but it's a valid module that produces an output
@@ -202,38 +195,40 @@ in
 
           # perMachine = {}: {};
         };
-        machines = {
-          jon = { };
-          sara = { };
-          hxi = { };
-        };
-        instances."instance_foo" = {
-          module = {
-            name = "A";
-            input = "self";
+        inventory = {
+          machines = {
+            jon = { };
+            sara = { };
+            hxi = { };
           };
-          roles.peer.machines.jon = { };
-        };
-        instances."instance_bar" = {
-          module = {
-            name = "A";
-            input = "self";
+          instances."instance_foo" = {
+            module = {
+              name = "A";
+              input = "self";
+            };
+            roles.peer.machines.jon = { };
           };
-          roles.peer.machines.sara = { };
-        };
-        instances."instance_zaza" = {
-          module = {
-            name = "B";
-            input = null;
+          instances."instance_bar" = {
+            module = {
+              name = "A";
+              input = "self";
+            };
+            roles.peer.machines.sara = { };
           };
-          roles.peer.tags.all = { };
+          instances."instance_zaza" = {
+            module = {
+              name = "B";
+              input = null;
+            };
+            roles.peer.tags.all = { };
+          };
         };
       };
     in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
+      expr = lib.attrNames res.config._services.mappedServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -243,7 +238,7 @@ in
   # Membership via tags
   test_add_machines_via_tags =
     let
-      res = callInventoryAdapter {
+      res = createTestClan {
         # Authored module
         # A minimal module looks like this
         # It isn't exactly doing anything but it's a valid module that produces an output
@@ -257,35 +252,37 @@ in
 
           # perMachine = {}: {};
         };
-        machines = {
-          jon = {
-            tags = [ "foo" ];
+        inventory = {
+          machines = {
+            jon = {
+              tags = [ "foo" ];
+            };
+            sara = {
+              tags = [ "foo" ];
+            };
+            hxi = { };
           };
-          sara = {
-            tags = [ "foo" ];
+          instances."instance_foo" = {
+            module = {
+              name = "A";
+              input = "self";
+            };
+            roles.peer.tags.foo = { };
           };
-          hxi = { };
-        };
-        instances."instance_foo" = {
-          module = {
-            name = "A";
-            input = "self";
+          instances."instance_zaza" = {
+            module = {
+              name = "B";
+              input = null;
+            };
+            roles.peer.tags.all = { };
           };
-          roles.peer.tags.foo = { };
-        };
-        instances."instance_zaza" = {
-          module = {
-            name = "B";
-            input = null;
-          };
-          roles.peer.tags.all = { };
         };
       };
     in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
+      expr = lib.attrNames res.config._services.mappedServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -293,6 +290,9 @@ in
     };
 
   machine_imports = import ./machine_imports.nix { inherit lib clanLib; };
-  per_machine_args = import ./per_machine_args.nix { inherit lib callInventoryAdapter; };
-  per_instance_args = import ./per_instance_args.nix { inherit lib callInventoryAdapter; };
+  per_machine_args = import ./per_machine_args.nix { inherit lib createTestClan; };
+  per_instance_args = import ./per_instance_args.nix {
+    inherit lib;
+    callInventoryAdapter = createTestClan;
+  };
 }
