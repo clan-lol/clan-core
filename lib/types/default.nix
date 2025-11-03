@@ -27,7 +27,7 @@ in
     - Enforces that the definition is JSON serializable
     - Disallows nested imports
   */
-  uniqueDeferredSerializableModule = fix (
+  uniqueDeferredSerializableModule = lib.fix (
     self:
     let
       checkDef =
@@ -38,7 +38,7 @@ in
           def;
     in
     # Essentially the "raw" type, but with a custom name and check
-    mkOptionType {
+    lib.mkOptionType {
       name = "deferredModule";
       description = "deferred custom module. Must be JSON serializable.";
       descriptionClass = "noun";
@@ -49,7 +49,8 @@ in
         merge = loc: defs: {
           imports = map (
             def:
-            seq (checkDef loc def) setDefaultModuleLocation "${def.file}, via option ${showOption loc}"
+            lib.seq (checkDef loc def) lib.setDefaultModuleLocation
+              "${def.file}, via option ${lib.showOption loc}"
               def.value
           ) defs;
         };
