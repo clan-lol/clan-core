@@ -131,9 +131,6 @@ export function CubeScene(props: {
 
   let machineManager: MachineManager;
 
-  const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
-    "grid",
-  );
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
 
@@ -142,10 +139,6 @@ export function CubeScene(props: {
   // TODO: Unify this with actionRepr position
   const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
-  const [cameraInfo, setCameraInfo] = createSignal({
-    position: { x: 0, y: 0, z: 0 },
-    spherical: { radius: 0, theta: 0, phi: 0 },
-  });
   // Context menu state
   const [contextOpen, setContextOpen] = createSignal(false);
   const [menuPos, setMenuPos] = createSignal<{ x: number; y: number }>();
@@ -157,7 +150,6 @@ export function CubeScene(props: {
   const BASE_SIZE = 0.9; // Height of the cube above the ground
   const CUBE_SIZE = BASE_SIZE / 1.5; //
   const BASE_HEIGHT = 0.05; // Height of the cube above the ground
-  const CUBE_Y = 0 + CUBE_SIZE / 2 + BASE_HEIGHT / 2; // Y position of the cube above the ground
   const CUBE_SEGMENT_HEIGHT = CUBE_SIZE / 1;
 
   const FLOOR_COLOR = 0xcdd8d9;
@@ -311,21 +303,12 @@ export function CubeScene(props: {
       bgCamera,
     );
 
-    // controls.addEventListener("start", (e) => {
-    //   setIsDragging(true);
-    // });
-    // controls.addEventListener("end", (e) => {
-    //   setIsDragging(false);
-    // });
-
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xd9f2f7, 0.72);
     scene.add(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
 
-    // scene.add(new THREE.DirectionalLightHelper(directionalLight));
-    // scene.add(new THREE.CameraHelper(camera));
     const lightPos = new THREE.Spherical(
       15,
       initialSphericalCameraPosition.phi - Math.PI / 8,
@@ -411,30 +394,6 @@ export function CubeScene(props: {
     }
     actionMachine = createActionMachine();
     scene.add(actionMachine);
-
-    // const spherical = new THREE.Spherical();
-    // spherical.setFromVector3(camera.position);
-
-    // Function to update camera info
-    const updateCameraInfo = () => {
-      const spherical = new THREE.Spherical();
-      spherical.setFromVector3(camera.position);
-      setCameraInfo({
-        position: {
-          x: Math.round(camera.position.x * 100) / 100,
-          y: Math.round(camera.position.y * 100) / 100,
-          z: Math.round(camera.position.z * 100) / 100,
-        },
-        spherical: {
-          radius: Math.round(spherical.radius * 100) / 100,
-          theta: Math.round(spherical.theta * 100) / 100,
-          phi: Math.round(spherical.phi * 100) / 100,
-        },
-      });
-    };
-
-    // Initial camera info update
-    updateCameraInfo();
 
     createEffect(
       on(ctx.worldMode, (mode) => {
@@ -694,7 +653,6 @@ export function CubeScene(props: {
   };
 
   const onAddClick = (event: MouseEvent) => {
-    setPositionMode("grid");
     ctx.setWorldMode("create");
     renderLoop.requestRender();
   };
@@ -706,9 +664,6 @@ export function CubeScene(props: {
     if (!actionRepr) return;
 
     actionRepr.visible = true;
-    // (actionRepr.material as THREE.MeshPhongMaterial).emissive.set(
-    //   worldMode() === "create" ? CREATE_BASE_EMISSIVE : MOVE_BASE_EMISSIVE,
-    // );
 
     // Calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
