@@ -18,12 +18,12 @@ export class MachineManager {
 
   private disposeRoot: () => void;
 
-  private machinePositionsSignal: Accessor<SceneData>;
+  private machinePositionsSignal: Accessor<SceneData | undefined>;
 
   constructor(
     scene: THREE.Scene,
     registry: ObjectRegistry,
-    machinePositionsSignal: Accessor<SceneData>,
+    machinePositionsSignal: Accessor<SceneData | undefined>,
     machinesQueryResult: MachinesQueryResult,
     selectedIds: Accessor<Set<string>>,
     setMachinePos: (id: string, position: [number, number] | null) => void,
@@ -39,8 +39,9 @@ export class MachineManager {
         if (!machinesQueryResult.data) return;
 
         const actualIds = Object.keys(machinesQueryResult.data);
-        const machinePositions = machinePositionsSignal();
-        // Remove stale
+
+        const machinePositions = machinePositionsSignal() || {};
+
         for (const id of Object.keys(machinePositions)) {
           if (!actualIds.includes(id)) {
             console.log("Removing stale machine", id);
@@ -61,8 +62,7 @@ export class MachineManager {
       // Effect 2: sync store → scene
       //
       createEffect(() => {
-        const positions = machinePositionsSignal();
-        if (!positions) return;
+        const positions = machinePositionsSignal() || {};
 
         // Remove machines from scene
         for (const [id, repr] of this.machines) {
@@ -103,7 +103,7 @@ export class MachineManager {
 
   nextGridPos(): [number, number] {
     const occupiedPositions = new Set(
-      Object.values(this.machinePositionsSignal()).map((data) =>
+      Object.values(this.machinePositionsSignal() || {}).map((data) =>
         keyFromPos(data.position),
       ),
     );

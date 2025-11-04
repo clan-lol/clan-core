@@ -1,11 +1,13 @@
 import { onCleanup, onMount } from "solid-js";
 import styles from "./ContextMenu.module.css";
 import { Typography } from "../Typography/Typography";
+import { Divider } from "../Divider/Divider";
+import Icon from "../Icon/Icon";
 
 export const Menu = (props: {
   x: number;
   y: number;
-  onSelect: (option: "move") => void;
+  onSelect: (option: "move" | "delete") => void;
   close: () => void;
   intersect: string[];
 }) => {
@@ -54,11 +56,29 @@ export const Menu = (props: {
       >
         <Typography
           hierarchy="label"
-          size="s"
-          weight="bold"
           color={currentMachine() ? "primary" : "quaternary"}
         >
           Move
+        </Typography>
+      </li>
+      <Divider />
+      <li
+        class={styles.item}
+        aria-disabled={!currentMachine()}
+        onClick={() => {
+          console.log("Delete clicked", currentMachine());
+          props.onSelect("delete");
+          props.close();
+        }}
+      >
+        <Typography
+          hierarchy="label"
+          color={currentMachine() ? "primary" : "quaternary"}
+        >
+          <span class="flex items-center gap-2">
+            Delete
+            <Icon icon="Trash" font-size="inherit" />
+          </span>
         </Typography>
       </li>
     </ul>

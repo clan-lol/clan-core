@@ -32,6 +32,9 @@ import {
 } from "./highlightStore";
 import { createMachineMesh } from "./MachineRepr";
 import { useClanContext } from "@/src/routes/Clan/Clan";
+import client from "@api/clan/client";
+import { navigateToClan } from "../hooks/clan";
+import { useNavigate } from "@solidjs/router";
 
 function intersectMachines(
   event: MouseEvent,
@@ -100,7 +103,7 @@ export function CubeScene(props: {
   onCreate: () => Promise<{ id: string }>;
   selectedIds: Accessor<Set<string>>;
   onSelect: (v: Set<string>) => void;
-  sceneStore: Accessor<SceneData>;
+  sceneStore: Accessor<SceneData | undefined>;
   setMachinePos: (machineId: string, pos: [number, number] | null) => void;
   isLoading: boolean;
   clanURI: string;
@@ -192,6 +195,8 @@ export function CubeScene(props: {
   );
 
   const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
+
+  const navigate = useNavigate();
 
   onMount(() => {
     // Scene setup
@@ -620,7 +625,8 @@ export function CubeScene(props: {
   });
 
   const snapToGrid = (point: THREE.Vector3) => {
-    if (!props.sceneStore) return;
+    const store = props.sceneStore() || {};
+
     // Snap to grid
     const snapped = new THREE.Vector3(
       Math.round(point.x / GRID_SIZE) * GRID_SIZE,
@@ -629,7 +635,7 @@ export function CubeScene(props: {
     );
 
     // Skip snapping if there's already a cube at this position
-    const positions = Object.entries(props.sceneStore());
+    const positions = Object.entries(store);
     const intersects = positions.some(
       ([_id, p]) => p.position[0] === snapped.x && p.position[1] === snapped.z,
     );
@@ -691,23 +697,38 @@ export function CubeScene(props: {
       }
     }
   };
-  const handleMenuSelect = (mode: "move") => {
+  const handleMenuSelect = async (mode: "move" | "delete") => {
+    const firstId = menuIntersection()[0];
+    if (!firstId) {
+      return;
+    }
+    const machine = machineManager.machines.get(firstId);
+    if (mode === "delete") {
+      console.log("deleting machine", firstId);
+      await client.post("delete_machine", {
+        body: {
+          machine: { flake: { identifier: props.clanURI }, name: firstId },
+        },
+      });
+      navigateToClan(navigate, props.clanURI);
+      ctx.machinesQuery.refetch();
+      ctx.serviceInstancesQuery.refetch();
+      return;
+    }
+
+    // Else "move" mode
     ctx.setWorldMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
 
     // Find the position of the first selected machine
     // Set the actionMachine position to that
-    const firstId = menuIntersection()[0];
-    if (firstId) {
-      const machine = machineManager.machines.get(firstId);
-      if (machine && actionMachine) {
-        actionMachine.position.set(
-          machine.group.position.x,
-          0,
-          machine.group.position.z,
-        );
-        setCursorPosition([machine.group.position.x, machine.group.position.z]);
-      }
+    if (machine && actionMachine) {
+      actionMachine.position.set(
+        machine.group.position.x,
+        0,
+        machine.group.position.z,
+      );
+      setCursorPosition([machine.group.position.x, machine.group.position.z]);
     }
   };
 

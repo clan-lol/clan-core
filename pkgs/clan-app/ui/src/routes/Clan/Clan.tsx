@@ -206,8 +206,8 @@ const ClanSceneController = (props: RouteSectionProps) => {
         <AddMachine
           onCreated={async (id) => {
             const promise = currentPromise();
+            await ctx.machinesQuery.refetch();
             if (promise) {
-              await ctx.machinesQuery.refetch();
               promise.resolve({ id });
               setCurrentPromise(null);
             }

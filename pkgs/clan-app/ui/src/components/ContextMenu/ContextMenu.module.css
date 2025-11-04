@@ -4,6 +4,7 @@
   padding: 8px;
   flex-direction: column;
   align-items: flex-start;
+  gap: 4px;
 
   border-radius: 5px;
   border: 1px solid var(--clr-border-def-2, #d8e8eb);

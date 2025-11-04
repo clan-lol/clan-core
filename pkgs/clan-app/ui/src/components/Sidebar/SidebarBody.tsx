@@ -71,7 +71,7 @@ const Machines = () => {
     }
 
     const result = ctx.machinesQuery.data;
-    return Object.keys(result).length > 0 ? result : undefined;
+    return Object.keys(result).length > 0 ? result : [];
   };
 
   return (
@@ -117,7 +117,7 @@ const Machines = () => {
           }
         >
           <nav>
-            <For each={Object.entries(machines()!)}>
+            <For each={Object.entries(machines())}>
               {([id, machine]) => (
                 <MachineRoute
                   clanURI={clanURI}
