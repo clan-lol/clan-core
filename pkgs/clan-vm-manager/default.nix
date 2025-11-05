@@ -17,7 +17,7 @@
   runCommand,
   setuptools,
   webkitgtk_6_0,
-  wrapGAppsHook,
+  wrapGAppsHook3,
   python,
   lib,
   stdenv,
@@ -87,7 +87,7 @@ buildPythonApplication rec {
   nativeBuildInputs = [
     setuptools
     copyDesktopItems
-    wrapGAppsHook
+    wrapGAppsHook3
     gobject-introspection
   ];
 
