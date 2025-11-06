@@ -56,6 +56,38 @@ class LoggingMiddleware(Middleware):
             raise enhanced_error from e
 
         # Register logging context manager
+        class TeeStream:
+            """Binary stream that writes to both a file and stderr."""
+
+            def __init__(self, file_obj: Any, stderr: Any) -> None:
+                self.file_obj = file_obj
+                self.stderr = stderr.buffer if hasattr(stderr, "buffer") else stderr
+
+            def write(self, data: bytes) -> int:
+                self.file_obj.write(data)
+                self.stderr.write(data)
+                self.stderr.flush()
+                return len(data)
+
+            def flush(self) -> None:
+                self.file_obj.flush()
+                self.stderr.flush()
+
+            def fileno(self) -> int:
+                return self.file_obj.fileno()
+
+            def closed(self) -> None:
+                pass
+
+            def readable(self) -> bool:
+                return False
+
+            def writable(self) -> bool:
+                return True
+
+            def seekable(self) -> bool:
+                return False
+
         class LoggingContextManager:
             def __init__(self, log_file: Any) -> None:
                 self.log_file = log_file
@@ -64,7 +96,8 @@ class LoggingMiddleware(Middleware):
                 self.original_ctx: AsyncContext | None = None
 
             def __enter__(self) -> "LoggingContextManager":
-                self.log_f = self.log_file.open("ab")
+                file_obj = self.log_file.open("ab")
+                self.log_f = TeeStream(file_obj, sys.stderr)
                 self.original_ctx = get_async_ctx()
 
                 # Set up async context for logging
