@@ -89,11 +89,12 @@ in
       # having to re-import nixpkgs.
       # ZeroTier 1.16+ requires building with controller support when controller is enabled
       services.zerotierone.package = lib.mkDefault (
-        if cfg.controller.enable && lib.versionAtLeast pkgs.zerotierone.version "1.16"
-        then pkgs.callPackage ../../../pkgs/zerotierone {
-          zerotierone = pkgs.zerotierone.override { enableUnfree = true; };
-        }
-        else pkgs.callPackage ../../../pkgs/zerotierone { }
+        if cfg.controller.enable && lib.versionAtLeast pkgs.zerotierone.version "1.16" then
+          pkgs.callPackage ../../../pkgs/zerotierone {
+            zerotierone = pkgs.zerotierone.override { enableUnfree = true; };
+          }
+        else
+          pkgs.callPackage ../../../pkgs/zerotierone { }
       );
     }
     (lib.mkIf (cfg.networkId != null) {
