@@ -157,15 +157,6 @@
               })
             ];
             config = {
-              # ZeroTier 1.16+ requires building with controller support
-              services.zerotierone.package =
-                if lib.versionAtLeast pkgs.zerotierone.version "1.16" then
-                  pkgs.callPackage ../../../pkgs/zerotierone {
-                    zerotierone = pkgs.zerotierone.override { enableUnfree = true; };
-                  }
-                else
-                  pkgs.callPackage ../../../pkgs/zerotierone { };
-
               systemd.services.zerotier-inventory-autoaccept =
                 let
                   machines = uniqueStrings (

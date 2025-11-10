@@ -87,7 +87,14 @@ in
     {
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
-      services.zerotierone.package = lib.mkDefault (pkgs.callPackage ../../../pkgs/zerotierone { });
+      # ZeroTier 1.16+ requires building with controller support when controller is enabled
+      services.zerotierone.package = lib.mkDefault (
+        if cfg.controller.enable && lib.versionAtLeast pkgs.zerotierone.version "1.16"
+        then pkgs.callPackage ../../../pkgs/zerotierone {
+          zerotierone = pkgs.zerotierone.override { enableUnfree = true; };
+        }
+        else pkgs.callPackage ../../../pkgs/zerotierone { }
+      );
     }
     (lib.mkIf (cfg.networkId != null) {
       environment.etc."zerotier/ip".text =
