@@ -60,7 +60,7 @@ Configure Clan-wide settings and define machines. Here's an example `flake.nix`:
       # Define your Clan
       clan = {
         meta.name = ""; # Required and must be unique
-        meta.tld = ""; # Required and must be unique
+        meta.domain = ""; # Required and must be unique
 
         machines = {
           jon = {

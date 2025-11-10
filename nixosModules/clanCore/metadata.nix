@@ -114,6 +114,14 @@ in
             # Set by the flake, so it's read-only in the machine
             readOnly = true;
           };
+          domain = lib.mkOption {
+            type = types.strMatching "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9]))";
+            description = ''
+              the domain for the clan
+            '';
+            # Set by the flake, so it's read-only in the machine
+            readOnly = true;
+          };
           machine = mkOption {
             description = ''
               Settings of the machine.

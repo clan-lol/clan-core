@@ -17,6 +17,7 @@ export async function createClan({
         template: "minimal",
         initial: {
           name,
+          domain: "clan",
           description,
         },
       },

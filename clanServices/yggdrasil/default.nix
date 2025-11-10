@@ -142,7 +142,7 @@
           in
           {
 
-            # Set <yggdrasil ip> <hostname>.<tld> for all hosts.
+            # Set <yggdrasil ip> <hostname>.<domain> for all hosts.
             # Networking modules will then add themselves as peers, so we can
             # always use this to resolve a host via the best possible route,
             # doing fail-over if needed.
@@ -154,7 +154,7 @@
                     ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/yggdrasil/address/value";
                   in
                   if builtins.pathExists ipPath then
-                    "${builtins.readFile ipPath} ${name}.${config.clan.core.settings.tld}"
+                    "${builtins.readFile ipPath} ${name}.${config.clan.core.settings.domain}"
                   else
                     ""
                 ) (lib.attrNames roles.default.machines)

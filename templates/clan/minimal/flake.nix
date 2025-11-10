@@ -11,7 +11,7 @@
         # Change this to your clan name
         # Setting a name is required
         meta.name = inputs.nixpkgs.lib.mkDefault "__clan__";
-        meta.tld = inputs.nixpkgs.lib.mkDefault "changeme";
+        meta.domain = inputs.nixpkgs.lib.mkDefault "changeme";
       };
     in
     {

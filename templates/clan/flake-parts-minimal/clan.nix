@@ -5,6 +5,6 @@
   ];
   clan = {
     meta.name = "__CHANGE_ME__";
-    meta.tld = "changeme";
+    meta.domain = "changeme";
   };
 }

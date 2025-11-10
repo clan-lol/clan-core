@@ -14,7 +14,7 @@ This eliminates the need to specify `--target-host` in CLI commands.
 {
 # Ensure this is unique among all clans you want to use.
 meta.name = "my-clan";
-meta.tld = "ccc";
+meta.domain = "ccc";
 
 inventory.machines = {
     # Define machines here.

@@ -74,7 +74,8 @@ def test_create_with_name(tmp_path: Path, offline_flake_hook: Any) -> None:
         dest=dest,
         template="minimal",  # important the default template is not writable
         initial={
-            "name": "test-clan",  # invalid hostname
+            "name": "test-clan",
+            "domain": "clan",
             "description": "Test description",
             # Note: missing "icon", should be okay and should not get persisted
         },
@@ -116,9 +117,7 @@ def test_create_cannot_set_name(tmp_path: Path, offline_flake_hook: Any) -> None
     opts = CreateOptions(
         dest=dest,
         template="default",  # The default template currently has a non-writable 'name'
-        initial={
-            "name": "test-clan",
-        },
+        initial={"name": "test-clan", "domain": "clan"},
         _postprocess_flake_hook=offline_flake_hook,
     )
     with pytest.raises(ClanError) as exc_info:
@@ -137,9 +136,7 @@ def test_create_invalid_name(tmp_path: Path, offline_flake_hook: Any) -> None:
     opts = CreateOptions(
         dest=dest,
         template="default",  # The default template currently has a non-writable 'name'
-        initial={
-            "name": "test clan",  # spaces are not allowed in hostnames
-        },
+        initial={"name": "test clan", "domain": "clan"},  # spaces are not allowed
         _postprocess_flake_hook=offline_flake_hook,
     )
     with pytest.raises(ClanError) as exc_info:

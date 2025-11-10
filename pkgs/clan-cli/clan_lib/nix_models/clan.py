@@ -76,12 +76,14 @@ class InventoryMachine(TypedDict):
 
 
 
+InventoryMetaDomainType = str
 InventoryMetaNameType = str
 InventoryMetaDescriptionType = str | None
 InventoryMetaIconType = str | None
-InventoryMetaTldType = str
+InventoryMetaTldType = str | None
 
 class InventoryMeta(TypedDict):
+    domain: str
     name: str
     description: NotRequired[InventoryMetaDescriptionType]
     icon: NotRequired[InventoryMetaIconType]
