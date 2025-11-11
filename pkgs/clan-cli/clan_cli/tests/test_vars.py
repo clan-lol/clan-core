@@ -1440,7 +1440,7 @@ def test_shared_generator_conflicting_definition_raises_error(
     # because they have conflicting definitions for the same shared generator
     with pytest.raises(
         ClanError,
-        match=".*differ.*",
+        match=r".*differ.*",
     ):
         cli.run(["vars", "generate", "--flake", str(flake.path)])
 

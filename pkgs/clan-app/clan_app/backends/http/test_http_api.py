@@ -94,7 +94,7 @@ class TestHttpBridge:
 
     def test_http_bridge_middleware_setup(self, http_bridge: tuple) -> None:
         """Test that middleware is properly set up."""
-        api, middleware_chain = http_bridge
+        _api, middleware_chain = http_bridge
 
         # Test that we can create the bridge with middleware
         # The actual HTTP handling will be tested through the server integration tests
