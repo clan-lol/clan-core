@@ -24,6 +24,7 @@
       ];
 
       # Apply patch to fix x-initrd.mount filesystem handling in switch-to-configuration-ng
+      # Currently maintained at https://github.com/Enzime/nixpkgs/tree/switch-to-configuration-ng-container-tests
       nixpkgs.overlays = [
         (_final: prev: {
           switch-to-configuration-ng = prev.switch-to-configuration-ng.overrideAttrs (old: {
