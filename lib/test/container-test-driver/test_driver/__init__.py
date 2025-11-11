@@ -501,7 +501,7 @@ def setup_filesystems(container: ContainerInfo) -> None:
         if file.is_symlink():
             target = file.readlink()
             sym = container.nix_store_dir / file.name
-            os.symlink(target, sym)
+            sym.symlink_to(target)
 
     # Read /proc/mounts and replicate every bind mount
     with Path("/proc/self/mounts").open() as f:

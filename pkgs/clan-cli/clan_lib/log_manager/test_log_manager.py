@@ -216,7 +216,7 @@ class TestLogFileCreation:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that creating log file with unregistered group fails."""
-        with pytest.raises(ValueError, match="Group structure.*is not valid"):
+        with pytest.raises(ValueError, match=r"Group structure.*is not valid"):
             configured_log_manager.create_log_file(
                 example_function,
                 "test_op",
@@ -228,7 +228,7 @@ class TestLogFileCreation:
         configured_log_manager: LogManager,
     ) -> None:
         """Test that invalid nested structure fails."""
-        with pytest.raises(ValueError, match="Group structure.*is not valid"):
+        with pytest.raises(ValueError, match=r"Group structure.*is not valid"):
             configured_log_manager.create_log_file(
                 example_function,
                 "test_op",
