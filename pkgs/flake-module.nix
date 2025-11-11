@@ -14,7 +14,12 @@
   ];
 
   perSystem =
-    { config, pkgs, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     {
       packages = {
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
@@ -25,6 +30,9 @@
         editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
+      }
+      // lib.optionalAttrs pkgs.stdenv.isLinux {
+        systemd = pkgs.callPackage ./systemd { };
       };
     };
 }

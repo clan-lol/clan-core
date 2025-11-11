@@ -69,8 +69,13 @@ in
       checks =
         let
           nixosTestArgs = {
-            # reference to nixpkgs for the current system
-            inherit pkgs lib nixosLib;
+            # reference to nixpkgs for the current system with patched systemd
+            pkgs = pkgs.extend (
+              _final: _prev: {
+                systemd = self'.packages.systemd;
+              }
+            );
+            inherit lib nixosLib;
             # this gives us a reference to our flake but also all flake inputs
             inherit self;
             inherit (self) clanLib;
