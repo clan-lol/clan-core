@@ -842,7 +842,7 @@ class TestGetLlmFinalDecision:
         ):
             mock_agg.return_value = MagicMock(tools=[mock_schema])
 
-            function_call_results, message = get_llm_final_decision(
+            function_call_results, _message = get_llm_final_decision(
                 user_request="okay then gchq-local as controller and qube-email as moon please everything else as peer",
                 flake=mock_flake,
                 selected_service="zerotier",
