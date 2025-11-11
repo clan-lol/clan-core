@@ -9,7 +9,7 @@
       { modulesPath, ... }:
       {
         imports = [ (modulesPath + "/../tests/common/wayland-cage.nix") ];
-        services.cage.program = "${self.packages.${pkgs.system}.clan-app}/bin/clan-app";
+        services.cage.program = "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-app}/bin/clan-app";
         virtualisation.memorySize = 2047;
         # TODO: get rid of this and fix debus-proxy error instead
         services.cage.environment.WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS = "1";
@@ -24,7 +24,7 @@
         virtualisation.memorySize = 2047;
         services.xserver.enable = true;
         services.xserver.displayManager.sessionCommands = "${
-          self.packages.${pkgs.system}.clan-app
+          self.packages.${pkgs.stdenv.hostPlatform.system}.clan-app
         }/bin/clan-app";
         test-support.displayManager.auto.user = "alice";
       };

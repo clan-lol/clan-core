@@ -167,7 +167,7 @@
             name = "installation";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              self.legacyPackages.${pkgs.system}.nixosTestLib
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
             ];
 
             testScript = ''
@@ -220,7 +220,7 @@
 
                   # Run clan install from host using port forwarding
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "init-hardware-config",
                       "--debug",
@@ -236,7 +236,7 @@
 
                   # Run clan install from host using port forwarding
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "install",
                       "--phases", "disko,install",
@@ -271,7 +271,7 @@
             name = "update-hardware-configuration";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              self.legacyPackages.${pkgs.system}.nixosTestLib
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
             ];
 
             testScript = ''
@@ -308,7 +308,7 @@
 
                   # Test facter backend
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "update-hardware-config",
                       "--debug",
@@ -332,7 +332,7 @@
 
                   # Test nixos-generate-config backend
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "update-hardware-config",
                       "--debug",

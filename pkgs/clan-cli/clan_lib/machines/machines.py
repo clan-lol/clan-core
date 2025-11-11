@@ -78,7 +78,7 @@ class Machine:
     @property
     def system(self) -> str:
         return self.flake.select(
-            f'{self._class_}Configurations."{self.name}".pkgs.hostPlatform.system',
+            f'{self._class_}Configurations."{self.name}".pkgs.stdenv.hostPlatform.system',
         )
 
     @cached_property

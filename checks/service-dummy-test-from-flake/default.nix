@@ -22,7 +22,7 @@ nixosLib.runTest (
     clan.test.fromFlake = ./.;
 
     extraPythonPackages = _p: [
-      clan-core.legacyPackages.${hostPkgs.system}.nixosTestLib
+      clan-core.legacyPackages.${hostPkgs.stdenv.hostPlatform.system}.nixosTestLib
     ];
 
     testScript =
@@ -53,7 +53,7 @@ nixosLib.runTest (
           # Run clan command
           result = subprocess.run(
               ["${
-                clan-core.packages.${hostPkgs.system}.clan-cli
+                clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
               }/bin/clan", "machines", "list", "--flake", "${config.clan.test.flakeForSandbox}"],
               check=True
           )

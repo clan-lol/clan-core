@@ -49,7 +49,7 @@
 
         clan.core.networking.targetHost = config.networking.hostName;
 
-        environment.systemPackages = [ clan-core.packages.${pkgs.system}.clan-cli ];
+        environment.systemPackages = [ clan-core.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli ];
 
         clan.core.state.test-backups.folders = [ "/var/test-backups" ];
       };

@@ -75,7 +75,7 @@ in
       config = eval {
         # imports = [ usage_simple ];
         generators.my_secret.script = derivation {
-          system = pkgs.system;
+          system = pkgs.stdenv.hostPlatform.system;
           name = "my-script";
           builder = "/bin/sh";
           args = [
