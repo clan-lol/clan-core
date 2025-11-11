@@ -230,6 +230,8 @@ extra_css:
   - static/extra.css
 
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/regular/comment
       link: https://matrix.to/#/#clan:clan.lol
@@ -242,6 +244,12 @@ extra:
 
 plugins:
   - search
+  - mike:
+      alias_type: symlink
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
   - redoc-tag
   - redirects:
       redirect_maps:

@@ -37,6 +37,7 @@ pkgs.stdenv.mkDerivation {
     mkdocs-material
     mkdocs-redoc-tag
     mkdocs-redirects
+    mike
   ]);
   configurePhase = ''
     pushd docs
