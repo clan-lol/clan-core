@@ -26,15 +26,22 @@ class SecretStore(SecretStoreBase):
         if has_machine(self.machine.flake_dir, self.machine.name):
             return
         priv_key, pub_key = generate_private_key()
+        age_plugins = load_age_plugins(self.machine.flake)
         encrypt_secret(
             self.machine.flake_dir,
             sops_secrets_folder(self.machine.flake_dir)
             / f"{self.machine.name}-age.key",
+            age_plugins,
             priv_key,
             add_groups=self.machine.select("config.clan.core.sops.defaultGroups"),
-            age_plugins=load_age_plugins(self.machine.flake),
         )
-        add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
+        add_machine(
+            self.machine.flake_dir,
+            self.machine.name,
+            pub_key,
+            False,
+            age_plugins,
+        )
 
     def set(
         self,
@@ -50,10 +57,10 @@ class SecretStore(SecretStoreBase):
         encrypt_secret(
             self.machine.flake_dir,
             path,
+            load_age_plugins(self.machine.flake),
             value,
             add_machines=[self.machine.name],
             add_groups=groups,
-            age_plugins=load_age_plugins(self.machine.flake),
         )
         return path
 

@@ -95,11 +95,15 @@ def list_directory(directory: Path) -> str:
     return msg
 
 
-def update_group_keys(flake_dir: Path, group: str) -> list[Path]:
+def update_group_keys(
+    flake_dir: Path, group: str, age_plugins: list[str]
+) -> list[Path]:
     def filter_group_secrets(secret: Path) -> bool:
         return (secret / "groups" / group).is_symlink()
 
-    return secrets.update_secrets(flake_dir, filter_secrets=filter_group_secrets)
+    return secrets.update_secrets(
+        flake_dir, filter_secrets=filter_group_secrets, age_plugins=age_plugins
+    )
 
 
 def add_member(
@@ -108,6 +112,7 @@ def add_member(
     get_group_folder: Callable[[Path, str], Path],
     get_source_folder: Callable[[Path], Path],
     name: str,
+    age_plugins: list[str],
 ) -> list[Path]:
     source_folder = get_source_folder(flake_dir)
     source = source_folder / name
@@ -126,7 +131,9 @@ def add_member(
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
     changed_files = [user_target]
     group_name = group_folder.parent.name
-    changed_files.extend(update_group_keys(flake_dir, group_name))
+    changed_files.extend(
+        update_group_keys(flake_dir, group_name, age_plugins=age_plugins)
+    )
     return changed_files
 
 
@@ -135,6 +142,7 @@ def remove_member(
     group_name: str,
     get_group_folder: Callable[[Path, str], Path],
     name: str,
+    age_plugins: list[str],
 ) -> list[Path]:
     group_folder = get_group_folder(flake_dir, group_name)
     target = group_folder / name
@@ -151,18 +159,19 @@ def remove_member(
     if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
-    updated_files.extend(update_group_keys(flake_dir, group_name))
+    updated_files.extend(update_group_keys(flake_dir, group_name, age_plugins))
 
     return updated_files
 
 
-def add_user(flake_dir: Path, group: str, name: str) -> None:
+def add_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
     updated_files = add_member(
         flake_dir,
         group,
         users_folder,
         sops_users_folder,
         name,
+        age_plugins=age_plugins,
     )
     commit_files(
         updated_files,
@@ -172,15 +181,18 @@ def add_user(flake_dir: Path, group: str, name: str) -> None:
 
 
 def add_user_command(args: argparse.Namespace) -> None:
-    add_user(args.flake.path, args.group, args.user)
+    add_user(
+        args.flake.path, args.group, args.user, age_plugins=load_age_plugins(args.flake)
+    )
 
 
-def remove_user(flake_dir: Path, group: str, name: str) -> None:
+def remove_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
     updated_files = remove_member(
         flake_dir,
         group,
         users_folder,
         name,
+        age_plugins,
     )
     commit_files(
         updated_files,
@@ -190,16 +202,17 @@ def remove_user(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_user_command(args: argparse.Namespace) -> None:
-    remove_user(args.flake.path, args.group, args.user)
+    remove_user(args.flake.path, args.group, args.user, load_age_plugins(args.flake))
 
 
-def add_machine(flake_dir: Path, group: str, name: str) -> None:
+def add_machine(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
     updated_files = add_member(
         flake_dir,
         group,
         machines_folder,
         sops_machines_folder,
         name,
+        age_plugins=age_plugins,
     )
     commit_files(
         updated_files,
@@ -209,15 +222,23 @@ def add_machine(flake_dir: Path, group: str, name: str) -> None:
 
 
 def add_machine_command(args: argparse.Namespace) -> None:
-    add_machine(args.flake.path, args.group, args.machine)
+    add_machine(
+        args.flake.path,
+        args.group,
+        args.machine,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
-def remove_machine(flake_dir: Path, group: str, name: str) -> None:
+def remove_machine(
+    flake_dir: Path, group: str, name: str, age_plugins: list[str]
+) -> None:
     updated_files = remove_member(
         flake_dir,
         group,
         machines_folder,
         name,
+        age_plugins,
     )
     commit_files(
         updated_files,
@@ -227,7 +248,9 @@ def remove_machine(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_machine_command(args: argparse.Namespace) -> None:
-    remove_machine(args.flake.path, args.group, args.machine)
+    remove_machine(
+        args.flake.path, args.group, args.machine, load_age_plugins(args.flake)
+    )
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
@@ -248,7 +271,7 @@ def add_secret(
     flake_dir: Path,
     group: str,
     name: str,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> None:
     secrets.allow_member(
         secrets.groups_folder(sops_secrets_folder(flake_dir) / name),

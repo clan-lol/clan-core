@@ -71,8 +71,8 @@ def list_vars_secrets(flake_dir: Path) -> list[Path]:
 
 def update_secrets(
     flake_dir: Path,
+    age_plugins: list[str],
     filter_secrets: Callable[[Path], bool] = lambda _: True,
-    age_plugins: list[str] | None = None,
 ) -> list[Path]:
     changed_files = []
     secret_paths = [sops_secrets_folder(flake_dir) / s for s in list_secrets(flake_dir)]
@@ -141,12 +141,12 @@ def collect_keys_for_path(path: Path) -> set[sops.SopsKey]:
 def encrypt_secret(
     flake_dir: Path,
     secret_path: Path,
+    age_plugins: list[str],
     value: IO[bytes] | str | bytes | None,
     add_users: list[str] | None = None,
     add_machines: list[str] | None = None,
     add_groups: list[str] | None = None,
     git_commit: bool = True,
-    age_plugins: list[str] | None = None,
 ) -> None:
     if add_groups is None:
         add_groups = []
@@ -177,8 +177,8 @@ def encrypt_secret(
                 users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 user,
+                age_plugins,
                 do_update_keys,
-                age_plugins=age_plugins,
             ),
         )
 
@@ -188,8 +188,8 @@ def encrypt_secret(
                 machines_folder(secret_path),
                 sops_machines_folder(flake_dir),
                 machine,
+                age_plugins,
                 do_update_keys,
-                age_plugins=age_plugins,
             ),
         )
 
@@ -199,8 +199,8 @@ def encrypt_secret(
                 groups_folder(secret_path),
                 sops_groups_folder(flake_dir),
                 group,
+                age_plugins,
                 do_update_keys,
-                age_plugins=age_plugins,
             ),
         )
 
@@ -214,8 +214,8 @@ def encrypt_secret(
                 users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 username,
+                age_plugins,
                 do_update_keys,
-                age_plugins=age_plugins,
             ),
         )
 
@@ -288,8 +288,8 @@ def allow_member(
     group_folder: Path,
     source_folder: Path,
     name: str,
+    age_plugins: list[str],
     do_update_keys: bool = True,
-    age_plugins: list[str] | None = None,
 ) -> list[Path]:
     source = source_folder / name
     if not source.exists():
@@ -323,7 +323,7 @@ def allow_member(
 def disallow_member(
     group_folder: Path,
     name: str,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> list[Path]:
     target = group_folder / name
     if not target.exists():
@@ -380,7 +380,7 @@ def list_command(args: argparse.Namespace) -> None:
         print("\n".join(lst))
 
 
-def decrypt_secret(secret_path: Path, age_plugins: list[str] | None) -> str:
+def decrypt_secret(secret_path: Path, age_plugins: list[str]) -> str:
     # lopter(2024-10): I can't think of a good way to ensure that we have the
     # private key for the secret. I mean we could collect all private keys we
     # could find and then make sure we have the one for the secret, but that
@@ -419,11 +419,11 @@ def set_command(args: argparse.Namespace) -> None:
     encrypt_secret(
         args.flake.path,
         sops_secrets_folder(args.flake.path) / args.secret,
+        load_age_plugins(args.flake),
         secret_value,
         args.user,
         args.machine,
         args.group,
-        age_plugins=load_age_plugins(args.flake),
     )
 
 

@@ -47,11 +47,11 @@ def import_sops(args: argparse.Namespace) -> None:
             encrypt_secret(
                 args.flake.path,
                 sops_secrets_folder(args.flake.path) / secret_name,
+                load_age_plugins(args.flake),
                 v,
-                add_groups=args.group,
-                add_machines=args.machine,
                 add_users=args.user,
-                age_plugins=load_age_plugins(args.flake),
+                add_machines=args.machine,
+                add_groups=args.group,
             )
 
 

@@ -77,9 +77,7 @@ def update_command(args: argparse.Namespace) -> None:
     commit_files(
         update_secrets(
             flake_dir,
-            age_plugins=load_age_plugins(args.flake)
-            if should_load_age_plugins
-            else None,
+            load_age_plugins(args.flake) if should_load_age_plugins else [],
         ),
         flake_dir,
         "Updated secrets with new keys",
