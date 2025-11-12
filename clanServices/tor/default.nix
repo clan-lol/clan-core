@@ -57,20 +57,23 @@
         instanceName,
         roles,
         lib,
+        mkExports,
         ...
       }:
       {
-        exports.networking = {
-          priority = lib.mkDefault 10;
-          # TODO add user space network support to clan-cli
-          module = "clan_lib.network.tor";
-          peers = lib.mapAttrs (name: _machine: {
-            host.var = {
-              machine = name;
-              generator = "tor_${instanceName}";
-              file = "hostname";
-            };
-          }) roles.server.machines;
+        exports = mkExports {
+          networking = {
+            priority = lib.mkDefault 10;
+            # TODO add user space network support to clan-cli
+            module = "clan_lib.network.tor";
+            peers = lib.mapAttrs (name: _machine: {
+              host.var = {
+                machine = name;
+                generator = "tor_${instanceName}";
+                file = "hostname";
+              };
+            }) roles.server.machines;
+          };
         };
         nixosModule =
           {

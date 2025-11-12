@@ -16,20 +16,23 @@
         instanceName,
         roles,
         lib,
+        mkExports,
         ...
       }:
       {
-        exports.networking = {
-          priority = lib.mkDefault 900;
-          # TODO add user space network support to clan-cli
-          module = "clan_lib.network.zerotier";
-          peers = lib.mapAttrs (name: _machine: {
-            host.var = {
-              machine = name;
-              generator = "zerotier";
-              file = "zerotier-ip";
-            };
-          }) roles.peer.machines;
+        exports = mkExports {
+          networking = {
+            priority = lib.mkDefault 900;
+            # TODO add user space network support to clan-cli
+            module = "clan_lib.network.zerotier";
+            peers = lib.mapAttrs (name: _machine: {
+              host.var = {
+                machine = name;
+                generator = "zerotier";
+                file = "zerotier-ip";
+              };
+            }) roles.peer.machines;
+          };
         };
         nixosModule =
           {
