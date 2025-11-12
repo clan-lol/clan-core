@@ -108,17 +108,23 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
     # TODO more precaching, for example for vars
     flake.precache(
         [
-            "clan.?exports.instances.*.networking",
+            "clan.?exports.?instances.*.networking",
         ],
     )
     networks: dict[str, Network] = {}
-    networks_ = flake.select("clan.?exports.instances.*.networking")
+    networks_ = flake.select("clan.?exports.?instances.*.networking")
     if "exports" not in networks_:
         msg = """You are not exporting the clan exports through your flake.
         Please add exports next to clanInternals and nixosConfiguration into the global flake.
         """
         log.warning(msg)
         return {}
+
+    if "instances" not in networks_:
+        msg = """instances missing in exports"""
+        log.warning(msg)
+        return {}
+
     for network_name, network in networks_["exports"].items():
         if network:
             peers: dict[str, Peer] = {}
