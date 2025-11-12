@@ -103,42 +103,71 @@ class NetworkTechnologyBase(ABC):
     def connection(self, network: Network) -> Iterator[Network]:
         pass
 
+@dataclass
+class ExportScope():
+    service: str
+    instance: str
+    role: str
+    machine: str
+
+def parse_export(exports: str) -> ExportScope:
+    [service, instance, role, machine] = exports.split(":")
+    return ExportScope(service, instance, role, machine)
 
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
     # TODO more precaching, for example for vars
-    flake.precache(
-        [
-            "clan.?exports.?instances.*.networking",
-        ],
-    )
+
+    flake.precache([ "clan.?exports" ])
+
     networks: dict[str, Network] = {}
-    networks_ = flake.select("clan.?exports.?instances.*.networking")
-    if "exports" not in networks_:
-        msg = """You are not exporting the clan exports through your flake.
-        Please add exports next to clanInternals and nixosConfiguration into the global flake.
-        """
+
+    defined_exports = flake.select("clan.?exports")
+
+    if "exports" not in defined_exports:
+        msg = """ NO EXPORTS! """
         log.warning(msg)
         return {}
 
-    if "instances" not in networks_:
-        msg = """instances missing in exports"""
-        log.warning(msg)
-        return {}
 
-    for network_name, network in networks_["exports"].items():
-        if network:
-            peers: dict[str, Peer] = {}
-            for _peer in network["peers"].values():
-                peers[_peer["name"]] = Peer(
-                    name=_peer["name"],
-                    _host=_peer["host"],
-                    flake=flake,
-                )
-            networks[network_name] = Network(
-                peers=peers,
-                module_name=network["module"],
-                priority=network["priority"],
+    for export_name, network in defined_exports["exports"].items():
+
+        if defined_exports["exports"][export_name]["networking"] is None:
+            continue
+
+        scope = parse_export(export_name)
+        network_name = scope.instance
+        peers: dict[str, Peer] = {}
+
+        if "exports" not in defined_exports:
+            msg = """
+                Export has no export
+            """
+            log.warning(msg)
+            continue
+
+        for export_peer_name in defined_exports["exports"]:
+
+            if defined_exports["exports"][export_peer_name]["peer"] is None:
+                continue
+
+
+            peer_scope = parse_export(export_peer_name)
+
+            # Filter peers to only include those that belong to this network
+            if peer_scope.service != scope.service or peer_scope.instance != network_name:
+                continue
+
+            peers[peer_scope.machine] = Peer(
+                name=peer_scope.machine,
+                _host=defined_exports["exports"][export_peer_name]["peer"]["host"],
+                flake=flake,
             )
+
+        networks[network_name] = Network(
+            peers=peers,
+            module_name=network["networking"]["module"],
+            priority=network["priority"],
+        )
     return networks
 
 

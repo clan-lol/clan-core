@@ -118,6 +118,65 @@ in
       visible = false;
       type = types.deferredModule;
       default = {
+
+        options.peer = lib.mkOption {
+
+          type = lib.types.nullOr (
+            lib.types.submodule (
+              { name, ... }:
+              {
+                options = {
+                  name = lib.mkOption {
+                    type = lib.types.str;
+                    default = name;
+                  };
+                  SSHOptions = lib.mkOption {
+                    type = lib.types.listOf lib.types.str;
+                    default = [ ];
+                  };
+                  host = lib.mkOption {
+                    description = '''';
+                    type = lib.types.attrTag {
+                      plain = lib.mkOption {
+                        type = lib.types.str;
+                        description = ''
+                          a plain value, which can be read directly from the config
+                        '';
+                      };
+                      var = lib.mkOption {
+                        type = lib.types.submodule {
+                          options = {
+                            machine = lib.mkOption {
+                              type = lib.types.str;
+                              example = "jon";
+                            };
+                            generator = lib.mkOption {
+                              type = lib.types.str;
+                              example = "tor-ssh";
+                            };
+                            file = lib.mkOption {
+                              type = lib.types.str;
+                              example = "hostname";
+                            };
+                          };
+                        };
+                      };
+                    };
+                  };
+                };
+              }
+            )
+          );
+
+          # "peer": {
+          #     "sshoptions": [ ],
+          #     "host": {
+          #         "plain": "1.2.3.4",
+          #         # "var": ""
+          #     }
+          # }
+        };
+
         options.networking = lib.mkOption {
           default = null;
           type = lib.types.nullOr (
@@ -145,53 +204,6 @@ in
                 };
                 # should we call this machines? hosts?
                 peers = lib.mkOption {
-                  # <name>
-                  type = lib.types.attrsOf (
-                    lib.types.submodule (
-                      { name, ... }:
-                      {
-                        options = {
-                          name = lib.mkOption {
-                            type = lib.types.str;
-                            default = name;
-                          };
-                          SSHOptions = lib.mkOption {
-                            type = lib.types.listOf lib.types.str;
-                            default = [ ];
-                          };
-                          host = lib.mkOption {
-                            description = '''';
-                            type = lib.types.attrTag {
-                              plain = lib.mkOption {
-                                type = lib.types.str;
-                                description = ''
-                                  a plain value, which can be read directly from the config
-                                '';
-                              };
-                              var = lib.mkOption {
-                                type = lib.types.submodule {
-                                  options = {
-                                    machine = lib.mkOption {
-                                      type = lib.types.str;
-                                      example = "jon";
-                                    };
-                                    generator = lib.mkOption {
-                                      type = lib.types.str;
-                                      example = "tor-ssh";
-                                    };
-                                    file = lib.mkOption {
-                                      type = lib.types.str;
-                                      example = "hostname";
-                                    };
-                                  };
-                                };
-                              };
-                            };
-                          };
-                        };
-                      }
-                    )
-                  );
                 };
               };
             }
