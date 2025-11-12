@@ -87,7 +87,11 @@ in
     {
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
-      services.zerotierone.package = lib.mkDefault (pkgs.callPackage ../../../pkgs/zerotierone { });
+      services.zerotierone.package = lib.mkDefault (
+        pkgs.callPackage ../../../pkgs/zerotierone {
+          includeController = cfg.controller.enable;
+        }
+      );
     }
     (lib.mkIf (cfg.networkId != null) {
       environment.etc."zerotier/ip".text =
