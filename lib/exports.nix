@@ -38,8 +38,8 @@ let
       ];
       checkedParts = lib.map (
         part:
-        lib.throwIf (builtins.match ".?/.?" part != null) ''
-          exports.mkExportsScope: ${part} cannot contain the "/" character
+        lib.throwIf (builtins.match ".?:.?" part != null) ''
+          exports.mkExportsScope: ${part} cannot contain the ":" character
         '' part
       ) parts;
     in
@@ -52,7 +52,7 @@ let
 
       If you need a scope with neither service nor machine, please file an issue
       explaining your use case at: https://git.clan.lol/clan/clan-core/issues
-    '' (lib.join "/" checkedParts);
+    '' (lib.join ":" checkedParts);
 
   /**
     Parses a scope string into its components
@@ -76,9 +76,9 @@ let
   parseScope =
     scopeStr:
     let
-      parts = lib.splitString "/" scopeStr;
+      parts = lib.splitString ":" scopeStr;
       checkedParts = lib.throwIf (lib.length parts != 4) ''
-        clanLib.exports.parseScope: invalid scope string format, expected 4 parts separated by 3 "/"
+        clanLib.exports.parseScope: invalid scope string format, expected 4 parts separated by 3 ":"
       '' (parts);
     in
     {
@@ -115,7 +115,7 @@ let
               Export scope mismatch: incorrect service name
 
               Scope key: "${scope}"
-              Expected: "${serviceName}/..."
+              Expected: "${serviceName}:..."
 
               ${errorDetails}
             ''
@@ -126,7 +126,7 @@ let
               Export scope mismatch: incorrect instance name
 
               Scope key: "${scope}"
-              Expected: "/.../${instanceName}/..."
+              Expected: ":...:${instanceName}:..."
 
               ${errorDetails}
             ''
@@ -137,7 +137,7 @@ let
 
               Scope key: "${scope}"
                           ^
-              Expected: "/.../${roleName}/..."
+              Expected: ":...:${roleName}:..."
 
               ${errorDetails}
             ''
@@ -149,7 +149,7 @@ let
 
               Scope key: "${scope}"
                           ^
-              Expected: "/.../${machineName}"
+              Expected: ":...:${machineName}"
 
               ${errorDetails}
             ''
@@ -160,7 +160,7 @@ let
 
   /**
     Checks export attributes
-    in the form of  { "///" = ... ; ... }
+    in the form of  { ":::" = ... ; ... }
 
     Against the given scope constraint `c`
     See 'checkScope' for details.
@@ -290,15 +290,15 @@ let
       ${lib.concatStringsSep "\n" (map (key: "  • ${key}") (lib.attrNames exports))}
 
       Common causes:
-        • The exact instance/role/machine combination doesn't exist
+        • The exact instance:role:machine combination doesn't exist
         • The data needs to be aggregated from multiple exports
         • Typo in one of the scope parameters
 
       Tip: Inspect all exports in the nix repl
         nix-repl> clan.exports
         => {
-          "myservice///" = ...;
-          "myservice/i1/role1/machineA" = ...;
+          "myservice:::" = ...;
+          "myservice:i1:role1:machineA" = ...;
           ...
         }
     '';
