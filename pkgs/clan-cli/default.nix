@@ -233,6 +233,8 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.pass
               pkgs.passage
               zerotierone
+              # needed by vars generate tests
+              (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
               minifakeroot
               nix-select
               ../../nixosModules/clanCore/zerotier/generate.py
