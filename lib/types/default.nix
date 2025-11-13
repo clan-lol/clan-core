@@ -1,6 +1,13 @@
 { lib, ... }:
 let
-  inherit (lib) fix mkOptionType seq isAttrs setDefaultModuleLocation showOption;
+  inherit (lib)
+    fix
+    mkOptionType
+    seq
+    isAttrs
+    setDefaultModuleLocation
+    showOption
+    ;
   inherit (lib.options) mergeUniqueOption;
 in
 {
@@ -38,8 +45,7 @@ in
         merge = loc: defs: {
           imports = map (
             def:
-            seq (checkDef loc def) setDefaultModuleLocation
-              "${def.file}, via option ${showOption loc}"
+            seq (checkDef loc def) setDefaultModuleLocation "${def.file}, via option ${showOption loc}"
               def.value
           ) defs;
         };
