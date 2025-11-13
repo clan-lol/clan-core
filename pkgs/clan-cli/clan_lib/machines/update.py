@@ -13,7 +13,7 @@ from clan_lib.api import API
 from clan_lib.async_run import is_async_cancelled
 from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
-from clan_lib.errors import ClanError
+from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command, nix_metadata
 from clan_lib.ssh.localhost import LocalHost
@@ -53,6 +53,45 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     if local:
         print(f"[WARN] flake input has local node: {json.dumps(node)}")
     return local
+
+
+def _check_ssh_auth_error(error: ClanError, machine: Machine) -> None:
+    """Check if an error indicates SSH authentication issues with private repos.
+
+    If detected and forwardAgent is disabled, provide helpful guidance.
+    Only checks stderr to avoid false positives from build output.
+    """
+    if not isinstance(error, ClanCmdError):
+        return
+
+    stderr = error.cmd.stderr
+
+    ssh_auth_indicators = [
+        "Permission denied (publickey",
+        "fatal: Could not read from remote repository",
+    ]
+
+    if (
+        any(indicator in stderr for indicator in ssh_auth_indicators)
+        and not machine.get_forward_agent()
+    ):
+        machine.warn(
+            "\nSSH authentication failed during deployment. This may be caused by "
+            "private Git repositories in your flake inputs.\n"
+            "\n"
+            "To fix this, you have several options:\n"
+            "\n"
+            "1. Enable SSH agent forwarding (quick fix, but has security implications):\n"
+            f"   - Per-machine: Set `inventory.machines.{machine.name}.deploy.forwardAgent = true;`\n"
+            "   - Globally: Set `clan.core.networking.forwardAgent = true;` in your configuration\n"
+            "\n"
+            "2. Use more secure alternatives:\n"
+            "   - Use deploy keys managed via clan vars (recommended)\n"
+            "   - Use HTTPS URLs with access tokens (netrc or nix.extraOptions)\n"
+            "   - Configure nix access-tokens for private repositories\n"
+            "\n"
+            "See https://docs.clan.lol/guides/ssh-agent-forwarding for more information."
+        )
 
 
 def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str:
@@ -99,15 +138,19 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
                 path,
             ],
         )
-        run(
-            cmd,
-            RunOpts(
-                env=env,
-                needs_user_terminal=True,
-                error_msg="failed to upload sources",
-                prefix=machine.name,
-            ),
-        )
+        try:
+            run(
+                cmd,
+                RunOpts(
+                    env=env,
+                    needs_user_terminal=True,
+                    error_msg="failed to upload sources",
+                    prefix=machine.name,
+                ),
+            )
+        except ClanError as e:
+            _check_ssh_auth_error(e, machine)
+            raise
         return path
 
     # Slow path: we need to upload all sources to the remote machine
@@ -125,15 +168,19 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
             flake_url,
         ],
     )
-    proc = run(
-        cmd,
-        RunOpts(
-            env=env,
-            needs_user_terminal=True,
-            error_msg="failed to upload sources",
-            prefix=machine.name,
-        ),
-    )
+    try:
+        proc = run(
+            cmd,
+            RunOpts(
+                env=env,
+                needs_user_terminal=True,
+                error_msg="failed to upload sources",
+                prefix=machine.name,
+            ),
+        )
+    except ClanError as e:
+        _check_ssh_auth_error(e, machine)
+        raise
 
     try:
         return json.loads(proc.stdout)["path"]

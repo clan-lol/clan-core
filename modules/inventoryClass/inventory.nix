@@ -317,6 +317,18 @@ in
                     default = null;
                     type = types.nullOr types.str;
                   };
+                  deploy.forwardAgent = lib.mkOption {
+                    description = ''
+                      Enable SSH agent forwarding for deployments to this specific machine.
+
+                      If not set (null), inherits from {option}`clan.core.networking.forwardAgent`.
+
+                      Set to `true` to enable agent forwarding for this machine only, or `false`
+                      to explicitly disable it even if the global setting is enabled.
+                    '';
+                    default = null;
+                    type = types.nullOr types.bool;
+                  };
                 };
               }
             )

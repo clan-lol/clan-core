@@ -515,6 +515,16 @@ class MachineDeployInput(TypedDict):
     """
     SSH address of the host to build the machine on
     """
+    forwardAgent: NotRequired[bool | None]
+    """
+    Enable SSH agent forwarding for deployments to this specific machine.
+
+    If not set (null), inherits from {option}`clan.core.networking.forwardAgent`.
+
+    Set to `true` to enable agent forwarding for this machine only, or `false`
+    to explicitly disable it even if the global setting is enabled.
+
+    """
     targetHost: NotRequired[str | None]
     """
     SSH address of the host to deploy the machine to
@@ -525,6 +535,16 @@ class MachineDeployOutput(TypedDict):
     buildHost: ReadOnly[str | None]
     """
     SSH address of the host to build the machine on
+    """
+    forwardAgent: ReadOnly[bool | None]
+    """
+    Enable SSH agent forwarding for deployments to this specific machine.
+
+    If not set (null), inherits from {option}`clan.core.networking.forwardAgent`.
+
+    Set to `true` to enable agent forwarding for this machine only, or `false`
+    to explicitly disable it even if the global setting is enabled.
+
     """
     targetHost: ReadOnly[str | None]
     """

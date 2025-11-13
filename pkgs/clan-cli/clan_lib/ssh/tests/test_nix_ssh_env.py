@@ -102,14 +102,24 @@ def test_nix_ssh_env_host_key_none() -> None:
 
 
 def test_nix_ssh_env_forward_agent() -> None:
-    """Forward agent flag must be present."""
+    """Forward agent flag must not be present."""
     remote = Remote(
         address="host",
         user="root",
     )
     env = remote.nix_ssh_env(control_master=False)
     opts = _parse_nix_sshopts(env)
+    assert "-A" not in opts
 
+
+def test_not_ssh_forward() -> None:
+    remote = Remote(
+        address="host",
+        user="root",
+        forward_agent=True,
+    )
+    env = remote.nix_ssh_env(control_master=False)
+    opts = _parse_nix_sshopts(env)
     assert "-A" in opts
 
 

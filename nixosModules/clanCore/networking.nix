@@ -52,6 +52,28 @@
         type = lib.types.nullOr lib.types.str;
         default = null;
       };
+      forwardAgent = lib.mkOption {
+        description = ''
+          Enable SSH agent forwarding for deployments from this machine.
+
+          When enabled, your local SSH keys will be forwarded to build/target hosts,
+          allowing them to access private repositories during deployment.
+
+          **Security Warning:** Agent forwarding has security implications. Only enable
+          if you trust the remote hosts, as they could potentially use your forwarded
+          credentials while the connection is active.
+
+          For accessing private flake inputs, consider these alternatives:
+          - Deploy keys installed directly on the build/target host
+          - HTTPS URLs with access tokens on the build/target host
+          - Setting this option per-machine in the inventory when needed
+
+          This option can be overridden per-machine using
+          {option}`inventory.machines.<name>.deploy.forwardAgent`.
+        '';
+        type = lib.types.bool;
+        default = false;
+      };
     };
 
     deployment = {
