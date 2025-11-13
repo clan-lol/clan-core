@@ -1,4 +1,8 @@
 { lib, ... }:
+let
+  inherit (lib) fix mkOptionType seq isAttrs setDefaultModuleLocation showOption;
+  inherit (lib.options) mergeUniqueOption;
+in
 {
   /**
     A custom type for deferred modules that guarantee to be JSON serializable.
@@ -12,7 +16,7 @@
     - Enforces that the definition is JSON serializable
     - Disallows nested imports
   */
-  uniqueDeferredSerializableModule = lib.fix (
+  uniqueDeferredSerializableModule = fix (
     self:
     let
       checkDef =
@@ -23,19 +27,19 @@
           def;
     in
     # Essentially the "raw" type, but with a custom name and check
-    lib.mkOptionType {
+    mkOptionType {
       name = "deferredModule";
       description = "deferred custom module. Must be JSON serializable.";
       descriptionClass = "noun";
       # Unfortunately, tryEval doesn't catch JSON errors
-      check = value: lib.seq (builtins.toJSON value) (lib.isAttrs value);
-      merge = lib.options.mergeUniqueOption {
+      check = value: seq (builtins.toJSON value) (isAttrs value);
+      merge = mergeUniqueOption {
         message = "------";
         merge = loc: defs: {
           imports = map (
             def:
-            lib.seq (checkDef loc def) lib.setDefaultModuleLocation
-              "${def.file}, via option ${lib.showOption loc}"
+            seq (checkDef loc def) setDefaultModuleLocation
+              "${def.file}, via option ${showOption loc}"
               def.value
           ) defs;
         };
