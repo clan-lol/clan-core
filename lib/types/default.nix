@@ -7,8 +7,12 @@ let
     isAttrs
     setDefaultModuleLocation
     showOption
+    isFunction
+    warnIf
+    length
     ;
   inherit (lib.options) mergeUniqueOption;
+  inherit (lib.types) submoduleWith path;
 in
 {
   /**
@@ -56,6 +60,54 @@ in
         # Non mergable type
         binOp = _a: _b: null;
       };
+    }
+  );
+
+  /**
+    Custom extension of deferredModuleWith
+
+    If defined in two places (i.e. once in clan-core, once in the user flake)
+    it prints the given warning
+
+    If its exlusively set, then it remains silent
+
+    Mimics the behavior of "readOnly" in a soft way
+  */
+  exclusiveDeferredModule = fix (
+    self:
+    attrs@{
+      staticModules ? [ ],
+      warning,
+    }:
+    mkOptionType {
+      name = "deferredModuleWith";
+      description = "module";
+      descriptionClass = "noun";
+      check = x: isAttrs x || isFunction x || path.check x;
+      merge =
+        loc: defs:
+        let
+          warnDefs = warnIf (length defs > 1) warning;
+        in
+        {
+          imports =
+            staticModules
+            ++ map (def: setDefaultModuleLocation "${def.file}, via option ${showOption loc}" def.value) (
+              warnDefs defs
+            );
+        };
+      inherit (submoduleWith { modules = staticModules; })
+        getSubOptions
+        getSubModules
+        ;
+      substSubModules =
+        m:
+        self (
+          attrs
+          // {
+            staticModules = m;
+          }
+        );
     }
   );
 }
