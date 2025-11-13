@@ -103,21 +103,24 @@ class NetworkTechnologyBase(ABC):
     def connection(self, network: Network) -> Iterator[Network]:
         pass
 
+
 @dataclass
-class ExportScope():
+class ExportScope:
     service: str
     instance: str
     role: str
     machine: str
 
+
 def parse_export(exports: str) -> ExportScope:
     [service, instance, role, machine] = exports.split(":")
     return ExportScope(service, instance, role, machine)
 
+
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
     # TODO more precaching, for example for vars
 
-    flake.precache([ "clan.?exports" ])
+    flake.precache(["clan.?exports"])
 
     networks: dict[str, Network] = {}
 
@@ -128,9 +131,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
         log.warning(msg)
         return {}
 
-
     for export_name, network in defined_exports["exports"].items():
-
         if defined_exports["exports"][export_name]["networking"] is None:
             continue
 
@@ -146,15 +147,16 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
             continue
 
         for export_peer_name in defined_exports["exports"]:
-
             if defined_exports["exports"][export_peer_name]["peer"] is None:
                 continue
-
 
             peer_scope = parse_export(export_peer_name)
 
             # Filter peers to only include those that belong to this network
-            if peer_scope.service != scope.service or peer_scope.instance != network_name:
+            if (
+                peer_scope.service != scope.service
+                or peer_scope.instance != network_name
+            ):
                 continue
 
             peers[peer_scope.machine] = Peer(

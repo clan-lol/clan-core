@@ -646,14 +646,6 @@ in
       type = types.deferredModuleWith {
         staticModules = [
           ({
-            # exports."///".generator.name = { _file ... import = []; _type = }
-            # exports."///".networking = { _file ... import = []; }
-
-            # generators."///".name = { name, ...}: { _file ... import = [];}
-            # networks."///" = { _file ... import = []; }
-
-            # { _file ... import = []; }
-            # { _file ... import = []; }
             options.exports = mkOption {
               type = types.lazyAttrsOf types.deferredModule;
               default = { };
@@ -795,41 +787,11 @@ in
         ```
       '';
       default = { };
-      type = types.lazyAttrsOf (
-        types.deferredModuleWith {
-          # staticModules = [];
-          # lib.concatLists (
-          #   lib.concatLists (
-          #     lib.mapAttrsToList (
-          #       _roleName: role:
-          #       lib.mapAttrsToList (
-          #         _instanceName: instance: lib.mapAttrsToList (_machineName: v: v.exports) instance.allMachines
-          #       ) role.allInstances
-          #     ) config.result.allRoles
-          #   )
-          # )
-          # ++
-        }
-      );
-      #     # Lazy default via imports
-      #     # should probably be moved to deferredModuleWith { staticModules = [ ]; }
-      #     imports =
-      #       if config._docs_rendering then
-      #         [ ]
-      #       else
-      #         lib.mapAttrsToList (_roleName: role: {
-      #           instances = lib.mapAttrs (_instanceName: instance: {
-      #             imports = lib.mapAttrsToList (_machineName: v: v.exports) instance.allMachines;
-      #           }) role.allInstances;
-      #         }) config.result.allRoles
-      #         ++ lib.mapAttrsToList (machineName: machine: {
-      #           machines.${machineName} = machine.exports;
-      #         }) config.result.allMachines;
-      #   }
-      # ];
+      type = types.lazyAttrsOf (types.deferredModuleWith { });
     };
+
     # ---
-    # Place the result in _module.result to mark them as "internal" and discourage usage/overrides
+    # Place the result in 'result' to mark them as "internal" and discourage usage/overrides
     #
     # ---
     # Intermediate result by mapping over the 'roles', 'instances', and 'machines'.
@@ -1011,18 +973,12 @@ in
         }
       ) config.result.allMachines;
     };
-
-    # debug = mkOption {
-    #   default = lib.zipAttrsWith (_name: values: { imports = values; }) (
-    #     lib.mapAttrsToList (_machineName: machine: machine.exports) config.result.allMachines
-    #   );
-    # };
   };
 
   imports = [
     {
       # collect exports from all machines
-      # zipAttrs is needed until we use the record type.
+      # zipAttrs is needed to check the export correctness
       exports = lib.zipAttrsWith (_name: values: { imports = values; }) (
         lib.mapAttrsToList (
           machineName: machine:

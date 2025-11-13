@@ -62,7 +62,7 @@ in
         lib.mapAttrsToList (
           _service_id: service:
           specialArgs.clanLib.exports.checkExports {
-            whitelist = [ "///" ];
+            whitelist = [ ":::" ];
             serviceName = service.manifest.name;
             errorDetails = ''
               Export validation failed in service '${service.manifest.name}'
@@ -71,7 +71,7 @@ in
                 - Service: ${service.manifest.name}
                 - Source: exports
 
-              Problem: Services can only export to their own scope (here: "${service.manifest.name}///") or to global scope. ("///")
+              Problem: Services can only export to their own scope (here: "${service.manifest.name}:::") or to global scope. (":::")
 
               Refer to https://docs.clan.lol for more information on exports.
             '';

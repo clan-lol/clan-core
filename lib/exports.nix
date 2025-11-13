@@ -7,20 +7,20 @@ let
 
     The scope string has the format:
 
-    "SERVICE/INSTANCE/ROLE/MACHINE"
+    "SERVICE:INSTANCE:ROLE:MACHINE"
 
     If the parameter is not set, the corresponding part is left empty.
     Semantically this means "all".
 
     Examples:
     buildScopeKey { service = "A"; }
-    -> "A///"
+    -> "A:::"
 
     buildScopeKey { machine = "jon"; }
-    -> "///jon"
+    -> ":::jon"
 
     buildScopeKey { service = "A"; instance = "i1"; role = "peer"; machine = "jon"; }
-    -> "A/i1/peer/jon"
+    -> "A:i1:peer:jon"
   */
   buildScopeKey =
     {
@@ -64,7 +64,7 @@ let
     - machineName
 
     Example:
-    parseScope "A/i1/peer/jon"
+    parseScope "A:i1:peer:jon"
     ->
     {
       serviceName = "A";
@@ -193,16 +193,16 @@ let
     selectExports {
       service = "A";
     } {
-      "A///" = { ... };
-      "A//jon" = { ... };
-      "A/iA/peer/machineA" = { ... };
-      "B/iB/peer/machineB" = { ... };
+      "A:::" = { ... };
+      "A:::jon" = { ... };
+      "A:iA:peer:machineA" = { ... };
+      "B:iB:peer:machineB" = { ... };
       ...
     } =>
     {
-      "A///" = { ... };
-      "A//jon" = { ... };
-      "A/iA/peer/machineA" = { ... };
+      "A:::" = { ... };
+      "A:::jon" = { ... };
+      "A:iA:peer:machineA" = { ... };
     }
 
     Selecting by machine returns all exports for that machine
@@ -211,16 +211,16 @@ let
     selectExports {
       machine = "A";
     } {
-      "A///" = { ... };
-      "A//jon" = { ... };
-      "A/iA/peer/jon" = { ... };
-      "B/iB/peer/jon" = { ... };
+      "A:::" = { ... };
+      "A::jon" = { ... };
+      "A:iA:peer:jon" = { ... };
+      "B:iB:peer:jon" = { ... };
       ...
     } =>
     {
-      "A//jon" = { ... };
-      "A/iA/peer/jon" = { ... };
-      "B/iB/peer/jon" = { ... };
+      "A::jon" = { ... };
+      "A:iA:peer:jon" = { ... };
+      "B:iB:peer:jon" = { ... };
     }
   */
   selectExports =
@@ -261,11 +261,11 @@ let
     Get the global exports
 
     getExport { } exports
-    -> exports."///"
+    -> exports.":::"
 
     Get service A exports
     getExport { serviceName = "A"; } exports
-    -> exports."A///"
+    -> exports."A:::"
 
     Get instance machine A of service A exports
     getExport { serviceName = "A"; machineName = "A"; } exports

@@ -28,81 +28,72 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     # Define the expected return value from flake.select
     mock_networking_data = {
         "exports": {
-
             # Exports of the service instance
             "clan-core/internet:vpn-network::": {
                 "peer": None,
                 "priority": 1000,
                 "networking": {
                     "module": "clan_lib.network.tor",
-                }
+                },
             },
-
             "clan-core/wireguard:local-network::": {
                 "peer": None,
                 "priority": 500,
-                "networking": {
-                    "module": "clan_lib.network.direct",
-                    "key": "some_key"
-                }
+                "networking": {"module": "clan_lib.network.direct", "key": "some_key"},
             },
-
             # Exports of the host
             "clan-core/internet:vpn-network:default:machine1": {
                 "networking": None,
                 "peer": {
                     "name": "machnine1",
-                    "sshoptions": [ ],
+                    "sshoptions": [],
                     "host": {
                         "var": {
                             "machine": "machine1",
                             "generator": "wireguard",
                             "file": "address",
                         },
-                    }
-                }
+                    },
+                },
             },
-
             "clan-core/internet:vpn-network:default:machine2": {
                 "networking": None,
                 "peer": {
                     "name": "machnine1",
-                    "sshoptions": [ ],
+                    "sshoptions": [],
                     "host": {
                         "var": {
                             "machine": "machine2",
                             "generator": "wireguard",
                             "file": "address",
                         },
-                    }
-                }
+                    },
+                },
             },
-
             "clan-core/wireguard:local-network:default:machine1": {
                 "networking": None,
                 "peer": {
                     "name": "machine1",
-                    "sshoptions": [ ],
+                    "sshoptions": [],
                     "host": {
                         "var": {
                             "machine": "machine1",
                             "generator": "wireguard",
                             "file": "address",
                         },
-                    }
-                }
+                    },
+                },
             },
-
             "clan-core/wireguard:local-network:default:machine3": {
                 "networking": None,
                 "peer": {
                     "name": "machine3",
-                    "sshoptions": [ ],
+                    "sshoptions": [],
                     "host": {
                         "plain": "10.0.0.10",
-                    }
-                }
-            }
+                    },
+                },
+            },
         }
     }
 
