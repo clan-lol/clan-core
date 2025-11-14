@@ -23,15 +23,17 @@ This simple configuration ensures that all critical data for the `linkding` serv
 
 ## Custom Pre and Post Backup Hooks
 
-The state interface allows you to run custom scripts before creating a backup and after restoring one. These scripts are defined using the `preBackupScript` and `postRestoreScript` options. This can be useful for tasks like stopping services, syncing data, or performing cleanup operations.
+The state interface allows you to run custom scripts before creating a backup, after creating a backup, and after restoring one. These scripts are defined using the `preBackupScript`, `postBackupScript`, and `postRestoreScript` options. This can be useful for tasks like stopping services, syncing data, or performing cleanup operations.
 
 ### Example: Pre and Post Backup Scripts for the `linkding` Service
 
 In the following example, we configure the `linkding` service to:
 
-1. Stop the service before backing up its data.
+1. Stop the service before syncing its data.
 2. Sync the data to a staging directory.
-3. Restore the data and restart the service after restoration.
+3. Start the service after sync
+4. Clean the staging directory
+5. Restore the data and restart the service after restoration.
 
 ```nix hl_lines="5 26"
 clan.core.state.linkding = {
@@ -56,6 +58,11 @@ clan.core.state.linkding = {
       rsync -avH --delete --numeric-ids "/data/podman/linkding/" /var/backup/linkding/
       systemctl start podman-linkding
     fi
+  '';
+
+  postBackupScript = ''
+    shopt -s dotglob
+    rm -r /var/backup/linkding/*
   '';
 
   # Script to run after restoring a backup

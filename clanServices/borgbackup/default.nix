@@ -188,6 +188,28 @@
                   fi
                 '';
 
+                postBackupScript = ''
+                  declare -A postCommandErrors
+
+                  ${lib.concatMapStringsSep "\n" (
+                    state:
+                    lib.optionalString (state.postBackupCommand != null) ''
+                      echo "Running post-backup command for ${state.name}"
+                      if ! /run/current-system/sw/bin/${state.postBackupCommand}; then
+                        postCommandErrors["${state.name}"]=1
+                      fi
+                    ''
+                  ) (lib.attrValues config.clan.core.state)}
+
+                  if [[ ''${#postCommandErrors[@]} -gt 0 ]]; then
+                    echo "post-backup commands failed for the following services:"
+                    for state in "''${!postCommandErrors[@]}"; do
+                      echo "  $state"
+                    done
+                    exit 1
+                  fi
+                '';
+
                 # The destinations from server.roles.machines.*
                 # name is the server, machine can only be in one instance
                 internalDestinations =
@@ -232,9 +254,14 @@
                     # since borgbackup mounts the system read-only, we need to
                     # run in a ExecStartPre script, so we can generate
                     # additional files.
-                    serviceConfig.ExecStartPre = [
-                      ''+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}''
-                    ];
+                    serviceConfig = {
+                      ExecStartPre = [
+                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}''
+                      ];
+                      ExecStopPost = [
+                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-post-backup-commands" postBackupScript}''
+                      ];
+                    };
                   }
                 ) allDestinations;
 
