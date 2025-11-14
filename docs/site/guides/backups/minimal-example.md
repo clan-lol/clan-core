@@ -33,8 +33,10 @@ inventory.instances = {
         "bob" = { };
         "jon" = { };
     };
-    roles.server.machines = { 
-        "alice" = { };
+    roles.server.machines = {
+        "alice" = {
+            address = "alice.example.org";
+        };
     };
   };
 };

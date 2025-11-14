@@ -14,12 +14,23 @@
       { lib, ... }:
       {
 
-        options.directory = lib.mkOption {
-          type = lib.types.str;
-          default = "/var/lib/borgbackup";
-          description = ''
-            The directory where the borgbackup repositories are stored.
-          '';
+        options = {
+          address = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              Address to use when connecting to this machine, if `null`, use
+              the machines name.
+            '';
+          };
+
+          directory = lib.mkOption {
+            type = lib.types.str;
+            default = "/var/lib/borgbackup";
+            description = ''
+              The directory where the borgbackup repositories are stored.
+            '';
+          };
         };
 
       };
@@ -176,19 +187,21 @@
                 # name is the server, machine can only be in one instance
                 internalDestinations =
                   let
-                    destinations = builtins.map (serverName: {
+                    destinations = lib.mapAttrsToList (serverName: machine: {
                       name = "${serverName}";
                       value = {
                         # inherit name;
                         name = "${serverName}";
-                        repo = "borg@${serverName}:.";
+                        repo = "borg@${
+                          if (machine.settings.address == null) then serverName else machine.settings.address
+                        }:.";
                         # rsh = "";
 
                         rsh = "ssh -i ${
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
                         } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
                       };
-                    }) (builtins.attrNames (roles.server.machines or { }));
+                    }) (roles.server.machines or { });
                   in
                   (builtins.listToAttrs destinations);
 
