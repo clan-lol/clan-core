@@ -80,6 +80,11 @@
         ...
       }:
       {
+        options.startAt = lib.mkOption {
+          type = lib.types.str;
+          default = "*-*-* 01:00:00";
+          description = '''';
+        };
 
         options.destinations = lib.mkOption {
           type = lib.types.attrsOf (
@@ -241,7 +246,7 @@
                   repo = dest.repo;
                   environment.BORG_RSH = dest.rsh;
                   compression = "auto,zstd";
-                  startAt = "*-*-* 01:00:00";
+                  startAt = settings.startAt;
                   persistentTimer = true;
 
                   encryption = {
