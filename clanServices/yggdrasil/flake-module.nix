@@ -4,9 +4,7 @@
   ...
 }:
 let
-  module = lib.modules.importApply ./default.nix {
-    inherit (self) packages;
-  };
+  module = ./default.nix;
 in
 {
   clan.modules = {

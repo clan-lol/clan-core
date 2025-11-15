@@ -1,4 +1,4 @@
-{ ... }:
+{ clanLib, ... }:
 {
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
@@ -58,7 +58,6 @@
             config,
             pkgs,
             lib,
-            clan-core,
             ...
           }:
           let
@@ -70,20 +69,26 @@
               "tls://${ip}:6443"
             ];
 
-            select' = clan-core.inputs.nix-select.lib.select;
-
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs = builtins.foldl' (
-              acc: e:
-              if e == { } then
-                acc
-              else
-                acc ++ (lib.flatten (builtins.filter (s: s != "") (lib.attrValues (select' "peers.*.plain" e))))
-            ) [ ] (lib.attrValues (select' "instances.*.networking.?peers.*.host.?plain" exports));
+            exportedPeerIPs =
+              builtins.concatMap
+                (
+                  export:
+                  if export.peer == null then
+                    [ ]
+                  else
+                    (mkPeers export.peer.host.plain)
+                )
+                (
+                  lib.attrValues (
+                    clanLib.exports.selectExports {
+                    } exports
+                  )
+                );
 
             # Construct a list of peers in yggdrasil format
-            exportedPeers = lib.flatten (map mkPeers exportedPeerIPs);
+            exportedPeers = exportedPeerIPs;
 
           in
           {

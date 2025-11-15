@@ -120,7 +120,7 @@ in
       default = {
 
         options.peer = lib.mkOption {
-
+          default = null;
           type = lib.types.nullOr (
             lib.types.submodule (
               { name, ... }:
@@ -201,9 +201,6 @@ in
                     the technology this network uses to connect to the target
                     This is used for userspace networking with socks proxies.
                   '';
-                };
-                # should we call this machines? hosts?
-                peers = lib.mkOption {
                 };
               };
             }

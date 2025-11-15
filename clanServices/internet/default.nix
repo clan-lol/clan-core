@@ -35,17 +35,22 @@
         roles,
         lib,
         mkExports,
+        settings,
         ...
       }:
       {
         exports = mkExports {
-          networking = {
-            # TODO add user space network support to clan-cli
-            peers = lib.mapAttrs (_name: machine: {
-              host.plain = machine.settings.host;
-              SSHOptions = map (_x: "-J x") machine.settings.jumphosts;
-            }) roles.default.machines;
-          };
+          peer = {
+              host.plain = settings.host;
+              SSHOptions = map (_x: "-J x") settings.jumphosts;
+            };
+          # networking = {
+          #   # TODO add user space network support to clan-cli
+          #   peers = lib.mapAttrs (_name: machine: {
+          #     host.plain = machine.settings.host;
+          #     SSHOptions = map (_x: "-J x") machine.settings.jumphosts;
+          #   }) roles.default.machines;
+          # };
         };
       };
   };
