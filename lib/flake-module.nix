@@ -104,7 +104,7 @@ rec {
         clan-core = self;
       };
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-build-clan
-      legacyPackages.eval-exports = import ./new_exports.nix {
+      legacyPackages.eval-exports = import ./exports/tests.nix {
         inherit lib;
         clan-core = self;
       };

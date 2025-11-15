@@ -41,7 +41,7 @@ lib.fix (
       resolveModule = clanLib.callLib ./resolve-module { };
 
       # Functions to help define exports
-      exports = clanLib.callLib ./exports.nix { };
+      exports = clanLib.callLib ./exports/exports.nix { };
 
       fs = {
         inherit (builtins) pathExists readDir;
