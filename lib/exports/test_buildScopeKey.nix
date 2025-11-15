@@ -1,4 +1,4 @@
-{ clan-core }:
+{ clan-core, ... }:
 {
   test_build_scope_key = {
     expr = clan-core.clanLib.exports.buildScopeKey {

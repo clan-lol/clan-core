@@ -298,8 +298,43 @@ instances.machine-type = {
 
 ---
 
+## Sharing Data Between Machines with Exports
+
+Services often need to share configuration data between machines. For example, clients need to know the server's IP address, or peers in a mesh network need to discover each other.
+
+**Exports** provide a standardized way to share structured data between service components.
+
+🔗 See the complete guide: [Service Exports](./exports.md)
+
+**Quick Example:**
+
+```nix
+roles.server = {
+  perInstance = { mkExports, ... }: {
+    # Export the server's connection information
+    exports = mkExports {
+      endpoint = "https://server.example.com:8443";
+      publicKey = "...";
+    };
+  };
+};
+
+roles.client = {
+  perInstance = { exports, instanceName, ... }: {
+    nixosModule = { ... }: {
+      # Access the server's exported data
+      services.myapp.serverEndpoint =
+        exports."myservice:${instanceName}:server:".endpoint;
+    };
+  };
+};
+```
+
+---
+
 ## Further Reading
 
+- [Service Exports Guide](./exports.md) - How to share data between machines
 - [Reference Documentation for Service Authors](../../reference/options/clan_service.md)
 - [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](../../decisions/01-Clan-Modules.md)
