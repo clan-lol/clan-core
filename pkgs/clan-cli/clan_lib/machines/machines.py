@@ -173,7 +173,7 @@ def get_machine_host(
 
     if host_str is None:
         machine.debug(
-            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/target-host",
+            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/networking/networking/",
         )
 
         host_str = machine.select(f'config.clan.core.networking."{field}"')
