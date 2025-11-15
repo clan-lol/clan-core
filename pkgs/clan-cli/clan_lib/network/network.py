@@ -139,18 +139,11 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
         network_name = scope.instance
         peers: dict[str, Peer] = {}
 
-        if "exports" not in defined_exports:
-            msg = """
-                Export has no export
-            """
-            log.warning(msg)
-            continue
-
-        for export_peer_name in defined_exports["exports"]:
-            if defined_exports["exports"][export_peer_name]["peer"] is None:
+        for scope_name in defined_exports["exports"]:
+            if defined_exports["exports"][scope_name]["peer"] is None:
                 continue
 
-            peer_scope = parse_export(export_peer_name)
+            peer_scope = parse_export(scope_name)
 
             # Filter peers to only include those that belong to this network
             if (
@@ -161,14 +154,14 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
 
             peers[peer_scope.machine] = Peer(
                 name=peer_scope.machine,
-                _host=defined_exports["exports"][export_peer_name]["peer"]["host"],
+                _host=defined_exports["exports"][scope_name]["peer"]["host"],
                 flake=flake,
             )
 
         networks[network_name] = Network(
             peers=peers,
             module_name=network["networking"]["module"],
-            priority=network["priority"],
+            priority=network["networking"]["priority"],
         )
     return networks
 

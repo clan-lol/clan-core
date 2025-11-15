@@ -1,9 +1,28 @@
-{ clanLib, ... }:
+{
+  directory,
+  lib,
+  clanLib,
+  config,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
   manifest.readme = builtins.readFile ./README.md;
+
+  exports = lib.mapAttrs' (
+    instanceName: _: {
+      name = clanLib.exports.buildScopeKey {
+        inherit instanceName;
+        serviceName = config.manifest.name;
+      };
+      value = {
+        networking.priority = 2000;
+      };
+    }
+  ) config.instances;
+
 
   roles.default = {
     description = "Placeholder role to apply the yggdrasil service";
@@ -49,10 +68,22 @@
       {
         settings,
         roles,
+        mkExports,
         exports,
+        machine,
         ...
       }:
       {
+
+        exports = mkExports {
+          peer.host.plain = clanLib.vars.getPublicValue {
+            machine = machine.name;
+            generator = "yggdrasil";
+            file = "address";
+            flake = directory;
+          };
+        };
+
         nixosModule =
           {
             config,
