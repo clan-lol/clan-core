@@ -1,4 +1,7 @@
-{ clan-core }:
+{
+  clan-core,
+  ...
+}:
 {
   test_get_export = {
     expr =

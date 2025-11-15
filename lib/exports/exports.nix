@@ -280,7 +280,7 @@ let
     let
       scopeKey = buildScopeKey scope;
     in
-    exports.${scopeKey} or throw ''
+    exports.${scopeKey} or (throw ''
       getExport: export not found
 
       Requested scope: "${scopeKey}"
@@ -306,7 +306,7 @@ let
           "myservice:i1:role1:machineA" = ...;
           ...
         }
-    '';
+    '');
 
 in
 {

@@ -1,4 +1,4 @@
-{ clan-core }:
+{ clan-core, ... }:
 {
   test_check_scope_simple = {
     expr = clan-core.clanLib.exports.checkScope {

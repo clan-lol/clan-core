@@ -1,4 +1,4 @@
-{ clan-core }:
+{ clan-core, ... }:
 {
   test_parse_scope_simple = {
     expr = clan-core.clanLib.exports.parseScope "serviceA:::machine01";
