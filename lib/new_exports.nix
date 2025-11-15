@@ -84,6 +84,30 @@
     ];
   };
 
+  test_get_export = {
+    expr =
+      clan-core.clanLib.exports.getExport
+        {
+          serviceName = "serviceA";
+          instanceName = "iA";
+          roleName = "default";
+          machineName = "jon";
+        }
+        {
+          "serviceA:iA:default:jon" = {
+            foo = 42;
+            bar = 7;
+          };
+          "serviceA:iA:default:sara" = {
+            foo = 10;
+          };
+        };
+    expected = {
+      foo = 42;
+      bar = 7;
+    };
+  };
+
   test_simple =
     let
       eval = clan-core.clanLib.clan {

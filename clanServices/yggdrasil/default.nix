@@ -72,14 +72,7 @@
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
             exportedPeerIPs =
-              builtins.concatMap
-                (
-                  export:
-                  if export.peer == null then
-                    [ ]
-                  else
-                    (mkPeers export.peer.host.plain)
-                )
+              builtins.concatMap (export: if export.peer == null then [ ] else (mkPeers export.peer.host.plain))
                 (
                   lib.attrValues (
                     clanLib.exports.selectExports {
