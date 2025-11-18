@@ -54,7 +54,7 @@ let
       explaining your use case at: https://git.clan.lol/clan/clan-core/issues
     '' (lib.join ":" checkedParts);
 
-    mkExports = scope: value: { 
+    mkExports = scope: value: {
       ${buildScopeKey scope} =  value;
     };
 
@@ -315,12 +315,12 @@ let
 in
 {
   inherit
-    parseScope
-    checkScope
-    checkExports
     buildScopeKey
+    checkExports
+    checkScope
     getExport
-    selectExports
     mkExports
+    parseScope
+    selectExports
     ;
 }
