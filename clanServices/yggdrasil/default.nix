@@ -90,17 +90,35 @@
           }:
           let
 
-            mkPeers = ip: [
-              # "tcp://${ip}:6443"
-              "quic://${ip}:6443"
-              "ws://${ip}:6443"
-              "tls://${ip}:6443"
-            ];
+            mkPeers =
+              ip:
+              # We need to add [ ] for ipv6 addresses
+              if (lib.hasInfix ":" ip) then
+                [
+                  # "tcp://[${ip}]:6443"
+                  "quic://[${ip}]:6443"
+                  "ws://[${ip}]:6443"
+                  "tls://[${ip}]:6443"
+                ]
+              else
+                [
+                  # "tcp://[${ip}]:6443"
+                  "quic://${ip}:6443"
+                  "ws://${ip}:6443"
+                  "tls://${ip}:6443"
+                ];
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
             exportedPeerIPs =
-              builtins.concatMap (export: if export.peer == null then [ ] else (mkPeers export.peer.host.plain))
+              builtins.concatMap
+                (
+                  export:
+                  if (export.peer == null || export.peer.host.plain == "") then
+                    [ ]
+                  else
+                    (mkPeers export.peer.host.plain)
+                )
                 (
                   lib.attrValues (
                     clanLib.exports.selectExports {
