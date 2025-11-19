@@ -334,7 +334,7 @@ roles.client = {
 
 ## Further Reading
 
-- [Service Exports Guide](./exports.md) - How to share data between machines
+- [Service Exports Guide](./exports.md) - How to share data between services
 - [Reference Documentation for Service Authors](../../reference/options/clan_service.md)
 - [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](../../decisions/01-Clan-Modules.md)

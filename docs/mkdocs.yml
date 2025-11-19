@@ -65,8 +65,8 @@ nav:
           - File Autoincludes: guides/inventory/autoincludes.md
       - Services:
           - Introduction to Services: guides/services/introduction-to-services.md
-          - Service Exports: guides/services/exports.md
           - Author Your Own Service: guides/services/community.md
+          - Exports: guides/services/exports.md
           - Internal Services with SSL: guides/internal-ssl-services.md
       - Vars:
           - Introduction to Vars: guides/vars/vars-overview.md

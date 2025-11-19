@@ -1,8 +1,10 @@
-# Service Exports
+# Exports
 
 ## Overview
 
-**Exports** are a mechanism for services to share structured configuration data between machines in a multi-host service. They provide a standardized way for different machines and service instances to discover and access information they need from each other.
+Exports are a mechanism for services to share structured data.
+
+They provide a way for different machines and service instances to discover and access information they need from each other,
 
 ## Use Cases
 
@@ -11,110 +13,91 @@ Exports are useful when you need to:
 - Share network configuration (IP addresses, ports, etc.) between service components
 - Distribute generated credentials or connection strings to consuming machines
 - Provide discovery information for peers in a distributed service
-- Enable machines to dynamically configure themselves based on the topology of other machines
+- generally share information between machines or services.
 
-**Example scenarios:**
+Examples:
+
 - A VPN service where peers need to know each other's public endpoints
 - A database cluster where replicas need the primary's connection string
 - A monitoring system where agents need the metrics collector's address
 
 ## How Exports Work
 
-Exports use a **scope-based system** with four components:
+Exports use a scope-based system to organize data.
+Each export is tagged with a scope that identifies its source:
 
-```
-SERVICE:INSTANCE:ROLE:MACHINE
-```
+- **Service**: The name of the service (e.g., "zerotier", "wireguard")
+- **Instance**: A specific instance of that service
+- **Role**: A role within the service (e.g., "client", "server", "peer")
+- **Machine**: A specific machine name
 
-Each part can be empty (represented by an empty string), meaning "all" or "global":
+Additionally, exports can be **global** (not bound to any specific service, instance, role, or machine).
 
-- **`serviceName`**: The name of the service (e.g., "zerotier", "wireguard")
-- **`instanceName`**: A specific instance of that service
-- **`roleName`**: A role within the service (e.g., "client", "server", "peer")
-- **`machineName`**: A specific machine name
+**Scope levels:**
 
-**Example scopes:**
-- `"zerotier:default:peer:machine01"` - Data specific to machine01's peer role in the default zerotier instance
-- `"zerotier:::"` - Global data for the zerotier service across all instances
-- `":::machine01"` - Global data for machine01 across all services
-- `":::"` - Truly global data
+- **Global scope**: Data shared across all services and machines
+- **Service level**: Data specific to a service across all instances
+- **Instance level**: Data specific to a service instance
+- **Role level**: Data specific to a role
+- **Machine level**: Data specific to a single machine
+
+!!! Important
+    Exports are stored internally using scope keys, therefore you should always use the `clanLib.exports` helper functions to work with them.
+
+    The internal format is subject to change.
 
 ## Defining Exports in Your Service
 
-To export data from your service, use the `mkExports` helper function available in the `perInstance` context:
+To export data from your service, use the `mkExports` helper function available in the `perInstance` or `perMachine` context:
 
 ```nix
-{
+{ clanLib, ... }: {
   roles.peer = {
-    perInstance = { instanceName, mkExports, roles, lib, ... }: {
+    perInstance = { instanceName, mkExports, roles, ... }: {
       exports = mkExports {
         # Your exported data here
-        networking = {
-          priority = lib.mkDefault 900;
-          module = "clan_lib.network.zerotier";
-          peers = lib.mapAttrs (name: _machine: {
-            host.var = {
-              machine = name;
-              generator = "zerotier";
-              file = "zerotier-ip";
-            };
-          }) roles.peer.machines;
-        };
+        peer.host.plain = "192.192.192.12";
       };
 
       nixosModule = { ... }: {
-        # Your NixOS configuration
+        # ...elided
       };
     };
   };
 }
 ```
 
-The `mkExports` function automatically creates the appropriate scope key for your exports based on the current service, instance, role, and machine context.
+The `mkExports` function automatically creates the appropriate scope for your exports based on the current service, instance, role, and machine context.
 
 ## Accessing Exports
 
-Within your service module, you can access exports from the `exports` parameter available in the `perInstance` context:
+Within your service module, you can access exports using the `clanLib.exports` helper functions.
+
+### `selectExports` - Query Multiple Exports
+
+Get all exports matching specific criteria
 
 ```nix
-perInstance = { exports, instanceName, machine, ... }: {
-  nixosModule = { ... }: {
-    # Access global exports
-    # exports.":::"
-
-    # Access service-level exports
-    # exports."myservice:::"
-
-    # Access specific machine exports
-    # exports."myservice:instance01:peer:machine02"
+{ exports, clanLib, ... }: {
+  perInstance = { ... }: {
+    nixosModule = { ... }: {
+      # Get all exports from the "vpn" service
+      vpnConfigs = clanLib.exports.selectExports
+        { service = "vpn"; }
+        exports;
+    };
   };
-};
+}
 ```
 
-### Export Scope Patterns
+**Query parameters** (all optional, default to wildcard `"*"`):
 
-**Service-level exports** (available to all instances/machines of a service):
-```nix
-exports."myservice:::" = {
-  apiVersion = "v1";
-  clusterConfig = { ... };
-};
-```
+- `service` - Filter by service name
+- `instance` - Filter by instance name
+- `role` - Filter by role name
+- `machine` - Filter by machine name
 
-**Instance-level exports** (specific to one instance):
-```nix
-exports."myservice:instance01::" = {
-  instanceId = "abc123";
-};
-```
-
-**Role+Machine exports** (specific to a role on a machine):
-```nix
-exports."myservice:instance01:server:backend01" = {
-  ipAddress = "192.168.1.10";
-  port = 5432;
-};
-```
+Returns an attribute set where keys are scope identifiers and values are the exported data.
 
 ## Helper Functions
 
@@ -131,7 +114,7 @@ clanLib.exports.buildScopeKey {
   roleName = "server";
   machineName = "backend01";
 }
-# => "myservice:prod:server:backend01"
+# => "myservice:prod:server:backend01" (internal information)
 ```
 
 ### `parseScope`
@@ -156,7 +139,7 @@ Retrieve a single export by scope:
 clanLib.exports.getExport
   { serviceName = "myservice"; machineName = "backend01"; }
   exports
-# => exports."myservice:::backend01"
+# => <some data>
 ```
 
 ### `selectExports`
@@ -168,73 +151,44 @@ Filter exports matching specific criteria:
 clanLib.exports.selectExports
   { serviceName = "myservice"; }
   exports
+# =>  {
+#   <scopes> :: <some data>
+# }
 
 # Get all exports for a specific machine
 clanLib.exports.selectExports
   { machineName = "backend01"; }
   exports
+# =>  {
+#   <scopes> :: <some data>
+# }
 ```
+
+## Export Scope Rules
+
+When defining exports, certain restrictions apply based on context:
+
+1. **`perInstance`**: Can only export to the matching scope.
+2. **`perMachine`**: Can only export to the machine scope.
+3. **Services can only write to**:
+    - Their own service scope (e.g., `service = "myservice"`)
+    - Global scope
+    - **Not** other services' scopes
+
+These restrictions prevent accidental conflicts and maintain clear data ownership.
 
 ## Best Practices
 
-1. **Use appropriate scopes**: Export at the narrowest scope that makes sense
-   - Service-wide configuration → `"myservice:::"`
-   - Machine-specific data → `"myservice:::machine01"`
-   - Role-instance-machine data → `"myservice:inst:role:machine"`
+1. **Use the helper functions**: Always use `clanLib.exports.*` functions instead of accessing the internal format directly
 
-2. **Structure your exports logically**: Group related data under descriptive keys
+2. **Use appropriate scopes**: Export at the most specific scope that makes sense
+    - Machine-level data (IPs, hostnames) - export in `perInstance`
+    - Instance-level configuration - export
+    - Global aggregations - export to global scope
 
-3. **Document your exports**: Add comments explaining what data is exported and why
+## Examples
 
-4. **Avoid circular dependencies**: Be careful not to create situations where machines depend on each other's exports in a circular manner
-
-5. **Use `lib.mkDefault` for priorities**: When exporting configuration that might be overridden, use `lib.mkDefault` to set appropriate precedence
-
-## Complete Example
-
-Here's a simplified example of a distributed key-value store service using exports:
-
-```nix
-{
-  _class = "clan.service";
-  manifest.name = "kvstore";
-
-  roles.primary = {
-    perInstance = { mkExports, ... }: {
-      exports = mkExports {
-        connectionString = "tcp://primary:6379";
-        isLeader = true;
-      };
-
-      nixosModule = { ... }: {
-        services.kvstore = {
-          enable = true;
-          mode = "primary";
-        };
-      };
-    };
-  };
-
-  roles.replica = {
-    perInstance = { exports, instanceName, machine, mkExports, ... }: {
-      # Replicas export their own connection info
-      exports = mkExports {
-        connectionString = "tcp://${machine.name}:6379";
-        isLeader = false;
-      };
-
-      nixosModule = { ... }: {
-        services.kvstore = {
-          enable = true;
-          mode = "replica";
-          # Access the primary's connection string from exports
-          primaryEndpoint = exports."kvstore:${instanceName}:primary:".connectionString or null;
-        };
-      };
-    };
-  };
-}
-```
+For real-world use cases, see the [clan-services](https://git.clan.lol/clan/clan-core/src/branch/main/clanServices)
 
 ## Further Reading
 
