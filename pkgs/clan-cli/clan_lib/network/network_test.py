@@ -31,15 +31,18 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
             # Exports of the service instance
             "clan-core/internet:vpn-network::": {
                 "peer": None,
-                "priority": 1000,
                 "networking": {
+                    "priority": 1000,
                     "module": "clan_lib.network.tor",
                 },
             },
             "clan-core/wireguard:local-network::": {
                 "peer": None,
-                "priority": 500,
-                "networking": {"module": "clan_lib.network.direct", "key": "some_key"},
+                "networking": {
+                    "priority": 500,
+                    "module": "clan_lib.network.direct",
+                    "key": "some_key",
+                },
             },
             # Exports of the host
             "clan-core/internet:vpn-network:default:machine1": {
