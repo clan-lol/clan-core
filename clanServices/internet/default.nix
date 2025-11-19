@@ -1,4 +1,9 @@
-{ ... }:
+{
+  config,
+  clanLib,
+  lib,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/internet";
@@ -8,6 +13,17 @@
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
+
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 2000;
+    };
+  }) config.instances;
+
   roles.default = {
     description = "Placeholder role to apply the internet service";
     interface =
@@ -42,13 +58,6 @@
             host.plain = settings.host;
             SSHOptions = map (_x: "-J x") settings.jumphosts;
           };
-          # networking = {
-          #   # TODO add user space network support to clan-cli
-          #   peers = lib.mapAttrs (_name: machine: {
-          #     host.plain = machine.settings.host;
-          #     SSHOptions = map (_x: "-J x") machine.settings.jumphosts;
-          #   }) roles.default.machines;
-          # };
         };
       };
   };
