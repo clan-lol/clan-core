@@ -1,5 +1,7 @@
 {
   clanLib,
+  config,
+  lib,
   directory,
   ...
 }:
@@ -9,6 +11,19 @@
   manifest.description = "Zerotier Mesh VPN Service for secure P2P networking between machines";
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
+
+
+          # networking.priority = lib.mkDefault 900;
+
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 900;
+    };
+  }) config.instances;
 
   roles.peer = {
     description = "A peer that connects to your private Zerotier network.";
@@ -22,7 +37,6 @@
       }:
       {
         exports = mkExports {
-          # priority = lib.mkDefault 900;
           peer.host.plain = clanLib.vars.getPublicValue {
             machine = machine.name;
             generator = "zerotier";
