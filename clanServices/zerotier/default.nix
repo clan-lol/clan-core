@@ -12,9 +12,6 @@
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
 
-
-          # networking.priority = lib.mkDefault 900;
-
   exports = lib.mapAttrs' (instanceName: _: {
     name = clanLib.exports.buildScopeKey {
       inherit instanceName;
