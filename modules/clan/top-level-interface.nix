@@ -116,96 +116,17 @@ in
     exportsModule = lib.mkOption {
       internal = true;
       visible = false;
-      type = types.deferredModule;
-      default = {
+      type = clanLib.types.exclusiveDeferredModule {
+        warning = ''
+          ! Non-standard exportsModule detected - clan incompatibility likely
 
-        options.peer = lib.mkOption {
-          default = null;
-          type = lib.types.nullOr (
-            lib.types.submodule (
-              { name, ... }:
-              {
-                options = {
-                  name = lib.mkOption {
-                    type = lib.types.str;
-                    default = name;
-                  };
-                  SSHOptions = lib.mkOption {
-                    type = lib.types.listOf lib.types.str;
-                    default = [ ];
-                  };
-                  host = lib.mkOption {
-                    description = '''';
-                    type = lib.types.attrTag {
-                      plain = lib.mkOption {
-                        type = lib.types.str;
-                        description = ''
-                          a plain value, which can be read directly from the config
-                        '';
-                      };
-                      var = lib.mkOption {
-                        type = lib.types.submodule {
-                          options = {
-                            machine = lib.mkOption {
-                              type = lib.types.str;
-                              example = "jon";
-                            };
-                            generator = lib.mkOption {
-                              type = lib.types.str;
-                              example = "tor-ssh";
-                            };
-                            file = lib.mkOption {
-                              type = lib.types.str;
-                              example = "hostname";
-                            };
-                          };
-                        };
-                      };
-                    };
-                  };
-                };
-              }
-            )
-          );
+          You've defined custom options in 'exportsModule' that aren't part of clan-core.
+          Other clans won't be able to use your modules unless they define identical options.
 
-          # "peer": {
-          #     "sshoptions": [ ],
-          #     "host": {
-          #         "plain": "1.2.3.4",
-          #         # "var": ""
-          #     }
-          # }
-        };
-
-        options.networking = lib.mkOption {
-          default = null;
-          type = lib.types.nullOr (
-            lib.types.submodule {
-              options = {
-                priority = lib.mkOption {
-                  type = lib.types.int;
-                  default = 1000;
-                  description = ''
-                    priority with which this network should be tried.
-                    higher priority means it gets used earlier in the chain
-                  '';
-                };
-                module = lib.mkOption {
-                  # type = lib.types.enum [
-                  #   "clan_lib.network.direct"
-                  #   "clan_lib.network.tor"
-                  # ];
-                  type = lib.types.str;
-                  default = "clan_lib.network.direct";
-                  description = ''
-                    the technology this network uses to connect to the target
-                    This is used for userspace networking with socks proxies.
-                  '';
-                };
-              };
-            }
-          );
-        };
+          - Use central options from clan-core for compatibility
+          - Developing new standards? Consider upstreaming
+          - See: https://docs.clan.lol/reference/exports
+        '';
       };
       description = ''
         A module that is used to define the module of flake level exports -
@@ -393,6 +314,96 @@ in
           machines = lib.mkOption { type = lib.types.raw; };
         };
       };
+    };
+  };
+
+  config.exportsModule = {
+    options.peer = lib.mkOption {
+      default = null;
+      type = lib.types.nullOr (
+        lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                type = lib.types.str;
+                default = name;
+              };
+              SSHOptions = lib.mkOption {
+                type = lib.types.listOf lib.types.str;
+                default = [ ];
+              };
+              host = lib.mkOption {
+                description = '''';
+                type = lib.types.attrTag {
+                  plain = lib.mkOption {
+                    type = lib.types.str;
+                    description = ''
+                      a plain value, which can be read directly from the config
+                    '';
+                  };
+                  var = lib.mkOption {
+                    type = lib.types.submodule {
+                      options = {
+                        machine = lib.mkOption {
+                          type = lib.types.str;
+                          example = "jon";
+                        };
+                        generator = lib.mkOption {
+                          type = lib.types.str;
+                          example = "tor-ssh";
+                        };
+                        file = lib.mkOption {
+                          type = lib.types.str;
+                          example = "hostname";
+                        };
+                      };
+                    };
+                  };
+                };
+              };
+            };
+          }
+        )
+      );
+
+      # "peer": {
+      #     "sshoptions": [ ],
+      #     "host": {
+      #         "plain": "1.2.3.4",
+      #         # "var": ""
+      #     }
+      # }
+    };
+
+    options.networking = lib.mkOption {
+      default = null;
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            priority = lib.mkOption {
+              type = lib.types.int;
+              default = 1000;
+              description = ''
+                priority with which this network should be tried.
+                higher priority means it gets used earlier in the chain
+              '';
+            };
+            module = lib.mkOption {
+              # type = lib.types.enum [
+              #   "clan_lib.network.direct"
+              #   "clan_lib.network.tor"
+              # ];
+              type = lib.types.str;
+              default = "clan_lib.network.direct";
+              description = ''
+                the technology this network uses to connect to the target
+                This is used for userspace networking with socks proxies.
+              '';
+            };
+          };
+        }
+      );
     };
   };
 }
