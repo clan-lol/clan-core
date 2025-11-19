@@ -93,12 +93,12 @@ Now, activate the environment using one of the following methods.
 
     First you need to install [direnv](https://github.com/direnv/direnv) to allow auto-loading `.envrc` bash files on `cd`  
     ```bash
-    nix profile install nixpkgs#direnv
+    nix profile add nixpkgs#direnv
     ```
 
     Ontop of that you need the [nix-direnv](https://github.com/nix-community/nix-direnv) addon.
     ```bash
-    nix profile install nixpkgs#nix-direnv
+    nix profile add nixpkgs#nix-direnv
     ```
 
    - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
