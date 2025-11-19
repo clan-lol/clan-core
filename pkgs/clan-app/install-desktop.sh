@@ -6,7 +6,7 @@ if [ "$ALREADY_INSTALLED" = "true" ]; then
   echo "Upgrading installed clan-app"
   nix profile upgrade clan-app
 else
-  nix profile install .#clan-app
+  nix profile add .#clan-app
 fi
 
 # Check OS type
