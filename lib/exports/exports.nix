@@ -54,9 +54,9 @@ let
       explaining your use case at: https://git.clan.lol/clan/clan-core/issues
     '' (lib.join ":" checkedParts);
 
-    mkExports = scope: value: {
-      ${buildScopeKey scope} =  value;
-    };
+  mkExports = scope: value: {
+    ${buildScopeKey scope} = value;
+  };
 
   /**
     Parses a scope string into its components

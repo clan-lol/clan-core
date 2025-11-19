@@ -14,7 +14,7 @@
         machines.jon = { };
         machines.sara = { };
 
-        exportsModule =
+        exportsModule = lib.mkForce (
           { lib, ... }:
           {
             options.foo = lib.mkOption {
@@ -25,7 +25,8 @@
               type = lib.types.number;
               default = 0;
             };
-          };
+          }
+        );
 
         ####### Service module "A"
         modules.service-A =

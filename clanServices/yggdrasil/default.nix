@@ -11,18 +11,15 @@
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
   manifest.readme = builtins.readFile ./README.md;
 
-  exports = lib.mapAttrs' (
-    instanceName: _: {
-      name = clanLib.exports.buildScopeKey {
-        inherit instanceName;
-        serviceName = config.manifest.name;
-      };
-      value = {
-        networking.priority = 2000;
-      };
-    }
-  ) config.instances;
-
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 2000;
+    };
+  }) config.instances;
 
   roles.default = {
     description = "Placeholder role to apply the yggdrasil service";
