@@ -17,7 +17,7 @@ Make sure you have the following:
 
         1.  Run the recommended installer:
             ```shellSession
-            curl --proto '=https' --tlsv1.2 -sSf -L [https://install.determinate.systems/nix](https://install.determinate.systems/nix) | sh -s -- install
+            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
             ```
 
         2.  After installation, ensure flakes are enabled by adding this line to `~/.config/nix/nix.conf`:
