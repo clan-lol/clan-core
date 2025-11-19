@@ -26,7 +26,7 @@ Let's get your development environment up and running:
       - To automatically setup a devshell on entering the directory
 
       ```bash
-      nix profile add nixpkgs#nix-direnv-flakes nixpkgs#direnv
+      nix profile add nixpkgs#nix-direnv nixpkgs#direnv
       ```
 
 3. **Add direnv to your shell**:
