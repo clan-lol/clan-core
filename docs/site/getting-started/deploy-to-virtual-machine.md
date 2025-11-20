@@ -22,3 +22,19 @@ clan machines init-hardware-config [MACHINE] \
 
 !!! Warning
     After running the above command, be aware that the SSH login user changes from `myuser` to `root`. For subsequent SSH connections to the target machine, use `root` as the login user. This change occurs because the system switches to the NixOS kernel using `kexec`.
+
+## Configure Disk Layout
+
+Before installing, you need to configure how the disk should be partitioned. See the [disk configuration guide](../getting-started/configure-disk.md) for details on setting up your disk layout.
+
+## Install the Machine
+
+**Finally deployment time!**
+
+This command is destructive and will format your disk and install NixOS on it!
+
+```shell-session
+$ clan machines install [MACHINE] --target-host root@<IP>
+```
+
+After the installation completes, your machine will reboot into the newly installed NixOS system.
