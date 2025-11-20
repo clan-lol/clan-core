@@ -335,32 +335,34 @@ in
               };
               host = lib.mkOption {
                 description = '''';
-                type = lib.types.attrTag {
-                  plain = lib.mkOption {
-                    type = lib.types.str;
-                    description = ''
-                      a plain value, which can be read directly from the config
-                    '';
-                  };
-                  var = lib.mkOption {
-                    type = lib.types.submodule {
-                      options = {
-                        machine = lib.mkOption {
-                          type = lib.types.str;
-                          example = "jon";
-                        };
-                        generator = lib.mkOption {
-                          type = lib.types.str;
-                          example = "tor-ssh";
-                        };
-                        file = lib.mkOption {
-                          type = lib.types.str;
-                          example = "hostname";
+                type = lib.types.listOf (
+                  lib.types.attrTag {
+                    plain = lib.mkOption {
+                      type = lib.types.str;
+                      description = ''
+                        a plain value, which can be read directly from the config
+                      '';
+                    };
+                    var = lib.mkOption {
+                      type = lib.types.submodule {
+                        options = {
+                          machine = lib.mkOption {
+                            type = lib.types.str;
+                            example = "jon";
+                          };
+                          generator = lib.mkOption {
+                            type = lib.types.str;
+                            example = "tor-ssh";
+                          };
+                          file = lib.mkOption {
+                            type = lib.types.str;
+                            example = "hostname";
+                          };
                         };
                       };
                     };
-                  };
-                };
+                  }
+                );
               };
             };
           }

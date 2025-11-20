@@ -55,7 +55,7 @@
       {
         exports = mkExports {
           peer = {
-            host.plain = settings.host;
+            host = [ { plain = settings.host; } ];
             SSHOptions = map (_x: "-J x") settings.jumphosts;
           };
         };

@@ -73,12 +73,16 @@
       {
 
         exports = mkExports {
-          peer.host.plain = clanLib.vars.getPublicValue {
-            machine = machine.name;
-            generator = "yggdrasil";
-            file = "address";
-            flake = directory;
-          };
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "yggdrasil";
+                file = "address";
+                flake = directory;
+              };
+            }
+          ];
         };
 
         nixosModule =
@@ -91,40 +95,53 @@
           let
 
             mkPeers =
-              ip:
-              # We need to add [ ] for ipv6 addresses
-              if (lib.hasInfix ":" ip) then
-                [
-                  # "tcp://[${ip}]:6443"
-                  "quic://[${ip}]:6443"
-                  "ws://[${ip}]:6443"
-                  "tls://[${ip}]:6443"
-                ]
-              else
-                [
-                  # "tcp://[${ip}]:6443"
-                  "quic://${ip}:6443"
-                  "ws://${ip}:6443"
-                  "tls://${ip}:6443"
-                ];
+              export:
+              let
+                # Extract host list from the export
+                hostList = export.peer.host or [ ];
+
+                # Extract actual IP values from tagged unions
+                extractHostValue =
+                  hostItem:
+                  if hostItem ? plain then
+                    hostItem.plain
+                  else if hostItem ? var then
+                    clanLib.vars.getPublicValue hostItem.var
+                  else
+                    throw "Unknown host type in export";
+
+                # Get list of IP addresses
+                hosts = map extractHostValue hostList;
+              in
+              lib.concatMap (
+                ip:
+                # We need to add [ ] for ipv6 addresses
+                if (lib.hasInfix ":" ip) then
+                  [
+                    # "tcp://[${ip}]:6443"
+                    "quic://[${ip}]:6443"
+                    "ws://[${ip}]:6443"
+                    "tls://[${ip}]:6443"
+                  ]
+                else
+                  [
+                    # "tcp://[${ip}]:6443"
+                    "quic://${ip}:6443"
+                    "ws://${ip}:6443"
+                    "tls://${ip}:6443"
+                  ]
+              ) hosts;
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs =
-              builtins.concatMap
-                (
-                  export:
-                  if (export.peer == null || export.peer.host.plain == "") then
-                    [ ]
-                  else
-                    (mkPeers export.peer.host.plain)
+            exportedPeerIPs = lib.flatten (
+              map mkPeers (
+                lib.attrValues (
+                  clanLib.exports.selectExports {
+                  } exports
                 )
-                (
-                  lib.attrValues (
-                    clanLib.exports.selectExports {
-                    } exports
-                  )
-                );
+              )
+            );
 
             # Construct a list of peers in yggdrasil format
             exportedPeers = exportedPeerIPs;
