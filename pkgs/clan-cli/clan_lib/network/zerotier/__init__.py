@@ -36,8 +36,11 @@ class NetworkTechnology(NetworkTechnologyBase):
         # TODO: Implement userspace ZeroTier service start/stop
         yield network
 
-    def remote(self, peer: Peer) -> "Remote":
-        return Remote(
-            address=peer.host,
-            command_prefix=peer.name,
-        )
+    def remote(self, peer: Peer) -> list["Remote"]:
+        return [
+            Remote(
+                address=host,
+                command_prefix=peer.name,
+            )
+            for host in peer.host
+        ]

@@ -502,6 +502,8 @@ def _parse_ssh_uri(
             msg = f"Invalid host, got `{address}` but expected something like `[user@]hostname[:port]`"
             raise ClanError(msg)
 
+
+
     # Make this check now rather than failing with a `ValueError`
     # when looking up the port from the `urlsplit` result below:
     if host_port.count(":") > 1 and not re.match(r".*\[.*]", host_port):
