@@ -56,6 +56,8 @@
 
 {
   clanLib,
+  config,
+  lib,
   ...
 }:
 let
@@ -153,6 +155,16 @@ in
   ];
   manifest.readme = builtins.readFile ./README.md;
 
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 1000;
+    };
+  }) config.instances;
+
   # Peer options and configuration
   roles.peer = {
     description = "A peer that connects to one or more controllers.";
@@ -176,9 +188,27 @@ in
         settings,
         roles,
         machine,
+        # mkExports,
         ...
       }:
       {
+
+        # TODO: add exports to wireguard peers.
+        # We currently only export the ip for controllers, as wireguard peer
+        # have multiple IPs, one per controller and exports only allow
+        # exporting one currently?
+
+        # exports = mkExports {
+        #   peer.host.plain =
+        #     (clanLib.vars.getPublicValue {
+        #       flake = config.clan.core.settings.directory;
+        #       machine = machine.name;
+        #       generator = "wireguard-network-${instanceName}";
+        #       file = "prefix";
+        #     })
+        #     + "::1";
+        # };
+
         # Set default domain to instanceName
 
         # Peers connect to all controllers
@@ -295,9 +325,20 @@ in
         instanceName,
         roles,
         machine,
+        mkExports,
         ...
       }:
       {
+        exports = mkExports {
+          peer.host.plain =
+            (clanLib.vars.getPublicValue {
+              flake = config.clan.core.settings.directory;
+              machine = machine.name;
+              generator = "wireguard-network-${instanceName}";
+              file = "prefix";
+            })
+            + "::1";
+        };
 
         # Controllers connect to all peers and other controllers
         nixosModule =
