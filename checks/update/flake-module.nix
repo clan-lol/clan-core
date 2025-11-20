@@ -28,7 +28,13 @@
       nixpkgs.overlays = [
         (_final: prev: {
           switch-to-configuration-ng = prev.switch-to-configuration-ng.overrideAttrs (old: {
-            patches = (old.patches or [ ]) ++ [ ./switch-to-configuration-initrd-mount-fix.patch ];
+            patches = (old.patches or [ ]) ++ [
+              (prev.fetchpatch {
+                url = "file://${./switch-to-configuration-initrd-mount-fix.patch}";
+                hash = "sha256-iKmgZDUd4DkHa7MPuaZX6h85+0Nc4lY+w1YRBIwwQt0=";
+                relative = "pkgs/by-name/sw/switch-to-configuration-ng/src";
+              })
+            ];
           });
         })
       ];
