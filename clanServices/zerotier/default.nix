@@ -34,12 +34,16 @@
       }:
       {
         exports = mkExports {
-          peer.host.plain = clanLib.vars.getPublicValue {
-            machine = machine.name;
-            generator = "zerotier";
-            file = "zerotier-ip";
-            flake = directory;
-          };
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "zerotier";
+                file = "zerotier-ip";
+                flake = directory;
+              };
+            }
+          ];
         };
         nixosModule =
           {

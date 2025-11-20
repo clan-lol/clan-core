@@ -55,12 +55,16 @@
       {
 
         exports = mkExports {
-          peer.host.plain = clanLib.vars.getPublicValue {
-            machine = machine.name;
-            generator = "mycelium";
-            file = "ip";
-            flake = directory;
-          };
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "mycelium";
+                file = "ip";
+                flake = directory;
+              };
+            }
+          ];
         };
 
         nixosModule =

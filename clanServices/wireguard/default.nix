@@ -330,14 +330,18 @@ in
       }:
       {
         exports = mkExports {
-          peer.host.plain =
-            (clanLib.vars.getPublicValue {
-              flake = config.clan.core.settings.directory;
-              machine = machine.name;
-              generator = "wireguard-network-${instanceName}";
-              file = "prefix";
-            })
-            + "::1";
+          peer.host = [
+            {
+              plain =
+                (clanLib.vars.getPublicValue {
+                  flake = config.clan.core.settings.directory;
+                  machine = machine.name;
+                  generator = "wireguard-network-${instanceName}";
+                  file = "prefix";
+                })
+                + "::1";
+            }
+          ];
         };
 
         # Controllers connect to all peers and other controllers

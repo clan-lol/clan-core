@@ -78,11 +78,15 @@
       }:
       {
         exports = mkExports {
-          peer.host.var = {
-            machine = machine.name;
-            generator = "tor_${instanceName}";
-            file = "hostname";
-          };
+          peer.host = [
+            {
+              var = {
+                machine = machine.name;
+                generator = "tor_${instanceName}";
+                file = "hostname";
+              };
+            }
+          ];
         };
         nixosModule =
           {
