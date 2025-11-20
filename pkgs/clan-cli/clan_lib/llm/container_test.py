@@ -16,7 +16,6 @@ from clan_lib.service_runner import create_service_manager
 if TYPE_CHECKING:
     from clan_lib.llm.llm_types import ChatResult
     from clan_lib.llm.schemas import SessionState
-import platform
 
 
 def get_current_mode(session_state: "SessionState") -> str:
@@ -262,11 +261,6 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
         print(f"  Next Action: {result.next_action['type']}")
         print(f"  Description: {result.next_action['description']}")
         print_meta_info(result, turn=3, phase="Readme Fetch Executed")
-
-        if platform.machine() == "aarch64":
-            pytest.skip(
-                "aarch64 detected: skipping readme/service-selection and final step for performance reasons"
-            )
 
         # ========== STEP 4: Execute service selection ==========
         print_separator("STEP 4: Execute Service Selection", char="=", width=80)

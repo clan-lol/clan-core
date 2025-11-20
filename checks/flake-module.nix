@@ -78,23 +78,27 @@ in
             inherit (self) clanLib;
             clan-core = self;
           };
-          nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
+          nixosTests =
+            lib.optionalAttrs (pkgs.stdenv.isLinux) {
 
-            # Base Tests
-            nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-            nixos-test-wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
+              # Base Tests
+              nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
+              nixos-test-wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
-            # Container Tests
-            nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
-            nixos-systemd-abstraction = self.clanLib.test.containerTest ./systemd-abstraction nixosTestArgs;
-            nixos-llm-test = self.clanLib.test.containerTest ./llm nixosTestArgs;
-            nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
-            nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
-            nixos-test-extra-python-packages = self.clanLib.test.containerTest ./test-extra-python-packages nixosTestArgs;
+              # Container Tests
+              nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
+              nixos-systemd-abstraction = self.clanLib.test.containerTest ./systemd-abstraction nixosTestArgs;
+              nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
+              nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
+              nixos-test-extra-python-packages = self.clanLib.test.containerTest ./test-extra-python-packages nixosTestArgs;
 
-            service-dummy-test = import ./service-dummy-test nixosTestArgs;
-            service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
-          };
+              service-dummy-test = import ./service-dummy-test nixosTestArgs;
+              service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
+            }
+            # LLM test is too slow on aarch64 (inference times exceed timeout)
+            // lib.optionalAttrs (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
+              nixos-llm-test = self.clanLib.test.containerTest ./llm nixosTestArgs;
+            };
 
           packagesToBuild = lib.removeAttrs self'.packages [
             # exclude the check that checks that nothing depends on the repo root
