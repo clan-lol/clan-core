@@ -10,9 +10,16 @@ import inspect
 import pytest
 from clan_lib.flake import Flake
 
+from . import completions
 from .completions import complete_machines
 from .tests import fixtures_flakes
 from .tests.helpers import cli
+
+
+@pytest.fixture(autouse=True)
+def increase_completion_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Increase completion timeout for tests to avoid flakiness in CI."""
+    monkeypatch.setattr(completions, "COMPLETION_TIMEOUT", 10)
 
 
 @pytest.mark.with_core
