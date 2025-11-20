@@ -72,6 +72,10 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
         if pre_backup:
             print(f"  preBackupCommand: {pre_backup}")
 
+        post_backup = service_cfg.get("postBackupCommand")
+        if post_backup:
+            print(f"  postBackupCommand: {post_backup}")
+
         pre_restore = service_cfg.get("preRestoreCommand")
         if pre_restore:
             print(f"  preRestoreCommand: {pre_restore}")
