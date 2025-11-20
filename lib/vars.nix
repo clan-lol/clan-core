@@ -6,7 +6,7 @@ _: {
       default ? throw "getPublicValue: Public value ${machine}/${generator}/${file} not found!",
       shared ? false,
       generator,
-      machine,
+      machine ? null,
       file,
       flake,
     }:
@@ -15,7 +15,10 @@ _: {
       let
         path =
           if shared then
-            "${flake}/vars/shared/${generator}/${file}/value"
+            if machine != null then
+              throw "getPublicValue: machine must not be set when shared=true"
+            else
+              "${flake}/vars/shared/${generator}/${file}/value"
           else
             "${flake}/vars/per-machine/${machine}/${generator}/${file}/value";
       in
