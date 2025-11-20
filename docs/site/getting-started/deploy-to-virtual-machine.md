@@ -12,13 +12,11 @@ Clan supports any cloud machine if it is reachable via SSH and supports `kexec`.
     If on Linode: Make sure that the system uses "Direct Disk boot kernel" (found in the configuration panel)
 
 
-The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
+The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. This command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
 
 
 ```terminal
-clan machines install [MACHINE] \
-  --update-hardware-config nixos-facter \
-  --phases kexec \
+clan machines init-hardware-config [MACHINE] \
   --target-host myuser@<IP>
 ```
 
