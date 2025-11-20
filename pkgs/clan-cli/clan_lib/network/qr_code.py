@@ -88,7 +88,7 @@ def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
     if clearnet_addrs:
         for addr in clearnet_addrs:
             if isinstance(addr, str):
-                peer = Peer(name="installer", _host={"plain": addr}, flake=flake)
+                peer = Peer(name="installer", _host=[{"plain": addr}], flake=flake)
                 network = Network(
                     peers={"installer": peer},
                     module_name="clan_lib.network.direct",
@@ -107,7 +107,7 @@ def read_qr_json(qr_data: dict[str, Any], flake: Flake) -> QRCodeData:
 
     # Process tor address
     if tor_addr := qr_data.get("tor"):
-        peer = Peer(name="installer-tor", _host={"plain": tor_addr}, flake=flake)
+        peer = Peer(name="installer-tor", _host=[{"plain": tor_addr}], flake=flake)
         network = Network(
             peers={"installer-tor": peer},
             module_name="clan_lib.network.tor",

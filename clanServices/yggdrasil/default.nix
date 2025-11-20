@@ -110,8 +110,8 @@
                   else
                     throw "Unknown host type in export";
 
-                # Get list of IP addresses
-                hosts = map extractHostValue hostList;
+                # Get list of IP addresses and strip whitespace (newlines, etc.)
+                hosts = map (ip: lib.strings.trim (extractHostValue ip)) hostList;
               in
               lib.concatMap (
                 ip:

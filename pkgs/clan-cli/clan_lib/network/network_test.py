@@ -50,13 +50,15 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machnine1",
                     "sshoptions": [],
-                    "host": {
-                        "var": {
-                            "machine": "machine1",
-                            "generator": "wireguard",
-                            "file": "address",
+                    "host": [
+                        {
+                            "var": {
+                                "machine": "machine1",
+                                "generator": "wireguard",
+                                "file": "address",
+                            },
                         },
-                    },
+                    ],
                 },
             },
             "clan-core/internet:vpn-network:default:machine2": {
@@ -64,13 +66,15 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machnine1",
                     "sshoptions": [],
-                    "host": {
-                        "var": {
-                            "machine": "machine2",
-                            "generator": "wireguard",
-                            "file": "address",
+                    "host": [
+                        {
+                            "var": {
+                                "machine": "machine2",
+                                "generator": "wireguard",
+                                "file": "address",
+                            },
                         },
-                    },
+                    ],
                 },
             },
             "clan-core/wireguard:local-network:default:machine1": {
@@ -78,13 +82,15 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machine1",
                     "sshoptions": [],
-                    "host": {
-                        "var": {
-                            "machine": "machine1",
-                            "generator": "wireguard",
-                            "file": "address",
+                    "host": [
+                        {
+                            "var": {
+                                "machine": "machine1",
+                                "generator": "wireguard",
+                                "file": "address",
+                            },
                         },
-                    },
+                    ],
                 },
             },
             "clan-core/wireguard:local-network:default:machine3": {
@@ -92,9 +98,11 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machine3",
                     "sshoptions": [],
-                    "host": {
-                        "plain": "10.0.0.10",
-                    },
+                    "host": [
+                        {
+                            "plain": "10.0.0.10",
+                        },
+                    ],
                 },
             },
         }
@@ -126,7 +134,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     # Check peer details - this will call get_machine_var to decrypt the var
     machine1_peer = vpn_network.peers["machine1"]
     assert isinstance(machine1_peer, Peer)
-    assert machine1_peer.host == "192.168.1.10"
+    assert machine1_peer.host == ["192.168.1.10"]
     assert machine1_peer.flake == flake
 
     # Check local-network

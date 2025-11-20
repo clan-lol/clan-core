@@ -1,6 +1,4 @@
-{
-  ...
-}:
+{ ... }:
 let
   module = ./default.nix;
 in
