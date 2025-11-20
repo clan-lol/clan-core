@@ -1,23 +1,22 @@
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
 To see what disk templates are available run:
-```{.shellSession hl_lines="10" .no-copy}
+```{.shellSession hl_lines="11" .no-copy}
 $ clan templates list
 
-Available 'clan' template
+Available 'clan' templates
 ├── <builtin>
 │   ├── default: Initialize a new clan flake
 │   ├── flake-parts: Flake-parts
+│   ├── flake-parts-minimal: Minimal flake-parts clan template
 │   └── minimal: for clans managed via (G)UI
 Available 'disko' templates
 ├── <builtin>
 │   └── single-disk: A simple ext4 disk with a single partition
 Available 'machine' templates
 ├── <builtin>
-│   ├── demo-template: Demo machine for the CLAN project
 │   ├── flash-installer: Initialize a new flash-installer machine
-│   ├── new-machine: Initialize a new machine
-│   └── test-morph-template: Morph a machine
+│   └── new-machine: Initialize a new machine
 ```
 
 
