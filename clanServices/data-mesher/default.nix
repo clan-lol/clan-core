@@ -40,6 +40,14 @@ let
             '';
           };
         };
+
+        extraHostNames = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = ''
+            A list of extra hostnames to claim for this machine.
+          '';
+        };
       };
     };
 
@@ -78,7 +86,8 @@ let
       network.id = config.clan.core.vars.generators.data-mesher-network-key.files.public_key.value;
 
       host = {
-        names = [ config.networking.hostName ];
+        # combine the default hostname with any extra hostnames the user wants to include
+        names = [ config.networking.hostName ] ++ dmSettings.extraHostNames;
         key_path = config.clan.core.vars.generators.data-mesher-host-key.files.private_key.path;
       };
 

@@ -25,6 +25,7 @@
           {
             roles.peer.machines.peer.settings = {
               network.interface = "eth1";
+              extraHostNames = [ "xtra" ];
               inherit bootstrapNodes;
             };
             roles.signer.machines.signer.settings = {
@@ -84,6 +85,7 @@
       resolve(node, {
           "admin.foo": ["2001:db8:1::1", "192.168.1.1"],
           "peer.foo": ["2001:db8:1::2", "192.168.1.2"],
+          "xtra.foo": ["2001:db8:1::2", "192.168.1.2"],
           "signer.foo": ["2001:db8:1::3", "192.168.1.3"]
       })
   '';
