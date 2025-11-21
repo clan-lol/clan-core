@@ -244,13 +244,12 @@ in
 
   test_get_var_machine =
     let
-      varsLib = import ./vars.nix { };
+      varsLib = import ./vars.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
         backend = "in_repo";
         default = "test";
-        shared = false;
         generator = "test-generator";
         machine = "test-machine";
         file = "test-file";
@@ -261,13 +260,12 @@ in
 
   test_get_var_shared =
     let
-      varsLib = import ./vars.nix { };
+      varsLib = import ./vars.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
         backend = "in_repo";
         default = "test";
-        shared = true;
         generator = "test-generator";
         file = "test-file";
         flake = ./vars-test-flake;
@@ -275,33 +273,14 @@ in
       expected = "foo-shared";
     };
 
-  test_get_var_shared_machine_set_fail =
-    let
-      varsLib = import ./vars.nix { };
-    in
-    {
-      expr = varsLib.getPublicValue {
-        backend = "in_repo";
-        default = "test";
-        shared = true;
-        generator = "test-generator";
-        machine = "test-machine";
-        file = "test-file";
-        flake = ./vars-test-flake;
-      };
-      expectedError.type = "ThrownError";
-      expectedError.msg = "getPublicValue: machine must not be set when shared=true";
-    };
-
   test_get_var_default =
     let
-      varsLib = import ./vars.nix { };
+      varsLib = import ./vars.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
         backend = "in_repo";
         default = "test-default";
-        shared = true;
         generator = "test-generator-wrong";
         file = "test-file";
         flake = ./vars-test-flake;
