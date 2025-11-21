@@ -68,7 +68,7 @@
       };
   };
 
-  # The impnlementation of the evening role is in a separate file. We have kept
+  # The implementation of the evening role is in a separate file. We have kept
   # the interface here, so we can see all settings of the service in one place,
   # but you can also move it to the respective file
   roles.evening = {
