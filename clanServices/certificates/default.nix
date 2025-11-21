@@ -24,7 +24,11 @@
 
         options.tlds = lib.mkOption {
           type = lib.types.listOf lib.types.str;
-          description = "Top level domain for this CA. Certificates will be issued and trusted for *.<tld>";
+          default = [ ];
+          description = ''
+            Top level domain for this CA. Certificates will be issued and trusted for *.<tld>.
+            Defaults to [ config.clan.core.settings.tld ]
+          '';
         };
 
         options.expire = lib.mkOption {
@@ -46,7 +50,9 @@
             ...
           }:
           let
-            domains = map (tld: "ca.${tld}") settings.tlds;
+            tlds = if settings.tlds != [ ] then settings.tlds else [ config.clan.core.settings.tld ];
+            domains = map (tld: "ca.${tld}") tlds;
+
           in
           {
             security.acme.defaults.email = settings.acmeEmail;
