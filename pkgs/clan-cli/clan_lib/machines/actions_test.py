@@ -46,6 +46,24 @@ def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
 
 
 @pytest.mark.with_core
+def test_list_machines_full(clan_flake: Callable[..., Flake]) -> None:
+    clan_config: Clan = {
+        "machines": {
+            "jon": cast("Unknown", {}),
+            "sara": cast("Unknown", {}),
+        },
+    }
+    flake = clan_flake(clan_config)
+
+    machines = flake.list_machines_full()
+
+    assert list(machines.keys()) == ["jon", "sara"]
+    assert all(isinstance(m, Machine) for m in machines.values())
+    assert machines["jon"].name == "jon"
+    assert machines["sara"].name == "sara"
+
+
+@pytest.mark.with_core
 def test_list_inventory_machines(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
         {
