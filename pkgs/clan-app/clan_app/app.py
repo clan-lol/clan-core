@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,7 +17,6 @@ from clan_app.backends.http.http_server import HttpApiServer
 from clan_app.backends.webview.webview import Size, SizeHint, Webview
 from clan_app.middleware import (
     ArgumentParsingMiddleware,
-    LoggingMiddleware,
     MethodExecutionMiddleware,
 )
 
@@ -30,6 +30,19 @@ class ClanAppOptions:
     http_api: bool = False
     http_host: str = "127.0.0.1"
     http_port: int = 8080
+
+
+def delete_old_logs(log_manager: LogManager) -> None:
+    for index, day in enumerate(log_manager.list_log_days()):
+        if index == 0:
+            continue  # Keep the most recent log day
+        p = day.get_dir_path()
+        try:
+            if p.exists() and p.is_dir():
+                shutil.rmtree(p)
+                log.info(f"Removed log day directory: {p}")
+        except Exception as e:  # noqa: BLE001
+            log.warning(f"Failed to remove log day directory '{p}': {e}")
 
 
 @profile
@@ -49,6 +62,8 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     # Add a log group ["clans", <dynamic_name>, "machines", <dynamic_name>]
     log_manager = LogManager(base_dir=user_data_dir() / "clan-app" / "logs")
+    delete_old_logs(log_manager)
+
     clan_log_group = LogGroupConfig("clans", "Clans").add_child(
         LogGroupConfig("machines", "Machines"),
     )
@@ -80,7 +95,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
         # Add middleware to HTTP server
         http_server.add_middleware(ArgumentParsingMiddleware(api=API))
-        http_server.add_middleware(LoggingMiddleware(log_manager=log_manager))
+        # http_server.add_middleware(LoggingMiddleware(log_manager=log_manager))
         http_server.add_middleware(MethodExecutionMiddleware(api=API))
 
         # Start the server (bridge will be created automatically)
@@ -117,7 +132,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
         # Add middleware to the webview
         webview.add_middleware(ArgumentParsingMiddleware(api=API))
-        webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
+        # webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
         webview.add_middleware(MethodExecutionMiddleware(api=API))
 
         webview.bind_jsonschema_api(API)
