@@ -51,6 +51,25 @@
               '';
             };
 
+            postBackupScript = lib.mkOption {
+              type = lib.types.nullOr lib.types.lines;
+              default = null;
+              description = ''
+                script to run after backing up the state dir
+                This is for example useful to reverse any actions done in the preBackupScript
+              '';
+            };
+
+            postBackupCommand = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = if config.postBackupScript == null then null else "post-backup-${name}";
+              defaultText = lib.literalExpression ''null if postBackupScript set, or else "post-backup-${name}"'';
+              readOnly = true;
+              description = ''
+                Use this command in backup providers. It contains the content of postBackupScript.
+              '';
+            };
+
             # TODO: implement this
             #stopOnRestore = lib.mkOption {
             #  type = lib.types.listOf lib.types.str;
@@ -121,6 +140,9 @@
           mkdir -p $out/bin/
           ${lib.optionalString (state.preBackupCommand != null) ''
             writeShellScript ${lib.escapeShellArg state.preBackupCommand} ${lib.escapeShellArg state.preBackupScript}
+          ''}
+          ${lib.optionalString (state.postBackupCommand != null) ''
+            writeShellScript ${lib.escapeShellArg state.postBackupCommand} ${lib.escapeShellArg state.postBackupScript}
           ''}
           ${lib.optionalString (state.preRestoreCommand != null) ''
             writeShellScript ${lib.escapeShellArg state.preRestoreCommand} ${lib.escapeShellArg state.preRestoreScript}

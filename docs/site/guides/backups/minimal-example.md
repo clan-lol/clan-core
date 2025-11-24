@@ -30,11 +30,15 @@ inventory.instances = {
       input = "clan-core";
     };
     roles.client.machines = {
-        "bob" = { };
+        "bob" = {
+            startAt = "*-*-* 04:00:00";
+        };
         "jon" = { };
     };
-    roles.server.machines = { 
-        "alice" = { };
+    roles.server.machines = {
+        "alice" = {
+            address = "alice.example.org";
+        };
     };
   };
 };

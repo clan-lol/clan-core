@@ -14,12 +14,23 @@
       { lib, ... }:
       {
 
-        options.directory = lib.mkOption {
-          type = lib.types.str;
-          default = "/var/lib/borgbackup";
-          description = ''
-            The directory where the borgbackup repositories are stored.
-          '';
+        options = {
+          address = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              Address to use when connecting to this machine, if `null`, use
+              the machines name.
+            '';
+          };
+
+          directory = lib.mkOption {
+            type = lib.types.str;
+            default = "/var/lib/borgbackup";
+            description = ''
+              The directory where the borgbackup repositories are stored.
+            '';
+          };
         };
 
       };
@@ -69,6 +80,11 @@
         ...
       }:
       {
+        options.startAt = lib.mkOption {
+          type = lib.types.str;
+          default = "*-*-* 01:00:00";
+          description = '''';
+        };
 
         options.destinations = lib.mkOption {
           type = lib.types.attrsOf (
@@ -87,7 +103,7 @@
                   };
                   rsh = lib.mkOption {
                     type = lib.types.str;
-                    defaultText = "ssh -i \${config.clan.core.vars.generators.borgbackup.files.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+                    defaultText = "ssh -i \${config.clan.core.vars.generators.borgbackup.files.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=accept-new";
                     description = "the rsh to use for the backup";
                   };
                 };
@@ -137,7 +153,7 @@
                       rsh = lib.mkOption {
                         default = "ssh -i ${
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
-                        } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes -o PasswordAuthentication=no";
+                        } -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=Yes -o PasswordAuthentication=no";
                       };
                     };
                   }
@@ -172,23 +188,47 @@
                   fi
                 '';
 
+                postBackupScript = ''
+                  declare -A postCommandErrors
+
+                  ${lib.concatMapStringsSep "\n" (
+                    state:
+                    lib.optionalString (state.postBackupCommand != null) ''
+                      echo "Running post-backup command for ${state.name}"
+                      if ! /run/current-system/sw/bin/${state.postBackupCommand}; then
+                        postCommandErrors["${state.name}"]=1
+                      fi
+                    ''
+                  ) (lib.attrValues config.clan.core.state)}
+
+                  if [[ ''${#postCommandErrors[@]} -gt 0 ]]; then
+                    echo "post-backup commands failed for the following services:"
+                    for state in "''${!postCommandErrors[@]}"; do
+                      echo "  $state"
+                    done
+                    exit 1
+                  fi
+                '';
+
                 # The destinations from server.roles.machines.*
                 # name is the server, machine can only be in one instance
                 internalDestinations =
                   let
-                    destinations = builtins.map (serverName: {
+                    destinations = lib.mapAttrsToList (serverName: machine: {
                       name = "${serverName}";
                       value = {
                         # inherit name;
                         name = "${serverName}";
-                        repo = "borg@${serverName}:.";
+                        repo = "borg@${
+                          if (machine.settings.address == null) then serverName else machine.settings.address
+                        }:.";
                         # rsh = "";
 
                         rsh = "ssh -i ${
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
-                        } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
+                        } -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=Yes";
                       };
-                    }) (builtins.attrNames (roles.server.machines or { }));
+                    }) (roles.server.machines or { });
                   in
                   (builtins.listToAttrs destinations);
 
@@ -214,9 +254,17 @@
                     # since borgbackup mounts the system read-only, we need to
                     # run in a ExecStartPre script, so we can generate
                     # additional files.
-                    serviceConfig.ExecStartPre = [
-                      ''+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}''
-                    ];
+                    serviceConfig = {
+                      ExecStartPre = [
+                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}''
+                      ];
+                      ExecStopPost = [
+                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-post-backup-commands" postBackupScript}''
+                      ];
+                      # Disable timeouts to allow pre/post-backup commands (like database dumps) to complete
+                      TimeoutStartSec = "infinity";
+                      TimeoutStopSec = "infinity";
+                    };
                   }
                 ) allDestinations;
 
@@ -228,7 +276,7 @@
                   repo = dest.repo;
                   environment.BORG_RSH = dest.rsh;
                   compression = "auto,zstd";
-                  startAt = "*-*-* 01:00:00";
+                  startAt = settings.startAt;
                   persistentTimer = true;
 
                   encryption = {
