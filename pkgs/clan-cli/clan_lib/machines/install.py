@@ -12,6 +12,7 @@ from clan_cli.machines.hardware import HardwareConfig
 
 from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
 from clan_lib.persist.inventory_store import InventoryStore
@@ -247,6 +248,15 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         else:
             for phase in ["kexec", "disko", "install", "reboot"]:
                 run_phase(phase)
+
+    if opts.update_hardware_config is not HardwareConfig.NONE:
+        hw_file = opts.update_hardware_config.config_path(machine)
+        if hw_file.exists():
+            commit_file(
+                hw_file,
+                opts.machine.flake.path,
+                f"machines/{opts.machine.name}/{hw_file.name}: update hardware configuration",
+            )
 
     if opts.persist_state:
         inventory_store = InventoryStore(machine.flake)
