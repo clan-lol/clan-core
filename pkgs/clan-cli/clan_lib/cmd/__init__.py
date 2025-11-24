@@ -26,19 +26,18 @@ from clan_lib.errors import ClanCmdError, ClanError, CmdOut, indent_command
 cmdlog = logging.getLogger(__name__)
 
 
-class ClanCmdTimeoutError(ClanError):
+class ClanCmdTimeoutError(ClanCmdError):
     timeout: float
 
     def __init__(
         self,
-        msg: str | None = None,
-        *,
-        description: str | None = None,
-        location: str | None = None,
+        cmd: CmdOut,
         timeout: float,
     ) -> None:
         self.timeout = timeout
-        super().__init__(msg, description=description, location=location)
+        # Set the error message on the CmdOut
+        cmd.msg = f"Command timed out after {timeout} seconds"
+        super().__init__(cmd)
 
 
 class Log(Enum):
@@ -64,6 +63,9 @@ def handle_io(
     stderr: IO[bytes] | None,
     timeout: float = math.inf,
     msg_color: MsgColor | None = None,
+    cmd: list[str] | None = None,
+    cwd: Path | None = None,
+    env: dict[str, str] | None = None,
 ) -> tuple[str, str]:
     rlist = [
         process.stdout,
@@ -100,9 +102,16 @@ def handle_io(
     while len(rlist) != 0 or len(wlist) != 0:
         # Check if the command has timed out
         if time.time() - start > timeout:
-            msg = f"Command timed out after {timeout} seconds"
-            description = prefix
-            raise ClanCmdTimeoutError(msg=msg, description=description, timeout=timeout)
+            cmd_out = CmdOut(
+                stdout=stdout_buf.decode("utf-8", "replace"),
+                stderr=stderr_buf.decode("utf-8", "replace"),
+                cwd=cwd or Path.cwd(),
+                env=env,
+                command_list=cmd or [],
+                returncode=-1,  # Indicate abnormal termination
+                msg=None,
+            )
+            raise ClanCmdTimeoutError(cmd_out, timeout)
 
         # Check if the command has been cancelled
         if is_async_cancelled():
@@ -402,6 +411,9 @@ def run(
             input_bytes=input_bytes,
             stdout=options.stdout,
             stderr=options.stderr,
+            cmd=cmd,
+            cwd=options.cwd,
+            env=options.env,
         )
         if not is_async_cancelled():
             process.wait()
