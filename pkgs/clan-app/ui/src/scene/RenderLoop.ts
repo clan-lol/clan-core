@@ -121,6 +121,7 @@ class RenderLoop {
     this.controls = null!;
     this.labelRenderer = null!;
     this.initialized = false;
+    this.renderRequested = false;
   }
 }
 
