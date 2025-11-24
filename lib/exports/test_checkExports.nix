@@ -1,11 +1,11 @@
 {
-  clan-core,
+  clanLib,
   ...
 }:
 {
   test_check_exports = {
     expr =
-      clan-core.clanLib.exports.checkExports
+      clanLib.exports.checkExports
         {
           serviceName = "serviceA";
         }
@@ -23,7 +23,7 @@
 
   test_check_exports_multiple = {
     expr =
-      clan-core.clanLib.exports.checkExports
+      clanLib.exports.checkExports
         {
           serviceName = "serviceA";
         }
@@ -53,7 +53,7 @@
 
   test_check_exports_with_machine = {
     expr =
-      clan-core.clanLib.exports.checkExports
+      clanLib.exports.checkExports
         {
           serviceName = "serviceA";
           machineName = "machine01";

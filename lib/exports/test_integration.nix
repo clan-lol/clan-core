@@ -1,8 +1,8 @@
-{ clan-core, lib }:
+{ clanLib, lib }:
 {
   test_simple =
     let
-      eval = clan-core.clanLib.clan {
+      eval = clanLib.clan {
         exports.":::".foo = lib.mkForce eval.config.exports.":::".bar;
 
         directory = ./.;
@@ -100,7 +100,7 @@
     in
     {
       inherit eval;
-      expr = clan-core.clanLib.exports.selectExports { } eval.config.exports;
+      expr = clanLib.exports.selectExports { } eval.config.exports;
       expected = {
         ":::" = {
           bar = 0;

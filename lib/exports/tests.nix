@@ -2,12 +2,15 @@
   clan-core,
   lib,
 }:
-lib.foldl' (acc: file: acc // (import file { inherit clan-core lib; })) { } [
-  ./test_buildScopeKey.nix
-  ./test_checkScope.nix
-  ./test_parseScope.nix
-  ./test_checkExports.nix
-  ./test_selectExports.nix
-  ./test_getExport.nix
-  ./test_simple.nix
-]
+let
+  inherit (clan-core) clanLib;
+in
+{
+  buildScopeKey = import ./test_buildScopeKey.nix { inherit clanLib lib; };
+  checkScope = import ./test_checkScope.nix { inherit clanLib lib; };
+  parseScope = import ./test_parseScope.nix { inherit clanLib lib; };
+  checkExports = import ./test_checkExports.nix { inherit clanLib lib; };
+  selectExports = import ./test_selectExports.nix { inherit clanLib lib; };
+  getExport = import ./test_getExport.nix { inherit clanLib lib; };
+  integration = import ./test_integration.nix { inherit clanLib lib; };
+}

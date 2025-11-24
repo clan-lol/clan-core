@@ -1,7 +1,7 @@
-{ clan-core, ... }:
+{ clanLib, ... }:
 {
   test_build_scope_key = {
-    expr = clan-core.clanLib.exports.buildScopeKey {
+    expr = clanLib.exports.buildScopeKey {
       serviceName = "serviceA";
       instanceName = "instance01";
       roleName = "roleX";
@@ -11,14 +11,14 @@
   };
 
   test_build_scope_key_service_only = {
-    expr = clan-core.clanLib.exports.buildScopeKey {
+    expr = clanLib.exports.buildScopeKey {
       serviceName = "serviceA";
     };
     expected = "serviceA:::";
   };
 
   test_build_scope_key_machine_only = {
-    expr = clan-core.clanLib.exports.buildScopeKey {
+    expr = clanLib.exports.buildScopeKey {
       machineName = "machine01";
     };
     expected = ":::machine01";

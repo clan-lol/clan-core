@@ -1,11 +1,11 @@
 {
-  clan-core,
+  clanLib,
   ...
 }:
 {
   test_get_export = {
     expr =
-      clan-core.clanLib.exports.getExport
+      clanLib.exports.getExport
         {
           serviceName = "serviceA";
           instanceName = "iA";
@@ -29,7 +29,7 @@
 
   test_get_export_service_level = {
     expr =
-      clan-core.clanLib.exports.getExport
+      clanLib.exports.getExport
         {
           serviceName = "serviceA";
         }
@@ -50,7 +50,7 @@
 
   test_get_export_machine_level = {
     expr =
-      clan-core.clanLib.exports.getExport
+      clanLib.exports.getExport
         {
           machineName = "machine01";
         }
