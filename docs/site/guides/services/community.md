@@ -306,30 +306,6 @@ Services often need to share configuration data between machines. For example, c
 
 🔗 See the complete guide: [Service Exports](./exports.md)
 
-**Quick Example:**
-
-```nix
-roles.server = {
-  perInstance = { mkExports, ... }: {
-    # Export the server's connection information
-    exports = mkExports {
-      endpoint = "https://server.example.com:8443";
-      publicKey = "...";
-    };
-  };
-};
-
-roles.client = {
-  perInstance = { exports, instanceName, ... }: {
-    nixosModule = { ... }: {
-      # Access the server's exported data
-      services.myapp.serverEndpoint =
-        exports."myservice:${instanceName}:server:".endpoint;
-    };
-  };
-};
-```
-
 ---
 
 ## Further Reading

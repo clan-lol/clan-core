@@ -172,7 +172,6 @@ When defining exports, certain restrictions apply based on context:
 2. **`perMachine`**: Can only export to the machine scope.
 3. **Services can only write to**:
     - Their own service scope (e.g., `service = "myservice"`)
-    - Global scope
     - **Not** other services' scopes
 
 These restrictions prevent accidental conflicts and maintain clear data ownership.

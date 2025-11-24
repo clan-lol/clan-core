@@ -134,14 +134,7 @@
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs = lib.flatten (
-              map mkPeers (
-                lib.attrValues (
-                  clanLib.exports.selectExports {
-                  } exports
-                )
-              )
-            );
+            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues (exports)));
 
             # Construct a list of peers in yggdrasil format
             exportedPeers = exportedPeerIPs;
