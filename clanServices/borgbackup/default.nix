@@ -103,7 +103,7 @@
                   };
                   rsh = lib.mkOption {
                     type = lib.types.str;
-                    defaultText = "ssh -i \${config.clan.core.vars.generators.borgbackup.files.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+                    defaultText = "ssh -i \${config.clan.core.vars.generators.borgbackup.files.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=accept-new";
                     description = "the rsh to use for the backup";
                   };
                 };
@@ -153,7 +153,7 @@
                       rsh = lib.mkOption {
                         default = "ssh -i ${
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
-                        } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes -o PasswordAuthentication=no";
+                        } -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=Yes -o PasswordAuthentication=no";
                       };
                     };
                   }
@@ -226,7 +226,7 @@
 
                         rsh = "ssh -i ${
                           config.clan.core.vars.generators.borgbackup.files."borgbackup.ssh".path
-                        } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
+                        } -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=Yes";
                       };
                     }) (roles.server.machines or { });
                   in
