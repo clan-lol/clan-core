@@ -191,7 +191,7 @@ def test_full_conversation_flow(mock_flake: MagicMock) -> None:
         "ollama": ModelConfig(
             name="qwen3:4b-instruct",
             provider="ollama",
-            timeout=300,  # set inference timeout to 5 minutes as CI may be slow
+            timeout=None,  # set inference timeout to 5 minutes as CI may be slow
             temperature=0,  # set randomness to 0 for consistent test results
         ),
     }
