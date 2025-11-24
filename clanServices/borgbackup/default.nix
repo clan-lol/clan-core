@@ -261,6 +261,9 @@
                       ExecStopPost = [
                         ''+${pkgs.writeShellScript "borgbackup-job-${destName}-post-backup-commands" postBackupScript}''
                       ];
+                      # Disable timeouts to allow pre/post-backup commands (like database dumps) to complete
+                      TimeoutStartSec = "infinity";
+                      TimeoutStopSec = "infinity";
                     };
                   }
                 ) allDestinations;
