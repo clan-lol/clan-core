@@ -844,6 +844,10 @@ def test_shared_vars_regeneration(
     child_generator["script"] = 'cat "$in"/shared_generator/my_value > "$out"/my_value'
     # machine 2 is equivalent to machine 1
     flake.machines["machine2"] = machine1_config
+    # machine 0 is a machine with no relevant generators
+    # This tests regression: https://git.clan.lol/clan/clan-core/issues/5747
+    # ... where shared vars defined only on some machines lead to an eval errors
+    flake.machines["machine0"] = create_test_machine_config()
     flake.refresh()
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
@@ -857,6 +861,7 @@ def test_shared_vars_regeneration(
     child_gen_m2 = Generator(
         "child_generator", share=False, machines=["machine2"], _flake=machine2.flake
     )
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
     # generate for machine 1
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
     # generate for machine 2

@@ -199,9 +199,6 @@ def run_generators(
     flake = machines[0].flake
 
     def get_generator_machine(generator: Generator) -> Machine:
-        if generator.share:
-            # return first machine if generator is shared
-            return machines[0]
         return Machine(name=generator.machines[0], flake=flake)
 
     # preheat the select cache, to reduce repeated calls during execution
