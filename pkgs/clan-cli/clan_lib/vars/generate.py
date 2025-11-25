@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable
+from collections.abc import Generator as GeneratorType
 
 from clan_cli.vars import graph
 from clan_cli.vars.generator import Generator
@@ -178,16 +179,21 @@ def run_generators(
     for machine in machines:
         _ensure_healthy(machine=machine)
 
+    # get the flake via any machine (they are all the same)
+    flake = machines[0].flake
+
+    def get_generator_machines(generator: Generator) -> GeneratorType[Machine]:
+        for machine_name in generator.machines:
+            yield Machine(name=machine_name, flake=flake)
+
     # ensure all selected machines have access to all selected shared generators
-    for machine in machines:
-        # This is only relevant for the sops store
-        # TODO: improve store abstraction to use Protocols and introduce a proper SecretStore interface
-        if not isinstance(machine.secret_vars_store, sops.SecretStore):
-            continue
-        for generator in all_generators:
-            if generator.share:
-                for file in generator.files:
-                    if not file.secret or not file.exists or not file.deploy:
+    for generator in all_generators:
+        if generator.share:
+            for file in generator.files:
+                if not file.secret or not file.exists or not file.deploy:
+                    continue
+                for machine in get_generator_machines(generator):
+                    if not isinstance(machine.secret_vars_store, sops.SecretStore):
                         continue
                     machine.secret_vars_store.ensure_machine_has_access(
                         generator,
@@ -195,27 +201,24 @@ def run_generators(
                         machine.name,
                     )
 
-    # get the flake via any machine (they are all the same)
-    flake = machines[0].flake
-
-    def get_generator_machine(generator: Generator) -> Machine:
-        return Machine(name=generator.machines[0], flake=flake)
-
     # preheat the select cache, to reduce repeated calls during execution
     selectors = []
     for generator in generators_to_run:
-        machine = get_generator_machine(generator)
+        machine = next(get_generator_machines(generator))
         selectors.append(generator.final_script_selector(machine.name))
     flake.precache(selectors)
 
     # execute generators
     for generator in generators_to_run:
-        machine = get_generator_machine(generator)
-        if check_can_migrate(machine, generator):
-            migrate_files(machine, generator)
+        all_machines = list(get_generator_machines(generator))
+        if not all_machines:
+            continue
+        first_machine = all_machines[0]
+        if check_can_migrate(first_machine, generator):
+            migrate_files(first_machine, generator)
         else:
             generator.execute(
-                machine=machine,
+                machine=first_machine,
                 prompt_values=prompt_values.get(generator.name, {}),
                 no_sandbox=no_sandbox,
             )
