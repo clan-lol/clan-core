@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from clan_lib.api import API
 from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, RunOpts, run
 from clan_lib.errors import ClanError  # Assuming these are available
+from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
 cmdlog = logging.getLogger(__name__)
@@ -113,7 +114,10 @@ def check_machine_ssh_reachable(
     )
 
     try:
-        res = run(cmd, options=RunOpts(timeout=opts.timeout, check=False))
+        res = run(
+            nix_shell(["netcat"], cmd),
+            options=RunOpts(timeout=opts.timeout, check=False),
+        )
 
         if "succeeded" in res.stderr:
             return
