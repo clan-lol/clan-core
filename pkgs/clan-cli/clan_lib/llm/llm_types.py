@@ -72,14 +72,14 @@ class ModelConfig:
     Attributes:
         name: The model identifier/name
         provider: The LLM provider
-        timeout: Request timeout in seconds (default: 120)
+        timeout: Request timeout in seconds (default: 120, None for infinite)
         temperature: Sampling temperature for the model (default: None = use API default)
 
     """
 
     name: str
     provider: Literal["openai", "ollama", "claude"]
-    timeout: int = 120
+    timeout: int | None = 120
     temperature: float | None = None
 
 
