@@ -28,6 +28,7 @@ if TYPE_CHECKING:
         ListOptions,
         MachineResponse,
     )
+    from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
@@ -1177,6 +1178,18 @@ class Flake:
         from clan_lib.machines.actions import list_machines  # noqa: PLC0415
 
         return list_machines(self, opts)
+
+    def list_machines_full(self) -> dict[str, "Machine"]:
+        """List machines of a clan as full Machine objects.
+
+        Returns:
+            A dict mapping machine names to Machine objects
+
+        """
+        from clan_lib.machines.machines import Machine  # noqa: PLC0415
+
+        machine_responses = self.list_machines()
+        return {name: Machine(name=name, flake=self) for name in machine_responses}
 
 
 def require_flake(flake: Flake | None) -> Flake:

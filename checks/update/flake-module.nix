@@ -202,7 +202,7 @@
                             "-e",
                             "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
                             f"{str(flake_dir)}/",
-                            f"root@192.168.1.1:/flake",
+                            "root@192.168.1.1:/flake",
                         ],
                         check=True
                       )
@@ -212,7 +212,7 @@
                           "ssh",
                           "-o", "UserKnownHostsFile=/dev/null",
                           "-o", "StrictHostKeyChecking=no",
-                          f"root@192.168.1.1",
+                          "root@192.168.1.1",
                           "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo \"$(cat \"${../assets/ssh/privkey}\")\" > /root/.ssh/id_ed25519 && chmod 600 /root/.ssh/id_ed25519",
                       ], check=True)
 
@@ -226,7 +226,7 @@
                             "--to",
                             "ssh://root@192.168.1.1",
                             "--no-check-sigs",
-                            f"${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli}",
+                            "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli}",
                             "--extra-experimental-features", "nix-command flakes",
                         ],
                         check=True,
@@ -236,12 +236,24 @@
                         },
                       )
 
+                      # generate sops keys
+                      subprocess.run([
+                          "ssh",
+                          "-o", "UserKnownHostsFile=/dev/null",
+                          "-o", "StrictHostKeyChecking=no",
+                          "root@192.168.1.1",
+                          "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli}/bin/clan",
+                          "vars",
+                          "keygen",
+                          "--flake", "/flake",
+                      ], check=True)
+
                       # Run ssh on the host to run the clan update command via --build-host local
                       subprocess.run([
                           "ssh",
                           "-o", "UserKnownHostsFile=/dev/null",
                           "-o", "StrictHostKeyChecking=no",
-                          f"root@192.168.1.1",
+                          "root@192.168.1.1",
                           "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli}/bin/clan",
                           "machines",
                           "update",
@@ -251,7 +263,7 @@
                           "--upload-inputs",  # Use local store instead of fetching from network
                           "--build-host", "localhost",
                           "test-update-machine",
-                          "--target-host", f"root@localhost",
+                          "--target-host", "root@localhost",
                       ], check=True)
 
                       # Verify the update was successful
@@ -267,6 +279,14 @@
                         environment.etc."target-host-update-successful".text = "ok";
                       }
                       """)
+
+                      # Generate sops keys
+                      subprocess.run([
+                          "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
+                          "vars",
+                          "keygen",
+                          "--flake", flake_dir,
+                      ], check=True)
 
                       # Run clan update command
                       subprocess.run([

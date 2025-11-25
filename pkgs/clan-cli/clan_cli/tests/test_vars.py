@@ -408,7 +408,7 @@ def test_generate_secret_var_sops_with_default_group(
 
 
 @pytest.mark.with_core
-def test_generated_shared_secret_sops(
+def test_generate_shared_secret_sops(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
 ) -> None:
@@ -429,6 +429,8 @@ def test_generated_shared_secret_sops(
     m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
         shared_generator.copy()
     )
+    # machine 3 should not have the shared secret
+    flake.machines["machine3"] = create_test_machine_config()
     flake.refresh()
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
@@ -500,6 +502,20 @@ def test_generated_shared_secret_sops(
     )
     assert not m2_sops_store.machine_has_access(
         generator_m2, "no_deploy_secret", "machine2"
+    )
+
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+    machine3 = Machine(name="machine3", flake=Flake(str(flake.path)))
+    m3_sops_store = sops.SecretStore(machine3.flake)
+    generator_m3 = Generator(
+        "my_shared_generator",
+        share=True,
+        _flake=machine3.flake,
+    )
+    assert not m3_sops_store.machine_has_access(
+        generator_m3,
+        "my_shared_secret",
+        "machine3",
     )
 
 
@@ -844,6 +860,10 @@ def test_shared_vars_regeneration(
     child_generator["script"] = 'cat "$in"/shared_generator/my_value > "$out"/my_value'
     # machine 2 is equivalent to machine 1
     flake.machines["machine2"] = machine1_config
+    # machine 0 is a machine with no relevant generators
+    # This tests regression: https://git.clan.lol/clan/clan-core/issues/5747
+    # ... where shared vars defined only on some machines lead to an eval errors
+    flake.machines["machine0"] = create_test_machine_config()
     flake.refresh()
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
@@ -857,6 +877,7 @@ def test_shared_vars_regeneration(
     child_gen_m2 = Generator(
         "child_generator", share=False, machines=["machine2"], _flake=machine2.flake
     )
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
     # generate for machine 1
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
     # generate for machine 2
