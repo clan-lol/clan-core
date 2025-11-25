@@ -30,7 +30,6 @@ let
           self.clan = res.config;
         };
         directory = ./.;
-        exportsModule = { };
 
         imports = [
           testClan

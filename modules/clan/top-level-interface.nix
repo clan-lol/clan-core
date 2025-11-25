@@ -122,47 +122,20 @@ in
 
     # TODO: make this writable by moving the options from inventoryClass into clan.
     exports = lib.mkOption {
-      type = types.lazyAttrsOf (types.submoduleWith { modules = [ config.exportsModule ]; });
+      type = types.lazyAttrsOf types.raw;
     };
 
-    exportsModule = lib.mkOption {
+    exportInterfaces = lib.mkOption {
       internal = true;
       visible = false;
-      type = clanLib.types.exclusiveDeferredModule {
-        warning = ''
-          ! Non-standard exportsModule detected - clan incompatibility likely
-
-          You've defined custom options in 'exportsModule' that aren't part of clan-core.
-          Other clans won't be able to use your modules unless they define identical options.
-
-          - Use central options from clan-core for compatibility
-          - Developing new standards? Consider upstreaming
-          - See: https://docs.clan.lol/reference/exports
-        '';
-      };
+      type = types.attrsOf types.deferredModule;
+      apply =
+        attrs:
+        lib.mapAttrs (n: v: {
+          options.${n} = lib.mkOption { type = lib.types.submodule v; };
+        }) attrs;
       description = ''
-        A module that is used to define the module of flake level exports -
-
-        such as 'exports.machines.<name>' and 'exports.instances.<name>'
-
-        Example:
-
-        ```nix
-        {
-          options.vars.generators = lib.mkOption {
-            type = lib.types.attrsOf (
-              lib.types.submoduleWith {
-                modules = [
-                  {
-                    options.script = lib.mkOption { type = lib.types.str; };
-                  }
-                ];
-              }
-            );
-            default = { };
-          };
-        }
-        ```
+        bla bla
       '';
     };
 
@@ -367,33 +340,10 @@ in
     };
   };
 
-  config.exportsModule = {
-
-    options.endpoints = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr (
-        lib.types.submodule {
-          imports = [ ./export-modules/endpoints.nix ];
-        }
-      );
-    };
-
-    options.peer = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr (
-        lib.types.submodule {
-          imports = [ ./export-modules/peer.nix ];
-        }
-      );
-    };
-
-    options.networking = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr (
-        lib.types.submodule {
-          imports = [ ./export-modules/networking.nix ];
-        }
-      );
-    };
+  # Core-traits
+  #
+  config.exportInterfaces = {
+    peer = import ./exportInterfaces/peer.nix;
+    networking = import ./exportInterfaces/networking.nix;
   };
 }

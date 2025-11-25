@@ -14,46 +14,69 @@
         machines.jon = { };
         machines.sara = { };
 
-        exportsModule = lib.mkForce (
-          { lib, ... }:
-          {
-            options.foo = lib.mkOption {
-              type = lib.types.number;
-              default = 0;
+        exportInterfaces = lib.mkForce ({
+          networking =
+            { ... }:
+            {
+              options.host = lib.mkOption {
+                type = lib.types.str;
+              };
             };
-            options.bar = lib.mkOption {
-              type = lib.types.number;
-              default = 0;
+          bar =
+            { ... }:
+            {
+              options.opt = lib.mkOption {
+                type = lib.types.int;
+              };
             };
-          }
-        );
+        });
 
         ####### Service module "A"
         modules.service-A =
           { ... }:
           {
             manifest.name = "A";
+            manifest.traits = [
+              "networking"
+              "peer"
+            ];
 
             roles.default = {
               perInstance =
                 {
-                  machine,
-                  exports,
-                  mkExports,
                   ...
                 }:
                 {
-                  exports = mkExports {
-                    foo = 7;
-                    bar = exports."B:iB:default:${machine.name}".foo + 35;
-                  };
+                  # exports = mkExports {
+                  #   imports = [
+                  #     # eval.config.exportInterfaces.foo
+                  #     # eval.config.exportInterfaces.bar
+                  #   ];
+                  #   foo = 7;
+                  #   # bar.opt = exports."B:iB:default:${machine.name}".foo + 35;
+                  # };
                 };
             };
 
             perMachine =
               { mkExports, ... }:
               {
-                exports = mkExports { foo = 42; };
+                exports = mkExports {
+                  # imports = [
+                  #   eval.config.exportInterfaces.networking
+                  # ];
+                  networking.host = "42";
+                };
+
+                # exports =
+                #   mkExports
+                #     [
+                #       eval.config.exportInterfaces.foo
+                #     ]
+                #     {
+
+                #       foo.opt = "42";
+                #     };
               };
           };
         ####### Service module "A"
@@ -90,11 +113,11 @@
             module.input = "self";
             roles.default.tags = [ "all" ];
           };
-          instances.iB = {
-            module.name = "service-B";
-            module.input = "self";
-            roles.default.tags = [ "all" ];
-          };
+          # instances.iB = {
+          #   module.name = "service-B";
+          #   module.input = "self";
+          #   roles.default.tags = [ "all" ];
+          # };
         };
       };
     in

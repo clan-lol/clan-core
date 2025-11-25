@@ -265,7 +265,7 @@ in
                 flakeInputs
                 relativeDirectory
                 ;
-              exportsModule = config.exportsModule;
+              exportInterfaces = config.exportInterfaces;
             }
             (
               { ... }:

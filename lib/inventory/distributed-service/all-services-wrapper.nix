@@ -53,10 +53,9 @@ in
       default = { };
     };
     exports = mkOption {
-      type = types.lazyAttrsOf types.deferredModule;
+      type = types.lazyAttrsOf (types.submoduleWith { modules = [ ]; });
 
       # collect exports from all services
-      # zipAttrs is needed until we use the record type.
       default = lib.zipAttrsWith (_name: values: { imports = values; }) (
         lib.mapAttrsToList (
           _service_id: service:
