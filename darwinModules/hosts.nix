@@ -55,17 +55,18 @@ in
             # Create a temporary file in /private/etc/
             temp_file=$(mktemp /private/etc/hosts.XXXXXX)
 
+            # Install cleanup trap to remove temp file on failure
+            trap 'rm -f "$temp_file"' EXIT ERR INT
+
             # Set proper permissions for the temp file
             chmod 644 "$temp_file"
 
             # Check if ${name} section exists
             if grep -q "^# BEGIN ${sectionName} HOSTS$" /private/etc/hosts; then
-              # Update existing section
+              # Update existing section - first copy everything BEFORE the section
               awk '
-                BEGIN { in_section = 0 }
-                /^# BEGIN ${sectionName} HOSTS$/ { in_section = 1; next }
-                /^# END ${sectionName} HOSTS$/ { in_section = 0; next }
-                !in_section { print }
+                /^# BEGIN ${sectionName} HOSTS$/ { exit }
+                { print }
               ' /private/etc/hosts > "$temp_file"
 
               # Add the ${name} section
@@ -73,12 +74,11 @@ in
               echo "$hosts_content" >> "$temp_file"
               echo "# END ${sectionName} HOSTS" >> "$temp_file"
 
-              # Copy everything after the section
+              # Copy everything AFTER the section
               awk '
-                BEGIN { in_section = 0; after_section = 0 }
-                /^# BEGIN ${sectionName} HOSTS$/ { in_section = 1; next }
-                /^# END ${sectionName} HOSTS$/ { in_section = 0; after_section = 1; next }
-                after_section && !in_section { print }
+                BEGIN { after_section = 0 }
+                after_section { print }
+                /^# END ${sectionName} HOSTS$/ { after_section = 1; next }
               ' /private/etc/hosts >> "$temp_file"
             else
               # First time - append to existing hosts file
@@ -91,6 +91,9 @@ in
 
             # Replace the hosts file (permissions already set on temp file)
             mv "$temp_file" /private/etc/hosts
+
+            # Disable cleanup trap after successful move
+            trap - EXIT
           '';
         in
         {
