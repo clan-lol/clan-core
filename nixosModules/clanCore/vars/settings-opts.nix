@@ -55,17 +55,6 @@
     '';
   };
 
-  # Legacy option that guides migration
-  passBackend = lib.mkOption {
-    type = lib.types.nullOr lib.types.str;
-    default = null;
-    visible = false;
-    description = ''
-      DEPRECATED: This option has been removed. Use clan.vars.password-store.passPackage instead.
-      Set it to pkgs.pass for GPG or pkgs.passage for age encryption.
-    '';
-  };
-
   dependenciesType = lib.mkOption {
     type = lib.types.raw;
     description = ''

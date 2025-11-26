@@ -47,18 +47,6 @@ in
   };
 
   config = {
-    # Check for removed passBackend option usage
-    assertions = [
-      {
-        assertion = config.clan.core.vars.settings.passBackend == null;
-        message = ''
-          The option `clan.core.vars.settings.passBackend' has been removed.
-          Use clan.core.vars.password-store.passPackage instead.
-          Set it to pkgs.pass for GPG or pkgs.passage for age encryption.
-        '';
-      }
-    ];
-
     # check all that all non-secret files have no owner/group/mode set
     warnings = lib.foldl' (
       warnings: generator:
