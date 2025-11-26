@@ -315,6 +315,10 @@ in
         };
         directory = ./.;
         meta.name = "test";
+        # Set nixpkgs.hostPlatform for each machine to allow deep evaluation
+        machines.nixos-peer.nixpkgs.hostPlatform = "x86_64-linux";
+        machines.darwin-peer.nixpkgs.hostPlatform = "aarch64-darwin";
+        machines.controller.nixpkgs.hostPlatform = "x86_64-linux";
         inventory = {
           machines.nixos-peer = { };
           machines.darwin-peer = {
@@ -322,18 +326,31 @@ in
           };
           machines.controller = { };
           instances.wg-test = {
-            module.name = "@clan/wireguard";
+            module.name = "wireguard";
             roles.controller.machines.controller.settings.endpoint = "192.168.1.1";
             roles.peer.machines.nixos-peer.settings.controller = "controller";
             roles.peer.machines.darwin-peer.settings.controller = "controller";
           };
         };
       };
+      darwinConfig = eval.config.darwinConfigurations.darwin-peer.config;
+      nixosConfig = eval.config.nixosConfigurations.nixos-peer.config;
     in
     {
       expr = {
+        # Check machine configurations exist
         nixos = builtins.attrNames eval.config.nixosConfigurations;
         darwin = builtins.attrNames eval.config.darwinConfigurations;
+
+        # Check darwin wg-quick interface is configured (option exists)
+        darwinWgInterface = darwinConfig.networking.wg-quick.interfaces ? wg-test;
+
+        # Check darwin has extraHosts option defined
+        # We only check existence since evaluating the value requires vars to be generated
+        darwinHasExtraHostsOption = darwinConfig.clan.core.networking ? extraHosts;
+
+        # Check nixos wireguard interface is configured (option exists)
+        nixosWgInterface = nixosConfig.networking.wireguard.interfaces ? wg-test;
       };
       expected = {
         nixos = [
@@ -341,6 +358,10 @@ in
           "nixos-peer"
         ];
         darwin = [ "darwin-peer" ];
+
+        darwinWgInterface = true;
+        darwinHasExtraHostsOption = true;
+        nixosWgInterface = true;
       };
     };
 }

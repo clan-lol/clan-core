@@ -60,17 +60,21 @@
 }:
 let
   # Shared module for extraHosts configuration
+  # Returns a function that takes module arguments (including _class) and returns config
   extraHostsModule =
     {
       instanceName,
       settings,
       roles,
+    }:
+    # This is the actual NixOS/darwin module function
+    {
+      _class,
       config,
       lib,
       ...
     }:
     let
-      _class = config.clan.core.settings.machineClass or "nixos";
       domain = if settings.domain == null then instanceName else settings.domain;
       # Controllers use their subnet's ::1 address
       controllerHosts = lib.mapAttrsToList (
@@ -116,10 +120,13 @@ let
       ) roles.peer.machines;
       hostsContent = builtins.concatStringsSep "\n" (controllerHosts ++ peerHosts);
     in
-    {
-      networking.extraHosts = lib.mkIf (_class == "nixos") hostsContent;
-      environment.etc."hosts".text = lib.mkIf (_class == "darwin") (lib.mkAfter hostsContent);
-    };
+    # Use conditional attribute set to avoid defining non-existent options
+    # mkIf doesn't prevent option definition checks, so we must return
+    # different attribute sets based on _class
+    if _class == "darwin" then
+      { clan.core.networking.extraHosts.wireguard = hostsContent; }
+    else
+      { networking.extraHosts = hostsContent; };
 
   # Shared interface options
   sharedInterface =
@@ -216,8 +223,6 @@ in
                   instanceName
                   settings
                   roles
-                  config
-                  lib
                   ;
               })
             ];
@@ -299,6 +304,15 @@ in
             ...
           }:
           {
+            imports = [
+              (extraHostsModule {
+                inherit
+                  instanceName
+                  settings
+                  roles
+                  ;
+              })
+            ];
             # Network allocation generator for this peer - generates host suffix
             clan.core.vars.generators."wireguard-network-${instanceName}" = {
               files.suffix.secret = false;
@@ -415,8 +429,6 @@ in
                   instanceName
                   settings
                   roles
-                  config
-                  lib
                   ;
               })
             ];
@@ -528,6 +540,15 @@ in
             allPeers = roles.peer.machines;
           in
           {
+            imports = [
+              (extraHostsModule {
+                inherit
+                  instanceName
+                  settings
+                  roles
+                  ;
+              })
+            ];
             # Network allocation generator for this controller
             clan.core.vars.generators."wireguard-network-${instanceName}" = {
               files.prefix.secret = false;

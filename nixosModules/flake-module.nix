@@ -16,6 +16,9 @@ let
         inputs.nixos-facter-modules.nixosModules.facter
         inputs.disko.nixosModules.default
         inputs.data-mesher.nixosModules.data-mesher
+      ]
+      ++ lib.optionals (_class == "darwin") [
+        ../darwinModules/hosts.nix
       ];
       config = {
         clan.core.clanPkgs = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system};
