@@ -186,21 +186,6 @@ def run_generators(
         for machine_name in generator.machines:
             yield Machine(name=machine_name, flake=flake)
 
-    # ensure all selected machines have access to all selected shared generators
-    for generator in all_generators:
-        if generator.share:
-            for file in generator.files:
-                if not file.secret or not file.exists or not file.deploy:
-                    continue
-                for machine in get_generator_machines(generator):
-                    if not isinstance(machine.secret_vars_store, sops.SecretStore):
-                        continue
-                    machine.secret_vars_store.ensure_machine_has_access(
-                        generator,
-                        file.name,
-                        machine.name,
-                    )
-
     # preheat the select cache, to reduce repeated calls during execution
     selectors = []
     for generator in generators_to_run:
@@ -222,3 +207,18 @@ def run_generators(
                 prompt_values=prompt_values.get(generator.name, {}),
                 no_sandbox=no_sandbox,
             )
+
+    # ensure all selected machines have access to all selected shared generators
+    for generator in all_generators:
+        if generator.share:
+            for file in generator.files:
+                if not file.secret or not file.exists or not file.deploy:
+                    continue
+                for machine in get_generator_machines(generator):
+                    if not isinstance(machine.secret_vars_store, sops.SecretStore):
+                        continue
+                    machine.secret_vars_store.ensure_machine_has_access(
+                        generator,
+                        file.name,
+                        machine.name,
+                    )
