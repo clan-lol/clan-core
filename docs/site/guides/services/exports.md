@@ -1,5 +1,8 @@
 # Exports
 
+!!! Danger "Experimental"
+    This feature is still experimental and will change in the future.
+
 ## Overview
 
 Exports are a mechanism for services to share structured data.
@@ -23,7 +26,7 @@ Examples:
 
 ## How Exports Work
 
-Exports use a scope-based system to organize data.
+Exports use a scope-based system to publish data.
 Each export is tagged with a scope that identifies its source:
 
 - **Service**: The name of the service (e.g., "zerotier", "wireguard")
@@ -31,11 +34,8 @@ Each export is tagged with a scope that identifies its source:
 - **Role**: A role within the service (e.g., "client", "server", "peer")
 - **Machine**: A specific machine name
 
-Additionally, exports can be **global** (not bound to any specific service, instance, role, or machine).
-
 **Scope levels:**
 
-- **Global scope**: Data shared across all services and machines
 - **Service level**: Data specific to a service across all instances
 - **Instance level**: Data specific to a service instance
 - **Role level**: Data specific to a role
@@ -183,7 +183,6 @@ These restrictions prevent accidental conflicts and maintain clear data ownershi
 2. **Use appropriate scopes**: Export at the most specific scope that makes sense
     - Machine-level data (IPs, hostnames) - export in `perInstance`
     - Instance-level configuration - export
-    - Global aggregations - export to global scope
 
 ## Examples
 
