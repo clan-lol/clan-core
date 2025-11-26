@@ -569,9 +569,28 @@ in
             networking.wg-quick.interfaces."${instanceName}" = {
               listenPort = settings.port;
 
-              # Enable IPv6 forwarding via postUp script
+              # Enable IPv6 forwarding via postUp script, save previous value for restoration
               postUp = ''
+                # Store current sysctl value in secure state directory
+                state_dir="/var/lib/wireguard"
+                mkdir -p "$state_dir"
+                chmod 700 "$state_dir"
+
+                # Save current IPv6 forwarding state
+                sysctl -n net.inet6.ip6.forwarding > "$state_dir/${instanceName}.ip6_forwarding.state"
+
+                # Enable IPv6 forwarding
                 sysctl -w net.inet6.ip6.forwarding=1
+              '';
+
+              # Restore previous IPv6 forwarding state
+              postDown = ''
+                state_file="/var/lib/wireguard/${instanceName}.ip6_forwarding.state"
+                if [ -f "$state_file" ]; then
+                  prev_value=$(cat "$state_file")
+                  sysctl -w net.inet6.ip6.forwarding="$prev_value"
+                  rm -f "$state_file"
+                fi
               '';
 
               address = [
