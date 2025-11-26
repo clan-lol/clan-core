@@ -62,11 +62,16 @@ in
         location where the tarball with the password-store secrets will be uploaded to and the manifest
       '';
     };
-    passPackage = lib.mkOption {
-      type = lib.types.package;
-      default = pkgs.pass;
+    passCommand = lib.mkOption {
+      type = lib.types.enum [
+        "pass"
+        "passage"
+      ];
+      default = "passage";
       description = ''
-        Password store package to use. Can be pkgs.pass for GPG-based storage or pkgs.passage for age-based storage.
+        Password store command to use, must be available in PATH. E.g.
+        - "pass": GPG-based password store
+        - "passage": age-based password store
       '';
     };
   };

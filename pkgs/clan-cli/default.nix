@@ -1,6 +1,7 @@
 {
   # callPackage args
   gnupg,
+  passage,
   installShellFiles,
   pass,
   jq,
@@ -67,6 +68,7 @@ let
   testDependencies = testRuntimeDependencies ++ [
     gnupg
     pass
+    passage
     stdenv.cc # Compiler used for certain native extensions
     (pythonRuntime.withPackages pyTestDeps)
   ];
@@ -229,6 +231,7 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.mkpasswd
               pkgs.xkcdpass
               pkgs.pass
+              pkgs.passage
               zerotierone
               minifakeroot
               nix-select

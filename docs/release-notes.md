@@ -4,14 +4,31 @@
 
 ## New features
 
-Exports
+### Exports
 - Standardized exports system with centrally-defined options in clan-core
 
 ## Breaking Changes
 
-Exports
+###Exports
 - **Experimental** exports system has been redesigned.
   - Previous export definitions are no longer compatible
   - **Migration required**: Update your modules to use the standardized export options
 
+### Clan Password Store Backend
+
+The `clan.core.vars.password-store.passPackage` option has been removed. The
+default backend for clan password store is now `passage` (age-based encryption).
+
+**Migration:**
+
+- **Before:** `clan.core.vars.password-store.passPackage = pkgs.passage;`
+- **After:** `clan.core.vars.password-store.passCommand = "passage";`
+
+The new `passCommand` option specifies the command name to execute for password
+store operations. The command must be available in the system PATH and needs to
+be installed by the user (e.g., via `environment.systemPackages`).
+
+The backend now defaults to passage/age, providing improved security through age
+encryption. If you were explicitly setting `passPackage`, you should update your
+configuration to use `passComma
 ## Misc

@@ -547,6 +547,8 @@ def test_generate_secret_var_password_store(
     config = flake.machines["my_machine"] = create_test_machine_config()
     clan_vars = config["clan"]["core"]["vars"]
     clan_vars["settings"]["secretStore"] = "password-store"
+    # Use pass (GPG-based) for this test
+    config["clan"]["core"]["vars"]["password-store"]["passCommand"] = "pass"
     # Create a second secret so that when we delete the first one,
     # we still have the second one to test `delete_store`:
     my_generator = clan_vars["generators"]["my_generator"]
@@ -1385,6 +1387,113 @@ def test_share_mode_switch_regenerates_secret(
     assert sops_store.exists(generator_shared, "my_secret"), (
         "Shared secret should exist"
     )
+
+
+@pytest.mark.with_core
+def test_generate_secret_var_password_store_minimal_select_calls(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list,
+) -> None:
+    """Test that password_store backend doesn't make unnecessary select calls."""
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    clan_vars = config["clan"]["core"]["vars"]
+    clan_vars["settings"]["secretStore"] = "password-store"
+    # Use passage (age-based) instead of pass (GPG-based)
+    config["clan"]["core"]["vars"]["password-store"]["passCommand"] = "passage"
+
+    # Create a simple generator with a secret
+    my_generator = clan_vars["generators"]["my_generator"]
+    my_generator["files"]["my_secret"]["secret"] = True
+    my_generator["script"] = 'echo hello > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Set up age key for passage using test fixtures
+    age_key = age_keys[0]
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_key.privkey)
+
+    # Set up password store directory for passage
+    password_store_dir = flake.path / "pass"
+    password_store_dir.mkdir(parents=True)
+    # Create .age-recipients file for passage (passage uses this instead of .gpg-id)
+    (password_store_dir / ".age-recipients").write_text(f"{age_key.pubkey}\n")
+
+    # Passage uses PASSAGE_DIR (not PASSWORD_STORE_DIR like pass does)
+    monkeypatch.setenv("PASSAGE_DIR", str(password_store_dir))
+    # Set the age identities file for passage
+    monkeypatch.setenv("PASSAGE_IDENTITIES_FILE", str(age_key_file))
+
+    # Initialize password store as a git repository
+    subprocess.run(["git", "init"], cwd=password_store_dir, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    # Create an initial commit so the git repo is valid
+    subprocess.run(
+        ["git", "add", ".age-recipients"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Initialize password store"],
+        cwd=password_store_dir,
+        check=True,
+    )
+
+    # Create a fresh flake object and invalidate cache to ensure clean state
+    invalidate_flake_cache(flake.path)
+    flake_obj = Flake(str(flake.path))
+    machine = Machine(name="my_machine", flake=flake_obj)
+
+    # Generate the secret - this will initialize the password store backend
+    # and should result in minimal select calls
+    run_generators(
+        machines=[machine],
+        generators=None,  # Generate all
+    )
+
+    # The optimization should result in minimal cache misses.
+    # We expect exactly 3 cache misses:
+    # 1. One select to get the list of generators for the machine
+    # 2. One batched evaluation for getting generator configuration (script, files, etc.)
+    # 3. One select for password_store.passCommand during init_pass_command
+
+    # Print stack traces if we have more cache misses than expected
+    if flake_obj._cache_misses > 3:
+        flake_obj.print_cache_miss_analysis(
+            title="Cache miss analysis for password_store backend"
+        )
+
+    assert flake_obj._cache_misses == 3, (
+        f"Expected exactly 3 cache misses for password_store backend initialization, "
+        f"got {flake_obj._cache_misses}. The passCommand optimization should minimize select calls "
+        f"(before: 4-5 selects with passPackage.outPath + meta.mainProgram, after: 3 with passCommand only)."
+    )
+
+    # Verify the secret was actually generated
+    store = password_store.SecretStore(flake=flake_obj)
+    store.init_pass_command(machine="my_machine")
+    generator = Generator(
+        "my_generator",
+        share=False,
+        files=[],
+        machines=["my_machine"],
+        _flake=flake_obj,
+    )
+    assert store.exists(generator, "my_secret")
+    assert store.get(generator, "my_secret").decode() == "hello\n"
 
 
 @pytest.mark.with_core

@@ -1,5 +1,6 @@
 import io
 import logging
+import shutil
 import subprocess
 import tarfile
 from collections.abc import Iterable
@@ -46,44 +47,21 @@ class SecretStore(StoreBase):
             self._store_dir = Path(result.stdout.strip().decode())
         return self._store_dir
 
+    def cmd_exists(self, cmd: str) -> bool:
+        return shutil.which(cmd) is not None
+
     def init_pass_command(self, machine: str) -> None:
         """Initialize the password store command based on the machine's configuration."""
-        out_path = self.flake.select_machine(
+        pass_cmd = self.flake.select_machine(
             machine,
-            "config.clan.core.vars.password-store.passPackage.outPath",
-        )
-        main_program = (
-            self.flake.select_machine(
-                machine,
-                "config.clan.core.vars.password-store.passPackage.?meta.?mainProgram",
-            )
-            .get("meta", {})
-            .get("mainProgram")
+            "config.clan.core.vars.password-store.passCommand",
         )
 
-        if main_program:
-            binary_path = Path(out_path) / "bin" / main_program
-            if binary_path.exists():
-                self._pass_cmd = str(binary_path)
-                return
+        if not self.cmd_exists(pass_cmd):
+            msg = f"Could not find {pass_cmd} in PATH. Make sure it is installed"
+            raise ValueError(msg)
 
-        # Look for common password store binaries
-        bin_dir = Path(out_path) / "bin"
-        if bin_dir.exists():
-            for binary in ["pass", "passage"]:
-                binary_path = bin_dir / binary
-                if binary_path.exists():
-                    self._pass_cmd = str(binary_path)
-                    return
-
-            # If only one binary exists, use it
-            binaries = [f for f in bin_dir.iterdir() if f.is_file()]
-            if len(binaries) == 1:
-                self._pass_cmd = str(binaries[0])
-                return
-
-        msg = "Could not find password store binary in package"
-        raise ValueError(msg)
+        self._pass_cmd = str(pass_cmd)
 
     def _pass_command(self) -> str:
         if not self._pass_cmd:
