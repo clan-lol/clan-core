@@ -54,11 +54,13 @@ class Peer:
                 )
                 if not var.exists:
                     msg = (
-                        textwrap.dedent(f"""
+                        textwrap.dedent(
+                            f"""
                     It looks like you added a networking module to your machine, but forgot
                     to deploy your changes. Please run "clan machines update {machine_name}"
                     so that the appropriate vars are generated and deployed properly.
-                    """)
+                    """
+                        )
                         .rstrip("\n")
                         .lstrip("\n")
                     )
@@ -181,7 +183,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
 
             peers[peer_scope.machine] = Peer(
                 name=peer_scope.machine,
-                _host=defined_exports["exports"][scope_name]["peer"]["host"],
+                _host=defined_exports["exports"][scope_name]["peer"]["hosts"],
                 flake=flake,
             )
 

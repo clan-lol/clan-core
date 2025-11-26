@@ -333,7 +333,7 @@ in
                 type = lib.types.listOf lib.types.str;
                 default = [ ];
               };
-              host = lib.mkOption {
+              hosts = lib.mkOption {
                 description = '''';
                 type = lib.types.listOf (
                   lib.types.attrTag {
