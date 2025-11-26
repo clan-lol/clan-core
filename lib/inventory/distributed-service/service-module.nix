@@ -564,6 +564,34 @@ in
                             ```
                           '';
                         };
+                        options.darwinModule = mkOption {
+                          type = types.deferredModule;
+                          default = { };
+                          description = ''
+                            This module is later imported to configure darwin machines with the config derived from service's settings.
+
+                            Example:
+
+                            ```nix
+                            roles.client.perInstance = { instanceName, ... }:
+                            {
+                              # Keep in mind that this module is produced once per-instance
+                              # Meaning you might end up with multiple of these modules.
+                              # Make sure they can be imported all together without conflicts
+                              #
+                              #                 ↓ darwin-config
+                              darwinModule = { config ,... }: {
+                                # create one launchd daemon per instance
+                                # It is a common practice to concatenate the *service-name* and *instance-name*
+                                # To ensure globally unique launchd daemons for the target machine
+                                launchd.daemons."webly-''${instanceName}" = {
+                                  ...
+                                };
+                              };
+                            }
+                            ```
+                          '';
+                        };
                       })
                     ];
                   };
@@ -691,6 +719,29 @@ in
                 {               # ↓ nixos-config
                   nixosModule = { config ,... }: {
                     systemd.services.foo = {
+                      enable = true;
+                    };
+                  }
+                }
+                ```
+              '';
+            };
+            options.darwinModule = mkOption {
+              type = types.deferredModule;
+              default = { };
+              description = ''
+                A single nix-darwin module for the machine.
+
+                This module is later imported to configure darwin machines with the config derived from service's settings.
+
+                Example:
+
+                ```nix
+                #              ↓ machine.roles ...
+                perMachine = { machine, ... }:
+                {               # ↓ darwin-config
+                  darwinModule = { config ,... }: {
+                    launchd.daemons.foo = {
                       enable = true;
                     };
                   }
@@ -839,6 +890,9 @@ in
                     lib.setDefaultModuleLocation "via inventory.instances.${instanceName}.roles.${roleName}" s
                 ) instanceCfg.roles.${roleName}.extraModules);
               };
+              darwinModule = {
+                imports = [ instanceRes.darwinModule ];
+              };
             }
 
           ) instanceCfg.roles.${roleName}.machines or { };
@@ -928,11 +982,24 @@ in
                       else
                         instanceAcc.nixosModules
                     );
+                    darwinModules = (
+                      if instance.allMachines.${machineName}.darwinModule or { } != { } then
+                        instanceAcc.darwinModules
+                        ++ [
+                          (lib.setDefaultModuleLocation
+                            "Via instances.${instanceName}.roles.${roleName}.machines.${machineName}"
+                            instance.allMachines.${machineName}.darwinModule
+                          )
+                        ]
+                      else
+                        instanceAcc.darwinModules
+                    );
                   }
                 ) roleAcc role.allInstances
               )
               {
                 nixosModules = [ ];
+                darwinModules = [ ];
                 # ...
               }
               config.result.allRoles;
@@ -969,6 +1036,12 @@ in
               (lib.setDefaultModuleLocation "Via ${config.manifest.name}.perMachine - machine='${machineName}';" machineResult.nixosModule)
             ]
             ++ instanceResults.nixosModules;
+          };
+          darwinModule = {
+            imports = [
+              (lib.setDefaultModuleLocation "Via ${config.manifest.name}.perMachine - machine='${machineName}';" machineResult.darwinModule)
+            ]
+            ++ instanceResults.darwinModules;
           };
         }
       ) config.result.allMachines;

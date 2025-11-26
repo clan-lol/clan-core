@@ -92,6 +92,9 @@ in
           machineImports = mkOption {
             type = types.listOf types.raw;
           };
+          darwinImports = mkOption {
+            type = types.listOf types.raw;
+          };
         };
       }));
     };

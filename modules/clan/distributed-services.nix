@@ -150,6 +150,11 @@ in
         acc: _module_ident: serviceModule:
         acc ++ [ serviceModule.result.final.${machineName}.nixosModule or { } ]
       ) [ ] config._services.mappedServices;
+      # This is the list of darwinModules for each machine
+      darwinImports = lib.foldlAttrs (
+        acc: _module_ident: serviceModule:
+        acc ++ [ serviceModule.result.final.${machineName}.darwinModule or { } ]
+      ) [ ] config._services.mappedServices;
     }) inventory.machines or { };
   };
 

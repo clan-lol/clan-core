@@ -123,6 +123,7 @@ rec {
                   "lib"
                   "machines"
                   "nixosModules"
+                  "darwinModules"
                   "modules"
                 ];
               }

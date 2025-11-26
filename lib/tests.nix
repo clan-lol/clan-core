@@ -306,4 +306,41 @@ in
         "machine1"
       ];
     };
+
+  test_clan_darwin_wireguard_service =
+    let
+      eval = clan {
+        self = {
+          inputs = { };
+        };
+        directory = ./.;
+        meta.name = "test";
+        inventory = {
+          machines.nixos-peer = { };
+          machines.darwin-peer = {
+            machineClass = "darwin";
+          };
+          machines.controller = { };
+          instances.wg-test = {
+            module.name = "@clan/wireguard";
+            roles.controller.machines.controller.settings.endpoint = "192.168.1.1";
+            roles.peer.machines.nixos-peer.settings.controller = "controller";
+            roles.peer.machines.darwin-peer.settings.controller = "controller";
+          };
+        };
+      };
+    in
+    {
+      expr = {
+        nixos = builtins.attrNames eval.config.nixosConfigurations;
+        darwin = builtins.attrNames eval.config.darwinConfigurations;
+      };
+      expected = {
+        nixos = [
+          "controller"
+          "nixos-peer"
+        ];
+        darwin = [ "darwin-peer" ];
+      };
+    };
 }

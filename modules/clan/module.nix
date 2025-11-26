@@ -192,7 +192,8 @@ in
               # - darwinModules (_class = darwin)
               (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
             ]
-            ++ lib.optionals (_class == "nixos") (v.machineImports or [ ]);
+            ++ lib.optionals (_class == "nixos") (v.machineImports or [ ])
+            ++ lib.optionals (_class == "darwin") (v.darwinImports or [ ]);
 
             # default hostname
             networking.hostName = lib.mkDefault name;
