@@ -24,8 +24,6 @@
     };
   }) config.instances;
 
-  # module = "clan_lib.network.tor";
-
   roles.client = {
     description = ''
       Enables a continuosly running Tor proxy on the machine, allowing access to other machines via the Tor network.

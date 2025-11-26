@@ -368,14 +368,6 @@ in
           }
         )
       );
-
-      # "peer": {
-      #     "sshoptions": [ ],
-      #     "host": {
-      #         "plain": "1.2.3.4",
-      #         # "var": ""
-      #     }
-      # }
     };
 
     options.networking = lib.mkOption {
