@@ -42,6 +42,7 @@ def set_via_stdin(machine_name: str, var_id: str, flake: Flake) -> None:
             var.id,
             PromptType.MULTILINE_HIDDEN,
             None,
+            [machine_name],
         ).encode("utf-8")
     else:
         new_value = sys.stdin.buffer.read()

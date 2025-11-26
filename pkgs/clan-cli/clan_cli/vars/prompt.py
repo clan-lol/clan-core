@@ -195,10 +195,12 @@ def ask(
     ident: str,
     input_type: PromptType,
     label: str | None,
+    machine_names: list[str],
 ) -> str:
     """Ask user for input, with confirmation for secret inputs."""
     text = label or f"Enter the value for {ident}:"
-    log.info(f"Prompting value for {ident}")
+
+    log.info(f"Prompting value for {ident} for machines: {', '.join(machine_names)}")
 
     if MOCK_PROMPT_RESPONSE:
         return next(MOCK_PROMPT_RESPONSE)
