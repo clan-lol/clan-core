@@ -110,7 +110,7 @@ def add_secret(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Add {user} to secret",
+        f"Add {user} to secret {secret}",
     )
 
 

@@ -85,7 +85,7 @@ def add_secret(
     commit_files(
         paths,
         flake_dir,
-        f"Add {machine} to secret",
+        f"Add {machine} to secret {secret_path.relative_to(flake_dir)}",
     )
 
 
