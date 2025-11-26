@@ -17,6 +17,7 @@ from clan_lib.nix import nix_config
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
+from clan_lib.vars.generate import run_generators
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -172,7 +173,10 @@ def update_command(args: argparse.Namespace) -> None:
             ],
         )
 
-        host_key_check = args.host_key_check
+        # update vars for all machines
+        all_machines = list(flake.list_machines_full().values())
+        run_generators(all_machines, generators=None, full_closure=False)
+
         with AsyncRuntime() as runtime:
             for machine in machines_to_update:
                 # figure out on which machine to build on
@@ -184,7 +188,7 @@ def update_command(args: argparse.Namespace) -> None:
                         build_host = Remote.from_ssh_uri(
                             machine_name=machine.name,
                             address=args.build_host,
-                        ).override(host_key_check=host_key_check)
+                        ).override(host_key_check=args.host_key_check)
                 else:
                     build_host = machine.build_host()
 
@@ -198,7 +202,7 @@ def update_command(args: argparse.Namespace) -> None:
                     machine=machine,
                     build_host=build_host,
                     upload_inputs=args.upload_inputs,
-                    host_key_check=host_key_check,
+                    host_key_check=args.host_key_check,
                     target_host_override=args.target_host,
                 )
             runtime.join_all()
