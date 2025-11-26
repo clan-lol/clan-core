@@ -76,7 +76,7 @@
       }:
       {
         exports = mkExports {
-          peer.host = [
+          peer.hosts = [
             {
               var = {
                 machine = machine.name;

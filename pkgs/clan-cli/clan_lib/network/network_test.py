@@ -50,7 +50,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machnine1",
                     "sshoptions": [],
-                    "host": [
+                    "hosts": [
                         {
                             "var": {
                                 "machine": "machine1",
@@ -66,7 +66,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machnine1",
                     "sshoptions": [],
-                    "host": [
+                    "hosts": [
                         {
                             "var": {
                                 "machine": "machine2",
@@ -82,7 +82,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machine1",
                     "sshoptions": [],
-                    "host": [
+                    "hosts": [
                         {
                             "var": {
                                 "machine": "machine1",
@@ -98,7 +98,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                 "peer": {
                     "name": "machine3",
                     "sshoptions": [],
-                    "host": [
+                    "hosts": [
                         {
                             "plain": "10.0.0.10",
                         },

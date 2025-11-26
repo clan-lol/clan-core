@@ -55,7 +55,7 @@
       {
 
         exports = mkExports {
-          peer.host = [
+          peer.hosts = [
             {
               plain = clanLib.vars.getPublicValue {
                 machine = machine.name;
