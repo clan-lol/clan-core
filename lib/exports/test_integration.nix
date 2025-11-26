@@ -3,7 +3,7 @@
   test_simple =
     let
       eval = clanLib.clan {
-        exports.":::".foo = lib.mkForce eval.config.exports.":::".bar;
+        exports."B:::".foo = lib.mkForce eval.config.exports."B:::".bar;
 
         directory = ./.;
         self = {
@@ -71,11 +71,11 @@
                 }:
                 {
                   exports = mkExports {
-                    foo = exports.":::".foo + exports."A:iA1:default:${machine.name}".foo;
+                    foo = exports."B:::".foo + exports."A:iA1:default:${machine.name}".foo;
                   };
                 };
             };
-            exports.":::".foo = 10;
+            exports."B:::".foo = 10;
           };
         #######
 
@@ -102,7 +102,7 @@
       inherit eval;
       expr = clanLib.exports.selectExports { } eval.config.exports;
       expected = {
-        ":::" = {
+        "B:::" = {
           bar = 0;
           foo = 0;
         };

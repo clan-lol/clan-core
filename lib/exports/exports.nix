@@ -43,16 +43,23 @@ let
         '' part
       ) parts;
     in
-    lib.throwIf ((serviceName == "" && machineName == "")) ''
-      buildScopeKey requires at least 'serviceName' or 'machineName'
+    lib.throwIf (lib.all (p: p == "") parts)
+      ''
+        buildScopeKey: Global exports (":::") are not yet supported.
+      ''
+      lib.throwIf
+      ((serviceName == "" && machineName == ""))
+      ''
+        buildScopeKey requires at least 'serviceName' or 'machineName'
 
-      Examples:
-      - { serviceName = "myservice"; ... }
-      - { machineName = "server01"; ... }
+        Examples:
+        - { serviceName = "myservice"; ... }
+        - { machineName = "server01"; ... }
 
-      If you need a scope with neither service nor machine, please file an issue
-      explaining your use case at: https://git.clan.lol/clan/clan-core/issues
-    '' (lib.join ":" checkedParts);
+        If you need a scope with neither service nor machine, please file an issue
+        explaining your use case at: https://git.clan.lol/clan/clan-core/issues
+      ''
+      (lib.join ":" checkedParts);
 
   mkExports = scope: value: {
     ${buildScopeKey scope} = value;
