@@ -118,6 +118,5 @@ And thus can point to test already opened PRs for example.
 ## Standards
 
 - Every new module name should be in kebab-case.
-- Every fact definition, where possible should be in kebab-case.
 - Every vars definition, where possible should be in kebab-case.
 - Command line help descriptions should start capitalized and should not end in a period.
