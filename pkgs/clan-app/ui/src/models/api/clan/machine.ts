@@ -96,10 +96,7 @@ export async function generateMachineHardwareReport(
         address: ssh.address,
         port: ssh.port,
         password: ssh.password,
-        ssh_options: {
-          StrictHostKeyChecking: "no",
-          UserKnownHostsFile: "/dev/null",
-        },
+        host_key_check: "none",
       },
       opts: {
         machine: {
@@ -272,10 +269,7 @@ export async function installMachine(
           address: opts.ssh.address,
           port: opts.ssh.port,
           password: opts.ssh.password,
-          ssh_options: {
-            StrictHostKeyChecking: "no",
-            UserKnownHostsFile: "/dev/null",
-          },
+          host_key_check: "none",
         },
       },
     });
@@ -310,10 +304,7 @@ export async function updateMachine(
           address: opts.ssh.address,
           port: opts.ssh.port,
           password: opts.ssh.password,
-          ssh_options: {
-            StrictHostKeyChecking: "no",
-            UserKnownHostsFile: "/dev/null",
-          },
+          host_key_check: "none",
         },
       },
     });
