@@ -175,16 +175,19 @@ class StoreBase(ABC):
 
             machine_obj = Machine(name=generator.machines[0], flake=self.flake)
             log_info = machine_obj.info
+        machines_str = f" for machines: {', '.join(generator.machines)}"
         if self.is_secret_store:
-            log.info(f"{action_str} secret var {generator.name}/{var.name}\n")
+            log.info(
+                f"{action_str} secret var {generator.name}/{var.name}{machines_str}\n"
+            )
         elif value != old_val:
-            msg = f"{action_str} var {generator.name}/{var.name}"
+            msg = f"{action_str} var {generator.name}/{var.name}{machines_str}"
             if not is_migration:
                 msg += f"\n  old: {old_val_str}\n  new: {string_repr(value)}"
             log_info(msg)
         else:
             log_info(
-                f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}",
+                f"Var {generator.name}/{var.name}{machines_str} remains unchanged: {old_val_str}",
             )
         changed_files += [new_file] if new_file else []
         return changed_files

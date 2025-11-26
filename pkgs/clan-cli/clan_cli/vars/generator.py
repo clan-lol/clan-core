@@ -421,6 +421,7 @@ class Generator:
                 var_id,
                 prompt.prompt_type,
                 prompt.description if prompt.description != prompt.name else None,
+                self.machines,
             )
         return prompt_values
 

@@ -711,6 +711,7 @@ def test_generate_secret_for_multiple_machines(
 def test_prompt(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test that generators can use prompts to collect user input and store the values appropriately."""
     flake = flake_with_sops
@@ -752,7 +753,22 @@ def test_prompt(
     )
 
     # Run the generator which will collect prompts and generate vars
-    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    with caplog.at_level(logging.INFO):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Verify that the prompt log messages include machine names
+    assert (
+        "Prompting value for my_generator/prompt1 for machines: my_machine"
+        in caplog.text
+    )
+    assert (
+        "Prompting value for my_generator/prompt2 for machines: my_machine"
+        in caplog.text
+    )
+    assert (
+        "Prompting value for my_generator/prompt_persist for machines: my_machine"
+        in caplog.text
+    )
 
     # Set up objects for testing the results
     flake_obj = Flake(str(flake.path))
@@ -1064,7 +1080,7 @@ def test_stdout_of_generate(
             generators=["my_generator"],
         )
 
-    assert "Updated var my_generator/my_value" in caplog.text
+    assert "Updated var my_generator/my_value for machines: my_machine" in caplog.text
     assert "old: <not set>" in caplog.text
     assert "new: hello" in caplog.text
     caplog.clear()
@@ -1075,7 +1091,7 @@ def test_stdout_of_generate(
             machines=[Machine(name="my_machine", flake=flake)],
             generators=["my_generator"],
         )
-    assert "Updated var my_generator/my_value" in caplog.text
+    assert "Updated var my_generator/my_value for machines: my_machine" in caplog.text
     assert "old: world" in caplog.text
     assert "new: hello" in caplog.text
     caplog.clear()
@@ -1093,7 +1109,10 @@ def test_stdout_of_generate(
             machines=[Machine(name="my_machine", flake=flake)],
             generators=["my_secret_generator"],
         )
-    assert "Updated secret var my_secret_generator/my_secret" in caplog.text
+    assert (
+        "Updated secret var my_secret_generator/my_secret for machines: my_machine"
+        in caplog.text
+    )
     assert "hello" not in caplog.text
     caplog.clear()
     set_var(
