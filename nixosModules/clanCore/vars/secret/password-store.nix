@@ -69,7 +69,9 @@ in
       ];
       default = "passage";
       description = ''
-        TODO
+        Password store command to use, must be available in PATH. E.g.
+        - "pass": GPG-based password store
+        - "passage": age-based password store
       '';
     };
   };

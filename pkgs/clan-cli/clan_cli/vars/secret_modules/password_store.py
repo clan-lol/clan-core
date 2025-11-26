@@ -1,5 +1,6 @@
 import io
 import logging
+import shutil
 import subprocess
 import tarfile
 from collections.abc import Iterable
@@ -46,8 +47,7 @@ class SecretStore(StoreBase):
             self._store_dir = Path(result.stdout.strip().decode())
         return self._store_dir
 
-    def cmd_exists(self, cmd: str):
-        import shutil
+    def cmd_exists(self, cmd: str) -> bool:
         return shutil.which(cmd) is not None
 
     def init_pass_command(self, machine: str) -> None:
@@ -58,11 +58,10 @@ class SecretStore(StoreBase):
         )
 
         if not self.cmd_exists(pass_cmd):
-            msg = "Could not find password store binary in package: "
+            msg = f"Could not find {pass_cmd} in PATH. Make sure it is installed"
             raise ValueError(msg)
 
         self._pass_cmd = str(pass_cmd)
-
 
     def _pass_command(self) -> str:
         if not self._pass_cmd:
