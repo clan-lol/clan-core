@@ -1,5 +1,4 @@
 import { SidebarSection } from "@/src/components/Sidebar/SidebarSection";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 import { For, Show } from "solid-js";
 import { useMachineName } from "@/src/hooks/clan";
 import { ServiceRoute } from "@/src/components/Sidebar/SidebarBody";

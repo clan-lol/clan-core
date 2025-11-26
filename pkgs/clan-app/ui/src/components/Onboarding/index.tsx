@@ -7,11 +7,6 @@ import {
   Show,
   Switch,
 } from "solid-js";
-import {
-  RouteSectionProps,
-  useNavigate,
-  useSearchParams,
-} from "@solidjs/router";
 import styles from "./Onboarding.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
@@ -19,8 +14,6 @@ import { Alert } from "@/src/components/Alert/Alert";
 
 import { Divider } from "@/src/components/Divider/Divider";
 import { Logo } from "@/src/components/Logo/Logo";
-import { navigateToClan, selectClanFolder } from "@/src/hooks/clan";
-import { activeClanURI, addClanURI, setActiveClanURI } from "@/src/stores/clan";
 import {
   createForm,
   FormStore,
@@ -34,11 +27,11 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { useApiClient } from "@/src/hooks/ApiClient";
 import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
 import * as api from "@/src/api";
+import { useClanContext } from "@/src/contexts/ClanContext";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -90,23 +83,21 @@ const welcome = (props: {
   welcomeError: Accessor<string | undefined>;
   setWelcomeError: Setter<string | undefined>;
 }) => {
-  const navigate = useNavigate();
-
+  const { clans } = useClanContext()!;
   const [loading, setLoading] = createSignal(false);
 
-  const selectFolder = async () => {
+  const onSelect = async () => {
     setLoading(true);
-
+    // TODO display error, currently we don't get anything to distinguish between cancel or an actual error
+    let path;
     try {
-      const uri = await selectClanFolder();
+      path = await api.clan.getClanDir();
+    } catch (err) {
       setLoading(false);
-      navigateToClan(navigate, uri);
-    } catch (e) {
-      // todo display error, currently we don't get anything to distinguish between cancel or an actual error
-    } finally {
-      // stop the loading state of the button
-      setLoading(false);
+      return;
     }
+    setLoading(false);
+    clans()?.add({ id: path });
   };
 
   return (
@@ -154,30 +145,15 @@ const welcome = (props: {
         </Typography>
         <Divider orientation="horizontal" />
       </div>
-      <Button
-        hierarchy="primary"
-        ghost
-        loading={loading()}
-        onClick={selectFolder}
-      >
+      <Button hierarchy="primary" ghost loading={loading()} onClick={onSelect}>
         Select existing Clan
       </Button>
     </div>
   );
 };
 
-export const Onboarding: Component<RouteSectionProps> = (props) => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const activeURI = activeClanURI();
-
-  if (!searchParams.addClan && activeURI) {
-    // the user has already selected a clan, so we should navigate to it
-    console.log("active clan detected, navigating to it", activeURI);
-    navigateToClan(navigate, activeURI);
-  }
-
+export const Onboarding: Component = () => {
+  const { clans } = useClanContext()!;
   const [state, setState] = createSignal<State>("welcome");
 
   // used to display an error in the welcome screen in the event of a failed
@@ -194,29 +170,20 @@ export const Onboarding: Component<RouteSectionProps> = (props) => {
     return formErrors.name || formErrors.description || formErrors.directory;
   };
 
-  const client = useApiClient();
-
   const onSubmit: SubmitHandler<SetupForm> = async (
     { name, description, directory },
     event,
   ) => {
     const path = `${directory}/${name}`;
+    const data = { name, description };
     setState("creating");
     try {
-      await api.clan.createClan({
-        name,
-        path,
-        description,
-      });
+      await clans()?.create(path, data);
     } catch (err) {
       setWelcomeError(String(err));
       setState("welcome");
       return;
     }
-
-    addClanURI(path);
-    setActiveClanURI(path);
-    navigateToClan(navigate, path);
   };
 
   return (

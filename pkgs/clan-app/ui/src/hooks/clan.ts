@@ -5,24 +5,6 @@ import { Params, Navigator, useParams, useSearchParams } from "@solidjs/router";
 export const encodeBase64 = (value: string) => window.btoa(value);
 const decodeBase64 = (value: string) => window.atob(value);
 
-export const selectClanFolder = async () => {
-  const req = callApi("get_clan_folder", {});
-  const res = await req.result;
-
-  if (res.status === "error") {
-    throw new Error(res.errors[0].message);
-  }
-
-  if (res.status === "success" && res.data) {
-    const { identifier: uri } = res.data;
-    addClanURI(uri);
-    setActiveClanURI(uri);
-    return uri;
-  }
-
-  throw new Error("Illegal state exception");
-};
-
 export const buildClanPath = (clanURI: string) => {
   return "/clans/" + encodeBase64(clanURI);
 };
@@ -110,16 +92,6 @@ const nameParam = (params: Params) => params.name;
 const idParam = (params: Params) => params.id;
 
 export const useMachineName = (): string => machineNameParam(useParams());
-const useInputParam = (): string => inputParam(useParams());
-const useNameParam = (): string => nameParam(useParams());
-
-const maybeUseIdParam = (): string | null => {
-  const params = useParams();
-  if (params.id === undefined) {
-    return null;
-  }
-  return idParam(params);
-};
 
 export const maybeUseMachineName = (): string | null => {
   const params = useParams();

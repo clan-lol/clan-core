@@ -31,10 +31,8 @@ import {
   setHighlightGroups,
 } from "./highlightStore";
 import { createMachineMesh } from "./MachineRepr";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 import client from "@api/clan/client";
 import { navigateToClan } from "../hooks/clan";
-import { useNavigate } from "@solidjs/router";
 
 function intersectMachines(
   event: MouseEvent,
@@ -195,8 +193,6 @@ export function CubeScene(props: {
   );
 
   const grid = new THREE.GridHelper(1000, 1000 / 1, 0xe1edef, 0xe1edef);
-
-  const navigate = useNavigate();
 
   onMount(() => {
     // Scene setup

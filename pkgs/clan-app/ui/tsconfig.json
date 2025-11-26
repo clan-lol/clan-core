@@ -14,6 +14,8 @@
       "vite-plugin-solid-svg/types-component-solid",
       "@vitest/browser/providers/playwright"
     ],
+    // TODO: fix our code so this strictness can be enabled
+    // "exactOptionalPropertyTypes": true,
     "noEmit": true,
     "resolveJsonModule": true,
     "allowJs": true,

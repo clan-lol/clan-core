@@ -20,6 +20,7 @@ import { Button } from "@/src/components/Button/Button";
 import { callApi } from "@/src/hooks/api";
 import { Alert } from "@/src/components/Alert/Alert";
 import { removeClanURI } from "@/src/stores/clan";
+import { useClanContext } from "@/src/contexts/ClanContext";
 
 const schema = v.object({
   name: v.string(),
@@ -28,7 +29,6 @@ const schema = v.object({
 });
 
 export interface ClanSettingsModalProps {
-  model: ClanDetails;
   onClose: () => void;
 }
 
@@ -36,15 +36,16 @@ type FieldNames = "name" | "description" | "icon";
 type FormValues = Pick<ClanDetails["details"], "name" | "description" | "icon">;
 
 export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
+  const { clans } = useClanContext()!;
+  const activeClan = () => clans()?.active;
   const [saving, setSaving] = createSignal(false);
 
   const [formStore, { Form, Field }] = createForm<FormValues>({
-    initialValues: props.model.details,
+    initialValues: activeClan()!,
     validate: valiForm<FormValues>(schema),
   });
 
-  const readOnly = (name: FieldNames) =>
-    props.model.fieldsSchema[name]?.readonly ?? false;
+  const readOnly = (name: FieldNames) => activeClan()?.schema[name]?.readonly;
 
   const handleSubmit: SubmitHandler<FormValues> = async (values, event) => {
     if (!formStore.dirty) {
@@ -59,12 +60,12 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
     const call = callApi("set_clan_details", {
       options: {
         flake: {
-          identifier: props.model.uri,
+          identifier: activeClan.path,
         },
         meta: {
           // todo we don't support icon field yet, so we mixin the original fields to stop the API from complaining
           // about deleting a field
-          ...props.model.details,
+          ...activeClan.data(),
           ...values,
         },
       },
@@ -95,7 +96,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
 
   const [removeValue, setRemoveValue] = createSignal("");
 
-  const removeDisabled = () => removeValue() !== props.model.details.name;
+  const removeDisabled = () => removeValue() !== activeClan.data()?.name;
 
   const onRemove = () => {
     removeClanURI(props.model.uri);
@@ -143,7 +144,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  props.model.fieldsSchema,
+                  activeClan()!.schema,
                   "A unique identifier for this Clan",
                 )}
               />
@@ -159,7 +160,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 readOnly={readOnly("description")}
                 tooltip={tooltipText(
                   "description",
-                  props.model.fieldsSchema,
+                  activeClan()!.schema,
                   "A description of this Clan",
                 )}
                 orientation="horizontal"

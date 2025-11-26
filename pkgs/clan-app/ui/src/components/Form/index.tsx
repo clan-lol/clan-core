@@ -1,9 +1,9 @@
-import { SuccessData } from "@/src/hooks/api";
+import { ClanMeta } from "@/src/api/clan";
 import { Maybe } from "@modular-forms/solid";
 
 export const tooltipText = (
   name: string,
-  schema: SuccessData<"get_machine_fields_schema">,
+  schema: ClanMeta["schema"],
   staticValue: Maybe<string> = undefined,
 ): Maybe<string> => {
   const entry = schema[name];

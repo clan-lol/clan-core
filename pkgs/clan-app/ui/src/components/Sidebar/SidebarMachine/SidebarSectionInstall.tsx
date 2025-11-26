@@ -4,21 +4,16 @@ import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
 import { useMachineName } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";
-import { Alert } from "../Alert/Alert";
-import { useClanContext } from "@/src/routes/Clan/Clan";
+import { Alert } from "../../Alert/Alert";
+import { useMachineContext } from "@/src/contexts/MachineContext";
 
-interface SidebarSectionInstallProps {
-  clanURI: string;
-  machineName: string;
-}
+export const SidebarSectionInstall = () => {
+  const machine = useMachineContext()!;
 
-export const SidebarSectionInstall = (props: SidebarSectionInstallProps) => {
-  const ctx = useClanContext();
-  const query = useMachineStateQuery(props.clanURI, props.machineName);
   const [showInstall, setShowModal] = createSignal(false);
 
   return (
-    <Show when={query.isSuccess && query.data.status == "not_installed"}>
+    <Show when={machine.status == "not_installed"}>
       <div class={styles.install}>
         <Alert
           type="warning"

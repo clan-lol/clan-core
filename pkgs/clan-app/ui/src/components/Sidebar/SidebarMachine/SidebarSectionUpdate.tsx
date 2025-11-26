@@ -4,7 +4,6 @@ import { useMachineName } from "@/src/hooks/clan";
 import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 
 interface SidebarSectionUpdateProps {
   clanURI: string;

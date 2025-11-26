@@ -1,5 +1,4 @@
 import { RouteSectionProps, useNavigate } from "@solidjs/router";
-import { useClanContext } from "@/src/routes/Clan/Clan";
 import { ServiceWorkflow } from "@/src/workflows/Service/Service";
 import { SubmitServiceHandler } from "@/src/workflows/Service/models";
 import { buildClanPath } from "@/src/hooks/clan";
@@ -10,8 +9,6 @@ import { onMount } from "solid-js";
 
 export const Service = (props: RouteSectionProps) => {
   const ctx = useClanContext();
-
-  const navigate = useNavigate();
 
   const client = useApiClient();
 

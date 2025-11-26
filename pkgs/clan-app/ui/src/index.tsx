@@ -1,18 +1,16 @@
 /* @refresh reload */
-import { render } from "solid-js/web";
+import { ErrorBoundary, render } from "solid-js/web";
 
 import "./index.css";
 import { QueryClientProvider } from "@tanstack/solid-query";
-import { Routes } from "@/src/routes";
-import { Router } from "@solidjs/router";
-import { Layout } from "@/src/routes/Layout";
-import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { ApiClientProvider } from "./hooks/ApiClient";
 import { callApi } from "./hooks/api";
 import { DefaultQueryClient } from "@/src/hooks/queries";
 import { Toaster } from "solid-toast";
+import Entrypoint from "./Entrypoint";
+import { ClanContextProvider } from "./contexts/ClanContext";
 
-const root = document.getElementById("app");
+const root = document.getElementById("app")!;
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(
@@ -25,14 +23,27 @@ if (import.meta.env.DEV) {
 
 render(
   () => (
-    <ApiClientProvider client={{ fetch: callApi }}>
-      {/* Temporary solution */}
-      <Toaster toastOptions={{}} />
-      <QueryClientProvider client={DefaultQueryClient}>
-        <SolidQueryDevtools initialIsOpen={true} />
-        <Router root={Layout}>{Routes}</Router>
-      </QueryClientProvider>
-    </ApiClientProvider>
+    <ErrorBoundary
+      fallback={(error, reset) => {
+        console.error(error);
+        return (
+          <div>
+            <p>{error.message}</p>
+            <button onClick={reset}>Try Again</button>
+          </div>
+        );
+      }}
+    >
+      <ApiClientProvider client={{ fetch: callApi }}>
+        {/* Temporary solution */}
+        <Toaster toastOptions={{}} />
+        <QueryClientProvider client={DefaultQueryClient}>
+          <ClanContextProvider>
+            <Entrypoint />
+          </ClanContextProvider>
+        </QueryClientProvider>
+      </ApiClientProvider>
+    </ErrorBoundary>
   ),
-  root!,
+  root,
 );

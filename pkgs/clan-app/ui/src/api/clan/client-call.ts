@@ -7,6 +7,10 @@ interface Header {
 }
 type Body<Method extends Methods> = API[Method]["arguments"];
 type Response<Method extends Methods> = API[Method]["return"];
+export type SuccessResponse<Method extends Methods> = Extract<
+  Response<Method>,
+  { status: "success" }
+>;
 async function call<Method extends Methods>(
   method: Method,
   {
@@ -18,7 +22,7 @@ async function call<Method extends Methods>(
     header?: Header;
     signal?: AbortSignal;
   } = {},
-): Promise<Response<Method>> {
+): Promise<SuccessResponse<Method>> {
   const fn = (
     window as unknown as Record<
       Method,
@@ -53,11 +57,14 @@ async function call<Method extends Methods>(
     throw new Error(`${err.message}: ${err.description}`);
   }
 
-  return res.body;
+  return res.body as SuccessResponse<Method>;
 }
 
 export default {
-  async get(url: Methods, { signal }: { signal?: AbortSignal }) {
+  async get<Method extends Methods>(
+    url: Method,
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
     return await call(url, { signal });
   },
   async post<Method extends Methods>(

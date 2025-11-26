@@ -2,7 +2,6 @@ import { Search } from "@/src/components/Search/Search";
 import { Typography } from "@/src/components/Typography/Typography";
 import { buildServicePath, useClanURI } from "@/src/hooks/clan";
 import { useServiceInstances, useServiceModules } from "@/src/hooks/queries";
-import { useNavigate } from "@solidjs/router";
 import { createEffect, createSignal, Show } from "solid-js";
 import { Module } from "./models";
 import Icon from "@/src/components/Icon/Icon";
@@ -52,7 +51,6 @@ export const SelectService = (props: FlyoutProps) => {
     });
     navigate(serviceURL);
   };
-  const navigate = useNavigate();
 
   let ref: HTMLDivElement;
 
