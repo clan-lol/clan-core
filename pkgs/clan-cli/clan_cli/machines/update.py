@@ -169,6 +169,8 @@ def update_command(args: argparse.Namespace) -> None:
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
             ],
         )
 
