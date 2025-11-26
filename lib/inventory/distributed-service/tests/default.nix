@@ -42,7 +42,7 @@ let
 in
 {
   extraModules = import ./extraModules.nix { inherit clanLib; };
-  exports = import ./exports.nix { inherit lib clanLib; };
+  # exports = import ./exports.nix { inherit lib clanLib; };
   settings = import ./settings.nix { inherit lib createTestClan; };
   specialArgs = import ./specialArgs.nix { inherit lib createTestClan; };
   resolve_module_spec = import ./import_module_spec.nix {

@@ -23,38 +23,51 @@ log = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class Peer:
     name: str
-    _host: dict[str, str | dict[str, str]]
+    _host: list[dict[str, str | dict[str, str]]]
     flake: Flake
 
-    @cached_property
-    def host(self) -> str:
-        if "plain" in self._host and isinstance(self._host["plain"], str):
-            return self._host["plain"]
-        if "var" in self._host and isinstance(self._host["var"], dict):
-            _var: dict[str, str] = self._host["var"]
-            machine_name = _var["machine"]
-            generator = _var["generator"]
-            from clan_lib.machines.machines import Machine  # noqa: PLC0415
+    @staticmethod
+    def _format_address(address: str) -> str:
+        """Format address, adding brackets for IPv6 addresses if needed."""
+        # Check if it's an IPv6 address (contains colons and no brackets)
+        if ":" in address and not address.startswith("["):
+            return f"[{address}]"
+        return address
 
-            machine = Machine(name=machine_name, flake=self.flake)
-            var = get_machine_var(
-                machine,
-                f"{generator}/{_var['file']}",
-            )
-            if not var.exists:
-                msg = (
-                    textwrap.dedent(f"""
-                It looks like you added a networking module to your machine, but forgot
-                to deploy your changes. Please run "clan machines update {machine_name}"
-                so that the appropriate vars are generated and deployed properly.
-                """)
-                    .rstrip("\n")
-                    .lstrip("\n")
+    @cached_property
+    def host(self) -> list[str]:
+        # _host is a list of host definitions
+        result = []
+        for host_def in self._host:
+            if "plain" in host_def and isinstance(host_def["plain"], str):
+                result.append(self._format_address(host_def["plain"]))
+            elif "var" in host_def and isinstance(host_def["var"], dict):
+                _var: dict[str, str] = host_def["var"]
+                machine_name = _var["machine"]
+                generator = _var["generator"]
+                from clan_lib.machines.machines import Machine  # noqa: PLC0415
+
+                machine = Machine(name=machine_name, flake=self.flake)
+                var = get_machine_var(
+                    machine,
+                    f"{generator}/{_var['file']}",
                 )
+                if not var.exists:
+                    msg = (
+                        textwrap.dedent(f"""
+                    It looks like you added a networking module to your machine, but forgot
+                    to deploy your changes. Please run "clan machines update {machine_name}"
+                    so that the appropriate vars are generated and deployed properly.
+                    """)
+                        .rstrip("\n")
+                        .lstrip("\n")
+                    )
+                    raise ClanError(msg)
+                result.append(self._format_address(var.value.decode().strip()))
+            else:
+                msg = f"Unknown Var Type {host_def}"
                 raise ClanError(msg)
-            return var.value.decode().strip()
-        msg = f"Unknown Var Type {self._host}"
-        raise ClanError(msg)
+        return result
 
 
 @dataclass(frozen=True)
@@ -75,9 +88,23 @@ class Network:
         return self.module.is_running()
 
     def ping(self, peer: str) -> float | None:
-        return self.module.ping(self.remote(peer))
+        remotes = self.remote(peer)
+        for remote in remotes:
+            result = self.module.ping(remote)
+            if result is not None:
+                return result
+        return None
 
-    def remote(self, peer: str) -> "Remote":
+    def get_working_remote(self, peer: str) -> "Remote | None":
+        """Try each remote for the peer and return the first one that responds to ping."""
+        remotes = self.remote(peer)
+        for remote in remotes:
+            result = self.module.ping(remote)
+            if result is not None:
+                return remote
+        return None
+
+    def remote(self, peer: str) -> list["Remote"]:
         # TODO raise exception if peer is not in peers
         return self.module.remote(self.peers[peer])
 
@@ -91,7 +118,7 @@ class NetworkTechnologyBase(ABC):
         pass
 
     @abstractmethod
-    def remote(self, peer: Peer) -> "Remote":
+    def remote(self, peer: Peer) -> list["Remote"]:
         pass
 
     @abstractmethod
@@ -104,35 +131,65 @@ class NetworkTechnologyBase(ABC):
         pass
 
 
+@dataclass
+class ExportScope:
+    service: str
+    instance: str
+    role: str
+    machine: str
+
+
+def parse_export(exports: str) -> ExportScope:
+    [service, instance, role, machine] = exports.split(":")
+    return ExportScope(service, instance, role, machine)
+
+
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
     # TODO more precaching, for example for vars
-    flake.precache(
-        [
-            "clan.?exports.instances.*.networking",
-        ],
-    )
+
+    flake.precache(["clan.?exports"])
+
     networks: dict[str, Network] = {}
-    networks_ = flake.select("clan.?exports.instances.*.networking")
-    if "exports" not in networks_:
-        msg = """You are not exporting the clan exports through your flake.
-        Please add exports next to clanInternals and nixosConfiguration into the global flake.
-        """
+
+    defined_exports = flake.select("clan.?exports")
+
+    if "exports" not in defined_exports:
+        msg = """ NO EXPORTS! """
         log.warning(msg)
         return {}
-    for network_name, network in networks_["exports"].items():
-        if network:
-            peers: dict[str, Peer] = {}
-            for _peer in network["peers"].values():
-                peers[_peer["name"]] = Peer(
-                    name=_peer["name"],
-                    _host=_peer["host"],
-                    flake=flake,
-                )
-            networks[network_name] = Network(
-                peers=peers,
-                module_name=network["module"],
-                priority=network["priority"],
+
+    for export_name, network in defined_exports["exports"].items():
+        if defined_exports["exports"][export_name]["networking"] is None:
+            continue
+
+        scope = parse_export(export_name)
+        network_name = scope.instance
+        peers: dict[str, Peer] = {}
+
+        for scope_name in defined_exports["exports"]:
+            if defined_exports["exports"][scope_name]["peer"] is None:
+                continue
+
+            peer_scope = parse_export(scope_name)
+
+            # Filter peers to only include those that belong to this network
+            if (
+                peer_scope.service != scope.service
+                or peer_scope.instance != network_name
+            ):
+                continue
+
+            peers[peer_scope.machine] = Peer(
+                name=peer_scope.machine,
+                _host=defined_exports["exports"][scope_name]["peer"]["host"],
+                flake=flake,
             )
+
+        networks[network_name] = Network(
+            peers=peers,
+            module_name=network["networking"]["module"],
+            priority=network["networking"]["priority"],
+        )
     return networks
 
 
@@ -187,8 +244,10 @@ class BestRemoteContext:
                             log.info(
                                 f"Machine {self.machine.name} reachable via {network_name} network",
                             )
-                            self._remote = remote = network.remote(self.machine.name)
-                            return remote
+                            remote = network.get_working_remote(self.machine.name)
+                            if remote is not None:
+                                self._remote = remote
+                                return remote
                     except ClanError as e:
                         log.debug(
                             f"Failed to reach {self.machine.name} via {network_name}: {e}"
@@ -204,10 +263,12 @@ class BestRemoteContext:
                             log.info(
                                 f"Machine {self.machine.name} reachable via {network_name} network after connection",
                             )
-                            self._remote = remote = connected_network.remote(
+                            remote = connected_network.get_working_remote(
                                 self.machine.name
                             )
-                            return remote
+                            if remote is not None:
+                                self._remote = remote
+                                return remote
                         # Ping failed, clean up this connection attempt
                         self._network_ctx.__exit__(None, None, None)
                         self._network_ctx = None

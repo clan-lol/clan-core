@@ -176,9 +176,27 @@ in
         settings,
         roles,
         machine,
+        # mkExports,
         ...
       }:
       {
+
+        # TODO: add exports to wireguard peers.
+        # We currently only export the ip for controllers, as wireguard peer
+        # have multiple IPs, one per controller and exports only allow
+        # exporting one currently?
+
+        # exports = mkExports {
+        #   peer.host.plain =
+        #     (clanLib.vars.getPublicValue {
+        #       flake = config.clan.core.settings.directory;
+        #       machine = machine.name;
+        #       generator = "wireguard-network-${instanceName}";
+        #       file = "prefix";
+        #     })
+        #     + "::1";
+        # };
+
         # Set default domain to instanceName
 
         # Peers connect to all controllers
@@ -298,7 +316,6 @@ in
         ...
       }:
       {
-
         # Controllers connect to all peers and other controllers
         nixosModule =
           {

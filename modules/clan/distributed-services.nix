@@ -111,11 +111,11 @@ in
       };
       modules = [
         (import ../../lib/inventory/distributed-service/all-services-wrapper.nix {
-          inherit (clanConfig) directory;
+          inherit (clanConfig) directory exports;
         })
         # Dependencies
         {
-          exportsModule = clanConfig.exportsModule;
+          # exportsModule = clanConfig.exportsModule;
         }
         {
           # TODO: Rename to "allServices"

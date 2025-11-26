@@ -298,8 +298,19 @@ instances.machine-type = {
 
 ---
 
+## Sharing Data Between Machines with Exports
+
+Services often need to share configuration data between machines. For example, clients need to know the server's IP address, or peers in a mesh network need to discover each other.
+
+**Exports** provide a standardized way to share structured data between service components.
+
+🔗 See the complete guide: [Service Exports](./exports.md)
+
+---
+
 ## Further Reading
 
+- [Service Exports Guide](./exports.md) - How to share data between services
 - [Reference Documentation for Service Authors](../../reference/options/clan_service.md)
 - [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
 - [Decision that lead to ClanServices](../../decisions/01-Clan-Modules.md)

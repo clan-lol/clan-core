@@ -46,10 +46,13 @@ class NetworkTechnology(NetworkTechnologyBase):
             with spawn_tor() as _:
                 yield network
 
-    def remote(self, peer: Peer) -> "Remote":
-        return Remote(
-            address=peer.host,
-            command_prefix=peer.name,
-            socks_port=self.proxy,
-            socks_wrapper=tor_wrapper,
-        )
+    def remote(self, peer: Peer) -> list["Remote"]:
+        return [
+            Remote(
+                address=host,
+                command_prefix=peer.name,
+                socks_port=self.proxy,
+                socks_wrapper=tor_wrapper,
+            )
+            for host in peer.host
+        ]

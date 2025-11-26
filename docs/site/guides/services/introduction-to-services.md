@@ -177,5 +177,6 @@ ______________________________________________________________________
 
 ## What's Next?
 
+- [Learn about Service Exports →](./exports.md) - Share configuration data between machines
 - [Author your own clanService →](../../guides/services/community.md)
 - [Migrate from clanModules →](../../guides/migrations/migrate-inventory-services.md)

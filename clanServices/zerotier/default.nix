@@ -1,5 +1,8 @@
 {
   clanLib,
+  config,
+  lib,
+  directory,
   ...
 }:
 {
@@ -9,27 +12,38 @@
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
 
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 900;
+    };
+  }) config.instances;
+
   roles.peer = {
     description = "A peer that connects to your private Zerotier network.";
     perInstance =
       {
         instanceName,
         roles,
-        lib,
+        mkExports,
+        machine,
         ...
       }:
       {
-        exports.networking = {
-          priority = lib.mkDefault 900;
-          # TODO add user space network support to clan-cli
-          module = "clan_lib.network.zerotier";
-          peers = lib.mapAttrs (name: _machine: {
-            host.var = {
-              machine = name;
-              generator = "zerotier";
-              file = "zerotier-ip";
-            };
-          }) roles.peer.machines;
+        exports = mkExports {
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "zerotier";
+                file = "zerotier-ip";
+                flake = directory;
+              };
+            }
+          ];
         };
         nixosModule =
           {

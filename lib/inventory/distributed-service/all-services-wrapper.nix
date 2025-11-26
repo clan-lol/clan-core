@@ -2,6 +2,7 @@
 {
   # TODO: consume directly from clan.config
   directory,
+  exports,
 }:
 {
   lib,
@@ -17,10 +18,10 @@ in
 {
   # TODO: merge these options into clan options
   options = {
-    exportsModule = mkOption {
-      type = types.deferredModule;
-      readOnly = true;
-    };
+    # exportsModule = mkOption {
+    #   type = types.deferredModule;
+    #   readOnly = true;
+    # };
     mappedServices = mkOption {
       visible = false;
       type = attrsWith {
@@ -28,9 +29,11 @@ in
         elemType = submoduleWith {
           class = "clan.service";
           specialArgs = {
-            directory = directory;
             clanLib = specialArgs.clanLib;
-            exports = config.exports;
+            inherit
+              exports
+              directory
+              ;
           };
           modules = [
             (
@@ -51,34 +54,29 @@ in
       default = { };
     };
     exports = mkOption {
-      type = submoduleWith {
-        modules = [
-          {
-            options = {
-              instances = lib.mkOption {
-                default = { };
-                # instances.<instanceName>...
-                type = types.attrsOf (submoduleWith {
-                  modules = [
-                    config.exportsModule
-                  ];
-                });
-              };
-              # instances.<machineName>...
-              machines = lib.mkOption {
-                default = { };
-                type = types.attrsOf (submoduleWith {
-                  modules = [
-                    config.exportsModule
-                  ];
-                });
-              };
-            };
-          }
-        ]
-        ++ lib.mapAttrsToList (_: service: service.exports) config.mappedServices;
-      };
-      default = { };
+      type = types.lazyAttrsOf types.deferredModule;
+
+      # collect exports from all services
+      # zipAttrs is needed until we use the record type.
+      default = lib.zipAttrsWith (_name: values: { imports = values; }) (
+        lib.mapAttrsToList (
+          _service_id: service:
+          specialArgs.clanLib.exports.checkExports {
+            serviceName = service.manifest.name;
+            errorDetails = ''
+              Export validation failed in service '${service.manifest.name}'
+
+              Context:
+                - Service: ${service.manifest.name}
+                - Source: exports
+
+              Problem: Services can only export to their own scope (here: "${service.manifest.name}:::")
+
+              Refer to https://docs.clan.lol for more information on exports.
+            '';
+          } service.exports
+        ) config.mappedServices
+      );
     };
   };
 }

@@ -1,4 +1,10 @@
-{ ... }:
+{
+  clanLib,
+  lib,
+  config,
+  directory,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/mycelium";
@@ -8,6 +14,16 @@
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
+
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 800;
+    };
+  }) config.instances;
 
   roles.peer = {
     description = "A peer in the mycelium network";
@@ -30,8 +46,27 @@
       };
 
     perInstance =
-      { settings, ... }:
       {
+        settings,
+        mkExports,
+        machine,
+        ...
+      }:
+      {
+
+        exports = mkExports {
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "mycelium";
+                file = "ip";
+                flake = directory;
+              };
+            }
+          ];
+        };
+
         nixosModule =
           {
             config,

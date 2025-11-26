@@ -1,9 +1,25 @@
-{ ... }:
+{
+  directory,
+  lib,
+  clanLib,
+  config,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
   manifest.readme = builtins.readFile ./README.md;
+
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 2000;
+    };
+  }) config.instances;
 
   roles.default = {
     description = "Placeholder role to apply the yggdrasil service";
@@ -49,41 +65,79 @@
       {
         settings,
         roles,
+        mkExports,
         exports,
+        machine,
         ...
       }:
       {
+
+        exports = mkExports {
+          peer.host = [
+            {
+              plain = clanLib.vars.getPublicValue {
+                machine = machine.name;
+                generator = "yggdrasil";
+                file = "address";
+                flake = directory;
+              };
+            }
+          ];
+        };
+
         nixosModule =
           {
             config,
             pkgs,
             lib,
-            clan-core,
             ...
           }:
           let
 
-            mkPeers = ip: [
-              # "tcp://${ip}:6443"
-              "quic://${ip}:6443"
-              "ws://${ip}:6443"
-              "tls://${ip}:6443"
-            ];
+            mkPeers =
+              export:
+              let
+                # Extract host list from the export
+                hostList = export.peer.host or [ ];
 
-            select' = clan-core.inputs.nix-select.lib.select;
+                # Extract actual IP values from tagged unions
+                extractHostValue =
+                  hostItem:
+                  if hostItem ? plain then
+                    hostItem.plain
+                  else if hostItem ? var then
+                    clanLib.vars.getPublicValue hostItem.var
+                  else
+                    throw "Unknown host type in export";
+
+                # Get list of IP addresses and strip whitespace (newlines, etc.)
+                hosts = map (ip: lib.strings.trim (extractHostValue ip)) hostList;
+              in
+              lib.concatMap (
+                ip:
+                # We need to add [ ] for ipv6 addresses
+                if (lib.hasInfix ":" ip) then
+                  [
+                    # "tcp://[${ip}]:6443"
+                    "quic://[${ip}]:6443"
+                    "ws://[${ip}]:6443"
+                    "tls://[${ip}]:6443"
+                  ]
+                else
+                  [
+                    # "tcp://[${ip}]:6443"
+                    "quic://${ip}:6443"
+                    "ws://${ip}:6443"
+                    "tls://${ip}:6443"
+                  ]
+              ) hosts;
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs = builtins.foldl' (
-              acc: e:
-              if e == { } then
-                acc
-              else
-                acc ++ (lib.flatten (builtins.filter (s: s != "") (lib.attrValues (select' "peers.*.plain" e))))
-            ) [ ] (lib.attrValues (select' "instances.*.networking.?peers.*.host.?plain" exports));
+            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues (exports)));
 
             # Construct a list of peers in yggdrasil format
-            exportedPeers = lib.flatten (map mkPeers exportedPeerIPs);
+            exportedPeers = exportedPeerIPs;
 
           in
           {

@@ -1,9 +1,12 @@
 {
   lib,
   config,
+  # clan-core specialArgs
+  # TODO: remove _ctx
   _ctx,
-  directory,
   exports,
+  clanLib,
+  directory,
   ...
 }:
 let
@@ -504,7 +507,7 @@ in
                     staticModules = [
                       ({
                         options.exports = mkOption {
-                          type = types.deferredModule;
+                          type = types.lazyAttrsOf types.deferredModule;
                           default = { };
                           description = ''
                             !!! Danger "Experimental Feature"
@@ -578,6 +581,15 @@ in
                           roles = applySettings instanceName config.instances.${instanceName};
                         in
                         {
+                          mkExports = v: {
+                            ${
+                              clanLib.exports.buildScopeKey {
+                                inherit instanceName roleName machineName;
+                                serviceName = config.manifest.name;
+                              }
+                            } =
+                              v;
+                          };
                           inherit instanceName roles exports;
                           machine = {
                             name = machineName;
@@ -635,7 +647,7 @@ in
         staticModules = [
           ({
             options.exports = mkOption {
-              type = types.deferredModule;
+              type = types.lazyAttrsOf types.deferredModule;
               default = { };
               description = ''
                 !!! Danger "Experimental Feature"
@@ -719,7 +731,15 @@ in
             };
             inherit exports;
             inherit (machineScope) instances;
-
+            mkExports = v: {
+              ${
+                clanLib.exports.buildScopeKey {
+                  inherit machineName;
+                  serviceName = config.manifest.name;
+                }
+              } =
+                v;
+            };
             # There are no machine settings.
             # Settings are always role specific, having settings that apply to a machine globally would mean to merge all role and all instance settings into a single module.
             # But that will likely cause conflicts because it is inherently wrong.
@@ -767,82 +787,11 @@ in
         ```
       '';
       default = { };
-      type = types.submoduleWith {
-        # Static modules
-        modules = [
-          {
-            options.instances = mkOption {
-              type = types.attrsOf types.deferredModule;
-              description = ''
-                export modules defined in 'perInstance'
-                mapped to their instance name
-
-                Example
-
-                with instances:
-
-                ```nix
-                instances.A = { ... };
-                instances.B= { ... };
-
-                roles.peer.perInstance = { instanceName, machine, ... }:
-                {
-                  exports.foo = 1;
-                }
-
-                This yields all other services can access these exports
-                =>
-                exports.instances.A.foo = 1;
-                exports.instances.B.foo = 1;
-                ```
-              '';
-            };
-            options.machines = mkOption {
-              type = types.attrsOf types.deferredModule;
-              description = ''
-                export modules defined in 'perMachine'
-                mapped to their machine name
-
-                Example
-
-                with machines:
-
-                ```nix
-                instances.A = { roles.peer.machines.jon = ... };
-                instances.B = { roles.peer.machines.jon = ... };
-
-                perMachine = { machine, ... }:
-                {
-                  exports.foo = 1;
-                }
-
-                This yields all other services can access these exports
-                =>
-                exports.machines.jon.foo = 1;
-                exports.machines.sara.foo = 1;
-                ```
-              '';
-            };
-            # Lazy default via imports
-            # should probably be moved to deferredModuleWith { staticModules = [ ]; }
-            imports =
-              if config._docs_rendering then
-                [ ]
-              else
-                lib.mapAttrsToList (_roleName: role: {
-                  instances = lib.mapAttrs (_instanceName: instance: {
-                    imports = lib.mapAttrsToList (_machineName: v: v.exports) instance.allMachines;
-                  }) role.allInstances;
-                }) config.result.allRoles
-                ++ lib.mapAttrsToList (machineName: machine: {
-                  machines.${machineName} = machine.exports;
-                }) config.result.allMachines;
-          }
-        ];
-      };
+      type = types.lazyAttrsOf (types.deferredModuleWith { });
     };
+
     # ---
-    # Place the result in _module.result to mark them as "internal" and discourage usage/overrides
+    # Place the result in 'result' to mark them as "internal" and discourage usage/overrides
     #
     # ---
     # Intermediate result by mapping over the 'roles', 'instances', and 'machines'.
@@ -1025,4 +974,86 @@ in
       ) config.result.allMachines;
     };
   };
+
+  imports = [
+    {
+      # collect exports from all machines
+      # zipAttrs is needed to check the export correctness
+      exports = lib.zipAttrsWith (_name: values: { imports = values; }) (
+        lib.mapAttrsToList (
+          machineName: machine:
+          clanLib.exports.checkExports {
+            serviceName = config.manifest.name;
+            inherit machineName;
+            errorDetails = ''
+              Export validation failed in service '${config.manifest.name}'
+
+              Context:
+                - Service: ${config.manifest.name}
+                - Machine: ${machineName}
+                - Source: perMachine exports
+
+              Problem: Export keys must match their context.
+
+              Hint: Use 'mkExports' helper to ensure correct scope:
+                perMachine = { mkExports, ... }: {
+                  exports = mkExports {
+                    # your exports here
+                  };
+                };
+
+              Refer to https://docs.clan.lol for more information on exports.
+            '';
+          } machine.exports
+        ) config.result.allMachines
+      );
+    }
+    {
+      # collect exports from all instances, roles and machines
+      # zipAttrs is needed until we use the record type.
+      exports = lib.zipAttrsWith (_name: values: { imports = values; }) (
+        lib.concatLists (
+          lib.concatLists (
+            lib.mapAttrsToList (
+              roleName: role:
+              lib.mapAttrsToList (
+                instanceName: instance:
+                lib.mapAttrsToList (
+                  machineName: v:
+                  # Pass exports through check
+                  #
+                  clanLib.exports.checkExports {
+                    serviceName = config.manifest.name;
+                    inherit machineName instanceName roleName;
+                    errorDetails = ''
+                      Export validation failed in service '${config.manifest.name}'
+
+                      Context:
+                        - Service: ${config.manifest.name}
+                        - Instance: ${instanceName}
+                        - Role: ${roleName}
+                        - Machine: ${machineName}
+                        - Source: perInstance exports
+
+                      Problem: Export keys must match their context.
+
+                      Hint: Use 'mkExports' helper to ensure correct scope:
+                        roles.${roleName}.perInstance = { mkExports, ... }: {
+                          exports = mkExports {
+                            # your exports here
+                          };
+                        };
+
+                      Refer to https://docs.clan.lol for more information on exports.
+                    '';
+                  } v.exports
+                ) instance.allMachines
+              ) role.allInstances
+            ) config.result.allRoles
+          )
+        )
+      );
+    }
+  ];
+
 }

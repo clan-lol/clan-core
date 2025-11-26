@@ -41,5 +41,8 @@ class NetworkTechnology(NetworkTechnologyBase):
         # TODO maybe we want to setup jumphosts for network access? but sounds complicated
         yield network
 
-    def remote(self, peer: Peer) -> Remote:
-        return Remote.from_ssh_uri(machine_name=peer.name, address=peer.host)
+    def remote(self, peer: Peer) -> list[Remote]:
+        return [
+            Remote.from_ssh_uri(machine_name=peer.name, address=host)
+            for host in peer.host
+        ]

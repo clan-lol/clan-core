@@ -1,4 +1,9 @@
-{ ... }:
+{
+  lib,
+  clanLib,
+  config,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/tor";
@@ -8,6 +13,16 @@
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
+
+  exports = lib.mapAttrs' (instanceName: _: {
+    name = clanLib.exports.buildScopeKey {
+      inherit instanceName;
+      serviceName = config.manifest.name;
+    };
+    value = {
+      networking.priority = 10;
+    };
+  }) config.instances;
 
   roles.client = {
     description = ''
@@ -55,22 +70,21 @@
     perInstance =
       {
         instanceName,
-        roles,
-        lib,
+        mkExports,
+        machine,
         ...
       }:
       {
-        exports.networking = {
-          priority = lib.mkDefault 10;
-          # TODO add user space network support to clan-cli
-          module = "clan_lib.network.tor";
-          peers = lib.mapAttrs (name: _machine: {
-            host.var = {
-              machine = name;
-              generator = "tor_${instanceName}";
-              file = "hostname";
-            };
-          }) roles.server.machines;
+        exports = mkExports {
+          peer.host = [
+            {
+              var = {
+                machine = machine.name;
+                generator = "tor_${instanceName}";
+                file = "hostname";
+              };
+            }
+          ];
         };
         nixosModule =
           {
