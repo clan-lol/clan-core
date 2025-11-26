@@ -122,7 +122,7 @@ in
 
     # TODO: make this writable by moving the options from inventoryClass into clan.
     exports = lib.mkOption {
-      type = types.lazyAttrsOf types.raw;
+      type = types.lazyAttrsOf (types.submoduleWith { modules = [ ]; });
     };
 
     exportInterfaces = lib.mkOption {
@@ -343,7 +343,7 @@ in
   # Core-traits
   #
   config.exportInterfaces = {
-    peer = import ./exportInterfaces/peer.nix;
-    networking = import ./exportInterfaces/networking.nix;
+    peer = import ./export-modules/peer.nix;
+    networking = import ./export-modules/networking.nix;
   };
 }

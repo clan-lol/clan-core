@@ -3,7 +3,8 @@
   test_simple =
     let
       eval = clanLib.clan {
-        exports."B:::".foo = lib.mkForce eval.config.exports."B:::".bar;
+        # Inject exports from the top-level
+        exports."A:::sara".networking.host = lib.mkForce "shitty-gritty";
 
         directory = ./.;
         self = {
@@ -14,6 +15,7 @@
         machines.jon = { };
         machines.sara = { };
 
+        # Override to decouple from implementation state
         exportInterfaces = lib.mkForce ({
           networking =
             { ... }:
@@ -26,7 +28,7 @@
             { ... }:
             {
               options.opt = lib.mkOption {
-                type = lib.types.int;
+                type = lib.types.str;
               };
             };
         });
@@ -38,23 +40,27 @@
             manifest.name = "A";
             manifest.traits = [
               "networking"
-              "peer"
             ];
 
             roles.default = {
               perInstance =
                 {
+                  mkExports,
                   ...
                 }:
                 {
-                  # exports = mkExports {
-                  #   imports = [
-                  #     # eval.config.exportInterfaces.foo
-                  #     # eval.config.exportInterfaces.bar
-                  #   ];
-                  #   foo = 7;
-                  #   # bar.opt = exports."B:iB:default:${machine.name}".foo + 35;
-                  # };
+                  exports = mkExports {
+                    # Bad but possible for debugging
+                    # Circumvents introspection
+                    # Should use submodule instead of submoduleWith to use
+                    # onlyDefinesConfig
+                    imports = [
+                      eval.config.exportInterfaces.bar
+                    ];
+
+                    networking.host = "foo";
+                    bar.opt = "barbar";
+                  };
                 };
             };
 
@@ -62,21 +68,8 @@
               { mkExports, ... }:
               {
                 exports = mkExports {
-                  # imports = [
-                  #   eval.config.exportInterfaces.networking
-                  # ];
                   networking.host = "42";
                 };
-
-                # exports =
-                #   mkExports
-                #     [
-                #       eval.config.exportInterfaces.foo
-                #     ]
-                #     {
-
-                #       foo.opt = "42";
-                #     };
               };
           };
         ####### Service module "A"
@@ -84,6 +77,7 @@
           { exports, ... }:
           {
             manifest.name = "B";
+            manifest.traits = [ "bar" ];
 
             roles.default = {
               perInstance =
@@ -94,11 +88,11 @@
                 }:
                 {
                   exports = mkExports {
-                    foo = exports."B:::".foo + exports."A:iA1:default:${machine.name}".foo;
+                    bar.opt = "foo" + exports."A:::${machine.name}".networking.host;
+                    # foo = exports."B:::".foo + exports."A:iA1:default:${machine.name}".foo;
                   };
                 };
             };
-            exports."B:::".foo = 10;
           };
         #######
 
@@ -113,11 +107,11 @@
             module.input = "self";
             roles.default.tags = [ "all" ];
           };
-          # instances.iB = {
-          #   module.name = "service-B";
-          #   module.input = "self";
-          #   roles.default.tags = [ "all" ];
-          # };
+          instances.iB = {
+            module.name = "service-B";
+            module.input = "self";
+            roles.default.tags = [ "all" ];
+          };
         };
       };
     in
@@ -125,41 +119,57 @@
       inherit eval;
       expr = clanLib.selectExports (_: true) eval.config.exports;
       expected = {
-        "B:::" = {
-          bar = 0;
-          foo = 0;
-        };
         "A:::jon" = {
-          bar = 0;
-          foo = 42;
+          networking = {
+            host = "42";
+          };
         };
         "A:::sara" = {
-          bar = 0;
-          foo = 42;
+          networking = {
+            host = "shitty-gritty";
+          };
         };
         "A:iA1:default:jon" = {
-          bar = 42;
-          foo = 7;
+          bar = {
+            opt = "barbar";
+          };
+          networking = {
+            host = "foo";
+          };
         };
         "A:iA1:default:sara" = {
-          bar = 42;
-          foo = 7;
+          bar = {
+            opt = "barbar";
+          };
+          networking = {
+            host = "foo";
+          };
         };
         "A:iA2:default:jon" = {
-          bar = 42;
-          foo = 7;
+          bar = {
+            opt = "barbar";
+          };
+          networking = {
+            host = "foo";
+          };
         };
         "A:iA2:default:sara" = {
-          bar = 42;
-          foo = 7;
+          bar = {
+            opt = "barbar";
+          };
+          networking = {
+            host = "foo";
+          };
         };
         "B:iB:default:jon" = {
-          bar = 0;
-          foo = 7;
+          bar = {
+            opt = "foo42";
+          };
         };
         "B:iB:default:sara" = {
-          bar = 0;
-          foo = 7;
+          bar = {
+            opt = "fooshitty-gritty";
+          };
         };
       };
     };

@@ -344,6 +344,11 @@ in
                 );
               };
 
+              # TODO: Restrict?
+              traits = mkOption {
+                type = types.listOf types.str;
+              };
+
               features = mkOption {
                 description = ''
                   Enable built-in features for the module
