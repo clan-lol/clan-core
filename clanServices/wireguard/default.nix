@@ -56,8 +56,6 @@
 
 {
   clanLib,
-  config,
-  lib,
   ...
 }:
 let
@@ -154,16 +152,6 @@ in
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
-
-  exports = lib.mapAttrs' (instanceName: _: {
-    name = clanLib.exports.buildScopeKey {
-      inherit instanceName;
-      serviceName = config.manifest.name;
-    };
-    value = {
-      networking.priority = 1000;
-    };
-  }) config.instances;
 
   # Peer options and configuration
   roles.peer = {
@@ -325,25 +313,9 @@ in
         instanceName,
         roles,
         machine,
-        mkExports,
         ...
       }:
       {
-        exports = mkExports {
-          peer.host = [
-            {
-              plain =
-                (clanLib.vars.getPublicValue {
-                  flake = config.clan.core.settings.directory;
-                  machine = machine.name;
-                  generator = "wireguard-network-${instanceName}";
-                  file = "prefix";
-                })
-                + "::1";
-            }
-          ];
-        };
-
         # Controllers connect to all peers and other controllers
         nixosModule =
           {
