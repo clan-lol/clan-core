@@ -20,7 +20,6 @@ from clan_lib.nix import nix_command, nix_metadata
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
-from clan_lib.vars.generate import run_generators
 
 log = logging.getLogger(__name__)
 
@@ -155,8 +154,6 @@ def run_machine_update(
         target_host_root = stack.enter_context(_target_host.become_root())
 
         generate_facts([machine], service=None, regenerate=False)
-        all_machines = list(machine.flake.list_machines_full().values())
-        run_generators(all_machines, generators=None, full_closure=False)
 
         # Upload secrets to the target host using root
         upload_secrets(machine, target_host_root)
