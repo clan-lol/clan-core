@@ -98,7 +98,7 @@
               export:
               let
                 # Extract host list from the export
-                hostList = export.peer.host or [ ];
+                hostList = export.peer.hosts or [ ];
 
                 # Extract actual IP values from tagged unions
                 extractHostValue =
