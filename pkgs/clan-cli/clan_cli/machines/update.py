@@ -156,7 +156,10 @@ def update_command(args: argparse.Namespace) -> None:
         # Prepopulate the cache
         config = nix_config()
         system = config["system"]
-        machine_names = [machine.name for machine in machines_to_update]
+
+        all_machines = list(flake.list_machines_full().values())
+        machine_names = [machine.name for machine in all_machines]
+
         flake.precache(
             [
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.facts.publicModule",
@@ -171,12 +174,10 @@ def update_command(args: argparse.Namespace) -> None:
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?secretLocation",
             ],
         )
 
-        # update vars for all machines
-        all_machines = list(flake.list_machines_full().values())
         run_generators(all_machines, generators=None, full_closure=False)
 
         with AsyncRuntime() as runtime:
