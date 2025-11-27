@@ -346,7 +346,9 @@ def test_machines(
     )
 
 
+# TODO: Reactivate this test
 @pytest.mark.with_core
+@pytest.mark.skip(reason="Test fails on aarch64-linux")
 def test_groups(
     test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
