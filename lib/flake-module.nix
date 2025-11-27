@@ -118,11 +118,13 @@ rec {
             --flake ${
               self.filter {
                 include = [
+                  "clanServices"
                   "flakeModules"
                   "inventory.json"
                   "lib"
                   "machines"
                   "nixosModules"
+                  "darwinModules"
                   "modules"
                 ];
               }
