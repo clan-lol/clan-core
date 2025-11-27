@@ -43,7 +43,7 @@ For the purpose of this guide we have two machines:
         inherit self;
 
         meta.name = "myclan";
-        meta.tld = "ccc";
+        meta.domain = "ccc";
 
         inventory.machines = {
           controller = {};

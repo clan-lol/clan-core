@@ -137,13 +137,13 @@ Description: None
 
 This confirms your setup is working correctly.
 
-You can now change the default name and tld by editing the `meta.name` and `meta.tld` fields in your `clan.nix` file.
+You can now change the default name and domain by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
 
 ```{.nix title="clan.nix" hl_lines="3 4"}
 {
   # Ensure this is unique among all clans you want to use.
   meta.name = "__CHANGE_ME__";
-  meta.tld = "changeme";
+  meta.domain = "changeme";
 
   # ...
   # elided

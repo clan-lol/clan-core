@@ -13,6 +13,7 @@
           { ... }:
           {
             meta.name = "foo";
+            meta.domain = "foo";
             machines.peer1 = { };
             machines.admin1 = { };
 

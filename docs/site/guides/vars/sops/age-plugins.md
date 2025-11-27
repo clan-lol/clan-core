@@ -63,7 +63,7 @@ To use `age` plugins with Clan, you need to configure them in your `flake.nix` f
       inherit self;
 
       meta.name = "myclan";
-      meta.tld = "ccc";
+      meta.domain = "ccc";
 
       # Add YubiKey and FIDO2 HMAC plugins
       # Note: Plugins must be available in nixpkgs.
