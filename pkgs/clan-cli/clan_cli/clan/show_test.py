@@ -18,6 +18,7 @@ def test_clan_show(
     assert "Name:" in output.out
     assert "Name: test_flake_with_core" in output.out
     assert "Description:" in output.out
+    assert "Domain:" in output.out
 
 
 def test_clan_show_no_flake(
