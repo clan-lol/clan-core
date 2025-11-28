@@ -134,7 +134,7 @@
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
             # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues (exports)));
+            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues exports));
 
             # Construct a list of peers in yggdrasil format
             exportedPeers = exportedPeerIPs;
@@ -203,6 +203,11 @@
               # See https://github.com/NixOS/nixpkgs/pull/440910#issuecomment-3301835895 for details.
               persistentKeys = false;
               settings = {
+                Listen = [
+                  "quic://[::]:6443"
+                  "ws//[::]:6443"
+                  "tls://[::]:6443"
+                ];
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
                 Peers = lib.lists.unique (exportedPeers ++ settings.extraPeers);
@@ -226,7 +231,11 @@
                 ++ settings.extraMulticastInterfaces;
               };
             };
-            networking.firewall.allowedTCPPorts = [ 5400 ];
+            networking.firewall.allowedUDPPorts = [ 6443 ];
+            networking.firewall.allowedTCPPorts = [
+              5400
+              6443
+            ];
           };
       };
   };
