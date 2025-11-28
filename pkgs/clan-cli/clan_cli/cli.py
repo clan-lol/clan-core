@@ -133,6 +133,7 @@ Examples:
   $ clan show --flake [PATH]
   Name: My Empty Clan
   Description: some nice description
+  Domain: clan.example
 """
         ),
         formatter_class=argparse.RawTextHelpFormatter,

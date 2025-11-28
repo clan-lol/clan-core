@@ -13,6 +13,7 @@ def show_command(args: argparse.Namespace) -> None:
 
     print(f"Name: {meta.get('name')}")
     print(f"Description: {meta.get('description', '-')}")
+    print(f"Domain: {meta.get('domain')}")
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
