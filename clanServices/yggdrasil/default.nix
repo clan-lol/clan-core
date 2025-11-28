@@ -112,6 +112,9 @@
 
                 # Get list of IP addresses and strip whitespace (newlines, etc.)
                 hosts = map (ip: lib.strings.trim (extractHostValue ip)) hostList;
+
+                # Filter out empty IPs
+                filteredHosts = lib.filter (ip: ip != "") hosts;
               in
               lib.concatMap (
                 ip:
@@ -130,13 +133,24 @@
                     "ws://${ip}:6443"
                     "tls://${ip}:6443"
                   ]
-              ) hosts;
+              ) filteredHosts;
+
+            # Filter out exports from the local machine and yggdrasil
+            # exports to avoid self-connections
+            nonLocalExports = lib.filterAttrs (
+              name: _:
+              let
+                parts = lib.splitString ":" name;
+                exportMachineName = lib.last parts;
+              in
+              # Exclude yggdrasil exports and exports from this
+              # machine. Self-connections lead to ErrBadKey!
+              !(lib.hasPrefix "clan-core/yggdrasil" name) && exportMachineName != machine.name
+            ) exports;
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
-            # Get a list of all exported IPs from all VPN modules
-            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues exports));
+            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues nonLocalExports));
 
-            # Construct a list of peers in yggdrasil format
             exportedPeers = exportedPeerIPs;
 
           in
@@ -205,7 +219,7 @@
               settings = {
                 Listen = [
                   "quic://[::]:6443"
-                  "ws//[::]:6443"
+                  "ws://[::]:6443"
                   "tls://[::]:6443"
                 ];
                 PrivateKeyPath = "/key";
@@ -231,11 +245,16 @@
                 ++ settings.extraMulticastInterfaces;
               };
             };
-            networking.firewall.allowedUDPPorts = [ 6443 ];
-            networking.firewall.allowedTCPPorts = [
-              5400
-              6443
-            ];
+            networking.firewall = {
+              allowedUDPPorts = [
+                6443
+                9001
+              ];
+              allowedTCPPorts = [
+                5400
+                6443
+              ];
+            };
           };
       };
   };
