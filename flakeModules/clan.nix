@@ -23,8 +23,18 @@ in
 
   options.perSystem = mkPerSystemOption ({
     options.clan.pkgs = lib.mkOption {
-      description = "";
+      description = ''
+        Packages for system
+
+        This will set the pkgs for every system used in a 'clan'
+
+        !!! Warning
+            If pkgsForSystem is set explicitly, that has higher precedence.
+
+            This option has no effect if pkgsForSystem is set.
+      '';
       type = types.raw;
+      default = null;
     };
   });
 
@@ -52,6 +62,9 @@ in
           };
           modules = [
             clan-core.modules.clan.default
+
+            # Inject the users flake-config from flake-parts
+            { _dependencies.flake-config = config; }
           ];
         };
         # Important: !This logic needs to be kept in sync with lib.clan function!

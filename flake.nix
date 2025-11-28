@@ -66,7 +66,11 @@
         };
       }
       (
-        { ... }:
+        {
+          lib,
+          flake-parts-lib,
+          ...
+        }:
         {
           debug = true;
           clan = {
@@ -107,9 +111,13 @@
               ./pkgs/flake-module.nix
               ./templates/flake-module.nix
             ]
-          ++ [
-            (if pathExists ./flakeModules/clan.nix then import ./flakeModules/clan.nix inputs.self else { })
-          ]
+          ++ lib.optional (pathExists ./flakeModules/clan.nix) (
+            import ./flakeModules/clan.nix {
+              clan-core = inputs.self;
+              inherit flake-parts-lib;
+            }
+          )
+
           # Make treefmt-nix optional
           # This only works if you set inputs.clan-core.inputs.treefmt-nix.follows
           # to a non-empty input that doesn't export a flakeModule

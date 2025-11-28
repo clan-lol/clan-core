@@ -49,6 +49,18 @@ in
       default = [ ];
     };
 
+    # internal options
+    # dependency injection
+    _dependencies.flake-config = lib.mkOption {
+      type = types.raw;
+      internal = true;
+      default = null;
+      description = ''
+        The flake-parts-config if present
+        'null' in case 'lib.clan' is used.
+      '';
+    };
+
     # id :: { assertion, message }
     checks = lib.mkOption {
       type = checkType;
@@ -231,10 +243,20 @@ in
 
     pkgsForSystem = lib.mkOption {
       type = types.functionTo (types.nullOr types.attrs);
-      default = _system: null;
+      default =
+        # If the user uses flake-parts default to use perSystem.clan.pkgs
+        if config._dependencies.flake-config != null then
+          (system: config._dependencies.flake-config.allSystems.${system}.clan.pkgs)
+        else
+          (_system: null);
       defaultText = "system: null";
       description = ''
         A function that maps from architecture to pkg. `( string -> pkgs )`
+
+        Clan uses one global package set for all machines.
+        Override this function to customize packages.
+
+        When using flake-parts use 'perSystem.clan.pkgs' instead.
 
         If specified this nixpkgs will be only imported once for each system.
         This improves performance, but all `nixpkgs.*` options will be ignored.
