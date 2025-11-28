@@ -136,6 +136,7 @@ Examples:
   Icon: A path to the png
 """
         ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     show_parser.set_defaults(func=show.show_command)
 
