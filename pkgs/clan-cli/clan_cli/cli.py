@@ -133,7 +133,6 @@ Examples:
   $ clan show --flake [PATH]
   Name: My Empty Clan
   Description: some nice description
-  Icon: A path to the png
 """
         ),
     )
