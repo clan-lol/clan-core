@@ -115,7 +115,7 @@ in
             readOnly = true;
           };
           domain = lib.mkOption {
-            type = types.strMatching "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$";
+            type = types.strMatching "^[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?(\.[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?)+$";
             description = ''
               the domain for the clan
             '';
