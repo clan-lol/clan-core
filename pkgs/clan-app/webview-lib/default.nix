@@ -24,8 +24,8 @@ llvmPackages.stdenv.mkDerivation {
     domain = "git.clan.lol";
     owner = "clan";
     repo = "webview";
-    rev = "950c3eeea791d10b040abbb54164b7d860d13fb2";
-    hash = "sha256-zG3UpsZX+uwJGOVheIn9q/J4yRTTgyaDELoN2FF62RI=";
+    rev = "f46249218b7188ef8a29673d8c8453c90eb1a39b";
+    hash = "sha256-RtTOJqsdIaOqZpu66O3U9Ftubxd1scoZ+qq3u94gU/k=";
   };
 
   outputs = [

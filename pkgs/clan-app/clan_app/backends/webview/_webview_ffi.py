@@ -118,7 +118,31 @@ class _WebviewLibrary:
         self.webview_get_native_handle.argtypes = [c_void_p, c_int]
         self.webview_get_native_handle.restype = c_void_p
 
+        # URL filtering functions
+        self.webview_add_url_pattern = self.lib.webview_add_url_pattern
+        self.webview_add_url_pattern.argtypes = [c_void_p, c_char_p]
+        self.webview_add_url_pattern.restype = c_int
+
+        self.webview_remove_url_pattern = self.lib.webview_remove_url_pattern
+        self.webview_remove_url_pattern.argtypes = [c_void_p, c_char_p]
+        self.webview_remove_url_pattern.restype = c_int
+
+        self.webview_clear_url_patterns = self.lib.webview_clear_url_patterns
+        self.webview_clear_url_patterns.argtypes = [c_void_p]
+        self.webview_clear_url_patterns.restype = c_int
+
+        self.webview_set_url_blocked_callback = (
+            self.lib.webview_set_url_blocked_callback
+        )
+        self.webview_set_url_blocked_callback.argtypes = [
+            c_void_p,
+            c_void_p,
+            c_void_p,
+        ]
+        self.webview_set_url_blocked_callback.restype = c_int
+
         self.binding_callback_t = CFUNCTYPE(None, c_char_p, c_char_p, c_void_p)
+        self.url_blocked_callback_t = CFUNCTYPE(None, c_void_p, c_char_p, c_void_p)
 
         self.CFUNCTYPE = CFUNCTYPE
 
