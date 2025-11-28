@@ -1,4 +1,4 @@
-clan-core:
+{ clan-core, flake-parts-lib }:
 # Downstream flake arguments
 {
   self,
@@ -9,12 +9,25 @@ clan-core:
 }:
 let
   inherit (lib) types;
+
+  inherit (flake-parts-lib)
+    mkPerSystemOption
+    ;
+
 in
 {
   # Backwards compatibility
   imports = [
     (lib.mkRenamedOptionModule [ "clan" ] [ "flake" "clan" ])
   ];
+
+  options.perSystem = mkPerSystemOption ({
+    options.clan.pkgs = lib.mkOption {
+      description = "";
+      type = types.raw;
+    };
+  });
+
   options.flake = {
     # CLI compat
     clanInternals = lib.mkOption {
