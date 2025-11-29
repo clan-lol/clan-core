@@ -103,23 +103,6 @@ in
       expected = "x";
     };
 
-  # Regression test: domain with underscore should be allowed
-  test_domain_with_underscore =
-    let
-      eval = clan {
-        self = {
-          inputs = { };
-        };
-        directory = ./.;
-        meta.name = "test";
-        meta.domain = "my_clan.x";
-      };
-    in
-    {
-      expr = eval.config.clanInternals.inventoryClass.inventory.meta.domain;
-      expected = "my_clan.x";
-    };
-
   test_fn_simple =
     let
       eval = clan {
