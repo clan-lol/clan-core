@@ -60,9 +60,10 @@
                   host:
                   lib.strings.concatStringsSep "\n" (
                     map (
-                      service: "${service} IN A ${roles.default.machines.${host}.settings.ip}   ; ${host}"
+                      service: "${service} IN ${dnsType host} ${roles.default.machines.${host}.settings.ip}   ; ${host}"
                     ) roles.default.machines.${host}.settings.services
                   );
+                dnsType = host: if lib.hasInfix ":" roles.default.machines.${host}.settings.ip then "AAAA" else "A";
 
                 zonefile = pkgs.writeTextFile {
                   name = "db.${settings.tld}";

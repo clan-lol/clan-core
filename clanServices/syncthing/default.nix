@@ -218,11 +218,11 @@
                 # 22000 TCP and/or UDP for sync traffic
                 # 21027/UDP for discovery
                 # source: https://docs.syncthing.net/users/firewall.html
-                networking.firewall.interfaces."zt+".allowedTCPPorts = [
+                networking.firewall.interfaces."zt*".allowedTCPPorts = [
                   8384
                   22000
                 ];
-                networking.firewall.interfaces."zt+".allowedUDPPorts = [
+                networking.firewall.interfaces."zt*".allowedUDPPorts = [
                   22000
                   21027
                 ];

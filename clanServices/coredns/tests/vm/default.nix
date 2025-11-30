@@ -12,7 +12,7 @@
       machines = {
         dns = { }; # 192.168.1.2
         server01 = { }; # 192.168.1.3
-        server02 = { }; # 192.168.1.4
+        server02 = { }; # 2001:db8:1::1
         client = { }; # 192.168.1.1
       };
 
@@ -32,7 +32,7 @@
 
           # Second service
           roles.default.machines."server02".settings = {
-            ip = "192.168.1.4";
+            ip = "2001:db8:1::1";
             services = [ "two" ];
           };
 
@@ -103,8 +103,8 @@
     answer = client.succeed("dig @192.168.1.2 -p 1053 one.foo")
     assert "192.168.1.3" in answer, "IP not found"
 
-    answer = client.succeed("dig @192.168.1.2 -p 1053 two.foo")
-    assert "192.168.1.4" in answer, "IP not found"
+    answer = client.succeed("dig @192.168.1.2 -p 1053 two.foo AAAA")
+    assert "2001:db8:1::1" in answer, "IP not found"
 
   '';
 }
