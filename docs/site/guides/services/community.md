@@ -266,7 +266,7 @@ reusing parts of your configuration that should be appplied to a class of
 machines. Since this is such a common pattern, here is how to write such a
 service.
 
-For this example the we have to roles: `server` and `desktop`. Additionally, we
+For this example we have two roles: `server` and `desktop`. Additionally, we
 can use the `perMachine` section to add configuration to all machines regardless
 of their type.
 
