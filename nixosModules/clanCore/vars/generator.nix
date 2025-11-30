@@ -26,9 +26,9 @@ in
 {
   finalScript = mkOptionDefault (
     pkgs.writeScript "generator-${config.name}" ''
-      set -eu -o pipefail
+      set -euo pipefail
 
-      export PATH="${makeBinPath config.runtimeInputs}:${pkgs.coreutils}/bin"
+      PATH=${makeBinPath (config.runtimeInputs ++ [ pkgs.coreutils ])}
 
       ${optionalString (pkgs.stdenv.hostPlatform.isLinux) ''
         # prepare sandbox user on platforms where this is supported
