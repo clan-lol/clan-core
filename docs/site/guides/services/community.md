@@ -175,8 +175,7 @@ The following example shows how to create a local instance of machine specific s
 ```
 
 !!! Danger
-    `localSettings` are a local attribute. Other machines cannot access it.
-    If calling extendSettings is done that doesn't change the original `settings` this means if a different machine tries to access i.e `roles.client.settings` it would *NOT* contain your changes.
+    `localSettings` are a local attribute that other machines cannot access, because calling `extendSettings` doesn't change the original `settings`. This means if a different machine tries to access, for example `roles.client.settings`, it will *NOT* contain changes made by `extendSettings`.
 
     Exposing the changed settings to other machines would come with a huge performance penalty, thats why we don't want to offer it.
 
