@@ -1,7 +1,11 @@
 # This file is imported into:
 # - clan.meta
 # - clan.inventory.meta
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 let
   types = lib.types;
 
@@ -40,7 +44,7 @@ let
       '';
     };
     domain = lib.mkOption {
-      type = types.strMatching "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$";
+      type = (import ../../lib/types/default.nix { inherit lib; }).domainName;
       default =
         if config.tld != null then
           lib.warn "`clan.meta.tld` has been deprecated in favor of `clan.meta.domain`. `clan.meta.tld` will be removed in the next release." config.tld
