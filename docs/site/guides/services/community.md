@@ -90,7 +90,7 @@ Next we need to define the settings and the behavior of these distinct roles.
         # Maps over all instances and produces one result per instance.
         perInstance = { instanceName, settings, machine, roles, ... }: {
         # Analog to 'perSystem' of flake-parts.
-            # For every instance of this service we will add a nixosModule to a client-machine
+            # For every instance of this service we will add a nixosModule to a peer-machine
             nixosModule = { config, ... }: {
                 # Interaction examples what you could do here:
                 # - Get some settings of this machine
