@@ -1,4 +1,4 @@
-{ ... }:
+{ clanLib, ... }:
 {
   _class = "clan.service";
   manifest.name = "clan-core/syncthing";
@@ -142,28 +142,20 @@
           let
             allPeerMachines = lib.attrNames roles.peer.machines;
 
-            readMachineVar =
-              machine: varPath: default:
-              let
-                fullPath = "${config.clan.core.settings.directory}/vars/per-machine/${machine}/${varPath}";
-              in
-              if builtins.pathExists fullPath then
-                lib.removeSuffix "\n" (builtins.readFile fullPath)
-              else
-                default;
-
             peerDevices = lib.listToAttrs (
-              lib.forEach allPeerMachines (machine: {
-                name = machine;
+              lib.forEach allPeerMachines (name: {
+                inherit name;
                 value = {
-                  name = machine;
-                  id = readMachineVar machine "syncthing/id/value" "";
-                  addresses = [
-                    "dynamic"
-                  ]
-                  ++
-                    lib.optional (readMachineVar machine "zerotier/zerotier-ip/value" null != null)
-                      "tcp://[${readMachineVar machine "zerotier/zerotier-ip/value" ""}]:22000";
+                  inherit name;
+                  id = lib.removeSuffix "\n" (
+                    clanLib.vars.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "syncthing";
+                      file = "id";
+                    }
+                  );
+                  addresses = [ "dynamic" ] ++ [ "tcp://${name}.${config.clan.core.settings.domain}:22000" ];
                 };
               })
             );
@@ -218,11 +210,11 @@
                 # 22000 TCP and/or UDP for sync traffic
                 # 21027/UDP for discovery
                 # source: https://docs.syncthing.net/users/firewall.html
-                networking.firewall.interfaces."zt*".allowedTCPPorts = [
+                networking.firewall.allowedTCPPorts = [
                   8384
                   22000
                 ];
-                networking.firewall.interfaces."zt*".allowedUDPPorts = [
+                networking.firewall.allowedUDPPorts = [
                   22000
                   21027
                 ];

@@ -51,8 +51,6 @@ let
       };
     };
 
-  # For admin and signer machines:
-  # <hostname>.<config.clan.core.settings.domain>:<settings.port>
   mkBootstrapNodes =
     {
       config,
@@ -140,7 +138,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;
@@ -189,7 +186,6 @@ in
     perInstance =
       {
         extendSettings,
-        lib,
         roles,
         ...
       }:
@@ -201,7 +197,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;
@@ -221,7 +216,6 @@ in
     perInstance =
       {
         extendSettings,
-        lib,
         roles,
         ...
       }:
@@ -233,7 +227,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;
