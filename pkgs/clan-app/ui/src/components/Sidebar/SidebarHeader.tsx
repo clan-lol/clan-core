@@ -32,7 +32,7 @@ export const SidebarHeader = () => {
                 weight="bold"
                 inverted={true}
               >
-                {clans()?.active?.name.charAt(0).toUpperCase()}
+                {clans()?.active?.data.name.charAt(0).toUpperCase()}
               </Typography>
             </div>
             <Typography
@@ -41,7 +41,7 @@ export const SidebarHeader = () => {
               weight="bold"
               inverted={!open()}
             >
-              {clans()?.active?.name}
+              {clans()?.active?.data.name}
             </Typography>
           </div>
           <DropdownMenu.Icon>
@@ -96,7 +96,7 @@ export const SidebarHeader = () => {
                         }}
                       >
                         <Typography hierarchy="label" size="xs" weight="medium">
-                          {clan.name}
+                          {clan.data.name}
                         </Typography>
                       </DropdownMenu.Item>
                     </Suspense>

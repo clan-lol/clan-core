@@ -1,7 +1,7 @@
 import * as api from "@/src/api";
 import { AccessorWithLatest, createAsync } from "@solidjs/router";
 import { MachineList } from "./Machine";
-import { ClanData, ClanMeta } from "@/src/api/clan";
+import { ClanData, ClanMeta, DataSchema, Tags } from "@/src/api/clan";
 import { createStore, SetStoreFunction } from "solid-js/store";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { makePersisted } from "@solid-primitives/storage";
@@ -29,18 +29,30 @@ export class ClanList {
   }
 
   #clans: Clan[];
-  #setClans: SetStoreFunction<Clan[]>;
+  #setClans: (clans: Clan[]) => void;
   #activeIndex: Accessor<number>;
   #setActiveIndex: Setter<number>;
 
   private constructor(clans: Clan[]) {
-    [this.#clans, this.#setClans] = createStore(clans);
-    [this.#activeIndex, this.#setActiveIndex] = makePersisted(
-      createSignal(-1),
-      {
-        name: "activeClanIndex",
-      },
-    );
+    const [clansStore, setClansStore] = createStore(clans);
+    this.#clans = clansStore;
+
+    this.#setClans = (clans: Clan[]) => {
+      setClansStore(clans);
+      ClanList.#setIds(this.#clans.map(({ id }) => id));
+    };
+    const [activeIndex, setActiveIndex] = makePersisted(createSignal(-1), {
+      name: "activeClanIndex",
+    });
+    this.#activeIndex = activeIndex;
+    this.#setActiveIndex = (...args) => {
+      if (this.active) {
+        if (this.active.hasMachines()) {
+          this.active.machines()?.deactivate();
+        }
+      }
+      setActiveIndex(...args);
+    };
   }
   get length() {
     return this.#clans.length;
@@ -48,7 +60,7 @@ export class ClanList {
   [Symbol.iterator]() {
     return this.#clans[Symbol.iterator]();
   }
-  get entries() {
+  entries(): ArrayIterator<[number, Clan]> {
     return this.#clans.entries();
   }
 
@@ -57,13 +69,9 @@ export class ClanList {
     return i === -1 ? null : this.#clans[i] || null;
   }
 
-  activate(idOrIndex: string | number): void {
-    if (typeof idOrIndex === "number") {
-      this.#setActiveIndex(idOrIndex);
-      return;
-    }
+  activate(id: string): void {
     for (const [i, clan] of this.#clans.entries()) {
-      if (clan.id === idOrIndex) {
+      if (clan.id === id) {
         this.#setActiveIndex(i);
       }
     }
@@ -71,6 +79,17 @@ export class ClanList {
 
   deactivate(): void {
     this.#setActiveIndex(-1);
+  }
+
+  remove(id: string): void {
+    for (const [i, clan] of this.#clans.entries()) {
+      if (clan.id === id) {
+        this.#setClans([
+          ...this.#clans.slice(0, i),
+          ...this.#clans.slice(i + 1),
+        ]);
+      }
+    }
   }
 
   async create(
@@ -84,8 +103,7 @@ export class ClanList {
   ) {
     const meta = await api.clan.createClan(path, data);
     const clan = new Clan(meta, this);
-    this.#setClans(this.#clans.length, clan);
-    ClanList.#setIds(this.#clans.map(({ id }) => id));
+    this.#setClans([...this.#clans, clan]);
     if (active) {
       this.#setActiveIndex(this.#clans.length - 1);
     }
@@ -99,8 +117,7 @@ export class ClanList {
     }
 
     const clan = await Clan.get(id, this);
-    this.#setClans(this.#clans.length, clan);
-    ClanList.#setIds(this.#clans.map(({ id }) => id));
+    this.#setClans([...this.#clans, clan]);
     if (active) {
       this.#setActiveIndex(this.#clans.length - 1);
     }
@@ -109,28 +126,36 @@ export class ClanList {
 
 export class Clan {
   static async get(id: string, clans: ClanList) {
-    const data = await api.clan.getClan(id);
-    return new Clan(data, clans);
+    const meta = await api.clan.getClan(id);
+    return new Clan(meta, clans);
   }
 
-  #clans: ClanList;
+  readonly #clans: ClanList;
   readonly id: string;
-  name: string;
-  description: string | undefined;
-  schema: ClanMeta["schema"];
+  readonly data: ClanData;
+  readonly #setData: SetStoreFunction<ClanData>;
+  readonly schema: DataSchema;
+  readonly hasMachines: Accessor<boolean>;
   readonly machines: AccessorWithLatest<MachineList | undefined>;
+  readonly tags: AccessorWithLatest<Tags | undefined>;
 
   constructor(meta: ClanMeta, clans: ClanList) {
     this.#clans = clans;
     this.id = meta.id;
-    this.name = meta.data.name;
-    this.description = meta.data.description;
+    [this.data, this.#setData] = createStore(meta.data);
     this.schema = meta.schema;
-    this.machines = createAsync(async () => await MachineList.get(this));
+    const [hasMachines, setHasMachines] = createSignal(false);
+    this.hasMachines = hasMachines;
+    this.machines = createAsync(async () => {
+      const machines = await MachineList.get(this);
+      setHasMachines(true);
+      return machines;
+    });
+    this.tags = createAsync(async () => await api.clan.getTags(this.id));
   }
 
   get isActive(): boolean {
-    return this.#clans.active === this;
+    return this.#clans.active?.id === this.id;
   }
 
   activate(): void {
@@ -141,5 +166,14 @@ export class Clan {
     if (this.isActive) {
       this.#clans.deactivate();
     }
+  }
+
+  async updateDate(data: ClanData): Promise<void> {
+    await api.clan.updateClanData(this.id, data);
+    this.#setData(data);
+  }
+
+  remove(): void {
+    this.#clans.remove(this.id);
   }
 }

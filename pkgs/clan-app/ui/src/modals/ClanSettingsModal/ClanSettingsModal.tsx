@@ -1,6 +1,5 @@
 import styles from "./ClanSettingsModal.module.css";
 import { Modal } from "@/src/components/Modal/Modal";
-import { ClanDetails } from "@/src/hooks/queries";
 import * as v from "valibot";
 import {
   createForm,
@@ -17,10 +16,9 @@ import { Fieldset } from "@/src/components/Form/Fieldset";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
-import { callApi } from "@/src/hooks/api";
 import { Alert } from "@/src/components/Alert/Alert";
-import { removeClanURI } from "@/src/stores/clan";
 import { useClanContext } from "@/src/contexts/ClanContext";
+import { ClanData } from "@/src/api/clan";
 
 const schema = v.object({
   name: v.string(),
@@ -33,55 +31,28 @@ export interface ClanSettingsModalProps {
 }
 
 type FieldNames = "name" | "description" | "icon";
-type FormValues = Pick<ClanDetails["details"], "name" | "description" | "icon">;
 
 export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
   const { clans } = useClanContext()!;
-  const activeClan = () => clans()?.active;
+  const activeClan = () => clans()!.active!;
   const [saving, setSaving] = createSignal(false);
 
-  const [formStore, { Form, Field }] = createForm<FormValues>({
-    initialValues: activeClan()!,
-    validate: valiForm<FormValues>(schema),
+  const [formStore, { Form, Field }] = createForm<ClanData>({
+    initialValues: activeClan().data,
+    validate: valiForm<ClanData>(schema),
   });
 
-  const readOnly = (name: FieldNames) => activeClan()?.schema[name]?.readonly;
+  const readOnly = (name: FieldNames) => activeClan().schema[name]?.readonly;
 
-  const handleSubmit: SubmitHandler<FormValues> = async (values, event) => {
-    if (!formStore.dirty) {
-      // nothing to save, just close the modal
-      props.onClose();
-      return;
-    }
-
-    // we only save stuff when the form is dirty
+  const onSubmit: SubmitHandler<ClanData> = async (values, event) => {
     setSaving(true);
-
-    const call = callApi("set_clan_details", {
-      options: {
-        flake: {
-          identifier: activeClan.path,
-        },
-        meta: {
-          // todo we don't support icon field yet, so we mixin the original fields to stop the API from complaining
-          // about deleting a field
-          ...activeClan.data(),
-          ...values,
-        },
-      },
+    // TODO: once the backend supports partial update, only pass in changed data
+    await activeClan().updateDate({
+      ...activeClan().data,
+      ...values,
     });
-
-    const result = await call.result;
-
     setSaving(false);
-
-    if (result.status == "error") {
-      throw new Error(`Failed to save changes: ${result.errors[0].message}`);
-    }
-
-    if (result.status == "success") {
-      props.onClose();
-    }
+    props.onClose();
   };
 
   const errorMessage = (): Maybe<string> => {
@@ -96,10 +67,10 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
 
   const [removeValue, setRemoveValue] = createSignal("");
 
-  const removeDisabled = () => removeValue() !== activeClan.data()?.name;
+  const removeDisabled = () => removeValue() !== activeClan().data.name;
 
   const onRemove = () => {
-    removeClanURI(props.model.uri);
+    activeClan().remove();
   };
 
   return (
@@ -108,9 +79,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
       open
       title="Settings"
       onClose={props.onClose}
-      wrapContent={(props) => (
-        <Form onSubmit={handleSubmit}>{props.children}</Form>
-      )}
+      wrapContent={(props) => <Form onSubmit={onSubmit}>{props.children}</Form>}
       metaHeader={() => (
         <div class={styles.header}>
           <Typography
@@ -119,7 +88,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
             size="default"
             weight="medium"
           >
-            {props.model.details.name}
+            {activeClan().data.name}
           </Typography>
           <Button hierarchy="primary" size="s" type="submit" loading={saving()}>
             Save
@@ -144,7 +113,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  activeClan()!.schema,
+                  activeClan().schema,
                   "A unique identifier for this Clan",
                 )}
               />
@@ -160,7 +129,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 readOnly={readOnly("description")}
                 tooltip={tooltipText(
                   "description",
-                  activeClan()!.schema,
+                  activeClan().schema,
                   "A description of this Clan",
                 )}
                 orientation="horizontal"

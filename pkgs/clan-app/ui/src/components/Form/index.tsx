@@ -1,9 +1,9 @@
-import { ClanMeta } from "@/src/api/clan";
+import { DataSchema } from "@/src/api/clan";
 import { Maybe } from "@modular-forms/solid";
 
 export const tooltipText = (
   name: string,
-  schema: ClanMeta["schema"],
+  schema: DataSchema,
   staticValue: Maybe<string> = undefined,
 ): Maybe<string> => {
   const entry = schema[name];
