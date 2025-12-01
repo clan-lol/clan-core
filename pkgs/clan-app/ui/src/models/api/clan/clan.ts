@@ -1,22 +1,10 @@
-import client from "@api/clan/client";
-import { DataSchema } from ".";
+import { ClanData, ClanMeta, Tags } from "../../Clan";
+import client from "./client-call";
 
 export async function getClanDir(): Promise<string> {
   const res = await client.get("get_clan_folder");
   return res.data.identifier;
 }
-
-export type ClanData = {
-  name: string;
-  description?: string;
-};
-
-export type ClanMeta = {
-  id: string;
-  data: ClanData;
-  schema: DataSchema;
-};
-
 // TODO: make this one API call only
 export async function getClan(id: string): Promise<ClanMeta> {
   // TODO: make this a GET instead
@@ -122,12 +110,6 @@ export async function createClan(
   };
 }
 
-export type Tags = {
-  // TODO: rename backend's data.options to data.regular, options is too
-  // overloaded a name
-  regular: string[];
-  special: string[];
-};
 export async function getTags(clanId: string): Promise<Tags> {
   const res = await client.post("list_tags", {
     body: {

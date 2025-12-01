@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createMemoryHistory, MemoryRouter, Route } from "@solidjs/router";
-import { Sidebar } from "@/src/components/Sidebar/Sidebar";
+import Sidebar from "@/src/components/Sidebar";
 import { Suspense } from "solid-js";
 import { addClanURI, resetStore } from "@/src/stores/clan";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";

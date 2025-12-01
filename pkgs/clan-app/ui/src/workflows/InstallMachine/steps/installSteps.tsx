@@ -33,7 +33,7 @@ import {
 } from "@/src/hooks/queries";
 import { useClanURI } from "@/src/hooks/clan";
 import { useApiClient } from "@/src/hooks/ApiClient";
-import * as api from "@/src/api";
+import * as api from "@/src/models/api";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";

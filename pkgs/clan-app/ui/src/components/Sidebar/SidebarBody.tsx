@@ -4,19 +4,23 @@ import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
-import { SidebarProps } from "./Sidebar";
+import { SidebarProps } from ".";
 import { Button } from "../Button/Button";
 import { Instance } from "@/src/workflows/Service/models";
-import { useClanContext } from "@/src/contexts/ClanContext";
-import { Machine } from "@/src/contexts/ClanContext/Machine";
+import { useClanContext } from "../Context/ClanContext";
+import {
+  MachineContextProvider,
+  useMachineContext,
+} from "../Context/MachineContext";
 
-const MachineRoute = (props: { machine: Machine }) => {
+const MachineRoute = () => {
+  const machine = useMachineContext()!;
   return (
     <a
       href="#"
       onClick={(ev) => {
         ev.preventDefault();
-        props.machine.activate();
+        machine().activate();
       }}
     >
       <div class="flex w-full flex-col gap-2">
@@ -28,9 +32,9 @@ const MachineRoute = (props: { machine: Machine }) => {
             color="primary"
             inverted
           >
-            {props.machine.name}
+            {machine().name}
           </Typography>
-          <MachineStatus status={props.machine.status} />
+          <MachineStatus status={machine().status} />
         </div>
         <div class="flex w-full flex-row items-center gap-1">
           <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
@@ -41,7 +45,7 @@ const MachineRoute = (props: { machine: Machine }) => {
             inverted
             color="primary"
           >
-            {props.machine.instanceRefs.length}
+            {machine().serviceInstances.length}
           </Typography>
         </div>
       </div>
@@ -50,7 +54,7 @@ const MachineRoute = (props: { machine: Machine }) => {
 };
 
 const Machines = () => {
-  const { clans } = useClanContext()!;
+  const clan = useClanContext()!;
 
   return (
     <Accordion.Item class={styles.accordionItem} value="machines">
@@ -77,7 +81,7 @@ const Machines = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <Show
-          when={clans()?.active?.machines()?.length}
+          when={clan().machines()?.length}
           fallback={
             <div class="flex w-full flex-col items-center justify-center gap-2.5">
               <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -95,8 +99,12 @@ const Machines = () => {
           }
         >
           <nav>
-            <For each={Array.from(clans()!.active!.machines()!)}>
-              {(machine) => <MachineRoute machine={machine} />}
+            <For each={Array.from(clan().machines() || [])}>
+              {(machine) => (
+                <MachineContextProvider machine={() => machine}>
+                  <MachineRoute />
+                </MachineContextProvider>
+              )}
             </For>
           </nav>
         </Show>
@@ -141,6 +149,8 @@ export const ServiceRoute = (props: {
 );
 
 const Services = () => {
+  const { clans } = useClanContext()!;
+
   const serviceInstances = () => {
     if (!ctx.serviceInstancesQuery.isSuccess) {
       return [];

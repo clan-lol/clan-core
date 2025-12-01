@@ -4,13 +4,15 @@ import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { Typography } from "../Typography/Typography";
 import { createSignal, For, Show, Suspense } from "solid-js";
 import { Button } from "../Button/Button";
-import { ClanSettingsModal } from "@/src/modals/ClanSettingsModal/ClanSettingsModal";
-import { useClanContext } from "@/src/contexts/ClanContext";
+import { ClanSettingsModal } from "@/src/components/Modal/ClanSettingsModal";
+import { useClanContext } from "../Context/ClanContext";
+import { useClansContext } from "../Context/ClansContext";
 
 export const SidebarHeader = () => {
   const [open, setOpen] = createSignal(false);
   const [showSettings, setShowSettings] = createSignal(false);
-  const { clans } = useClanContext()!;
+  const clan = useClanContext()!;
+  const clans = useClansContext()!;
 
   return (
     <div class={styles.sidebarHeader}>
@@ -32,7 +34,7 @@ export const SidebarHeader = () => {
                 weight="bold"
                 inverted={true}
               >
-                {clans()?.active?.data.name.charAt(0).toUpperCase()}
+                {clan().data.name.charAt(0).toUpperCase()}
               </Typography>
             </div>
             <Typography
@@ -41,7 +43,7 @@ export const SidebarHeader = () => {
               weight="bold"
               inverted={!open()}
             >
-              {clans()?.active?.data.name}
+              {clan().data.name}
             </Typography>
           </div>
           <DropdownMenu.Icon>
@@ -80,7 +82,7 @@ export const SidebarHeader = () => {
                   ghost
                   size="xs"
                   icon="Plus"
-                  onClick={() => clans()?.active?.deactivate()}
+                  onClick={() => clan().deactivate()}
                 >
                   Add
                 </Button>

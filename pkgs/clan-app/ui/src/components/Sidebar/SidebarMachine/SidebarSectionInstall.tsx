@@ -3,7 +3,7 @@ import { Button } from "@/src/components/Button/Button";
 import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
 import styles from "./SidebarSectionInstall.module.css";
 import { Alert } from "../../Alert/Alert";
-import { useMachineContext } from "@/src/contexts/MachineContext";
+import { useMachineContext } from "@/src/components/Context/MachineContext";
 
 export const SidebarSectionInstall = () => {
   const machine = useMachineContext()!;
@@ -11,7 +11,7 @@ export const SidebarSectionInstall = () => {
   const [showInstall, setShowModal] = createSignal(false);
 
   return (
-    <Show when={machine.status == "not_installed"}>
+    <Show when={machine().status == "not_installed"}>
       <div class={styles.install}>
         <Alert
           type="warning"
@@ -25,7 +25,7 @@ export const SidebarSectionInstall = () => {
         <Show when={showInstall()}>
           <InstallModal
             open={showInstall()}
-            machineName={machine.name}
+            machineName={machine().name}
             onClose={async () => {
               setShowModal(false);
             }}

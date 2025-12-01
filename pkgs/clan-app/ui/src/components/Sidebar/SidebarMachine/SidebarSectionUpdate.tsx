@@ -2,7 +2,7 @@ import { createSignal, Show } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
 import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
-import { useMachineContext } from "@/src/contexts/MachineContext";
+import { useMachineContext } from "@/src/components/Context/MachineContext";
 
 export const SidebarSectionUpdate = () => {
   const machine = useMachineContext()!;
@@ -10,7 +10,7 @@ export const SidebarSectionUpdate = () => {
   const [showUpdate, setShowUpdate] = createSignal(false);
 
   return (
-    <Show when={machine.status !== "not_installed"}>
+    <Show when={machine().status !== "not_installed"}>
       <div class={styles.install}>
         <Button
           hierarchy="primary"
@@ -22,7 +22,7 @@ export const SidebarSectionUpdate = () => {
         <Show when={showUpdate()}>
           <UpdateModal
             open={showUpdate()}
-            machineName={machine.name}
+            machineName={machine().name}
             onClose={async () => {
               setShowUpdate(false);
             }}

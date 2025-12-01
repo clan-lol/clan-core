@@ -1,35 +1,5 @@
-import client from "@api/clan/client";
-import { DataSchema } from ".";
-
-export type MachineData = {
-  // TODO: don't use nested fields, it makes updating data much more complex
-  // because we need to deal with deep merging and check if the whole object
-  // is missing or not
-  deploy?: {
-    buildHost?: string;
-    targetHost?: string;
-  };
-  description?: string;
-  icon?: string;
-  installedAt?: number;
-  machineClass: "nixos" | "darwin";
-  tags: string[];
-};
-
-export type MachineMeta = {
-  // TODO: name should be renamed to id
-  name: string;
-  data: MachineData;
-  instanceRefs: string[];
-  status: MachineStatus;
-  schema: DataSchema;
-};
-
-export type MachineStatus =
-  | "not_installed"
-  | "offline"
-  | "out_of_sync"
-  | "online";
+import client from "./client-call";
+import { MachineData, MachineMeta } from "@/src/models/Machine";
 
 // TODO: make this one API call only
 export async function getMachines(
@@ -73,7 +43,7 @@ export async function getMachines(
           {
             name: machineName,
             data: machine.data,
-            instanceRefs: machine.instance_refs,
+            serviceInstances: machine.instance_refs,
             status: stateRes.data.status,
             schema: schemaRes.data,
           },

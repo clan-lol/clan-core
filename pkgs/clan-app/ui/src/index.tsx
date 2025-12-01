@@ -8,7 +8,6 @@ import { callApi } from "./hooks/api";
 import { DefaultQueryClient } from "@/src/hooks/queries";
 import { Toaster } from "solid-toast";
 import Entrypoint from "./Entrypoint";
-import { ClanContextProvider } from "./contexts/ClanContext";
 
 const root = document.getElementById("app")!;
 
@@ -38,9 +37,7 @@ render(
         {/* Temporary solution */}
         <Toaster toastOptions={{}} />
         <QueryClientProvider client={DefaultQueryClient}>
-          <ClanContextProvider>
-            <Entrypoint />
-          </ClanContextProvider>
+          <Entrypoint />
         </QueryClientProvider>
       </ApiClientProvider>
     </ErrorBoundary>

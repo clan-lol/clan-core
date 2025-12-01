@@ -1,10 +1,10 @@
-import * as api from "@/src/api";
 import { AccessorWithLatest, createAsync } from "@solidjs/router";
+import * as api from "./api";
 import { MachineList } from "./Machine";
-import { ClanData, ClanMeta, DataSchema, Tags } from "@/src/api/clan";
 import { createStore, SetStoreFunction } from "solid-js/store";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { makePersisted } from "@solid-primitives/storage";
+import { DataSchema } from "./schema";
 
 const [ids, setIds] = makePersisted(createStore<string[]>([]), {
   name: "clanIds",
@@ -136,6 +136,8 @@ export class Clan {
   readonly schema: DataSchema;
   readonly hasMachines: Accessor<boolean>;
   readonly machines: AccessorWithLatest<MachineList | undefined>;
+  readonly hasServices: Accessor<boolean>;
+  readonly services: AccessorWithLatest<MachineList | undefined>;
   readonly tags: AccessorWithLatest<Tags | undefined>;
 
   constructor(meta: ClanMeta, clans: ClanList) {
@@ -149,6 +151,13 @@ export class Clan {
       const machines = await MachineList.get(this);
       setHasMachines(true);
       return machines;
+    });
+    const [hasServices, setHasServices] = createSignal(false);
+    this.hasServices = hasServices;
+    this.services = createAsync(async () => {
+      const services = await MachineList.get(this);
+      setHasServices(true);
+      return services;
     });
     this.tags = createAsync(async () => await api.clan.getTags(this.id));
   }
@@ -176,3 +185,21 @@ export class Clan {
     this.#clans.remove(this.id);
   }
 }
+
+export type ClanData = {
+  name: string;
+  description?: string;
+};
+
+export type ClanMeta = {
+  id: string;
+  data: ClanData;
+  schema: DataSchema;
+};
+
+export type Tags = {
+  // TODO: rename backend's data.options to data.regular, options is too
+  // overloaded a name
+  regular: string[];
+  special: string[];
+};

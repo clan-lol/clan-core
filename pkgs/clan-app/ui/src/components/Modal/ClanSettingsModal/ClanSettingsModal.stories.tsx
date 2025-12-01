@@ -1,6 +1,6 @@
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ClanSettingsModal } from "./ClanSettingsModal";
+import { ClanSettingsModal } from ".";
 
 const meta: Meta<typeof ClanSettingsModal> = {
   title: "Modals/ClanSettings",

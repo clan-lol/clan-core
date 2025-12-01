@@ -17,8 +17,8 @@ import { Divider } from "@/src/components/Divider/Divider";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
-import { useClanContext } from "@/src/contexts/ClanContext";
-import { ClanData } from "@/src/api/clan";
+import { useClanContext } from "../../Context/ClanContext";
+import { ClanData } from "@/src/models/Clan";
 
 const schema = v.object({
   name: v.string(),
@@ -33,22 +33,21 @@ export interface ClanSettingsModalProps {
 type FieldNames = "name" | "description" | "icon";
 
 export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
-  const { clans } = useClanContext()!;
-  const activeClan = () => clans()!.active!;
+  const clan = useClanContext()!;
   const [saving, setSaving] = createSignal(false);
 
   const [formStore, { Form, Field }] = createForm<ClanData>({
-    initialValues: activeClan().data,
+    initialValues: clan().data,
     validate: valiForm<ClanData>(schema),
   });
 
-  const readOnly = (name: FieldNames) => activeClan().schema[name]?.readonly;
+  const readOnly = (name: FieldNames) => clan().schema[name]?.readonly;
 
   const onSubmit: SubmitHandler<ClanData> = async (values, event) => {
     setSaving(true);
     // TODO: once the backend supports partial update, only pass in changed data
-    await activeClan().updateDate({
-      ...activeClan().data,
+    await clan().updateDate({
+      ...clan().data,
       ...values,
     });
     setSaving(false);
@@ -67,10 +66,10 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
 
   const [removeValue, setRemoveValue] = createSignal("");
 
-  const removeDisabled = () => removeValue() !== activeClan().data.name;
+  const removeDisabled = () => removeValue() !== clan().data.name;
 
   const onRemove = () => {
-    activeClan().remove();
+    clan().remove();
   };
 
   return (
@@ -88,7 +87,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
             size="default"
             weight="medium"
           >
-            {activeClan().data.name}
+            {clan().data.name}
           </Typography>
           <Button hierarchy="primary" size="s" type="submit" loading={saving()}>
             Save
@@ -113,7 +112,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  activeClan().schema,
+                  clan().schema,
                   "A unique identifier for this Clan",
                 )}
               />
@@ -129,7 +128,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 readOnly={readOnly("description")}
                 tooltip={tooltipText(
                   "description",
-                  activeClan().schema,
+                  clan().schema,
                   "A description of this Clan",
                 )}
                 orientation="horizontal"

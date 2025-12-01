@@ -27,11 +27,11 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
+import { ListClansModal } from "@/src/components/Modal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import * as api from "@/src/api";
-import { useClanContext } from "@/src/contexts/ClanContext";
+import * as api from "@/src/models/api";
+import { useClansContext } from "../Context/ClansContext";
 
 type State = "welcome" | "setup" | "creating";
 
@@ -83,7 +83,7 @@ const welcome = (props: {
   welcomeError: Accessor<string | undefined>;
   setWelcomeError: Setter<string | undefined>;
 }) => {
-  const { clans } = useClanContext()!;
+  const clans = useClansContext()!;
   const [loading, setLoading] = createSignal(false);
 
   const onSelect = async () => {
@@ -153,7 +153,7 @@ const welcome = (props: {
 };
 
 export const Onboarding: Component = () => {
-  const { clans } = useClanContext()!;
+  const clans = useClansContext()!;
   const [state, setState] = createSignal<State>("welcome");
 
   // used to display an error in the welcome screen in the event of a failed

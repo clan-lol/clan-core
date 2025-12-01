@@ -1,20 +1,17 @@
-import { Modal } from "../../components/Modal/Modal";
+import { Modal } from "../Modal";
 import cx from "classnames";
 import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, Show } from "solid-js";
-import { activeClanURI, clanURIs, setActiveClanURI } from "@/src/stores/clan";
-import { useClanListQuery } from "@/src/hooks/queries";
-import { Alert } from "@/src/components/Alert/Alert";
+import { For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
-import { useClanContext } from "@/src/contexts/ClanContext";
+import { useClansContext } from "../../Context/ClansContext";
 
 export interface ListClansModalProps {
   onClose?: () => void;
 }
 
 export const ListClansModal = (props: ListClansModalProps) => {
-  const { clans } = useClanContext()!;
+  const clans = useClansContext()!;
 
   return (
     <Modal
@@ -43,11 +40,7 @@ export const ListClansModal = (props: ListClansModalProps) => {
                   label={clan.data.name}
                   description={clan.data.description}
                   onClick={() => {
-                    if (clan.isActive) {
-                      location.reload();
-                    } else {
-                      clan.activate();
-                    }
+                    clan.activate();
                   }}
                 />
               </li>

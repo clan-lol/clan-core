@@ -19,7 +19,7 @@ export interface SidebarProps {
   staticSections?: SectionProps[];
 }
 
-export const Sidebar = (props: SidebarProps) => {
+export default function Sidebar(props: SidebarProps) {
   const [bodyProps] = splitProps(props, ["staticSections"]);
 
   return (
@@ -28,4 +28,4 @@ export const Sidebar = (props: SidebarProps) => {
       <SidebarBody {...bodyProps} />
     </div>
   );
-};
+}

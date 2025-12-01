@@ -1,57 +1,20 @@
-import { RouteSectionProps, useLocation, useNavigate } from "@solidjs/router";
-import {
-  Component,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  ErrorBoundary,
-  on,
-  onMount,
-  Show,
-  Suspense,
-  useContext,
-} from "solid-js";
-import {
-  buildClanPath,
-  buildMachinePath,
-  maybeUseMachineName,
-  useClanURI,
-  useMachineName,
-} from "@/src/hooks/clan";
+import { Show } from "solid-js";
 import { CubeScene } from "@/src/scene/cubes";
-import {
-  ClanDetails,
-  ListServiceInstances,
-  MachinesQueryResult,
-  useClanDetailsQuery,
-  useClanListQuery,
-  useMachinesQuery,
-  useServiceInstancesQuery,
-} from "@/src/hooks/queries";
-import { clanURIs, setStore, store } from "@/src/stores/clan";
-import { produce } from "solid-js/store";
 import cx from "classnames";
 import styles from "./Workspace.module.css";
-import { Sidebar } from "@/src/components/Sidebar/Sidebar";
-import { UseQueryResult } from "@tanstack/solid-query";
-import { ListClansModal } from "@/src/modals/ListClansModal/ListClansModal";
-
-import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
-import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
-import { useClanContext } from "@/src/contexts/ClanContext";
-import { Service } from "../../routes/Service/Service";
+import Sidebar from "@/src/components/Sidebar";
 import SidebarMachine from "../Sidebar/SidebarMachine";
+import { useClanContext } from "../Context/ClanContext";
+import { MachineContextProvider } from "../Context/MachineContext";
 
-export default function Clan() {
-  const { clans } = useClanContext()!;
-  const activeMachine = () => clans()?.active?.machines()?.active;
+export default function Workspace() {
+  const clan = useClanContext()!;
 
   return (
     <>
       <div
         class={cx(styles.sidebarContainer, {
-          [styles.machineSelected]: activeMachine(),
+          [styles.machineSelected]: clan().machines()?.active,
         })}
       >
         <Sidebar />
@@ -111,8 +74,10 @@ export default function Clan() {
         </Suspense>
       </ErrorBoundary> */}
       </div>
-      <Show when={activeMachine()}>
-        <SidebarMachine machine={activeMachine()!} />
+      <Show when={clan().machines()?.active}>
+        <MachineContextProvider machine={() => clan().machines()!.active!}>
+          <SidebarMachine />
+        </MachineContextProvider>
       </Show>
     </>
   );

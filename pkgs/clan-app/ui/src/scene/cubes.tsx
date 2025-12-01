@@ -31,7 +31,7 @@ import {
   setHighlightGroups,
 } from "./highlightStore";
 import { createMachineMesh } from "./MachineRepr";
-import client from "@api/clan/client";
+import client from "@/src/models/api/clan/client-call";
 import { navigateToClan } from "../hooks/clan";
 
 function intersectMachines(

@@ -1,13 +1,8 @@
-import * as api from "@/src/api";
-import {
-  DataSchema,
-  MachineData,
-  MachineMeta,
-  MachineStatus,
-} from "@/src/api/clan";
-import { Clan } from "./Clan";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
+import * as api from "./api";
+import { Clan } from "./Clan";
+import { DataSchema } from "./schema";
 
 export class MachineList {
   static async get(clan: Clan): Promise<MachineList> {
@@ -67,7 +62,7 @@ export class Machine {
   readonly data: MachineData;
   readonly #setData: SetStoreFunction<MachineData>;
   readonly status: MachineStatus;
-  readonly instanceRefs: string[];
+  readonly serviceInstances: string[];
   readonly schema: DataSchema;
 
   constructor(meta: MachineMeta, machines: MachineList, clan: Clan) {
@@ -76,12 +71,12 @@ export class Machine {
     this.name = meta.name;
     [this.data, this.#setData] = createStore(meta.data);
     this.status = meta.status;
-    this.instanceRefs = meta.instanceRefs;
+    this.serviceInstances = meta.serviceInstances;
     this.schema = meta.schema;
   }
 
   get isActive() {
-    return this.#machines.active === this;
+    return this.#machines.active?.name === this.name;
   }
 
   activate(): void {
@@ -99,3 +94,33 @@ export class Machine {
     this.#setData(data);
   }
 }
+
+export type MachineData = {
+  // TODO: don't use nested fields, it makes updating data much more complex
+  // because we need to deal with deep merging and check if the whole object
+  // is missing or not
+  deploy?: {
+    buildHost?: string;
+    targetHost?: string;
+  };
+  description?: string;
+  icon?: string;
+  installedAt?: number;
+  machineClass: "nixos" | "darwin";
+  tags: string[];
+};
+
+export type MachineMeta = {
+  // TODO: name should be renamed to id
+  name: string;
+  data: MachineData;
+  serviceInstances: string[];
+  status: MachineStatus;
+  schema: DataSchema;
+};
+
+export type MachineStatus =
+  | "not_installed"
+  | "offline"
+  | "out_of_sync"
+  | "online";

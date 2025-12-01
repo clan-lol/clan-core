@@ -5,8 +5,8 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { tooltipText } from "@/src/components/Form";
-import { useMachineContext } from "@/src/contexts/MachineContext";
-import { MachineData } from "@/src/api/clan";
+import { useMachineContext } from "@/src/components/Context/MachineContext";
+import { MachineData } from "@/src/models/api/clan";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),
@@ -24,12 +24,12 @@ export const SectionGeneral = () => {
       return true;
     }
 
-    return machine.schema[name]?.readonly;
+    return machine().schema[name]?.readonly;
   };
 
   async function onSubmit(values: Partial<MachineData>): Promise<void> {
     // TODO: once the backend supports partial update, only pass in changed data
-    await machine.updateData({ ...machine.data, ...values });
+    await machine().updateData({ ...machine().data, ...values });
   }
 
   return (
@@ -39,7 +39,7 @@ export const SectionGeneral = () => {
       onSubmit={onSubmit}
       // FIXME: name is not editable, data shouldn't contain name
       // Make the name field just pure text
-      initialValues={machine.data as MachineData & { name: string }}
+      initialValues={machine().data as MachineData & { name: string }}
     >
       {({ editing, Field }) => (
         <div class="flex flex-col gap-3">
@@ -58,7 +58,7 @@ export const SectionGeneral = () => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  machine.schema,
+                  machine().schema,
                   "A unique identifier for this machine",
                 )}
               />
@@ -80,7 +80,7 @@ export const SectionGeneral = () => {
                 input={input}
                 tooltip={tooltipText(
                   "machineClass",
-                  machine.schema,
+                  machine().schema,
                   "The target platform for this machine",
                 )}
               />
@@ -97,7 +97,7 @@ export const SectionGeneral = () => {
                 labelWeight="normal"
                 inverted
                 readOnly={readOnly(editing, "description")}
-                tooltip={tooltipText("description", machine.schema)}
+                tooltip={tooltipText("description", machine().schema)}
                 orientation="horizontal"
                 autoResize={true}
                 minRows={2}
