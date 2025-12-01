@@ -28,7 +28,7 @@ const MachineRoute = (props: { machine: Machine }) => {
             color="primary"
             inverted
           >
-            {props.machine.data.name}
+            {props.machine.name}
           </Typography>
           <MachineStatus status={props.machine.status} />
         </div>

@@ -1,8 +1,6 @@
 import { createSignal, Show } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
 import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
-import { useMachineName } from "@/src/hooks/clan";
-import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";
 import { Alert } from "../../Alert/Alert";
 import { useMachineContext } from "@/src/contexts/MachineContext";
@@ -27,11 +25,8 @@ export const SidebarSectionInstall = () => {
         <Show when={showInstall()}>
           <InstallModal
             open={showInstall()}
-            machineName={useMachineName()}
+            machineName={machine.name}
             onClose={async () => {
-              // refresh some queries
-              ctx.machinesQuery.refetch();
-              ctx.serviceInstancesQuery.refetch();
               setShowModal(false);
             }}
           />

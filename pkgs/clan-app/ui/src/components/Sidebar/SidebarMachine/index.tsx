@@ -20,58 +20,16 @@ export default function SidebarMachine(props: { machine: Machine }) {
     props.machine.deactivate();
   };
 
-  // we have to update the whole machine model rather than just the sub fields that were changed
-  // for that reason we pass in this common submit handler to each machine sub section
-  const onSubmit = async (values: Partial<MachineModel>) => {
-    console.log("saving tags", values);
-    const call = callApi("set_machine", {
-      machine: {
-        name: machineName,
-        flake: {
-          identifier: clanURI,
-        },
-      },
-      update: {
-        ...machineQuery.data?.machine,
-        ...values,
-      },
-    });
-
-    const result = await call.result;
-    if (result.status === "error") {
-      throw new Error(result.errors[0].message);
-    }
-
-    // refresh the query
-    await machineQuery.refetch();
-  };
-
   return (
     <MachineContextProvider machine={props.machine}>
       <div class={styles.sidebarPaneContainer}>
-        <SidebarPane
-          title={props.machine.name}
-          onClose={onClose}
-          // the implementation of remote machine status in the backend needs more time to bake, so for now we remove it and
-          // present the user with the ability to install or update a machines based on `installedAt` in the inventory.json
-          //
-          // subHeader={
-          //   <Show when={useMachineName()} keyed>
-          //     <SidebarMachineStatus
-          //       clanURI={clanURI}
-          //       machineName={useMachineName()}
-          //     />
-          //   </Show>
-          // }
-        >
+        <SidebarPane title={props.machine.name} onClose={onClose}>
+          {/* TODO: merge the following two components */}
           <SidebarSectionInstall />
-          {/* <SidebarSectionUpdate
-          clanURI={clanURI}
-          machineName={useMachineName()}
-        />
-        <SectionGeneral {...sectionProps} />
-        <SectionTags {...sectionProps} />
-        <SectionServices /> */}
+          <SidebarSectionUpdate />
+          <SectionGeneral />
+          <SectionTags />
+          {/* <SectionServices /> */}
         </SidebarPane>
       </div>
     </MachineContextProvider>

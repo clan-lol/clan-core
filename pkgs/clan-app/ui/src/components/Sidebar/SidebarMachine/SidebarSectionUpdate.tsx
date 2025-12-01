@@ -1,23 +1,16 @@
 import { createSignal, Show } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
-import { useMachineName } from "@/src/hooks/clan";
-import { useMachineStateQuery } from "@/src/hooks/queries";
 import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
+import { useMachineContext } from "@/src/contexts/MachineContext";
 
-interface SidebarSectionUpdateProps {
-  clanURI: string;
-  machineName: string;
-}
-
-export const SidebarSectionUpdate = (props: SidebarSectionUpdateProps) => {
-  const ctx = useClanContext();
-  const query = useMachineStateQuery(props.clanURI, props.machineName);
+export const SidebarSectionUpdate = () => {
+  const machine = useMachineContext()!;
 
   const [showUpdate, setShowUpdate] = createSignal(false);
 
   return (
-    <Show when={query.isSuccess && query.data.status !== "not_installed"}>
+    <Show when={machine.status !== "not_installed"}>
       <div class={styles.install}>
         <Button
           hierarchy="primary"
@@ -29,12 +22,8 @@ export const SidebarSectionUpdate = (props: SidebarSectionUpdateProps) => {
         <Show when={showUpdate()}>
           <UpdateModal
             open={showUpdate()}
-            machineName={useMachineName()}
+            machineName={machine.name}
             onClose={async () => {
-              // refresh some queries
-              ctx.machinesQuery.refetch();
-              ctx.serviceInstancesQuery.refetch();
-
               setShowUpdate(false);
             }}
           />

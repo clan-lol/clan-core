@@ -1,23 +1,29 @@
 import client from "@api/clan/client";
+import { DataSchema } from ".";
 
-export interface MachineData {
-  name: string;
-  deploy: {
-    buildHost?: string | null;
-    targetHost?: string | null;
+export type MachineData = {
+  // TODO: don't use nested fields, it makes updating data much more complex
+  // because we need to deal with deep merging and check if the whole object
+  // is missing or not
+  deploy?: {
+    buildHost?: string;
+    targetHost?: string;
   };
   description?: string;
   icon?: string;
   installedAt?: number;
   machineClass: "nixos" | "darwin";
   tags: string[];
-}
+};
 
-export interface MachineMeta {
+export type MachineMeta = {
+  // TODO: name should be renamed to id
+  name: string;
   data: MachineData;
   instanceRefs: string[];
   status: MachineStatus;
-}
+  schema: DataSchema;
+};
 
 export type MachineStatus =
   | "not_installed"
@@ -25,6 +31,7 @@ export type MachineStatus =
   | "out_of_sync"
   | "online";
 
+// TODO: make this one API call only
 export async function getMachines(
   clanId: string,
 ): Promise<Record<string, MachineMeta>> {
@@ -39,27 +46,60 @@ export async function getMachines(
   return Object.fromEntries(
     await Promise.all(
       Object.entries(res.data).map(async ([machineName, machine]) => {
-        const res = await client.post("get_machine_state", {
-          body: {
-            machine: {
-              name: machineName,
-              flake: {
-                identifier: clanId,
+        const [stateRes, schemaRes] = await Promise.all([
+          client.post("get_machine_state", {
+            body: {
+              machine: {
+                name: machineName,
+                flake: {
+                  identifier: clanId,
+                },
               },
             },
-          },
-        });
+          }),
+          client.post("get_machine_fields_schema", {
+            body: {
+              machine: {
+                name: machineName,
+                flake: {
+                  identifier: clanId,
+                },
+              },
+            },
+          }),
+        ]);
         return [
           machineName,
           {
+            name: machineName,
             data: machine.data,
             instanceRefs: machine.instance_refs,
-            status: res.data.status,
+            status: stateRes.data.status,
+            schema: schemaRes.data,
           },
         ];
       }),
     ),
   );
+}
+
+// TODO: backend should provide an API that allows partial update
+export async function updateMachineData(
+  clanId: string,
+  machineName: string,
+  data: MachineData,
+): Promise<void> {
+  await client.post("set_machine", {
+    body: {
+      machine: {
+        name: machineName,
+        flake: {
+          identifier: clanId,
+        },
+      },
+      update: data,
+    },
+  });
 }
 
 export async function updateMachine({

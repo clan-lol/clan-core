@@ -1,5 +1,10 @@
 import * as api from "@/src/api";
-import { MachineData, MachineMeta, MachineStatus } from "@/src/api/clan";
+import {
+  DataSchema,
+  MachineData,
+  MachineMeta,
+  MachineStatus,
+} from "@/src/api/clan";
 import { Clan } from "./Clan";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
@@ -17,7 +22,7 @@ export class MachineList {
   }
 
   #machines: Machine[];
-  #setMachines: SetStoreFunction<Machine[]>;
+  #setMachines: (machines: Machine[]) => void;
   #activeIndex: Accessor<number>;
   #setActiveIndex: Setter<number>;
   private constructor(machines: Machine[]) {
@@ -31,29 +36,25 @@ export class MachineList {
       : this.#machines[this.#activeIndex()] || null;
   }
 
-  activate(nameOrIndex: string | number): void {
-    if (typeof nameOrIndex === "number") {
-      this.#setActiveIndex(nameOrIndex);
-      return;
-    }
+  activate(name: string): void {
     for (const [i, machine] of this.#machines.entries() || []) {
-      if (machine.data.name === nameOrIndex) {
+      if (machine.name === name) {
         this.#setActiveIndex(i);
       }
     }
   }
 
-  get length() {
+  get length(): number {
     return this.#machines.length;
   }
-  [Symbol.iterator]() {
+  [Symbol.iterator](): ArrayIterator<Machine> {
     return this.#machines[Symbol.iterator]();
   }
-  get entries() {
+  entries(): ArrayIterator<[number, Machine]> {
     return this.#machines.entries();
   }
 
-  deactive(): void {
+  deactivate(): void {
     this.#setActiveIndex(-1);
   }
 }
@@ -61,16 +62,21 @@ export class MachineList {
 export class Machine {
   clan: Clan;
   #machines: MachineList;
+  name: string;
   data: MachineData;
+  #setData: SetStoreFunction<MachineData>;
   status: MachineStatus;
   instanceRefs: string[];
+  schema: DataSchema;
 
   constructor(meta: MachineMeta, machines: MachineList, clan: Clan) {
     this.clan = clan;
     this.#machines = machines;
-    this.data = meta.data;
+    this.name = meta.name;
+    [this.data, this.#setData] = createStore(meta.data);
     this.status = meta.status;
     this.instanceRefs = meta.instanceRefs;
+    this.schema = meta.schema;
   }
 
   get isActive() {
@@ -78,48 +84,17 @@ export class Machine {
   }
 
   activate(): void {
-    this.#machines.activate(this.data.name);
+    this.#machines.activate(this.name);
   }
 
   deactivate(): void {
     if (this.isActive) {
-      this.#machines.deactive();
+      this.#machines.deactivate();
     }
   }
+
+  async updateData(data: MachineData) {
+    await api.clan.updateMachineData(this.clan.id, this.name, data);
+    this.#setData(data);
+  }
 }
-// export type Machine = (API["list_machines"]["return"] & {
-//   status: "success";
-// })["data"][string] & {
-//   state: ReturnType<typeof createState>;
-// };
-
-// function createState(clanPath: string, machineName: string) {
-//   return createAsync(
-//     async () => await api.clan.getMachineState(clanPath, machineName),
-//   );
-// }
-
-// function createTags(clanPath: string, machineName: string) {
-//   return createAsync(
-//     async () => await api.clan.getMachineState(clanPath, machineName),
-//   );
-// }
-
-// export function createMachines(clanPath: string) {
-//   return createAsync(async () =>
-//     Object.fromEntries(
-//       Object.entries(await api.clan.getMachines(clanPath)).map(
-//         ([machineName, machine]) => {
-//           return [
-//             machineName,
-//             {
-//               ...machine,
-//               state: createState(clanPath, machineName),
-//               tags:
-//             },
-//           ];
-//         },
-//       ),
-//     ),
-//   );
-// }
