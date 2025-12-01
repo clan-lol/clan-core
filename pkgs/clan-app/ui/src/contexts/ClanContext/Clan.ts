@@ -6,41 +6,39 @@ import { createStore, SetStoreFunction } from "solid-js/store";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { makePersisted } from "@solid-primitives/storage";
 
-export class ClanList {
-  static #setIds: SetStoreFunction<string[]>;
-  static #shared: ClanList;
-  static async get(): Promise<ClanList> {
-    if (this.#shared) {
-      return this.#shared;
-    }
+const [ids, setIds] = makePersisted(createStore<string[]>([]), {
+  name: "clanIds",
+});
+let clanList: ClanList | undefined;
 
-    const [ids, setIds] = makePersisted(createStore<string[]>([]), {
-      name: "clanIds",
-    });
-    this.#setIds = setIds;
+export class ClanList {
+  static async get(): Promise<ClanList> {
+    if (clanList) {
+      return clanList;
+    }
 
     const list = new ClanList([]);
     const clans = (await api.clan.getClans(ids)).map(
       (data) => new Clan(data, list),
     );
     list.#setClans(clans);
-    this.#shared = list;
+    clanList = list;
     return list;
   }
 
-  #clans: Clan[];
-  #setClans: (clans: Clan[]) => void;
-  #activeIndex: Accessor<number>;
-  #setActiveIndex: Setter<number>;
+  readonly #clans: Clan[];
+  readonly #setClans: (clans: Clan[]) => void;
+  readonly #activeIndex: Accessor<number>;
+  readonly #setActiveIndex: Setter<number>;
 
   private constructor(clans: Clan[]) {
     const [clansStore, setClansStore] = createStore(clans);
     this.#clans = clansStore;
-
     this.#setClans = (clans: Clan[]) => {
       setClansStore(clans);
-      ClanList.#setIds(this.#clans.map(({ id }) => id));
+      setIds(this.#clans.map(({ id }) => id));
     };
+
     const [activeIndex, setActiveIndex] = makePersisted(createSignal(-1), {
       name: "activeClanIndex",
     });
@@ -88,6 +86,7 @@ export class ClanList {
           ...this.#clans.slice(0, i),
           ...this.#clans.slice(i + 1),
         ]);
+        return;
       }
     }
   }

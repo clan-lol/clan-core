@@ -21,10 +21,11 @@ export class MachineList {
     return list;
   }
 
-  #machines: Machine[];
-  #setMachines: (machines: Machine[]) => void;
-  #activeIndex: Accessor<number>;
-  #setActiveIndex: Setter<number>;
+  readonly #machines: Machine[];
+  readonly #setMachines: (machines: Machine[]) => void;
+  readonly #activeIndex: Accessor<number>;
+  readonly #setActiveIndex: Setter<number>;
+
   private constructor(machines: Machine[]) {
     [this.#machines, this.#setMachines] = createStore(machines);
     [this.#activeIndex, this.#setActiveIndex] = createSignal(-1);
@@ -60,14 +61,14 @@ export class MachineList {
 }
 
 export class Machine {
-  clan: Clan;
-  #machines: MachineList;
-  name: string;
-  data: MachineData;
-  #setData: SetStoreFunction<MachineData>;
-  status: MachineStatus;
-  instanceRefs: string[];
-  schema: DataSchema;
+  readonly clan: Clan;
+  readonly #machines: MachineList;
+  readonly name: string;
+  readonly data: MachineData;
+  readonly #setData: SetStoreFunction<MachineData>;
+  readonly status: MachineStatus;
+  readonly instanceRefs: string[];
+  readonly schema: DataSchema;
 
   constructor(meta: MachineMeta, machines: MachineList, clan: Clan) {
     this.clan = clan;
