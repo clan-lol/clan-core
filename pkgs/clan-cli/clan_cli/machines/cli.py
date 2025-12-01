@@ -20,7 +20,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         required=True,
         # Workaround https://github.com/python/cpython/issues/67037 by setting
         # `metavar` to ensure `morph` isn't mentioned
-        metavar="{update,create,delete,list,update-hardware-config,install}",
+        metavar="{update,create,delete,list,init-hardware-config,update-hardware-config,install,generations}",
     )
 
     update_parser = subparser.add_parser(

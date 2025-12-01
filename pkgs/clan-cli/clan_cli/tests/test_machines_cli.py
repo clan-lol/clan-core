@@ -1,6 +1,7 @@
 import argparse
 
 import pytest
+from clan_cli.machines.cli import register_parser as register_machines_parser
 from clan_cli.machines.update import register_update_parser
 from clan_cli.secrets.folders import sops_machines_folder
 from clan_cli.tests import fixtures_flakes
@@ -11,6 +12,47 @@ from clan_cli.tests.stdout import CaptureOutput
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
+
+
+def test_machines_metavar_completeness() -> None:
+    """Test that the metavar in machines CLI includes all registered subcommands
+    except those explicitly ignored.
+    """
+    ignored_subcommands = ["morph"]
+
+    parser = argparse.ArgumentParser()
+    register_machines_parser(parser)
+
+    subparsers_action = None
+    if parser._subparsers is not None:
+        for action in parser._subparsers._actions:
+            if isinstance(action, argparse._SubParsersAction):
+                subparsers_action = action
+                break
+
+    assert subparsers_action is not None, "No subparser found in parser"
+    assert subparsers_action.choices is not None, "Subparser has no choices"
+    registered_subcommands = set(subparsers_action.choices.keys())
+
+    assert subparsers_action.metavar is not None, "Subparser metavar not set"
+    metavar_str = (
+        subparsers_action.metavar
+        if isinstance(subparsers_action.metavar, str)
+        else ",".join(subparsers_action.metavar)
+    )
+    metavar_commands = set(metavar_str.strip("{}").split(","))
+
+    expected_commands = registered_subcommands - set(ignored_subcommands)
+    missing = expected_commands - metavar_commands
+    extra = metavar_commands - expected_commands
+
+    assert metavar_commands == expected_commands, (
+        f"Metavar mismatch.\n"
+        f"Expected: {sorted(expected_commands)}\n"
+        f"Got: {sorted(metavar_commands)}\n"
+        + (f"Missing: {sorted(missing)}\n" if missing else "")
+        + (f"Extra: {sorted(extra)}" if extra else "")
+    )
 
 
 @pytest.mark.with_core

@@ -335,8 +335,8 @@ def produce_clan_service_docs() -> None:
         for role_name, role_filename in module_info["roles"].items():
             output += print_options(
                 role_filename,
-                f"## Options for the `{role_name}` role",
-                "This role has no configuration",
+                f"## Options for the `{role_name}` role\n",
+                f"## The `{role_name}` role has no configuration\n",
                 replace_prefix=f"clan.{module_name}",
             )
 
