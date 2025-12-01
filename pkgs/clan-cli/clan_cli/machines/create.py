@@ -63,7 +63,7 @@ def create_machine(
         flake=opts.clan_dir,
         template_ident=opts.template,
         dst_machine_name=machine_name,
-    ) as _machine_dir:
+    ) as machine_dir:
         # Write to the inventory if persist is true
         inventory_store = InventoryStore(opts.clan_dir)
         inventory = inventory_store.read()
@@ -77,7 +77,7 @@ def create_machine(
         # defaults to the eval result of inventory
         if commit:
             commit_file(
-                clan_dir / "machines" / machine_name,
+                machine_dir,
                 repo_dir=clan_dir,
                 commit_message=f"Add machine {machine_name}",
             )
