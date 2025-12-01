@@ -8,10 +8,10 @@
     # jon = { };
   };
 
-  # Docs: See https://docs.clan.lol/reference/clanServices
+  # Docs: See https://docs.clan.lol/services/definition/
   inventory.instances = {
 
-    # Docs: https://docs.clan.lol/reference/clanServices/admin/
+    # Docs: https://docs.clan.lol/services/official/admin/
     # Admin service for managing machines
     # This service adds a root password and SSH access.
     admin = {
@@ -24,7 +24,7 @@
       };
     };
 
-    # Docs: https://docs.clan.lol/reference/clanServices/zerotier/
+    # Docs: https://docs.clan.lol/services/official/zerotier/
     # The lines below will define a zerotier network and add all machines as 'peer' to it.
     # !!! Manual steps required:
     #   - Define a controller machine for the zerotier network.
@@ -39,7 +39,7 @@
       roles.peer.tags.all = { };
     };
 
-    # Docs: https://docs.clan.lol/reference/clanServices/tor/
+    # Docs: https://docs.clan.lol/services/official/tor/
     # Tor network provides secure, anonymous connections to your machines
     # All machines will be accessible via Tor as a fallback connection method
     tor = {
@@ -49,7 +49,7 @@
 
   # Additional NixOS configuration can be added here.
   # machines/jon/configuration.nix will be automatically imported.
-  # See: https://docs.clan.lol/guides/more-machines/#automatic-registration
+  # See: https://docs.clan.lol/guides/inventory/autoincludes/
   machines = {
     # jon = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];
