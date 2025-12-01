@@ -4,6 +4,10 @@
 
 ## New features
 
+## ncps
+
+- Added the ncps nix proxy binary cache service.
+
 ### Exports
 - Standardized exports system with centrally-defined options in clan-core
 

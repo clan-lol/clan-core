@@ -170,6 +170,7 @@ nav:
           - services/official/matrix-synapse.md
           - services/official/mycelium.md
           - services/official/monitoring.md
+          - services/official/ncps.md
           - services/official/packages.md
           - services/official/sshd.md
           - services/official/syncthing.md
