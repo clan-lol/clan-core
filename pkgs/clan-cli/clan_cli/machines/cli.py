@@ -110,6 +110,7 @@ Examples:
   Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 """
         ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     register_init_hardware_config(init_hardware_config_parser)
 
