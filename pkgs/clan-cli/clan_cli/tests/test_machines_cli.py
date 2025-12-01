@@ -1,4 +1,6 @@
 import argparse
+from pathlib import Path
+from typing import Any
 
 import pytest
 from clan_cli.machines.cli import register_parser as register_machines_parser
@@ -9,6 +11,7 @@ from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.tests.fixtures_flakes import create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
+from clan_lib.cmd import run
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
@@ -109,6 +112,49 @@ def test_machine_subcommands(
     assert "machine1" not in output.out
     assert "vm1" in output.out
     assert "vm2" in output.out
+
+
+@pytest.mark.with_core
+def test_machine_create_with_custom_directory(
+    clan_flake: Any,
+) -> None:
+    flake = clan_flake(
+        raw="""
+        {
+          directory = ./custom-machines-dir;
+        }
+        """
+    )
+
+    custom_dir = Path(flake.path) / "custom-machines-dir"
+    custom_dir.mkdir(parents=True, exist_ok=True)
+    (custom_dir / ".gitkeep").touch()
+
+    run(["git", "-C", str(flake.path), "add", "custom-machines-dir"])
+
+    flake.invalidate_cache()
+
+    inventory_store = InventoryStore(flake)
+    inventory = inventory_store.read()
+    assert "testmachine" not in inventory.get("machines", {})
+
+    cli.run(
+        [
+            "machines",
+            "create",
+            "--flake",
+            str(flake.path),
+            "testmachine",
+        ],
+    )
+
+    machine_dir = custom_dir / "machines" / "testmachine"
+    assert machine_dir.exists(), f"Machine directory not created at {machine_dir}"
+    assert (machine_dir / "configuration.nix").exists()
+
+    flake.invalidate_cache()
+    inventory = inventory_store.read()
+    assert "testmachine" in inventory.get("machines", {})
 
 
 @pytest.mark.with_core
