@@ -39,7 +39,7 @@ let
       checkedParts = lib.map (
         part:
         lib.throwIf (builtins.match ".?:.?" part != null) ''
-          exports.mkExportsScope: ${part} cannot contain the ":" character
+          mkExportsScope: ${part} cannot contain the ":" character
         '' part
       ) parts;
     in

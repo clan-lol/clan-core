@@ -88,7 +88,7 @@
 
   test_select_exports_by_query = {
     expr = lib.attrNames (
-      clanLib.exports.selectExports (scope: scope.serviceName != "A") {
+      clanLib.selectExports (scope: scope.serviceName != "A") {
         "A:::" = 1;
         "A:::jon" = 2;
         "A:iA:peer:jon" = 3;
