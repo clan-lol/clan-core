@@ -263,6 +263,17 @@ in
 
         Returning `null` for a system will fallback to the default behavior of respecting the `nixpkgs.*` options.
       '';
+      example = lib.literalExpression ''
+        pkgsForSystem =
+          system:
+          import nixpkgs {
+            inherit system;
+            config = {
+              allowUnfree = true;
+            };
+            overlays = [];
+          };
+      '';
     };
 
     # Outputs
