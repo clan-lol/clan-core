@@ -49,6 +49,19 @@ def pretty_diff_objects(
     return "\n".join(diff)
 
 
+def filter_machine_specific_attrs(files: dict[str, dict]) -> dict[str, dict]:
+    """Filter out machine-specific attributes that can differ per machine.
+
+    Removes attributes like owner, group, and mode that don't affect
+    the equivalency of shared vars across different platforms.
+    """
+    machine_specific_attrs = {"owner", "group", "mode"}
+    return {
+        name: {k: v for k, v in attrs.items() if k not in machine_specific_attrs}
+        for name, attrs in files.items()
+    }
+
+
 def dependencies_as_dir(
     decrypted_dependencies: dict[str, dict[str, bytes]],
     tmpdir: Path,
@@ -238,9 +251,13 @@ class Generator:
                         prev_machine, prev_gen_data, prev_files_data = (
                             shared_generators_raw[gen_name]
                         )
-                        # Compare raw data
-                        prev_gen_files = prev_files_data.get(gen_name, {})
-                        curr_gen_files = files_data.get(gen_name, {})
+                        prev_gen_files = filter_machine_specific_attrs(
+                            prev_files_data.get(gen_name, {})
+                        )
+                        curr_gen_files = filter_machine_specific_attrs(
+                            files_data.get(gen_name, {})
+                        )
+
                         # Build list of differences with details
                         differences = []
                         if prev_gen_files != curr_gen_files:
