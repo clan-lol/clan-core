@@ -7,19 +7,9 @@
 }:
 let
 
-  collectFiles = import ./collectFiles.nix { inherit lib; };
+  mapGeneratorsToSopsSecrets = import ./generators-to-sops.nix { inherit lib; };
 
   machineName = config.clan.core.settings.machine.name;
-
-  secretPath =
-    secret:
-    if secret.share then
-      config.clan.core.settings.directory + "/vars/shared/${secret.generator}/${secret.name}/secret"
-    else
-      config.clan.core.settings.directory
-      + "/vars/per-machine/${machineName}/${secret.generator}/${secret.name}/secret";
-
-  vars = collectFiles config.clan.core.vars.generators;
 in
 {
   config.clan.core.vars.settings = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
@@ -39,28 +29,13 @@ in
   };
 
   config.sops = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
-
-    secrets = lib.listToAttrs (
-      map (secret: {
-        name = "vars/${secret.generator}/${secret.name}";
-        value = {
-          inherit (secret)
-            owner
-            group
-            mode
-            neededForUsers
-            ;
-          sopsFile = builtins.path {
-            name = "${secret.generator}_${secret.name}";
-            path = secretPath secret;
-          };
-          format = "binary";
-        }
-        // (lib.optionalAttrs (_class == "nixos") {
-          inherit (secret) restartUnits;
-        });
-      }) (builtins.filter (x: builtins.pathExists (secretPath x)) vars)
-    );
+    #
+    secrets = mapGeneratorsToSopsSecrets {
+      inherit machineName;
+      directory = config.clan.core.settings.directory;
+      class = _class;
+      generators = config.clan.core.vars.generators;
+    };
 
     # To get proper error messages about missing secrets we need a dummy secret file that is always present
     defaultSopsFile = lib.mkIf config.sops.validateSopsFiles (

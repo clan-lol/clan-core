@@ -8,6 +8,7 @@ from typing import get_args
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
+from clan_lib.machines.hardware import has_facter_config, has_hardware_config
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
 from clan_lib.machines.machines import Machine
 from clan_lib.network.qr_code import read_qr_image, read_qr_json
@@ -22,6 +23,125 @@ from clan_cli.completions import (
 from clan_cli.machines.hardware import HardwareConfig
 
 log = logging.getLogger(__name__)
+
+
+def should_prompt_for_hardware_config(
+    machine: Machine, args: argparse.Namespace
+) -> bool:
+    """Determine if we should prompt user to generate hardware config.
+
+    Returns True only when:
+    - Not in non-interactive mode (--yes)
+    - Running in an interactive terminal (stdin is a TTY)
+    - No explicit --update-hardware-config given (i.e., still "none")
+    - No hardware config exists for machine
+
+    Args:
+        machine: The machine to check
+        args: Command line arguments
+
+    Returns:
+        True if should prompt, False otherwise
+
+    """
+    if args.yes:
+        return False
+
+    if not sys.stdin.isatty():
+        return False
+
+    if args.update_hardware_config != "none":
+        return False
+
+    return not has_hardware_config(machine)
+
+
+def should_prompt_for_facter_update(machine: Machine, args: argparse.Namespace) -> bool:
+    """Determine if we should prompt user to update existing facter.json.
+
+    Returns True only when:
+    - Not in non-interactive mode (--yes)
+    - Running in an interactive terminal (stdin is a TTY)
+    - No explicit --update-hardware-config given (i.e., still "none")
+    - facter.json exists for machine
+
+    Args:
+        machine: The machine to check
+        args: Command line arguments
+
+    Returns:
+        True if should prompt, False otherwise
+
+    """
+    if args.yes:
+        return False
+
+    if not sys.stdin.isatty():
+        return False
+
+    if args.update_hardware_config != "none":
+        return False
+
+    return has_facter_config(machine)
+
+
+def get_hardware_config(machine: Machine, args: argparse.Namespace) -> HardwareConfig:
+    """Determine the hardware config to use, prompting user if needed.
+
+    Args:
+        machine: The machine to install
+        args: Command line arguments
+
+    Returns:
+        HardwareConfig value to use for installation
+
+    """
+    # If user explicitly set hardware config, use it
+    if args.update_hardware_config != "none":
+        return HardwareConfig(args.update_hardware_config)
+
+    if should_prompt_for_hardware_config(machine, args):
+        while True:
+            response = (
+                input(
+                    f"Hardware configuration not found for '{args.machine}'. "
+                    f"Generate it using nixos-facter? [Y/n] "
+                )
+                .strip()
+                .lower()
+            )
+
+            if response in ("", "y", "yes"):
+                print("Will generate hardware configuration using nixos-facter")
+                return HardwareConfig("nixos-facter")
+            if response in ("n", "no"):
+                print("Skipping hardware configuration generation")
+                return HardwareConfig("none")
+            print(
+                f"Invalid input '{response}'. Please enter 'y' for yes or 'n' for no."
+            )
+
+    if should_prompt_for_facter_update(machine, args):
+        while True:
+            response = (
+                input(
+                    f"Update existing hardware configuration (facter.json) for '{args.machine}'? [y/N] "
+                )
+                .strip()
+                .lower()
+            )
+
+            if response in ("y", "yes"):
+                print("Will update hardware configuration using nixos-facter")
+                return HardwareConfig("nixos-facter")
+            if response in ("", "n", "no"):
+                print("Skipping hardware configuration update")
+                return HardwareConfig("none")
+            print(
+                f"Invalid input '{response}'. Please enter 'y' for yes or 'n' for no."
+            )
+
+    return HardwareConfig("none")
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -62,6 +182,9 @@ def install_command(args: argparse.Namespace) -> None:
                 msg = "Installing macOS machines is not yet supported"
                 raise ClanError(msg)
 
+            # Get hardware config (prompting user if needed)
+            hardware_config = get_hardware_config(machine, args)
+
             if not args.yes:
                 while True:
                     ask = (
@@ -91,7 +214,7 @@ def install_command(args: argparse.Namespace) -> None:
                     debug=args.debug,
                     no_reboot=args.no_reboot,
                     build_on=args.build_on if args.build_on is not None else None,
-                    update_hardware_config=HardwareConfig(args.update_hardware_config),
+                    update_hardware_config=hardware_config,
                     persist_state=not args.no_persist_state,
                 ),
                 target_host=remote,
@@ -136,7 +259,7 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         "--update-hardware-config",
         type=str,
         default="none",
-        help="update the hardware configuration",
+        help="Update the hardware configuration (auto-prompted if missing in interactive mode)",
         choices=[x.value for x in HardwareConfig],
     )
     parser.add_argument(
