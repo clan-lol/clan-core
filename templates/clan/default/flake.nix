@@ -15,6 +15,17 @@
         inherit self;
         imports = [ ./clan.nix ];
         specialArgs = { inherit inputs; };
+
+        # Customize nixpkgs
+        # pkgsForSystem =
+        #   system:
+        #   import nixpkgs {
+        #     inherit system;
+        #     config = {
+        #       allowUnfree = true;
+        #     };
+        #     overlays = [];
+        #   };
       };
     in
     {

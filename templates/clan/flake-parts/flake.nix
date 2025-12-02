@@ -29,6 +29,14 @@
         { pkgs, inputs', ... }:
         {
           devShells.default = pkgs.mkShell { packages = [ inputs'.clan-core.packages.clan-cli ]; };
+
+          # Customize nixpkgs
+          # _module.args.pkgs = import inputs.nixpkgs {
+          #   inherit system;
+          #   config.allowUnfree = true;
+          #   overlays = [ ];
+          # };
+          # clan.pkgs = pkgs;
         };
     };
 }

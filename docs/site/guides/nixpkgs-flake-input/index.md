@@ -1,8 +1,10 @@
+## How should I choose the `nixpkgs` input for my flake when using `clan-core`?
+
 **Q**: How should I choose the `nixpkgs` input for my flake when using `clan-core`?
 
 **A**: Pin your flake to a recent `nixpkgs` version. Here are two common approaches, each with its trade-offs:
 
-## Option 1: Follow `clan-core`
+### Option 1: Follow `clan-core`
 
 - **Pros**:
     - Recommended for most users.
@@ -21,7 +23,7 @@ inputs = {
 };
 ```
 
-## Option 2: Use Your Own `nixpkgs` Version
+### Option 2: Use Your Own `nixpkgs` Version
 
 - **Pros**:
     - Faster access to new upstream features and packages.
@@ -42,7 +44,7 @@ inputs = {
 };
 ```
 
-## Recommended: Avoid Duplicate `nixpkgs` Entries
+### Recommended: Avoid Duplicate `nixpkgs` Entries
 
 To prevent ambiguity or compatibility issues, check your `flake.lock` for duplicate `nixpkgs` entries. Duplicate entries indicate a missing `follows` directive in one of your flake inputs.
 
@@ -97,3 +99,66 @@ home-manager.inputs.nixpkgs.follows = "nixpkgs";
 ```
 
 Repeat this process until all duplicate `nixpkgs` entries are resolved. This ensures all inputs use the same `nixpkgs` source, preventing cross-version conflicts.
+
+## How to customize pkgs?
+
+### Override an existing package
+
+A common method to override pkgs are [overlays](https://wiki.nixos.org/wiki/Overlays)
+
+Rule of Thumb: Use overlays if you need to override an existing package.
+If you want to inject your own packages see the next point
+
+```{.nix, title="clan.lib.clan"}
+# flake.nix
+
+```
+
+```{.nix, title="flake-parts"}
+# flake.nix
+{
+  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+  inputs.nixpkgs.follows = "clan-core/nixpkgs";
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
+  inputs.flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
+
+  outputs =
+    inputs@{
+      flake-parts,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      imports = [
+        inputs.clan-core.flakeModules.default
+      ];
+
+      # https://docs.clan.lol/guides/flake-parts
+      clan = {
+        imports = [ ./clan.nix ];
+      };
+
+      perSystem =
+        { system, ... }:
+        {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [
+              inputs.foo.overlays.default
+              (final: prev: {
+                # ... things you need to patch ...
+              })
+            ];
+            config.allowUnfree = true;
+          };
+        };
+    };
+}
+```
+
+For more examples see our [clan templates](https://git.clan.lol/clan/clan-core/src/branch/main/templates)
