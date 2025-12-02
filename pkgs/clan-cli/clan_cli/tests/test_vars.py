@@ -1614,6 +1614,54 @@ def test_shared_generator_conflicting_definition_raises_error(
 
 
 @pytest.mark.with_core
+def test_shared_generator_allows_machine_specific_differences(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that vars generation doesn't raise an error when two machines
+    only differ in machine-specific fields like owner, group and mode.
+    """
+    flake = flake_with_sops
+
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen1 = machine1_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_gen1["share"] = True
+    shared_gen1["files"]["file"]["owner"] = "root"
+    shared_gen1["files"]["file"]["group"] = "root"
+    shared_gen1["files"]["file"]["mode"] = "0400"
+    shared_gen1["script"] = 'echo -n "secret" > "$out"/file'
+
+    machine2_config = flake.machines["machine2"] = create_test_machine_config()
+    shared_gen2 = machine2_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_gen2["share"] = True
+    shared_gen2["files"]["file"]["owner"] = "user"
+    shared_gen2["files"]["file"]["group"] = "wheel"
+    shared_gen2["files"]["file"]["mode"] = "0440"
+    shared_gen2["script"] = 'echo -n "secret" > "$out"/file'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    flake_obj = Flake(str(flake.path))
+    sops_store = sops.SecretStore(flake=flake_obj)
+
+    shared_generator = Generator(
+        "shared_generator",
+        share=True,
+        _flake=flake_obj,
+    )
+
+    assert sops_store.exists(shared_generator, "file")
+    assert sops_store.get(shared_generator, "file").decode() == "secret"
+
+
+@pytest.mark.with_core
 def test_dynamic_invalidation(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
