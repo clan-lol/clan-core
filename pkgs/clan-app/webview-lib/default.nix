@@ -24,8 +24,8 @@ clangStdenv.mkDerivation {
     domain = "git.clan.lol";
     owner = "clan";
     repo = "webview";
-    rev = "d83c3ebffb76f25b3a9e37d59237c5d8e94060a2";
-    hash = "sha256-YAfH1KCw4r2WPvBQho2ypAVH+/c/a05SsEDUYKGadFI=";
+    rev = "950c3eeea791d10b040abbb54164b7d860d13fb2";
+    hash = "sha256-zG3UpsZX+uwJGOVheIn9q/J4yRTTgyaDELoN2FF62RI=";
   };
 
   outputs = [
