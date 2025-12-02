@@ -13,7 +13,7 @@ from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING, Any
 
 from clan_lib.cmd import Log, RunOpts, run
-from clan_lib.dirs import select_source, user_cache_dir
+from clan_lib.dirs import clan_tmp_dir, select_source
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.nix import (
     nix_build,
@@ -934,9 +934,7 @@ class Flake:
             msg = "Hash cannot be None"
             raise ClanError(msg)
         hashed_hash = sha1(self.hash.encode()).hexdigest()  # noqa: S324 - SHA1 used only for cache directory naming, not security
-        self.flake_cache_path = (
-            Path(user_cache_dir()) / "clan" / "flakes-v2" / hashed_hash
-        )
+        self.flake_cache_path = Path(clan_tmp_dir()) / "flakes-v2" / hashed_hash
         self.load_cache()
 
         if "original" not in self.flake_metadata:

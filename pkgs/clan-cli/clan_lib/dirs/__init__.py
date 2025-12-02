@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import urllib.parse
 from enum import Enum
 from pathlib import Path
@@ -124,6 +125,37 @@ def user_cache_dir() -> Path:
     if sys.platform == "darwin":
         return Path("~/Library/Caches/").expanduser()
     return Path("~/.cache").expanduser()
+
+
+def clan_tmp_dir() -> Path:
+    """Returns the temporary runtime directory for clan.
+
+    Uses per-user runtime directories that are cleaned on reboot/logout:
+    - Linux: $XDG_RUNTIME_DIR/clan-cache (typically /run/user/$UID/clan-cache)
+    - macOS: $TMPDIR/clan-cache-$UID (typically /var/folders/.../clan-cache-$UID)
+    - Windows: %TEMP%/clan-cache-%USERNAME%
+
+    Falls back to user-specific directory in system temp if XDG_RUNTIME_DIR is unavailable.
+    The directory is ephemeral and cleared on logout/reboot.
+    """
+    # On Linux systems with XDG support, use XDG_RUNTIME_DIR
+    if sys.platform == "linux" and (runtime_dir := os.getenv("XDG_RUNTIME_DIR")):
+        temp_dir = Path(runtime_dir) / "clan-cache"
+    else:
+        # Fallback: use system temp with user-specific suffix
+        base_temp = Path(tempfile.gettempdir())
+
+        if sys.platform == "win32":
+            # Windows: use USERNAME environment variable
+            user_suffix = os.getenv("USERNAME", "unknown")
+        else:
+            # Unix-like systems: use numeric UID for consistency
+            user_suffix = str(os.getuid())
+
+        temp_dir = base_temp / f"clan-cache-{user_suffix}"
+
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    return temp_dir
 
 
 def user_nixos_anywhere_dir() -> Path:
