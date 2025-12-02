@@ -43,6 +43,38 @@ class HardwareConfig(Enum):
         return HardwareConfig.NONE
 
 
+def has_facter_config(machine: Machine) -> bool:
+    """Check if machine has modern facter.json configuration.
+
+    Args:
+        machine: The machine to check
+
+    Returns:
+        True if facter.json exists, False otherwise
+
+    """
+    machine_dir = specific_machine_dir(machine)
+    return (machine_dir / "facter.json").exists()
+
+
+def has_hardware_config(machine: Machine) -> bool:
+    """Check if machine has any hardware configuration.
+
+    Checks for either facter.json or hardware-configuration.nix.
+
+    Args:
+        machine: The machine to check
+
+    Returns:
+        True if any hardware configuration exists, False otherwise
+
+    """
+    machine_dir = specific_machine_dir(machine)
+    has_facter = (machine_dir / "facter.json").exists()
+    has_hardware_nix = (machine_dir / "hardware-configuration.nix").exists()
+    return has_facter or has_hardware_nix
+
+
 def get_machine_target_platform(machine: Machine) -> str | None:
     config = nix_config()
     system = config["system"]
