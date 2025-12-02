@@ -859,8 +859,11 @@ class Flake:
 
     def get_input_names(self) -> list[str]:
         log.debug("flake.get_input_names is deprecated and will be removed")
-        flakes = self.select("inputs.*._type")
-        return list(flakes.keys())
+        # inputs with flake = false do not have a _type attribute
+        flakes = self.select("inputs.*.?_type")
+
+        #  filter out keys that do not have a _type attribute
+        return list(filter(lambda key: "_type" in flakes[key], flakes.keys()))
 
     @property
     def path(self) -> Path:
