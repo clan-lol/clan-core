@@ -2,30 +2,22 @@
   lib,
   ...
 }:
-# Produces the
-# 'clanLib' attribute set
-# Wrapped with fix, so we can depend on other clanLib functions without passing the whole flake
 lib.fix (
   let
     f = clanLib: {
       __unfix__ = f;
       clan = throw "lib.clan is not yet initialized. Use lib.clan exported by the clan-core flake.";
-      /**
-        Like callPackage, but doesn't try to automatically detect arguments
-        'lib' and 'clanLib' are always passed, plus the additional arguments
-      */
-      callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
-      checkConfig = clanLib.callLib ./clan/checkConfig.nix { };
+      checkConfig = import ./clan/checkConfig.nix { inherit lib clanLib; };
 
-      evalService = clanLib.callLib ./evalService.nix { };
+      evalService = import ./evalService.nix { inherit lib clanLib; };
       # ------------------------------------
       # ClanLib functions
-      inventory = clanLib.callLib ./inventory { };
-      test = clanLib.callLib ./test { };
-      flake-inputs = clanLib.callLib ./flake-inputs.nix { };
+      inventory = import ./inventory { inherit lib clanLib; };
+      test = import ./test { inherit lib clanLib; };
+      flake-inputs = import ./flake-inputs.nix { inherit lib clanLib; };
       # Custom types
-      types = clanLib.callLib ./types { };
+      types = import ./types { inherit lib clanLib; };
 
       # Plain imports.
       introspection = import ./introspection { inherit lib; };
@@ -35,13 +27,13 @@ lib.fix (
       vars = import ./vars.nix { inherit lib; };
 
       # flakes
-      flakes = clanLib.callLib ./flakes.nix { };
+      flakes = import ./flakes.nix { inherit lib clanLib; };
 
       # TODO: Flatten our lib functions like this:
-      resolveModule = clanLib.callLib ./resolve-module { };
+      resolveModule = import ./resolve-module { inherit lib clanLib; };
 
       # Functions to help define exports
-      exports = clanLib.callLib ./exports/exports.nix { };
+      exports = import ./exports/exports.nix { inherit lib clanLib; };
 
       fs = {
         inherit (builtins) pathExists readDir;
