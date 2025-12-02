@@ -61,10 +61,6 @@ let
       ''
       (lib.join ":" checkedParts);
 
-  mkExports = scope: value: {
-    ${buildScopeKey scope} = value;
-  };
-
   /**
     Parses a scope string into its components
 
@@ -201,14 +197,12 @@ let
 
     Selecting all exports is equivalent to just exports
 
-    selectExports { } exports := exports
+    selectExports (_: true) exports := exports
 
     Selecting by service only returns all exports for that service
     including all instances and machines
 
-    selectExports {
-      service = "A";
-    } {
+    selectExports (scope: scope.serviceName == "A") {
       "A:::" = { ... };
       "A:::jon" = { ... };
       "A:iA:peer:machineA" = { ... };
@@ -220,54 +214,15 @@ let
       "A:::jon" = { ... };
       "A:iA:peer:machineA" = { ... };
     }
-
-    Selecting by machine returns all exports for that machine
-    including all services and instances
-
-    selectExports {
-      machine = "A";
-    } {
-      "A:::" = { ... };
-      "A::jon" = { ... };
-      "A:iA:peer:jon" = { ... };
-      "B:iB:peer:jon" = { ... };
-      ...
-    } =>
-    {
-      "A::jon" = { ... };
-      "A:iA:peer:jon" = { ... };
-      "B:iB:peer:jon" = { ... };
-    }
   */
   selectExports =
-    {
-      serviceName ? "*",
-      instanceName ? "*",
-      roleName ? "*",
-      machineName ? "*",
-    }:
-    filterAttrsByName (
-      scopeKey:
-      matchesFullScope {
-        inherit
-          machineName
-          roleName
-          instanceName
-          serviceName
-          ;
-      } scopeKey
-    );
-
-  matchesFullScope =
-    c: scopeKey:
-    let
-      parsed = parseScope scopeKey;
-      matchesPart = part: expected: expected == "*" || part == expected;
-    in
-    matchesPart parsed.serviceName c.serviceName
-    && matchesPart parsed.instanceName c.instanceName
-    && matchesPart parsed.roleName c.roleName
-    && matchesPart parsed.machineName c.machineName;
+    pred:
+    if lib.isFunction pred then
+      filterAttrsByName (scopeKey: pred (parseScope scopeKey))
+    else
+      lib.trace pred throw ''
+        selectExports expected a function. But was called with ${builtins.typeOf pred}
+      '';
 
   /**
     Helper to get a single export by scope
@@ -318,7 +273,6 @@ let
           ...
         }
     '');
-
 in
 {
   inherit
@@ -326,7 +280,6 @@ in
     checkExports
     checkScope
     getExport
-    mkExports
     parseScope
     selectExports
     ;

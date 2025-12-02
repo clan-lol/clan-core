@@ -100,7 +100,7 @@
     in
     {
       inherit eval;
-      expr = clanLib.selectExports { } eval.config.exports;
+      expr = clanLib.selectExports (_: true) eval.config.exports;
       expected = {
         "B:::" = {
           bar = 0;
