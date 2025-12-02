@@ -1,5 +1,7 @@
+import difflib
 import logging
 import os
+import pprint
 import shutil
 import sys
 from collections.abc import Iterable
@@ -26,6 +28,25 @@ if TYPE_CHECKING:
 from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
+
+
+def pretty_diff_objects(
+    prev_value: object,
+    curr_value: object,
+    prev_label: str,
+    curr_label: str,
+) -> str:
+    """Return a unified diff string between two values."""
+    prev_lines = pprint.pformat(prev_value).splitlines()
+    curr_lines = pprint.pformat(curr_value).splitlines()
+    diff = difflib.unified_diff(
+        prev_lines,
+        curr_lines,
+        fromfile=prev_label,
+        tofile=curr_label,
+        lineterm="",
+    )
+    return "\n".join(diff)
 
 
 def dependencies_as_dir(
@@ -223,16 +244,30 @@ class Generator:
                         # Build list of differences with details
                         differences = []
                         if prev_gen_files != curr_gen_files:
+                            log.debug(
+                                f"Files differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_files, curr_gen_files, prev_machine, machine_name)}"
+                            )
                             differences.append("files")
                         if prev_gen_data.get("prompts") != gen_data.get("prompts"):
+                            log.debug(
+                                f"Prompts differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_data.get('prompts'), gen_data.get('prompts'), prev_machine, machine_name)}"
+                            )
                             differences.append("prompts")
                         if prev_gen_data.get("dependencies") != gen_data.get(
                             "dependencies"
                         ):
+                            log.debug(
+                                f"Dependencies differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_data.get('dependencies'), gen_data.get('dependencies'), prev_machine, machine_name)}"
+                            )
                             differences.append("dependencies")
                         if prev_gen_data.get("validationHash") != gen_data.get(
                             "validationHash"
                         ):
+                            log.debug(
+                                f"Validation hash differs for generator '{gen_name}':\n"
+                                f"  {prev_machine}={prev_gen_data.get('validationHash')}\n"
+                                f"  {machine_name}={gen_data.get('validationHash')}"
+                            )
                             differences.append("validation_hash")
                         if differences:
                             msg = f"Machines {prev_machine} and {machine_name} have different definitions for shared generator '{gen_name}' (differ in: {', '.join(differences)})"
