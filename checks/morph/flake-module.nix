@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   self,
   ...
 }:
@@ -6,6 +8,7 @@
   clan.machines.test-morph-machine = {
     imports = [
       ./template/configuration.nix
+      self.clanLib.test.minifyModule
       self.nixosModules.clanCore
     ];
     nixpkgs.hostPlatform = "x86_64-linux";
