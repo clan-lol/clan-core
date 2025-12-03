@@ -1,4 +1,4 @@
-{ ... }:
+{ clanLib, ... }:
 {
   _class = "clan.service";
   manifest.name = "borgbackup";
@@ -53,16 +53,20 @@
 
             config.services.borgbackup.repos =
               let
-                borgbackupIpMachinePath =
+                borgbackupIpMachine =
                   machine:
-                  config.clan.core.settings.directory
-                  + "/vars/per-machine/${machine}/borgbackup/borgbackup.ssh.pub/value";
+                  clanLib.getPublicValue {
+                    flake = config.clan.core.settings.directory;
+                    inherit machine;
+                    generator = "borgbackup";
+                    file = "borgbackup.ssh.pub";
+                  };
 
                 hosts = builtins.mapAttrs (machineName: _machineSettings: {
                   # name = "${instanceName}-${machineName}";
                   # value = {
                   path = "${settings.directory}/${machineName}";
-                  authorizedKeys = [ (builtins.readFile (borgbackupIpMachinePath machineName)) ];
+                  authorizedKeys = [ (borgbackupIpMachine machineName) ];
                   # };
                   # }) machinesWithKey;
                 }) (roles.client.machines or { });

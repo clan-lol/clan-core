@@ -165,12 +165,15 @@
                 map (
                   name:
                   let
-                    ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/yggdrasil/address/value";
+                    ip = clanLib.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "yggdrasil";
+                      file = "address";
+                      default = "";
+                    };
                   in
-                  if builtins.pathExists ipPath then
-                    "${builtins.readFile ipPath} ${name}.${config.clan.core.settings.domain}"
-                  else
-                    ""
+                  ip
                 ) (lib.attrNames roles.default.machines)
               )
             );
