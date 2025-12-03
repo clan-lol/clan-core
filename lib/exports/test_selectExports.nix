@@ -2,7 +2,7 @@
 {
   test_select_exports = {
     expr = lib.attrNames (
-      clanLib.exports.selectExports
+      clanLib.selectExports
         {
           serviceName = "serviceA";
           instanceName = "iA";
@@ -38,7 +38,7 @@
 
   test_select_exports_by_machine = {
     expr = lib.attrNames (
-      clanLib.exports.selectExports
+      clanLib.selectExports
         {
           machineName = "jon";
         }
@@ -69,7 +69,7 @@
 
   test_select_exports_by_service_only = {
     expr = lib.attrNames (
-      clanLib.exports.selectExports
+      clanLib.selectExports
         {
           serviceName = "serviceA";
         }

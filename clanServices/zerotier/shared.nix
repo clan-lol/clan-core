@@ -9,7 +9,7 @@
 }:
 let
   controllerMachine = builtins.head (lib.attrNames roles.controller.machines or { });
-  networkId = clanLib.vars.getPublicValue {
+  networkId = clanLib.getPublicValue {
     flake = config.clan.core.settings.directory;
     machine = controllerMachine;
     generator = "zerotier";
@@ -20,7 +20,7 @@ let
   moonIps = builtins.foldl' (
     ips: name:
     let
-      moonIp = clanLib.vars.getPublicValue {
+      moonIp = clanLib.getPublicValue {
         flake = config.clan.core.settings.directory;
         machine = name;
         generator = "zerotier";

@@ -262,10 +262,10 @@ in
 
   test_get_var_machine =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      getPublicValue = import ./get-public-value.nix { inherit lib; };
     in
     {
-      expr = varsLib.getPublicValue {
+      expr = getPublicValue {
         backend = "in_repo";
         default = "test";
         generator = "test-generator";
@@ -278,10 +278,10 @@ in
 
   test_get_var_shared =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      getPublicValue = import ./get-public-value.nix { inherit lib; };
     in
     {
-      expr = varsLib.getPublicValue {
+      expr = getPublicValue {
         backend = "in_repo";
         default = "test";
         generator = "test-generator";
@@ -293,10 +293,10 @@ in
 
   test_get_var_default =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      getPublicValue = import ./get-public-value.nix { inherit lib; };
     in
     {
-      expr = varsLib.getPublicValue {
+      expr = getPublicValue {
         backend = "in_repo";
         default = "test-default";
         generator = "test-generator-wrong";

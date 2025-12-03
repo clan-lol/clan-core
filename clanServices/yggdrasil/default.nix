@@ -12,7 +12,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   exports = lib.mapAttrs' (instanceName: _: {
-    name = clanLib.exports.buildScopeKey {
+    name = clanLib.buildScopeKey {
       inherit instanceName;
       serviceName = config.manifest.name;
     };
@@ -75,7 +75,7 @@
         exports = mkExports {
           peer.hosts = [
             {
-              plain = clanLib.vars.getPublicValue {
+              plain = clanLib.getPublicValue {
                 machine = machine.name;
                 generator = "yggdrasil";
                 file = "address";
@@ -106,7 +106,7 @@
                   if hostItem ? plain then
                     hostItem.plain
                   else if hostItem ? var then
-                    clanLib.vars.getPublicValue hostItem.var
+                    clanLib.getPublicValue hostItem.var
                   else
                     throw "Unknown host type in export";
 

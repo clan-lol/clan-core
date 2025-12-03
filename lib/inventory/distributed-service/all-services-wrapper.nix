@@ -61,7 +61,7 @@ in
       default = lib.zipAttrsWith (_name: values: { imports = values; }) (
         lib.mapAttrsToList (
           _service_id: service:
-          specialArgs.clanLib.exports.checkExports {
+          specialArgs.clanLib.checkExports {
             serviceName = service.manifest.name;
             errorDetails = ''
               Export validation failed in service '${service.manifest.name}'

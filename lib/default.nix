@@ -4,41 +4,49 @@
 }:
 lib.fix (
   let
-    f = clanLib: {
-      __unfix__ = f;
-      clan = throw "lib.clan is not yet initialized. Use lib.clan exported by the clan-core flake.";
+    f =
+      clanLib:
+      {
+        __unfix__ = f;
+        clan = throw "lib.clan is not yet initialized. Use lib.clan exported by the clan-core flake.";
 
-      checkConfig = import ./clan/checkConfig.nix { inherit lib clanLib; };
+        # TODO: Hide from public interface
+        # TODO: Flatten our lib functions like this:
+        checkConfig = import ./clan/checkConfig.nix { inherit lib; };
+        evalService = import ./evalService.nix { inherit lib clanLib; };
 
-      evalService = import ./evalService.nix { inherit lib clanLib; };
-      # ------------------------------------
-      # ClanLib functions
-      inventory = import ./inventory { inherit lib clanLib; };
-      test = import ./test { inherit lib clanLib; };
-      flake-inputs = import ./flake-inputs.nix { inherit lib clanLib; };
-      # Custom types
-      types = import ./types { inherit lib clanLib; };
+        resolveModule = import ./resolve-module { inherit lib clanLib; };
+        inventory = import ./inventory { inherit lib clanLib; };
+        flake-inputs = import ./flake-inputs.nix { inherit lib clanLib; };
 
-      # Plain imports.
-      introspection = import ./introspection { inherit lib; };
-      jsonschema = import ./jsonschema { inherit lib; };
-      docs = import ./docs.nix { inherit lib; };
+        types = import ./types { inherit lib clanLib; };
 
-      vars = import ./vars.nix { inherit lib; };
+        introspection = import ./introspection { inherit lib; };
+        jsonschema = import ./jsonschema { inherit lib; };
+        docs = import ./docs.nix { inherit lib; };
 
-      # flakes
-      flakes = import ./flakes.nix { inherit lib clanLib; };
+        flakes = import ./flakes.nix { inherit lib clanLib; };
 
-      # TODO: Flatten our lib functions like this:
-      resolveModule = import ./resolve-module { inherit lib clanLib; };
+        fs = {
+          inherit (builtins) pathExists readDir;
+        };
 
-      # Functions to help define exports
-      exports = import ./exports/exports.nix { inherit lib clanLib; };
+        # ------------------------------------
+        # Public ClanLib functions
+        # TODO: Hoist all functions directly into clanLib
 
-      fs = {
-        inherit (builtins) pathExists readDir;
-      };
-    };
+        getPublicValue = import ./get-public-value.nix { inherit lib; };
+
+        test = import ./test { inherit lib clanLib; };
+
+        # Deprecated will be removed with the next release
+        vars.getPublicValue = lib.warn "'vars.getPublicValue' was renamed. Use 'getPublicValue' instead." clanLib.getPublicValue;
+
+        # Experimental
+        exports = throw "clanLib.exports has been renamed. Use the utility in clanLib directly";
+
+      }
+      // (import ./exports/exports.nix { inherit lib clanLib; });
   in
   f
 )
