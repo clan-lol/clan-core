@@ -57,7 +57,7 @@
         exports = mkExports {
           peer.hosts = [
             {
-              plain = clanLib.vars.getPublicValue {
+              plain = clanLib.getPublicValue {
                 machine = machine.name;
                 generator = "mycelium";
                 file = "ip";

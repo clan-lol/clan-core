@@ -62,7 +62,7 @@ let
       builtins.foldl' (
         urls: name:
         let
-          ip = clanLib.vars.getPublicValue {
+          ip = clanLib.getPublicValue {
             flake = config.clan.core.settings.directory;
             machine = name;
             generator = "zerotier";
@@ -168,7 +168,7 @@ in
                   readHostKey =
                     machine:
                     let
-                      publicKey = clanLib.vars.getPublicValue {
+                      publicKey = clanLib.getPublicValue {
                         flake = config.clan.core.settings.directory;
                         inherit machine;
                         generator = "data-mesher-host-key";

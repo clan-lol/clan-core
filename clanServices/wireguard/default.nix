@@ -80,7 +80,7 @@ let
       controllerHosts = lib.mapAttrsToList (
         name: _value:
         let
-          prefix = clanLib.vars.getPublicValue {
+          prefix = clanLib.getPublicValue {
             flake = config.clan.core.settings.directory;
             machine = name;
             generator = "wireguard-network-${instanceName}";
@@ -96,7 +96,7 @@ let
       peerHosts = lib.mapAttrsToList (
         peerName: peerValue:
         let
-          peerSuffix = clanLib.vars.getPublicValue {
+          peerSuffix = clanLib.getPublicValue {
             flake = config.clan.core.settings.directory;
             machine = peerName;
             generator = "wireguard-network-${instanceName}";
@@ -108,7 +108,7 @@ let
               (builtins.head (builtins.attrNames roles.controller.machines))
             else
               peerValue.settings.controller;
-          controllerPrefix = clanLib.vars.getPublicValue {
+          controllerPrefix = clanLib.getPublicValue {
             flake = config.clan.core.settings.directory;
             machine = designatedController;
             generator = "wireguard-network-${instanceName}";
@@ -197,7 +197,7 @@ in
 
         # exports = mkExports {
         #   peer.host.plain =
-        #     (clanLib.vars.getPublicValue {
+        #     (clanLib.getPublicValue {
         #       flake = config.clan.core.settings.directory;
         #       machine = machine.name;
         #       generator = "wireguard-network-${instanceName}";
@@ -254,7 +254,7 @@ in
                 lib.mapAttrsToList (
                   ctrlName: _:
                   let
-                    controllerPrefix = clanLib.vars.getPublicValue {
+                    controllerPrefix = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = ctrlName;
                       generator = "wireguard-network-${instanceName}";
@@ -270,7 +270,7 @@ in
 
               # Connect to all controllers
               peers = lib.mapAttrsToList (name: value: {
-                publicKey = clanLib.vars.getPublicValue {
+                publicKey = clanLib.getPublicValue {
                   flake = config.clan.core.settings.directory;
                   machine = name;
                   generator = "wireguard-keys-${instanceName}";
@@ -280,7 +280,7 @@ in
                 # Allow each controller's /56 subnet
                 allowedIPs = [
                   "${
-                    clanLib.vars.getPublicValue {
+                    clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-network-${instanceName}";
@@ -341,7 +341,7 @@ in
                 lib.mapAttrsToList (
                   ctrlName: _:
                   let
-                    controllerPrefix = clanLib.vars.getPublicValue {
+                    controllerPrefix = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = ctrlName;
                       generator = "wireguard-network-${instanceName}";
@@ -357,7 +357,7 @@ in
 
               # Connect to all controllers
               peers = lib.mapAttrsToList (name: value: {
-                publicKey = clanLib.vars.getPublicValue {
+                publicKey = clanLib.getPublicValue {
                   flake = config.clan.core.settings.directory;
                   machine = name;
                   generator = "wireguard-keys-${instanceName}";
@@ -367,7 +367,7 @@ in
                 # Allow each controller's /56 subnet
                 allowedIPs = [
                   "${
-                    clanLib.vars.getPublicValue {
+                    clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-network-${instanceName}";
@@ -471,7 +471,7 @@ in
                 if allPeers ? ${name} then
                   # For peers: they now have our entire /56 subnet
                   {
-                    publicKey = clanLib.vars.getPublicValue {
+                    publicKey = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-keys-${instanceName}";
@@ -482,13 +482,13 @@ in
                     allowedIPs = lib.mapAttrsToList (
                       ctrlName: _:
                       let
-                        controllerPrefix = clanLib.vars.getPublicValue {
+                        controllerPrefix = clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = ctrlName;
                           generator = "wireguard-network-${instanceName}";
                           file = "prefix";
                         };
-                        peerSuffix = clanLib.vars.getPublicValue {
+                        peerSuffix = clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = name;
                           generator = "wireguard-network-${instanceName}";
@@ -503,7 +503,7 @@ in
                 else
                   # For other controllers: use their /56 subnet
                   {
-                    publicKey = clanLib.vars.getPublicValue {
+                    publicKey = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-keys-${instanceName}";
@@ -512,7 +512,7 @@ in
 
                     allowedIPs = [
                       "${
-                        clanLib.vars.getPublicValue {
+                        clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = name;
                           generator = "wireguard-network-${instanceName}";
@@ -607,7 +607,7 @@ in
                 if allPeers ? ${name} then
                   # For peers: they now have our entire /56 subnet
                   {
-                    publicKey = clanLib.vars.getPublicValue {
+                    publicKey = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-keys-${instanceName}";
@@ -618,13 +618,13 @@ in
                     allowedIPs = lib.mapAttrsToList (
                       ctrlName: _:
                       let
-                        controllerPrefix = clanLib.vars.getPublicValue {
+                        controllerPrefix = clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = ctrlName;
                           generator = "wireguard-network-${instanceName}";
                           file = "prefix";
                         };
-                        peerSuffix = clanLib.vars.getPublicValue {
+                        peerSuffix = clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = name;
                           generator = "wireguard-network-${instanceName}";
@@ -639,7 +639,7 @@ in
                 else
                   # For other controllers: use their /56 subnet
                   {
-                    publicKey = clanLib.vars.getPublicValue {
+                    publicKey = clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "wireguard-keys-${instanceName}";
@@ -648,7 +648,7 @@ in
 
                     allowedIPs = [
                       "${
-                        clanLib.vars.getPublicValue {
+                        clanLib.getPublicValue {
                           flake = config.clan.core.settings.directory;
                           machine = name;
                           generator = "wireguard-network-${instanceName}";
