@@ -191,6 +191,12 @@
     server = {
       description = "The monitoring server that stores metrics and logs. Provides optional dashboards and alerting.";
 
+      interface =
+        { lib, ... }:
+        {
+          options.grafana.enable = lib.mkEnableOption "grafana";
+        };
+
       perInstance =
         { settings, ... }:
         {
@@ -201,10 +207,47 @@
             in
             {
               clan.core = {
+                postgresql = {
+                  enable = true;
+                  users.grafana = { };
+                  databases.grafana = {
+                    create.options = {
+                      OWNER = "grafana";
+                    };
+                    restore.stopOnRestore = [ "grafana" ];
+                  };
+                };
+
                 state.monitoring.folders = [
                   "/var/lib/mimir"
                   config.services.loki.dataDir
                 ];
+
+                vars.generators.grafana-admin = {
+                  prompts = {
+                    username = {
+                      description = "Username of the grafana admin user";
+                    };
+                  };
+
+                  files = {
+                    username = {
+                      secret = false;
+                    };
+                    password = {
+                      owner = "grafana";
+                      secret = true;
+                    };
+                  };
+
+                  runtimeInputs = [
+                    pkgs.openssl
+                  ];
+                  script = ''
+                    cat "$prompts/username" > $out/username
+                    openssl rand -hex 32 > $out/password
+                  '';
+                };
               };
 
               services.nginx = {
@@ -221,6 +264,10 @@
                   locations."/loki/" = {
                     basicAuthFile = config.clan.core.vars.generators.loki-auth.files.htpasswd.path;
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
+                  };
+
+                  locations."/" = {
+                    proxyPass = "http://127.0.0.1:${builtins.toString config.services.grafana.settings.server.http_port}/";
                   };
                 };
               };
@@ -310,6 +357,65 @@
                   };
 
                   storage_config.filesystem.directory = "${config.services.loki.dataDir}/chunks";
+                };
+              };
+
+              services.grafana = {
+                enable = settings.grafana.enable;
+                settings = {
+                  analytics = {
+                    enabled = false;
+                    reporting_enabled = false;
+                    check_for_updates = false;
+                    check_for_plugin_updates = false;
+                    feedback_links_enabled = false;
+                  };
+
+                  database = {
+                    type = "postgres";
+                    host = "/run/postgresql";
+                    user = "grafana";
+                    name = "grafana";
+                  };
+
+                  metrics.enabled = false;
+                  public_dashboards.enabled = false;
+
+                  security = {
+                    admin_user = "$__file{${config.clan.core.vars.generators.grafana-admin.files.username.path}}";
+                    admin_password = "$__file{${config.clan.core.vars.generators.grafana-admin.files.password.path}}";
+                    cookie_secure = true;
+                  };
+
+                  server = {
+                    domain = config.networking.fqdn;
+                    root_url = "https://${config.networking.fqdn}/";
+                  };
+
+                  snapshots = {
+                    enabled = false;
+                    external_enabled = false;
+                  };
+                };
+
+                provision = {
+                  enable = true;
+
+                  datasources.settings.datasources = [
+                    {
+                      name = "mimir";
+                      url = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}${config.services.mimir.configuration.api.prometheus_http_prefix}";
+                      type = "prometheus";
+                      isDefault = true;
+                      jsonData.manageAlerts = false;
+                    }
+                    {
+                      name = "loki";
+                      url = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}";
+                      type = "loki";
+                      jsonData.manageAlerts = false;
+                    }
+                  ];
                 };
               };
             };
