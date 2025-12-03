@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib }:
 /**
   Function to assert clan configuration checks.
 
