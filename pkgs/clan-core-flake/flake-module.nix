@@ -36,6 +36,9 @@ in
                 cp ${mkOfflineFlakeLock self} $out/flake.lock
                 nix flake lock $out --extra-experimental-features 'nix-command flakes'
                 clanCoreHash=$(nix hash path ${clanCore} --extra-experimental-features 'nix-command')
+
+                # Marker file to disable private flake loading in tests
+                touch $out/.skip-private-inputs
               '';
         in
         pkgs.callPackage package { clanCore = self; };
