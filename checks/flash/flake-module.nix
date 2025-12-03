@@ -13,6 +13,8 @@
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
+        # We need to use `mkForce` because we inherit from `test-install-machine`
+        # which currently hardcodes `nixpkgs.hostPlatform`
         nixpkgs.hostPlatform = lib.mkForce system;
 
         imports = [ self.nixosModules.test-flash-machine ];
@@ -66,7 +68,10 @@
         self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
         self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript.drvPath
       ]
-      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+      ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+      ++ builtins.map (import ../installation/facter-report.nix) (
+        lib.filter (lib.hasSuffix "linux") config.systems
+      );
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
@@ -102,7 +107,9 @@
                 machine.succeed("echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target' > ./test_id_ed25519.pub")
                 # Some distros like to automount disks with spaces
                 machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')
-                machine.succeed("clan flash write --ssh-pubkey ./test_id_ed25519.pub --keymap de --language de_DE.UTF-8 --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdc test-flash-machine-${pkgs.stdenv.hostPlatform.system}")
+                machine.succeed("clan flash write --ssh-pubkey ./test_id_ed25519.pub --keymap de --language de_DE.UTF-8 --debug --flake ${
+                  self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake
+                } --yes --disk main /dev/vdc test-flash-machine-${pkgs.stdenv.hostPlatform.system}")
               '';
             } { inherit pkgs self; };
           };

@@ -2,7 +2,6 @@
   self,
   lib,
   inputs,
-  privateInputs ? { },
   ...
 }:
 let
@@ -44,7 +43,6 @@ in
         && !(hasPrefix "vars-check-" name)
         && !(hasPrefix "devShell-" name)
         && !(elem name [
-          "clan-core-for-checks"
           "clan-deps"
         ])
       ) self.checks.${system};
@@ -131,18 +129,7 @@ in
               self'.legacyPackages.homeConfigurations or { }
             );
         in
-        nixosTests
-        // flakeOutputs
-        // {
-          clan-core-for-checks = pkgs.runCommand "clan-core-for-checks" { } ''
-            cp -r ${privateInputs.clan-core-for-checks} $out
-            chmod -R +w $out
-            cp ${../flake.lock} $out/flake.lock
-
-            # Create marker file to disable private flake loading in tests
-            touch $out/.skip-private-inputs
-          '';
-        };
+        nixosTests // flakeOutputs;
       packages = lib.optionalAttrs (pkgs.stdenv.isLinux) {
         run-vm-test-offline = pkgs.callPackage ../pkgs/run-vm-test-offline { };
       };

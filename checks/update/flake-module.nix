@@ -1,4 +1,9 @@
-{ self, ... }:
+{
+  config,
+  self,
+  lib,
+  ...
+}:
 {
   # Machine for update test
   clan.machines.test-update-machine = {
@@ -116,14 +121,17 @@
                 closureInfo = pkgs.closureInfo {
                   rootPaths = [
                     self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
-                    self.checks.${pkgs.stdenv.hostPlatform.system}.clan-core-for-checks
+                    self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake
                     self.clanInternals.machines.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
                     pkgs.bubblewrap
                   ]
-                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+                  ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+                  ++ builtins.map (import ../installation/facter-report.nix) (
+                    lib.filter (lib.hasSuffix "linux") config.systems
+                  );
                 };
               in
               self.clanLib.test.containerTest {
@@ -154,7 +162,7 @@
                       # Prepare test flake and Nix store
                       flake_dir = prepare_test_flake(
                           temp_dir,
-                          "${self.checks.${pkgs.stdenv.hostPlatform.system}.clan-core-for-checks}",
+                          "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
                           "${closureInfo}"
                       )
                       (flake_dir / ".clan-flake").write_text("")  # Ensure .clan-flake exists

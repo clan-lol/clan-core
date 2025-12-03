@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   self,
   ...
 }:
@@ -6,6 +8,7 @@
   clan.machines.test-morph-machine = {
     imports = [
       ./template/configuration.nix
+      self.clanLib.test.minifyModule
       self.nixosModules.clanCore
     ];
     nixpkgs.hostPlatform = "x86_64-linux";
@@ -36,7 +39,10 @@
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
                 ]
-                ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+                ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+                ++ builtins.map (import ../installation/facter-report.nix) (
+                  lib.filter (lib.hasSuffix "linux") config.systems
+                );
                 closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
               in
 
@@ -54,7 +60,9 @@
           testScript = ''
             start_all()
             actual.fail("cat /etc/testfile")
-            actual.succeed("env CLAN_DIR=${self.checks.x86_64-linux.clan-core-for-checks} clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
+            actual.succeed("env CLAN_DIR=${
+              self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake
+            } clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
             assert actual.succeed("cat /etc/testfile") == "morphed"
           '';
         } { inherit pkgs self; };

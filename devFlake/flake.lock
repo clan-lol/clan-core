@@ -143,7 +143,6 @@
     },
     "root": {
       "inputs": {
-        "clan-core-for-checks": "clan-core-for-checks",
         "flake-utils": "flake-utils",
         "nixpkgs-dev": "nixpkgs-dev",
         "nuschtos": "nuschtos",
