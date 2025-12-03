@@ -380,6 +380,10 @@ in
                             type = lib.types.str;
                             example = "hostname";
                           };
+                          flake = lib.mkOption {
+                            type = lib.types.path;
+                            example = "config.clan.core.settings.directory";
+                          };
                         };
                       };
                     };
