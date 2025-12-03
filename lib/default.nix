@@ -32,11 +32,16 @@ lib.fix (
       # ------------------------------------
       # Public ClanLib functions
       # TODO: Hoist all functions directly into clanLib
-      exports = import ./exports/exports.nix { inherit lib clanLib; };
-      #
-      vars = import ./vars.nix { inherit lib; };
-      #
+
+      getPublicValue = import ./get-public-value.nix { inherit lib; };
+
       test = import ./test { inherit lib clanLib; };
+
+      # Deprecated will be removed with the next release
+      vars.getPublicValue = lib.warn "'vars.getPublicValue' was renamed. Use 'getPublicValue' instead." clanLib.getPublicValue;
+
+      # Experimental
+      exports = import ./exports/exports.nix { inherit lib clanLib; };
     };
   in
   f

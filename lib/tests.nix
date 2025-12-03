@@ -262,7 +262,7 @@ in
 
   test_get_var_machine =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      varsLib = import ./get-public-value.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
@@ -278,7 +278,7 @@ in
 
   test_get_var_shared =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      varsLib = import ./get-public-value.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
@@ -293,7 +293,7 @@ in
 
   test_get_var_default =
     let
-      varsLib = import ./vars.nix { inherit lib; };
+      varsLib = import ./get-public-value.nix { inherit lib; };
     in
     {
       expr = varsLib.getPublicValue {
