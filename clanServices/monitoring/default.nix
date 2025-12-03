@@ -25,6 +25,7 @@
               clan.core = {
                 state.monitoring.folders = [
                   "/var/lib/mimir"
+                  config.services.loki.dataDir
                 ];
               };
 
@@ -37,6 +38,11 @@
                   locations."/mimir/" = {
                     basicAuthFile = config.clan.core.vars.generators.mimir-auth.files.htpasswd.path;
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
+                  };
+
+                  locations."/loki/" = {
+                    basicAuthFile = config.clan.core.vars.generators.loki-auth.files.htpasswd.path;
+                    proxyPass = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
                   };
                 };
               };
@@ -85,6 +91,49 @@
                   };
                 };
               };
+
+              services.loki = {
+                enable = true;
+
+                configuration = {
+                  analytics.reporting_enabled = false;
+
+                  auth_enabled = false;
+
+                  common = {
+                    path_prefix = config.services.loki.dataDir;
+                    replication_factor = 1;
+                    instance_interface_names = networkingInterfaces;
+                    ring = {
+                      instance_addr = "127.0.0.1";
+                      kvstore.store = "inmemory";
+                    };
+                  };
+
+                  schema_config = {
+                    configs = [
+                      {
+                        from = "2025-11-01";
+                        object_store = "filesystem";
+                        schema = "v13";
+                        store = "tsdb";
+                        index = {
+                          prefix = "index_";
+                          period = "24h";
+                        };
+                      }
+                    ];
+                  };
+
+                  server = {
+                    http_listen_port = 3002;
+                    http_path_prefix = "/loki";
+                    grpc_listen_port = 9096;
+                  };
+
+                  storage_config.filesystem.directory = "${config.services.loki.dataDir}/chunks";
+                };
+              };
             };
         };
     };
@@ -94,6 +143,32 @@
     { pkgs, ... }:
     {
       clan.core.vars.generators = {
+        loki-auth = {
+          share = true;
+
+          files."username" = {
+            secret = false;
+          };
+          files."password" = {
+            owner = "alloy";
+            secret = true;
+          };
+          files."htpasswd" = {
+            secret = true;
+            owner = "nginx";
+          };
+
+          runtimeInputs = [
+            pkgs.openssl
+            pkgs.apacheHttpd
+          ];
+          script = ''
+            echo -n "alloy" > $out/username
+            openssl rand -hex 32 > $out/password
+            htpasswd -nbB "$(cat $out/username)" "$(cat $out/password)" > $out/htpasswd
+          '';
+        };
+
         mimir-auth = {
           share = true;
 
