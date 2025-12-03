@@ -2,6 +2,7 @@
   lib,
   clanLib,
   config,
+  directory,
   ...
 }:
 {
@@ -82,6 +83,7 @@
                 machine = machine.name;
                 generator = "tor_${instanceName}";
                 file = "hostname";
+                flake = directory;
               };
             }
           ];
