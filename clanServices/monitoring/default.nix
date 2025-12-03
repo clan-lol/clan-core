@@ -135,6 +135,53 @@
                         }
                       }
                     }
+
+                    // Collects logs and sends them to loki.
+                    ${
+                      if settings.monitoredSystemdServices == "all" then
+                        ''
+                          loki.source.journal "all" {
+                            relabel_rules = loki.relabel.journal.rules
+                            forward_to = [loki.write.loki.receiver]
+                          }
+                        ''
+                      else
+                        lib.concatStrings (
+                          builtins.map (monitoredService: ''
+                            loki.source.journal "${builtins.replaceStrings [ "-" "." ] [ "_" "_" ] monitoredService}" {
+                              matches = "_SYSTEMD_UNIT=${monitoredService}"
+                              relabel_rules = loki.relabel.journal.rules
+                              forward_to = [loki.write.loki.receiver]
+                            }
+                          '') monitoredServices
+                        )
+                    }
+
+                    loki.relabel "journal" {
+                      rule {
+                        source_labels = ["__journal__hostname"]
+                        target_label = "instance"
+                      }
+                      rule {
+                        source_labels = ["__journal__systemd_unit"]
+                        target_label = "service_name"
+                      }
+                      rule {
+                        source_labels = ["__journal_priority_keyword"]
+                        target_label = "level"
+                      }
+                      forward_to = []
+                    }
+
+                    loki.write "loki" {
+                      endpoint {
+                        url = "${serverAddress}/loki/loki/api/v1/push"
+                        basic_auth {
+                          username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
+                          password_file = "${config.clan.core.vars.generators.loki-auth.files.password.path}"
+                        }
+                      }
+                    }
                   '';
                 };
             };
