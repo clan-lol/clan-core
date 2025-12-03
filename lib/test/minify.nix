@@ -9,4 +9,6 @@
   documentation.doc.enable = false;
   documentation.man.enable = false;
   documentation.enable = lib.mkDefault false;
+  system.nixos.version = "";
+  system.nixos.revision = "";
 }

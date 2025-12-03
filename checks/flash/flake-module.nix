@@ -69,7 +69,9 @@
         self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript.drvPath
       ]
       ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-      ++ builtins.map (i: i.outPath) (builtins.attrValues privateInputs);
+      ++ builtins.map (import ../installation/facter-report.nix) (
+        lib.filter (lib.hasSuffix "linux") config.systems
+      );
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {

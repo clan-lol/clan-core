@@ -1,4 +1,9 @@
-{ self, privateInputs, ... }:
+{
+  config,
+  self,
+  lib,
+  ...
+}:
 {
   # Machine for update test
   clan.machines.test-update-machine = {
@@ -124,7 +129,9 @@
                     pkgs.bubblewrap
                   ]
                   ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-                  ++ builtins.map (i: i.outPath) (builtins.attrValues privateInputs);
+                  ++ builtins.map (import ../installation/facter-report.nix) (
+                    lib.filter (lib.hasSuffix "linux") config.systems
+                  );
                 };
               in
               self.clanLib.test.containerTest {
