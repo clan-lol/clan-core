@@ -8,6 +8,137 @@
   roles = {
     client = {
       description = "Monitoring clients send their metrics and logs to the monitoring server.";
+
+      interface =
+        { lib, ... }:
+        {
+          options = {
+            monitoredSystemdServices = lib.mkOption {
+              type = lib.types.either (lib.types.enum [
+                "all"
+                "nixos"
+              ]) (lib.types.listOf lib.types.str);
+              default = "nixos";
+              description = ''
+                List of systemd services which are shown in the clan infrastructure grafana dashboard.
+                Logs sent to the monitoring server are filtered using this list.
+
+                Options:
+                "all" - all systemd services
+                "nixos" (default) - services that have been explicitly enabled through nixos config
+                listOf str - custom list of systemd services
+              '';
+              example = [
+                "alloy.service"
+                "grafana.service"
+                "loki.service"
+                "mimir.service"
+                "nginx.service"
+              ];
+            };
+          };
+        };
+
+      perInstance =
+        { roles, settings, ... }:
+        {
+          nixosModule =
+            {
+              config,
+              lib,
+              options,
+              ...
+            }:
+            {
+              services.alloy =
+                let
+                  serverAddress = lib.head (
+                    map (m: "https://${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                  );
+
+                  enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
+                    lib.attrNames (
+                      lib.attrsets.filterAttrs (_name: value: value == true) (
+                        lib.mapAttrs (
+                          name: value:
+                          builtins.hasAttr "enable" options.services."${name}"
+                          && builtins.hasAttr "default" options.services."${name}".enable
+                          && options.services."${name}".enable.default != value.enable
+                          && value.enable == true
+                        ) (config.services)
+                      )
+                    )
+                  );
+
+                  monitoredServices = (
+                    if settings.monitoredSystemdServices == "nixos" then
+                      enabledNixosSystemdServices
+                    else
+                      settings.monitoredSystemdServices
+                  );
+                in
+                {
+                  enable = true;
+                  extraFlags = [
+                    "--server.http.enable-pprof=false"
+                    "--disable-reporting=true"
+                  ];
+                  configPath = builtins.toFile "config.alloy" ''
+                    // Collects metrics and sends them to mimir.
+                    prometheus.exporter.unix "local_system" {
+                      // See the list of available collectors in the alloy docs at
+                      // https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list
+                      set_collectors = [ "cpu", "filesystem", "meminfo", "systemd" ]
+                    }
+
+                    prometheus.scrape "scrape_metrics" {
+                      targets = prometheus.exporter.unix.local_system.targets
+                      forward_to = [prometheus.relabel.create_nixos_services_metric.receiver, prometheus.remote_write.mimir.receiver]
+                      scrape_interval = "10s"
+                    }
+
+                    prometheus.relabel "create_nixos_services_metric" {
+                      forward_to = [prometheus.remote_write.mimir.receiver]
+
+                      ${
+                        if settings.monitoredSystemdServices == "all" then
+                          ''
+                            rule {
+                              action = "keep"
+                              source_labels = ["__name__"]
+                              regex = "node_systemd_unit_state"
+                            }
+                          ''
+                        else
+                          ''
+                            rule {
+                              action = "keep"
+                              source_labels = ["__name__", "name"]
+                              regex = "node_systemd_unit_state;(${lib.strings.join "|" monitoredServices})"
+                            }
+                          ''
+                      }
+
+                      rule {
+                        action = "replace"
+                        target_label = "__name__"
+                        replacement = "nixos_systemd_unit_state"
+                      }
+                    }
+
+                    prometheus.remote_write "mimir" {
+                      endpoint {
+                        url = "${serverAddress}/mimir/api/v1/push"
+                        basic_auth {
+                          username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
+                          password_file = "${config.clan.core.vars.generators.mimir-auth.files.password.path}"
+                        }
+                      }
+                    }
+                  '';
+                };
+            };
+        };
     };
 
     server = {
