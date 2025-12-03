@@ -42,7 +42,7 @@ Each export is tagged with a scope that identifies its source:
 - **Machine level**: Data specific to a single machine
 
 !!! Important
-    Exports are stored internally using scope keys, therefore you should always use the `clanLib.exports` helper functions to work with them.
+    Exports are stored internally using scope keys, therefore you should always use the `clanLib` helper functions to work with them.
 
     The internal format is subject to change.
 
@@ -82,7 +82,7 @@ Get all exports matching specific criteria
   perInstance = { ... }: {
     nixosModule = { ... }: {
       # Get all exports from the "vpn" service
-      vpnConfigs = clanLib.exports.selectExports
+      vpnConfigs = clanLib.selectExports
         { service = "vpn"; }
         exports;
     };
@@ -101,14 +101,14 @@ Returns an attribute set where keys are scope identifiers and values are the exp
 
 ## Helper Functions
 
-The `clanLib.exports` module provides several helper functions for working with exports:
+`clanLib` provides several helper functions for working with exports:
 
 ### `buildScopeKey`
 
 Build a scope key string from components:
 
 ```nix
-clanLib.exports.buildScopeKey {
+clanLib.buildScopeKey {
   serviceName = "myservice";
   instanceName = "prod";
   roleName = "server";
@@ -122,7 +122,7 @@ clanLib.exports.buildScopeKey {
 Parse a scope string into its components:
 
 ```nix
-clanLib.exports.parseScope "myservice:prod:server:backend01"
+clanLib.parseScope "myservice:prod:server:backend01"
 # => {
 #   serviceName = "myservice";
 #   instanceName = "prod";
@@ -136,7 +136,7 @@ clanLib.exports.parseScope "myservice:prod:server:backend01"
 Retrieve a single export by scope:
 
 ```nix
-clanLib.exports.getExport
+clanLib.getExport
   { serviceName = "myservice"; machineName = "backend01"; }
   exports
 # => <some data>
@@ -148,7 +148,7 @@ Filter exports matching specific criteria:
 
 ```nix
 # Get all exports for a specific service
-clanLib.exports.selectExports
+clanLib.selectExports
   { serviceName = "myservice"; }
   exports
 # =>  {
@@ -156,7 +156,7 @@ clanLib.exports.selectExports
 # }
 
 # Get all exports for a specific machine
-clanLib.exports.selectExports
+clanLib.selectExports
   { machineName = "backend01"; }
   exports
 # =>  {
@@ -178,7 +178,7 @@ These restrictions prevent accidental conflicts and maintain clear data ownershi
 
 ## Best Practices
 
-1. **Use the helper functions**: Always use `clanLib.exports.*` functions instead of accessing the internal format directly
+1. **Use the helper functions**: Always use `clanLib.*` functions instead of accessing the internal format directly
 
 2. **Use appropriate scopes**: Export at the most specific scope that makes sense
     - Machine-level data (IPs, hostnames) - export in `perInstance`
