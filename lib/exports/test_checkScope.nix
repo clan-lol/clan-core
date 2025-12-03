@@ -1,7 +1,7 @@
 { clanLib, ... }:
 {
   test_check_scope_simple = {
-    expr = clanLib.exports.checkScope {
+    expr = clanLib.checkScope {
       serviceName = "serviceA";
       machineName = "machine01";
     } "serviceA:::machine01";
@@ -9,7 +9,7 @@
   };
 
   test_check_scope_all_parts = {
-    expr = clanLib.exports.checkScope {
+    expr = clanLib.checkScope {
       serviceName = "serviceA";
       instanceName = "i1";
       roleName = "default";
@@ -19,7 +19,7 @@
   };
 
   test_check_scope_with_whitelist = {
-    expr = clanLib.exports.checkScope {
+    expr = clanLib.checkScope {
       serviceName = "serviceA";
       machineName = "machine01";
       whitelist = [ "serviceB:::machine02" ];

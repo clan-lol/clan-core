@@ -89,12 +89,12 @@ let
     let
       parts = lib.splitString ":" scopeStr;
       checkedParts = lib.throwIf (lib.length parts != 4) ''
-        clanLib.exports.parseScope: invalid scope string format.
+        parseScope: invalid scope string format.
         Got '${scopeStr}'
 
         fix:
         - use the provided 'mkExports' utility or
-        - use clanLib.exports.buildScopeKey
+        - use buildScopeKey
       '' (parts);
     in
     {

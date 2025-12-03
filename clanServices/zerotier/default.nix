@@ -13,7 +13,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   exports = lib.mapAttrs' (instanceName: _: {
-    name = clanLib.exports.buildScopeKey {
+    name = clanLib.buildScopeKey {
       inherit instanceName;
       serviceName = config.manifest.name;
     };

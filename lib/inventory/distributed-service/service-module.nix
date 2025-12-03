@@ -611,7 +611,7 @@ in
                         {
                           mkExports = v: {
                             ${
-                              clanLib.exports.buildScopeKey {
+                              clanLib.buildScopeKey {
                                 inherit instanceName roleName machineName;
                                 serviceName = config.manifest.name;
                               }
@@ -784,7 +784,7 @@ in
             inherit (machineScope) instances;
             mkExports = v: {
               ${
-                clanLib.exports.buildScopeKey {
+                clanLib.buildScopeKey {
                   inherit machineName;
                   serviceName = config.manifest.name;
                 }
@@ -1055,7 +1055,7 @@ in
       exports = lib.zipAttrsWith (_name: values: { imports = values; }) (
         lib.mapAttrsToList (
           machineName: machine:
-          clanLib.exports.checkExports {
+          clanLib.checkExports {
             serviceName = config.manifest.name;
             inherit machineName;
             errorDetails = ''
@@ -1095,7 +1095,7 @@ in
                   machineName: v:
                   # Pass exports through check
                   #
-                  clanLib.exports.checkExports {
+                  clanLib.checkExports {
                     serviceName = config.manifest.name;
                     inherit machineName instanceName roleName;
                     errorDetails = ''
