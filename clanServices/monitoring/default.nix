@@ -401,6 +401,13 @@
                 provision = {
                   enable = true;
 
+                  dashboards.settings.providers = [
+                    {
+                      name = "clan";
+                      options.path = ./dashboards;
+                    }
+                  ];
+
                   datasources.settings.datasources = [
                     {
                       name = "mimir";
