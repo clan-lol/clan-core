@@ -33,7 +33,6 @@
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clan.core.facts.secretUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
               clan.core.sops.defaultGroups = [ "admins" ];
               clan.virtualisation.graphics = false;
 
@@ -48,7 +47,6 @@
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clan.core.facts.secretUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
               clan.core.networking.zerotier.networkId = "82b44b162ec6c013";
             };
         };

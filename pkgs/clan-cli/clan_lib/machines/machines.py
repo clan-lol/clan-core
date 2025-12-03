@@ -5,8 +5,6 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal
 
-from clan_cli.facts import public_modules as facts_public_modules
-from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.vars._types import StoreBase
 
 from clan_lib.api import API
@@ -82,18 +80,6 @@ class Machine:
         )
 
     @cached_property
-    def secret_facts_store(self) -> facts_secret_modules.SecretStoreBase:
-        secret_module = self.select("config.clan.core.facts.secretModule")
-        module = importlib.import_module(secret_module)
-        return module.SecretStore(machine=self)
-
-    @cached_property
-    def public_facts_store(self) -> facts_public_modules.FactStoreBase:
-        public_module = self.select("config.clan.core.facts.publicModule")
-        module = importlib.import_module(public_module)
-        return module.FactStore(machine=self)
-
-    @cached_property
     def secret_vars_store(self) -> StoreBase:
         from clan_cli.vars.secret_modules import password_store  # noqa: PLC0415
 
@@ -109,17 +95,6 @@ class Machine:
         public_module = self.select("config.clan.core.vars.settings.publicModule")
         module = importlib.import_module(public_module)
         return module.FactStore(flake=self.flake)
-
-    @property
-    def facts_data(self) -> dict[str, dict[str, Any]]:
-        services = self.select("config.clan.core.facts.services")
-        if services:
-            return services
-        return {}
-
-    @property
-    def secrets_upload_directory(self) -> str:
-        return self.select("config.clan.core.facts.secretUploadDirectory")
 
     @property
     def flake_dir(self) -> Path:

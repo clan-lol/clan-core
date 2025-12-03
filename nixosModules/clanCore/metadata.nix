@@ -87,7 +87,7 @@ in
           directory = mkOption {
             type = types.path;
             description = ''
-              the location of the flake repo, used to calculate the location of facts and secrets
+              the location of the flake repo, used to calculate the location of vars and secrets
             '';
           };
           name = lib.mkOption {

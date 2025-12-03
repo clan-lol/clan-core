@@ -116,7 +116,6 @@ nav:
           - Overview: reference/clan.core/index.md
           - reference/clan.core/backups.md
           - reference/clan.core/deployment.md
-          - reference/clan.core/facts.md
           - reference/clan.core/networking.md
           - reference/clan.core/postgresql.md
           - reference/clan.core/settings.md
@@ -128,7 +127,6 @@ nav:
           - Overview: reference/cli/index.md
 
           - reference/cli/backups.md
-          - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md
           - reference/cli/machines.md

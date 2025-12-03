@@ -20,7 +20,6 @@ from clan_lib.nix import nix_shell, nix_test_store
 from clan_lib.vars.generate import run_generators
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.facts.generate import generate_facts
 from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 from clan_cli.vars.upload import populate_secret_vars
@@ -31,21 +30,6 @@ from .virtiofsd import start_virtiofsd
 from .waypipe import start_waypipe
 
 log = logging.getLogger(__name__)
-
-
-def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
-    nixos_config: dict = {}
-    nixos_config["clan"] = {}
-    nixos_config["clan"]["core"] = {}
-    nixos_config["clan"]["core"]["secrets"] = {}
-    for service, service_facts in facts.items():
-        nixos_config["clan"]["core"]["secrets"][service] = {}
-        nixos_config["clan"]["core"]["secrets"][service]["facts"] = {}
-        for fact, value in service_facts.items():
-            nixos_config["clan"]["core"]["secrets"][service]["facts"][fact] = {
-                "value": value.decode(),
-            }
-    return nixos_config
 
 
 # TODO move this to the Machines class
@@ -84,7 +68,6 @@ def get_secrets(
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
-    machine.secret_facts_store.upload(secrets_dir)
     populate_secret_vars(machine, secrets_dir)
 
     return secrets_dir
@@ -388,7 +371,6 @@ def run_command(
 ) -> None:
     machine_obj: Machine = Machine(args.machine, args.flake)
 
-    generate_facts([machine_obj])
     run_generators([machine_obj], generators=None, full_closure=False)
 
     vm: VmConfig = inspect_vm(machine=machine_obj)

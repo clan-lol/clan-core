@@ -134,7 +134,6 @@
               name = secret_id opt;
               value = {
                 share = true;
-                migrateFact = "${secret_id opt}";
                 prompts.${secret_id opt} = {
                   type = "hidden";
                   persist = true;

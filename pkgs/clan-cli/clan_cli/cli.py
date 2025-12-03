@@ -20,7 +20,6 @@ from . import (
 )
 from .arg_actions import AppendOptionAction
 from .clan import show
-from .facts import cli as facts
 from .flash import cli as flash_cli
 from .hyperlink import help_hyperlink
 from .machines import cli as machines
@@ -312,46 +311,6 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
     )
     secrets.register_parser(parser_secrets)
 
-    parser_facts = subparsers.add_parser(
-        "facts",
-        help="Manage facts",
-        description="Manage facts",
-        epilog=(
-            f"""
-Note: Facts are being deprecated, please use Vars instead.
-For a migration guide visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/migrations/migration-facts-vars")}
-
-This subcommand provides an interface to facts of clan machines.
-Facts are artifacts that a service can generate.
-There are public and secret facts.
-Public facts can be referenced by other machines directly.
-Public facts can include: ip addresses, public keys.
-Secret facts can include: passwords, private keys.
-
-A service is an included clan-module that implements facts generation functionality.
-For example the zerotier module will generate private and public facts.
-In this case the public fact will be the resulting zerotier-ip of the machine.
-The secret fact will be the zerotier-identity-secret, which is used by zerotier
-to prove the machine has control of the zerotier-ip.
-
-Examples:
-
-  $ clan facts generate
-  Will generate facts for all machines.
-
-  $ clan facts generate --service [SERVICE] --regenerate
-  Will regenerate facts, if they are already generated for a specific service.
-  This is especially useful for resetting certain passwords while leaving the rest
-  of the facts for a machine in place.
-
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
-        """
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    facts.register_parser(parser_facts)
-
-    # like facts but with vars instead of facts
     parser_vars = subparsers.add_parser(
         "vars",
         aliases=["va"],

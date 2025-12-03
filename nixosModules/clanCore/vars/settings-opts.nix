@@ -10,7 +10,7 @@
     ];
     default = "sops";
     description = ''
-      method to store secret facts
+      method to store secret vars.
       custom can be used to define a custom secret var store.
     '';
   };

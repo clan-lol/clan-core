@@ -50,7 +50,6 @@ class Subcommand:
 icon_table = {
     "backups": ":material-backup-restore: ",
     "config": ":material-shape-outline: ",
-    "facts": ":simple-databricks: ",
     "flakes": ":material-snowflake: ",
     "flash": ":material-flash: ",
     "history": ":octicons-history-24: ",

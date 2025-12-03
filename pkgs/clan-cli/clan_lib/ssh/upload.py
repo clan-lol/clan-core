@@ -53,7 +53,7 @@ def upload(
             raise ClanError(msg)
 
     # Create the tarball from the temporary directory
-    with TemporaryDirectory(prefix="facts-upload-") as tardir:
+    with TemporaryDirectory(prefix="vars-upload-") as tardir:
         tar_path = Path(tardir) / "upload.tar.gz"
         # We set the permissions of the files and directories in the tarball to read only and owned by root
         # As first uploading the tarball and then changing the permissions can lead an attacker to

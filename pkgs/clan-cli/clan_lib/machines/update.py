@@ -6,8 +6,6 @@ import shlex
 from contextlib import ExitStack
 from typing import cast
 
-from clan_cli.facts.generate import generate_facts
-from clan_cli.facts.upload import upload_secrets
 from clan_cli.vars.upload import upload_secret_vars
 
 from clan_lib.api import API
@@ -134,7 +132,7 @@ def run_machine_update(
 
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
-            generating facts or variables.
+            generating vars.
 
     """
     with ExitStack() as stack:
@@ -153,10 +151,7 @@ def run_machine_update(
         # Some operations require root privileges on the target host.
         target_host_root = stack.enter_context(_target_host.become_root())
 
-        generate_facts([machine], service=None, regenerate=False)
-
         # Upload secrets to the target host using root
-        upload_secrets(machine, target_host_root)
         upload_secret_vars(machine, target_host_root)
 
         # Upload the flake's source to the build host.

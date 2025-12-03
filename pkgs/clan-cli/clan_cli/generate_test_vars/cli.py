@@ -137,7 +137,7 @@ class TestMachine(Machine):
 
     def select(self, attr: str) -> Any:
         """Build the machine and return the path to the result
-        accepts a secret store and a facts store # TODO
+        accepts a secret store and a public store
         """
         config = nix_config()
         system = config["system"]

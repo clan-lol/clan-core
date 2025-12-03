@@ -30,7 +30,7 @@ in
     description = ''
       Generated Variables
 
-      Define generators that prompt for or generate variables like facts and secrets to store, deploy, and rotate them easily.
+      Define generators that prompt for or generate variables and secrets to store, deploy, and rotate them easily.
       For example, generators can be used to:
         - prompt the user for input, like passwords or host names
         - generate secrets like private keys automatically when they are needed

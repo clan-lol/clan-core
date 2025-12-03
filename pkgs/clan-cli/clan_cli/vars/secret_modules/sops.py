@@ -272,7 +272,11 @@ class SecretStore(StoreBase):
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
             self.populate_dir(machine, sops_upload_dir, phases)
-            upload(host, sops_upload_dir, Path("/var/lib/sops-nix"))
+            secret_upload_directory = self.flake.select_machine(
+                machine,
+                "config.clan.core.vars.sops.secretUploadDirectory",
+            )
+            upload(host, sops_upload_dir, Path(secret_upload_directory))
 
     def exists(self, generator: Generator, name: str) -> bool:
         secret_folder = self.secret_path(generator, name)

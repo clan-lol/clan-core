@@ -84,7 +84,7 @@ def complete_services_for_machine(
     parsed_args: argparse.Namespace,
     **_kwargs: Any,
 ) -> Iterable[str]:
-    """Provides completion functionality for machine facts generation services."""
+    """Provides completion functionality for machine vars generators."""
     services: list[str] = []
     # TODO: consolidate, if multiple machines are used
     machines: list[str] = parsed_args.machines
@@ -101,7 +101,7 @@ def complete_services_for_machine(
                 run(
                     nix_eval(
                         flags=[
-                            f"{flake}#nixosConfigurations.{machines[0]}.config.clan.core.facts.services",
+                            f"{flake}#nixosConfigurations.{machines[0]}.config.clan.core.vars.generators",
                             "--apply",
                             "builtins.attrNames",
                         ],

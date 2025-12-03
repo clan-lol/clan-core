@@ -12,6 +12,17 @@ let
   machineName = config.clan.core.settings.machine.name;
 in
 {
+  options.clan.core.vars.sops = {
+    secretUploadDirectory = lib.mkOption {
+      type = lib.types.path;
+      default = "/var/lib/sops-nix";
+      description = ''
+        The directory where sops-related files are uploaded to on the target machine.
+        This includes the age private key used for decryption and activation secrets.
+      '';
+    };
+  };
+
   config.clan.core.vars.settings = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
     # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
     fileModule = file: {
@@ -19,7 +30,7 @@ in
         if file.config.neededFor == "partitioning" then
           "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
         else if file.config.neededFor == "activation" then
-          "/var/lib/sops-nix/activation/${file.config.generatorName}/${file.config.name}"
+          "${config.clan.core.vars.sops.secretUploadDirectory}/activation/${file.config.generatorName}/${file.config.name}"
         else
           config.sops.secrets.${"vars/${file.config.generatorName}/${file.config.name}"}.path
             or "/no-such-path"
@@ -43,6 +54,6 @@ in
     );
     age.keyFile = lib.mkIf (builtins.pathExists (
       config.clan.core.settings.directory + "/sops/secrets/${machineName}-age.key/secret"
-    )) (lib.mkDefault "/var/lib/sops-nix/key.txt");
+    )) (lib.mkDefault "${config.clan.core.vars.sops.secretUploadDirectory}/key.txt");
   };
 }

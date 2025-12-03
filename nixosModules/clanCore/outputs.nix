@@ -78,14 +78,6 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      facts = {
-        inherit (config.clan.core.facts)
-          secretUploadDirectory
-          secretModule
-          publicModule
-          services
-          ;
-      };
       sops.defaultGroups = config.clan.core.sops.defaultGroups;
       inherit (config.clan.core.networking) targetHost buildHost;
       inherit (config.system.clan.deployment) nixosMobileWorkaround;

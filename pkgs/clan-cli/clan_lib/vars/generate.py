@@ -5,7 +5,6 @@ from collections.abc import Generator as GeneratorType
 from clan_cli.vars import graph
 from clan_cli.vars.generator import Generator
 from clan_cli.vars.graph import requested_closure
-from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_cli.vars.secret_modules import sops
 
 from clan_lib.api import API
@@ -199,14 +198,11 @@ def run_generators(
         if not all_machines:
             continue
         first_machine = all_machines[0]
-        if check_can_migrate(first_machine, generator):
-            migrate_files(first_machine, generator)
-        else:
-            generator.execute(
-                machine=first_machine,
-                prompt_values=prompt_values.get(generator.name, {}),
-                no_sandbox=no_sandbox,
-            )
+        generator.execute(
+            machine=first_machine,
+            prompt_values=prompt_values.get(generator.name, {}),
+            no_sandbox=no_sandbox,
+        )
 
     # ensure all selected machines have access to all selected shared generators
     for generator in all_generators:
