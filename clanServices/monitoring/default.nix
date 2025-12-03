@@ -1,5 +1,7 @@
-{ ... }:
 {
   _class = "clan.service";
-  manifest.name = "clan-core/monitoring";
+  manifest = {
+    name = "monitoring";
+    description = "Monitoring stack gathering metrics and logs with a small resource footprint.";
+  };
 }
