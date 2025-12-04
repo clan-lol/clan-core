@@ -22,6 +22,7 @@ This example shows how to create a complete certificate authority with root and 
         $out/ca.crt $out/ca.key \
         --profile root-ca \
         --no-password \
+        --insecure \
         --not-after 87600h
     '';
   };
@@ -37,7 +38,8 @@ This example shows how to create a complete certificate authority with root and 
       step crypto keypair \
         $out/intermediate.pub \
         $out/intermediate.key \
-        --no-password
+        --no-password \
+        --insecure
     '';
   };
 
@@ -52,12 +54,13 @@ This example shows how to create a complete certificate authority with root and 
     script = ''
       step certificate create "My Intermediate CA" \
         $out/intermediate.crt \
-        $in/intermediate-key/intermediate.key \
+        --key $in/intermediate-key/intermediate.key \
         --ca $in/root-ca/ca.crt \
         --ca-key $in/root-ca/ca.key \
         --profile intermediate-ca \
         --not-after 8760h \
-        --no-password
+        --no-password \
+        --insecure
     '';
   };
 
