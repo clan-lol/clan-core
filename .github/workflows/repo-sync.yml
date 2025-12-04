@@ -10,7 +10,7 @@ jobs:
     if: github.repository_owner == 'clan-lol'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: actions/create-github-app-token@v2
