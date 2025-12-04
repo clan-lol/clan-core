@@ -33,6 +33,7 @@ let
         umount -R "$target".tmp
         rmdir "$target".tmp
         umount --lazy "$target"
+        umount --lazy "$target"
       else
         mount -t tmpfs -o noswap tmpfs "$target"
         tar -xf "$src" -C "$target"
