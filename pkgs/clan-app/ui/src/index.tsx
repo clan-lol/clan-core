@@ -22,25 +22,13 @@ if (import.meta.env.DEV) {
 
 render(
   () => (
-    <ErrorBoundary
-      fallback={(error, reset) => {
-        console.error(error);
-        return (
-          <div>
-            <p>{error.message}</p>
-            <button onClick={reset}>Try Again</button>
-          </div>
-        );
-      }}
-    >
-      <ApiClientProvider client={{ fetch: callApi }}>
-        {/* Temporary solution */}
-        <Toaster toastOptions={{}} />
-        <QueryClientProvider client={DefaultQueryClient}>
-          <Entrypoint />
-        </QueryClientProvider>
-      </ApiClientProvider>
-    </ErrorBoundary>
+    <ApiClientProvider client={{ fetch: callApi }}>
+      {/* Temporary solution */}
+      <Toaster toastOptions={{}} />
+      <QueryClientProvider client={DefaultQueryClient}>
+        <Entrypoint />
+      </QueryClientProvider>
+    </ApiClientProvider>
   ),
   root,
 );

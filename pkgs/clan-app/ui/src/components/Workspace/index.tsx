@@ -14,7 +14,7 @@ export default function Workspace() {
     <>
       <div
         class={cx(styles.sidebarContainer, {
-          [styles.machineSelected]: clan().machines()?.active,
+          // [styles.machineSelected]: clan().machines()?.active,
         })}
       >
         <Sidebar />
@@ -74,11 +74,11 @@ export default function Workspace() {
         </Suspense>
       </ErrorBoundary> */}
       </div>
-      <Show when={clan().machines()?.active}>
+      {/* <Show when={clan().machines()?.active}>
         <MachineContextProvider machine={() => clan().machines()!.active!}>
           <SidebarMachine />
         </MachineContextProvider>
-      </Show>
+      </Show> */}
     </>
   );
 }

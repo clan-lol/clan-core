@@ -1,8 +1,9 @@
+import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
-import * as api from "./api";
-import { Clan } from "./Clan";
-import { DataSchema } from "./schema";
+import api from "./api";
+import { Clan } from "./clan";
+import { Service, ServiceInstance } from "./Service";
 
 export class MachineList {
   static async get(clan: Clan): Promise<MachineList> {
@@ -110,13 +111,13 @@ export type MachineData = {
   tags: string[];
 };
 
-export type MachineMeta = {
+export type MachineEntity = {
   // TODO: name should be renamed to id
   name: string;
   data: MachineData;
+  dataSchema: JSONSchema;
   serviceInstances: string[];
   status: MachineStatus;
-  schema: DataSchema;
 };
 
 export type MachineStatus =

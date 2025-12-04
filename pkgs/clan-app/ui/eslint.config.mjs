@@ -30,6 +30,9 @@ const config = tseslint.config(
           whitelist: ["material-icons"],
         },
       ],
+      // modular-forms explicitly requires `type` instead of `interface`
+      // https://github.com/fabian-hiller/modular-forms/issues/2
+      "@typescript-eslint/consistent-type-definitions": "off",
       // TODO: make this more strict by removing later
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",

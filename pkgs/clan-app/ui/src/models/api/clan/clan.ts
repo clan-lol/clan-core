@@ -1,14 +1,49 @@
-import { ClanData, ClanMeta, Tags } from "../../Clan";
+import {
+  ClanData,
+  ClanEntity,
+  ClanMetaData,
+  ClanMetaEntity,
+  ClanNewEntity,
+  ClansEntity,
+} from "../../clan";
+import { MachineData } from "../../Machine";
 import client from "./client-call";
 
-export async function getClanDir(): Promise<string> {
-  const res = await client.get("get_clan_folder");
-  return res.data.identifier;
-}
 // TODO: make this one API call only
-export async function getClan(id: string): Promise<ClanMeta> {
+export async function getClans(
+  ids: string[],
+  activeIndex: number,
+): Promise<ClansEntity> {
+  return {
+    all: await Promise.all(
+      ids.map(async (id, i) => {
+        if (i === activeIndex) {
+          return await getClan(id);
+        }
+        return await getClanMeta(id);
+      }),
+    ),
+    activeIndex,
+  };
+}
+export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
   // TODO: make this a GET instead
-  const [clanRes, schemaRes] = await Promise.all([
+  const clan = await client.post("get_clan_details", {
+    body: {
+      flake: {
+        identifier: id,
+      },
+    },
+  });
+
+  return {
+    id,
+    data: clan.data as ClanMetaData,
+  };
+}
+
+export async function getClan(id: string): Promise<ClanEntity> {
+  const [clan, dataSchema] = await Promise.all([
     client.post("get_clan_details", {
       body: {
         flake: {
@@ -24,23 +59,25 @@ export async function getClan(id: string): Promise<ClanMeta> {
       },
     }),
   ]);
-
   return {
     id,
-    data: clanRes.data,
-    schema: schemaRes.data,
-  } as ClanMeta;
+    data: clan.data as ClanData,
+    dataSchema: dataSchema.data,
+    machines: [],
+    services: [],
+    globalTags: { regular: [], special: [] },
+  };
 }
 
-// TODO: make this one API call only
-export async function getClans(ids: string[]): Promise<ClanMeta[]> {
-  return await Promise.all(ids.map(async (id) => await getClan(id)));
+export async function pickClanDir(): Promise<string> {
+  const res = await client.get("get_clan_folder");
+  return res.data.identifier;
 }
 
 // TODO: backend should provide an API that allows partial update
 export async function updateClanData(
   clanId: string,
-  data: ClanData,
+  data: Partial<ClanData>,
 ): Promise<void> {
   await client.post("set_clan_details", {
     body: {
@@ -48,7 +85,7 @@ export async function updateClanData(
         flake: {
           identifier: clanId,
         },
-        meta: data,
+        meta: data as ClanData,
       },
     },
   });
@@ -56,16 +93,13 @@ export async function updateClanData(
 
 // TODO: make this one API call only
 // TODO: allow users to select a template
-export async function createClan(
-  path: string,
-  data: ClanData,
-): Promise<ClanMeta> {
+export async function createClan(data: ClanNewEntity): Promise<ClanEntity> {
   await client.post("create_clan", {
     body: {
       opts: {
-        dest: path,
+        dest: data.id,
         template: "minimal",
-        initial: data,
+        initial: data.data,
       },
     },
   });
@@ -74,14 +108,14 @@ export async function createClan(
     client.post("get_clan_details_schema", {
       body: {
         flake: {
-          identifier: path,
+          identifier: data.id,
         },
       },
     }),
     client.post("create_service_instance", {
       body: {
         flake: {
-          identifier: path,
+          identifier: data.id,
         },
         module_ref: {
           name: "admin",
@@ -98,19 +132,22 @@ export async function createClan(
     }),
     client.post("create_secrets_user", {
       body: {
-        flake_dir: path,
+        flake_dir: data.id,
       },
     }),
   ]);
 
   return {
-    id: path,
-    data,
-    schema: schemaRes.data,
+    id: data.id,
+    data: data.data,
+    dataSchema: {},
+    machines: [],
+    services: [],
+    globalTags: { regular: [], special: [] },
   };
 }
 
-export async function getTags(clanId: string): Promise<Tags> {
+export async function getAllTags(clanId: string): Promise<Tags> {
   const res = await client.post("list_tags", {
     body: {
       flake: {

@@ -2,17 +2,16 @@ import styles from "./SidebarHeader.module.css";
 import Icon from "@/src/components/Icon/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { Typography } from "../Typography/Typography";
-import { createSignal, For, Show, Suspense } from "solid-js";
+import { Component, createSignal, For, Show } from "solid-js";
 import { Button } from "../Button/Button";
 import { ClanSettingsModal } from "@/src/components/Modal/ClanSettingsModal";
-import { useClanContext } from "../Context/ClanContext";
-import { useClansContext } from "../Context/ClansContext";
+import { useClansContext, useClanContext } from "../Context/ClanContext";
 
-export const SidebarHeader = () => {
+const SidebarHeader: Component = () => {
   const [open, setOpen] = createSignal(false);
   const [showSettings, setShowSettings] = createSignal(false);
-  const clan = useClanContext()!;
-  const clans = useClansContext()!;
+  const [clan] = useClanContext();
+  const [clans, { activateClan, deactivateClan }] = useClansContext();
 
   return (
     <div class={styles.sidebarHeader}>
@@ -82,26 +81,24 @@ export const SidebarHeader = () => {
                   ghost
                   size="xs"
                   icon="Plus"
-                  onClick={() => clan().deactivate()}
+                  onClick={() => deactivateClan()}
                 >
                   Add
                 </Button>
               </DropdownMenu.GroupLabel>
               <div class={styles.dropdownGroupItems}>
-                <For each={Array.from(clans()!)}>
+                <For each={clans.all}>
                   {(clan) => (
-                    <Suspense fallback={"Loading..."}>
-                      <DropdownMenu.Item
-                        class={styles.dropdownItem}
-                        onSelect={() => {
-                          clan.activate();
-                        }}
-                      >
-                        <Typography hierarchy="label" size="xs" weight="medium">
-                          {clan.data.name}
-                        </Typography>
-                      </DropdownMenu.Item>
-                    </Suspense>
+                    <DropdownMenu.Item
+                      class={styles.dropdownItem}
+                      onSelect={async () => {
+                        await activateClan(clan);
+                      }}
+                    >
+                      <Typography hierarchy="label" size="xs" weight="medium">
+                        {clan.data.name}
+                      </Typography>
+                    </DropdownMenu.Item>
                   )}
                 </For>
               </div>
@@ -112,3 +109,4 @@ export const SidebarHeader = () => {
     </div>
   );
 };
+export default SidebarHeader;

@@ -2,9 +2,8 @@ import styles from "./SidebarBody.module.css";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, Show } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
-import { SidebarProps } from ".";
 import { Button } from "../Button/Button";
 import { Instance } from "@/src/workflows/Service/models";
 import { useClanContext } from "../Context/ClanContext";
@@ -13,48 +12,24 @@ import {
   useMachineContext,
 } from "../Context/MachineContext";
 
-const MachineRoute = () => {
-  const machine = useMachineContext()!;
+const SidebarBody: Component = () => {
   return (
-    <a
-      href="#"
-      onClick={(ev) => {
-        ev.preventDefault();
-        machine().activate();
-      }}
-    >
-      <div class="flex w-full flex-col gap-2">
-        <div class="flex flex-row items-center justify-between">
-          <Typography
-            hierarchy="label"
-            size="xs"
-            weight="bold"
-            color="primary"
-            inverted
-          >
-            {machine().name}
-          </Typography>
-          <MachineStatus status={machine().status} />
-        </div>
-        <div class="flex w-full flex-row items-center gap-1">
-          <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
-          <Typography
-            hierarchy="label"
-            family="mono"
-            size="s"
-            inverted
-            color="primary"
-          >
-            {machine().serviceInstances.length}
-          </Typography>
-        </div>
-      </div>
-    </a>
+    <div class={styles.sidebarBody}>
+      <Accordion
+        class={styles.accordion}
+        multiple
+        defaultValue={["machines", "services"]}
+      >
+        <Machines />
+        {/* <Services /> */}
+      </Accordion>
+    </div>
   );
 };
+export default SidebarBody;
 
-const Machines = () => {
-  const clan = useClanContext()!;
+const Machines: Component = () => {
+  const [clan] = useClanContext();
 
   return (
     <Accordion.Item class={styles.accordionItem} value="machines">
@@ -113,6 +88,46 @@ const Machines = () => {
   );
 };
 
+const MachineRoute: Component = () => {
+  const machine = useMachineContext()!;
+  return (
+    <a
+      href="#"
+      onClick={(ev) => {
+        ev.preventDefault();
+        machine().activate();
+      }}
+    >
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <Typography
+            hierarchy="label"
+            size="xs"
+            weight="bold"
+            color="primary"
+            inverted
+          >
+            {machine().name}
+          </Typography>
+          <MachineStatus status={machine().status} />
+        </div>
+        <div class="flex w-full flex-row items-center gap-1">
+          <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
+          <Typography
+            hierarchy="label"
+            family="mono"
+            size="s"
+            inverted
+            color="primary"
+          >
+            {machine().serviceInstances.length}
+          </Typography>
+        </div>
+      </div>
+    </a>
+  );
+};
+
 export const ServiceRoute = (props: {
   clanURI: string;
   label: string;
@@ -149,7 +164,7 @@ export const ServiceRoute = (props: {
 );
 
 const Services = () => {
-  const { clans } = useClanContext()!;
+  const clan = useClanContext()!;
 
   const serviceInstances = () => {
     if (!ctx.serviceInstancesQuery.isSuccess) {
@@ -208,73 +223,5 @@ const Services = () => {
         </nav>
       </Accordion.Content>
     </Accordion.Item>
-  );
-};
-
-export const SidebarBody = (props: SidebarProps) => {
-  const sectionLabels = (props.staticSections || []).map(
-    (section) => section.title,
-  );
-
-  // controls which sections are open by default
-  // we want them all to be open by default
-  const defaultAccordionValues = ["machines", "services", ...sectionLabels];
-
-  return (
-    <div class={styles.sidebarBody}>
-      <Accordion
-        class={styles.accordion}
-        multiple
-        defaultValue={defaultAccordionValues}
-      >
-        <Machines />
-        {/* <Services /> */}
-
-        <For each={props.staticSections}>
-          {(section) => (
-            <Accordion.Item class={styles.accordionItem} value={section.title}>
-              <Accordion.Header class={styles.accordionHeader}>
-                <Accordion.Trigger class={styles.accordionTrigger}>
-                  <Typography
-                    hierarchy="label"
-                    family="mono"
-                    size="xs"
-                    inverted
-                    color="tertiary"
-                    transform="uppercase"
-                  >
-                    {section.title}
-                  </Typography>
-                  <Icon
-                    icon="CaretDown"
-                    color="tertiary"
-                    inverted
-                    size="0.75rem"
-                    in="SidebarBody-AccordionTrigger"
-                  />
-                </Accordion.Trigger>
-              </Accordion.Header>
-              <Accordion.Content class={styles.accordionContent}>
-                <nav>
-                  <For each={section.links || []}>
-                    {(link) => (
-                      <Typography
-                        hierarchy="body"
-                        size="xs"
-                        weight="bold"
-                        color="primary"
-                        inverted
-                      >
-                        {link.label}
-                      </Typography>
-                    )}
-                  </For>
-                </nav>
-              </Accordion.Content>
-            </Accordion.Item>
-          )}
-        </For>
-      </Accordion>
-    </div>
   );
 };

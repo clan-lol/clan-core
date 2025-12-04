@@ -1,1 +1,5 @@
-export * as clan from "./clan";
+import * as clan from "./clan";
+
+export default {
+  clan,
+};

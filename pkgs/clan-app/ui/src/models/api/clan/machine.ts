@@ -2,9 +2,7 @@ import client from "./client-call";
 import { MachineData, MachineMeta } from "@/src/models/Machine";
 
 // TODO: make this one API call only
-export async function getMachines(
-  clanId: string,
-): Promise<Record<string, MachineMeta>> {
+export async function getMachines(clanId: string): Promise<MachineMeta[]> {
   // TODO: make this a GET instead
   const res = await client.post("list_machines", {
     body: {

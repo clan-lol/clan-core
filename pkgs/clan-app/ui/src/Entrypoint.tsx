@@ -1,23 +1,60 @@
-import { Show, Suspense } from "solid-js";
-import { Onboarding } from "./components/Onboarding";
+import { Accessor, Component, ErrorBoundary, Show, Suspense } from "solid-js";
+import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
 import Splash from "./scene/splash";
-import { ClanContextProvider } from "./components/Context/ClanContext";
+import {
+  ClansEntity,
+  createClanStore,
+  createClansStore,
+  initClans,
+} from "./models";
+import {
+  ClanContextProvider,
+  ClansContextProvider,
+  useClansContext,
+} from "./components/Context/ClanContext";
 import { createAsync } from "@solidjs/router";
-import { ClanList } from "./models/Clan";
-import { ClansContextProvider } from "./components/Context/ClansContext";
 
-export default function Entrypoint() {
-  const clans = createAsync(async () => await ClanList.get());
+const Entrypoint: Component = () => {
+  const clans = createAsync(async () => await initClans());
+  // Add other top level models here
+  // const foo = createAsync(async () => await initFoo());
   return (
-    <Suspense fallback={<Splash />}>
-      <ClansContextProvider clans={clans}>
-        <Show when={clans()?.active} fallback={<Onboarding />}>
-          <ClanContextProvider clan={() => clans()!.active!}>
-            <Workspace />
-          </ClanContextProvider>
+    <ErrorBoundary
+      fallback={(error, reset) => {
+        return (
+          <div>
+            <p>{error.message}</p>
+            <button onClick={reset}>Try Again</button>
+          </div>
+        );
+      }}
+    >
+      <Suspense fallback={<Splash />}>
+        <Show when={clans() /* && foo() */}>
+          <ClansContextProvider
+            value={createClansStore(clans as Accessor<ClansEntity>)}
+          >
+            <Content />
+          </ClansContextProvider>
         </Show>
-      </ClansContextProvider>
-    </Suspense>
+      </Suspense>
+    </ErrorBoundary>
   );
-}
+};
+export default Entrypoint;
+
+const Content: Component = () => {
+  const [clans, clansSetters] = useClansContext();
+  return (
+    <Show when={clans.activeClan} fallback={<Onboarding />}>
+      {(clan) => (
+        <ClanContextProvider
+          value={createClanStore(clan, [clans, clansSetters])}
+        >
+          <Workspace />
+        </ClanContextProvider>
+      )}
+    </Show>
+  );
+};

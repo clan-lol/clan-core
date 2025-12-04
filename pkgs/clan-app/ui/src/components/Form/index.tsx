@@ -1,4 +1,4 @@
-import { DataSchema } from "@/src/models/api/clan";
+import { DataSchema } from "@/src/models";
 import { Maybe } from "@modular-forms/solid";
 
 export const tooltipText = (

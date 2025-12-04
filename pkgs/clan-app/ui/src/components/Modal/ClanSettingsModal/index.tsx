@@ -18,7 +18,8 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
 import { useClanContext } from "../../Context/ClanContext";
-import { ClanData } from "@/src/models/Clan";
+import { ClanData } from "@/src/models";
+import { JSONSchema } from "json-schema-typed";
 
 const schema = v.object({
   name: v.string(),
@@ -33,7 +34,7 @@ export interface ClanSettingsModalProps {
 type FieldNames = "name" | "description" | "icon";
 
 export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
-  const clan = useClanContext()!;
+  const [clan, { updateClanData, removeClan }] = useClanContext()!;
   const [saving, setSaving] = createSignal(false);
 
   const [formStore, { Form, Field }] = createForm<ClanData>({
@@ -41,12 +42,12 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
     validate: valiForm<ClanData>(schema),
   });
 
-  const readOnly = (name: FieldNames) => clan().schema[name]?.readonly;
+  const readOnly = (name: FieldNames) => clan().dataSchema[name]?.readonly;
 
   const onSubmit: SubmitHandler<ClanData> = async (values, event) => {
     setSaving(true);
     // TODO: once the backend supports partial update, only pass in changed data
-    await clan().updateDate({
+    await updateClanData({
       ...clan().data,
       ...values,
     });
@@ -69,7 +70,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
   const removeDisabled = () => removeValue() !== clan().data.name;
 
   const onRemove = () => {
-    clan().remove();
+    removeClan();
   };
 
   return (
@@ -112,7 +113,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  clan().schema,
+                  clan().dataSchema,
                   "A unique identifier for this Clan",
                 )}
               />
@@ -128,7 +129,7 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
                 readOnly={readOnly("description")}
                 tooltip={tooltipText(
                   "description",
-                  clan().schema,
+                  clan().dataSchema,
                   "A description of this Clan",
                 )}
                 orientation="horizontal"

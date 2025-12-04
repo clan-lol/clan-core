@@ -4,14 +4,14 @@ import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
-import { useClansContext } from "../../Context/ClansContext";
+import { useClansContext } from "../../Context/ClanContext";
 
 export interface ListClansModalProps {
   onClose?: () => void;
 }
 
 export const ListClansModal = (props: ListClansModalProps) => {
-  const clans = useClansContext()!;
+  const [clans, { activateClan }] = useClansContext();
 
   return (
     <Modal
@@ -33,14 +33,14 @@ export const ListClansModal = (props: ListClansModalProps) => {
           </Typography>
         </div>
         <ul class={cx(styles.clans)}>
-          <For each={Array.from(clans() || [])}>
+          <For each={clans.all}>
             {(clan) => (
               <li>
                 <NavSection
                   label={clan.data.name}
                   description={clan.data.description}
                   onClick={() => {
-                    clan.activate();
+                    activateClan(clan);
                   }}
                 />
               </li>

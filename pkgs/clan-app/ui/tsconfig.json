@@ -4,7 +4,7 @@
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "preserve",
@@ -22,7 +22,7 @@
     "isolatedModules": true,
     "paths": {
       "@/*": ["./*"],
-      "@api/clan/client": ["./src/api/clan/client-call"]
+      "@api/clan/client": ["./src/models/api/clan/client-call"]
     }
   }
 }

@@ -1,7 +1,7 @@
 import {
   Accessor,
-  Component,
   createSignal,
+  JSX,
   Match,
   Setter,
   Show,
@@ -16,7 +16,6 @@ import { Divider } from "@/src/components/Divider/Divider";
 import { Logo } from "@/src/components/Logo/Logo";
 import {
   createForm,
-  FormStore,
   getError,
   getErrors,
   SubmitHandler,
@@ -30,10 +29,12 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { ListClansModal } from "@/src/components/Modal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import * as api from "@/src/models/api";
-import { useClansContext } from "../Context/ClansContext";
+import { useClansContext } from "../Context/ClanContext";
 
-type State = "welcome" | "setup" | "creating";
+type Step = {
+  type: "welcome" | "setup" | "creating";
+  error?: string;
+};
 
 const SetupSchema = v.object({
   name: v.pipe(
@@ -50,115 +51,9 @@ const SetupSchema = v.object({
 
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
-const background = (props: { state: State; form: FormStore<SetupForm> }) => {
-  // controls whether the list clans modal is displayed
-  const [showModal, setShowModal] = createSignal(false);
-
-  return (
-    <div class={styles.background}>
-      <div class={styles.backgroundLayer1} />
-      <div class={styles.backgroundLayer2} />
-      <div class={styles.backgroundLayer3} />
-      <Logo variant="Clan" inverted />
-      <div class={styles.listClans}>
-        <Button
-          hierarchy="primary"
-          ghost
-          size="s"
-          icon="Grid"
-          onClick={() => setShowModal(true)}
-        >
-          All Clans
-        </Button>
-      </div>
-      <Show when={showModal()}>
-        <ListClansModal onClose={() => setShowModal(false)} />
-      </Show>
-    </div>
-  );
-};
-
-const welcome = (props: {
-  setState: Setter<State>;
-  welcomeError: Accessor<string | undefined>;
-  setWelcomeError: Setter<string | undefined>;
-}) => {
-  const clans = useClansContext()!;
-  const [loading, setLoading] = createSignal(false);
-
-  const onSelect = async () => {
-    setLoading(true);
-    // TODO display error, currently we don't get anything to distinguish between cancel or an actual error
-    let path;
-    try {
-      path = await api.clan.getClanDir();
-    } catch (err) {
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    clans()?.add({ id: path });
-  };
-
-  return (
-    <div class={styles.welcome}>
-      <Typography
-        hierarchy="headline"
-        size="xxl"
-        weight="bold"
-        align="center"
-        inverted={true}
-      >
-        Build your own
-        <br />
-        Clan
-      </Typography>
-      {props.welcomeError() && (
-        <Alert
-          type="error"
-          icon="Info"
-          title="Your Clan creation failed"
-          description={props.welcomeError() || ""}
-        />
-      )}
-      <Button
-        hierarchy="secondary"
-        onClick={() => {
-          // reset welcome error
-          props.setWelcomeError(undefined);
-          // move to next step
-          props.setState("setup");
-        }}
-      >
-        Start building
-      </Button>
-      <div class={styles.welcomeSeparator}>
-        <Divider orientation="horizontal" />
-        <Typography
-          hierarchy="body"
-          size="s"
-          weight="medium"
-          inverted={true}
-          align="center"
-        >
-          or
-        </Typography>
-        <Divider orientation="horizontal" />
-      </div>
-      <Button hierarchy="primary" ghost loading={loading()} onClick={onSelect}>
-        Select existing Clan
-      </Button>
-    </div>
-  );
-};
-
-export const Onboarding: Component = () => {
-  const clans = useClansContext()!;
-  const [state, setState] = createSignal<State>("welcome");
-
-  // used to display an error in the welcome screen in the event of a failed
-  // clan creation
-  const [welcomeError, setWelcomeError] = createSignal<string | undefined>();
+export default function Onboarding(): JSX.Element {
+  const [, { addNewClan }] = useClansContext()!;
+  const [step, setStep] = createSignal<Step>({ type: "welcome" });
 
   //
   const [setupForm, { Form, Field }] = createForm<SetupForm>({
@@ -175,38 +70,32 @@ export const Onboarding: Component = () => {
     event,
   ) => {
     const path = `${directory}/${name}`;
-    const data = { name, description };
-    setState("creating");
+    const data = { id: path, data: { name, description } };
+    setStep({ type: "creating" });
     try {
-      await clans()?.create(path, data);
+      await addNewClan(data);
     } catch (err) {
-      setWelcomeError(String(err));
-      setState("welcome");
+      setStep({ type: "welcome", error: String(err) });
       return;
     }
   };
 
   return (
     <main class={styles.onboarding}>
-      {background({ form: setupForm, state: state() })}
+      <Background />
       <div class={styles.container}>
         <Switch>
-          <Match when={state() === "welcome"}>
-            {welcome({
-              setState,
-              welcomeError,
-              setWelcomeError,
-            })}
+          <Match when={step().type === "welcome"}>
+            <Welcome step={step} setStep={setStep} />
           </Match>
-
-          <Match when={state() === "setup"}>
+          <Match when={step().type === "setup"}>
             <div class={styles.setup}>
               <div class={styles.setupHeader}>
                 <Button
                   hierarchy="secondary"
                   ghost={true}
                   icon="ArrowLeft"
-                  onClick={() => setState("welcome")}
+                  onClick={() => setStep({ type: "welcome" })}
                 />
                 <Typography hierarchy="headline" size="default" weight="bold">
                   Setup
@@ -283,7 +172,7 @@ export const Onboarding: Component = () => {
             </div>
           </Match>
 
-          <Match when={state() === "creating"}>
+          <Match when={step().type === "creating"}>
             <div class={styles.creating}>
               <Tooltip
                 open={true}
@@ -299,4 +188,102 @@ export const Onboarding: Component = () => {
       </div>
     </main>
   );
-};
+}
+
+function Background(): JSX.Element {
+  // controls whether the list clans modal is displayed
+  const [showModal, setShowModal] = createSignal(false);
+
+  return (
+    <div class={styles.background}>
+      <div class={styles.backgroundLayer1} />
+      <div class={styles.backgroundLayer2} />
+      <div class={styles.backgroundLayer3} />
+      <Logo variant="Clan" inverted />
+      <div class={styles.listClans}>
+        <Button
+          hierarchy="primary"
+          ghost
+          size="s"
+          icon="Grid"
+          onClick={() => setShowModal(true)}
+        >
+          All Clans
+        </Button>
+      </div>
+      <Show when={showModal()}>
+        <ListClansModal onClose={() => setShowModal(false)} />
+      </Show>
+    </div>
+  );
+}
+
+function Welcome(props: {
+  step: Accessor<Step>;
+  setStep: Setter<Step>;
+}): JSX.Element {
+  const [, { pickClanDir, addExistingClan }] = useClansContext()!;
+  const [loading, setLoading] = createSignal(false);
+
+  async function onSelect(): Promise<void> {
+    setLoading(true);
+    // TODO display error, currently we don't get anything to distinguish between cancel or an actual error
+    let path;
+    try {
+      path = await pickClanDir();
+    } catch (err) {
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    await addExistingClan(path);
+  }
+
+  return (
+    <div class={styles.welcome}>
+      <Typography
+        hierarchy="headline"
+        size="xxl"
+        weight="bold"
+        align="center"
+        inverted={true}
+      >
+        Build your own
+        <br />
+        Clan
+      </Typography>
+      {props.step().error && (
+        <Alert
+          type="error"
+          icon="Info"
+          title="Your Clan creation failed"
+          description={props.step().error || ""}
+        />
+      )}
+      <Button
+        hierarchy="secondary"
+        onClick={() => {
+          props.setStep({ type: "setup" });
+        }}
+      >
+        Start building
+      </Button>
+      <div class={styles.welcomeSeparator}>
+        <Divider orientation="horizontal" />
+        <Typography
+          hierarchy="body"
+          size="s"
+          weight="medium"
+          inverted={true}
+          align="center"
+        >
+          or
+        </Typography>
+        <Divider orientation="horizontal" />
+      </div>
+      <Button hierarchy="primary" ghost loading={loading()} onClick={onSelect}>
+        Select existing Clan
+      </Button>
+    </div>
+  );
+}

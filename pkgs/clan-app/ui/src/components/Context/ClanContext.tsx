@@ -1,19 +1,46 @@
-import { Clan } from "@/src/models/Clan";
+import { Clan, Clans, ClanSetters, ClansSetters } from "@/src/models";
 import { Accessor, createContext, JSX, useContext } from "solid-js";
 
-const clanContext = createContext<Accessor<Clan>>();
+const ClansContext = createContext<[Clans, ClansSetters]>();
 
-export function useClanContext() {
-  return useContext(clanContext);
+export function useClansContext(): [Clans, ClansSetters] {
+  const value = useContext(ClansContext);
+  if (!value) {
+    throw new Error(
+      "useClansContext must be used within a ClansContextProvider",
+    );
+  }
+  return value;
 }
 
-export function ClanContextProvider(props: {
-  clan: Accessor<Clan>;
+export function ClansContextProvider(props: {
+  value: [Clans, ClansSetters];
   children: JSX.Element;
 }): JSX.Element {
   return (
-    <clanContext.Provider value={props.clan}>
+    <ClansContext.Provider value={props.value}>
       {props.children}
-    </clanContext.Provider>
+    </ClansContext.Provider>
+  );
+}
+
+const ClanContext = createContext<[Accessor<Clan>, ClanSetters]>();
+
+export function useClanContext(): [Accessor<Clan>, ClanSetters] {
+  const value = useContext(ClanContext);
+  if (!value) {
+    throw new Error("useClanContext must be used within a ClanContextProvider");
+  }
+  return value;
+}
+
+export function ClanContextProvider(props: {
+  value: [Accessor<Clan>, ClanSetters];
+  children: JSX.Element;
+}): JSX.Element {
+  return (
+    <ClanContext.Provider value={props.value}>
+      {props.children}
+    </ClanContext.Provider>
   );
 }

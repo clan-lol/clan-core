@@ -16,7 +16,7 @@ import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
 import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import * as api from "@/src/models/api";
+import api from "@/src/models/api";
 import { useClanURI } from "@/src/hooks/clan";
 import { AlertProps } from "@/src/components/Alert/Alert";
 import usbLogo from "@/logos/usb-stick-min.png?url";
