@@ -4,7 +4,7 @@
   clanLib,
   config,
   ...
-}:
+}@service:
 {
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
@@ -137,19 +137,12 @@
 
             # Filter out exports from the local machine and yggdrasil
             # exports to avoid self-connections
-            nonLocalExports = lib.filterAttrs (
-              name: _:
-              let
-                parts = lib.splitString ":" name;
-                exportMachineName = lib.last parts;
-              in
-              # Exclude yggdrasil exports and exports from this
-              # machine. Self-connections lead to ErrBadKey!
-              !(lib.hasPrefix "clan-core/yggdrasil" name) && exportMachineName != machine.name
+            nonLocalExports = clanLib.selectExports (
+              scope: scope.serviceName != service.config.manifest.name && scope.machineName != machine.name
             ) exports;
 
             # TODO make it nicer @lassulus, @picnoir wants microlens
-            exportedPeerIPs = lib.flatten (map mkPeers (lib.attrValues nonLocalExports));
+            exportedPeerIPs = lib.concatLists (map mkPeers (lib.attrValues nonLocalExports));
 
             exportedPeers = exportedPeerIPs;
 
@@ -227,7 +220,7 @@
                 ];
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
-                Peers = lib.lists.unique (exportedPeers ++ settings.extraPeers);
+                Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
                 MulticastInterfaces = [
                   # Ethernet is preferred over WIFI
                   {
