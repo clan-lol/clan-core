@@ -106,7 +106,7 @@
                   if hostItem ? plain then
                     hostItem.plain
                   else if hostItem ? var then
-                    clanLib.getPublicValue hostItem.var
+                    clanLib.getPublicValue (hostItem.var // { default = ""; })
                   else
                     throw "Unknown host type in export";
 
