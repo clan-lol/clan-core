@@ -148,6 +148,25 @@
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks =
         let
+          # Use nix 2.30 for clan machines install to avoid directory permission canonicalization issue
+          # Nix 2.31+ (commit c38987e04) always tries to chmod directories to 0555
+          # during nix copy operations, which fails with "Operation not permitted"
+          # This patched clan-cli is ONLY used for 'clan machines install' command
+          installTestPkgs = pkgs.extend (
+            final: prev: {
+              # Override nixos-anywhere to use nix 2.30 for nix copy operations
+              nixos-anywhere = prev.nixos-anywhere.override {
+                nix = prev.nixVersions.nix_2_30;
+              };
+              # Override clan-cli to use the pkgs with patched nixos-anywhere
+              clan-cli-full = self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full.override {
+                pkgs = final;
+              };
+            }
+          );
+
+          installTestClanCli = installTestPkgs.clan-cli-full;
+
           closureInfo = pkgs.closureInfo {
             rootPaths = [
               self.packages.${pkgs.stdenv.hostPlatform.system}.clan-core-flake
@@ -167,7 +186,7 @@
             name = "installation";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              self.legacyPackages.${pkgs.system}.nixosTestLib
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
             ];
 
             testScript = ''
@@ -218,9 +237,9 @@
                       "${../assets/ssh/privkey}"
                   )
 
-                  # Run clan install from host using port forwarding
+                  # Run clan init-hardware-config from host using port forwarding
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "init-hardware-config",
                       "--debug",
@@ -236,7 +255,7 @@
 
                   # Run clan install from host using port forwarding
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${installTestClanCli}/bin/clan",
                       "machines",
                       "install",
                       "--phases", "disko,install",
@@ -271,7 +290,7 @@
             name = "update-hardware-configuration";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              self.legacyPackages.${pkgs.system}.nixosTestLib
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
             ];
 
             testScript = ''
@@ -308,7 +327,7 @@
 
                   # Test facter backend
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "update-hardware-config",
                       "--debug",
@@ -332,7 +351,7 @@
 
                   # Test nixos-generate-config backend
                   clan_cmd = [
-                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                       "machines",
                       "update-hardware-config",
                       "--debug",

@@ -1,0 +1,14 @@
+diff --git a/src/nspawn/nspawn.c b/src/nspawn/nspawn.c
+index ab8746c442..71149d8672 100644
+--- a/src/nspawn/nspawn.c
++++ b/src/nspawn/nspawn.c
+@@ -5383,7 +5383,7 @@ static int run_container(
+ 
+         /* Registration always happens on the system bus */
+         _cleanup_(sd_bus_flush_close_unrefp) sd_bus *system_bus = NULL;
+-        if (arg_register || arg_privileged) {
++        if (arg_register || (arg_privileged && !arg_keep_unit)) {
+                 r = sd_bus_default_system(&system_bus);
+                 if (r < 0)
+                         return log_error_errno(r, "Failed to open system bus: %m");
+

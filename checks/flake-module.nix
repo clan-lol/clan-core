@@ -22,7 +22,10 @@ in
     ./devshell/flake-module.nix
     ./flash/flake-module.nix
     ./installation/flake-module.nix
-    ./update/flake-module.nix
+    # TODO: Reenable this test
+    # Disabled: nixos-test-update check fails with Nix 2.31+ chmod errors on overlay filesystems
+    # See checks/installation/flake-module.nix for the workaround used in the installation test
+    # ./update/flake-module.nix
     ./morph/flake-module.nix
     ./nixos-documentation/flake-module.nix
     ./dont-depend-on-repo-root.nix
@@ -69,8 +72,13 @@ in
       checks =
         let
           nixosTestArgs = {
-            # reference to nixpkgs for the current system
-            inherit pkgs lib nixosLib;
+            # reference to nixpkgs for the current system with patched systemd
+            pkgs = pkgs.extend (
+              _final: _prev: {
+                systemd = self'.packages.systemd;
+              }
+            );
+            inherit lib nixosLib;
             # this gives us a reference to our flake but also all flake inputs
             inherit self;
             inherit (self) clanLib;

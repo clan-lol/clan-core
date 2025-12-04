@@ -54,7 +54,7 @@
                 virtualisation.useNixStoreImage = true;
                 virtualisation.writableStore = true;
 
-                environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli-full ];
+                environment.systemPackages = [ self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full ];
               };
           };
           testScript = ''

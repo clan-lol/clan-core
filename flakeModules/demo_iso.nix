@@ -22,7 +22,7 @@ let
       pkgs.gum
       pkgs.gitMinimal
       pkgs.retry
-      self.packages.${pkgs.system}.clan-cli
+      self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
     ];
     text = ''
       set -efu

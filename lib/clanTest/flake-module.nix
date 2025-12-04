@@ -77,7 +77,9 @@ in
         ) machineModules
       );
 
-      update-vars-script = "${self.packages.${hostPkgs.system}.clan-cli}/bin/clan-generate-test-vars";
+      update-vars-script = "${
+        self.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
+      }/bin/clan-generate-test-vars";
 
       relativeDir = removePrefix "${self}/" (toString config.clan.directory);
 
@@ -106,13 +108,15 @@ in
             substituteInPlace $out/flake.nix \
               --replace-fail \
                 "https://git.clan.lol/clan/clan-core/archive/main.tar.gz" \
-                "${clan-core.packages.${hostPkgs.system}.clan-core-flake}"
+                "${clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-core-flake}"
 
             # Create a proper lock file for the test flake
             export HOME=$(mktemp -d)
             nix flake lock $out \
               --extra-experimental-features 'nix-command flakes' \
-              --override-input clan-core ${clan-core.packages.${hostPkgs.system}.clan-core-flake} \
+              --override-input clan-core ${
+                clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-core-flake
+              } \
               --override-input nixpkgs ${clan-core.inputs.nixpkgs}
           '';
     in

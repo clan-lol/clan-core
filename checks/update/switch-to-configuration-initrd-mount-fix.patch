@@ -1,17 +1,28 @@
-diff --git a/src/main.rs b/src/main.rs
-index 8baf5924a7db..1234567890ab 100644
---- a/src/main.rs
-+++ b/src/main.rs
-@@ -1295,6 +1295,12 @@ won't take effect until you reboot the system.
+From fec57dc805d79ce3b670999995da32916c65f63d Mon Sep 17 00:00:00 2001
+From: Michael Hoang <enzime@users.noreply.github.com>
+Date: Tue, 11 Nov 2025 16:11:55 +0700
+Subject: [PATCH] switch-to-configuration-ng: support container tests
+
+---
+ pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs b/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
+index a33b391a524a..908f33167e5d 100644
+--- a/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
++++ b/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
+@@ -1340,6 +1340,11 @@ won't take effect until you reboot the system.
+         .unwrap_or_default();
  
      for (mountpoint, current_filesystem) in current_filesystems {
-         // Use current version of systemctl binary before daemon is reexeced.
-+        
 +        // Skip filesystem comparison if x-initrd.mount is present in options
 +        if current_filesystem.options.contains("x-initrd.mount") {
 +            continue;
 +        }
-+        
-         let unit = path_to_unit_name(&current_system_bin, &mountpoint);
-         if let Some(new_filesystem) = new_filesystems.get(&mountpoint) {
-             if current_filesystem.fs_type != new_filesystem.fs_type
++
+         let is_automount = current_filesystem.options.contains("x-systemd.automount");
+ 
+         // Use current version of systemctl binary before daemon is reexeced.
+-- 
+2.51.0
+

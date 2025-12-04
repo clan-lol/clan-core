@@ -12,6 +12,7 @@ let
       imports = [
         (modulesPath + "/../tests/common/auto-format-root-device.nix")
       ];
+
       networking.useNetworkd = true;
       services.openssh.enable = true;
       services.openssh.settings.UseDns = false;
