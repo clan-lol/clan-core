@@ -377,6 +377,16 @@ in
                       '';
                     };
                     var = lib.mkOption {
+                      description = ''
+                        A reference to a 'var' file
+
+                        The 'var' will be read by the CLI and potentially other services
+
+                        !!! Danger
+                            Don't export references to private vars.
+
+                            Their value cannot be accessed.
+                      '';
                       type = lib.types.submodule {
                         options = {
                           machine = lib.mkOption {
