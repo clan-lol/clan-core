@@ -118,20 +118,29 @@
               in
               lib.concatMap (
                 ip:
-                # We need to add [ ] for ipv6 addresses
-                if (lib.hasInfix ":" ip) then
+                if (lib.hasSuffix ".onion" ip) then
                   [
-                    # "tcp://[${ip}]:6443"
-                    "quic://[${ip}]:6443"
-                    "ws://[${ip}]:6443"
-                    "tls://[${ip}]:6443"
+                    # Tor onion peers use SOCKS proxy
+                    # socks:// = TCP (port 6443)
+                    # sockstls:// = TLS (port 6446)
+                    "socks://127.0.0.1:9050/${ip}:6443"
+                    "sockstls://127.0.0.1:9050/${ip}:6446"
+                  ]
+                else if (lib.hasInfix ":" ip) then
+                  [
+                    # We need to add [ ] for IPv6 addresses
+                    "tcp://[${ip}]:6443"
+                    "quic://[${ip}]:6444"
+                    "ws://[${ip}]:6445"
+                    "tls://[${ip}]:6446"
                   ]
                 else
                   [
-                    # "tcp://[${ip}]:6443"
-                    "quic://${ip}:6443"
-                    "ws://${ip}:6443"
-                    "tls://${ip}:6443"
+                    # No [ ] for IPv4 addresses
+                    "tcp://${ip}:6443"
+                    "quic://${ip}:6444"
+                    "ws://${ip}:6445"
+                    "tls://${ip}:6446"
                   ]
               ) filteredHosts;
 
@@ -166,7 +175,7 @@
                       default = "";
                     };
                   in
-                  ip
+                  "${ip} ${name}.${config.clan.core.settings.domain}"
                 ) (lib.attrNames roles.default.machines)
               )
             );
@@ -214,9 +223,10 @@
               persistentKeys = false;
               settings = {
                 Listen = [
-                  "quic://[::]:6443"
-                  "ws://[::]:6443"
-                  "tls://[::]:6443"
+                  "tcp://[::]:6443"
+                  "quic://[::]:6444"
+                  "ws://[::]:6445"
+                  "tls://[::]:6446"
                 ];
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
@@ -243,12 +253,13 @@
             };
             networking.firewall = {
               allowedUDPPorts = [
-                6443
-                9001
+                5400 # Multicast
+                6444 # QUIC
               ];
               allowedTCPPorts = [
-                5400
-                6443
+                6443 # TCP
+                6445 # WebSocket
+                6446 # TLS
               ];
             };
           };
