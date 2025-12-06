@@ -66,6 +66,13 @@
               except:
                   return count_mounts(machine, path)
 
+          def create_new_tarball(machine, content):
+              """Create a new secrets tarball with the given content"""
+              machine.succeed(f"mkdir -p /tmp/new-secrets/test-secret")
+              machine.succeed(f"echo '{content}' > /tmp/new-secrets/test-secret/secret1")
+              machine.succeed("tar czf /etc/secret-vars/secrets.tar.gz -C /tmp/new-secrets test-secret")
+              machine.succeed("rm -rf /tmp/new-secrets")
+
           start_all()
           machine.wait_for_unit("multi-user.target")
 
@@ -78,29 +85,36 @@
           initial_mounts = get_mount_stack_depth(machine, "/run/secrets")
           print(f"Initial mount depth at /run/secrets: {initial_mounts}")
 
-          # Check which backend we're using
-          service_exists = machine.succeed("systemctl list-units --all | grep -q pass-install-secrets || echo 'no-service'").strip() != 'no-service'
-          print(f"Using systemd service: {service_exists}")
+          # Find the install-secret-tarball script
+          script_path = machine.succeed("find /nix/store -name 'install-secret-tarball' -type f | head -1").strip()
+          print(f"Found script at: {script_path}")
 
           # Simulate running the install-secret-tarball script multiple times
-          # This would happen during system updates or secret rotations
+          # with different content each time to verify updates are deployed
           for i in range(5):
-              print(f"Running secret installation iteration {i+1}")
-              if service_exists:
-                  machine.succeed("systemctl restart pass-install-secrets.service")
-                  machine.wait_for_unit("pass-install-secrets.service")
-              else:
-                  # Manually run the installation script (activation script mode)
-                  # Find the script in the system
-                  script_path = machine.succeed("find /nix/store -name 'install-secret-tarball' -type f | head -1").strip()
-                  print(f"Found script at: {script_path}")
-                  machine.succeed(
-                      f"{script_path} "
-                      "/etc/secret-vars/secrets.tar.gz /run/secrets"
-                  )
+              new_content = f"updated-secret-content-{i+1}"
+              print(f"Running secret installation iteration {i+1} with content: {new_content}")
+
+              # Create a new tarball with updated content
+              create_new_tarball(machine, new_content)
+
+              # Run the installation script
+              machine.succeed(
+                  f"{script_path} "
+                  "/etc/secret-vars/secrets.tar.gz /run/secrets"
+              )
 
               # Check secrets are still accessible
               machine.succeed("test -f /run/secrets/test-secret/secret1")
+
+              # Verify the NEW content is deployed
+              actual_content = machine.succeed("cat /run/secrets/test-secret/secret1").strip()
+              if actual_content != new_content:
+                  raise Exception(
+                      f"Secret content not updated! "
+                      f"Expected: {new_content}, Got: {actual_content}"
+                  )
+              print(f"✓ Secret content correctly updated to: {actual_content}")
 
               # Check mount count hasn't grown
               current_mounts = get_mount_stack_depth(machine, "/run/secrets")
@@ -123,6 +137,7 @@
               )
 
           print(f"✓ Mount count stable: {initial_mounts} -> {final_mounts}")
+          print(f"✓ All secret updates were correctly deployed")
         '';
       };
     };
