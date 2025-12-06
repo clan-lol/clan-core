@@ -1,3 +1,14 @@
+.sidebarContainer {
+  @apply absolute left-4 top-4 w-60 z-10;
+  height: calc(100vh - 2rem);
+  transition: 250ms ease-in-out;
+
+  &.machineSelected {
+    @apply top-16;
+    height: calc(100vh - 8rem);
+  }
+}
+
 .sidebar {
   @apply w-60 border-none z-10 h-full flex flex-col rounded-b-md overflow-hidden;
 }

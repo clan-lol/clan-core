@@ -5,7 +5,7 @@ import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
 import { useMachineContext } from "@/src/components/Context/MachineContext";
 
 export const SidebarSectionUpdate = () => {
-  const machine = useMachineContext()!;
+  const [machine] = useMachineContext()!;
 
   const [showUpdate, setShowUpdate] = createSignal(false);
 
@@ -22,7 +22,7 @@ export const SidebarSectionUpdate = () => {
         <Show when={showUpdate()}>
           <UpdateModal
             open={showUpdate()}
-            machineName={machine().name}
+            machineName={machine().id}
             onClose={async () => {
               setShowUpdate(false);
             }}

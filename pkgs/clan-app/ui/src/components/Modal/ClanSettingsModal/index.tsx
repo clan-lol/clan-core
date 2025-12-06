@@ -44,13 +44,9 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
 
   const readOnly = (name: FieldNames) => clan().dataSchema[name]?.readonly;
 
-  const onSubmit: SubmitHandler<ClanData> = async (values, event) => {
+  const onSubmit: SubmitHandler<ClanData> = async (data, event) => {
     setSaving(true);
-    // TODO: once the backend supports partial update, only pass in changed data
-    await updateClanData({
-      ...clan().data,
-      ...values,
-    });
+    await updateClanData(data);
     setSaving(false);
     props.onClose();
   };

@@ -9,14 +9,14 @@ import { SidebarSectionUpdate } from "@/src/components/Sidebar/SidebarMachine/Si
 import { useMachineContext } from "@/src/components/Context/MachineContext";
 
 export default function SidebarMachine() {
-  const machine = useMachineContext()!;
+  const [machine, { deactivateMachine }] = useMachineContext();
   const onClose = () => {
-    machine().deactivate();
+    deactivateMachine();
   };
 
   return (
     <div class={styles.sidebarPaneContainer}>
-      <SidebarPane title={machine().name} onClose={onClose}>
+      <SidebarPane title={machine().id} onClose={onClose}>
         {/* TODO: merge the following two components */}
         <SidebarSectionInstall />
         <SidebarSectionUpdate />

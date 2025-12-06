@@ -1,5 +1,13 @@
-import { Clan, Clans, ClanSetters, ClansSetters } from "@/src/models";
-import { Accessor, createContext, JSX, useContext } from "solid-js";
+import {
+  Clan,
+  Clans,
+  ClansEntity,
+  ClanSetters,
+  ClansSetters,
+  createClansStore,
+  createClanStore,
+} from "@/src/models";
+import { Accessor, Component, createContext, JSX, useContext } from "solid-js";
 
 const ClansContext = createContext<[Clans, ClansSetters]>();
 
@@ -13,16 +21,16 @@ export function useClansContext(): [Clans, ClansSetters] {
   return value;
 }
 
-export function ClansContextProvider(props: {
-  value: [Clans, ClansSetters];
+export const ClansContextProvider: Component<{
+  clans: Accessor<ClansEntity>;
   children: JSX.Element;
-}): JSX.Element {
+}> = (props) => {
   return (
-    <ClansContext.Provider value={props.value}>
+    <ClansContext.Provider value={createClansStore(props.clans)}>
       {props.children}
     </ClansContext.Provider>
   );
-}
+};
 
 const ClanContext = createContext<[Accessor<Clan>, ClanSetters]>();
 
@@ -34,13 +42,14 @@ export function useClanContext(): [Accessor<Clan>, ClanSetters] {
   return value;
 }
 
-export function ClanContextProvider(props: {
-  value: [Accessor<Clan>, ClanSetters];
+export const ClanContextProvider: Component<{
+  clan: Accessor<Clan>;
   children: JSX.Element;
-}): JSX.Element {
+}> = (props) => {
+  const value = useClansContext();
   return (
-    <ClanContext.Provider value={props.value}>
+    <ClanContext.Provider value={createClanStore(props.clan, value)}>
       {props.children}
     </ClanContext.Provider>
   );
-}
+};

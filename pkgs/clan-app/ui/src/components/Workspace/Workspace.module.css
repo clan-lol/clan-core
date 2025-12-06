@@ -7,13 +7,3 @@
   @apply min-w-96;
 }
 
-.sidebarContainer {
-  @apply absolute left-4 top-4 w-60 z-10;
-  height: calc(100vh - 2rem);
-  transition: 250ms ease-in-out;
-
-  &.machineSelected {
-    @apply top-16;
-    height: calc(100vh - 8rem);
-  }
-}

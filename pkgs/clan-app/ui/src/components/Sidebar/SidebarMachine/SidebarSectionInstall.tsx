@@ -6,7 +6,7 @@ import { Alert } from "../../Alert/Alert";
 import { useMachineContext } from "@/src/components/Context/MachineContext";
 
 export const SidebarSectionInstall = () => {
-  const machine = useMachineContext()!;
+  const [machine] = useMachineContext()!;
 
   const [showInstall, setShowModal] = createSignal(false);
 
@@ -25,7 +25,7 @@ export const SidebarSectionInstall = () => {
         <Show when={showInstall()}>
           <InstallModal
             open={showInstall()}
-            machineName={machine().name}
+            machineName={machine().id}
             onClose={async () => {
               setShowModal(false);
             }}

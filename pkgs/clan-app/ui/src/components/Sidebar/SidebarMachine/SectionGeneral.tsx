@@ -6,7 +6,7 @@ import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { tooltipText } from "@/src/components/Form";
 import { useMachineContext } from "@/src/components/Context/MachineContext";
-import { MachineData } from "@/src/models/api/clan";
+import { MachineData } from "@/src/models";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),
@@ -17,19 +17,18 @@ const schema = v.object({
 type FieldNames = "name" | "description" | "machineClass";
 
 export const SectionGeneral = () => {
-  const machine = useMachineContext()!;
+  const [machine, { updateMachineData }] = useMachineContext()!;
 
   const readOnly = (editing: boolean, name: FieldNames) => {
     if (!editing) {
       return true;
     }
 
-    return machine().schema[name]?.readonly;
+    return machine().dataSchema[name]?.readonly;
   };
 
   async function onSubmit(values: Partial<MachineData>): Promise<void> {
-    // TODO: once the backend supports partial update, only pass in changed data
-    await machine().updateData({ ...machine().data, ...values });
+    await updateMachineData(values);
   }
 
   return (
@@ -58,7 +57,7 @@ export const SectionGeneral = () => {
                 input={input}
                 tooltip={tooltipText(
                   "name",
-                  machine().schema,
+                  machine().dataSchema,
                   "A unique identifier for this machine",
                 )}
               />
@@ -80,7 +79,7 @@ export const SectionGeneral = () => {
                 input={input}
                 tooltip={tooltipText(
                   "machineClass",
-                  machine().schema,
+                  machine().dataSchema,
                   "The target platform for this machine",
                 )}
               />
@@ -97,7 +96,7 @@ export const SectionGeneral = () => {
                 labelWeight="normal"
                 inverted
                 readOnly={readOnly(editing, "description")}
-                tooltip={tooltipText("description", machine().schema)}
+                tooltip={tooltipText("description", machine().dataSchema)}
                 orientation="horizontal"
                 autoResize={true}
                 minRows={2}

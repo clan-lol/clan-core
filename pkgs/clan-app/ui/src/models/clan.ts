@@ -7,7 +7,7 @@ import {
 } from "solid-js/store";
 import { captureStoreUpdates } from "@solid-primitives/deep";
 import api from "./api";
-import { Machine, MachineData, MachineEntity, MachineList } from "./Machine";
+import { Machine, MachineEntity, Machines } from "./machine";
 import { DataSchema } from ".";
 
 export async function initClans(): Promise<ClansEntity> {
@@ -29,38 +29,6 @@ export async function initClans(): Promise<ClansEntity> {
   return await api.clan.getClans(ids, activeIndex);
 }
 
-function fromEntity(
-  entity: ClanEntity | ClanMetaEntity,
-  clans: Clans,
-): Clan | ClanMeta {
-  function getIndex(id: string): number {
-    for (const [i, clan] of clans.all.entries()) {
-      if (clan.id === id) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  if (isNotMeta(entity)) {
-    return {
-      ...entity,
-      get index(): number {
-        return getIndex(this.id);
-      },
-      get isActive(): boolean {
-        return clans.activeClan?.id === this.id;
-      },
-    };
-  }
-  return {
-    ...entity,
-    get index(): number {
-      return getIndex(this.id);
-    },
-  };
-}
-
 export function createClansStore(
   entity: Accessor<ClansEntity>,
 ): [Clans, ClansSetters] {
@@ -77,7 +45,7 @@ export function createClansStore(
     on(entity, (entity) => {
       setClans(
         produce((clans) => {
-          clans.all = entity.all.map((clan) => fromEntity(clan, clans));
+          clans.all = entity.all.map((clan) => toClanOrClanMeta(clan, clans));
           clans.activeIndex = entity.activeIndex;
         }),
       );
@@ -126,13 +94,73 @@ export function createClansStore(
   return [clans, clansSetters([clans, setClans])];
 }
 
+function toClanOrClanMeta(
+  entity: ClanEntity | ClanMetaEntity,
+  clans: Clans,
+): Clan | ClanMeta {
+  function getIndex(id: string): number {
+    for (const [i, clan] of clans.all.entries()) {
+      if (clan.id === id) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  if (isNotMeta(entity)) {
+    return {
+      ...entity,
+      machines: {
+        all: entity.machines.map((machine) => toMachine(machine, clans)),
+        activeIndex: -1,
+        get activeMachine(): Machine | undefined {
+          return this.activeIndex === -1
+            ? undefined
+            : this.all[this.activeIndex];
+        },
+      },
+      get index(): number {
+        return getIndex(this.id);
+      },
+      get isActive(): boolean {
+        return clans.activeClan?.id === this.id;
+      },
+    } satisfies Clan;
+  }
+  return {
+    ...entity,
+    get index(): number {
+      return getIndex(this.id);
+    },
+  } satisfies ClanMeta;
+}
+
+function toMachine(machine: MachineEntity, clans: Clans): Machine {
+  return {
+    ...machine,
+    get index(): number {
+      const machines = clans.activeClan?.machines.all;
+      if (!machines) return -1;
+      for (const [i, machine] of machines.entries()) {
+        if (machine.id === this.id) {
+          return i;
+        }
+      }
+      return -1;
+    },
+    get isActive(): boolean {
+      return clans.activeClan?.machines.activeMachine?.id === this.id;
+    },
+  };
+}
+
 export type ClansSetters = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
   activateClan(item: number | Clan | ClanMeta): Promise<Clan | undefined>;
-  deactivateClan(): void;
+  deactivateClan(clan?: Clan): void;
   addExistingClan(id: string): Promise<Clan | undefined>;
-  addNewClan(data: ClanNewEntity): Promise<Clan | undefined>;
+  addNewClan(entity: ClanNewEntity): Promise<Clan | undefined>;
   removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | undefined;
 };
 function clansSetters([clans, setClans]: [
@@ -156,7 +184,7 @@ function clansSetters([clans, setClans]: [
         }
         const meta = c;
         const entity = await api.clan.getClan(meta.id);
-        const clan = fromEntity(entity, clans) as Clan;
+        const clan = toClanOrClanMeta(entity, clans) as Clan;
         setClans(
           produce((clans) => {
             clans.all[i] = clan;
@@ -175,12 +203,13 @@ function clansSetters([clans, setClans]: [
       }
       if (clan.index === clans.activeIndex) {
         setClans("activeIndex", -1);
+        return;
       }
     },
 
-    async addNewClan(data: ClanNewEntity) {
-      const entity = await api.clan.createClan(data);
-      const clan = fromEntity(entity, clans) as Clan;
+    async addNewClan(entity: ClanNewEntity) {
+      const created = await api.clan.createClan(entity);
+      const clan = toClanOrClanMeta(created, clans) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -197,7 +226,7 @@ function clansSetters([clans, setClans]: [
         }
       }
       const entity = await api.clan.getClan(id);
-      const clan = fromEntity(entity, clans) as Clan;
+      const clan = toClanOrClanMeta(entity, clans) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -235,6 +264,7 @@ export function createClanStore(
 }
 
 export type ClanSetters = {
+  setClan: SetStoreFunction<Clan>;
   activateClan(): Promise<void>;
   deactivateClan(): void;
   updateClanData(data: Partial<ClanData>): Promise<void>;
@@ -253,6 +283,7 @@ function clanSetters(
     setClans("all", clan().index, ...args);
   };
   const self: ClanSetters = {
+    setClan,
     async activateClan() {
       await activateClan(clan());
     },
@@ -280,7 +311,7 @@ export type ClansEntity = {
   readonly all: (ClanEntity | ClanMetaEntity)[];
   activeIndex: number;
 };
-export type Clans = ClansEntity & {
+export type Clans = Omit<ClansEntity, "all"> & {
   all: (Clan | ClanMeta)[];
   readonly activeClan: Clan | undefined;
 };
@@ -291,12 +322,12 @@ export type ClanEntity = {
   readonly dataSchema: DataSchema;
   readonly machines: MachineEntity[];
   // readonly services: ServiceEntity[];
-  readonly globalTags: GlobalTags;
+  readonly globalTags: Tags;
 };
-export type Clan = ClanEntity & {
+export type Clan = Omit<ClanEntity, "data" | "machines"> & {
   data: ClanData;
   readonly index: number;
-  readonly machines: MachineList;
+  readonly machines: Machines;
   // readonly services: ServiceList;
   readonly isActive: boolean;
 };
@@ -323,7 +354,7 @@ export type ClanData = ClanMetaData & {
   // globalTags: globalTags;
 };
 
-export interface GlobalTags {
+export interface Tags {
   // TODO: rename backend's data.options to data.regular, options is too
   // overloaded a name
   readonly regular: string[];

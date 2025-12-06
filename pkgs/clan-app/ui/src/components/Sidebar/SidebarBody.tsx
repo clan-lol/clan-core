@@ -10,6 +10,7 @@ import { useClanContext } from "../Context/ClanContext";
 import {
   MachineContextProvider,
   useMachineContext,
+  useMachinesContext,
 } from "../Context/MachineContext";
 
 const SidebarBody: Component = () => {
@@ -30,6 +31,7 @@ export default SidebarBody;
 
 const Machines: Component = () => {
   const [clan] = useClanContext();
+  const [machines] = useMachinesContext();
 
   return (
     <Accordion.Item class={styles.accordionItem} value="machines">
@@ -56,7 +58,7 @@ const Machines: Component = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <Show
-          when={clan().machines()?.length}
+          when={clan().machines.all.length !== 0}
           fallback={
             <div class="flex w-full flex-col items-center justify-center gap-2.5">
               <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -74,7 +76,7 @@ const Machines: Component = () => {
           }
         >
           <nav>
-            <For each={Array.from(clan().machines() || [])}>
+            <For each={machines().all}>
               {(machine) => (
                 <MachineContextProvider machine={() => machine}>
                   <MachineRoute />
@@ -89,13 +91,13 @@ const Machines: Component = () => {
 };
 
 const MachineRoute: Component = () => {
-  const machine = useMachineContext()!;
+  const [machine, { activateMachine }] = useMachineContext()!;
   return (
     <a
       href="#"
       onClick={(ev) => {
         ev.preventDefault();
-        machine().activate();
+        activateMachine();
       }}
     >
       <div class="flex w-full flex-col gap-2">
@@ -107,7 +109,7 @@ const MachineRoute: Component = () => {
             color="primary"
             inverted
           >
-            {machine().name}
+            {machine().id}
           </Typography>
           <MachineStatus status={machine().status} />
         </div>

@@ -1,25 +1,11 @@
-import { Show } from "solid-js";
 import { CubeScene } from "@/src/scene/cubes";
-import cx from "classnames";
-import styles from "./Workspace.module.css";
 import Sidebar from "@/src/components/Sidebar";
-import SidebarMachine from "../Sidebar/SidebarMachine";
-import { useClanContext } from "../Context/ClanContext";
-import { MachineContextProvider } from "../Context/MachineContext";
 
 export default function Workspace() {
-  const clan = useClanContext()!;
-
   return (
     <>
-      <div
-        class={cx(styles.sidebarContainer, {
-          // [styles.machineSelected]: clan().machines()?.active,
-        })}
-      >
-        <Sidebar />
-
-        {/* <ErrorBoundary fallback={<p>Could not fetch clan data.</p>}>
+      <Sidebar />
+      {/* <ErrorBoundary fallback={<p>Could not fetch clan data.</p>}>
         <Suspense fallback={<Splash />}>
           <CubeScene
             selectedIds={selectedIds}
@@ -73,12 +59,6 @@ export default function Workspace() {
           />
         </Suspense>
       </ErrorBoundary> */}
-      </div>
-      {/* <Show when={clan().machines()?.active}>
-        <MachineContextProvider machine={() => clan().machines()!.active!}>
-          <SidebarMachine />
-        </MachineContextProvider>
-      </Show> */}
     </>
   );
 }

@@ -3,27 +3,25 @@ import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
-import { MachineData } from "@/src/models/api/clan";
 import { useMachineContext } from "@/src/components/Context/MachineContext";
+import { useClanContext } from "../../Context/ClanContext";
+import { MachineData } from "@/src/models";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),
 });
 
 export const SectionTags = () => {
-  const machine = useMachineContext()!;
+  const [machine, { updateMachineData }] = useMachineContext();
+  const [clan] = useClanContext();
 
-  // we have to update the whole machine model rather than just the sub fields that were changed
-  // for that reason we pass in this common submit handler to each machine sub section
   const onSubmit = async (values: Partial<MachineData>) => {
-    await machine().updateData({ ...machine().data, ...values });
+    await updateMachineData(values);
   };
 
-  const readonlyTags = () => machine().schema?.tags?.readonly_members || [];
+  const readonlyTags = () => machine().dataSchema.tags?.readonly_members || [];
   const defaultTags = () =>
-    (machine().clan.tags()?.regular || []).filter(
-      (tag) => !readonlyTags().includes(tag),
-    );
+    clan().globalTags.regular.filter((tag) => !readonlyTags().includes(tag));
 
   // TODO: this should be a form solely for tags
   return (

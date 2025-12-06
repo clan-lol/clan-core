@@ -2,18 +2,14 @@ import { Accessor, Component, ErrorBoundary, Show, Suspense } from "solid-js";
 import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
 import Splash from "./scene/splash";
-import {
-  ClansEntity,
-  createClanStore,
-  createClansStore,
-  initClans,
-} from "./models";
+import { ClansEntity, initClans } from "./models";
 import {
   ClanContextProvider,
   ClansContextProvider,
   useClansContext,
 } from "./components/Context/ClanContext";
 import { createAsync } from "@solidjs/router";
+import { MachinesContextProvider } from "./components/Context/MachineContext";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());
@@ -21,10 +17,11 @@ const Entrypoint: Component = () => {
   // const foo = createAsync(async () => await initFoo());
   return (
     <ErrorBoundary
-      fallback={(error, reset) => {
+      fallback={(err, reset) => {
+        console.error(err);
         return (
           <div>
-            <p>{error.message}</p>
+            <p>{err.message}</p>
             <button onClick={reset}>Try Again</button>
           </div>
         );
@@ -32,9 +29,7 @@ const Entrypoint: Component = () => {
     >
       <Suspense fallback={<Splash />}>
         <Show when={clans() /* && foo() */}>
-          <ClansContextProvider
-            value={createClansStore(clans as Accessor<ClansEntity>)}
-          >
+          <ClansContextProvider clans={clans as Accessor<ClansEntity>}>
             <Content />
           </ClansContextProvider>
         </Show>
@@ -45,14 +40,14 @@ const Entrypoint: Component = () => {
 export default Entrypoint;
 
 const Content: Component = () => {
-  const [clans, clansSetters] = useClansContext();
+  const [clans] = useClansContext();
   return (
     <Show when={clans.activeClan} fallback={<Onboarding />}>
       {(clan) => (
-        <ClanContextProvider
-          value={createClanStore(clan, [clans, clansSetters])}
-        >
-          <Workspace />
+        <ClanContextProvider clan={clan}>
+          <MachinesContextProvider machines={() => clan().machines}>
+            <Workspace />
+          </MachinesContextProvider>
         </ClanContextProvider>
       )}
     </Show>

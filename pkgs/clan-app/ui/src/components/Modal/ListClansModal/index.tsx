@@ -2,15 +2,13 @@ import { Modal } from "../Modal";
 import cx from "classnames";
 import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For } from "solid-js";
+import { Component, For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 import { useClansContext } from "../../Context/ClanContext";
 
-export interface ListClansModalProps {
+const ListClansModal: Component<{
   onClose?: () => void;
-}
-
-export const ListClansModal = (props: ListClansModalProps) => {
+}> = (props) => {
   const [clans, { activateClan }] = useClansContext();
 
   return (
@@ -51,3 +49,4 @@ export const ListClansModal = (props: ListClansModalProps) => {
     </Modal>
   );
 };
+export default ListClansModal;

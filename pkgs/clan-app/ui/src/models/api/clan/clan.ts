@@ -6,7 +6,7 @@ import {
   ClanNewEntity,
   ClansEntity,
 } from "../../clan";
-import { MachineData } from "../../Machine";
+import { MachineEntity } from "../../machine";
 import client from "./client-call";
 
 // TODO: make this one API call only
@@ -43,7 +43,7 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
 }
 
 export async function getClan(id: string): Promise<ClanEntity> {
-  const [clan, dataSchema] = await Promise.all([
+  const [clan, dataSchema, rawMachines, tags] = await Promise.all([
     client.post("get_clan_details", {
       body: {
         flake: {
@@ -58,14 +58,64 @@ export async function getClan(id: string): Promise<ClanEntity> {
         },
       },
     }),
+    client.post("list_machines", {
+      body: {
+        flake: {
+          identifier: id,
+        },
+      },
+    }),
+    client.post("list_tags", {
+      body: {
+        flake: {
+          identifier: id,
+        },
+      },
+    }),
   ]);
+  const machines = await Promise.all(
+    Object.entries(rawMachines.data).map(async ([machineId, machine]) => {
+      const [state, schema] = await Promise.all([
+        client.post("get_machine_state", {
+          body: {
+            machine: {
+              name: machineId,
+              flake: {
+                identifier: id,
+              },
+            },
+          },
+        }),
+        client.post("get_machine_fields_schema", {
+          body: {
+            machine: {
+              name: machineId,
+              flake: {
+                identifier: id,
+              },
+            },
+          },
+        }),
+      ]);
+      return {
+        id: machineId,
+        data: machine.data,
+        dataSchema: schema.data,
+        serviceInstances: machine.instance_refs,
+        status: state.data.status,
+      } as MachineEntity;
+    }),
+  );
   return {
     id,
     data: clan.data as ClanData,
     dataSchema: dataSchema.data,
-    machines: [],
+    machines,
     services: [],
-    globalTags: { regular: [], special: [] },
+    globalTags: {
+      regular: tags.data.options,
+      special: tags.data.special,
+    },
   };
 }
 
@@ -93,29 +143,36 @@ export async function updateClanData(
 
 // TODO: make this one API call only
 // TODO: allow users to select a template
-export async function createClan(data: ClanNewEntity): Promise<ClanEntity> {
+export async function createClan(entity: ClanNewEntity): Promise<ClanEntity> {
   await client.post("create_clan", {
     body: {
       opts: {
-        dest: data.id,
+        dest: entity.id,
         template: "minimal",
-        initial: data.data,
+        initial: entity.data,
       },
     },
   });
 
-  const [schemaRes] = await Promise.all([
+  const [dataSchema, tags] = await Promise.all([
     client.post("get_clan_details_schema", {
       body: {
         flake: {
-          identifier: data.id,
+          identifier: entity.id,
+        },
+      },
+    }),
+    client.post("list_tags", {
+      body: {
+        flake: {
+          identifier: entity.id,
         },
       },
     }),
     client.post("create_service_instance", {
       body: {
         flake: {
-          identifier: data.id,
+          identifier: entity.id,
         },
         module_ref: {
           name: "admin",
@@ -132,31 +189,20 @@ export async function createClan(data: ClanNewEntity): Promise<ClanEntity> {
     }),
     client.post("create_secrets_user", {
       body: {
-        flake_dir: data.id,
+        flake_dir: entity.id,
       },
     }),
   ]);
 
   return {
-    id: data.id,
-    data: data.data,
-    dataSchema: {},
+    id: entity.id,
+    data: entity.data,
+    dataSchema: dataSchema.data,
     machines: [],
     services: [],
-    globalTags: { regular: [], special: [] },
-  };
-}
-
-export async function getAllTags(clanId: string): Promise<Tags> {
-  const res = await client.post("list_tags", {
-    body: {
-      flake: {
-        identifier: clanId,
-      },
+    globalTags: {
+      regular: tags.data.options,
+      special: tags.data.special,
     },
-  });
-  return {
-    regular: res.data.options,
-    special: res.data.special,
   };
 }

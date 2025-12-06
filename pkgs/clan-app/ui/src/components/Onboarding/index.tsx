@@ -26,7 +26,7 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { ListClansModal } from "@/src/components/Modal/ListClansModal";
+import ListClansModal from "@/src/components/Modal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
 import { useClansContext } from "../Context/ClanContext";
