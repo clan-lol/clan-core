@@ -24,17 +24,19 @@ let
 
       mkdir -p "$target".tmp "$target"
       if mountpoint -q "$target"; then
-        mount -t tmpfs -o noswap -o private tmpfs "$target".tmp
+        # Prepare new mount with secrets
+        mount -t tmpfs -o noswap tmpfs "$target".tmp
         chmod 511 "$target".tmp
-        mount --bind --make-private "$target".tmp "$target".tmp
-        mount --bind --make-private "$target" "$target"
         tar -xf "$src" -C "$target".tmp
-        move-mount --beneath --move "$target".tmp "$target"
+
+        # Atomically move new mount beneath the old one, then unmount the old and .tmp
+        move-mount --detached --beneath "$target".tmp "$target"
+        umount --lazy "$target"
         umount -R "$target".tmp
         rmdir "$target".tmp
-        umount --lazy "$target"
       else
         mount -t tmpfs -o noswap tmpfs "$target"
+        chmod 511 "$target"
         tar -xf "$src" -C "$target"
       fi
     '';

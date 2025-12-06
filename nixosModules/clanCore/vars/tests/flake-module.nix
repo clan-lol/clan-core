@@ -12,10 +12,9 @@
           test.useContainers = false;
 
           machines.machine =
-            { pkgs, ... }:
+            { pkgs, lib, ... }:
             {
               clan.core.vars.settings.secretStore = "password-store";
-              clan.core.vars.password-store.secretLocation = "/etc/secret-vars";
 
               # Create a test var that will be installed
               clan.core.vars.generators.test-secret = {
@@ -29,12 +28,29 @@
               };
 
               # Mock the secrets tarball for testing
-              # Create the tarball in /etc via environment.etc so it exists at boot
-              environment.etc."secret-vars/secrets.tar.gz".source = pkgs.runCommand "mock-secrets-tarball" { } ''
-                mkdir -p test-secret
-                echo "test-secret-content" > test-secret/secret1
-                tar czf $out test-secret
-              '';
+              # Use a tmpfiles rule to create a writable directory and copy initial tarball there
+              systemd.tmpfiles.rules = [
+                "d /var/lib/secret-vars 0755 root root -"
+              ];
+
+              # Copy the initial tarball to the writable location at boot
+              system.activationScripts.copySecretsTarball = {
+                text = ''
+                  mkdir -p /var/lib/secret-vars
+                  cp ${
+                    pkgs.runCommand "mock-secrets-tarball" { } ''
+                      mkdir -p test-secret
+                      echo "test-secret-content" > test-secret/secret1
+                      tar czf $out test-secret
+                    ''
+                  } /var/lib/secret-vars/secrets.tar.gz
+                  chmod 644 /var/lib/secret-vars/secrets.tar.gz
+                '';
+                deps = [ "specialfs" ];
+              };
+
+              # Point the secret location to the writable path
+              clan.core.vars.password-store.secretLocation = lib.mkForce "/var/lib/secret-vars";
 
               clan.core.settings.directory = ./.;
             };
@@ -50,27 +66,22 @@
 
           def get_mount_stack_depth(machine, path):
               """Get the number of mounts stacked at a specific mountpoint"""
-              # Use findmnt to get JSON output showing the mount tree
+              # Use findmnt to get JSON output - stacked mounts appear as array elements
               result = machine.succeed(f"findmnt -J {path} || echo '{{}}'")
               try:
                   data = json.loads(result)
-                  if "filesystems" in data and len(data["filesystems"]) > 0:
-                      # Count nested mounts in the tree
-                      def count_depth(node):
-                          children = node.get("children", [])
-                          if not children:
-                              return 1
-                          return 1 + sum(count_depth(child) for child in children)
-                      return count_depth(data["filesystems"][0])
+                  if "filesystems" in data:
+                      # Stacked mounts at the same path appear as multiple entries in the array
+                      return len(data["filesystems"])
                   return 0
               except:
                   return count_mounts(machine, path)
 
           def create_new_tarball(machine, content):
               """Create a new secrets tarball with the given content"""
-              machine.succeed(f"mkdir -p /tmp/new-secrets/test-secret")
+              machine.succeed("mkdir -p /tmp/new-secrets/test-secret")
               machine.succeed(f"echo '{content}' > /tmp/new-secrets/test-secret/secret1")
-              machine.succeed("tar czf /etc/secret-vars/secrets.tar.gz -C /tmp/new-secrets test-secret")
+              machine.succeed("tar czf /var/lib/secret-vars/secrets.tar.gz -C /tmp/new-secrets test-secret")
               machine.succeed("rm -rf /tmp/new-secrets")
 
           start_all()
@@ -101,7 +112,7 @@
               # Run the installation script
               machine.succeed(
                   f"{script_path} "
-                  "/etc/secret-vars/secrets.tar.gz /run/secrets"
+                  "/var/lib/secret-vars/secrets.tar.gz /run/secrets"
               )
 
               # Check secrets are still accessible
@@ -137,7 +148,7 @@
               )
 
           print(f"✓ Mount count stable: {initial_mounts} -> {final_mounts}")
-          print(f"✓ All secret updates were correctly deployed")
+          print("✓ All secret updates were correctly deployed")
         '';
       };
     };
