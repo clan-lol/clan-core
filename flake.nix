@@ -2,7 +2,7 @@
   description = "clan.lol base operating system";
 
   inputs = {
-    nixpkgs.url = "https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz";
+    nixpkgs.url = "github:nixos/nixpkgs?rev=213fed0310e326e9994f36769fcb6e619bc8a0cc";
 
     nix-darwin.url = "github:nix-darwin/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
