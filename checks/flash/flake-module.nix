@@ -55,18 +55,28 @@
       ...
     }:
     let
+      nixosConfig = self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}";
       dependencies = [
         pkgs.disko
         pkgs.buildPackages.xorg.lndir
         pkgs.glibcLocales
         pkgs.kbd.out
-        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
-        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".pkgs.perlPackages.FileSlurp
+        nixosConfig.pkgs.perlPackages.ConfigIniFiles
+        nixosConfig.pkgs.perlPackages.FileSlurp
         pkgs.bubblewrap
 
-        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
-        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
-        self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript.drvPath
+        # Include the full system closure to ensure all dependencies are available
+        nixosConfig.config.system.build.toplevel
+        nixosConfig.config.system.build.diskoScript
+        nixosConfig.config.system.build.diskoScript.drvPath
+
+        # Include openssh and its dependencies with source tarballs to avoid fetching during installation
+        nixosConfig.pkgs.openssh
+        nixosConfig.pkgs.openssh.src
+        nixosConfig.pkgs.ldns
+        nixosConfig.pkgs.ldns.src
+        nixosConfig.pkgs.softhsm
+        nixosConfig.pkgs.softhsm.src
       ]
       ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
       ++ builtins.map (import ../installation/facter-report.nix) (
