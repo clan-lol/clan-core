@@ -41,12 +41,7 @@ in
                   testModule
                 ];
 
-                # Extend pkgs with patched systemd for container tests
-                hostPkgs = pkgs.extend (
-                  _final: _prev: {
-                    systemd = config.packages.systemd;
-                  }
-                );
+                hostPkgs = pkgs;
 
                 defaults = {
                   imports = [

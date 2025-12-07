@@ -30,9 +30,6 @@
         editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
-      }
-      // lib.optionalAttrs pkgs.stdenv.isLinux {
-        systemd = pkgs.callPackage ./systemd { };
       };
     };
 }
