@@ -55,7 +55,6 @@ let
   # Filter out packages that are not needed for tests and pull in many dependencies
   testExcludedPackages = {
     virt-viewer = true; # pulls in libvirt and other graphics libraries
-    age-plugin-se = true; # smartcard support not needed in tests
     waypipe = true; # wayland forwarding not needed in tests
     zenity = true; # GUI dialogs not needed in tests
   };
