@@ -1,20 +1,13 @@
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
-import {
-  AddMachineSteps,
-  AddMachineStoreType,
-} from "@/src/workflows/AddMachine/AddMachine";
+import { AddMachineSteps, AddMachineStoreType } from ".";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Show } from "solid-js";
 import { Alert } from "@/src/components/Alert/Alert";
 
-interface StepProgressProps {
-  onDone: () => void;
-}
-
-export const StepProgress = (props: StepProgressProps) => {
+export const StepProgress = () => {
   const stepSignal = useStepper<AddMachineSteps>();
-  const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
+  const [store] = getStepStore<AddMachineStoreType>(stepSignal);
 
   return (
     <div class="flex flex-col items-center justify-center gap-2.5 px-6 pb-7 pt-4">
@@ -24,7 +17,7 @@ export const StepProgress = (props: StepProgressProps) => {
           <>
             <Loader size="l" />
             <Typography hierarchy="body" size="s" weight="medium" family="mono">
-              {store.general?.name} is being created
+              {store.general?.id} is being created
             </Typography>
           </>
         }

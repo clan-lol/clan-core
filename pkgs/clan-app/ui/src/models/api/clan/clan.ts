@@ -3,10 +3,18 @@ import {
   ClanEntity,
   ClanMetaData,
   ClanMetaEntity,
-  ClanNewEntity,
+  NewClanEntity,
   ClansEntity,
 } from "../../clan";
-import { MachineEntity } from "../../machine";
+import {
+  MachineEntity,
+  MachinePositions,
+  machinePositions,
+} from "../../machine";
+import {
+  ServiceInstanceRole,
+  ServiceInstanceRoleSettings,
+} from "../../service";
 import client from "./client-call";
 
 // TODO: make this one API call only
@@ -27,7 +35,6 @@ export async function getClans(
   };
 }
 export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
-  // TODO: make this a GET instead
   const clan = await client.post("get_clan_details", {
     body: {
       flake: {
@@ -35,7 +42,6 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
       },
     },
   });
-
   return {
     id,
     data: clan.data as ClanMetaData,
@@ -43,36 +49,51 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
 }
 
 export async function getClan(id: string): Promise<ClanEntity> {
-  const [clan, dataSchema, rawMachines, tags] = await Promise.all([
-    client.post("get_clan_details", {
-      body: {
-        flake: {
-          identifier: id,
+  const [clan, dataSchema, rawMachines, tags, services, serviceInstances] =
+    await Promise.all([
+      client.post("get_clan_details", {
+        body: {
+          flake: {
+            identifier: id,
+          },
         },
-      },
-    }),
-    client.post("get_clan_details_schema", {
-      body: {
-        flake: {
-          identifier: id,
+      }),
+      client.post("get_clan_details_schema", {
+        body: {
+          flake: {
+            identifier: id,
+          },
         },
-      },
-    }),
-    client.post("list_machines", {
-      body: {
-        flake: {
-          identifier: id,
+      }),
+      client.post("list_machines", {
+        body: {
+          flake: {
+            identifier: id,
+          },
         },
-      },
-    }),
-    client.post("list_tags", {
-      body: {
-        flake: {
-          identifier: id,
+      }),
+      client.post("list_tags", {
+        body: {
+          flake: {
+            identifier: id,
+          },
         },
-      },
-    }),
-  ]);
+      }),
+      client.post("list_service_modules", {
+        body: {
+          flake: {
+            identifier: id,
+          },
+        },
+      }),
+      client.post("list_service_instances", {
+        body: {
+          flake: {
+            identifier: id,
+          },
+        },
+      }),
+    ]);
   const machines = await Promise.all(
     Object.entries(rawMachines.data).map(async ([machineId, machine]) => {
       const [state, schema] = await Promise.all([
@@ -97,12 +118,21 @@ export async function getClan(id: string): Promise<ClanEntity> {
           },
         }),
       ]);
+
+      let mp: MachinePositions;
+      if (!machinePositions[id]) {
+        mp = new MachinePositions({});
+        machinePositions[id] = mp;
+      } else {
+        mp = machinePositions[id];
+      }
       return {
         id: machineId,
         data: machine.data,
         dataSchema: schema.data,
         serviceInstances: machine.instance_refs,
         status: state.data.status,
+        position: mp.getOrSetPosition(machineId),
       } as MachineEntity;
     }),
   );
@@ -111,7 +141,24 @@ export async function getClan(id: string): Promise<ClanEntity> {
     data: clan.data as ClanData,
     dataSchema: dataSchema.data,
     machines,
-    services: [],
+    services: services.data.modules.map((service) => {
+      return {
+        id: service.usage_ref.name,
+        rolesSchema: [],
+        instances: service.instance_refs.map((instanceId) => {
+          const instance = serviceInstances.data[instanceId];
+          return {
+            id: instanceId,
+            roles: Object.entries(instance.roles).map(([roleId, role]) => ({
+              id: roleId,
+              tags: Object.keys(role.tags as Record<string, unknown>),
+              settings: role.settings as ServiceInstanceRoleSettings,
+              machines: role.machines as ServiceInstanceRole["machines"],
+            })),
+          };
+        }),
+      };
+    }),
     globalTags: {
       regular: tags.data.options,
       special: tags.data.special,
@@ -143,7 +190,7 @@ export async function updateClanData(
 
 // TODO: make this one API call only
 // TODO: allow users to select a template
-export async function createClan(entity: ClanNewEntity): Promise<ClanEntity> {
+export async function createClan(entity: NewClanEntity): Promise<ClanEntity> {
   await client.post("create_clan", {
     body: {
       opts: {

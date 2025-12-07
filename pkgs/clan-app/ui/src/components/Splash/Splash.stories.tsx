@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Splash } from "./splash";
+import Splash from ".";
 
 const meta: Meta = {
   title: "scene/splash",

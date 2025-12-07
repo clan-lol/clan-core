@@ -11,10 +11,7 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
-import {
-  AddMachineSteps,
-  AddMachineStoreType,
-} from "@/src/workflows/AddMachine/AddMachine";
+import { AddMachineSteps, AddMachineStoreType } from ".";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Divider } from "@/src/components/Divider/Divider";
@@ -22,8 +19,7 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Select } from "@/src/components/Select/Select";
 import { Show } from "solid-js";
 import { Alert } from "@/src/components/Alert/Alert";
-import { useMachinesQuery } from "@/src/hooks/queries";
-import { useClanURI } from "@/src/hooks/clan";
+import { useMachinesContext } from "../../Context/MachineContext";
 
 const PlatformOptions = [
   { label: "NixOS", value: "nixos" },
@@ -31,7 +27,7 @@ const PlatformOptions = [
 ];
 
 const GeneralSchema = v.object({
-  name: v.pipe(
+  id: v.pipe(
     v.string("Name must be a string"),
     v.nonEmpty("Please enter a machine name"),
     v.regex(
@@ -45,24 +41,14 @@ const GeneralSchema = v.object({
 
 export interface GeneralForm extends FieldValues {
   machineClass: "nixos" | "darwin";
-  name: string;
+  id: string;
   description?: string;
 }
 
 export const StepGeneral = () => {
+  const [, { hasMachine }] = useMachinesContext();
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
-
-  const clanURI = useClanURI();
-  const machines = useMachinesQuery(clanURI);
-
-  const machineNames = () => {
-    if (!machines.isSuccess) {
-      return [];
-    }
-
-    return Object.keys(machines.data || {});
-  };
 
   const [formStore, { Form, Field }] = createForm<GeneralForm>({
     validate: valiForm(GeneralSchema),
@@ -70,16 +56,16 @@ export const StepGeneral = () => {
   });
 
   const handleSubmit: SubmitHandler<GeneralForm> = (values, event) => {
-    if (machineNames().includes(values.name)) {
+    if (hasMachine(values.id)) {
       setError(
         formStore,
         "name",
-        `A machine named '${values.name}' already exists. Please choose a different one.`,
+        `A machine named '${values.id}' already exists. Please choose a different one.`,
       );
       return;
     }
 
-    clearError(formStore, "name");
+    clearError(formStore, "id");
 
     set("general", (s) => ({
       ...s,
@@ -108,7 +94,7 @@ export const StepGeneral = () => {
               />
             </Show>
             <Fieldset>
-              <Field name="name">
+              <Field name="id">
                 {(field, input) => (
                   <TextInput
                     {...field}
@@ -121,7 +107,7 @@ export const StepGeneral = () => {
                       placeholder: "A unique machine name.",
                     }}
                     validationState={
-                      getError(formStore, "name") ? "invalid" : "valid"
+                      getError(formStore, "id") ? "invalid" : "valid"
                     }
                   />
                 )}

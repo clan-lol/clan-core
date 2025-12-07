@@ -7,16 +7,13 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
-import {
-  AddMachineSteps,
-  AddMachineStoreType,
-} from "@/src/workflows/AddMachine/AddMachine";
+import { AddMachineSteps, AddMachineStoreType } from ".";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
-import { useApiClient } from "@/src/hooks/ApiClient";
-import { useClanURI } from "@/src/hooks/clan";
 import { removeEmptyStrings } from "@/src/util";
+import { useMachinesContext } from "../../Context/MachineContext";
+import { useModalContext } from "../../Context/ModalContext";
 
 const TagsSchema = v.object({
   tags: v.array(v.string()),
@@ -24,7 +21,9 @@ const TagsSchema = v.object({
 
 type TagsForm = v.InferInput<typeof TagsSchema>;
 
-export const StepTags = (props: { onDone: () => void }) => {
+export const StepTags = () => {
+  const [modal, { closeAddMachineModal }] = useModalContext<"addMachine">();
+  const [, { addMachine }] = useMachinesContext();
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
 
@@ -33,47 +32,24 @@ export const StepTags = (props: { onDone: () => void }) => {
     initialValues: store.tags,
   });
 
-  const apiClient = useApiClient();
-  const clanURI = useClanURI();
-
   const handleSubmit: SubmitHandler<TagsForm> = async (values, event) => {
     set("tags", (s) => ({
       ...s,
       ...values,
     }));
 
-    const machine = removeEmptyStrings({
-      ...store.general,
-      ...store.tags,
-      deploy: store.deploy,
-    });
-
-    console.log("machine", machine);
-
-    const call = apiClient.fetch("create_machine", {
-      opts: {
-        clan_dir: {
-          identifier: clanURI,
-        },
-        machine,
-      },
-    });
-
     stepSignal.next();
 
-    const result = await call.result;
-
-    if (result.status == "error") {
-      // setError(result.errors[0].message);
-    }
-
-    if (result.status == "success") {
-      console.log("Machine creation was successful");
-      if (store.general) {
-        store.onCreated(store.general.name);
-      }
-    }
-    props.onDone();
+    const machine = await addMachine({
+      id: store.general.id,
+      data: removeEmptyStrings({
+        ...store.general,
+        ...store.tags,
+        deploy: store.deploy,
+      }),
+      position: modal.data.position,
+    });
+    closeAddMachineModal(machine);
   };
 
   return (

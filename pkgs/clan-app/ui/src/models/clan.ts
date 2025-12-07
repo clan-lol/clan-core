@@ -7,8 +7,14 @@ import {
 } from "solid-js/store";
 import { captureStoreUpdates } from "@solid-primitives/deep";
 import api from "./api";
-import { Machine, MachineEntity, Machines } from "./machine";
+import { MachineEntity, Machines, toMachines } from "./machine";
 import { DataSchema } from ".";
+import {
+  Service,
+  ServiceEntity,
+  ServiceInstanceEntity,
+  ServiceInstances,
+} from "./service";
 
 export async function initClans(): Promise<ClansEntity> {
   const ids: string[] = (() => {
@@ -31,7 +37,7 @@ export async function initClans(): Promise<ClansEntity> {
 
 export function createClansStore(
   entity: Accessor<ClansEntity>,
-): [Clans, ClansSetters] {
+): readonly [Clans, ClansMethods] {
   const [clans, setClans] = createStore<Clans>({
     all: [],
     activeIndex: entity().activeIndex,
@@ -41,136 +47,78 @@ export function createClansStore(
         : (this.all[this.activeIndex] as Clan);
     },
   });
+  const clansValue = [clans, clansMethods([clans, setClans])] as const;
+
   createEffect(
     on(entity, (entity) => {
       setClans(
         produce((clans) => {
-          clans.all = entity.all.map((clan) => toClanOrClanMeta(clan, clans));
+          clans.all = entity.all.map((clan) =>
+            toClanOrClanMeta(clan, clansValue),
+          );
           clans.activeIndex = entity.activeIndex;
         }),
       );
     }),
   );
-  const delta = createMemo(captureStoreUpdates(clans));
-  createEffect(
-    on(
-      delta,
-      (delta) => {
-        for (const { path, value } of delta) {
-          let arrayChanged = false;
-          let indexChanged = false;
-          switch (path.length) {
-            case 0:
-              if ("all" in value) {
-                arrayChanged = true;
-              }
-              if ("activeIndex" in value) {
-                indexChanged = true;
-              }
-              break;
-            case 1:
-              if (path[0] === "all") {
-                arrayChanged = true;
-              }
-              if (path[0] === "activeIndex") {
-                indexChanged = true;
-              }
-              break;
-          }
-          if (arrayChanged) {
-            localStorage.setItem(
-              "clanIds",
-              JSON.stringify(clans.all.map(({ id }) => id)),
-            );
-          }
-          if (indexChanged) {
-            localStorage.setItem("activeClanIndex", String(clans.activeIndex));
-          }
-        }
-      },
-      { defer: true },
-    ),
-  );
-  return [clans, clansSetters([clans, setClans])];
+  persistClans(clans);
+  return clansValue;
 }
 
 function toClanOrClanMeta(
   entity: ClanEntity | ClanMetaEntity,
-  clans: Clans,
+  [clans, { clanIndex }]: readonly [Clans, ClansMethods],
 ): Clan | ClanMeta {
-  function getIndex(id: string): number {
-    for (const [i, clan] of clans.all.entries()) {
-      if (clan.id === id) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   if (isNotMeta(entity)) {
-    return {
+    const self: Clan = {
       ...entity,
-      machines: {
-        all: entity.machines.map((machine) => toMachine(machine, clans)),
-        activeIndex: -1,
-        get activeMachine(): Machine | undefined {
-          return this.activeIndex === -1
-            ? undefined
-            : this.all[this.activeIndex];
-        },
-      },
+      machines: toMachines(entity.machines, clans),
       get index(): number {
-        return getIndex(this.id);
+        return clanIndex(this.id);
       },
       get isActive(): boolean {
         return clans.activeClan?.id === this.id;
       },
-    } satisfies Clan;
+    };
+    return self;
   }
   return {
     ...entity,
     get index(): number {
-      return getIndex(this.id);
+      return clanIndex(this.id);
     },
   } satisfies ClanMeta;
 }
 
-function toMachine(machine: MachineEntity, clans: Clans): Machine {
-  return {
-    ...machine,
-    get index(): number {
-      const machines = clans.activeClan?.machines.all;
-      if (!machines) return -1;
-      for (const [i, machine] of machines.entries()) {
-        if (machine.id === this.id) {
-          return i;
-        }
-      }
-      return -1;
-    },
-    get isActive(): boolean {
-      return clans.activeClan?.machines.activeMachine?.id === this.id;
-    },
-  };
-}
-
-export type ClansSetters = {
+export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
+  clanIndex(item: string | Clan | ClanMeta): number;
   activateClan(item: number | Clan | ClanMeta): Promise<Clan | undefined>;
   deactivateClan(clan?: Clan): void;
   addExistingClan(id: string): Promise<Clan | undefined>;
-  addNewClan(entity: ClanNewEntity): Promise<Clan | undefined>;
+  addNewClan(entity: NewClanEntity): Promise<Clan | undefined>;
   removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | undefined;
 };
-function clansSetters([clans, setClans]: [
+function clansMethods([clans, setClans]: [
   Clans,
   SetStoreFunction<Clans>,
-]): ClansSetters {
-  const self: ClansSetters = {
+]): ClansMethods {
+  const self: ClansMethods = {
     setClans,
     async pickClanDir() {
       return api.clan.pickClanDir();
+    },
+    clanIndex(item: string | Clan | ClanMeta): number {
+      if (typeof item === "string") {
+        for (const [i, clan] of clans.all.entries()) {
+          if (clan.id === item) {
+            return i;
+          }
+        }
+        return -1;
+      }
+      return self.clanIndex(item.id);
     },
     async activateClan(item) {
       if (typeof item === "number") {
@@ -184,7 +132,7 @@ function clansSetters([clans, setClans]: [
         }
         const meta = c;
         const entity = await api.clan.getClan(meta.id);
-        const clan = toClanOrClanMeta(entity, clans) as Clan;
+        const clan = toClanOrClanMeta(entity, [clans, self]) as Clan;
         setClans(
           produce((clans) => {
             clans.all[i] = clan;
@@ -207,9 +155,9 @@ function clansSetters([clans, setClans]: [
       }
     },
 
-    async addNewClan(entity: ClanNewEntity) {
+    async addNewClan(entity: NewClanEntity) {
       const created = await api.clan.createClan(entity);
-      const clan = toClanOrClanMeta(created, clans) as Clan;
+      const clan = toClanOrClanMeta(created, [clans, self]) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -226,7 +174,7 @@ function clansSetters([clans, setClans]: [
         }
       }
       const entity = await api.clan.getClan(id);
-      const clan = toClanOrClanMeta(entity, clans) as Clan;
+      const clan = toClanOrClanMeta(entity, [clans, self]) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -258,31 +206,31 @@ function clansSetters([clans, setClans]: [
 
 export function createClanStore(
   clan: Accessor<Clan>,
-  [clans, clansSetters]: [Clans, ClansSetters],
-): [Accessor<Clan>, ClanSetters] {
-  return [clan, clanSetters(clan, [clans, clansSetters])];
+  clansValue: readonly [Clans, ClansMethods],
+): readonly [Accessor<Clan>, ClanMethods] {
+  return [clan, clanMethods(clan, clansValue)];
 }
 
-export type ClanSetters = {
+export type ClanMethods = {
   setClan: SetStoreFunction<Clan>;
   activateClan(): Promise<void>;
   deactivateClan(): void;
   updateClanData(data: Partial<ClanData>): Promise<void>;
   removeClan(): void;
 };
-function clanSetters(
+function clanMethods(
   clan: Accessor<Clan>,
-  [clans, { setClans, activateClan, deactivateClan, removeClan }]: [
+  [clans, { setClans, activateClan, deactivateClan, removeClan }]: readonly [
     Clans,
-    ClansSetters,
+    ClansMethods,
   ],
-): ClanSetters {
+): ClanMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setClan: SetStoreFunction<Clan> = (...args) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClans("all", clan().index, ...args);
   };
-  const self: ClanSetters = {
+  const self: ClanMethods = {
     setClan,
     async activateClan() {
       await activateClan(clan());
@@ -321,17 +269,22 @@ export type ClanEntity = {
   readonly data: ClanData;
   readonly dataSchema: DataSchema;
   readonly machines: MachineEntity[];
-  // readonly services: ServiceEntity[];
+  readonly services: ServiceEntity[];
+  readonly serviceInstances: ServiceInstanceEntity[];
   readonly globalTags: Tags;
 };
-export type Clan = Omit<ClanEntity, "data" | "machines"> & {
+export type Clan = Omit<
+  ClanEntity,
+  "data" | "machines" | "services" | "serviceInstances"
+> & {
   data: ClanData;
   readonly index: number;
   readonly machines: Machines;
-  // readonly services: ServiceList;
+  readonly services: Service[];
+  readonly serviceInstances: ServiceInstances;
   readonly isActive: boolean;
 };
-export type ClanNewEntity = Pick<ClanEntity, "id" | "data">;
+export type NewClanEntity = Pick<ClanEntity, "id" | "data">;
 
 export type ClanMetaEntity = {
   readonly id: string;
@@ -367,4 +320,107 @@ function isNotMeta(
   clan: Clan | ClanEntity | ClanMeta | ClanMetaEntity,
 ): clan is Clan | ClanEntity {
   return "machines" in clan;
+}
+
+function persistClans(clans: Clans) {
+  const delta = createMemo(captureStoreUpdates(clans));
+  createEffect(
+    on(
+      delta,
+      (delta) => {
+        for (const { path, value } of delta) {
+          let clansChanged = false;
+          let activeClanIndexChanged = false;
+          let machinesChanged = false;
+          let machinePositionsChanged = false;
+          if (path.length === 0) {
+            if ("all" in value) {
+              clansChanged = true;
+            }
+            if ("activeIndex" in value) {
+              activeClanIndexChanged = true;
+            }
+          } else {
+            if (isPath(path, ["all"])) {
+              clansChanged = true;
+            } else if (isPath(path, ["activeIndex"])) {
+              activeClanIndexChanged = true;
+            } else if (
+              isPath(path, ["all", "*", "machines", "all"]) ||
+              (isPath(path, ["all", "*", "machines"]) && "all" in value)
+            ) {
+              machinesChanged = true;
+            } else if (
+              isAnyPath(path, [
+                ["all", "*", "machines", "all", "*", "position"],
+              ])
+            ) {
+              machinePositionsChanged = true;
+            }
+          }
+
+          if (clansChanged) {
+            machinesChanged = true;
+            localStorage.setItem(
+              "clanIds",
+              JSON.stringify(clans.all.map(({ id }) => id)),
+            );
+          }
+          if (activeClanIndexChanged) {
+            localStorage.setItem("activeClanIndex", String(clans.activeIndex));
+          }
+          if (machinesChanged) {
+            machinePositionsChanged = true;
+          }
+          if (machinePositionsChanged) {
+            localStorage.setItem(
+              "machinePositions",
+              JSON.stringify(
+                Object.fromEntries(
+                  clans.all.map((clan) => {
+                    if (isNotMeta(clan)) {
+                      return [
+                        clan.id,
+                        Object.fromEntries(
+                          clan.machines.all.map((machine) => [
+                            machine.id,
+                            machine.position,
+                          ]),
+                        ),
+                      ];
+                    }
+                    return [];
+                  }),
+                ),
+              ),
+            );
+          }
+        }
+      },
+      { defer: true },
+    ),
+  );
+}
+
+function isPath(
+  path: (string | number)[],
+  targetPath: (string | number)[],
+): boolean {
+  if (path.length !== targetPath.length) return false;
+  for (const [i, part] of path.entries()) {
+    if (targetPath[i] !== "*" && targetPath[i] !== part) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isAnyPath(
+  path: (string | number)[],
+  targetPaths: (string | number)[][],
+): boolean {
+  for (const targetPath of targetPaths) {
+    if (isPath(path, targetPath)) return true;
+  }
+  return false;
 }

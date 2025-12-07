@@ -1,17 +1,21 @@
-import { Accessor, Component, createContext, JSX, useContext } from "solid-js";
+import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
 import {
   createMachinesStore,
   createMachineStore,
   Machine,
   Machines,
-  MachineSetters,
-  MachinesSetters,
+  MachineMethods,
+  MachinesMethods,
 } from "@/src/models";
 import { useClanContext, useClansContext } from "./ClanContext";
 
-const MachinesContext = createContext<[Accessor<Machines>, MachinesSetters]>();
+const MachinesContext =
+  createContext<readonly [Accessor<Machines>, MachinesMethods]>();
 
-export function useMachinesContext(): [Accessor<Machines>, MachinesSetters] {
+export function useMachinesContext(): readonly [
+  Accessor<Machines>,
+  MachinesMethods,
+] {
   const value = useContext(MachinesContext);
   if (!value) {
     throw new Error(
@@ -21,9 +25,8 @@ export function useMachinesContext(): [Accessor<Machines>, MachinesSetters] {
   return value;
 }
 
-export const MachinesContextProvider: Component<{
+export const MachinesContextProvider: FlowComponent<{
   machines: Accessor<Machines>;
-  children: JSX.Element;
 }> = (props) => {
   const clanValue = useClanContext();
   const clansValue = useClansContext();
@@ -36,9 +39,13 @@ export const MachinesContextProvider: Component<{
   );
 };
 
-const MachineContext = createContext<[Accessor<Machine>, MachineSetters]>();
+const MachineContext =
+  createContext<readonly [Accessor<Machine>, MachineMethods]>();
 
-export function useMachineContext(): [Accessor<Machine>, MachineSetters] {
+export function useMachineContext(): readonly [
+  Accessor<Machine>,
+  MachineMethods,
+] {
   const value = useContext(MachineContext);
   if (!value) {
     throw new Error(
@@ -48,9 +55,8 @@ export function useMachineContext(): [Accessor<Machine>, MachineSetters] {
   return value;
 }
 
-export const MachineContextProvider: Component<{
+export const MachineContextProvider: FlowComponent<{
   machine: Accessor<Machine>;
-  children: JSX.Element;
 }> = (props) => {
   const machinesValue = useMachinesContext();
   const clanValue = useClanContext();

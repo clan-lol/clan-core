@@ -4,86 +4,27 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import {
-  GeneralForm,
-  StepGeneral,
-} from "@/src/workflows/AddMachine/StepGeneral";
+import { GeneralForm, StepGeneral } from "./StepGeneral";
 import { Modal } from "@/src/components/Modal/Modal";
 import cx from "classnames";
 import { Dynamic } from "solid-js/web";
-import { Show } from "solid-js";
+import { Component, Show } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
-import { StepHost } from "@/src/workflows/AddMachine/StepHost";
-import { StepTags } from "@/src/workflows/AddMachine/StepTags";
+import { StepHost } from "./StepHost";
+import { StepTags } from "./StepTags";
 import { StepProgress } from "./StepProgress";
+import { useModalContext } from "../../Context/ModalContext";
 
-interface AddMachineStepperProps {
-  onDone: () => void;
-}
-
-const AddMachineStepper = (props: AddMachineStepperProps) => {
-  const stepSignal = useStepper<AddMachineSteps>();
-
-  return (
-    <Dynamic
-      component={stepSignal.currentStep().content}
-      onDone={props.onDone}
-    />
-  );
-};
-
-interface AddMachineProps {
-  onClose: () => void;
-  onCreated: (id: string) => void;
+const AddMachineModal: Component<{
   initialStep?: AddMachineSteps[number]["id"];
-}
-
-export interface AddMachineStoreType {
-  general: GeneralForm;
-  deploy: {
-    targetHost?: string;
-  };
-  tags: {
-    tags: string[];
-  };
-  onCreated: (id: string) => void;
-  error?: string;
-}
-
-const steps = defineSteps([
-  {
-    id: "general",
-    title: "General",
-    content: StepGeneral,
-  },
-  {
-    id: "host",
-    title: "Host",
-    content: StepHost,
-  },
-  {
-    id: "tags",
-    title: "Tags",
-    content: StepTags,
-  },
-  {
-    id: "progress",
-    title: "Creating...",
-    content: StepProgress,
-    isSplash: true,
-  },
-] as const);
-
-export type AddMachineSteps = typeof steps;
-
-export const AddMachine = (props: AddMachineProps) => {
+}> = (props) => {
+  const [, { closeAddMachineModal }] = useModalContext();
   const stepper = createStepper(
     {
       steps,
     },
     {
       initialStep: props.initialStep || "general",
-      initialStoreData: { onCreated: props.onCreated },
     },
   );
 
@@ -119,15 +60,59 @@ export const AddMachine = (props: AddMachineProps) => {
       <Modal
         class={cx("w-screen", sizeClasses())}
         title="Add Machine"
-        onClose={props.onClose}
+        onClose={() => closeAddMachineModal()}
         open={true}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
         // @ts-expect-error some steps might not have
         disablePadding={stepper.currentStep()?.isSplash}
       >
-        <AddMachineStepper onDone={() => props.onClose()} />
+        <AddMachineStepper />
       </Modal>
     </StepperProvider>
   );
 };
+export default AddMachineModal;
+
+const AddMachineStepper = () => {
+  const stepSignal = useStepper<AddMachineSteps>();
+
+  return <Dynamic component={stepSignal.currentStep().content} />;
+};
+
+export interface AddMachineStoreType {
+  general: GeneralForm;
+  deploy: {
+    targetHost?: string;
+  };
+  tags: {
+    tags: string[];
+  };
+  error?: string;
+}
+
+const steps = defineSteps([
+  {
+    id: "general",
+    title: "General",
+    content: StepGeneral,
+  },
+  {
+    id: "host",
+    title: "Host",
+    content: StepHost,
+  },
+  {
+    id: "tags",
+    title: "Tags",
+    content: StepTags,
+  },
+  {
+    id: "progress",
+    title: "Creating...",
+    content: StepProgress,
+    isSplash: true,
+  },
+] as const);
+
+export type AddMachineSteps = typeof steps;

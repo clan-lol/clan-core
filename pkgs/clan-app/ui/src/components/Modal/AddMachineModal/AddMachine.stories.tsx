@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { AddMachine } from "@/src/workflows/AddMachine/AddMachine";
+import AddMachineModal from ".";
 import {
   createMemoryHistory,
   MemoryRouter,
@@ -58,9 +58,9 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
   };
 };
 
-const meta: Meta<typeof AddMachine> = {
+const meta: Meta<typeof AddMachineModal> = {
   title: "workflows/add-machine",
-  component: AddMachine,
+  component: AddMachineModal,
   decorators: [
     (Story) => {
       const Routes: RouteDefinition[] = [
@@ -100,7 +100,7 @@ const meta: Meta<typeof AddMachine> = {
 
 export default meta;
 
-type Story = StoryObj<typeof AddMachine>;
+type Story = StoryObj<typeof AddMachineModal>;
 
 export const General: Story = {
   args: {},

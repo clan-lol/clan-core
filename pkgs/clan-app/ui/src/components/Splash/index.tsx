@@ -1,6 +1,6 @@
-import styles from "./splash.module.css";
-import { Typography } from "../components/Typography/Typography";
-import { LoadingBar } from "../components/LoadingBar/LoadingBar";
+import styles from "./Splash.module.css";
+import { Typography } from "../Typography/Typography";
+import { LoadingBar } from "../LoadingBar/LoadingBar";
 
 export default function Splash() {
   return (

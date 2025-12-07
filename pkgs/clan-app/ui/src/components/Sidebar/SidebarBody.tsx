@@ -21,16 +21,15 @@ const SidebarBody: Component = () => {
         multiple
         defaultValue={["machines", "services"]}
       >
-        <Machines />
-        {/* <Services /> */}
+        <MachinesSection />
+        {/* <ServicesSection /> */}
       </Accordion>
     </div>
   );
 };
 export default SidebarBody;
 
-const Machines: Component = () => {
-  const [clan] = useClanContext();
+const MachinesSection: Component = () => {
   const [machines] = useMachinesContext();
 
   return (
@@ -58,7 +57,7 @@ const Machines: Component = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <Show
-          when={clan().machines.all.length !== 0}
+          when={machines().all.length !== 0}
           fallback={
             <div class="flex w-full flex-col items-center justify-center gap-2.5">
               <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -79,7 +78,7 @@ const Machines: Component = () => {
             <For each={machines().all}>
               {(machine) => (
                 <MachineContextProvider machine={() => machine}>
-                  <MachineRoute />
+                  <MachineSection />
                 </MachineContextProvider>
               )}
             </For>
@@ -90,7 +89,7 @@ const Machines: Component = () => {
   );
 };
 
-const MachineRoute: Component = () => {
+const MachineSection: Component = () => {
   const [machine, { activateMachine }] = useMachineContext()!;
   return (
     <a

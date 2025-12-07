@@ -1,10 +1,24 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
-import { Accessor, createSignal, Setter } from "solid-js";
-import { createStore, reconcile, SetStoreFunction } from "solid-js/store";
+import { Accessor } from "solid-js";
+import { reconcile, SetStoreFunction } from "solid-js/store";
 import api from "./api";
-import { Clan, Clans, ClanSetters, ClansSetters } from "./clan";
-import { Service, ServiceInstance } from "./Service";
+import { Clan, Clans, ClanMethods, ClansMethods } from "./clan";
+import { Service, ServiceInstance } from "./service";
 import { DataSchema } from ".";
+
+export const machinePositions: Record<string, MachinePositions> = (() => {
+  const s = localStorage.getItem("machinePositions");
+  if (s === null) {
+    return {};
+  }
+  const all = JSON.parse(s) as Record<
+    string,
+    Record<string, readonly [number, number]>
+  >;
+  return Object.fromEntries(
+    Object.entries(all).map(([clanId, p]) => [clanId, new MachinePositions(p)]),
+  );
+})();
 
 export type Machines = {
   all: Machine[];
@@ -14,34 +28,47 @@ export type Machines = {
 
 export function createMachinesStore(
   machines: Accessor<Machines>,
-  [clan, clanSetters]: [Accessor<Clan>, ClanSetters],
-  [clans, clansSetters]: [Clans, ClansSetters],
-): [Accessor<Machines>, MachinesSetters] {
-  return [
-    machines,
-    machinesSetters(machines, [clan, clanSetters], [clans, clansSetters]),
-  ];
+  clanValue: readonly [Accessor<Clan>, ClanMethods],
+  clansValue: readonly [Clans, ClansMethods],
+): [Accessor<Machines>, MachinesMethods] {
+  return [machines, machinesMethods(machines, clanValue, clansValue)];
 }
 
-export type MachinesSetters = {
+export type MachinesMethods = {
   setMachines: SetStoreFunction<Machines>;
+  machineIndex(item: string | Machine): number;
+  hasMachine(item: string | Machine): boolean;
   activateMachine(item: number | Machine): Machine | undefined;
   deactivateMachine(item?: number | Machine): Machine | undefined;
-  // addMachine(entity: MachineNewEntity): Promise<MachineEntity>;
+  addMachine(entity: NewMachineEntity): Promise<Machine>;
   // removeMachine(): void;
 };
-function machinesSetters(
+function machinesMethods(
   machines: Accessor<Machines>,
-  [clan, { setClan }]: [Accessor<Clan>, ClanSetters],
-  [clans]: [Clans, ClansSetters],
-): MachinesSetters {
+  [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
+  [clans]: readonly [Clans, ClansMethods],
+): MachinesMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setMachines: SetStoreFunction<Machines> = (...args) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClan("machines", ...args);
   };
-  const self: MachinesSetters = {
+  const self: MachinesMethods = {
     setMachines,
+    machineIndex(item: string | Machine): number {
+      if (typeof item === "string") {
+        for (const [i, machine] of machines().all.entries()) {
+          if (machine.id === item) {
+            return i;
+          }
+        }
+        return -1;
+      }
+      return self.machineIndex(item.id);
+    },
+    hasMachine(item: string | Machine): boolean {
+      return self.machineIndex(item) !== -1;
+    },
     activateMachine(item) {
       if (typeof item === "number") {
         const machine = machines().all[item];
@@ -64,6 +91,10 @@ function machinesSetters(
       }
       return self.deactivateMachine(item.index);
     },
+    async addMachine(entity) {
+      const machine = await api.clan.createMachine(clan().id, entity);
+      return toMachine(machine, clans);
+    },
   };
   return self;
 }
@@ -73,14 +104,21 @@ export type MachineEntity = {
   readonly data: MachineData;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
+  readonly position: readonly [number, number];
   readonly serviceInstances: string[];
 };
 export type Machine = Omit<MachineEntity, "data"> & {
   data: MachineData;
+  position: readonly [number, number];
   readonly index: number;
   readonly isActive: boolean;
 };
-export type MachineNewEntity = Pick<MachineEntity, "id" | "data">;
+export type NewMachineEntity = Pick<MachineEntity, "id" | "data"> & {
+  readonly position: readonly [number, number];
+};
+export type PersistMachine = {
+  position: [number, number];
+};
 
 export type MachineData = {
   // TODO: don't use nested fields, it makes updating data much more complex
@@ -104,38 +142,38 @@ export type MachineStatus =
 
 export function createMachineStore(
   machine: Accessor<Machine>,
-  machinesValue: [Accessor<Machines>, MachinesSetters],
-  clanValue: [Accessor<Clan>, ClanSetters],
-  clansValue: [Clans, ClansSetters],
-): [Accessor<Machine>, MachineSetters] {
+  machinesValue: readonly [Accessor<Machines>, MachinesMethods],
+  clanValue: readonly [Accessor<Clan>, ClanMethods],
+  clansValue: readonly [Clans, ClansMethods],
+): readonly [Accessor<Machine>, MachineMethods] {
   return [
     machine,
-    machineSetters(machine, machinesValue, clanValue, clansValue),
+    machineMethods(machine, machinesValue, clanValue, clansValue),
   ];
 }
 
-export type MachineSetters = {
+export type MachineMethods = {
   setMachine: SetStoreFunction<Machine>;
   activateMachine(): void;
   deactivateMachine(): void;
   updateMachineData(data: Partial<MachineData>): Promise<void>;
   // removeMachine(): void;
 };
-function machineSetters(
+function machineMethods(
   machine: Accessor<Machine>,
-  [machines, { setMachines, activateMachine, deactivateMachine }]: [
+  [machines, { setMachines, activateMachine, deactivateMachine }]: readonly [
     Accessor<Machines>,
-    MachinesSetters,
+    MachinesMethods,
   ],
-  [clan]: [Accessor<Clan>, ClanSetters],
-  [clans]: [Clans, ClansSetters],
-): MachineSetters {
+  [clan]: readonly [Accessor<Clan>, ClanMethods],
+  [clans]: readonly [Clans, ClansMethods],
+): MachineMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setMachine: SetStoreFunction<Machine> = (...args) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setMachines("all", machine().index, ...args);
   };
-  const self: MachineSetters = {
+  const self: MachineMethods = {
     setMachine,
     activateMachine() {
       activateMachine(machine());
@@ -156,4 +194,108 @@ function machineSetters(
     // },
   };
   return self;
+}
+
+export function toMachines(entities: MachineEntity[], clans: Clans): Machines {
+  const self: Machines = {
+    all: entities.map((machine) => toMachine(machine, clans)),
+    activeIndex: -1,
+    get activeMachine(): Machine | undefined {
+      return this.activeIndex === -1 ? undefined : this.all[this.activeIndex];
+    },
+  };
+  return self;
+}
+
+function toMachine(machine: MachineEntity, clans: Clans): Machine {
+  return {
+    ...machine,
+    get index(): number {
+      const machines = clans.activeClan?.machines.all;
+      if (!machines) return -1;
+      for (const [i, machine] of machines.entries()) {
+        if (machine.id === this.id) {
+          return i;
+        }
+      }
+      return -1;
+    },
+    get isActive(): boolean {
+      return clans.activeClan?.machines.activeMachine?.id === this.id;
+    },
+  };
+}
+
+const CUBE_SPACING = 1;
+
+export class MachinePositions {
+  #all: Record<string, readonly [number, number]>;
+  #set: Set<string>;
+  constructor(all: Record<string, readonly [number, number]>) {
+    this.#all = all;
+    this.#set = new Set(Object.values(all).map(posStr));
+  }
+  getOrSetPosition(machineId: string): readonly [number, number] {
+    if (this.#all[machineId]) {
+      return this.#all[machineId];
+    }
+    const pos = this.#nextAvailable();
+    this.#all[machineId] = pos;
+    this.#set.add(posStr(pos));
+    return pos;
+  }
+
+  #hasPosition(p: readonly [number, number]): boolean {
+    return this.#set.has(posStr(p));
+  }
+
+  #nextAvailable(): readonly [number, number] {
+    let x = 0;
+    let z = 0;
+    let layer = 1;
+
+    while (layer < 100) {
+      // right
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        x += 1;
+      }
+      // down
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        z += 1;
+      }
+      layer++;
+      // left
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        x -= 1;
+      }
+      // up
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        z -= 1;
+      }
+      layer++;
+    }
+    console.warn("No free grid positions available, returning [0, 0]");
+    // Fallback if no position was found
+    return [0, 0];
+  }
+}
+
+function posStr([x, y]: readonly [number, number]): string {
+  return `${x},${y}`;
 }

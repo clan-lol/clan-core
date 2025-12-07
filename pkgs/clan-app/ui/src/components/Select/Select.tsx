@@ -13,7 +13,6 @@ import {
 import styles from "./Select.module.css";
 import { Typography } from "../Typography/Typography";
 import cx from "classnames";
-import { useModalContext } from "../Modal/Modal";
 import { keepTruthy } from "@/src/util";
 
 interface Option {
@@ -95,9 +94,7 @@ export const Select = (props: SelectProps) => {
     setValue(options().find((option) => rest.value === option.value));
   });
 
-  const modalContext = useModalContext();
-  const defaultMount =
-    rest.portalProps?.mount || modalContext?.portalRef || document.body;
+  const defaultMount = rest.portalProps?.mount || document.body;
 
   createEffect(() => {
     console.debug("Select component mounted at:", defaultMount);

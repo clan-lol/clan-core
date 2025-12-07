@@ -14,20 +14,6 @@ import Icon from "../Icon/Icon";
 import cx from "classnames";
 import { Dynamic } from "solid-js/web";
 
-interface ModalContextType {
-  portalRef: HTMLDivElement;
-}
-
-const ModalContext = createContext<unknown>();
-
-export const useModalContext = () => {
-  const context = useContext(ModalContext);
-  if (!context) {
-    return null;
-  }
-  return context as ModalContextType;
-};
-
 const defaultContentWrapper: ParentComponent = (props): JSX.Element => (
   <>{props.children}</>
 );
@@ -46,8 +32,6 @@ export interface ModalProps {
 }
 
 export const Modal = (props: ModalProps) => {
-  const [portalRef, setPortalRef] = createSignal<HTMLDivElement>();
-
   // allows wrapping the dialog content in a component
   // useful with forms where the submit button is in the header
   const contentWrapper: Component = props.wrapContent || defaultContentWrapper;
@@ -93,13 +77,9 @@ export const Modal = (props: ModalProps) => {
                     <div
                       class={styles.modal_body}
                       data-no-padding={props.disablePadding}
-                      ref={setPortalRef}
                     >
-                      <ModalContext.Provider
-                        value={{ portalRef: portalRef()! }}
-                      >
-                        {props.children}
-                      </ModalContext.Provider>
+                      {/* TODO: fix the z-index issue for <Select /> */}
+                      {props.children}
                     </div>
                   </>
                 ),

@@ -2,16 +2,16 @@ import {
   Clan,
   Clans,
   ClansEntity,
-  ClanSetters,
-  ClansSetters,
+  ClanMethods,
   createClansStore,
   createClanStore,
+  ClansMethods,
 } from "@/src/models";
-import { Accessor, Component, createContext, JSX, useContext } from "solid-js";
+import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
 
-const ClansContext = createContext<[Clans, ClansSetters]>();
+const ClansContext = createContext<readonly [Clans, ClansMethods]>();
 
-export function useClansContext(): [Clans, ClansSetters] {
+export function useClansContext(): readonly [Clans, ClansMethods] {
   const value = useContext(ClansContext);
   if (!value) {
     throw new Error(
@@ -21,9 +21,8 @@ export function useClansContext(): [Clans, ClansSetters] {
   return value;
 }
 
-export const ClansContextProvider: Component<{
+export const ClansContextProvider: FlowComponent<{
   clans: Accessor<ClansEntity>;
-  children: JSX.Element;
 }> = (props) => {
   return (
     <ClansContext.Provider value={createClansStore(props.clans)}>
@@ -32,9 +31,9 @@ export const ClansContextProvider: Component<{
   );
 };
 
-const ClanContext = createContext<[Accessor<Clan>, ClanSetters]>();
+const ClanContext = createContext<readonly [Accessor<Clan>, ClanMethods]>();
 
-export function useClanContext(): [Accessor<Clan>, ClanSetters] {
+export function useClanContext(): readonly [Accessor<Clan>, ClanMethods] {
   const value = useContext(ClanContext);
   if (!value) {
     throw new Error("useClanContext must be used within a ClanContextProvider");
@@ -42,9 +41,8 @@ export function useClanContext(): [Accessor<Clan>, ClanSetters] {
   return value;
 }
 
-export const ClanContextProvider: Component<{
+export const ClanContextProvider: FlowComponent<{
   clan: Accessor<Clan>;
-  children: JSX.Element;
 }> = (props) => {
   const value = useClansContext();
   return (

@@ -7,10 +7,7 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
-import {
-  AddMachineSteps,
-  AddMachineStoreType,
-} from "@/src/workflows/AddMachine/AddMachine";
+import { AddMachineSteps, AddMachineStoreType } from ".";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
 

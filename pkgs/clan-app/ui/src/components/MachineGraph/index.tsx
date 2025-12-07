@@ -4,111 +4,35 @@ import {
   onCleanup,
   onMount,
   on,
-  JSX,
   Show,
+  Component,
 } from "solid-js";
-import styles from "./cubes.module.css";
+import styles from "./MachineGraph.module.css";
 
 import * as THREE from "three";
 import { MapControls } from "three/examples/jsm/controls/MapControls.js";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
-import { Toolbar } from "../components/Toolbar/Toolbar";
-import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
-import { Divider } from "../components/Divider/Divider";
-import { MachinesQueryResult, useMachinesQuery } from "../hooks/queries";
-import { SceneData } from "../stores/clan";
-import { Accessor } from "solid-js";
+import { Toolbar } from "../Toolbar/Toolbar";
+import { ToolbarButton } from "../Toolbar/ToolbarButton";
+import { Divider } from "../Divider/Divider";
 import { renderLoop } from "./RenderLoop";
 import { ObjectRegistry } from "./ObjectRegistry";
-import { MachineManager } from "./MachineManager";
 import cx from "classnames";
 import { Portal } from "solid-js/web";
-import { Menu } from "../components/ContextMenu/ContextMenu";
+import { Menu } from "../ContextMenu/ContextMenu";
 import {
   clearHighlight,
   highlightGroups,
   setHighlightGroups,
 } from "./highlightStore";
-import { createMachineMesh } from "./MachineRepr";
+import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import client from "@/src/models/api/clan/client-call";
-import { navigateToClan } from "../hooks/clan";
+import { useModalContext } from "../Context/ModalContext";
+import { useMachinesContext } from "../Context/MachineContext";
+import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
 
-function intersectMachines(
-  event: MouseEvent,
-  renderer: THREE.WebGLRenderer,
-  camera: THREE.Camera,
-  machineManager: MachineManager,
-  raycaster: THREE.Raycaster,
-) {
-  const rect = renderer.domElement.getBoundingClientRect();
-  const mouse = new THREE.Vector2(
-    ((event.clientX - rect.left) / rect.width) * 2 - 1,
-    -((event.clientY - rect.top) / rect.height) * 2 + 1,
-  );
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(
-    Array.from(machineManager.machines.values().map((m) => m.group)),
-  );
-
-  return {
-    machines: intersects.map((i) => i.object.userData.id),
-    intersection: intersects,
-  };
-}
-
-function garbageCollectGroup(group: THREE.Group) {
-  for (const child of group.children) {
-    if (child instanceof THREE.Mesh) {
-      child.geometry.dispose();
-      if (Array.isArray(child.material)) {
-        child.material.forEach((material) => material.dispose());
-      } else {
-        child.material.dispose();
-      }
-    } else {
-      console.warn("Unknown child type in group:", child);
-    }
-  }
-  group.clear(); // Clear the group
-}
-
-// Can be imported by others via wrappers below
-// Global signal for last clicked machine
-const [lastClickedMachine, setLastClickedMachine] = createSignal<string | null>(
-  null,
-);
-
-// Exported so others could also emit the signal if needed
-// And for testing purposes
-function emitMachineClick(id: string | null) {
-  setLastClickedMachine(id);
-  if (id) {
-    // Clear after a short delay to allow re-clicking the same machine
-    setTimeout(() => {
-      setLastClickedMachine(null);
-    }, 100);
-  }
-}
-
-/** Hook for components to subscribe */
-export function useMachineClick() {
-  return lastClickedMachine;
-}
-
-export function CubeScene(props: {
-  cubesQuery: MachinesQueryResult;
-  onCreate: () => Promise<{ id: string }>;
-  selectedIds: Accessor<Set<string>>;
-  onSelect: (v: Set<string>) => void;
-  sceneStore: Accessor<SceneData | undefined>;
-  setMachinePos: (machineId: string, pos: [number, number] | null) => void;
-  isLoading: boolean;
-  clanURI: string;
-  toolbarPopup?: JSX.Element;
-}) {
-  const ctx = useClanContext();
-
+export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
   let scene: THREE.Scene;
   let camera: THREE.OrthographicCamera;
@@ -132,6 +56,12 @@ export function CubeScene(props: {
 
   let machineManager: MachineManager;
 
+  const [, { openAddMachineModal }] = useModalContext();
+  const [machines, { deactivateMachine }] = useMachinesContext();
+
+  const [actionMode, setActionMode] = createSignal<
+    "select" | "service" | "create" | "move"
+  >("select");
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
 
@@ -162,6 +92,8 @@ export function CubeScene(props: {
 
   const CREATE_BASE_EMISSIVE = 0xc5fad7;
   const MOVE_BASE_EMISSIVE = 0xb2d7ff;
+
+  const sceneMachines: Record<string, MachineRepr> = {};
 
   function createCubeBase(
     cube_pos: [number, number, number],
@@ -397,7 +329,7 @@ export function CubeScene(props: {
     scene.add(actionMachine);
 
     createEffect(
-      on(ctx.worldMode, (mode) => {
+      on(actionMode, (mode) => {
         if (mode === "create") {
           actionBase!.visible = true;
         } else {
@@ -409,48 +341,45 @@ export function CubeScene(props: {
 
     const registry = new ObjectRegistry();
 
-    machineManager = new MachineManager(
-      scene,
-      registry,
-      props.sceneStore,
-      props.cubesQuery,
-      props.selectedIds,
-      props.setMachinePos,
-      camera,
-    );
+    createEffect(() => {
+      for (const machine of machines().all) {
+        if (!sceneMachines[machine.id]) {
+          const repr = new MachineRepr(
+            scene,
+            registry,
+            new THREE.Vector2(machine.position[0], machine.position[1]),
+            machine.id,
+            () => machine.isActive,
+            highlightGroups,
+            camera,
+          );
+          sceneMachines[machine.id] = repr;
+          scene.add(repr.group);
+        } else {
+          sceneMachines[machine.id].setPosition(
+            new THREE.Vector2(machine.position[0], machine.position[1]),
+          );
+        }
+      }
+      renderLoop.requestRender();
+    });
 
     // Click handler:
     // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
-    const onClick = (event: MouseEvent) => {
-      if (ctx.worldMode() === "create") {
-        props
-          .onCreate()
-          .then(({ id }) => {
-            //Successfully created machine
-            const pos = cursorPosition();
-            if (!pos) {
-              console.warn("No position set for new cube");
-              return;
-            }
-            props.setMachinePos(id, pos);
-          })
-          .catch((error) => {
-            console.error("Error creating cube:", error);
-          })
-          .finally(() => {
-            if (actionBase) actionBase.visible = false;
-
-            ctx.setWorldMode("select");
-          });
-      }
-      if (ctx.worldMode() === "move") {
+    const onClick = async (event: MouseEvent) => {
+      if (actionMode() === "create") {
+        await openAddMachineModal({
+          position: cursorPosition()!,
+        });
+        if (actionBase) actionBase.visible = false;
+        setActionMode("select");
+      } else if (actionMode() === "move") {
         const currId = menuIntersection().at(0);
         const pos = cursorPosition();
         if (!currId || !pos) return;
 
-        props.setMachinePos(currId, pos);
-        ctx.setWorldMode("select");
+        setActionMode("select");
         clearHighlight("move");
       }
 
@@ -470,14 +399,14 @@ export function CubeScene(props: {
 
         if (!id) return;
 
-        if (ctx.worldMode() === "select") props.onSelect(new Set<string>([id]));
+        if (actionMode() === "select") props.onSelect(new Set<string>([id]));
 
         console.log("Clicked on machine", id);
         emitMachineClick(id); // notify subscribers
       } else {
         emitMachineClick(null);
 
-        if (ctx.worldMode() === "select") props.onSelect(new Set<string>());
+        if (actionMode() === "select") props.onSelect(new Set<string>());
       }
     };
 
@@ -519,7 +448,7 @@ export function CubeScene(props: {
       if (e.button === 0) {
         // Left button
 
-        if (ctx.worldMode() === "select" && machines.length) {
+        if (actionMode() === "select" && machines.length) {
           // Disable controls to avoid conflict
           controls.enabled = false;
 
@@ -534,7 +463,7 @@ export function CubeScene(props: {
             // Set machine as flying
             setHighlightGroups({ move: new Set(machines) });
 
-            ctx.setWorldMode("move");
+            setActionMode("move");
             renderLoop.requestRender();
           }, 500);
           setCancelMove(cancelMove);
@@ -560,7 +489,7 @@ export function CubeScene(props: {
         // Always re-enable controls
         controls.enabled = true;
 
-        if (ctx.worldMode() === "move") {
+        if (actionMode() === "move") {
           // Set machine as not flying
           const pos = actionMachine!.position.toArray();
           props.setMachinePos(highlightGroups["move"].values().next().value!, [
@@ -568,7 +497,7 @@ export function CubeScene(props: {
             pos[2], // z
           ]);
           clearHighlight("move");
-          ctx.setWorldMode("select");
+          setActionMode("select");
           renderLoop.requestRender();
         }
       }
@@ -599,7 +528,9 @@ export function CubeScene(props: {
 
       renderLoop.dispose();
 
-      machineManager.dispose(scene);
+      for (const machine of Object.values(sceneMachines)) {
+        machine.dispose(scene);
+      }
 
       renderer.domElement.removeEventListener("click", onClick);
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
@@ -655,14 +586,13 @@ export function CubeScene(props: {
   };
 
   const onAddClick = (event: MouseEvent) => {
-    ctx.setWorldMode("create");
+    setActionMode("create");
     renderLoop.requestRender();
   };
   const onMouseMove = (event: MouseEvent) => {
-    if (!(ctx.worldMode() === "create" || ctx.worldMode() === "move")) return;
+    if (!(actionMode() === "create" || actionMode() === "move")) return;
 
-    const actionRepr =
-      ctx.worldMode() === "create" ? actionBase : actionMachine;
+    const actionRepr = actionMode() === "create" ? actionBase : actionMachine;
     if (!actionRepr) return;
 
     actionRepr.visible = true;
@@ -713,7 +643,7 @@ export function CubeScene(props: {
     }
 
     // Else "move" mode
-    ctx.setWorldMode(mode);
+    setActionMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
 
     // Find the position of the first selected machine
@@ -727,14 +657,6 @@ export function CubeScene(props: {
       setCursorPosition([machine.group.position.x, machine.group.position.z]);
     }
   };
-
-  createEffect(
-    on(ctx.worldMode, (mode) => {
-      console.log("World mode changed to", mode);
-    }),
-  );
-
-  const machinesQuery = useMachinesQuery(props.clanURI);
 
   return (
     <>
@@ -752,42 +674,57 @@ export function CubeScene(props: {
       <div
         class={cx(
           styles.cubesSceneContainer,
-          ctx.worldMode() === "default" && "cursor-no-drop",
-          ctx.worldMode() === "select" && "cursor-pointer",
-          ctx.worldMode() === "service" && "cursor-pointer",
-          ctx.worldMode() === "create" && "cursor-cell",
-          isDragging() && "!cursor-grabbing",
+          {
+            select: "cursor-pointer",
+            service: "cursor-pointer",
+            create: "cursor-cell",
+            move: "",
+          }[actionMode()],
+          isDragging() && "cursor-grabbing",
         )}
         ref={(el) => (container = el)}
       />
       <div class={styles.toolbarContainer}>
         <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
-          {props.toolbarPopup}
+          <Show when={actionMode() === "service"}>
+            <Show
+              when={false}
+              fallback={
+                <SelectService
+                  onClose={() => {
+                    setActionMode("select");
+                  }}
+                />
+              }
+            >
+              <></>
+            </Show>
+          </Show>
         </div>
         <Toolbar>
           <ToolbarButton
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() => ctx.setWorldMode("select")}
-            selected={ctx.worldMode() === "select"}
+            onClick={() => setActionMode("select")}
+            selected={actionMode() === "select"}
           />
           <ToolbarButton
             description="Create new machine"
             name="new-machine"
             icon="NewMachine"
             onClick={onAddClick}
-            selected={ctx.worldMode() === "create"}
+            selected={actionMode() === "create"}
           />
           <Divider orientation="vertical" />
           <ToolbarButton
             description="Add new Service"
             name="modules"
             icon="Services"
-            selected={ctx.worldMode() === "service"}
+            selected={actionMode() === "service"}
             onClick={() => {
-              ctx.navigateToRoot();
-              ctx.setWorldMode("service");
+              deactivateMachine();
+              setActionMode("service");
             }}
           />
           <ToolbarButton
@@ -800,4 +737,44 @@ export function CubeScene(props: {
       </div>
     </>
   );
+};
+export default MachineGraph;
+
+function intersectMachines(
+  event: MouseEvent,
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.Camera,
+  machineManager: MachineManager,
+  raycaster: THREE.Raycaster,
+) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(
+    Array.from(machineManager.machines.values().map((m) => m.group)),
+  );
+
+  return {
+    machines: intersects.map((i) => i.object.userData.id),
+    intersection: intersects,
+  };
+}
+
+function garbageCollectGroup(group: THREE.Group) {
+  for (const child of group.children) {
+    if (child instanceof THREE.Mesh) {
+      child.geometry.dispose();
+      if (Array.isArray(child.material)) {
+        child.material.forEach((material) => material.dispose());
+      } else {
+        child.material.dispose();
+      }
+    } else {
+      console.warn("Unknown child type in group:", child);
+    }
+  }
+  group.clear(); // Clear the group
 }
