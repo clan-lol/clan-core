@@ -1,9 +1,9 @@
 { self, pkgs, ... }:
 
 let
-
-  cli = self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full;
-
+  system = pkgs.stdenv.hostPlatform.system;
+  cli = self.packages.${system}.clan-cli-full;
+  ollama = self.packages.${system}.ollama or pkgs.ollama;
   ollama-model = pkgs.callPackage ./qwen3-4b-instruct.nix { };
 in
 {
@@ -47,7 +47,7 @@ in
 
         environment.systemPackages = [
           cli
-          pkgs.ollama
+          ollama
           (cli.pythonRuntime.withPackages (
             ps: with ps; [
               pytest

@@ -44,6 +44,9 @@
           builtins.attrValues (self.inputs.nix-select.lib.select "clan.templates.clan.*.path" self)
           ++ builtins.attrValues (self.inputs.nix-select.lib.select "clan.templates.machine.*.path" self);
       };
+
+      # Use fixed ollama on Darwin if available
+      ollama = self'.packages.ollama or pkgs.ollama;
     in
     {
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
@@ -55,6 +58,7 @@
           inherit (inputs) nixpkgs nix-select;
           inherit (self.legacyPackages.${system}) setupNixInNix;
           inherit (self'.packages) zerotierone minifakeroot;
+          inherit ollama;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -69,6 +73,7 @@
           inherit (inputs) nixpkgs nix-select;
           inherit (self.legacyPackages.${system}) setupNixInNix;
           inherit (self'.packages) zerotierone minifakeroot;
+          inherit ollama;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
