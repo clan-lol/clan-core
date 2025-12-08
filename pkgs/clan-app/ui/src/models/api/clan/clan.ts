@@ -1,3 +1,4 @@
+import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import {
   ClanData,
   ClanEntity,
@@ -6,15 +7,7 @@ import {
   NewClanEntity,
   ClansEntity,
 } from "../../clan";
-import {
-  MachineEntity,
-  MachinePositions,
-  machinePositions,
-} from "../../machine";
-import {
-  ServiceInstanceRole,
-  ServiceInstanceRoleSettings,
-} from "../../service";
+import { MachineData, MachinePositions, machinePositions } from "../../machine";
 import client from "./client-call";
 
 // TODO: make this one API call only
@@ -128,12 +121,11 @@ export async function getClan(id: string): Promise<ClanEntity> {
       }
       return {
         id: machineId,
-        data: machine.data,
+        data: machine.data as MachineData,
         dataSchema: schema.data,
-        serviceInstances: machine.instance_refs,
         status: state.data.status,
         position: mp.getOrSetPosition(machineId),
-      } as MachineEntity;
+      };
     }),
   );
   return {
@@ -141,24 +133,24 @@ export async function getClan(id: string): Promise<ClanEntity> {
     data: clan.data as ClanData,
     dataSchema: dataSchema.data,
     machines,
-    services: services.data.modules.map((service) => {
-      return {
-        id: service.usage_ref.name,
-        rolesSchema: [],
-        instances: service.instance_refs.map((instanceId) => {
-          const instance = serviceInstances.data[instanceId];
-          return {
-            id: instanceId,
-            roles: Object.entries(instance.roles).map(([roleId, role]) => ({
-              id: roleId,
-              tags: Object.keys(role.tags as Record<string, unknown>),
-              settings: role.settings as ServiceInstanceRoleSettings,
-              machines: role.machines as ServiceInstanceRole["machines"],
-            })),
-          };
-        }),
-      };
-    }),
+    services: services.data.modules.map((service) => ({
+      id: service.usage_ref.name,
+      instances: service.instance_refs.map((instanceName) => {
+        const instance = serviceInstances.data[instanceName];
+        return {
+          data: {
+            name: instanceName,
+          },
+          roles: Object.entries(instance.roles).map(([roleId, role]) => ({
+            id: roleId,
+            settings: role.settings as Record<string, unknown>,
+            settingsSchema: {} as JSONSchema,
+            machines: Object.keys(role.machines!),
+            tags: Object.keys(role.tags!),
+          })),
+        };
+      }),
+    })),
     globalTags: {
       regular: tags.data.options,
       special: tags.data.special,

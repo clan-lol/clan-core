@@ -51,7 +51,6 @@ export async function createMachine(
     ...entity,
     dataSchema: schema.data,
     status: "not_installed",
-    serviceInstances: [],
   };
 }
 

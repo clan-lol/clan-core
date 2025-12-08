@@ -1,10 +1,79 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import { Accessor } from "solid-js";
-import { reconcile, SetStoreFunction } from "solid-js/store";
+import { produce, reconcile, SetStoreFunction } from "solid-js/store";
 import api from "./api";
 import { Clan, Clans, ClanMethods, ClansMethods } from "./clan";
-import { Service, ServiceInstance } from "./service";
+import { ServiceInstance } from "./service";
 import { DataSchema } from ".";
+
+const CUBE_SPACING = 1;
+export class MachinePositions {
+  #all: Record<string, readonly [number, number]>;
+  #set: Set<string>;
+  constructor(all: Record<string, readonly [number, number]>) {
+    this.#all = all;
+    this.#set = new Set(Object.values(all).map(posStr));
+  }
+  getOrSetPosition(machineId: string): readonly [number, number] {
+    if (this.#all[machineId]) {
+      return this.#all[machineId];
+    }
+    const pos = this.#nextAvailable();
+    this.#all[machineId] = pos;
+    this.#set.add(posStr(pos));
+    return pos;
+  }
+
+  #hasPosition(p: readonly [number, number]): boolean {
+    return this.#set.has(posStr(p));
+  }
+
+  #nextAvailable(): readonly [number, number] {
+    let x = 0;
+    let z = 0;
+    let layer = 1;
+
+    while (layer < 100) {
+      // right
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        x += 1;
+      }
+      // down
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        z += 1;
+      }
+      layer++;
+      // left
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        x -= 1;
+      }
+      // up
+      for (let i = 0; i < layer; i++) {
+        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
+        if (!this.#hasPosition(pos)) {
+          return pos;
+        }
+        z -= 1;
+      }
+      layer++;
+    }
+    console.warn("No free grid positions available, returning [0, 0]");
+    // Fallback if no position was found
+    return [0, 0];
+  }
+}
 
 export const machinePositions: Record<string, MachinePositions> = (() => {
   const s = localStorage.getItem("machinePositions");
@@ -46,7 +115,7 @@ export type MachinesMethods = {
 function machinesMethods(
   machines: Accessor<Machines>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  [clans]: readonly [Clans, ClansMethods],
+  clansValue: readonly [Clans, ClansMethods],
 ): MachinesMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setMachines: SetStoreFunction<Machines> = (...args) => {
@@ -71,8 +140,14 @@ function machinesMethods(
     },
     activateMachine(item) {
       if (typeof item === "number") {
-        const machine = machines().all[item];
-        setMachines("activeIndex", item);
+        const i = item;
+        if (i < 0 || i >= machines().all.length) {
+          throw new Error(`activateMachine called with invalid index: ${i}`);
+        }
+        if (machines().activeIndex === i) return;
+
+        const machine = machines().all[i];
+        setMachines("activeIndex", i);
         return machine;
       }
       return self.activateMachine(item.index);
@@ -91,9 +166,16 @@ function machinesMethods(
       }
       return self.deactivateMachine(item.index);
     },
-    async addMachine(entity) {
-      const machine = await api.clan.createMachine(clan().id, entity);
-      return toMachine(machine, clans);
+    async addMachine(newEntity) {
+      const entity = await api.clan.createMachine(clan().id, newEntity);
+      const machine = toMachine(entity, clan().id, clansValue);
+      setMachines(
+        "all",
+        produce((all) => {
+          all.push(machine);
+        }),
+      );
+      return machine;
     },
   };
   return self;
@@ -105,13 +187,14 @@ export type MachineEntity = {
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
   readonly position: readonly [number, number];
-  readonly serviceInstances: string[];
 };
 export type Machine = Omit<MachineEntity, "data"> & {
+  readonly clan: Clan;
   data: MachineData;
   position: readonly [number, number];
   readonly index: number;
   readonly isActive: boolean;
+  readonly serviceInstances: ServiceInstance[];
 };
 export type NewMachineEntity = Pick<MachineEntity, "id" | "data"> & {
   readonly position: readonly [number, number];
@@ -196,9 +279,13 @@ function machineMethods(
   return self;
 }
 
-export function toMachines(entities: MachineEntity[], clans: Clans): Machines {
+export function toMachines(
+  entities: MachineEntity[],
+  clanId: string,
+  clansValue: readonly [Clans, ClansMethods],
+): Machines {
   const self: Machines = {
-    all: entities.map((machine) => toMachine(machine, clans)),
+    all: entities.map((machine) => toMachine(machine, clanId, clansValue)),
     activeIndex: -1,
     get activeMachine(): Machine | undefined {
       return this.activeIndex === -1 ? undefined : this.all[this.activeIndex];
@@ -207,11 +294,23 @@ export function toMachines(entities: MachineEntity[], clans: Clans): Machines {
   return self;
 }
 
-function toMachine(machine: MachineEntity, clans: Clans): Machine {
+function toMachine(
+  machine: MachineEntity,
+  clanId: string,
+  clansValue: readonly [Clans, ClansMethods],
+): Machine {
+  const [clans, { clanIndex }] = clansValue;
   return {
     ...machine,
+    get clan(): Clan {
+      const i = clanIndex(clanId);
+      if (i === -1) {
+        throw new Error(`Clan does not exist: ${clanId}`);
+      }
+      return clans.all[i] as Clan;
+    },
     get index(): number {
-      const machines = clans.activeClan?.machines.all;
+      const machines = this.clan.machines.all;
       if (!machines) return -1;
       for (const [i, machine] of machines.entries()) {
         if (machine.id === this.id) {
@@ -221,79 +320,23 @@ function toMachine(machine: MachineEntity, clans: Clans): Machine {
       return -1;
     },
     get isActive(): boolean {
-      return clans.activeClan?.machines.activeMachine?.id === this.id;
+      return this.clan.machines.activeMachine?.id === this.id;
+    },
+    get serviceInstances(): ServiceInstance[] {
+      return (
+        this.clan.serviceInstances.all.filter((instance) => {
+          return instance.roles.some((role) => {
+            const tags = new Set(role.tags);
+            return (
+              tags.has("all") ||
+              new Set(role.machines).has(this.id) ||
+              !tags.isDisjointFrom(new Set(this.data.tags))
+            );
+          });
+        }) || []
+      );
     },
   };
-}
-
-const CUBE_SPACING = 1;
-
-export class MachinePositions {
-  #all: Record<string, readonly [number, number]>;
-  #set: Set<string>;
-  constructor(all: Record<string, readonly [number, number]>) {
-    this.#all = all;
-    this.#set = new Set(Object.values(all).map(posStr));
-  }
-  getOrSetPosition(machineId: string): readonly [number, number] {
-    if (this.#all[machineId]) {
-      return this.#all[machineId];
-    }
-    const pos = this.#nextAvailable();
-    this.#all[machineId] = pos;
-    this.#set.add(posStr(pos));
-    return pos;
-  }
-
-  #hasPosition(p: readonly [number, number]): boolean {
-    return this.#set.has(posStr(p));
-  }
-
-  #nextAvailable(): readonly [number, number] {
-    let x = 0;
-    let z = 0;
-    let layer = 1;
-
-    while (layer < 100) {
-      // right
-      for (let i = 0; i < layer; i++) {
-        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
-        if (!this.#hasPosition(pos)) {
-          return pos;
-        }
-        x += 1;
-      }
-      // down
-      for (let i = 0; i < layer; i++) {
-        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
-        if (!this.#hasPosition(pos)) {
-          return pos;
-        }
-        z += 1;
-      }
-      layer++;
-      // left
-      for (let i = 0; i < layer; i++) {
-        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
-        if (!this.#hasPosition(pos)) {
-          return pos;
-        }
-        x -= 1;
-      }
-      // up
-      for (let i = 0; i < layer; i++) {
-        const pos = [x * CUBE_SPACING, z * CUBE_SPACING] as const;
-        if (!this.#hasPosition(pos)) {
-          return pos;
-        }
-        z -= 1;
-      }
-      layer++;
-    }
-    console.warn("No free grid positions available, returning [0, 0]");
-    // Fallback if no position was found
-    return [0, 0];
-  }
 }
 
 function posStr([x, y]: readonly [number, number]): string {

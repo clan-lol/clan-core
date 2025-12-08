@@ -1,6 +1,7 @@
 export * from "./modal";
 export * from "./clan";
 export * from "./machine";
+export * from "./service";
 
 export type DataSchema = Record<
   string,

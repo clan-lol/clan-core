@@ -5,13 +5,16 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Component, For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { Button } from "../Button/Button";
-import { Instance } from "@/src/workflows/Service/models";
 import { useClanContext } from "../Context/ClanContext";
 import {
   MachineContextProvider,
   useMachineContext,
   useMachinesContext,
 } from "../Context/MachineContext";
+import {
+  ServiceInstanceContextProvider,
+  useServiceInstanceContext,
+} from "../Context/ServiceContext";
 
 const SidebarBody: Component = () => {
   return (
@@ -22,7 +25,7 @@ const SidebarBody: Component = () => {
         defaultValue={["machines", "services"]}
       >
         <MachinesSection />
-        {/* <ServicesSection /> */}
+        <ServicesSection />
       </Accordion>
     </div>
   );
@@ -129,62 +132,8 @@ const MachineSection: Component = () => {
   );
 };
 
-export const ServiceRoute = (props: {
-  clanURI: string;
-  label: string;
-  id: string;
-  instance: Instance;
-}) => (
-  <div class="flex w-full flex-col gap-2">
-    <div class="flex flex-row items-center justify-between">
-      <Typography
-        hierarchy="label"
-        size="xs"
-        weight="bold"
-        color="primary"
-        inverted
-      >
-        {props.label}
-      </Typography>
-      <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
-    </div>
-    {/* Same subtitle as Machine */}
-    {/* <div class="flex w-full flex-row items-center gap-1">
-        <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
-        <Typography
-          hierarchy="label"
-          family="mono"
-          size="s"
-          inverted
-          color="primary"
-        >
-          {props.instance.resolved.usage_ref.name}
-        </Typography>
-      </div> */}
-  </div>
-);
-
-const Services = () => {
-  const clan = useClanContext()!;
-
-  const serviceInstances = () => {
-    if (!ctx.serviceInstancesQuery.isSuccess) {
-      return [];
-    }
-
-    return Object.entries(ctx.serviceInstancesQuery.data)
-      .map(([id, instance]) => {
-        const moduleName = instance.module.name;
-
-        const label = moduleName == id ? moduleName : `${moduleName} (${id})`;
-        return {
-          id,
-          label,
-          instance: instance,
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
-  };
+const ServicesSection: Component = () => {
+  const [clan] = useClanContext();
 
   return (
     <Accordion.Item class={styles.accordionItem} value="services">
@@ -211,18 +160,45 @@ const Services = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <nav>
-          <For each={serviceInstances()}>
-            {(mapped) => (
-              <ServiceRoute
-                clanURI={ctx.clanURI}
-                id={mapped.id}
-                label={mapped.label}
-                instance={mapped.instance}
-              />
+          <For each={clan().serviceInstances.all}>
+            {(instance) => (
+              <ServiceInstanceContextProvider serviceInstance={() => instance}>
+                <ServiceInstanceEntry />
+              </ServiceInstanceContextProvider>
             )}
           </For>
         </nav>
       </Accordion.Content>
     </Accordion.Item>
+  );
+};
+
+export const ServiceInstanceEntry: Component = () => {
+  const [instance, { activateServiceInstance }] = useServiceInstanceContext();
+  return (
+    <a
+      href="#"
+      onClick={(ev) => {
+        ev.preventDefault();
+        activateServiceInstance();
+      }}
+    >
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <Typography
+            hierarchy="label"
+            size="xs"
+            weight="bold"
+            color="primary"
+            inverted
+          >
+            {instance().data.name == instance().service.id
+              ? instance().data.name
+              : `${instance().service.id} (${instance().data.name})`}
+          </Typography>
+          <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
+        </div>
+      </div>
+    </a>
   );
 };

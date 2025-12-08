@@ -23,6 +23,7 @@ import {
   useModalContext,
 } from "./components/Context/ModalContext";
 import AddMachineModal from "./components/Modal/AddMachineModal";
+import { ServiceInstancesContextProvider } from "./components/Context/ServiceContext";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());
@@ -63,12 +64,16 @@ const Content: Component = () => {
         {(clan) => (
           <ClanContextProvider clan={clan}>
             <MachinesContextProvider machines={() => clan().machines}>
-              <Workspace />
-              <Switch>
-                <Match when={modal.type === "addMachine"}>
-                  <AddMachineModal />
-                </Match>
-              </Switch>
+              <ServiceInstancesContextProvider
+                serviceInstances={() => clan().serviceInstances}
+              >
+                <Workspace />
+                <Switch>
+                  <Match when={modal.type === "addMachine"}>
+                    <AddMachineModal />
+                  </Match>
+                </Switch>
+              </ServiceInstancesContextProvider>
             </MachinesContextProvider>
           </ClanContextProvider>
         )}

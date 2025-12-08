@@ -4,7 +4,6 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { useClanURI, useServiceParams } from "@/src/hooks/clan";
 import {
   MachinesQuery,
   TagsQuery,
@@ -33,11 +32,11 @@ import { Button } from "@/src/components/Button/Button";
 import cx from "classnames";
 import { BackButton } from "../Steps";
 import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
-import { useMachineClick } from "@/src/scene/cubes";
+import { useMachineClick } from "@/src/components/MachineGraph";
 import {
   clearAllHighlights,
   setHighlightGroups,
-} from "@/src/scene/highlightStore";
+} from "@/src/components/MachineGraph/highlightStore";
 import {
   getRoleMembers,
   RoleType,

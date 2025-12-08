@@ -5,15 +5,16 @@ import {
   reconcile,
   SetStoreFunction,
 } from "solid-js/store";
-import { captureStoreUpdates } from "@solid-primitives/deep";
+import { captureStoreUpdates, NestedUpdate } from "@solid-primitives/deep";
 import api from "./api";
 import { MachineEntity, Machines, toMachines } from "./machine";
 import { DataSchema } from ".";
 import {
   Service,
   ServiceEntity,
-  ServiceInstanceEntity,
+  ServiceInstance,
   ServiceInstances,
+  toService,
 } from "./service";
 
 export async function initClans(): Promise<ClansEntity> {
@@ -67,12 +68,28 @@ export function createClansStore(
 
 function toClanOrClanMeta(
   entity: ClanEntity | ClanMetaEntity,
-  [clans, { clanIndex }]: readonly [Clans, ClansMethods],
+  clansValue: readonly [Clans, ClansMethods],
 ): Clan | ClanMeta {
+  const [clans, { clanIndex, existingClan }] = clansValue;
   if (isNotMeta(entity)) {
     const self: Clan = {
       ...entity,
-      machines: toMachines(entity.machines, clans),
+      machines: toMachines(entity.machines, entity.id, clansValue),
+      services: entity.services.map((service) =>
+        toService(service, entity.id, clansValue),
+      ),
+      serviceInstances: {
+        get all() {
+          const clan = existingClan(entity.id);
+          return clan.services.flatMap((service) => service.instances);
+        },
+        activeIndex: -1,
+        get activeServiceInstance(): ServiceInstance | undefined {
+          return this.activeIndex == -1
+            ? undefined
+            : this.all[this.activeIndex];
+        },
+      },
       get index(): number {
         return clanIndex(this.id);
       },
@@ -94,7 +111,10 @@ export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
   clanIndex(item: string | Clan | ClanMeta): number;
-  activateClan(item: number | Clan | ClanMeta): Promise<Clan | undefined>;
+  existingClan(id: string): Clan;
+  activateClan(
+    item: number | string | Clan | ClanMeta,
+  ): Promise<Clan | undefined>;
   deactivateClan(clan?: Clan): void;
   addExistingClan(id: string): Promise<Clan | undefined>;
   addNewClan(entity: NewClanEntity): Promise<Clan | undefined>;
@@ -120,12 +140,26 @@ function clansMethods([clans, setClans]: [
       }
       return self.clanIndex(item.id);
     },
+    existingClan(id: string): Clan {
+      const i = self.clanIndex(id);
+      if (i === -1) {
+        throw new Error(`Clan does not exist: ${id}`);
+      }
+      const clan = clans.all[i];
+      if (isNotMeta(clan)) return clan;
+      throw new Error(
+        `Accessing a clan that has not been activated yet: ${id}`,
+      );
+    },
     async activateClan(item) {
       if (typeof item === "number") {
         const i = item;
-        const c = clans.all[i];
-        if (!c) return;
+        if (i < 0 || i >= clans.all.length) {
+          throw new Error(`activateClan called with invalid index: ${i}`);
+        }
+        if (clans.activeIndex === i) return;
 
+        const c = clans.all[i];
         if (isNotMeta(c)) {
           setClans("activeIndex", i);
           return c;
@@ -141,8 +175,17 @@ function clansMethods([clans, setClans]: [
         );
         return clan;
       }
-
-      return await self.activateClan(item.index);
+      let id: string;
+      if (typeof item === "string") {
+        id = item;
+      } else {
+        id = item.id;
+      }
+      const i = self.clanIndex(id);
+      if (i === -1) {
+        throw new Error(`Clan does not exist: ${id}`);
+      }
+      return await self.activateClan(i);
     },
     deactivateClan(clan?: Clan) {
       if (!clan) {
@@ -270,13 +313,9 @@ export type ClanEntity = {
   readonly dataSchema: DataSchema;
   readonly machines: MachineEntity[];
   readonly services: ServiceEntity[];
-  readonly serviceInstances: ServiceInstanceEntity[];
   readonly globalTags: Tags;
 };
-export type Clan = Omit<
-  ClanEntity,
-  "data" | "machines" | "services" | "serviceInstances"
-> & {
+export type Clan = Omit<ClanEntity, "data" | "machines" | "services"> & {
   data: ClanData;
   readonly index: number;
   readonly machines: Machines;
@@ -323,83 +362,84 @@ function isNotMeta(
 }
 
 function persistClans(clans: Clans) {
-  const delta = createMemo(captureStoreUpdates(clans));
+  const changes = createMemo(captureStoreUpdates(clans));
   createEffect(
-    on(
-      delta,
-      (delta) => {
-        for (const { path, value } of delta) {
-          let clansChanged = false;
-          let activeClanIndexChanged = false;
-          let machinesChanged = false;
-          let machinePositionsChanged = false;
-          if (path.length === 0) {
-            if ("all" in value) {
-              clansChanged = true;
-            }
-            if ("activeIndex" in value) {
-              activeClanIndexChanged = true;
-            }
-          } else {
-            if (isPath(path, ["all"])) {
-              clansChanged = true;
-            } else if (isPath(path, ["activeIndex"])) {
-              activeClanIndexChanged = true;
-            } else if (
-              isPath(path, ["all", "*", "machines", "all"]) ||
-              (isPath(path, ["all", "*", "machines"]) && "all" in value)
-            ) {
-              machinesChanged = true;
-            } else if (
-              isAnyPath(path, [
-                ["all", "*", "machines", "all", "*", "position"],
-              ])
-            ) {
-              machinePositionsChanged = true;
-            }
-          }
-
-          if (clansChanged) {
-            machinesChanged = true;
-            localStorage.setItem(
-              "clanIds",
-              JSON.stringify(clans.all.map(({ id }) => id)),
-            );
-          }
-          if (activeClanIndexChanged) {
-            localStorage.setItem("activeClanIndex", String(clans.activeIndex));
-          }
-          if (machinesChanged) {
-            machinePositionsChanged = true;
-          }
-          if (machinePositionsChanged) {
-            localStorage.setItem(
-              "machinePositions",
-              JSON.stringify(
-                Object.fromEntries(
-                  clans.all.map((clan) => {
-                    if (isNotMeta(clan)) {
-                      return [
-                        clan.id,
-                        Object.fromEntries(
-                          clan.machines.all.map((machine) => [
-                            machine.id,
-                            machine.position,
-                          ]),
-                        ),
-                      ];
-                    }
-                    return [];
-                  }),
-                ),
-              ),
-            );
-          }
-        }
-      },
-      { defer: true },
-    ),
+    on(changes, (changes) => persistClansChanges(changes, clans), {
+      defer: true,
+    }),
   );
+}
+
+function persistClansChanges(
+  changes: NestedUpdate<Clans>[],
+  clans: Clans,
+): void {
+  for (const { path, value } of changes) {
+    let clansChanged = false;
+    let activeClanIndexChanged = false;
+    let machinesChanged = false;
+    let machinePositionsChanged = false;
+    if (path.length === 0) {
+      if ("all" in value) {
+        clansChanged = true;
+      }
+      if ("activeIndex" in value) {
+        activeClanIndexChanged = true;
+      }
+    } else {
+      if (isPath(path, ["all"])) {
+        clansChanged = true;
+      } else if (isPath(path, ["activeIndex"])) {
+        activeClanIndexChanged = true;
+      } else if (
+        isPath(path, ["all", "*", "machines", "all"]) ||
+        (isPath(path, ["all", "*", "machines"]) && "all" in value)
+      ) {
+        machinesChanged = true;
+      } else if (
+        isAnyPath(path, [["all", "*", "machines", "all", "*", "position"]])
+      ) {
+        machinePositionsChanged = true;
+      }
+    }
+
+    if (clansChanged) {
+      machinesChanged = true;
+      localStorage.setItem(
+        "clanIds",
+        JSON.stringify(clans.all.map(({ id }) => id)),
+      );
+    }
+    if (activeClanIndexChanged) {
+      localStorage.setItem("activeClanIndex", String(clans.activeIndex));
+    }
+    if (machinesChanged) {
+      machinePositionsChanged = true;
+    }
+    if (machinePositionsChanged) {
+      localStorage.setItem(
+        "machinePositions",
+        JSON.stringify(
+          Object.fromEntries(
+            clans.all.map((clan) => {
+              if (isNotMeta(clan)) {
+                return [
+                  clan.id,
+                  Object.fromEntries(
+                    clan.machines.all.map((machine) => [
+                      machine.id,
+                      machine.position,
+                    ]),
+                  ),
+                ];
+              }
+              return [];
+            }),
+          ),
+        ),
+      );
+    }
+  }
 }
 
 function isPath(
