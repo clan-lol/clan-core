@@ -2,7 +2,7 @@
   gtk4,
   webkitgtk_6_0,
   lib,
-  clangStdenv,
+  llvmPackages,
   fetchFromGitea,
   gnumake,
   cmake,
@@ -12,7 +12,7 @@
   ...
 }:
 
-clangStdenv.mkDerivation {
+llvmPackages.stdenv.mkDerivation {
   pname = "webview";
   version = "nightly";
 
@@ -37,6 +37,7 @@ clangStdenv.mkDerivation {
 
   cmakeFlags = [
     "-DWEBVIEW_BUILD_TESTS=OFF"
+    "-DWEBVIEW_ENABLE_CHECKS=OFF"
   ];
 
   # Dependencies used during the build process, if any
