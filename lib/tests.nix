@@ -8,7 +8,7 @@ let
     _acc: _name: value:
     lib.seq value true
   ) true;
-  inherit (clan-core.clanLib) clan;
+  inherit (clan-core.clanLib) clan getPublicValue;
 in
 #######
 {
@@ -260,51 +260,36 @@ in
       expected = 42;
     };
 
-  test_get_var_machine =
-    let
-      getPublicValue = import ./get-public-value.nix { inherit lib; };
-    in
-    {
-      expr = getPublicValue {
-        backend = "in_repo";
-        default = "test";
-        generator = "test-generator";
-        machine = "test-machine";
-        file = "test-file";
-        flake = ./vars-test-flake;
-      };
-      expected = "foo-machine";
+  test_get_var_machine = {
+    expr = getPublicValue {
+      default = "test";
+      generator = "test-generator";
+      machine = "test-machine";
+      file = "test-file";
+      flake = ./vars-test-flake;
     };
+    expected = "foo-machine";
+  };
 
-  test_get_var_shared =
-    let
-      getPublicValue = import ./get-public-value.nix { inherit lib; };
-    in
-    {
-      expr = getPublicValue {
-        backend = "in_repo";
-        default = "test";
-        generator = "test-generator";
-        file = "test-file";
-        flake = ./vars-test-flake;
-      };
-      expected = "foo-shared";
+  test_get_var_shared = {
+    expr = getPublicValue {
+      default = "test";
+      generator = "test-generator";
+      file = "test-file";
+      flake = ./vars-test-flake;
     };
+    expected = "foo-shared";
+  };
 
-  test_get_var_default =
-    let
-      getPublicValue = import ./get-public-value.nix { inherit lib; };
-    in
-    {
-      expr = getPublicValue {
-        backend = "in_repo";
-        default = "test-default";
-        generator = "test-generator-wrong";
-        file = "test-file";
-        flake = ./vars-test-flake;
-      };
-      expected = "test-default";
+  test_get_var_default = {
+    expr = getPublicValue {
+      default = "test-default";
+      generator = "test-generator-wrong";
+      file = "test-file";
+      flake = ./vars-test-flake;
     };
+    expected = "test-default";
+  };
 
   test_clan_all_machines_laziness =
     let
