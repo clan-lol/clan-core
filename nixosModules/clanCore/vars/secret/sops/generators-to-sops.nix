@@ -4,6 +4,7 @@
   lib ? import <nixpkgs/lib>,
   # Can be mocked for testing
   pathExists ? builtins.pathExists,
+  path ? builtins.path,
 }:
 let
   inherit (lib)
@@ -62,7 +63,9 @@ let
             mode
             neededForUsers
             ;
-          sopsFile = builtins.path {
+          # builtins.path: aliased to overide during unit-testing
+          # Neded because it requires the file to exist at eval time
+          sopsFile = path {
             name = "${secret.generator}_${secret.name}";
             path = getSecretPath secret;
           };
