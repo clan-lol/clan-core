@@ -3,9 +3,7 @@ import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
-import { useMachineContext } from "@/src/components/Context/MachineContext";
-import { useClanContext } from "../../Context/ClanContext";
-import { MachineData } from "@/src/models";
+import { MachineData, useClanContext, useMachineContext } from "@/src/models";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),

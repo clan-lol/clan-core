@@ -1,21 +1,24 @@
 import { Accessor, createEffect, createMemo, on } from "solid-js";
-import {
-  createStore,
-  produce,
-  reconcile,
-  SetStoreFunction,
-} from "solid-js/store";
+import { createStore, produce, SetStoreFunction } from "solid-js/store";
 import { captureStoreUpdates, NestedUpdate } from "@solid-primitives/deep";
-import api from "./api";
-import { MachineEntity, Machines, toMachines } from "./machine";
-import { DataSchema } from ".";
+import api from "../api";
+import { Clan, ClanMeta } from "..";
 import {
-  Service,
-  ServiceEntity,
-  ServiceInstance,
-  ServiceInstances,
-  toService,
-} from "./service";
+  ClanEntity,
+  ClanMetaEntity,
+  isClan,
+  toClanOrClanMeta,
+  NewClanEntity,
+} from "./clan";
+
+export type ClansEntity = {
+  readonly all: (ClanEntity | ClanMetaEntity)[];
+  activeIndex: number;
+};
+export type Clans = Omit<ClansEntity, "all"> & {
+  all: (Clan | ClanMeta)[];
+  readonly activeClan: Clan | undefined;
+};
 
 export async function initClans(): Promise<ClansEntity> {
   const ids: string[] = (() => {
@@ -66,47 +69,6 @@ export function createClansStore(
   return clansValue;
 }
 
-function toClanOrClanMeta(
-  entity: ClanEntity | ClanMetaEntity,
-  clansValue: readonly [Clans, ClansMethods],
-): Clan | ClanMeta {
-  const [clans, { clanIndex, existingClan }] = clansValue;
-  if (isNotMeta(entity)) {
-    const self: Clan = {
-      ...entity,
-      machines: toMachines(entity.machines, entity.id, clansValue),
-      services: entity.services.map((service) =>
-        toService(service, entity.id, clansValue),
-      ),
-      serviceInstances: {
-        get all() {
-          const clan = existingClan(entity.id);
-          return clan.services.flatMap((service) => service.instances);
-        },
-        activeIndex: -1,
-        get activeServiceInstance(): ServiceInstance | undefined {
-          return this.activeIndex == -1
-            ? undefined
-            : this.all[this.activeIndex];
-        },
-      },
-      get index(): number {
-        return clanIndex(this.id);
-      },
-      get isActive(): boolean {
-        return clans.activeClan?.id === this.id;
-      },
-    };
-    return self;
-  }
-  return {
-    ...entity,
-    get index(): number {
-      return clanIndex(this.id);
-    },
-  } satisfies ClanMeta;
-}
-
 export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
@@ -146,7 +108,7 @@ function clansMethods([clans, setClans]: [
         throw new Error(`Clan does not exist: ${id}`);
       }
       const clan = clans.all[i];
-      if (isNotMeta(clan)) return clan;
+      if (isClan(clan)) return clan;
       throw new Error(
         `Accessing a clan that has not been activated yet: ${id}`,
       );
@@ -160,7 +122,7 @@ function clansMethods([clans, setClans]: [
         if (clans.activeIndex === i) return;
 
         const c = clans.all[i];
-        if (isNotMeta(c)) {
+        if (isClan(c)) {
           setClans("activeIndex", i);
           return c;
         }
@@ -247,120 +209,6 @@ function clansMethods([clans, setClans]: [
   return self;
 }
 
-export function createClanStore(
-  clan: Accessor<Clan>,
-  clansValue: readonly [Clans, ClansMethods],
-): readonly [Accessor<Clan>, ClanMethods] {
-  return [clan, clanMethods(clan, clansValue)];
-}
-
-export type ClanMethods = {
-  setClan: SetStoreFunction<Clan>;
-  activateClan(): Promise<void>;
-  deactivateClan(): void;
-  updateClanData(data: Partial<ClanData>): Promise<void>;
-  removeClan(): void;
-};
-function clanMethods(
-  clan: Accessor<Clan>,
-  [clans, { setClans, activateClan, deactivateClan, removeClan }]: readonly [
-    Clans,
-    ClansMethods,
-  ],
-): ClanMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setClan: SetStoreFunction<Clan> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setClans("all", clan().index, ...args);
-  };
-  const self: ClanMethods = {
-    setClan,
-    async activateClan() {
-      await activateClan(clan());
-    },
-    deactivateClan() {
-      if (clan().isActive) {
-        deactivateClan();
-      }
-    },
-
-    async updateClanData(data) {
-      // TODO: Use partial update once supported by backend and solidjs
-      // https://github.com/solidjs/solid/issues/2475
-      const d = { ...clan().data, ...data };
-      await api.clan.updateClanData(clan().id, d);
-      setClan("data", reconcile(d));
-    },
-    removeClan() {
-      removeClan(clan());
-    },
-  };
-  return self;
-}
-
-export type ClansEntity = {
-  readonly all: (ClanEntity | ClanMetaEntity)[];
-  activeIndex: number;
-};
-export type Clans = Omit<ClansEntity, "all"> & {
-  all: (Clan | ClanMeta)[];
-  readonly activeClan: Clan | undefined;
-};
-
-export type ClanEntity = {
-  readonly id: string;
-  readonly data: ClanData;
-  readonly dataSchema: DataSchema;
-  readonly machines: MachineEntity[];
-  readonly services: ServiceEntity[];
-  readonly globalTags: Tags;
-};
-export type Clan = Omit<ClanEntity, "data" | "machines" | "services"> & {
-  data: ClanData;
-  readonly index: number;
-  readonly machines: Machines;
-  readonly services: Service[];
-  readonly serviceInstances: ServiceInstances;
-  readonly isActive: boolean;
-};
-export type NewClanEntity = Pick<ClanEntity, "id" | "data">;
-
-export type ClanMetaEntity = {
-  readonly id: string;
-  readonly data: ClanMetaData;
-};
-export type ClanMeta = ClanMetaEntity & {
-  readonly index: number;
-};
-
-export type ClanMetaData = {
-  name: string;
-  description?: string;
-};
-
-export type ClanData = ClanMetaData & {
-  domain?: string;
-  // dataSchema: JSONSchema;
-  // machines: MachineData[];
-  // services: ServiceData[];
-  // globalTags: globalTags;
-};
-
-export interface Tags {
-  // TODO: rename backend's data.options to data.regular, options is too
-  // overloaded a name
-  readonly regular: string[];
-  readonly special: string[];
-}
-
-function isNotMeta(clan: Clan | ClanMeta): clan is Clan;
-function isNotMeta(clan: ClanEntity | ClanMetaEntity): clan is ClanEntity;
-function isNotMeta(
-  clan: Clan | ClanEntity | ClanMeta | ClanMetaEntity,
-): clan is Clan | ClanEntity {
-  return "machines" in clan;
-}
-
 function persistClans(clans: Clans) {
   const changes = createMemo(captureStoreUpdates(clans));
   createEffect(
@@ -374,6 +222,7 @@ function persistClansChanges(
   changes: NestedUpdate<Clans>[],
   clans: Clans,
 ): void {
+  // @ts-expect-error it seems NestedUpdate can't handle circular data
   for (const { path, value } of changes) {
     let clansChanged = false;
     let activeClanIndexChanged = false;
@@ -422,7 +271,7 @@ function persistClansChanges(
         JSON.stringify(
           Object.fromEntries(
             clans.all.map((clan) => {
-              if (isNotMeta(clan)) {
+              if (isClan(clan)) {
                 return [
                   clan.id,
                   Object.fromEntries(

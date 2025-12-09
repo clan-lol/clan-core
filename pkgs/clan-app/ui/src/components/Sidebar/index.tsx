@@ -3,11 +3,8 @@ import { Show } from "solid-js";
 import styles from "./Sidebar.module.css";
 import SidebarHeader from "@/src/components/Sidebar/SidebarHeader";
 import SidebarBody from "@/src/components/Sidebar/SidebarBody";
-import {
-  MachineContextProvider,
-  useMachinesContext,
-} from "../Context/MachineContext";
 import SidebarMachine from "./SidebarMachine";
+import { MachineContextProvider, useMachinesContext } from "@/src/models";
 
 export default function Sidebar() {
   const [machines] = useMachinesContext();

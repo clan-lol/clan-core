@@ -12,8 +12,7 @@ import { Fieldset } from "@/src/components/Form/Fieldset";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
 import { removeEmptyStrings } from "@/src/util";
-import { useMachinesContext } from "../../Context/MachineContext";
-import { useModalContext } from "@/src/models";
+import { useMachinesContext, useModalContext } from "@/src/models";
 
 const TagsSchema = v.object({
   tags: v.array(v.string()),

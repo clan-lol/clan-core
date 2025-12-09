@@ -1,13 +1,14 @@
 import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
 import {
-  createMachinesStore,
-  createMachineStore,
   Machine,
-  Machines,
   MachineMethods,
+  Machines,
   MachinesMethods,
-} from "@/src/models";
-import { useClanContext, useClansContext } from "./ClanContext";
+  useClanContext,
+  useClansContext,
+} from "..";
+import { createMachineStore } from "./machine";
+import { createMachinesStore } from "./machines";
 
 const MachinesContext =
   createContext<readonly [Accessor<Machines>, MachinesMethods]>();

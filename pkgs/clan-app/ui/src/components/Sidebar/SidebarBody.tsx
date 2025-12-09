@@ -5,16 +5,14 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Component, For, Show } from "solid-js";
 import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
 import { Button } from "../Button/Button";
-import { useClanContext } from "../Context/ClanContext";
 import {
   MachineContextProvider,
+  ServiceInstanceContextProvider,
+  useClanContext,
   useMachineContext,
   useMachinesContext,
-} from "../Context/MachineContext";
-import {
-  ServiceInstanceContextProvider,
   useServiceInstanceContext,
-} from "../Context/ServiceContext";
+} from "@/src/models";
 
 const SidebarBody: Component = () => {
   return (
@@ -93,7 +91,7 @@ const MachinesSection: Component = () => {
 };
 
 const MachineSection: Component = () => {
-  const [machine, { activateMachine }] = useMachineContext()!;
+  const [machine, { activateMachine }] = useMachineContext();
   return (
     <a
       href="#"

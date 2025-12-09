@@ -11,20 +11,18 @@ import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
 import Splash from "./components/Splash";
 import {
-  ClansEntity,
-  initClans,
-  ModalContextProvider,
-  useModalContext,
-} from "./models";
-import {
   ClanContextProvider,
   ClansContextProvider,
+  ClansEntity,
+  initClans,
+  MachinesContextProvider,
+  ModalContextProvider,
+  ServiceInstancesContextProvider,
   useClansContext,
-} from "./components/Context/ClanContext";
+  useModalContext,
+} from "./models";
 import { createAsync } from "@solidjs/router";
-import { MachinesContextProvider } from "./components/Context/MachineContext";
 import AddMachineModal from "./components/Modal/AddMachineModal";
-import { ServiceInstancesContextProvider } from "./components/Context/ServiceContext";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());

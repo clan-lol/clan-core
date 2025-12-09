@@ -6,7 +6,7 @@ import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarMachine/S
 import styles from "./SidebarMachine.module.css";
 import { SectionServices } from "@/src/components/Sidebar/SidebarMachine/SectionServices";
 import { SidebarSectionUpdate } from "@/src/components/Sidebar/SidebarMachine/SidebarSectionUpdate";
-import { useMachineContext } from "@/src/components/Context/MachineContext";
+import { useMachineContext } from "@/src/models";
 
 export default function SidebarMachine() {
   const [machine, { deactivateMachine }] = useMachineContext();

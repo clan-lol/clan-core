@@ -19,7 +19,7 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Select } from "@/src/components/Select/Select";
 import { Show } from "solid-js";
 import { Alert } from "@/src/components/Alert/Alert";
-import { useMachinesContext } from "../../Context/MachineContext";
+import { useMachinesContext } from "@/src/models";
 
 const PlatformOptions = [
   { label: "NixOS", value: "nixos" },

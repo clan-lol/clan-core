@@ -5,9 +5,13 @@ import {
   ClanMetaData,
   ClanMetaEntity,
   NewClanEntity,
-  ClansEntity,
-} from "../../clan";
-import { MachineData, MachinePositions, machinePositions } from "../../machine";
+} from "../../clan/clan";
+import {
+  MachineData,
+  MachinePositions,
+  machinePositions,
+} from "../../machine/machine";
+import { ClansEntity } from "../../clan/clans";
 import client from "./client-call";
 
 // TODO: make this one API call only

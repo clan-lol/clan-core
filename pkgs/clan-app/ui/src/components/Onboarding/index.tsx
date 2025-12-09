@@ -29,7 +29,7 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import ListClansModal from "@/src/components/Modal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import { useClansContext } from "../Context/ClanContext";
+import { useClansContext } from "@/src/models";
 
 type Step = {
   type: "welcome" | "setup" | "creating";
@@ -52,7 +52,7 @@ const SetupSchema = v.object({
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
 export default function Onboarding(): JSX.Element {
-  const [, { addNewClan }] = useClansContext()!;
+  const [, { addNewClan }] = useClansContext();
   const [step, setStep] = createSignal<Step>({ type: "welcome" });
 
   //

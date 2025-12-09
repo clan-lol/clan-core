@@ -1,13 +1,14 @@
+import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
 import {
-  createServiceInstancesStore,
-  createServiceInstanceStore,
   ServiceInstance,
   ServiceInstanceMethods,
   ServiceInstances,
   ServiceInstancesMethods,
-} from "@/src/models";
-import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
-import { useClanContext, useClansContext } from "./ClanContext";
+  useClanContext,
+  useClansContext,
+} from "..";
+import { createServiceInstancesStore } from "./instances";
+import { createServiceInstanceStore } from "./instance";
 
 const ServiceInstancesContext =
   createContext<

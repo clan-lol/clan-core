@@ -5,8 +5,7 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { tooltipText } from "@/src/components/Form";
-import { useMachineContext } from "@/src/components/Context/MachineContext";
-import { MachineData } from "@/src/models";
+import { MachineData, useMachineContext } from "@/src/models";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),
@@ -17,7 +16,7 @@ const schema = v.object({
 type FieldNames = "name" | "description" | "machineClass";
 
 export const SectionGeneral = () => {
-  const [machine, { updateMachineData }] = useMachineContext()!;
+  const [machine, { updateMachineData }] = useMachineContext();
 
   const readOnly = (editing: boolean, name: FieldNames) => {
     if (!editing) {

@@ -1,11 +1,11 @@
 import { SidebarSection } from "@/src/components/Sidebar/SidebarSection";
-import { For, Show } from "solid-js";
-import { useMachineName } from "@/src/hooks/clan";
-import { ServiceRoute } from "@/src/components/Sidebar/SidebarBody";
+import { For } from "solid-js";
+import { ServiceSection } from "@/src/components/Sidebar/SidebarBody";
 import styles from "./SectionServices.module.css";
+import { useMachineContext } from "@/src/models";
 
 export const SectionServices = () => {
-  const ctx = useClanContext();
+  const [machine] = useMachineContext();
 
   const services = () => {
     if (!(ctx.machinesQuery.isSuccess && ctx.serviceInstancesQuery.isSuccess)) {
@@ -36,18 +36,16 @@ export const SectionServices = () => {
   };
 
   return (
-    <Show when={ctx.serviceInstancesQuery.isSuccess}>
-      <SidebarSection title="Services">
-        <div class={styles.sectionServices}>
-          <nav>
-            <For each={services()}>
-              {(instance) => (
-                <ServiceRoute clanURI={ctx.clanURI} {...instance} />
-              )}
-            </For>
-          </nav>
-        </div>
-      </SidebarSection>
-    </Show>
+    <SidebarSection title="Services">
+      <div class={styles.sectionServices}>
+        <nav>
+          <For each={machine().serviceInstances}>
+            {(instance) => (
+              <ServiceSection clanURI={ctx.clanURI} {...instance} />
+            )}
+          </For>
+        </nav>
+      </div>
+    </SidebarSection>
   );
 };

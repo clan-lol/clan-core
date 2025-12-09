@@ -28,9 +28,12 @@ import {
 } from "./highlightStore";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import client from "@/src/models/api/clan/client-call";
-import { useMachinesContext } from "../Context/MachineContext";
 import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
-import { ModalCancelError, useModalContext } from "@/src/models";
+import {
+  ModalCancelError,
+  useMachinesContext,
+  useModalContext,
+} from "@/src/models";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -450,7 +453,7 @@ export const MachineGraph: Component = () => {
         e,
         renderer,
         camera,
-        machineManager,
+        sceneMachines,
         raycaster,
       );
       if (e.button === 0) {
@@ -752,7 +755,7 @@ function intersectMachines(
   event: MouseEvent,
   renderer: THREE.WebGLRenderer,
   camera: THREE.Camera,
-  machineManager: MachineManager,
+  sceneMachines: Record<string, MachineRepr> = {},
   raycaster: THREE.Raycaster,
 ) {
   const rect = renderer.domElement.getBoundingClientRect();
@@ -762,7 +765,7 @@ function intersectMachines(
   );
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(
-    Array.from(machineManager.machines.values().map((m) => m.group)),
+    Object.values(sceneMachines).map((m) => m.group),
   );
 
   return {

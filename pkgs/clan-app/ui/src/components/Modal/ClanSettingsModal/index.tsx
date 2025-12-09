@@ -17,9 +17,7 @@ import { Divider } from "@/src/components/Divider/Divider";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
-import { useClanContext } from "../../Context/ClanContext";
-import { ClanData } from "@/src/models";
-import { JSONSchema } from "json-schema-typed";
+import { ClanData, useClanContext } from "@/src/models";
 
 const schema = v.object({
   name: v.string(),
@@ -34,7 +32,7 @@ export interface ClanSettingsModalProps {
 type FieldNames = "name" | "description" | "icon";
 
 export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
-  const [clan, { updateClanData, removeClan }] = useClanContext()!;
+  const [clan, { updateClanData, removeClan }] = useClanContext();
   const [saving, setSaving] = createSignal(false);
 
   const [formStore, { Form, Field }] = createForm<ClanData>({

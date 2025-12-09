@@ -4,7 +4,7 @@ import styles from "./ListClansModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Component, For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
-import { useClansContext } from "../../Context/ClanContext";
+import { useClansContext } from "@/src/models";
 
 const ListClansModal: Component<{
   onClose?: () => void;

@@ -3,10 +3,10 @@ import { Button } from "@/src/components/Button/Button";
 import { InstallModal } from "@/src/workflows/InstallMachine/InstallMachine";
 import styles from "./SidebarSectionInstall.module.css";
 import { Alert } from "../../Alert/Alert";
-import { useMachineContext } from "@/src/components/Context/MachineContext";
+import { useMachineContext } from "@/src/models";
 
 export const SidebarSectionInstall = () => {
-  const [machine] = useMachineContext()!;
+  const [machine] = useMachineContext();
 
   const [showInstall, setShowModal] = createSignal(false);
 

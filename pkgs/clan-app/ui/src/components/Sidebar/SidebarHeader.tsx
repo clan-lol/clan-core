@@ -5,7 +5,7 @@ import { Typography } from "../Typography/Typography";
 import { Component, createSignal, For, Show } from "solid-js";
 import { Button } from "../Button/Button";
 import { ClanSettingsModal } from "@/src/components/Modal/ClanSettingsModal";
-import { useClansContext, useClanContext } from "../Context/ClanContext";
+import { useClanContext, useClansContext } from "@/src/models";
 
 const SidebarHeader: Component = () => {
   const [open, setOpen] = createSignal(false);

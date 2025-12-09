@@ -1,13 +1,7 @@
-import {
-  Clan,
-  Clans,
-  ClansEntity,
-  ClanMethods,
-  createClansStore,
-  createClanStore,
-  ClansMethods,
-} from "@/src/models";
 import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
+import { Clan, ClanMethods, ClansEntity, Clans, ClansMethods } from "..";
+import { createClanStore } from "./clan";
+import { createClansStore } from "./clans";
 
 const ClansContext = createContext<readonly [Clans, ClansMethods]>();
 

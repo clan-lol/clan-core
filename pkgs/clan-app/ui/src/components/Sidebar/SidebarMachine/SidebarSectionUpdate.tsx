@@ -2,10 +2,10 @@ import { createSignal, Show } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
 import styles from "./SidebarSectionInstall.module.css";
 import { UpdateModal } from "@/src/workflows/InstallMachine/UpdateMachine";
-import { useMachineContext } from "@/src/components/Context/MachineContext";
+import { useMachineContext } from "@/src/models";
 
 export const SidebarSectionUpdate = () => {
-  const [machine] = useMachineContext()!;
+  const [machine] = useMachineContext();
 
   const [showUpdate, setShowUpdate] = createSignal(false);
 

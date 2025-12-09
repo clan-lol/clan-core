@@ -1,5 +1,9 @@
 import client from "./client-call";
-import { MachineData, MachineEntity, NewMachineEntity } from "@/src/models";
+import {
+  MachineData,
+  MachineEntity,
+  NewMachineEntity,
+} from "../../machine/machine";
 // TODO: backend should provide an API that allows partial update
 export async function updateMachineData(
   machineId: string,
