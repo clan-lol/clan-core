@@ -13,7 +13,7 @@ import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
 import { removeEmptyStrings } from "@/src/util";
 import { useMachinesContext } from "../../Context/MachineContext";
-import { useModalContext } from "../../Context/ModalContext";
+import { useModalContext } from "@/src/models";
 
 const TagsSchema = v.object({
   tags: v.array(v.string()),
@@ -22,7 +22,7 @@ const TagsSchema = v.object({
 type TagsForm = v.InferInput<typeof TagsSchema>;
 
 export const StepTags = () => {
-  const [modal, { closeAddMachineModal }] = useModalContext<"addMachine">();
+  const [modal, { closeModal }] = useModalContext<"addMachine">();
   const [, { addMachine }] = useMachinesContext();
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
@@ -49,7 +49,7 @@ export const StepTags = () => {
       }),
       position: modal.data.position,
     });
-    closeAddMachineModal(machine);
+    closeModal(machine);
   };
 
   return (

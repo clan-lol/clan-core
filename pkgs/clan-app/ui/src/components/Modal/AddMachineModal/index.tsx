@@ -13,12 +13,12 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { StepHost } from "./StepHost";
 import { StepTags } from "./StepTags";
 import { StepProgress } from "./StepProgress";
-import { useModalContext } from "../../Context/ModalContext";
+import { useModalContext } from "@/src/models";
 
 const AddMachineModal: Component<{
   initialStep?: AddMachineSteps[number]["id"];
 }> = (props) => {
-  const [, { closeAddMachineModal }] = useModalContext();
+  const [, { cancelModal }] = useModalContext();
   const stepper = createStepper(
     {
       steps,
@@ -60,7 +60,7 @@ const AddMachineModal: Component<{
       <Modal
         class={cx("w-screen", sizeClasses())}
         title="Add Machine"
-        onClose={() => closeAddMachineModal()}
+        onClose={() => cancelModal()}
         open={true}
         // @ts-expect-error some steps might not have
         metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}

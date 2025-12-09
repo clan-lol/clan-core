@@ -10,7 +10,12 @@ import {
 import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
 import Splash from "./components/Splash";
-import { ClansEntity, initClans } from "./models";
+import {
+  ClansEntity,
+  initClans,
+  ModalContextProvider,
+  useModalContext,
+} from "./models";
 import {
   ClanContextProvider,
   ClansContextProvider,
@@ -18,10 +23,6 @@ import {
 } from "./components/Context/ClanContext";
 import { createAsync } from "@solidjs/router";
 import { MachinesContextProvider } from "./components/Context/MachineContext";
-import {
-  ModalContextProvider,
-  useModalContext,
-} from "./components/Context/ModalContext";
 import AddMachineModal from "./components/Modal/AddMachineModal";
 import { ServiceInstancesContextProvider } from "./components/Context/ServiceContext";
 

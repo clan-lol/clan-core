@@ -28,9 +28,9 @@ import {
 } from "./highlightStore";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import client from "@/src/models/api/clan/client-call";
-import { useModalContext } from "../Context/ModalContext";
 import { useMachinesContext } from "../Context/MachineContext";
 import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
+import { ModalCancelError, useModalContext } from "@/src/models";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -54,9 +54,7 @@ export const MachineGraph: Component = () => {
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
 
-  let machineManager: MachineManager;
-
-  const [, { openAddMachineModal }] = useModalContext();
+  const [, { openModal }] = useModalContext<"addMachine">();
   const [machines, { deactivateMachine }] = useMachinesContext();
 
   const [actionMode, setActionMode] = createSignal<
@@ -369,12 +367,22 @@ export const MachineGraph: Component = () => {
     // - Creates a new cube in "create" mode
     const onClick = async (event: MouseEvent) => {
       if (actionMode() === "create") {
-        await openAddMachineModal({
-          position: cursorPosition()!,
-        });
+        try {
+          await openModal("addMachine", {
+            position: cursorPosition()!,
+          });
+        } catch (err) {
+          if (err instanceof ModalCancelError) {
+            return;
+          }
+          throw err;
+        }
         if (actionBase) actionBase.visible = false;
         setActionMode("select");
-      } else if (actionMode() === "move") {
+        return;
+      }
+
+      if (actionMode() === "move") {
         const currId = menuIntersection().at(0);
         const pos = cursorPosition();
         if (!currId || !pos) return;
