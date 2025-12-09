@@ -21,6 +21,7 @@
   zerotierone,
   minifakeroot,
   nixosConfigurations,
+  ollama ? pkgs.ollama,
 }:
 let
   pyDeps = ps: [
@@ -48,9 +49,15 @@ let
   # This file represents an allow list at the same time that is checked by the run_cmd
   #   implementation in nix.py
   allDependencies = lib.importJSON ./clan_lib/nix/allowed-packages.json;
+  # Package overrides for packages that need special handling (e.g., fixed ollama on Darwin)
+  packageOverrides = {
+    inherit ollama;
+  };
   generateRuntimeDependenciesMap =
     deps:
-    lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
+    lib.filterAttrs (_: pkg: !(pkg.meta.unsupported or false)) (
+      lib.genAttrs deps (name: packageOverrides.${name} or pkgs.${name})
+    );
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
   # Filter out packages that are not needed for tests and pull in many dependencies
   testExcludedPackages = {
@@ -260,6 +267,9 @@ pythonRuntime.pkgs.buildPythonApplication {
               pkgs.getconf
               # REMOVEME: once we drop support for 25.11
               (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
+
+              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.build.toplevel
+              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.build.toplevel
 
               nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
               nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create

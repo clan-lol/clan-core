@@ -23,15 +23,18 @@
   flake.nixosModules = {
     # NixOS module for test_vm_persistence
     test-vm-persistence =
-      { config, ... }:
+      { config, lib, ... }:
       {
         imports = [ self.nixosModules.clan-vm-base ];
 
         system.stateVersion = config.system.nixos.release;
 
-        # Disable services that might cause issues in tests
-        systemd.services.logrotate-checkconf.enable = false;
+        # Disable system.checks to avoid rebuild mismatches in tests
+        system.checks = lib.mkForce [ ];
+
         services.getty.autologinUser = "root";
+        # logrotate-checkconf fails in the minimal VM image; disable for test VMs
+        systemd.services.logrotate-checkconf.enable = false;
 
         # Basic networking setup
         networking.useDHCP = false;
@@ -81,6 +84,9 @@
 
         # SSH for deployment tests
         services.openssh.enable = true;
+
+        # Disable system.checks to avoid rebuild mismatches in tests
+        system.checks = lib.mkForce [ ];
 
         # Initialize users for tests
         users.users = {
