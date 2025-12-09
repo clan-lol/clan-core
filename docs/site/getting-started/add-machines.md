@@ -106,12 +106,13 @@ Make sure to also remove or update any references to that machine in your nix fi
 
 ## Checkpoint
 
-!!! Warning "In Development"
-    We are currently working on a command to test your setup up to this point.
+Verify that your machines have been created successfully by listing them:
 
-    For now, please check manually if there is a new folder for every `create machine NAME` you entered.
+```bash
+clan machines list
+```
 
-    ```ls machines/```
+This should display all the machines you've created (e.g., `jon-machine`). If you don't see your machines listed, double-check the previous steps.
 
 
 ## Next Up
