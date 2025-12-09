@@ -53,26 +53,48 @@
 
   roles.server = {
     description = "Sets up a Tor onion service for the machine, thus making it reachable over Tor.";
-    # interface =
-    #   { lib, ... }:
-    #   {
-    #     options = {
-    #       OciSettings = lib.mkOption {
-    #         type = lib.types.raw;
-    #         default = null;
-    #         description = "NixOS settings for virtualisation.oci-container.<name>.settings";
-    #       };
-    #       buildContainer = lib.mkOption {
-    #         type = lib.types.nullOr lib.types.str;
-    #         default = null;
-    #       };
-    #     };
-    #   };
+    interface =
+      { lib, ... }:
+      {
+        options = {
+
+          portMapping = lib.mkOption {
+            type = lib.types.listOf lib.types.raw;
+            default = [
+              {
+                port = 22;
+                target.port = 22;
+              }
+            ];
+            description = ''
+              List of port mappings for the Tor onion service.
+              Each mapping defines which ports are exposed through Tor and where they should forward to.
+              Default exposes SSH (port 22) for remote access.
+            '';
+          };
+
+          secretHostname = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether to keep the onion service hostname secret.
+
+              When enabled (default), the hostname is stored securely as a
+              secret var and not exposed in your configuration.
+
+              If you expose SSH, it is recommended to keep this set to true in
+              public configurainos as anyone with knowledge of the hostname
+              could try brut-forcing attacks against it.
+            '';
+          };
+        };
+      };
     perInstance =
       {
         instanceName,
         mkExports,
         machine,
+        settings,
         ...
       }:
       {
@@ -100,19 +122,13 @@
                 enable = true;
                 relay.onionServices."clan_${instanceName}" = {
                   version = 3;
-                  # TODO get ports from instance machine config
-                  map = [
-                    {
-                      port = 22;
-                      target.port = 22;
-                    }
-                  ];
+                  map = settings.portMapping;
                   secretKey = config.clan.core.vars.generators."tor_${instanceName}".files.hs_ed25519_secret_key.path;
                 };
               };
               clan.core.vars.generators."tor_${instanceName}" = {
                 files.hs_ed25519_secret_key = { };
-                files.hostname = { };
+                files.hostname.secret = settings.secretHostname;
                 runtimeInputs = with pkgs; [
                   coreutils
                   tor
