@@ -1,19 +1,33 @@
+## Summary 
+
 Ready to manage your fleet of machines?
 
-We will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
+In this guide, we will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
 
 You'll finish with a centrally managed fleet, ready to import your existing NixOS configuration.
 
-## Prerequisites
+
+## Requirements
 
 Make sure you have the following:
 
-* 💻 **Administration Machine**: Run the setup commands from this machine.
-* 🛠️ **Nix**: The Nix package manager, installed on your administration machine.
+* 💻 **Setup Device**: A Linux machine from which the setup commands will be run.
 
-    ??? info "**How to install Nix (Linux / MacOS / NixOS)**"
+!!! Warning "Operating System Recommendations" 
+    We are currently working on more refined operating system recommendations.
 
-        **On Linux or macOS:**
+    - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
+
+    - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+
+    - Root user access will be required throughout the whole setup.
+
+
+* 🛠️ **Nix**: The Nix package manager installed on your setup device.
+
+    ??? info "**How to install Nix**"
+
+        **On Linux (or macOS):**
 
         1.  Run the recommended installer:
             ```shellSession
@@ -27,7 +41,8 @@ Make sure you have the following:
 
         **On NixOS:**
 
-        Nix is already installed. You only need to enable flakes for your user in your `configuration.nix`:
+        Nix is already installed. 
+        You only need to enable flakes for your user via `nano /etc/nixos/configuration.nix`:
 
         ```nix
         {
@@ -36,36 +51,99 @@ Make sure you have the following:
         ```
         Then, run `nixos-rebuild switch` to apply the changes.
 
-* 🎯 **Target Machine(s)**: A remote machine with SSH, or your local machine (if NixOS).
+*  🛠️ **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
+
+    ??? info "**How to install direnv**"
+
+        === "NixOS (recommended)"
+            1. Add the required lines to your `configuration.nix`:
+
+                ```nix
+                {
+                  programs.direnv.enable = true;
+                  programs.direnv.nix-direnv.enable = true;
+                }
+                ```
+
+            2. Run:
+
+                ```bash
+                sudo nixos-rebuild switch
+                ```
+
+            3. Verify installation:
+
+                ```bash
+                direnv --version
+                ```
+
+        === "Other Linux"
+            1. Install direnv:
+
+                ```bash
+                sudo apt install direnv
+                ```
+                or for Arch:
+                ```bash
+                sudo pacman -S direnv
+                ```
+
+            2. Add a hook to your shell:
+
+                ```bash
+                echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
+                ```
+                or for zsh:
+                ```bash
+                echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc
+                ```
+
+            3. Restart your shell and then allow direnv for the current folder to test if it worked:
+
+                ```bash
+                direnv allow
+                ```
+
+* 🎯 **Target Device(s)**: Any number of remote Linux or MacOS devices with SSH root access to. If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+
+* Expected knowledge levels for this guide:
+    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
+
+* Estimated time for this step: 20 minutes
+
 
 ## Create a New Clan
+
+A "Clan" is the top level concept of the environment you are building.
+
+In your Clan, you will create and manage your machines, users, and services. It can later also define the relation between services and machines via roles.
 
 1. Navigate to your desired directory:
 
     ```shellSession
-    cd <your-directory>
+    cd <MY-DIRECTORY>
     ```
 
 2. Create a new clan flake:
 
-    **Note:** This creates a new directory in your current location
+    **Note:** This creates a new directory in your current location. Depending on your connection speed, this step may take a few minutes.
 
     ```shellSession
     nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- flakes create
     ```
 
-3. Enter a **name** in the prompt:
+3. Enter a **name** in the prompt, for example `MY-NEW-CLAN`:
 
     ```terminalSession
-    Enter a name for the new clan: my-clan
+    Enter a name for the new clan: MY-NEW-CLAN
     ```
 
 ## Project Structure
 
-Your new directory, `my-clan`, should contain the following structure:
+Your new directory, `MY-NEW-CLAN`, should contain the following structure:
 
 ```
-my-clan/
+MY-NEW-CLAN/
 ├── clan.nix
 ├── flake.lock
 ├── flake.nix
@@ -79,48 +157,35 @@ my-clan/
     Use `clan templates list` and `clan templates --help` for available templates & more. Keep in mind that the exact files may change as templates evolve.
 
 
-## Activate the Environment
+## Activating the Environment
 
 To get started, `cd` into your new project directory.
 
 ```shellSession
-cd my-clan
+cd MY-NEW-CLAN
 ```
 
 Now, activate the environment using one of the following methods.
 
 === "Automatic (direnv, recommended)"
+    If you installed direnv correctly following the required steps before, you should be presented with an error message now:
 
-    First you need to install [direnv](https://github.com/direnv/direnv) to allow auto-loading `.envrc` bash files on `cd`  
-    ```bash
-    nix profile add nixpkgs#direnv
-    ```
+    `direnv: error /MY-DIRECTORY/MY-NEW-CLAN/.envrc is blocked. Run direnv allow to approve its content`
 
-    Ontop of that you need the [nix-direnv](https://github.com/nix-community/nix-direnv) addon.
-    ```bash
-    nix profile add nixpkgs#nix-direnv
-    ```
-
-   - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
-     You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
+    To continue, simply allow direnv in your Clan directory:
 
     ```bash
-    echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
-    ```
-
-    Run `direnv allow` to automatically load the environment whenever you enter this directory.
-    ```shellSession
     direnv allow
     ```
 
 === "Manual (nix develop)"
-    Run nix develop to load the environment for your current shell session.
+    Run nix develop to load the environment manually:
 
-    ```shellSession
+    ```bash
     nix develop
     ```
 
-## Verify the Setup
+## Checkpoint / Renaming Your Clan
 
 Once your environment is active, verify that the clan command is available by running:
 
@@ -137,16 +202,26 @@ Description: None
 
 This confirms your setup is working correctly.
 
-You can now change the default name and domain by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
+You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
 
-```{.nix title="clan.nix" hl_lines="3 4"}
+The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
+
+The metal.domain will function as your internal top level domain. Select something catchy, like clan.lol
+
+Feel free to add `meta.description = "something smart"` beneath meta.tld if you would like to update the description for `clan show`.
+
+```{.nix title="clan.nix" hl_lines="3 4 5"}
 {
   # Ensure this is unique among all clans you want to use.
   meta.name = "__CHANGE_ME__";
   meta.domain = "changeme";
+  meta.description = "optional";
 
   # ...
   # elided
 }
 ```
 
+## Up Next
+
+We will add machines to your freshly created clan during the next step.
