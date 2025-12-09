@@ -154,7 +154,7 @@ in
                   readHostKey =
                     machine:
                     let
-                      publicKey = clanLib.vars.getPublicValue {
+                      publicKey = clanLib.getPublicValue {
                         flake = config.clan.core.settings.directory;
                         inherit machine;
                         generator = "data-mesher-host-key";
