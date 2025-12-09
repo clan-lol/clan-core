@@ -82,7 +82,7 @@ Adding ssh keys is one of the most recommended services:
 }
 ```
 
-The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convienient administration to all machines.
+The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convenient administration to all machines.
 
 This method is equivalent to directly setting `authorizedKeys` like in [configuring a machine](../getting-started/add-machines.md#configuring-a-machine)
 

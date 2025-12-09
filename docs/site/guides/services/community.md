@@ -261,7 +261,7 @@ The benefit of this approach is that downstream users can override the value of
 
 Users often have different types of machines. These could be any classification
 you like, for example "servers" and "desktops". Having such distictions, allows
-reusing parts of your configuration that should be appplied to a class of
+reusing parts of your configuration that should be applied to a class of
 machines. Since this is such a common pattern, here is how to write such a
 service.
 

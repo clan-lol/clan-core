@@ -30,7 +30,7 @@ in
         # suffix is to prevent disk name collisions
         name = "main-" + suffix;
         type = "disk";
-        # Set the following in flake.nix for each maschine:
+        # Set the following in flake.nix for each machine:
         # device = <uuid>;
         content = {
           # edlied
