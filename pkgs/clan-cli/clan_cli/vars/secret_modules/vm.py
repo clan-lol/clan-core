@@ -72,6 +72,11 @@ class SecretStore(StoreBase):
             shutil.rmtree(output_dir)
         shutil.copytree(vars_dir, output_dir)
 
+    def get_upload_directory(self, machine: str) -> str:
+        del machine  # Unused
+        msg = "VM backend does not support remote installation"
+        raise NotImplementedError(msg)
+
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         msg = "Cannot upload secrets to VMs"
         raise NotImplementedError(msg)

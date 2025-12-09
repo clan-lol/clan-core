@@ -11,6 +11,7 @@ from clan_cli.machines.hardware import HardwareConfig
 
 from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
@@ -101,17 +102,34 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     ):
         base_directory = Path(_base_directory).resolve()
         activation_secrets = base_directory / "activation_secrets"
-        # Vars use /run/secrets as the standard directory for secret deployment
-        upload_dir = activation_secrets / "secrets-upload"
-        upload_dir.mkdir(parents=True)
 
         # Notify the UI about what we are doing
         notify_install_step(Step.UPLOAD_SECRETS)
+
+        # Get upload directory, falling back if backend doesn't support remote install
+        try:
+            secrets_target_dir = machine.secret_vars_store.get_upload_directory(
+                machine.name
+            )
+            upload_dir = activation_secrets / secrets_target_dir.lstrip("/")
+        except NotImplementedError:
+            secrets_target_dir = None
+            upload_dir = activation_secrets / "secrets-upload"
+
+        upload_dir.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
             machine.name,
             upload_dir,
             phases=["activation", "users", "services"],
         )
+
+        # Fail if activation secrets exist but backend can't place them correctly
+        if secrets_target_dir is None and any(upload_dir.rglob("*")):
+            msg = (
+                "The configured secret store does not support remote installation, "
+                "but this machine has activation-phase secrets that require upload"
+            )
+            raise ClanError(msg)
 
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)

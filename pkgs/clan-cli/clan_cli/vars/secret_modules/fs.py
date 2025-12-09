@@ -60,6 +60,11 @@ class SecretStore(StoreBase):
             shutil.rmtree(self.dir)
         return []
 
+    def get_upload_directory(self, machine: str) -> str:
+        del machine  # Unused
+        msg = "FS backend does not support remote installation"
+        raise NotImplementedError(msg)
+
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         msg = "Cannot upload secrets with FS backend"
         raise NotImplementedError(msg)
