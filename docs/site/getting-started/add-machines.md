@@ -21,7 +21,9 @@ When finishing it, you will have prepared at least one machine that can be rolle
 
 Navigate to your clan folder and run the following command to create a machine for our test user Jon:
 
-`clan machines create jon-machine`
+```nix
+clan machines create jon-machine
+```
 
 A dedicated folder will be created at `machines/jon-machine`.
 You can see the complete [list](../guides/inventory/autoincludes.md) of auto-loaded files in our extended documentation.
