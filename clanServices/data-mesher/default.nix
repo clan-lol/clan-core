@@ -54,25 +54,12 @@ let
   mkBootstrapNodes =
     {
       config,
-      lib,
       roles,
       settings,
     }:
-    lib.mkDefault (
-      builtins.foldl' (
-        urls: name:
-        let
-          ip = clanLib.getPublicValue {
-            flake = config.clan.core.settings.directory;
-            machine = name;
-            generator = "zerotier";
-            file = "zerotier-ip";
-            default = null;
-          };
-        in
-        if ip != null then urls ++ [ "[${ip}]:${builtins.toString settings.network.port}" ] else urls
-      ) [ ] (builtins.attrNames ((roles.admin.machines or { }) // (roles.signer.machines or { })))
-    );
+    map (
+      name: "${name}.${config.clan.core.settings.domain}:${builtins.toString settings.network.port}"
+    ) (builtins.attrNames ((roles.admin.machines or { }) // (roles.signer.machines or { })));
 
   mkDmService = dmSettings: config: {
     enable = true;
@@ -151,7 +138,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;
@@ -168,7 +154,7 @@ in
                   readHostKey =
                     machine:
                     let
-                      publicKey = clanLib.getPublicValue {
+                      publicKey = clanLib.vars.getPublicValue {
                         flake = config.clan.core.settings.directory;
                         inherit machine;
                         generator = "data-mesher-host-key";
@@ -200,7 +186,6 @@ in
     perInstance =
       {
         extendSettings,
-        lib,
         roles,
         ...
       }:
@@ -212,7 +197,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;
@@ -232,7 +216,6 @@ in
     perInstance =
       {
         extendSettings,
-        lib,
         roles,
         ...
       }:
@@ -244,7 +227,6 @@ in
               bootstrapNodes = mkBootstrapNodes {
                 inherit
                   config
-                  lib
                   roles
                   settings
                   ;

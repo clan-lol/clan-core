@@ -10,6 +10,25 @@
       machines.machine3 = { };
       machines.machine4 = { };
 
+      meta.domain = "test";
+
+      # This mocks the use of a networking module, which provides
+      # host resolution, e.g. yggdrasil
+      instances.importer = {
+        module.name = "importer";
+        roles.default.tags = [ "all" ];
+        roles.default.extraModules = [
+          {
+            networking.extraHosts = ''
+              192.168.1.1 machine1.test
+              192.168.1.2 machine2.test
+              192.168.1.3 machine3.test
+              192.168.1.4 machine4.test
+            '';
+          }
+        ];
+      };
+
       instances.default = {
         module.name = "syncthing-service";
         module.input = "self";
@@ -52,8 +71,6 @@
     ''
       start_all()
 
-      machine1.wait_for_unit("syncthing.service")
-      machine2.wait_for_unit("syncthing.service")
       machine3.wait_for_unit("syncthing.service")
       machine4.wait_for_unit("syncthing.service")
 

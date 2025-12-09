@@ -18,7 +18,6 @@ in
           inherit module;
           inherit inputs;
           fileset = lib.fileset.unions [
-            # The zerotier service being tested
             ../../clanServices/syncthing
             # Required modules
             ../../nixosModules/clanCore
