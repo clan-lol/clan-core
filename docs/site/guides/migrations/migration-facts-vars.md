@@ -17,6 +17,9 @@ The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](..
     2. Copy the values
     3. Use `clan vars generate` to generate the new values initially, then `clan vars set` to override with old values.
 
+    Alternative:
+    Roll back to a clan-core version before December 2025 and use the automatic migration feature.
+
 ## Keep Existing Values (Historical)
 
 **Note:** This section describes the automatic migration feature that has been removed.

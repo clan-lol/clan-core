@@ -135,15 +135,10 @@ def run_machine_flash(
 
         with TemporaryDirectory(prefix="disko-install-") as _tmpdir:
             tmpdir = Path(_tmpdir)
-            upload_dir = "/run/secrets-upload"
+            secrets_dir_local = tmpdir / "secrets-for-upload"
 
-            if upload_dir.startswith("/"):
-                local_dir = tmpdir / upload_dir[1:]
-            else:
-                local_dir = tmpdir / upload_dir
-
-            local_dir.mkdir(parents=True)
-            populate_secret_vars(machine, local_dir)
+            secrets_dir_local.mkdir(parents=True)
+            populate_secret_vars(machine, secrets_dir_local)
             disko_install = []
 
             if os.geteuid() != 0:
@@ -168,7 +163,9 @@ def run_machine_flash(
 
                 log.info("Will flash disk %s: %s", disk.name, disk.device)
 
-            disko_install.extend(["--extra-files", str(local_dir), "/run/secrets"])
+            disko_install.extend(
+                ["--extra-files", str(secrets_dir_local), "/run/secrets"]
+            )
             disko_install.extend(["--flake", str(machine.flake) + "#" + machine.name])
             disko_install.extend(["--mode", str(mode)])
             disko_install.extend(

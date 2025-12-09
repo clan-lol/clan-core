@@ -95,6 +95,7 @@ in
         submoduleWithPkgs (generator: {
           imports = [
             ./generator.nix
+            # needed for mkRemovedOptionModule
             (pkgs.path + "/nixos/modules/misc/assertions.nix")
             (lib.mkRemovedOptionModule [ "migrateFact" ] ''
               The `migrateFact` option has been removed.

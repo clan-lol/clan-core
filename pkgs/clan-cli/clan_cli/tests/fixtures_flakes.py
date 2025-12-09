@@ -110,10 +110,6 @@ def substitute(
                 )
 
             processed_line = processed_line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
-            processed_line = processed_line.replace(
-                "__CLAN_SOPS_KEY_DIR__",
-                str(flake / "do-we-still-need-this-dir"),
-            )
             buf += processed_line
 
     print(f"file: {file}")
