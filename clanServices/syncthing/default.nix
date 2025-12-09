@@ -148,7 +148,7 @@
                 value = {
                   inherit name;
                   id = lib.removeSuffix "\n" (
-                    clanLib.vars.getPublicValue {
+                    clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
                       generator = "syncthing";
