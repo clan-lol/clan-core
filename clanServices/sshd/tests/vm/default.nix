@@ -42,7 +42,7 @@
     server.succeed("grep '^@cert-authority ssh-ca,\*.example.com ssh-ed25519 ' /etc/ssh/ssh_known_hosts")
 
     # Check that server contains a line starting with 'localhost,server ssh-ed25519'
-    server.succeed("grep '^localhost,server ssh-ed25519 ' /etc/ssh/ssh_known_hosts")
+    server.succeed("grep '^localhost,server,server.clan ssh-ed25519 ' /etc/ssh/ssh_known_hosts")
 
     # Check that /etc/ssh/ssh_known_hosts contains the required CA string on the client
     client.succeed("grep '^.cert-authority ssh-ca.*example.com ssh-ed25519 ' /etc/ssh/ssh_known_hosts")
