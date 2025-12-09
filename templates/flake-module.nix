@@ -51,6 +51,7 @@
             outPath = initialized;
           };
           clan-core = self;
+          nixpkgs = inputs.nixpkgs;
         };
       in
       {

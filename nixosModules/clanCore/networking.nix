@@ -111,24 +111,36 @@
     )
   ];
   config = lib.optionalAttrs (_class == "nixos") (
-    lib.mkIf config.clan.core.enableRecommendedDefaults {
-      # conflicts with systemd-resolved
-      networking.useHostResolvConf = false;
+    lib.mkMerge [
+      (lib.mkIf config.clan.core.enableRecommendedDefaults {
+        # conflicts with systemd-resolved
+        networking.useHostResolvConf = false;
 
-      # Allow PMTU / DHCP
-      networking.firewall.allowPing = true;
+        # Allow PMTU / DHCP
+        networking.firewall.allowPing = true;
 
-      # The notion of "online" is a broken concept
-      # https://github.com/systemd/systemd/blob/e1b45a756f71deac8c1aa9a008bd0dab47f64777/NEWS#L13
-      systemd.services.NetworkManager-wait-online.enable = false;
-      systemd.network.wait-online.enable = false;
+        # The notion of "online" is a broken concept
+        # https://github.com/systemd/systemd/blob/e1b45a756f71deac8c1aa9a008bd0dab47f64777/NEWS#L13
+        systemd.services.NetworkManager-wait-online.enable = false;
+        systemd.network.wait-online.enable = false;
 
-      systemd.network.networks."99-ethernet-default-dhcp".networkConfig.MulticastDNS = lib.mkDefault true;
-      systemd.network.networks."99-wireless-client-dhcp".networkConfig.MulticastDNS = lib.mkDefault true;
-      networking.firewall.allowedUDPPorts = [ 5353 ]; # Multicast DNS
+        systemd.network.networks."99-ethernet-default-dhcp".networkConfig.MulticastDNS = lib.mkDefault true;
+        systemd.network.networks."99-wireless-client-dhcp".networkConfig.MulticastDNS = lib.mkDefault true;
+        networking.firewall.allowedUDPPorts = [ 5353 ]; # Multicast DNS
 
-      # Use networkd instead of the pile of shell scripts
-      networking.useNetworkd = lib.mkDefault true;
-    }
+        # Use networkd instead of the pile of shell scripts
+        networking.useNetworkd = lib.mkDefault true;
+      })
+      # Default the NixOS domain option to clan's meta.domain if not explicitely set otherwise
+      # Only set if domain is defined (e.g., through inventory/flake configuration)
+      (
+        let
+          domainEval = builtins.tryEval config.clan.core.settings.domain;
+        in
+        lib.mkIf (config.clan.core.enableRecommendedDefaults && domainEval.success) {
+          networking.domain = lib.mkDefault domainEval.value;
+        }
+      )
+    ]
   );
 }
