@@ -1,4 +1,8 @@
-To install Clan on physical machines, you need to use our custom installer image. This is necessary for proper installation and operation.
+## Summary
+
+To install Clan on physical machines, you need to use our custom installer image. 
+
+This is necessary for proper installation and operation.
 
 !!! note "Deploying to a Virtual Machine?"
     If you're deploying to a virtual machine (VM), you can skip this section and go directly to the [Deploy Virtual Machine](../../getting-started/deploy-to-virtual-machine.md) step. In this scenario, we automatically use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to replace the kernel during runtime.
@@ -9,14 +13,27 @@ To install Clan on physical machines, you need to use our custom installer image
 ??? info "Reasons for a Custom Install Image"
     Our custom install images are built to include essential tools like [nixos-facter](https://github.com/nix-community/nixos-facter) and support for [ZFS](https://wiki.archlinux.org/title/ZFS). They're also optimized to run on systems with as little as 1 GB of RAM, ensuring efficient performance even on lower-end hardware.
 
-## Prerequisites
 
-- [x] A free USB Drive with at least 1.5GB (All data on it will be lost)
-- [x] Linux/NixOS Machine with Internet
+## Requirements
+
+* Estimated time for this step: 20 minutes
+* A USB drive with at least 1.5GB total space (all data on it will be lost)
+* A Linux/NixOS machine with internet access to create the boot stick. You can use your setup device or any other machine for this step.
+* One or more target machines with Linux running on them and network root access.
+
+    !!! Warning "Operating System Recommendations"
+        We are currently working on more refined operating system recommendations.
+
+        - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
+
+        - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+
+        - Root user access will be required throughout the whole setup.
+
 
 ## Identify the USB Flash Drive
 
-1. Insert your USB flash drive into your computer.
+1. Insert your USB flash drive into your Linux computer.
 
 2. Identify your flash drive with `lsblk`:
 
@@ -42,7 +59,7 @@ To install Clan on physical machines, you need to use our custom installer image
 sudo umount /dev/sdb1
 ```
 
-## Installer
+## Installer Creation
 
 === "**Linux OS**"
     **Create a Custom Installer**
@@ -148,9 +165,12 @@ sudo umount /dev/sdb1
       If you need to configure Wi-Fi first, refer to the next section.
       If Multicast-DNS (Avahi) is enabled on your own machine, you can also access the installer using the `nixos-installer.local` address.
 
-## Boot From USB Stick
+## Checkpoint 1: Boot From USB Stick on Target Device
 
-- To use, boot from the Clan USB drive with **secure boot turned off**. For step by step instructions go to [Disabling Secure Boot](../../guides/secure-boot.md)
+To see if your new Clan USB boot stick works, plug it into a target device and boot from the USB drive with **secure boot turned off**. 
+
+For step by step instructions go to [Disabling Secure Boot](../../guides/secure-boot.md)
+
 
 ## (Optional) Connect to Wifi Manually
 
@@ -198,4 +218,10 @@ Press ++ctrl+d++ to exit `IWD`.
 !!! Important
     Press ++ctrl+d++ **again** to update the displayed QR code and connection information.
 
-You're all set up
+## 
+
+
+## Next up
+
+In the next part of the physical deployment preparations, we will continue the process on the target device.
+

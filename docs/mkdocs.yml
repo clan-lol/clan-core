@@ -51,11 +51,10 @@ nav:
       - getting-started/add-machines.md
       - getting-started/add-users.md
       - getting-started/add-services.md
-      - Deploy to Physical Machine:
-          - getting-started/deploy-to-physical-machine/flash-installer.md
-          - getting-started/deploy-to-physical-machine/install-machine.md
-      - getting-started/deploy-to-virtual-machine.md
+      - getting-started/prepare-physical-machines.md
+      - getting-started/prepare-virtual-machines.md
       - getting-started/configure-disk.md
+      - getting-started/deployment-phase.md
       - getting-started/update-machines.md
       - getting-started/continuous-integration.md
       - Convert existing NixOS configurations: getting-started/convert-existing-NixOS-configuration.md

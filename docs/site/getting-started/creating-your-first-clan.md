@@ -9,18 +9,21 @@ You'll finish with a centrally managed fleet, ready to import your existing NixO
 
 ## Requirements
 
-Make sure you have the following:
+* **Expected knowledge levels for this guide:**
+    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
 
-* **Setup Device**: A Linux machine from which the setup commands will be run.
+* **Estimated time for this step:** 20 minutes
 
-!!! Warning "Operating System Recommendations"
-    We are currently working on more refined operating system recommendations.
+* **One Setup Device**: A Linux machine from which the setup commands will be run.
 
-    - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
+    !!! Warning "Operating System Recommendations" 
+        We are currently working on more refined operating system recommendations.
 
-    - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+        - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
 
-    - Root user access will be required throughout the whole setup.
+        - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+
+        - Root user access will be required throughout the whole setup.
 
 
 * **Nix**: The Nix package manager installed on your setup device.
@@ -104,12 +107,11 @@ Make sure you have the following:
                 direnv allow
                 ```
 
-* **Target Device(s)**: Any number of remote Linux or MacOS devices with SSH root access to. If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+* **Target Device(s)**: Any number of physical and / or virtual Linux or MacOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above. 
+    
+    If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
 
-* Expected knowledge levels for this guide:
-    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
-
-* Estimated time for this step: 20 minutes
+* **In Case of Physical Target Device(s):** A USB drive with at least 1.5GB total space (all data on it will be lost)
 
 
 ## Create a New Clan
