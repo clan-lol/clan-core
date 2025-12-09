@@ -71,7 +71,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = res.config._services.mappedServices ? "<clan-core>-simple-module";
+      expr = res.config._services.allServices ? "<clan-core>-simple-module";
       expected = true;
       inherit res;
     };
@@ -124,7 +124,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.config._services.mappedServices;
+      expr = lib.attrNames res.config._services.allServices;
       expected = [
         "<clan-core>-A"
         "<clan-core>-B"
@@ -170,7 +170,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.config._services.mappedServices.self-A.instances;
+      expr = lib.attrNames res.config._services.allServices.self-A.instances;
       expected = [
         "instance_bar"
         "instance_foo"
@@ -228,7 +228,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.config._services.mappedServices.self-A.result.allMachines;
+      expr = lib.attrNames res.config._services.allServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -282,7 +282,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.config._services.mappedServices.self-A.result.allMachines;
+      expr = lib.attrNames res.config._services.allServices.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"

@@ -45,7 +45,7 @@ let
     };
   };
 
-  config = res.config._services.mappedServices.self-A;
+  config = res.config._services.allServices.self-A;
 
   #
   applySettings =

@@ -115,12 +115,8 @@ in
         })
         # Dependencies
         {
-          # exportsModule = clanConfig.exportsModule;
-        }
-        {
-          # TODO: Rename to "allServices"
           # All services
-          mappedServices = lib.mapAttrs (_module_ident: instances: {
+          allServices = lib.mapAttrs (_module_ident: instances: {
             imports = [
               # Import the resolved module.
               # i.e. clan.modules.admin
@@ -149,12 +145,12 @@ in
       machineImports = lib.foldlAttrs (
         acc: _module_ident: serviceModule:
         acc ++ [ serviceModule.result.final.${machineName}.nixosModule or { } ]
-      ) [ ] config._services.mappedServices;
+      ) [ ] config._services.allServices;
       # This is the list of darwinModules for each machine
       darwinImports = lib.foldlAttrs (
         acc: _module_ident: serviceModule:
         acc ++ [ serviceModule.result.final.${machineName}.darwinModule or { } ]
-      ) [ ] config._services.mappedServices;
+      ) [ ] config._services.allServices;
     }) inventory.machines or { };
   };
 

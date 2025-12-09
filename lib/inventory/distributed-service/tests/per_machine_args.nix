@@ -83,7 +83,7 @@ in
     inherit res;
     expr = {
       hasMachineSettings =
-        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon
+        res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon
         ? settings;
 
       # settings are specific.
@@ -92,10 +92,10 @@ in
       # roles = peer
       # machines = jon
       specificMachineSettings =
-        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
+        res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon.settings;
 
       hasRoleSettings =
-        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
+        res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
         ? settings;
 
       # settings are specific.
@@ -104,7 +104,7 @@ in
       # roles = peer
       # machines = *
       specificRoleSettings =
-        res.config._services.mappedServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
+        res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer;
     };
     expected = {
       hasMachineSettings = true;

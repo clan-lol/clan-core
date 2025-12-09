@@ -1,6 +1,5 @@
 # Wraps all services in one fixed point module
 {
-  # TODO: consume directly from clan.config
   directory,
   exports,
 }:
@@ -22,7 +21,7 @@ in
     #   type = types.deferredModule;
     #   readOnly = true;
     # };
-    mappedServices = mkOption {
+    allServices = mkOption {
       visible = false;
       type = attrsWith {
         placeholder = "mappedServiceName";
@@ -75,7 +74,7 @@ in
               Refer to https://docs.clan.lol for more information on exports.
             '';
           } service.exports
-        ) config.mappedServices
+        ) config.allServices
       );
     };
   };
