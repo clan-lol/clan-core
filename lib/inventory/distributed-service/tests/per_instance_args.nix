@@ -112,7 +112,7 @@ in
     inherit res;
     expr = {
       instanceName =
-        res.config._services.mappedServices.self-A.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.instanceName;
+        res.config._services.allServices.self-A.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.instanceName;
 
       # settings are specific.
       # Below we access:
@@ -120,11 +120,11 @@ in
       # roles = peer
       # machines = jon
       settings =
-        res.config._services.mappedServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.settings;
+        res.config._services.allServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.settings;
       machine =
-        res.config._services.mappedServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.machine;
+        res.config._services.allServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.machine;
       roles =
-        res.config._services.mappedServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.roles;
+        res.config._services.allServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.roles;
     };
     expected = {
       instanceName = "instance_foo";
@@ -165,9 +165,9 @@ in
 
   # TODO: Cannot be tested like this anymore
   test_per_instance_settings_vendoring = {
-    x = res.config._services.mappedServices.self-A;
+    x = res.config._services.allServices.self-A;
     expr =
-      res.config._services.mappedServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.vendoredSettings;
+      res.config._services.allServices.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.vendoredSettings;
     expected = {
       timeout = "config.thing";
     };

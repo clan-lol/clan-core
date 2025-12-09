@@ -39,7 +39,7 @@ in
       (resolve {
         name = "A";
         input = "self";
-      }).config._services.mappedServices.self-A.manifest.name;
+      }).config._services.allServices.self-A.manifest.name;
     expected = "network";
   };
   test_import_remote_module_by_name = {
@@ -47,7 +47,7 @@ in
       (resolve {
         name = "uzzi";
         input = "upstream";
-      }).config._services.mappedServices.upstream-uzzi.manifest.name;
+      }).config._services.allServices.upstream-uzzi.manifest.name;
     expected = "uzzi-from-upstream";
 
   };

@@ -28,7 +28,7 @@ let
     };
   };
 
-  specialArgs = lib.attrNames res.config._services.mappedServices.self-A.test.specialArgs;
+  specialArgs = lib.attrNames res.config._services.allServices.self-A.test.specialArgs;
 in
 {
   test_simple = {
