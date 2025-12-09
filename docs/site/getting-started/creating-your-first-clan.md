@@ -11,7 +11,7 @@ You'll finish with a centrally managed fleet, ready to import your existing NixO
 
 Make sure you have the following:
 
-* 💻 **Setup Device**: A Linux machine from which the setup commands will be run.
+* **Setup Device**: A Linux machine from which the setup commands will be run.
 
 !!! Warning "Operating System Recommendations"
     We are currently working on more refined operating system recommendations.
@@ -23,7 +23,7 @@ Make sure you have the following:
     - Root user access will be required throughout the whole setup.
 
 
-* 🛠️ **Nix**: The Nix package manager installed on your setup device.
+* **Nix**: The Nix package manager installed on your setup device.
 
     ??? info "**How to install Nix**"
 
@@ -51,7 +51,7 @@ Make sure you have the following:
         ```
         Then, run `nixos-rebuild switch` to apply the changes.
 
-*  🛠️ **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
+*  **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
 
     ??? info "**How to install direnv**"
 
@@ -104,7 +104,7 @@ Make sure you have the following:
                 direnv allow
                 ```
 
-* 🎯 **Target Device(s)**: Any number of remote Linux or MacOS devices with SSH root access to. If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+* **Target Device(s)**: Any number of remote Linux or MacOS devices with SSH root access to. If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
 
 * Expected knowledge levels for this guide:
     Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
@@ -224,6 +224,26 @@ Description: None
 ```
 
 This confirms your setup is working correctly.
+
+You can now change the default name and domain by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
+
+The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
+
+The meta.domain will function as your internal top level domain. Select something catchy, like clan.lol
+
+Feel free to add `meta.description = "something smart"` beneath meta.domain if you would like to update the description for `clan show`.
+
+```{.nix title="clan.nix" hl_lines="3 4 5"}
+{
+  # Ensure this is unique among all clans you want to use.
+  meta.name = "__CHANGE_ME__";
+  meta.domain = "changeme";
+  meta.description = "optional";
+
+  # ...
+  # elided
+}
+```
 
 ## Up Next
 
