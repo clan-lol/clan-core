@@ -7,7 +7,6 @@ from tempfile import TemporaryDirectory
 from time import time
 from typing import Literal
 
-from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 
 from clan_lib.api import API, message_queue
@@ -72,7 +71,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
 
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
-            generating facts or variables.
+            generating vars.
 
     """
     machine = opts.machine
@@ -86,7 +85,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     machine.flake.precache(
         [
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.validationHash",
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.{{share,dependencies,migrateFact,prompts}}",
+            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.{{share,dependencies,prompts}}",
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}",
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.secretModule",
             f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.publicModule",
@@ -95,7 +94,6 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
 
     # Notify the UI about what we are doing
     notify_install_step(Step.GENERATORS)
-    generate_facts([machine])
     run_generators([machine], generators=None, full_closure=False)
 
     with (
@@ -103,12 +101,12 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     ):
         base_directory = Path(_base_directory).resolve()
         activation_secrets = base_directory / "activation_secrets"
-        upload_dir = activation_secrets / machine.secrets_upload_directory.lstrip("/")
+        # Vars use /run/secrets as the standard directory for secret deployment
+        upload_dir = activation_secrets / "secrets-upload"
         upload_dir.mkdir(parents=True)
 
         # Notify the UI about what we are doing
         notify_install_step(Step.UPLOAD_SECRETS)
-        machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
             machine.name,
             upload_dir,

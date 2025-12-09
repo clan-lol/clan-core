@@ -59,6 +59,14 @@ def test_vm_deployment(
         qga_m1 = stack.enter_context(vm1.qga_connect())
         # run these always successful commands to make sure all vms have started before continuing
         qga_m1.run(["echo"])
+        # check all systemd services are OK, or print details
+        result = qga_m1.run(
+            [
+                "/bin/sh",
+                "-c",
+                "systemctl --failed | tee /tmp/log | grep -q '0 loaded units listed' || ( cat /tmp/log && false )",
+            ],
+        )
         # check my_secret is deployed
         result = qga_m1.run(["cat", "/run/secrets/vars/m1_generator/my_secret"])
         assert result.stdout == "hello\n"

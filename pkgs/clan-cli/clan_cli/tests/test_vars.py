@@ -1154,64 +1154,6 @@ def test_stdout_of_generate(
 
 
 @pytest.mark.with_core
-def test_migration(
-    monkeypatch: pytest.MonkeyPatch,
-    flake_with_sops: ClanFlake,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    flake = flake_with_sops
-
-    config = flake.machines["my_machine"] = create_test_machine_config()
-    my_service = config["clan"]["core"]["facts"]["services"]["my_service"]
-    my_service["public"]["my_value"] = {}
-    my_service["secret"]["my_secret"] = {}
-    my_service["generator"]["script"] = (
-        'echo -n hello > "$facts"/my_value && echo -n hello > "$secrets"/my_secret'
-    )
-    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
-    my_generator["files"]["my_value"]["secret"] = False
-    my_generator["files"]["my_secret"]["secret"] = True
-    my_generator["migrateFact"] = "my_service"
-    my_generator["script"] = 'echo -n other > "$out"/my_value'
-
-    other_service = config["clan"]["core"]["facts"]["services"]["other_service"]
-    other_service["secret"]["other_value"] = {}
-    other_service["generator"]["script"] = 'echo -n hello > "$secrets"/other_value'
-    other_generator = config["clan"]["core"]["vars"]["generators"]["other_generator"]
-    # the var to migrate to is mistakenly marked as not secret (migration should fail)
-    other_generator["files"]["other_value"]["secret"] = False
-    other_generator["migrateFact"] = "my_service"
-    other_generator["script"] = 'echo -n value-from-vars > "$out"/other_value'
-
-    flake.refresh()
-    monkeypatch.chdir(flake.path)
-    cli.run(["facts", "generate", "--flake", str(flake.path), "my_machine"])
-    with caplog.at_level(logging.INFO):
-        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-
-    assert "Migrated var my_generator/my_value" in caplog.text
-    assert "Migrated secret var my_generator/my_secret" in caplog.text
-    flake_obj = Flake(str(flake.path))
-    my_generator = Generator("my_generator", machines=["my_machine"], _flake=flake_obj)
-    other_generator = Generator(
-        "other_generator",
-        machines=["my_machine"],
-        _flake=flake_obj,
-    )
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
-    sops_store = sops.SecretStore(flake=flake_obj)
-    assert in_repo_store.exists(my_generator, "my_value")
-    assert in_repo_store.get(my_generator, "my_value").decode() == "hello"
-    assert sops_store.exists(my_generator, "my_secret")
-    assert sops_store.get(my_generator, "my_secret").decode() == "hello"
-
-    assert in_repo_store.exists(other_generator, "other_value")
-    assert (
-        in_repo_store.get(other_generator, "other_value").decode() == "value-from-vars"
-    )
-
-
-@pytest.mark.with_core
 def test_fails_when_files_are_left_from_other_backend(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
@@ -1718,7 +1660,7 @@ def test_dynamic_invalidation(
 
     # after generating once, dependent generator validation should be set
     # Generators_1: The generators after the first 'vars generate'
-    generators_1 = machine.select(gen_prefix)
+    generators_1 = machine.select(f"{gen_prefix}.*.{{validationHash,files}}")
     assert generators_1["dependent_generator"]["validationHash"] is not None
 
     # @tangential: after generating once, neither generator should want to run again because `clan vars generate` should have re-evaluated the dependent generator's validationHash after executing the parent generator but before executing the dependent generator
@@ -1731,7 +1673,7 @@ def test_dynamic_invalidation(
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
     clan_flake.invalidate_cache()
     # Generators_2: The generators after the second 'vars generate'
-    generators_2 = machine.select(gen_prefix)
+    generators_2 = machine.select(f"{gen_prefix}.*.{{validationHash,files}}")
     assert (
         generators_1["dependent_generator"]["validationHash"]
         == generators_2["dependent_generator"]["validationHash"]

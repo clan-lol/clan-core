@@ -139,7 +139,6 @@
                   coreutils
                   pwgen
                 ];
-                migrateFact = "matrix-synapse";
                 script = ''
                   echo -n "$(pwgen -s 32 1)" > "$out"/synapse-registration_shared_secret
                 '';
@@ -149,7 +148,6 @@
               _name: user:
               lib.nameValuePair "matrix-password-${user.name}" {
                 files."matrix-password-${user.name}" = { };
-                migrateFact = "matrix-password-${user.name}";
                 runtimeInputs = with pkgs; [ xkcdpass ];
                 script = ''
                   xkcdpass -n 4 -d - > "$out"/${lib.escapeShellArg "matrix-password-${user.name}"}

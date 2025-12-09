@@ -93,7 +93,16 @@ in
       default = { };
       type = attrsOf (
         submoduleWithPkgs (generator: {
-          imports = [ ./generator.nix ];
+          imports = [
+            ./generator.nix
+            # needed for mkRemovedOptionModule
+            (pkgs.path + "/nixos/modules/misc/assertions.nix")
+            (lib.mkRemovedOptionModule [ "migrateFact" ] ''
+              The `migrateFact` option has been removed.
+              The facts system has been fully removed from clan-core.
+              See https://docs.clan.lol/guides/migrations/migration-facts-vars/ for manual migration instructions.
+            '')
+          ];
           options = {
             name = mkOption {
               type = str;
@@ -116,16 +125,6 @@ in
               '';
               type = config.settings.dependenciesType;
               default = [ ];
-            };
-            migrateFact = mkOption {
-              description = ''
-                The fact service name to import the files from.
-
-                Use this to migrate legacy facts to the new vars system.
-              '';
-              type = nullOr str;
-              example = "my_service";
-              default = null;
             };
             validation = mkOption {
               description = ''

@@ -38,3 +38,10 @@ The backend now defaults to passage/age, providing improved security through age
 encryption. If you were explicitly setting `passPackage`, you should update your
 configuration to use `passComma
 ## Misc
+
+
+### Facts got removed
+
+The `facts` system has been fully removed from clan-core. The automatic migration feature (`migrateFact`) is no longer available.
+Since the deprecation of facts happened already a while ago, all your facts should be migrated to vars automatically by now.
+If not, have a look at the [migration guide](https://docs.clan.lol/guides/migrations/migration-facts-vars/)

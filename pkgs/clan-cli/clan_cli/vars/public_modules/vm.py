@@ -28,9 +28,9 @@ class FactStore(StoreBase):
 
     def get_dir(self, machine: str) -> Path:
         """Get the directory for a given machine."""
-        vars_dir = vm_state_dir(self.flake.identifier, machine) / "facts"
+        vars_dir = vm_state_dir(self.flake.identifier, machine) / "vars"
         log.debug(
-            f"FactStore using dir {vars_dir}",
+            f"vars store using dir {vars_dir}",
             extra={"command_prefix": machine},
         )
         return vars_dir

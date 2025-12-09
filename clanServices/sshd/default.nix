@@ -169,7 +169,6 @@
               openssh = {
                 files."ssh.id_ed25519" = { };
                 files."ssh.id_ed25519.pub".secret = false;
-                migrateFact = "openssh";
                 runtimeInputs = [
                   pkgs.coreutils
                   pkgs.openssh

@@ -302,7 +302,6 @@
                   files."borgbackup.ssh" = { };
                   files."borgbackup.repokey" = { };
 
-                  migrateFact = "borgbackup";
                   runtimeInputs = [
                     pkgs.coreutils
                     pkgs.openssh

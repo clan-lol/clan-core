@@ -6,7 +6,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Literal
 
-from clan_cli.facts.generate import generate_facts
 from clan_cli.vars.generator import Generator
 from clan_cli.vars.upload import populate_secret_vars
 
@@ -122,7 +121,6 @@ def run_machine_flash(
         if extra_args is None:
             extra_args = []
 
-        generate_facts([machine])
         run_generators([machine], generators=None, full_closure=False)
 
         system_config_nix = build_system_config_nix(system_config)
@@ -137,16 +135,10 @@ def run_machine_flash(
 
         with TemporaryDirectory(prefix="disko-install-") as _tmpdir:
             tmpdir = Path(_tmpdir)
-            upload_dir = machine.secrets_upload_directory
+            secrets_dir_local = tmpdir / "secrets-for-upload"
 
-            if upload_dir.startswith("/"):
-                local_dir = tmpdir / upload_dir[1:]
-            else:
-                local_dir = tmpdir / upload_dir
-
-            local_dir.mkdir(parents=True)
-            machine.secret_facts_store.upload(local_dir)
-            populate_secret_vars(machine, local_dir)
+            secrets_dir_local.mkdir(parents=True)
+            populate_secret_vars(machine, secrets_dir_local)
             disko_install = []
 
             if os.geteuid() != 0:
@@ -171,7 +163,9 @@ def run_machine_flash(
 
                 log.info("Will flash disk %s: %s", disk.name, disk.device)
 
-            disko_install.extend(["--extra-files", str(local_dir), upload_dir])
+            disko_install.extend(
+                ["--extra-files", str(secrets_dir_local), "/run/secrets"]
+            )
             disko_install.extend(["--flake", str(machine.flake) + "#" + machine.name])
             disko_install.extend(["--mode", str(mode)])
             disko_install.extend(

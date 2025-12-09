@@ -92,7 +92,6 @@ class Generator:
     prompts: list[Prompt] = field(default_factory=list)
     dependencies: list[GeneratorKey] = field(default_factory=list)
 
-    migrate_fact: str | None = None
     validation_hash: str | None = None
 
     machines: list[str] = field(default_factory=list)
@@ -185,7 +184,7 @@ class Generator:
         config = nix_config()
         system = config["system"]
 
-        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts,validationHash}"
+        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
 
         all_selectors = []
@@ -195,6 +194,7 @@ class Generator:
                 f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
                 f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.publicModule',
                 f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.secretModule',
+                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.?sops.?secretUploadDirectory',
             ]
         return all_selectors
 
@@ -216,7 +216,7 @@ class Generator:
             list[Generator]: A list of (unsorted) generators for the machine.
 
         """
-        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts,validationHash}"
+        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
         flake.precache(cls.get_machine_selectors(machine_names))
 
@@ -333,7 +333,6 @@ class Generator:
                         gen_data["dependencies"],
                         generators_data,
                     ),
-                    migrate_fact=gen_data.get("migrateFact"),
                     validation_hash=gen_data.get("validationHash"),
                     prompts=prompts,
                     # shared generators can have multiple machines, machine-specific have one

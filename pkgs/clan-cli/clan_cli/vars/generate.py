@@ -50,7 +50,7 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
     machines_parser = parser.add_argument(
         "machines",
         type=str,
-        help="machine to generate facts for. if empty, generate facts for all machines",
+        help="machine to generate vars for. if empty, generate vars for all machines",
         nargs="*",
         default=[],
     )
@@ -69,7 +69,7 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
         "--regenerate",
         "-r",
         action=argparse.BooleanOptionalAction,
-        help="whether to regenerate facts for the specified machine",
+        help="whether to regenerate vars for the specified machine",
         default=None,
     )
 

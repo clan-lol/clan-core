@@ -513,7 +513,6 @@ The following module demonstrates the idea in the example of *borgbackup*.
               files."borgbackup.ssh" = { };
               files."borgbackup.repokey" = { };
 
-              migrateFact = "borgbackup";
               runtimeInputs = [
                 pkgs.coreutils
                 pkgs.openssh

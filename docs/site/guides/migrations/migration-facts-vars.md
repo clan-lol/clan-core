@@ -7,31 +7,46 @@ to the [`vars`](../../guides/vars/vars-overview.md) backend.
 
 The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
 
-## Keep Existing Values
+!!! warning "Facts System Removed"
+
+    The `facts` system has been fully removed from clan-core. The automatic migration feature (`migrateFact`) is no longer available.
+    This guide is kept for historical reference, but you must now manually migrate your secrets and values from the old facts storage to the new vars system.
+
+    To manually migrate:
+    1. Locate your old facts in your facts storage backend (sops, password-store, or in-repo)
+    2. Copy the values
+    3. Use `clan vars generate` to generate the new values initially, then `clan vars set` to override with old values.
+
+    Alternative:
+    Roll back to a clan-core version before December 2025 and use the automatic migration feature.
+
+## Keep Existing Values (Historical)
+
+**Note:** This section describes the automatic migration feature that has been removed.
 
 In order to keep existing values and move them from `facts` to `vars`
-we will need to set the corresponding option in the vars module:
+we used to be able to set the corresponding option in the vars module:
 
 ```
 migrateFact = "fact-name"
 ```
 
-This will now check on `vars` generation if there is an existing `fact` with the
-name already present and if that is the case will migrate it to `vars`.
+This would check on `vars` generation if there is an existing `fact` with the
+name already present and if that was the case would migrate it to `vars`.
 
 Let us look at the mapping a little closer.
 Suppose we have the following fact: `facts.services.vaultwarden.secret.admin`.
 This would read as follows: The `vaultwarden` `fact` service has the `admin` secret.
-In order to migrate this fact we would need to have the following `vars` configuration:
+In order to migrate this fact we would have needed the following `vars` configuration:
 
 ```nix
 vars.generators.vaultwarden = {
-    migrateFact = "vaultwarden";
+    migrateFact = "vaultwarden";  # No longer functional
     files.admin = {};
 };
 ```
 
-And this would read as follows: The vaultwarden `vars` module generates the admin file.
+And this would have read as follows: The vaultwarden `vars` module generates the admin file.
 
 ## Prompts
 

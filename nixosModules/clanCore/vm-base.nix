@@ -39,6 +39,9 @@ in
   # only works on x11
   services.spice-vdagentd.enable = config.services.xserver.enable;
 
+  # logrotate crashes sometimes
+  services.logrotate.enable = false;
+
   boot.initrd.systemd.enable = true;
 
   boot.initrd.systemd.storePaths = [
@@ -91,7 +94,7 @@ in
         fsType = "ext4";
       };
 
-      ${config.clan.core.facts.secretUploadDirectory} = {
+      ${config.clan.core.vars.sops.secretUploadDirectory} = {
         device = "secrets";
         fsType = "9p";
         neededForBoot = true;

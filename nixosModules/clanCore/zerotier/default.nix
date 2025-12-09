@@ -190,7 +190,6 @@ in
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clan.core.vars.generators.zerotier = {
-        migrateFact = "zerotier";
         files.zerotier-ip.secret = false;
         files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
         files.zerotier-network-id.secret = false;
@@ -216,7 +215,6 @@ in
     })
     (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
       clan.core.vars.generators.zerotier = {
-        migrateFact = "zerotier";
         files.zerotier-ip.secret = false;
         files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
         files.zerotier-identity-secret = {
