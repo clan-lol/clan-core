@@ -45,7 +45,7 @@ Benefits:
 * Simple and native interaction with the `nix commands`is rather intuitive
 * Custom error handling for each attribute is easy
 
-This sytem could be enhanced with custom nix expressions, which could be used in places where we don't want to put values into deployment.json or want to fetch flake level values. This also has some downsides:
+This system could be enhanced with custom nix expressions, which could be used in places where we don't want to put values into deployment.json or want to fetch flake level values. This also has some downsides:
 
 * technical debt
   * we have to maintain custom nix expressions inside python code, embedding code is error prone and the language linters won't help you here, so errors are common and harder to debug.

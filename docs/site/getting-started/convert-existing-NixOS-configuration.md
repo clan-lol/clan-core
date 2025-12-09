@@ -126,7 +126,7 @@ git+file:///my-nixos-config
 ```
 
 Of course you can also rebuild your configuration using `nixos-rebuild` and
-veryify everything still works.
+verify everything still works.
 
 ## 3. Add `clan-cli` to your `devShells`
 
@@ -161,7 +161,7 @@ cologne
 ## Specify Targets
 
 Clan needs to know where it can reach your hosts. For testing purpose set
-`clan.core.networking.targetHost` to the machines adress or hostname.
+`clan.core.networking.targetHost` to the machines address or hostname.
 
 ```nix
 # machines/berlin/configuration.nix

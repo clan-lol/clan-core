@@ -58,7 +58,7 @@ This example demonstrates a setup with two machines and a few extra settings:
 ```
 inventory.machines: Tags can be used to automatically assign services to a machine later on (don't worry, we don't need to set this now). Additional machines - like sara-machine in this example - will all be listed here if created via `clan machines create <name>`
 
-machines: It is adviced to add the *ssh key* of your setup device's root user here - That will ensure you can always login to your new machine via `ssh root@ip` from your setup device in case something goes wrong.
+machines: It is advised to add the *ssh key* of your setup device's root user here - That will ensure you can always login to your new machine via `ssh root@ip` from your setup device in case something goes wrong.
 
 !!! Developer "Developer Note"
     The option: `inventory.machines.<name>` is used to define metadata about the machine.
