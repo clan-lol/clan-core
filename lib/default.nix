@@ -35,7 +35,7 @@ lib.fix (
         # Public ClanLib functions
         # TODO: Hoist all functions directly into clanLib
 
-        getPublicValue = import ./get-public-value.nix { inherit lib; };
+        # getPublicValue = import ./get-public-value.nix { inherit lib; };
 
         test = import ./test { inherit lib clanLib; };
 
@@ -46,6 +46,7 @@ lib.fix (
         exports = throw "clanLib.exports has been renamed. Use the utility in clanLib directly";
 
       }
+      // (import ./vars/default.nix { inherit lib; })
       // (import ./exports/exports.nix { inherit lib clanLib; });
   in
   f
