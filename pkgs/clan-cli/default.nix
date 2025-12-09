@@ -268,10 +268,8 @@ pythonRuntime.pkgs.buildPythonApplication {
               # REMOVEME: once we drop support for 25.11
               (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
 
-              # nixpkgs setup hooks needed for VM builds
-              pkgs.installShellFiles
-              pkgs.makeShellWrapper
-              pkgs.findXMLCatalogs
+              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.build.toplevel
+              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.build.toplevel
 
               nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
               nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create

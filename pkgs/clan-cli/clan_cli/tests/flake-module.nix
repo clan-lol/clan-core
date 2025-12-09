@@ -33,6 +33,8 @@
         system.checks = lib.mkForce [ ];
 
         services.getty.autologinUser = "root";
+        # logrotate-checkconf fails in the minimal VM image; disable for test VMs
+        systemd.services.logrotate-checkconf.enable = false;
 
         # Basic networking setup
         networking.useDHCP = false;
