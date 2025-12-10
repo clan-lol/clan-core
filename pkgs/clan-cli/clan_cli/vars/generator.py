@@ -615,15 +615,14 @@ class Generator:
                 files_to_commit.extend(file_paths)
 
             validation = self.validation()
-            if validation is not None:
-                if public_changed:
-                    files_to_commit.append(
-                        machine.public_vars_store.set_validation(self, validation),
-                    )
-                if secret_changed:
-                    files_to_commit.append(
-                        machine.secret_vars_store.set_validation(self, validation),
-                    )
+            if public_changed:
+                files_to_commit += machine.public_vars_store.set_validation(
+                    self, validation
+                )
+            if secret_changed:
+                files_to_commit += machine.secret_vars_store.set_validation(
+                    self, validation
+                )
 
         commit_files(
             files_to_commit,
