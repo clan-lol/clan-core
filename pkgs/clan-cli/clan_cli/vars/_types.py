@@ -224,12 +224,30 @@ class StoreBase(ABC):
             return None
         return hash_file.read_text().strip()
 
-    def set_validation(self, generator: "Generator", hash_str: str) -> Path:
-        """Store the invalidation hash that indicates if a generator needs to be re-run"""
+    def set_validation(
+        self, generator: "Generator", hash_str: str | None
+    ) -> list[Path]:
+        # """Store the invalidation hash that indicates if a generator needs to be re-run"""
+        """Store the invalidation hash that indicates if a generator needs to be re-run
+
+        Args:
+            generator (Generator): The generator for which to store the hash
+            hash_str (str | None): The hash string to store. If None, the existing
+                hash file will be deleted.
+
+        Returns:
+            pathlib.Path: The path to the hash file
+
+        """
         hash_file = self.directory(generator, ".validation-hash")
         hash_file.parent.mkdir(parents=True, exist_ok=True)
+        if hash_str is None:
+            if hash_file.exists():
+                hash_file.unlink()
+                return [hash_file]
+            return []
         hash_file.write_text(hash_str)
-        return hash_file
+        return [hash_file]
 
     def hash_is_valid(self, generator: "Generator") -> bool:
         """Check if the invalidation hash is up to date

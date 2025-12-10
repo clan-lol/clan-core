@@ -1236,18 +1236,34 @@ def test_invalidation(
     # generate again and make sure nothing changes without the invalidation data being set
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     value1_new = get_machine_var(machine, "my_generator/my_value").printable_value
-    assert value1 == value1_new
+    assert value1 == value1_new, (
+        "Value should not change without invalidation data being changed"
+    )
     # set the invalidation data of the generator
     my_generator["validation"] = 1
     flake.refresh()
     # generate again and make sure the value changes
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     value2 = get_machine_var(machine, "my_generator/my_value").printable_value
-    assert value1 != value2
+    assert value1 != value2, "Value should change when invalidation data is changed"
     # generate again without changing invalidation data -> value should not change
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     value2_new = get_machine_var(machine, "my_generator/my_value").printable_value
-    assert value2 == value2_new
+    assert value2 == value2_new, (
+        "Value should not change without invalidation data being changed"
+    )
+    # remove the validation data -> value should change again
+    del my_generator["validation"]
+    flake.refresh()
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    value3 = get_machine_var(machine, "my_generator/my_value").printable_value
+    assert value2 != value3, "Value should change when invalidation data is changed"
+    # generate again without changing invalidation data -> value should not change
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    value3_new = get_machine_var(machine, "my_generator/my_value").printable_value
+    assert value3 == value3_new, (
+        "Value should not change without invalidation data being changed"
+    )
 
 
 @pytest.mark.with_core
