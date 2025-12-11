@@ -9,17 +9,12 @@
     lib.map (
       system:
       lib.nameValuePair "test-flash-machine-${system}" {
-        clan.core.networking.targetHost = "test-flash-machine";
-        fileSystems."/".device = lib.mkDefault "/dev/vda";
-        boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
         # We need to use `mkForce` because we inherit from `test-install-machine`
         # which currently hardcodes `nixpkgs.hostPlatform`
         nixpkgs.hostPlatform = lib.mkForce system;
 
         imports = [
           self.nixosModules.test-flash-machine
-          self.clanLib.test.minifyModule
         ];
       }
     ) (lib.filter (lib.hasSuffix "linux") config.systems)
@@ -30,6 +25,10 @@
       { lib, ... }:
       {
         imports = [ self.nixosModules.test-install-machine-without-system ];
+
+        clan.core.networking.targetHost = "test-flash-machine";
+        fileSystems."/".device = lib.mkDefault "/dev/vda";
+        boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
         # We don't want our system to define any `vars` generators as these can't
         # be generated as the flake is inside `/nix/store`.
@@ -47,8 +46,6 @@
         users.users.root.openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target\n"
         ];
-        # TODO: clan flash does not support activaiton secrets yet
-        system.activationScripts.test-vars-activation.text = lib.mkForce ''true'';
       };
 
   };
@@ -70,9 +67,6 @@
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target\n"
         ];
       };
-      diskMappings = {
-        main = "/dev/vdc";
-      };
       /*
         disko injects configuration, which we need to imitate here, so the correct paths are cached
         For reference, disko-cli.nix is called like this
@@ -93,7 +87,7 @@
             { lib, ... }:
             {
               boot.loader.efi.canTouchEfiVariables = lib.mkVMOverride false;
-              boot.loader.grub.devices = lib.mkVMOverride (lib.attrValues diskMappings);
+              boot.loader.grub.devices = lib.mkVMOverride [ "/dev/vdc" ];
             }
           )
         ];
