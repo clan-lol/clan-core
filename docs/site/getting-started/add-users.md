@@ -2,9 +2,9 @@
     We are still working on the user creation and integration processes.
     This guide outlines a few currently working solutions.
 
-    !!! Note "This is inspiration"
-        Our community might come up with better solutions soon.
-        We are seeking contributions to improve this pattern, so please contact us if you have a nicer solution in mind!
+!!! Note "This is inspiration"
+    Our community might come up with better solutions soon.
+    We are seeking contributions to improve this pattern, so please contact us if you have a nicer solution in mind!
 
 ## Summary
 
@@ -12,18 +12,17 @@ The users we define in this step will be the users that can actually log in to y
 
 Defining users can be done in many different ways. We will highlight a few approaches here and recommend using clan's [users](../services/official/users.md) service.
 
-
 ## Requirements
+
 - Estimated time: 30min
-- A working clan setup with at least one machine defined in clan.nix
+- A working clan setup with at least one machine
 
-
-## Recommended: Adding Users using the [users](../services/official/users.md) service
+## Adding Users using the [users](../services/official/users.md) service
 
 To add a first *user* this guide will be leveraging two things:
 
 - [services](../services/definition.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
-- [services/users](../services/official/users.md): Implements logic for adding a single user perInstance.
+- [services/users](../services/official/users.md): Implements logic for adding a single user.
 
 The example shows how to add a user called `jon`:
 
@@ -59,7 +58,11 @@ The example shows how to add a user called `jon`:
 2. Add this user to `all` machines
 3. Define the `name` of the user to be `jon`
 
-The `users` service creates a `/home/jon` directory, allows `jon` to sign in and will take care of the user's password.
+The `users` service:
+
+- creates a `/home/jon` directory.
+- allows `jon` to sign in.
+- takes care of the user's password.
 
 For more information see [services/users](../services/official/users.md)
 
@@ -132,15 +135,12 @@ We can use this property of clan services to bind a nixosModule to the user, whi
 }
 ```
 
-
 ## Checkpoint
 
 !!! Warning "Under construction"
     The user creation process is not yet finieshed, but if you want to test if everything worked up to this point, you can use `clan machines update`.
     If the command does not return any errors and asks you to select a password, you can ctrl-c out of it at this point.
 
-
-
-## Up Nest
+## Up Next
 
 In the next step, we will add a few recommended services to your clan setup.

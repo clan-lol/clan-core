@@ -12,18 +12,18 @@ This eliminates the need to specify `--target-host` in CLI commands.
 
 ```{.nix title="clan.nix" hl_lines="10"}
 {
-# Ensure this is unique among all clans you want to use.
-meta.name = "my-clan";
-meta.domain = "ccc";
+    # Ensure this is unique among all clans you want to use.
+    meta.name = "my-clan";
+    meta.domain = "ccc";
 
-inventory.machines = {
-    # Define machines here.
-    # The machine name will be used as the hostname.
-    jon = {
-        deploy.targetHost = "root@192.168.192.4"; # (1)
+    inventory.machines = {
+        # Define machines here.
+        # The machine name will be used as the hostname.
+        jon = {
+            deploy.targetHost = "root@192.168.192.4"; # (1)
+        };
     };
-};
-# [...]
+    # [...]
 }
 ```
 
