@@ -28,12 +28,16 @@ import {
 } from "./highlightStore";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import client from "@/src/models/api/clan/client-call";
-import { SelectService } from "@/src/workflows/Service/SelectServiceFlyout";
+import SelectService from "@/src/workflows/ServiceInstance/SelectService";
 import {
   ModalCancelError,
+  ServiceInstance,
+  ServiceInstanceContextProvider,
   useMachinesContext,
   useModalContext,
+  useServiceInstancesContext,
 } from "@/src/models";
+import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -58,7 +62,11 @@ export const MachineGraph: Component = () => {
   let sharedBaseGeometry: THREE.BoxGeometry;
 
   const [, { openModal }] = useModalContext<"addMachine">();
-  const [machines, { deactivateMachine }] = useMachinesContext();
+  const [machines] = useMachinesContext();
+  const [servinceInstances, { createServiceInstance }] =
+    useServiceInstancesContext();
+  const [editingServinceInstance, setEditingServinceInstance] =
+    createSignal<ServiceInstance | null>(null);
 
   const [actionMode, setActionMode] = createSignal<
     "select" | "service" | "create" | "move"
@@ -368,7 +376,7 @@ export const MachineGraph: Component = () => {
     // Click handler:
     // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
-    const onClick = async (event: MouseEvent) => {
+    const onClickGraph = async (event: MouseEvent) => {
       if (actionMode() === "create") {
         try {
           await openModal("addMachine", {
@@ -421,7 +429,7 @@ export const MachineGraph: Component = () => {
       }
     };
 
-    renderer.domElement.addEventListener("click", onClick);
+    renderer.domElement.addEventListener("click", onClickGraph);
 
     renderLoop.requestRender();
 
@@ -543,7 +551,7 @@ export const MachineGraph: Component = () => {
         machine.dispose(scene);
       }
 
-      renderer.domElement.removeEventListener("click", onClick);
+      renderer.domElement.removeEventListener("click", onClickGraph);
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", handleResize);
 
@@ -596,7 +604,7 @@ export const MachineGraph: Component = () => {
     return snapped;
   };
 
-  const onAddClick = (event: MouseEvent) => {
+  const onClickToolbarAdd = (event: MouseEvent) => {
     setActionMode("create");
     renderLoop.requestRender();
   };
@@ -696,22 +704,22 @@ export const MachineGraph: Component = () => {
         ref={(el) => (container = el)}
       />
       <div class={styles.toolbarContainer}>
-        <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
-          <Show when={actionMode() === "service"}>
-            <Show
-              when={false}
-              fallback={
-                <SelectService
-                  onClose={() => {
-                    setActionMode("select");
-                  }}
-                />
-              }
-            >
-              <></>
-            </Show>
-          </Show>
-        </div>
+        <Show when={actionMode() === "service"}>
+          <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
+            <SelectService
+              onSelect={(service) => {
+                setActionMode("select");
+                if (service.instances.length === 0) {
+                  const instance = createServiceInstance(service);
+                  setEditingServinceInstance(instance);
+                } else {
+                  setEditingServinceInstance(service.instances[0]);
+                }
+              }}
+              onClose={() => setActionMode("select")}
+            />
+          </div>
+        </Show>
         <Toolbar>
           <ToolbarButton
             description="Select machine"
@@ -724,7 +732,7 @@ export const MachineGraph: Component = () => {
             description="Create new machine"
             name="new-machine"
             icon="NewMachine"
-            onClick={onAddClick}
+            onClick={onClickToolbarAdd}
             selected={actionMode() === "create"}
           />
           <Divider orientation="vertical" />
@@ -733,10 +741,7 @@ export const MachineGraph: Component = () => {
             name="modules"
             icon="Services"
             selected={actionMode() === "service"}
-            onClick={() => {
-              deactivateMachine();
-              setActionMode("service");
-            }}
+            onClick={() => setActionMode("service")}
           />
           <ToolbarButton
             icon="Update"
@@ -745,6 +750,18 @@ export const MachineGraph: Component = () => {
             onClick={() => machinesQuery.refetch()}
           />
         </Toolbar>
+        <Show when={editingServinceInstance()}>
+          {(editingServinceInstance) => (
+            <ServiceInstanceContextProvider
+              serviceInstance={editingServinceInstance}
+            >
+              <ServiceInstanceWorkflow
+                onClose={() => setEditingServinceInstance(null)}
+                onDone={() => setEditingServinceInstance(null)}
+              />
+            </ServiceInstanceContextProvider>
+          )}
+        </Show>
       </div>
     </>
   );

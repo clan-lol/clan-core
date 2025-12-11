@@ -1,4 +1,5 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
+import client from "./client-call";
 import {
   ClanData,
   ClanEntity,
@@ -11,25 +12,21 @@ import {
   MachinePositions,
   machinePositions,
 } from "../../machine/machine";
-import { ClansEntity } from "../../clan/clans";
-import client from "./client-call";
+import { ServiceRole } from "../../service";
 
 // TODO: make this one API call only
 export async function getClans(
   ids: string[],
   activeIndex: number,
-): Promise<ClansEntity> {
-  return {
-    all: await Promise.all(
-      ids.map(async (id, i) => {
-        if (i === activeIndex) {
-          return await getClan(id);
-        }
-        return await getClanMeta(id);
-      }),
-    ),
-    activeIndex,
-  };
+): Promise<(ClanEntity | ClanMetaEntity)[]> {
+  return await Promise.all(
+    ids.map(async (id, i) => {
+      if (i === activeIndex) {
+        return await getClan(id);
+      }
+      return await getClanMeta(id);
+    }),
+  );
 }
 export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
   const clan = await client.post("get_clan_details", {
@@ -46,53 +43,59 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
 }
 
 export async function getClan(id: string): Promise<ClanEntity> {
-  const [clan, dataSchema, rawMachines, tags, services, serviceInstances] =
-    await Promise.all([
-      client.post("get_clan_details", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+  const [
+    clanRes,
+    dataSchemaRes,
+    machinesRes,
+    tagsRes,
+    servicesRes,
+    serviceInstancesRes,
+  ] = await Promise.all([
+    client.post("get_clan_details", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-      client.post("get_clan_details_schema", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+      },
+    }),
+    client.post("get_clan_details_schema", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-      client.post("list_machines", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+      },
+    }),
+    client.post("list_machines", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-      client.post("list_tags", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+      },
+    }),
+    client.post("list_tags", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-      client.post("list_service_modules", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+      },
+    }),
+    client.post("list_service_modules", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-      client.post("list_service_instances", {
-        body: {
-          flake: {
-            identifier: id,
-          },
+      },
+    }),
+    client.post("list_service_instances", {
+      body: {
+        flake: {
+          identifier: id,
         },
-      }),
-    ]);
+      },
+    }),
+  ]);
   const machines = await Promise.all(
-    Object.entries(rawMachines.data).map(async ([machineId, machine]) => {
+    Object.entries(machinesRes.data).map(async ([machineId, machine]) => {
       const [state, schema] = await Promise.all([
         client.post("get_machine_state", {
           body: {
@@ -132,32 +135,45 @@ export async function getClan(id: string): Promise<ClanEntity> {
       };
     }),
   );
-  return {
-    id,
-    data: clan.data as ClanData,
-    dataSchema: dataSchema.data,
-    machines,
-    services: services.data.modules.map((service) => ({
+  const services: ClanEntity["services"] = servicesRes.data.modules.map(
+    (service) => ({
       id: service.usage_ref.name,
+      isCore: service.native,
+      description: service.info.manifest.description,
+      source: service.usage_ref.input!,
+      roles: service.info.roles as Record<string, ServiceRole>,
+      rolesSchema: {},
       instances: service.instance_refs.map((instanceName) => {
-        const instance = serviceInstances.data[instanceName];
+        const instance = serviceInstancesRes.data[instanceName];
         return {
           data: {
             name: instanceName,
+            roles: Object.fromEntries(
+              Object.entries(instance.roles).map(([roleId, role]) => [
+                roleId,
+                {
+                  id: roleId,
+                  settings: role.settings as Record<string, unknown>,
+                  settingsSchema: {} as JSONSchema,
+                  machines: Object.keys(role.machines!),
+                  tags: Object.keys(role.tags!),
+                },
+              ]),
+            ),
           },
-          roles: Object.entries(instance.roles).map(([roleId, role]) => ({
-            id: roleId,
-            settings: role.settings as Record<string, unknown>,
-            settingsSchema: {} as JSONSchema,
-            machines: Object.keys(role.machines!),
-            tags: Object.keys(role.tags!),
-          })),
         };
       }),
-    })),
+    }),
+  );
+  return {
+    id,
+    data: clanRes.data as ClanData,
+    dataSchema: dataSchemaRes.data,
+    machines,
+    services,
     globalTags: {
-      regular: tags.data.options,
-      special: tags.data.special,
+      regular: tagsRes.data.options,
+      special: tagsRes.data.special,
     },
   };
 }

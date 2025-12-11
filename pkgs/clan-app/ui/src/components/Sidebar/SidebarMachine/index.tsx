@@ -22,7 +22,7 @@ export default function SidebarMachine() {
         <SidebarSectionUpdate />
         <SectionGeneral />
         <SectionTags />
-        {/* <SectionServices /> */}
+        <SectionServices />
       </SidebarPane>
     </div>
   );

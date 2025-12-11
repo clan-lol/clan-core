@@ -3,15 +3,8 @@ import {
   ServiceInstancesQuery,
   ServiceModules,
 } from "@/src/hooks/queries";
-import { TagType } from "./Service";
-
-export interface ServiceStoreType {
-  roles: Record<string, TagType[]>;
-  currentRole?: string;
-  close: () => void;
-  handleSubmit: SubmitServiceHandler;
-  action: "create" | "update";
-}
+import { TagType } from ".";
+import { Service } from "@/src/models";
 
 // TODO: Ideally we would impot this from a backend model package
 interface InventoryInstance {
@@ -33,12 +26,10 @@ export type SubmitServiceHandler = (
   action: "create" | "update",
 ) => void | Promise<void>;
 
-type ModuleItem = ServiceModules["modules"][number];
-
 export interface Module {
   value: string;
   label: string;
-  raw: ModuleItem;
+  raw: Service;
 }
 
 type ValueOf<T> = T[keyof T];

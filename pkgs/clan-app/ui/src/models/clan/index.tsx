@@ -1,4 +1,11 @@
 export { initClans } from "./clans";
-export type { ClansEntity, Clans, ClansMethods } from "./clans";
-export type { Clan, ClanData, ClanMeta, Tags, ClanMethods } from "./clan";
+export type { Clans, ClansMethods, ClansEntity } from "./clans";
+export type {
+  Clan,
+  ClanData,
+  ClanMember,
+  ClanMeta,
+  Tags,
+  ClanMethods,
+} from "./clan";
 export * from "./Context";

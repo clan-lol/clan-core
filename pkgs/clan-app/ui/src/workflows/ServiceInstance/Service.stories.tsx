@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ServiceWorkflow } from "./Service";
+import { ServiceWorkflow } from ".";
 import {
   createMemoryHistory,
   MemoryRouter,

@@ -22,11 +22,16 @@ export type ClanEntity = {
   readonly services: ServiceEntity[];
   readonly globalTags: Tags;
 };
-export type Clan = Omit<ClanEntity, "data" | "machines" | "services"> & {
+export type Clan = {
+  readonly id: string;
   data: ClanData;
-  readonly index: number;
+  readonly dataSchema: DataSchema;
   readonly machines: Machines;
   readonly services: Service[];
+  readonly globalTags: Tags;
+  readonly clans: Clans;
+  readonly members: ClanMember[];
+  readonly index: number;
   readonly serviceInstances: ServiceInstances;
   readonly isActive: boolean;
 };
@@ -36,7 +41,10 @@ export type ClanMetaEntity = {
   readonly id: string;
   readonly data: ClanMetaData;
 };
-export type ClanMeta = ClanMetaEntity & {
+export type ClanMeta = {
+  readonly id: string;
+  readonly data: ClanMetaData;
+  readonly clans: Clans;
   readonly index: number;
 };
 
@@ -51,6 +59,11 @@ export type ClanData = ClanMetaData & {
   // machines: MachineData[];
   // services: ServiceData[];
   // globalTags: globalTags;
+};
+
+export type ClanMember = {
+  type: "tag" | "machine";
+  name: string;
 };
 
 export type Tags = {
@@ -96,7 +109,6 @@ function clanMethods(
         deactivateClan();
       }
     },
-
     async updateClanData(data) {
       // TODO: Use partial update once supported by backend and solidjs
       // https://github.com/solidjs/solid/issues/2475
@@ -110,23 +122,36 @@ function clanMethods(
   };
   return self;
 }
-
+export function toClanOrClanMeta(entity: ClanEntity, clans: Clans): Clan;
+export function toClanOrClanMeta(
+  entity: ClanMetaEntity,
+  clans: Clans,
+): ClanMeta;
 export function toClanOrClanMeta(
   entity: ClanEntity | ClanMetaEntity,
-  clansValue: readonly [Clans, ClansMethods],
+  clans: Clans,
 ): Clan | ClanMeta {
-  const [clans, { clanIndex, existingClan }] = clansValue;
+  const { id } = entity;
+  const clan: Accessor<Clan> = () => {
+    const i = clans.all.findIndex((clan) => clan.id === id);
+    if (i === -1) {
+      throw new Error(`Clan does not exist: ${id}`);
+    }
+    const clan = clans.all[i];
+    if (isClan(clan)) return clan;
+    throw new Error(`Accessing a clan that has not been activated yet: ${id}`);
+  };
   if (isClan(entity)) {
     const self: Clan = {
       ...entity,
-      machines: toMachines(entity.machines, entity.id, clansValue),
-      services: entity.services.map((service) =>
-        toService(service, entity.id, clansValue),
-      ),
+      get clans() {
+        return clans;
+      },
+      machines: toMachines(entity.machines, clan),
+      services: entity.services.map((service) => toService(service, clan)),
       serviceInstances: {
         get all() {
-          const clan = existingClan(entity.id);
-          return clan.services.flatMap((service) => service.instances);
+          return clan().services.flatMap((service) => service.instances);
         },
         activeIndex: -1,
         get activeServiceInstance(): ServiceInstance | undefined {
@@ -135,21 +160,36 @@ export function toClanOrClanMeta(
             : this.all[this.activeIndex];
         },
       },
-      get index(): number {
-        return clanIndex(this.id);
+      get members() {
+        return [
+          ...Object.keys(this.machines).map((name) => ({
+            type: "machine" as const,
+            name,
+          })),
+          ...this.globalTags.regular
+            .concat(this.globalTags.special)
+            .map((name) => ({ type: "tag" as const, name })),
+        ].sort((a, b) => a.name.localeCompare(b.name));
       },
-      get isActive(): boolean {
+      get index() {
+        return this.clans.all.findIndex((clan) => clan.id === this.id);
+      },
+      get isActive() {
         return clans.activeClan?.id === this.id;
       },
     };
     return self;
   }
-  return {
+  const self: ClanMeta = {
     ...entity,
-    get index(): number {
-      return clanIndex(this.id);
+    get clans() {
+      return clans;
     },
-  } satisfies ClanMeta;
+    get index(): number {
+      return this.clans.all.findIndex((clan) => clan.id === this.id);
+    },
+  };
+  return self;
 }
 
 export function isClan(clan: Clan | ClanMeta): clan is Clan;

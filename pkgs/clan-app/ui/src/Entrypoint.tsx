@@ -7,6 +7,7 @@ import {
   Suspense,
   Switch,
 } from "solid-js";
+import { createAsync } from "@solidjs/router";
 import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
 import Splash from "./components/Splash";
@@ -21,7 +22,6 @@ import {
   useClansContext,
   useModalContext,
 } from "./models";
-import { createAsync } from "@solidjs/router";
 import AddMachineModal from "./components/Modal/AddMachineModal";
 
 const Entrypoint: Component = () => {

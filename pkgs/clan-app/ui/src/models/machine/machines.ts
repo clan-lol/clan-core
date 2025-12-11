@@ -12,10 +12,13 @@ export type Machines = {
 
 export function createMachinesStore(
   machines: Accessor<Machines>,
-  clanValue: readonly [Accessor<Clan>, ClanMethods],
-  clansValue: readonly [Clans, ClansMethods],
+  [clan, clanMethods]: readonly [Accessor<Clan>, ClanMethods],
+  [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): [Accessor<Machines>, MachinesMethods] {
-  return [machines, machinesMethods(machines, clanValue, clansValue)];
+  return [
+    machines,
+    machinesMethods(machines, [clan, clanMethods], [clans, clansMethods]),
+  ];
 }
 
 export type MachinesMethods = {
@@ -25,12 +28,13 @@ export type MachinesMethods = {
   activateMachine(item: number | Machine): Machine | undefined;
   deactivateMachine(item?: number | Machine): Machine | undefined;
   addMachine(entity: NewMachineEntity): Promise<Machine>;
+  machinesByTag(tag: string): Machine[];
   // removeMachine(): void;
 };
 function machinesMethods(
   machines: Accessor<Machines>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  clansValue: readonly [Clans, ClansMethods],
+  [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): MachinesMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setMachines: SetStoreFunction<Machines> = (...args) => {
@@ -83,7 +87,7 @@ function machinesMethods(
     },
     async addMachine(newEntity) {
       const entity = await api.clan.createMachine(clan().id, newEntity);
-      const machine = toMachine(entity, clan().id, clansValue);
+      const machine = toMachine(entity, clan);
       setMachines(
         "all",
         produce((all) => {
@@ -92,17 +96,21 @@ function machinesMethods(
       );
       return machine;
     },
+    machinesByTag(tag: string) {
+      return machines().all.filter((machine) =>
+        machine.data.tags.includes(tag),
+      );
+    },
   };
   return self;
 }
 
 export function toMachines(
   entities: MachineEntity[],
-  clanId: string,
-  clansValue: readonly [Clans, ClansMethods],
+  clan: Accessor<Clan>,
 ): Machines {
   const self: Machines = {
-    all: entities.map((machine) => toMachine(machine, clanId, clansValue)),
+    all: entities.map((machine) => toMachine(machine, clan)),
     activeIndex: -1,
     get activeMachine(): Machine | undefined {
       return this.activeIndex === -1 ? undefined : this.all[this.activeIndex];

@@ -1,26 +1,29 @@
 import { Accessor } from "solid-js";
-import { Clan, ClanMethods, Clans, ClansMethods, ServiceInstance } from "..";
-import { SetStoreFunction } from "solid-js/store";
+import {
+  Clan,
+  ClanMethods,
+  Clans,
+  ClansMethods,
+  Service,
+  ServiceInstance,
+} from "..";
+import { produce, SetStoreFunction } from "solid-js/store";
+import api from "../api";
+import { toServiceInstance } from "./instance";
 
 export type ServiceInstances = {
-  readonly all: ServiceInstance[];
+  all: ServiceInstance[];
   activeIndex: number;
   readonly activeServiceInstance: ServiceInstance | undefined;
 };
-
-export function createServiceInstancesStore(
-  instances: Accessor<ServiceInstances>,
-  clanValue: readonly [Accessor<Clan>, ClanMethods],
-  clansValue: readonly [Clans, ClansMethods],
-): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
-  return [instances, instancesMethods(instances, clanValue, clansValue)];
-}
 
 export type ServiceInstancesMethods = {
   setServiceInstances: SetStoreFunction<ServiceInstances>;
   activateServiceInstance(
     item: number | ServiceInstance,
   ): ServiceInstance | undefined;
+  createServiceInstance(service: Service): ServiceInstance;
+  addServiceInstance(instance: ServiceInstance): Promise<void>;
 };
 function instancesMethods(
   instances: Accessor<ServiceInstances>,
@@ -51,6 +54,44 @@ function instancesMethods(
       }
       return self.activateServiceInstance(item.index);
     },
+    createServiceInstance(service: Service): ServiceInstance {
+      return toServiceInstance(
+        {
+          data: {
+            name: service.id,
+            roles: Object.fromEntries(
+              Object.entries(service.roles).map(([roleId]) => [
+                roleId,
+                {
+                  id: roleId,
+                  settings: {},
+                  machines: [] as string[],
+                  tags: [] as string[],
+                },
+              ]),
+            ),
+          },
+        },
+        () => service,
+      );
+    },
+    async addServiceInstance(instance: ServiceInstance): Promise<void> {
+      await api.clan.createServiceInstance(instance);
+      setServiceInstances(
+        "all",
+        produce((instances) => {
+          instances.push(instance);
+        }),
+      );
+    },
   };
   return self;
+}
+
+export function createServiceInstancesStore(
+  instances: Accessor<ServiceInstances>,
+  clanValue: readonly [Accessor<Clan>, ClanMethods],
+  clansValue: readonly [Clans, ClansMethods],
+): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
+  return [instances, instancesMethods(instances, clanValue, clansValue)];
 }

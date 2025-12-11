@@ -13,11 +13,12 @@ import {
 
 export type ClansEntity = {
   readonly all: (ClanEntity | ClanMetaEntity)[];
-  activeIndex: number;
+  readonly activeIndex: number;
 };
-export type Clans = Omit<ClansEntity, "all"> & {
+export type Clans = {
   all: (Clan | ClanMeta)[];
-  readonly activeClan: Clan | undefined;
+  activeIndex: number;
+  readonly activeClan: Clan | null;
 };
 
 export async function initClans(): Promise<ClansEntity> {
@@ -36,7 +37,10 @@ export async function initClans(): Promise<ClansEntity> {
     return parseInt(s, 10);
   })();
 
-  return await api.clan.getClans(ids, activeIndex);
+  return {
+    all: await api.clan.getClans(ids, activeIndex),
+    activeIndex,
+  };
 }
 
 export function createClansStore(
@@ -44,43 +48,40 @@ export function createClansStore(
 ): readonly [Clans, ClansMethods] {
   const [clans, setClans] = createStore<Clans>({
     all: [],
-    activeIndex: entity().activeIndex,
-    get activeClan(): Clan | undefined {
+    activeIndex: -1,
+    get activeClan(): Clan | null {
       return this.activeIndex === -1
-        ? undefined
+        ? null
         : (this.all[this.activeIndex] as Clan);
     },
   });
-  const clansValue = [clans, clansMethods([clans, setClans])] as const;
-
+  const methods = clansMethods([clans, setClans]);
   createEffect(
     on(entity, (entity) => {
+      const all = entity.all.map((entity) => toClanOrClanMeta(entity, clans));
+      const { activeIndex } = entity;
       setClans(
         produce((clans) => {
-          clans.all = entity.all.map((clan) =>
-            toClanOrClanMeta(clan, clansValue),
-          );
-          clans.activeIndex = entity.activeIndex;
+          clans.all = all;
+          clans.activeIndex = activeIndex;
         }),
       );
     }),
   );
   persistClans(clans);
-  return clansValue;
+
+  return [clans, methods];
 }
 
 export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
   clanIndex(item: string | Clan | ClanMeta): number;
-  existingClan(id: string): Clan;
-  activateClan(
-    item: number | string | Clan | ClanMeta,
-  ): Promise<Clan | undefined>;
+  activateClan(item: number | string | Clan | ClanMeta): Promise<Clan | null>;
   deactivateClan(clan?: Clan): void;
-  addExistingClan(id: string): Promise<Clan | undefined>;
-  addNewClan(entity: NewClanEntity): Promise<Clan | undefined>;
-  removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | undefined;
+  addExistingClan(id: string): Promise<Clan | null>;
+  addNewClan(entity: NewClanEntity): Promise<Clan | null>;
+  removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | null;
 };
 function clansMethods([clans, setClans]: [
   Clans,
@@ -93,25 +94,9 @@ function clansMethods([clans, setClans]: [
     },
     clanIndex(item: string | Clan | ClanMeta): number {
       if (typeof item === "string") {
-        for (const [i, clan] of clans.all.entries()) {
-          if (clan.id === item) {
-            return i;
-          }
-        }
-        return -1;
+        return clans.all.findIndex((clan) => clan.id === item);
       }
       return self.clanIndex(item.id);
-    },
-    existingClan(id: string): Clan {
-      const i = self.clanIndex(id);
-      if (i === -1) {
-        throw new Error(`Clan does not exist: ${id}`);
-      }
-      const clan = clans.all[i];
-      if (isClan(clan)) return clan;
-      throw new Error(
-        `Accessing a clan that has not been activated yet: ${id}`,
-      );
     },
     async activateClan(item) {
       if (typeof item === "number") {
@@ -119,7 +104,7 @@ function clansMethods([clans, setClans]: [
         if (i < 0 || i >= clans.all.length) {
           throw new Error(`activateClan called with invalid index: ${i}`);
         }
-        if (clans.activeIndex === i) return;
+        if (clans.activeIndex === i) return null;
 
         const c = clans.all[i];
         if (isClan(c)) {
@@ -128,7 +113,7 @@ function clansMethods([clans, setClans]: [
         }
         const meta = c;
         const entity = await api.clan.getClan(meta.id);
-        const clan = toClanOrClanMeta(entity, [clans, self]) as Clan;
+        const clan = toClanOrClanMeta(entity, clans);
         setClans(
           produce((clans) => {
             clans.all[i] = clan;
@@ -162,7 +147,7 @@ function clansMethods([clans, setClans]: [
 
     async addNewClan(entity: NewClanEntity) {
       const created = await api.clan.createClan(entity);
-      const clan = toClanOrClanMeta(created, [clans, self]) as Clan;
+      const clan = toClanOrClanMeta(created, clans) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -179,7 +164,7 @@ function clansMethods([clans, setClans]: [
         }
       }
       const entity = await api.clan.getClan(id);
-      const clan = toClanOrClanMeta(entity, [clans, self]) as Clan;
+      const clan = toClanOrClanMeta(entity, clans) as Clan;
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
@@ -192,7 +177,7 @@ function clansMethods([clans, setClans]: [
       if (typeof item === "number") {
         const i = item;
         const clan = clans.all[i];
-        if (!clan) return;
+        if (!clan) return null;
         setClans(
           produce((clans) => {
             clans.all.splice(i, 1);

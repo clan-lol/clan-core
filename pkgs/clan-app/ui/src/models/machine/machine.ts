@@ -192,45 +192,32 @@ function machineMethods(
 
 export function toMachine(
   machine: MachineEntity,
-  clanId: string,
-  clansValue: readonly [Clans, ClansMethods],
+  clan: Accessor<Clan>,
 ): Machine {
-  const [clans, { clanIndex }] = clansValue;
   return {
     ...machine,
-    get clan(): Clan {
-      const i = clanIndex(clanId);
-      if (i === -1) {
-        throw new Error(`Clan does not exist: ${clanId}`);
-      }
-      return clans.all[i] as Clan;
+    get clan() {
+      return clan();
     },
-    get index(): number {
-      const machines = this.clan.machines.all;
-      if (!machines) return -1;
-      for (const [i, machine] of machines.entries()) {
-        if (machine.id === this.id) {
-          return i;
-        }
-      }
-      return -1;
+    get index() {
+      return this.clan.machines.all.findIndex(
+        (machine) => machine.id === this.id,
+      );
     },
-    get isActive(): boolean {
+    get isActive() {
       return this.clan.machines.activeMachine?.id === this.id;
     },
-    get serviceInstances(): ServiceInstance[] {
-      return (
-        this.clan.serviceInstances.all.filter((instance) => {
-          return instance.roles.some((role) => {
-            const tags = new Set(role.tags);
-            return (
-              tags.has("all") ||
-              new Set(role.machines).has(this.id) ||
-              !tags.isDisjointFrom(new Set(this.data.tags))
-            );
-          });
-        }) || []
-      );
+    get serviceInstances() {
+      return this.clan.serviceInstances.all.filter((instance) => {
+        return Object.entries(instance.data.roles).some(([, role]) => {
+          const tags = new Set(role.tags);
+          return (
+            tags.has("all") ||
+            new Set(role.machines).has(this.id) ||
+            !tags.isDisjointFrom(new Set(this.data.tags))
+          );
+        });
+      });
     },
   };
 }

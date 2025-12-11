@@ -1,13 +1,11 @@
 import { Search } from "@/src/components/Search/Search";
 import { Typography } from "@/src/components/Typography/Typography";
-import { buildServicePath, useClanURI } from "@/src/hooks/clan";
-import { useServiceInstances, useServiceModules } from "@/src/hooks/queries";
-import { createEffect, createSignal, Show } from "solid-js";
-import { Module } from "./models";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
 import { css } from "@linaria/core";
+import { Service, useClanContext } from "@/src/models";
+import { Component, Show } from "solid-js";
 
 // TODO: Move this to typography styles
 const tag = css`
@@ -15,45 +13,21 @@ const tag = css`
   font-weight: var(--font-weight-semibold);
 `;
 
-interface FlyoutProps {
-  onClose: () => void;
+interface Module {
+  value: string;
+  label: string;
+  raw: Service;
 }
-export const SelectService = (props: FlyoutProps) => {
-  const clanURI = useClanURI();
 
-  const serviceModulesQuery = useServiceModules(clanURI);
-  const serviceInstancesQuery = useServiceInstances(clanURI);
-
-  const [moduleOptions, setModuleOptions] = createSignal<Module[]>([]);
-
-  createEffect(() => {
-    if (serviceModulesQuery.data && serviceInstancesQuery.data) {
-      setModuleOptions(
-        serviceModulesQuery.data.modules.map((currService) => ({
-          value: `${currService.usage_ref.name}:${currService.usage_ref.input}`,
-          label: currService.usage_ref.name,
-          raw: currService,
-        })),
-      );
-    }
-  });
-
-  const handleChange = (module: Module | null) => {
-    if (!module) return;
-
-    const serviceURL = buildServicePath({
-      clanURI,
-      id: module.raw.instance_refs[0] || module.raw.usage_ref.name,
-      module: {
-        name: module.raw.usage_ref.name,
-        input: module.raw.usage_ref.input,
-      },
-    });
-    navigate(serviceURL);
-  };
+const SelectService: Component<{
+  onClose: () => void;
+  onSelect: (service: Service) => void;
+}> = (props) => {
+  const [clan] = useClanContext();
 
   let ref: HTMLDivElement;
 
+  // TODO: use `use:*` attribute
   useClickOutside(
     () => ref,
     () => {
@@ -67,12 +41,16 @@ export const SelectService = (props: FlyoutProps) => {
     >
       <div class="w-[30rem]">
         <Search<Module>
-          loading={
-            serviceModulesQuery.isLoading || serviceInstancesQuery.isLoading
-          }
           height="13rem"
-          onChange={handleChange}
-          options={moduleOptions()}
+          onChange={(data) => {
+            if (!data) return;
+            props.onSelect(data.raw);
+          }}
+          options={clan().services.map((service) => ({
+            value: `${service.id}:${service.source}`,
+            label: service.id,
+            raw: service,
+          }))}
           renderItem={(item, opts) => {
             return (
               <div class="flex items-center justify-between gap-2 overflow-hidden rounded-md px-2 py-1 pr-4">
@@ -81,7 +59,7 @@ export const SelectService = (props: FlyoutProps) => {
                 </div>
                 <div class="flex w-full flex-col">
                   <Combobox.ItemLabel class="flex gap-1.5">
-                    <Show when={item.raw.instance_refs.length > 0}>
+                    <Show when={item.raw.instances.length !== 0}>
                       <div class="flex items-center rounded bg-[#76FFA4] px-1 py-0.5">
                         <span class={tag}>Added</span>
                       </div>
@@ -104,11 +82,11 @@ export const SelectService = (props: FlyoutProps) => {
                     in="SelectService-item-description"
                   >
                     <span class="inline-block max-w-80 truncate align-middle">
-                      {item.raw.info.manifest.description}
+                      {item.raw.description}
                     </span>
                     <span class="inline-block max-w-32 truncate align-middle">
-                      <Show when={!item.raw.native} fallback="by clan-core">
-                        by {item.raw.usage_ref.input}
+                      <Show when={!item.raw.isCore} fallback="by clan-core">
+                        by {item.raw.source}
                       </Show>
                     </span>
                   </Typography>
@@ -121,3 +99,4 @@ export const SelectService = (props: FlyoutProps) => {
     </div>
   );
 };
+export default SelectService;
