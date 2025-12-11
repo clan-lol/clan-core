@@ -76,13 +76,26 @@
         # disko config
         boot.loader.grub.efiSupport = lib.mkDefault true;
         boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
-        clan.core.vars.settings.secretStore = "vm";
-        clan.core.vars.generators.test = {
+        clan.core.vars.settings.secretStore = "sops";
+        clan.core.vars.generators.test-partitioning = {
           files.test.neededFor = "partitioning";
           script = ''
             echo "notok" > "$out"/test
           '';
         };
+        clan.core.vars.generators.test-activation = {
+          files.test.neededFor = "activation";
+          script = ''
+            echo "almöhi" > "$out"/test
+          '';
+        };
+        # an activation script that requires the activation secret to be present
+        system.activationScripts.test-vars-activation.text = ''
+          test -e /var/lib/sops-nix/activation/test-activation/test || {
+            echo "\nTEST ERROR: Activation secret not found!\n" >&2
+            exit 1
+          }
+        '';
         disko.devices = {
           disk = {
             main = {
@@ -90,7 +103,7 @@
               device = "/dev/vda";
 
               preCreateHook = ''
-                test -e /run/partitioning-secrets/test/test
+                test -e /run/partitioning-secrets/test-partitioning/test
               '';
 
               content = {
@@ -252,8 +265,19 @@
                   ]
                   subprocess.run(clan_cmd, check=True)
 
+                  # Run clan vars keygen to generate sops keys
+                  print("Starting 'clan vars keygen'...")
+                  clan_cmd = [
+                      "${installTestClanCli}/bin/clan",
+                      "vars",
+                      "keygen",
+                      "--debug",
+                      "--flake", str(flake_dir),
+                  ]
+                  subprocess.run(clan_cmd, check=True)
 
                   # Run clan install from host using port forwarding
+                  print("Starting 'clan machines install'...")
                   clan_cmd = [
                       "${installTestClanCli}/bin/clan",
                       "machines",
@@ -261,14 +285,14 @@
                       "--phases", "disko,install",
                       "--debug",
                       "--flake", str(flake_dir),
-                      "--yes", "test-install-machine-without-system",
+                      "--yes",
+                      "test-install-machine-without-system",
                       "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
                       "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
                       "--update-hardware-config", "nixos-facter",
                       "--no-persist-state",
                   ]
-
                   subprocess.run(clan_cmd, check=True)
 
               # Shutdown the installer machine gracefully

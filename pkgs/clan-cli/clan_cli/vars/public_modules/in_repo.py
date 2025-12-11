@@ -74,6 +74,11 @@ class FactStore(StoreBase):
         msg = "populate_dir is not implemented for public vars stores"
         raise NotImplementedError(msg)
 
+    def get_upload_directory(self, machine: str) -> str:
+        del machine  # Unused
+        msg = "Public var stores do not have upload directories"
+        raise NotImplementedError(msg)
+
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         msg = "upload is not implemented for public vars stores"
         raise NotImplementedError(msg)

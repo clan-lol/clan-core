@@ -265,6 +265,13 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
     @override
+    def get_upload_directory(self, machine: str) -> str:
+        return self.flake.select_machine(
+            machine,
+            "config.clan.core.vars.sops.secretUploadDirectory",
+        )
+
+    @override
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
@@ -272,11 +279,7 @@ class SecretStore(StoreBase):
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
             self.populate_dir(machine, sops_upload_dir, phases)
-            secret_upload_directory = self.flake.select_machine(
-                machine,
-                "config.clan.core.vars.sops.secretUploadDirectory",
-            )
-            upload(host, sops_upload_dir, Path(secret_upload_directory))
+            upload(host, sops_upload_dir, Path(self.get_upload_directory(machine)))
 
     def exists(self, generator: Generator, name: str) -> bool:
         secret_folder = self.secret_path(generator, name)

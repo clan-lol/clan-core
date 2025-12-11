@@ -6,6 +6,7 @@ import tarfile
 from collections.abc import Iterable
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generator import Generator, Var
@@ -238,6 +239,13 @@ class SecretStore(StoreBase):
         if hash_data:
             (output_dir / ".pass_info").write_bytes(hash_data)
 
+    @override
+    def get_upload_directory(self, machine: str) -> str:
+        return self.flake.select_machine(
+            machine,
+            "config.clan.core.vars.password-store.secretLocation",
+        )
+
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
@@ -248,10 +256,4 @@ class SecretStore(StoreBase):
         with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
             pass_dir = Path(_tempdir).resolve()
             self.populate_dir(machine, pass_dir, phases)
-            upload_dir = Path(
-                self.flake.select_machine(
-                    machine,
-                    "config.clan.core.vars.password-store.secretLocation",
-                ),
-            )
-            upload(host, pass_dir, upload_dir)
+            upload(host, pass_dir, Path(self.get_upload_directory(machine)))

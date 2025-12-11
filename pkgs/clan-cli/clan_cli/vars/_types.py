@@ -266,5 +266,15 @@ class StoreBase(ABC):
         pass
 
     @abstractmethod
+    def get_upload_directory(self, machine: str) -> str:
+        """Return the target directory path where secrets should be uploaded.
+
+        This is the absolute path on the target machine where the secret store
+        expects files to be placed (e.g., /var/lib/sops-nix for sops backend).
+        Used by install.py to construct the correct directory structure for
+        nixos-anywhere's --extra-files.
+        """
+
+    @abstractmethod
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         pass
