@@ -83,7 +83,15 @@ let
 in
 {
   options = {
-    settings = import ./settings-opts.nix { inherit lib; };
+    settings = mkOption {
+      description = ''
+        Settings for the vars module.
+      '';
+      type = submodule {
+        imports = [ ./settings-opts.nix ];
+      };
+      default = { };
+    };
     generators = mkOption {
       description = ''
         A set of generators that can be used to generate files.
@@ -123,7 +131,7 @@ in
 
                 **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
               '';
-              type = config.settings.dependenciesType;
+              type = lib.types.listOf lib.types.str;
               default = [ ];
             };
             validation = mkOption {

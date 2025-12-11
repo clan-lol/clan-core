@@ -39,9 +39,6 @@ in
     type = submodule {
       imports = [
         ./interface.nix
-        {
-          settings.dependenciesType = lib.types.listOf lib.types.str;
-        }
       ];
     };
   };
