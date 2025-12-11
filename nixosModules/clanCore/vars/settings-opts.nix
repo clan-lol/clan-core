@@ -52,14 +52,4 @@
       the python import path to the public module
     '';
   };
-
-  dependenciesType = lib.mkOption {
-    type = lib.types.raw;
-    description = ''
-      The type of the `dependencies` option.
-    '';
-    internal = true;
-    readOnly = true;
-    visible = false;
-  };
 }

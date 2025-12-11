@@ -131,7 +131,7 @@ in
 
                 **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
               '';
-              type = config.settings.dependenciesType;
+              type = lib.types.listOf lib.types.str;
               default = [ ];
             };
             validation = mkOption {
