@@ -84,4 +84,4 @@ def list_keymaps() -> list[str]:
                 name_without_ext = file[:-7]
                 keymap_files.append(name_without_ext)
 
-    return keymap_files
+    return sorted(keymap_files)
