@@ -37,13 +37,11 @@
   publicStore = lib.mkOption {
     type = lib.types.enum [
       "in_repo"
-      "vm"
-      "custom"
     ];
     default = "in_repo";
     description = ''
-      method to store public vars.
-      custom can be used to define a custom public vars store.
+      Method to store public vars.
+      Currently only 'in_repo' is supported, which stores public vars in the clan repository.
     '';
   };
 
