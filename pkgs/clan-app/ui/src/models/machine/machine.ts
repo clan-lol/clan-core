@@ -11,6 +11,7 @@ import {
   MachinesMethods,
   ServiceInstance,
 } from "..";
+import { mapObjectValues } from "@/src/util";
 
 export type MachineEntity = {
   readonly id: string;
@@ -123,9 +124,7 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
     string,
     Record<string, readonly [number, number]>
   >;
-  return Object.fromEntries(
-    Object.entries(all).map(([clanId, p]) => [clanId, new MachinePositions(p)]),
-  );
+  return mapObjectValues(all, ([clanId, p]) => new MachinePositions(p));
 })();
 
 export function createMachineStore(

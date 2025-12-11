@@ -1,3 +1,4 @@
+import { mapObjectValues } from "@/src/util";
 import { ServiceInstance } from "../../service";
 import client from "./client-call";
 
@@ -13,17 +14,12 @@ export async function createServiceInstance(
         name: instance.service.id,
         input: instance.service.source,
       },
-      roles: Object.fromEntries(
-        Object.entries(instance.data.roles).map(([roleId, role]) => [
-          roleId,
-          {
-            machines: Object.fromEntries(
-              role.machines.map((machineId) => [machineId, {}]),
-            ),
-            tags: role.tags,
-          },
-        ]),
-      ),
+      roles: mapObjectValues(instance.data.roles, ([roleId, role]) => ({
+        machines: Object.fromEntries(
+          role.machines.map((machineId) => [machineId, {}]),
+        ),
+        tags: role.tags,
+      })),
     },
   });
 }

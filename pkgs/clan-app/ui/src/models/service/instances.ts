@@ -10,6 +10,7 @@ import {
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import { toServiceInstance } from "./instance";
+import { mapObjectValues } from "@/src/util";
 
 export type ServiceInstances = {
   all: ServiceInstance[];
@@ -59,17 +60,12 @@ function instancesMethods(
         {
           data: {
             name: service.id,
-            roles: Object.fromEntries(
-              Object.entries(service.roles).map(([roleId]) => [
-                roleId,
-                {
-                  id: roleId,
-                  settings: {},
-                  machines: [] as string[],
-                  tags: [] as string[],
-                },
-              ]),
-            ),
+            roles: mapObjectValues(service.roles, ([roleId]) => ({
+              id: roleId,
+              settings: {},
+              machines: [] as string[],
+              tags: [] as string[],
+            })),
           },
         },
         () => service,

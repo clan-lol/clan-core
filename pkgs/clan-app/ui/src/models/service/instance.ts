@@ -10,6 +10,7 @@ import {
   ServiceInstances,
   ServiceInstancesMethods,
 } from "..";
+import { mapObjectValues } from "@/src/util";
 
 export type ServiceInstanceEntity = {
   data: ServiceInstanceEntityData;
@@ -98,31 +99,26 @@ export function toServiceInstance(
     ...instance,
     data: {
       ...instance.data,
-      roles: Object.fromEntries(
-        Object.entries(instance.data.roles).map(([roleId, role]) => [
-          roleId,
-          {
-            ...role,
-            members: [
-              ...role.machines.map((name) => ({
-                type: "machine" as const,
-                name,
-              })),
-              ...role.tags.map((name) => ({ type: "tag" as const, name })),
-            ].sort((a, b) => a.name.localeCompare(b.name)),
-            get machines() {
-              return this.members
-                .filter(({ type }) => type === "machine")
-                .map(({ name }) => name);
-            },
-            get tags() {
-              return this.members
-                .filter(({ type }) => type === "tag")
-                .map(({ name }) => name);
-            },
-          },
-        ]),
-      ),
+      roles: mapObjectValues(instance.data.roles, ([roleId, role]) => ({
+        ...role,
+        members: [
+          ...role.machines.map((name) => ({
+            type: "machine" as const,
+            name,
+          })),
+          ...role.tags.map((name) => ({ type: "tag" as const, name })),
+        ].sort((a, b) => a.name.localeCompare(b.name)),
+        get machines() {
+          return this.members
+            .filter(({ type }) => type === "machine")
+            .map(({ name }) => name);
+        },
+        get tags() {
+          return this.members
+            .filter(({ type }) => type === "tag")
+            .map(({ name }) => name);
+        },
+      })),
     },
     get clan() {
       return service().clan;
