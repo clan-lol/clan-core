@@ -23,8 +23,8 @@ export type ModalMethods<T extends ModelType> = {
   onCancelModal(callback: (v: ModalCancelError) => void): void;
 };
 function modalMethods<T extends ModelType>([modal, setModal]: readonly [
-  Modal<T> | typeof closedModal,
-  SetStoreFunction<Modal<T> | typeof closedModal>,
+  Modal<T> | { type: null },
+  SetStoreFunction<Modal<T> | { type: null }>,
 ]): ModalMethods<T> {
   let promise: Promise<CloseData<T>>;
   let resolve: (data: CloseData<T> | undefined) => void;
@@ -48,11 +48,11 @@ function modalMethods<T extends ModelType>([modal, setModal]: readonly [
       return await promise;
     },
     closeModal(...args) {
-      setModal(() => closedModal);
+      setModal({ type: null });
       resolve(args?.[0]);
     },
     cancelModal() {
-      setModal(() => closedModal);
+      setModal({ type: null });
       reject(new ModalCancelError(modal.type!));
     },
     onCloseModal(cb) {
@@ -73,15 +73,15 @@ function modalMethods<T extends ModelType>([modal, setModal]: readonly [
 
 const ModalContext =
   createContext<
-    readonly [Modal<ModelType> | typeof closedModal, ModalMethods<ModelType>]
+    readonly [Modal<ModelType> | { type: null }, ModalMethods<ModelType>]
   >();
 
 export function useModalContext<T extends ModelType>(): readonly [
-  Modal<T> | typeof closedModal,
+  Modal<T> | { type: null },
   ModalMethods<T>,
 ] {
   const value = useContext(ModalContext) as
-    | readonly [Modal<T> | typeof closedModal, ModalMethods<T>]
+    | readonly [Modal<T> | { type: null }, ModalMethods<T>]
     | undefined;
   if (!value) {
     throw new Error(
@@ -92,10 +92,10 @@ export function useModalContext<T extends ModelType>(): readonly [
 }
 
 function createModalStore(): readonly [
-  Modal<ModelType> | typeof closedModal,
+  Modal<ModelType> | { type: null },
   ModalMethods<ModelType>,
 ] {
-  const [modal, setModal] = createStore<Modal<ModelType> | typeof closedModal>(
+  const [modal, setModal] = createStore<Modal<ModelType> | { type: null }>(
     closedModal,
   );
   return [modal, modalMethods([modal, setModal])];

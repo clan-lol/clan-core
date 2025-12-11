@@ -484,8 +484,7 @@ export const MachineGraph: Component = () => {
           const cancelMove = setTimeout(() => {
             setIsDragging(true);
             const pos =
-              machineManager.machines.get(machines[0])?.group.position ||
-              new THREE.Vector3(0, 0, 0);
+              machines[0]?.group.position || new THREE.Vector3(0, 0, 0);
             actionMachine?.position.set(pos.x, 0, pos.z);
             // Set machine as flying
             setHighlightGroups({ move: new Set(machines) });
@@ -579,8 +578,6 @@ export const MachineGraph: Component = () => {
   });
 
   const snapToGrid = (point: THREE.Vector3) => {
-    const store = props.sceneStore() || {};
-
     // Snap to grid
     const snapped = new THREE.Vector3(
       Math.round(point.x / GRID_SIZE) * GRID_SIZE,
@@ -589,16 +586,20 @@ export const MachineGraph: Component = () => {
     );
 
     // Skip snapping if there's already a cube at this position
-    const positions = Object.entries(store);
+    const positions = Object.entries(machines().all);
     const intersects = positions.some(
-      ([_id, p]) => p.position[0] === snapped.x && p.position[1] === snapped.z,
+      ([, machine]) =>
+        machine.data.position[0] === snapped.x &&
+        machine.data.position[1] === snapped.z,
     );
     const movingMachine = Array.from(highlightGroups["move"] || [])[0];
-    const startingPos = positions.find(([_id, p]) => _id === movingMachine);
+    const startingPos = positions.find(
+      ([machineId]) => machineId === movingMachine,
+    );
     if (startingPos) {
       const isStartingPos =
-        snapped.x === startingPos[1].position[0] &&
-        snapped.z === startingPos[1].position[1];
+        snapped.x === startingPos[1].data.position[0] &&
+        snapped.z === startingPos[1].data.position[1];
       // If Intersect any other machine and not the one being moved
       if (!isStartingPos && intersects) {
         return;

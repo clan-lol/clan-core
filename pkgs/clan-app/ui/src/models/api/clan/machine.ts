@@ -20,16 +20,23 @@ export async function updateMachineData(
 }
 
 // TODO: make this one API call only
-export async function createMachine(machine: Machine): Promise<void> {
+export async function createMachine(
+  machineId: string,
+  data: MachineData,
+  clanId: string,
+): Promise<void> {
   await client.post("create_machine", {
     body: {
       opts: {
         clan_dir: {
-          identifier: machine.clan.id,
+          identifier: clanId,
         },
         machine: {
-          ...machine.data,
-          name: machine.id,
+          deploy: data.deploy,
+          description: data.description,
+          machineClass: data.machineClass,
+          tags: data.tags,
+          name: machineId,
         },
       },
     },

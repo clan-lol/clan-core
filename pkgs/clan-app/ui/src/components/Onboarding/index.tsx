@@ -52,7 +52,7 @@ const SetupSchema = v.object({
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
 export default function Onboarding(): JSX.Element {
-  const [, { createClan, addClan }] = useClansContext();
+  const [, { createClan }] = useClansContext();
   const [step, setStep] = createSignal<Step>({ type: "welcome" });
 
   //
@@ -71,10 +71,9 @@ export default function Onboarding(): JSX.Element {
   ) => {
     const path = `${directory}/${name}`;
     const data = { name, description };
-    const clan = createClan(path, data);
     setStep({ type: "creating" });
     try {
-      await addClan(clan);
+      await createClan(path, data);
     } catch (err) {
       setStep({ type: "welcome", error: String(err) });
       return;

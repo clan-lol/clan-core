@@ -29,8 +29,7 @@ export type MachinesMethods = {
   hasMachine(item: string | Machine): boolean;
   activateMachine(item: string | Machine): Machine | null;
   deactivateMachine(item?: string | Machine): Machine | null;
-  createMachine(id: string, data: MachineData): Machine;
-  addMachine(machine: Machine): Promise<void>;
+  createMachine(id: string, data: MachineData): Promise<Machine>;
   machinesByTag(tag: string): Machine[];
   // removeMachine(): void;
 };
@@ -88,8 +87,9 @@ function machinesMethods(
       }
       return null;
     },
-    createMachine(id: string, data: MachineData) {
-      return toMachine(
+    async createMachine(id: string, data: MachineData) {
+      await api.clan.createMachine(id, data, clan().id);
+      const machine = toMachine(
         {
           id,
           data,
@@ -98,15 +98,13 @@ function machinesMethods(
         },
         clan,
       );
-    },
-    async addMachine(machine) {
-      await api.clan.createMachine(machine);
       setMachines(
         "all",
         produce((all) => {
           all[machine.id] = machine;
         }),
       );
+      return machine;
     },
     machinesByTag(tag: string) {
       return Object.entries(machines().all)

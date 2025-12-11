@@ -29,15 +29,11 @@ export type Machine = {
 };
 
 export type MachineData = {
-  // TODO: don't use nested fields, it makes updating data much more complex
-  // because we need to deal with deep merging
   deploy: {
     buildHost?: string;
     targetHost?: string;
   };
   description?: string;
-  icon?: string;
-  installedAt?: number;
   machineClass: "nixos" | "darwin";
   tags: string[];
   position: readonly [number, number];

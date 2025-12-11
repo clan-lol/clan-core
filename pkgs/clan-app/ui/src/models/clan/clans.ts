@@ -81,8 +81,7 @@ export type ClansMethods = {
   activateClan(item: number | string | Clan | ClanMeta): Promise<Clan | null>;
   deactivateClan(clan?: Clan): void;
   loadClan(id: string): Promise<Clan | null>;
-  createClan(id: string, data: ClanData): Clan;
-  addClan(clan: Clan): Promise<void>;
+  createClan(id: string, data: ClanData): Promise<Clan>;
   removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | null;
 };
 function clansMethods([clans, setClans]: [
@@ -94,7 +93,7 @@ function clansMethods([clans, setClans]: [
     async pickClanDir() {
       return api.clan.pickClanDir();
     },
-    clanIndex(item: string | Clan | ClanMeta): number {
+    clanIndex(item) {
       if (typeof item === "string") {
         return clans.all.findIndex((clan) => clan.id === item);
       }
@@ -136,7 +135,7 @@ function clansMethods([clans, setClans]: [
       }
       return await self.activateClan(i);
     },
-    deactivateClan(clan?: Clan) {
+    deactivateClan(clan) {
       if (!clan) {
         setClans("activeIndex", -1);
         return;
@@ -146,7 +145,7 @@ function clansMethods([clans, setClans]: [
         return;
       }
     },
-    async loadClan(id: string) {
+    async loadClan(id) {
       for (const [i, clan] of clans.all.entries()) {
         if (clan.id === id) {
           return self.activateClan(i);
@@ -162,8 +161,9 @@ function clansMethods([clans, setClans]: [
       );
       return clans.all.at(-1) as Clan;
     },
-    createClan(id, data): Clan {
-      return toClanOrClanMeta(
+    async createClan(id, data) {
+      await api.clan.createClan(id, data);
+      const clan = toClanOrClanMeta(
         {
           id,
           data,
@@ -177,15 +177,13 @@ function clansMethods([clans, setClans]: [
         },
         clans,
       );
-    },
-    async addClan(clan) {
-      await api.clan.createClan(clan);
       setClans(
         produce((clans) => {
           clans.activeIndex = clans.all.length;
           clans.all.push(clan);
         }),
       );
+      return clan;
     },
     removeClan(item) {
       if (typeof item === "number") {

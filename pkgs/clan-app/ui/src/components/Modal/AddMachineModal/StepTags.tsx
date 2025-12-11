@@ -22,7 +22,7 @@ type TagsForm = v.InferInput<typeof TagsSchema>;
 
 export const StepTags = () => {
   const [modal, { closeModal }] = useModalContext<"addMachine">();
-  const [, { addMachine }] = useMachinesContext();
+  const [, { createMachine }] = useMachinesContext();
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
 
@@ -38,16 +38,16 @@ export const StepTags = () => {
     }));
 
     stepSignal.next();
-
-    const machine = await addMachine({
-      id: store.general.id,
-      data: removeEmptyStrings({
-        ...store.general,
-        ...store.tags,
+    const machine = await createMachine(
+      store.general.id,
+      removeEmptyStrings({
+        machineClass: store.general.machineClass,
+        description: store.general.description,
         deploy: store.deploy,
+        tags: store.tags.tags,
+        position: modal.data.position,
       }),
-      position: modal.data.position,
-    });
+    );
     closeModal(machine);
   };
 

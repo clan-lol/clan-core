@@ -1,7 +1,6 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import client from "./client-call";
 import {
-  Clan,
   ClanData,
   ClanEntity,
   ClanMetaData,
@@ -202,13 +201,13 @@ export async function updateClanData(
 
 // TODO: make this one API call only
 // TODO: allow users to select a template
-export async function createClan(clan: Clan): Promise<void> {
+export async function createClan(id: string, data: ClanData): Promise<void> {
   await client.post("create_clan", {
     body: {
       opts: {
-        dest: clan.id,
+        dest: id,
         template: "minimal",
-        initial: clan.data,
+        initial: data,
       },
     },
   });
@@ -217,7 +216,7 @@ export async function createClan(clan: Clan): Promise<void> {
     client.post("create_service_instance", {
       body: {
         flake: {
-          identifier: clan.id,
+          identifier: id,
         },
         module_ref: {
           name: "admin",
@@ -234,7 +233,7 @@ export async function createClan(clan: Clan): Promise<void> {
     }),
     client.post("create_secrets_user", {
       body: {
-        flake_dir: clan.id,
+        flake_dir: id,
       },
     }),
   ]);
