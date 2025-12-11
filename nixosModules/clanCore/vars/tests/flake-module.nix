@@ -12,10 +12,9 @@
           test.useContainers = false;
 
           machines.machine =
-            { pkgs, ... }:
+            { pkgs, lib, ... }:
             {
               clan.core.vars.settings.secretStore = "password-store";
-              clan.core.vars.password-store.secretLocation = "/etc/secret-vars";
 
               # Create a test var that will be installed
               clan.core.vars.generators.test-secret = {
@@ -29,12 +28,29 @@
               };
 
               # Mock the secrets tarball for testing
-              # Create the tarball in /etc via environment.etc so it exists at boot
-              environment.etc."secret-vars/secrets.tar.gz".source = pkgs.runCommand "mock-secrets-tarball" { } ''
-                mkdir -p test-secret
-                echo "test-secret-content" > test-secret/secret1
-                tar czf $out test-secret
-              '';
+              # Use a tmpfiles rule to create a writable directory and copy initial tarball there
+              systemd.tmpfiles.rules = [
+                "d /var/lib/secret-vars 0755 root root -"
+              ];
+
+              # Copy the initial tarball to the writable location at boot
+              system.activationScripts.copySecretsTarball = {
+                text = ''
+                  mkdir -p /var/lib/secret-vars
+                  cp ${
+                    pkgs.runCommand "mock-secrets-tarball" { } ''
+                      mkdir -p test-secret
+                      echo "test-secret-content" > test-secret/secret1
+                      tar czf $out test-secret
+                    ''
+                  } /var/lib/secret-vars/secrets.tar.gz
+                  chmod 644 /var/lib/secret-vars/secrets.tar.gz
+                '';
+                deps = [ "specialfs" ];
+              };
+
+              # Point the secret location to the writable path
+              clan.core.vars.password-store.secretLocation = lib.mkForce "/var/lib/secret-vars";
 
               clan.core.settings.directory = ./.;
             };
@@ -50,21 +66,23 @@
 
           def get_mount_stack_depth(machine, path):
               """Get the number of mounts stacked at a specific mountpoint"""
-              # Use findmnt to get JSON output showing the mount tree
+              # Use findmnt to get JSON output - stacked mounts appear as array elements
               result = machine.succeed(f"findmnt -J {path} || echo '{{}}'")
               try:
                   data = json.loads(result)
-                  if "filesystems" in data and len(data["filesystems"]) > 0:
-                      # Count nested mounts in the tree
-                      def count_depth(node):
-                          children = node.get("children", [])
-                          if not children:
-                              return 1
-                          return 1 + sum(count_depth(child) for child in children)
-                      return count_depth(data["filesystems"][0])
+                  if "filesystems" in data:
+                      # Stacked mounts at the same path appear as multiple entries in the array
+                      return len(data["filesystems"])
                   return 0
               except:
                   return count_mounts(machine, path)
+
+          def create_new_tarball(machine, content):
+              """Create a new secrets tarball with the given content"""
+              machine.succeed("mkdir -p /tmp/new-secrets/test-secret")
+              machine.succeed(f"echo '{content}' > /tmp/new-secrets/test-secret/secret1")
+              machine.succeed("tar czf /var/lib/secret-vars/secrets.tar.gz -C /tmp/new-secrets test-secret")
+              machine.succeed("rm -rf /tmp/new-secrets")
 
           start_all()
           machine.wait_for_unit("multi-user.target")
@@ -78,29 +96,36 @@
           initial_mounts = get_mount_stack_depth(machine, "/run/secrets")
           print(f"Initial mount depth at /run/secrets: {initial_mounts}")
 
-          # Check which backend we're using
-          service_exists = machine.succeed("systemctl list-units --all | grep -q pass-install-secrets || echo 'no-service'").strip() != 'no-service'
-          print(f"Using systemd service: {service_exists}")
+          # Find the install-secret-tarball script
+          script_path = machine.succeed("find /nix/store -name 'install-secret-tarball' -type f | head -1").strip()
+          print(f"Found script at: {script_path}")
 
           # Simulate running the install-secret-tarball script multiple times
-          # This would happen during system updates or secret rotations
+          # with different content each time to verify updates are deployed
           for i in range(5):
-              print(f"Running secret installation iteration {i+1}")
-              if service_exists:
-                  machine.succeed("systemctl restart pass-install-secrets.service")
-                  machine.wait_for_unit("pass-install-secrets.service")
-              else:
-                  # Manually run the installation script (activation script mode)
-                  # Find the script in the system
-                  script_path = machine.succeed("find /nix/store -name 'install-secret-tarball' -type f | head -1").strip()
-                  print(f"Found script at: {script_path}")
-                  machine.succeed(
-                      f"{script_path} "
-                      "/etc/secret-vars/secrets.tar.gz /run/secrets"
-                  )
+              new_content = f"updated-secret-content-{i+1}"
+              print(f"Running secret installation iteration {i+1} with content: {new_content}")
+
+              # Create a new tarball with updated content
+              create_new_tarball(machine, new_content)
+
+              # Run the installation script
+              machine.succeed(
+                  f"{script_path} "
+                  "/var/lib/secret-vars/secrets.tar.gz /run/secrets"
+              )
 
               # Check secrets are still accessible
               machine.succeed("test -f /run/secrets/test-secret/secret1")
+
+              # Verify the NEW content is deployed
+              actual_content = machine.succeed("cat /run/secrets/test-secret/secret1").strip()
+              if actual_content != new_content:
+                  raise Exception(
+                      f"Secret content not updated! "
+                      f"Expected: {new_content}, Got: {actual_content}"
+                  )
+              print(f"✓ Secret content correctly updated to: {actual_content}")
 
               # Check mount count hasn't grown
               current_mounts = get_mount_stack_depth(machine, "/run/secrets")
@@ -123,6 +148,7 @@
               )
 
           print(f"✓ Mount count stable: {initial_mounts} -> {final_mounts}")
+          print("✓ All secret updates were correctly deployed")
         '';
       };
     };
