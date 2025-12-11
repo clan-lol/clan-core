@@ -18,7 +18,6 @@ in
           clan.core.settings.machine.name = config.networking.hostName;
         })
         {
-          documentation.enable = lib.mkDefault false;
           nix.settings.min-free = 0;
           system.stateVersion = config.system.nixos.release;
         }
@@ -26,7 +25,6 @@ in
     }
   );
 
-  _module.args = { inherit self; };
   # to accept external dependencies such as disko
   node.specialArgs.self = self;
   imports = [ test ];
