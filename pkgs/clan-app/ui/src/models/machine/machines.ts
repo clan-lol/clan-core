@@ -2,12 +2,15 @@ import { Accessor } from "solid-js";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import { Clan, ClanMethods, Clans, ClansMethods, Machine } from "..";
-import { MachineEntity, NewMachineEntity, toMachine } from "./machine";
+import { MachineData, MachineEntity, toMachine } from "./machine";
+import { mapObjectValues } from "@/src/util";
 
 export type Machines = {
-  all: Machine[];
-  activeIndex: number;
-  readonly activeMachine: Machine | undefined;
+  all: Record<string, Machine>;
+  sorted: Machine[];
+  highlightedIds: string[];
+  activeId: string | null;
+  readonly activeMachine: Machine | null;
 };
 
 export function createMachinesStore(
@@ -23,11 +26,11 @@ export function createMachinesStore(
 
 export type MachinesMethods = {
   setMachines: SetStoreFunction<Machines>;
-  machineIndex(item: string | Machine): number;
   hasMachine(item: string | Machine): boolean;
-  activateMachine(item: number | Machine): Machine | undefined;
-  deactivateMachine(item?: number | Machine): Machine | undefined;
-  addMachine(entity: NewMachineEntity): Promise<Machine>;
+  activateMachine(item: string | Machine): Machine | null;
+  deactivateMachine(item?: string | Machine): Machine | null;
+  createMachine(id: string, data: MachineData): Machine;
+  addMachine(machine: Machine): Promise<void>;
   machinesByTag(tag: string): Machine[];
   // removeMachine(): void;
 };
@@ -43,77 +46,92 @@ function machinesMethods(
   };
   const self: MachinesMethods = {
     setMachines,
-    machineIndex(item: string | Machine): number {
-      if (typeof item === "string") {
-        for (const [i, machine] of machines().all.entries()) {
-          if (machine.id === item) {
-            return i;
-          }
-        }
-        return -1;
-      }
-      return self.machineIndex(item.id);
-    },
     hasMachine(item: string | Machine): boolean {
-      return self.machineIndex(item) !== -1;
+      let id: string;
+      if (typeof item === "string") {
+        id = item;
+      } else {
+        id = item.id;
+      }
+      return id in machines().all;
     },
     activateMachine(item) {
-      if (typeof item === "number") {
-        const i = item;
-        if (i < 0 || i >= machines().all.length) {
-          throw new Error(`activateMachine called with invalid index: ${i}`);
-        }
-        if (machines().activeIndex === i) return;
-
-        const machine = machines().all[i];
-        setMachines("activeIndex", i);
+      let id: string;
+      if (typeof item === "string") {
+        id = item;
+      } else {
+        id = item.id;
+      }
+      const machine = machines().all[id];
+      if (machine) {
+        setMachines("activeId", id);
         return machine;
       }
-      return self.activateMachine(item.index);
+      throw new Error(`Machine does not exist: ${id}`);
     },
     deactivateMachine(item) {
-      if (typeof item === "number") {
-        if (item === machines().activeIndex) {
-          setMachines("activeIndex", -1);
-          return machines().all[item];
-        }
-        return;
-      }
       if (!item) {
-        setMachines("activeIndex", -1);
-        return;
+        const id = machines().activeId;
+        if (!id) return null;
+        return self.deactivateMachine(id);
       }
-      return self.deactivateMachine(item.index);
+      let id: string;
+      if (typeof item === "string") {
+        id = item;
+      } else {
+        id = item.id;
+      }
+      if (machines().activeId === id) {
+        const machine = machines().all[id];
+        setMachines("activeId", null);
+        return machine;
+      }
+      return null;
     },
-    async addMachine(newEntity) {
-      const entity = await api.clan.createMachine(clan().id, newEntity);
-      const machine = toMachine(entity, clan);
+    createMachine(id: string, data: MachineData) {
+      return toMachine(
+        {
+          id,
+          data,
+          dataSchema: {},
+          status: "not_installed",
+        },
+        clan,
+      );
+    },
+    async addMachine(machine) {
+      await api.clan.createMachine(machine);
       setMachines(
         "all",
         produce((all) => {
-          all.push(machine);
+          all[machine.id] = machine;
         }),
       );
-      return machine;
     },
     machinesByTag(tag: string) {
-      return machines().all.filter((machine) =>
-        machine.data.tags.includes(tag),
-      );
+      return Object.entries(machines().all)
+        .filter(([, machine]) => machine.data.tags.includes(tag))
+        .map(([, machine]) => machine);
     },
   };
   return self;
 }
 
 export function toMachines(
-  entities: MachineEntity[],
+  entities: Record<string, MachineEntity>,
   clan: Accessor<Clan>,
 ): Machines {
   const self: Machines = {
-    all: entities.map((machine) => toMachine(machine, clan)),
-    activeIndex: -1,
-    get activeMachine(): Machine | undefined {
-      return this.activeIndex === -1 ? undefined : this.all[this.activeIndex];
+    all: mapObjectValues(entities, ([, machine]) => toMachine(machine, clan)),
+    get sorted() {
+      return Object.values(this.all).sort((a, b) => {
+        return a.id.localeCompare(b.id);
+      });
+    },
+    highlightedIds: [],
+    activeId: null,
+    get activeMachine() {
+      return this.activeId ? this.all[this.activeId] : null;
     },
   };
   return self;

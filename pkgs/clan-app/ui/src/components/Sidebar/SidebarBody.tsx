@@ -58,7 +58,7 @@ const MachinesSection: Component = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <Show
-          when={machines().all.length !== 0}
+          when={Object.keys(machines().all).length !== 0}
           fallback={
             <div class="flex w-full flex-col items-center justify-center gap-2.5">
               <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -76,7 +76,7 @@ const MachinesSection: Component = () => {
           }
         >
           <nav>
-            <For each={machines().all}>
+            <For each={machines().sorted}>
               {(machine) => (
                 <MachineContextProvider machine={() => machine}>
                   <MachineSection />

@@ -87,3 +87,25 @@ type DashJoined<T extends readonly string[]> = T extends readonly [infer First]
         : never
       : never
     : "";
+
+export function mapObjectValues<T, U>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => U,
+): Record<string, U> {
+  return Object.fromEntries(
+    Object.entries(o).map((item, i, arr) => [item[0], fn(item, i, arr)]),
+  );
+}
+export async function asyncMapObjectValues<T, U>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => Promise<U>,
+): Promise<Record<string, U>> {
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(o).map(async (item, i, arr) => [
+        item[0],
+        await fn(item, i, arr),
+      ]),
+    ),
+  );
+}

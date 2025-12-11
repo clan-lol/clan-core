@@ -18,7 +18,7 @@ export type ClanEntity = {
   readonly id: string;
   readonly data: ClanData;
   readonly dataSchema: DataSchema;
-  readonly machines: MachineEntity[];
+  readonly machines: Record<string, MachineEntity>;
   readonly services: ServiceEntity[];
   readonly globalTags: Tags;
 };
@@ -35,7 +35,6 @@ export type Clan = {
   readonly serviceInstances: ServiceInstances;
   readonly isActive: boolean;
 };
-export type NewClanEntity = Pick<ClanEntity, "id" | "data">;
 
 export type ClanMetaEntity = {
   readonly id: string;

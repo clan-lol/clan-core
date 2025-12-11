@@ -10,9 +10,7 @@ import { useMachineContext } from "@/src/models";
 
 export default function SidebarMachine() {
   const [machine, { deactivateMachine }] = useMachineContext();
-  const onClose = () => {
-    deactivateMachine();
-  };
+  const onClose = () => deactivateMachine();
 
   return (
     <div class={styles.sidebarPaneContainer}>

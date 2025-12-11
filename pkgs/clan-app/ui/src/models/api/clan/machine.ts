@@ -1,9 +1,5 @@
 import client from "./client-call";
-import {
-  MachineData,
-  MachineEntity,
-  NewMachineEntity,
-} from "../../machine/machine";
+import { Machine, MachineData, MachineEntity } from "../../machine/machine";
 // TODO: backend should provide an API that allows partial update
 export async function updateMachineData(
   machineId: string,
@@ -24,38 +20,20 @@ export async function updateMachineData(
 }
 
 // TODO: make this one API call only
-export async function createMachine(
-  clanId: string,
-  entity: NewMachineEntity,
-): Promise<MachineEntity> {
+export async function createMachine(machine: Machine): Promise<void> {
   await client.post("create_machine", {
     body: {
       opts: {
         clan_dir: {
-          identifier: clanId,
+          identifier: machine.clan.id,
         },
         machine: {
-          ...entity.data,
-          name: entity.id,
+          ...machine.data,
+          name: machine.id,
         },
       },
     },
   });
-  const schema = await client.post("get_machine_fields_schema", {
-    body: {
-      machine: {
-        name: entity.id,
-        flake: {
-          identifier: clanId,
-        },
-      },
-    },
-  });
-  return {
-    ...entity,
-    dataSchema: schema.data,
-    status: "not_installed",
-  };
 }
 
 export async function updateMachine({

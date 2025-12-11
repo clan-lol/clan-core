@@ -1,18 +1,20 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import client from "./client-call";
 import {
+  Clan,
   ClanData,
   ClanEntity,
   ClanMetaData,
   ClanMetaEntity,
-  NewClanEntity,
 } from "../../clan/clan";
 import {
   MachineData,
+  MachineEntity,
   MachinePositions,
   machinePositions,
 } from "../../machine/machine";
 import { ServiceRole } from "../../service";
+import { asyncMapObjectValues, mapObjectValues } from "@/src/util";
 
 // TODO: make this one API call only
 export async function getClans(
@@ -94,9 +96,10 @@ export async function getClan(id: string): Promise<ClanEntity> {
       },
     }),
   ]);
-  const machines = await Promise.all(
-    Object.entries(machinesRes.data).map(async ([machineId, machine]) => {
-      const [state, schema] = await Promise.all([
+  const machines: Record<string, MachineEntity> = await asyncMapObjectValues(
+    machinesRes.data,
+    async ([machineId, machine]) => {
+      const [stateRes, schemaRes] = await Promise.all([
         client.post("get_machine_state", {
           body: {
             machine: {
@@ -128,12 +131,14 @@ export async function getClan(id: string): Promise<ClanEntity> {
       }
       return {
         id: machineId,
-        data: machine.data as MachineData,
-        dataSchema: schema.data,
-        status: state.data.status,
-        position: mp.getOrSetPosition(machineId),
+        data: {
+          ...(machine.data as MachineData),
+          position: mp.getOrSetPosition(machineId),
+        },
+        dataSchema: schemaRes.data,
+        status: stateRes.data.status,
       };
-    }),
+    },
   );
   const services: ClanEntity["services"] = servicesRes.data.modules.map(
     (service) => ({
@@ -148,18 +153,13 @@ export async function getClan(id: string): Promise<ClanEntity> {
         return {
           data: {
             name: instanceName,
-            roles: Object.fromEntries(
-              Object.entries(instance.roles).map(([roleId, role]) => [
-                roleId,
-                {
-                  id: roleId,
-                  settings: role.settings as Record<string, unknown>,
-                  settingsSchema: {} as JSONSchema,
-                  machines: Object.keys(role.machines!),
-                  tags: Object.keys(role.tags!),
-                },
-              ]),
-            ),
+            roles: mapObjectValues(instance.roles, ([roleId, role]) => ({
+              id: roleId,
+              settings: role.settings as Record<string, unknown>,
+              settingsSchema: {} as JSONSchema,
+              machines: Object.keys(role.machines!),
+              tags: Object.keys(role.tags!),
+            })),
           },
         };
       }),
@@ -202,36 +202,22 @@ export async function updateClanData(
 
 // TODO: make this one API call only
 // TODO: allow users to select a template
-export async function createClan(entity: NewClanEntity): Promise<ClanEntity> {
+export async function createClan(clan: Clan): Promise<void> {
   await client.post("create_clan", {
     body: {
       opts: {
-        dest: entity.id,
+        dest: clan.id,
         template: "minimal",
-        initial: entity.data,
+        initial: clan.data,
       },
     },
   });
 
-  const [dataSchema, tags] = await Promise.all([
-    client.post("get_clan_details_schema", {
-      body: {
-        flake: {
-          identifier: entity.id,
-        },
-      },
-    }),
-    client.post("list_tags", {
-      body: {
-        flake: {
-          identifier: entity.id,
-        },
-      },
-    }),
+  await Promise.all([
     client.post("create_service_instance", {
       body: {
         flake: {
-          identifier: entity.id,
+          identifier: clan.id,
         },
         module_ref: {
           name: "admin",
@@ -248,20 +234,8 @@ export async function createClan(entity: NewClanEntity): Promise<ClanEntity> {
     }),
     client.post("create_secrets_user", {
       body: {
-        flake_dir: entity.id,
+        flake_dir: clan.id,
       },
     }),
   ]);
-
-  return {
-    id: entity.id,
-    data: entity.data,
-    dataSchema: dataSchema.data,
-    machines: [],
-    services: [],
-    globalTags: {
-      regular: tags.data.options,
-      special: tags.data.special,
-    },
-  };
 }

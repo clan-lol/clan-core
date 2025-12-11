@@ -62,9 +62,9 @@ export const MachineGraph: Component = () => {
   let sharedBaseGeometry: THREE.BoxGeometry;
 
   const [, { openModal }] = useModalContext<"addMachine">();
-  const [machines] = useMachinesContext();
-  const [servinceInstances, { createServiceInstance }] =
-    useServiceInstancesContext();
+  const [machines, { activateMachine, deactivateMachine }] =
+    useMachinesContext();
+  const [, { createServiceInstance }] = useServiceInstancesContext();
   const [editingServinceInstance, setEditingServinceInstance] =
     createSignal<ServiceInstance | null>(null);
 
@@ -351,12 +351,15 @@ export const MachineGraph: Component = () => {
     const registry = new ObjectRegistry();
 
     createEffect(() => {
-      for (const machine of machines().all) {
+      for (const machine of Object.values(machines().all)) {
         if (!sceneMachines[machine.id]) {
           const repr = new MachineRepr(
             scene,
             registry,
-            new THREE.Vector2(machine.position[0], machine.position[1]),
+            new THREE.Vector2(
+              machine.data.position[0],
+              machine.data.position[1],
+            ),
             machine.id,
             () => machine.isActive,
             highlightGroups,
@@ -366,7 +369,10 @@ export const MachineGraph: Component = () => {
           scene.add(repr.group);
         } else {
           sceneMachines[machine.id].setPosition(
-            new THREE.Vector2(machine.position[0], machine.position[1]),
+            new THREE.Vector2(
+              machine.data.position[0],
+              machine.data.position[1],
+            ),
           );
         }
       }
@@ -410,15 +416,17 @@ export const MachineGraph: Component = () => {
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(
-        Array.from(machineManager.machines.values().map((m) => m.group)),
+        Array.from(Object.values(sceneMachines).map((m) => m.group)),
       );
       if (intersects.length > 0) {
         const id = intersects.find((i) => i.object.userData?.id)?.object
-          .userData.id;
+          .userData.id as string | undefined;
 
         if (!id) return;
 
-        if (actionMode() === "select") props.onSelect(new Set<string>([id]));
+        if (actionMode() === "select") {
+          activateMachine(id);
+        }
 
         console.log("Clicked on machine", id);
         emitMachineClick(id); // notify subscribers
@@ -741,7 +749,10 @@ export const MachineGraph: Component = () => {
             name="modules"
             icon="Services"
             selected={actionMode() === "service"}
-            onClick={() => setActionMode("service")}
+            onClick={() => {
+              deactivateMachine();
+              setActionMode("service");
+            }}
           />
           <ToolbarButton
             icon="Update"

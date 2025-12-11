@@ -8,8 +8,9 @@ import {
   ClanMetaEntity,
   isClan,
   toClanOrClanMeta,
-  NewClanEntity,
+  ClanData,
 } from "./clan";
+import { mapObjectValues } from "@/src/util";
 
 export type ClansEntity = {
   readonly all: (ClanEntity | ClanMetaEntity)[];
@@ -79,8 +80,9 @@ export type ClansMethods = {
   clanIndex(item: string | Clan | ClanMeta): number;
   activateClan(item: number | string | Clan | ClanMeta): Promise<Clan | null>;
   deactivateClan(clan?: Clan): void;
-  addExistingClan(id: string): Promise<Clan | null>;
-  addNewClan(entity: NewClanEntity): Promise<Clan | null>;
+  loadClan(id: string): Promise<Clan | null>;
+  createClan(id: string, data: ClanData): Clan;
+  addClan(clan: Clan): Promise<void>;
   removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | null;
 };
 function clansMethods([clans, setClans]: [
@@ -144,20 +146,7 @@ function clansMethods([clans, setClans]: [
         return;
       }
     },
-
-    async addNewClan(entity: NewClanEntity) {
-      const created = await api.clan.createClan(entity);
-      const clan = toClanOrClanMeta(created, clans) as Clan;
-      setClans(
-        produce((clans) => {
-          clans.activeIndex = clans.all.length;
-          clans.all.push(clan);
-        }),
-      );
-      return clans.all.at(-1) as Clan;
-    },
-
-    async addExistingClan(id: string) {
+    async loadClan(id: string) {
       for (const [i, clan] of clans.all.entries()) {
         if (clan.id === id) {
           return self.activateClan(i);
@@ -172,6 +161,31 @@ function clansMethods([clans, setClans]: [
         }),
       );
       return clans.all.at(-1) as Clan;
+    },
+    createClan(id, data): Clan {
+      return toClanOrClanMeta(
+        {
+          id,
+          data,
+          dataSchema: {},
+          machines: {},
+          services: [],
+          globalTags: {
+            regular: [],
+            special: ["all", "nixos", "darwin"],
+          },
+        },
+        clans,
+      );
+    },
+    async addClan(clan) {
+      await api.clan.createClan(clan);
+      setClans(
+        produce((clans) => {
+          clans.activeIndex = clans.all.length;
+          clans.all.push(clan);
+        }),
+      );
     },
     removeClan(item) {
       if (typeof item === "number") {
@@ -259,11 +273,9 @@ function persistClansChanges(
               if (isClan(clan)) {
                 return [
                   clan.id,
-                  Object.fromEntries(
-                    clan.machines.all.map((machine) => [
-                      machine.id,
-                      machine.position,
-                    ]),
+                  mapObjectValues(
+                    clan.machines.all,
+                    ([, machine]) => machine.data.position,
                   ),
                 ];
               }

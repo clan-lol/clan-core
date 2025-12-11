@@ -17,24 +17,21 @@ export type MachineEntity = {
   readonly data: MachineData;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
-  readonly position: readonly [number, number];
 };
-export type Machine = Omit<MachineEntity, "data"> & {
+export type Machine = {
   readonly clan: Clan;
+  readonly id: string;
   data: MachineData;
-  position: readonly [number, number];
-  readonly index: number;
+  readonly dataSchema: DataSchema;
+  readonly status: MachineStatus;
   readonly isActive: boolean;
   readonly serviceInstances: ServiceInstance[];
-};
-export type NewMachineEntity = Pick<MachineEntity, "id" | "data"> & {
-  readonly position: readonly [number, number];
 };
 
 export type MachineData = {
   // TODO: don't use nested fields, it makes updating data much more complex
   // because we need to deal with deep merging
-  deploy?: {
+  deploy: {
     buildHost?: string;
     targetHost?: string;
   };
@@ -43,6 +40,7 @@ export type MachineData = {
   installedAt?: number;
   machineClass: "nixos" | "darwin";
   tags: string[];
+  position: readonly [number, number];
 };
 
 export type MachineStatus =
@@ -198,11 +196,6 @@ export function toMachine(
     ...machine,
     get clan() {
       return clan();
-    },
-    get index() {
-      return this.clan.machines.all.findIndex(
-        (machine) => machine.id === this.id,
-      );
     },
     get isActive() {
       return this.clan.machines.activeMachine?.id === this.id;

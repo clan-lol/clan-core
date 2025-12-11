@@ -52,7 +52,7 @@ const SetupSchema = v.object({
 type SetupForm = v.InferInput<typeof SetupSchema>;
 
 export default function Onboarding(): JSX.Element {
-  const [, { addNewClan }] = useClansContext();
+  const [, { createClan, addClan }] = useClansContext();
   const [step, setStep] = createSignal<Step>({ type: "welcome" });
 
   //
@@ -70,10 +70,11 @@ export default function Onboarding(): JSX.Element {
     event,
   ) => {
     const path = `${directory}/${name}`;
-    const data = { id: path, data: { name, description } };
+    const data = { name, description };
+    const clan = createClan(path, data);
     setStep({ type: "creating" });
     try {
-      await addNewClan(data);
+      await addClan(clan);
     } catch (err) {
       setStep({ type: "welcome", error: String(err) });
       return;
@@ -222,7 +223,7 @@ function Welcome(props: {
   step: Accessor<Step>;
   setStep: Setter<Step>;
 }): JSX.Element {
-  const [, { pickClanDir, addExistingClan }] = useClansContext()!;
+  const [, { pickClanDir, loadClan }] = useClansContext()!;
   const [loading, setLoading] = createSignal(false);
 
   async function onSelect(): Promise<void> {
@@ -236,7 +237,7 @@ function Welcome(props: {
       return;
     }
     setLoading(false);
-    await addExistingClan(path);
+    await loadClan(path);
   }
 
   return (
