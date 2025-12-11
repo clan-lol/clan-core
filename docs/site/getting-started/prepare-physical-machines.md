@@ -17,23 +17,17 @@ This is necessary for proper installation and operation.
 ## Requirements
 
 * Estimated time for this step: 20 minutes
-* A USB drive with at least 1.5GB total space (all data on it will be lost)
+* A USB drive with at least 1.5GB total space (!! all data will be lost !!)
 * A Linux/NixOS machine with internet access to create the boot stick. You can use your setup device or any other machine for this step.
-* One or more target machines with Linux running on them and network root access.
-
-    !!! Warning "Operating System Recommendations"
-        We are currently working on more refined operating system recommendations.
-
-        - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
-
-        - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
-
-        - Root user access will be required throughout the whole setup.
+* One or more physical target machines (!! all data will be lost !!)
+   
+    Minimum target 
+system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
 
 
 ## Identify the USB Flash Drive
 
-1. Insert your USB flash drive into your Linux computer.
+1. Insert your USB flash drive into the Linux computer you want to create the boot stick on.
 
 2. Identify your flash drive with `lsblk`:
 
@@ -218,10 +212,95 @@ Press ++ctrl+d++ to exit `IWD`.
 !!! Important
     Press ++ctrl+d++ **again** to update the displayed QR code and connection information.
 
-## 
+
+### Image Installer
+This method makes use of the [image installers](../../getting-started/deploy-to-physical-machine/flash-installer.md).
+The installer will randomly generate a password and local addresses on boot, then run a SSH server with these preconfigured.
+The installer shows its deployment relevant information in two formats, a text form, as well as a QR code.
+This is an example of the booted installer.
+```{ .bash .annotate .no-copy .nohighlight}
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ ┌───────────────────────────┐                                                       │
+│ │███████████████████████████│ # This is the QR Code (1)                             │
+│ │██ ▄▄▄▄▄ █▀▄█▀█▀▄█ ▄▄▄▄▄ ██│                                                       │
+│ │██ █   █ █▀▄▄▄█ ▀█ █   █ ██│                                                       │
+│ │██ █▄▄▄█ █▀▄ ▀▄▄▄█ █▄▄▄█ ██│                                                       │
+│ │██▄▄▄▄▄▄▄█▄▀ ▀▄▀▄█▄▄▄▄▄▄▄██│                                                       │
+│ │███▀▀▀ █▄▄█ ▀▄   ▄▀▄█   ███│                                                       │
+│ │██▄██▄▄█▄▄▀▀██▄▀ ▄▄▄ ▄▀█▀██│                                                       │
+│ │██ ▄▄▄▄▄ █▄▄▄▄ █ █▄█ █▀ ███│                                                       │
+│ │██ █   █ █ █  █ ▄▄▄  ▄▀▀ ██│                                                       │
+│ │██ █▄▄▄█ █ ▄ ▄    ▄ ▀█ ▄███│                                                       │
+│ │██▄▄▄▄▄▄▄█▄▄▄▄▄▄█▄▄▄▄▄█▄███│                                                       │
+│ │███████████████████████████│                                                       │
+│ └───────────────────────────┘                                                       │
+│ ┌─────────────────────────────────────────────────────────────────────────────────┐ │
+│ │Root password: cheesy-capital-unwell  # password (2)                             │ │
+│ │Local network addresses:                                                         │ │
+│ │enp1s0           UP    192.168.178.169/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
+│ │enp2s0           DOWN                                                            │ │
+│ │wlan0            DOWN # connect to wlan (3)                                      │ │
+│ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
+│ │Multicast DNS: nixos-installer.local                                             │ │
+│ └─────────────────────────────────────────────────────────────────────────────────┘ │
+│ Press 'Ctrl-C' for console access                                                   │
+│                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
+1.  This is not an actual QR code, because it is displayed rather poorly on text sites.
+    This would be the actual content of this specific QR code prettified:
+    ```json
+    {
+        "pass": "cheesy-capital-unwell",
+        "tor": "6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion",
+        "addrs": [
+        "2001:9e8:347:ca00:21e:6ff:fe45:3c92"
+        ]
+    }
+    ```
+    To generate the actual QR code, that would be displayed use:
+    ```shellSession
+    echo '{"pass":"cheesy-capital-unwell","tor":"6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion","addrs":["2001:9e8:347:ca00:21e:6ff:fe45:3c92"]}' | nix run nixpkgs#qrencode -- -s 2 -m 2 -t utf8
+    ```
+2.  The root password for the installer medium.
+    This password is autogenerated and meant to be easily typeable.
+3.  See how to connect the installer medium to wlan [here](../../getting-started/deploy-to-physical-machine/flash-installer.md).
+!!!tip
+    For easy sharing of deployment information via QR code, we highly recommend using [KDE Connect](https://apps.kde.org/de/kdeconnect/).
+There are two ways to deploy your machine:
+### Generating a Hardware Report
+The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
+=== "Password"
+    **Password**
+    ```terminal
+    clan machines install [MACHINE] \
+        --update-hardware-config nixos-facter \
+        --phases kexec \
+        --target-host root@192.168.178.169
+    ```
+=== "QR Code"
+    **QR Code**
+    **Using a JSON String or File Path**:
+    Copy the JSON string contained in the QR Code and provide its path or paste it directly:
+    ```terminal
+    clan machines install [MACHINE] --json [JSON] \
+        --update-hardware-config nixos-facter \
+        --phases kexec
+    ```
+    **Using an Image Containing the QR Code**:
+    Provide the path to an image file containing the QR code displayed by the installer:
+    ```terminal
+    clan machines install [MACHINE] --png [PATH] \
+        --update-hardware-config nixos-facter \
+        --phases kexec
+    ```
+If you are using our template `[MACHINE]` would be `jon`
 
 
 ## Next up
 
-In the next part of the physical deployment preparations, we will continue the process on the target device.
+If all your machines are physical, you can continue with disk preparations here:
 
+[Next Step (Choose Disk Format)](configure-disk.md){ .md-button .md-button--primary }
+
+Alternatively, feel free to also add virtual machines into the mix!

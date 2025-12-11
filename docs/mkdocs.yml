@@ -47,17 +47,16 @@ exclude_docs: |
 nav:
   - Getting Started:
       - Overview: index.md
-      - getting-started/creating-your-first-clan.md
-      - getting-started/add-machines.md
-      - getting-started/add-users.md
-      - getting-started/add-services.md
-      - getting-started/prepare-physical-machines.md
-      - getting-started/prepare-virtual-machines.md
-      - getting-started/configure-disk.md
-      - getting-started/deployment-phase.md
-      - getting-started/update-machines.md
-      - getting-started/continuous-integration.md
-      - Convert existing NixOS configurations: getting-started/convert-existing-NixOS-configuration.md
+      - Creating Your First Clan: getting-started/creating-your-first-clan.md
+      - Adding Machines: getting-started/add-machines.md
+      - Adding Users: getting-started/add-users.md
+      - Adding Services: getting-started/add-services.md
+      - Physical Machine Preparations: getting-started/prepare-physical-machines.md
+      - Virtual Machine Preparations: getting-started/prepare-virtual-machines.md
+      - Disk Configuration: getting-started/configure-disk.md
+      - Deployment Phase: getting-started/deployment-phase.md
+      - Updating Machines: getting-started/update-machines.md
+      - What's Next?: getting-started/continuous-integration.md
   - Guides:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md
@@ -94,6 +93,7 @@ nav:
           - Introduction to Templates: concepts/templates.md
           - Community Disko Templates: guides/disko-templates/community.md
       - Migrations:
+          - Convert existing NixOS configurations: guides/migrations/convert-existing-NixOS-configuration.md
           - clan modules to clan services: guides/migrations/migrate-inventory-services.md
           - Facts to Vars: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md
