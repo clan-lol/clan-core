@@ -83,7 +83,15 @@ let
 in
 {
   options = {
-    settings = import ./settings-opts.nix { inherit lib; };
+    settings = mkOption {
+      description = ''
+        Settings for the vars module.
+      '';
+      type = submodule {
+        imports = [ ./settings-opts.nix ];
+      };
+      default = { };
+    };
     generators = mkOption {
       description = ''
         A set of generators that can be used to generate files.
