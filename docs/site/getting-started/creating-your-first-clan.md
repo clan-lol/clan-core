@@ -1,4 +1,4 @@
-## Summary 
+## Summary
 
 Ready to manage your fleet of machines?
 
@@ -13,7 +13,7 @@ Make sure you have the following:
 
 * 💻 **Setup Device**: A Linux machine from which the setup commands will be run.
 
-!!! Warning "Operating System Recommendations" 
+!!! Warning "Operating System Recommendations"
     We are currently working on more refined operating system recommendations.
 
     - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
@@ -41,7 +41,7 @@ Make sure you have the following:
 
         **On NixOS:**
 
-        Nix is already installed. 
+        Nix is already installed.
         You only need to enable flakes for your user via `nano /etc/nixos/configuration.nix`:
 
         ```nix
@@ -185,9 +185,31 @@ Now, activate the environment using one of the following methods.
     nix develop
     ```
 
-## Checkpoint / Renaming Your Clan
+## Renaming Your Clan
 
-Once your environment is active, verify that the clan command is available by running:
+You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
+
+The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
+
+The metal.domain will function as your internal top level domain. Select something catchy, like clan.lol
+
+Feel obliged to change the following lines
+
+```{.nix title="clan.nix" hl_lines="3 4 5"}
+{
+  # Ensure this is unique among all clans you want to use.
+  meta.name = "fancyclan";
+  meta.domain = "fancydomain";
+  meta.description = "My selfhosted homelab";
+
+  # ...
+  # elided
+}
+```
+
+## Checkpoint
+
+Once your [environment is active](#activating-the-environment), verify that the clan command is available by running:
 
 ```shellSession
 clan show
@@ -201,26 +223,6 @@ Description: None
 ```
 
 This confirms your setup is working correctly.
-
-You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
-
-The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
-
-The metal.domain will function as your internal top level domain. Select something catchy, like clan.lol
-
-Feel free to add `meta.description = "something smart"` beneath meta.tld if you would like to update the description for `clan show`.
-
-```{.nix title="clan.nix" hl_lines="3 4 5"}
-{
-  # Ensure this is unique among all clans you want to use.
-  meta.name = "__CHANGE_ME__";
-  meta.domain = "changeme";
-  meta.description = "optional";
-
-  # ...
-  # elided
-}
-```
 
 ## Up Next
 
