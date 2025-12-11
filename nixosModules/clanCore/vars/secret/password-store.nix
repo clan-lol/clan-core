@@ -78,27 +78,29 @@ in
     };
   };
   config = {
-    clan.core.vars.settings =
+    clan.core.vars.settings.fileModule =
       lib.mkIf (config.clan.core.vars.settings.secretStore == "password-store")
-        {
-          fileModule =
-            file:
-            lib.mkIf file.config.secret {
-              path =
-                if file.config.neededFor == "users" then
-                  "/run/user-secrets/${file.config.generatorName}/${file.config.name}"
-                else if file.config.neededFor == "services" then
-                  "/run/secrets/${file.config.generatorName}/${file.config.name}"
-                else if file.config.neededFor == "activation" then
-                  "${config.clan.core.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
-                else if file.config.neededFor == "partitioning" then
-                  "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
-                else
-                  throw "unknown neededFor ${file.config.neededFor}";
+        (
+          file:
+          lib.mkIf file.config.secret {
+            path =
+              if file.config.neededFor == "users" then
+                "/run/user-secrets/${file.config.generatorName}/${file.config.name}"
+              else if file.config.neededFor == "services" then
+                "/run/secrets/${file.config.generatorName}/${file.config.name}"
+              else if file.config.neededFor == "activation" then
+                "${config.clan.core.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
+              else if file.config.neededFor == "partitioning" then
+                "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
+              else
+                throw "unknown neededFor ${file.config.neededFor}";
 
-            };
-          secretModule = "clan_cli.vars.secret_modules.password_store";
-        };
+          }
+        );
+    clan.core.vars.settings.secretModule = lib.mkIf (
+      config.clan.core.vars.settings.secretStore == "password-store"
+    ) "clan_cli.vars.secret_modules.password_store";
+
     system.activationScripts =
       lib.mkIf ((config.clan.core.vars.settings.secretStore == "password-store") && !useSystemdActivation)
         {
