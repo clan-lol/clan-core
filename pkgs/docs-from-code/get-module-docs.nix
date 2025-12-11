@@ -9,35 +9,21 @@ let
   inherit (clan-core.clanLib.docs) stripStorePathsFromDeclarations;
   transformOptions = stripStorePathsFromDeclarations;
 
-  nixosConfigurationWithClan =
-    let
-      evaled = lib.evalModules {
-        class = "nixos";
-        modules = [
-          # Basemodule
-          (
-            { config, ... }:
-            {
-              imports = (import (pkgs.path + "/nixos/modules/module-list.nix"));
-              nixpkgs.pkgs = pkgs;
-              clan.core.name = "dummy";
-              system.stateVersion = config.system.nixos.release;
-              # Set this to work around a bug where `clan.core.settings.machine.name`
-              # is forced due to `networking.interfaces` being forced
-              # somewhere in the nixpkgs options
-              facter.detected.dhcp.enable = lib.mkForce false;
-            }
-          )
-          {
-            clan.core.settings.directory = clan-core;
-          }
-          clan-core.nixosModules.clanCore
-        ];
+  clanEval = clan-core.clanLib.clan {
+    # name = "jon's clan";
+    directory = ./.;
+    machines.jon =
+      { config, ... }:
+      {
+        nixpkgs.pkgs = pkgs;
+        system.stateVersion = config.system.nixos.release;
       };
-    in
-    evaled;
+  };
+
+  nixosConfigurationWithClan = clanEval.config.nixosConfigurations.jon;
 in
 {
+  inherit clanEval;
   # Test with:
   # nix build .\#legacyPackages.x86_64-linux.clanModulesViaService
   clanModulesViaService = lib.mapAttrs (
