@@ -52,19 +52,21 @@ def list_groups(flake_dir: Path) -> list[Group]:
     if not groups_dir.exists():
         return groups
 
-    for group in groups_dir.iterdir():
+    for group in sorted(groups_dir.iterdir(), key=lambda p: p.name):
         group_folder = groups_dir / group
         if not group_folder.is_dir():
             continue
         machines_path = machines_folder(flake_dir, group.name)
         machines = (
-            [f.name for f in machines_path.iterdir() if validate_hostname(f.name)]
+            sorted(f.name for f in machines_path.iterdir() if validate_hostname(f.name))
             if machines_path.is_dir()
             else []
         )
         users_path = users_folder(flake_dir, group.name)
         users = (
-            [f.name for f in users_path.iterdir() if VALID_USER_NAME.match(f.name)]
+            sorted(
+                f.name for f in users_path.iterdir() if VALID_USER_NAME.match(f.name)
+            )
             if users_path.is_dir()
             else []
         )
@@ -291,11 +293,11 @@ def get_groups(flake_dir: Path, what: str, name: str) -> list[str]:
     if not groups_dir.exists():
         return []
 
-    return [
+    return sorted(
         group.name
         for group in groups_dir.iterdir()
         if group.is_dir() and (group / what / name).is_symlink()
-    ]
+    )
 
 
 def add_secret_command(args: argparse.Namespace) -> None:

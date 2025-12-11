@@ -49,7 +49,7 @@ def list_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
     machine = Machine(name=args.machine, flake=flake)
     all_vars = get_machine_vars(machine)
-    print("\n".join([str(var) for var in all_vars]))
+    print("\n".join(sorted(str(var) for var in all_vars)))
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:

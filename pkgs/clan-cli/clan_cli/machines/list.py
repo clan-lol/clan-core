@@ -12,9 +12,11 @@ log = logging.getLogger(__name__)
 def list_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
 
-    for name in list_machines(
-        flake,
-        opts=ListOptions(filter=MachineFilter(tags=args.tags)),
+    for name in sorted(
+        list_machines(
+            flake,
+            opts=ListOptions(filter=MachineFilter(tags=args.tags)),
+        )
     ):
         print(name)
 

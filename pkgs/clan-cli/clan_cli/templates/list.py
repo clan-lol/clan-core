@@ -17,7 +17,7 @@ def list_command(args: argparse.Namespace) -> None:
     templates = list_templates(args.flake)
 
     # Display all templates
-    for template_type in templates.builtins:
+    for template_type in sorted(templates.builtins):
         builtin_template_set: TemplateClanType | None = templates.builtins.get(
             template_type,
             None,
@@ -27,7 +27,9 @@ def list_command(args: argparse.Namespace) -> None:
 
         print(f"Available '{template_type}' templates")
         print("├── <builtin>")
-        for builtin_idx, (name, template) in enumerate(builtin_template_set.items()):
+        for builtin_idx, (name, template) in enumerate(
+            sorted(builtin_template_set.items())
+        ):
             description = template.get("description", "no description")
             is_last_template = builtin_idx == len(builtin_template_set) - 1
             if not is_last_template:
@@ -35,11 +37,11 @@ def list_command(args: argparse.Namespace) -> None:
             else:
                 print(f"│   └── {name}: {description}")
 
-        visible_inputs = [
+        visible_inputs = sorted(
             (input_name, input_templates)
             for input_name, input_templates in templates.custom.items()
             if template_type in input_templates
-        ]
+        )
         last_idx = len(visible_inputs) - 1
         for input_idx, (input_name, input_templates) in enumerate(visible_inputs):
             custom_templates: TemplateClanType = input_templates[template_type]  # type: ignore[literal-required]
@@ -50,7 +52,9 @@ def list_command(args: argparse.Namespace) -> None:
             else:
                 print(f"└── inputs.{input_name}:")
 
-            for custom_idx, (name, template) in enumerate(custom_templates.items()):
+            for custom_idx, (name, template) in enumerate(
+                sorted(custom_templates.items())
+            ):
                 is_last_template = custom_idx == len(custom_templates) - 1
                 if not is_last_template:
                     print(

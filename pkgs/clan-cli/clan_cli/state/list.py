@@ -52,7 +52,7 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
                 description=f"The service: {service} needs to be configured for the machine.",
             )
 
-    for svc in state:
+    for svc in sorted(state):
         if not svc:
             continue
 

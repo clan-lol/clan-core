@@ -15,7 +15,7 @@ def list_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
     machine = Machine(name=args.machine, flake=flake)
     backups = list_backups(machine=machine, provider=args.provider)
-    for backup in backups:
+    for backup in sorted(backups, key=lambda b: b.name):
         print(backup.name)
 
 
