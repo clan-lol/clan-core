@@ -186,10 +186,15 @@ def run_generators(
             yield Machine(name=machine_name, flake=flake)
 
     # preheat the select cache, to reduce repeated calls during execution
-    selectors = []
+    selectors = ["clanInternals.?secrets.?age.?plugins"]
     for generator in generators_to_run:
         machine = next(get_generator_machines(generator))
         selectors.append(generator.final_script_selector(machine.name))
+        selectors.append(
+            flake.machine_selector(
+                machine.name, "config.clan.core.?sops.?defaultGroups"
+            )
+        )
     flake.precache(selectors)
 
     # execute generators

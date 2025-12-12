@@ -1455,6 +1455,95 @@ def test_generate_secret_var_password_store_minimal_select_calls(
 
 
 @pytest.mark.with_core
+def test_generate_secret_var_sops_minimal_select_calls(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that sops backend doesn't make unnecessary select calls.
+
+    This test uses multiple machines and multiple generators to ensure
+    that the batching optimization works correctly across the board.
+    """
+    flake = flake_with_sops
+
+    # Set up first machine with two generators
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+
+    gen1_m1 = machine1_config["clan"]["core"]["vars"]["generators"]["gen1"]
+    gen1_m1["files"]["secret1"]["secret"] = True
+    gen1_m1["files"]["value1"]["secret"] = False
+    gen1_m1["script"] = (
+        'echo -n "secret1" > "$out"/secret1 && echo -n "value1" > "$out"/value1'
+    )
+
+    gen2_m1 = machine1_config["clan"]["core"]["vars"]["generators"]["gen2"]
+    gen2_m1["files"]["secret2"]["secret"] = True
+    gen2_m1["files"]["value2"]["secret"] = False
+    gen2_m1["script"] = (
+        'echo -n "secret2" > "$out"/secret2 && echo -n "value2" > "$out"/value2'
+    )
+
+    # Set up second machine with the same generator configuration
+    flake.machines["machine2"] = machine1_config.copy()
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Create a fresh flake object and invalidate cache to ensure clean state
+    invalidate_flake_cache(flake.path)
+    flake_obj = Flake(str(flake.path))
+    machine1 = Machine(name="machine1", flake=flake_obj)
+    machine2 = Machine(name="machine2", flake=flake_obj)
+
+    # Generate secrets for both machines - this should result in minimal select calls
+    # Even with 2 machines x 2 generators = 4 generator instances, we should still
+    # only have 2 cache misses due to batching
+    run_generators(
+        machines=[machine1, machine2],
+        generators=None,  # Generate all
+    )
+
+    # The optimization should result in minimal cache misses.
+    # We expect exactly 2 cache misses:
+    # 1. One select to get the list of generators for all machines
+    # 2. One batched evaluation for getting all generator configurations (script, files, etc.)
+    # Unlike password-store, SOPS doesn't need additional selects for command configuration.
+
+    # Print stack traces if we have more cache misses than expected
+    if flake_obj._cache_misses > 2:
+        flake_obj.print_cache_miss_analysis(
+            title="Cache miss analysis for sops backend"
+        )
+
+    assert flake_obj._cache_misses == 2, (
+        f"Expected exactly 2 cache misses for sops backend with 2 machines and 2 generators, "
+        f"got {flake_obj._cache_misses}."
+    )
+
+    # Verify the secrets were actually generated for both machines
+    sops_store = sops.SecretStore(flake=flake_obj)
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+
+    for machine_name in ["machine1", "machine2"]:
+        gen1 = Generator("gen1", share=False, machines=[machine_name], _flake=flake_obj)
+        gen2 = Generator("gen2", share=False, machines=[machine_name], _flake=flake_obj)
+
+        assert sops_store.exists(gen1, "secret1"), f"secret1 missing for {machine_name}"
+        assert sops_store.get(gen1, "secret1").decode() == "secret1"
+        assert in_repo_store.exists(gen1, "value1"), (
+            f"value1 missing for {machine_name}"
+        )
+        assert in_repo_store.get(gen1, "value1").decode() == "value1"
+
+        assert sops_store.exists(gen2, "secret2"), f"secret2 missing for {machine_name}"
+        assert sops_store.get(gen2, "secret2").decode() == "secret2"
+        assert in_repo_store.exists(gen2, "value2"), (
+            f"value2 missing for {machine_name}"
+        )
+        assert in_repo_store.get(gen2, "value2").decode() == "value2"
+
+
+@pytest.mark.with_core
 def test_cache_misses_for_vars_operations(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
