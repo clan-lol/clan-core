@@ -3,6 +3,7 @@
   imports = [
     ./backups.nix
     ./defaults.nix
+    ./dependencies.nix
     ./facts-deprecation.nix
     ./inventory
     ./meta/interface.nix

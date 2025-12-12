@@ -179,6 +179,13 @@ in
           in
           {
             imports = [
+              # Counterpart to /nixosModules/clanCore/dependencies.nix
+              # Dependencies from 'clan' scope injected into 'machine' modules
+              {
+                clanConfig = config;
+              }
+
+              # TODO: deprecate these options in favor of dependencies above
               (lib.modules.importApply ../../nixosModules/machineModules/forName.nix {
                 inherit (config.inventory) meta;
                 inherit

@@ -12,6 +12,7 @@ let
 in
 #######
 {
+  clan = import ./lib-clan-tests.nix { clanLib = clan-core.clanLib; };
   autoloading = import ./dir_test.nix { inherit lib; };
   test_missing_self =
     let
