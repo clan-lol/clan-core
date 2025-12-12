@@ -26,21 +26,39 @@
     interface =
       { lib, ... }:
       {
-        options.extraMulticastInterfaces = lib.mkOption {
+        options.multicastInterfaces = lib.mkOption {
           type = lib.types.listOf lib.types.attrs;
           default = [ ];
           description = ''
-            Additional interfaces to use for Multicast. See
-            https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
-            for reference.
+            Interfaces to use for Yggdrasil multicast peer discovery.
+            By default, multicast is enabled on all interfaces (empty list).
+            To restrict multicast to specific interfaces, add them to this list.
+            See https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
           '';
           example = [
             {
-              Regex = "(wg).*";
+              # Restrict to only VPN interfaces
+              Regex = "(wg|zt|tailscale|mycelium|tinc|tun|tap).*";
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1020;
+              Priority = 0;
+            }
+            {
+              # Or restrict to ethernet interfaces
+              Regex = "(eth|en).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 1024;
+            }
+            {
+              # Or restrict to wifi interfaces
+              Regex = "(wl).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 1025;
             }
           ];
         };
@@ -155,28 +173,20 @@
 
             exportedPeers = exportedPeerIPs;
 
-            # Read this machine's own public key
-            localPublicKey = lib.strings.trim (
-              builtins.readFile config.clan.core.vars.generators.yggdrasil.files.publicKey.path
-            );
-
-            # Collect public keys from all machines in the role (including self)
-            allowedPublicKeys = lib.lists.unique (
-              lib.filter (key: key != "") (
-                [ localPublicKey ] ++
-                map (
-                  name:
-                  lib.strings.trim (
-                    clanLib.getPublicValue {
-                      flake = config.clan.core.settings.directory;
-                      machine = name;
-                      generator = "yggdrasil";
-                      file = "publicKey";
-                      default = "";
-                    }
-                  )
-                ) (lib.attrNames roles.default.machines)
-              )
+            # Collect public keys from all machines in the role
+            allowedPublicKeys = lib.filter (key: key != "") (
+              map (
+                name:
+                lib.strings.trim (
+                  clanLib.getPublicValue {
+                    flake = config.clan.core.settings.directory;
+                    machine = name;
+                    generator = "yggdrasil";
+                    file = "publicKey";
+                    default = "";
+                  }
+                )
+              ) (lib.attrNames roles.default.machines)
             );
 
             # Collect Yggdrasil IPv6 addresses from all machines in the role
@@ -234,15 +244,16 @@
               ];
 
               script = ''
-                # Generate private key (only if it doesn't exist - handled by clan vars)
+                # Generate private key
                 openssl genpkey -algorithm Ed25519 -out $out/privateKey
 
-                # Extract raw 32-byte public key and convert to hex
-                # The DER format has a 12-byte header, skip it to get the raw key bytes
+                # Extract raw 32-byte public key and convert to hex.
+                # The DER format has a 12-byte header, skip it to get the raw
+                # key bytes
                 openssl pkey -in $out/privateKey -pubout -outform DER | \
                   tail -c +13 | xxd -p -c 64 | tr -d '\n' > $out/publicKey
 
-                # Derive IPv6 address from key (unchanged)
+                # Derive IPv6 address from key
                 echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | yggdrasil -useconf -address | tr -d '\n' > $out/address
               '';
             };
@@ -275,24 +286,8 @@
                 IfName = "ygg";
                 Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
                 AllowedEncryptionPublicKeys = allowedPublicKeys;
-                MulticastInterfaces = [
-                  # Ethernet is preferred over WIFI
-                  {
-                    Regex = "(eth|en).*";
-                    Beacon = true;
-                    Listen = true;
-                    Port = 5400;
-                    Priority = 1024;
-                  }
-                  {
-                    Regex = "(wl).*";
-                    Beacon = true;
-                    Listen = true;
-                    Port = 5400;
-                    Priority = 1025;
-                  }
-                ]
-                ++ settings.extraMulticastInterfaces;
+                NodeInfoPrivacy = true;
+                MulticastInterfaces = settings.multicastInterfaces;
               };
             };
             networking.firewall = {
@@ -306,7 +301,8 @@
                 6446 # TLS
               ];
 
-              # Restrict ygg interface to only allow traffic from clan members (iptables)
+              # Restrict ygg interface to only allow traffic from clan members
+              # (iptables)
               extraCommands = lib.mkIf (!config.networking.nftables.enable) ''
                 # Create chain for yggdrasil input filtering
                 ip6tables -N ygg-input 2>/dev/null || true
@@ -325,7 +321,8 @@
               '';
             };
 
-            # Restrict ygg interface to only allow traffic from clan members (nftables)
+            # Restrict ygg interface to only allow traffic from clan members
+            # (nftables)
             networking.nftables.tables.yggdrasil-filter = lib.mkIf config.networking.nftables.enable {
               family = "inet";
               content = ''

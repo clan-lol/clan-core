@@ -109,24 +109,37 @@ inventory = {
 };
 ```
 
-## Security: Automatic Whitelisting
+## Security and Privacy
 
-The Yggdrasil service implements **two layers of security** to restrict connections
-to only clan members:
+This module sets Yggdrasil's `AllowedEncryptionPublicKeys` to limit the
+connections to the public keys of all machines with the `default` role.
 
-### Layer 1: Peer Whitelisting (Application Level)
-Uses Yggdrasil's `AllowedEncryptionPublicKeys` to control which nodes can establish
-peering connections:
-- **Automatic**: All machines in the `default` role are automatically whitelisted
-- **Isolation**: Public nodes cannot peer with your Yggdrasil instance
-- **Multicast**: Local discovery via multicast is still enabled by default
+According to the [yggdrasil
+documentation](https://yggdrasil-network.github.io/configurationref.html#allowedpublickeys):
 
-### Layer 2: Firewall Rules (Network Level)
-Restricts the `ygg` network interface to only accept traffic from clan member IPs:
-- **IP-based filtering**: Only allows IPv6 traffic from known clan Yggdrasil addresses
-- **Interface-specific**: Rules only apply to the `ygg` interface
-- **Defense in depth**: Blocks traffic even if a non-clan node somehow peers
-- **Automatic**: Works with both nftables and iptables backends
+> This is not a firewall and does not control who can send you traffic over the
+> Yggdrasil Network or reach open ports and services on your machine. For that you
+> need an IPv6 firewall.
 
-**Combined Effect**: Only clan members can both peer AND route traffic through
-your Yggdrasil instance, providing comprehensive protection against unauthorized access.
+This service therefore also sets up firewall rules, such that the `ygg` network
+interface only accepts traffic from clan member IPs.
+
+By default, multicast peer discovery is enabled on all network interfaces,
+allowing automatic discovery of local peers. Since Yggdrasil provides end-to-end
+encryption, this is safe even on untrusted networks.
+
+If you want to restrict multicast to specific interfaces (e.g., only VPN
+interfaces), you can configure `settings.multicastInterfaces` with a list of
+interface patterns. For example, to only announce on VPN interfaces:
+
+```nix
+settings.multicastInterfaces = [
+  {
+    Regex = "(wg|zt|tailscale|mycelium|tinc|tun|tap).*";
+    Beacon = true;
+    Listen = true;
+    Port = 5400;
+    Priority = 0;
+  }
+];
+```
