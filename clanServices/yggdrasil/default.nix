@@ -179,6 +179,22 @@
               )
             );
 
+            # Collect Yggdrasil IPv6 addresses from all machines in the role
+            allowedYggdrasilIPs = lib.filter (ip: ip != "") (
+              map (
+                name:
+                lib.strings.trim (
+                  clanLib.getPublicValue {
+                    flake = config.clan.core.settings.directory;
+                    machine = name;
+                    generator = "yggdrasil";
+                    file = "address";
+                    default = "";
+                  }
+                )
+              ) (lib.attrNames roles.default.machines)
+            );
+
           in
           {
 
@@ -289,6 +305,42 @@
                 6445 # WebSocket
                 6446 # TLS
               ];
+
+              # Restrict ygg interface to only allow traffic from clan members (iptables)
+              extraCommands = lib.mkIf (!config.networking.nftables.enable) ''
+                # Create chain for yggdrasil input filtering
+                ip6tables -N ygg-input 2>/dev/null || true
+                ip6tables -F ygg-input
+
+                # Allow traffic from clan member IPs
+                ${lib.concatMapStringsSep "\n    " (
+                  ip: "ip6tables -A ygg-input -s ${lib.escapeShellArg ip} -i ygg -j ACCEPT"
+                ) allowedYggdrasilIPs}
+
+                # Drop all other traffic on ygg interface
+                ip6tables -A ygg-input -i ygg -j DROP
+
+                # Insert rule at beginning of INPUT chain
+                ip6tables -I INPUT -i ygg -j ygg-input
+              '';
+            };
+
+            # Restrict ygg interface to only allow traffic from clan members (nftables)
+            networking.nftables.tables.yggdrasil-filter = lib.mkIf config.networking.nftables.enable {
+              family = "inet";
+              content = ''
+                chain input {
+                  type filter hook input priority 0; policy accept;
+
+                  # Only apply to ygg interface
+                  iifname "ygg" ip6 saddr {
+                    ${lib.concatMapStringsSep ",\n        " (ip: "${ip}") allowedYggdrasilIPs}
+                  } counter accept comment "allow clan yggdrasil IPs"
+
+                  # Drop all other traffic on ygg interface
+                  iifname "ygg" counter drop comment "block non-clan yggdrasil traffic"
+                }
+              '';
             };
           };
       };
