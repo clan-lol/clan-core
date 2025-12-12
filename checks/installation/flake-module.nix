@@ -195,6 +195,46 @@
           };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
+          /*
+            Test: Complete Clan machine installation workflow
+
+            This integration test validates the full end-to-end installation process for a Clan machine
+            starting from a fresh system without any pre-existing hardware configuration.
+
+            Test flow:
+
+            1. VM Setup: Spawns a target VM running in a NixOS installer environment
+
+            2. Hardware Detection: Executes `clan machines init-hardware-config` to:
+               - Detect hardware via SSH connection to the target
+               - Generate facter.json with hardware information
+               - Create initial machine configuration
+
+            3. Encryption Setup: Runs `clan vars keygen` to generate:
+               - SOPS encryption keys for secret management
+               - Machine-specific key material
+
+            4. Full Installation: Executes `clan machines install` which performs:
+               - Disk partitioning using disko (tests partitioning-time secrets)
+               - NixOS system installation with the generated config
+               - Secret deployment for both partitioning and activation phases
+               - Hardware config update using nixos-facter backend
+
+            5. Verification:
+               - Gracefully shuts down the installer VM
+               - Boots a new VM from the installed disk image
+               - Verifies the installation succeeded by checking for /etc/install-successful
+
+            Objectives:
+
+            - Validates the most common deployment scenario: installing on bare metal/VMs
+              without pre-existing hardware configuration files
+            - Tests the integration between clan CLI, nixos-anywhere, disko, and sops
+            - Ensures secrets are properly deployed at the right stages (partitioning vs activation)
+            - Verifies that hardware auto-detection (facter) works correctly
+
+            Note: Uses Nix 2.30 to work around chmod permission issues in Nix 2.31+
+          */
           nixos-test-installation = self.clanLib.test.baseTest {
             name = "installation";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
