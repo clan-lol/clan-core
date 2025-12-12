@@ -155,6 +155,30 @@
 
             exportedPeers = exportedPeerIPs;
 
+            # Read this machine's own public key
+            localPublicKey = lib.strings.trim (
+              builtins.readFile config.clan.core.vars.generators.yggdrasil.files.publicKey.path
+            );
+
+            # Collect public keys from all machines in the role (including self)
+            allowedPublicKeys = lib.lists.unique (
+              lib.filter (key: key != "") (
+                [ localPublicKey ] ++
+                map (
+                  name:
+                  lib.strings.trim (
+                    clanLib.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "yggdrasil";
+                      file = "publicKey";
+                      default = "";
+                    }
+                  )
+                ) (lib.attrNames roles.default.machines)
+              )
+            );
+
           in
           {
 
@@ -190,16 +214,19 @@
                 yggdrasil
                 jq
                 openssl
+                xxd
               ];
 
               script = ''
-                # Generate private key
+                # Generate private key (only if it doesn't exist - handled by clan vars)
                 openssl genpkey -algorithm Ed25519 -out $out/privateKey
 
-                # Generate corresponding public key
-                openssl pkey -in $out/privateKey -pubout -out $out/publicKey
+                # Extract raw 32-byte public key and convert to hex
+                # The DER format has a 12-byte header, skip it to get the raw key bytes
+                openssl pkey -in $out/privateKey -pubout -outform DER | \
+                  tail -c +13 | xxd -p -c 64 | tr -d '\n' > $out/publicKey
 
-                # Derive IPv6 address from key
+                # Derive IPv6 address from key (unchanged)
                 echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | yggdrasil -useconf -address | tr -d '\n' > $out/address
               '';
             };
@@ -231,6 +258,7 @@
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
                 Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
+                AllowedEncryptionPublicKeys = allowedPublicKeys;
                 MulticastInterfaces = [
                   # Ethernet is preferred over WIFI
                   {

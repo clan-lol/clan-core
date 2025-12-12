@@ -108,3 +108,19 @@ inventory = {
   };
 };
 ```
+
+## Security: Peer Whitelisting
+
+The Yggdrasil service automatically restricts incoming connections to only allow
+peers from machines within the same clan role. This is implemented using Yggdrasil's
+`AllowedEncryptionPublicKeys` configuration, which creates a whitelist of trusted
+public keys.
+
+- **Automatic**: All machines in the `default` role are automatically whitelisted
+- **Isolation**: Public nodes cannot connect to your Yggdrasil instance
+- **Multicast**: Local discovery via multicast is still enabled by default
+- **Outbound**: You can still connect to specified peers via `extraPeers`
+
+Note: This is not a complete firewall. It only controls peering connections, not
+general IPv6 traffic routing through the Yggdrasil network. For additional security,
+configure IPv6 firewall rules.
