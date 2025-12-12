@@ -5,6 +5,9 @@ The disks of the target devices need to be configured before the rollout can sta
 ## Requirements
 * SSH access from your setup device to all target devices
 
+* Double check that each machine has a hardware report saved under ```machines/YOUR-MACHINE-NAME/facter.json```
+
+
 
 ## Configuring Target Disks
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
@@ -74,10 +77,6 @@ You can have a look and customize it if needed.
 Check your machines/ folders for the disk files. If a machine sub-folder does not contain a disk file, the setup ran into an error and needs to be restartet for the particular machine.
 
 
-## Next Up
+## Up Next
 
 After all preparations are done, we can now start the actual deployment process.
-
-
-
-

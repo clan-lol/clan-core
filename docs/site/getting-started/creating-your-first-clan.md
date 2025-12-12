@@ -4,7 +4,9 @@ Ready to manage your fleet of machines?
 
 In this guide, we will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
 
-You'll finish with a centrally managed fleet, ready to import your existing NixOS configuration.
+At the end of this getting started guide, you will have a centrally managed fleet of Clan devices at your disposal.
+
+If you want to [migrate your existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead of following this guide for a completely fresh setup, please find the corresponding links in our Guides database instead. Note that you can also always migrate your existing systems into the new Clan after following this getting started guide, too.
 
 
 ## Requirements

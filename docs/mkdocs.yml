@@ -46,17 +46,17 @@ exclude_docs: |
 
 nav:
   - Getting Started:
-      - Overview: index.md
-      - Creating Your First Clan: getting-started/creating-your-first-clan.md
-      - Adding Machines: getting-started/add-machines.md
-      - Adding Users: getting-started/add-users.md
-      - Adding Services: getting-started/add-services.md
-      - Physical Machine Preparations: getting-started/prepare-physical-machines.md
-      - Virtual Machine Preparations: getting-started/prepare-virtual-machines.md
-      - Disk Configuration: getting-started/configure-disk.md
-      - Deployment Phase: getting-started/deployment-phase.md
-      - Updating Machines: getting-started/update-machines.md
-      - What's Next?: getting-started/continuous-integration.md
+      - index.md
+      - getting-started/creating-your-first-clan.md
+      - getting-started/add-machines.md
+      - getting-started/add-users.md
+      - getting-started/add-services.md
+      - getting-started/prepare-physical-machines.md
+      - getting-started/prepare-virtual-machines.md
+      - getting-started/configure-disk.md
+      - getting-started/deployment-phase.md
+      - getting-started/update-machines.md
+      - getting-started/whats-next.md
   - Guides:
       - Inventory:
           - Introduction to Inventory: guides/inventory/inventory.md

@@ -5,7 +5,7 @@ In this step, we will prepare your virtual machines to be deployed from your set
 
 ## Requirements
 * **Setup Device**: The same setup device you were using during the previous steps.
-* **Target Device(s)**: Any number of physical and / or virtual Linux or MacOS devices with SSH root access to.
+* **Target Device(s)**: Any number of virtual Linux or macOS devices with SSH root access to.
 
     !!! Warning "Operating System Recommendations"
         We are currently working on more refined operating system recommendations.
@@ -29,13 +29,15 @@ In this step, we will prepare your virtual machines to be deployed from your set
 
 ## Generating Hardware Reports
 
-A hardware report will be created on each target machine before actual deployment.
+A hardware report needs to  be created on each target machine before the actual deployment.
 
-The following command will generate the hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. This command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
+The following command will generate the hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and write it back into the respective machine folder on your setup device. 
+
+The command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
 
 
 ```terminal
-clan machines init-hardware-config [MACHINE] \
+clan machines init-hardware-config [YOUR-MACHINE-NAME] \
   --target-host myuser@<IP>
 ```
 
@@ -43,5 +45,13 @@ clan machines init-hardware-config [MACHINE] \
     After running the above command, be aware that the SSH login user changes from `myuser` to `root`. For subsequent SSH connections to the target machine, use `root` as the login user. This change occurs because the system switches to the NixOS kernel using `kexec`.
 
 
-## Next Up
+## Checkpoint: Confirming the Hardware Reports
+
+For each machine, check if the hardware report was saved under 
+```machines/YOUR-MACHINE-NAME/facter.json```
+ on your setup device.
+
+
+## Up Next
+
 After the report is generated for all target machines, we will configure the disk layout in the next step and then deploy the machines remotely.
