@@ -109,3 +109,10 @@ export async function asyncMapObjectValues<T, U>(
     ),
   );
 }
+
+export function isSamePosition(
+  a: readonly [number, number],
+  b: readonly [number, number],
+) {
+  return a[0] === b[0] && a[1] === b[1];
+}

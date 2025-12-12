@@ -238,12 +238,15 @@ function persistClansChanges(
       } else if (isPath(path, ["activeIndex"])) {
         activeClanIndexChanged = true;
       } else if (
-        isPath(path, ["all", "*", "machines", "all"]) ||
+        isAnyPath(path, [
+          ["all", "*", "machines", "all"],
+          ["all", "*", "machines", "all", "*"],
+        ]) ||
         (isPath(path, ["all", "*", "machines"]) && "all" in value)
       ) {
         machinesChanged = true;
       } else if (
-        isAnyPath(path, [["all", "*", "machines", "all", "*", "position"]])
+        isPath(path, ["all", "*", "machines", "all", "*", "data", "position"])
       ) {
         machinePositionsChanged = true;
       }

@@ -9,11 +9,7 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": [
-      "vite/client",
-      "vite-plugin-solid-svg/types-component-solid",
-      "@vitest/browser/providers/playwright"
-    ],
+    "types": ["vite/client", "vite-plugin-solid-svg/types-component-solid"],
     // TODO: fix our code so this strictness can be enabled
     // "exactOptionalPropertyTypes": true,
     "noEmit": true,

@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { ObjectRegistry } from "./ObjectRegistry";
-import { Accessor, createEffect, createRoot, on } from "solid-js";
+import { createEffect, createRoot } from "solid-js";
 import { renderLoop } from "./RenderLoop";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/Addons";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import jsonfont from "three/examples/fonts/helvetiker_regular.typeface.json";
+import { Machine } from "@/src/models";
 
 // Constants
 const BASE_SIZE = 0.9;
@@ -103,17 +104,15 @@ export class MachineRepr {
     scene: THREE.Scene,
     registry: ObjectRegistry,
     position: THREE.Vector2,
-    id: string,
-    isActive: Accessor<boolean>,
-    highlightGroups: Record<string, Set<string>>, // Reactive store
+    machine: Machine,
     camera: THREE.Camera,
   ) {
-    this.id = id;
+    this.id = machine.id;
     this.camera = camera;
 
     const { baseMesh, cubeMesh, geometry, material } = createMachineMesh();
     this.cubeMesh = cubeMesh;
-    this.cubeMesh.userData = { id };
+    this.cubeMesh.userData = { id: machine.id };
 
     this.baseMesh = baseMesh;
     this.baseMesh.name = "base";
@@ -121,7 +120,7 @@ export class MachineRepr {
     this.geometry = geometry;
     this.material = material;
 
-    const label = this.createLabel(id);
+    const label = this.createLabel(machine.id);
 
     const shadowPlaneMaterial = new THREE.MeshStandardMaterial({
       color: BASE_COLOR,
@@ -147,35 +146,29 @@ export class MachineRepr {
     this.group.add(shadowPlane);
 
     this.group.position.set(position.x, 0, position.y);
-    this.group.userData.id = id;
+    this.group.userData.id = machine.id;
 
     this.disposeRoot = createRoot((disposeEffects) => {
-      createEffect(
-        on(isActive, (isActive) => {
-          const groups = Object.entries(highlightGroups);
-          const highlightedGroups = groups
-            .filter(([, ids]) => ids.has(this.id))
-            .map(([name]) => name);
-          // Update cube
-          (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
-            isActive ? CUBE_SELECTED_COLOR : CUBE_COLOR,
-          );
+      createEffect(() => {
+        // Update cube
+        (this.cubeMesh.material as THREE.MeshPhongMaterial).color.set(
+          machine.isActive ? CUBE_SELECTED_COLOR : CUBE_COLOR,
+        );
 
-          // Update base
-          (this.baseMesh.material as THREE.MeshPhongMaterial).color.set(
-            isActive ? BASE_SELECTED_COLOR : BASE_COLOR,
-          );
+        // Update base
+        (this.baseMesh.material as THREE.MeshPhongMaterial).color.set(
+          machine.isActive ? BASE_SELECTED_COLOR : BASE_COLOR,
+        );
 
-          // TOOD: Find a different way to show both selected & highlighted
-          // I.e. via outline or pulsing
-          // selected > highlighted > normal
-          (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
-            highlightedGroups.length > 0 ? HIGHLIGHT_COLOR : 0x000000,
-          );
+        // TOOD: Find a different way to show both selected & highlighted
+        // I.e. via outline or pulsing
+        // selected > highlighted > normal
+        (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(
+          machine.isHighlighted ? HIGHLIGHT_COLOR : 0x000000,
+        );
 
-          renderLoop.requestRender();
-        }),
-      );
+        renderLoop.requestRender();
+      });
 
       return disposeEffects;
     });
@@ -184,7 +177,7 @@ export class MachineRepr {
 
     registry.add({
       object: this.group,
-      id,
+      id: machine.id,
       type: "machine",
       dispose: () => this.dispose(scene),
     });

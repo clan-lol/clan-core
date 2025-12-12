@@ -26,6 +26,7 @@ export type Machine = {
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
   readonly isActive: boolean;
+  readonly isHighlighted: boolean;
   readonly serviceInstances: ServiceInstance[];
 };
 
@@ -194,6 +195,9 @@ export function toMachine(
     },
     get isActive() {
       return this.clan.machines.activeMachine?.id === this.id;
+    },
+    get isHighlighted() {
+      return !!this.clan.machines.highlightedIds[this.id];
     },
     get serviceInstances() {
       return this.clan.serviceInstances.all.filter((instance) => {

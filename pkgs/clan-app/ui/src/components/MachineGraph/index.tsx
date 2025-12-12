@@ -6,6 +6,7 @@ import {
   on,
   Show,
   Component,
+  batch,
 } from "solid-js";
 import styles from "./MachineGraph.module.css";
 
@@ -38,6 +39,7 @@ import {
   useServiceInstancesContext,
 } from "@/src/models";
 import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
+import { isSamePosition } from "@/src/util";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -49,8 +51,16 @@ export const MachineGraph: Component = () => {
   let controls: MapControls;
   // Raycaster for clicking
   const raycaster = new THREE.Raycaster();
-  let actionBase: THREE.Mesh | undefined;
-  let actionMachine: THREE.Group | undefined;
+  let actionBase: THREE.Mesh;
+  let actionMachine: THREE.Group;
+  let snappedMousePosition: readonly [number, number] | undefined;
+  let mouseMoveData:
+    | {
+        timer: number;
+        startingPosition: readonly [number, number];
+        targetMachineId: string;
+      }
+    | undefined;
 
   // Create background scene
   const bgScene = new THREE.Scene();
@@ -62,8 +72,17 @@ export const MachineGraph: Component = () => {
   let sharedBaseGeometry: THREE.BoxGeometry;
 
   const [, { openModal }] = useModalContext<"addMachine">();
-  const [machines, { activateMachine, deactivateMachine }] =
-    useMachinesContext();
+  const [
+    machines,
+    {
+      activateMachine,
+      deactivateMachine,
+      setMachinePosition,
+      isMachineAtPosition,
+      highlightMachines,
+      unhighlightMachines,
+    },
+  ] = useMachinesContext();
   const [, { createServiceInstance }] = useServiceInstancesContext();
   const [editingServinceInstance, setEditingServinceInstance] =
     createSignal<ServiceInstance | null>(null);
@@ -73,11 +92,6 @@ export const MachineGraph: Component = () => {
   >("select");
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
-
-  const [cancelMove, setCancelMove] = createSignal<NodeJS.Timeout>();
-
-  // TODO: Unify this with actionRepr position
-  const [cursorPosition, setCursorPosition] = createSignal<[number, number]>();
 
   // Context menu state
   const [contextOpen, setContextOpen] = createSignal(false);
@@ -340,9 +354,9 @@ export const MachineGraph: Component = () => {
     createEffect(
       on(actionMode, (mode) => {
         if (mode === "create") {
-          actionBase!.visible = true;
+          actionBase.visible = true;
         } else {
-          actionBase!.visible = false;
+          actionBase.visible = false;
         }
         renderLoop.requestRender();
       }),
@@ -360,9 +374,7 @@ export const MachineGraph: Component = () => {
               machine.data.position[0],
               machine.data.position[1],
             ),
-            machine.id,
-            () => machine.isActive,
-            highlightGroups,
+            machine,
             camera,
           );
           sceneMachines[machine.id] = repr;
@@ -384,9 +396,10 @@ export const MachineGraph: Component = () => {
     // - Creates a new cube in "create" mode
     const onClickGraph = async (event: MouseEvent) => {
       if (actionMode() === "create") {
+        if (!snappedMousePosition) return;
         try {
           await openModal("addMachine", {
-            position: cursorPosition()!,
+            position: snappedMousePosition,
           });
         } catch (err) {
           if (err instanceof ModalCancelError) {
@@ -401,8 +414,7 @@ export const MachineGraph: Component = () => {
 
       if (actionMode() === "move") {
         const currId = menuIntersection().at(0);
-        const pos = cursorPosition();
-        if (!currId || !pos) return;
+        if (!currId || !snappedMousePosition) return;
 
         setActionMode("select");
         clearHighlight("move");
@@ -428,12 +440,11 @@ export const MachineGraph: Component = () => {
           activateMachine(id);
         }
 
-        console.log("Clicked on machine", id);
-        emitMachineClick(id); // notify subscribers
+        // console.log("Clicked on machine", id);
+        // emitMachineClick(id); // notify subscribers
       } else {
-        emitMachineClick(null);
-
-        if (actionMode() === "select") props.onSelect(new Set<string>());
+        // emitMachineClick(null);
+        // if (actionMode() === "select") props.onSelect(new Set<string>());
       }
     };
 
@@ -464,74 +475,110 @@ export const MachineGraph: Component = () => {
       renderLoop.requestRender();
     };
 
-    const handleMouseDown = (e: MouseEvent) => {
-      const { machines, intersection } = intersectMachines(
+    const onMouseDownGraph = (e: MouseEvent) => {
+      const { machineIds, intersections } = intersectMachines(
         e,
         renderer,
         camera,
         sceneMachines,
         raycaster,
       );
-      if (e.button === 0) {
-        // Left button
 
-        if (actionMode() === "select" && machines.length) {
+      // Left button
+      if (e.button === 0) {
+        if (actionMode() === "select" && machineIds.length) {
+          const targetMachineId = machineIds[0];
+          const pos = machines().all[targetMachineId].data.position;
           // Disable controls to avoid conflict
           controls.enabled = false;
 
           // Change cursor to grabbing
           // LongPress, if not canceled, enters move mode
-          const cancelMove = setTimeout(() => {
-            setIsDragging(true);
-            const pos =
-              machines[0]?.group.position || new THREE.Vector3(0, 0, 0);
-            actionMachine?.position.set(pos.x, 0, pos.z);
-            // Set machine as flying
-            setHighlightGroups({ move: new Set(machines) });
-
-            setActionMode("move");
-            renderLoop.requestRender();
-          }, 500);
-          setCancelMove(cancelMove);
+          mouseMoveData = {
+            targetMachineId,
+            startingPosition: pos,
+            timer: window.setTimeout(() => {
+              actionMachine.position.set(pos[0], 0, pos[1]);
+              batch(() => {
+                setIsDragging(true);
+                highlightMachines(targetMachineId);
+                setActionMode("move");
+              });
+              renderLoop.requestRender();
+            }, 500),
+          };
         }
-      }
-
-      if (e.button === 2) {
+      } else if (e.button === 2) {
         e.preventDefault();
         e.stopPropagation();
-        if (!intersection.length) return;
-        setMenuIntersection(machines);
+        if (!intersections.length) return;
+        setMenuIntersection(machineIds);
         setMenuPos({ x: e.clientX, y: e.clientY });
         setContextOpen(true);
       }
     };
-    const handleMouseUp = (e: MouseEvent) => {
+    const onMouseUpGraph = (e: MouseEvent) => {
       if (e.button === 0) {
-        setIsDragging(false);
-        if (cancelMove()) {
-          clearTimeout(cancelMove()!);
-          setCancelMove(undefined);
-        }
-        // Always re-enable controls
-        controls.enabled = true;
+        if (mouseMoveData) {
+          const data = mouseMoveData;
+          window.clearTimeout(data.timer);
+          // Always re-enable controls
+          controls.enabled = true;
+          actionMachine.visible = false;
 
-        if (actionMode() === "move") {
           // Set machine as not flying
-          const pos = actionMachine!.position.toArray();
-          props.setMachinePos(highlightGroups["move"].values().next().value!, [
-            pos[0], // x
-            pos[2], // z
-          ]);
-          clearHighlight("move");
-          setActionMode("select");
+          batch(() => {
+            setMachinePosition(data.targetMachineId, [
+              actionMachine.position.x,
+              actionMachine.position.z,
+            ]);
+            setIsDragging(false);
+            unhighlightMachines();
+            setActionMode("select");
+          });
+          renderLoop.requestRender();
+          mouseMoveData = undefined;
+        }
+      }
+    };
+    const onMouseMoveGraph = (event: MouseEvent) => {
+      if (!(actionMode() === "create" || actionMode() === "move")) return;
+
+      const actionRepr = actionMode() === "create" ? actionBase : actionMachine;
+      if (!actionRepr) return;
+
+      actionRepr.visible = true;
+
+      // Calculate mouse position in normalized device coordinates
+      // (-1 to +1) for both components
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      const mouse = new THREE.Vector2(
+        ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        -((event.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(floor);
+      if (intersects.length > 0) {
+        const { point } = intersects[0];
+
+        const snapped = snapToGrid([point.x, point.z]);
+        if (!snapped) return;
+        if (
+          Math.abs(actionRepr.position.x - snapped[0]) > 0.01 ||
+          Math.abs(actionRepr.position.z - snapped[1]) > 0.01
+        ) {
+          // Only request render if the position actually changed
+          actionRepr.position.set(snapped[0], 0, snapped[1]);
+          snappedMousePosition = snapped; // Update next position for cube creation
           renderLoop.requestRender();
         }
       }
     };
 
-    renderer.domElement.addEventListener("mousedown", handleMouseDown);
-    renderer.domElement.addEventListener("mouseup", handleMouseUp);
-    renderer.domElement.addEventListener("mousemove", onMouseMove);
+    renderer.domElement.addEventListener("mousedown", onMouseDownGraph);
+    renderer.domElement.addEventListener("mouseup", onMouseUpGraph);
+    renderer.domElement.addEventListener("mousemove", onMouseMoveGraph);
 
     window.addEventListener("resize", handleResize);
 
@@ -559,7 +606,7 @@ export const MachineGraph: Component = () => {
       }
 
       renderer.domElement.removeEventListener("click", onClickGraph);
-      renderer.domElement.removeEventListener("mousemove", onMouseMove);
+      renderer.domElement.removeEventListener("mousemove", onMouseMoveGraph);
       window.removeEventListener("resize", handleResize);
 
       if (actionBase) {
@@ -577,37 +624,26 @@ export const MachineGraph: Component = () => {
     });
   });
 
-  const snapToGrid = (point: THREE.Vector3) => {
+  const snapToGrid = (pos: readonly [number, number]) => {
     // Snap to grid
-    const snapped = new THREE.Vector3(
-      Math.round(point.x / GRID_SIZE) * GRID_SIZE,
-      0,
-      Math.round(point.z / GRID_SIZE) * GRID_SIZE,
+    const snapped = [
+      Math.round(pos[0] / GRID_SIZE) * GRID_SIZE,
+      Math.round(pos[1] / GRID_SIZE) * GRID_SIZE,
+    ] as const;
+
+    const intersects = Object.values(machines().all).some((machine) =>
+      isMachineAtPosition(machine, snapped),
     );
 
-    // Skip snapping if there's already a cube at this position
-    const positions = Object.entries(machines().all);
-    const intersects = positions.some(
-      ([, machine]) =>
-        machine.data.position[0] === snapped.x &&
-        machine.data.position[1] === snapped.z,
-    );
-    const movingMachine = Array.from(highlightGroups["move"] || [])[0];
-    const startingPos = positions.find(
-      ([machineId]) => machineId === movingMachine,
-    );
-    if (startingPos) {
-      const isStartingPos =
-        snapped.x === startingPos[1].data.position[0] &&
-        snapped.z === startingPos[1].data.position[1];
-      // If Intersect any other machine and not the one being moved
-      if (!isStartingPos && intersects) {
-        return;
-      }
-    } else {
-      if (intersects) {
-        return;
-      }
+    // Skip snapping if there's already a machine at this position (excluding
+    // the staring position if a machine is being moved)
+    if (
+      intersects &&
+      !(
+        mouseMoveData && isSamePosition(mouseMoveData.startingPosition, snapped)
+      )
+    ) {
+      return;
     }
 
     return snapped;
@@ -616,40 +652,6 @@ export const MachineGraph: Component = () => {
   const onClickToolbarAdd = (event: MouseEvent) => {
     setActionMode("create");
     renderLoop.requestRender();
-  };
-  const onMouseMove = (event: MouseEvent) => {
-    if (!(actionMode() === "create" || actionMode() === "move")) return;
-
-    const actionRepr = actionMode() === "create" ? actionBase : actionMachine;
-    if (!actionRepr) return;
-
-    actionRepr.visible = true;
-
-    // Calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-
-    const rect = renderer.domElement.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
-      ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      -((event.clientY - rect.top) / rect.height) * 2 + 1,
-    );
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(floor);
-    if (intersects.length > 0) {
-      const point = intersects[0].point;
-
-      const snapped = snapToGrid(point);
-      if (!snapped) return;
-      if (
-        Math.abs(actionRepr.position.x - snapped.x) > 0.01 ||
-        Math.abs(actionRepr.position.z - snapped.z) > 0.01
-      ) {
-        // Only request render if the position actually changed
-        actionRepr.position.set(snapped.x, 0, snapped.z);
-        setCursorPosition([snapped.x, snapped.z]); // Update next position for cube creation
-        renderLoop.requestRender();
-      }
-    }
   };
   const handleMenuSelect = async (mode: "move" | "delete") => {
     const firstId = menuIntersection()[0];
@@ -793,13 +795,13 @@ function intersectMachines(
     -((event.clientY - rect.top) / rect.height) * 2 + 1,
   );
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(
+  const intersections = raycaster.intersectObjects(
     Object.values(sceneMachines).map((m) => m.group),
   );
 
   return {
-    machines: intersects.map((i) => i.object.userData.id),
-    intersection: intersects,
+    machineIds: intersections.map((i) => i.object.userData.id as string),
+    intersections,
   };
 }
 

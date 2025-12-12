@@ -46,7 +46,7 @@ export interface GeneralForm extends FieldValues {
 }
 
 export const StepGeneral = () => {
-  const [, { hasMachine }] = useMachinesContext();
+  const [machines] = useMachinesContext();
   const stepSignal = useStepper<AddMachineSteps>();
   const [store, set] = getStepStore<AddMachineStoreType>(stepSignal);
 
@@ -56,7 +56,7 @@ export const StepGeneral = () => {
   });
 
   const handleSubmit: SubmitHandler<GeneralForm> = (values, event) => {
-    if (hasMachine(values.id)) {
+    if (values.id in machines().all) {
       setError(
         formStore,
         "name",

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ServiceWorkflow } from ".";
+import ServiceInstanceWorkflow from ".";
 import {
   createMemoryHistory,
   MemoryRouter,
@@ -122,9 +122,9 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
   };
 };
 
-const meta: Meta<typeof ServiceWorkflow> = {
+const meta: Meta<typeof ServiceInstanceWorkflow> = {
   title: "workflows/service",
-  component: ServiceWorkflow,
+  component: ServiceInstanceWorkflow,
   decorators: [
     (Story) => {
       const Routes: RouteDefinition[] = [
