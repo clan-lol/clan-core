@@ -158,7 +158,7 @@ const ServicesSection: Component = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <nav>
-          <For each={clan().serviceInstances.all}>
+          <For each={clan().serviceInstances.sorted}>
             {(instance) => (
               <ServiceInstanceContextProvider serviceInstance={() => instance}>
                 <ServiceInstanceEntry />

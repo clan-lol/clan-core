@@ -46,7 +46,7 @@ const SelectService: Component<{
             if (!data) return;
             props.onSelect(data.raw);
           }}
-          options={clan().services.map((service) => ({
+          options={clan().services.sorted.map((service) => ({
             value: `${service.id}:${service.source}`,
             label: service.id,
             raw: service,

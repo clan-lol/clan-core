@@ -3,6 +3,7 @@ export type { Clans, ClansMethods, ClansEntity } from "./clans";
 export type {
   Clan,
   ClanData,
+  ClanEntityData,
   ClanMember,
   ClanMeta,
   Tags,

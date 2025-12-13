@@ -2,14 +2,8 @@ import { Accessor, createEffect, createMemo, on } from "solid-js";
 import { createStore, produce, SetStoreFunction } from "solid-js/store";
 import { captureStoreUpdates, NestedUpdate } from "@solid-primitives/deep";
 import api from "../api";
-import { Clan, ClanMeta } from "..";
-import {
-  ClanEntity,
-  ClanMetaEntity,
-  isClan,
-  toClanOrClanMeta,
-  ClanData,
-} from "./clan";
+import { Clan, ClanMeta, ClanEntityData } from "..";
+import { ClanEntity, ClanMetaEntity, isClan, toClan, toClanMeta } from "./clan";
 import { mapObjectValues } from "@/src/util";
 
 export type ClansEntity = {
@@ -18,8 +12,7 @@ export type ClansEntity = {
 };
 export type Clans = {
   all: (Clan | ClanMeta)[];
-  activeIndex: number;
-  readonly activeClan: Clan | null;
+  activeClan: Clan | null;
 };
 
 export async function initClans(): Promise<ClansEntity> {
@@ -30,13 +23,26 @@ export async function initClans(): Promise<ClansEntity> {
     }
     return JSON.parse(s);
   })();
-  const activeIndex: number = (() => {
+  let activeIndex: number = (() => {
     const s = localStorage.getItem("activeClanIndex");
     if (s === null) {
       return -1;
     }
     return parseInt(s, 10);
   })();
+
+  if (ids.length === 0) {
+    return {
+      all: [],
+      activeIndex: -1,
+    };
+  }
+
+  // This means localStorage has been corrupted, which shouldn't happen.
+  // Just make the first clan to be the active one to be defensive
+  if (activeIndex >= ids.length) {
+    activeIndex = 0;
+  }
 
   return {
     all: await api.clan.getClans(ids, activeIndex),
@@ -49,22 +55,22 @@ export function createClansStore(
 ): readonly [Clans, ClansMethods] {
   const [clans, setClans] = createStore<Clans>({
     all: [],
-    activeIndex: -1,
-    get activeClan(): Clan | null {
-      return this.activeIndex === -1
-        ? null
-        : (this.all[this.activeIndex] as Clan);
-    },
+    activeClan: null,
   });
   const methods = clansMethods([clans, setClans]);
   createEffect(
     on(entity, (entity) => {
-      const all = entity.all.map((entity) => toClanOrClanMeta(entity, clans));
-      const { activeIndex } = entity;
+      const all = entity.all.map((clanEntity, i) =>
+        i === entity.activeIndex
+          ? toClan(clanEntity as ClanEntity, clans)
+          : toClanMeta(clanEntity as ClanMetaEntity, clans),
+      );
+      const activeClan =
+        entity.activeIndex === -1 ? null : (all[entity.activeIndex] as Clan);
       setClans(
         produce((clans) => {
           clans.all = all;
-          clans.activeIndex = activeIndex;
+          clans.activeClan = activeClan;
         }),
       );
     }),
@@ -77,99 +83,134 @@ export function createClansStore(
 export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
   pickClanDir(): Promise<string>;
-  clanIndex(item: string | Clan | ClanMeta): number;
-  activateClan(item: number | string | Clan | ClanMeta): Promise<Clan | null>;
-  deactivateClan(clan?: Clan): void;
-  loadClan(id: string): Promise<Clan | null>;
-  createClan(id: string, data: ClanData): Promise<Clan>;
-  removeClan(item: number | Clan | ClanMeta): Clan | ClanMeta | null;
+  activateClan(item: Clan | ClanMeta | string): Promise<Clan | null>;
+  deactivateClan(): void;
+  deactivateClan(item: Clan | string): Clan | null;
+  loadClan(id: string, opts?: { active?: boolean }): Promise<Clan | null>;
+  createClan(
+    id: string,
+    data: ClanEntityData,
+    opts?: { active?: boolean },
+  ): Promise<Clan>;
+  removeClan(item: Clan | ClanMeta | string): Clan | ClanMeta;
 };
 function clansMethods([clans, setClans]: [
   Clans,
   SetStoreFunction<Clans>,
 ]): ClansMethods {
+  function getClan(item: Clan | string): readonly [Clan, number];
+  function getClan(item: ClanMeta | string): readonly [ClanMeta, number];
+  function getClan(
+    item: Clan | ClanMeta | string,
+  ): readonly [Clan | ClanMeta, number];
+  function getClan(
+    item: Clan | ClanMeta | string,
+  ): readonly [Clan | ClanMeta, number] {
+    if (typeof item === "string") {
+      const id = item;
+      for (const [i, clan] of clans.all.entries()) {
+        if (clan.id === id) {
+          return [clan, i];
+        }
+      }
+      throw new Error(`Clan does not exist: ${id}`);
+    }
+    const clan = item;
+    const i = clans.all.indexOf(item);
+    if (i === -1) {
+      throw new Error(
+        `This clan does not belong to the known clans: ${clan.id}`,
+      );
+    }
+    return [clan, i];
+  }
+
+  function deactivateClan(): void;
+  function deactivateClan(item: Clan | string): Clan | null;
+  function deactivateClan(item?: Clan | string): void | Clan | null {
+    if (!item) {
+      setClans(
+        produce((clans) => {
+          clans.activeClan = null;
+        }),
+      );
+      return;
+    }
+    const [clan] = getClan(item);
+    if (clan === clans.activeClan) {
+      return null;
+    }
+    setClans(
+      produce((clans) => {
+        clans.activeClan = clan;
+      }),
+    );
+    return clan;
+  }
+
   const self: ClansMethods = {
     setClans,
     async pickClanDir() {
       return api.clan.pickClanDir();
     },
-    clanIndex(item) {
-      if (typeof item === "string") {
-        return clans.all.findIndex((clan) => clan.id === item);
-      }
-      return self.clanIndex(item.id);
-    },
     async activateClan(item) {
-      if (typeof item === "number") {
-        const i = item;
-        if (i < 0 || i >= clans.all.length) {
-          throw new Error(`activateClan called with invalid index: ${i}`);
-        }
-        if (clans.activeIndex === i) return null;
+      const [clan, i] = getClan(item);
 
-        const c = clans.all[i];
-        if (isClan(c)) {
-          setClans("activeIndex", i);
-          return c;
+      if (isClan(clan)) {
+        if (clan === clans.activeClan) {
+          return null;
         }
-        const meta = c;
-        const entity = await api.clan.getClan(meta.id);
-        const clan = toClanOrClanMeta(entity, clans);
         setClans(
           produce((clans) => {
-            clans.all[i] = clan;
-            clans.activeIndex = i;
+            clans.activeClan = clan;
           }),
         );
         return clan;
       }
-      let id: string;
-      if (typeof item === "string") {
-        id = item;
-      } else {
-        id = item.id;
-      }
-      const i = self.clanIndex(id);
-      if (i === -1) {
-        throw new Error(`Clan does not exist: ${id}`);
-      }
-      return await self.activateClan(i);
-    },
-    deactivateClan(clan) {
-      if (!clan) {
-        setClans("activeIndex", -1);
-        return;
-      }
-      if (clan.index === clans.activeIndex) {
-        setClans("activeIndex", -1);
-        return;
-      }
-    },
-    async loadClan(id) {
-      for (const [i, clan] of clans.all.entries()) {
-        if (clan.id === id) {
-          return self.activateClan(i);
-        }
-      }
-      const entity = await api.clan.getClan(id);
-      const clan = toClanOrClanMeta(entity, clans) as Clan;
+      const entity = await api.clan.getClan(clan.id);
+      const newClan = toClan(entity as ClanEntity, clans);
       setClans(
         produce((clans) => {
-          clans.activeIndex = clans.all.length;
-          clans.all.push(clan);
+          clans.all[i] = newClan;
+          clans.activeClan = newClan;
         }),
       );
-      return clans.all.at(-1) as Clan;
+      return newClan;
     },
-    async createClan(id, data) {
+    deactivateClan,
+    async loadClan(id, { active = true } = {}) {
+      const [clan] = getClan(id);
+      if (clan) {
+        if (active && clans.activeClan !== clan) {
+          setClans(
+            produce((clans) => {
+              clans.activeClan = clan;
+            }),
+          );
+        }
+        return null;
+      }
+      const entity = await api.clan.getClan(id);
+      const newClan = toClan(entity, clans);
+      setClans(
+        produce((clans) => {
+          clans.all.push(newClan);
+          if (active) {
+            clans.activeClan = newClan;
+          }
+        }),
+      );
+      return newClan;
+    },
+    async createClan(id, data, { active = true } = {}) {
       await api.clan.createClan(id, data);
-      const clan = toClanOrClanMeta(
+      const newClan = toClan(
         {
           id,
           data,
           dataSchema: {},
           machines: {},
-          services: [],
+          services: {},
           globalTags: {
             regular: [],
             special: ["all", "nixos", "darwin"],
@@ -179,28 +220,25 @@ function clansMethods([clans, setClans]: [
       );
       setClans(
         produce((clans) => {
-          clans.activeIndex = clans.all.length;
-          clans.all.push(clan);
+          clans.all.push(newClan);
+          if (active) {
+            clans.activeClan = newClan;
+          }
+        }),
+      );
+      return newClan;
+    },
+    removeClan(item) {
+      const [clan, i] = getClan(item);
+      setClans(
+        produce((clans) => {
+          clans.all.splice(i, 1);
+          if (clans.activeClan === clan) {
+            clans.activeClan = null;
+          }
         }),
       );
       return clan;
-    },
-    removeClan(item) {
-      if (typeof item === "number") {
-        const i = item;
-        const clan = clans.all[i];
-        if (!clan) return null;
-        setClans(
-          produce((clans) => {
-            clans.all.splice(i, 1);
-            if (clans.activeIndex === i) {
-              clans.activeIndex = -1;
-            }
-          }),
-        );
-        return clan;
-      }
-      return self.removeClan(item.index);
     },
   };
   return self;
@@ -219,95 +257,106 @@ function persistClansChanges(
   changes: NestedUpdate<Clans>[],
   clans: Clans,
 ): void {
-  // @ts-expect-error it seems NestedUpdate can't handle circular data
-  for (const { path, value } of changes) {
-    let clansChanged = false;
-    let activeClanIndexChanged = false;
-    let machinesChanged = false;
-    let machinePositionsChanged = false;
-    if (path.length === 0) {
-      if ("all" in value) {
-        clansChanged = true;
-      }
-      if ("activeIndex" in value) {
-        activeClanIndexChanged = true;
-      }
-    } else {
-      if (isPath(path, ["all"])) {
-        clansChanged = true;
-      } else if (isPath(path, ["activeIndex"])) {
-        activeClanIndexChanged = true;
-      } else if (
-        isAnyPath(path, [
-          ["all", "*", "machines", "all"],
-          ["all", "*", "machines", "all", "*"],
-        ]) ||
-        (isPath(path, ["all", "*", "machines"]) && "all" in value)
-      ) {
-        machinesChanged = true;
-      } else if (
-        isPath(path, ["all", "*", "machines", "all", "*", "data", "position"])
-      ) {
-        machinePositionsChanged = true;
-      }
-    }
+  let clansChanged = false;
+  let activeClanChanged = false;
+  let machinesChanged = false;
+  let machinePositionsChanged = false;
 
-    if (clansChanged) {
+  for (const change of changes) {
+    if (isPath(change, ["all"])) {
+      clansChanged = true;
+    } else if (isPath(change, ["activeClan"])) {
+      activeClanChanged = true;
+    } else if (
+      isAnyPath(change, [
+        ["all", "*", "machines", "all"],
+        ["all", "*", "machines", "all", "*"],
+      ])
+    ) {
       machinesChanged = true;
-      localStorage.setItem(
-        "clanIds",
-        JSON.stringify(clans.all.map(({ id }) => id)),
-      );
-    }
-    if (activeClanIndexChanged) {
-      localStorage.setItem("activeClanIndex", String(clans.activeIndex));
-    }
-    if (machinesChanged) {
+    } else if (
+      isPath(change, ["all", "*", "machines", "all", "*", "data", "position"])
+    ) {
       machinePositionsChanged = true;
     }
-    if (machinePositionsChanged) {
-      localStorage.setItem(
-        "machinePositions",
-        JSON.stringify(
-          Object.fromEntries(
-            clans.all.map((clan) => {
-              if (isClan(clan)) {
-                return [
-                  clan.id,
-                  mapObjectValues(
-                    clan.machines.all,
-                    ([, machine]) => machine.data.position,
-                  ),
-                ];
-              }
-              return [];
-            }),
-          ),
+  }
+
+  if (clansChanged) {
+    machinesChanged = true;
+    localStorage.setItem(
+      "clanIds",
+      JSON.stringify(clans.all.map(({ id }) => id)),
+    );
+  }
+  if (activeClanChanged) {
+    localStorage.setItem(
+      "activeClanIndex",
+      String(clans.activeClan ? clans.activeClan.index : -1),
+    );
+  }
+  if (machinesChanged) {
+    machinePositionsChanged = true;
+  }
+  if (machinePositionsChanged) {
+    localStorage.setItem(
+      "machinePositions",
+      JSON.stringify(
+        Object.fromEntries(
+          clans.all.map((clan) => {
+            if (isClan(clan)) {
+              return [
+                clan.id,
+                mapObjectValues(
+                  clan.machines.all,
+                  ([, machine]) => machine.data.position,
+                ),
+              ];
+            }
+            return [];
+          }),
         ),
-      );
-    }
+      ),
+    );
   }
 }
 
 function isPath(
+  change: NestedUpdate<Clans>,
+  targetPath: (string | number)[],
+): boolean {
+  // @ts-expect-error AllNestedObjects results in infinite recurrsion for
+  // circular types
+  const { path, value } = change;
+  if (path.length === targetPath.length) {
+    return pathMatches(path, targetPath);
+  }
+  const base = path.slice(0, targetPath.length - 1);
+  const lastIndex = targetPath.length - 1;
+  if (base.length === lastIndex) {
+    const last = targetPath[lastIndex]!;
+    return pathMatches(base, targetPath.slice(0, lastIndex)) && last in value;
+  }
+  return false;
+}
+
+function isAnyPath(
+  change: NestedUpdate<Clans>,
+  targetPaths: (string | number)[][],
+): boolean {
+  return targetPaths.some((targetPath) => isPath(change, targetPath));
+}
+
+function pathMatches(
   path: (string | number)[],
   targetPath: (string | number)[],
 ): boolean {
-  if (path.length !== targetPath.length) return false;
+  if (path.length !== targetPath.length) {
+    return false;
+  }
   for (const [i, part] of path.entries()) {
-    if (targetPath[i] !== "*" && targetPath[i] !== part) {
+    if (targetPath[i] !== "*" && path[i] !== part) {
       return false;
     }
   }
   return true;
-}
-
-function isAnyPath(
-  path: (string | number)[],
-  targetPaths: (string | number)[][],
-): boolean {
-  for (const targetPath of targetPaths) {
-    if (isPath(path, targetPath)) return true;
-  }
-  return false;
 }

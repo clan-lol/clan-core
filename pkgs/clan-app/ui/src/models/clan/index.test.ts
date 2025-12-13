@@ -7,7 +7,9 @@ vi.mock("../api", () => {
   return {
     default: {
       clan: {
-        updateClanData() {},
+        updateClanData() {
+          return;
+        },
       },
     },
   };
@@ -26,7 +28,7 @@ describe("clan", () => {
               },
               dataSchema: {},
               machines: {},
-              services: [],
+              services: {},
               globalTags: {
                 regular: [],
                 special: [],
@@ -47,7 +49,7 @@ describe("clan", () => {
             expect(clan().data.name).toStrictEqual("foo");
             done();
           },
-        ][runNum]();
+        ][runNum]?.();
         return runNum + 1;
       }, 0);
     });

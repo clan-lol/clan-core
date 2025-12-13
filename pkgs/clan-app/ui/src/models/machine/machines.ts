@@ -1,18 +1,24 @@
-import { Accessor, batch } from "solid-js";
+import { Accessor } from "solid-js";
 import { produce, reconcile, SetStoreFunction } from "solid-js/store";
 import api from "../api";
-import { Clan, ClanMethods, Clans, ClansMethods, Machine } from "..";
+import {
+  Clan,
+  ClanMethods,
+  Clans,
+  MachineEntityData,
+  ClansMethods,
+  Machine,
+} from "..";
 import { MachineData, MachineEntity, toMachine } from "./machine";
-import { isSamePosition, mapObjectValues } from "@/src/util";
+import { mapObject, mapObjectValues } from "@/src/util";
 
 export type Machines = {
   all: Record<string, Machine>;
-  sorted: Machine[];
+  readonly sorted: Machine[];
   // Idealy this should be Set<string>, but solidjs' produce function
   // doesn't work with Sets or Maps
-  highlightedIds: Record<string, true | undefined>;
-  activeId: string | null;
-  readonly activeMachine: Machine | null;
+  highlightedMachines: Record<string, Machine>;
+  activeMachine: Machine | null;
 };
 
 export function createMachinesStore(
@@ -28,18 +34,14 @@ export function createMachinesStore(
 
 export type MachinesMethods = {
   setMachines: SetStoreFunction<Machines>;
-  getMachine(item: string): Machine;
-  activateMachine(item: string | Machine): Machine | null;
-  deactivateMachine(item?: string | Machine): Machine | null;
-  createMachine(id: string, data: MachineData): Promise<Machine>;
-  setMachinePosition(
-    item: string | Machine,
-    pos: readonly [number, number],
-  ): void;
-  isMachineAtPosition(
-    item: string | Machine,
-    pos: readonly [number, number],
-  ): boolean;
+  activateMachine(item: Machine | string): Machine | null;
+  deactivateMachine(): void;
+  deactivateMachine(item: Machine | string): Machine | null;
+  updateMachineData(
+    item: Machine | string,
+    data: Partial<MachineData>,
+  ): Promise<void>;
+  createMachine(id: string, data: MachineEntityData): Promise<Machine>;
   highlightMachines(items: (string | Machine)[] | string | Machine): void;
   unhighlightMachines(items?: (string | Machine)[] | string | Machine): void;
   machinesByTag(tag: string): Machine[];
@@ -50,6 +52,50 @@ function machinesMethods(
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): MachinesMethods {
+  function getMachine(item: Machine | string): Machine {
+    if (typeof item === "string") {
+      const id = item;
+      const machine = machines().all[id];
+      if (!machine) {
+        throw new Error(`Machine does not exist: ${id}`);
+      }
+      return machine;
+    }
+    const machine = item;
+    if (machine !== machines().all[machine.id]) {
+      throw new Error(
+        `This machine does not belong to the known machines: ${machine.id}`,
+      );
+    }
+    return machine;
+  }
+
+  function deactivateMachine(): void;
+  function deactivateMachine(item: Machine | string): Machine | null;
+  function deactivateMachine(item?: Machine | string): void | Machine | null {
+    if (!item) {
+      const machine = machines().activeMachine;
+      if (!machine) {
+        return null;
+      }
+      setMachines(
+        produce((machines) => {
+          machines.activeMachine = null;
+        }),
+      );
+      return machine;
+    }
+    const machine = getMachine(item);
+    if (machine !== machines().activeMachine) {
+      return null;
+    }
+    setMachines(
+      produce((machines) => {
+        machines.activeMachine = null;
+      }),
+    );
+    return machine;
+  }
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setMachines: SetStoreFunction<Machines> = (...args) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
@@ -57,33 +103,19 @@ function machinesMethods(
   };
   const self: MachinesMethods = {
     setMachines,
-    getMachine(id) {
-      const machine = machines().all[id];
-      if (machine) {
-        return machine;
-      }
-      throw new Error(`Machine does not exist: ${id}`);
-    },
     activateMachine(item) {
-      const id = getMachineId(item);
-      const machine = self.getMachine(id);
-      setMachines("activeId", id);
+      const machine = getMachine(item);
+      if (machines().activeMachine === machine) {
+        return null;
+      }
+      setMachines(
+        produce((machines) => {
+          machines.activeMachine = machine;
+        }),
+      );
       return machine;
     },
-    deactivateMachine(item) {
-      if (!item) {
-        const id = machines().activeId;
-        if (!id) return null;
-        return self.deactivateMachine(id);
-      }
-      const id = getMachineId(item);
-      const machine = self.getMachine(id);
-      if (machine.id === machines().activeId) {
-        setMachines("activeId", null);
-        return machine;
-      }
-      return null;
-    },
+    deactivateMachine,
     async createMachine(id, data) {
       await api.clan.createMachine(id, data, clan().id);
       const machine = toMachine(
@@ -103,52 +135,63 @@ function machinesMethods(
       );
       return machine;
     },
-    setMachinePosition(item, pos) {
-      const id = getMachineId(item);
-      // Ensure the id exists
-      self.getMachine(id);
-      setMachines("all", id, "data", "position", pos);
-    },
-    isMachineAtPosition(item, pos) {
-      const id = getMachineId(item);
-      const machine = self.getMachine(id);
-      return isSamePosition(machine.data.position, pos);
+    async updateMachineData(item, data) {
+      const machine = getMachine(item);
+      if (data.position) {
+        setMachines("all", machine.id, "data", "position", data.position);
+        if (Object.keys(data).length == 1) {
+          return;
+        }
+      }
+      // TODO: Use partial update once supported by backend and solidjs
+      // https://github.com/solidjs/solid/issues/2475
+      const d = { ...machine.data, ...data };
+      await api.clan.updateMachineData(machine.id, clan().id, d);
+      setMachines("all", machine.id, "data", reconcile(d));
     },
     highlightMachines(items) {
       if (!Array.isArray(items)) {
         return self.highlightMachines([items]);
       }
-      batch(() => {
-        for (const item of items) {
-          const id = getMachineId(item);
-          // Ensure the id exists
-          self.getMachine(id);
-          setMachines(
-            "highlightedIds",
-            produce((ids) => (ids[id] = true)),
-          );
-        }
-      });
+      setMachines(
+        "highlightedMachines",
+        produce((machines) =>
+          Object.assign(
+            machines,
+            Object.fromEntries(
+              items.map((item) => {
+                const machine = getMachine(item);
+                return [machine.id, machine];
+              }),
+            ),
+          ),
+        ),
+      );
     },
     unhighlightMachines(items) {
       if (!items) {
-        setMachines("highlightedIds", reconcile({}));
+        setMachines("highlightedMachines", {});
         return;
       }
       if (!Array.isArray(items)) {
         return self.unhighlightMachines([items]);
       }
-      batch(() => {
-        for (const item of items) {
-          const id = getMachineId(item);
-          // Ensure the id exists
-          self.getMachine(id);
-          setMachines(
-            "highlightedIds",
-            produce((ids) => (ids[id] = undefined)),
-          );
-        }
-      });
+      const unhighlighted = new Set(
+        items.map((item) => getMachine(item)).map((machine) => machine.id),
+      );
+      // Use delete to remove the unhighlighted is more intuitive but delete is
+      // slow in JS engines and we also need to use batch to ensure multiple
+      // deletes only result in one rendering
+      const highlighted = mapObject(
+        machines().highlightedMachines,
+        ([id, machine]) => {
+          if (unhighlighted.has(id)) {
+            return [];
+          }
+          return [id, machine];
+        },
+      );
+      setMachines("highlightedMachines", reconcile(highlighted));
     },
     machinesByTag(tag: string) {
       return Object.entries(machines().all)
@@ -170,18 +213,8 @@ export function toMachines(
         return a.id.localeCompare(b.id);
       });
     },
-    highlightedIds: {},
-    activeId: null,
-    get activeMachine() {
-      return this.activeId ? this.all[this.activeId] : null;
-    },
+    highlightedMachines: {},
+    activeMachine: null,
   };
   return self;
-}
-
-function getMachineId(item: string | Machine): string {
-  if (typeof item === "string") {
-    return item;
-  }
-  return item.id;
 }

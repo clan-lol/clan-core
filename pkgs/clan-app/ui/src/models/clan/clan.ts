@@ -5,30 +5,33 @@ import {
   ClansMethods,
   DataSchema,
   Machines,
-  Service,
-  ServiceInstance,
   ServiceInstances,
+  Services,
 } from "..";
 import { reconcile, SetStoreFunction } from "solid-js/store";
 import { MachineEntity } from "../machine/machine";
 import { toMachines } from "../machine/machines";
-import { ServiceEntity, toService } from "../service/service";
+import { toServices } from "../service/services";
+import { ServiceEntity } from "../service/service";
+import { toServiceInstances } from "../service/instances";
 
 export type ClanEntity = {
   readonly id: string;
-  readonly data: ClanData;
+  readonly data: ClanEntityData;
   readonly dataSchema: DataSchema;
   readonly machines: Record<string, MachineEntity>;
-  readonly services: ServiceEntity[];
+  readonly services: Record<string, ServiceEntity>;
   readonly globalTags: Tags;
 };
-export type Clan = {
-  readonly id: string;
+
+export type ClanEntityData = ClanMetaEntityData & {
+  domain?: string;
+};
+
+export type Clan = Omit<ClanEntity, "data" | "machines" | "services"> & {
   data: ClanData;
-  readonly dataSchema: DataSchema;
   readonly machines: Machines;
-  readonly services: Service[];
-  readonly globalTags: Tags;
+  readonly services: Services;
   readonly clans: Clans;
   readonly members: ClanMember[];
   readonly index: number;
@@ -36,29 +39,23 @@ export type Clan = {
   readonly isActive: boolean;
 };
 
+export type ClanData = ClanEntityData;
+
 export type ClanMetaEntity = {
   readonly id: string;
-  readonly data: ClanMetaData;
+  readonly data: ClanMetaEntityData;
 };
-export type ClanMeta = {
-  readonly id: string;
+export type ClanMetaEntityData = {
+  name: string;
+  description?: string;
+};
+export type ClanMeta = Omit<ClanMetaEntity, "data"> & {
   readonly data: ClanMetaData;
   readonly clans: Clans;
   readonly index: number;
 };
 
-export type ClanMetaData = {
-  name: string;
-  description?: string;
-};
-
-export type ClanData = ClanMetaData & {
-  domain?: string;
-  // dataSchema: JSONSchema;
-  // machines: MachineData[];
-  // services: ServiceData[];
-  // globalTags: globalTags;
-};
+export type ClanMetaData = ClanMetaEntityData;
 
 export type ClanMember = {
   type: "tag" | "machine";
@@ -121,65 +118,46 @@ function clanMethods(
   };
   return self;
 }
-export function toClanOrClanMeta(entity: ClanEntity, clans: Clans): Clan;
-export function toClanOrClanMeta(
-  entity: ClanMetaEntity,
-  clans: Clans,
-): ClanMeta;
-export function toClanOrClanMeta(
-  entity: ClanEntity | ClanMetaEntity,
-  clans: Clans,
-): Clan | ClanMeta {
+
+export function toClan(entity: ClanEntity, clans: Clans): Clan {
   const { id } = entity;
   const clan: Accessor<Clan> = () => {
-    const i = clans.all.findIndex((clan) => clan.id === id);
-    if (i === -1) {
+    const clan = clans.all.find((clan) => clan.id === id);
+    if (!clan) {
       throw new Error(`Clan does not exist: ${id}`);
     }
-    const clan = clans.all[i];
     if (isClan(clan)) return clan;
     throw new Error(`Accessing a clan that has not been activated yet: ${id}`);
   };
-  if (isClan(entity)) {
-    const self: Clan = {
-      ...entity,
-      get clans() {
-        return clans;
-      },
-      machines: toMachines(entity.machines, clan),
-      services: entity.services.map((service) => toService(service, clan)),
-      serviceInstances: {
-        get all() {
-          return clan().services.flatMap((service) => service.instances);
-        },
-        activeIndex: -1,
-        get activeServiceInstance(): ServiceInstance | undefined {
-          return this.activeIndex == -1
-            ? undefined
-            : this.all[this.activeIndex];
-        },
-      },
-      get members() {
-        return [
-          ...Object.keys(this.machines).map((name) => ({
-            type: "machine" as const,
-            name,
-          })),
-          ...this.globalTags.regular
-            .concat(this.globalTags.special)
-            .map((name) => ({ type: "tag" as const, name })),
-        ].sort((a, b) => a.name.localeCompare(b.name));
-      },
-      get index() {
-        return this.clans.all.findIndex((clan) => clan.id === this.id);
-      },
-      get isActive() {
-        return clans.activeClan?.id === this.id;
-      },
-    };
-    return self;
-  }
-  const self: ClanMeta = {
+  return {
+    ...entity,
+    get clans() {
+      return clans;
+    },
+    machines: toMachines(entity.machines, clan),
+    services: toServices(entity.services, clan),
+    serviceInstances: toServiceInstances(clan),
+    get members() {
+      return [
+        ...Object.keys(this.machines).map((name) => ({
+          type: "machine" as const,
+          name,
+        })),
+        ...this.globalTags.regular
+          .concat(this.globalTags.special)
+          .map((name) => ({ type: "tag" as const, name })),
+      ].sort((a, b) => a.name.localeCompare(b.name));
+    },
+    get index() {
+      return this.clans.all.findIndex((clan) => clan.id === this.id);
+    },
+    get isActive() {
+      return clans.activeClan?.id === this.id;
+    },
+  };
+}
+export function toClanMeta(entity: ClanMetaEntity, clans: Clans): ClanMeta {
+  return {
     ...entity,
     get clans() {
       return clans;
@@ -188,13 +166,8 @@ export function toClanOrClanMeta(
       return this.clans.all.findIndex((clan) => clan.id === this.id);
     },
   };
-  return self;
 }
 
-export function isClan(clan: Clan | ClanMeta): clan is Clan;
-export function isClan(clan: ClanEntity | ClanMetaEntity): clan is ClanEntity;
-export function isClan(
-  clan: Clan | ClanEntity | ClanMeta | ClanMetaEntity,
-): clan is Clan | ClanEntity {
+export function isClan(clan: Clan | ClanMeta): clan is Clan {
   return "machines" in clan;
 }

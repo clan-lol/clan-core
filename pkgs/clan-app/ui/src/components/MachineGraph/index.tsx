@@ -39,7 +39,7 @@ import {
   useServiceInstancesContext,
 } from "@/src/models";
 import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
-import { isSamePosition } from "@/src/util";
+import { isPosition } from "@/src/util";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -77,8 +77,7 @@ export const MachineGraph: Component = () => {
     {
       activateMachine,
       deactivateMachine,
-      setMachinePosition,
-      isMachineAtPosition,
+      updateMachineData,
       highlightMachines,
       unhighlightMachines,
     },
@@ -436,15 +435,9 @@ export const MachineGraph: Component = () => {
 
         if (!id) return;
 
-        if (actionMode() === "select") {
-          activateMachine(id);
-        }
-
-        // console.log("Clicked on machine", id);
-        // emitMachineClick(id); // notify subscribers
+        activateMachine(id);
       } else {
-        // emitMachineClick(null);
-        // if (actionMode() === "select") props.onSelect(new Set<string>());
+        deactivateMachine();
       }
     };
 
@@ -486,9 +479,9 @@ export const MachineGraph: Component = () => {
 
       // Left button
       if (e.button === 0) {
-        if (actionMode() === "select" && machineIds.length) {
-          const targetMachineId = machineIds[0];
-          const pos = machines().all[targetMachineId].data.position;
+        if (actionMode() === "select" && machineIds.length !== 0) {
+          const targetMachineId = machineIds[0]!;
+          const pos = machines().all[targetMachineId]!.data.position;
           // Disable controls to avoid conflict
           controls.enabled = false;
 
@@ -524,20 +517,20 @@ export const MachineGraph: Component = () => {
           window.clearTimeout(data.timer);
           // Always re-enable controls
           controls.enabled = true;
-          actionMachine.visible = false;
-
-          // Set machine as not flying
-          batch(() => {
-            setMachinePosition(data.targetMachineId, [
-              actionMachine.position.x,
-              actionMachine.position.z,
-            ]);
-            setIsDragging(false);
-            unhighlightMachines();
-            setActionMode("select");
-          });
-          renderLoop.requestRender();
-          mouseMoveData = undefined;
+          if (actionMode() === "move") {
+            actionMachine.visible = false;
+            // Set machine as not flying
+            batch(() => {
+              updateMachineData(data.targetMachineId, {
+                position: [actionMachine.position.x, actionMachine.position.z],
+              });
+              setIsDragging(false);
+              unhighlightMachines();
+              setActionMode("select");
+            });
+            renderLoop.requestRender();
+            mouseMoveData = undefined;
+          }
         }
       }
     };
@@ -632,16 +625,14 @@ export const MachineGraph: Component = () => {
     ] as const;
 
     const intersects = Object.values(machines().all).some((machine) =>
-      isMachineAtPosition(machine, snapped),
+      isPosition(machine.data.position, snapped),
     );
 
     // Skip snapping if there's already a machine at this position (excluding
     // the staring position if a machine is being moved)
     if (
       intersects &&
-      !(
-        mouseMoveData && isSamePosition(mouseMoveData.startingPosition, snapped)
-      )
+      !(mouseMoveData && isPosition(mouseMoveData.startingPosition, snapped))
     ) {
       return;
     }
@@ -721,10 +712,9 @@ export const MachineGraph: Component = () => {
               onSelect={(service) => {
                 setActionMode("select");
                 if (service.instances.length === 0) {
-                  const instance = createServiceInstance(service);
                   setEditingServinceInstance(instance);
                 } else {
-                  setEditingServinceInstance(service.instances[0]);
+                  setEditingServinceInstance(service.instances[0]!);
                 }
               }}
               onClose={() => setActionMode("select")}

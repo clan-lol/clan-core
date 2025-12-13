@@ -37,27 +37,26 @@ import {
   clearAllHighlights,
   setHighlightGroups,
 } from "@/src/components/MachineGraph/highlightStore";
-import { getRoleMembers, RoleType, SubmitServiceHandler } from "./models";
 import { TagSelect } from "@/src/components/Search/TagSelect";
 import { Tag } from "@/src/components/Tag/Tag";
 import {
   ClanMember,
   useClanContext,
-  useMachinesContext,
   useServiceInstanceContext,
 } from "@/src/models";
 
 interface ServiceStoreType {
   roles: Record<string, TagType[]>;
   currentRole?: string;
-  onClose(): void;
-  onDone(): void;
   mode: "create" | "update";
+  onClose?(): void;
+  onDone?(): void;
 }
 
 const ServiceInstanceWorkflow: Component<{
   initialStep?: ServiceSteps[number]["id"];
   initialStore?: Partial<ServiceStoreType>;
+  mode: "create" | "update";
   onClose?(): void;
   onDone?(): void;
 }> = (props) => {
@@ -67,6 +66,7 @@ const ServiceInstanceWorkflow: Component<{
       initialStep: props.initialStep || "view:members",
       initialStoreData: {
         ...props.initialStore,
+        mode: props.mode,
         onClose: props.onClose,
         onDone: props.onDone,
       },
@@ -201,7 +201,7 @@ const ConfigureServiceInstance = () => {
       </div>
       <div class={cx(styles.footer, styles.backgroundAlt)}>
         <Button hierarchy="secondary" type="submit">
-          <Show when={serviceInstance().isNew} fallback={"Save Changes"}>
+          <Show when={store.mode === "create"} fallback={"Save Changes"}>
             Add Service
           </Show>
         </Button>

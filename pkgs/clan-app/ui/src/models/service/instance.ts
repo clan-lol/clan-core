@@ -13,11 +13,11 @@ import {
 import { mapObjectValues } from "@/src/util";
 
 export type ServiceInstanceEntity = {
-  data: ServiceInstanceEntityData;
+  readonly data: ServiceInstanceEntityData;
 };
 export type ServiceInstanceEntityData = {
-  name: string;
-  roles: Record<string, ServiceInstanceRoleEntity>;
+  readonly name: string;
+  readonly roles: Record<string, ServiceInstanceRoleEntity>;
 };
 
 export type ServiceInstance = Omit<ServiceInstanceEntity, "data"> & {
@@ -25,8 +25,6 @@ export type ServiceInstance = Omit<ServiceInstanceEntity, "data"> & {
   readonly service: Service;
   data: ServiceInstanceData;
   readonly isActive: boolean;
-  readonly isNew: boolean;
-  readonly index: number;
 };
 
 export type ServiceInstanceData = Omit<ServiceInstanceEntityData, "roles"> & {
@@ -35,17 +33,16 @@ export type ServiceInstanceData = Omit<ServiceInstanceEntityData, "roles"> & {
 
 export type ServiceInstanceRoleEntity = {
   readonly id: string;
-  settings: Record<string, unknown>;
-  machines: string[];
-  tags: string[];
+  readonly settings: Record<string, unknown>;
+  readonly machines: string[];
+  readonly tags: string[];
 };
 
 export type ServiceInstanceRole = Omit<
   ServiceInstanceRoleEntity,
-  "machines" | "tags"
+  "settings"
 > & {
-  readonly machines: string[];
-  readonly tags: string[];
+  settings: Record<string, unknown>;
   members: ClanMember[];
 };
 
@@ -127,18 +124,9 @@ export function toServiceInstance(
       return service();
     },
     get isActive() {
-      const i = this.clan.serviceInstances.activeIndex;
-      if (i === undefined || i === -1) {
-        return false;
-      }
-      return this.data.name === this.clan.serviceInstances.all[i].data.name;
-    },
-    get isNew() {
-      return this.index === -1;
-    },
-    get index() {
-      return this.clan.serviceInstances.all.findIndex(
-        (instance) => this.data.name === instance.data.name,
+      return (
+        this.data.name ===
+        this.clan.serviceInstances.activeServiceInstance?.data.name
       );
     },
   };

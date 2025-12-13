@@ -6,24 +6,26 @@ import {
   ClansMethods,
   Service,
   ServiceInstance,
+  ServiceInstanceEntityData,
 } from "..";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import { toServiceInstance } from "./instance";
-import { mapObjectValues } from "@/src/util";
 
 export type ServiceInstances = {
-  all: ServiceInstance[];
-  activeIndex: number;
-  readonly activeServiceInstance: ServiceInstance | undefined;
+  readonly sorted: ServiceInstance[];
+  activeServiceInstance: ServiceInstance | null;
 };
 
 export type ServiceInstancesMethods = {
   setServiceInstances: SetStoreFunction<ServiceInstances>;
   activateServiceInstance(
-    item: number | ServiceInstance,
-  ): ServiceInstance | undefined;
-  createServiceInstance(service: Service): ServiceInstance;
+    item: string | ServiceInstance,
+  ): ServiceInstance | null;
+  createServiceInstance(
+    data: ServiceInstanceEntityData,
+    service: Service,
+  ): Promise<ServiceInstance>;
   addServiceInstance(instance: ServiceInstance): Promise<void>;
 };
 function instancesMethods(
@@ -36,45 +38,56 @@ function instancesMethods(
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClan("serviceInstances", ...args);
   };
+  function getInstance(item: string | ServiceInstance): ServiceInstance {
+    if (typeof item === "string") {
+      const name = item;
+      for (const [, service] of Object.entries(clan().services.all)) {
+        for (const [, instance] of service.instances.entries()) {
+          if (instance.data.name === name) {
+            return instance;
+          }
+        }
+      }
+      throw new Error(`Service instance does not exist: ${name}`);
+    }
+    const instance = item;
+    for (const [, service] of Object.entries(clan().services.all)) {
+      for (const [, inst] of service.instances.entries()) {
+        if (inst === instance) {
+          return instance;
+        }
+      }
+    }
+    throw new Error(
+      `This service instance does not belong to the known service instances: ${instance.data.name}`,
+    );
+  }
 
   const self: ServiceInstancesMethods = {
     setServiceInstances,
     activateServiceInstance(item) {
-      if (typeof item === "number") {
-        const i = item;
-        if (i < 0 || i >= instances().all.length) {
-          throw new Error(
-            `activateServiceInstance called with invalid index: ${i}`,
-          );
-        }
-        if (instances().activeIndex === i) return;
-
-        const instance = instances().all[i];
-        setServiceInstances("activeIndex", i);
-        return instance;
+      const instance = getInstance(item);
+      if (clan().serviceInstances.activeServiceInstance === instance) {
+        return null;
       }
-      return self.activateServiceInstance(item.index);
+      setServiceInstances("activeServiceInstance", instance);
+      return instance;
     },
-    createServiceInstance(service: Service): ServiceInstance {
-      return toServiceInstance(
-        {
-          data: {
-            name: service.id,
-            roles: mapObjectValues(service.roles, ([roleId]) => ({
-              id: roleId,
-              settings: {},
-              machines: [] as string[],
-              tags: [] as string[],
-            })),
-          },
-        },
-        () => service,
-      );
+    async createServiceInstance(data, service) {
+      await api.clan.createServiceInstance(data, service.id, service.clan.id);
+      return toServiceInstance({ data }, () => service);
     },
     async addServiceInstance(instance: ServiceInstance): Promise<void> {
-      await api.clan.createServiceInstance(instance);
-      setServiceInstances(
+      await api.clan.createServiceInstance(
+        instance.data,
+        instance.service.id,
+        instance.clan.id,
+      );
+      setClan(
+        "services",
         "all",
+        instance.service.id,
+        "instances",
         produce((instances) => {
           instances.push(instance);
         }),
@@ -90,4 +103,15 @@ export function createServiceInstancesStore(
   clansValue: readonly [Clans, ClansMethods],
 ): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
   return [instances, instancesMethods(instances, clanValue, clansValue)];
+}
+
+export function toServiceInstances(clan: Accessor<Clan>) {
+  return {
+    get sorted() {
+      return Object.values(clan().services.all)
+        .flatMap((service) => service.instances)
+        .sort((a, b) => a.data.name.localeCompare(b.data.name));
+    },
+    activeServiceInstance: null,
+  };
 }

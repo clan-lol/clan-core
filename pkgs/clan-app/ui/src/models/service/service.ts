@@ -1,5 +1,5 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
-import { Clan, Clans, ClansMethods, ServiceInstance } from "..";
+import { Clan, ServiceInstance } from "..";
 import { ServiceInstanceEntity, toServiceInstance } from "./instance";
 import { Accessor } from "solid-js";
 
@@ -15,7 +15,11 @@ export type ServiceEntity = {
 
 export type Service = Omit<ServiceEntity, "instances"> & {
   readonly clan: Clan;
-  readonly instances: ServiceInstance[];
+  // clans, machines and services all use a Record<string, ...> type, instances
+  // doesn't follow suit because an instance doesn't have a stable id, using a
+  // record requires the key to be updated as well when the id (instance name)
+  // is updated
+  instances: ServiceInstance[];
 };
 
 export type ServiceRole = {
@@ -28,7 +32,7 @@ export function toService(
 ): Service {
   const service = () => {
     const { id } = entity;
-    const service = clan().services.find((service) => service.id === id);
+    const service = clan().services.all[id];
     if (!service) {
       throw new Error(`Service does not exist: ${id}`);
     }

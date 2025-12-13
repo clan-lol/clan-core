@@ -1,6 +1,5 @@
 import { Accessor } from "solid-js";
-import { reconcile, SetStoreFunction } from "solid-js/store";
-import api from "../api";
+import { SetStoreFunction } from "solid-js/store";
 import {
   Clan,
   ClanMethods,
@@ -15,22 +14,11 @@ import { mapObjectValues } from "@/src/util";
 
 export type MachineEntity = {
   readonly id: string;
-  readonly data: MachineData;
+  readonly data: MachineEntityData;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
 };
-export type Machine = {
-  readonly clan: Clan;
-  readonly id: string;
-  data: MachineData;
-  readonly dataSchema: DataSchema;
-  readonly status: MachineStatus;
-  readonly isActive: boolean;
-  readonly isHighlighted: boolean;
-  readonly serviceInstances: ServiceInstance[];
-};
-
-export type MachineData = {
+export type MachineEntityData = {
   deploy: {
     buildHost?: string;
     targetHost?: string;
@@ -40,6 +28,14 @@ export type MachineData = {
   tags: string[];
   position: readonly [number, number];
 };
+export type Machine = Omit<MachineEntity, "data"> & {
+  readonly clan: Clan;
+  data: MachineData;
+  readonly isActive: boolean;
+  readonly isHighlighted: boolean;
+  readonly serviceInstances: ServiceInstance[];
+};
+export type MachineData = MachineEntityData;
 
 export type MachineStatus =
   | "not_installed"
@@ -149,10 +145,10 @@ export type MachineMethods = {
 };
 function machineMethods(
   machine: Accessor<Machine>,
-  [machines, { setMachines, activateMachine, deactivateMachine }]: readonly [
-    Accessor<Machines>,
-    MachinesMethods,
-  ],
+  [
+    machines,
+    { setMachines, activateMachine, deactivateMachine, updateMachineData },
+  ]: readonly [Accessor<Machines>, MachinesMethods],
   [clan]: readonly [Accessor<Clan>, ClanMethods],
   [clans]: readonly [Clans, ClansMethods],
 ): MachineMethods {
@@ -171,11 +167,7 @@ function machineMethods(
     },
 
     async updateMachineData(data) {
-      // TODO: Use partial update once supported by backend and solidjs
-      // https://github.com/solidjs/solid/issues/2475
-      const d = { ...machine().data, ...data };
-      await api.clan.updateMachineData(machine().id, clan().id, d);
-      setMachine("data", reconcile(d));
+      await updateMachineData(machine(), data);
     },
     // removeClan() {
     //   removeClan(clan());
@@ -185,11 +177,11 @@ function machineMethods(
 }
 
 export function toMachine(
-  machine: MachineEntity,
+  entity: MachineEntity,
   clan: Accessor<Clan>,
 ): Machine {
   return {
-    ...machine,
+    ...entity,
     get clan() {
       return clan();
     },
@@ -197,10 +189,10 @@ export function toMachine(
       return this.clan.machines.activeMachine?.id === this.id;
     },
     get isHighlighted() {
-      return !!this.clan.machines.highlightedIds[this.id];
+      return this.id in this.clan.machines.highlightedMachines;
     },
     get serviceInstances() {
-      return this.clan.serviceInstances.all.filter((instance) => {
+      return this.clan.serviceInstances.sorted.filter((instance) => {
         return Object.entries(instance.data.roles).some(([, role]) => {
           const tags = new Set(role.tags);
           return (

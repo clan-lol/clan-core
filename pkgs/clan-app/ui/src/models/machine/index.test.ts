@@ -26,7 +26,7 @@ describe("machines", () => {
       });
 
       const [fooMachine, fooMachineMethods] = createMachineStore(
-        () => machines().all.foo,
+        () => machines().all.foo!,
         [machines, machinesMethods],
         [clan, clanMethods],
         [clans, clansMethods],
@@ -42,7 +42,7 @@ describe("machines", () => {
             expect(fooMachine().isActive).toBe(true);
             done();
           },
-        ][runNum]();
+        ][runNum]?.();
         return runNum + 1;
       }, 0);
     });
@@ -68,7 +68,7 @@ describe("machines", () => {
       });
 
       const [fooMachine, fooMachineMethods] = createMachineStore(
-        () => machines().all.foo,
+        () => machines().all.foo!,
         [machines, machinesMethods],
         [clan, clanMethods],
         [clans, clansMethods],
@@ -84,7 +84,7 @@ describe("machines", () => {
             expect(fooMachine().isHighlighted).toBe(true);
             done();
           },
-        ][runNum]();
+        ][runNum]?.();
         return runNum + 1;
       }, 0);
     });
