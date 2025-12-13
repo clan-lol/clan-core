@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import os
@@ -12,6 +13,7 @@ from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
+from clan_cli.vars.generate import generate_command
 from clan_cli.vars.generator import (
     Generator,
     dependencies_as_dir,
@@ -1413,31 +1415,35 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     # Create a fresh flake object and invalidate cache to ensure clean state
     invalidate_flake_cache(flake.path)
     flake_obj = Flake(str(flake.path))
-    machine = Machine(name="my_machine", flake=flake_obj)
 
     # Generate the secret - this will initialize the password store backend
     # and should result in minimal select calls
-    run_generators(
-        machines=[machine],
-        generators=None,  # Generate all
+    generate_command(
+        argparse.Namespace(
+            machines=["my_machine"],
+            generator=None,
+            flake=flake_obj,
+            regenerate=False,
+            no_sandbox=False,
+        )
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 3 cache misses:
-    # 1. One select to get the list of generators for the machine
-    # 2. One batched evaluation for getting generator configuration (script, files, etc.)
-    # 3. One select for password_store.passCommand during init_pass_command
+    # We expect exactly 4 cache misses:
+    # 1. Inventory selectors (from list_full_machines)
+    # 2. Generator metadata selectors (from generate_command precache)
+    # 3. finalScript and sops selectors (from run_generators precache)
+    # 4. One select for password_store.passCommand during init_pass_command
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 3:
+    if flake_obj._cache_misses > 4:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for password_store backend"
         )
 
-    assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for password_store backend initialization, "
-        f"got {flake_obj._cache_misses}. The passCommand optimization should minimize select calls "
-        f"(before: 4-5 selects with passPackage.outPath + meta.mainProgram, after: 3 with passCommand only)."
+    assert flake_obj._cache_misses == 4, (
+        f"Expected exactly 4 cache misses for password_store backend initialization, "
+        f"got {flake_obj._cache_misses}."
     )
 
     # Verify the secret was actually generated
@@ -1485,6 +1491,7 @@ def test_generate_secret_var_sops_minimal_select_calls(
 
     # Set up second machine with the same generator configuration
     flake.machines["machine2"] = machine1_config.copy()
+    flake.machines["machine3"] = machine1_config.copy()
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
@@ -1492,31 +1499,32 @@ def test_generate_secret_var_sops_minimal_select_calls(
     # Create a fresh flake object and invalidate cache to ensure clean state
     invalidate_flake_cache(flake.path)
     flake_obj = Flake(str(flake.path))
-    machine1 = Machine(name="machine1", flake=flake_obj)
-    machine2 = Machine(name="machine2", flake=flake_obj)
-
-    # Generate secrets for both machines - this should result in minimal select calls
-    # Even with 2 machines x 2 generators = 4 generator instances, we should still
-    # only have 2 cache misses due to batching
-    run_generators(
-        machines=[machine1, machine2],
-        generators=None,  # Generate all
+    # Generate secrets for multiple machines - this should result in minimal select calls
+    generate_command(
+        argparse.Namespace(
+            # don't select all machines, since this can trigger more eval calls
+            # due to a difference in `all generators` vs `selected generators`
+            machines=["machine1", "machine2"],
+            generator=None,
+            flake=flake_obj,
+            regenerate=False,
+            no_sandbox=False,
+        )
     )
-
     # The optimization should result in minimal cache misses.
-    # We expect exactly 2 cache misses:
-    # 1. One select to get the list of generators for all machines
-    # 2. One batched evaluation for getting all generator configurations (script, files, etc.)
-    # Unlike password-store, SOPS doesn't need additional selects for command configuration.
+    # We expect exactly 3 cache misses:
+    # 1. Inventory selectors (retrieving list of all machines)
+    # 2. Generator metadata selectors (definitions of all generators + vars settings)
+    # 3. finalScript and sops settings (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 2:
+    if flake_obj._cache_misses > 3:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for sops backend"
         )
 
-    assert flake_obj._cache_misses == 2, (
-        f"Expected exactly 2 cache misses for sops backend with 2 machines and 2 generators, "
+    assert flake_obj._cache_misses == 3, (
+        f"Expected exactly 3 cache misses for sops backend with 3 machines and 2 generators, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -1570,30 +1578,34 @@ def test_cache_misses_for_vars_operations(
     # Create fresh machine objects to ensure clean cache state
     flake_obj = Flake(str(flake.path))
     machine1 = Machine(name="my_machine", flake=flake_obj)
-    machine2 = Machine(name="other_machine", flake=flake_obj)
 
-    # Test 1: Running vars generate for BOTH machines simultaneously should still result in exactly 2 cache misses
+    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 3 cache misses
     # Even though we have:
     # - 2 machines (my_machine and other_machine)
     # - 2 generators per machine (gen1 and gen2)
-    # We still only get 2 cache misses when generating for both machines:
-    # 1. One for getting the list of generators for both machines
-    # 2. One batched evaluation for getting all generator scripts for both machines
-    # The key insight: the system should batch ALL evaluations across ALL machines into a single nix eval
+    # We get 3 cache misses when generating for both machines:
+    # 1. Inventory selectors (from list_full_machines)
+    # 2. Generator metadata selectors (from generate_command precache)
+    # 3. finalScript and sops selectors (from run_generators precache)
 
-    run_generators(
-        machines=[machine1, machine2],
-        generators=None,  # Generate all
+    generate_command(
+        argparse.Namespace(
+            machines=["my_machine", "other_machine"],
+            generator=None,
+            flake=flake_obj,
+            regenerate=False,
+            no_sandbox=False,
+        )
     )
 
-    # Print stack traces if we have more than 2 cache misses
-    if flake_obj._cache_misses != 2:
+    # Print stack traces if we have more than 3 cache misses
+    if flake_obj._cache_misses != 3:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for vars generate"
         )
 
-    assert flake_obj._cache_misses == 2, (
-        f"Expected exactly 2 cache misses for vars generate, got {flake_obj._cache_misses}"
+    assert flake_obj._cache_misses == 3, (
+        f"Expected exactly 3 cache misses for vars generate, got {flake_obj._cache_misses}"
     )
 
     # Test 2: List all vars should result in exactly 1 cache miss

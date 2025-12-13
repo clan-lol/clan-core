@@ -1099,6 +1099,15 @@ class Flake:
             selector for selector in selectors if not self._cache.is_cached(selector)
         ]
 
+        def selector_str(selector: str) -> str:
+            return (
+                f"\n  - (cached) {selector}"
+                if self._cache and self._cache.is_cached(selector)
+                else f"\n  - (not cached) {selector}"
+            )
+
+        log.debug(f"Precaching selectors:{''.join(map(selector_str, selectors))}")
+
         if not_fetched_selectors:
             # Record cache miss with stack trace
             self._record_cache_miss(
@@ -1127,13 +1136,12 @@ class Flake:
             raise ClanError(msg)
 
         if not self._cache.is_cached(selector):
-            log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
             log.debug(f"Cache miss for {selector}")
             # Record cache miss with stack trace
             self._record_cache_miss(f"Cache miss for selector: {selector}")
             self.get_from_nix([selector])
         else:
-            log.debug(f"$ clan select {shlex.quote(selector)}")
+            log.debug(f"(cached) $ clan select {shlex.quote(selector)}")
 
         try:
             return self._cache.select(selector)

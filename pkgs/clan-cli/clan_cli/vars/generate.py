@@ -8,7 +8,6 @@ from clan_cli.completions import (
 )
 from clan_lib.flake import require_flake
 from clan_lib.machines.list import list_full_machines
-from clan_lib.nix import nix_config
 from clan_lib.vars.generate import run_generators
 
 if TYPE_CHECKING:
@@ -26,17 +25,6 @@ def generate_command(args: argparse.Namespace) -> None:
                 machines,
             ),
         )
-
-    # prefetch all vars
-    config = nix_config()
-    system = config["system"]
-    machine_names = [machine.name for machine in machines]
-    # test
-    flake.precache(
-        [
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-        ],
-    )
 
     run_generators(
         machines,

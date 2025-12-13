@@ -17,6 +17,25 @@ log = logging.getLogger(__name__)
 debug_condition = False
 
 
+def get_generators_precache_selectors(machine_names: list[str]) -> list[str]:
+    """Get all selectors needed for get_generators and run_generators.
+
+    This function returns all selectors that should be precached before calling
+    get_generators or run_generators. It includes inventory selectors, generator
+    metadata, and execution-time selectors (finalScript, sops config).
+
+    Args:
+        machine_names: The names of machines to get selectors for.
+
+    Returns:
+        List of selectors to precache.
+
+    """
+    return InventoryStore.default_selectors() + Generator.get_machine_selectors(
+        machine_names
+    )
+
+
 @API.register
 def get_generators(
     machines: list[Machine],
@@ -40,11 +59,8 @@ def get_generators(
         msg = "At least one machine must be provided"
         raise ClanError(msg)
     flake = machines[0].flake
-    flake.precache(
-        InventoryStore.default_selectors()
-        + Generator.get_machine_selectors(m.name for m in machines)
-    )
     all_machines = flake.list_machines().keys()
+    flake.precache(get_generators_precache_selectors(list(all_machines)))
     requested_machines = [machine.name for machine in machines]
 
     all_generators_list = Generator.get_machine_generators(
