@@ -200,6 +200,54 @@ class Generator:
         ]
 
     @classmethod
+    def _find_generator_differences(
+        cls: type["Generator"],
+        gen_name: str,
+        ref_machine: str,
+        ref_data: dict,
+        ref_files: dict,
+        curr_machine: str,
+        curr_data: dict,
+        curr_files: dict,
+    ) -> list[str]:
+        """Find differences between two generator definitions.
+
+        Compares the following fields:
+
+        files, prompts, dependencies, validationHash
+
+        Returns:
+            List of field names that differ.
+
+        """
+        differences = []
+
+        if ref_files != curr_files:
+            log.debug(
+                f"Files differ for generator '{gen_name}':\n{pretty_diff_objects(ref_files, curr_files, ref_machine, curr_machine)}"
+            )
+            differences.append("files")
+        if ref_data.get("prompts") != curr_data.get("prompts"):
+            log.debug(
+                f"Prompts differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('prompts'), curr_data.get('prompts'), ref_machine, curr_machine)}"
+            )
+            differences.append("prompts")
+        if ref_data.get("dependencies") != curr_data.get("dependencies"):
+            log.debug(
+                f"Dependencies differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('dependencies'), curr_data.get('dependencies'), ref_machine, curr_machine)}"
+            )
+            differences.append("dependencies")
+        if ref_data.get("validationHash") != curr_data.get("validationHash"):
+            log.debug(
+                f"Validation hash differs for generator '{gen_name}':\n"
+                f"  {ref_machine}={ref_data.get('validationHash')}\n"
+                f"  {curr_machine}={curr_data.get('validationHash')}"
+            )
+            differences.append("validation_hash")
+
+        return differences
+
+    @classmethod
     def get_machine_generators(
         cls: type["Generator"],
         machine_names: Iterable[str],
@@ -260,36 +308,19 @@ class Generator:
                         )
 
                         # Build list of differences with details
-                        differences = []
-                        if prev_gen_files != curr_gen_files:
-                            log.debug(
-                                f"Files differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_files, curr_gen_files, prev_machine, machine_name)}"
-                            )
-                            differences.append("files")
-                        if prev_gen_data.get("prompts") != gen_data.get("prompts"):
-                            log.debug(
-                                f"Prompts differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_data.get('prompts'), gen_data.get('prompts'), prev_machine, machine_name)}"
-                            )
-                            differences.append("prompts")
-                        if prev_gen_data.get("dependencies") != gen_data.get(
-                            "dependencies"
-                        ):
-                            log.debug(
-                                f"Dependencies differ for generator '{gen_name}':\n{pretty_diff_objects(prev_gen_data.get('dependencies'), gen_data.get('dependencies'), prev_machine, machine_name)}"
-                            )
-                            differences.append("dependencies")
-                        if prev_gen_data.get("validationHash") != gen_data.get(
-                            "validationHash"
-                        ):
-                            log.debug(
-                                f"Validation hash differs for generator '{gen_name}':\n"
-                                f"  {prev_machine}={prev_gen_data.get('validationHash')}\n"
-                                f"  {machine_name}={gen_data.get('validationHash')}"
-                            )
-                            differences.append("validation_hash")
+                        differences = cls._find_generator_differences(
+                            gen_name=gen_name,
+                            ref_machine=prev_machine,
+                            ref_data=prev_gen_data,
+                            ref_files=prev_gen_files,
+                            curr_machine=machine_name,
+                            curr_data=gen_data,
+                            curr_files=curr_gen_files,
+                        )
                         if differences:
                             msg = f"Machines {prev_machine} and {machine_name} have different definitions for shared generator '{gen_name}' (differ in: {', '.join(differences)})"
                             raise ClanError(msg)
+
                     else:
                         shared_generators_raw[gen_name] = (
                             machine_name,
