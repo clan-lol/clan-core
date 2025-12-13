@@ -187,16 +187,17 @@ class Generator:
         generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
 
-        all_selectors = []
-        for machine_name in machine_names:
-            all_selectors += [
-                f'clanInternals.machines."{system}"."{machine_name}".{generators_selector}',
-                f'clanInternals.machines."{system}"."{machine_name}".{files_selector}',
-                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.publicModule',
-                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.settings.secretModule',
-                f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.?sops.?secretUploadDirectory',
-            ]
-        return all_selectors
+        return [
+            "clanInternals.?secrets.?age.?plugins",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{generators_selector}",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{files_selector}",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.?sops.?defaultGroups",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.publicModule",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?sops.?secretUploadDirectory",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?secretLocation",
+        ]
 
     @classmethod
     def get_machine_generators(

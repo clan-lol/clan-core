@@ -1367,6 +1367,10 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["script"] = 'echo hello > "$out"/my_secret'
 
+    # Add machine2 and machine3 with the same configuration
+    flake.machines["machine2"] = config.copy()
+    flake.machines["machine3"] = config.copy()
+
     flake.refresh()
     monkeypatch.chdir(flake.path)
 
@@ -1420,7 +1424,7 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     # and should result in minimal select calls
     generate_command(
         argparse.Namespace(
-            machines=["my_machine"],
+            machines=["my_machine", "machine2", "machine3"],
             generator=None,
             flake=flake_obj,
             regenerate=False,
@@ -1433,16 +1437,15 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     # 1. Inventory selectors (from list_full_machines)
     # 2. Generator metadata selectors (from generate_command precache)
     # 3. finalScript and sops selectors (from run_generators precache)
-    # 4. One select for password_store.passCommand during init_pass_command
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 4:
+    if flake_obj._cache_misses > 3:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for password_store backend"
         )
 
-    assert flake_obj._cache_misses == 4, (
-        f"Expected exactly 4 cache misses for password_store backend initialization, "
+    assert flake_obj._cache_misses == 3, (
+        f"Expected exactly 4 cache misses for password_store backend, "
         f"got {flake_obj._cache_misses}."
     )
 
