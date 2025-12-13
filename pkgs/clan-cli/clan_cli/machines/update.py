@@ -25,6 +25,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
+from clan_cli.vars.generator import Generator
 
 if TYPE_CHECKING:
     from clan_lib.ssh.host import Host
@@ -162,17 +163,10 @@ def update_command(args: argparse.Namespace) -> None:
 
         flake.precache(
             [
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts}}",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.publicModule",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
+                *Generator.get_machine_selectors(machine_names),
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?secretLocation",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?sops.?secretUploadDirectory",
-            ],
+            ]
         )
 
         run_generators(all_machines, generators=None, full_closure=False)
