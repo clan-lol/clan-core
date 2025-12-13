@@ -480,7 +480,7 @@ def complete_tags(
 
 def complete_build_host(
     prefix: str,  # noqa: ARG001
-    _parsed_args: argparse.Namespace,
+    parsed_args: argparse.Namespace,  # noqa: ARG001
     **_kwargs: Any,
 ) -> Iterable[str]:
     """Provides completion functionality for build host.
