@@ -3,6 +3,7 @@
   nix-unit,
   clan-cli,
   mkShell,
+  passage,
   ruff,
   self,
   self',
@@ -10,7 +11,7 @@
 
 mkShell {
   name = "clan-cli";
-  buildInputs = [
+  packages = [
     (clan-cli.pythonRuntime.withPackages (
       ps:
       with ps;
@@ -20,6 +21,7 @@ mkShell {
       ]
       ++ (clan-cli.devshellPyDeps ps)
     ))
+    passage
     ruff
     nix-unit
   ]

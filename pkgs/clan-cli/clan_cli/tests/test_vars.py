@@ -1415,31 +1415,35 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     # Create a fresh flake object and invalidate cache to ensure clean state
     invalidate_flake_cache(flake.path)
     flake_obj = Flake(str(flake.path))
-    machine = Machine(name="my_machine", flake=flake_obj)
 
     # Generate the secret - this will initialize the password store backend
     # and should result in minimal select calls
-    run_generators(
-        machines=[machine],
-        generators=None,  # Generate all
+    generate_command(
+        argparse.Namespace(
+            machines=["my_machine"],
+            generator=None,
+            flake=flake_obj,
+            regenerate=False,
+            no_sandbox=False,
+        )
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 3 cache misses:
-    # 1. One select to get the list of generators for the machine
-    # 2. One batched evaluation for getting generator configuration (script, files, etc.)
-    # 3. One select for password_store.passCommand during init_pass_command
+    # We expect exactly 4 cache misses:
+    # 1. Inventory selectors (from list_full_machines)
+    # 2. Generator metadata selectors (from generate_command precache)
+    # 3. finalScript and sops selectors (from run_generators precache)
+    # 4. One select for password_store.passCommand during init_pass_command
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 3:
+    if flake_obj._cache_misses > 4:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for password_store backend"
         )
 
-    assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for password_store backend initialization, "
-        f"got {flake_obj._cache_misses}. The passCommand optimization should minimize select calls "
-        f"(before: 4-5 selects with passPackage.outPath + meta.mainProgram, after: 3 with passCommand only)."
+    assert flake_obj._cache_misses == 4, (
+        f"Expected exactly 4 cache misses for password_store backend initialization, "
+        f"got {flake_obj._cache_misses}."
     )
 
     # Verify the secret was actually generated
@@ -1574,30 +1578,34 @@ def test_cache_misses_for_vars_operations(
     # Create fresh machine objects to ensure clean cache state
     flake_obj = Flake(str(flake.path))
     machine1 = Machine(name="my_machine", flake=flake_obj)
-    machine2 = Machine(name="other_machine", flake=flake_obj)
 
-    # Test 1: Running vars generate for BOTH machines simultaneously should still result in exactly 2 cache misses
+    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 3 cache misses
     # Even though we have:
     # - 2 machines (my_machine and other_machine)
     # - 2 generators per machine (gen1 and gen2)
-    # We still only get 2 cache misses when generating for both machines:
-    # 1. One for getting the list of generators for both machines
-    # 2. One batched evaluation for getting all generator scripts for both machines
-    # The key insight: the system should batch ALL evaluations across ALL machines into a single nix eval
+    # We get 3 cache misses when generating for both machines:
+    # 1. Inventory selectors (from list_full_machines)
+    # 2. Generator metadata selectors (from generate_command precache)
+    # 3. finalScript and sops selectors (from run_generators precache)
 
-    run_generators(
-        machines=[machine1, machine2],
-        generators=None,  # Generate all
+    generate_command(
+        argparse.Namespace(
+            machines=["my_machine", "other_machine"],
+            generator=None,
+            flake=flake_obj,
+            regenerate=False,
+            no_sandbox=False,
+        )
     )
 
-    # Print stack traces if we have more than 2 cache misses
-    if flake_obj._cache_misses != 2:
+    # Print stack traces if we have more than 3 cache misses
+    if flake_obj._cache_misses != 3:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for vars generate"
         )
 
-    assert flake_obj._cache_misses == 2, (
-        f"Expected exactly 2 cache misses for vars generate, got {flake_obj._cache_misses}"
+    assert flake_obj._cache_misses == 3, (
+        f"Expected exactly 3 cache misses for vars generate, got {flake_obj._cache_misses}"
     )
 
     # Test 2: List all vars should result in exactly 1 cache miss
