@@ -6,8 +6,11 @@ let
       modules = [
         ../interface.nix
         module
+        {
+          class = "nixos";
+          pkgs = pkgs;
+        }
       ];
-      specialArgs.pkgs = pkgs;
     }).config;
 
   usage_simple = {
