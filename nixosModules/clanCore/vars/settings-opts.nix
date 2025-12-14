@@ -54,10 +54,14 @@ let
             path = file.config.flakePath;
           }
         '';
-        default = builtins.path {
-          name = "${file.config.generatorName}_${file.config.name}";
-          path = file.config.flakePath;
-        };
+        default =
+          if file.config.flakePath == null then
+            throw "flakePath must be set before accessing path"
+          else
+            builtins.path {
+              name = "${file.config.generatorName}_${file.config.name}";
+              path = file.config.flakePath;
+            };
       };
       exists = mkOption {
         description = ''
