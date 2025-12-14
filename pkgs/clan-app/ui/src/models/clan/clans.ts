@@ -63,7 +63,7 @@ export function createClansStore(
     all: [],
     activeClan: null,
   });
-  const methods = clansMethods([clans, setClans]);
+  const methods = createClansMethods(clans, setClans);
   createEffect(
     on(entity, (entity) => {
       const all = entity.all.map((clanEntity, i) =>
@@ -100,10 +100,10 @@ export type ClansMethods = {
   ): Promise<Clan>;
   removeClan(item: Clan | ClanMeta | string): Clan | ClanMeta;
 };
-function clansMethods([clans, setClans]: [
-  Clans,
-  SetStoreFunction<Clans>,
-]): ClansMethods {
+export function createClansMethods(
+  clans: Clans,
+  setClans: SetStoreFunction<Clans>,
+): ClansMethods {
   function getClan(item: Clan | string): readonly [Clan, number];
   function getClan(item: ClanMeta | string): readonly [ClanMeta, number];
   function getClan(

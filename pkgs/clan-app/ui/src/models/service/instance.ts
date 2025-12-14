@@ -57,8 +57,30 @@ export type ServiceInstanceRole = Omit<
 export function createServiceInstanceStore(
   instance: Accessor<ServiceInstance>,
 ): [Accessor<ServiceInstance>, ServiceInstanceMethods] {
-  const [clan, clanMethods] = useClanContext();
-  const { setClan } = clanMethods;
+  return [
+    instance,
+    createInstanceMethods(
+      instance,
+      useServiceInstancesContext(),
+      useClanContext(),
+      useClansContext(),
+    ),
+  ];
+}
+
+export type ServiceInstanceMethods = {
+  setServiceInstance: SetStoreFunction<ServiceInstance>;
+  activateServiceInstance(): void;
+};
+export function createInstanceMethods(
+  instance: Accessor<ServiceInstance>,
+  [instances, { activateServiceInstance }]: readonly [
+    Accessor<ServiceInstances>,
+    ServiceInstancesMethods,
+  ],
+  [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
+  [clans]: readonly [Clans, ClansMethods],
+): ServiceInstanceMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setInstance: SetStoreFunction<ServiceInstance> = (...args) => {
     const i = clan().serviceInstances.all.indexOf(instance());
@@ -70,33 +92,6 @@ export function createServiceInstanceStore(
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClan("serviceInstances", "all", i, ...args);
   };
-  return [
-    instance,
-    instanceMethods(
-      [instance, setInstance],
-      useServiceInstancesContext(),
-      [clan, clanMethods],
-      useClansContext(),
-    ),
-  ];
-}
-
-export type ServiceInstanceMethods = {
-  setServiceInstance: SetStoreFunction<ServiceInstance>;
-  activateServiceInstance(): void;
-};
-function instanceMethods(
-  [instance, setInstance]: readonly [
-    Accessor<ServiceInstance>,
-    SetStoreFunction<ServiceInstance>,
-  ],
-  [instances, { activateServiceInstance }]: readonly [
-    Accessor<ServiceInstances>,
-    ServiceInstancesMethods,
-  ],
-  [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  [clans]: readonly [Clans, ClansMethods],
-): ServiceInstanceMethods {
   const self: ServiceInstanceMethods = {
     setServiceInstance: setInstance,
     activateServiceInstance() {

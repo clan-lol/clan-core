@@ -77,8 +77,23 @@ export type Tags = {
 export function createClanStore(
   clan: Accessor<Clan>,
 ): readonly [Accessor<Clan>, ClanMethods] {
-  const [clans, clansMethods] = useClansContext();
-  const { setClans } = clansMethods;
+  return [clan, createClanMethods(clan, useClansContext())];
+}
+
+export type ClanMethods = {
+  setClan: SetStoreFunction<Clan>;
+  activateClan(): Promise<void>;
+  deactivateClan(): void;
+  updateClanData(data: Partial<ClanData>): Promise<void>;
+  removeClan(): void;
+};
+export function createClanMethods(
+  clan: Accessor<Clan>,
+  [clans, { setClans, activateClan, deactivateClan, removeClan }]: readonly [
+    Clans,
+    ClansMethods,
+  ],
+): ClanMethods {
   // @ts-expect-error ...args won't infer properly for overloaded functions
   const setClan: SetStoreFunction<Clan> = (...args) => {
     const i = clan().index;
@@ -90,23 +105,6 @@ export function createClanStore(
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClans("all", i, ...args);
   };
-  return [clan, clanMethods([clan, setClan], [clans, clansMethods])];
-}
-
-export type ClanMethods = {
-  setClan: SetStoreFunction<Clan>;
-  activateClan(): Promise<void>;
-  deactivateClan(): void;
-  updateClanData(data: Partial<ClanData>): Promise<void>;
-  removeClan(): void;
-};
-function clanMethods(
-  [clan, setClan]: [Accessor<Clan>, SetStoreFunction<Clan>],
-  [clans, { activateClan, deactivateClan, removeClan }]: readonly [
-    Clans,
-    ClansMethods,
-  ],
-): ClanMethods {
   const self: ClanMethods = {
     setClan,
     async activateClan() {

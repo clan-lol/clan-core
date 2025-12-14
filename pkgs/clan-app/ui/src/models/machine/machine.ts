@@ -130,24 +130,11 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
 export function createMachineStore(
   machine: Accessor<Machine>,
 ): readonly [Accessor<Machine>, MachineMethods] {
-  const [machines, machinesMethods] = useMachinesContext();
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachine: SetStoreFunction<Machine> = (...args) => {
-    const m = machine();
-    if (m != machines().all[m.id]) {
-      throw new Error(
-        `This machine does not belong to the known machines: ${m.id}`,
-      );
-    }
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setMachines("all", m.id, ...args);
-  };
-
   return [
     machine,
-    machineMethods(
-      [machine, setMachine],
-      [machines, machinesMethods],
+    createMachineMethods(
+      machine,
+      useMachinesContext(),
       useClanContext(),
       useClansContext(),
     ),
@@ -161,15 +148,26 @@ export type MachineMethods = {
   updateMachineData(data: Partial<MachineData>): Promise<void>;
   // removeMachine(): void;
 };
-function machineMethods(
-  [machine, setMachine]: [Accessor<Machine>, SetStoreFunction<Machine>],
+export function createMachineMethods(
+  machine: Accessor<Machine>,
   [
     machines,
-    { activateMachine, deactivateMachine, updateMachineData },
+    { setMachines, activateMachine, deactivateMachine, updateMachineData },
   ]: readonly [Accessor<Machines>, MachinesMethods],
   [clan]: readonly [Accessor<Clan>, ClanMethods],
   [clans]: readonly [Clans, ClansMethods],
 ): MachineMethods {
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setMachine: SetStoreFunction<Machine> = (...args) => {
+    const m = machine();
+    if (m != machines().all[m.id]) {
+      throw new Error(
+        `This machine does not belong to the known machines: ${m.id}`,
+      );
+    }
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setMachines("all", m.id, ...args);
+  };
   const self: MachineMethods = {
     setMachine,
     activateMachine() {

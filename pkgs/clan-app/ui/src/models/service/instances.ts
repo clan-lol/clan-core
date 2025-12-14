@@ -28,20 +28,9 @@ export type ServiceInstances = {
 export function createServiceInstancesStore(
   instances: Accessor<ServiceInstances>,
 ): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
-  const [clan, clanMethods] = useClanContext();
-  const { setClan } = clanMethods;
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setInstances: SetStoreFunction<ServiceInstances> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setClan("serviceInstances", ...args);
-  };
   return [
     instances,
-    instancesMethods(
-      [instances, setInstances],
-      [clan, clanMethods],
-      useClansContext(),
-    ),
+    instancesMethods(instances, useClanContext(), useClansContext()),
   ];
 }
 
@@ -57,13 +46,16 @@ export type ServiceInstancesMethods = {
   updateServiceInstanceData(data: ServiceInstanceDataEntity): Promise<void>;
 };
 function instancesMethods(
-  [instances, setInstances]: [
-    Accessor<ServiceInstances>,
-    SetStoreFunction<ServiceInstances>,
-  ],
+  instances: Accessor<ServiceInstances>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   [clans]: readonly [Clans, ClansMethods],
 ): ServiceInstancesMethods {
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setInstances: SetStoreFunction<ServiceInstances> = (...args) => {
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setClan("serviceInstances", ...args);
+  };
+
   function getInstance(item: string | ServiceInstance): ServiceInstance {
     if (typeof item === "string") {
       const name = item;

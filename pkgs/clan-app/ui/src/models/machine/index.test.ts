@@ -2,7 +2,7 @@ import { describe, test, vi } from "vitest";
 import { testEffect } from "@solidjs/testing-library";
 import { createEffect } from "solid-js";
 import { createMachinesStoreFixture } from "@/src/tests/utils";
-import { createMachineStore } from "./machine";
+import { createMachineMethods, createMachineStore } from "./machine";
 
 describe("machines", () => {
   test("activate", ({ expect }) => {
@@ -13,7 +13,6 @@ describe("machines", () => {
         [clans, clansMethods],
       ] = createMachinesStoreFixture({
         foo: {
-          id: "foo",
           data: {
             deploy: {},
             machineClass: "nixos",
@@ -24,13 +23,7 @@ describe("machines", () => {
           status: "not_installed",
         },
       });
-
-      const [fooMachine, fooMachineMethods] = createMachineStore(
-        () => machines().all.foo!,
-        [machines, machinesMethods],
-        [clan, clanMethods],
-        [clans, clansMethods],
-      );
+      const fooMachine = () => machines().all.foo;
 
       createEffect((runNum: number) => {
         [
@@ -55,7 +48,6 @@ describe("machines", () => {
         [clans, clansMethods],
       ] = createMachinesStoreFixture({
         foo: {
-          id: "foo",
           data: {
             deploy: {},
             machineClass: "nixos",
@@ -67,18 +59,13 @@ describe("machines", () => {
         },
       });
 
-      const [fooMachine, fooMachineMethods] = createMachineStore(
-        () => machines().all.foo!,
-        [machines, machinesMethods],
-        [clan, clanMethods],
-        [clans, clansMethods],
-      );
+      const fooMachine = () => machines().all.foo;
 
       createEffect((runNum: number) => {
         [
           () => {
             expect(fooMachine().isHighlighted).toBe(false);
-            machinesMethods.highlightMachines("foo");
+            machinesMethods.setHighlightedMachines("foo");
           },
           () => {
             expect(fooMachine().isHighlighted).toBe(true);

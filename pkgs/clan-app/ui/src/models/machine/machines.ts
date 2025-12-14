@@ -26,20 +26,9 @@ export type Machines = {
 export function createMachinesStore(
   machines: Accessor<Machines>,
 ): [Accessor<Machines>, MachinesMethods] {
-  const [clan, clanMethods] = useClanContext();
-  const { setClan } = clanMethods;
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachines: SetStoreFunction<Machines> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setClan("machines", ...args);
-  };
   return [
     machines,
-    machinesMethods(
-      [machines, setMachines],
-      [clan, clanMethods],
-      useClansContext(),
-    ),
+    createMachinesMethods(machines, useClanContext(), useClansContext()),
   ];
 }
 
@@ -61,11 +50,17 @@ export type MachinesMethods = {
   machinesByTag(tag: string): Machine[];
   // removeMachine(): void;
 };
-function machinesMethods(
-  [machines, setMachines]: [Accessor<Machines>, SetStoreFunction<Machines>],
+export function createMachinesMethods(
+  machines: Accessor<Machines>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): MachinesMethods {
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setMachines: SetStoreFunction<Machines> = (...args) => {
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setClan("machines", ...args);
+  };
+
   function getMachine(item: Machine | string): Machine {
     if (typeof item === "string") {
       const id = item;
