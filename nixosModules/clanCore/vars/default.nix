@@ -6,14 +6,7 @@
   ...
 }:
 let
-  inherit (lib.types) submoduleWith;
-  submodule =
-    module:
-    submoduleWith {
-      class = _class;
-      specialArgs.pkgs = pkgs;
-      modules = [ module ];
-    };
+  inherit (lib.types) submodule;
 in
 {
   imports = [
@@ -39,6 +32,10 @@ in
     type = submodule {
       imports = [
         ./interface.nix
+        {
+          class = _class;
+          inherit pkgs;
+        }
       ];
     };
   };
