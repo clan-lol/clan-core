@@ -47,8 +47,8 @@ export type MachinesMethods = {
   ): void;
   setHighlightedMachines(items: (string | Machine)[] | string | Machine): void;
   unhighlightMachines(): void;
+  deleteMachine(item: Machine | string): Promise<void>;
   machinesByTag(tag: string): Machine[];
-  // removeMachine(): void;
 };
 export function createMachinesMethods(
   machines: Accessor<Machines>,
@@ -196,6 +196,11 @@ export function createMachinesMethods(
     },
     unhighlightMachines() {
       setMachines(produce((machines) => (machines.highlightedMachines = {})));
+    },
+    async deleteMachine(item) {
+      const machine = getMachine(item);
+      await api.clan.deleteMachine(machine.id, clan().id);
+      setMachines(produce((machines) => delete machines.all[machine.id]));
     },
     machinesByTag(tag: string) {
       return Object.entries(machines().all)

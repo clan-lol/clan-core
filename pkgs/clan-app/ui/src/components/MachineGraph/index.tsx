@@ -21,9 +21,7 @@ import { ObjectRegistry } from "./ObjectRegistry";
 import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
-import { setHighlightGroups } from "./highlightStore";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
-import client from "@/src/models/api/clan/client-call";
 import SelectService from "@/src/workflows/ServiceInstance/SelectService";
 import {
   ModalCancelError,
@@ -49,7 +47,7 @@ export const MachineGraph: Component = () => {
   let snappedMousePosition: readonly [number, number] | undefined;
   let mouseMoveData:
     | {
-        timer: number;
+        timer?: number;
         startingPosition: readonly [number, number];
         targetMachineId: string;
       }
@@ -74,6 +72,7 @@ export const MachineGraph: Component = () => {
       toggleHighlightedMachines,
       setHighlightedMachines,
       unhighlightMachines,
+      deleteMachine,
     },
   ] = useMachinesContext();
 
@@ -375,6 +374,13 @@ export const MachineGraph: Component = () => {
           );
         }
       }
+      for (const [machineId, machine] of Object.entries(sceneMachines)) {
+        if (machineId in machines().all) {
+          continue;
+        }
+        machine.dispose(scene);
+        delete sceneMachines[machineId];
+      }
       renderLoop.requestRender();
     });
 
@@ -466,7 +472,7 @@ export const MachineGraph: Component = () => {
     };
 
     const onMouseDownGraph = (e: MouseEvent) => {
-      const { machineIds, intersections } = intersectMachines(
+      const machineIds = intersectMachines(
         e,
         renderer,
         camera,
@@ -501,7 +507,7 @@ export const MachineGraph: Component = () => {
       } else if (e.button === 2) {
         e.preventDefault();
         e.stopPropagation();
-        if (!intersections.length) return;
+        if (machineIds.length === 0) return;
         setMenuIntersection(machineIds);
         setMenuPos({ x: e.clientX, y: e.clientY });
         setContextOpen(true);
@@ -509,11 +515,11 @@ export const MachineGraph: Component = () => {
     };
     const onMouseUpGraph = (e: MouseEvent) => {
       if (e.button === 0) {
+        // Always re-enable controls
+        controls.enabled = true;
         if (mouseMoveData) {
           const data = mouseMoveData;
           window.clearTimeout(data.timer);
-          // Always re-enable controls
-          controls.enabled = true;
           if (ui.toolbarMode.type === "move") {
             actionMachine.visible = false;
             // Set machine as not flying
@@ -644,38 +650,31 @@ export const MachineGraph: Component = () => {
     setToolbarMode({ type: "create" });
     renderLoop.requestRender();
   };
-  const handleMenuSelect = async (mode: "move" | "delete") => {
+  const onMenuSelect = async (mode: "move" | "delete") => {
     const firstId = menuIntersection()[0];
     if (!firstId) {
       return;
     }
-    const machine = machineManager.machines.get(firstId);
+
     if (mode === "delete") {
-      console.log("deleting machine", firstId);
-      await client.post("delete_machine", {
-        body: {
-          machine: { flake: { identifier: props.clanURI }, name: firstId },
-        },
-      });
-      navigateToClan(navigate, props.clanURI);
-      ctx.machinesQuery.refetch();
-      ctx.serviceInstancesQuery.refetch();
+      await deleteMachine(firstId);
+      setContextOpen(false);
       return;
-    }
-
-    // Else "move" mode
-    setToolbarMode(mode);
-    setHighlightGroups({ move: new Set(menuIntersection()) });
-
-    // Find the position of the first selected machine
-    // Set the actionMachine position to that
-    if (machine && actionMachine) {
-      actionMachine.position.set(
-        machine.group.position.x,
-        0,
-        machine.group.position.z,
-      );
-      setCursorPosition([machine.group.position.x, machine.group.position.z]);
+    } else if (mode === "move") {
+      controls.enabled = false;
+      const machine = sceneMachines[firstId];
+      const pos = [machine.group.position.x, machine.group.position.z] as const;
+      actionMachine.position.set(pos[0], 0, pos[1]);
+      batch(() => {
+        setIsDragging(true);
+        setHighlightedMachines(firstId);
+        setToolbarMode({ type: "move" });
+      });
+      renderLoop.requestRender();
+      mouseMoveData = {
+        targetMachineId: firstId,
+        startingPosition: pos,
+      };
     }
   };
 
@@ -684,7 +683,7 @@ export const MachineGraph: Component = () => {
       <Show when={contextOpen()}>
         <Portal mount={document.body}>
           <Menu
-            onSelect={handleMenuSelect}
+            onSelect={onMenuSelect}
             intersect={menuIntersection()}
             x={menuPos()!.x - 10}
             y={menuPos()!.y - 10}
@@ -775,10 +774,7 @@ function intersectMachines(
     Object.values(sceneMachines).map((m) => m.group),
   );
 
-  return {
-    machineIds: intersections.map((i) => i.object.userData.id as string),
-    intersections,
-  };
+  return intersections.map((i) => i.object.userData.id as string);
 }
 
 function garbageCollectGroup(group: THREE.Group) {

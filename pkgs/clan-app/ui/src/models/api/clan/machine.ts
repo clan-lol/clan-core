@@ -22,6 +22,17 @@ export async function updateMachineData(
   });
 }
 
+export async function deleteMachine(
+  machineId: string,
+  clanId: string,
+): Promise<void> {
+  await client.post("delete_machine", {
+    body: {
+      machine: { flake: { identifier: clanId }, name: machineId },
+    },
+  });
+}
+
 // TODO: make this one API call only
 export async function createMachine(
   machineId: string,

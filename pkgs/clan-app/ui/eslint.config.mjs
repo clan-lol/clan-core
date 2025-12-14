@@ -33,6 +33,8 @@ const config = tseslint.config(
           whitelist: ["material-icons"],
         },
       ],
+      // Fixme: needed by deleteMachine, find a way to re-enable this
+      "@typescript-eslint/no-dynamic-delete": "off",
       // modular-forms explicitly requires `type` instead of `interface`
       // https://github.com/fabian-hiller/modular-forms/issues/2
       "@typescript-eslint/consistent-type-definitions": "off",
