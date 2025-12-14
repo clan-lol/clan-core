@@ -6,7 +6,6 @@
 }:
 let
   inherit (lib) types mkOption;
-  submodule = m: types.submoduleWith { modules = [ m ]; };
 
   inspectModule =
     inputName: moduleName: module:
@@ -87,16 +86,18 @@ in
       '';
     };
     machines = mkOption {
-      type = types.attrsOf (submodule ({
-        options = {
-          machineImports = mkOption {
-            type = types.listOf types.raw;
+      type = types.attrsOf (
+        types.submodule ({
+          options = {
+            machineImports = mkOption {
+              type = types.listOf types.raw;
+            };
+            darwinImports = mkOption {
+              type = types.listOf types.raw;
+            };
           };
-          darwinImports = mkOption {
-            type = types.listOf types.raw;
-          };
-        };
-      }));
+        })
+      );
     };
     introspection = lib.mkOption {
       readOnly = true;
