@@ -1,50 +1,59 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import { Clan, ServiceInstance } from "..";
-import { ServiceInstanceEntity, toServiceInstance } from "./instance";
+import { ServiceInstanceEntity } from "./instance";
 import { Accessor } from "solid-js";
+import { mapObjectValues } from "@/src/util";
 
 export type ServiceEntity = {
-  readonly id: string;
   readonly description: string;
   readonly isCore: boolean;
   readonly source: string | null;
-  readonly roles: Record<string, ServiceRole>;
+  readonly roles: Record<string, ServiceRoleEntity>;
   readonly rolesSchema: Record<string, JSONSchema>;
   readonly instances: ServiceInstanceEntity[];
 };
-
-export type Service = Omit<ServiceEntity, "instances"> & {
-  readonly clan: Clan;
-  // clans, machines and services all use a Record<string, ...> type, instances
-  // doesn't follow suit because an instance doesn't have a stable id, using a
-  // record requires the key to be updated as well when the id (instance name)
-  // is updated
-  instances: ServiceInstance[];
-};
-
-export type ServiceRole = {
+export type ServiceRoleEntity = {
   readonly description: string;
 };
 
-export function toService(
+export type Service = Omit<ServiceEntity, "roles" | "instances"> & {
+  readonly clan: Clan;
+  readonly id: string;
+  readonly roles: ServiceRoles;
+  readonly instances: ServiceInstance[];
+};
+export type ServiceRoles = {
+  all: Record<string, ServiceRole>;
+  sorted: ServiceRole[];
+};
+export type ServiceRole = ServiceRoleEntity & {
+  readonly id: string;
+};
+
+export function createService(
+  id: string,
   entity: ServiceEntity,
   clan: Accessor<Clan>,
 ): Service {
-  const service = () => {
-    const { id } = entity;
-    const service = clan().services.all[id];
-    if (!service) {
-      throw new Error(`Service does not exist: ${id}`);
-    }
-    return service;
-  };
   return {
     ...entity,
+    id,
     get clan(): Clan {
       return clan();
     },
-    instances: entity.instances.map((instance) =>
-      toServiceInstance(instance, service),
-    ),
+    roles: {
+      all: mapObjectValues(entity.roles, ([id, role]) => ({
+        ...role,
+        id,
+      })),
+      get sorted() {
+        return Object.values(this.all).sort((a, b) => a.id.localeCompare(b.id));
+      },
+    },
+    get instances() {
+      return clan().serviceInstances.sorted.filter(
+        (instance) => instance.service.id === this.id,
+      );
+    },
   };
 }

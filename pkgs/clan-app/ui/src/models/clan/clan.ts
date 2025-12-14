@@ -7,45 +7,53 @@ import {
   Machines,
   ServiceInstances,
   Services,
+  useClansContext,
 } from "..";
-import { reconcile, SetStoreFunction } from "solid-js/store";
+import { SetStoreFunction } from "solid-js/store";
 import { MachineEntity } from "../machine/machine";
-import { toMachines } from "../machine/machines";
-import { toServices } from "../service/services";
+import { createMachines } from "../machine/machines";
+import { createServices } from "../service/services";
 import { ServiceEntity } from "../service/service";
-import { toServiceInstances } from "../service/instances";
+import { createServiceInstances } from "../service/instances";
 
 export type ClanEntity = {
   readonly id: string;
-  readonly data: ClanEntityData;
+  readonly data: ClanDataEntity;
   readonly dataSchema: DataSchema;
   readonly machines: Record<string, MachineEntity>;
   readonly services: Record<string, ServiceEntity>;
   readonly globalTags: Tags;
 };
 
-export type ClanEntityData = ClanMetaEntityData & {
+export type ClanDataEntity = ClanMetaDataEntity & {
   domain?: string;
 };
+export type ClanMemberEntity = {
+  readonly type: "tag" | "machine";
+  readonly name: string;
+};
 
-export type Clan = Omit<ClanEntity, "data" | "machines" | "services"> & {
-  data: ClanData;
+export type Clan = Omit<
+  ClanEntity,
+  "data" | "machines" | "services" | "serviceInstances"
+> & {
+  readonly clans: Clans;
   readonly machines: Machines;
   readonly services: Services;
-  readonly clans: Clans;
+  data: ClanData;
   readonly members: ClanMember[];
   readonly index: number;
-  readonly serviceInstances: ServiceInstances;
+  serviceInstances: ServiceInstances;
   readonly isActive: boolean;
 };
 
-export type ClanData = ClanEntityData;
+export type ClanData = ClanDataEntity;
 
 export type ClanMetaEntity = {
   readonly id: string;
-  readonly data: ClanMetaEntityData;
+  readonly data: ClanMetaDataEntity;
 };
-export type ClanMetaEntityData = {
+export type ClanMetaDataEntity = {
   name: string;
   description?: string;
 };
@@ -55,12 +63,9 @@ export type ClanMeta = Omit<ClanMetaEntity, "data"> & {
   readonly index: number;
 };
 
-export type ClanMetaData = ClanMetaEntityData;
+export type ClanMetaData = ClanMetaDataEntity;
 
-export type ClanMember = {
-  type: "tag" | "machine";
-  name: string;
-};
+export type ClanMember = ClanMemberEntity;
 
 export type Tags = {
   // TODO: rename backend's data.options to data.regular, options is too
@@ -71,9 +76,21 @@ export type Tags = {
 
 export function createClanStore(
   clan: Accessor<Clan>,
-  clansValue: readonly [Clans, ClansMethods],
 ): readonly [Accessor<Clan>, ClanMethods] {
-  return [clan, clanMethods(clan, clansValue)];
+  const [clans, clansMethods] = useClansContext();
+  const { setClans } = clansMethods;
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setClan: SetStoreFunction<Clan> = (...args) => {
+    const i = clan().index;
+    if (i === -1) {
+      throw new Error(
+        `This clan does not belong to the known clan: ${clan().id}`,
+      );
+    }
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setClans("all", i, ...args);
+  };
+  return [clan, clanMethods([clan, setClan], [clans, clansMethods])];
 }
 
 export type ClanMethods = {
@@ -84,17 +101,12 @@ export type ClanMethods = {
   removeClan(): void;
 };
 function clanMethods(
-  clan: Accessor<Clan>,
-  [clans, { setClans, activateClan, deactivateClan, removeClan }]: readonly [
+  [clan, setClan]: [Accessor<Clan>, SetStoreFunction<Clan>],
+  [clans, { activateClan, deactivateClan, removeClan }]: readonly [
     Clans,
     ClansMethods,
   ],
 ): ClanMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setClan: SetStoreFunction<Clan> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setClans("all", clan().index, ...args);
-  };
   const self: ClanMethods = {
     setClan,
     async activateClan() {
@@ -110,7 +122,7 @@ function clanMethods(
       // https://github.com/solidjs/solid/issues/2475
       const d = { ...clan().data, ...data };
       await api.clan.updateClanData(clan().id, d);
-      setClan("data", reconcile(d));
+      setClan("data", d);
     },
     removeClan() {
       removeClan(clan());
@@ -119,7 +131,7 @@ function clanMethods(
   return self;
 }
 
-export function toClan(entity: ClanEntity, clans: Clans): Clan {
+export function createClan(entity: ClanEntity, clans: Clans): Clan {
   const { id } = entity;
   const clan: Accessor<Clan> = () => {
     const clan = clans.all.find((clan) => clan.id === id);
@@ -134,12 +146,12 @@ export function toClan(entity: ClanEntity, clans: Clans): Clan {
     get clans() {
       return clans;
     },
-    machines: toMachines(entity.machines, clan),
-    services: toServices(entity.services, clan),
-    serviceInstances: toServiceInstances(clan),
+    machines: createMachines(entity.machines, clan),
+    services: createServices(entity.services, clan),
+    serviceInstances: createServiceInstances(entity.services, clan),
     get members() {
       return [
-        ...Object.keys(this.machines).map((name) => ({
+        ...Object.keys(this.machines.all).map((name) => ({
           type: "machine" as const,
           name,
         })),
@@ -149,14 +161,14 @@ export function toClan(entity: ClanEntity, clans: Clans): Clan {
       ].sort((a, b) => a.name.localeCompare(b.name));
     },
     get index() {
-      return this.clans.all.findIndex((clan) => clan.id === this.id);
+      return this.clans.all.indexOf(this);
     },
     get isActive() {
-      return clans.activeClan?.id === this.id;
+      return clans.activeClan === this;
     },
   };
 }
-export function toClanMeta(entity: ClanMetaEntity, clans: Clans): ClanMeta {
+export function createClanMeta(entity: ClanMetaEntity, clans: Clans): ClanMeta {
   return {
     ...entity,
     get clans() {

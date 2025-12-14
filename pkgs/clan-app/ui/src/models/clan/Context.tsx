@@ -16,10 +16,10 @@ export function useClansContext(): readonly [Clans, ClansMethods] {
 }
 
 export const ClansContextProvider: FlowComponent<{
-  clans: Accessor<ClansEntity>;
+  value: Accessor<ClansEntity>;
 }> = (props) => {
   return (
-    <ClansContext.Provider value={createClansStore(props.clans)}>
+    <ClansContext.Provider value={createClansStore(props.value)}>
       {props.children}
     </ClansContext.Provider>
   );
@@ -36,11 +36,10 @@ export function useClanContext(): readonly [Accessor<Clan>, ClanMethods] {
 }
 
 export const ClanContextProvider: FlowComponent<{
-  clan: Accessor<Clan>;
+  value: Accessor<Clan>;
 }> = (props) => {
-  const value = useClansContext();
   return (
-    <ClanContext.Provider value={createClanStore(props.clan, value)}>
+    <ClanContext.Provider value={createClanStore(props.value)}>
       {props.children}
     </ClanContext.Provider>
   );

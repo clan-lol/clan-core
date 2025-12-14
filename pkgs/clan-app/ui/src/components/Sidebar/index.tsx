@@ -22,7 +22,7 @@ export default function Sidebar() {
       </div>
       <Show when={machines().activeMachine}>
         {(activeMachine) => (
-          <MachineContextProvider machine={activeMachine}>
+          <MachineContextProvider value={activeMachine}>
             <SidebarMachine />
           </MachineContextProvider>
         )}

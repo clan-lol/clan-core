@@ -16,7 +16,7 @@ export const SectionServices = () => {
         <nav>
           <For each={machine().serviceInstances}>
             {(instance) => (
-              <ServiceInstanceContextProvider serviceInstance={() => instance}>
+              <ServiceInstanceContextProvider value={() => instance}>
                 <ServiceInstanceEntry />
               </ServiceInstanceContextProvider>
             )}

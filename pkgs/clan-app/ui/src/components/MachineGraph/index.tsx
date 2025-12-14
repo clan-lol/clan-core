@@ -3,7 +3,6 @@ import {
   createEffect,
   onCleanup,
   onMount,
-  on,
   Show,
   Component,
   batch,
@@ -22,24 +21,18 @@ import { ObjectRegistry } from "./ObjectRegistry";
 import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
-import {
-  clearHighlight,
-  highlightGroups,
-  setHighlightGroups,
-} from "./highlightStore";
+import { setHighlightGroups } from "./highlightStore";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import client from "@/src/models/api/clan/client-call";
 import SelectService from "@/src/workflows/ServiceInstance/SelectService";
 import {
   ModalCancelError,
-  ServiceInstance,
-  ServiceInstanceContextProvider,
   useMachinesContext,
   useModalContext,
-  useServiceInstancesContext,
 } from "@/src/models";
 import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
 import { isPosition } from "@/src/util";
+import { useUIContext } from "@/src/models/ui";
 
 export const MachineGraph: Component = () => {
   let container: HTMLDivElement;
@@ -78,17 +71,13 @@ export const MachineGraph: Component = () => {
       activateMachine,
       deactivateMachine,
       updateMachineData,
-      highlightMachines,
+      toggleHighlightedMachines,
+      setHighlightedMachines,
       unhighlightMachines,
     },
   ] = useMachinesContext();
-  const [, { createServiceInstance }] = useServiceInstancesContext();
-  const [editingServinceInstance, setEditingServinceInstance] =
-    createSignal<ServiceInstance | null>(null);
 
-  const [actionMode, setActionMode] = createSignal<
-    "select" | "service" | "create" | "move"
-  >("select");
+  const [ui, { setToolbarMode }] = useUIContext();
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
 
@@ -350,22 +339,21 @@ export const MachineGraph: Component = () => {
     actionMachine = createActionMachine();
     scene.add(actionMachine);
 
-    createEffect(
-      on(actionMode, (mode) => {
-        if (mode === "create") {
-          actionBase.visible = true;
-        } else {
-          actionBase.visible = false;
-        }
-        renderLoop.requestRender();
-      }),
-    );
+    createEffect(() => {
+      if (ui.toolbarMode.type === "create") {
+        actionBase.visible = true;
+      } else {
+        actionBase.visible = false;
+      }
+      renderLoop.requestRender();
+    });
 
     const registry = new ObjectRegistry();
 
     createEffect(() => {
       for (const machine of Object.values(machines().all)) {
-        if (!sceneMachines[machine.id]) {
+        const sceneMachine = sceneMachines[machine.id];
+        if (!sceneMachine) {
           const repr = new MachineRepr(
             scene,
             registry,
@@ -379,7 +367,7 @@ export const MachineGraph: Component = () => {
           sceneMachines[machine.id] = repr;
           scene.add(repr.group);
         } else {
-          sceneMachines[machine.id].setPosition(
+          sceneMachine.setPosition(
             new THREE.Vector2(
               machine.data.position[0],
               machine.data.position[1],
@@ -394,7 +382,7 @@ export const MachineGraph: Component = () => {
     // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
     const onClickGraph = async (event: MouseEvent) => {
-      if (actionMode() === "create") {
+      if (ui.toolbarMode.type === "create") {
         if (!snappedMousePosition) return;
         try {
           await openModal("addMachine", {
@@ -407,16 +395,15 @@ export const MachineGraph: Component = () => {
           throw err;
         }
         if (actionBase) actionBase.visible = false;
-        setActionMode("select");
+        setToolbarMode({ type: "select" });
         return;
       }
 
-      if (actionMode() === "move") {
+      if (ui.toolbarMode.type === "move") {
         const currId = menuIntersection().at(0);
         if (!currId || !snappedMousePosition) return;
 
-        setActionMode("select");
-        clearHighlight("move");
+        setToolbarMode({ type: "select" });
       }
 
       const rect = renderer.domElement.getBoundingClientRect();
@@ -435,9 +422,19 @@ export const MachineGraph: Component = () => {
 
         if (!id) return;
 
-        activateMachine(id);
+        if (ui.toolbarMode.type === "select") {
+          activateMachine(id);
+        } else if (
+          ui.toolbarMode.type === "service" &&
+          ui.toolbarMode.subtype &&
+          ui.toolbarMode.highlighting
+        ) {
+          toggleHighlightedMachines(id);
+        }
       } else {
-        deactivateMachine();
+        if (ui.toolbarMode.type === "select") {
+          deactivateMachine();
+        }
       }
     };
 
@@ -479,7 +476,7 @@ export const MachineGraph: Component = () => {
 
       // Left button
       if (e.button === 0) {
-        if (actionMode() === "select" && machineIds.length !== 0) {
+        if (ui.toolbarMode.type === "select" && machineIds.length !== 0) {
           const targetMachineId = machineIds[0]!;
           const pos = machines().all[targetMachineId]!.data.position;
           // Disable controls to avoid conflict
@@ -494,8 +491,8 @@ export const MachineGraph: Component = () => {
               actionMachine.position.set(pos[0], 0, pos[1]);
               batch(() => {
                 setIsDragging(true);
-                highlightMachines(targetMachineId);
-                setActionMode("move");
+                setHighlightedMachines(targetMachineId);
+                setToolbarMode({ type: "move" });
               });
               renderLoop.requestRender();
             }, 500),
@@ -517,7 +514,7 @@ export const MachineGraph: Component = () => {
           window.clearTimeout(data.timer);
           // Always re-enable controls
           controls.enabled = true;
-          if (actionMode() === "move") {
+          if (ui.toolbarMode.type === "move") {
             actionMachine.visible = false;
             // Set machine as not flying
             batch(() => {
@@ -526,7 +523,7 @@ export const MachineGraph: Component = () => {
               });
               setIsDragging(false);
               unhighlightMachines();
-              setActionMode("select");
+              setToolbarMode({ type: "select" });
             });
             renderLoop.requestRender();
             mouseMoveData = undefined;
@@ -535,9 +532,11 @@ export const MachineGraph: Component = () => {
       }
     };
     const onMouseMoveGraph = (event: MouseEvent) => {
-      if (!(actionMode() === "create" || actionMode() === "move")) return;
+      if (!(ui.toolbarMode.type === "create" || ui.toolbarMode.type === "move"))
+        return;
 
-      const actionRepr = actionMode() === "create" ? actionBase : actionMachine;
+      const actionRepr =
+        ui.toolbarMode.type === "create" ? actionBase : actionMachine;
       if (!actionRepr) return;
 
       actionRepr.visible = true;
@@ -552,8 +551,9 @@ export const MachineGraph: Component = () => {
       );
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObject(floor);
-      if (intersects.length > 0) {
-        const { point } = intersects[0];
+      const intersect = intersects?.[0];
+      if (intersect) {
+        const { point } = intersect;
 
         const snapped = snapToGrid([point.x, point.z]);
         if (!snapped) return;
@@ -641,7 +641,7 @@ export const MachineGraph: Component = () => {
   };
 
   const onClickToolbarAdd = (event: MouseEvent) => {
-    setActionMode("create");
+    setToolbarMode({ type: "create" });
     renderLoop.requestRender();
   };
   const handleMenuSelect = async (mode: "move" | "delete") => {
@@ -664,7 +664,7 @@ export const MachineGraph: Component = () => {
     }
 
     // Else "move" mode
-    setActionMode(mode);
+    setToolbarMode(mode);
     setHighlightGroups({ move: new Set(menuIntersection()) });
 
     // Find the position of the first selected machine
@@ -695,56 +695,54 @@ export const MachineGraph: Component = () => {
       <div
         class={cx(
           styles.cubesSceneContainer,
-          {
-            select: "cursor-pointer",
-            service: "cursor-pointer",
-            create: "cursor-cell",
-            move: "",
-          }[actionMode()],
+          (
+            {
+              select: "cursor-pointer",
+              service: "cursor-pointer",
+              create: "cursor-cell",
+            } as Record<string, string>
+          )[ui.toolbarMode.type] || "",
           isDragging() && "cursor-grabbing",
         )}
         ref={(el) => (container = el)}
       />
       <div class={styles.toolbarContainer}>
-        <Show when={actionMode() === "service"}>
+        <Show
+          when={ui.toolbarMode.type === "service" && !ui.toolbarMode.subtype}
+        >
           <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
-            <SelectService
-              onSelect={(service) => {
-                setActionMode("select");
-                if (service.instances.length === 0) {
-                  setEditingServinceInstance(instance);
-                } else {
-                  setEditingServinceInstance(service.instances[0]!);
-                }
-              }}
-              onClose={() => setActionMode("select")}
-            />
+            <SelectService />
           </div>
+        </Show>
+        <Show
+          when={ui.toolbarMode.type === "service" && ui.toolbarMode.subtype}
+        >
+          <ServiceInstanceWorkflow />
         </Show>
         <Toolbar>
           <ToolbarButton
             description="Select machine"
             name="Select"
             icon="Cursor"
-            onClick={() => setActionMode("select")}
-            selected={actionMode() === "select"}
+            onClick={() => setToolbarMode({ type: "select" })}
+            selected={ui.toolbarMode.type === "select"}
           />
           <ToolbarButton
             description="Create new machine"
             name="new-machine"
             icon="NewMachine"
             onClick={onClickToolbarAdd}
-            selected={actionMode() === "create"}
+            selected={ui.toolbarMode.type === "create"}
           />
           <Divider orientation="vertical" />
           <ToolbarButton
             description="Add new Service"
             name="modules"
             icon="Services"
-            selected={actionMode() === "service"}
+            selected={ui.toolbarMode.type === "service"}
             onClick={() => {
               deactivateMachine();
-              setActionMode("service");
+              setToolbarMode({ type: "service" });
             }}
           />
           <ToolbarButton
@@ -754,18 +752,6 @@ export const MachineGraph: Component = () => {
             onClick={() => machinesQuery.refetch()}
           />
         </Toolbar>
-        <Show when={editingServinceInstance()}>
-          {(editingServinceInstance) => (
-            <ServiceInstanceContextProvider
-              serviceInstance={editingServinceInstance}
-            >
-              <ServiceInstanceWorkflow
-                onClose={() => setEditingServinceInstance(null)}
-                onDone={() => setEditingServinceInstance(null)}
-              />
-            </ServiceInstanceContextProvider>
-          )}
-        </Show>
       </div>
     </>
   );

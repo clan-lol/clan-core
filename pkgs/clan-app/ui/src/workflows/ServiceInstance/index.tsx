@@ -5,22 +5,12 @@ import {
   useStepper,
 } from "@/src/hooks/stepper";
 import {
-  MachinesQuery,
-  TagsQuery,
-  useMachinesQuery,
-  useServiceInstances,
-  useServiceModules,
-  useTags,
-} from "@/src/hooks/queries";
-import {
   createEffect,
-  createMemo,
-  createSignal,
   Show,
-  on,
   onMount,
   For,
   Component,
+  onCleanup,
 } from "solid-js";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
@@ -33,51 +23,59 @@ import { Button } from "@/src/components/Button/Button";
 import cx from "classnames";
 import { BackButton } from "../Steps";
 import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
-import {
-  clearAllHighlights,
-  setHighlightGroups,
-} from "@/src/components/MachineGraph/highlightStore";
 import { TagSelect } from "@/src/components/Search/TagSelect";
 import { Tag } from "@/src/components/Tag/Tag";
 import {
   ClanMember,
   useClanContext,
-  useServiceInstanceContext,
+  useMachinesContext,
+  useUIContext,
+  ToolbarServiceInstanceMode,
+  useServiceInstancesContext,
 } from "@/src/models";
+import { produce, unwrap } from "solid-js/store";
 
-interface ServiceStoreType {
-  roles: Record<string, TagType[]>;
-  currentRole?: string;
-  mode: "create" | "update";
-  onClose?(): void;
-  onDone?(): void;
-}
+type Role = {
+  id: string;
+  settings: Record<string, unknown>;
+  members: ClanMember[];
+};
+type ServiceStoreType = {
+  roles: Role[];
+  instanceName: string;
+  currentRole: Role | null;
+};
 
-const ServiceInstanceWorkflow: Component<{
-  initialStep?: ServiceSteps[number]["id"];
-  initialStore?: Partial<ServiceStoreType>;
-  mode: "create" | "update";
-  onClose?(): void;
-  onDone?(): void;
-}> = (props) => {
+const ServiceInstanceWorkflow: Component = (props) => {
+  const [ui] = useUIContext();
+  const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
   const stepper = createStepper(
     { steps },
     {
-      initialStep: props.initialStep || "view:members",
-      initialStoreData: {
-        ...props.initialStore,
-        mode: props.mode,
-        onClose: props.onClose,
-        onDone: props.onDone,
-      },
+      initialStep: "view:members",
+      initialStoreData:
+        mode.subtype === "edit"
+          ? {
+              instanceName: mode.serviceInstance.data.name,
+              roles: mode.serviceInstance.data.roles.sorted.map((role) => ({
+                id: role.id,
+                settings: unwrap(role.settings),
+                members: role.members.slice(0),
+              })),
+              currentRole: null,
+            }
+          : {
+              // Default to the module name, until we support multiple instances
+              instanceName: mode.service.id,
+              roles: mode.service.roles.sorted.map((role) => ({
+                id: role.id,
+                settings: {},
+                members: [],
+              })),
+              currentRole: null,
+            },
     },
   );
-
-  createEffect(() => {
-    if (stepper.currentStep().id !== "select:members") {
-      clearAllHighlights();
-    }
-  });
 
   return (
     <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
@@ -89,50 +87,48 @@ const ServiceInstanceWorkflow: Component<{
 };
 export default ServiceInstanceWorkflow;
 
-const sanitizeModuleInput = (
-  input: string | undefined,
-  core_input_name: string,
-) => {
-  if (!input) return null;
-
-  if (input === core_input_name) return null;
-
-  return input;
-};
-
 interface RolesForm extends FieldValues {
-  roles: Record<string, string[]>;
   instanceName: string;
 }
 const ConfigureServiceInstance = () => {
-  const [serviceInstance] = useServiceInstanceContext();
+  const [ui, { setToolbarMode }] = useUIContext();
+  const [, { addServiceInstance, updateServiceInstanceData }] =
+    useServiceInstancesContext();
   const [clan] = useClanContext();
   const stepper = useStepper<ServiceSteps>();
 
   const [store, setStore] = getStepStore<ServiceStoreType>(stepper);
-
   const [formStore, { Form, Field }] = createForm<RolesForm>({
     initialValues: {
-      // Default to the module name, until we support multiple instances
-      instanceName: serviceInstance().data.name,
+      instanceName: store.instanceName,
     },
   });
 
-  const onSubmit = (values: RolesForm) => {
-    store.handleSubmit(
-      {
-        name: values.instanceName,
-        module: {
-          name: routerProps.name,
-          input: sanitizeModuleInput(
-            routerProps.input,
-            serviceModulesQuery.data?.core_input_name || "clan-core",
-          ),
-        },
-        roles,
-      },
-      store.action,
-    );
+  const onSubmit = async (values: RolesForm) => {
+    const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
+    const data = {
+      name: values.instanceName,
+      roles: Object.fromEntries(
+        store.roles.map((role) => [
+          role.id,
+          {
+            settings: {},
+            machines: role.members
+              .filter(({ type }) => type === "machine")
+              .map(({ name }) => name),
+            tags: role.members
+              .filter(({ type }) => type === "tag")
+              .map(({ name }) => name),
+          },
+        ]),
+      ),
+    };
+    if (mode.subtype === "create") {
+      await addServiceInstance(data, mode.service);
+    } else {
+      await updateServiceInstanceData(data);
+    }
+    setToolbarMode({ type: "select" });
   };
 
   return (
@@ -143,7 +139,7 @@ const ConfigureServiceInstance = () => {
         </div>
         <div class="flex flex-col">
           <Typography hierarchy="body" size="s" weight="medium" inverted>
-            {serviceInstance().data.name}
+            {store.instanceName}
           </Typography>
           <Field name="instanceName">
             {(field, input) => (
@@ -165,12 +161,12 @@ const ConfigureServiceInstance = () => {
           ghost
           size="s"
           in="ConfigureService"
-          onClick={() => store.onClose?.()}
+          onClick={() => setToolbarMode({ type: "select" })}
         />
       </div>
       <div class={styles.content}>
-        <For each={Object.entries(serviceInstance().data.roles)}>
-          {([, role]) => {
+        <For each={store.roles}>
+          {(role) => {
             return (
               <TagSelect<ClanMember>
                 label={role.id}
@@ -191,7 +187,7 @@ const ConfigureServiceInstance = () => {
                 values={role.members}
                 options={clan().members}
                 onClick={() => {
-                  setStore("currentRole", role.id);
+                  setStore("currentRole", role);
                   stepper.next();
                 }}
               />
@@ -201,7 +197,13 @@ const ConfigureServiceInstance = () => {
       </div>
       <div class={cx(styles.footer, styles.backgroundAlt)}>
         <Button hierarchy="secondary" type="submit">
-          <Show when={store.mode === "create"} fallback={"Save Changes"}>
+          <Show
+            when={
+              (ui.toolbarMode as ToolbarServiceInstanceMode).subtype ===
+              "create"
+            }
+            fallback={"Save Changes"}
+          >
             Add Service
           </Show>
         </Button>
@@ -224,76 +226,40 @@ export type TagType =
     };
 
 const ConfigureRole = () => {
+  const [ui, { setToolbarMode }] = useUIContext();
+  const [clan] = useClanContext();
+  const [, { setHighlightedMachines, machinesByTag }] = useMachinesContext();
   const stepper = useStepper<ServiceSteps>();
-  const [store, set] = getStepStore<ServiceStoreType>(stepper);
-
-  const lastClickedMachine = useMachineClick();
-
-  createEffect(
-    on(members, (m) => {
-      clearAllHighlights();
-      setHighlightGroups({
-        [store.currentRole as string]: new Set(
-          m.flatMap((m) => {
-            if (m.type === "machine") return m.label;
-
-            return m.members;
-          }),
-        ),
-      });
-    }),
-  );
+  const [store, setStore] = getStepStore<ServiceStoreType>(stepper);
+  const role = store.currentRole!;
 
   onMount(() => {
-    setHighlightGroups(() => ({}));
+    setToolbarMode({
+      ...(ui.toolbarMode as ToolbarServiceInstanceMode),
+      highlighting: true,
+    });
+    createEffect(() => {
+      const highlighted = role.members
+        .filter(({ type }) => type === "machine")
+        .map(({ name }) => name);
+      setHighlightedMachines(highlighted);
+    });
   });
 
-  createEffect(
-    on(lastClickedMachine, (machine) => {
-      // const machine = lastClickedMachine();
-      const currentMembers = members();
-      if (!machine) return;
-
-      const machineTagName = "m_" + machine;
-
-      const existing = currentMembers.find((m) => m.value === machineTagName);
-      if (existing) {
-        // Remove
-        setMembers(currentMembers.filter((m) => m.value !== machineTagName));
-      } else {
-        // Add
-        setMembers([
-          ...currentMembers,
-          { value: machineTagName, label: machine, type: "machine" },
-        ]);
-      }
-    }),
-  );
-
-  const tagsQuery = useTags(useClanURI());
-
-  const options = useOptions(tagsQuery, machinesQuery);
-
-  const handleSubmit = () => {
-    if (!store.currentRole) return;
-
-    if (!store.roles) {
-      set("roles", {});
-    }
-    set("roles", (r) => ({
-      ...r,
-      [store.currentRole as string]: members(),
-    }));
-    stepper.setActiveStep("view:members");
-  };
+  onCleanup(() => {
+    setToolbarMode({
+      ...(ui.toolbarMode as ToolbarServiceInstanceMode),
+      highlighting: false,
+    });
+  });
 
   return (
-    <form onSubmit={() => handleSubmit()}>
+    <form onSubmit={() => stepper.setActiveStep("view:members")}>
       <div class={cx(styles.backgroundAlt, "rounded-md")}>
         <div class="flex w-full flex-col ">
-          <SearchMultiple<TagType>
-            values={members()}
-            options={options()}
+          <SearchMultiple<ClanMember>
+            values={role.members}
+            options={clan().members}
             headerClass={cx(styles.backgroundAlt, "flex flex-col gap-2.5")}
             headerChildren={
               <div class="flex w-full gap-2.5">
@@ -305,7 +271,7 @@ const ConfigureRole = () => {
                   inverted
                   transform="capitalize"
                 >
-                  Select {store.currentRole}
+                  Select {role.id}
                 </Typography>
               </div>
             }
@@ -324,7 +290,7 @@ const ConfigureRole = () => {
                     weight="medium"
                     inverted
                   >
-                    {item.label}
+                    {item.name}
                   </Typography>
                   <Show when={item.type === "tag" && item}>
                     {(tag) => (
@@ -336,7 +302,7 @@ const ConfigureRole = () => {
                         color="secondary"
                         tag="div"
                       >
-                        {tag().members.length}
+                        {machinesByTag(tag().name).length}
                       </Typography>
                     )}
                   </Show>
@@ -353,8 +319,11 @@ const ConfigureRole = () => {
             virtualizerOptions={{
               estimateSize: () => 38,
             }}
-            onChange={(selection) => {
-              setMembers(selection);
+            onChange={(members) => {
+              setStore(
+                "currentRole",
+                produce((role) => (role!.members = members)),
+              );
             }}
           />
         </div>

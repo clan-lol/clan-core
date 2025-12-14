@@ -2,7 +2,7 @@ export type { Machines, MachinesMethods } from "./machines";
 export type {
   Machine,
   MachineData,
-  MachineEntityData,
+  MachineDataEntity,
   MachineStatus,
   MachineMethods,
 } from "./machine";

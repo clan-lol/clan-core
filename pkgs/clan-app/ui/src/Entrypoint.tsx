@@ -23,6 +23,7 @@ import {
   useModalContext,
 } from "./models";
 import AddMachineModal from "./components/Modal/AddMachineModal";
+import { UIContextProvider } from "./models/ui";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());
@@ -42,7 +43,7 @@ const Entrypoint: Component = () => {
     >
       <Suspense fallback={<Splash />}>
         <Show when={clans() /* && foo() */}>
-          <ClansContextProvider clans={clans as Accessor<ClansEntity>}>
+          <ClansContextProvider value={clans as Accessor<ClansEntity>}>
             <ModalContextProvider>
               <Content />
             </ModalContextProvider>
@@ -61,20 +62,22 @@ const Content: Component = () => {
     <>
       <Show when={clans.activeClan} fallback={<Onboarding />}>
         {(clan) => (
-          <ClanContextProvider clan={clan}>
-            <MachinesContextProvider machines={() => clan().machines}>
-              <ServiceInstancesContextProvider
-                serviceInstances={() => clan().serviceInstances}
-              >
-                <Workspace />
-                <Switch>
-                  <Match when={modal.type === "addMachine"}>
-                    <AddMachineModal />
-                  </Match>
-                </Switch>
-              </ServiceInstancesContextProvider>
-            </MachinesContextProvider>
-          </ClanContextProvider>
+          <UIContextProvider>
+            <ClanContextProvider value={clan}>
+              <MachinesContextProvider value={() => clan().machines}>
+                <ServiceInstancesContextProvider
+                  value={() => clan().serviceInstances}
+                >
+                  <Workspace />
+                  <Switch>
+                    <Match when={modal.type === "addMachine"}>
+                      <AddMachineModal />
+                    </Match>
+                  </Switch>
+                </ServiceInstancesContextProvider>
+              </MachinesContextProvider>
+            </ClanContextProvider>
+          </UIContextProvider>
         )}
       </Show>
     </>

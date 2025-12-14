@@ -1,12 +1,5 @@
 import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
-import {
-  Machine,
-  MachineMethods,
-  Machines,
-  MachinesMethods,
-  useClanContext,
-  useClansContext,
-} from "..";
+import { Machine, MachineMethods, Machines, MachinesMethods } from "..";
 import { createMachineStore } from "./machine";
 import { createMachinesStore } from "./machines";
 
@@ -27,14 +20,10 @@ export function useMachinesContext(): readonly [
 }
 
 export const MachinesContextProvider: FlowComponent<{
-  machines: Accessor<Machines>;
+  value: Accessor<Machines>;
 }> = (props) => {
-  const clanValue = useClanContext();
-  const clansValue = useClansContext();
   return (
-    <MachinesContext.Provider
-      value={createMachinesStore(props.machines, clanValue, clansValue)}
-    >
+    <MachinesContext.Provider value={createMachinesStore(props.value)}>
       {props.children}
     </MachinesContext.Provider>
   );
@@ -57,20 +46,10 @@ export function useMachineContext(): readonly [
 }
 
 export const MachineContextProvider: FlowComponent<{
-  machine: Accessor<Machine>;
+  value: Accessor<Machine>;
 }> = (props) => {
-  const machinesValue = useMachinesContext();
-  const clanValue = useClanContext();
-  const clansValue = useClansContext();
   return (
-    <MachineContext.Provider
-      value={createMachineStore(
-        props.machine,
-        machinesValue,
-        clanValue,
-        clansValue,
-      )}
-    >
+    <MachineContext.Provider value={createMachineStore(props.value)}>
       {props.children}
     </MachineContext.Provider>
   );

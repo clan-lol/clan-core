@@ -6,6 +6,7 @@ import { useClickOutside } from "@/src/hooks/useClickOutside";
 import { css } from "@linaria/core";
 import { Service, useClanContext } from "@/src/models";
 import { Component, Show } from "solid-js";
+import { useUIContext } from "@/src/models/ui";
 
 // TODO: Move this to typography styles
 const tag = css`
@@ -19,10 +20,8 @@ interface Module {
   raw: Service;
 }
 
-const SelectService: Component<{
-  onClose: () => void;
-  onSelect: (service: Service) => void;
-}> = (props) => {
+const SelectService: Component = (props) => {
+  const [, { setToolbarMode }] = useUIContext();
   const [clan] = useClanContext();
 
   let ref: HTMLDivElement;
@@ -31,7 +30,7 @@ const SelectService: Component<{
   useClickOutside(
     () => ref,
     () => {
-      props.onClose();
+      setToolbarMode({ type: "select" });
     },
   );
   return (
@@ -43,8 +42,24 @@ const SelectService: Component<{
         <Search<Module>
           height="13rem"
           onChange={(data) => {
-            if (!data) return;
-            props.onSelect(data.raw);
+            const service = data?.raw;
+            if (!service) {
+              return;
+            }
+            const instance = service.instances?.[0];
+            setToolbarMode(
+              instance
+                ? {
+                    type: "service",
+                    subtype: "edit",
+                    serviceInstance: instance,
+                  }
+                : {
+                    type: "service",
+                    subtype: "create",
+                    service,
+                  },
+            );
           }}
           options={clan().services.sorted.map((service) => ({
             value: `${service.id}:${service.source}`,

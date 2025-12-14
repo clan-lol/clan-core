@@ -12,13 +12,12 @@ import {
   Switch,
 } from "solid-js";
 import { createVirtualizer, VirtualizerOptions } from "@tanstack/solid-virtual";
-import { CollectionNode } from "@kobalte/core/*";
 import cx from "classnames";
 import { Loader } from "../Loader/Loader";
+import { CollectionNode } from "@kobalte/core";
 
 interface Option {
-  value: string;
-  label: string;
+  name: string;
   disabled?: boolean;
 }
 
@@ -69,7 +68,7 @@ export function SearchMultiple<T extends Option>(
       getScrollElement: () => listboxRef,
       getItemKey: (index) => {
         const item = items[index];
-        return item?.rawValue?.value || `item-${index}`;
+        return item?.rawValue?.name || `item-${index}`;
       },
       estimateSize: () => 42,
       gap: 0,
@@ -86,17 +85,13 @@ export function SearchMultiple<T extends Option>(
     <Combobox<T>
       multiple
       value={props.values}
-      onChange={(values) => {
-        // setValues(() => values);
-        console.log("onChange", values);
-        props.onChange(values);
-      }}
+      onChange={(values) => props.onChange(values)}
       class={styles.searchContainer}
       placement="bottom-start"
       options={props.options}
-      optionValue="value"
-      optionTextValue="label"
-      optionLabel="label"
+      optionValue="name"
+      optionTextValue="name"
+      optionLabel="name"
       optionDisabled={"disabled"}
       sameWidth={true}
       open={true}
@@ -160,7 +155,7 @@ export function SearchMultiple<T extends Option>(
         }}
         scrollToItem={(key) => {
           const idx = comboboxItems().findIndex(
-            (option) => option.rawValue.value === key,
+            (option) => option.rawValue.name === key,
           );
           virtualizer().scrollToIndex(idx);
         }}
@@ -198,9 +193,7 @@ export function SearchMultiple<T extends Option>(
                         return null;
                       }
                       const isSelected = () =>
-                        props.values.some(
-                          (v) => v.value === item.rawValue.value,
-                        );
+                        props.values.some((v) => v.name === item.rawValue.name);
                       return (
                         <Combobox.Item
                           item={item}

@@ -1,16 +1,18 @@
 import { Accessor } from "solid-js";
-import { produce, reconcile, SetStoreFunction } from "solid-js/store";
+import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import {
   Clan,
   ClanMethods,
   Clans,
-  MachineEntityData,
+  MachineDataEntity,
   ClansMethods,
   Machine,
+  useClanContext,
+  useClansContext,
 } from "..";
-import { MachineData, MachineEntity, toMachine } from "./machine";
-import { mapObject, mapObjectValues } from "@/src/util";
+import { MachineData, MachineEntity, createMachine } from "./machine";
+import { mapObjectValues } from "@/src/util";
 
 export type Machines = {
   all: Record<string, Machine>;
@@ -23,12 +25,21 @@ export type Machines = {
 
 export function createMachinesStore(
   machines: Accessor<Machines>,
-  [clan, clanMethods]: readonly [Accessor<Clan>, ClanMethods],
-  [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): [Accessor<Machines>, MachinesMethods] {
+  const [clan, clanMethods] = useClanContext();
+  const { setClan } = clanMethods;
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setMachines: SetStoreFunction<Machines> = (...args) => {
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setClan("machines", ...args);
+  };
   return [
     machines,
-    machinesMethods(machines, [clan, clanMethods], [clans, clansMethods]),
+    machinesMethods(
+      [machines, setMachines],
+      [clan, clanMethods],
+      useClansContext(),
+    ),
   ];
 }
 
@@ -41,14 +52,17 @@ export type MachinesMethods = {
     item: Machine | string,
     data: Partial<MachineData>,
   ): Promise<void>;
-  createMachine(id: string, data: MachineEntityData): Promise<Machine>;
-  highlightMachines(items: (string | Machine)[] | string | Machine): void;
-  unhighlightMachines(items?: (string | Machine)[] | string | Machine): void;
+  createMachine(id: string, data: MachineDataEntity): Promise<Machine>;
+  toggleHighlightedMachines(
+    items: (string | Machine)[] | string | Machine,
+  ): void;
+  setHighlightedMachines(items: (string | Machine)[] | string | Machine): void;
+  unhighlightMachines(): void;
   machinesByTag(tag: string): Machine[];
   // removeMachine(): void;
 };
 function machinesMethods(
-  machines: Accessor<Machines>,
+  [machines, setMachines]: [Accessor<Machines>, SetStoreFunction<Machines>],
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   [clans, clansMethods]: readonly [Clans, ClansMethods],
 ): MachinesMethods {
@@ -96,11 +110,6 @@ function machinesMethods(
     );
     return machine;
   }
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachines: SetStoreFunction<Machines> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setClan("machines", ...args);
-  };
   const self: MachinesMethods = {
     setMachines,
     activateMachine(item) {
@@ -118,9 +127,9 @@ function machinesMethods(
     deactivateMachine,
     async createMachine(id, data) {
       await api.clan.createMachine(id, data, clan().id);
-      const machine = toMachine(
+      const machine = createMachine(
+        id,
         {
-          id,
           data,
           dataSchema: {},
           status: "not_installed",
@@ -147,51 +156,51 @@ function machinesMethods(
       // https://github.com/solidjs/solid/issues/2475
       const d = { ...machine.data, ...data };
       await api.clan.updateMachineData(machine.id, clan().id, d);
-      setMachines("all", machine.id, "data", reconcile(d));
+      setMachines("all", machine.id, "data", d);
     },
-    highlightMachines(items) {
+    toggleHighlightedMachines(items) {
       if (!Array.isArray(items)) {
-        return self.highlightMachines([items]);
+        return self.toggleHighlightedMachines([items]);
+      }
+
+      const togglingMachines = Object.fromEntries(
+        items.map((item) => {
+          const machine = getMachine(item);
+          return [machine.id, machine];
+        }),
+      );
+      const oldHighlighted = machines().highlightedMachines;
+      const newHighlighted: Record<string, Machine> = {};
+      for (const [id, machine] of Object.entries(oldHighlighted)) {
+        if (!(id in togglingMachines)) {
+          newHighlighted[id] = machine;
+        }
+      }
+      for (const [id, machine] of Object.entries(togglingMachines)) {
+        if (!(id in oldHighlighted)) {
+          newHighlighted[id] = machine;
+        }
       }
       setMachines(
-        "highlightedMachines",
-        produce((machines) =>
-          Object.assign(
-            machines,
-            Object.fromEntries(
-              items.map((item) => {
-                const machine = getMachine(item);
-                return [machine.id, machine];
-              }),
-            ),
-          ),
-        ),
+        produce((machines) => (machines.highlightedMachines = newHighlighted)),
       );
     },
-    unhighlightMachines(items) {
-      if (!items) {
-        setMachines("highlightedMachines", {});
-        return;
-      }
+    setHighlightedMachines(items) {
       if (!Array.isArray(items)) {
-        return self.unhighlightMachines([items]);
+        return self.setHighlightedMachines([items]);
       }
-      const unhighlighted = new Set(
-        items.map((item) => getMachine(item)).map((machine) => machine.id),
+      const highlighted = Object.fromEntries(
+        items.map((item) => {
+          const machine = getMachine(item);
+          return [machine.id, machine];
+        }),
       );
-      // Use delete to remove the unhighlighted is more intuitive but delete is
-      // slow in JS engines and we also need to use batch to ensure multiple
-      // deletes only result in one rendering
-      const highlighted = mapObject(
-        machines().highlightedMachines,
-        ([id, machine]) => {
-          if (unhighlighted.has(id)) {
-            return [];
-          }
-          return [id, machine];
-        },
+      setMachines(
+        produce((machines) => (machines.highlightedMachines = highlighted)),
       );
-      setMachines("highlightedMachines", reconcile(highlighted));
+    },
+    unhighlightMachines() {
+      setMachines(produce((machines) => (machines.highlightedMachines = {})));
     },
     machinesByTag(tag: string) {
       return Object.entries(machines().all)
@@ -202,12 +211,14 @@ function machinesMethods(
   return self;
 }
 
-export function toMachines(
+export function createMachines(
   entities: Record<string, MachineEntity>,
   clan: Accessor<Clan>,
 ): Machines {
   const self: Machines = {
-    all: mapObjectValues(entities, ([, machine]) => toMachine(machine, clan)),
+    all: mapObjectValues(entities, ([id, machine]) =>
+      createMachine(id, machine, clan),
+    ),
     get sorted() {
       return Object.values(this.all).sort((a, b) => {
         return a.id.localeCompare(b.id);

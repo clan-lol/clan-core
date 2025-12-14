@@ -78,7 +78,7 @@ const MachinesSection: Component = () => {
           <nav>
             <For each={machines().sorted}>
               {(machine) => (
-                <MachineContextProvider machine={() => machine}>
+                <MachineContextProvider value={() => machine}>
                   <MachineSection />
                 </MachineContextProvider>
               )}
@@ -160,7 +160,7 @@ const ServicesSection: Component = () => {
         <nav>
           <For each={clan().serviceInstances.sorted}>
             {(instance) => (
-              <ServiceInstanceContextProvider serviceInstance={() => instance}>
+              <ServiceInstanceContextProvider value={() => instance}>
                 <ServiceInstanceEntry />
               </ServiceInstanceContextProvider>
             )}

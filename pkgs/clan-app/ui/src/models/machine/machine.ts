@@ -9,16 +9,18 @@ import {
   Machines,
   MachinesMethods,
   ServiceInstance,
+  useClanContext,
+  useClansContext,
+  useMachinesContext,
 } from "..";
 import { mapObjectValues } from "@/src/util";
 
 export type MachineEntity = {
-  readonly id: string;
-  readonly data: MachineEntityData;
+  readonly data: MachineDataEntity;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
 };
-export type MachineEntityData = {
+export type MachineDataEntity = {
   deploy: {
     buildHost?: string;
     targetHost?: string;
@@ -30,12 +32,13 @@ export type MachineEntityData = {
 };
 export type Machine = Omit<MachineEntity, "data"> & {
   readonly clan: Clan;
+  readonly id: string;
   data: MachineData;
   readonly isActive: boolean;
   readonly isHighlighted: boolean;
   readonly serviceInstances: ServiceInstance[];
 };
-export type MachineData = MachineEntityData;
+export type MachineData = MachineDataEntity;
 
 export type MachineStatus =
   | "not_installed"
@@ -126,13 +129,28 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
 
 export function createMachineStore(
   machine: Accessor<Machine>,
-  machinesValue: readonly [Accessor<Machines>, MachinesMethods],
-  clanValue: readonly [Accessor<Clan>, ClanMethods],
-  clansValue: readonly [Clans, ClansMethods],
 ): readonly [Accessor<Machine>, MachineMethods] {
+  const [machines, machinesMethods] = useMachinesContext();
+  // @ts-expect-error ...args won't infer properly for overloaded functions
+  const setMachine: SetStoreFunction<Machine> = (...args) => {
+    const m = machine();
+    if (m != machines().all[m.id]) {
+      throw new Error(
+        `This machine does not belong to the known machines: ${m.id}`,
+      );
+    }
+    // @ts-expect-error ...args won't infer properly for overloaded functions
+    setMachines("all", m.id, ...args);
+  };
+
   return [
     machine,
-    machineMethods(machine, machinesValue, clanValue, clansValue),
+    machineMethods(
+      [machine, setMachine],
+      [machines, machinesMethods],
+      useClanContext(),
+      useClansContext(),
+    ),
   ];
 }
 
@@ -144,19 +162,14 @@ export type MachineMethods = {
   // removeMachine(): void;
 };
 function machineMethods(
-  machine: Accessor<Machine>,
+  [machine, setMachine]: [Accessor<Machine>, SetStoreFunction<Machine>],
   [
     machines,
-    { setMachines, activateMachine, deactivateMachine, updateMachineData },
+    { activateMachine, deactivateMachine, updateMachineData },
   ]: readonly [Accessor<Machines>, MachinesMethods],
   [clan]: readonly [Accessor<Clan>, ClanMethods],
   [clans]: readonly [Clans, ClansMethods],
 ): MachineMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachine: SetStoreFunction<Machine> = (...args) => {
-    // @ts-expect-error ...args won't infer properly for overloaded functions
-    setMachines("all", machine().index, ...args);
-  };
   const self: MachineMethods = {
     setMachine,
     activateMachine() {
@@ -176,12 +189,14 @@ function machineMethods(
   return self;
 }
 
-export function toMachine(
+export function createMachine(
+  id: string,
   entity: MachineEntity,
   clan: Accessor<Clan>,
 ): Machine {
   return {
     ...entity,
+    id,
     get clan() {
       return clan();
     },
@@ -193,7 +208,7 @@ export function toMachine(
     },
     get serviceInstances() {
       return this.clan.serviceInstances.sorted.filter((instance) => {
-        return Object.entries(instance.data.roles).some(([, role]) => {
+        return Object.entries(instance.data.roles.all).some(([, role]) => {
           const tags = new Set(role.tags);
           return (
             tags.has("all") ||

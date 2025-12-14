@@ -1,5 +1,5 @@
 import client from "./client-call";
-import { MachineData, MachineEntityData } from "../../machine/machine";
+import { MachineData, MachineDataEntity } from "../../machine/machine";
 // TODO: backend should provide an API that allows partial update
 export async function updateMachineData(
   machineId: string,
@@ -25,7 +25,7 @@ export async function updateMachineData(
 // TODO: make this one API call only
 export async function createMachine(
   machineId: string,
-  data: MachineEntityData,
+  data: MachineDataEntity,
   clanId: string,
 ): Promise<void> {
   await client.post("create_machine", {

@@ -3,19 +3,18 @@ import client from "./client-call";
 import {
   ClanData,
   ClanEntity,
-  ClanEntityData,
-  ClanMetaData,
+  ClanDataEntity,
   ClanMetaEntity,
+  ClanMetaDataEntity,
 } from "../../clan/clan";
 import {
-  MachineData,
+  MachineDataEntity,
   MachineEntity,
   MachinePositions,
   machinePositions,
 } from "../../machine/machine";
-import { ServiceRole } from "../../service";
 import { asyncMapObjectValues, mapObjectValues } from "@/src/util";
-import { ServiceEntity } from "../../service/service";
+import { ServiceEntity, ServiceRoleEntity } from "../../service/service";
 
 // TODO: make this one API call only
 export async function getClans(
@@ -41,7 +40,7 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
   });
   return {
     id,
-    data: clan.data as ClanMetaData,
+    data: clan.data as ClanMetaDataEntity,
   };
 }
 
@@ -133,7 +132,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
       return {
         id: machineId,
         data: {
-          ...(machine.data as MachineData),
+          ...(machine.data as MachineDataEntity),
           position: mp.getOrSetPosition(machineId),
         },
         dataSchema: schemaRes.data,
@@ -149,18 +148,21 @@ export async function getClan(id: string): Promise<ClanEntity> {
         isCore: service.native,
         description: service.info.manifest.description,
         source: service.usage_ref.input!,
-        roles: service.info.roles as Record<string, ServiceRole>,
+        roles: service.info.roles as Record<string, ServiceRoleEntity>,
         rolesSchema: {},
         instances: service.instance_refs.map((instanceName) => {
           const instance = serviceInstancesRes.data[instanceName]!;
           return {
             data: {
               name: instanceName,
-              roles: mapObjectValues(instance.roles, ([roleId, role]) => ({
-                id: roleId,
+              roles: mapObjectValues(instance.roles, ([, role]) => ({
                 settings: role.settings as Record<string, unknown>,
                 settingsSchema: {} as JSONSchema,
-                machines: Object.keys(role.machines!),
+                machines: Object.entries(machinesRes.data)
+                  .filter(([, machine]) =>
+                    machine.instance_refs?.includes(instanceName),
+                  )
+                  .map(([id]) => id),
                 tags: Object.keys(role.tags!),
               })),
             },
@@ -208,7 +210,7 @@ export async function updateClanData(
 // TODO: allow users to select a template
 export async function createClan(
   id: string,
-  data: ClanEntityData,
+  data: ClanDataEntity,
 ): Promise<void> {
   await client.post("create_clan", {
     body: {

@@ -87,20 +87,7 @@ type DashJoined<T extends readonly string[]> = T extends readonly [infer First]
         : never
       : never
     : "";
-export function mapObject<T, U>(
-  o: Record<string, T>,
-  fn: (v: [string, T], i: number, arr: [string, T][]) => [] | [string, U],
-): Record<string, U> {
-  return Object.fromEntries(
-    Object.entries(o).flatMap((item, i, arr) => {
-      const tuple = fn(item, i, arr);
-      if (tuple.length === 0) {
-        return [];
-      }
-      return [tuple];
-    }),
-  );
-}
+
 export function mapObjectValues<T, U>(
   o: Record<string, T>,
   fn: (v: [string, T], i: number, arr: [string, T][]) => U,

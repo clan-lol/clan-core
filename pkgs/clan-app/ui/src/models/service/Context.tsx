@@ -4,8 +4,6 @@ import {
   ServiceInstanceMethods,
   ServiceInstances,
   ServiceInstancesMethods,
-  useClanContext,
-  useClansContext,
 } from "..";
 import { createServiceInstancesStore } from "./instances";
 import { createServiceInstanceStore } from "./instance";
@@ -29,17 +27,11 @@ export function useServiceInstancesContext(): readonly [
 }
 
 export const ServiceInstancesContextProvider: FlowComponent<{
-  serviceInstances: Accessor<ServiceInstances>;
+  value: Accessor<ServiceInstances>;
 }> = (props) => {
-  const clanValue = useClanContext();
-  const clansValue = useClansContext();
   return (
     <ServiceInstancesContext.Provider
-      value={createServiceInstancesStore(
-        props.serviceInstances,
-        clanValue,
-        clansValue,
-      )}
+      value={createServiceInstancesStore(props.value)}
     >
       {props.children}
     </ServiceInstancesContext.Provider>
@@ -63,19 +55,11 @@ export function useServiceInstanceContext(): readonly [
 }
 
 export const ServiceInstanceContextProvider: FlowComponent<{
-  serviceInstance: Accessor<ServiceInstance>;
+  value: Accessor<ServiceInstance>;
 }> = (props) => {
-  const instancesValue = useServiceInstancesContext();
-  const clanValue = useClanContext();
-  const clansValue = useClansContext();
   return (
     <ServiceInstanceContext.Provider
-      value={createServiceInstanceStore(
-        props.serviceInstance,
-        instancesValue,
-        clanValue,
-        clansValue,
-      )}
+      value={createServiceInstanceStore(props.value)}
     >
       {props.children}
     </ServiceInstanceContext.Provider>
