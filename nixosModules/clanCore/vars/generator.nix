@@ -1,7 +1,6 @@
 {
   lib,
   config,
-  pkgs,
   ...
 }:
 let
@@ -14,6 +13,8 @@ let
     mkOptionDefault
     optionalString
     ;
+
+  pkgs = config.pkgs;
 
   promptToFile = name: ''
     cat "$prompts/${name}" > "$out/${name}"

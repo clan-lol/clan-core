@@ -24,6 +24,7 @@ let
     oneOf
     package
     path
+    raw
     str
     strMatching
     submoduleWith
@@ -35,14 +36,6 @@ let
       modules = [ module ];
     };
 
-  submoduleWithPkgs =
-    module:
-    submoduleWith {
-      modules = [
-        module
-        { config._module.args.pkgs = pkgs; }
-      ];
-    };
   # Display module for prompts
   displayModule = {
     options = {
@@ -100,8 +93,12 @@ in
       '';
       default = { };
       type = attrsOf (
-        submoduleWithPkgs (generator: {
+        submodule (generator: {
           imports = [
+            # Inject dependencies from the 'nixos' module
+            {
+              inherit pkgs;
+            }
             ./generator.nix
             # needed for mkRemovedOptionModule
             (pkgs.path + "/nixos/modules/misc/assertions.nix")
@@ -177,6 +174,14 @@ in
                   hashString "sha256" (toJSON generator.config.validation);
               defaultText = "Hash of the invalidation data";
             };
+            pkgs = mkOption {
+              type = raw;
+              description = ''
+                The pkgs set to use for this generator.
+                This is usually inherited from the nixos pkgs set.
+              '';
+            };
+
             files = mkOption {
               description = ''
                 A set of files to generate.
