@@ -24,7 +24,8 @@ let
         description = ''
           name of the generator
         '';
-        readOnly = true;
+        # This must be set by the 'generator' (parent of this submodule)
+        default = throw "generatorName must be set by the generator";
         defaultText = "Name of the generator that generates this file";
       };
       secret = mkOption {
