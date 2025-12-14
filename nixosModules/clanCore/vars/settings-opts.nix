@@ -1,4 +1,94 @@
 { lib, ... }:
+let
+  inherit (lib) mkOption;
+  inherit (lib.types)
+    str
+    path
+    bool
+    nullOr
+    ;
+
+  fileModuleInterface = file: {
+    options = {
+      name = mkOption {
+        type = str;
+        description = ''
+          name of the public fact
+        '';
+        readOnly = true;
+        default = file.config._module.args.name;
+        defaultText = "Name of the file";
+      };
+      generatorName = mkOption {
+        type = str;
+        description = ''
+          name of the generator
+        '';
+        # This must be set by the 'generator' (parent of this submodule)
+        default = throw "generatorName must be set by the generator";
+        defaultText = "Name of the generator that generates this file";
+      };
+      secret = mkOption {
+        description = ''
+          Whether the file should be treated as a secret.
+        '';
+        type = bool;
+        default = true;
+      };
+      flakePath = mkOption {
+        description = ''
+          The path to the file containing the content of the generated value.
+          This will be set automatically
+        '';
+        type = nullOr path;
+        default = null;
+      };
+      path = mkOption {
+        description = ''
+          The path to the file containing the content of the generated value.
+          This will be set automatically
+        '';
+        type = str;
+        defaultText = ''
+          builtins.path {
+            name = "$${file.config.generatorName}_$${file.config.name}";
+            path = file.config.flakePath;
+          }
+        '';
+        default =
+          if file.config.flakePath == null then
+            throw "flakePath must be set before accessing path"
+          else
+            builtins.path {
+              name = "${file.config.generatorName}_${file.config.name}";
+              path = file.config.flakePath;
+            };
+      };
+      exists = mkOption {
+        description = ''
+          Returns true if the file exists. This is used to guard against reading not set value in evaluation.
+          This currently only works for non secret files.
+        '';
+        type = bool;
+        default = if file.config.secret then throw "Cannot determine existence of secret file" else false;
+        defaultText = "Throws error because the existence of a secret file cannot be determined";
+      };
+      value =
+        mkOption {
+          description = ''
+            The content of the generated value.
+            Only available if the file is not secret.
+          '';
+          type = str;
+          defaultText = "Throws error because the value of a secret file is not accessible";
+        }
+        // lib.optionalAttrs file.config.secret {
+          default = throw "Cannot access value of secret file";
+        };
+    };
+  };
+
+in
 {
   options = {
     secretStore = lib.mkOption {
@@ -26,7 +116,29 @@
 
     # TODO: see if this is the right approach. Maybe revert to secretPathFunction
     fileModule = lib.mkOption {
-      type = lib.types.deferredModule;
+      type = lib.types.deferredModuleWith {
+        staticModules = [
+          fileModuleInterface
+          (lib.mkRenamedOptionModule
+            [
+              "sops"
+              "owner"
+            ]
+            [
+              "owner"
+            ]
+          )
+          (lib.mkRenamedOptionModule
+            [
+              "sops"
+              "group"
+            ]
+            [
+              "group"
+            ]
+          )
+        ];
+      };
       internal = true;
       description = ''
         A module to be imported in every vars.files.<name> submodule.
