@@ -1,8 +1,6 @@
 {
-  _class,
   lib,
   config,
-  pkgs,
   ...
 }:
 let
@@ -27,14 +25,8 @@ let
     raw
     str
     strMatching
-    submoduleWith
+    submodule
     ;
-  # the original types.submodule has strange behavior
-  submodule =
-    module:
-    submoduleWith {
-      modules = [ module ];
-    };
 
   # Display module for prompts
   displayModule = {
@@ -76,6 +68,32 @@ let
 in
 {
   options = {
+    # ===
+    # Injected dependencies
+    # ===
+    pkgs = mkOption {
+      description = ''
+        The pkgs set to use for vars generators.
+        This is usually inherited from the nixos pkgs set.
+      '';
+      type = raw;
+      internal = true;
+    };
+    class = mkOption {
+      description = ''
+        The class of the current machine.
+        This is usually inherited from the nixos module system.
+        Supported: "nixos", "darwin"
+      '';
+      type = enum [
+        "nixos"
+        "darwin"
+      ];
+      internal = true;
+    };
+    # ===
+    # Global vars settings
+    # ===
     settings = mkOption {
       description = ''
         Settings for the vars module.
@@ -85,6 +103,10 @@ in
       };
       default = { };
     };
+
+    # ===
+    # Generators
+    # ===
     generators = mkOption {
       description = ''
         A set of generators that can be used to generate files.
@@ -97,11 +119,11 @@ in
           imports = [
             # Inject dependencies from the 'nixos' module
             {
-              inherit pkgs;
+              inherit (config) pkgs;
             }
             ./generator.nix
             # needed for mkRemovedOptionModule
-            (pkgs.path + "/nixos/modules/misc/assertions.nix")
+            (config.pkgs.path + "/nixos/modules/misc/assertions.nix")
             (lib.mkRemovedOptionModule [ "migrateFact" ] ''
               The `migrateFact` option has been removed.
               The facts system has been fully removed from clan-core.
@@ -205,7 +227,7 @@ in
                         group = mkOption {
                           type = str;
                           description = "The group name or id that will own the file.";
-                          default = if _class == "darwin" then "wheel" else "root";
+                          default = if config.class == "darwin" then "wheel" else "root";
                           defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
                         };
                         mode = mkOption {
@@ -254,7 +276,7 @@ in
                         };
                       };
                     })
-                    (lib.optionalAttrs (_class == "nixos") {
+                    (lib.optionalAttrs (config.class == "nixos") {
                       options.restartUnits = mkOption {
                         description = ''
                           A list of systemd units that should be restarted after the file is deployed.
