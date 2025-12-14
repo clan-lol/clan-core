@@ -61,12 +61,12 @@ let
       };
       exists = mkOption {
         description = ''
-          Returns true if the file exists, This is used to guard against reading not set value in evaluation.
+          Returns true if the file exists. This is used to guard against reading not set value in evaluation.
           This currently only works for non secret files.
         '';
         type = bool;
-        default = if file.config.secret then throw "Cannot determine existance of secret file" else false;
-        defaultText = "Throws error because the existance of a secret file cannot be determined";
+        default = if file.config.secret then throw "Cannot determine existence of secret file" else false;
+        defaultText = "Throws error because the existence of a secret file cannot be determined";
       };
       value =
         mkOption {
