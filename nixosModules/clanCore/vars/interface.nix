@@ -202,6 +202,7 @@ in
                 The pkgs set to use for this generator.
                 This is usually inherited from the nixos pkgs set.
               '';
+              internal = true;
             };
 
             files = mkOption {
