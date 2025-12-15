@@ -12,6 +12,7 @@ import {
   useMachineContext,
   useMachinesContext,
   useServiceInstanceContext,
+  useUIContext,
 } from "@/src/models";
 
 const SidebarBody: Component = () => {
@@ -31,6 +32,7 @@ const SidebarBody: Component = () => {
 export default SidebarBody;
 
 const MachinesSection: Component = () => {
+  const [, { showModal }] = useUIContext();
   const [machines] = useMachinesContext();
 
   return (
@@ -68,7 +70,9 @@ const MachinesSection: Component = () => {
                 hierarchy="primary"
                 size="s"
                 icon="Machine"
-                onClick={() => ctx.setShowAddMachine(true)}
+                onClick={() =>
+                  showModal({ type: "AddMachine", position: [0, 0] })
+                }
               >
                 Add machine
               </Button>
