@@ -21,7 +21,7 @@ import styles from "./ServiceInstance.module.css";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Button } from "@/src/components/Button/Button";
 import cx from "classnames";
-import { BackButton } from "../../../workflows/Steps";
+import { BackButton } from "../Steps";
 import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
 import { TagSelect } from "@/src/components/Search/TagSelect";
 import { Tag } from "@/src/components/Tag/Tag";

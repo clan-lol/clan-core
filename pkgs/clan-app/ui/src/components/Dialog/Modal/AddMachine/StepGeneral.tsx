@@ -1,4 +1,4 @@
-import { NextButton, StepLayout } from "@/src/workflows/Steps";
+import { NextButton, StepLayout } from "@/src/components/Dialog/Steps";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/hooks/stepper";
 import {

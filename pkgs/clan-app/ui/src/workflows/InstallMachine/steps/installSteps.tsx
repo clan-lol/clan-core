@@ -1,5 +1,9 @@
 import { Typography } from "@/src/components/Typography/Typography";
-import { BackButton, NextButton, StepLayout } from "../../Steps";
+import {
+  BackButton,
+  NextButton,
+  StepLayout,
+} from "../../../components/Dialog/Steps";
 import {
   createForm,
   FieldValues,

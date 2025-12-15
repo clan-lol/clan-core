@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
-import { useStepper } from "../hooks/stepper";
-import { Button, ButtonProps } from "../components/Button/Button";
+import { useStepper } from "../../../hooks/stepper";
+import { Button, ButtonProps } from "../../Button/Button";
 import { InstallSteps } from "@/src/workflows/InstallMachine/InstallMachine";
 import styles from "./Steps.module.css";
 

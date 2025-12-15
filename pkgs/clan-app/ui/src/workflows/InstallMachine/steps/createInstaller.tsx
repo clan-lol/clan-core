@@ -5,7 +5,12 @@ import { InstallSteps, InstallStoreType } from "../InstallMachine";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Select } from "@/src/components/Select/Select";
-import { BackButton, NextButton, StepFooter, StepLayout } from "../../Steps";
+import {
+  BackButton,
+  NextButton,
+  StepFooter,
+  StepLayout,
+} from "../../../components/Dialog/Steps";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";

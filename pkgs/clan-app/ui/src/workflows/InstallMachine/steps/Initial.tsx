@@ -1,7 +1,7 @@
 import { defineSteps, useStepper } from "@/src/hooks/stepper";
 import { InstallSteps } from "../InstallMachine";
 import { Button } from "@/src/components/Button/Button";
-import { StepLayout } from "../../Steps";
+import { StepLayout } from "../../../components/Dialog/Steps";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 
 const ChoiceLocalOrRemote = () => {
