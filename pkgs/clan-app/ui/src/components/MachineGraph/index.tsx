@@ -22,9 +22,9 @@ import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
-import SelectService from "@/src/workflows/ServiceInstance/SelectService";
+import ServiceDialog from "@/src/components/Dialog/Service";
 import { useMachinesContext } from "@/src/models";
-import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
+import ServiceInstanceDialog from "@/src/components/Dialog/ServiceInstance";
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
 
@@ -699,13 +699,13 @@ export const MachineGraph: Component = () => {
           when={ui.toolbarMode.type === "service" && !ui.toolbarMode.subtype}
         >
           <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
-            <SelectService />
+            <ServiceDialog />
           </div>
         </Show>
         <Show
           when={ui.toolbarMode.type === "service" && ui.toolbarMode.subtype}
         >
-          <ServiceInstanceWorkflow />
+          <ServiceInstanceDialog />
         </Show>
         <Toolbar>
           <ToolbarButton

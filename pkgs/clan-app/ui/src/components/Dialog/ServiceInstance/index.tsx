@@ -17,11 +17,11 @@ import { Combobox } from "@kobalte/core/combobox";
 import { Typography } from "@/src/components/Typography/Typography";
 
 import { createForm, FieldValues } from "@modular-forms/solid";
-import styles from "./Service.module.css";
+import styles from "./ServiceInstance.module.css";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { Button } from "@/src/components/Button/Button";
 import cx from "classnames";
-import { BackButton } from "../Steps";
+import { BackButton } from "../../../workflows/Steps";
 import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
 import { TagSelect } from "@/src/components/Search/TagSelect";
 import { Tag } from "@/src/components/Tag/Tag";
