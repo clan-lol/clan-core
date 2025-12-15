@@ -8,6 +8,9 @@ export type Modal =
     }
   | {
       type: "ClanSettings";
+    }
+  | {
+      type: "ListClans";
     };
 
 export type ModalMethods = {

@@ -26,10 +26,9 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import ListClansModal from "@/src/components/Modal/ListClansModal";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import { useClansContext } from "@/src/models";
+import { useClansContext, useUIContext } from "@/src/models";
 
 type Step = {
   type: "welcome" | "setup" | "creating";
@@ -191,9 +190,7 @@ export default function Onboarding(): JSX.Element {
 }
 
 function Background(): JSX.Element {
-  // controls whether the list clans modal is displayed
-  const [showModal, setShowModal] = createSignal(false);
-
+  const [, { showModal }] = useUIContext();
   return (
     <div class={styles.background}>
       <div class={styles.backgroundLayer1} />
@@ -206,14 +203,11 @@ function Background(): JSX.Element {
           ghost
           size="s"
           icon="Grid"
-          onClick={() => setShowModal(true)}
+          onClick={() => showModal({ type: "ListClans" })}
         >
           All Clans
         </Button>
       </div>
-      <Show when={showModal()}>
-        <ListClansModal onClose={() => setShowModal(false)} />
-      </Show>
     </div>
   );
 }

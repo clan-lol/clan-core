@@ -1,0 +1,12 @@
+.content {
+  @apply flex flex-col gap-2;
+  padding: 1rem;
+}
+
+.header {
+  @apply flex items-center justify-between;
+}
+
+.clans {
+  @apply flex flex-col gap-2;
+}
