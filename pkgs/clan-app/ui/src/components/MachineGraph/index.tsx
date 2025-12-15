@@ -23,11 +23,7 @@ import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import SelectService from "@/src/workflows/ServiceInstance/SelectService";
-import {
-  ModalCancelError,
-  useMachinesContext,
-  useModalContext,
-} from "@/src/models";
+import { useMachinesContext } from "@/src/models";
 import ServiceInstanceWorkflow from "@/src/workflows/ServiceInstance";
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
@@ -62,7 +58,6 @@ export const MachineGraph: Component = () => {
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
 
-  const [, { openModal }] = useModalContext<"addMachine">();
   const [
     machines,
     {
@@ -76,7 +71,7 @@ export const MachineGraph: Component = () => {
     },
   ] = useMachinesContext();
 
-  const [ui, { setToolbarMode }] = useUIContext();
+  const [ui, { setToolbarMode, showModal }] = useUIContext();
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
 
@@ -390,16 +385,10 @@ export const MachineGraph: Component = () => {
     const onClickGraph = async (event: MouseEvent) => {
       if (ui.toolbarMode.type === "create") {
         if (!snappedMousePosition) return;
-        try {
-          await openModal("addMachine", {
-            position: snappedMousePosition,
-          });
-        } catch (err) {
-          if (err instanceof ModalCancelError) {
-            return;
-          }
-          throw err;
-        }
+        showModal({
+          type: "AddMachine",
+          position: snappedMousePosition,
+        });
         if (actionBase) actionBase.visible = false;
         setToolbarMode({ type: "select" });
         return;

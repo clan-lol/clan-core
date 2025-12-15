@@ -1,12 +1,4 @@
-import {
-  Accessor,
-  Component,
-  ErrorBoundary,
-  Match,
-  Show,
-  Suspense,
-  Switch,
-} from "solid-js";
+import { Accessor, Component, ErrorBoundary, Show, Suspense } from "solid-js";
 import { createAsync } from "@solidjs/router";
 import Onboarding from "./components/Onboarding";
 import Workspace from "./components/Workspace";
@@ -17,13 +9,11 @@ import {
   ClansEntity,
   initClans,
   MachinesContextProvider,
-  ModalContextProvider,
   ServiceInstancesContextProvider,
   useClansContext,
-  useModalContext,
 } from "./models";
-import AddMachineModal from "./components/Modal/AddMachineModal";
 import { UIContextProvider } from "./models/ui";
+import Modal from "./components/Dialog/Modal";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());
@@ -44,9 +34,7 @@ const Entrypoint: Component = () => {
       <Suspense fallback={<Splash />}>
         <Show when={clans() /* && foo() */}>
           <ClansContextProvider value={clans as Accessor<ClansEntity>}>
-            <ModalContextProvider>
-              <Content />
-            </ModalContextProvider>
+            <Content />
           </ClansContextProvider>
         </Show>
       </Suspense>
@@ -57,29 +45,30 @@ export default Entrypoint;
 
 const Content: Component = () => {
   const [clans] = useClansContext();
-  const [modal] = useModalContext();
   return (
-    <>
-      <Show when={clans.activeClan} fallback={<Onboarding />}>
+    <UIContextProvider>
+      <Show
+        when={clans.activeClan}
+        fallback={
+          <>
+            <Onboarding />
+            <Modal />
+          </>
+        }
+      >
         {(clan) => (
-          <UIContextProvider>
-            <ClanContextProvider value={clan}>
-              <MachinesContextProvider value={() => clan().machines}>
-                <ServiceInstancesContextProvider
-                  value={() => clan().serviceInstances}
-                >
-                  <Workspace />
-                  <Switch>
-                    <Match when={modal.type === "addMachine"}>
-                      <AddMachineModal />
-                    </Match>
-                  </Switch>
-                </ServiceInstancesContextProvider>
-              </MachinesContextProvider>
-            </ClanContextProvider>
-          </UIContextProvider>
+          <ClanContextProvider value={clan}>
+            <MachinesContextProvider value={() => clan().machines}>
+              <ServiceInstancesContextProvider
+                value={() => clan().serviceInstances}
+              >
+                <Workspace />
+                <Modal />
+              </ServiceInstancesContextProvider>
+            </MachinesContextProvider>
+          </ClanContextProvider>
         )}
       </Show>
-    </>
+    </UIContextProvider>
   );
 };

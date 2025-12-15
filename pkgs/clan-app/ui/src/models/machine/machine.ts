@@ -28,8 +28,10 @@ export type MachineDataEntity = {
   description?: string;
   machineClass: "nixos" | "darwin";
   tags: string[];
-  position: readonly [number, number];
+  position: MachinePosition;
 };
+export type MachinePosition = readonly [number, number];
+
 export type Machine = Omit<MachineEntity, "data"> & {
   readonly clan: Clan;
   readonly id: string;
@@ -48,13 +50,13 @@ export type MachineStatus =
 
 const CUBE_SPACING = 1;
 export class MachinePositions {
-  #all: Record<string, readonly [number, number]>;
+  #all: Record<string, MachinePosition>;
   #set: Set<string>;
-  constructor(all: Record<string, readonly [number, number]>) {
+  constructor(all: Record<string, MachinePosition>) {
     this.#all = all;
     this.#set = new Set(Object.values(all).map(posStr));
   }
-  getOrSetPosition(machineId: string): readonly [number, number] {
+  getOrSetPosition(machineId: string): MachinePosition {
     if (this.#all[machineId]) {
       return this.#all[machineId];
     }
@@ -64,11 +66,11 @@ export class MachinePositions {
     return pos;
   }
 
-  #hasPosition(p: readonly [number, number]): boolean {
+  #hasPosition(p: MachinePosition): boolean {
     return this.#set.has(posStr(p));
   }
 
-  #nextAvailable(): readonly [number, number] {
+  #nextAvailable(): MachinePosition {
     let x = 0;
     let z = 0;
     let layer = 1;
@@ -120,10 +122,7 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
   if (s === null) {
     return {};
   }
-  const all = JSON.parse(s) as Record<
-    string,
-    Record<string, readonly [number, number]>
-  >;
+  const all = JSON.parse(s) as Record<string, Record<string, MachinePosition>>;
   return mapObjectValues(all, ([clanId, p]) => new MachinePositions(p));
 })();
 
@@ -219,6 +218,6 @@ export function createMachine(
   };
 }
 
-function posStr([x, y]: readonly [number, number]): string {
+function posStr([x, y]: MachinePosition): string {
   return `${x},${y}`;
 }

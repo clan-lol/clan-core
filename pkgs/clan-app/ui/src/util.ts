@@ -110,6 +110,14 @@ export async function asyncMapObjectValues<T, U>(
   );
 }
 
+export function mapObjectKeys<T>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => string,
+): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(o).map((item, i, arr) => [fn(item, i, arr), item[1]]),
+  );
+}
 export function isPosition(
   a: readonly [number, number],
   b: readonly [number, number],

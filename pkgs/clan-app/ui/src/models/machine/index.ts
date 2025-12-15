@@ -3,6 +3,7 @@ export type {
   Machine,
   MachineData,
   MachineDataEntity,
+  MachinePosition,
   MachineStatus,
   MachineMethods,
 } from "./machine";
