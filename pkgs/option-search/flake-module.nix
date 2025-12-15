@@ -6,7 +6,6 @@
 {
   perSystem =
     {
-      lib,
       pkgs,
       ...
     }:
@@ -14,40 +13,10 @@
 
       baseHref = "/option-search/";
 
-      # Map each letter to its capitalized version
-
-      baseModule =
-        # Module
-        { config, ... }:
-        {
-          imports = (import (pkgs.path + "/nixos/modules/module-list.nix"));
-          nixpkgs.pkgs = pkgs;
-          clan.core.name = "dummy";
-          system.stateVersion = config.system.nixos.release;
-          # Set this to work around a bug where `clan.core.settings.machine.name`
-          # is forced due to `networking.interfaces` being forced
-          # somewhere in the nixpkgs options
-          facter.detected.dhcp.enable = lib.mkForce false;
-        };
-
-      evalClanModules =
-        let
-          evaled = lib.evalModules {
-            class = "nixos";
-            modules = [
-              baseModule
-              {
-                clan.core.settings.directory = self;
-              }
-              self.nixosModules.clanCore
-            ];
-          };
-        in
-        evaled;
-
       coreOptions =
         (pkgs.nixosOptionsDoc {
-          options = (evalClanModules.options).clan.core or { };
+          options =
+            self.legacyPackages.x86_64-linux.jsonDocs.clanEval.config.nixosConfigurations.jon.options.clan.core;
           warningsAreErrors = true;
           transformOptions = self.clanLib.docs.stripStorePathsFromDeclarations;
         }).optionsJSON;

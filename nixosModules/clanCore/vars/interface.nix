@@ -72,6 +72,18 @@ in
     # ===
     # Injected dependencies
     # ===
+    globalSettings = mkOption {
+      description = ''
+        The global vars settings for the whole clan.
+
+        This is a deferred module that is merged with the local settings of this machine
+      '';
+      type = lib.types.deferredModuleWith {
+        staticModules = [ ../../../modules/clan/vars/settings-opts.nix ];
+      };
+      internal = true;
+      default = { };
+    };
     pkgs = mkOption {
       description = ''
         The pkgs set to use for vars generators.
@@ -99,9 +111,7 @@ in
       description = ''
         Settings for the vars module.
       '';
-      type = submodule {
-        imports = [ ./settings-opts.nix ];
-      };
+      type = submodule config.globalSettings;
       default = { };
     };
 

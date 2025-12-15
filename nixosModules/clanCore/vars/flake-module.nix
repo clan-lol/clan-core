@@ -30,6 +30,7 @@ in
                 (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../../..)
                 ../../../flakeModules/clan.nix
                 ../../../lib
+                ../../../modules
                 ../../../nixosModules/clanCore/vars
               ];
             }
