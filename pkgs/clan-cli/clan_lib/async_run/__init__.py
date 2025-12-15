@@ -149,6 +149,8 @@ class AsyncThread[**P, R](threading.Thread):
     def run(self) -> None:
         """Run the function in a separate thread."""
         try:
+            # Set async context for the new thread since context is not inherited across thread boundaries otherwise
+            set_async_ctx(self.async_opts.async_ctx)
             set_should_cancel(lambda: self.stop_event.is_set())
             # Arguments for ParamSpec "P@AsyncThread" are missing
             self.result = AsyncResult(_result=self.function(*self.args, **self.kwargs))

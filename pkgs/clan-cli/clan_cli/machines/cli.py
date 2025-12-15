@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from .build import register_build_parser
 from .create import register_create_parser
 from .delete import register_delete_parser
 from .generations import register_generations_parser
@@ -20,8 +21,38 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         required=True,
         # Workaround https://github.com/python/cpython/issues/67037 by setting
         # `metavar` to ensure `morph` isn't mentioned
-        metavar="{update,create,delete,list,init-hardware-config,update-hardware-config,install,generations}",
+        metavar="{build,update,create,delete,list,init-hardware-config,update-hardware-config,install,generations}",
     )
+
+    build_parser = subparser.add_parser(
+        "build",
+        help="Build machine configurations",
+        epilog=(
+            """
+This subcommand provides an interface to build machines managed by Clan.
+
+Examples:
+
+  $ clan machines build
+  Will build all machines in the flake.
+
+  $ clan machines build machine1 machine2
+  Will build only the specified machines.
+
+  $ clan machines build --tags [TAGS..]
+  Will build all machines that have the specified tags associated through the inventory.
+  If multiple tags are specified machines are matched against both tags.
+
+  $ clan machines build machine1 machine2 --format iso
+  Will build ISO images for machine1 and machine2.
+
+  $ clan machines build --tags production
+  Will build all production machines.
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    register_build_parser(build_parser)
 
     update_parser = subparser.add_parser(
         "update",
