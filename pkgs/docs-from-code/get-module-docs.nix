@@ -11,6 +11,7 @@ let
 
   clanEval = clan-core.clanLib.clan {
     # name = "jon's clan";
+    self = { };
     directory = ./.;
     machines.jon =
       { config, ... }:
