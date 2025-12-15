@@ -1,6 +1,7 @@
 {
   _class,
   lib,
+  options,
   config,
   pkgs,
   ...
@@ -35,7 +36,7 @@ in
         {
           class = _class;
           inherit pkgs;
-          globalSettings = config.clanConfig.vars.settings;
+          globalSettings = lib.mkIf options.clanConfig.isDefined config.clanConfig.vars.settings;
         }
       ];
     };
