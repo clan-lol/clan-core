@@ -78,8 +78,11 @@ in
 
         This is a deferred module that is merged with the local settings of this machine
       '';
-      type = raw;
+      type = lib.types.deferredModuleWith {
+        staticModules = [ ../../../modules/clan/vars/settings-opts.nix ];
+      };
       internal = true;
+      default = { };
     };
     pkgs = mkOption {
       description = ''
