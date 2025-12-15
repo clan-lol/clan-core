@@ -19,7 +19,7 @@ const AddMachineModal: Component<{
       steps,
     },
     {
-      initialStep: props.initialStep || "progress",
+      initialStep: props.initialStep || "general",
     },
   );
 

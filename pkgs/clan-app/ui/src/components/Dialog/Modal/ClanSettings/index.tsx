@@ -1,5 +1,3 @@
-import styles from "./ClanSettingsModal.module.css";
-import { Modal } from "@/src/components/Modal/Modal";
 import * as v from "valibot";
 import {
   createForm,
@@ -8,16 +6,17 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
+import styles from "./ClanSettings.module.css";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { tooltipText } from "@/src/components/Form";
 import { TextArea } from "@/src/components/Form/TextArea";
-import { createSignal, Show, splitProps } from "solid-js";
+import { Component, createSignal, Show, splitProps } from "solid-js";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { Divider } from "@/src/components/Divider/Divider";
-import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
 import { ClanData, useClanContext } from "@/src/models";
+import { ModalHeading } from "..";
 
 const schema = v.object({
   name: v.string(),
@@ -25,13 +24,9 @@ const schema = v.object({
   icon: v.optional(v.string()),
 });
 
-export interface ClanSettingsModalProps {
-  onClose: () => void;
-}
-
 type FieldNames = "name" | "description" | "icon";
 
-export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
+const ClanSettings: Component = () => {
   const [clan, { updateClanData, removeClan }] = useClanContext();
   const [saving, setSaving] = createSignal(false);
 
@@ -46,7 +41,6 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
     setSaving(true);
     await updateClanData(data);
     setSaving(false);
-    props.onClose();
   };
 
   const errorMessage = (): Maybe<string> => {
@@ -68,28 +62,15 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
   };
 
   return (
-    <Modal
-      class={styles.modal}
-      open
-      title="Settings"
-      onClose={props.onClose}
-      wrapContent={(props) => <Form onSubmit={onSubmit}>{props.children}</Form>}
-      metaHeader={() => (
-        <div class={styles.header}>
-          <Typography
-            hierarchy="label"
-            family="mono"
-            size="default"
-            weight="medium"
-          >
-            {clan().data.name}
-          </Typography>
+    <Form onSubmit={onSubmit}>
+      <ModalHeading
+        text={clan().data.name}
+        tail={
           <Button hierarchy="primary" size="s" type="submit" loading={saving()}>
             Save
           </Button>
-        </div>
-      )}
-    >
+        }
+      />
       <div class={styles.content}>
         <Show when={errorMessage()}>
           <Alert type="error" title="Error" description={errorMessage()} />
@@ -167,6 +148,9 @@ export const ClanSettingsModal = (props: ClanSettingsModalProps) => {
           </Button>
         </div>
       </div>
-    </Modal>
+    </Form>
   );
 };
+export default ClanSettings;
+
+export const title = "Settings";

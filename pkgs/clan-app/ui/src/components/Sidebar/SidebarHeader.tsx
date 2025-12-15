@@ -2,27 +2,18 @@ import styles from "./SidebarHeader.module.css";
 import Icon from "@/src/components/Icon/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { Typography } from "../Typography/Typography";
-import { Component, createSignal, For, Show } from "solid-js";
+import { Component, createSignal, For } from "solid-js";
 import { Button } from "../Button/Button";
-import { ClanSettingsModal } from "@/src/components/Modal/ClanSettingsModal";
-import { useClanContext, useClansContext } from "@/src/models";
+import { useClanContext, useClansContext, useUIContext } from "@/src/models";
 
 const SidebarHeader: Component = () => {
+  const [, { showModal }] = useUIContext();
   const [open, setOpen] = createSignal(false);
-  const [showSettings, setShowSettings] = createSignal(false);
   const [clan] = useClanContext();
   const [clans, { activateClan, deactivateClan }] = useClansContext();
 
   return (
     <div class={styles.sidebarHeader}>
-      <Show when={showSettings()}>
-        <ClanSettingsModal
-          onClose={() => {
-            // TODO: refresh clan data
-            setShowSettings(false);
-          }}
-        />
-      </Show>
       <DropdownMenu open={open()} onOpenChange={setOpen} sameWidth={true}>
         <DropdownMenu.Trigger class={styles.dropDownTrigger}>
           <div class={styles.clanLabel}>
@@ -53,7 +44,7 @@ const SidebarHeader: Component = () => {
           <DropdownMenu.Content class={styles.dropDownContent}>
             <DropdownMenu.Item
               class={styles.dropdownItem}
-              onSelect={() => setShowSettings(true)}
+              onSelect={() => showModal({ type: "ClanSettings" })}
             >
               <Icon
                 icon="Settings"

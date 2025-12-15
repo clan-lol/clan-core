@@ -1,4 +1,4 @@
-import { Component } from "solid-js";
+import { Component, JSX, Show } from "solid-js";
 import { Dialog } from "@kobalte/core/dialog";
 import styles from "./Modal.module.css";
 import { Typography } from "../../Typography/Typography";
@@ -60,7 +60,9 @@ const ModalComponent: Component = () => {
 };
 export default ModalComponent;
 
-export const ModalHeading: Component<{ text: string }> = (props) => {
+export const ModalHeading: Component<{ text: string; tail?: JSX.Element }> = (
+  props,
+) => {
   return (
     <div class={styles.headingbar}>
       <div class={styles.headingbarInner}>
@@ -72,6 +74,7 @@ export const ModalHeading: Component<{ text: string }> = (props) => {
         >
           {props.text}
         </Typography>
+        <Show when={props.tail}>{props.tail}</Show>
       </div>
     </div>
   );

@@ -1,10 +1,14 @@
 import { produce, SetStoreFunction } from "solid-js/store";
 import { MachinePosition, UI } from "..";
 
-export type Modal = {
-  type: "AddMachine";
-  position: MachinePosition;
-};
+export type Modal =
+  | {
+      type: "AddMachine";
+      position: MachinePosition;
+    }
+  | {
+      type: "ClanSettings";
+    };
 
 export type ModalMethods = {
   showModal(modal: Modal): void;

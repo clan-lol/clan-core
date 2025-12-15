@@ -83,9 +83,9 @@ export const StepGeneral = () => {
   };
 
   return (
-    <>
+    <Form onSubmit={handleSubmit}>
       <ModalHeading text="General" />
-      <Form onSubmit={handleSubmit} class={styles.content}>
+      <div class={styles.content}>
         <StepLayout
           body={
             <div class="flex flex-col gap-2">
@@ -161,7 +161,7 @@ export const StepGeneral = () => {
             </div>
           }
         />
-      </Form>
-    </>
+      </div>
+    </Form>
   );
 };
