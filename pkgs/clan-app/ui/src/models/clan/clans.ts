@@ -271,8 +271,6 @@ function persistClansChanges(
   for (const change of changes) {
     if (isPath(change, ["all"])) {
       clansChanged = true;
-    } else if (isPath(change, ["activeClan"])) {
-      activeClanChanged = true;
     } else if (
       isAnyPath(change, [
         ["all", "*", "machines", "all"],
@@ -284,6 +282,9 @@ function persistClansChanges(
       isPath(change, ["all", "*", "machines", "all", "*", "data", "position"])
     ) {
       machinePositionsChanged = true;
+    }
+    if (isPath(change, ["activeClan"])) {
+      activeClanChanged = true;
     }
   }
 
