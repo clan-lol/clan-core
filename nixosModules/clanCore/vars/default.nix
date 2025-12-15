@@ -35,6 +35,7 @@ in
         {
           class = _class;
           inherit pkgs;
+          globalSettings = config.clanConfig.vars.settings;
         }
       ];
     };

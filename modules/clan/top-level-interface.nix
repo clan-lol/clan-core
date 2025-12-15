@@ -222,6 +222,16 @@ in
       '';
     };
 
+    vars = lib.mkOption {
+      type = types.submodule {
+        imports = [ ./vars/default.nix ];
+      };
+      description = ''
+        Settings for all vars generators.
+      '';
+      default = { };
+    };
+
     # Meta
     meta = lib.mkOption {
       description = ''
