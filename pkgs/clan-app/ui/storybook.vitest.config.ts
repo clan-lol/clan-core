@@ -31,7 +31,7 @@ export default defineConfig((configEnv) =>
               //
               // Firefox is the only browser that can reliably finish the
               // tests. We want to test storybook only, and the differences
-              // between browsers are probably neglegible to us
+              // between browsers are probably negligible to us
               browser: "firefox",
             },
           ],
