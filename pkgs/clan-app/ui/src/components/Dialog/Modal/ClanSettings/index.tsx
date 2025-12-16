@@ -16,7 +16,7 @@ import { Divider } from "@/src/components/Divider/Divider";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
 import { ClanData, useClanContext } from "@/src/models";
-import { ModalHeading } from "..";
+import { ModalConfig, ModalHeading } from "..";
 
 const schema = v.object({
   name: v.string(),
@@ -62,7 +62,7 @@ const ClanSettings: Component = () => {
   };
 
   return (
-    <Form onSubmit={onSubmit}>
+    <Form onSubmit={onSubmit} class={styles.container}>
       <ModalHeading
         text={clan().data.name}
         tail={
@@ -153,4 +153,6 @@ const ClanSettings: Component = () => {
 };
 export default ClanSettings;
 
-export const title = "Settings";
+export const config: ModalConfig = {
+  title: "Settings",
+};

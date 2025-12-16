@@ -184,11 +184,6 @@ export async function getClan(id: string): Promise<ClanEntity> {
   };
 }
 
-export async function pickClanDir(): Promise<string> {
-  const res = await client.get("get_clan_folder");
-  return res.data.identifier;
-}
-
 // TODO: backend should provide an API that allows partial update
 export async function updateClanData(
   clanId: string,

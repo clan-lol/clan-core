@@ -29,6 +29,7 @@ import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
 import { useClansContext, useUIContext } from "@/src/models";
+import { useSysContext } from "@/src/models";
 
 type Step = {
   type: "welcome" | "setup" | "creating";
@@ -216,7 +217,8 @@ function Welcome(props: {
   step: Accessor<Step>;
   setStep: Setter<Step>;
 }): JSX.Element {
-  const [, { pickClanDir, loadClan }] = useClansContext()!;
+  const [, { pickClanDir }] = useSysContext();
+  const [, { loadClan }] = useClansContext()!;
   const [loading, setLoading] = createSignal(false);
 
   async function onSelect(): Promise<void> {

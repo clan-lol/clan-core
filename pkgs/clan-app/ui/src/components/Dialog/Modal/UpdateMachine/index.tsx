@@ -5,27 +5,78 @@ import {
   StepperProvider,
   useStepper,
 } from "@/src/hooks/stepper";
-import { createSignal, Show } from "solid-js";
+import { Component, createSignal, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { ConfigureAddress, ConfigureData } from "./steps/installSteps";
+import {
+  ConfigureAddress,
+  ConfigureData,
+} from "../InstallMachine/steps/installSteps";
 
 import cx from "classnames";
-import { InstallStoreType } from "./InstallMachine";
+import { InstallStoreType } from "../InstallMachine";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
-import { ProcessMessage, useNotifyOrigin } from "@/src/hooks/notify";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import api from "@/src/models/api";
 import { useClanURI } from "@/src/hooks/clan";
 import { AlertProps } from "@/src/components/Alert/Alert";
 import usbLogo from "@/logos/usb-stick-min.png?url";
 
-// TODO: Deduplicate
-interface UpdateStepperProps {
-  onDone: () => void;
-}
-const UpdateStepper = (props: UpdateStepperProps) => {
+const UpdateMachine = () => {
+  const stepper = createStepper(
+    {
+      steps,
+    },
+    {
+      initialStep: "update:data",
+      initialStoreData: {
+        install: { machineName: props.machineName },
+      } as Partial<InstallStoreType>,
+    },
+  );
+
+  const MetaHeader = () => {
+    // @ts-expect-error some steps might not provide a title
+    const HeaderComponent = () => stepper.currentStep()?.title;
+    return (
+      <Show when={HeaderComponent()}>
+        {(C) => <Dynamic component={C()} machineName={props.machineName} />}
+      </Show>
+    );
+  };
+  const [store, set] = getStepStore<InstallStoreType>(stepper);
+
+  set("install", { machineName: props.machineName });
+
+  // allows each step to adjust the size of the modal
+  const sizeClasses = () => {
+    const defaultClass = "max-w-3xl h-[30rem]";
+
+    const currentStep = stepper.currentStep();
+    if (!currentStep) {
+      return defaultClass;
+    }
+
+    switch (currentStep.id) {
+      case "update:progress":
+      case "update:done":
+        return currentStep.class;
+
+      default:
+        return defaultClass;
+    }
+  };
+
+  return (
+    <StepperProvider stepper={stepper}>
+      <UpdateStepper />
+    </StepperProvider>
+  );
+};
+export default UpdateMachine;
+
+const UpdateStepper: Component = () => {
   const stepSignal = useStepper<UpdateSteps>();
 
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
@@ -76,21 +127,12 @@ const UpdateStepper = (props: UpdateStepperProps) => {
   return (
     <Dynamic
       component={stepSignal.currentStep().content}
-      onDone={props.onDone}
       next="update"
       stepFinished={handleUpdate}
       alert={alert()}
     />
   );
 };
-
-interface UpdateModalProps {
-  machineName: string;
-  open: boolean;
-  initialStep?: UpdateSteps[number]["id"];
-  mount?: Node;
-  onClose?: () => void;
-}
 
 const UpdateHeader = (props: { machineName: string }) => {
   return (
@@ -145,10 +187,7 @@ const UpdateProgress = () => {
   );
 };
 
-interface UpdateDoneProps {
-  onDone: () => void;
-}
-const UpdateDone = (props: UpdateDoneProps) => {
+const UpdateDone = () => {
   const stepSignal = useStepper<UpdateSteps>();
   const [store, get] = getStepStore<InstallStoreType>(stepSignal);
 
@@ -207,71 +246,3 @@ const steps = [
 ] as const;
 
 type UpdateSteps = typeof steps;
-type PromptValues = Record<string, Record<string, string>>;
-
-export const UpdateModal = (props: UpdateModalProps) => {
-  const stepper = createStepper(
-    {
-      steps,
-    },
-    {
-      initialStep: props.initialStep || "update:data",
-      initialStoreData: {
-        install: { machineName: props.machineName },
-      } as Partial<InstallStoreType>,
-    },
-  );
-
-  const MetaHeader = () => {
-    // @ts-expect-error some steps might not provide a title
-    const HeaderComponent = () => stepper.currentStep()?.title;
-    return (
-      <Show when={HeaderComponent()}>
-        {(C) => <Dynamic component={C()} machineName={props.machineName} />}
-      </Show>
-    );
-  };
-  const [store, set] = getStepStore<InstallStoreType>(stepper);
-
-  set("install", { machineName: props.machineName });
-
-  // allows each step to adjust the size of the modal
-  const sizeClasses = () => {
-    const defaultClass = "max-w-3xl h-[30rem]";
-
-    const currentStep = stepper.currentStep();
-    if (!currentStep) {
-      return defaultClass;
-    }
-
-    switch (currentStep.id) {
-      case "update:progress":
-      case "update:done":
-        return currentStep.class;
-
-      default:
-        return defaultClass;
-    }
-  };
-
-  const onClose = async () => {
-    props.onClose?.();
-  };
-
-  return (
-    <StepperProvider stepper={stepper}>
-      <Modal
-        class={cx("w-screen", sizeClasses())}
-        title="Update machine"
-        onClose={onClose}
-        open={props.open}
-        // @ts-expect-error some steps might not have
-        metaHeader={stepper.currentStep()?.title ? <MetaHeader /> : undefined}
-        // @ts-expect-error some steps might not have
-        disablePadding={stepper.currentStep()?.isSplash}
-      >
-        <UpdateStepper onDone={onClose} />
-      </Modal>
-    </StepperProvider>
-  );
-};

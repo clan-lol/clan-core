@@ -6,5 +6,16 @@ export type {
   MachinePosition,
   MachineStatus,
   MachineMethods,
+  MachineSSH,
+  MachineHardwareReport,
+  MachineDiskTemplates,
+  MachineDiskTemplate,
+  MachineDiskTemplatePlaceHolder,
+  MachineVarsPromptGroups,
+  MachineVarsPromptGroup,
+  MachineVarsPrompts,
+  MachineVarsPrompt,
+  InstallMachineOptions,
+  InstallMachineProgress,
 } from "./machine";
 export * from "./Context";

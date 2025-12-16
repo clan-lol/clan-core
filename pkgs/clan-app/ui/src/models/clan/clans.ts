@@ -88,7 +88,6 @@ export function createClansStore(
 
 export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
-  pickClanDir(): Promise<string>;
   activateClan(item: Clan | ClanMeta | string): Promise<Clan | null>;
   deactivateClan(): void;
   deactivateClan(item: Clan | string): Clan | null;
@@ -156,9 +155,6 @@ export function createClansMethods(
 
   const self: ClansMethods = {
     setClans,
-    async pickClanDir() {
-      return api.clan.pickClanDir();
-    },
     async activateClan(item) {
       const [clan, i] = getClan(item);
 

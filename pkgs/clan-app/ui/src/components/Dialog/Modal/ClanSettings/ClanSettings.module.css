@@ -1,5 +1,6 @@
-.modal {
-  @apply w-screen max-w-xl h-fit flex flex-col;
+.container {
+  max-width: 36rem;
+  width: 100vw;
 }
 .content {
   @apply flex flex-col gap-3 size-full;

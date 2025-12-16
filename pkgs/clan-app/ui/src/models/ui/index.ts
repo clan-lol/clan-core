@@ -21,9 +21,13 @@ export function createUIStore(): readonly [UI, UIMethods] {
 
 export type UIMethods = ToolbarMethods & ModalMethods;
 
-function createUIMethods(ui: UI, setUI: SetStoreFunction<UI>): UIMethods {
-  return {
+export function createUIMethods(
+  ui: UI,
+  setUI: SetStoreFunction<UI>,
+): UIMethods {
+  const self: UIMethods = {
     ...createToolbarMethods(ui, setUI),
     ...createModalMethods(ui, setUI),
   };
+  return self;
 }

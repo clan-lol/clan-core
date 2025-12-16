@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { InstallModal } from "./InstallMachine";
 import {
   createMemoryHistory,
   MemoryRouter,
@@ -24,39 +23,6 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
 ): ApiCall<K> => {
   // TODO: Make this configurable for every story
   const resultData: Partial<ResultDataMap> = {
-    get_system_file: ["id_rsa.pub"],
-    list_system_storage_devices: {
-      blockdevices: [
-        {
-          name: "sda_bla_bla",
-          path: "/dev/sda",
-          id_link: "usb-bla-bla",
-          size: "12gb",
-        },
-        {
-          name: "sdb_foo_foo",
-          path: "/dev/sdb",
-          id_link: "usb-boo-foo",
-          size: "16gb",
-        },
-      ] as SuccessQuery<"list_system_storage_devices">["data"]["blockdevices"],
-    },
-    get_machine_disk_schemas: {
-      "single-disk": {
-        readme: "This is a single disk installation schema",
-        frontmatter: {
-          description: "Single disk installation schema",
-        },
-        name: "single-disk",
-        placeholders: {
-          mainDisk: {
-            label: "Main Disk",
-            required: true,
-            options: ["disk1", "usb1"],
-          },
-        },
-      },
-    },
     get_generators: [
       {
         name: "funny.gritty",
@@ -75,7 +41,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
           {
             name: "gritty.foo",
             description: "Name of the gritty",
-            prompt_type: "hidden",
+            prompt_type: "line",
             display: {
               helperText: null,
               label: "(2) Password",
@@ -113,7 +79,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
           {
             name: "gritty.foo",
             description: "Name of the gritty",
-            prompt_type: "hidden",
+            prompt_type: "line",
             display: {
               helperText: null,
               label: "(5) Password",
@@ -136,10 +102,7 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
       },
     ],
     run_generators: null,
-    get_machine_hardware_summary: {
-      hardware_config: "nixos-facter",
-      platform: "x86_64-linux",
-    },
+    run_machine_update: null,
   };
 
   return {
@@ -147,9 +110,18 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
     cancel: () => Promise.resolve(),
     result: new Promise((resolve) => {
       setTimeout(() => {
+        const status = name === "run_machine_update" ? "error" : "success";
+
         resolve({
           op_key: "1",
-          status: "success",
+          status: status,
+          errors: [
+            {
+              message: "Mock error message",
+              description:
+                "This is a more detailed description of the mock error.",
+            },
+          ],
           data: resultData[name],
         } as OperationResponse<K>);
       }, 1500);
@@ -157,9 +129,9 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
   };
 };
 
-const meta: Meta<typeof InstallModal> = {
-  title: "workflows/install",
-  component: InstallModal,
+const meta: Meta<typeof UpdateModal> = {
+  title: "workflows/update",
+  component: UpdateModal,
   decorators: [
     (Story) => {
       const Routes: RouteDefinition[] = [
@@ -198,96 +170,25 @@ const meta: Meta<typeof InstallModal> = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof UpdateModal>;
 
 export const Init: Story = {
   args: {
     open: true,
-    machineName: "Test Machine",
-    initialStep: "init",
+    machineName: "Jon",
   },
 };
-export const CreateInstallerProse: Story = {
+export const Address: Story = {
   args: {
     open: true,
-    machineName: "Test Machine",
-    initialStep: "create:prose",
+    machineName: "Jon",
+    initialStep: "update:address",
   },
 };
-export const CreateInstallerImage: Story = {
+export const UpdateProgress: Story = {
   args: {
     open: true,
-    machineName: "Test Machine",
-    initialStep: "create:image",
-  },
-};
-export const CreateInstallerDisk: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "create:disk",
-  },
-};
-export const CreateInstallerProgress: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "create:progress",
-  },
-};
-export const CreateInstallerDone: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "create:done",
-  },
-};
-export const InstallConfigureAddress: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:address",
-  },
-};
-export const InstallCheckHardware: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:check-hardware",
-  },
-};
-export const InstallSelectDisk: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:disk",
-  },
-};
-export const InstallVars: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:data",
-  },
-};
-export const InstallSummary: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:summary",
-  },
-};
-export const InstallProgress: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:progress",
-  },
-};
-export const InstallDone: Story = {
-  args: {
-    open: true,
-    machineName: "Test Machine",
-    initialStep: "install:done",
+    machineName: "Jon",
+    initialStep: "update:progress",
   },
 };

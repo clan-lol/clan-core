@@ -4,13 +4,14 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { batch, Component, For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 import { useClansContext, useUIContext } from "@/src/models";
+import { ModalConfig } from "..";
 
 const ListClans: Component = () => {
   const [, { closeModal }] = useUIContext();
   const [clans, { activateClan }] = useClansContext();
 
   return (
-    <div class={cx(styles.content)}>
+    <div class={cx(styles.container)}>
       <div class={cx(styles.header)}>
         <Typography
           hierarchy="label"
@@ -45,4 +46,6 @@ const ListClans: Component = () => {
 };
 export default ListClans;
 
-export const title = "Select Clan";
+export const config: ModalConfig = {
+  title: "Select Clan",
+};

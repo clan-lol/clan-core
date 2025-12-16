@@ -61,7 +61,7 @@ export const StepGeneral = () => {
     if (values.id in machines().all) {
       setError(
         formStore,
-        "name",
+        "id",
         `A machine named '${values.id}' already exists. Please choose a different one.`,
       );
       return;
@@ -79,11 +79,11 @@ export const StepGeneral = () => {
 
   const formError = () => {
     const errors = getErrors(formStore);
-    return errors.name || errors.description || errors.machineClass;
+    return errors.id || errors.description || errors.machineClass;
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit} class={styles.container}>
       <ModalHeading text="General" />
       <div class={styles.content}>
         <StepLayout

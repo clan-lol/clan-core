@@ -10,16 +10,15 @@ import { StepHost } from "./StepHost";
 import { StepTags } from "./StepTags";
 import { StepProgress } from "./StepProgress";
 import { Dynamic } from "solid-js/web";
+import { ModalConfig } from "..";
 
-const AddMachineModal: Component<{
-  initialStep?: AddMachineSteps[number]["id"];
-}> = (props) => {
+const AddMachine: Component = () => {
   const stepper = createStepper(
     {
       steps,
     },
     {
-      initialStep: props.initialStep || "general",
+      initialStep: "general",
     },
   );
 
@@ -29,11 +28,13 @@ const AddMachineModal: Component<{
     </StepperProvider>
   );
 };
-export default AddMachineModal;
+export default AddMachine;
 
-export const title = "Add Machine";
+export const config: ModalConfig = {
+  title: "Add Machine",
+};
 
-const AddMachineStepper = () => {
+const AddMachineStepper: Component = () => {
   const stepSignal = useStepper<AddMachineSteps>();
 
   return <Dynamic component={stepSignal.currentStep().content} />;

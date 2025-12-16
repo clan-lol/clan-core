@@ -1,5 +1,7 @@
-.content {
+.container {
   @apply flex flex-col gap-2;
+  max-width: 42rem;
+  width: 100vw;
   padding: 1rem;
 }
 

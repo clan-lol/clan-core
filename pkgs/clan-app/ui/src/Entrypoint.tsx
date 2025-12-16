@@ -14,6 +14,7 @@ import {
 } from "./models";
 import { UIContextProvider } from "./models/ui";
 import Modal from "./components/Dialog/Modal";
+import { SysContextProvider } from "./models/sys";
 
 const Entrypoint: Component = () => {
   const clans = createAsync(async () => await initClans());
@@ -31,13 +32,17 @@ const Entrypoint: Component = () => {
         );
       }}
     >
-      <Suspense fallback={<Splash />}>
-        <Show when={clans() /* && foo() */}>
-          <ClansContextProvider value={clans as Accessor<ClansEntity>}>
-            <Content />
-          </ClansContextProvider>
-        </Show>
-      </Suspense>
+      <SysContextProvider>
+        <UIContextProvider>
+          <Suspense fallback={<Splash />}>
+            <Show when={clans() /* && foo() */}>
+              <ClansContextProvider value={clans as Accessor<ClansEntity>}>
+                <Content />
+              </ClansContextProvider>
+            </Show>
+          </Suspense>
+        </UIContextProvider>
+      </SysContextProvider>
     </ErrorBoundary>
   );
 };
@@ -46,29 +51,27 @@ export default Entrypoint;
 const Content: Component = () => {
   const [clans] = useClansContext();
   return (
-    <UIContextProvider>
-      <Show
-        when={clans.activeClan}
-        fallback={
-          <>
-            <Onboarding />
-            <Modal />
-          </>
-        }
-      >
-        {(clan) => (
-          <ClanContextProvider value={clan}>
-            <MachinesContextProvider value={() => clan().machines}>
-              <ServiceInstancesContextProvider
-                value={() => clan().serviceInstances}
-              >
-                <Workspace />
-                <Modal />
-              </ServiceInstancesContextProvider>
-            </MachinesContextProvider>
-          </ClanContextProvider>
-        )}
-      </Show>
-    </UIContextProvider>
+    <Show
+      when={clans.activeClan}
+      fallback={
+        <>
+          <Onboarding />
+          <Modal />
+        </>
+      }
+    >
+      {(clan) => (
+        <ClanContextProvider value={clan}>
+          <MachinesContextProvider value={() => clan().machines}>
+            <ServiceInstancesContextProvider
+              value={() => clan().serviceInstances}
+            >
+              <Workspace />
+              <Modal />
+            </ServiceInstancesContextProvider>
+          </MachinesContextProvider>
+        </ClanContextProvider>
+      )}
+    </Show>
   );
 };

@@ -200,7 +200,14 @@ export function createMachinesMethods(
     async deleteMachine(item) {
       const machine = getMachine(item);
       await api.clan.deleteMachine(machine.id, clan().id);
-      setMachines(produce((machines) => delete machines.all[machine.id]));
+      setMachines(
+        produce((machines) => {
+          delete machines.all[machine.id];
+          if (machines.activeMachine?.id === machine.id) {
+            machines.activeMachine = null;
+          }
+        }),
+      );
     },
     machinesByTag(tag: string) {
       return Object.entries(machines().all)

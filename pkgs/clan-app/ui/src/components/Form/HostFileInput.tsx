@@ -10,7 +10,7 @@ import { createSignal, JSX, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
 import { Typography } from "@/src/components/Typography/Typography";
 import { keepTruthy } from "@/src/util";
-import { callApi } from "@/src/hooks/api";
+import { useSysContext } from "@/src/models";
 
 export type HostFileInputProps = FieldProps & {
   name: string;
@@ -31,6 +31,7 @@ export type HostFileInputProps = FieldProps & {
 };
 
 export const HostFileInput = (props: HostFileInputProps) => {
+  const [, { pickDir }] = useSysContext();
   const [rootProps, inputProps, local, labelProps] = splitProps(
     props,
     ["name", "defaultValue", "required", "disabled"],
@@ -45,24 +46,16 @@ export const HostFileInput = (props: HostFileInputProps) => {
     if (local.readOnly) {
       return;
     }
-    const req = callApi("get_system_file", {
-      file_request: {
-        mode: "select_folder",
-        title: local.windowTitle || labelProps.label,
-        initial_folder: local.initialFolder,
-      },
-    });
-
-    const resp = await req.result;
 
     // TOOD: When a user clicks cancel button in the file picker, an error will
     // be return, the backend should provide more data so we can target the
     // cancellation specifically and not swallow other errors
-    if (resp.status === "error") {
-      return;
-    }
+    const path = await pickDir({
+      title: local.windowTitle || labelProps.label,
+      initialPath: local.initialFolder,
+    });
 
-    setValue(resp.data![0]);
+    setValue(path);
     inputElement.dispatchEvent(
       new Event("input", { bubbles: true, cancelable: true }),
     );

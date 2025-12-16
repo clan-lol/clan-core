@@ -1,5 +1,6 @@
 import { Accessor } from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
+import api from "../api";
 import {
   Clan,
   ClanMethods,
@@ -47,6 +48,79 @@ export type MachineStatus =
   | "offline"
   | "out_of_sync"
   | "online";
+
+export type MachineSSH = {
+  address: string;
+  port?: number;
+  password?: string;
+};
+
+export type MachineHardwareReportEntity = {
+  readonly type: "nixos-facter" | "nixos-generate-config";
+};
+
+export type MachineHardwareReport = MachineHardwareReportEntity;
+
+export type MachineDiskTemplatesEntity = Record<
+  string,
+  MachineDiskTemplateEntity
+>;
+export type MachineDiskTemplateEntity = {
+  readonly name: string;
+  readonly description: string;
+  readonly placeholders: Record<string, MachineDiskTemplatePlaceHolderEntity>;
+};
+export type MachineDiskTemplatePlaceHolderEntity = {
+  readonly name: string;
+  readonly values: string[];
+  readonly required: boolean;
+};
+
+export type MachineDiskTemplates = {
+  all: Record<string, MachineDiskTemplate>;
+  sorted: MachineDiskTemplate[];
+};
+export type MachineDiskTemplate = Omit<
+  MachineDiskTemplateEntity,
+  "placeholders"
+> & {
+  readonly id: string;
+  readonly placeholders: Record<string, MachineDiskTemplatePlaceHolder>;
+};
+export type MachineDiskTemplatePlaceHolder =
+  MachineDiskTemplatePlaceHolderEntity & {
+    readonly id: string;
+  };
+
+export type MachineVarsPromptGroupsEntity = Record<
+  string,
+  MachineVarsPromptsEntity
+>;
+export type MachineVarsPromptsEntity = Record<string, MachineVarsPromptEntity>;
+export type MachineVarsPromptEntity = {
+  readonly generator: string;
+  readonly description: string;
+  readonly name: string;
+  readonly value: string;
+  readonly type: "hidden" | "line" | "multiline" | "multiline-hidden";
+  readonly required: boolean;
+};
+
+export type MachineVarsPromptGroups = {
+  readonly all: Record<string, MachineVarsPromptGroup>;
+  readonly sorted: MachineVarsPromptGroup[];
+};
+export type MachineVarsPromptGroup = {
+  readonly id: string;
+  readonly prompts: MachineVarsPrompts;
+};
+export type MachineVarsPrompts = {
+  readonly all: Record<string, MachineVarsPrompt>;
+  readonly sorted: MachineVarsPrompt[];
+};
+export type MachineVarsPrompt = MachineVarsPromptEntity & {
+  readonly id: string;
+};
 
 const CUBE_SPACING = 1;
 export class MachinePositions {
@@ -145,8 +219,31 @@ export type MachineMethods = {
   activateMachine(): void;
   deactivateMachine(): void;
   updateMachineData(data: Partial<MachineData>): Promise<void>;
-  // removeMachine(): void;
+  installMachine(opts: InstallMachineOptions): Promise<void>;
+  isMachineSSHable(ssh: MachineSSH): Promise<boolean>;
+  getOrGenerateMachineHardwareReport(
+    ssh: MachineSSH,
+  ): Promise<MachineHardwareReport | null>;
+  getMachineDiskTemplates(): Promise<MachineDiskTemplates>;
+  getMachineVarsPromptGroups(): Promise<MachineVarsPromptGroups>;
 };
+export type InstallMachineOptions = {
+  signal?: AbortSignal;
+  ssh: MachineSSH;
+  diskPath: string;
+  varsPromptValues: Record<string, Record<string, string>>;
+  onProgress?(progress: InstallMachineProgress): void;
+};
+export type InstallMachineProgress =
+  | "disk"
+  | "varsPrompts"
+  | "generators"
+  | "upload-secrets"
+  | "nixos-anywhere"
+  | "formatting"
+  | "rebooting"
+  | "installing";
+
 export function createMachineMethods(
   machine: Accessor<Machine>,
   [
@@ -175,13 +272,82 @@ export function createMachineMethods(
     deactivateMachine() {
       deactivateMachine(machine());
     },
-
     async updateMachineData(data) {
       await updateMachineData(machine(), data);
     },
-    // removeClan() {
-    //   removeClan(clan());
-    // },
+    async installMachine(opts) {
+      await api.clan.installMachine(opts, machine().id, clan().id);
+    },
+    async isMachineSSHable(ssh) {
+      return await api.clan.isMachineSSHable(ssh);
+    },
+    async getOrGenerateMachineHardwareReport(ssh) {
+      const report = await api.clan.getMachineHardwareReport(
+        machine().id,
+        clan().id,
+      );
+      if (report) {
+        return report;
+      }
+      return await api.clan.generateMachineHardwareReport(
+        ssh,
+        machine().id,
+        clan().id,
+      );
+    },
+    async getMachineDiskTemplates() {
+      const entity = await api.clan.getMachineDiskTemplates(
+        machine().id,
+        clan().id,
+      );
+      const templates: MachineDiskTemplates = {
+        all: mapObjectValues(entity, ([id, entity]) => ({
+          ...entity,
+          id,
+          placeholders: mapObjectValues(
+            entity.placeholders,
+            ([id, entity]) => ({
+              ...entity,
+              id,
+            }),
+          ),
+        })),
+        get sorted() {
+          return Object.values(this.all).sort((a, b) =>
+            a.name.localeCompare(b.name),
+          );
+        },
+      };
+      return templates;
+    },
+    async getMachineVarsPromptGroups() {
+      const entity = await api.clan.getMachineVarsPromptGroups(
+        machine().id,
+        clan().id,
+      );
+      const groups: MachineVarsPromptGroups = {
+        all: mapObjectValues(entity, ([groupId, groupEntity]) => ({
+          id: groupId,
+          prompts: {
+            all: mapObjectValues(groupEntity, ([promptId, promptEntity]) => ({
+              ...promptEntity,
+              id: promptId,
+            })),
+            get sorted() {
+              return Object.values(this.all).sort((a, b) =>
+                a.name.localeCompare(b.name),
+              );
+            },
+          },
+        })),
+        get sorted() {
+          return Object.values(this.all).sort((a, b) =>
+            a.id.localeCompare(b.id),
+          );
+        },
+      };
+      return groups;
+    },
   };
   return self;
 }

@@ -11,7 +11,7 @@ const modals: Record<
   string,
   {
     default: Component;
-    title: string;
+    config?: ModalConfig;
   }
 > = mapObjectKeys(
   import.meta.glob(["./*/index.tsx", "./*.tsx", "!./index.tsx", "!./*.*.tsx"], {
@@ -27,6 +27,11 @@ const modals: Record<
   },
 );
 
+export type ModalConfig = {
+  title: string;
+};
+
+// If some content 
 const ModalComponent: Component = () => {
   const [ui, { closeModal }] = useUIContext();
   const modal = () => ui.modal && modals[ui.modal.type];
@@ -42,15 +47,17 @@ const ModalComponent: Component = () => {
                 size="xs"
                 in="Modal-title"
               >
-                {modal()?.title}
+                {modal()?.config?.title}
               </Typography>
               <Dialog.CloseButton on:click={() => closeModal()}>
                 <Icon icon="Close" size="0.75rem" />
               </Dialog.CloseButton>
             </div>
             <div class={styles.content}>
-              {/* TODO: fix the z-index issue for <Select /> */}
-              <Dynamic component={modal()?.default} />
+              <Show when={ui.modal}>
+                {/* TODO: fix the z-index issue for <Select /> */}
+                <Dynamic component={modal()?.default} />
+              </Show>
             </div>
           </Dialog.Content>
         </Dialog.Overlay>

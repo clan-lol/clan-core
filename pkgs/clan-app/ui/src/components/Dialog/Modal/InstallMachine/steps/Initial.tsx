@@ -1,13 +1,13 @@
 import { defineSteps, useStepper } from "@/src/hooks/stepper";
-import { InstallSteps } from "../InstallMachine";
+import { InstallSteps } from "..";
 import { Button } from "@/src/components/Button/Button";
-import { StepLayout } from "../../../components/Dialog/Steps";
+import { StepLayout } from "../../../Steps";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 
 const ChoiceLocalOrRemote = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <div class="flex size-full flex-col gap-3">
+    <div class="flex size-full h-[30rem] w-svw max-w-3xl flex-col gap-3 p-4">
       <NavSection
         label="I have physical access to the machine"
         onClick={() => stepSignal.setActiveStep("local:choice")}
@@ -23,29 +23,31 @@ const ChoiceLocalOrRemote = () => {
 const ChoiceLocalInstaller = () => {
   const stepSignal = useStepper<InstallSteps>();
   return (
-    <StepLayout
-      body={
-        <div class="flex flex-col gap-3">
-          <NavSection
-            label="I have an installer"
-            onClick={() => stepSignal.setActiveStep("install:address")}
-          />
-          <NavSection
-            label="I don't have an installer, yet"
-            onClick={() => stepSignal.setActiveStep("create:prose")}
-          />
-        </div>
-      }
-      footer={
-        <div class="flex justify-start">
-          <Button
-            hierarchy="secondary"
-            icon="ArrowLeft"
-            onClick={() => stepSignal.previous()}
-          />
-        </div>
-      }
-    />
+    <div class="h-[30rem] w-svw max-w-3xl p-4">
+      <StepLayout
+        body={
+          <div class="flex flex-col gap-3">
+            <NavSection
+              label="I have an installer"
+              onClick={() => stepSignal.setActiveStep("install:address")}
+            />
+            <NavSection
+              label="I don't have an installer, yet"
+              onClick={() => stepSignal.setActiveStep("create:prose")}
+            />
+          </div>
+        }
+        footer={
+          <div class="flex justify-start">
+            <Button
+              hierarchy="secondary"
+              icon="ArrowLeft"
+              onClick={() => stepSignal.previous()}
+            />
+          </div>
+        }
+      />
+    </div>
   );
 };
 

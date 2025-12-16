@@ -56,9 +56,9 @@ export const StepTags = () => {
   };
 
   return (
-    <>
+    <Form onSubmit={handleSubmit} class={styles.container}>
       <ModalHeading text="Tags" />
-      <Form onSubmit={handleSubmit} class={styles.content}>
+      <div class={styles.content}>
         <StepLayout
           body={
             <div class="flex flex-col gap-2">
@@ -90,7 +90,7 @@ export const StepTags = () => {
             </div>
           }
         />
-      </Form>
-    </>
+      </div>
+    </Form>
   );
 };

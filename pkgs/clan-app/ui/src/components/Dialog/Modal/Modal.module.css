@@ -1,13 +1,6 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  min-width: 320px;
-  max-width: 48rem;
-  width: 100vw;
   border-radius: 0.375rem;
   overflow: hidden;
-  height: fit-content;
-  max-height: calc(100vh - 2rem);
 
   /* todo replace with a theme() color */
   box-shadow: 0.1875rem 0.1875rem 0 0 rgba(145, 172, 175, 0.32);
@@ -16,7 +9,7 @@
 
 .titlebar {
   @apply flex items-center justify-center;
-  @apply w-full px-2 py-1.5;
+  @apply px-2 py-1.5;
   @apply bg-def-3;
   @apply rounded-tl-md rounded-tr-md;
   /* @apply border-b-def-3; */
