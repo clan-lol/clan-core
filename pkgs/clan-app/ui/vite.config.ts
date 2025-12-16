@@ -59,7 +59,6 @@ export default defineConfig(({ mode }) => {
     build: {
       target: "safari11",
       modulePreload: false,
-      //  assetsDi
       manifest: true,
       // Inline everything: TODO
       // Detect file:///assets requests and point to the correct directory in webview
