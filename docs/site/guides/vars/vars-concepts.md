@@ -1,6 +1,6 @@
 # Understanding Clan Vars - Concepts & Architecture
 
-This guide explains the architecture and design principles behind the vars system. 
+This guide explains the architecture and design principles behind the vars system.
 
 ## Architecture Overview
 
@@ -77,7 +77,7 @@ Control when vars are available during system activation:
 ```nix
 files."early-secret" = {
   secret = true;
-  neededFor = [ "users" "groups" ];  # Available early in activation
+  neededFor = "users";  # Available early in activation
 };
 ```
 
