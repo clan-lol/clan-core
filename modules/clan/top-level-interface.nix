@@ -364,66 +364,9 @@ in
     options.peer = lib.mkOption {
       default = null;
       type = lib.types.nullOr (
-        lib.types.submodule (
-          { name, ... }:
-          {
-            options = {
-              name = lib.mkOption {
-                type = lib.types.str;
-                default = name;
-              };
-              SSHOptions = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
-                default = [ ];
-              };
-              hosts = lib.mkOption {
-                description = '''';
-                type = lib.types.listOf (
-                  lib.types.attrTag {
-                    plain = lib.mkOption {
-                      type = lib.types.str;
-                      description = ''
-                        a plain value, which can be read directly from the config
-                      '';
-                    };
-                    var = lib.mkOption {
-                      description = ''
-                        A reference to a 'var' file
-
-                        The 'var' will be read by the CLI and potentially other services
-
-                        !!! Danger
-                            Don't export references to private vars.
-
-                            Their value cannot be accessed.
-                      '';
-                      type = lib.types.submodule {
-                        options = {
-                          machine = lib.mkOption {
-                            type = lib.types.str;
-                            example = "jon";
-                          };
-                          generator = lib.mkOption {
-                            type = lib.types.str;
-                            example = "tor-ssh";
-                          };
-                          file = lib.mkOption {
-                            type = lib.types.str;
-                            example = "hostname";
-                          };
-                          flake = lib.mkOption {
-                            type = lib.types.path;
-                            example = "config.clan.core.settings.directory";
-                          };
-                        };
-                      };
-                    };
-                  }
-                );
-              };
-            };
-          }
-        )
+        lib.types.submodule {
+          imports = [ ./export-modules/peer.nix ];
+        }
       );
     };
 
@@ -431,28 +374,7 @@ in
       default = null;
       type = lib.types.nullOr (
         lib.types.submodule {
-          options = {
-            priority = lib.mkOption {
-              type = lib.types.int;
-              default = 1000;
-              description = ''
-                priority with which this network should be tried.
-                higher priority means it gets used earlier in the chain
-              '';
-            };
-            module = lib.mkOption {
-              # type = lib.types.enum [
-              #   "clan_lib.network.direct"
-              #   "clan_lib.network.tor"
-              # ];
-              type = lib.types.str;
-              default = "clan_lib.network.direct";
-              description = ''
-                the technology this network uses to connect to the target
-                This is used for userspace networking with socks proxies.
-              '';
-            };
-          };
+          imports = [ ./export-modules/networking.nix ];
         }
       );
     };
