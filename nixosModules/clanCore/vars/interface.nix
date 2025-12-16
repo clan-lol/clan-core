@@ -275,18 +275,24 @@ in
                             type = bool;
                             default = true;
                           };
-                        };
-                      })
-                      (lib.optionalAttrs (!config.pkgs.stdenv.hostPlatform.isDarwin) {
-                        options.restartUnits = mkOption {
-                          description = ''
-                            A list of systemd units that should be restarted after the file is deployed.
-                            This is useful for services that need to reload their configuration after the file is updated.
+                          restartUnits = mkOption {
+                            description = ''
+                              A list of systemd units that should be restarted after the file is deployed.
+                              This is useful for services that need to reload their configuration after the file is updated.
 
-                            WARNING: currently only sops-nix implements this option.
-                          '';
-                          type = listOf str;
-                          default = [ ];
+                              WARNING: currently only sops-nix implements this option.
+
+                              NOTE: This option is not supported on Darwin systems.
+                            '';
+                            type = listOf str;
+                            apply =
+                              value:
+                              # If the value is set to a non-empty list on Darwin, throw an error
+                              lib.throwIf (value != [ ] && config.pkgs.stdenv.hostPlatform.isDarwin) ''
+                                The restartUnits option is not supported on Darwin systems.
+                              '' value;
+                            default = [ ];
+                          };
                         };
                       })
                     ];
