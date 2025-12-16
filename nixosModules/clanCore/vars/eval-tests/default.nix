@@ -7,8 +7,7 @@ let
         ../interface.nix
         module
         {
-          class = "nixos";
-          pkgs = pkgs;
+          inherit pkgs;
         }
       ];
     }).config;
