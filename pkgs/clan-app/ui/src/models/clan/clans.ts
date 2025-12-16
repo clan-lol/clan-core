@@ -180,14 +180,9 @@ export function createClansMethods(
     },
     deactivateClan,
     async loadClan(id, { active = true } = {}) {
-      const [clan] = getClan(id);
-      if (clan) {
-        if (active && clans.activeClan !== clan) {
-          setClans(
-            produce((clans) => {
-              clans.activeClan = clan;
-            }),
-          );
+      if (clans.all.some((clan) => clan.id === id)) {
+        if (active) {
+          return await self.activateClan(id);
         }
         return null;
       }
