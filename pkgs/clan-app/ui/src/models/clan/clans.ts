@@ -351,7 +351,7 @@ function pathMatches(
     return false;
   }
   for (const [i, part] of path.entries()) {
-    if (targetPath[i] !== "*" && path[i] !== part) {
+    if (targetPath[i] !== "*" && targetPath[i] !== part) {
       return false;
     }
   }
