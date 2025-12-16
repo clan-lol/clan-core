@@ -143,13 +143,12 @@ export function createClansMethods(
     }
     const [clan] = getClan(item);
     if (clan === clans.activeClan) {
-      return null;
+      setClans(
+        produce((clans) => {
+          clans.activeClan = null;
+        }),
+      );
     }
-    setClans(
-      produce((clans) => {
-        clans.activeClan = clan;
-      }),
-    );
     return clan;
   }
 
