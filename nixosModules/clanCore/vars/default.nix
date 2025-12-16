@@ -34,7 +34,6 @@ in
       imports = [
         ./interface.nix
         {
-          class = _class;
           inherit pkgs;
           globalSettings = lib.mkIf options.clanConfig.isDefined config.clanConfig.vars.settings;
         }

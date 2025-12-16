@@ -92,18 +92,6 @@ in
       type = raw;
       internal = true;
     };
-    class = mkOption {
-      description = ''
-        The class of the current machine.
-        This is usually inherited from the nixos module system.
-        Supported: "nixos", "darwin"
-      '';
-      type = enum [
-        "nixos"
-        "darwin"
-      ];
-      internal = true;
-    };
     # ===
     # Global vars settings
     # ===
@@ -240,8 +228,8 @@ in
                           group = mkOption {
                             type = str;
                             description = "The group name or id that will own the file.";
-                            default = if config.class == "darwin" then "wheel" else "root";
-                            defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
+                            default = if config.pkgs.stdenv.hostPlatform.isDarwin then "wheel" else "root";
+                            defaultText = lib.literalExpression ''if pkgs.stdenv.hostPlatform.isDarwin then "wheel" else "root"'';
                           };
                           mode = mkOption {
                             type = strMatching "^[0-7]{4}$";
@@ -289,7 +277,7 @@ in
                           };
                         };
                       })
-                      (lib.optionalAttrs (config.class == "nixos") {
+                      (lib.optionalAttrs (!config.pkgs.stdenv.hostPlatform.isDarwin) {
                         options.restartUnits = mkOption {
                           description = ''
                             A list of systemd units that should be restarted after the file is deployed.
