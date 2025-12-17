@@ -38,7 +38,7 @@ This example demonstrates a setup with two machines and a few extra settings:
 {
     inventory.machines = {
         jon-machine = {
-            deploy.targ	etHost = "root@192.168.0.2";
+            deploy.targetHost = "root@192.168.0.2";
             # Define tags here (optional)
             tags = [ ]; 
         };
@@ -117,6 +117,6 @@ clan machines list
 This should display all the machines you've created (e.g., `jon-machine`). If you don't see your machines listed, double-check the previous steps.
 
 
-## Next Up
+## Up Next
 
 In the next step, we will create and configure the users for the machines we just prepared.

@@ -1,8 +1,14 @@
-# Update Machines
+## Summary
+Your Clan is deployed. For changes to the existing clan, you will use the machine update workflow from now on.
 
 The Clan command line interface enables you to update machines remotely over SSH.
 In this guide we will teach you how to set a `targetHost` in Nix,
 and how to define a remote builder for your machine closures.
+
+
+##Requirements
+* **Expected time for this step**: 15min
+* **A setup device **: Any machine that is part of your clan and that you have root access to, or the setup machine you used durign the previous steps.
 
 
 ## Setting `targetHost`
@@ -128,3 +134,7 @@ This is particularly useful when:
 - The flake references private Git repositories
 - Authentication credentials are only available on local machine
 - The build host doesn't have access to certain network resources
+
+
+##Up Next
+Feel free to check out some of our recommandations and ideas for the future of your Clan adventure.

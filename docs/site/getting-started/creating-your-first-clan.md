@@ -4,26 +4,31 @@ Ready to manage your fleet of machines?
 
 In this guide, we will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
 
-You'll finish with a centrally managed fleet, ready to import your existing NixOS configuration.
+At the end of this getting started guide, you will have a centrally managed fleet of Clan devices at your disposal.
+
+If you want to [migrate your existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead of following this guide for a completely fresh setup, please find the corresponding links in our Guides database instead. Note that you can also always migrate your existing systems into the new Clan after following this getting started guide, too.
 
 
 ## Requirements
 
-Make sure you have the following:
+* **Expected knowledge levels for this guide:**
+    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
 
-* 💻 **Setup Device**: A Linux machine from which the setup commands will be run.
+* **Estimated time for this step:** 20 minutes
 
-!!! Warning "Operating System Recommendations"
-    We are currently working on more refined operating system recommendations.
+* **One Setup Device**: A Linux machine from which the setup commands will be run.
 
-    - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
+    !!! Warning "Operating System Recommendations" 
+        We are currently working on more refined operating system recommendations.
 
-    - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+        - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
 
-    - Root user access will be required throughout the whole setup.
+        - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
+
+        - Root user access will be required throughout the whole setup.
 
 
-* 🛠️ **Nix**: The Nix package manager installed on your setup device.
+* **Nix**: The Nix package manager installed on your setup device.
 
     ??? info "**How to install Nix**"
 
@@ -51,7 +56,7 @@ Make sure you have the following:
         ```
         Then, run `nixos-rebuild switch` to apply the changes.
 
-*  🛠️ **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
+*  **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
 
     ??? info "**How to install direnv**"
 
@@ -104,12 +109,11 @@ Make sure you have the following:
                 direnv allow
                 ```
 
-* 🎯 **Target Device(s)**: Any number of remote Linux or MacOS devices with SSH root access to. If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+* **Target Device(s)**: Any number of physical and / or virtual Linux or MacOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above. 
+    
+    If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
 
-* Expected knowledge levels for this guide:
-    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
-
-* Estimated time for this step: 20 minutes
+* **In Case of Physical Target Device(s):** A USB drive with at least 1.5GB total space (all data on it will be lost)
 
 
 ## Create a New Clan
@@ -224,6 +228,26 @@ Description: None
 ```
 
 This confirms your setup is working correctly.
+
+You can now change the default name and domain by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
+
+The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
+
+The meta.domain will function as your internal top level domain. Select something catchy, like clan.lol
+
+Feel free to add `meta.description = "something smart"` beneath meta.domain if you would like to update the description for `clan show`.
+
+```{.nix title="clan.nix" hl_lines="3 4 5"}
+{
+  # Ensure this is unique among all clans you want to use.
+  meta.name = "__CHANGE_ME__";
+  meta.domain = "changeme";
+  meta.description = "optional";
+
+  # ...
+  # elided
+}
+```
 
 ## Up Next
 

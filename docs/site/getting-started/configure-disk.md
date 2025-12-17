@@ -1,3 +1,15 @@
+## Summary
+The disks of the target devices need to be configured before the rollout can start.
+
+
+## Requirements
+* SSH access from your setup device to all target devices
+
+* Double check that each machine has a hardware report saved under ```machines/YOUR-MACHINE-NAME/facter.json```
+
+
+
+## Configuring Target Disks
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
 To see what disk templates are available run:
@@ -52,22 +64,19 @@ Should now be successful
 Applied disk template 'single-disk' to machine 'jon'
 ```
 
-A disko.nix file should be created in `machines/jon`
+A disko.nix file is created in `machines/jon`
 You can have a look and customize it if needed.
 
 !!! Danger
     Don't change the `disko.nix` after the machine is installed for the first time, unless you really know what you are doing.
     Changing disko configuration requires wiping and reinstalling the machine.
 
-## Deploy the machine
 
-**Finally deployment time!**
+## Checkpoint
 
-This command is destructive and will format your disk and install NixOS on it! It is equivalent to appending `--phases kexec,disko,install,reboot`.
-
-
-```bash
-clan machines install [MACHINE] --target-host root@<IP>
-```
+Check your machines/ folders for the disk files. If a machine sub-folder does not contain a disk file, the setup ran into an error and needs to be restartet for the particular machine.
 
 
+## Up Next
+
+After all preparations are done, we can now start the actual deployment process.

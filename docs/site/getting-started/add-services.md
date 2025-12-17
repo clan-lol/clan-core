@@ -98,4 +98,10 @@ This method is equivalent to directly setting `authorizedKeys` like in [configur
 
 We will deploy your configuration to either a bare metal physical machine or a virtual machine.
 
-Please select your path accordingly.
+Please select your path accordingly:
+
+[Next Step: Prepare Physical Machines](prepare-physical-machines.md){ .md-button .md-button--primary }
+
+[Next Step: Prepare Virtual Machines](prepare-virtual-machines.md){ .md-button .md-button--primary }
+
+You can have a mix of both if you like. In that case, simply follow the respective guide per machine type.
