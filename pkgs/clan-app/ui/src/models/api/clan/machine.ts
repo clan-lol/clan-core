@@ -10,6 +10,7 @@ import {
   MachineSSH,
   MachineVarsPromptGroupsEntity,
   MachineVarsPromptsEntity,
+  UpdateMachineOptions,
 } from "../../machine/machine";
 import { mapObjectValues } from "@/src/util";
 import { ClanMessageHandler, onMessage } from "./event";
@@ -284,33 +285,29 @@ export async function installMachine(
   }
 }
 
-export async function updateMachine({
-  clan,
-  name,
-  targetHost,
-  port,
-  password,
-  signal,
-}: {
-  clan: string;
-  name: string;
-  targetHost: string;
-  port?: number;
-  password?: string;
-  signal?: AbortSignal;
-}): Promise<void> {
+export async function updateMachine(
+  opts: UpdateMachineOptions,
+  machineId: string,
+  clanId: string,
+): Promise<void> {
+  const onProgress = opts.onProgress;
+  let handler: ClanMessageHandler;
+  if (onProgress) {
+    handler = (msg) => onProgress(msg.type as InstallMachineProgress);
+    onMessage.addListener("run_machine_update", handler);
+  }
   await client.post("run_machine_update", {
-    signal,
+    signal: opts.signal,
     body: {
       machine: {
-        flake: { identifier: clan },
-        name,
+        flake: { identifier: clanId },
+        name: machineId,
       },
       build_host: null,
       target_host: {
-        address: targetHost,
-        port,
-        password,
+        address: opts.ssh.address,
+        port: opts.ssh.port,
+        password: opts.ssh.password,
         ssh_options: {
           StrictHostKeyChecking: "no",
           UserKnownHostsFile: "/dev/null",

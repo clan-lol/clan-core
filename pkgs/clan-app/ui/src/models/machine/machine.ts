@@ -226,6 +226,7 @@ export type MachineMethods = {
   ): Promise<MachineHardwareReport | null>;
   getMachineDiskTemplates(): Promise<MachineDiskTemplates>;
   getMachineVarsPromptGroups(): Promise<MachineVarsPromptGroups>;
+  updateMachine(opts: UpdateMachineOptions): Promise<void>;
 };
 export type InstallMachineOptions = {
   signal?: AbortSignal;
@@ -237,6 +238,18 @@ export type InstallMachineOptions = {
 export type InstallMachineProgress =
   | "disk"
   | "varsPrompts"
+  | "generators"
+  | "upload-secrets"
+  | "nixos-anywhere"
+  | "formatting"
+  | "rebooting"
+  | "installing";
+export type UpdateMachineOptions = {
+  signal?: AbortSignal;
+  ssh: MachineSSH;
+  onProgress?(progress: InstallMachineProgress): void;
+};
+export type UpdateMachineProgress =
   | "generators"
   | "upload-secrets"
   | "nixos-anywhere"
@@ -347,6 +360,9 @@ export function createMachineMethods(
         },
       };
       return groups;
+    },
+    async updateMachine(opts) {
+      await api.clan.updateMachine(opts, machine().id, clan().id);
     },
   };
   return self;

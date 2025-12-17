@@ -15,12 +15,7 @@ import TitledModal from "../components/TitledModal";
 const InstallMachine: Component = () => {
   const [ui] = useUIContext();
   const modal = ui.modal as Extract<Modal, { type: "InstallMachine" }>;
-  const stepper = createStepper(
-    {
-      steps,
-    },
-    { initialStep: "init" },
-  );
+  const stepper = createStepper({ steps }, { initialStep: "init" });
 
   return (
     <TitledModal title="Install machine">

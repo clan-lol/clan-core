@@ -13,7 +13,7 @@ import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
 import { InstallSteps, InstallStoreType, PromptValues } from "..";
 import { TextInput } from "@/src/components/Form/TextInput";
-import { Alert, AlertProps } from "@/src/components/Alert/Alert";
+import { Alert } from "@/src/components/Alert/Alert";
 import {
   batch,
   Component,
@@ -60,11 +60,9 @@ const ConfigureAdressSchema = v.object({
 
 type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
 
-export const ConfigureAddress = (props: {
-  next?: string;
-  stepFinished: () => void;
-  alert?: AlertProps;
-}) => {
+export const ConfigureAddress: Component<{
+  forUpdating?: boolean;
+}> = (props) => {
   const [machine, { isMachineSSHable }] = useMachineContext();
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
@@ -84,15 +82,13 @@ export const ConfigureAddress = (props: {
     values,
     event,
   ) => {
-    set("install", (s) => ({
-      ...s,
+    set("install", {
       targetHost: values.targetHost,
       port: values.port,
       password: values.password,
-    }));
+    });
 
     stepSignal.next();
-    props.stepFinished?.();
   };
 
   const tryReachable = async () => {
@@ -122,14 +118,13 @@ export const ConfigureAddress = (props: {
       onSubmit={handleSubmit}
       class="flex h-[30rem] w-svw max-w-3xl flex-col bg-white"
     >
-      <ModalHeading text={`Installing: ${machine().id}`} />
+      <ModalHeading
+        text={`${props.forUpdating ? "Updating" : "Installing"}: ${machine().id}`}
+      />
       <div class="flex-1 p-4">
         <StepLayout
           body={
             <div class="flex flex-col gap-2">
-              <Show when={props.alert}>
-                {(alert) => <Alert {...alert()} />}
-              </Show>
               <Fieldset>
                 <Field name="targetHost">
                   {(field, props) => (
@@ -332,7 +327,7 @@ const ConfigureDisk = () => {
   });
 
   const handleSubmit: SubmitHandler<DiskForm> = (values, event) => {
-    set("install", (s) => ({ ...s, mainDisk: values.mainDisk }));
+    set("install", { mainDisk: values.mainDisk });
     stepSignal.next();
   };
 
@@ -391,7 +386,9 @@ const ConfigureDisk = () => {
   );
 };
 
-export const ConfigureData = () => {
+export const ConfigureData: Component<{
+  forUpdating?: boolean;
+}> = (props) => {
   const [, { getMachineVarsPromptGroups }] = useMachineContext();
   const stepSignal = useStepper<InstallSteps>();
   const [, setStore] = getStepStore<InstallStoreType>(stepSignal);
@@ -426,7 +423,12 @@ export const ConfigureData = () => {
               stepSignal.next();
               return;
             }
-            return <PromptsFields varsPromptGroups={groups()} />;
+            return (
+              <PromptsFields
+                varsPromptGroups={groups()}
+                forUpdating={props.forUpdating}
+              />
+            );
           }}
         </Show>
       </Suspense>
@@ -460,6 +462,7 @@ const transformPromptValues = (
 
 const PromptsFields: Component<{
   varsPromptGroups: MachineVarsPromptGroups;
+  forUpdating?: boolean;
 }> = (props) => {
   const [machine] = useMachineContext();
   const stepSignal = useStepper<InstallSteps>();
@@ -490,7 +493,9 @@ const PromptsFields: Component<{
       onSubmit={handleSubmit}
       class="flex h-[30rem] w-svw max-w-3xl flex-col bg-white"
     >
-      <ModalHeading text={`Installing: ${machine().id}`} />
+      <ModalHeading
+        text={`${props.forUpdating ? "Updating" : "Installing"}: ${machine().id}`}
+      />
       <div class="flex-1 p-4">
         <StepLayout
           body={
@@ -783,7 +788,5 @@ export const installSteps = [
   {
     id: "install:done",
     content: InstallDone,
-    isSplash: true,
-    class: "max-w-[30rem] h-[18rem]",
   },
 ] as const;
