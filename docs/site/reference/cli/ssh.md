@@ -34,7 +34,7 @@ This subcommand allows seamless ssh access to the nixos-image builders or a mach
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: [deploy](../../getting-started/deploy-to-physical-machine/install-machine.md)
+For more detailed information, visit: [deploy](../../getting-started/deployment-phase.md)
         
 
 
