@@ -1,5 +1,5 @@
 import { produce, SetStoreFunction } from "solid-js/store";
-import { Service, ServiceInstance, UI } from "..";
+import { Service, UI } from "..";
 
 export type ToolbarMode =
   | { type: "select" }
@@ -7,20 +7,7 @@ export type ToolbarMode =
   | { type: "move" }
   | {
       type: "service";
-      subtype?: undefined;
-    }
-  | ToolbarServiceInstanceMode;
-export type ToolbarServiceInstanceMode =
-  | {
-      type: "service";
-      subtype: "create";
-      service: Service;
-      highlighting?: boolean;
-    }
-  | {
-      type: "service";
-      subtype: "edit";
-      serviceInstance: ServiceInstance;
+      service?: Service;
       highlighting?: boolean;
     };
 

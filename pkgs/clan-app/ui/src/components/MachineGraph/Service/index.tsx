@@ -3,7 +3,11 @@ import { Typography } from "@/src/components/Typography/Typography";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { css } from "@linaria/core";
-import { Service, useClanContext } from "@/src/models";
+import {
+  Service,
+  useClanContext,
+  useServiceInstancesContext,
+} from "@/src/models";
 import { Component, Show } from "solid-js";
 import { useUIContext } from "@/src/models/ui";
 import { onClickOutside } from "@/src/util";
@@ -22,6 +26,7 @@ interface Module {
 
 const SelectService: Component = () => {
   const [, { setToolbarMode }] = useUIContext();
+  const [, { activateServiceInstance }] = useServiceInstancesContext();
   const [clan] = useClanContext();
 
   // https://docs.solidjs.com/reference/jsx-attributes/use#avoiding-tree-shaking
@@ -42,19 +47,14 @@ const SelectService: Component = () => {
               return;
             }
             const instance = service.instances?.[0];
-            setToolbarMode(
-              instance
-                ? {
-                    type: "service",
-                    subtype: "edit",
-                    serviceInstance: instance,
-                  }
-                : {
-                    type: "service",
-                    subtype: "create",
-                    service,
-                  },
-            );
+            if (instance) {
+              activateServiceInstance(instance);
+            } else {
+              setToolbarMode({
+                type: "service",
+                service,
+              });
+            }
           }}
           options={clan().services.sorted.map((service) => ({
             value: `${service.id}:${service.source}`,

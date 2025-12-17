@@ -11,6 +11,7 @@ import {
   For,
   Component,
   onCleanup,
+  batch,
 } from "solid-js";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
@@ -30,8 +31,8 @@ import {
   useClanContext,
   useMachinesContext,
   useUIContext,
-  ToolbarServiceInstanceMode,
   useServiceInstancesContext,
+  ToolbarMode,
 } from "@/src/models";
 import { produce, SetStoreFunction, unwrap } from "solid-js/store";
 
@@ -46,8 +47,11 @@ type ServiceStoreType = {
   currentRole: Role | null;
 };
 
+type ToolbarServiceInstanceMode = Extract<ToolbarMode, { type: "service" }>;
+
 const ServiceInstanceWorkflow: Component = (props) => {
   const [ui] = useUIContext();
+  const [instances] = useServiceInstancesContext();
   const stepper = createStepper(
     { steps },
     {
@@ -60,29 +64,30 @@ const ServiceInstanceWorkflow: Component = (props) => {
     SetStoreFunction<ServiceStoreType>,
   ];
   createEffect(() => {
-    const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
-    setStore(
-      mode.subtype === "edit"
-        ? {
-            instanceName: mode.serviceInstance.data.name,
-            roles: mode.serviceInstance.data.roles.sorted.map((role) => ({
-              id: role.id,
-              settings: unwrap(role.settings),
-              members: role.members.slice(0),
-            })),
-            currentRole: null,
-          }
-        : {
-            // Default to the module name, until we support multiple instances
-            instanceName: mode.service.id,
-            roles: mode.service.roles.sorted.map((role) => ({
-              id: role.id,
-              settings: {},
-              members: [],
-            })),
-            currentRole: null,
-          },
-    );
+    const instance = instances().activeServiceInstance;
+    if (instance) {
+      setStore({
+        instanceName: instance.data.name,
+        roles: instance.data.roles.sorted.map((role) => ({
+          id: role.id,
+          settings: unwrap(role.settings),
+          members: role.members.slice(0),
+        })),
+        currentRole: null,
+      });
+      return;
+    }
+    const service = (ui.toolbarMode as ToolbarServiceInstanceMode).service!;
+    setStore({
+      // Default to the module name, until we support multiple instances
+      instanceName: service.id,
+      roles: service.roles.sorted.map((role) => ({
+        id: role.id,
+        settings: {},
+        members: [],
+      })),
+      currentRole: null,
+    });
   });
 
   return (
@@ -100,8 +105,14 @@ interface RolesForm extends FieldValues {
 }
 const ConfigureServiceInstance = () => {
   const [ui, { setToolbarMode }] = useUIContext();
-  const [, { addServiceInstance, updateServiceInstanceData }] =
-    useServiceInstancesContext();
+  const [
+    instances,
+    {
+      addServiceInstance,
+      updateServiceInstanceData,
+      deactivateServiceInstance,
+    },
+  ] = useServiceInstancesContext();
   const [clan] = useClanContext();
   const stepper = useStepper<ServiceSteps>();
 
@@ -113,7 +124,6 @@ const ConfigureServiceInstance = () => {
   });
 
   const onSubmit = async (values: RolesForm) => {
-    const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
     const data = {
       name: values.instanceName,
       roles: Object.fromEntries(
@@ -131,12 +141,20 @@ const ConfigureServiceInstance = () => {
         ]),
       ),
     };
-    if (mode.subtype === "create") {
-      await addServiceInstance(data, mode.service);
+    if (!instances().activeServiceInstance) {
+      const service = (ui.toolbarMode as ToolbarServiceInstanceMode).service!;
+      await addServiceInstance(data, service);
+      setToolbarMode({ type: "select" });
     } else {
       await updateServiceInstanceData(data);
+      deactivateServiceInstance();
     }
-    setToolbarMode({ type: "select" });
+  };
+  const onClose = () => {
+    batch(() => {
+      deactivateServiceInstance();
+      setToolbarMode({ type: "select" });
+    });
   };
 
   return (
@@ -169,7 +187,7 @@ const ConfigureServiceInstance = () => {
           ghost
           size="s"
           in="ConfigureService"
-          onClick={() => setToolbarMode({ type: "select" })}
+          onClick={onClose}
         />
       </div>
       <div class={styles.content}>
@@ -206,10 +224,7 @@ const ConfigureServiceInstance = () => {
       <div class={cx(styles.footer, styles.backgroundAlt)}>
         <Button hierarchy="secondary" type="submit">
           <Show
-            when={
-              (ui.toolbarMode as ToolbarServiceInstanceMode).subtype ===
-              "create"
-            }
+            when={!instances().activeServiceInstance}
             fallback={"Save Changes"}
           >
             Add Service

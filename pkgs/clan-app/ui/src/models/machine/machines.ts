@@ -92,7 +92,7 @@ export function createMachinesMethods(
           machines.activeMachine = null;
         }),
       );
-      return machine;
+      return;
     }
     const machine = getMachine(item);
     if (machine !== machines().activeMachine) {

@@ -1,4 +1,4 @@
-import { Accessor } from "solid-js";
+import { Accessor, createEffect, on } from "solid-js";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import {
@@ -12,6 +12,7 @@ import {
   createServiceInstance,
   useClanContext,
   useClansContext,
+  useUIContext,
 } from "..";
 import { ServiceEntity } from "./service";
 
@@ -28,16 +29,34 @@ export type ServiceInstances = {
 export function createServiceInstancesStore(
   instances: Accessor<ServiceInstances>,
 ): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
+  const [, { setToolbarMode }] = useUIContext();
+  createEffect(
+    on(
+      () => instances().activeServiceInstance,
+      (instance) => {
+        if (instance) {
+          setToolbarMode({ type: "service" });
+        } else {
+          setToolbarMode({ type: "select" });
+        }
+      },
+      { defer: true },
+    ),
+  );
   return [
     instances,
-    instancesMethods(instances, useClanContext(), useClansContext()),
+    createInstancesMethods(instances, useClanContext(), useClansContext()),
   ];
 }
 
 export type ServiceInstancesMethods = {
   setServiceInstances: SetStoreFunction<ServiceInstances>;
   activateServiceInstance(
-    item: string | ServiceInstance,
+    item: ServiceInstance | string,
+  ): ServiceInstance | null;
+  deactivateServiceInstance(): void;
+  deactivateServiceInstance(
+    item: ServiceInstance | string,
   ): ServiceInstance | null;
   addServiceInstance(
     data: ServiceInstanceDataEntity,
@@ -45,7 +64,7 @@ export type ServiceInstancesMethods = {
   ): Promise<ServiceInstance>;
   updateServiceInstanceData(data: ServiceInstanceDataEntity): Promise<void>;
 };
-function instancesMethods(
+function createInstancesMethods(
   instances: Accessor<ServiceInstances>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   [clans]: readonly [Clans, ClansMethods],
@@ -81,16 +100,52 @@ function instancesMethods(
     );
   }
 
+  function deactivateServiceInstance(): void;
+  function deactivateServiceInstance(
+    item: ServiceInstance | string,
+  ): ServiceInstance | null;
+  function deactivateServiceInstance(
+    item?: ServiceInstance | string,
+  ): void | ServiceInstance | null {
+    if (!item) {
+      const instance = instances().activeServiceInstance;
+      if (!instance) {
+        return null;
+      }
+      setInstances(
+        produce((instances) => {
+          instances.activeServiceInstance = null;
+        }),
+      );
+      return;
+    }
+    const instance = getInstance(item);
+    if (instance !== instances().activeServiceInstance) {
+      return null;
+    }
+    setInstances(
+      produce((instances) => {
+        instances.activeServiceInstance = null;
+      }),
+    );
+    return instance;
+  }
+
   const self: ServiceInstancesMethods = {
     setServiceInstances: setInstances,
     activateServiceInstance(item) {
       const instance = getInstance(item);
-      if (clan().serviceInstances.activeServiceInstance === instance) {
+      if (instances().activeServiceInstance === instance) {
         return null;
       }
-      setInstances("activeServiceInstance", instance);
+      setInstances(
+        produce((instances) => {
+          instances.activeServiceInstance = instance;
+        }),
+      );
       return instance;
     },
+    deactivateServiceInstance,
     async addServiceInstance(
       data: ServiceInstanceDataEntity,
       service: Service,

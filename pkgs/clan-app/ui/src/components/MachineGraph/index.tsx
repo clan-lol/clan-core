@@ -23,7 +23,7 @@ import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import ServiceDialog from "@/src/components/MachineGraph/Service";
-import { useMachinesContext } from "@/src/models";
+import { useMachinesContext, useServiceInstancesContext } from "@/src/models";
 import ServiceInstanceDialog from "@/src/components/MachineGraph/ServiceInstance";
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
@@ -58,6 +58,7 @@ const MachineGraph: Component = () => {
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
 
+  const [ui, { setToolbarMode, showModal }] = useUIContext();
   const [
     machines,
     {
@@ -70,8 +71,8 @@ const MachineGraph: Component = () => {
       deleteMachine,
     },
   ] = useMachinesContext();
+  const [instances] = useServiceInstancesContext();
 
-  const [ui, { setToolbarMode, showModal }] = useUIContext();
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
 
@@ -421,7 +422,6 @@ const MachineGraph: Component = () => {
           activateMachine(id);
         } else if (
           ui.toolbarMode.type === "service" &&
-          ui.toolbarMode.subtype &&
           ui.toolbarMode.highlighting
         ) {
           toggleHighlightedMachines(id);
@@ -696,14 +696,21 @@ const MachineGraph: Component = () => {
       />
       <div class={styles.toolbarContainer}>
         <Show
-          when={ui.toolbarMode.type === "service" && !ui.toolbarMode.subtype}
+          when={
+            ui.toolbarMode.type === "service" &&
+            !ui.toolbarMode.service &&
+            !instances().activeServiceInstance
+          }
         >
           <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
             <ServiceDialog />
           </div>
         </Show>
         <Show
-          when={ui.toolbarMode.type === "service" && ui.toolbarMode.subtype}
+          when={
+            ui.toolbarMode.type === "service" &&
+            (ui.toolbarMode.service || instances().activeServiceInstance)
+          }
         >
           <ServiceInstanceDialog />
         </Show>

@@ -2,7 +2,6 @@ import { createStore, SetStoreFunction } from "solid-js/store";
 import { ToolbarMode, ToolbarMethods, createToolbarMethods } from "./toolbar";
 import { createModalMethods, Modal, ModalMethods } from "./modal";
 
-export type { ToolbarServiceInstanceMode } from "./toolbar";
 export * from "./Context";
 export type { ToolbarMode, ToolbarMethods, Modal, ModalMethods };
 
@@ -16,6 +15,7 @@ export function createUIStore(): readonly [UI, UIMethods] {
     toolbarMode: { type: "select" },
     modal: null,
   });
+
   return [ui, createUIMethods(ui, setUI)];
 }
 
