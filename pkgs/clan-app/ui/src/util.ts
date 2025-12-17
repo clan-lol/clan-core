@@ -1,3 +1,5 @@
+import { Accessor, onCleanup } from "solid-js";
+
 export const pick = <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> =>
   keys.reduce(
     (acc, key) => {
@@ -123,4 +125,18 @@ export function isPosition(
   b: readonly [number, number],
 ) {
   return a[0] === b[0] && a[1] === b[1];
+}
+
+export function onClickOutside(
+  el: HTMLElement,
+  value: Accessor<() => void>,
+): void {
+  const listener = (ev: MouseEvent) => {
+    if (!el.contains(ev.target as Node)) {
+      const fn = value();
+      fn();
+    }
+  };
+  document.addEventListener("mousedown", listener);
+  onCleanup(() => document.removeEventListener("mousedown", listener));
 }

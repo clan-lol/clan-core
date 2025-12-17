@@ -2,11 +2,11 @@ import { Search } from "@/src/components/Search/Search";
 import { Typography } from "@/src/components/Typography/Typography";
 import Icon from "@/src/components/Icon/Icon";
 import { Combobox } from "@kobalte/core/combobox";
-import { useClickOutside } from "@/src/hooks/useClickOutside";
 import { css } from "@linaria/core";
 import { Service, useClanContext } from "@/src/models";
 import { Component, Show } from "solid-js";
 import { useUIContext } from "@/src/models/ui";
+import { onClickOutside } from "@/src/util";
 
 // TODO: Move this to typography styles
 const tag = css`
@@ -24,18 +24,13 @@ const SelectService: Component = (props) => {
   const [, { setToolbarMode }] = useUIContext();
   const [clan] = useClanContext();
 
-  let ref: HTMLDivElement;
+  // https://docs.solidjs.com/reference/jsx-attributes/use#avoiding-tree-shaking
+  /* eslint-disable no-constant-binary-expression, @typescript-eslint/no-unused-expressions */
+  false && onClickOutside;
 
-  // TODO: use `use:*` attribute
-  useClickOutside(
-    () => ref,
-    () => {
-      setToolbarMode({ type: "select" });
-    },
-  );
   return (
     <div
-      ref={(e) => (ref = e)}
+      use:onClickOutside={() => setToolbarMode({ type: "select" })}
       class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2"
     >
       <div class="w-[30rem]">

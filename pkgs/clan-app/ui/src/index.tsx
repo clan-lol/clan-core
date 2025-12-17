@@ -1,12 +1,6 @@
-/* @refresh reload */
-import { ErrorBoundary, render } from "solid-js/web";
+import { render } from "solid-js/web";
 
 import "./index.css";
-import { QueryClientProvider } from "@tanstack/solid-query";
-import { ApiClientProvider } from "./hooks/ApiClient";
-import { callApi } from "./hooks/api";
-import { DefaultQueryClient } from "@/src/hooks/queries";
-import { Toaster } from "solid-toast";
 import Entrypoint from "./Entrypoint";
 
 const root = document.getElementById("app")!;
@@ -20,15 +14,4 @@ if (import.meta.env.DEV) {
   console.log("Development mode");
 }
 
-render(
-  () => (
-    <ApiClientProvider client={{ fetch: callApi }}>
-      {/* Temporary solution */}
-      <Toaster toastOptions={{}} />
-      <QueryClientProvider client={DefaultQueryClient}>
-        <Entrypoint />
-      </QueryClientProvider>
-    </ApiClientProvider>
-  ),
-  root,
-);
+render(() => <Entrypoint />, root);
