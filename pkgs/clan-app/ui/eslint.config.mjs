@@ -4,13 +4,11 @@ import storybook from "eslint-plugin-storybook";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import tailwind from "eslint-plugin-tailwindcss";
-import pluginQuery from "@tanstack/eslint-plugin-query";
 import { globalIgnores } from "eslint/config";
 import unusedImports from "eslint-plugin-unused-imports";
 
 const config = tseslint.config(
   eslint.configs.recommended,
-  ...pluginQuery.configs["flat/recommended"],
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
   ...tailwind.configs["flat/recommended"],

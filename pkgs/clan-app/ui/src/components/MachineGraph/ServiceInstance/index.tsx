@@ -212,19 +212,6 @@ const ConfigureServiceInstance = () => {
   );
 };
 
-export type TagType =
-  | {
-      value: string;
-      label: string;
-      type: "machine";
-    }
-  | {
-      value: string;
-      label: string;
-      type: "tag";
-      members: string[];
-    };
-
 const ConfigureRole = () => {
   const [ui, { setToolbarMode }] = useUIContext();
   const [clan] = useClanContext();

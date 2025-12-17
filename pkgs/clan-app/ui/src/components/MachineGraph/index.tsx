@@ -28,7 +28,7 @@ import ServiceInstanceDialog from "@/src/components/MachineGraph/ServiceInstance
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
 
-export const MachineGraph: Component = () => {
+const MachineGraph: Component = () => {
   let container: HTMLDivElement;
   let scene: THREE.Scene;
   let camera: THREE.OrthographicCamera;

@@ -7,7 +7,7 @@ interface Header {
 }
 type Body<Method extends Methods> = API[Method]["arguments"];
 type Response<Method extends Methods> = API[Method]["return"];
-export type SuccessResponse<Method extends Methods> = Extract<
+type SuccessResponse<Method extends Methods> = Extract<
   Response<Method>,
   { status: "success" }
 >;

@@ -6,7 +6,7 @@ import { Combobox } from "@kobalte/core/combobox";
 import { Button } from "../Button/Button";
 
 // Base props common to both modes
-export interface TagSelectProps<T> {
+interface TagSelectProps<T> {
   onClick: () => void;
   label: string;
   values: T[];

@@ -13,7 +13,7 @@ export type SysMethods = {
   pickFile(opts?: { title?: string; initialPath?: string }): Promise<string>;
   pickDir(opts?: { title?: string; initialPath?: string }): Promise<string>;
   pickClanDir(): Promise<string>;
-  getFlashableDevices(): Promise<BlockDeviceEntity[]>;
+  getFlashableDevices(): Promise<BlockDevice[]>;
   flashInstaller(opts: FlashInstallerOptions): Promise<void>;
 };
 
@@ -45,7 +45,7 @@ function createSysMethods(sys: Sys, setSys: SetStoreFunction<Sys>): SysMethods {
       return await api.clan.getFlashableDevices();
     },
     async flashInstaller(opts) {
-      return await api.clan.flashInstaller();
+      return await api.clan.flashInstaller(opts);
     },
   };
   return self;

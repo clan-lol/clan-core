@@ -4,7 +4,7 @@ import styles from "./Search.module.css";
 import { Combobox } from "@kobalte/core/combobox";
 import { createMemo, createSignal, For, JSX, Match, Switch } from "solid-js";
 import { createVirtualizer } from "@tanstack/solid-virtual";
-import { CollectionNode } from "@kobalte/core/*";
+import { CollectionNode } from "@kobalte/core";
 import { Loader } from "../Loader/Loader";
 import cx from "classnames";
 
@@ -14,7 +14,7 @@ interface Option {
   disabled?: boolean;
 }
 
-export interface SearchProps<T> {
+interface SearchProps<T> {
   onChange: (value: T | null) => void;
   options: T[];
   renderItem: (item: T, opts: { disabled: boolean }) => JSX.Element;

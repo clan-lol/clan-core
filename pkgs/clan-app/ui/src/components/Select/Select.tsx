@@ -21,7 +21,7 @@ interface Option {
   disabled?: boolean;
 }
 
-export type SelectProps = {
+type SelectProps = {
   // Kobalte Select props, for modular forms
   name: string;
   placeholder?: string | undefined;

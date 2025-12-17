@@ -26,7 +26,7 @@ export interface ItemRenderOptions {
   disabled: boolean;
 }
 
-export interface SearchMultipleProps<T> {
+interface SearchMultipleProps<T> {
   values: T[]; // controlled values
   onChange: (values: T[]) => void;
   options: T[];

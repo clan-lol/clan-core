@@ -2,7 +2,7 @@ import styles from "./Divider.module.css";
 import cx from "classnames";
 import { Separator, SeparatorRootProps } from "@kobalte/core/separator";
 
-export interface DividerProps extends Pick<SeparatorRootProps, "orientation"> {
+interface DividerProps extends Pick<SeparatorRootProps, "orientation"> {
   inverted?: boolean;
 }
 

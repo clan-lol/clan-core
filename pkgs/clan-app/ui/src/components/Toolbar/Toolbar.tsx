@@ -1,7 +1,7 @@
 import { JSX } from "solid-js";
 import styles from "./Toolbar.module.css";
 
-export interface ToolbarProps {
+interface ToolbarProps {
   children: JSX.Element;
 }
 

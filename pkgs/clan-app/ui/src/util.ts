@@ -1,14 +1,5 @@
 import { Accessor, onCleanup } from "solid-js";
 
-export const pick = <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> =>
-  keys.reduce(
-    (acc, key) => {
-      acc[key] = obj[key];
-      return acc;
-    },
-    {} as Pick<T, K>,
-  );
-
 export const removeEmptyStrings = <T>(obj: T): T => {
   if (obj === null || obj === undefined) {
     return obj;

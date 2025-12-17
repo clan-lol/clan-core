@@ -24,7 +24,7 @@ interface MachineTag {
   disabled?: boolean;
 }
 
-export type MachineTagsProps = FieldProps & {
+type MachineTagsProps = FieldProps & {
   name: string;
   onChange: (values: string[]) => void;
   defaultValue?: string[];

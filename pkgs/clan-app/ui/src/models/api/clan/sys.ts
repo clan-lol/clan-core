@@ -1,4 +1,4 @@
-import { BlockDevice } from "../../sys";
+import { BlockDevice, FlashInstallerOptions } from "../../sys";
 import client from "./client-call";
 
 export async function pickFile({
@@ -55,5 +55,23 @@ export async function getFlashableDevices(): Promise<BlockDevice[]> {
       size: device.size,
       path: device.path,
     };
+  });
+}
+
+export async function flashInstaller(
+  opts: FlashInstallerOptions,
+): Promise<void> {
+  await client.post("run_machine_flash", {
+    body: {
+      system_config: {
+        ssh_keys_path: [opts.sshKeysDir],
+      },
+      disks: [
+        {
+          name: "main",
+          device: opts.diskPath,
+        },
+      ],
+    },
   });
 }
