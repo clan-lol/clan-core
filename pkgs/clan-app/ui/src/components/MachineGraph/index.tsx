@@ -22,9 +22,9 @@ import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
-import ServiceDialog from "@/src/components/Dialog/Service";
+import ServiceDialog from "@/src/components/MachineGraph/Service";
 import { useMachinesContext } from "@/src/models";
-import ServiceInstanceDialog from "@/src/components/Dialog/ServiceInstance";
+import ServiceInstanceDialog from "@/src/components/MachineGraph/ServiceInstance";
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
 

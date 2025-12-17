@@ -1,0 +1,9 @@
+.container {
+  max-width: 48rem;
+  width: 100vw;
+  background: #fff;
+}
+
+.content {
+  padding: 1rem;
+}

@@ -13,7 +13,7 @@ import {
   useClansContext,
 } from "./models";
 import { UIContextProvider } from "./models/ui";
-import Modal from "./components/Dialog/Modal";
+import Modal from "./components/Modal";
 import { SysContextProvider } from "./models/sys";
 
 const Entrypoint: Component = () => {

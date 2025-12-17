@@ -1,42 +1,12 @@
-.modal_content {
-  @apply min-w-[320px] flex flex-col;
-  @apply rounded-md overflow-hidden;
-
-  max-height: calc(100vh - 2rem);
-
-  /* todo replace with a theme() color */
-  box-shadow: 0.1875rem 0.1875rem 0 0 rgba(145, 172, 175, 0.32);
-  @apply border border-def-3 rounded-bl-md rounded-br-md;
-}
-
-.modal_header {
-  @apply flex items-center justify-center;
-  @apply w-full px-2 py-1.5;
-  @apply bg-def-3;
-  @apply rounded-tl-md rounded-tr-md;
-  /* @apply border-b-def-3; */
-
-  border-bottom: solid 1px theme(colors.border.def.2);
-}
-
-.modal_body {
-  overflow-y: auto;
-  @apply rounded-b-md p-4 pt-4 bg-def-1 flex-grow;
-
-  &[data-no-padding] {
-    @apply p-0;
-  }
-}
-
-.header_divider {
-  @apply bg-def-3 h-[6px] border-def-2 border-t-[1px];
-}
-
 .backdrop {
-  @apply absolute top-0 left-0 w-full h-svh flex justify-center items-center z-50;
-  @apply bg-inv-4 opacity-70;
-}
-
-.contentWrapper {
-  @apply absolute left-0 top-0 z-50 flex size-full items-center justify-center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(32, 54, 55, 0.57);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
