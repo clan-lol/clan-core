@@ -189,11 +189,11 @@
         "nixpkgs": []
       },
       "locked": {
-        "lastModified": 1762938485,
-        "narHash": "sha256-AlEObg0syDl+Spi4LsZIBrjw+snSVU4T8MOeuZJUJjM=",
+        "lastModified": 1765982577,
+        "narHash": "sha256-qYUjljxINfhuEFipGYNDpBbsbAXxd8bW5KLQeKe2U+w=",
         "owner": "numtide",
         "repo": "treefmt-nix",
-        "rev": "5b4ee75aeefd1e2d5a1cc43cf6ba65eba75e83e4",
+        "rev": "1b9b6f9c5ae66f0e20cf38a55591ef3548a7cb6e",
         "type": "github"
       },
       "original": {
