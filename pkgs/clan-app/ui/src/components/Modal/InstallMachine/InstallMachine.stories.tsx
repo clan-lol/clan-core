@@ -1,18 +1,4 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { InstallModal } from ".";
-import {
-  createMemoryHistory,
-  MemoryRouter,
-  RouteDefinition,
-} from "@solidjs/router";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import { ApiClientProvider, Fetcher } from "@/src/hooks/ApiClient";
-import {
-  ApiCall,
-  OperationNames,
-  OperationResponse,
-  SuccessQuery,
-} from "@/src/hooks/api";
 
 type ResultDataMap = {
   [K in OperationNames]: SuccessQuery<K>["data"];
