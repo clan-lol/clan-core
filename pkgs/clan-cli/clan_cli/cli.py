@@ -253,7 +253,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/deploy-to-physical-machine/flash-installer")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/prepare-physical-machines")}
             """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -280,7 +280,7 @@ Examples:
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deploy-to-physical-machine/install-machine")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deployment-phase")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
