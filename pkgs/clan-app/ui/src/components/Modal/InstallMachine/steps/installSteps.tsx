@@ -649,7 +649,7 @@ const InstallDone = () => {
   const [, { closeModal }] = useUIContext();
   const [, { installMachine }] = useMachineContext();
   const stepSignal = useStepper<InstallSteps>();
-  const [store, get] = getStepStore<InstallStoreType>(stepSignal);
+  const [store] = getStepStore<InstallStoreType>(stepSignal);
   const [progress, setProgress] = createSignal<
     InstallMachineProgress | undefined
   >();

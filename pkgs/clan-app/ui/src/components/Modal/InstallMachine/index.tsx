@@ -8,7 +8,6 @@ import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
-import { ApiCall } from "@/src/hooks/api";
 
 import { MachineContextProvider, Modal, useUIContext } from "@/src/models";
 import TitledModal from "../components/TitledModal";
@@ -52,17 +51,13 @@ export interface InstallStoreType {
   flash: {
     ssh_file: string;
     device: string;
-    progress: ApiCall<"run_machine_flash">;
   };
   install: {
     targetHost?: string;
     port?: string;
     password?: string;
     mainDisk?: string;
-    // ...TODO Vars
-    progress: AbortController;
     promptValues: PromptValues;
-    prepareStep: "disk" | "generators" | "install";
   };
   done: () => void;
 }
