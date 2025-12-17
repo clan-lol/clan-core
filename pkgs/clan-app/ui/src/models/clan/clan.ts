@@ -9,7 +9,7 @@ import {
   Services,
   useClansContext,
 } from "..";
-import { SetStoreFunction } from "solid-js/store";
+import { reconcile, SetStoreFunction } from "solid-js/store";
 import { MachineEntity } from "../machine/machine";
 import { createMachines } from "../machine/machines";
 import { createServices } from "../service/services";
@@ -86,6 +86,7 @@ export type ClanMethods = {
   deactivateClan(): void;
   updateClanData(data: Partial<ClanData>): Promise<void>;
   removeClan(): void;
+  refreshClan(): Promise<void>;
 };
 export function createClanMethods(
   clan: Accessor<Clan>,
@@ -124,6 +125,11 @@ export function createClanMethods(
     },
     removeClan() {
       removeClan(clan());
+    },
+    async refreshClan() {
+      const entity = await api.clan.getClan(clan().id);
+      const newClan = createClan(entity, clans);
+      setClan(reconcile(newClan));
     },
   };
   return self;

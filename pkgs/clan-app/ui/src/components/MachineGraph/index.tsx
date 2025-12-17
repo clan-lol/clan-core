@@ -23,7 +23,11 @@ import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
 import ServiceDialog from "@/src/components/MachineGraph/Service";
-import { useMachinesContext, useServiceInstancesContext } from "@/src/models";
+import {
+  useClanContext,
+  useMachinesContext,
+  useServiceInstancesContext,
+} from "@/src/models";
 import ServiceInstanceDialog from "@/src/components/MachineGraph/ServiceInstance";
 import { isPosition } from "@/src/util";
 import { useUIContext } from "@/src/models/ui";
@@ -72,6 +76,7 @@ const MachineGraph: Component = () => {
     },
   ] = useMachinesContext();
   const [instances] = useServiceInstancesContext();
+  const [, { refreshClan }] = useClanContext();
 
   // Managed by controls
   const [isDragging, setIsDragging] = createSignal(false);
@@ -744,7 +749,7 @@ const MachineGraph: Component = () => {
             icon="Update"
             name="Reload"
             description="Reload machines"
-            onClick={() => machinesQuery.refetch()}
+            onClick={async () => await refreshClan()}
           />
         </Toolbar>
       </div>
