@@ -33,7 +33,7 @@ import {
   ToolbarServiceInstanceMode,
   useServiceInstancesContext,
 } from "@/src/models";
-import { produce, unwrap } from "solid-js/store";
+import { produce, SetStoreFunction, unwrap } from "solid-js/store";
 
 type Role = {
   id: string;
@@ -48,34 +48,42 @@ type ServiceStoreType = {
 
 const ServiceInstanceWorkflow: Component = (props) => {
   const [ui] = useUIContext();
-  const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
   const stepper = createStepper(
     { steps },
     {
       initialStep: "view:members",
-      initialStoreData:
-        mode.subtype === "edit"
-          ? {
-              instanceName: mode.serviceInstance.data.name,
-              roles: mode.serviceInstance.data.roles.sorted.map((role) => ({
-                id: role.id,
-                settings: unwrap(role.settings),
-                members: role.members.slice(0),
-              })),
-              currentRole: null,
-            }
-          : {
-              // Default to the module name, until we support multiple instances
-              instanceName: mode.service.id,
-              roles: mode.service.roles.sorted.map((role) => ({
-                id: role.id,
-                settings: {},
-                members: [],
-              })),
-              currentRole: null,
-            },
+      initialStoreData: {},
     },
   );
+  const [, setStore] = stepper._store as [
+    ServiceStoreType,
+    SetStoreFunction<ServiceStoreType>,
+  ];
+  createEffect(() => {
+    const mode = ui.toolbarMode as ToolbarServiceInstanceMode;
+    setStore(
+      mode.subtype === "edit"
+        ? {
+            instanceName: mode.serviceInstance.data.name,
+            roles: mode.serviceInstance.data.roles.sorted.map((role) => ({
+              id: role.id,
+              settings: unwrap(role.settings),
+              members: role.members.slice(0),
+            })),
+            currentRole: null,
+          }
+        : {
+            // Default to the module name, until we support multiple instances
+            instanceName: mode.service.id,
+            roles: mode.service.roles.sorted.map((role) => ({
+              id: role.id,
+              settings: {},
+              members: [],
+            })),
+            currentRole: null,
+          },
+    );
+  });
 
   return (
     <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">

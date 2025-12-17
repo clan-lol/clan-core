@@ -176,13 +176,18 @@ const ServicesSection: Component = () => {
 };
 
 export const ServiceInstanceEntry: Component = () => {
-  const [instance, { activateServiceInstance }] = useServiceInstanceContext();
+  const [, { setToolbarMode }] = useUIContext();
+  const [instance] = useServiceInstanceContext();
   return (
     <a
       href="#"
       onClick={(ev) => {
         ev.preventDefault();
-        activateServiceInstance();
+        setToolbarMode({
+          type: "service",
+          subtype: "edit",
+          serviceInstance: instance(),
+        });
       }}
     >
       <div class="flex w-full flex-col gap-2">

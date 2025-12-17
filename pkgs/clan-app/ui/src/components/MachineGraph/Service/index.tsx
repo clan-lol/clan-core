@@ -20,7 +20,7 @@ interface Module {
   raw: Service;
 }
 
-const SelectService: Component = (props) => {
+const SelectService: Component = () => {
   const [, { setToolbarMode }] = useUIContext();
   const [clan] = useClanContext();
 
