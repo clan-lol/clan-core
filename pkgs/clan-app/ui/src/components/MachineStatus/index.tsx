@@ -1,18 +1,15 @@
 import styles from "./MachineStatus.module.css";
 import { Badge } from "@kobalte/core/badge";
 import cx from "classnames";
-import { Match, Show, Switch } from "solid-js";
+import { Component, Match, Show, Switch } from "solid-js";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { MachineStatus as MachineStatusModel } from "@/src/hooks/queries";
-import { Loader } from "../Loader/Loader";
+import { MachineStatus } from "@/src/models";
 
-export interface MachineStatusProps {
-  label?: boolean;
-  status?: MachineStatusModel;
-}
-
-export const MachineStatus = (props: MachineStatusProps) => {
+const MachineStatusComponent: Component<{
+  label?: string;
+  status: MachineStatus;
+}> = (props) => {
   // FIXME: this will break i18n in the future
   // remove the '_' from the enum
   // we will use css transform in the typography component to capitalize
@@ -23,9 +20,6 @@ export const MachineStatus = (props: MachineStatusProps) => {
 
   return (
     <Switch>
-      <Match when={!props.status}>
-        <Loader />
-      </Match>
       <Match when={props.status}>
         <Badge
           class={cx(styles.machineStatus, {
@@ -57,3 +51,4 @@ export const MachineStatus = (props: MachineStatusProps) => {
     </Switch>
   );
 };
+export default MachineStatusComponent;

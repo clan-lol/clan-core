@@ -3,7 +3,7 @@ import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Component, For, Show } from "solid-js";
-import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
+import MachineStatusComponent from "@/src/components/MachineStatus";
 import { Button } from "../Button/Button";
 import {
   MachineContextProvider,
@@ -115,7 +115,7 @@ const MachineSection: Component = () => {
           >
             {machine().id}
           </Typography>
-          <MachineStatus status={machine().status} />
+          <MachineStatusComponent status={machine().status} />
         </div>
         <div class="flex w-full flex-row items-center gap-1">
           <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />

@@ -1,4 +1,4 @@
-import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
+import { MachineStatus } from "@/src/components/MachineStatus";
 import { Meta, StoryObj } from "storybook-solidjs-vite";
 
 const meta: Meta<typeof MachineStatus> = {
