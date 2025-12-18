@@ -1,5 +1,17 @@
 { lib, pkgs }:
 let
+  /**
+    Creates an evaluation of the vars interface.
+
+    Note: This test is agnostic from nixos, so we don't import the full clan-core
+    module here. Instead, we just import the interface and inject the following dependencies:
+
+    - pkgs: To pass to generators 'runtimeInputs'
+
+    @param module: A NixOS module that extends the vars interface
+
+    @return: The evaluated configuration
+  */
   eval =
     module:
     (lib.evalModules {
@@ -60,7 +72,6 @@ in
   test_script_text =
     let
       config = eval {
-        # imports = [ usage_simple ];
         generators.my_secret.script = ''
           echo "Hello, world!"
         '';
@@ -75,7 +86,6 @@ in
   test_script_writer =
     let
       config = eval {
-        # imports = [ usage_simple ];
         generators.my_secret.script = derivation {
           system = pkgs.stdenv.hostPlatform.system;
           name = "my-script";
