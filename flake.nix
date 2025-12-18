@@ -76,7 +76,6 @@
           clan = {
             meta.name = "clan-core";
             inventory = {
-              instances.internet.roles.default.tags = [ "all" ];
               machines = {
                 "test-darwin-machine" = {
                   machineClass = "darwin";
