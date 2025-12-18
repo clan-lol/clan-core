@@ -66,6 +66,7 @@
         # Ports
         options.ports = lib.mkOption {
           description = "Port configuration for Yggdrasil listeners.";
+          default = { };
           type = lib.types.submodule {
             options = {
               tcp = lib.mkOption {
@@ -327,9 +328,9 @@
                 ip6tables -N ygg-input 2>/dev/null || true
                 ip6tables -F ygg-input
 
-                # Allow traffic from clan member IPs
+                # Allow traffic from clan member IPs to continue to port-based firewall rules
                 ${lib.concatMapStringsSep "\n    " (
-                  ip: "ip6tables -A ygg-input -s ${lib.escapeShellArg ip} -i ygg -j ACCEPT"
+                  ip: "ip6tables -A ygg-input -s ${lib.escapeShellArg ip} -i ygg -j RETURN"
                 ) allowedYggdrasilIPs}
 
                 # Drop all other traffic on ygg interface
@@ -358,7 +359,7 @@
                   # Only apply to ygg interface
                   iifname "ygg" ip6 saddr {
                     ${lib.concatMapStringsSep ",\n        " (ip: "${ip}") allowedYggdrasilIPs}
-                  } counter accept comment "allow clan yggdrasil IPs"
+                  } counter return comment "allow clan yggdrasil IPs to continue to port-based firewall"
 
                   # Drop all other traffic on ygg interface
                   iifname "ygg" counter drop comment "block non-clan yggdrasil traffic"
