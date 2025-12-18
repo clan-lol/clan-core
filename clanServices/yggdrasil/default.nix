@@ -319,6 +319,13 @@
                 # Insert rule at beginning of INPUT chain
                 ip6tables -I INPUT -i ygg -j ygg-input
               '';
+
+              extraStopCommands = lib.mkIf (!config.networking.nftables.enable) ''
+                # Remove yggdrasil chain on firewall stop
+                ip6tables -D INPUT -i ygg -j ygg-input 2>/dev/null || true
+                ip6tables -F ygg-input 2>/dev/null || true
+                ip6tables -X ygg-input 2>/dev/null || true
+              '';
             };
 
             # Restrict ygg interface to only allow traffic from clan members
@@ -327,7 +334,7 @@
               family = "inet";
               content = ''
                 chain input {
-                  type filter hook input priority 0; policy accept;
+                  type filter hook input priority -10; policy accept;
 
                   # Only apply to ygg interface
                   iifname "ygg" ip6 saddr {
