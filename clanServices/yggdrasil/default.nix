@@ -63,6 +63,38 @@
           ];
         };
 
+        # Ports
+        options.ports = lib.mkOption {
+          description = "Port configuration for Yggdrasil listeners.";
+          type = lib.types.submodule {
+            options = {
+              tcp = lib.mkOption {
+                description = "TCP port, used for the tcp:// yggdrasil listener";
+                default = 6443;
+                type = lib.types.port;
+              };
+
+              quic = lib.mkOption {
+                description = "QUIC port, used for the quic:// yggdrasil listener";
+                default = 6444;
+                type = lib.types.port;
+              };
+
+              ws = lib.mkOption {
+                description = "Websocket port, used for the ws:// yggdrasil listener";
+                default = 6445;
+                type = lib.types.port;
+              };
+
+              tls = lib.mkOption {
+                description = "TLS port, used for the tls:// yggdrasil listener";
+                default = 6446;
+                type = lib.types.port;
+              };
+            };
+          };
+        };
+
         options.extraPeers = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
@@ -73,9 +105,9 @@
           '';
           example = [
             "tcp://192.168.1.1:6443"
-            "quic://192.168.1.1:6443"
-            "tls://192.168.1.1:6443"
-            "ws://192.168.1.1:6443"
+            "quic://192.168.1.1:6444"
+            "tls://192.168.1.1:6445"
+            "ws://192.168.1.1:6446"
           ];
         };
       };
@@ -133,34 +165,26 @@
 
                 # Filter out empty IPs
                 filteredHosts = lib.filter (ip: ip != "") hosts;
-              in
-              lib.concatMap (
-                ip:
-                if (lib.hasSuffix ".onion" ip) then
-                  [
+
+                # Helper to create peer URLs for a given IP
+                mkPeerUrlsForIp =
+                  ip:
+                  if (lib.hasSuffix ".onion" ip) then
                     # Tor onion peers use SOCKS proxy
                     # socks:// = TCP (port 6443)
                     # sockstls:// = TLS (port 6446)
-                    "socks://127.0.0.1:9050/${ip}:6443"
-                    "sockstls://127.0.0.1:9050/${ip}:6446"
-                  ]
-                else if (lib.hasInfix ":" ip) then
-                  [
+                    [
+                      "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}"
+                      "sockstls://127.0.0.1:9050/${ip}:${toString settings.ports.tls}"
+                    ]
+                  else if (lib.hasInfix ":" ip) then
                     # We need to add [ ] for IPv6 addresses
-                    "tcp://[${ip}]:6443"
-                    "quic://[${ip}]:6444"
-                    "ws://[${ip}]:6445"
-                    "tls://[${ip}]:6446"
-                  ]
-                else
-                  [
+                    lib.mapAttrsToList (protocol: port: "${protocol}://[${ip}]:${toString port}") settings.ports
+                  else
                     # No [ ] for IPv4 addresses
-                    "tcp://${ip}:6443"
-                    "quic://${ip}:6444"
-                    "ws://${ip}:6445"
-                    "tls://${ip}:6446"
-                  ]
-              ) filteredHosts;
+                    lib.mapAttrsToList (protocol: port: "${protocol}://${ip}:${toString port}") settings.ports;
+              in
+              lib.concatMap mkPeerUrlsForIp filteredHosts;
 
             # Filter out exports from the local machine and yggdrasil
             # exports to avoid self-connections
@@ -168,7 +192,6 @@
               scope: scope.serviceName != service.config.manifest.name && scope.machineName != machine.name
             ) exports;
 
-            # TODO make it nicer @lassulus, @picnoir wants microlens
             exportedPeerIPs = lib.concatLists (map mkPeers (lib.attrValues nonLocalExports));
 
             exportedPeers = exportedPeerIPs;
@@ -254,7 +277,8 @@
                   tail -c +13 | xxd -p -c 64 | tr -d '\n' > $out/publicKey
 
                 # Derive IPv6 address from key
-                echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | yggdrasil -useconf -address | tr -d '\n' > $out/address
+                echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | \
+                  yggdrasil -useconf -address | tr -d '\n' > $out/address
               '';
             };
 
@@ -276,12 +300,7 @@
               # See https://github.com/NixOS/nixpkgs/pull/440910#issuecomment-3301835895 for details.
               persistentKeys = false;
               settings = {
-                Listen = [
-                  "tcp://[::]:6443"
-                  "quic://[::]:6444"
-                  "ws://[::]:6445"
-                  "tls://[::]:6446"
-                ];
+                Listen = lib.mapAttrsToList (protocol: port: "${protocol}://[::]:${toString port}") settings.ports;
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
                 Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
@@ -290,15 +309,15 @@
                 MulticastInterfaces = settings.multicastInterfaces;
               };
             };
-            networking.firewall = {
+            networking.firewall = with settings.ports; {
               allowedUDPPorts = [
                 5400 # Multicast
-                6444 # QUIC
+                quic # QUIC
               ];
               allowedTCPPorts = [
-                6443 # TCP
-                6445 # WebSocket
-                6446 # TLS
+                tcp
+                ws # WebSocket
+                tls # TLS
               ];
 
               # Restrict ygg interface to only allow traffic from clan members
@@ -331,7 +350,7 @@
             # Restrict ygg interface to only allow traffic from clan members
             # (nftables)
             networking.nftables.tables.yggdrasil-filter = lib.mkIf config.networking.nftables.enable {
-              family = "inet";
+              family = "ip6";
               content = ''
                 chain input {
                   type filter hook input priority -10; policy accept;
