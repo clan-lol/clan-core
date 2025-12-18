@@ -1,8 +1,11 @@
 { lib, ... }:
+let
+  inherit (lib) mkRenamedOptionModule mkRemovedOptionModule;
+in
 {
   imports = [
     # secretUploadDirectory is renamed to the sops-specific option
-    (lib.mkRenamedOptionModule
+    (mkRenamedOptionModule
       [
         "clan"
         "core"
@@ -19,7 +22,7 @@
     )
 
     # All other facts options are removed
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -28,7 +31,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -37,7 +40,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -46,7 +49,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -55,7 +58,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -64,7 +67,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -73,7 +76,7 @@
       ]
       "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -84,22 +87,22 @@
     )
 
     # Legacy options from the old compat module
-    (lib.mkRemovedOptionModule [
+    (mkRemovedOptionModule [
       "clan"
       "core"
       "secretStore"
     ] "clan.core.secretStore has been removed. Use clan.core.vars.settings.secretStore instead.")
-    (lib.mkRemovedOptionModule [
+    (mkRemovedOptionModule [
       "clan"
       "core"
       "secretsPrefix"
     ] "clan.core.secretsPrefix has been removed.")
-    (lib.mkRemovedOptionModule [
+    (mkRemovedOptionModule [
       "clan"
       "core"
       "secretsDirectory"
     ] "clan.core.secretsDirectory has been removed.")
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
@@ -107,7 +110,7 @@
       ]
       "clan.core.secretsUploadDirectory has been removed. Use clan.core.vars.sops.secretUploadDirectory instead."
     )
-    (lib.mkRemovedOptionModule
+    (mkRemovedOptionModule
       [
         "clan"
         "core"
