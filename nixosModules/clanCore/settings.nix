@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, ... }:
 let
   inherit (lib) mkOption types;
 in
@@ -85,13 +85,6 @@ in
           };
         };
       };
-    };
-
-    # TODO: Move this into settings.clanPkgs ?
-    # This could also be part of the public interface to allow users to override the internal packages
-    clanPkgs = lib.mkOption {
-      defaultText = "self.packages.${pkgs.stdenv.hostPlatform.system}";
-      internal = true;
     };
   };
 }

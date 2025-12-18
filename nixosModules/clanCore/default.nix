@@ -6,7 +6,8 @@
     ./dependencies.nix
     ./facts-deprecation.nix
     ./deprecated.nix
-    ./metadata.nix
+    ./settings.nix
+    ./clanPkgs.nix
     ./networking.nix
     ./nix-settings.nix
     ./options.nix
