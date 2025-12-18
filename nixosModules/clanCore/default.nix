@@ -5,7 +5,7 @@
     ./defaults.nix
     ./dependencies.nix
     ./facts-deprecation.nix
-    ./inventory
+    ./deprecated.nix
     ./meta/interface.nix
     ./metadata.nix
     ./networking.nix
