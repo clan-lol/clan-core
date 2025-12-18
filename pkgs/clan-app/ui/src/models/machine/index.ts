@@ -17,5 +17,7 @@ export type {
   MachineVarsPrompt,
   InstallMachineOptions,
   InstallMachineProgress,
+  UpdateMachineOptions,
+  UpdateMachineProgress,
 } from "./machine";
 export * from "./Context";

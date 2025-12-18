@@ -12,7 +12,6 @@ const modals: Record<string, Component> = mapObjectKeys(
       "./*.tsx",
       "!./index.tsx",
       "!./*.*.tsx",
-      "!./frames/**",
       "!./components/**",
     ],
     {

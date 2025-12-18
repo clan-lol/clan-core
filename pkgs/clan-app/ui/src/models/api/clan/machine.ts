@@ -20,6 +20,7 @@ export async function updateMachineData(
   clanId: string,
   data: Partial<MachineData>,
 ): Promise<void> {
+  const { position, ...d } = data;
   await client.post("set_machine", {
     body: {
       machine: {
@@ -28,10 +29,7 @@ export async function updateMachineData(
           identifier: clanId,
         },
       },
-      update: {
-        ...data,
-        position: undefined,
-      },
+      update: d,
     },
   });
 }
