@@ -6,7 +6,6 @@
     ./dependencies.nix
     ./facts-deprecation.nix
     ./deprecated.nix
-    ./meta/interface.nix
     ./metadata.nix
     ./networking.nix
     ./nix-settings.nix

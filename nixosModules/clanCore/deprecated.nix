@@ -1,7 +1,10 @@
 { lib, ... }:
+let
+  inherit (lib) mkRemovedOptionModule mkRenamedOptionModule;
+in
 {
   imports = [
-    (lib.mkRemovedOptionModule [ "clan" "inventory" "services" ] ''
+    (mkRemovedOptionModule [ "clan" "inventory" "services" ] ''
       ###############################################################################
       #                                                                             #
       # Clan modules (clanModules) have been deprecated and removed in favor of     #
@@ -12,8 +15,12 @@
       #                                                                             #
       ###############################################################################
     '')
-    (lib.mkRemovedOptionModule [ "clan" "inventory" "assertions" ] ''
+    (mkRemovedOptionModule [ "clan" "inventory" "assertions" ] ''
       Use of 'machine.<name>.config.clan.inventory.assertions' was replaced by 'clan.checks'
     '')
+
+    (mkRenamedOptionModule [ "clan" "meta" "name" ] [ "clan" "core" "settings" "name" ])
+    (mkRenamedOptionModule [ "clan" "meta" "description" ] [ "clan" "core" "settings" "description" ])
+    (mkRenamedOptionModule [ "clan" "meta" "icon" ] [ "clan" "core" "settings" "icon" ])
   ];
 }
