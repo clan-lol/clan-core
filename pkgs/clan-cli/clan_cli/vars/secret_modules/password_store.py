@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 import shutil
 import subprocess
 import tarfile
@@ -35,17 +36,19 @@ class SecretStore(StoreBase):
 
     def store_dir(self) -> Path:
         """Get the password store directory, cached per machine."""
-        if not self._store_dir:
-            result = self._run_pass(
-                "git",
-                "rev-parse",
-                "--show-toplevel",
-                check=False,
-            )
-            if result.returncode != 0:
-                msg = "Password store must be a git repository"
-                raise ValueError(msg)
-            self._store_dir = Path(result.stdout.strip().decode())
+        if self._pass_command() == "passage":
+            if "PASSAGE_DIR" in os.environ:
+                self._store_dir = Path(os.environ["PASSAGE_DIR"])
+            else:
+                self._store_dir = Path(os.environ["HOME"] + "/.passage/store")
+        elif self._pass_command() == "pass":
+            if "PASSWORD_STORE_DIR" in os.environ:
+                self._store_dir = Path(os.environ["PASSWORD_STORE_DIR"])
+            else:
+                self._store_dir = Path(os.environ["HOME"] + "/.password-store")
+        else:
+            msg = f"Unknown pass command {self._pass_cmd}"
+            raise ValueError(msg)
         return self._store_dir
 
     def cmd_exists(self, cmd: str) -> bool:
