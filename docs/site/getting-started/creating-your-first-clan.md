@@ -12,7 +12,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 ## Requirements
 
 * **Expected knowledge levels for this guide:**
-    Linux 2/5 - nixOS 0/5 - Computer Networks 1/5
+    Linux 2/5 - NixOS 0/5 - Computer Networks 1/5
 
 * **Estimated time for this step:** 20 minutes
 
@@ -109,9 +109,9 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
                 direnv allow
                 ```
 
-* **Target Device(s)**: Any number of physical and / or virtual Linux or MacOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above. 
-    
-    If your setup machine is running on nixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+* **Target Device(s)**: Any number of physical and / or virtual Linux or macOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above.
+
+    If your setup machine is running on NixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
 
 * **In Case of Physical Target Device(s):** A USB drive with at least 1.5GB total space (all data on it will be lost)
 

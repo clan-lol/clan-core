@@ -37,7 +37,7 @@ name already present and if that was the case would migrate it to `vars`.
 Let us look at the mapping a little closer.
 Suppose we have the following fact: `facts.services.vaultwarden.secret.admin`.
 This would read as follows: The `vaultwarden` `fact` service has the `admin` secret.
-In order to migrate this fact we would have needed the following `vars` configuration:
+In order to migrate this fact, we would have needed the following `vars` configuration:
 
 ```nix
 vars.generators.vaultwarden = {

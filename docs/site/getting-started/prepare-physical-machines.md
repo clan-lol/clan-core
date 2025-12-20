@@ -138,7 +138,7 @@ sudo umount /dev/sdb1
     lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
-    On macos use `diskutil`:
+    On macOS use `diskutil`:
 
     ```
     diskutil list
@@ -164,9 +164,9 @@ To see if your new Clan USB boot stick works, plug it into a target device and b
 For step by step instructions go to [Disabling Secure Boot](../guides/secure-boot.md)
 
 
-## (Optional) Connect to Wifi Manually
+## (Optional) Connect to Wi-Fi Manually
 
-If you don't have access via LAN the Installer offers support for connecting via Wifi.
+If you don't have access via LAN, the installer offers support for connecting via Wi-Fi.
 
 ```shellSession
 iwctl
@@ -178,18 +178,18 @@ This will enter `iwd`
 [iwd]#
 ```
 
-Now run the following command to connect to your Wifi:
+Now run the following command to connect to your Wi-Fi:
 
 ```{.shellSession .no-copy}
 # Identify your network device.
 device list
 
 # Replace 'wlan0' with your wireless device name
-# Find your Wifi SSID.
+# Find your Wi-Fi SSID.
 station wlan0 scan
 station wlan0 get-networks
 
-# Replace your_ssid with the Wifi SSID
+# Replace your_ssid with the Wi-Fi SSID
 # Connect to your network.
 station wlan0 connect your_ssid
 
@@ -197,7 +197,7 @@ station wlan0 connect your_ssid
 station wlan0 show
 ```
 
-If the connection was successful you should see something like this:
+If the connection was successful, you should see something like this:
 
 ```{.console, .no-copy}
 State                 connected

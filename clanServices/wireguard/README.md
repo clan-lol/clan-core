@@ -1,10 +1,10 @@
-# Wireguard VPN Service
+# WireGuard VPN Service
 
-This service provides a Wireguard-based VPN mesh network with automatic IPv6 address allocation and routing between clan machines.
+This service provides a WireGuard-based VPN mesh network with automatic IPv6 address allocation and routing between clan machines.
 
 ## Overview
 
-The wireguard service creates a secure mesh network between clan machines using two roles:
+The WireGuard service creates a secure mesh network between clan machines using two roles:
 - **Controllers**: Machines with public endpoints that act as connection points and routers
 - **Peers**: Machines that connect through controllers to access the network
 
@@ -136,7 +136,7 @@ graph TB
 
 ### Automatic Hostname Resolution
 
-The wireguard service automatically adds entries to `/etc/hosts` for all machines in the network. Each machine is accessible via its hostname in the format `<machine-name>.<instance-name>`.
+The WireGuard service automatically adds entries to `/etc/hosts` for all machines in the network. Each machine is accessible via its hostname in the format `<machine-name>.<instance-name>`.
 
 For example, with an instance named `vpn`:
 - `server1.vpn` - resolves to server1's IPv6 address
@@ -154,7 +154,7 @@ ssh user@laptop1.vpn
 
 ## Troubleshooting
 
-### Check Wireguard Status
+### Check WireGuard Status
 ```bash
 sudo wg show
 ```
@@ -176,9 +176,9 @@ If you see this error in your logs:
 wireguard: Could not bring up interface, ignoring: Address already in use
 ```
 
-This means the configured port (default: 51820) is already in use by another service or wireguard instance. Solutions:
+This means the configured port (default: 51820) is already in use by another service or WireGuard instance. Solutions:
 
-1. **Check for conflicting wireguard instances:**
+1. **Check for conflicting WireGuard instances:**
    ```bash
    sudo wg show
    sudo ss -ulnp | grep 51820
@@ -195,7 +195,7 @@ This means the configured port (default: 51820) is already in use by another ser
    ```
 
 3. **Ensure unique ports across multiple instances:**
-   If you have multiple wireguard instances on the same machine, each must use a different port.
+   If you have multiple WireGuard instances on the same machine, each must use a different port.
 
 ### Key Management
 
@@ -211,9 +211,9 @@ clan machines update <machine-name>
 
 ## Security Considerations
 
-- All traffic is encrypted using Wireguard's modern cryptography
+- All traffic is encrypted using WireGuard's modern cryptography
 - Private keys never leave the machines they're generated on
 - Public keys are distributed through the clan vars system
 - Controllers must have publicly accessible endpoints
-- Firewall rules are automatically configured for the Wireguard ports
+- Firewall rules are automatically configured for the WireGuard ports
 

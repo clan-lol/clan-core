@@ -22,7 +22,7 @@ In this example, a `vars` `generator` is used to:
 - prompt the user for the password
 - run the required `mkpasswd` command to generate the hash
 - store the hash in a file
-- expose the file path to the nixos configuration
+- expose the file path to the NixOS configuration
 
 Create a new nix file `root-password.nix` with the following content and import it into your `configuration.nix`
 ```nix

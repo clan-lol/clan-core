@@ -99,7 +99,7 @@ inventory.instances = {
 
 Tags can be used to assign multiple machines to a role at once. It can be thought of as a grouping mechanism.
 
-For example using the `all` tag for services that you want to be configured on all
+For example, using the `all` tag for services that you want to be configured on all
 your machines is a common pattern.
 
 The following example could be used to backup all your machines to a common

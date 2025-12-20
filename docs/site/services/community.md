@@ -18,19 +18,19 @@ Services provided by the community, with no stability guarantees!
     Sets up [localsend](https://localsend.org), an application to share files to nearby devices.
 
 
--  [Wireguard Star](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/wireguard.nix) :octicons-link-external-16:
+-  [WireGuard Star](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/wireguard.nix) :octicons-link-external-16:
 
     ---
 
-    Set up [wireguard](https://wireguard.com) in a star topology. All machines
+    Set up [WireGuard](https://wireguard.com) in a star topology. All machines
     with the peer role will connect to the controller. IPv4 addresses are
     manually assigned. For a IPv6 service that also supports multiple
     controllers in a mesh topology, see the official
-    [clan wireguard service](https://docs.clan.lol/services/official/wireguard/)
+    [clan WireGuard service](https://docs.clan.lol/services/official/wireguard/)
 
     ---
 
-    Sets up the [EasyTier Mesh VPN](https://github.com/EasyTier/EasyTier), uses WirGuard under the hood.
+    Sets up the [EasyTier Mesh VPN](https://github.com/EasyTier/EasyTier), uses WireGuard under the hood.
 
 
 - [Nix Cache](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/nix-cache)

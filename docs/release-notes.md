@@ -10,7 +10,7 @@
 Darwin Support
 - Services now support nix-darwin alongside NixOS
 - Service authors can provide `darwinModule` in addition to `nixosModule` in their service definitions
-- Wireguard service now fully supports darwin machines using wg-quick interfaces
+- WireGuard service now fully supports darwin machines using wg-quick interfaces
 - Added `clan.core.networking.extraHosts` for managing /etc/hosts on darwin via launchd
 
 ## Breaking Changes

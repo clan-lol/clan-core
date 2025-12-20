@@ -9,7 +9,7 @@ It serves as a reference implementation and is used in clan-core CI tests to ens
 
 - How to define a basic Clan-compatible service.
 - How to structure your service for discovery and configuration.
-- How Clan services interact with nixos.
+- How Clan services interact with NixOS.
 
 ## Testing
 
@@ -48,7 +48,7 @@ Example in: tests/eval-tests.nix
 
 If you use flake-parts you can use the [native integration](https://flake.parts/options/nix-unit.html)
 
-If nix-unit succeeds you'r nixos evaluation should be mostly correct.
+If nix-unit succeeds, your NixOS evaluation should be mostly correct.
 
 !!! Tip
     - Ensure most used 'settings' and variants are tested.
