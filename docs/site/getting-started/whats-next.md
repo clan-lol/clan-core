@@ -33,6 +33,12 @@ This command helps ensure that your system configuration is correct and free fro
     You can integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase.
 
 
+### Backups
+
+We recommend to set up backups at this point on all machines. 
+
+Please follow our [detailed backup guide](../guides/backups/backup-intro.md) and keep your files safe.
+
 
 ### Migrate Existing Devices
 

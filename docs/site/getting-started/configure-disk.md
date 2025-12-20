@@ -8,14 +8,12 @@ The disks of the target devices need to be configured before the rollout can sta
 * Double check that each machine has a hardware report saved under ```machines/YOUR-MACHINE-NAME/facter.json```
 
 
-
 ## Configuring Target Disks
 By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
-To see what disk templates are available run:
-```{.shellSession hl_lines="11" .no-copy}
-$ clan templates list
+To see what disk templates are available, run `clan templates list`:
 
+```{.shellSession hl_lines="9" .no-copy}
 Available 'clan' templates
 ├── <builtin>
 │   ├── default: Initialize a new clan flake
@@ -42,7 +40,7 @@ For this guide we will select the `single-disk` template, that uses `A simple ex
 To setup a disk schema for a machine run
 
 ```bash
-clan templates apply disk single-disk jon --set mainDisk ""
+clan templates apply disk single-disk YOUR-MACHINE-NAME --set mainDisk ""
 ```
 
 Which should fail and give the valid options for the specific hardware:
@@ -55,16 +53,16 @@ Invalid value  for placeholder mainDisk - Valid options:
 Re-run the command with the correct disk:
 
 ```bash
-clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+clan templates apply disk single-disk YOUR-MACHINE-NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
-Should now be successful
+It should now be successful, in our example for jon-machine with an output like:
 
 ```shellSession
-Applied disk template 'single-disk' to machine 'jon'
+Applied disk template 'single-disk' to machine 'jon-machine'
 ```
 
-A disko.nix file is created in `machines/jon`
+A disko.nix file is created in `machines/YOUR-MACHINE-NAME` at this point-
 You can have a look and customize it if needed.
 
 !!! Danger
@@ -74,7 +72,7 @@ You can have a look and customize it if needed.
 
 ## Checkpoint
 
-Check your machines/ folders for the disk files. If a machine sub-folder does not contain a disk file, the setup ran into an error and needs to be restartet for the particular machine.
+Check your `machines/` folders for the disko.nix files. If a machine sub-folder does not contain a disko file, the setup ran into an error and needs to be restartet for the particular machine.
 
 
 ## Up Next
