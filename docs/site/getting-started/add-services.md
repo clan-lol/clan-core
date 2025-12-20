@@ -25,9 +25,9 @@ To learn more about services in general, visit [Clan Services](../guides/service
 - A Clan with at least one machine and at least one user prepared as described in the previous steps
 
 
-## Configure a Zerotier Network
+## Configure a ZeroTier Network
 
-Add the configurtaion for a Zerotier Network to your clan.nix file as follows:
+Add the configuration for a ZeroTier Network to your clan.nix file as follows:
 
 ```{.nix title="clan.nix" hl_lines="8-16"}
 {

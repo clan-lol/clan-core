@@ -33,8 +33,8 @@ The setup uses two clan services working together:
 
 ## Step-by-Step Setup
 
-The following setup assumes you have a VPN (e.g. Zerotier) already running. The
-IPs configured in the options below will probably the Zerotier-IPs of the
+The following setup assumes you have a VPN (e.g. ZeroTier) already running. The
+IPs configured in the options below will probably the ZeroTier IPs of the
 respective machines.
 
 ### Configure the CoreDNS Service

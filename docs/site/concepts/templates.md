@@ -3,7 +3,7 @@
 Clan offers the ability to use templates for creating different resources.
 It comes with some `<builtin>` templates and discovers all exposed templates from its flake's `inputs`
 
-For example one can list all current templates like this:
+For example, one can list all current templates like this:
 
 ```shellSession
 $ clan templates list

@@ -99,7 +99,7 @@ The status should be "ONLINE":
 
 ## Further
 
-Currently **Zerotier** is the only mesh-vpn that is fully integrated into clan.
+Currently **ZeroTier** is the only mesh-vpn that is fully integrated into clan.
 In the future we plan to add additional network technologies like tinc, head/tailscale
 Currently we support yggdrassil and mycelium through usage of the inventory,
 though it is not yet integrated into the networking module.

@@ -361,7 +361,7 @@ In clan core, the following pattern is usually followed:
 - a CI Job is exposed via a `flake-module.nix`
 - that `flake-module.nix` is imported via the `flake.nix` at the root of the project
 
-For example see `/lib/values/{test.nix,flake-module.nix}`.
+For example, see `/lib/values/{test.nix,flake-module.nix}`.
 
 ### Running nix eval tests
 

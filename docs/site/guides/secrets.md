@@ -58,7 +58,7 @@ clan secrets users add $USER --age-key <your_public_key>
 
 It's best to choose the same username as on your Setup/Admin Machine that you use to control the deployment with.
 
-Once run this will create the following files:
+Once run, this will create the following files:
 
 ```{.console, .no-copy}
 sops/
@@ -140,7 +140,7 @@ clan secrets list
 A NixOS machine will automatically import all secrets that are encrypted for the
 current machine. At runtime it will use the host key to decrypt all secrets into
 an in-memory, non-persistent filesystem using [sops-nix](https://github.com/Mic92/sops-nix).
-In your nixos configuration you can get a path to secrets like this `config.sops.secrets.<name>.path`. For example:
+In your NixOS configuration you can get a path to secrets like this `config.sops.secrets.<name>.path`. For example:
 
 ```nix
 { config, ...}: {
@@ -244,7 +244,7 @@ If you already happened to use sops-nix, you can migrate by using the `clan secr
 This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a `./sops` folder of your repository.
 Each member of the group `admins` in this case will be able to decrypt the secrets with their respective key.
 
-Since our clan secret module will auto-import secrets that are encrypted for a particular nixos machine,
+Since our clan secret module will auto-import secrets that are encrypted for a particular NixOS machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
 
 
@@ -341,7 +341,7 @@ Here we illustrate how machine groups work.
 
 Common use cases:
 
-- **Shared secrets**: Among multiple machines such as Wifi passwords
+- **Shared secrets**: Among multiple machines such as Wi-Fi passwords
 
 ```plantuml
 @startuml

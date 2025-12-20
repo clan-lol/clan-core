@@ -11,7 +11,7 @@ For the full specification and current state see: **[Service Author Reference](.
 
 First of all we need to register our module into the `clan.modules` attribute. Make sure to choose a unique name so the module doesn't have a name collision with any of the core modules.
 
-While not required we recommend to prefix your module attribute name.
+While not required, we recommend to prefix your module attribute name.
 
 If you export the module from your flake, other people will be able to import it and use it within their clan.
 
@@ -51,7 +51,7 @@ For more attributes see: **[Service Author Reference](../../reference/options/cl
 
 ### Adding functionality to the module
 
-While the very minimal module is valid in itself it has no way of adding any machines to it, because it doesn't specify any roles.
+While the very minimal module is valid in itself, it has no way of adding any machines to it, because it doesn't specify any roles.
 
 The next logical step is to think about the interactions between the machines and define *roles* for them.
 
@@ -150,7 +150,7 @@ Next we need to define the settings and the behavior of these distinct roles.
 
 Sometimes a settings value depends on something within a machines `config`.
 
-Since the `interface` is defined completely machine-agnostic this means values from a machine cannot be set in the traditional way.
+Since the `interface` is defined completely machine-agnostic, this means values from a machine cannot be set in the traditional way.
 
 The following example shows how to create a local instance of machine specific settings.
 

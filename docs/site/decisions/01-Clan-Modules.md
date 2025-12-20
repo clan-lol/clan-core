@@ -17,7 +17,7 @@ A `role` is a function of a machine within a service. For example in the `backup
 
 The `inventory` contains the settings for the user/consumer of the module. It describes what `services` run on each machine and with which `roles`.
 
-Additionally any `service` can be instantiated multiple times.
+Additionally, any `service` can be instantiated multiple times.
 
 This ADR proposes that we change how to write a `clanModule`. The `inventory` should get a new attribute called `instances` that allow for configuration of these modules.
 

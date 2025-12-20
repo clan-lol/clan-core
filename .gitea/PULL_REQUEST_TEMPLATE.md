@@ -14,6 +14,6 @@
 - [ ] Added major features
   - [ ] All features are mentioned in docs/release-notes.md
   - [ ] All features are tested sufficiently via:
-    - [ ] eval tests (for nixos modules and nix functions)
+    - [ ] eval tests (for NixOS modules and nix functions)
     - [ ] python tests for python API and CLI code
     - [ ] VM or container tests for new clan services

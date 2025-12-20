@@ -85,7 +85,7 @@ Which can be imported into individual machines to make the user available on tha
 
 ## Alternative 2: Using [home-manager](https://github.com/nix-community/home-manager)
 
-When using clan's `users` service it is possible to define extraModules.
+When using clan's `users` service, it is possible to define extraModules.
 In fact this is always possible when using clan's services.
 
 We can use this property of clan services to bind a nixosModule to the user, which configures home-manager.
