@@ -22,6 +22,7 @@
     };
     value = {
       networking.priority = 10;
+      networking.module = "clan_lib.network.tor";
     };
   }) config.instances;
 
