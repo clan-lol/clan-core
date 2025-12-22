@@ -2,7 +2,12 @@
 {
   imports = [ inputs.treefmt-nix.flakeModule ];
   perSystem =
-    { self', pkgs, ... }:
+    {
+      self',
+      pkgs,
+      lib,
+      ...
+    }:
     {
       treefmt.projectRootFile = "LICENSE.md";
       treefmt.programs.shellcheck.enable = true;
@@ -37,8 +42,6 @@
         "*/gnupg-home/*"
         "*/sops/secrets/*"
         "vars/*"
-        # prettier messes up our mkdocs flavoured markdown
-        "*.md"
         "**/node_modules/*"
         "**/.mypy_cache/*"
 
@@ -92,6 +95,8 @@
           "*.yaml"
           "*.yml"
         ];
+        # prettier messes up our mkdocs flavoured markdown
+        excludes = [ "*.md" ];
       };
       treefmt.programs.mypy.directories = {
         "clan-cli" = {
@@ -120,5 +125,38 @@
       );
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
+
+      treefmt.settings.formatter.vale =
+        let
+          valeTermsRule = pkgs.writeText "Terms.yml" ''
+            extends: existence
+            message: "Use 'NixOS' instead of '%s'"
+            level: error
+            nonword: true
+            raw:
+              - '\b(nixos|Nixos|NIXOS|nixOS)\b(?![-a-zA-Z])'
+          '';
+
+          valeStylesDir = pkgs.runCommand "vale-styles" { } ''
+            mkdir -p $out/config/vocabularies/ClanCore
+            mkdir -p $out/ClanCore
+            cp ${valeTermsRule} $out/ClanCore/Terms.yml
+          '';
+
+          valeConfig = pkgs.writeText "vale.ini" ''
+            StylesPath = ${valeStylesDir}
+            MinAlertLevel = suggestion
+
+            Vocab = ClanCore
+
+            [*.md]
+            BasedOnStyles = ClanCore
+          '';
+        in
+        {
+          command = lib.getExe pkgs.vale;
+          options = [ "--config=${valeConfig}" ];
+          includes = [ "docs/**/*.md" ];
+        };
     };
 }
