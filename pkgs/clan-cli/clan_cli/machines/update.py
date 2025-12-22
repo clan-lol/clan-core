@@ -18,6 +18,7 @@ from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars.generate import run_generators
+from clan_lib.vars.generator import Generator
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -25,7 +26,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
-from clan_cli.vars.generator import Generator
 
 if TYPE_CHECKING:
     from clan_lib.ssh.host import Host

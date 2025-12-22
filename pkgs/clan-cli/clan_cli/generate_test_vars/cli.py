@@ -11,14 +11,14 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING, Any, override
 
-from clan_cli.vars.generator import Generator
-from clan_cli.vars.prompt import PromptType
 from clan_lib.dirs import find_toplevel
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
 from clan_lib.vars.generate import run_generators
+from clan_lib.vars.generator import Generator
+from clan_lib.vars.prompt import PromptType
 
 if TYPE_CHECKING:
     from clan_lib.machines.actions import (

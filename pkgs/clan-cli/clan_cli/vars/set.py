@@ -8,13 +8,11 @@ from clan_cli.completions import (
     complete_vars_for_machine,
 )
 from clan_cli.vars.get import get_machine_var
-from clan_cli.vars.prompt import PromptType
 from clan_lib.flake import Flake
 from clan_lib.git import commit_files
 from clan_lib.machines.machines import Machine
-
-from .generator import Var
-from .prompt import ask
+from clan_lib.vars.generator import Var
+from clan_lib.vars.prompt import PromptType, ask
 
 log = logging.getLogger(__name__)
 
