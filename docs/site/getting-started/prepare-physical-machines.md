@@ -266,13 +266,11 @@ This is an example of the booted installer.
     For easy sharing of deployment information via QR code, we highly recommend using [KDE Connect](https://apps.kde.org/de/kdeconnect/).
 There are two ways to deploy your machine:
 ### Generating a Hardware Report
-The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. The `--phases kexec` flag makes sure we are not yet formatting anything, instead if the target system is not a NixOS machine it will use [kexec](https://wiki.archlinux.org/title/Kexec) to switch to a NixOS kernel.
+The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. This command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
 === "Password"
     **Password**
     ```terminal
-    clan machines install [MACHINE] \
-        --update-hardware-config nixos-facter \
-        --phases kexec \
+    clan machines init-hardware-config [MACHINE] \
         --target-host root@192.168.178.169
     ```
 === "QR Code"
@@ -280,16 +278,12 @@ The following command will generate a hardware report with [nixos-facter](https:
     **Using a JSON String or File Path**:
     Copy the JSON string contained in the QR Code and provide its path or paste it directly:
     ```terminal
-    clan machines install [MACHINE] --json [JSON] \
-        --update-hardware-config nixos-facter \
-        --phases kexec
+    clan machines init-hardware-config [MACHINE] --json [JSON]
     ```
     **Using an Image Containing the QR Code**:
     Provide the path to an image file containing the QR code displayed by the installer:
     ```terminal
-    clan machines install [MACHINE] --png [PATH] \
-        --update-hardware-config nixos-facter \
-        --phases kexec
+    clan machines init-hardware-config [MACHINE] --png [PATH]
     ```
 If you are using our template `[MACHINE]` would be `jon`
 
