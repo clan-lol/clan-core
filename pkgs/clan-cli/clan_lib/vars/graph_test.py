@@ -1,10 +1,10 @@
 from unittest.mock import Mock
 
-from clan_cli.vars.generator import (
+from clan_lib.vars.generator import (
     Generator,
     GeneratorKey,
 )
-from clan_cli.vars.graph import all_missing_closure, requested_closure
+from clan_lib.vars.graph import all_missing_closure, requested_closure
 
 
 def generator_names(generator: list[Generator]) -> list[str]:

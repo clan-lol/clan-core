@@ -2,11 +2,9 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.vars.generator import Generator
 from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
-
-from .generator import Var
+from clan_lib.vars.generator import Generator, Var
 
 log = logging.getLogger(__name__)
 

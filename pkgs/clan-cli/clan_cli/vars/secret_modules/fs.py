@@ -2,10 +2,10 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from clan_cli.vars._types import StoreBase
-from clan_cli.vars.generator import Generator, Var
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
+from clan_lib.vars._types import StoreBase
+from clan_lib.vars.generator import Generator, Var
 
 
 class SecretStore(StoreBase):

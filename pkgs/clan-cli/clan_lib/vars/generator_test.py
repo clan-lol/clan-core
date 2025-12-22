@@ -1,4 +1,4 @@
-from clan_cli.vars.generator import filter_machine_specific_attrs
+from .generator import filter_machine_specific_attrs
 
 
 def test_filter_machine_specific_attrs_removes_platform_attrs() -> None:

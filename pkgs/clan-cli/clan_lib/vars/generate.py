@@ -2,15 +2,15 @@ import logging
 from collections.abc import Callable
 from collections.abc import Generator as GeneratorType
 
-from clan_cli.vars import graph
-from clan_cli.vars.generator import Generator
-from clan_cli.vars.graph import requested_closure
 from clan_cli.vars.secret_modules import sops
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.vars import graph
+from clan_lib.vars.generator import Generator
+from clan_lib.vars.graph import requested_closure
 
 log = logging.getLogger(__name__)
 

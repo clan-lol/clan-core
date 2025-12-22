@@ -7,12 +7,11 @@ from clan_cli.completions import (
     complete_machines,
     complete_vars_for_machine,
 )
+from clan_cli.vars.list import get_machine_vars
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
-
-from .generator import Var
-from .list import get_machine_vars
+from clan_lib.vars.generator import Var
 
 log = logging.getLogger(__name__)
 

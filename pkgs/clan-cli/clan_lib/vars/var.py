@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from clan_cli.vars.generator import Generator
-
     from ._types import StoreBase
+    from .generator import Generator
 
 
 @dataclass

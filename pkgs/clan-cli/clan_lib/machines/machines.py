@@ -5,12 +5,11 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal
 
-from clan_cli.vars._types import StoreBase
-
 from clan_lib.api import API
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
+from clan_lib.vars._types import StoreBase
 
 log = logging.getLogger(__name__)
 

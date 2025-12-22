@@ -14,10 +14,6 @@ from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import generate_command
-from clan_cli.vars.generator import (
-    Generator,
-    dependencies_as_dir,
-)
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
@@ -30,6 +26,10 @@ from clan_lib.nix import nix_config, nix_eval, run
 from clan_lib.vars.generate import (
     get_generators,
     run_generators,
+)
+from clan_lib.vars.generator import (
+    Generator,
+    dependencies_as_dir,
 )
 
 
@@ -771,7 +771,7 @@ def test_prompt(
 
     # Mock the prompt responses to simulate user input
     monkeypatch.setattr(
-        "clan_cli.vars.prompt.MOCK_PROMPT_RESPONSE",
+        "clan_lib.vars.prompt.MOCK_PROMPT_RESPONSE",
         iter(["line input", "my\nmultiline\ninput\n", "prompt_persist"]),
     )
 
