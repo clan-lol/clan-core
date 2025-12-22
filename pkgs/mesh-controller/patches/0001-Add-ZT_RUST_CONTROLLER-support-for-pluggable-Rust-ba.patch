@@ -1,0 +1,151 @@
+From 63f18b6b33551cadd826e9971868e2a437b1d275 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
+Date: Wed, 3 Dec 2025 17:45:49 +0100
+Subject: [PATCH] Add ZT_RUST_CONTROLLER support for pluggable Rust-based
+ controller
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When ZT_RUST_CONTROLLER is defined, the build uses RustController from
+controller_shim.hpp instead of the nonfree EmbeddedNetworkController.
+The Rust controller reads authorized members from controller.json and
+assigns deterministic IPv6 addresses.
+
+This also guards RedisConfig which is only available in the nonfree
+controller headers.
+
+Signed-off-by: Jörg Thalheim <joerg@thalheim.io>
+---
+ service/OneService.cpp | 33 ++++++++++++++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 3 deletions(-)
+
+diff --git a/service/OneService.cpp b/service/OneService.cpp
+index 41d790516..c27fba317 100644
+--- a/service/OneService.cpp
++++ b/service/OneService.cpp
+@@ -123,9 +123,13 @@ extern "C" {
+ 
+ using json = nlohmann::json;
+ 
++#ifdef ZT_RUST_CONTROLLER
++#include "controller_shim.hpp"
++#else
+ #include "../nonfree/controller/EmbeddedNetworkController.hpp"
+ #include "../nonfree/controller/PostgreSQL.hpp"
+ #include "../nonfree/controller/Redis.hpp"
++#endif
+ #include "../osdep/EthernetTap.hpp"
+ #ifdef __WINDOWS__
+ #include "../osdep/WindowsEthernetTap.hpp"
+@@ -820,11 +824,17 @@ class OneServiceImpl : public OneService {
+ 	const std::string _homePath;
+ 	std::string _authToken;
+ 	std::string _metricsToken;
++#ifndef ZT_RUST_CONTROLLER
+ 	std::string _controllerDbPath;
++#endif
+ 	const std::string _networksPath;
+ 	const std::string _moonsPath;
+ 
++#ifdef ZT_RUST_CONTROLLER
++	RustController* _controller;
++#else
+ 	EmbeddedNetworkController* _controller;
++#endif
+ 	Phy<OneServiceImpl*> _phy;
+ 	Node* _node;
+ 	bool _updateAutoApply;
+@@ -926,7 +936,9 @@ class OneServiceImpl : public OneService {
+ 	volatile bool _run;
+ 	Mutex _run_m;
+ 
++#ifndef ZT_RUST_CONTROLLER
+ 	RedisConfig* _rc;
++#endif
+ 	std::string _ssoRedirectURL;
+ 
+ #ifdef ZT_OPENTELEMETRY_ENABLED
+@@ -940,10 +952,16 @@ class OneServiceImpl : public OneService {
+ 
+ 	OneServiceImpl(const char* hp, unsigned int port)
+ 		: _homePath((hp) ? hp : ".")
++#ifndef ZT_RUST_CONTROLLER
+ 		, _controllerDbPath(_homePath + ZT_PATH_SEPARATOR_S "controller.d")
++#endif
+ 		, _networksPath(_homePath + ZT_PATH_SEPARATOR_S "networks.d")
+ 		, _moonsPath(_homePath + ZT_PATH_SEPARATOR_S "moons.d")
++#ifdef ZT_RUST_CONTROLLER
++		, _controller((RustController*)0)
++#else
+ 		, _controller((EmbeddedNetworkController*)0)
++#endif
+ 		, _phy(this, false, true)
+ 		, _node((Node*)0)
+ 		, _updateAutoApply(false)
+@@ -976,7 +994,9 @@ class OneServiceImpl : public OneService {
+ 		, _vaultPath("cubbyhole/zerotier")
+ #endif
+ 		, _run(true)
++#ifndef ZT_RUST_CONTROLLER
+ 		, _rc(NULL)
++#endif
+ 		, _ssoRedirectURL()
+ #ifdef ZT_OPENTELEMETRY_ENABLED
+ 		, _traceProvider(nullptr)
+@@ -1034,7 +1054,9 @@ class OneServiceImpl : public OneService {
+ 		delete _portMapper;
+ #endif
+ 		delete _controller;
++#ifndef ZT_RUST_CONTROLLER
+ 		delete _rc;
++#endif
+ 	}
+ 
+ 	void setUpMultithreading()
+@@ -1259,7 +1281,10 @@ class OneServiceImpl : public OneService {
+ 			OSUtils::rmDashRf((_homePath + ZT_PATH_SEPARATOR_S "iddb.d").c_str());
+ 
+ 			// Network controller is now enabled by default for desktop and server
+-#ifdef ZT_NONFREE_CONTROLLER
++#ifdef ZT_RUST_CONTROLLER
++			_controller = new RustController();
++			_node->setNetconfMaster((void*)_controller);
++#elif defined(ZT_NONFREE_CONTROLLER)
+ 			_controller = new EmbeddedNetworkController(_node, _homePath.c_str(), _controllerDbPath.c_str(), _ports[0], _rc);
+ 			if (! _ssoRedirectURL.empty()) {
+ 				_controller->setSSORedirectURL(_ssoRedirectURL);
+@@ -1586,10 +1611,12 @@ class OneServiceImpl : public OneService {
+ 
+ 		json& settings = lc["settings"];
+ 		if (settings.is_object()) {
++#ifndef ZT_RUST_CONTROLLER
+ 			// Allow controller DB path to be put somewhere else
+ 			const std::string cdbp(OSUtils::jsonString(settings["controllerDbPath"], ""));
+ 			if (cdbp.length() > 0)
+ 				_controllerDbPath = cdbp;
++#endif
+ 
+ 			_ssoRedirectURL = OSUtils::jsonString(settings["ssoRedirectURL"], "");
+ 
+@@ -2598,7 +2625,7 @@ class OneServiceImpl : public OneService {
+ 		_controlPlane.set_exception_handler(exceptionHandler);
+ 		_controlPlaneV6.set_exception_handler(exceptionHandler);
+ 
+-#ifdef ZT_NONFREE_CONTROLLER
++#if defined(ZT_NONFREE_CONTROLLER) && !defined(ZT_RUST_CONTROLLER)
+ 		if (_controller) {
+ 			_controller->configureHTTPControlPlane(_controlPlane, _controlPlaneV6, setContent);
+ 		}
+@@ -3653,7 +3680,7 @@ class OneServiceImpl : public OneService {
+ 			} break;
+ 
+ 			case ZT_EVENT_REMOTE_TRACE: {
+-#ifdef ZT_NONFREE_CONTROLLER
++#if defined(ZT_NONFREE_CONTROLLER) && !defined(ZT_RUST_CONTROLLER)
+ 				const ZT_RemoteTrace* rt = reinterpret_cast<const ZT_RemoteTrace*>(metaData);
+ 				if ((rt) && (rt->len > 0) && (rt->len <= ZT_MAX_REMOTE_TRACE_SIZE) && (rt->data))
+ 					_controller->handleRemoteTrace(*rt);
+-- 
+2.51.2
+

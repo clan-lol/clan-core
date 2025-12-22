@@ -1,0 +1,205 @@
+# HELP zt_packet ZeroTier packet type counts
+# TYPE zt_packet counter
+zt_packet{direction="tx",packet_type="path_negotiation_request"} 0
+zt_packet{direction="tx",packet_type="user_message"} 0
+zt_packet{direction="tx",packet_type="push_direct_paths"} 0
+zt_packet{direction="tx",packet_type="multicast_gather"} 0
+zt_packet{direction="tx",packet_type="network_config"} 0
+zt_packet{direction="tx",packet_type="remote_trace"} 0
+zt_packet{direction="tx",packet_type="network_config_request"} 0
+zt_packet{direction="tx",packet_type="multicast_frame"} 0
+zt_packet{direction="tx",packet_type="multicast_like"} 0
+zt_packet{direction="tx",packet_type="echo"} 0
+zt_packet{direction="tx",packet_type="frame"} 0
+zt_packet{direction="tx",packet_type="error"} 0
+zt_packet{direction="rx",packet_type="user_message"} 0
+zt_packet{direction="tx",packet_type="nop"} 0
+zt_packet{direction="tx",packet_type="hello"} 0
+zt_packet{direction="tx",packet_type="ok"} 0
+zt_packet{direction="rx",packet_type="multicast_gather"} 0
+zt_packet{direction="rx",packet_type="echo"} 0
+zt_packet{direction="rx",packet_type="frame"} 0
+zt_packet{direction="rx",packet_type="multicast_like"} 0
+zt_packet{direction="rx",packet_type="whois"} 0
+zt_packet{direction="rx",packet_type="hello"} 0
+zt_packet{direction="rx",packet_type="error"} 0
+zt_packet{direction="rx",packet_type="network_config"} 0
+zt_packet{direction="rx",packet_type="rendezvous"} 0
+zt_packet{direction="rx",packet_type="qos"} 0
+zt_packet{direction="rx",packet_type="ext_frame"} 0
+zt_packet{direction="rx",packet_type="network_credentials"} 0
+zt_packet{direction="tx",packet_type="ack"} 0
+zt_packet{direction="rx",packet_type="ack"} 0
+zt_packet{direction="rx",packet_type="nop"} 0
+zt_packet{direction="rx",packet_type="network_config_request"} 0
+zt_packet{direction="rx",packet_type="path_negotiation_request"} 0
+zt_packet{direction="rx",packet_type="multicast_frame"} 0
+zt_packet{direction="rx",packet_type="push_direct_paths"} 0
+zt_packet{direction="tx",packet_type="network_credentials"} 0
+zt_packet{direction="rx",packet_type="remote_trace"} 0
+zt_packet{direction="tx",packet_type="ext_frame"} 0
+zt_packet{direction="rx",packet_type="ok"} 0
+zt_packet{direction="tx",packet_type="qos"} 0
+zt_packet{direction="tx",packet_type="rendezvous"} 0
+zt_packet{direction="tx",packet_type="whois"} 0
+# HELP zt_packet_error ZeroTier packet errors
+# TYPE zt_packet_error counter
+zt_packet_error{direction="tx",error_type="internal_server_error"} 0
+zt_packet_error{direction="tx",error_type="authentication_required"} 0
+zt_packet_error{direction="rx",error_type="unsupported_operation"} 0
+zt_packet_error{direction="rx",error_type="unwanted_multicast"} 0
+zt_packet_error{direction="rx",error_type="need_membership_certificate"} 0
+zt_packet_error{direction="tx",error_type="unwanted_multicast"} 0
+zt_packet_error{direction="rx",error_type="identity_collision"} 0
+zt_packet_error{direction="rx",error_type="authentication_required"} 0
+zt_packet_error{direction="rx",error_type="obj_not_found"} 0
+zt_packet_error{direction="rx",error_type="network_access_denied"} 0
+zt_packet_error{direction="tx",error_type="identity_collision"} 0
+zt_packet_error{direction="rx",error_type="internal_server_error"} 0
+zt_packet_error{direction="tx",error_type="obj_not_found"} 0
+zt_packet_error{direction="tx",error_type="unsupported_operation"} 0
+zt_packet_error{direction="tx",error_type="need_membership_certificate"} 0
+zt_packet_error{direction="tx",error_type="network_access_denied"} 0
+# HELP zt_data number of bytes ZeroTier has transmitted or received
+# TYPE zt_data counter
+zt_data{direction="rx",protocol="tcp"} 0
+zt_data{direction="tx",protocol="tcp"} 0
+zt_data{direction="tx",protocol="udp"} 0
+zt_data{direction="rx",protocol="udp"} 0
+# HELP zt_num_networks number of networks this instance is joined to
+# TYPE zt_num_networks gauge
+zt_num_networks 0
+# HELP zt_peer_latency peer latency (ms)
+# TYPE zt_peer_latency histogram
+zt_peer_latency_count{node_id="cafe04eba9"} 0
+zt_peer_latency_sum{node_id="cafe04eba9"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="1"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="3"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="6"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="10"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="30"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="60"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="100"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="300"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="600"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="1000"} 0
+zt_peer_latency_bucket{node_id="cafe04eba9",le="+Inf"} 0
+zt_peer_latency_count{node_id="62f865ae71"} 0
+zt_peer_latency_sum{node_id="62f865ae71"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="1"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="3"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="6"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="10"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="30"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="60"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="100"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="300"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="600"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="1000"} 0
+zt_peer_latency_bucket{node_id="62f865ae71",le="+Inf"} 0
+zt_peer_latency_count{node_id="778cde7190"} 0
+zt_peer_latency_sum{node_id="778cde7190"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="1"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="3"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="6"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="10"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="30"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="60"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="100"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="300"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="600"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="1000"} 0
+zt_peer_latency_bucket{node_id="778cde7190",le="+Inf"} 0
+zt_peer_latency_count{node_id="cafe9efeb9"} 0
+zt_peer_latency_sum{node_id="cafe9efeb9"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="1"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="3"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="6"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="10"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="30"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="60"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="100"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="300"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="600"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="1000"} 0
+zt_peer_latency_bucket{node_id="cafe9efeb9",le="+Inf"} 0
+# HELP zt_peer_path_count number of paths to peer
+# TYPE zt_peer_path_count gauge
+zt_peer_path_count{node_id="62f865ae71",status="dead"} 0
+zt_peer_path_count{node_id="cafe04eba9",status="alive"} 0
+zt_peer_path_count{node_id="62f865ae71",status="alive"} 0
+zt_peer_path_count{node_id="778cde7190",status="dead"} 0
+zt_peer_path_count{node_id="778cde7190",status="alive"} 0
+zt_peer_path_count{node_id="cafe9efeb9",status="dead"} 0
+zt_peer_path_count{node_id="cafe04eba9",status="dead"} 0
+zt_peer_path_count{node_id="cafe9efeb9",status="alive"} 0
+# HELP zt_peer_packets number of packets to/from a peer
+# TYPE zt_peer_packets counter
+zt_peer_packets{direction="tx",node_id="cafe04eba9"} 0
+zt_peer_packets{direction="tx",node_id="62f865ae71"} 0
+zt_peer_packets{direction="rx",node_id="62f865ae71"} 0
+zt_peer_packets{direction="tx",node_id="778cde7190"} 0
+zt_peer_packets{direction="rx",node_id="778cde7190"} 0
+zt_peer_packets{direction="tx",node_id="cafe9efeb9"} 0
+zt_peer_packets{direction="rx",node_id="cafe04eba9"} 0
+zt_peer_packets{direction="rx",node_id="cafe9efeb9"} 0
+# HELP zt_peer_packet_errors number of incoming packet errors from a peer
+# TYPE zt_peer_packet_errors counter
+zt_peer_packet_errors{node_id="cafe04eba9"} 0
+zt_peer_packet_errors{node_id="62f865ae71"} 0
+zt_peer_packet_errors{node_id="778cde7190"} 0
+zt_peer_packet_errors{node_id="cafe9efeb9"} 0
+# HELP controller_network_count number of networks the controller is serving
+# TYPE controller_network_count gauge
+controller_network_count 0
+# HELP controller_member_count number of network members the controller is serving
+# TYPE controller_member_count gauge
+controller_member_count 0
+# HELP controller_network_change_count number of times a network configuration is changed
+# TYPE controller_network_change_count counter
+controller_network_change_count 0
+# HELP controller_member_change_count number of times a network member configuration is changed
+# TYPE controller_member_change_count counter
+controller_member_change_count 0
+# HELP controller_member_auth_count number of network member auths
+# TYPE controller_member_auth_count counter
+controller_member_auth_count 0
+# HELP controller_member_deauth_count number of network member deauths
+# TYPE controller_member_deauth_count counter
+controller_member_deauth_count 0
+# HELP controller_network_config_request_queue number of entries in the request queue for network configurations
+# TYPE controller_network_config_request_queue gauge
+controller_network_config_request_queue 0
+# HELP controller_sso_expiration_checks number of sso expiration checks done
+# TYPE controller_sso_expiration_checks counter
+controller_sso_expiration_checks 0
+# HELP controller_sso_timeouts number of sso timeouts
+# TYPE controller_sso_timeouts counter
+controller_sso_timeouts 0
+# HELP controller_network_config_request count of config requests handled
+# TYPE controller_network_config_request counter
+controller_network_config_request 0
+# HELP controller_network_config_request_threads number of active network config handling threads
+# TYPE controller_network_config_request_threads gauge
+controller_network_config_request_threads 0
+# HELP controller_db_get_network counter
+# TYPE controller_db_get_network counter
+controller_db_get_network 0
+# HELP controller_db_get_network_and_member counter
+# TYPE controller_db_get_network_and_member counter
+controller_db_get_network_and_member 0
+# HELP controller_db_get_networK_and_member_summary counter
+# TYPE controller_db_get_networK_and_member_summary counter
+controller_db_get_networK_and_member_summary 0
+# HELP controller_db_get_member_list counter
+# TYPE controller_db_get_member_list counter
+controller_db_get_member_list 0
+# HELP controller_db_get_network_list counter
+# TYPE controller_db_get_network_list counter
+controller_db_get_network_list 0
+# HELP controller_db_member_change counter
+# TYPE controller_db_member_change counter
+controller_db_member_change 0
+# HELP controller_db_network_change counter
+# TYPE controller_db_network_change counter
+controller_db_network_change 0

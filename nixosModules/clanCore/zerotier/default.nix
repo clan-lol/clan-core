@@ -77,6 +77,13 @@ in
           everyone can join a public network without having the administrator to accept
         '';
       };
+      memberIps = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = ''
+          IPv6 addresses to authorize in controller.json when using the mesh controller.
+        '';
+      };
     };
     settings = lib.mkOption {
       description = "override the network config in /var/lib/zerotier/bla/$network.json";
@@ -85,11 +92,15 @@ in
   };
   config = lib.mkMerge [
     {
-      # Override license so that we can build zerotierone without
-      # having to re-import nixpkgs.
       services.zerotierone.package = lib.mkDefault (
-        pkgs.callPackage ../../../pkgs/zerotierone {
-          includeController = cfg.controller.enable;
+        pkgs.symlinkJoin {
+          name = "mesh-controller-zerotier";
+          paths = [ config.clan.core.clanPkgs.mesh-controller ];
+          postBuild = ''
+            ln -sf $out/bin/meshd $out/bin/zerotier-one
+            ln -sf $out/bin/mesh-cli $out/bin/zerotier-cli
+            ln -sf $out/bin/mesh-idtool $out/bin/zerotier-idtool
+          '';
         }
       );
     }
@@ -179,6 +190,11 @@ in
         joinNetworks = [ cfg.networkId ];
       };
 
+      systemd.services.zerotierone.serviceConfig = {
+        StateDirectory = lib.mkForce "zerotier-one";
+        WorkingDirectory = lib.mkForce "/var/lib/zerotier-one";
+      };
+
       # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
       # So we host our own relay in https://git.clan.lol/clan/clan-infra
       services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
@@ -210,8 +226,6 @@ in
         '';
       };
       clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
-
-      environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
       clan.core.vars.generators.zerotier = {
@@ -281,13 +295,49 @@ in
       };
       environment.etc."zerotier/network-id".text =
         config.clan.core.vars.generators.zerotier.files.zerotier-network-id.value;
-      systemd.services.zerotierone.serviceConfig.ExecStartPost = [
-        "+${pkgs.writeShellScript "whitelist-controller" ''
-          ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
-            builtins.substring 0 10 cfg.networkId
-          }
-        ''}"
-      ];
     })
+    (lib.mkIf (cfg.controller.enable && cfg.networkId != null) (
+      let
+        memberIps = lib.unique (
+          cfg.controller.memberIps
+          ++ lib.optional (
+            config.clan.core.vars.generators ? zerotier
+          ) config.clan.core.vars.generators.zerotier.files.zerotier-ip.value
+        );
+        controllerJson =
+          pkgs.runCommand "zerotier-controller.json" { nativeBuildInputs = [ pkgs.python3 ]; }
+            ''
+              python3 - <<'PY'
+              import ipaddress
+              import json
+              import os
+
+              member_ips = json.loads(${builtins.toJSON (builtins.toJSON memberIps)})
+              network_id = "${cfg.networkId}"
+              members = []
+              for ip in member_ips:
+                  try:
+                      addr = ipaddress.IPv6Address(ip)
+                  except ValueError:
+                      continue
+                  node_id = int.from_bytes(addr.packed[10:16], byteorder="big")
+                  members.append(format(node_id, "x").zfill(10)[-10:])
+              members = sorted(set(members))
+              with open(os.environ["out"], "w", encoding="utf-8") as f:
+                  json.dump({"networks": [{"id": network_id, "members": members}]}, f, indent=2)
+              PY
+            '';
+      in
+      {
+        systemd.services.zerotierone.serviceConfig.ExecStartPre = lib.mkAfter [
+          "+${pkgs.writeShellScript "install-controller-json" ''
+            mkdir -p /var/lib/zerotier-one
+            cp -f ${controllerJson} /var/lib/zerotier-one/controller.json
+          ''}"
+        ];
+        systemd.services.zerotierone.reloadIfChanged = true;
+        systemd.services.zerotierone.reload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+      }
+    ))
   ];
 }

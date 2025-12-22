@@ -170,42 +170,32 @@
                   ;
               })
             ];
-            config = {
-              systemd.services.zerotier-inventory-autoaccept =
-                let
-                  machines = uniqueStrings (
-                    (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
-                    ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
-                    ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
-                  );
-                  networkIps = builtins.foldl' (
-                    ips: name:
-                    let
-                      ztIp = clanLib.getPublicValue {
-                        flake = config.clan.core.settings.directory;
-                        machine = name;
-                        generator = "zerotier";
-                        file = "zerotier-ip";
-                        default = null;
-                      };
-                    in
-                    if ztIp != null then ips ++ [ ztIp ] else ips
-                  ) [ ] machines;
-                  allHostIPs = settings.allowedIps ++ networkIps;
-                in
-                {
-                  wantedBy = [ "multi-user.target" ];
-                  after = [ "zerotierone.service" ];
-                  path = [ config.clan.core.clanPkgs.zerotierone ];
-                  serviceConfig.ExecStart = pkgs.writeShellScript "zerotier-inventory-autoaccept" ''
-                    ${lib.concatMapStringsSep "\n" (host: ''
-                      ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
-                    '') allHostIPs}
-                  '';
-                };
-
-              clan.core.networking.zerotier.controller.enable = lib.mkDefault true;
-            };
+            config =
+              let
+                machines = uniqueStrings (
+                  (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
+                  ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
+                  ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
+                );
+                networkIps = builtins.foldl' (
+                  ips: name:
+                  let
+                    ztIp = clanLib.getPublicValue {
+                      flake = config.clan.core.settings.directory;
+                      machine = name;
+                      generator = "zerotier";
+                      file = "zerotier-ip";
+                      default = null;
+                    };
+                  in
+                  if ztIp != null then ips ++ [ ztIp ] else ips
+                ) [ ] machines;
+                allHostIPs = settings.allowedIps ++ networkIps;
+              in
+              {
+                clan.core.networking.zerotier.controller.memberIps = allHostIPs;
+                clan.core.networking.zerotier.controller.enable = lib.mkDefault true;
+              };
 
           };
       };

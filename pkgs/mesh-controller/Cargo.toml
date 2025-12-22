@@ -1,0 +1,21 @@
+[package]
+name = "mesh-controller"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal network mesh controller in Rust"
+license = "MPL-2.0"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "std"] }
+serde_json = { version = "1", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+libc = "0.2"
+tempfile = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1

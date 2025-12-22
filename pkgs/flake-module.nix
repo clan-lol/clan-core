@@ -11,6 +11,7 @@
     ./option-search/flake-module.nix
     ./docs-from-code/flake-module.nix
     ./testing/flake-module.nix
+    ./mesh-controller/flake-module.nix
   ];
 
   perSystem =
