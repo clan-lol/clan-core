@@ -771,7 +771,7 @@ def test_prompt(
 
     # Mock the prompt responses to simulate user input
     monkeypatch.setattr(
-        "clan_cli.vars.prompt.MOCK_PROMPT_RESPONSE",
+        "clan_lib.vars.prompt.MOCK_PROMPT_RESPONSE",
         iter(["line input", "my\nmultiline\ninput\n", "prompt_persist"]),
     )
 
