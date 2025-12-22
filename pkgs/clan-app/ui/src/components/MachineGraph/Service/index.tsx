@@ -30,12 +30,14 @@ const SelectService: Component = () => {
   const [clan] = useClanContext();
 
   // https://docs.solidjs.com/reference/jsx-attributes/use#avoiding-tree-shaking
-  /* eslint-disable no-constant-binary-expression, @typescript-eslint/no-unused-expressions */
+  /* eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unused-expressions, @typescript-eslint/no-unnecessary-condition */
   false && onClickOutside;
 
   return (
     <div
-      use:onClickOutside={() => setToolbarMode({ type: "select" })}
+      use:onClickOutside={() => {
+        setToolbarMode({ type: "select" });
+      }}
       class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2"
     >
       <div class="w-[30rem]">

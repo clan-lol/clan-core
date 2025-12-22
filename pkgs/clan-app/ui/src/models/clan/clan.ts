@@ -82,11 +82,11 @@ export function createClanStore(
 
 export type ClanMethods = {
   setClan: SetStoreFunction<Clan>;
-  activateClan(): Promise<void>;
-  deactivateClan(): void;
-  updateClanData(data: Partial<ClanData>): Promise<void>;
-  removeClan(): void;
-  refreshClan(): Promise<void>;
+  activateClan(this: void): Promise<void>;
+  deactivateClan(this: void): void;
+  updateClanData(this: void, data: Partial<ClanData>): Promise<void>;
+  removeClan(this: void): void;
+  refreshClan(this: void): Promise<void>;
 };
 export function createClanMethods(
   clan: Accessor<Clan>,
@@ -95,8 +95,7 @@ export function createClanMethods(
     ClansMethods,
   ],
 ): ClanMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setClan: SetStoreFunction<Clan> = (...args) => {
+  const setClan: SetStoreFunction<Clan> = (...args: unknown[]) => {
     const i = clan().index;
     if (i === -1) {
       throw new Error(
@@ -108,25 +107,25 @@ export function createClanMethods(
   };
   const self: ClanMethods = {
     setClan,
-    async activateClan() {
+    async activateClan(this: void) {
       await activateClan(clan());
     },
-    deactivateClan() {
+    deactivateClan(this: void) {
       if (clan().isActive) {
         deactivateClan();
       }
     },
-    async updateClanData(data) {
+    async updateClanData(this: void, data) {
       // TODO: Use partial update once supported by backend and solidjs
       // https://github.com/solidjs/solid/issues/2475
       const d = { ...clan().data, ...data };
       await api.clan.updateClanData(clan().id, d);
       setClan("data", d);
     },
-    removeClan() {
+    removeClan(this: void) {
       removeClan(clan());
     },
-    async refreshClan() {
+    async refreshClan(this: void) {
       const entity = await api.clan.getClan(clan().id);
       const newClan = createClan(entity, clans);
       setClan(reconcile(newClan));

@@ -1,10 +1,10 @@
 import { API } from "@/api/API";
 
 type Methods = keyof API;
-interface Header {
+type Header = {
   logging?: { group_path: string[] };
   op_key?: string;
-}
+};
 type Body<Method extends Methods> = API[Method]["arguments"];
 type Response<Method extends Methods> = API[Method]["return"];
 type SuccessResponse<Method extends Methods> = Extract<
@@ -18,15 +18,18 @@ async function call<Method extends Methods>(
     header,
     signal,
   }: {
-    body?: Body<Method>;
-    header?: Header;
-    signal?: AbortSignal;
+    body?: Body<Method> | undefined;
+    header?: Header | undefined;
+    signal?: AbortSignal | undefined;
   } = {},
 ): Promise<SuccessResponse<Method>> {
   const fn = (
     window as unknown as Record<
       Method,
-      (args: { body?: Body<Method>; header?: Header }) => Promise<{
+      (args: {
+        body?: Body<Method> | undefined;
+        header?: Header | undefined;
+      }) => Promise<{
         body: Response<Method>;
         header: Record<string, unknown>;
       }>
@@ -38,9 +41,11 @@ async function call<Method extends Methods>(
 
   const taskId = window.crypto.randomUUID();
   let isDone = false;
-  signal?.addEventListener("abort", async () => {
+  signal?.addEventListener("abort", () => {
     if (isDone) return;
-    await call("delete_task", { body: { task_id: taskId } });
+    void (async () => {
+      await call("delete_task", { body: { task_id: taskId } });
+    })();
   });
 
   const res = await fn({
@@ -54,7 +59,9 @@ async function call<Method extends Methods>(
 
   if (res.body.status == "error") {
     const err = res.body.errors[0];
-    throw new Error(`${err.message}: ${err.description}`);
+    if (err) {
+      throw new Error(`${err.message}: ${err.description}`);
+    }
   }
 
   return res.body as SuccessResponse<Method>;

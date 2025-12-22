@@ -1,5 +1,5 @@
 export default {
-  async get(url: string, { signal }: { signal?: AbortSignal }) {
+  async get(url: string, { signal = null }: { signal?: AbortSignal | null }) {
     const res = await fetch(url, { signal });
     return await res.json();
   },

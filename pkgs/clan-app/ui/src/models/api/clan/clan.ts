@@ -147,11 +147,11 @@ export async function getClan(id: string): Promise<ClanEntity> {
         id: service.usage_ref.name,
         isCore: service.native,
         description: service.info.manifest.description,
-        source: service.usage_ref.input!,
+        source: service.usage_ref.input,
         roles: service.info.roles as Record<string, ServiceRoleEntity>,
         rolesSchema: {},
         instances: service.instance_refs.map((instanceName) => {
-          const instance = serviceInstancesRes.data[instanceName]!;
+          const instance = serviceInstancesRes.data[instanceName];
           return {
             data: {
               name: instanceName,
@@ -163,7 +163,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
                     machine.instance_refs?.includes(instanceName),
                   )
                   .map(([id]) => id),
-                tags: Object.keys(role.tags!),
+                tags: Object.keys(role.tags),
               })),
             },
           };

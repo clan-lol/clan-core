@@ -22,12 +22,12 @@ export type Clans = {
 };
 
 export async function initClans(): Promise<ClansEntity> {
-  const ids: string[] = (() => {
+  const ids = (() => {
     const s = localStorage.getItem("clanIds");
     if (s === null) {
       return [];
     }
-    return JSON.parse(s);
+    return JSON.parse(s) as string[];
   })();
   let activeIndex: number = (() => {
     const s = localStorage.getItem("activeClanIndex");
@@ -88,16 +88,24 @@ export function createClansStore(
 
 export type ClansMethods = {
   setClans: SetStoreFunction<Clans>;
-  activateClan(item: Clan | ClanMeta | string): Promise<Clan | null>;
-  deactivateClan(): void;
-  deactivateClan(item: Clan | string): Clan | null;
-  loadClan(id: string, opts?: { active?: boolean }): Promise<Clan | null>;
+  activateClan(
+    this: void,
+    item: Clan | ClanMeta | string,
+  ): Promise<Clan | null>;
+  deactivateClan(this: void): void;
+  deactivateClan(this: void, item: Clan | string): Clan | null;
+  loadClan(
+    this: void,
+    id: string,
+    opts?: { active?: boolean },
+  ): Promise<Clan | null>;
   createClan(
+    this: void,
     id: string,
     data: ClanDataEntity,
     opts?: { active?: boolean },
   ): Promise<Clan>;
-  removeClan(item: Clan | ClanMeta | string): Clan | ClanMeta;
+  removeClan(this: void, item: Clan | ClanMeta | string): Clan | ClanMeta;
 };
 export function createClansMethods(
   clans: Clans,
@@ -169,7 +177,7 @@ export function createClansMethods(
         return clan;
       }
       const entity = await api.clan.getClan(clan.id);
-      const newClan = createClan(entity as ClanEntity, clans);
+      const newClan = createClan(entity, clans);
       setClans(
         produce((clans) => {
           clans.all[i] = newClan;
@@ -243,9 +251,15 @@ export function createClansMethods(
 function persistClans(clans: Clans) {
   const changes = createMemo(captureStoreUpdates(clans));
   createEffect(
-    on(changes, (changes) => persistClansChanges(changes, clans), {
-      defer: true,
-    }),
+    on(
+      changes,
+      (changes) => {
+        persistClansChanges(changes, clans);
+      },
+      {
+        defer: true,
+      },
+    ),
   );
 }
 
@@ -321,16 +335,19 @@ function isPath(
   change: NestedUpdate<Clans>,
   targetPath: (string | number)[],
 ): boolean {
-  // @ts-expect-error AllNestedObjects results in infinite recurrsion for
-  // circular types
-  const { path, value } = change;
+  // This is needed because AllNestedObjects results in infinite recurrsion for
+  // circular types (Clans contains Clan contains Clans)
+  const { path, value } = change as unknown as {
+    path: (string | number)[];
+    value: Record<string, unknown>;
+  };
   if (path.length === targetPath.length) {
     return pathMatches(path, targetPath);
   }
   const base = path.slice(0, targetPath.length - 1);
   const lastIndex = targetPath.length - 1;
-  if (base.length === lastIndex) {
-    const last = targetPath[lastIndex]!;
+  const last = targetPath[lastIndex];
+  if (last) {
     return pathMatches(base, targetPath.slice(0, lastIndex)) && last in value;
   }
   return false;

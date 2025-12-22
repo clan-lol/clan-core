@@ -14,7 +14,7 @@ export async function pickFile({
       },
     },
   });
-  return res.data![0];
+  return res.data[0];
 }
 
 export async function pickDir({
@@ -30,7 +30,7 @@ export async function pickDir({
       },
     },
   });
-  return res.data![0];
+  return res.data[0];
 }
 
 export async function pickClanDir(): Promise<string> {

@@ -34,29 +34,37 @@ export function createMachinesStore(
 
 export type MachinesMethods = {
   setMachines: SetStoreFunction<Machines>;
-  activateMachine(item: Machine | string): Machine | null;
-  deactivateMachine(): void;
-  deactivateMachine(item: Machine | string): Machine | null;
+  activateMachine(this: void, item: Machine | string): Machine | null;
+  deactivateMachine(this: void): void;
+  deactivateMachine(this: void, item: Machine | string): Machine | null;
   updateMachineData(
+    this: void,
     item: Machine | string,
     data: Partial<MachineData>,
   ): Promise<void>;
-  createMachine(id: string, data: MachineDataEntity): Promise<Machine>;
+  createMachine(
+    this: void,
+    id: string,
+    data: MachineDataEntity,
+  ): Promise<Machine>;
   toggleHighlightedMachines(
+    this: void,
     items: (string | Machine)[] | string | Machine,
   ): void;
-  setHighlightedMachines(items: (string | Machine)[] | string | Machine): void;
-  unhighlightMachines(): void;
-  deleteMachine(item: Machine | string): Promise<void>;
-  machinesByTag(tag: string): Machine[];
+  setHighlightedMachines(
+    this: void,
+    items: (string | Machine)[] | string | Machine,
+  ): void;
+  unhighlightMachines(this: void): void;
+  deleteMachine(this: void, item: Machine | string): Promise<void>;
+  machinesByTag(this: void, tag: string): Machine[];
 };
 export function createMachinesMethods(
   machines: Accessor<Machines>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  [clans, clansMethods]: readonly [Clans, ClansMethods],
+  _: readonly [Clans, ClansMethods],
 ): MachinesMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachines: SetStoreFunction<Machines> = (...args) => {
+  const setMachines: SetStoreFunction<Machines> = (...args: unknown[]) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClan("machines", ...args);
   };
@@ -155,7 +163,8 @@ export function createMachinesMethods(
     },
     toggleHighlightedMachines(items) {
       if (!Array.isArray(items)) {
-        return self.toggleHighlightedMachines([items]);
+        self.toggleHighlightedMachines([items]);
+        return;
       }
 
       const togglingMachines = Object.fromEntries(
@@ -182,7 +191,8 @@ export function createMachinesMethods(
     },
     setHighlightedMachines(items) {
       if (!Array.isArray(items)) {
-        return self.setHighlightedMachines([items]);
+        self.setHighlightedMachines([items]);
+        return;
       }
       const highlighted = Object.fromEntries(
         items.map((item) => {
@@ -202,6 +212,7 @@ export function createMachinesMethods(
       await api.clan.deleteMachine(machine.id, clan().id);
       setMachines(
         produce((machines) => {
+          /* eslint-disable @typescript-eslint/no-dynamic-delete */
           delete machines.all[machine.id];
           if (machines.activeMachine?.id === machine.id) {
             machines.activeMachine = null;

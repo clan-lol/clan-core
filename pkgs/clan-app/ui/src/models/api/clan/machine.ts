@@ -165,7 +165,7 @@ export async function getMachineVarsPromptGroups(
   });
   const groups: MachineVarsPromptGroupsEntity = {};
   for (const generator of res.data) {
-    for (const prompt of generator.prompts!) {
+    for (const prompt of generator.prompts) {
       const groupId = prompt.display?.group || "";
       let group: MachineVarsPromptsEntity;
       if (!(groupId in groups)) {

@@ -30,7 +30,10 @@ export type BlockDeviceEntity = {
 };
 export type BlockDevice = BlockDeviceEntity;
 
-function createSysMethods(sys: Sys, setSys: SetStoreFunction<Sys>): SysMethods {
+function createSysMethods(
+  _sys: Sys,
+  _setSys: SetStoreFunction<Sys>,
+): SysMethods {
   const self: SysMethods = {
     async pickFile(opts) {
       return await api.clan.pickFile(opts);
@@ -45,7 +48,7 @@ function createSysMethods(sys: Sys, setSys: SetStoreFunction<Sys>): SysMethods {
       return await api.clan.getFlashableDevices();
     },
     async flashInstaller(opts) {
-      return await api.clan.flashInstaller(opts);
+      await api.clan.flashInstaller(opts);
     },
   };
   return self;

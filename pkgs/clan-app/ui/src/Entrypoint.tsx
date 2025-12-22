@@ -22,7 +22,7 @@ const Entrypoint: Component = () => {
   // const foo = createAsync(async () => await initFoo());
   return (
     <ErrorBoundary
-      fallback={(err, reset) => {
+      fallback={(err: Error, reset) => {
         console.error(err);
         return (
           <div>

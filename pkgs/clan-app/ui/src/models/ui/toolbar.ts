@@ -12,11 +12,11 @@ export type ToolbarMode =
     };
 
 export type ToolbarMethods = {
-  setToolbarMode(mode: ToolbarMode): void;
+  setToolbarMode(this: void, mode: ToolbarMode): void;
 };
 
 export function createToolbarMethods(
-  ui: UI,
+  _: UI,
   setUI: SetStoreFunction<UI>,
 ): ToolbarMethods {
   const self: ToolbarMethods = {

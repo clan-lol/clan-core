@@ -197,7 +197,7 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
     return {};
   }
   const all = JSON.parse(s) as Record<string, Record<string, MachinePosition>>;
-  return mapObjectValues(all, ([clanId, p]) => new MachinePositions(p));
+  return mapObjectValues(all, ([, p]) => new MachinePositions(p));
 })();
 
 export function createMachineStore(
@@ -264,10 +264,9 @@ export function createMachineMethods(
     { setMachines, activateMachine, deactivateMachine, updateMachineData },
   ]: readonly [Accessor<Machines>, MachinesMethods],
   [clan]: readonly [Accessor<Clan>, ClanMethods],
-  [clans]: readonly [Clans, ClansMethods],
+  _: readonly [Clans, ClansMethods],
 ): MachineMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setMachine: SetStoreFunction<Machine> = (...args) => {
+  const setMachine: SetStoreFunction<Machine> = (...args: unknown[]) => {
     const m = machine();
     if (m != machines().all[m.id]) {
       throw new Error(

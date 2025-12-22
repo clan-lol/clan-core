@@ -22,12 +22,12 @@ export type Modal =
     };
 
 export type ModalMethods = {
-  showModal(modal: Modal): void;
-  closeModal(): void;
+  showModal(this: void, modal: Modal): void;
+  closeModal(this: void): void;
 };
 
 export function createModalMethods(
-  ui: UI,
+  _: UI,
   setUI: SetStoreFunction<UI>,
 ): ModalMethods {
   const self: ModalMethods = {

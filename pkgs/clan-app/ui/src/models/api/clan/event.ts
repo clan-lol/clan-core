@@ -6,16 +6,14 @@ export type ClanMessageHandler = (msg: ClanMessage) => void;
 const handlerGroups: Record<string, ClanMessageHandler[]> = {};
 export const onMessage = {
   addListener(name: string, handler: ClanMessageHandler) {
-    let handlers: ClanMessageHandler[];
-    if (name in handlerGroups) {
-      handlers = handlerGroups[name];
-    } else {
+    let handlers = handlerGroups[name];
+    if (!handlers) {
       handlers = handlerGroups[name] = [];
     }
     handlers.push(handler);
   },
   removeListener(name: string, handler: ClanMessageHandler) {
-    if (!(name in handlerGroups)) {
+    if (!handlerGroups[name]) {
       return;
     }
     const handlers = handlerGroups[name];
@@ -28,9 +26,9 @@ export const onMessage = {
 };
 
 window.notifyBus = (msg) => {
-  for (const handler of handlerGroups[msg.origin] || []) {
+  for (const handler of handlerGroups[msg.origin] ?? []) {
     handler({
-      ...(msg.data || {}),
+      ...(msg.data ?? {}),
       type: msg.topic,
     });
   }

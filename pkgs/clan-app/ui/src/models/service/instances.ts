@@ -52,25 +52,32 @@ export function createServiceInstancesStore(
 export type ServiceInstancesMethods = {
   setServiceInstances: SetStoreFunction<ServiceInstances>;
   activateServiceInstance(
+    this: void,
     item: ServiceInstance | string,
   ): ServiceInstance | null;
-  deactivateServiceInstance(): void;
+  deactivateServiceInstance(this: void): void;
   deactivateServiceInstance(
+    this: void,
     item: ServiceInstance | string,
   ): ServiceInstance | null;
   addServiceInstance(
+    this: void,
     data: ServiceInstanceDataEntity,
     service: Service,
   ): Promise<ServiceInstance>;
-  updateServiceInstanceData(data: ServiceInstanceDataEntity): Promise<void>;
+  updateServiceInstanceData(
+    this: void,
+    data: ServiceInstanceDataEntity,
+  ): Promise<void>;
 };
 function createInstancesMethods(
   instances: Accessor<ServiceInstances>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  [clans]: readonly [Clans, ClansMethods],
+  _: readonly [Clans, ClansMethods],
 ): ServiceInstancesMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setInstances: SetStoreFunction<ServiceInstances> = (...args) => {
+  const setInstances: SetStoreFunction<ServiceInstances> = (
+    ...args: unknown[]
+  ) => {
     // @ts-expect-error ...args won't infer properly for overloaded functions
     setClan("serviceInstances", ...args);
   };

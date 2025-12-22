@@ -70,19 +70,20 @@ export function createServiceInstanceStore(
 
 export type ServiceInstanceMethods = {
   setServiceInstance: SetStoreFunction<ServiceInstance>;
-  activateServiceInstance(): void;
+  activateServiceInstance(this: void): void;
 };
 export function createInstanceMethods(
   instance: Accessor<ServiceInstance>,
-  [instances, { activateServiceInstance }]: readonly [
+  [, { activateServiceInstance }]: readonly [
     Accessor<ServiceInstances>,
     ServiceInstancesMethods,
   ],
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
-  [clans]: readonly [Clans, ClansMethods],
+  _: readonly [Clans, ClansMethods],
 ): ServiceInstanceMethods {
-  // @ts-expect-error ...args won't infer properly for overloaded functions
-  const setInstance: SetStoreFunction<ServiceInstance> = (...args) => {
+  const setInstance: SetStoreFunction<ServiceInstance> = (
+    ...args: unknown[]
+  ) => {
     const i = clan().serviceInstances.all.indexOf(instance());
     if (i === -1) {
       throw new Error(
