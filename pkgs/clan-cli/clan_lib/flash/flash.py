@@ -183,7 +183,7 @@ def run_machine_flash(
             disko_install.extend(extra_args)
 
             cmd = nix_shell(
-                ["disko"],
+                [f"{clan_core_flake()}#disko"],
                 disko_install,
             )
             run(
