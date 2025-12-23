@@ -29,6 +29,7 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
     opts = HardwareGenerateOptions(
         machine=machine,
         password=args.password,
+        kexec=None,  # unlike `init`, we do not kexec on `update`
         backend=HardwareConfig(args.backend),
         debug=args.debug,
     )
@@ -68,6 +69,7 @@ def init_hardware_config_command(args: argparse.Namespace) -> None:
     opts = HardwareGenerateOptions(
         machine=machine,
         password=args.password,
+        kexec=args.kexec,
         backend=HardwareConfig(args.backend),
         debug=args.debug,
     )
@@ -144,6 +146,11 @@ def register_init_hardware_config(parser: argparse.ArgumentParser) -> None:
         dest="identity_file",
         type=Path,
         help="specify which SSH private key file to use",
+    )
+    parser.add_argument(
+        "--kexec",
+        type=str,
+        help="use another kexec tarball to bootstrap NixOS",
     )
 
 
