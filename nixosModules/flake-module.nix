@@ -13,7 +13,6 @@ let
         inputs.sops-nix."${_class}Modules".sops
       ]
       ++ lib.optionals (_class == "nixos") [
-        inputs.nixos-facter-modules.nixosModules.facter
         inputs.disko.nixosModules.default
         inputs.data-mesher.nixosModules.data-mesher
       ]

@@ -7,7 +7,7 @@ let
 in
 {
   _class = "nixos";
-  facter.reportPath = lib.mkIf (builtins.pathExists facterJson) facterJson;
+  hardware.facter.reportPath = lib.mkIf (builtins.pathExists facterJson) facterJson;
   warnings =
     lib.optionals
       (builtins.all builtins.pathExists [
