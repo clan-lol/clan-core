@@ -145,9 +145,6 @@ class Error(Exception):
 def prepare_machine_root(root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
     root.joinpath("etc").mkdir(parents=True, exist_ok=True)
-    root.joinpath(".env").write_text(
-        "\n".join(f"{k}={v}" for k, v in os.environ.items()),
-    )
 
 
 def pythonize_name(name: str) -> str:
