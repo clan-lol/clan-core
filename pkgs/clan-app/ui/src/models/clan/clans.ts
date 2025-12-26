@@ -27,14 +27,30 @@ export async function initClans(): Promise<ClansEntity> {
     if (s === null) {
       return [];
     }
-    return JSON.parse(s) as string[];
+    try {
+      return JSON.parse(s) as string[];
+    } catch (err) {
+      console.error(
+        "Failed to parse clanIds from localStorage, data was corrupted, assuming no clan was loaded",
+        err,
+      );
+      return [];
+    }
   })();
   let activeIndex: number = (() => {
     const s = localStorage.getItem("activeClanIndex");
     if (s === null) {
       return -1;
     }
-    return parseInt(s, 10);
+    try {
+      return parseInt(s, 10);
+    } catch (err) {
+      console.error(
+        "Failed to parse activeIndex from localStorage, data was corrupted, assuming no clan is active",
+        err,
+      );
+      return -1;
+    }
   })();
 
   if (ids.length === 0) {
