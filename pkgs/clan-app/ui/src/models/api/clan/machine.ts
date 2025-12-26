@@ -256,30 +256,33 @@ export async function installMachine(
     handler = (msg) => onProgress(msg.type as InstallMachineProgress);
     onMessage.addListener("run_machine_install", handler);
   }
-  await client.post("run_machine_install", {
-    signal: opts.signal,
-    body: {
-      opts: {
-        machine: {
-          name: machineId,
-          flake: {
-            identifier: clanId,
+  try {
+    await client.post("run_machine_install", {
+      signal: opts.signal,
+      body: {
+        opts: {
+          machine: {
+            name: machineId,
+            flake: {
+              identifier: clanId,
+            },
+          },
+        },
+        target_host: {
+          address: opts.ssh.address,
+          port: opts.ssh.port,
+          password: opts.ssh.password,
+          ssh_options: {
+            StrictHostKeyChecking: "no",
+            UserKnownHostsFile: "/dev/null",
           },
         },
       },
-      target_host: {
-        address: opts.ssh.address,
-        port: opts.ssh.port,
-        password: opts.ssh.password,
-        ssh_options: {
-          StrictHostKeyChecking: "no",
-          UserKnownHostsFile: "/dev/null",
-        },
-      },
-    },
-  });
-  if (onProgress) {
-    onMessage.removeListener("run_machine_install", handler!);
+    });
+  } finally {
+    if (onProgress) {
+      onMessage.removeListener("run_machine_install", handler!);
+    }
   }
 }
 
@@ -294,23 +297,29 @@ export async function updateMachine(
     handler = (msg) => onProgress(msg.type as InstallMachineProgress);
     onMessage.addListener("run_machine_update", handler);
   }
-  await client.post("run_machine_update", {
-    signal: opts.signal,
-    body: {
-      machine: {
-        flake: { identifier: clanId },
-        name: machineId,
-      },
-      build_host: null,
-      target_host: {
-        address: opts.ssh.address,
-        port: opts.ssh.port,
-        password: opts.ssh.password,
-        ssh_options: {
-          StrictHostKeyChecking: "no",
-          UserKnownHostsFile: "/dev/null",
+  try {
+    await client.post("run_machine_update", {
+      signal: opts.signal,
+      body: {
+        machine: {
+          flake: { identifier: clanId },
+          name: machineId,
+        },
+        build_host: null,
+        target_host: {
+          address: opts.ssh.address,
+          port: opts.ssh.port,
+          password: opts.ssh.password,
+          ssh_options: {
+            StrictHostKeyChecking: "no",
+            UserKnownHostsFile: "/dev/null",
+          },
         },
       },
-    },
-  });
+    });
+  } finally {
+    if (onProgress) {
+      onMessage.removeListener("run_machine_update", handler!);
+    }
+  }
 }
