@@ -236,10 +236,12 @@ export function createClansMethods(
       const [clan, i] = getClan(item);
       setClans(
         produce((clans) => {
-          clans.all.splice(i, 1);
-          if (clans.activeClan === clan) {
+          // produce creates a new proxy to be able to track the change
+          // don't compare object directly
+          if (clans.activeClan?.id === clan.id) {
             clans.activeClan = null;
           }
+          clans.all.splice(i, 1);
         }),
       );
       return clan;

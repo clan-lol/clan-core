@@ -212,11 +212,11 @@ export function createMachinesMethods(
       await api.clan.deleteMachine(machine.id, clan().id);
       setMachines(
         produce((machines) => {
-          /* eslint-disable @typescript-eslint/no-dynamic-delete */
-          delete machines.all[machine.id];
           if (machines.activeMachine?.id === machine.id) {
             machines.activeMachine = null;
           }
+          /* eslint-disable @typescript-eslint/no-dynamic-delete */
+          delete machines.all[machine.id];
         }),
       );
     },

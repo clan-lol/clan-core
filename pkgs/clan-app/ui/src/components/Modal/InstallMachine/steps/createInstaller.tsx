@@ -16,7 +16,7 @@ import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon/Icon";
-import { Show, Suspense } from "solid-js";
+import { onCleanup, Show, Suspense } from "solid-js";
 import cx from "classnames";
 import usbLogo from "@/logos/usb-stick-min.png?url";
 import { useSysContext } from "@/src/models";
@@ -24,7 +24,7 @@ import { createAsync } from "@solidjs/router";
 import ModalHeading from "../../components/ModalHeading";
 
 const Prose = () => (
-  <div class="h-[30rem] w-svw max-w-3xl p-4">
+  <div class="h-[30rem] w-svw max-w-3xl bg-white p-4">
     <StepLayout
       body={
         <div class="flex flex-col gap-4">
@@ -267,6 +267,10 @@ const FlashDone = () => {
     controller.abort();
     stepSignal.previous();
   };
+
+  onCleanup(() => {
+    controller.abort();
+  });
 
   return (
     <Suspense

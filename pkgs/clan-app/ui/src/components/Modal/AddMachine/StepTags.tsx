@@ -1,7 +1,4 @@
-import {
-  BackButton,
-  StepLayout,
-} from "@/src/components/Steps";
+import { BackButton, StepLayout } from "@/src/components/Steps";
 import * as v from "valibot";
 import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
 import {
@@ -44,6 +41,8 @@ export const StepTags = () => {
       ...values,
     }));
 
+    // FIXME: this design is weird. Go to the next step and then do something in
+    // the background.
     stepSignal.next();
     await createMachine(
       store.general.id,

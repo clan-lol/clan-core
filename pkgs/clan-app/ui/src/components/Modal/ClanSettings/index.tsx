@@ -10,12 +10,12 @@ import styles from "./ClanSettings.module.css";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { tooltipText } from "@/src/components/Form";
 import { TextArea } from "@/src/components/Form/TextArea";
-import { Component, createSignal, Show, splitProps } from "solid-js";
+import { batch, Component, createSignal, Show, splitProps } from "solid-js";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
-import { ClanData, useClanContext } from "@/src/models";
+import { ClanData, useClanContext, useUIContext } from "@/src/models";
 import TitledModal from "../components/TitledModal";
 import ModalHeading from "../components/ModalHeading";
 
@@ -28,6 +28,7 @@ const schema = v.object({
 type FieldNames = "name" | "description" | "icon";
 
 const ClanSettings: Component = () => {
+  const [, { closeModal }] = useUIContext();
   const [clan, { updateClanData, removeClan }] = useClanContext();
   const [saving, setSaving] = createSignal(false);
 
@@ -40,6 +41,8 @@ const ClanSettings: Component = () => {
 
   const onSubmit: SubmitHandler<ClanData> = async (data, event) => {
     setSaving(true);
+    // TODO: display the error in the UI
+    // and resets the error when re-submit
     await updateClanData(data);
     setSaving(false);
   };
@@ -59,7 +62,10 @@ const ClanSettings: Component = () => {
   const removeDisabled = () => removeValue() !== clan().data.name;
 
   const onRemove = () => {
-    removeClan();
+    batch(() => {
+      closeModal();
+      removeClan();
+    });
   };
 
   return (
@@ -136,8 +142,11 @@ const ClanSettings: Component = () => {
                   value: removeValue(),
                   placeholder: "Enter the name of this Clan",
                   onKeyDown: (event) => {
-                    if (event.key == "Enter" && !removeDisabled()) {
-                      onRemove();
+                    if (event.key == "Enter") {
+                      event.preventDefault();
+                      if (!removeDisabled()) {
+                        onRemove();
+                      }
                     }
                   },
                 }}

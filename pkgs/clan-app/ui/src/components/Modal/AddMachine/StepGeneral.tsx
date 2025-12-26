@@ -54,6 +54,7 @@ export const StepGeneral = () => {
 
   const [formStore, { Form, Field }] = createForm<GeneralForm>({
     validate: valiForm(GeneralSchema),
+    // FIXME: when going back from a step, the value will be reset
     initialValues: { ...store.general, machineClass: "nixos" },
   });
 
@@ -139,7 +140,10 @@ export const StepGeneral = () => {
                 <Field name="machineClass">
                   {(field, props) => (
                     <Select
-                      zIndex={100}
+                      // TODO: this value has to be greater than a dialog/modal's
+                      // z-index, other wise the dropdown list won't display in a
+                      // model. Make this value static
+                      zIndex={10000}
                       {...props}
                       value={field.value}
                       error={field.error}

@@ -196,8 +196,19 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
   if (s === null) {
     return {};
   }
-  const all = JSON.parse(s) as Record<string, Record<string, MachinePosition>>;
-  return mapObjectValues(all, ([, p]) => new MachinePositions(p));
+  try {
+    const all = JSON.parse(s) as Record<
+      string,
+      Record<string, MachinePosition>
+    >;
+    return mapObjectValues(all, ([, p]) => new MachinePositions(p));
+  } catch (err) {
+    console.error(
+      "Failed to parse machinePositions from localStorage, data was corrupted, assuming no machine positions were recorded",
+      err,
+    );
+    return {};
+  }
 })();
 
 export function createMachineStore(

@@ -173,7 +173,7 @@ export const ConfigureAddress: Component<{
                       value={field.value}
                       orientation="horizontal"
                       validationState={
-                        getError(formStore, "port") ? "invalid" : "valid"
+                        getError(formStore, "password") ? "invalid" : "valid"
                       }
                       input={{
                         ...props,
@@ -440,6 +440,7 @@ interface PromptForm extends FieldValues {
   promptValues: PromptValues;
 }
 
+// FIXME: only replaces the first dot. If field names contain multiple dots that breaks
 const sanitize = (name: string) => {
   return name.replace(".", "__dot__");
 };

@@ -26,7 +26,8 @@ export const StepProgress = () => {
                 weight="medium"
                 family="mono"
               >
-                {store.general?.id} is being created
+                {store.general?.id /* FIXME: is optional necessary? */} is being
+                created
               </Typography>
             </>
           }
