@@ -8,8 +8,6 @@ import {
   MachineDataEntity,
   ClansMethods,
   Machine,
-  useClanContext,
-  useClansContext,
 } from "..";
 import { MachineData, MachineEntity, createMachine } from "./machine";
 import { mapObjectValues } from "@/src/util";
@@ -22,15 +20,6 @@ export type Machines = {
   highlightedMachines: Record<string, Machine>;
   activeMachine: Machine | null;
 };
-
-export function createMachinesStore(
-  machines: Accessor<Machines>,
-): [Accessor<Machines>, MachinesMethods] {
-  return [
-    machines,
-    createMachinesMethods(machines, useClanContext(), useClansContext()),
-  ];
-}
 
 export type MachinesMethods = {
   setMachines: SetStoreFunction<Machines>;
@@ -215,6 +204,8 @@ export function createMachinesMethods(
           if (machines.activeMachine?.id === machine.id) {
             machines.activeMachine = null;
           }
+          /* eslint-disable @typescript-eslint/no-dynamic-delete */
+          delete machines.highlightedMachines[machine.id];
           /* eslint-disable @typescript-eslint/no-dynamic-delete */
           delete machines.all[machine.id];
         }),

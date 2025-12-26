@@ -74,12 +74,11 @@ export async function initClans(): Promise<ClansEntity> {
 
 export function createClansStore(
   entity: Accessor<ClansEntity>,
-): readonly [Clans, ClansMethods] {
+): readonly [Clans, SetStoreFunction<Clans>] {
   const [clans, setClans] = createStore<Clans>({
     all: [],
     activeClan: null,
   });
-  const methods = createClansMethods(clans, setClans);
   createEffect(
     on(entity, (entity) => {
       const all = entity.all.map((clanEntity, i) =>
@@ -98,8 +97,7 @@ export function createClansStore(
     }),
   );
   persistClans(clans);
-
-  return [clans, methods];
+  return [clans, setClans];
 }
 
 export type ClansMethods = {

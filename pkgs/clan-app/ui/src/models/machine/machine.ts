@@ -211,20 +211,6 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
   }
 })();
 
-export function createMachineStore(
-  machine: Accessor<Machine>,
-): readonly [Accessor<Machine>, MachineMethods] {
-  return [
-    machine,
-    createMachineMethods(
-      machine,
-      useMachinesContext(),
-      useClanContext(),
-      useClansContext(),
-    ),
-  ];
-}
-
 export type MachineMethods = {
   setMachine: SetStoreFunction<Machine>;
   activateMachine(): void;

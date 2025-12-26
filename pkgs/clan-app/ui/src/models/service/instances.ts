@@ -1,4 +1,4 @@
-import { Accessor, createEffect, on } from "solid-js";
+import { Accessor } from "solid-js";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
 import {
@@ -10,9 +10,6 @@ import {
   ServiceInstance,
   ServiceInstanceDataEntity,
   createServiceInstance,
-  useClanContext,
-  useClansContext,
-  useUIContext,
 } from "..";
 import { ServiceEntity } from "./service";
 
@@ -25,29 +22,6 @@ export type ServiceInstances = {
   readonly sorted: ServiceInstance[];
   activeServiceInstance: ServiceInstance | null;
 };
-
-export function createServiceInstancesStore(
-  instances: Accessor<ServiceInstances>,
-): [Accessor<ServiceInstances>, ServiceInstancesMethods] {
-  const [, { setToolbarMode }] = useUIContext();
-  createEffect(
-    on(
-      () => instances().activeServiceInstance,
-      (instance) => {
-        if (instance) {
-          setToolbarMode({ type: "service" });
-        } else {
-          setToolbarMode({ type: "select" });
-        }
-      },
-      { defer: true },
-    ),
-  );
-  return [
-    instances,
-    createInstancesMethods(instances, useClanContext(), useClansContext()),
-  ];
-}
 
 export type ServiceInstancesMethods = {
   setServiceInstances: SetStoreFunction<ServiceInstances>;
@@ -70,7 +44,7 @@ export type ServiceInstancesMethods = {
     data: ServiceInstanceDataEntity,
   ): Promise<void>;
 };
-function createInstancesMethods(
+export function createInstancesMethods(
   instances: Accessor<ServiceInstances>,
   [clan, { setClan }]: readonly [Accessor<Clan>, ClanMethods],
   _: readonly [Clans, ClansMethods],

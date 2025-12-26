@@ -74,12 +74,6 @@ export type Tags = {
   readonly special: string[];
 };
 
-export function createClanStore(
-  clan: Accessor<Clan>,
-): readonly [Accessor<Clan>, ClanMethods] {
-  return [clan, createClanMethods(clan, useClansContext())];
-}
-
 export type ClanMethods = {
   setClan: SetStoreFunction<Clan>;
   activateClan(this: void): Promise<void>;

@@ -1,7 +1,7 @@
 import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
 import { Clan, ClanMethods, ClansEntity, Clans, ClansMethods } from "..";
-import { createClansStore } from "./clans";
-import { createClanStore } from "./clan";
+import { createClansMethods, createClansStore } from "./clans";
+import { createClanMethods } from "./clan";
 
 const ClansContext = createContext<readonly [Clans, ClansMethods]>();
 
@@ -18,8 +18,9 @@ export function useClansContext(): readonly [Clans, ClansMethods] {
 export const ClansContextProvider: FlowComponent<{
   value: Accessor<ClansEntity>;
 }> = (props) => {
+  const [clans, setClans] = createClansStore(props.value);
   return (
-    <ClansContext.Provider value={createClansStore(props.value)}>
+    <ClansContext.Provider value={[clans, createClansMethods(clans, setClans)]}>
       {props.children}
     </ClansContext.Provider>
   );
@@ -39,7 +40,9 @@ export const ClanContextProvider: FlowComponent<{
   value: Accessor<Clan>;
 }> = (props) => {
   return (
-    <ClanContext.Provider value={createClanStore(props.value)}>
+    <ClanContext.Provider
+      value={[props.value, createClanMethods(props.value, useClansContext())]}
+    >
       {props.children}
     </ClanContext.Provider>
   );

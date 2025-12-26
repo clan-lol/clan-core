@@ -1,12 +1,22 @@
-import { Accessor, createContext, FlowComponent, useContext } from "solid-js";
+import {
+  Accessor,
+  createContext,
+  createEffect,
+  FlowComponent,
+  on,
+  useContext,
+} from "solid-js";
 import {
   ServiceInstance,
   ServiceInstanceMethods,
   ServiceInstances,
   ServiceInstancesMethods,
+  useClanContext,
+  useClansContext,
+  useUIContext,
 } from "..";
-import { createServiceInstancesStore } from "./instances";
-import { createServiceInstanceStore } from "./instance";
+import { createInstancesMethods } from "./instances";
+import { createInstanceMethods } from "./instance";
 
 const ServiceInstancesContext =
   createContext<
@@ -29,9 +39,31 @@ export function useServiceInstancesContext(): readonly [
 export const ServiceInstancesContextProvider: FlowComponent<{
   value: Accessor<ServiceInstances>;
 }> = (props) => {
+  const [, { setToolbarMode }] = useUIContext();
+  createEffect(
+    on(
+      () => props.value().activeServiceInstance,
+      (instance) => {
+        if (instance) {
+          setToolbarMode({ type: "service" });
+        } else {
+          setToolbarMode({ type: "select" });
+        }
+      },
+      { defer: true },
+    ),
+  );
+
   return (
     <ServiceInstancesContext.Provider
-      value={createServiceInstancesStore(props.value)}
+      value={[
+        props.value,
+        createInstancesMethods(
+          props.value,
+          useClanContext(),
+          useClansContext(),
+        ),
+      ]}
     >
       {props.children}
     </ServiceInstancesContext.Provider>
@@ -59,7 +91,15 @@ export const ServiceInstanceContextProvider: FlowComponent<{
 }> = (props) => {
   return (
     <ServiceInstanceContext.Provider
-      value={createServiceInstanceStore(props.value)}
+      value={[
+        props.value,
+        createInstanceMethods(
+          props.value,
+          useServiceInstancesContext(),
+          useClanContext(),
+          useClansContext(),
+        ),
+      ]}
     >
       {props.children}
     </ServiceInstanceContext.Provider>

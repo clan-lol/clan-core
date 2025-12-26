@@ -54,20 +54,6 @@ export type ServiceInstanceRole = Omit<
   members: ClanMember[];
 };
 
-export function createServiceInstanceStore(
-  instance: Accessor<ServiceInstance>,
-): [Accessor<ServiceInstance>, ServiceInstanceMethods] {
-  return [
-    instance,
-    createInstanceMethods(
-      instance,
-      useServiceInstancesContext(),
-      useClanContext(),
-      useClansContext(),
-    ),
-  ];
-}
-
 export type ServiceInstanceMethods = {
   setServiceInstance: SetStoreFunction<ServiceInstance>;
   activateServiceInstance(this: void): void;
