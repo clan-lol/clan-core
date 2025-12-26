@@ -142,12 +142,11 @@
           src = ./clan_lib/nix_models;
 
           env = {
-            classFile = "clan.py";
+            existing = "typing.py";
           };
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.clanSchemaJson}/schema.json b_classes.py
-            file1=$classFile
-            file2=b_classes.py
+            file1=$existing
+            file2=${self'.legacyPackages.clan-types}/typing.py
 
             echo "Comparing $file1 and $file2"
             if cmp -s "$file1" "$file2"; then

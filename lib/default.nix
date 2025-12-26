@@ -22,7 +22,7 @@ lib.fix (
         types = import ./types { inherit lib clanLib; };
 
         introspection = import ./introspection { inherit lib; };
-        jsonschema = import ./jsonschema { inherit lib; };
+        jsonschema = import ./jsonschema { inherit lib clanLib; };
         docs = import ./docs.nix { inherit lib; };
 
         flakes = import ./flakes.nix { inherit lib clanLib; };
@@ -45,6 +45,44 @@ lib.fix (
         # Experimental
         exports = throw "clanLib.exports has been renamed. Use the utility in clanLib directly";
 
+        /**
+          Upper-case the first character, leave the rest alone
+
+          # Inputs
+
+          `str`
+          : Input string
+
+          # Type
+
+          ```
+          toUpperFirst :: string -> string
+          ```
+
+          # Examples
+          :::{.example}
+          ## `lib.strings.toUpperFirst` usage example
+
+          ```nix
+          toUpperFirst "foo"
+          => "Foo"
+          hasPrefix "fooBar"
+          => "FooBar"
+          ```
+
+          :::
+        */
+        toUpperFirst =
+          str:
+          lib.throwIfNot (lib.isString str)
+            "toUpperFirst only accepts string values, but got ${lib.typeOf str}"
+            (
+              let
+                firstChar = lib.substring 0 1 str;
+                rest = lib.substring 1 (-1) str;
+              in
+              lib.addContextFrom str (lib.toUpper firstChar + rest)
+            );
       }
       // (import ./vars/default.nix { inherit lib; })
       // (import ./exports/exports.nix { inherit lib clanLib; });

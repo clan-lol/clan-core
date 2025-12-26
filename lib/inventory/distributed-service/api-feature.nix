@@ -2,10 +2,6 @@
 # manifest.features.API = true
 # It converts the roles.interface to a json-schema
 { clanLib, prefix }:
-let
-  converter = clanLib.jsonschema {
-  };
-in
 { lib, config, ... }:
 {
   options.result.api = lib.mkOption {
@@ -21,12 +17,12 @@ in
         '';
         defaultText = lib.literalExpression ''
           {
-            peer = { $schema" = "http://json-schema.org/draft-07/schema#"; ... }
-            commuter = { $schema" = "http://json-schema.org/draft-07/schema#"; ... }
-            distributor = { $schema" = "http://json-schema.org/draft-07/schema#"; ... }
+            peer = { $schema" = "http://json-schema.org/<version>"; ... }
+            commuter = { $schema" = "http://json-schema.org/<version>"; ... }
+            distributor = { $schema" = "http://json-schema.org/<version>"; ... }
           }
         '';
-        default = lib.mapAttrs (_roleName: v: converter.parseModule v.interface) config.roles;
+        default = lib.mapAttrs (_roleName: v: clanLib.jsonschema.fromModule v.interface) config.roles;
       };
     });
   };

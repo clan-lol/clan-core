@@ -22,8 +22,8 @@
         ];
       };
 
-      legacyPackages.schemas = (
-        import ./schemas {
+      legacyPackages.clan-types = (
+        import ./clan-types {
           flakeOptions = options;
           inherit
             pkgs
