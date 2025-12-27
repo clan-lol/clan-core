@@ -6,11 +6,10 @@ from base64 import b64encode
 from collections.abc import Iterator
 from typing import Any, TypedDict, cast
 
-from clan_cli.vars.get import VarNotFoundError, get_machine_var
-
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.ssh.host import Host
+from clan_lib.vars.get import VarNotFoundError, get_machine_var
 
 log = logging.getLogger(__name__)
 
