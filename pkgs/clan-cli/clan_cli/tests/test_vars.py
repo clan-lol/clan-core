@@ -182,7 +182,7 @@ def test_generate_public_and_secret_vars(
         machines=["my_machine"],
         _flake=flake_obj,
     )
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
     assert not in_repo_store.exists(my_generator, "my_secret")
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator, "my_secret")
@@ -352,7 +352,7 @@ def test_generate_secret_var_sops_with_default_group(
         machines=["my_machine"],
         _flake=flake_obj,
     )
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
     assert not in_repo_store.exists(first_generator, "my_secret")
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(first_generator, "my_secret")
@@ -710,8 +710,8 @@ def test_generate_secret_for_multiple_machines(
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
     flake_obj = Flake(str(flake.path))
-    in_repo_store1 = in_repo.FactStore(flake=flake_obj)
-    in_repo_store2 = in_repo.FactStore(flake=flake_obj)
+    in_repo_store1 = in_repo.VarsStore(flake=flake_obj)
+    in_repo_store2 = in_repo.VarsStore(flake=flake_obj)
 
     # Create generators for each machine
     gen1 = Generator("my_generator", machines=["machine1"], _flake=flake_obj)
@@ -805,7 +805,7 @@ def test_prompt(
     )
 
     # Verify that non-persistent prompts created public vars correctly
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
     assert in_repo_store.exists(my_generator, "line_value")
     assert in_repo_store.get(my_generator, "line_value").decode() == "line input"
 
@@ -907,8 +907,8 @@ def test_shared_vars_regeneration(
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
-    in_repo_store_1 = in_repo.FactStore(machine1.flake)
-    in_repo_store_2 = in_repo.FactStore(machine2.flake)
+    in_repo_store_1 = in_repo.VarsStore(machine1.flake)
+    in_repo_store_2 = in_repo.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     child_gen_m1 = Generator(
         "child_generator", share=False, machines=["machine1"], _flake=machine1.flake
@@ -977,8 +977,8 @@ def test_multi_machine_shared_vars(
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     sops_store_1 = sops.SecretStore(machine1.flake)
     sops_store_2 = sops.SecretStore(machine2.flake)
-    in_repo_store_1 = in_repo.FactStore(machine1.flake)
-    in_repo_store_2 = in_repo.FactStore(machine2.flake)
+    in_repo_store_1 = in_repo.VarsStore(machine1.flake)
+    in_repo_store_2 = in_repo.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     generator_m1 = Generator(
         "shared_generator",
@@ -1044,7 +1044,7 @@ def test_api_set_prompts(
         },
     )
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    store = in_repo.FactStore(machine.flake)
+    store = in_repo.VarsStore(machine.flake)
     my_generator = Generator(
         "my_generator", machines=["my_machine"], _flake=machine.flake
     )
@@ -1297,7 +1297,7 @@ def test_share_mode_switch_regenerates_secret(
 
     # Read the initial values
     flake_obj = Flake(str(flake.path))
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
     sops_store = sops.SecretStore(flake=flake_obj)
 
     generator_not_shared = Generator(
@@ -1533,7 +1533,7 @@ def test_generate_secret_var_sops_minimal_select_calls(
 
     # Verify the secrets were actually generated for both machines
     sops_store = sops.SecretStore(flake=flake_obj)
-    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
 
     for machine_name in ["machine1", "machine2"]:
         gen1 = Generator("gen1", share=False, machines=[machine_name], _flake=flake_obj)

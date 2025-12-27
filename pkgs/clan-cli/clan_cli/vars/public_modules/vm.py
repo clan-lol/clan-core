@@ -13,7 +13,7 @@ from clan_lib.vars.generator import Generator, Var
 log = logging.getLogger(__name__)
 
 
-class FactStore(StoreBase):
+class VarsStore(StoreBase):
     @property
     def is_secret_store(self) -> bool:
         return False

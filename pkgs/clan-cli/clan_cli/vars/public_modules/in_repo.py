@@ -9,7 +9,7 @@ from clan_lib.vars._types import StoreBase
 from clan_lib.vars.generator import Generator, Var
 
 
-class FactStore(StoreBase):
+class VarsStore(StoreBase):
     @property
     def is_secret_store(self) -> bool:
         return False

@@ -93,7 +93,7 @@ class Machine:
     def public_vars_store(self) -> StoreBase:
         public_module = self.select("config.clan.core.vars.settings.publicModule")
         module = importlib.import_module(public_module)
-        return module.FactStore(flake=self.flake)
+        return module.VarsStore(flake=self.flake)
 
     @property
     def flake_dir(self) -> Path:
