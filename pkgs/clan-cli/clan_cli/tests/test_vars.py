@@ -15,10 +15,8 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import generate_command
 from clan_cli.vars.get import get_machine_var
-from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
-from clan_cli.vars.set import set_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
@@ -31,6 +29,8 @@ from clan_lib.vars.generator import (
     Generator,
     dependencies_as_dir,
 )
+from clan_lib.vars.list import stringify_all_vars
+from clan_lib.vars.set import set_var
 
 
 def invalidate_flake_cache(flake_path: Path) -> None:
