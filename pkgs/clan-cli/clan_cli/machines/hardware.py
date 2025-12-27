@@ -106,47 +106,7 @@ def init_hardware_config_command(args: argparse.Namespace) -> None:
 
 def register_init_hardware_config(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=init_hardware_config_command)
-    machine_parser = parser.add_argument(
-        "machine",
-        help="the name of the machine",
-        type=machine_name_type,
-    )
-    add_dynamic_completer(machine_parser, complete_machines)
-    parser.add_argument(
-        "--target-host",
-        type=str,
-        help="ssh address to install to in the form of user@host:2222",
-    )
-    parser.add_argument(
-        "-y",
-        "--yes",
-        action="store_true",
-        help="do not ask for confirmation.",
-    )
-    parser.add_argument(
-        "--host-key-check",
-        choices=list(get_args(HostKeyCheck)),
-        default="ask",
-        help="Host key (.ssh/known_hosts) check mode.",
-    )
-    parser.add_argument(
-        "--password",
-        help="Pre-provided password the cli will prompt otherwise if needed.",
-        type=str,
-        required=False,
-    )
-    parser.add_argument(
-        "--backend",
-        help="The type of hardware report to generate.",
-        choices=["nixos-generate-config", "nixos-facter"],
-        default="nixos-facter",
-    )
-    parser.add_argument(
-        "-i",
-        dest="identity_file",
-        type=Path,
-        help="specify which SSH private key file to use",
-    )
+    _add_hardware_config_args(parser)
     parser.add_argument(
         "--kexec",
         type=str,
@@ -156,6 +116,10 @@ def register_init_hardware_config(parser: argparse.ArgumentParser) -> None:
 
 def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=update_hardware_config_command)
+    _add_hardware_config_args(parser)
+
+
+def _add_hardware_config_args(parser: argparse.ArgumentParser) -> None:
     machine_parser = parser.add_argument(
         "machine",
         help="the name of the machine",
