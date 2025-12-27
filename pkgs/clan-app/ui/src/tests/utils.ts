@@ -9,7 +9,7 @@ import {
   MachinesMethods,
 } from "../models";
 import { createClanMethods } from "../models/clan/clan";
-import { createClansStore } from "../models/clan/clans";
+import { createClansMethods, createClansStore } from "../models/clan/clans";
 import { MachineEntity } from "../models/machine/machine";
 import { createMachinesMethods } from "../models/machine/machines";
 
@@ -19,7 +19,8 @@ export function createClansStoreFixture(
   readonly [Accessor<Clan>, ClanMethods],
   readonly [Clans, ClansMethods],
 ] {
-  const [clans, clansMethods] = createClansStore(() => entity);
+  const [clans, setClans] = createClansStore(() => entity);
+  const clansMethods = createClansMethods(clans, setClans);
   const clan = () => clans.activeClan!;
   const clanMethods = createClanMethods(clan, [clans, clansMethods]);
   return [
@@ -35,7 +36,7 @@ export function createMachinesStoreFixture(
   readonly [Accessor<Clan>, ClanMethods],
   readonly [Clans, ClansMethods],
 ] {
-  const [clans, clansMethods] = createClansStore(
+  const [clans, setClans] = createClansStore(
     (): ClansEntity => ({
       all: [
         {
@@ -55,6 +56,7 @@ export function createMachinesStoreFixture(
       activeIndex: 0,
     }),
   );
+  const clansMethods = createClansMethods(clans, setClans);
   const clan = () => clans.activeClan!;
   const clanMethods = createClanMethods(clan, [clans, clansMethods]);
   const machines = () => clans.activeClan!.machines;
