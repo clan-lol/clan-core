@@ -80,7 +80,7 @@ export const StepGeneral = () => {
 
   const formError = () => {
     const errors = getErrors(formStore);
-    return errors.id || errors.description || errors.machineClass;
+    return errors.id ?? errors.description ?? errors.machineClass;
   };
 
   return (

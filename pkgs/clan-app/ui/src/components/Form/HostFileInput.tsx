@@ -40,7 +40,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
   );
 
   let inputElement!: HTMLInputElement;
-  const [value, setValue] = createSignal(rootProps.defaultValue || "");
+  const [value, setValue] = createSignal(rootProps.defaultValue ?? "");
 
   const onSelectFile = async () => {
     if (local.readOnly) {
@@ -51,7 +51,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
     // be return, the backend should provide more data so we can target the
     // cancellation specifically and not swallow other errors
     const path = await pickDir({
-      title: local.windowTitle || labelProps.label,
+      title: local.windowTitle ?? labelProps.label,
       initialPath: local.initialFolder,
     });
 
@@ -91,7 +91,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
             size={labelProps.size}
             icon="Folder"
             onClick={onSelectFile}
-            disabled={rootProps.disabled || local.readOnly}
+            disabled={rootProps.disabled ?? local.readOnly}
             elasticity={
               labelProps.orientation === "vertical" ? "fit" : undefined
             }
@@ -101,7 +101,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
                 : undefined
             }
           >
-            {local.placeholder || "No Selection"}
+            {local.placeholder ?? "No Selection"}
           </Button>
         )}
 
@@ -138,7 +138,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
               size={labelProps.size}
               icon="Folder"
               onClick={onSelectFile}
-              disabled={rootProps.disabled || local.readOnly}
+              disabled={rootProps.disabled ?? local.readOnly}
             >
               {value()}
             </Tooltip.Trigger>

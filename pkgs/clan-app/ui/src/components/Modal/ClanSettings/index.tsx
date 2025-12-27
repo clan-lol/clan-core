@@ -54,7 +54,7 @@ const ClanSettings: Component = () => {
       (value) => value,
     ) as Maybe<string>;
 
-    return firstFormError || formStore.response.message;
+    return firstFormError ?? formStore.response.message;
   };
 
   const [removeValue, setRemoveValue] = createSignal("");

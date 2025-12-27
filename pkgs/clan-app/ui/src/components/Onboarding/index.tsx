@@ -62,7 +62,7 @@ export default function Onboarding(): JSX.Element {
 
   const formError = () => {
     const formErrors = getErrors(setupForm);
-    return formErrors.name || formErrors.description || formErrors.directory;
+    return formErrors.name ?? formErrors.description ?? formErrors.directory;
   };
 
   const onSubmit: SubmitHandler<SetupForm> = async (
@@ -218,7 +218,7 @@ function Welcome(props: {
   setStep: Setter<Step>;
 }): JSX.Element {
   const [, { pickClanDir }] = useSysContext();
-  const [, { loadClan }] = useClansContext()!;
+  const [, { loadClan }] = useClansContext();
   const [loading, setLoading] = createSignal(false);
 
   async function onSelect(): Promise<void> {
@@ -253,7 +253,7 @@ function Welcome(props: {
           type="error"
           icon="Info"
           title="Your Clan creation failed"
-          description={props.step().error || ""}
+          description={props.step().error ?? ""}
         />
       )}
       <Button

@@ -88,7 +88,7 @@ export function Search<T extends Option>(props: SearchProps<T>) {
       noResetInputOnBlur={true}
     >
       <Combobox.Control<T>
-        class={cx(styles.searchHeader, props.headerClass || "bg-inv-3")}
+        class={cx(styles.searchHeader, props.headerClass ?? "bg-inv-3")}
       >
         {(state) => (
           <div class={styles.inputContainer}>

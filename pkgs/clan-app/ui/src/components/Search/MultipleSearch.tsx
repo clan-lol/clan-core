@@ -105,7 +105,7 @@ export function SearchMultiple<T extends Option>(
       noResetInputOnBlur={true}
     >
       <Combobox.Control<T>
-        class={cx(styles.searchHeader, props.headerClass || "bg-inv-3")}
+        class={cx(styles.searchHeader, props.headerClass ?? "bg-inv-3")}
       >
         {(state) => (
           <>

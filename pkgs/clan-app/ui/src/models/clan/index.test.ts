@@ -41,7 +41,7 @@ describe("clan", () => {
         [
           () => {
             expect(clan().data.name).toStrictEqual("testclan");
-            clanMethods.updateClanData({
+            void clanMethods.updateClanData({
               name: "foo",
             });
           },

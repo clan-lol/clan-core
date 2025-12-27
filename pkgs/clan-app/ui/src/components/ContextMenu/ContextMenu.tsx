@@ -26,7 +26,7 @@ export const Menu = (props: {
   onCleanup(() =>
     document.removeEventListener("mousedown", handleClickOutside),
   );
-  const currentMachine = () => props.intersect.at(0) || null;
+  const currentMachine = () => props.intersect.at(0) ?? null;
 
   return (
     <ul

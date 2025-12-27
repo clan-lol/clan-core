@@ -148,7 +148,7 @@ const Icon: Component<IconProps> = (props) => {
   );
   const component = () => icons[local.icon];
   // we need to adjust the view box for certain icons
-  const viewBox = () => viewBoxes[local.icon] || "0 0 48 48";
+  const viewBox = () => viewBoxes[local.icon] ?? "0 0 48 48";
   return (
     <Dynamic
       component={component()}

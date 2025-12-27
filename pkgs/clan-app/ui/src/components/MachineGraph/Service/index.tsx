@@ -30,7 +30,7 @@ const SelectService: Component = () => {
   const [clan] = useClanContext();
 
   // https://docs.solidjs.com/reference/jsx-attributes/use#avoiding-tree-shaking
-  /* eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unused-expressions, @typescript-eslint/no-unnecessary-condition */
+  /* eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unused-expressions */
   false && onClickOutside;
 
   return (

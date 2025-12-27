@@ -112,7 +112,7 @@ const StepperContext = createContext<unknown>(); // Concrete type will be provid
 export function useStepper<T extends readonly Step[] = never>() {
   const ctx = useContext(StepperContext);
   if (!ctx) throw new Error("useStepper must be used inside StepperProvider");
-  return ctx as T extends never ? never : StepperReturn<T, T[number]["id"]>; // type casting required due to context limitations
+  return ctx as StepperReturn<T, T[number]["id"]>; // type casting required due to context limitations
 }
 
 interface ProviderProps<T extends readonly Step[], StepId> {

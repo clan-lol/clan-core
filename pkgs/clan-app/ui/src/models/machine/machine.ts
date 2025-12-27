@@ -213,24 +213,25 @@ export const machinePositions: Record<string, MachinePositions> = (() => {
 
 export type MachineMethods = {
   setMachine: SetStoreFunction<Machine>;
-  activateMachine(): void;
-  deactivateMachine(): void;
-  updateMachineData(data: Partial<MachineData>): Promise<void>;
-  installMachine(opts: InstallMachineOptions): Promise<void>;
-  isMachineSSHable(ssh: MachineSSH): Promise<boolean>;
+  activateMachine(this: void): void;
+  deactivateMachine(this: void): void;
+  updateMachineData(this: void, data: Partial<MachineData>): Promise<void>;
+  installMachine(this: void, opts: InstallMachineOptions): Promise<void>;
+  isMachineSSHable(this: void, ssh: MachineSSH): Promise<boolean>;
   getOrGenerateMachineHardwareReport(
+    this: void,
     ssh: MachineSSH,
   ): Promise<MachineHardwareReport | null>;
-  getMachineDiskTemplates(): Promise<MachineDiskTemplates>;
-  getMachineVarsPromptGroups(): Promise<MachineVarsPromptGroups>;
-  updateMachine(opts: UpdateMachineOptions): Promise<void>;
+  getMachineDiskTemplates(this: void): Promise<MachineDiskTemplates>;
+  getMachineVarsPromptGroups(this: void): Promise<MachineVarsPromptGroups>;
+  updateMachine(this: void, opts: UpdateMachineOptions): Promise<void>;
 };
 export type InstallMachineOptions = {
   signal?: AbortSignal;
   ssh: MachineSSH;
   diskPath: string;
   varsPromptValues: Record<string, Record<string, string>>;
-  onProgress?(progress: InstallMachineProgress): void;
+  onProgress?(this: void, progress: InstallMachineProgress): void;
 };
 export type InstallMachineProgress =
   | "disk"
@@ -244,7 +245,7 @@ export type InstallMachineProgress =
 export type UpdateMachineOptions = {
   signal?: AbortSignal;
   ssh: MachineSSH;
-  onProgress?(progress: InstallMachineProgress): void;
+  onProgress?(this: void, progress: InstallMachineProgress): void;
 };
 export type UpdateMachineProgress =
   | "generators"

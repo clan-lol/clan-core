@@ -147,7 +147,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
         id: service.usage_ref.name,
         isCore: service.native,
         description: service.info.manifest.description,
-        source: service.usage_ref.input,
+        source: service.usage_ref.input as string | null,
         roles: service.info.roles as Record<string, ServiceRoleEntity>,
         rolesSchema: {},
         instances: service.instance_refs.map((instanceName) => {
@@ -163,7 +163,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
                     machine.instance_refs?.includes(instanceName),
                   )
                   .map(([id]) => id),
-                tags: Object.keys(role.tags),
+                tags: Object.keys(role.tags!),
               })),
             },
           };
@@ -195,7 +195,11 @@ export async function updateClanData(
         flake: {
           identifier: clanId,
         },
-        meta: data as ClanData,
+        meta: {
+          domain: "",
+          name: data.name!,
+          ...data,
+        },
       },
     },
   });
@@ -212,7 +216,11 @@ export async function createClan(
       opts: {
         dest: id,
         template: "minimal",
-        initial: data,
+        initial: {
+          // FIXME: remove this once backend API types are fixed
+          domain: "",
+          ...data,
+        },
       },
     },
   });

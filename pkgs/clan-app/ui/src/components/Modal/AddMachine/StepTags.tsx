@@ -12,7 +12,6 @@ import { AddMachineSteps, AddMachineStoreType } from ".";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { Button } from "@/src/components/Button/Button";
-import { removeEmptyStrings } from "@/src/util";
 import { useMachinesContext, useUIContext } from "@/src/models";
 import { Modal } from "@/src/models";
 import ModalHeading from "../components/ModalHeading";
@@ -44,16 +43,13 @@ export const StepTags = () => {
     // FIXME: this design is weird. Go to the next step and then do something in
     // the background.
     stepSignal.next();
-    await createMachine(
-      store.general.id,
-      removeEmptyStrings({
-        machineClass: store.general.machineClass,
-        description: store.general.description,
-        deploy: store.deploy,
-        tags: store.tags.tags,
-        position: modal().position,
-      }),
-    );
+    await createMachine(store.general.id, {
+      machineClass: store.general.machineClass,
+      description: store.general.description || undefined,
+      deploy: store.deploy,
+      tags: store.tags.tags,
+      position: modal().position,
+    });
     closeModal();
   };
 
@@ -71,7 +67,7 @@ export const StepTags = () => {
                       {...field}
                       required
                       orientation="horizontal"
-                      defaultValue={field.value || []}
+                      defaultValue={field.value ?? []}
                       defaultOptions={[]}
                       onChange={(newVal) => {
                         // Workaround for now, until we manage to use native events

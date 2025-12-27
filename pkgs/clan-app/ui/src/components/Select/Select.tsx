@@ -94,7 +94,7 @@ export const Select = (props: SelectProps) => {
     setValue(options().find((option) => rest.value === option.value));
   });
 
-  const defaultMount = rest.portalProps?.mount || document.body;
+  const defaultMount = rest.portalProps?.mount ?? document.body;
 
   createEffect(() => {
     console.debug("Select component mounted at:", defaultMount);

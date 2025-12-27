@@ -78,10 +78,7 @@ export const ConfigureAddress: Component<{
   const [isReachable, setIsReachable] = createSignal(false);
   const [loading, setLoading] = createSignal<boolean>(false);
   // TODO: push values to the parent form Store
-  const handleSubmit: SubmitHandler<ConfigureAdressForm> = async (
-    values,
-    event,
-  ) => {
+  const handleSubmit: SubmitHandler<ConfigureAdressForm> = (values, event) => {
     set("install", {
       targetHost: values.targetHost,
       port: values.port,
@@ -99,7 +96,7 @@ export const ConfigureAddress: Component<{
 
     const portValue = getValue(formStore, "port");
     const port = portValue ? parseInt(portValue, 10) : undefined;
-    const password = getValue(formStore, "password") || undefined;
+    const password = getValue(formStore, "password");
 
     setLoading(true);
     await isMachineSSHable({
@@ -599,7 +596,7 @@ const InstallSummary = () => {
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  const handleInstall = async () => {
+  const handleInstall = () => {
     stepSignal.setActiveStep("install:done");
   };
   return (
@@ -675,7 +672,7 @@ const InstallDone = () => {
     });
     return true;
   });
-  const handleCancel = async () => {
+  const handleCancel = () => {
     controller.abort();
     stepSignal.previous();
   };

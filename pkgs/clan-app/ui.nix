@@ -4,7 +4,6 @@
   importNpmLock,
   clan-ts-api,
   fonts,
-  ps,
   jq,
   playwright,
 }:
@@ -38,6 +37,28 @@ buildNpmPackage (finalAttrs: {
 
   passthru = {
     tests = {
+      "${finalAttrs.pname}-unit-tests" = buildNpmPackage {
+        name = "${finalAttrs.pname}-unit-tests";
+        inherit (finalAttrs)
+          nodejs
+          src
+          npmDeps
+          npmConfigHook
+          preBuild
+          ;
+        npmBuildScript = "test";
+      };
+      "${finalAttrs.pname}-lint" = buildNpmPackage {
+        name = "${finalAttrs.pname}-lint";
+        inherit (finalAttrs)
+          nodejs
+          src
+          npmDeps
+          npmConfigHook
+          preBuild
+          ;
+        npmBuildScript = "lint";
+      };
       "${finalAttrs.pname}-storybook" = buildNpmPackage {
         pname = "${finalAttrs.pname}-storybook";
         inherit (finalAttrs)
@@ -48,10 +69,7 @@ buildNpmPackage (finalAttrs: {
           npmConfigHook
           ;
 
-        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
-          ps
-          jq
-        ];
+        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [ jq ];
 
         npmBuildScript = "test-storybook";
 

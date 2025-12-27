@@ -71,7 +71,7 @@ export const Button = (props: ButtonProps) => {
         },
       )}
       onClick={local.onClick}
-      disabled={local.disabled || local.loading}
+      disabled={local.disabled ?? local.loading}
       {...other}
     >
       <Loader hierarchy={local.hierarchy} loading={local.loading} in="Button" />

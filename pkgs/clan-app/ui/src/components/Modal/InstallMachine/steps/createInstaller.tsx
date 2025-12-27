@@ -263,7 +263,7 @@ const FlashDone = () => {
     return true;
   });
 
-  const handleCancel = async () => {
+  const handleCancel = () => {
     controller.abort();
     stepSignal.previous();
   };

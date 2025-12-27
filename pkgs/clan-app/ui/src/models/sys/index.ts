@@ -10,11 +10,17 @@ export function createSysStore(): readonly [Sys, SysMethods] {
 }
 
 export type SysMethods = {
-  pickFile(opts?: { title?: string; initialPath?: string }): Promise<string>;
-  pickDir(opts?: { title?: string; initialPath?: string }): Promise<string>;
-  pickClanDir(): Promise<string>;
-  getFlashableDevices(): Promise<BlockDevice[]>;
-  flashInstaller(opts: FlashInstallerOptions): Promise<void>;
+  pickFile(
+    this: void,
+    opts?: { title?: string; initialPath?: string },
+  ): Promise<string>;
+  pickDir(
+    this: void,
+    opts?: { title?: string; initialPath?: string },
+  ): Promise<string>;
+  pickClanDir(this: void): Promise<string>;
+  getFlashableDevices(this: void): Promise<BlockDevice[]>;
+  flashInstaller(this: void, opts: FlashInstallerOptions): Promise<void>;
 };
 
 export type FlashInstallerOptions = {

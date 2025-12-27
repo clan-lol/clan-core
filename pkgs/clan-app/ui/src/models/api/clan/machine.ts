@@ -137,7 +137,7 @@ export async function getMachineDiskTemplates(
     description: template.frontmatter.description,
     placeholders: mapObjectValues(template.placeholders, ([, placeholder]) => ({
       name: placeholder.label,
-      values: placeholder.options as string[],
+      values: placeholder.options!,
       required: placeholder.required,
     })),
   }));
@@ -165,7 +165,7 @@ export async function getMachineVarsPromptGroups(
   });
   const groups: MachineVarsPromptGroupsEntity = {};
   for (const generator of res.data) {
-    for (const prompt of generator.prompts) {
+    for (const prompt of generator.prompts!) {
       const groupId = prompt.display?.group || "";
       let group: MachineVarsPromptsEntity;
       if (!(groupId in groups)) {
@@ -179,7 +179,7 @@ export async function getMachineVarsPromptGroups(
         description: prompt.description,
         name: prompt.display?.label || prompt.name,
         value: prompt.previous_value || "",
-        required: prompt.display?.required || false,
+        required: prompt.display?.required ?? false,
       };
     }
   }

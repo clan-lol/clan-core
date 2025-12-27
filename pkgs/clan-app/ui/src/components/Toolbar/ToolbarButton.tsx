@@ -17,7 +17,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
     <Tooltip description={props.description} gutter={10} placement="top">
       <Button
         class={cx(styles.toolbar_button, {
-          [styles["selected"]]: props.selected,
+          [styles.selected]: props.selected,
         })}
         {...props}
       >

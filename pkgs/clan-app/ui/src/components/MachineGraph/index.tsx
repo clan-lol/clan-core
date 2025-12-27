@@ -380,6 +380,7 @@ const MachineGraph: Component = () => {
           continue;
         }
         machine.dispose(scene);
+        /* eslint-disable @typescript-eslint/no-dynamic-delete */
         delete sceneMachines[machineId];
       }
       renderLoop.requestRender();
@@ -388,7 +389,7 @@ const MachineGraph: Component = () => {
     // Click handler:
     // - Select/deselects a cube in mode
     // - Creates a new cube in "create" mode
-    const onClickGraph = async (event: MouseEvent) => {
+    const onClickGraph = (event: MouseEvent) => {
       if (ui.toolbarMode.type === "create") {
         if (!snappedMousePosition) return;
         showModal({
@@ -477,8 +478,8 @@ const MachineGraph: Component = () => {
       // Left button
       if (e.button === 0) {
         if (ui.toolbarMode.type === "select" && machineIds.length !== 0) {
-          const targetMachineId = machineIds[0]!;
-          const pos = machines().all[targetMachineId]!.data.position;
+          const targetMachineId = machineIds[0];
+          const pos = machines().all[targetMachineId].data.position;
           // Disable controls to avoid conflict
           controls.enabled = false;
 
@@ -518,7 +519,7 @@ const MachineGraph: Component = () => {
             actionMachine.visible = false;
             // Set machine as not flying
             batch(() => {
-              updateMachineData(data.targetMachineId, {
+              void updateMachineData(data.targetMachineId, {
                 position: [actionMachine.position.x, actionMachine.position.z],
               });
               setIsDragging(false);
@@ -714,7 +715,7 @@ const MachineGraph: Component = () => {
         <Show
           when={
             ui.toolbarMode.type === "service" &&
-            (ui.toolbarMode.service || instances().activeServiceInstance)
+            (ui.toolbarMode.service ?? instances().activeServiceInstance)
           }
         >
           <ServiceInstanceDialog />
@@ -781,11 +782,12 @@ function intersectMachines(
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
     if (child instanceof THREE.Mesh) {
-      child.geometry.dispose();
-      if (Array.isArray(child.material)) {
-        child.material.forEach((material) => material.dispose());
+      const c = child as THREE.Mesh;
+      c.geometry.dispose();
+      if (Array.isArray(c.material)) {
+        c.material.forEach((material) => material.dispose());
       } else {
-        child.material.dispose();
+        c.material.dispose();
       }
     } else {
       console.warn("Unknown child type in group:", child);

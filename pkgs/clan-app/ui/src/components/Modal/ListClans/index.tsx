@@ -31,11 +31,9 @@ const ListClans: Component = () => {
                 <NavSection
                   label={clan.data.name}
                   description={clan.data.description}
-                  onClick={() => {
-                    batch(() => {
-                      activateClan(clan);
-                      closeModal();
-                    });
+                  onClick={async () => {
+                    await activateClan(clan);
+                    closeModal();
                   }}
                 />
               </li>

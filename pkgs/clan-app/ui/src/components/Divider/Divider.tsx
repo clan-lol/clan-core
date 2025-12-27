@@ -7,7 +7,7 @@ interface DividerProps extends Pick<SeparatorRootProps, "orientation"> {
 }
 
 export const Divider = (props: DividerProps) => {
-  const inverted = props.inverted || false;
+  const inverted = props.inverted ?? false;
 
   return (
     <Separator
