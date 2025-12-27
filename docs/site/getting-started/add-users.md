@@ -138,7 +138,7 @@ We can use this property of clan services to bind a nixosModule to the user, whi
 ## Checkpoint
 
 !!! Warning "Under construction"
-    The user creation process is not yet finieshed, but if you want to test if everything worked up to this point, you can use `clan machines update`.
+    The user creation process is not yet finished, but if you want to test if everything worked up to this point, you can use `clan machines update`.
     If the command does not return any errors and asks you to select a password, you can ctrl-c out of it at this point.
 
 
