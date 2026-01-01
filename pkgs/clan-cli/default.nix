@@ -21,8 +21,8 @@
   zerotierone,
   minifakeroot,
   nixosConfigurations,
-  ollama ? pkgs.ollama,
-}:
+  ...
+}@args:
 let
   pyDeps = ps: [
     ps.argcomplete # Enables shell completions
@@ -49,14 +49,11 @@ let
   # This file represents an allow list at the same time that is checked by the run_cmd
   #   implementation in nix.py
   allDependencies = lib.importJSON ./clan_lib/nix/allowed-packages.json;
-  # Package overrides for packages that need special handling (e.g., fixed ollama on Darwin)
-  packageOverrides = {
-    inherit ollama;
-  };
+  # Use function args first to respect overlays and explicit overrides (e.g., nix -> lix)
   generateRuntimeDependenciesMap =
     deps:
     lib.filterAttrs (_: pkg: !(pkg.meta.unsupported or false)) (
-      lib.genAttrs deps (name: packageOverrides.${name} or pkgs.${name})
+      lib.genAttrs deps (name: args.${name} or pkgs.${name})
     );
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
   # Filter out packages that are not needed for tests and pull in many dependencies
@@ -222,7 +219,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           buildInputs = [
             pkgs.bash
             pkgs.coreutils
-            pkgs.nix
+            nix
           ];
           closureInfo = pkgs.closureInfo {
             rootPaths = [
