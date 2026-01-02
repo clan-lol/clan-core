@@ -149,17 +149,20 @@ Examples:
         "update-hardware-config",
         help="Generate hardware specifics for a machine",
         description="""
-        Generates hardware specifics for a machine. Such as the host platform, available kernel modules, etc.
-        The target must be a Linux based system reachable via SSH
+Generates hardware specifics for a machine.
+Such as the host platform, available kernel modules, etc.
+The target must be a Linux based system reachable via SSH.
         """,
         epilog=(
             """
-        Examples:
+Examples:
 
-        $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
-        Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
+  $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
+  Will generate a hardware report for `[TARGET_HOST]` and place it in
+  the subdirectory for the given machine `[MACHINE]`.
         """
         ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     register_update_hardware_config(update_hardware_config_parser)
 
