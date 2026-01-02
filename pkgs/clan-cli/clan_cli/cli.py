@@ -21,6 +21,7 @@ from . import (
 from .arg_actions import AppendOptionAction
 from .clan import show
 from .flash import cli as flash_cli
+from .help import HelpFormatter
 from .hyperlink import help_hyperlink
 from .machines import cli as machines
 from .network import cli as network_cli
@@ -114,7 +115,7 @@ Online reference for the clan cli tool: {help_hyperlink("cli reference", "https:
 For more detailed information, visit: {help_hyperlink("docs", "https://docs.clan.lol")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
 
     subparsers = parser.add_subparsers()
@@ -135,7 +136,7 @@ Examples:
   Domain: clan.example
 """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     show_parser.set_defaults(func=show.show_command)
 
@@ -163,7 +164,7 @@ Examples:
 For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/guides/backups/backup-intro")}.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     backups.register_parser(parser_backups)
 
@@ -182,7 +183,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
 
     clan.register_parser(parser_flake)
@@ -239,7 +240,7 @@ Machine templates
   $ clan templates apply machine flash-installer my-installer
 """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     templates.register_parser(parser_templates)
 
@@ -256,7 +257,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/prepare-physical-machines")}
             """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     flash_cli.register_parser(parser_flash)
 
@@ -283,7 +284,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deployment-phase")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     ssh_cli.register_parser(parser_ssh)
 
@@ -307,7 +308,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     secrets.register_parser(parser_secrets)
 
@@ -344,7 +345,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     vars_cli.register_parser(parser_vars)
 
@@ -374,7 +375,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/update-machines")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     machines.register_parser(parser_machine)
 
@@ -406,7 +407,7 @@ Examples:
     List the first system package for jon.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     select.register_parser(parser_select)
 
@@ -440,7 +441,7 @@ Examples:
     Show complete network status and connectivity
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     network_cli.register_parser(parser_network)
 
@@ -473,7 +474,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/backups/backup-intro")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     state.register_parser(parser_state)
 
