@@ -61,7 +61,7 @@ lib.fix (
 
           # Examples
           :::{.example}
-          ## `lib.strings.toUpperFirst` usage example
+          ## `toUpperFirst` usage example
 
           ```nix
           toUpperFirst "foo"
@@ -83,6 +83,40 @@ lib.fix (
               in
               lib.addContextFrom str (lib.toUpper firstChar + rest)
             );
+        /**
+          Replace a list's nth element with a new element
+
+          # Inputs
+
+          `list`
+          : Input list
+
+          `idx`
+          : index to replace
+
+          `newElem`
+          : new element to replace with
+
+          # Type
+
+          ```
+          replaceElemAt :: [a] -> int - b -> [a]
+          ```
+
+          # Examples
+          :::{.example}
+          ## `replaceElemAt` usage example
+
+          ```nix
+          lib.replaceElemAt` [1 2 3] 0 "a"
+          => ["a" 2 3]
+          ```
+
+          :::
+        */
+        replaceElemAt =
+          list: idx: newElem:
+          lib.imap0 (i: oldElem: if i == idx then newElem else oldElem) list;
       }
       // (import ./vars/default.nix { inherit lib; })
       // (import ./exports/exports.nix { inherit lib clanLib; });
