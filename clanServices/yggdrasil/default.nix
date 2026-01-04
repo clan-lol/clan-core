@@ -26,23 +26,74 @@
     interface =
       { lib, ... }:
       {
-        options.extraMulticastInterfaces = lib.mkOption {
+        options.multicastInterfaces = lib.mkOption {
           type = lib.types.listOf lib.types.attrs;
           default = [ ];
           description = ''
-            Additional interfaces to use for Multicast. See
-            https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
-            for reference.
+            Interfaces to use for Yggdrasil multicast peer discovery.
+            By default, multicast is enabled on all interfaces (empty list).
+            To restrict multicast to specific interfaces, add them to this list.
+            See https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
           '';
           example = [
             {
-              Regex = "(wg).*";
+              # Restrict to only VPN interfaces
+              Regex = "(wg|zt|tailscale|mycelium|tinc|tun|tap).*";
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1020;
+              Priority = 0;
+            }
+            {
+              # Or restrict to ethernet interfaces
+              Regex = "(eth|en).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 1024;
+            }
+            {
+              # Or restrict to wifi interfaces
+              Regex = "(wl).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 1025;
             }
           ];
+        };
+
+        # Ports
+        options.ports = lib.mkOption {
+          description = "Port configuration for Yggdrasil listeners.";
+          default = { };
+          type = lib.types.submodule {
+            options = {
+              tcp = lib.mkOption {
+                description = "TCP port, used for the tcp:// yggdrasil listener";
+                default = 6443;
+                type = lib.types.port;
+              };
+
+              quic = lib.mkOption {
+                description = "QUIC port, used for the quic:// yggdrasil listener";
+                default = 6444;
+                type = lib.types.port;
+              };
+
+              ws = lib.mkOption {
+                description = "Websocket port, used for the ws:// yggdrasil listener";
+                default = 6445;
+                type = lib.types.port;
+              };
+
+              tls = lib.mkOption {
+                description = "TLS port, used for the tls:// yggdrasil listener";
+                default = 6446;
+                type = lib.types.port;
+              };
+            };
+          };
         };
 
         options.extraPeers = lib.mkOption {
@@ -55,9 +106,9 @@
           '';
           example = [
             "tcp://192.168.1.1:6443"
-            "quic://192.168.1.1:6443"
-            "tls://192.168.1.1:6443"
-            "ws://192.168.1.1:6443"
+            "quic://192.168.1.1:6444"
+            "tls://192.168.1.1:6445"
+            "ws://192.168.1.1:6446"
           ];
         };
       };
@@ -115,34 +166,26 @@
 
                 # Filter out empty IPs
                 filteredHosts = lib.filter (ip: ip != "") hosts;
-              in
-              lib.concatMap (
-                ip:
-                if (lib.hasSuffix ".onion" ip) then
-                  [
+
+                # Helper to create peer URLs for a given IP
+                mkPeerUrlsForIp =
+                  ip:
+                  if (lib.hasSuffix ".onion" ip) then
                     # Tor onion peers use SOCKS proxy
                     # socks:// = TCP (port 6443)
                     # sockstls:// = TLS (port 6446)
-                    "socks://127.0.0.1:9050/${ip}:6443"
-                    "sockstls://127.0.0.1:9050/${ip}:6446"
-                  ]
-                else if (lib.hasInfix ":" ip) then
-                  [
+                    [
+                      "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}"
+                      "sockstls://127.0.0.1:9050/${ip}:${toString settings.ports.tls}"
+                    ]
+                  else if (lib.hasInfix ":" ip) then
                     # We need to add [ ] for IPv6 addresses
-                    "tcp://[${ip}]:6443"
-                    "quic://[${ip}]:6444"
-                    "ws://[${ip}]:6445"
-                    "tls://[${ip}]:6446"
-                  ]
-                else
-                  [
+                    lib.mapAttrsToList (protocol: port: "${protocol}://[${ip}]:${toString port}") settings.ports
+                  else
                     # No [ ] for IPv4 addresses
-                    "tcp://${ip}:6443"
-                    "quic://${ip}:6444"
-                    "ws://${ip}:6445"
-                    "tls://${ip}:6446"
-                  ]
-              ) filteredHosts;
+                    lib.mapAttrsToList (protocol: port: "${protocol}://${ip}:${toString port}") settings.ports;
+              in
+              lib.concatMap mkPeerUrlsForIp filteredHosts;
 
             # Filter out exports from the local machine and yggdrasil
             # exports to avoid self-connections
@@ -150,10 +193,41 @@
               scope: scope.serviceName != service.config.manifest.name && scope.machineName != machine.name
             ) exports;
 
-            # TODO make it nicer @lassulus, @picnoir wants microlens
             exportedPeerIPs = lib.concatLists (map mkPeers (lib.attrValues nonLocalExports));
 
             exportedPeers = exportedPeerIPs;
+
+            # Collect public keys from all machines in the role
+            allowedPublicKeys = lib.filter (key: key != "") (
+              map (
+                name:
+                lib.strings.trim (
+                  clanLib.getPublicValue {
+                    flake = config.clan.core.settings.directory;
+                    machine = name;
+                    generator = "yggdrasil";
+                    file = "publicKey";
+                    default = "";
+                  }
+                )
+              ) (lib.attrNames roles.default.machines)
+            );
+
+            # Collect Yggdrasil IPv6 addresses from all machines in the role
+            allowedYggdrasilIPs = lib.filter (ip: ip != "") (
+              map (
+                name:
+                lib.strings.trim (
+                  clanLib.getPublicValue {
+                    flake = config.clan.core.settings.directory;
+                    machine = name;
+                    generator = "yggdrasil";
+                    file = "address";
+                    default = "";
+                  }
+                )
+              ) (lib.attrNames roles.default.machines)
+            );
 
           in
           {
@@ -190,17 +264,22 @@
                 yggdrasil
                 jq
                 openssl
+                xxd
               ];
 
               script = ''
                 # Generate private key
                 openssl genpkey -algorithm Ed25519 -out $out/privateKey
 
-                # Generate corresponding public key
-                openssl pkey -in $out/privateKey -pubout -out $out/publicKey
+                # Extract raw 32-byte public key and convert to hex.
+                # The DER format has a 12-byte header, skip it to get the raw
+                # key bytes
+                openssl pkey -in $out/privateKey -pubout -outform DER | \
+                  tail -c +13 | xxd -p -c 64 | tr -d '\n' > $out/publicKey
 
                 # Derive IPv6 address from key
-                echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | yggdrasil -useconf -address | tr -d '\n' > $out/address
+                echo "{\"PrivateKeyPath\": \"$out/privateKey\"}" | \
+                  yggdrasil -useconf -address | tr -d '\n' > $out/address
               '';
             };
 
@@ -222,45 +301,70 @@
               # See https://github.com/NixOS/nixpkgs/pull/440910#issuecomment-3301835895 for details.
               persistentKeys = false;
               settings = {
-                Listen = [
-                  "tcp://[::]:6443"
-                  "quic://[::]:6444"
-                  "ws://[::]:6445"
-                  "tls://[::]:6446"
-                ];
+                Listen = lib.mapAttrsToList (protocol: port: "${protocol}://[::]:${toString port}") settings.ports;
                 PrivateKeyPath = "/key";
                 IfName = "ygg";
                 Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
-                MulticastInterfaces = [
-                  # Ethernet is preferred over WIFI
-                  {
-                    Regex = "(eth|en).*";
-                    Beacon = true;
-                    Listen = true;
-                    Port = 5400;
-                    Priority = 1024;
-                  }
-                  {
-                    Regex = "(wl).*";
-                    Beacon = true;
-                    Listen = true;
-                    Port = 5400;
-                    Priority = 1025;
-                  }
-                ]
-                ++ settings.extraMulticastInterfaces;
+                AllowedEncryptionPublicKeys = allowedPublicKeys;
+                NodeInfoPrivacy = true;
+                MulticastInterfaces = settings.multicastInterfaces;
               };
             };
-            networking.firewall = {
+            networking.firewall = with settings.ports; {
               allowedUDPPorts = [
                 5400 # Multicast
-                6444 # QUIC
+                quic # QUIC
               ];
               allowedTCPPorts = [
-                6443 # TCP
-                6445 # WebSocket
-                6446 # TLS
+                tcp
+                ws # WebSocket
+                tls # TLS
               ];
+
+              # Restrict ygg interface to only allow traffic from clan members
+              # (iptables)
+              extraCommands = lib.mkIf (!config.networking.nftables.enable) ''
+                # Create chain for yggdrasil input filtering
+                ip6tables -N ygg-input 2>/dev/null || true
+                ip6tables -F ygg-input
+
+                # Allow traffic from clan member IPs to continue to port-based firewall rules
+                ${lib.concatMapStringsSep "\n    " (
+                  ip: "ip6tables -A ygg-input -s ${lib.escapeShellArg ip} -i ygg -j RETURN"
+                ) allowedYggdrasilIPs}
+
+                # Drop all other traffic on ygg interface
+                ip6tables -A ygg-input -i ygg -j DROP
+
+                # Insert rule at beginning of INPUT chain
+                ip6tables -I INPUT -i ygg -j ygg-input
+              '';
+
+              extraStopCommands = lib.mkIf (!config.networking.nftables.enable) ''
+                # Remove yggdrasil chain on firewall stop
+                ip6tables -D INPUT -i ygg -j ygg-input 2>/dev/null || true
+                ip6tables -F ygg-input 2>/dev/null || true
+                ip6tables -X ygg-input 2>/dev/null || true
+              '';
+            };
+
+            # Restrict ygg interface to only allow traffic from clan members
+            # (nftables)
+            networking.nftables.tables.yggdrasil-filter = lib.mkIf config.networking.nftables.enable {
+              family = "ip6";
+              content = ''
+                chain input {
+                  type filter hook input priority -10; policy accept;
+
+                  # Only apply to ygg interface
+                  iifname "ygg" ip6 saddr {
+                    ${lib.concatMapStringsSep ",\n        " (ip: "${ip}") allowedYggdrasilIPs}
+                  } counter return comment "allow clan yggdrasil IPs to continue to port-based firewall"
+
+                  # Drop all other traffic on ygg interface
+                  iifname "ygg" counter drop comment "block non-clan yggdrasil traffic"
+                }
+              '';
             };
           };
       };

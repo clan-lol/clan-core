@@ -108,3 +108,38 @@ inventory = {
   };
 };
 ```
+
+## Security and Privacy
+
+This module sets Yggdrasil's `AllowedEncryptionPublicKeys` to limit the
+connections to the public keys of all machines with the `default` role.
+
+According to the [yggdrasil
+documentation](https://yggdrasil-network.github.io/configurationref.html#allowedpublickeys):
+
+> This is not a firewall and does not control who can send you traffic over the
+> Yggdrasil Network or reach open ports and services on your machine. For that you
+> need an IPv6 firewall.
+
+This service therefore also sets up firewall rules, such that the `ygg` network
+interface only accepts traffic from clan member IPs.
+
+By default, multicast peer discovery is enabled on all network interfaces,
+allowing automatic discovery of local peers. Since Yggdrasil provides end-to-end
+encryption, this is safe even on untrusted networks.
+
+If you want to restrict multicast to specific interfaces (e.g., only VPN
+interfaces), you can configure `settings.multicastInterfaces` with a list of
+interface patterns. For example, to only announce on VPN interfaces:
+
+```nix
+settings.multicastInterfaces = [
+  {
+    Regex = "(wg|zt|tailscale|mycelium|tinc|tun|tap).*";
+    Beacon = true;
+    Listen = true;
+    Port = 5400;
+    Priority = 0;
+  }
+];
+```
