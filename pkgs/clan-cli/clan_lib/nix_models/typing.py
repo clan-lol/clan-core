@@ -3,8 +3,6 @@
 #
 # fmt: off
 
-from __future__ import annotations
-
 from typing import Literal, NotRequired, TypedDict
 
 type AnyJson = bool | int | float | str | list[AnyJson] | dict[str, AnyJson] | None

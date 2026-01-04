@@ -101,6 +101,7 @@ let
           --use-double-quotes \
           --use-frozen-field \
           --custom-file-header "$header" \
+          --disable-future-imports \
           --output $out/typing.py
       '';
 in
