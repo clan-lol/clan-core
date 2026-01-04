@@ -2,7 +2,6 @@ import difflib
 import logging
 import os
 import pprint
-import shutil
 import sys
 from collections.abc import Iterable
 from contextlib import ExitStack
@@ -15,7 +14,7 @@ from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
-from clan_lib.nix import nix_config, nix_shell, nix_test_store
+from clan_lib.nix import nix_config, nix_test_store
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -567,6 +566,7 @@ class Generator:
 
             if sys.platform == "linux" and bwrap.bubblewrap_works():
                 from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
+
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
             elif sys.platform == "darwin":
                 from clan_lib.sandbox_exec import sandbox_exec_cmd  # noqa: PLC0415

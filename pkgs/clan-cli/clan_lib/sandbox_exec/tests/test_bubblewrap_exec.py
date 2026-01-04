@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from clan_lib.sandbox_exec import bubblewrap_cmd
 
+
 @pytest.mark.impure
 @pytest.mark.skipif(sys.platform != "linux", reason="linux only")
 def test_bubblewrap_allows_write_to_tmpdir() -> None:

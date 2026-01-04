@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+
 from clan_lib.nix import nix_shell, nix_test_store
 
 
@@ -134,6 +135,7 @@ def sandbox_exec_cmd(generator: str, tmpdir: Path) -> Iterator[list[str]]:
         # Clean up the profile file
         with contextlib.suppress(OSError):
             Path(profile_path).unlink()
+
 
 def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
     """Helper function to create bubblewrap command."""
