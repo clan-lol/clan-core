@@ -191,8 +191,8 @@ Examples:
 
 Further references:
 
-- https://docs.clan.lol/getting-started/deploy-to-physical-machine/
-- https://docs.clan.lol/getting-started/deploy-to-virtual-machine/
+- https://docs.clan.lol/getting-started/prepare-physical-machines/
+- https://docs.clan.lol/getting-started/prepare-virtual-machines/
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
