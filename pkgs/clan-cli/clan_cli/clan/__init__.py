@@ -16,5 +16,10 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     )
     create_parser = subparser.add_parser("create", help="Create a clan")
     register_create_parser(create_parser)
-    inspect_parser = subparser.add_parser("inspect", help="Inspect a clan ")
+    inspect_parser = subparser.add_parser(
+        "inspect",
+        help="Inspect a clan",
+        description="""Inspects the flake and prints some medata.
+Deprecated - This command is marked for removal in the next release""",
+    )
     register_inspect_parser(inspect_parser)
