@@ -80,7 +80,7 @@ class Machine:
 
     @cached_property
     def secret_vars_store(self) -> StoreBase:
-        from clan_cli.vars.secret_modules import password_store  # noqa: PLC0415
+        from clan_lib.vars.secret_modules import password_store  # noqa: PLC0415
 
         secret_module = self.select("config.clan.core.vars.settings.secretModule")
         module = importlib.import_module(secret_module)

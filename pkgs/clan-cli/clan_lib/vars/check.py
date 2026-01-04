@@ -1,13 +1,10 @@
 import logging
 from typing import TYPE_CHECKING
 
-# Scope violation !!! Core cannot depend on CLI
-# TODO: Remove this
-from clan_cli.vars.secret_modules import sops
-
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.vars.secret_modules import sops
 
 if TYPE_CHECKING:
     from .generator import Var
