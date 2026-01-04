@@ -26,7 +26,7 @@ Clan doesn't replace `nixos-rebuild` - it enhances it. When you run `clan machin
 Under the hood, clan executes commands like:
 
 ```bash
-nixos-rebuild switch --fast --build-host builtHost --flake /path/to/flake#machine-name
+nixos-rebuild switch --fast --build-host buildHost --flake /path/to/flake#machine-name
 ```
 
 ## When You Need `clan vars upload`
