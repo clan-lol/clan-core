@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from clan_lib.nix import nix_shell, nix_test_store
 
 
 def create_sandbox_profile() -> str:
@@ -133,3 +134,33 @@ def sandbox_exec_cmd(generator: str, tmpdir: Path) -> Iterator[list[str]]:
         # Clean up the profile file
         with contextlib.suppress(OSError):
             Path(profile_path).unlink()
+
+def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
+    """Helper function to create bubblewrap command."""
+    test_store = nix_test_store()
+    real_bash_path = Path("bash")
+    if os.environ.get("IN_NIX_SANDBOX"):
+        bash_executable_path = Path(str(shutil.which("bash")))
+        real_bash_path = bash_executable_path.resolve()
+
+    # fmt: off
+    return nix_shell(
+        ["bash", "bubblewrap"],
+        [
+            "bwrap",
+            "--unshare-all",
+            "--tmpfs",  "/",
+            "--ro-bind", "/nix/store", "/nix/store",
+            "--ro-bind", "/bin/sh", "/bin/sh",
+            *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
+            "--dev", "/dev",
+            "--bind", str(tmpdir), str(tmpdir),
+            "--chdir", "/",
+            "--bind", "/proc", "/proc",
+            "--uid", "1000",
+            "--gid", "1000",
+            "--",
+            str(real_bash_path), "-c", generator,
+        ],
+    )
+    # fmt: on
