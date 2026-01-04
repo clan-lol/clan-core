@@ -14,7 +14,7 @@
       {
         options.tld = lib.mkOption {
           type = lib.types.str;
-          default = "clan";
+          defaultText = "clan.core.settings.meta.domain";
           description = ''
             Top-level domain for this instance. All services below this will be
             resolved internally.
@@ -37,7 +37,7 @@
     perInstance =
       {
         roles,
-        settings,
+        extendSettings,
         ...
       }:
       {
@@ -45,8 +45,14 @@
           {
             lib,
             pkgs,
+            config,
             ...
           }:
+          let
+            settings = extendSettings {
+              tld = lib.mkOptionDefault config.clan.core.settings.domain;
+            };
+          in
           {
 
             networking.firewall.allowedTCPPorts = [ settings.dnsPort ];
@@ -85,7 +91,7 @@
                 config =
 
                   let
-                    dnsPort = builtins.toString settings.dnsPort;
+                    dnsPort = toString settings.dnsPort;
                   in
 
                   ''
@@ -168,7 +174,7 @@
                 ];
                 stub-zone = map (m: {
                   name = "${roles.server.machines.${m}.settings.tld}.";
-                  stub-addr = "${roles.server.machines.${m}.settings.ip}@${builtins.toString settings.dnsPort}";
+                  stub-addr = "${roles.server.machines.${m}.settings.ip}@${toString settings.dnsPort}";
                 }) (lib.attrNames roles.server.machines);
               };
             };
