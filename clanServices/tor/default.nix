@@ -84,7 +84,7 @@
               secret var and not exposed in your configuration.
 
               If you expose SSH, it is recommended to keep this set to true in
-              public configurainos as anyone with knowledge of the hostname
+              public configurations as anyone with knowledge of the hostname
               could try brut-forcing attacks against it.
             '';
           };
