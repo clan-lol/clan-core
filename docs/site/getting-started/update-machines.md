@@ -104,14 +104,14 @@ clan machines update jon --build-host local
 ### Excluding a machine from `clan machine update`
 
 To exclude machines from being updated when running `clan machines update` without any machines specified,
-one can set the `clan.deployment.requireExplicitUpdate` option to true:
+one can set the `clan.core.deployment.requireExplicitUpdate` option to true:
 
 ```{.nix hl_lines="5" .no-copy}
 clan {
     # ...
     machines = {
         "jon" = {
-            clan.deployment.requireExplicitUpdate = true;
+            clan.core.deployment.requireExplicitUpdate = true;
         };
     };
 };
