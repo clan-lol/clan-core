@@ -666,7 +666,7 @@ let
                 false
               else
                 isContainingType t1.${attrName}.${name} t2.${attrName}.${name}
-            ) t2.${attrName}
+            ) (lib.attrNames t2.${attrName})
             || status == "neitherHas";
           isSameAttrValue =
             attrName:
