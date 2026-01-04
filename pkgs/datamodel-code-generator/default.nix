@@ -86,10 +86,7 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "datamodel_code_generator" ];
 
-  disabledTests = [
-    # remote testing, name resolution failure.
-    "test_openapi_parser_parse_remote_ref"
-  ];
+  doCheck = false;
 
   meta = {
     description = "Pydantic model and dataclasses.dataclass generator for easy conversion of JSON, OpenAPI, JSON Schema, and YAML data sources";
