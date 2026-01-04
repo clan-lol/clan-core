@@ -36,8 +36,8 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "koxudaxi";
     repo = "datamodel-code-generator";
-    tag = "f4b240a37a227c71cd9eed26486e4e3bdb6b656f";
-    hash = "sha256-ACKg5ev/ztvJUYiD8/7TdFb4vy4jGZ/mbmdJI1lLXTk=";
+    rev = "58e73ed8740d589623647008bb1fe230bac1aeda";
+    hash = "sha256-sgyUVL6e8SXPFP1FxICQ+ibRdPCPdZXCue1H85Vl06s=";
   };
 
   pythonRelaxDeps = [
