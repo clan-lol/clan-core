@@ -7,7 +7,7 @@
   # TODO: move into a single structure
   config.clan.core.vars.settings.secretModule = lib.mkIf (
     config.clan.core.vars.settings.secretStore == "fs"
-  ) "clan_cli.vars.secret_modules.fs";
+  ) "clan_lib.vars.secret_modules.fs";
   config.clan.core.vars.settings.fileModule =
     lib.mkIf (config.clan.core.vars.settings.secretStore == "fs")
       (file: {

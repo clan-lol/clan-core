@@ -9,7 +9,7 @@ let
 
   storeTypes = {
     "in_repo" = {
-      publicModule = "clan_cli.vars.public_modules.in_repo";
+      publicModule = "clan_lib.vars.public_modules.in_repo";
       fileModule = (
         file: {
           flakePath = mkIf (file.config.secret == false) (
