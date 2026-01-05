@@ -69,7 +69,7 @@ def test_sandbox_allows_nix_store_read(temp_dir: Path) -> None:
     """Test that sandboxed process can read from nix store."""
     # Use ls to read from nix store (should work) and write result to file
     success_file = temp_dir / "nix_test.txt"
-    script = f'ls /nix/store >/dev/null 2>&1 && echo "success" > "{success_file}"'
+    script = f'ls $(realpath $(which ls)) >/dev/null 2>&1 && echo "success" > "{success_file}"'
 
     with sandbox_exec_cmd(script, temp_dir) as cmd:
         result = subprocess.run(cmd, check=False, capture_output=True, text=True)
