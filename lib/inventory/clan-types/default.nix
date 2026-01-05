@@ -44,21 +44,21 @@ let
           .${name} or name
       else if loc == "freeform" then
         {
-          InventoryTags = "InventoryUserTags";
+          InventoryTags = "InventoryTagMachines";
         }
         .${name} or name
-      else if loc == "attrsOfItem" then
+      else if loc == "attrValue" then
         let
-          template = lib.removePrefix "Templates" name;
+          template = (lib.removePrefix "Templates" name);
         in
         if template != name then
-          "Template${template}"
+          "Template${lib.removeSuffix "AttrValue" template}"
         else
           {
-            Machines = "Machine";
-            Instances = "Instance";
-            InstanceRoles = "InstanceRole";
-            InstanceRoleMachines = "InstanceRoleMachine";
+            MachinesAttrValue = "Machine";
+            InstancesAttrValue = "Instance";
+            InstanceRolesAttrValue = "InstanceRole";
+            InstanceRoleMachinesAttrValue = "InstanceRoleMachine";
           }
           .${name} or name
       else

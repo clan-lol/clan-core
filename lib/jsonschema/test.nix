@@ -5,143 +5,134 @@
 let
   inherit (lib) types;
   fromModule =
-    opts@{
-      typePrefix ? "Main",
-      addsTitle ? false,
-      addsKeysType ? false,
-      ...
-    }:
-    module:
+    opts: module:
     let
-      opts' = opts // {
-        inherit typePrefix addsTitle addsKeysType;
-      };
-      jsonschema = clanLib.jsonschema.fromModule opts' module;
+      jsonschema = clanLib.jsonschema.fromModule (
+        {
+          typePrefix = "Main";
+          addsKeysType = false;
+          readOnly = {
+            input = false;
+            output = false;
+          };
+          output = false;
+        }
+        // opts
+      ) module;
     in
     jsonschema."$defs";
   fromOption =
-    opts@{
-      input ? true,
-      output ? false,
-      clipToOption ? true,
-      optionName ? "opt",
-      typePrefix ? "Main",
-      readOnly ? {
-        input = false;
-        output = false;
-      },
-      ...
-    }:
-    option:
-    let
-      opts' =
-        lib.removeAttrs opts [
-          "optionName"
-          "clipToOption"
-        ]
-        // {
-          inherit
-            input
-            output
-            typePrefix
-            readOnly
-            ;
-        };
-      result = fromModule opts' {
-        options.${optionName} = lib.mkOption option;
-      };
-    in
-    result
-    // lib.optionalAttrs clipToOption (
-      lib.optionalAttrs input {
-        "${typePrefix}Input" = result."${typePrefix}Input".properties.${optionName};
-      }
-      // lib.optionalAttrs output {
-        "${typePrefix}Output" = result."${typePrefix}Output".properties.${optionName};
-      }
-    );
+    opts: option:
+    fromModule opts {
+      options.opt = lib.mkOption option;
+    };
   fromType =
     opts: type:
     fromOption opts {
       inherit type;
     };
   AnyJson = {
-    type = [
-      "boolean"
-      "integer"
-      "number"
-      "string"
-      "array"
-      "object"
-      "null"
+    oneOf = [
+      { type = "null"; }
+      { type = "boolean"; }
+      { type = "integer"; }
+      { type = "number"; }
+      { type = "string"; }
+      {
+        type = "array";
+        items = {
+          "$ref" = "#/$defs/AnyJson";
+        };
+      }
+      {
+        type = "object";
+        additionalProperties = {
+          "$ref" = "#/$defs/AnyJson";
+        };
+      }
     ];
   };
 in
 {
   testNested = {
-    expr = fromModule { } {
-      options.foo.bar = lib.mkOption {
-        type = types.bool;
-      };
-      options.foo.baz = lib.mkOption {
-        type = types.bool;
-        default = false;
-      };
-    };
+    expr =
+      fromModule
+        {
+          readOnly = {
+            input = true;
+            output = true;
+          };
+          output = true;
+        }
+        {
+          options.foo.bar = lib.mkOption {
+            type = types.bool;
+          };
+          options.foo.baz = lib.mkOption {
+            type = types.bool;
+            default = false;
+          };
+        };
     expected = {
       MainInput = {
         type = "object";
         properties = {
           foo = {
-            additionalProperties = false;
-            properties = {
-              bar = {
-                type = "boolean";
-                readOnly = true;
-              };
-              baz = {
-                type = "boolean";
-                readOnly = true;
-              };
-            };
-            type = "object";
-            required = [ "bar" ];
+            "$ref" = "#/$defs/MainFooInput";
             readOnly = true;
           };
         };
         additionalProperties = false;
         required = [ "foo" ];
+      };
+      MainFooInput = {
+        additionalProperties = false;
+        properties = {
+          bar = {
+            type = "boolean";
+            readOnly = true;
+          };
+          baz = {
+            type = "boolean";
+            readOnly = true;
+          };
+        };
+        type = "object";
+        required = [ "bar" ];
       };
       MainOutput = {
         type = "object";
         properties = {
           foo = {
-            additionalProperties = false;
-            properties = {
-              bar = {
-                type = "boolean";
-                readOnly = true;
-              };
-              baz = {
-                type = "boolean";
-                readOnly = true;
-              };
-            };
-            type = "object";
-            required = [
-              "bar"
-              "baz"
-            ];
+            "$ref" = "#/$defs/MainFooOutput";
             readOnly = true;
           };
         };
         additionalProperties = false;
         required = [ "foo" ];
       };
+      MainFooOutput = {
+        additionalProperties = false;
+        properties = {
+          bar = {
+            type = "boolean";
+            readOnly = true;
+          };
+          baz = {
+            type = "boolean";
+            readOnly = true;
+          };
+        };
+        type = "object";
+        required = [
+          "bar"
+          "baz"
+        ];
+      };
     };
   };
   testNestedOptional = {
-    expr = fromModule { output = false; } {
+    expr = fromModule { readOnly.input = true; } {
       options.foo.bar = lib.mkOption {
         type = types.str;
         default = "bar";
@@ -156,18 +147,21 @@ in
         type = "object";
         properties = {
           foo = {
-            type = "object";
-            properties = {
-              bar = {
-                type = "string";
-                readOnly = true;
-              };
-              baz = {
-                type = "integer";
-                readOnly = true;
-              };
-            };
-            additionalProperties = false;
+            "$ref" = "#/$defs/MainFooInput";
+            readOnly = true;
+          };
+        };
+        additionalProperties = false;
+      };
+      MainFooInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "string";
+            readOnly = true;
+          };
+          baz = {
+            type = "integer";
             readOnly = true;
           };
         };
@@ -176,7 +170,7 @@ in
     };
   };
   testFreeForm = {
-    expr = fromModule { output = false; } [
+    expr = fromModule { readOnly.input = true; } [
       {
         freeformType = types.attrsOf types.int;
         options = {
@@ -215,8 +209,15 @@ in
       };
       expected = {
         MainInput = {
-          type = "boolean";
-          inherit description;
+          type = "object";
+          properties = {
+            opt = {
+              type = "boolean";
+              inherit description;
+            };
+          };
+          additionalProperties = false;
+          required = [ "opt" ];
         };
       };
     };
@@ -229,26 +230,28 @@ in
         type = types.bool;
         description = {
           _type = "mdDoc";
-          text = "foo";
+          text = description;
         };
       };
       expected = {
         MainInput = {
-          type = "boolean";
-          inherit description;
+          type = "object";
+          properties = {
+            opt = {
+              type = "boolean";
+              inherit description;
+            };
+          };
+          additionalProperties = false;
+          required = [ "opt" ];
         };
       };
     };
   testDefaultText = {
-    expr =
-      fromOption
-        {
-          clipToOption = false;
-        }
-        {
-          type = types.bool;
-          defaultText = "Not required";
-        };
+    expr = fromOption { } {
+      type = types.bool;
+      defaultText = "Not required";
+    };
     expected = {
       MainInput = {
         type = "object";
@@ -263,34 +266,32 @@ in
     };
   };
   testNestedDefaultText = {
-    expr =
-      fromOption
-        {
-          clipToOption = false;
-        }
-        {
-          type = lib.types.submodule {
-            options = {
-              foo = lib.mkOption {
-                type = lib.types.bool;
-                defaultText = "Not required";
-              };
-            };
+    expr = fromOption { } {
+      type = lib.types.submodule {
+        options = {
+          foo = lib.mkOption {
+            type = lib.types.bool;
+            defaultText = "Not required";
           };
-          defaultText = "Not required";
         };
+      };
+      defaultText = "Not required";
+    };
     expected = {
       MainInput = {
         type = "object";
         properties = {
           opt = {
-            type = "object";
-            properties = {
-              foo = {
-                type = "boolean";
-              };
-            };
-            additionalProperties = false;
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+      };
+      MainOptInput = {
+        type = "object";
+        properties = {
+          foo = {
+            type = "boolean";
           };
         };
         additionalProperties = false;
@@ -301,7 +302,14 @@ in
     expr = fromType { } types.str;
     expected = {
       MainInput = {
-        type = "string";
+        type = "object";
+        properties = {
+          opt = {
+            type = "string";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
@@ -309,7 +317,14 @@ in
     expr = fromType { } types.int;
     expected = {
       MainInput = {
-        type = "integer";
+        type = "object";
+        properties = {
+          opt = {
+            type = "integer";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
@@ -317,7 +332,14 @@ in
     expr = fromType { } types.float;
     expected = {
       MainInput = {
-        type = "number";
+        type = "object";
+        properties = {
+          opt = {
+            type = "number";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
@@ -333,6 +355,16 @@ in
       expr = fromType { } (types.enum values);
       expected = {
         MainInput = {
+          type = "object";
+          properties = {
+            opt = {
+              "$ref" = "#/$defs/MainOpt";
+            };
+          };
+          additionalProperties = false;
+          required = [ "opt" ];
+        };
+        MainOpt = {
           enum = values;
         };
       };
@@ -341,6 +373,17 @@ in
     expr = fromType { } (types.listOf types.int);
     expected = {
       MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+
+      };
+      MainOpt = {
         type = "array";
         items = {
           type = "integer";
@@ -352,6 +395,16 @@ in
     expr = fromType { } (types.listOf types.unspecified);
     expected = {
       MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
         type = "array";
         items = {
           "$ref" = "#/$defs/AnyJson";
@@ -365,6 +418,16 @@ in
     expected = {
       MainInput = {
         type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
+        type = "object";
         additionalProperties = {
           "$ref" = "#/$defs/AnyJson";
         };
@@ -377,6 +440,16 @@ in
     expected = {
       MainInput = {
         type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
+        type = "object";
         additionalProperties = {
           type = "integer";
         };
@@ -388,6 +461,16 @@ in
     expected = {
       MainInput = {
         type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
+        type = "object";
         additionalProperties = {
           type = "integer";
         };
@@ -398,10 +481,17 @@ in
     expr = fromType { } (types.nullOr types.bool);
     expected = {
       MainInput = {
-        oneOf = [
-          { type = "null"; }
-          { type = "boolean"; }
-        ];
+        type = "object";
+        properties = {
+          opt = {
+            oneOf = [
+              { type = "null"; }
+              { type = "boolean"; }
+            ];
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
@@ -409,15 +499,22 @@ in
     expr = fromType { } (types.nullOr (types.nullOr types.bool));
     expected = {
       MainInput = {
-        oneOf = [
-          { type = "null"; }
-          { type = "boolean"; }
-        ];
+        type = "object";
+        properties = {
+          opt = {
+            oneOf = [
+              { type = "null"; }
+              { type = "boolean"; }
+            ];
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
   testSubmodule = {
-    expr = fromType { clipToOption = false; } (
+    expr = fromType { } (
       types.submodule {
         options.bar = lib.mkOption {
           type = types.int;
@@ -434,16 +531,34 @@ in
         type = "object";
         properties = {
           opt = {
-            type = "object";
-            properties = {
-              bar = {
-                type = "integer";
-              };
-              baz = {
-                type = "number";
-              };
-            };
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+      };
+      MainOptInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "integer";
+          };
+          baz = {
+            type = "number";
+          };
+        };
+        additionalProperties = false;
+      };
+    };
+  };
+  testEmptySubmodule = {
+    expr = fromType { } (types.submodule { });
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
             additionalProperties = false;
+            type = "object";
           };
         };
         additionalProperties = false;
@@ -451,45 +566,40 @@ in
     };
   };
   testReadOnlySubmodule = {
-    expr =
-      fromModule
-        {
-          output = false;
-          readOnly = {
-            input = true;
+    expr = fromModule { readOnly.input = true; } {
+      options.foo = lib.mkOption {
+        type = types.submodule {
+          options.bar = lib.mkOption {
+            type = types.int;
+            default = 0;
           };
-        }
-        {
-          options.foo = lib.mkOption {
-            type = types.submodule {
-              options.bar = lib.mkOption {
-                type = types.int;
-                default = 0;
-              };
-              options.baz = lib.mkOption {
-                type = types.float;
-                default = 1.1;
-              };
-            };
+          options.baz = lib.mkOption {
+            type = types.float;
+            default = 1.1;
           };
         };
+      };
+    };
     expected = {
       MainInput = {
         type = "object";
         properties = {
           foo = {
-            type = "object";
-            properties = {
-              bar = {
-                type = "integer";
-                readOnly = true;
-              };
-              baz = {
-                type = "number";
-                readOnly = true;
-              };
-            };
-            additionalProperties = false;
+            "$ref" = "#/$defs/MainFooInput";
+            readOnly = true;
+          };
+        };
+        additionalProperties = false;
+      };
+      MainFooInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "integer";
+            readOnly = true;
+          };
+          baz = {
+            type = "number";
             readOnly = true;
           };
         };
@@ -509,6 +619,16 @@ in
       MainInput = {
         type = "object";
         properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        type = "object";
+        properties = {
           bar = {
             type = "integer";
           };
@@ -519,54 +639,84 @@ in
     };
   };
   testAttrsOfSubmodule = {
-    expr = fromType { } (
-      types.attrsOf (
-        types.submodule {
-          options.bar = lib.mkOption {
-            type = types.bool;
-          };
-        }
-      )
-    );
+    expr =
+      fromType { renameType = { loc, name }: if loc == "attrValue" then "MainAttrValue" else name; }
+        (
+          types.attrsOf (
+            types.submodule {
+              options.bar = lib.mkOption {
+                type = types.bool;
+              };
+            }
+          )
+        );
     expected = {
       MainInput = {
         type = "object";
-        additionalProperties = {
-          type = "object";
-          properties = {
-            bar = {
-              type = "boolean";
-            };
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
           };
-          additionalProperties = false;
-          required = [ "bar" ];
         };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        type = "object";
+        additionalProperties = {
+          "$ref" = "#/$defs/MainAttrValueInput";
+        };
+      };
+      MainAttrValueInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "boolean";
+          };
+        };
+        additionalProperties = false;
+        required = [ "bar" ];
       };
     };
   };
   testListOfSubmodule = {
-    expr = fromType { } (
-      types.listOf (
-        types.submodule {
-          options.bar = lib.mkOption {
-            type = types.bool;
-          };
-        }
-      )
-    );
+    expr =
+      fromType { renameType = { loc, name }: if loc == "listItem" then "MainListItem" else name; }
+        (
+          types.listOf (
+            types.submodule {
+              options.bar = lib.mkOption {
+                type = types.bool;
+              };
+            }
+          )
+        );
     expected = {
       MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
         type = "array";
         items = {
-          type = "object";
-          properties = {
-            bar = {
-              type = "boolean";
-            };
-          };
-          additionalProperties = false;
-          required = [ "bar" ];
+          "$ref" = "#/$defs/MainListItemInput";
         };
+      };
+      MainListItemInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "boolean";
+          };
+        };
+        additionalProperties = false;
+        required = [ "bar" ];
       };
     };
   };
@@ -574,6 +724,16 @@ in
     expr = fromType { } (types.either types.bool types.str);
     expected = {
       MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
         oneOf = [
           { type = "boolean"; }
           { type = "string"; }
@@ -585,7 +745,14 @@ in
     expr = fromType { } (types.either (types.functionTo types.str) types.str);
     expected = {
       MainInput = {
-        type = "string";
+        type = "object";
+        properties = {
+          opt = {
+            type = "string";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
     };
   };
@@ -593,69 +760,124 @@ in
     expr = fromType { } (types.either types.raw types.str);
     expected = {
       MainInput = {
-        "$ref" = "#/$defs/AnyJson";
-      };
-      inherit AnyJson;
-    };
-  };
-  testEitherComplexLists = {
-    expr = fromType { } (
-      types.either
-        (types.listOf (
-          types.enum [
-            "a"
-            "b"
-            "c"
-          ]
-        ))
-        (
-          types.listOf (
-            types.enum [
-              "a"
-              "b"
-            ]
-          )
-        )
-    );
-    expected = {
-      MainInput = {
-        type = "array";
-        items = {
-          enum = [
-            "a"
-            "b"
-            "c"
-          ];
-        };
-      };
-    };
-  };
-  testCoercedTo = {
-    expr = fromType {
-      output = true;
-      clipToOption = false;
-      addsTitle = true;
-    } (types.coercedTo types.int toString types.str);
-    expected = {
-      MainInput = {
         type = "object";
         properties = {
           opt = {
-            title = "MainOptInput";
-            oneOf = [
-              { type = "integer"; }
-              { type = "string"; }
-            ];
+            "$ref" = "#/$defs/AnyJson";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
+      inherit AnyJson;
+    };
+  };
+  testEitherEnum = {
+    expr = fromType { } (
+      types.either
+        (types.enum [
+          "a"
+          "b"
+          "c"
+        ])
+        (
+          types.enum [
+            "a"
+            "b"
+          ]
+        )
+    );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOpt = {
+        enum = [
+          "a"
+          "b"
+          "c"
+        ];
+      };
+    };
+  };
+  # testEitherComplexLists = {
+  #   expr =
+  #     fromType { renameType = { loc, name }: if loc == "listItem" then "MainListItem" else name; }
+  #       (
+  #         types.either
+  #           (types.listOf (
+  #             types.enum [
+  #               "a"
+  #               "b"
+  #               "c"
+  #             ]
+  #           ))
+  #           (
+  #             types.listOf (
+  #               types.enum [
+  #                 "a"
+  #                 "b"
+  #               ]
+  #             )
+  #           )
+  #       );
+  #   expected = {
+  #     MainInput = {
+  #       type = "object";
+  #       properties = {
+  #         opt = {
+  #           "$ref" = "#/$defs/MainOpt";
+  #         };
+  #       };
+  #       additionalProperties = false;
+  #       required = [ "opt" ];
+  #     };
+  #     MainOpt = {
+  #       type = "array";
+  #       items = {
+  #         "$ref" = "#/$defs/MainListItem";
+  #       };
+  #     };
+  #     MainListItem = {
+  #       enum = [
+  #         "a"
+  #         "b"
+  #         "c"
+  #       ];
+  #     };
+  #   };
+  # };
+  testCoercedTo = {
+    expr = fromType { output = true; } (types.coercedTo types.int toString types.str);
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        oneOf = [
+          { type = "integer"; }
+          { type = "string"; }
+        ];
+      };
       MainOutput = {
         type = "object";
         properties = {
           opt = {
-            # Should not add title here, because it's a simple type
+            # Should not use $ref here, because it's a simple type
             type = "string";
           };
         };
@@ -669,8 +891,14 @@ in
       fromType
         {
           output = true;
-          clipToOption = false;
-          addsTitle = true;
+          renameType =
+            { loc, name }:
+            if loc == "listOf" then
+              "MainList"
+            else if loc == "attrsOf" then
+              "MainAttrs"
+            else
+              name;
         }
         (
           types.coercedTo (types.listOf types.str) (
@@ -685,39 +913,35 @@ in
         type = "object";
         properties = {
           opt = {
-            title = "MainOptInput";
-            oneOf = [
-              {
-                # This colliding name is expected, since we don't renameType
-                title = "MainOptInput";
-                type = "array";
-                items = {
-                  type = "string";
-                };
-              }
-              {
-                # This colliding name is expected, since we don't renameType
-                title = "MainOptInput";
-                type = "object";
-                additionalProperties = {
-                  type = "string";
-                };
-              }
-            ];
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
+      MainOptInput = {
+        oneOf = [
+          { "$ref" = "#/$defs/MainList"; }
+          { "$ref" = "#/$defs/MainAttrs"; }
+        ];
+      };
+      MainList = {
+        type = "array";
+        items = {
+          type = "string";
+        };
+      };
+      MainAttrs = {
+        type = "object";
+        additionalProperties = {
+          type = "string";
+        };
+      };
       MainOutput = {
         type = "object";
         properties = {
           opt = {
-            title = "MainOptOutput";
-            type = "object";
-            additionalProperties = {
-              type = "string";
-            };
+            "$ref" = "#/$defs/MainAttrs";
           };
         };
         additionalProperties = false;
@@ -729,11 +953,107 @@ in
     expr = fromType { } (types.coercedTo types.raw lib.id types.path);
     expected = {
       MainInput = {
-        "$ref" = "#/$defs/AnyJson";
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/AnyJson";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
       };
       inherit AnyJson;
     };
   };
+  testComplexCoerced = {
+    expr =
+      fromType
+        {
+          renameType =
+            { loc, name }:
+            if loc == "listOf" then
+              "MainList"
+            else if loc == "attrsOf" then
+              "MainAttrs"
+            else
+              name;
+        }
+        (
+          types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
+            types.attrsOf (types.submodule { })
+          )
+        );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        oneOf = [
+          { "$ref" = "#/$defs/MainList"; }
+          { "$ref" = "#/$defs/MainAttrs"; }
+        ];
+      };
+      MainList = {
+        type = "array";
+        items = {
+          type = "string";
+        };
+      };
+      MainAttrs = {
+        type = "object";
+        additionalProperties = {
+          type = "object";
+          additionalProperties = false;
+        };
+      };
+    };
+  };
+  testFlatten =
+    let
+      flattenOneOf = import ./flattenOneOf.nix { inherit lib clanLib; };
+    in
+    {
+      expr = flattenOneOf { } [
+        {
+          type = "array";
+          items = {
+            type = "string";
+          };
+        }
+        {
+          type = "object";
+          additionalProperties = {
+            type = "object";
+            additionalProperties = false;
+          };
+        }
+      ];
+      expected = {
+        descendantTypes = { };
+        oneOf = [
+          {
+            type = "array";
+            items = {
+              type = "string";
+            };
+          }
+          {
+            type = "object";
+            additionalProperties = {
+              type = "object";
+              additionalProperties = false;
+            };
+          }
+        ];
+      };
+    };
   AnyJson =
     lib.genAttrs'
       [
@@ -747,7 +1067,14 @@ in
           expr = fromType { } types.${name};
           expected = {
             MainInput = {
-              "$ref" = "#/$defs/AnyJson";
+              type = "object";
+              properties = {
+                opt = {
+                  "$ref" = "#/$defs/AnyJson";
+                };
+              };
+              additionalProperties = false;
+              required = [ "opt" ];
             };
             inherit AnyJson;
           };
@@ -756,7 +1083,7 @@ in
   testRenameAttrType = {
     expr = fromType {
       addsTitle = true;
-      renameType = { loc, name }: if loc == "attrsOfItem" then "OptModule" else name;
+      renameType = { loc, name }: if loc == "attrValue" then "OptModule" else name;
     } (types.attrsOf types.deferredModule);
     expected = {
       MainInput = {

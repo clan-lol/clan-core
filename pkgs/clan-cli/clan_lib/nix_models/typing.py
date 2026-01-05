@@ -3,7 +3,7 @@
 #
 # fmt: off
 
-from typing import Literal, NotRequired, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 type AnyJson = bool | int | float | str | list[AnyJson] | dict[str, AnyJson] | None
 
@@ -82,6 +82,12 @@ class InstanceRoleMachineInput(TypedDict):
 
 
 type InstanceRoleMachinesInput = dict[str, InstanceRoleMachineInput]
+
+
+type InstanceRoleTagsFrom = list[str]
+
+
+type InstanceRoleTagsTo = dict[str, dict[str, Any]]
 
 
 class InventoryMetaInput(TypedDict):
@@ -229,9 +235,6 @@ class InventoryTagsInput(TypedDict):
     nixos: NotRequired[InventoryTagMachines]
 
 
-type InventoryUserTags = list[str]
-
-
 type MachineClass = Literal["nixos", "darwin"]
 """
 The module system that should be used to construct the machine
@@ -349,13 +352,7 @@ class ClanOutputsInput(TypedDict):
     moduleForMachine: OutputModuleForMachine
 
 
-class InstanceRoleInput(TypedDict):
-    extraModules: NotRequired[InstanceRoleExtraModules]
-    machines: NotRequired[InstanceRoleMachinesInput]
-    settings: NotRequired[AnyJson]
-
-
-type InstanceRolesInput = dict[str, InstanceRoleInput]
+type InstanceRoleTagsInput = InstanceRoleTagsFrom | InstanceRoleTagsTo
 
 
 class MachineInput(TypedDict):
@@ -422,6 +419,16 @@ class TemplatesInput(TypedDict):
     clan: NotRequired[TemplatesClanInput]
     disko: NotRequired[TemplatesDiskoInput]
     machine: NotRequired[TemplatesMachineInput]
+
+
+class InstanceRoleInput(TypedDict):
+    extraModules: NotRequired[InstanceRoleExtraModules]
+    machines: NotRequired[InstanceRoleMachinesInput]
+    settings: NotRequired[AnyJson]
+    tags: NotRequired[InstanceRoleTagsInput]
+
+
+type InstanceRolesInput = dict[str, InstanceRoleInput]
 
 
 class InstanceInput(TypedDict):
