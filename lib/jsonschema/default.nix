@@ -136,6 +136,53 @@ let
   # Type Handlers
   # ============================================================================
 
+  mkSimpleNode = type: description: isRequired: {
+    property = {
+      inherit type;
+    }
+    // description;
+    inherit isRequired;
+  };
+
+  # Trivial nodes
+  handleBool = ctx: mkSimpleNode "boolean" ctx.description ctx.isRequired;
+  handleInt = ctx: mkSimpleNode "integer" ctx.description ctx.isRequired;
+  handleNumber = ctx: mkSimpleNode "number" ctx.description ctx.isRequired;
+  handleString = ctx: mkSimpleNode "string" ctx.description ctx.isRequired;
+
+  # creates a reference to the "AnyJSON" $ref
+  handleAnyJson = ctx: {
+    property = ref "AnyJson" // ctx.description;
+    inherit (ctx) isRequired;
+    defs = {
+      inherit AnyJson;
+    };
+  };
+
+  handleEnum =
+    ctx:
+    let
+      typeName = ctx.getName ctx.typePrefix;
+      type = {
+        enum = ctx.option.type.functor.payload.values;
+      }
+      // ctx.description;
+      defs =
+        if ctx.shouldInlineTypes then
+          { }
+        else
+          {
+            ${typeName} = type;
+          };
+    in
+    {
+      property = if ctx.shouldInlineTypes then type else ref typeName;
+      inherit (ctx) isRequired;
+    }
+    // lib.optionalAttrs (defs != { }) {
+      defs = defs;
+    };
+
   # ============================================================================
   # Main Conversion Functions
   # ============================================================================
@@ -173,7 +220,7 @@ let
     ```
   */
   optionToNode =
-    opts@{
+    args@{
       typePrefix,
       mode,
       # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
@@ -192,71 +239,33 @@ let
       description = lib.optionalAttrs (option ? description) {
         description = option.description.text or option.description;
       };
+
+      ctx = {
+        inherit
+          args
+          option
+          isRequired
+          description
+          getName
+          optionToNode
+          optionsToNode
+          ;
+      };
     in
     if !isIncludedOption option then
       null
     else if isBoolOption option then
-      {
-        property = {
-          type = "boolean";
-        }
-        // description;
-        inherit isRequired;
-      }
+      handleBool ctx
     else if isIntOption option then
-      {
-        property = {
-          type = "integer";
-        }
-        // description;
-        inherit isRequired;
-      }
+      handleInt ctx
     else if isFloatOption option then
-      {
-        property = {
-          type = "number";
-        }
-        // description;
-        inherit isRequired;
-      }
+      handleNumber ctx
     else if isStrOption option then
-      {
-        property = {
-          type = "string";
-        }
-        // description;
-        inherit isRequired;
-      }
+      handleString ctx
     else if isAnyOption option then
-      {
-        property = ref "AnyJson" // description;
-        inherit isRequired;
-        defs = {
-          inherit AnyJson;
-        };
-      }
+      handleAnyJson ctx
     else if option.type.name == "enum" then
-      let
-        typeName = getName typePrefix;
-        type = {
-          enum = option.type.functor.payload.values;
-        }
-        // description;
-        defs =
-          if shouldInlineTypes then
-            { }
-          else
-            {
-              ${typeName} = type;
-            };
-      in
-      {
-        property = if shouldInlineTypes then type else ref typeName;
-        inherit isRequired;
-      }
-      // lib.optionalAttrs (defs != { }) {
-        defs = defs;
-      }
+      handleEnum ctx
     else if option.type.name == "nullOr" then
       let
         nestedOption = {
@@ -264,7 +273,7 @@ let
           _type = "option";
           loc = option.loc;
         };
-        node = optionToNode opts nestedOption;
+        node = optionToNode args nestedOption;
         inherit
           (flattenOneOf node.defs or { } (
             [
@@ -300,7 +309,7 @@ let
               name: type:
               optionToNode
                 (
-                  opts
+                  args
                   // {
                     typePrefix = typePrefix + lib.toSentenceCase name;
                     shouldInlineTypes = true;
@@ -354,7 +363,7 @@ let
               name: type:
               optionToNode
                 (
-                  opts
+                  args
                   // {
                     typePrefix = typePrefix + lib.toSentenceCase name;
                     shouldInlineTypes = mode == "input";
@@ -443,7 +452,7 @@ let
     else if option.type.name == "submodule" then
       let
         subOptions = option.type.getSubOptions option.loc;
-        node = optionsToNode (opts // { inherit description; }) subOptions;
+        node = optionsToNode (args // { inherit description; }) subOptions;
       in
       node
     else if option.type.name == "listOf" then
@@ -454,7 +463,7 @@ let
           loc = option.loc;
         };
         node = optionToNode (
-          opts
+          args
           // {
             typePrefix = getName (typePrefix + "Item");
             shouldInlineTypes = false;
@@ -487,7 +496,7 @@ let
           loc = option.loc;
         };
         node = optionToNode (
-          opts
+          args
           // {
             typePrefix = getName (typePrefix + "Item");
             shouldInlineTypes = false;
