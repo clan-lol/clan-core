@@ -68,7 +68,7 @@ let
       # with other branches. only the outside type should create a new type.
       # But inside an attrs which is inside a branch, a custom type should be
       # created again;
-      isDirectlyInsideBranch ? false,
+      shouldInlineTypes ? false,
       typeRenames,
       ...
     }:
@@ -130,7 +130,7 @@ let
         }
         // description;
         defs =
-          if isDirectlyInsideBranch then
+          if shouldInlineTypes then
             { }
           else
             {
@@ -138,7 +138,7 @@ let
             };
       in
       {
-        property = if isDirectlyInsideBranch then type else ref typeName;
+        property = if shouldInlineTypes then type else ref typeName;
         inherit isRequired;
       }
       // lib.optionalAttrs (defs != { }) {
@@ -190,7 +190,7 @@ let
                   opts
                   // {
                     typePrefix = typePrefix + lib.toSentenceCase name;
-                    isDirectlyInsideBranch = true;
+                    shouldInlineTypes = true;
                   }
                 )
                 {
@@ -216,10 +216,10 @@ let
         numOneOf = lib.length oneOf;
         typeName = getName typePrefix + (lib.toSentenceCase mode);
         property = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
-        createsTypeName = !isDirectlyInsideBranch && shouldCreateTypeName property;
+        shouldCreateDef = !shouldInlineTypes && shouldDefineType property;
         defs' =
           defs
-          // lib.optionalAttrs createsTypeName {
+          // lib.optionalAttrs shouldCreateDef {
             ${typeName} = property;
           };
       in
@@ -227,7 +227,7 @@ let
         null
       else
         {
-          property = if createsTypeName then ref typeName else property;
+          property = if shouldCreateDef then ref typeName else property;
           inherit isRequired;
         }
         // lib.optionalAttrs (defs' != { }) {
@@ -244,7 +244,7 @@ let
                   opts
                   // {
                     typePrefix = typePrefix + lib.toSentenceCase name;
-                    isDirectlyInsideBranch = mode == "input";
+                    shouldInlineTypes = mode == "input";
                   }
                 )
                 {
@@ -286,15 +286,15 @@ let
                 }
             )
             // description;
-          createsTypeName = shouldCreateTypeName property;
+          shouldCreateDef = shouldDefineType property;
           defs' =
             defs
-            // lib.optionalAttrs createsTypeName {
+            // lib.optionalAttrs shouldCreateDef {
               ${typeName} = property;
             };
         in
         {
-          property = if createsTypeName then ref typeName else property;
+          property = if shouldCreateDef then ref typeName else property;
           inherit isRequired;
         }
         // lib.optionalAttrs (defs' != { }) {
@@ -344,7 +344,7 @@ let
           opts
           // {
             typePrefix = getName (typePrefix + "Item");
-            isDirectlyInsideBranch = false;
+            shouldInlineTypes = false;
           }
         ) nestedOption;
         typeName =
@@ -377,7 +377,7 @@ let
           opts
           // {
             typePrefix = getName (typePrefix + "Item");
-            isDirectlyInsideBranch = false;
+            shouldInlineTypes = false;
           }
         ) nestedOption;
         typeName =
@@ -436,7 +436,7 @@ let
               opts
               // {
                 typePrefix = getName (typePrefix + lib.toSentenceCase name);
-                isDirectlyInsideBranch = false;
+                shouldInlineTypes = false;
               }
             ) option
           else
@@ -446,7 +446,7 @@ let
               opts
               // {
                 typePrefix = getName (typePrefix + lib.toSentenceCase name);
-                isDirectlyInsideBranch = false;
+                shouldInlineTypes = false;
               }
             ) option
         ) options
@@ -615,7 +615,18 @@ let
       deferredModule = true;
     }
     .${option.type.name} or false;
-  shouldCreateTypeName =
+
+  /**
+    Returns true, if the passed node is one of the following:
+
+    - array
+    - object
+    - enum
+    - oneOf
+
+    All other types return false
+  */
+  shouldDefineType =
     property:
     (
       property ? type
