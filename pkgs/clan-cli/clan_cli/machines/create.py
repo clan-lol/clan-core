@@ -8,8 +8,7 @@ from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_file
-from clan_lib.nix_models.clan import InventoryMachine
-from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
+from clan_lib.nix_models.typing import MachineDeployInput, MachineInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.patch_engine import merge_objects
 from clan_lib.persist.path_utils import set_value_by_path
@@ -23,7 +22,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class CreateOptions:
     clan_dir: Flake
-    machine: InventoryMachine
+    machine: MachineInput
     template: str = "new-machine"
     target_host: str | None = None
 
@@ -112,10 +111,10 @@ def create_command(args: argparse.Namespace) -> None:
         )
         raise ClanError(msg, description=description)
 
-    machine = InventoryMachine(
+    machine = MachineInput(
         name=args.machine_name,
         tags=args.tags,
-        deploy=MachineDeploy(targetHost=args.target_host),
+        deploy=MachineDeployInput(targetHost=args.target_host),
     )
     opts = CreateOptions(
         clan_dir=clan_dir,
