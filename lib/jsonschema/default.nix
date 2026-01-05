@@ -464,51 +464,42 @@ let
     }:
     options:
     let
-      nodesAttrs =
-        lib.concatMapAttrs
-          (
-            name: option:
-            if option ? _type then
-              let
-                node = toOptionNode (
-                  opts
-                  // {
-                    typePrefix = renameType {
-                      loc = "submodule";
-                      name = typePrefix + clanLib.toUpperFirst name;
-                    };
-                    isDirectlyInsideBranch = false;
-                  }
-                ) option;
-              in
-              lib.optionalAttrs (node != null) ({
-                ${name} = node;
-              })
-            else
-              # handle nested options (not a submodule)
-              # foo.bar = mkOption { type = str; };
-              let
-                node = toOptionsNode (
-                  opts
-                  // {
-                    typePrefix = renameType {
-                      loc = "optionPath";
-                      name = typePrefix + clanLib.toUpperFirst name;
-                    };
-                    isDirectlyInsideBranch = false;
-                  }
-                ) option;
-              in
-              {
-                ${name} = node;
-              }
-          )
-          (
-            lib.removeAttrs options [
+      nodesAttrs = lib.filterAttrs (n: v: v != null) (
+        lib.mapAttrs (
+          name: option:
+          if
+            builtins.elem name [
               "_module"
               "_freeformOptions"
             ]
-          );
+          then
+            null
+          else if option ? _type then
+            toOptionNode (
+              opts
+              // {
+                typePrefix = renameType {
+                  loc = "submodule";
+                  name = typePrefix + clanLib.toUpperFirst name;
+                };
+                isDirectlyInsideBranch = false;
+              }
+            ) option
+          else
+            # handle nested options (not a submodule)
+            # foo.bar = mkOption { type = str; };
+            toOptionsNode (
+              opts
+              // {
+                typePrefix = renameType {
+                  loc = "optionPath";
+                  name = typePrefix + clanLib.toUpperFirst name;
+                };
+                isDirectlyInsideBranch = false;
+              }
+            ) option
+        ) options
+      );
       freeformNode =
         let
           # freeformType will have more than 1 definitions if it's specified in
@@ -615,6 +606,7 @@ let
           };
         };
       };
+
   isIncludedOption =
     excludedTypes: option: option.visible or true && !lib.elem (option.type.name or null) excludedTypes;
   isBoolOption =
