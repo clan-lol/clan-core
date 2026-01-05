@@ -150,6 +150,8 @@ nav:
           - decisions/05-deployment-parameters.md
           - decisions/template.md
       - Glossary: reference/glossary.md
+      - Releases:
+          - releases/25-11.md
   - Services:
       - services/definition.md
       # Generated list from the list of official services
