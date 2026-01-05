@@ -1,8 +1,7 @@
 import argparse
 import logging
 
-from clan_lib.nix_models.clan import InventoryMachine
-from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
+from clan_lib.nix_models.typing import MachineDeployInput, MachineInput
 
 from clan_cli.machines.create import CreateOptions, create_machine
 
@@ -12,10 +11,10 @@ log = logging.getLogger(__name__)
 def apply_command(args: argparse.Namespace) -> None:
     """Apply a machine template - actually an alias for machines create --template."""
     # Create machine using the create_machine API directly
-    machine = InventoryMachine(
+    machine = MachineInput(
         name=args.machine,
         tags=[],
-        deploy=MachineDeploy(targetHost=None),
+        deploy=MachineDeployInput(targetHost=None),
     )
 
     opts = CreateOptions(
