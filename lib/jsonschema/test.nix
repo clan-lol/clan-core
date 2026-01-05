@@ -1036,7 +1036,7 @@ in
         }
       ];
       expected = {
-        descendantTypes = { };
+        defs = { };
         oneOf = [
           {
             type = "array";
@@ -1086,18 +1086,36 @@ in
       renameType = { loc, name }: if loc == "attrValue" then "OptModule" else name;
     } (types.attrsOf types.deferredModule);
     expected = {
+      inherit AnyJson;
       MainInput = {
-        title = "MainOpt";
-        type = "object";
-        additionalProperties = {
-          title = "OptModule";
-          type = "object";
-          additionalProperties = {
-            "$ref" = "#/$defs/AnyJson";
+        additionalProperties = false;
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOpt";
           };
         };
+        required = [ "opt" ];
+        type = "object";
       };
-      inherit AnyJson;
+      MainOpt = {
+        additionalProperties = {
+          "$ref" = "#/$defs/AnyJson";
+        };
+        type = "object";
+      };
     };
+    # MainInput = {
+    #   title = "MainOpt";
+    #   type = "object";
+    #   additionalProperties = {
+    #     title = "OptModule";
+    #     type = "object";
+    #     additionalProperties = {
+    #       "$ref" = "#/$defs/AnyJson";
+    #     };
+    #   };
+    # };
+    # inherit AnyJson;
+    # };
   };
 }

@@ -51,7 +51,7 @@ let
       # to the root $defs property of the jsonschema, omitted if it contains no
       # such types. Some example options that aways generate its own types:
       # attrsOf, listOf, submodule, etc
-      descendantAndSelfTypes = {
+      defs = {
         InventoryInput = {
           type = "object";
           properties = {};
@@ -128,7 +128,7 @@ let
         property = ref "AnyJson" // description;
         inherit isRequired;
         isSameInputOutputType = true;
-        descendantAndSelfTypes = {
+        defs = {
           inherit AnyJson;
         };
       }
@@ -142,7 +142,7 @@ let
           enum = option.type.functor.payload.values;
         }
         // description;
-        descendantAndSelfTypes =
+        defs =
           if isDirectlyInsideBranch then
             { }
           else
@@ -155,8 +155,8 @@ let
         inherit isRequired;
         isSameInputOutputType = true;
       }
-      // lib.optionalAttrs (descendantAndSelfTypes != { }) {
-        descendantAndSelfTypes = descendantAndSelfTypes;
+      // lib.optionalAttrs (defs != { }) {
+        defs = defs;
       }
     else if option.type.name == "nullOr" then
       let
@@ -167,14 +167,14 @@ let
         };
         node = toOptionNode opts nestedOption;
         inherit
-          (flattenOneOf node.descendantAndSelfTypes or { } (
+          (flattenOneOf node.defs or { } (
             [
               { type = "null"; }
             ]
             ++ (lib.optional (node != null) node.property)
           ))
           oneOf
-          descendantTypes
+          defs
           ;
         property =
           (
@@ -191,8 +191,8 @@ let
         inherit property isRequired;
         isSameInputOutputType = if node == null then true else node.isSameInputOutputType;
       }
-      // lib.optionalAttrs (descendantTypes != { }) {
-        descendantAndSelfTypes = descendantTypes;
+      // lib.optionalAttrs (defs != { }) {
+        defs = defs;
       }
     else if option.type.name == "either" then
       let
@@ -222,11 +222,11 @@ let
           lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
         );
         inherit
-          (flattenOneOf (lib.concatMapAttrs (_name: node: node.descendantAndSelfTypes or { }) nodesAttrs) (
+          (flattenOneOf (lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs) (
             map (node: node.property) nodes
           ))
           oneOf
-          descendantTypes
+          defs
           ;
         numOneOf = lib.length oneOf;
         isSameInputOutputType = lib.all (node: node.isSameInputOutputType) nodes;
@@ -238,8 +238,8 @@ let
           + lib.optionalString (!isSameInputOutputType) (clanLib.toUpperFirst mode);
         property = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
         createsTypeName = !isDirectlyInsideBranch && shouldCreateTypeName property;
-        descendantAndSelfTypes =
-          descendantTypes
+        defs' =
+          defs
           // lib.optionalAttrs createsTypeName {
             ${typeName} = property;
           };
@@ -251,8 +251,8 @@ let
           property = if createsTypeName then ref typeName else property;
           inherit isRequired isSameInputOutputType;
         }
-        // lib.optionalAttrs (descendantAndSelfTypes != { }) {
-          inherit descendantAndSelfTypes;
+        // lib.optionalAttrs (defs' != { }) {
+          defs = defs';
         }
     else if option.type.name == "coercedTo" then
       let
@@ -295,11 +295,11 @@ let
       else if mode == "input" then
         let
           inherit
-            (flattenOneOf (lib.concatMapAttrs (_name: node: node.descendantAndSelfTypes or { }) nodesAttrs) (
+            (flattenOneOf (lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs) (
               map (node: node.property) nodes
             ))
             oneOf
-            descendantTypes
+            defs
             ;
           numOneOf = lib.length oneOf;
           property =
@@ -313,8 +313,8 @@ let
             )
             // description;
           createsTypeName = shouldCreateTypeName property;
-          descendantAndSelfTypes =
-            descendantTypes
+          defs' =
+            defs
             // lib.optionalAttrs createsTypeName {
               ${typeName} = property;
             };
@@ -324,8 +324,8 @@ let
           inherit isRequired;
           isSameInputOutputType = false;
         }
-        // lib.optionalAttrs (descendantAndSelfTypes != { }) {
-          inherit descendantAndSelfTypes;
+        // lib.optionalAttrs (defs' != { }) {
+          defs = defs';
         }
       else
         let
@@ -336,8 +336,8 @@ let
           inherit isRequired;
           isSameInputOutputType = false;
         }
-        // lib.optionalAttrs (node ? descendantAndSelfTypes) {
-          descendantAndSelfTypes = node.descendantAndSelfTypes;
+        // lib.optionalAttrs (node ? defs) {
+          defs = node.defs;
         }
     else if option.type.name == "attrs" then
       let
@@ -350,7 +350,7 @@ let
         property = ref typeName;
         inherit isRequired;
         isSameInputOutputType = true;
-        descendantAndSelfTypes = {
+        defs = {
           ${typeName} = {
             type = "object";
             additionalProperties = ref "AnyJson";
@@ -396,7 +396,7 @@ let
         {
           property = ref typeName;
           inherit isRequired isSameInputOutputType;
-          descendantAndSelfTypes = node.descendantAndSelfTypes or { } // {
+          defs = node.defs or { } // {
             ${typeName} = {
               type = "array";
               items = node.property;
@@ -435,7 +435,7 @@ let
         {
           property = ref typeName;
           inherit isRequired isSameInputOutputType;
-          descendantAndSelfTypes = node.descendantAndSelfTypes or { } // {
+          defs = node.defs or { } // {
             ${typeName} = {
               type = "object";
               additionalProperties = node.property;
@@ -566,8 +566,8 @@ let
         # FIXME: shouldn't this depend on the default value of the submodule itself?
         isRequired = false;
       }
-      // lib.optionalAttrs (freeformNode ? descendantAndSelfTypes) {
-        descendantAndSelfTypes = freeformNode.descendantAndSelfTypes;
+      // lib.optionalAttrs (freeformNode ? defs) {
+        defs = freeformNode.defs;
       }
     else
       {
@@ -588,7 +588,7 @@ let
         # option is added, the type has to be split, having different names in
         # input and output. This breaks existing code that uses the old type.
         isSameInputOutputType = false;
-        descendantAndSelfTypes = {
+        defs = {
           ${typeName} = {
             type = "object";
             additionalProperties = if freeformNode == null then false else freeformNode.property;
@@ -607,8 +607,8 @@ let
         # Freeform type has a lower priority because a user's renameType might
         # rename it to an existing type, in which case the existing type should
         # be kept because a freeform type is less likely to have a description
-        // freeformNode.descendantAndSelfTypes or { }
-        // lib.concatMapAttrs (_name: node: node.descendantAndSelfTypes or { }) nodesAttrs
+        // freeformNode.defs or { }
+        // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs
         // lib.optionalAttrs (addsKeysType && properties != { }) {
           "${typeName}Keys" = {
             enum = lib.attrNames properties;
@@ -745,8 +745,7 @@ rec {
     {
       "$schema" = "https://json-schema.org/draft/2020-12/schema";
       "$defs" =
-        lib.optionalAttrs input inputNode.descendantAndSelfTypes or { }
-        // lib.optionalAttrs output outputNode.descendantAndSelfTypes or { };
+        lib.optionalAttrs input inputNode.defs or { } // lib.optionalAttrs output outputNode.defs or { };
     };
   fromModule =
     opts: module:

@@ -2,9 +2,6 @@
   clanLib,
   lib,
 }:
-let
-  refPrefix = "#/$defs/";
-in
 # FIXME: This function can result in infinite recursion when processing a type
 # like attrsOf enum with the default renameType. The reason is that enum will
 # have its own type name and by default it will be the same as the one for
@@ -13,22 +10,24 @@ in
 # A proper fix is probably just throw an error when a user hasn't renamed the
 # type with renameType
 /**
-  Takes the 'descendantTypes' and the current 'types'
+  Takes the 'defs' and the current 'types'
   Returns a list of types that is the superset of all types in 'types'
 
   Example:
 
   types := [ { type = "str" } { oneOf = [ { $ref = "#/$defs/ModelA" } ] } ]
-  descendantTypes := { ModelA = { type = "str" }; ModelB ... };
+  defs := { ModelA = { type = "str" }; ModelB ... };
 
-  flattenOneOf descendantTypes types
+  flattenOneOf defs types
   =>
   [ { type = "str" } ]
 
   ModelA would not be added to the output, since an superset of it is already contained
 */
-descendantTypes: types:
+defs: types:
 let
+  refPrefix = "#/$defs/";
+
   flatten = lib.foldl' (
     accu: type: if type ? oneOf then flatten accu type.oneOf else mergeType accu type
   );
@@ -326,7 +325,7 @@ let
     }
     ```
   */
-  derefType = type: descendantTypes.${refTypeName type};
+  derefType = type: defs.${refTypeName type};
   findAllRefTypeNames =
     t:
     if t ? "$ref" then
@@ -346,5 +345,5 @@ let
 in
 {
   oneOf = result.flattened;
-  descendantTypes = lib.removeAttrs descendantTypes (findAllRefTypeNames result.removedTypes);
+  defs = lib.removeAttrs defs (findAllRefTypeNames result.removedTypes);
 }
