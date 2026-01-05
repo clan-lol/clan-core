@@ -63,7 +63,6 @@ let
     opts@{
       typePrefix,
       mode,
-      excludedTypes,
       # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
       # enum or one of shouldn't create a new type, because they might be merged
       # with other branches. only the outside type should create a new type.
@@ -81,7 +80,7 @@ let
         description = option.description.text or option.description;
       };
     in
-    if !isIncludedOption excludedTypes option then
+    if !isIncludedOption option then
       null
     else if isBoolOption option then
       {
@@ -215,8 +214,7 @@ let
           defs
           ;
         numOneOf = lib.length oneOf;
-        typeName =
-          getName typePrefix + (lib.toSentenceCase mode);
+        typeName = getName typePrefix + (lib.toSentenceCase mode);
         property = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
         createsTypeName = !isDirectlyInsideBranch && shouldCreateTypeName property;
         defs' =
@@ -262,9 +260,7 @@ let
         nodes = lib.concatAttrValues (
           lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
         );
-        typeName =
-          getName typePrefix
-          + lib.toSentenceCase mode;
+        typeName = getName typePrefix + lib.toSentenceCase mode;
       in
       # If this option can result in null for either input or output, it
       # shouldn't be included in either
@@ -425,7 +421,7 @@ let
     let
       getName = finalName: typeRenames.${finalName} or finalName;
 
-      nodesAttrs = lib.filterAttrs (n: v: v != null) (
+      nodesAttrs = lib.filterAttrs (_n: v: v != null) (
         lib.mapAttrs (
           name: option:
           if
@@ -552,8 +548,7 @@ let
         // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
       };
 
-  isIncludedOption =
-    excludedTypes: option: option.visible or true && !lib.elem (option.type.name or null) excludedTypes;
+  isIncludedOption = option: option.visible or true;
   isBoolOption =
     option:
     {
@@ -643,10 +638,6 @@ rec {
         output = true;
       },
       typeRenames ? { },
-      excludedTypes ? [
-        "functionTo"
-        "package"
-      ],
     }:
     options:
     let
@@ -655,7 +646,6 @@ rec {
         inherit
           typePrefix
           readOnly
-          excludedTypes
           typeRenames
           ;
       } options;
@@ -664,7 +654,6 @@ rec {
         inherit
           typePrefix
           readOnly
-          excludedTypes
           typeRenames
           ;
       } options;
