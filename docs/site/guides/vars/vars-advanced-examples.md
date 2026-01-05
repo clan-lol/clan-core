@@ -129,7 +129,6 @@ Generate SSH host keys and sign them with a CA:
     runtimeInputs = [ pkgs.openssh ];
     script = ''
       ssh-keygen -t ed25519 -N "" -f $out/ca
-      mv $out/ca.pub $out/ca.pub
     '';
   };
 
