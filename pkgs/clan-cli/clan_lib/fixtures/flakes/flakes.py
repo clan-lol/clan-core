@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.flake.flake import Flake
-from clan_lib.nix_models.clan import Clan
+from clan_lib.nix_models.typing import ClanInput
 
 
 @pytest.fixture(scope="session")
@@ -59,9 +59,9 @@ def patch_clan_template(monkeypatch: Any, offline_template: Path) -> None:
 def clan_flake(
     tmp_path: Path,
     patch_clan_template: Any,  # noqa: ARG001
-) -> Callable[[Clan | None, str | None], Flake]:
+) -> Callable[[ClanInput | None, str | None], Flake]:
     def factory(
-        clan: Clan | None = None,
+        clan: ClanInput | None = None,
         raw: str | None = None,
         mutable_inventory_json: str | None = None,
     ) -> Flake:
