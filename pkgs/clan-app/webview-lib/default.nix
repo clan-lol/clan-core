@@ -1,4 +1,5 @@
 {
+  libadwaita,
   gtk4,
   webkitgtk_6_0,
   lib,
@@ -24,8 +25,8 @@ llvmPackages.stdenv.mkDerivation {
     domain = "git.clan.lol";
     owner = "clan";
     repo = "webview";
-    rev = "5220e2e3afe1c69c510229956bb7eb331cd6fa98";
-    hash = "sha256-0zZW35nkKljIGMBh92Trw8mT4b5/zAMiAcTjy9YYCSI=";
+    rev = "7e956adcd8fd1ea83f11b3cbc378c12dcd5fe998";
+    hash = "sha256-Kfw00NOD+CQC+03QTbzlg3f5AC8XjcaJ6fjZS60YwLk=";
   };
 
   outputs = [
@@ -36,8 +37,10 @@ llvmPackages.stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   cmakeFlags = [
-    "-DWEBVIEW_BUILD_TESTS=OFF"
-    "-DWEBVIEW_ENABLE_CHECKS=OFF"
+    "-DWEBVIEW_ENABLE_CLANG_FORMAT=OFF"
+    "-DWEBVIEW_ENABLE_CLANG_TIDY=OFF"
+    "-DWEBVIEW_BUILD_AMALGAMATION=OFF"
+    "-DWEBVIEW_USE_LIBADWAITA=ON"
   ];
 
   # Dependencies used during the build process, if any
@@ -50,6 +53,7 @@ llvmPackages.stdenv.mkDerivation {
 
   buildInputs = lib.optionals stdenv.isLinux [
     webkitgtk_6_0
+    libadwaita
     gtk4
   ];
 
