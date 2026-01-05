@@ -1,4 +1,5 @@
 import logging
+import shlex
 import subprocess
 import sys
 
@@ -96,7 +97,9 @@ class SudoAskpassProxy:
         # Create a shell script to run on the remote host
 
         # Start SSH process
-        cmd = [*self.host.ssh_cmd(), remote_script]
+        # Force bash execution to handle users with non-bash default shells (e.g., fish)
+        # Use shlex.quote to properly escape the script for the remote shell
+        cmd = [*self.host.ssh_cmd(), "bash", "-c", shlex.quote(remote_script)]
         try:
             self.ssh_process = subprocess.Popen(
                 cmd,
