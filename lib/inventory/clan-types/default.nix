@@ -22,47 +22,23 @@ let
   jsonschema = self.clanLib.jsonschema.fromOptions {
     typePrefix = "Clan";
     output = false;
-    addsKeysType = false;
     readOnly = {
       input = false;
     };
-    renameType =
-      { loc, name }:
-      if loc == "submodule" then
-        if name != "InventoryTags" && lib.hasPrefix "InventoryTags" name then
-          "InventoryTagMachines"
-        else
-          {
-            ClanInventory = "Inventory";
-            InventoryMachines = "Machines";
-            MachineMachineClass = "MachineClass";
-            InventoryInstances = "Instances";
-            ClanSecrets = "Secrets";
-            ClanTemplates = "Templates";
-            ClanOutputsModuleForMachine = "OutputModuleForMachine";
-          }
-          .${name} or name
-      else if loc == "freeform" then
-        {
-          InventoryTags = "InventoryTagMachines";
-        }
-        .${name} or name
-      else if loc == "attrValue" then
-        let
-          template = (lib.removePrefix "Templates" name);
-        in
-        if template != name then
-          "Template${lib.removeSuffix "AttrValue" template}"
-        else
-          {
-            MachinesAttrValue = "Machine";
-            InstancesAttrValue = "Instance";
-            InstanceRolesAttrValue = "InstanceRole";
-            InstanceRoleMachinesAttrValue = "InstanceRoleMachine";
-          }
-          .${name} or name
-      else
-        name;
+    typeRenames = {
+      ClanInventory = "Inventory";
+      InventoryMachinesItem = "Machine";
+      InventoryInstances = "Instances";
+      ClanOutputs = "Outputs";
+      ClanSecrets = "Secrets";
+      InstancesItem = "Instance";
+      InstanceRolesItem = "InstanceRole";
+      InstanceRoleMachinesItem = "InstanceRoleMachine";
+      ClanTemplates = "Templates";
+      TemplatesClanItem = "TemplatesClan";
+      TemplatesMachineItem = "TemplatesMachine";
+      TemplatesDiskoItem = "TemplatesDisko";
+    };
   } (lib.filterAttrs (n: _v: lib.elem n include) clanOpts);
 
   clan-types =

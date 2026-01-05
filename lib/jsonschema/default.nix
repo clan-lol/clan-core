@@ -42,11 +42,6 @@ let
       # should contain the propery name that corresponds to this option.
       isRequired = true | false
 
-      # If the type is only a simple type like string, bool or a listOf
-      # or attrsOf containing a simple type, generate the same type for input
-      # and output
-      isSameInputOutputType = true | false
-
       # Types that the node itself and its descendants generate, will be added
       # to the root $defs property of the jsonschema, omitted if it contains no
       # such types. Some example options that aways generate its own types:
@@ -75,11 +70,12 @@ let
       # But inside an attrs which is inside a branch, a custom type should be
       # created again;
       isDirectlyInsideBranch ? false,
-      renameType,
+      typeRenames,
       ...
     }:
     option:
     let
+      getName = finalName: typeRenames.${finalName} or finalName;
       isRequired = mode == "output" || !(option ? default) && !(option ? defaultText);
       description = lib.optionalAttrs (option ? description) {
         description = option.description.text or option.description;
@@ -94,7 +90,6 @@ let
         }
         // description;
         inherit isRequired;
-        isSameInputOutputType = true;
       }
     else if isIntOption option then
       {
@@ -103,7 +98,6 @@ let
         }
         // description;
         inherit isRequired;
-        isSameInputOutputType = true;
       }
     else if isFloatOption option then
       {
@@ -112,7 +106,6 @@ let
         }
         // description;
         inherit isRequired;
-        isSameInputOutputType = true;
       }
     else if isStrOption option then
       {
@@ -121,23 +114,18 @@ let
         }
         // description;
         inherit isRequired;
-        isSameInputOutputType = true;
       }
     else if isAnyOption option then
       {
         property = ref "AnyJson" // description;
         inherit isRequired;
-        isSameInputOutputType = true;
         defs = {
           inherit AnyJson;
         };
       }
     else if option.type.name == "enum" then
       let
-        typeName = renameType {
-          loc = "enum";
-          name = typePrefix;
-        };
+        typeName = getName typePrefix;
         type = {
           enum = option.type.functor.payload.values;
         }
@@ -153,7 +141,6 @@ let
       {
         property = if isDirectlyInsideBranch then type else ref typeName;
         inherit isRequired;
-        isSameInputOutputType = true;
       }
       // lib.optionalAttrs (defs != { }) {
         defs = defs;
@@ -189,7 +176,6 @@ let
       in
       {
         inherit property isRequired;
-        isSameInputOutputType = if node == null then true else node.isSameInputOutputType;
       }
       // lib.optionalAttrs (defs != { }) {
         defs = defs;
@@ -229,13 +215,8 @@ let
           defs
           ;
         numOneOf = lib.length oneOf;
-        isSameInputOutputType = lib.all (node: node.isSameInputOutputType) nodes;
         typeName =
-          renameType {
-            loc = "either";
-            name = typePrefix;
-          }
-          + lib.optionalString (!isSameInputOutputType) (clanLib.toUpperFirst mode);
+          getName typePrefix + (lib.toSentenceCase mode);
         property = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
         createsTypeName = !isDirectlyInsideBranch && shouldCreateTypeName property;
         defs' =
@@ -249,7 +230,7 @@ let
       else
         {
           property = if createsTypeName then ref typeName else property;
-          inherit isRequired isSameInputOutputType;
+          inherit isRequired;
         }
         // lib.optionalAttrs (defs' != { }) {
           defs = defs';
@@ -282,11 +263,8 @@ let
           lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
         );
         typeName =
-          renameType {
-            loc = "coercedTo";
-            name = typePrefix;
-          }
-          + clanLib.toUpperFirst mode;
+          getName typePrefix
+          + lib.toSentenceCase mode;
       in
       # If this option can result in null for either input or output, it
       # shouldn't be included in either
@@ -322,7 +300,6 @@ let
         {
           property = if createsTypeName then ref typeName else property;
           inherit isRequired;
-          isSameInputOutputType = false;
         }
         // lib.optionalAttrs (defs' != { }) {
           defs = defs';
@@ -334,22 +311,17 @@ let
         {
           property = node.property // description;
           inherit isRequired;
-          isSameInputOutputType = false;
         }
         // lib.optionalAttrs (node ? defs) {
           defs = node.defs;
         }
     else if option.type.name == "attrs" then
       let
-        typeName = renameType {
-          loc = "attrs";
-          name = typePrefix;
-        };
+        typeName = getName typePrefix;
       in
       {
         property = ref typeName;
         inherit isRequired;
-        isSameInputOutputType = true;
         defs = {
           ${typeName} = {
             type = "object";
@@ -375,27 +347,21 @@ let
         node = toOptionNode (
           opts
           // {
-            typePrefix = renameType {
-              loc = "listItem";
-              name = typePrefix + "ListItem";
-            };
+            typePrefix = getName (typePrefix + "Item");
             isDirectlyInsideBranch = false;
           }
         ) nestedOption;
-        isSameInputOutputType = node.isSameInputOutputType;
         typeName =
-          renameType {
-            loc = "listOf";
-            name = typePrefix;
-          }
-          + lib.optionalString (!isSameInputOutputType) (clanLib.toUpperFirst mode);
+          getName typePrefix
+
+          + (lib.toSentenceCase mode);
       in
       if node == null then
         null
       else
         {
           property = ref typeName;
-          inherit isRequired isSameInputOutputType;
+          inherit isRequired;
           defs = node.defs or { } // {
             ${typeName} = {
               type = "array";
@@ -414,27 +380,21 @@ let
         node = toOptionNode (
           opts
           // {
-            typePrefix = renameType {
-              loc = "attrValue";
-              name = typePrefix + "AttrValue";
-            };
+            typePrefix = getName (typePrefix + "Item");
             isDirectlyInsideBranch = false;
           }
         ) nestedOption;
-        isSameInputOutputType = node.isSameInputOutputType;
         typeName =
-          renameType {
-            loc = "attrsOf";
-            name = typePrefix;
-          }
-          + lib.optionalString (!isSameInputOutputType) (clanLib.toUpperFirst mode);
+          getName typePrefix
+
+          + (lib.toSentenceCase mode);
       in
       if node == null then
         null
       else
         {
           property = ref typeName;
-          inherit isRequired isSameInputOutputType;
+          inherit isRequired;
           defs = node.defs or { } // {
             ${typeName} = {
               type = "object";
@@ -456,14 +416,15 @@ let
     opts@{
       typePrefix,
       mode,
-      renameType,
-      addsKeysType,
+      typeRenames,
       # A submodule can provide this value
       description ? { },
       ...
     }:
     options:
     let
+      getName = finalName: typeRenames.${finalName} or finalName;
+
       nodesAttrs = lib.filterAttrs (n: v: v != null) (
         lib.mapAttrs (
           name: option:
@@ -474,14 +435,11 @@ let
             ]
           then
             null
-          else if option ? _type then
+          else if lib.isOption option then
             toOptionNode (
               opts
               // {
-                typePrefix = renameType {
-                  loc = "submodule";
-                  name = typePrefix + clanLib.toUpperFirst name;
-                };
+                typePrefix = getName (typePrefix + lib.toSentenceCase name);
                 isDirectlyInsideBranch = false;
               }
             ) option
@@ -491,10 +449,7 @@ let
             toOptionsNode (
               opts
               // {
-                typePrefix = renameType {
-                  loc = "optionPath";
-                  name = typePrefix + clanLib.toUpperFirst name;
-                };
+                typePrefix = getName (typePrefix + lib.toSentenceCase name);
                 isDirectlyInsideBranch = false;
               }
             ) option
@@ -526,10 +481,7 @@ let
           toOptionNode (
             opts
             // {
-              typePrefix = renameType {
-                loc = "freeform";
-                name = typePrefix;
-              };
+              typePrefix = getName typePrefix;
             }
           ) nestedOption;
       properties = lib.mapAttrs (_name: node: node.property // readOnly) nodesAttrs;
@@ -545,7 +497,7 @@ let
         readOnly = true;
       };
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
-      typeName = typePrefix + clanLib.toUpperFirst mode;
+      typeName = typePrefix + lib.toSentenceCase mode;
     in
     if nodesAttrs == { } && freeformNode == null then
       {
@@ -553,7 +505,6 @@ let
           type = "object";
           additionalProperties = false;
         };
-        isSameInputOutputType = true;
         # FIXME: shouldn't this depend on the default value of the submodule itself?
         isRequired = false;
       }
@@ -578,7 +529,6 @@ let
         # of the same type for both input and output. Later, if a new coercedTo
         # option is added, the type has to be split, having different names in
         # input and output. This breaks existing code that uses the old type.
-        isSameInputOutputType = false;
         defs = {
           ${typeName} = {
             type = "object";
@@ -595,16 +545,11 @@ let
             inherit required;
           };
         }
-        # Freeform type has a lower priority because a user's renameType might
+        # Freeform type has a lower priority because a user might
         # rename it to an existing type, in which case the existing type should
         # be kept because a freeform type is less likely to have a description
         // freeformNode.defs or { }
-        // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs
-        // lib.optionalAttrs (addsKeysType && properties != { }) {
-          "${typeName}Keys" = {
-            enum = lib.attrNames properties;
-          };
-        };
+        // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
       };
 
   isIncludedOption =
@@ -697,8 +642,7 @@ rec {
         input = true;
         output = true;
       },
-      addsKeysType ? true,
-      renameType ? { name, ... }: name,
+      typeRenames ? { },
       excludedTypes ? [
         "functionTo"
         "package"
@@ -711,9 +655,8 @@ rec {
         inherit
           typePrefix
           readOnly
-          addsKeysType
           excludedTypes
-          renameType
+          typeRenames
           ;
       } options;
       outputNode = toOptionsNode {
@@ -721,9 +664,8 @@ rec {
         inherit
           typePrefix
           readOnly
-          addsKeysType
           excludedTypes
-          renameType
+          typeRenames
           ;
       } options;
     in

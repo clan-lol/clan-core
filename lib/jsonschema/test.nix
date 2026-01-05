@@ -10,7 +10,6 @@ let
       jsonschema = clanLib.jsonschema.fromModule (
         {
           typePrefix = "Main";
-          addsKeysType = false;
           readOnly = {
             input = false;
             output = false;
