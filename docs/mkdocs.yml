@@ -241,6 +241,9 @@ extra:
     - icon: fontawesome/solid/rss
       link: https://clan.lol/feed.xml
 
+hooks:
+  - edit_hook.py
+
 plugins:
   - search
   - mike:
