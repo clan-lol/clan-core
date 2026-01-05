@@ -3,6 +3,10 @@
   clanLib,
 }:
 let
+  # ============================================================================
+  # Constants and Basic Helpers
+  # ============================================================================
+
   refPrefix = "#/$defs/";
   ref = typeName: {
     "$ref" = refPrefix + typeName;
@@ -24,9 +28,118 @@ let
       }
     ];
   };
+
   flattenOneOf = import ./flattenOneOf.nix {
     inherit lib clanLib;
   };
+
+  # ============================================================================
+  # Type Checkers
+  # ============================================================================
+  #
+  isIncludedOption = option: option.visible or true;
+  #
+  isBoolOption =
+    option:
+    {
+      bool = true;
+      boolByOr = true;
+    }
+    .${option.type.name} or false;
+  #
+  isIntOption =
+    option:
+    {
+      # TODO: Add support for intMatching in jsonschema
+      int = true;
+      intBetween = true;
+      positiveInt = true;
+      unsignedInt = true;
+      unsignedInt8 = true;
+      # This also includes port
+      unsignedInt16 = true;
+      unsignedInt32 = true;
+      signedInt8 = true;
+      signedInt16 = true;
+      signedInt32 = true;
+    }
+    .${option.type.name} or false;
+  #
+  isFloatOption =
+    option:
+    {
+      float = true;
+      numberBetween = true;
+      numberNonnegative = true;
+      numberPositive = true;
+    }
+    .${option.type.name} or false;
+  #
+  isStrOption =
+    option:
+    {
+      str = true;
+      nonEmptyStr = true;
+      singleLineStr = true;
+      separatedString = true;
+      path = true;
+    }
+    .${option.type.name} or (
+      if lib.strings.hasPrefix "strMatching " option.type.name then
+        true
+      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
+        true
+      else
+        false
+    );
+  #
+  isAnyOption =
+    option:
+    {
+      anything = true;
+      unspecified = true;
+      raw = true;
+      # This is a special case for the deferred clan.service 'settings', we
+      # assume it is JSON serializable To get the type of a Deferred modules we
+      # need to know the interface of the place where it is evaluated. i.e. in
+      # case of a clan.service this is the interface of the service which
+      # dynamically changes depending on the service
+      #
+      # We can assign the type later, when we know the exact interface.
+      deferredModule = true;
+    }
+    .${option.type.name} or false;
+
+  /**
+    Returns true, if the passed node is one of the following:
+
+    - array
+    - object
+    - enum
+    - oneOf
+
+    All other types return false
+  */
+  shouldDefineType =
+    property:
+    (
+      property ? type
+      && lib.elem property.type [
+        "array"
+        "object"
+      ]
+    )
+    || property ? enum
+    || property ? oneOf;
+
+  # ============================================================================
+  # Type Handlers
+  # ============================================================================
+
+  # ============================================================================
+  # Main Conversion Functions
+  # ============================================================================
+
   /**
     Takes a nix option and returns a node (or null) with this structure:
 
@@ -59,7 +172,7 @@ let
     }
     ```
   */
-  toOptionNode =
+  optionToNode =
     opts@{
       typePrefix,
       mode,
@@ -151,7 +264,7 @@ let
           _type = "option";
           loc = option.loc;
         };
-        node = toOptionNode opts nestedOption;
+        node = optionToNode opts nestedOption;
         inherit
           (flattenOneOf node.defs or { } (
             [
@@ -185,7 +298,7 @@ let
           lib.mapAttrs
             (
               name: type:
-              toOptionNode
+              optionToNode
                 (
                   opts
                   // {
@@ -239,7 +352,7 @@ let
           lib.mapAttrs
             (
               name: type:
-              toOptionNode
+              optionToNode
                 (
                   opts
                   // {
@@ -330,7 +443,7 @@ let
     else if option.type.name == "submodule" then
       let
         subOptions = option.type.getSubOptions option.loc;
-        node = toOptionsNode (opts // { inherit description; }) subOptions;
+        node = optionsToNode (opts // { inherit description; }) subOptions;
       in
       node
     else if option.type.name == "listOf" then
@@ -340,7 +453,7 @@ let
           _type = "option";
           loc = option.loc;
         };
-        node = toOptionNode (
+        node = optionToNode (
           opts
           // {
             typePrefix = getName (typePrefix + "Item");
@@ -373,7 +486,7 @@ let
           _type = "option";
           loc = option.loc;
         };
-        node = toOptionNode (
+        node = optionToNode (
           opts
           // {
             typePrefix = getName (typePrefix + "Item");
@@ -408,7 +521,7 @@ let
   /**
     Refer to `toOptionNode`'s doc for the definition of a node
   */
-  toOptionsNode =
+  optionsToNode =
     opts@{
       typePrefix,
       mode,
@@ -421,36 +534,28 @@ let
     let
       getName = finalName: typeRenames.${finalName} or finalName;
 
-      nodesAttrs = lib.filterAttrs (_n: v: v != null) (
+      relevantOptions = removeAttrs options [
+        "_module"
+        "_freeformOptions"
+      ];
+
+      /**
+        Map every option to a node
+        Some options mapped to null get filtered out. i.e. those that are not "visible"
+      */
+      nodesAttrs = lib.filterAttrs (_: v: v != null) (
         lib.mapAttrs (
           name: option:
-          if
-            builtins.elem name [
-              "_module"
-              "_freeformOptions"
-            ]
-          then
-            null
-          else if lib.isOption option then
-            toOptionNode (
-              opts
-              // {
-                typePrefix = getName (typePrefix + lib.toSentenceCase name);
-                shouldInlineTypes = false;
-              }
-            ) option
-          else
-            # handle nested options (not a submodule)
-            # foo.bar = mkOption { type = str; };
-            toOptionsNode (
-              opts
-              // {
-                typePrefix = getName (typePrefix + lib.toSentenceCase name);
-                shouldInlineTypes = false;
-              }
-            ) option
-        ) options
+          let
+            opts' = opts // {
+              typePrefix = getName (opts.typePrefix + lib.toSentenceCase name);
+              shouldInlineTypes = false;
+            };
+          in
+          if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
+        ) relevantOptions
       );
+
       freeformNode =
         let
           # freeformType will have more than 1 definitions if it's specified in
@@ -474,7 +579,7 @@ let
         if nestedType == null then
           null
         else
-          toOptionNode (
+          optionToNode (
             opts
             // {
               typePrefix = getName typePrefix;
@@ -482,8 +587,8 @@ let
           ) nestedOption;
       properties = lib.mapAttrs (_name: node: node.property // readOnly) nodesAttrs;
       # TODO: readOnly has no effect here becaus datamodel-code-generator's
-      # --use-frozen-field flag doesn't support TypedDict yet. when it doesn,
-      # this should generate typing.ReadOnly, and will allow assigning an output
+      # --use-frozen-field flag doesn't support TypedDict yet. when it does,
+      # this should generate typing. ReadOnly, and will allow assigning an output
       # type to the corresponding input type. Currently it will complain that a
       # required property can not be passed to a non-required one.
       # We do this in the unit tests:
@@ -548,95 +653,6 @@ let
         // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
       };
 
-  isIncludedOption = option: option.visible or true;
-  isBoolOption =
-    option:
-    {
-      bool = true;
-      boolByOr = true;
-    }
-    .${option.type.name} or false;
-  isIntOption =
-    option:
-    {
-      # TODO: Add support for intMatching in jsonschema
-      int = true;
-      intBetween = true;
-      positiveInt = true;
-      unsignedInt = true;
-      unsignedInt8 = true;
-      # This also includes port
-      unsignedInt16 = true;
-      unsignedInt32 = true;
-      signedInt8 = true;
-      signedInt16 = true;
-      signedInt32 = true;
-    }
-    .${option.type.name} or false;
-  isFloatOption =
-    option:
-    {
-      float = true;
-      numberBetween = true;
-      numberNonnegative = true;
-      numberPositive = true;
-    }
-    .${option.type.name} or false;
-  isStrOption =
-    option:
-    {
-      str = true;
-      nonEmptyStr = true;
-      singleLineStr = true;
-      separatedString = true;
-      path = true;
-    }
-    .${option.type.name} or (
-      if lib.strings.hasPrefix "strMatching " option.type.name then
-        true
-      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
-        true
-      else
-        false
-    );
-  isAnyOption =
-    option:
-    {
-      anything = true;
-      unspecified = true;
-      raw = true;
-      # This is a special case for the deferred clan.service 'settings', we
-      # assume it is JSON serializable To get the type of a Deferred modules we
-      # need to know the interface of the place where it is evaluated. i.e. in
-      # case of a clan.service this is the interface of the service which
-      # dynamically changes depending on the service
-      #
-      # We can assign the type later, when we know the exact interface.
-      deferredModule = true;
-    }
-    .${option.type.name} or false;
-
-  /**
-    Returns true, if the passed node is one of the following:
-
-    - array
-    - object
-    - enum
-    - oneOf
-
-    All other types return false
-  */
-  shouldDefineType =
-    property:
-    (
-      property ? type
-      && lib.elem property.type [
-        "array"
-        "object"
-      ]
-    )
-    || property ? enum
-    || property ? oneOf;
 in
 rec {
   fromOptions =
@@ -652,7 +668,7 @@ rec {
     }:
     options:
     let
-      inputNode = toOptionsNode {
+      inputNode = optionsToNode {
         mode = "input";
         inherit
           typePrefix
@@ -660,7 +676,7 @@ rec {
           typeRenames
           ;
       } options;
-      outputNode = toOptionsNode {
+      outputNode = optionsToNode {
         mode = "output";
         inherit
           typePrefix

@@ -638,17 +638,15 @@ in
     };
   };
   testAttrsOfSubmodule = {
-    expr =
-      fromType { renameType = { loc, name }: if loc == "attrValue" then "MainAttrValue" else name; }
-        (
-          types.attrsOf (
-            types.submodule {
-              options.bar = lib.mkOption {
-                type = types.bool;
-              };
-            }
-          )
-        );
+    expr = fromType { } (
+      types.attrsOf (
+        types.submodule {
+          options.bar = lib.mkOption {
+            type = types.bool;
+          };
+        }
+      )
+    );
     expected = {
       MainInput = {
         type = "object";
@@ -679,17 +677,15 @@ in
     };
   };
   testListOfSubmodule = {
-    expr =
-      fromType { renameType = { loc, name }: if loc == "listItem" then "MainListItem" else name; }
-        (
-          types.listOf (
-            types.submodule {
-              options.bar = lib.mkOption {
-                type = types.bool;
-              };
-            }
-          )
-        );
+    expr = fromType { } (
+      types.listOf (
+        types.submodule {
+          options.bar = lib.mkOption {
+            type = types.bool;
+          };
+        }
+      )
+    );
     expected = {
       MainInput = {
         type = "object";
@@ -890,14 +886,6 @@ in
       fromType
         {
           output = true;
-          renameType =
-            { loc, name }:
-            if loc == "listOf" then
-              "MainList"
-            else if loc == "attrsOf" then
-              "MainAttrs"
-            else
-              name;
         }
         (
           types.coercedTo (types.listOf types.str) (
@@ -968,14 +956,7 @@ in
     expr =
       fromType
         {
-          renameType =
-            { loc, name }:
-            if loc == "listOf" then
-              "MainList"
-            else if loc == "attrsOf" then
-              "MainAttrs"
-            else
-              name;
+
         }
         (
           types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
@@ -1080,10 +1061,7 @@ in
         }
       );
   testRenameAttrType = {
-    expr = fromType {
-      addsTitle = true;
-      renameType = { loc, name }: if loc == "attrValue" then "OptModule" else name;
-    } (types.attrsOf types.deferredModule);
+    expr = fromType { } (types.attrsOf types.deferredModule);
     expected = {
       inherit AnyJson;
       MainInput = {
