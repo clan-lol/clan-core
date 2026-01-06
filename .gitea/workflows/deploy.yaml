@@ -8,6 +8,12 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for mike to work with doc-pages branch
+      - name: Deploy with mike
+        run: |
+          cd docs
+          nix develop .#docs -c bash -c "mike deploy main dev --push --update-aliases"
       - run: nix run --print-build-logs .#deploy-docs
     env:
       SSH_HOMEPAGE_KEY: ${{ secrets.SSH_HOMEPAGE_KEY }}

@@ -3,6 +3,7 @@ site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: "_>"
 edit_uri: _edit/main/docs/site/
+remote_branch: doc-pages
 
 validation:
   omitted_files: warn
