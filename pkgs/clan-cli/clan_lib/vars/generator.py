@@ -504,6 +504,7 @@ class Generator:
                 prompt.prompt_type,
                 prompt.description if prompt.description != prompt.name else None,
                 self.machines,
+                previous_value=prompt.previous_value,
             )
         return prompt_values
 

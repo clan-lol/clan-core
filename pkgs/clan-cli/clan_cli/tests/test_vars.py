@@ -6,9 +6,11 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 
+import pexpect  # type: ignore[import-untyped]
 import pytest
 from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
@@ -832,6 +834,201 @@ def test_prompt(
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator_with_details, "prompt_persist")
     assert sops_store.get(my_generator, "prompt_persist").decode() == "prompt_persist"
+
+
+@pytest.mark.with_core
+def test_prompt_prefill_on_regeneration(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that existing prompt values are pre-filled on regeneration.
+
+    When a maintainer adds new prompts to a generator and regeneration is triggered,
+    the system should:
+    1. Pre-fill existing prompts with their previous values
+    2. Allow users to press enter to keep the previous value
+    3. Only require input for the new prompts
+
+    This test:
+    1. Creates a generator with one prompt and generates
+    2. Extends the generator with a second prompt
+    3. Regenerates with Enter for the first prompt (keeping previous value)
+    4. Verifies the first prompt retains its original value
+    """
+    flake = flake_with_sops
+    # Add clan_cli's parent to PYTHONPATH so subprocess can find it
+    clan_cli_path = Path(__file__).parent.parent.parent  # pkgs/clan-cli
+    spawn_env = os.environ.copy()
+    spawn_env["PYTHONPATH"] = str(clan_cli_path)
+
+    # Configure the machine and generator with one prompt initially
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+
+    # Configure first prompt - persisted so it can be re-used
+    my_generator["prompts"]["prompt1"]["description"] = "First prompt"
+    my_generator["prompts"]["prompt1"]["persist"] = True
+    my_generator["prompts"]["prompt1"]["type"] = "line"
+    my_generator["files"]["prompt1"]["secret"] = False
+
+    # Configure a secret prompt (starts as single-line hidden)
+    my_generator["prompts"]["secret_prompt"]["description"] = "Secret value"
+    my_generator["prompts"]["secret_prompt"]["persist"] = True
+    my_generator["prompts"]["secret_prompt"]["type"] = "hidden"
+    my_generator["files"]["secret_prompt"]["secret"] = True
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # First generation: provide initial values
+    child = pexpect.spawn(
+        sys.executable,
+        [
+            "-m",
+            "clan_cli",
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+        ],
+        timeout=30,
+        encoding="utf-8",
+        env=spawn_env,
+    )
+    child.expect("First prompt:")
+    child.sendline("initial_value")
+    # Secret prompt requires confirmation (enter twice)
+    child.expect("Secret value")
+    child.sendline("secret123")
+    child.expect("Confirm")
+    child.sendline("secret123")
+    child.expect(pexpect.EOF)
+    child.close()
+    assert child.exitstatus == 0, f"First generation failed: {child.before}"
+
+    # Verify initial generation worked
+    flake_obj = Flake(str(flake.path))
+    in_repo_store = in_repo.VarsStore(flake=flake_obj)
+    sops_store = sops.SecretStore(flake=flake_obj)
+    generator = Generator("my_generator", machines=["my_machine"], _flake=flake_obj)
+    assert in_repo_store.get(generator, "prompt1").decode() == "initial_value"
+    assert sops_store.get(generator, "secret_prompt").decode() == "secret123"
+
+    # Now extend the generator with a second prompt and change secret to multiline
+    my_generator["prompts"]["prompt2"]["description"] = "Second prompt"
+    my_generator["prompts"]["prompt2"]["persist"] = True
+    my_generator["prompts"]["prompt2"]["type"] = "line"
+    my_generator["files"]["prompt2"]["secret"] = False
+    # Change secret_prompt to multiline-hidden
+    my_generator["prompts"]["secret_prompt"]["type"] = "multiline-hidden"
+    flake.refresh()
+
+    # Second generation:
+    # - prompt1: press Enter to accept the pre-filled value
+    # - prompt2: type new value
+    # - secret_prompt: now multiline-hidden, enter multiple lines + Ctrl-D, then confirm
+    child = pexpect.spawn(
+        sys.executable,
+        [
+            "-m",
+            "clan_cli",
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            "--regenerate",
+        ],
+        timeout=30,
+        encoding="utf-8",
+        env=spawn_env,
+    )
+    # First prompt should show pre-filled value, just press Enter
+    child.expect("First prompt:")
+    child.sendline("")  # Press Enter to keep pre-filled value
+    # Second prompt needs new value
+    child.expect("Second prompt:")
+    child.sendline("second_value")
+    # Secret prompt is now multiline-hidden, enter new multiline value
+    child.expect("Enter multiple lines")
+    child.sendline("secret_line1")
+    child.sendline("secret_line2")
+    child.send("\x04")  # Ctrl-D to finish first input
+    child.expect("Confirm")
+    child.sendline("secret_line1")
+    child.sendline("secret_line2")
+    child.send("\x04")  # Ctrl-D to finish confirmation
+    child.expect(pexpect.EOF)
+    child.close()
+    assert child.exitstatus == 0, f"Second generation failed: {child.before}"
+
+    # Verify that the first prompt value is preserved (user pressed enter on prefilled)
+    assert in_repo_store.get(generator, "prompt1").decode() == "initial_value", (
+        "First prompt value should be preserved when user presses enter"
+    )
+
+    # Verify that the second prompt has the new value
+    assert in_repo_store.get(generator, "prompt2").decode() == "second_value", (
+        "Second prompt should have the newly entered value"
+    )
+
+    # Verify multiline secret value
+    assert (
+        sops_store.get(generator, "secret_prompt").decode()
+        == "secret_line1\nsecret_line2"
+    ), "Secret prompt should have multiline value"
+
+    # Third generation:
+    # - prompt1: delete pre-filled value with backspace and enter new value
+    # - prompt2: press Enter to keep pre-filled value
+    # - secret_prompt: multiline-hidden, Ctrl-D to keep previous value
+    child = pexpect.spawn(
+        sys.executable,
+        [
+            "-m",
+            "clan_cli",
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            "--regenerate",
+        ],
+        timeout=30,
+        encoding="utf-8",
+        env=spawn_env,
+    )
+    # First prompt has "initial_value" pre-filled - delete it with backspaces and type new
+    child.expect("First prompt:")
+    # Send backspaces to delete "initial_value" (13 characters)
+    child.send("\x7f" * 13)  # DEL character (ASCII 127)
+    child.sendline("modified_value")
+    # Second prompt has "second_value" pre-filled, just press Enter to keep it
+    child.expect("Second prompt:")
+    child.sendline("")
+    # Secret prompt (multiline-hidden) shows marker, Ctrl-D to keep previous value
+    child.expect("Enter multiple lines")
+    child.send("\x04")  # Ctrl-D to keep previous value
+    child.expect(pexpect.EOF)
+    child.close()
+    assert child.exitstatus == 0, f"Third generation failed: {child.before}"
+
+    # Verify that the first prompt value was changed
+    assert in_repo_store.get(generator, "prompt1").decode() == "modified_value", (
+        "First prompt value should be modified after backspace and new input"
+    )
+
+    # Verify that the second prompt value is preserved
+    assert in_repo_store.get(generator, "prompt2").decode() == "second_value", (
+        "Second prompt value should be preserved when user presses enter"
+    )
+
+    # Verify multiline secret value is preserved
+    assert (
+        sops_store.get(generator, "secret_prompt").decode()
+        == "secret_line1\nsecret_line2"
+    ), "Secret prompt multiline value should be preserved when user presses Ctrl-D"
 
 
 @pytest.mark.with_core

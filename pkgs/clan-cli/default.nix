@@ -41,6 +41,7 @@ let
       ps.pytest-xdist
       ps.pytest-timeout
       ps.pytest-cov
+      ps.pexpect
     ]
     ++ (pyDeps ps);
   pythonRuntimeWithDeps = pythonRuntime.withPackages (ps: pyDeps ps);

@@ -168,7 +168,9 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
-    all_generators = get_generators(machines, full_closure=True)
+    all_generators = get_generators(
+        machines, full_closure=True, include_previous_values=True
+    )
     if isinstance(generators, list):
         # List of generator names - use them exactly as provided
         if len(generators) == 0:
@@ -176,10 +178,12 @@ def run_generators(
         generators_to_run = [g for g in all_generators if g.key.name in generators]
     else:
         # None or single string - use get_generators with closure parameter
+        # include_previous_values=True so prompts can be pre-filled
         generators_to_run = get_generators(
             machines,
             full_closure=full_closure,
             generator_name=generators,
+            include_previous_values=True,
         )
 
     # If prompt function provided, ask all prompts
