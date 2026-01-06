@@ -594,18 +594,19 @@ let
               typePrefix = getName typePrefix;
             }
           ) nestedOption;
-      properties = lib.mapAttrs (_name: node: node.property // readOnly) nodesAttrs;
-      # TODO: readOnly has no effect here becaus datamodel-code-generator's
-      # --use-frozen-field flag doesn't support TypedDict yet. when it does,
-      # this should generate typing. ReadOnly, and will allow assigning an output
-      # type to the corresponding input type. Currently it will complain that a
-      # required property can not be passed to a non-required one.
-      # We do this in the unit tests:
-      #   machine_jon = get_machine(flake, "jon")
-      #   set_machine(Machine("jon", flake), machine_jon)
-      readOnly = lib.optionalAttrs (opts.readOnly.${mode} or true) {
-        readOnly = true;
-      };
+      properties = lib.mapAttrs (
+        _name: node:
+        node.property
+        // {
+          # Setting readOnly llows assigning an output
+          # type to the corresponding input type. Currently it will complain that a
+          # required property can not be passed to a non-required one.
+          # We do this in the unit tests:
+          #   machine_jon = get_machine(flake, "jon")
+          #   set_machine(Machine("jon", flake), machine_jon)
+          readOnly = opts.readOnly.${mode} or true;
+        }
+      ) nodesAttrs;
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
       typeName = typePrefix + lib.toSentenceCase mode;
     in
