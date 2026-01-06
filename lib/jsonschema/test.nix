@@ -150,7 +150,6 @@ in
             readOnly = true;
           };
         };
-        required = [ "foo" ];
         additionalProperties = false;
       };
       MainFooInput = {
