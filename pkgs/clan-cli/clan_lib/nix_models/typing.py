@@ -285,9 +285,6 @@ The machine can be referenced by its tags in `inventory.services`
 """
 
 
-type OutputsModuleForMachineInput = dict[str, AnyJson]
-
-
 type SecretsAgePluginsInput = list[str]
 """
 A list of age plugins which must be available in the shell when encrypting and decrypting secrets.
@@ -366,7 +363,7 @@ type InstanceRolesInput = dict[str, InstanceRoleInput]
 
 
 class MachineInput(TypedDict):
-    deploy: NotRequired[MachineDeployInput]
+    deploy: MachineDeployInput
     description: NotRequired[str | None]
     """
     Optional freeform description
@@ -393,10 +390,6 @@ class MachineInput(TypedDict):
     tags: NotRequired[MachineTagsInput]
 
 
-class OutputsInput(TypedDict):
-    moduleForMachine: OutputsModuleForMachineInput
-
-
 class SecretsAgeInput(TypedDict):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
@@ -412,7 +405,7 @@ class SecretsInput(TypedDict):
 
     """
 
-    age: NotRequired[SecretsAgeInput]
+    age: SecretsAgeInput
 
 
 class TemplatesInput(TypedDict):
@@ -478,7 +471,7 @@ class ClanInput(TypedDict):
     ```
 
     """
-    inventory: InventoryInput
+    inventory: NotRequired[InventoryInput]
     machines: NotRequired[ClanMachinesInput]
     meta: NotRequired[AnyJson]
     """
@@ -486,6 +479,5 @@ class ClanInput(TypedDict):
 
     """
     modules: NotRequired[ClanModulesInput]
-    outputs: OutputsInput
     secrets: NotRequired[SecretsInput]
     templates: NotRequired[TemplatesInput]

@@ -149,8 +149,16 @@ in
     ./computed-tags.nix
   ];
 
-  options.outputs.moduleForMachine = lib.mkOption {
-    type = lib.types.attrsOf lib.types.deferredModule;
+  options.outputs = lib.mkOption {
+    visible = false;
+    type = lib.types.submodule {
+      options = {
+        moduleForMachine = lib.mkOption {
+          type = lib.types.attrsOf lib.types.deferredModule;
+          visible = false;
+        };
+      };
+    };
   };
 
   config = {

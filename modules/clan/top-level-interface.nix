@@ -220,6 +220,7 @@ in
 
         For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
       '';
+      default = { };
     };
 
     vars = lib.mkOption {
