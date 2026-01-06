@@ -1,5 +1,4 @@
 import logging
-import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -13,7 +12,20 @@ from clan_lib.api import API, message_queue
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_config, nix_shell
+from clan_lib.machines.nixos_anywhere import (
+    add_debug,
+    add_kexec,
+    add_nix_options,
+    add_nixos_anywhere_key,
+    add_password_options,
+    add_ssh_port,
+    add_target,
+    add_target_private_key,
+    add_test_store_workaround,
+    setup_environ,
+    wrap_nix_shell,
+)
+from clan_lib.nix import nix_config
 from clan_lib.nix_selectors import (
     vars_generators_files,
     vars_generators_metadata,
@@ -22,7 +34,6 @@ from clan_lib.nix_selectors import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import set_value_by_path
-from clan_lib.ssh.create import create_secret_key_nixos_anywhere
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars.generate import run_generators
 
@@ -177,67 +188,32 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 ],
             )
 
-        environ = os.environ.copy()
-        if target_host.password:
-            cmd += [
-                "--env-password",
-                "--ssh-option",
-                "IdentitiesOnly=yes",
-            ]
-            environ["SSHPASS"] = target_host.password
+        environ = setup_environ(target_host)
+        cmd = add_password_options(cmd, target_host)
 
         # Always set a nixos-anywhere private key to prevent failures when running
         # 'clan install --phases kexec' followed by 'clan install --phases disko,install,reboot'.
         # The kexec phase requires an authorized key, and if not specified,
         # nixos-anywhere defaults to a key in a temporary directory.
         if opts.anywhere_priv_key is None:
-            key_pair = create_secret_key_nixos_anywhere()
+            cmd, key_pair = add_nixos_anywhere_key(cmd)
             opts.anywhere_priv_key = key_pair.private
-        cmd += ["-i", str(opts.anywhere_priv_key)]
+        else:
+            cmd, _ = add_nixos_anywhere_key(cmd, opts.anywhere_priv_key)
 
         # If we need a different private key for being able to kexec, we can specify it here.
-        if target_host.private_key:
-            cmd += ["--ssh-option", f"IdentityFile={target_host.private_key}"]
+        cmd = add_target_private_key(cmd, target_host)
 
         if opts.build_on:
             cmd += ["--build-on", opts.build_on]
 
-        if target_host.port:
-            cmd += ["--ssh-port", str(target_host.port)]
-        if opts.kexec:
-            cmd += ["--kexec", opts.kexec]
-
-        if opts.debug:
-            cmd.append("--debug")
-
-        # REMOVEME when nixos-anywhere > 1.12.0
-        # In 1.12.0 and earlier, nixos-anywhere doesn't pass Nix options when attempting to get substituters
-        # which leads to the installation test failing with the error of not being able to substitute flake-parts
-        # see: https://github.com/nix-community/nixos-anywhere/pull/596
-        if "CLAN_TEST_STORE" in environ:
-            cmd += ["--no-use-machine-substituters"]
-
-        # Add nix options to nixos-anywhere
-        cmd.extend(opts.machine.flake.nix_options or [])
-
-        cmd.append(target_host.target)
-        if target_host.socks_port:
-            # nix copy does not support socks5 proxy, use wrapper command
-            wrapper = target_host.socks_wrapper
-            wrapper_cmd = wrapper.cmd if wrapper else []
-            wrapper_packages = wrapper.packages if wrapper else []
-            cmd = nix_shell(
-                [
-                    "nixos-anywhere",
-                    *wrapper_packages,
-                ],
-                [*wrapper_cmd, *cmd],
-            )
-        else:
-            cmd = nix_shell(
-                ["nixos-anywhere"],
-                cmd,
-            )
+        cmd = add_ssh_port(cmd, target_host)
+        cmd = add_kexec(cmd, opts.kexec)
+        cmd = add_debug(cmd, opts.debug)
+        cmd = add_test_store_workaround(cmd, environ)
+        cmd = add_nix_options(cmd, machine)
+        cmd = add_target(cmd, target_host)
+        cmd = wrap_nix_shell(cmd, target_host)
 
         install_steps = {
             "kexec": Step.NIXOS_ANYWHERE,
