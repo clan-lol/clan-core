@@ -3,8 +3,8 @@
   coreutils,
   openssh,
   rsync,
+  git,
   lib,
-  docs,
 }:
 
 writeShellScriptBin "deploy-docs" ''
@@ -14,8 +14,11 @@ writeShellScriptBin "deploy-docs" ''
       coreutils
       openssh
       rsync
+      git
     ]
   }"
+
+  cd "$(git rev-parse --show-toplevel)"
 
   #########################################
   #                                       #
@@ -31,19 +34,24 @@ writeShellScriptBin "deploy-docs" ''
   else
     sshExtraArgs=
   fi
-  set -x
   ###########################
   #                         #
   #    END OF DANGER ZONE   #
   #                         #
   ###########################
 
+  git worktree add "$tmpdir/doc-pages" doc-pages
+
+  set -x
   rsync \
     --checksum \
     --delete \
     -e "ssh -o StrictHostKeyChecking=no $sshExtraArgs" \
-    -a ${docs}/ \
+    -a "$tmpdir/doc-pages/" \
     www@clan.lol:/var/www/docs.clan.lol
+  set +x
+
+  git worktree remove "$tmpdir/doc-pages" 2>/dev/null || true
 
   if [ -e ./ssh_key ]; then
     rm ./ssh_key
