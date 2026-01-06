@@ -21,7 +21,6 @@ let
   ];
   jsonschema = self.clanLib.jsonschema.fromOptions {
     typePrefix = "Clan";
-    output = false;
     readOnly = {
       input = false;
     };
