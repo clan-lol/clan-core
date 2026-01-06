@@ -146,7 +146,7 @@
           };
           installPhase = ''
             file1=$existing
-            file2=${self'.legacyPackages.clan-types}/typing.py
+            file2=${self'.packages.clan-types}/typing.py
 
             echo "Comparing $file1 and $file2"
             if cmp -s "$file1" "$file2"; then
