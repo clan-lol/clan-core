@@ -6,11 +6,11 @@ from typing import Any, NotRequired, Protocol, TypedDict, cast
 
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
-from clan_lib.nix_models.clan import (
-    Inventory,
-    InventoryInstancesType,
-    InventoryMachinesType,
-    InventoryMetaType,
+from clan_lib.nix_models.typing import (
+    InstancesInput,
+    InventoryInput,
+    InventoryMachinesInput,
+    InventoryMetaInput,
 )
 from clan_lib.persist.patch_engine import calc_patches
 from clan_lib.persist.path_utils import (
@@ -98,9 +98,9 @@ class InventorySnapshot(TypedDict):
     It contains only the keys that are convertible to python types and can be serialized to JSON.
     """
 
-    machines: NotRequired[InventoryMachinesType]
-    instances: NotRequired[InventoryInstancesType]
-    meta: NotRequired[InventoryMetaType]
+    machines: NotRequired[InventoryMachinesInput]
+    instances: NotRequired[InstancesInput]
+    meta: InventoryMetaInput
 
 
 class InventoryStore:
@@ -162,7 +162,7 @@ class InventoryStore:
             filtered = cast("InventorySnapshot", raw_value)
         return sanitize(filtered, self._allowed_path_transforms, [])
 
-    def get_readonly_raw(self, keys: set[str]) -> Inventory:
+    def get_readonly_raw(self, keys: set[str]) -> InventoryInput:
         attrs = "{" + ",".join(sorted(keys)) + "}"
         return self._flake.select(
             f"clanInternals.inventoryClass.inventorySerialization.{attrs}"
@@ -174,11 +174,11 @@ class InventoryStore:
         """
         # TODO: make this configurable
         if not self.inventory_file.exists():
-            return {}
+            return cast("InventorySnapshot", {})
         with self.inventory_file.open() as f:
             try:
                 res: dict = json.load(f)
-                inventory = Inventory(res)  # type: ignore[misc]
+                inventory = InventoryInput(res)  # type: ignore[misc]
             except json.JSONDecodeError as e:
                 # Error decoding the inventory file
                 msg = f"Error decoding inventory file: {e}"

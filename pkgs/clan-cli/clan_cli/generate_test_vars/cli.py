@@ -16,6 +16,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
+from clan_lib.nix_models.typing import MachineInput
 from clan_lib.vars.generate import run_generators
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.prompt import PromptType
@@ -103,13 +104,12 @@ class TestFlake(Flake):
     ) -> "dict[str, MachineResponse]":
         """List machines of a clan"""
         from clan_lib.machines.actions import (  # noqa: PLC0415
-            InventoryMachine,
             MachineResponse,
         )
 
         res = {}
         for name in self._machine_names:
-            res[name] = MachineResponse(data=InventoryMachine())
+            res[name] = MachineResponse(data=MachineInput())
         return res
 
 

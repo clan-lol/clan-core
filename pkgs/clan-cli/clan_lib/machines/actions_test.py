@@ -256,8 +256,8 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     # TODO: Move this into the api
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    curr_tags = get_value_by_path(
-        inventory, "machines.jon.tags", [], InventoryMachineTagsType
+    curr_tags: InventoryMachineTagsType = get_value_by_path(
+        inventory, "machines.jon.tags", []
     )
     new_tags = ["managed1", "managed2"]
     set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])
