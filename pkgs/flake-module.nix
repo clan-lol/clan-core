@@ -28,8 +28,10 @@
         minifakeroot = pkgs.callPackage ./minifakeroot { };
         pending-reviews = pkgs.callPackage ./pending-reviews { };
         editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
-        classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
+        datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
+          pkgs.python3Packages.callPackage ./datamodel-code-generator { }
+        );
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         disko = inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko;

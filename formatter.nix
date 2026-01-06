@@ -61,6 +61,7 @@
         "pkgs/clan-vm-manager/bin/clan-vm-manager"
         "clanServices/hello-world/default.nix"
         "sops/secrets/test-backup-age.key/secret"
+        "pkgs/clan-cli/clan_lib/nix_models/typing.py"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"
