@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from clan_lib.api import API
 from clan_lib.flake import ClanSelectError, Flake
-from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.nix_models.typing import MachineInput
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars._types import StoreBase
 
@@ -24,11 +24,11 @@ class Machine:
         cls,
         name: str,
         flake: Flake,
-        _inventory_machine: InventoryMachine,
+        _inventory_machine: MachineInput,
     ) -> "Machine":
         return cls(name=name, flake=flake)
 
-    def get_inv_machine(self) -> "InventoryMachine":
+    def get_inv_machine(self) -> "MachineInput":
         # Import on demand to avoid circular imports
         from clan_lib.machines.actions import get_machine  # noqa: PLC0415
 

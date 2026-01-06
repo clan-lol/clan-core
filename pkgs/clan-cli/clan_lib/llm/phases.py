@@ -7,7 +7,7 @@ from typing import Literal
 
 from clan_lib.errors import ClanAiError
 from clan_lib.flake.flake import Flake
-from clan_lib.nix_models.clan import InventoryInstance
+from clan_lib.nix_models.typing import InstanceInput
 from clan_lib.services.modules import (
     InputName,
     ServiceName,
@@ -495,7 +495,7 @@ def get_llm_final_decision(
 
 def llm_final_decision_to_inventory_instances(
     function_calls: list[FunctionCallType],
-) -> list[InventoryInstance]:
+) -> list[InstanceInput]:
     """Convert LLM function calls to an inventory instance list.
 
     Args:
@@ -505,7 +505,7 @@ def llm_final_decision_to_inventory_instances(
         List of inventory instances, each containing module metadata and roles
 
     """
-    inventory_instances: list[InventoryInstance] = []
+    inventory_instances: list[InstanceInput] = []
 
     for call in function_calls:
         func_name = call["name"]
@@ -518,7 +518,7 @@ def llm_final_decision_to_inventory_instances(
         module_input = args.get("module", {}).get("input", None)
 
         # Create inventory instance for this module
-        instance: InventoryInstance = {
+        instance: InstanceInput = {
             "module": {
                 "input": module_input,
                 "name": func_name,

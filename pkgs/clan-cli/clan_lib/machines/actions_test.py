@@ -1,6 +1,5 @@
 import time
 from collections.abc import Callable
-from typing import cast
 from unittest.mock import ANY, patch
 
 import pytest
@@ -9,12 +8,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines import actions as actions_module
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.clan import (
-    Clan,
-    InventoryMachine,
-    InventoryMachineTagsType,
-    Unknown,
-)
+from clan_lib.nix_models.typing import ClanInput, InstanceRoleTagListInput, MachineInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
 
@@ -32,10 +26,10 @@ from .actions import (
 
 @pytest.mark.with_core
 def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
-    clan_config: Clan = {
+    clan_config: ClanInput = {
         "machines": {
-            "jon": cast("Unknown", {}),  # Nixos Modules are not type checkable
-            "sara": cast("Unknown", {}),  # Nixos Modules are not type checkable
+            "jon": {},  # Nixos Modules are not type checkable
+            "sara": {},  # Nixos Modules are not type checkable
         },
     }
     flake = clan_flake(clan_config)
@@ -47,10 +41,10 @@ def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
 
 @pytest.mark.with_core
 def test_list_machines_full(clan_flake: Callable[..., Flake]) -> None:
-    clan_config: Clan = {
+    clan_config: ClanInput = {
         "machines": {
-            "jon": cast("Unknown", {}),
-            "sara": cast("Unknown", {}),
+            "jon": {},
+            "sara": {},
         },
     }
     flake = clan_flake(clan_config)
@@ -201,7 +195,7 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
         },
     )
 
-    def get_jon() -> InventoryMachine:
+    def get_jon() -> MachineInput:
         return get_machine(flake, "jon")
 
     def set_jon(tags: list[str]) -> None:
@@ -256,7 +250,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     # TODO: Move this into the api
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    curr_tags: InventoryMachineTagsType = get_value_by_path(
+    curr_tags: InstanceRoleTagListInput = get_value_by_path(
         inventory, "machines.jon.tags", []
     )
     new_tags = ["managed1", "managed2"]

@@ -5,7 +5,6 @@ import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
 
 import clan_cli.clan.create
 import pytest
@@ -22,12 +21,7 @@ from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.network.network import get_network_overview, networks_from_flake
 from clan_lib.nix import nix_command
-from clan_lib.nix_models.clan import (
-    InventoryInstancesType,
-    InventoryMachine,
-    Unknown,
-)
-from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
+from clan_lib.nix_models.typing import InstancesInput, MachineDeployInput, MachineInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.services.modules import list_service_modules
@@ -40,7 +34,7 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class InventoryWrapper:
-    instances: InventoryInstancesType
+    instances: InstancesInput
 
 
 @dataclass
@@ -63,26 +57,21 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
         ssh_keys.append(InvSSHKeyEntry(f"user_{num}", ssh_key.public.read_text()))
 
     """Create the base inventory structure."""
-    instances = InventoryInstancesType(
-        {
-            "admin-inst": {
-                "module": {"name": "admin", "input": "clan-core"},
-                "roles": {
-                    "default": {
-                        "tags": {"all": {}},
-                        "settings": cast(
-                            "Unknown",
-                            {
-                                "allowedKeys": {
-                                    key.username: key.ssh_pubkey_txt for key in ssh_keys
-                                },
-                            },
-                        ),
+    instances: InstancesInput = {
+        "admin-inst": {
+            "module": {"name": "admin", "input": "clan-core"},
+            "roles": {
+                "default": {
+                    "tags": {"all": {}},
+                    "settings": {
+                        "allowedKeys": {
+                            key.username: key.ssh_pubkey_txt for key in ssh_keys
+                        },
                     },
                 },
             },
         },
-    )
+    }
 
     return InventoryWrapper(instances=instances)
 
@@ -176,9 +165,9 @@ def test_clan_create_api(
         command_prefix=vm_name,
     )
     # TODO: We need to merge Host and Machine class these duplicate targetHost stuff is a nightmare
-    inv_machine = InventoryMachine(
+    inv_machine = MachineInput(
         name=vm_name,
-        deploy=MachineDeploy(targetHost=f"{host.target}:{ssh_port_var}"),
+        deploy=MachineDeployInput(targetHost=f"{host.target}:{ssh_port_var}"),
     )
     create_machine(
         ClanCreateOptions(

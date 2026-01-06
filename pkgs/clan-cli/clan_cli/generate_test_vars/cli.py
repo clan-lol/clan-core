@@ -109,7 +109,7 @@ class TestFlake(Flake):
 
         res = {}
         for name in self._machine_names:
-            res[name] = MachineResponse(data=MachineInput())
+            res[name] = MachineResponse(data=MachineInput(deploy={}))
         return res
 
 
