@@ -3,9 +3,7 @@
 #
 # fmt: off
 
-from typing import Literal, NotRequired
-
-from typing_extensions import TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 type AnyJson = bool | int | float | str | list[AnyJson] | dict[str, AnyJson] | None
 
@@ -34,11 +32,11 @@ An attribute set of exported modules.
 """
 
 
-class EmptyDictInput(TypedDict, closed=True):
+class EmptyDictInput(TypedDict):
     pass
 
 
-class InstanceModuleInput(TypedDict, closed=True):
+class InstanceModuleInput(TypedDict):
     input: NotRequired[str | None]
     """
     Name of the input. Default to 'null' which means the module is local
@@ -83,7 +81,7 @@ Other types are passed through to the nixos configuration.
 """
 
 
-class InstanceRoleMachineInput(TypedDict, closed=True):
+class InstanceRoleMachineInput(TypedDict):
     settings: NotRequired[AnyJson]
 
 
@@ -99,7 +97,7 @@ type InstanceRoleTagListInput = list[str]
 type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
 
 
-class InventoryMetaInput(TypedDict, closed=True):
+class InventoryMetaInput(TypedDict):
     description: NotRequired[str | None]
     """
     Optional freeform description
@@ -192,7 +190,7 @@ type InventoryTagMachinesInput = list[str]
 """
 
 
-class InventoryTagsInput(TypedDict, extra_items=InventoryTagMachinesInput):
+class InventoryTagsInput(TypedDict):
     """
     Tags of the inventory are used to group machines together.
 
@@ -244,7 +242,7 @@ class InventoryTagsInput(TypedDict, extra_items=InventoryTagMachinesInput):
     nixos: NotRequired[InventoryTagMachinesInput]
 
 
-type MachineClass = Literal["nixos", "darwin"]
+type MachineClassInput = Literal["nixos", "darwin"]
 """
 The module system that should be used to construct the machine
 
@@ -253,7 +251,7 @@ Set this to `darwin` for macOS machines
 """
 
 
-class MachineDeployInput(TypedDict, closed=True):
+class MachineDeployInput(TypedDict):
     buildHost: NotRequired[str | None]
     """
     SSH address of the host to build the machine on
@@ -297,7 +295,7 @@ A list of age plugins which must be available in the shell when encrypting and d
 """
 
 
-class TemplateClanInput(TypedDict, closed=True):
+class TemplateClanInput(TypedDict):
     description: NotRequired[str]
     """
     The name of the template.
@@ -310,7 +308,7 @@ class TemplateClanInput(TypedDict, closed=True):
     """
 
 
-class TemplateDiskoInput(TypedDict, closed=True):
+class TemplateDiskoInput(TypedDict):
     description: NotRequired[str]
     """
     The name of the template.
@@ -323,7 +321,7 @@ class TemplateDiskoInput(TypedDict, closed=True):
     """
 
 
-class TemplateMachineInput(TypedDict, closed=True):
+class TemplateMachineInput(TypedDict):
     description: NotRequired[str]
     """
     The name of the template.
@@ -357,7 +355,7 @@ Holds the different machine templates.
 """
 
 
-class InstanceRoleInput(TypedDict, closed=True):
+class InstanceRoleInput(TypedDict):
     extraModules: NotRequired[InstanceRoleExtraModulesInput]
     machines: NotRequired[InstanceRoleMachinesInput]
     settings: NotRequired[AnyJson]
@@ -367,7 +365,7 @@ class InstanceRoleInput(TypedDict, closed=True):
 type InstanceRolesInput = dict[str, InstanceRoleInput]
 
 
-class MachineInput(TypedDict, closed=True):
+class MachineInput(TypedDict):
     deploy: NotRequired[MachineDeployInput]
     description: NotRequired[str | None]
     """
@@ -386,7 +384,7 @@ class MachineInput(TypedDict, closed=True):
     Timestamp is in unix time (seconds since epoch).
 
     """
-    machineClass: NotRequired[MachineClass]
+    machineClass: NotRequired[MachineClassInput]
     name: NotRequired[str]
     """
     Name of the machine or service
@@ -395,11 +393,11 @@ class MachineInput(TypedDict, closed=True):
     tags: NotRequired[MachineTagsInput]
 
 
-class OutputsInput(TypedDict, closed=True):
+class OutputsInput(TypedDict):
     moduleForMachine: OutputsModuleForMachineInput
 
 
-class SecretsAgeInput(TypedDict, closed=True):
+class SecretsAgeInput(TypedDict):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
 
@@ -408,7 +406,7 @@ class SecretsAgeInput(TypedDict, closed=True):
     plugins: NotRequired[SecretsAgePluginsInput]
 
 
-class SecretsInput(TypedDict, closed=True):
+class SecretsInput(TypedDict):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
 
@@ -417,7 +415,7 @@ class SecretsInput(TypedDict, closed=True):
     age: NotRequired[SecretsAgeInput]
 
 
-class TemplatesInput(TypedDict, closed=True):
+class TemplatesInput(TypedDict):
     """
     Define Clan templates.
 
@@ -428,7 +426,7 @@ class TemplatesInput(TypedDict, closed=True):
     machine: NotRequired[TemplatesMachineInput]
 
 
-class InstanceInput(TypedDict, closed=True):
+class InstanceInput(TypedDict):
     module: NotRequired[InstanceModuleInput]
     roles: NotRequired[InstanceRolesInput]
 
@@ -448,7 +446,7 @@ Each machine declared here can be referencd via its `attributeName` by the `inve
 """
 
 
-class InventoryInput(TypedDict, closed=True):
+class InventoryInput(TypedDict):
     """
     The `Inventory` submodule.
 
@@ -463,7 +461,7 @@ class InventoryInput(TypedDict, closed=True):
     tags: NotRequired[InventoryTagsInput]
 
 
-class ClanInput(TypedDict, closed=True):
+class ClanInput(TypedDict):
     directory: NotRequired[AnyJson]
     """
     The directory containing the clan.
