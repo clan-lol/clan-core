@@ -452,7 +452,7 @@ let
     else if option.type.name == "submodule" then
       let
         subOptions = option.type.getSubOptions option.loc;
-        node = optionsToNode (args // { inherit description; }) subOptions;
+        node = optionsToNode (args // { inherit description isRequired; }) subOptions;
       in
       node
     else if option.type.name == "listOf" then
@@ -530,6 +530,7 @@ let
       mode,
       typeRenames,
       # A submodule can provide this value
+      isRequired,
       description ? { },
       ...
     }:
@@ -550,12 +551,14 @@ let
         lib.mapAttrs (
           name: option:
           let
+            isRequired = mode == "output" || !(option ? default) && !(option ? defaultText);
             opts' = opts // {
               # We need to use toUpperFirst here because name might be "extraModules"
               # and we want to turn it into "ExtraModules", toSentenceCase turns it
               # to "Extramodules" which is not what we want
               typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
               shouldInlineTypes = false;
+              inherit isRequired;
             };
           in
           if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
@@ -608,7 +611,7 @@ let
       {
         property = ref typeName;
         # FIXME: shouldn't this depend on the default value of the submodule itself?
-        isRequired = false;
+        isRequired = isRequired;
         defs = freeformNode.defs or { } // {
           ${typeName} = {
             type = "object";
@@ -621,7 +624,7 @@ let
         property = ref typeName;
         # This property is `required` if none of its child properties has a
         # default value (i.e., some of its child property's isRequired is true)
-        isRequired = required != [ ];
+        isRequired = isRequired;
 
         defs = {
           ${typeName} = {
@@ -663,6 +666,7 @@ rec {
     let
       inputNode = optionsToNode {
         mode = "input";
+        isRequired = true;
         inherit
           typePrefix
           readOnly
@@ -671,6 +675,7 @@ rec {
       } options;
       outputNode = optionsToNode {
         mode = "output";
+        isRequired = true;
         inherit
           typePrefix
           readOnly

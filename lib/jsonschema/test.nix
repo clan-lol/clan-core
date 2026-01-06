@@ -150,6 +150,7 @@ in
             readOnly = true;
           };
         };
+        required = [ "foo" ];
         additionalProperties = false;
       };
       MainFooInput = {
@@ -533,6 +534,7 @@ in
             "$ref" = "#/$defs/MainOptInput";
           };
         };
+        required = [ "opt" ];
         additionalProperties = false;
       };
       MainOptInput = {
@@ -559,6 +561,7 @@ in
             "$ref" = "#/$defs/MainOptInput";
           };
         };
+        required = [ "opt" ];
         additionalProperties = false;
       };
       MainOptInput = {
@@ -591,6 +594,7 @@ in
             readOnly = true;
           };
         };
+        required = [ "foo" ];
         additionalProperties = false;
       };
       MainFooInput = {
