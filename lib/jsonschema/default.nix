@@ -591,7 +591,7 @@ let
           optionToNode (
             opts
             // {
-              typePrefix = getName typePrefix;
+              typePrefix = getName (typePrefix + "Freeform");
             }
           ) nestedOption;
       properties = lib.mapAttrs (
@@ -612,34 +612,23 @@ let
     in
     if nodesAttrs == { } && freeformNode == null then
       {
-        property = {
-          type = "object";
-          additionalProperties = false;
-        };
+        property = ref typeName;
         # FIXME: shouldn't this depend on the default value of the submodule itself?
         isRequired = false;
-      }
-      // lib.optionalAttrs (freeformNode ? defs) {
-        defs = freeformNode.defs;
+        defs = freeformNode.defs or { } // {
+          ${typeName} = {
+            type = "object";
+            additionalProperties = false;
+          };
+        };
       }
     else
       {
         property = ref typeName;
-        # This property is required if none of its child properties has a
+        # This property is `required` if none of its child properties has a
         # default value (i.e., some of its child property's isRequired is true)
         isRequired = required != [ ];
 
-        # We always different types for input and output for options, to make
-        # the types stable.
-        #
-        # For example:
-        #   foo.bar = mkOption { type = bool; }
-        #   foo.baz = mkOption { type = bool; }
-        #
-        # In this case, both bar and nd baz are of simple types and foo can be
-        # of the same type for both input and output. Later, if a new coercedTo
-        # option is added, the type has to be split, having different names in
-        # input and output. This breaks existing code that uses the old type.
         defs = {
           ${typeName} = {
             type = "object";

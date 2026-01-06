@@ -27,6 +27,10 @@ let
     };
     typeRenames = {
       ClanInventory = "Inventory";
+      InventoryTagsAll = "InventoryTagMachines";
+      InventoryTagsDarwin = "InventoryTagMachines";
+      InventoryTagsNixos = "InventoryTagMachines";
+      InventoryTagsFreeform = "InventoryTagMachines";
       InventoryMachinesItem = "Machine";
       InventoryInstances = "Instances";
       ClanOutputs = "Outputs";
