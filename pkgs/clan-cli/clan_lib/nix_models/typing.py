@@ -3,12 +3,14 @@
 #
 # fmt: off
 
-from typing import Any, Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired
+
+from typing_extensions import TypedDict
 
 type AnyJson = bool | int | float | str | list[AnyJson] | dict[str, AnyJson] | None
 
 
-type ClanMachines = dict[str, AnyJson]
+type ClanMachinesInput = dict[str, AnyJson]
 """
 A mapping of machine names to their nixos configuration.
 
@@ -25,14 +27,18 @@ A mapping of machine names to their nixos configuration.
 """
 
 
-type ClanModules = dict[str, AnyJson]
+type ClanModulesInput = dict[str, AnyJson]
 """
 An attribute set of exported modules.
 
 """
 
 
-class InstanceModuleInput(TypedDict):
+class EmptyDictInput(TypedDict, closed=True):
+    pass
+
+
+class InstanceModuleInput(TypedDict, closed=True):
     input: NotRequired[str | None]
     """
     Name of the input. Default to 'null' which means the module is local
@@ -47,7 +53,7 @@ class InstanceModuleInput(TypedDict):
     """
 
 
-type InstanceRoleExtraModules = list[AnyJson]
+type InstanceRoleExtraModulesInput = list[AnyJson]
 """
 List of additionally imported `.nix` expressions.
 
@@ -77,20 +83,23 @@ Other types are passed through to the nixos configuration.
 """
 
 
-class InstanceRoleMachineInput(TypedDict):
+class InstanceRoleMachineInput(TypedDict, closed=True):
     settings: NotRequired[AnyJson]
 
 
 type InstanceRoleMachinesInput = dict[str, InstanceRoleMachineInput]
 
 
-type InstanceRoleTagsFrom = list[str]
+type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
 
 
-type InstanceRoleTagsTo = dict[str, dict[str, Any]]
+type InstanceRoleTagListInput = list[str]
 
 
-class InventoryMetaInput(TypedDict):
+type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
+
+
+class InventoryMetaInput(TypedDict, closed=True):
     description: NotRequired[str | None]
     """
     Optional freeform description
@@ -136,7 +145,7 @@ class InventoryMetaInput(TypedDict):
     """
 
 
-type InventoryModules = dict[str, AnyJson]
+type InventoryModulesInput = dict[str, AnyJson]
 """
 A mapping of module names to their path.
 
@@ -170,7 +179,7 @@ Each module can be referenced by its `attributeName` in the `inventory.services`
 """
 
 
-type InventoryTagMachines = list[str]
+type InventoryTagMachinesInput = list[str]
 """
 !!! example "Predefined Tag"
 
@@ -183,7 +192,7 @@ type InventoryTagMachines = list[str]
 """
 
 
-class InventoryTagsInput(TypedDict):
+class InventoryTagsInput(TypedDict, extra_items=InventoryTagMachinesInput):
     """
     Tags of the inventory are used to group machines together.
 
@@ -230,9 +239,9 @@ class InventoryTagsInput(TypedDict):
 
     """
 
-    all: NotRequired[InventoryTagMachines]
-    darwin: NotRequired[InventoryTagMachines]
-    nixos: NotRequired[InventoryTagMachines]
+    all: NotRequired[InventoryTagMachinesInput]
+    darwin: NotRequired[InventoryTagMachinesInput]
+    nixos: NotRequired[InventoryTagMachinesInput]
 
 
 type MachineClass = Literal["nixos", "darwin"]
@@ -244,7 +253,7 @@ Set this to `darwin` for macOS machines
 """
 
 
-class MachineDeployInput(TypedDict):
+class MachineDeployInput(TypedDict, closed=True):
     buildHost: NotRequired[str | None]
     """
     SSH address of the host to build the machine on
@@ -255,7 +264,7 @@ class MachineDeployInput(TypedDict):
     """
 
 
-type MachineTags = list[str]
+type MachineTagsInput = list[str]
 """
 List of tags for the machine.
 
@@ -278,17 +287,17 @@ The machine can be referenced by its tags in `inventory.services`
 """
 
 
-type OutputModuleForMachine = dict[str, AnyJson]
+type OutputsModuleForMachineInput = dict[str, AnyJson]
 
 
-type SecretsAgePlugins = list[str]
+type SecretsAgePluginsInput = list[str]
 """
 A list of age plugins which must be available in the shell when encrypting and decrypting secrets.
 
 """
 
 
-class TemplateClanInput(TypedDict):
+class TemplateClanInput(TypedDict, closed=True):
     description: NotRequired[str]
     """
     The name of the template.
@@ -301,7 +310,7 @@ class TemplateClanInput(TypedDict):
     """
 
 
-class TemplateDiskoInput(TypedDict):
+class TemplateDiskoInput(TypedDict, closed=True):
     description: NotRequired[str]
     """
     The name of the template.
@@ -314,7 +323,7 @@ class TemplateDiskoInput(TypedDict):
     """
 
 
-class TemplateMachineInput(TypedDict):
+class TemplateMachineInput(TypedDict, closed=True):
     description: NotRequired[str]
     """
     The name of the template.
@@ -348,14 +357,17 @@ Holds the different machine templates.
 """
 
 
-class ClanOutputsInput(TypedDict):
-    moduleForMachine: OutputModuleForMachine
+class InstanceRoleInput(TypedDict, closed=True):
+    extraModules: NotRequired[InstanceRoleExtraModulesInput]
+    machines: NotRequired[InstanceRoleMachinesInput]
+    settings: NotRequired[AnyJson]
+    tags: NotRequired[InstanceRoleTagsInput]
 
 
-type InstanceRoleTagsInput = InstanceRoleTagsFrom | InstanceRoleTagsTo
+type InstanceRolesInput = dict[str, InstanceRoleInput]
 
 
-class MachineInput(TypedDict):
+class MachineInput(TypedDict, closed=True):
     deploy: NotRequired[MachineDeployInput]
     description: NotRequired[str | None]
     """
@@ -380,28 +392,23 @@ class MachineInput(TypedDict):
     Name of the machine or service
 
     """
-    tags: NotRequired[MachineTags]
+    tags: NotRequired[MachineTagsInput]
 
 
-type MachinesInput = dict[str, MachineInput]
-"""
-Machines in the inventory.
-
-Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
-
-"""
+class OutputsInput(TypedDict, closed=True):
+    moduleForMachine: OutputsModuleForMachineInput
 
 
-class SecretsAgeInput(TypedDict):
+class SecretsAgeInput(TypedDict, closed=True):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
 
     """
 
-    plugins: NotRequired[SecretsAgePlugins]
+    plugins: NotRequired[SecretsAgePluginsInput]
 
 
-class SecretsInput(TypedDict):
+class SecretsInput(TypedDict, closed=True):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
 
@@ -410,7 +417,7 @@ class SecretsInput(TypedDict):
     age: NotRequired[SecretsAgeInput]
 
 
-class TemplatesInput(TypedDict):
+class TemplatesInput(TypedDict, closed=True):
     """
     Define Clan templates.
 
@@ -421,17 +428,7 @@ class TemplatesInput(TypedDict):
     machine: NotRequired[TemplatesMachineInput]
 
 
-class InstanceRoleInput(TypedDict):
-    extraModules: NotRequired[InstanceRoleExtraModules]
-    machines: NotRequired[InstanceRoleMachinesInput]
-    settings: NotRequired[AnyJson]
-    tags: NotRequired[InstanceRoleTagsInput]
-
-
-type InstanceRolesInput = dict[str, InstanceRoleInput]
-
-
-class InstanceInput(TypedDict):
+class InstanceInput(TypedDict, closed=True):
     module: NotRequired[InstanceModuleInput]
     roles: NotRequired[InstanceRolesInput]
 
@@ -442,7 +439,16 @@ Multi host service module instances
 """
 
 
-class InventoryInput(TypedDict):
+type InventoryMachinesInput = dict[str, MachineInput]
+"""
+Machines in the inventory.
+
+Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+
+"""
+
+
+class InventoryInput(TypedDict, closed=True):
     """
     The `Inventory` submodule.
 
@@ -451,13 +457,13 @@ class InventoryInput(TypedDict):
     """
 
     instances: NotRequired[InstancesInput]
-    machines: NotRequired[MachinesInput]
+    machines: NotRequired[InventoryMachinesInput]
     meta: InventoryMetaInput
-    modules: NotRequired[InventoryModules]
+    modules: NotRequired[InventoryModulesInput]
     tags: NotRequired[InventoryTagsInput]
 
 
-class ClanInput(TypedDict):
+class ClanInput(TypedDict, closed=True):
     directory: NotRequired[AnyJson]
     """
     The directory containing the clan.
@@ -475,13 +481,13 @@ class ClanInput(TypedDict):
 
     """
     inventory: InventoryInput
-    machines: NotRequired[ClanMachines]
+    machines: NotRequired[ClanMachinesInput]
     meta: NotRequired[AnyJson]
     """
     Global information about the clan.
 
     """
-    modules: NotRequired[ClanModules]
-    outputs: ClanOutputsInput
+    modules: NotRequired[ClanModulesInput]
+    outputs: OutputsInput
     secrets: NotRequired[SecretsInput]
     templates: NotRequired[TemplatesInput]

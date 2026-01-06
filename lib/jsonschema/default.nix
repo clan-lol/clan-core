@@ -311,7 +311,7 @@ let
                 (
                   args
                   // {
-                    typePrefix = typePrefix + lib.toSentenceCase name;
+                    typePrefix = getName (typePrefix + lib.toSentenceCase name);
                     shouldInlineTypes = true;
                   }
                 )
@@ -365,7 +365,7 @@ let
                 (
                   args
                   // {
-                    typePrefix = typePrefix + lib.toSentenceCase name;
+                    typePrefix = getName (typePrefix + lib.toSentenceCase name);
                     shouldInlineTypes = mode == "input";
                   }
                 )
@@ -435,7 +435,7 @@ let
         }
     else if option.type.name == "attrs" then
       let
-        typeName = getName typePrefix;
+        typeName = getName typePrefix + lib.toSentenceCase mode;
       in
       {
         property = ref typeName;
@@ -469,10 +469,7 @@ let
             shouldInlineTypes = false;
           }
         ) nestedOption;
-        typeName =
-          getName typePrefix
-
-          + (lib.toSentenceCase mode);
+        typeName = getName typePrefix + lib.toSentenceCase mode;
       in
       if node == null then
         null
@@ -502,10 +499,7 @@ let
             shouldInlineTypes = false;
           }
         ) nestedOption;
-        typeName =
-          getName typePrefix
-
-          + (lib.toSentenceCase mode);
+        typeName = getName typePrefix + lib.toSentenceCase mode;
       in
       if node == null then
         null
@@ -557,7 +551,10 @@ let
           name: option:
           let
             opts' = opts // {
-              typePrefix = getName (opts.typePrefix + lib.toSentenceCase name);
+              # We need to use toUpperFirst here because name might be "extraModules"
+              # and we want to turn it into "ExtraModules", toSentenceCase turns it
+              # to "Extramodules" which is not what we want
+              typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
               shouldInlineTypes = false;
             };
           in
@@ -608,7 +605,7 @@ let
         }
       ) nodesAttrs;
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
-      typeName = typePrefix + lib.toSentenceCase mode;
+      typeName = getName typePrefix + lib.toSentenceCase mode;
     in
     if nodesAttrs == { } && freeformNode == null then
       {

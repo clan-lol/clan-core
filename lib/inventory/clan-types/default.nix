@@ -21,6 +21,7 @@ let
   ];
   jsonschema = self.clanLib.jsonschema.fromOptions {
     typePrefix = "Clan";
+    output = false;
     readOnly = {
       input = false;
     };
@@ -31,16 +32,20 @@ let
       InventoryTagsNixos = "InventoryTagMachines";
       InventoryTagsFreeform = "InventoryTagMachines";
       InventoryMachinesItem = "Machine";
+      MachineMachineClass = "MachineClass";
       InventoryInstances = "Instances";
+      InstanceRoleTagsFrom = "InstanceRoleTagList";
+      InstanceRoleTagsTo = "InstanceRoleTagDict";
+      InstanceRoleTagDictItem = "EmptyDict";
       ClanOutputs = "Outputs";
       ClanSecrets = "Secrets";
       InstancesItem = "Instance";
       InstanceRolesItem = "InstanceRole";
       InstanceRoleMachinesItem = "InstanceRoleMachine";
       ClanTemplates = "Templates";
-      TemplatesClanItem = "TemplatesClan";
-      TemplatesMachineItem = "TemplatesMachine";
-      TemplatesDiskoItem = "TemplatesDisko";
+      TemplatesClanItem = "TemplateClan";
+      TemplatesMachineItem = "TemplateMachine";
+      TemplatesDiskoItem = "TemplateDisko";
     };
   } (lib.filterAttrs (n: _v: lib.elem n include) clanOpts);
 
