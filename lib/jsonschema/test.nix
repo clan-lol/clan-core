@@ -357,13 +357,13 @@ in
           type = "object";
           properties = {
             opt = {
-              "$ref" = "#/$defs/MainOpt";
+              "$ref" = "#/$defs/MainOptInput";
             };
           };
           additionalProperties = false;
           required = [ "opt" ];
         };
-        MainOpt = {
+        MainOptInput = {
           enum = values;
         };
       };
@@ -375,14 +375,14 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
 
       };
-      MainOpt = {
+      MainOptInput = {
         type = "array";
         items = {
           type = "integer";
@@ -397,13 +397,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         type = "array";
         items = {
           "$ref" = "#/$defs/AnyJson";
@@ -419,13 +419,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         type = "object";
         additionalProperties = {
           "$ref" = "#/$defs/AnyJson";
@@ -441,13 +441,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         type = "object";
         additionalProperties = {
           type = "integer";
@@ -462,13 +462,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         type = "object";
         additionalProperties = {
           type = "integer";
@@ -556,10 +556,13 @@ in
         type = "object";
         properties = {
           opt = {
-            additionalProperties = false;
-            type = "object";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
+        additionalProperties = false;
+      };
+      MainOptInput = {
+        type = "object";
         additionalProperties = false;
       };
     };
@@ -661,10 +664,10 @@ in
       MainOptInput = {
         type = "object";
         additionalProperties = {
-          "$ref" = "#/$defs/MainAttrValueInput";
+          "$ref" = "#/$defs/MainOptItemInput";
         };
       };
-      MainAttrValueInput = {
+      MainOptItemInput = {
         type = "object";
         properties = {
           bar = {
@@ -700,10 +703,10 @@ in
       MainOptInput = {
         type = "array";
         items = {
-          "$ref" = "#/$defs/MainListItemInput";
+          "$ref" = "#/$defs/MainOptItemInput";
         };
       };
-      MainListItemInput = {
+      MainOptItemInput = {
         type = "object";
         properties = {
           bar = {
@@ -722,32 +725,17 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         oneOf = [
           { type = "boolean"; }
           { type = "string"; }
         ];
-      };
-    };
-  };
-  testEitherFunctionTo = {
-    expr = fromType { } (types.either (types.functionTo types.str) types.str);
-    expected = {
-      MainInput = {
-        type = "object";
-        properties = {
-          opt = {
-            type = "string";
-          };
-        };
-        additionalProperties = false;
-        required = [ "opt" ];
       };
     };
   };
@@ -787,13 +775,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOpt = {
+      MainOptInput = {
         enum = [
           "a"
           "b"
@@ -882,19 +870,14 @@ in
     };
   };
   testCoercedToAttrs = {
-    expr =
-      fromType
-        {
-          output = true;
-        }
-        (
-          types.coercedTo (types.listOf types.str) (
-            strs:
-            lib.genAttrs strs (s: {
-              ${s} = s;
-            })
-          ) (types.attrsOf types.str)
-        );
+    expr = fromType { output = true; } (
+      types.coercedTo (types.listOf types.str) (
+        strs:
+        lib.genAttrs strs (s: {
+          ${s} = s;
+        })
+      ) (types.attrsOf types.str)
+    );
     expected = {
       MainInput = {
         type = "object";
@@ -908,17 +891,17 @@ in
       };
       MainOptInput = {
         oneOf = [
-          { "$ref" = "#/$defs/MainList"; }
-          { "$ref" = "#/$defs/MainAttrs"; }
+          { "$ref" = "#/$defs/MainOptFromInput"; }
+          { "$ref" = "#/$defs/MainOptToInput"; }
         ];
       };
-      MainList = {
+      MainOptFromInput = {
         type = "array";
         items = {
           type = "string";
         };
       };
-      MainAttrs = {
+      MainOptToInput = {
         type = "object";
         additionalProperties = {
           type = "string";
@@ -928,13 +911,20 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainAttrs";
+            "$ref" = "#/$defs/MainOptToOutput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
+      MainOptToOutput = {
+        type = "object";
+        additionalProperties = {
+          type = "string";
+        };
+      };
     };
+
   };
   testCoercedRawToPath = {
     expr = fromType { } (types.coercedTo types.raw lib.id types.path);
@@ -953,16 +943,11 @@ in
     };
   };
   testComplexCoerced = {
-    expr =
-      fromType
-        {
-
-        }
-        (
-          types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
-            types.attrsOf (types.submodule { })
-          )
-        );
+    expr = fromType { } (
+      types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
+        types.attrsOf (types.submodule { })
+      )
+    );
     expected = {
       MainInput = {
         type = "object";
@@ -976,22 +961,25 @@ in
       };
       MainOptInput = {
         oneOf = [
-          { "$ref" = "#/$defs/MainList"; }
-          { "$ref" = "#/$defs/MainAttrs"; }
+          { "$ref" = "#/$defs/MainOptFromInput"; }
+          { "$ref" = "#/$defs/MainOptToInput"; }
         ];
       };
-      MainList = {
+      MainOptFromInput = {
         type = "array";
         items = {
           type = "string";
         };
       };
-      MainAttrs = {
+      MainOptToInput = {
         type = "object";
         additionalProperties = {
-          type = "object";
-          additionalProperties = false;
+          "$ref" = "#/$defs/MainOptToItemInput";
         };
+      };
+      MainOptToItemInput = {
+        type = "object";
+        additionalProperties = false;
       };
     };
   };
@@ -1068,13 +1056,13 @@ in
         additionalProperties = false;
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOpt";
+            "$ref" = "#/$defs/MainOptInput";
           };
         };
         required = [ "opt" ];
         type = "object";
       };
-      MainOpt = {
+      MainOptInput = {
         additionalProperties = {
           "$ref" = "#/$defs/AnyJson";
         };

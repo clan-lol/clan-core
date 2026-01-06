@@ -162,7 +162,7 @@ let
   handleEnum =
     ctx:
     let
-      typeName = ctx.getName ctx.args.typePrefix;
+      typeName = ctx.getName ctx.args.typePrefix + lib.toSentenceCase ctx.args.mode;
       type = {
         enum = ctx.option.type.functor.payload.values;
       }
@@ -591,19 +591,16 @@ let
               typePrefix = getName (typePrefix + "Freeform");
             }
           ) nestedOption;
-      properties = lib.mapAttrs (
-        _name: node:
-        node.property
-        // {
-          # Setting readOnly llows assigning an output
-          # type to the corresponding input type. Currently it will complain that a
-          # required property can not be passed to a non-required one.
-          # We do this in the unit tests:
-          #   machine_jon = get_machine(flake, "jon")
-          #   set_machine(Machine("jon", flake), machine_jon)
-          readOnly = opts.readOnly.${mode} or true;
-        }
-      ) nodesAttrs;
+      properties = lib.mapAttrs (_name: node: node.property // readOnly) nodesAttrs;
+      # Setting readOnly llows assigning an output
+      # type to the corresponding input type. Currently it will complain that a
+      # required property can not be passed to a non-required one.
+      # We do this in the unit tests:
+      #   machine_jon = get_machine(flake, "jon")
+      #   set_machine(Machine("jon", flake), machine_jon)
+      readOnly = lib.optionalAttrs (opts.readOnly.${mode} or true) {
+        readOnly = true;
+      };
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
       typeName = getName typePrefix + lib.toSentenceCase mode;
     in
