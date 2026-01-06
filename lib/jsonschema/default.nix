@@ -162,13 +162,13 @@ let
   handleEnum =
     ctx:
     let
-      typeName = ctx.getName ctx.typePrefix;
+      typeName = ctx.getName ctx.args.typePrefix;
       type = {
         enum = ctx.option.type.functor.payload.values;
       }
       // ctx.description;
       defs =
-        if ctx.shouldInlineTypes then
+        if ctx.args.shouldInlineTypes then
           { }
         else
           {
@@ -176,7 +176,7 @@ let
           };
     in
     {
-      property = if ctx.shouldInlineTypes then type else ref typeName;
+      property = if ctx.args.shouldInlineTypes then type else ref typeName;
       inherit (ctx) isRequired;
     }
     // lib.optionalAttrs (defs != { }) {
