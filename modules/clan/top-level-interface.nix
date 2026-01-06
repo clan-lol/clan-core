@@ -368,6 +368,16 @@ in
   };
 
   config.exportsModule = {
+
+    options.endpoints = lib.mkOption {
+      default = null;
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          imports = [ ./export-modules/endpoints.nix ];
+        }
+      );
+    };
+
     options.peer = lib.mkOption {
       default = null;
       type = lib.types.nullOr (
