@@ -2,7 +2,6 @@
 {
   perSystem =
     {
-      config,
       self',
       pkgs,
       ...
@@ -33,7 +32,7 @@
             ;
           inherit (inputs) nixpkgs;
         };
-        deploy-docs = pkgs.callPackage ./deploy-docs.nix { inherit (config.packages) docs; };
+        deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
       };
       checks.docs-integrity =
         pkgs.runCommand "docs-integrity"
