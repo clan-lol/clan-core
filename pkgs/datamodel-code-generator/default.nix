@@ -30,14 +30,14 @@
 
 buildPythonPackage rec {
   pname = "datamodel-code-generator";
-  version = "0.46.0";
+  version = "0.52.2";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koxudaxi";
     repo = "datamodel-code-generator";
-    rev = "58e73ed8740d589623647008bb1fe230bac1aeda";
-    hash = "sha256-sgyUVL6e8SXPFP1FxICQ+ibRdPCPdZXCue1H85Vl06s=";
+    tag = version;
+    hash = "sha256-+GKtwmp3pp4+c1SL76xgaIF2mf8py0p0HO3rqstkE0M=";
   };
 
   pythonRelaxDeps = [
