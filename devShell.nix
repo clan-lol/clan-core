@@ -45,7 +45,7 @@
           ln -sfT ${inputs.nix-select} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/select"
 
           # Generate clan types
-          cp ${self'.legacyPackages.clan-types}/typing.py $PRJ_ROOT/pkgs/clan-cli/clan_lib/nix_models/typing.py
+          cp ${self'.packages.clan-types}/typing.py $PRJ_ROOT/pkgs/clan-cli/clan_lib/nix_models/typing.py
         '';
       };
     };
