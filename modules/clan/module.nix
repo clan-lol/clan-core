@@ -151,6 +151,7 @@ in
 
   options.outputs.moduleForMachine = lib.mkOption {
     type = lib.types.attrsOf lib.types.deferredModule;
+    visible = false;
   };
 
   config = {
