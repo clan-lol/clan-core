@@ -4,7 +4,7 @@ from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import FieldSchema
-from clan_lib.nix_models.typing import InventoryMetaInput
+from clan_lib.nix_models.typing import InventoryMetaOutput
 from clan_lib.persist.introspection import retrieve_typed_field_names
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.write_rules import is_readonly_key
@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def get_clan_details(flake: Flake) -> InventoryMetaInput:
+def get_clan_details(flake: Flake) -> InventoryMetaOutput:
     """Retrieve the clan details from the inventory of a given flake.
 
     Args:
@@ -53,7 +53,7 @@ def get_clan_details_schema(flake: Flake) -> dict[str, FieldSchema]:
     inventory_store = InventoryStore(flake)
     attribute_props = inventory_store.get_attribute_props()
 
-    field_names = retrieve_typed_field_names(InventoryMetaInput)
+    field_names = retrieve_typed_field_names(InventoryMetaOutput)
 
     return {
         field: {

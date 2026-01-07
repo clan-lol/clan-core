@@ -7,8 +7,9 @@ from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.typing import (
-    InstancesInput,
+    InstancesOutput,
     MachineInput,
+    MachineOutput,
     MachineTagsInput,
 )
 from clan_lib.persist.introspection import retrieve_typed_field_names
@@ -45,14 +46,14 @@ class MachineState(TypedDict):
 
 @dataclass
 class MachineResponse:
-    data: MachineInput
+    data: MachineOutput
     # Reference the installed service instances
     instance_refs: set[str] = field(default_factory=set)
 
 
 def machine_instances(
     machine_name: str,
-    instances: InstancesInput,
+    instances: InstancesOutput,
     tag_map: dict[str, set[str]],
 ) -> set[str]:
     res: set[str] = set()
@@ -92,7 +93,7 @@ def list_machines(
     res: dict[str, MachineResponse] = {}
     for machine_name, machine in raw_machines.items():
         m = MachineResponse(
-            data=MachineInput(**machine),
+            data=machine,
             instance_refs=machine_instances(machine_name, instances, tag_map),
         )
 
@@ -108,7 +109,7 @@ def list_machines(
 
 
 @API.register
-def get_machine(flake: Flake, name: str) -> MachineInput:
+def get_machine(flake: Flake, name: str) -> MachineOutput:
     """Retrieve a machine's inventory details by name from the given flake.
 
     Args:
@@ -130,7 +131,7 @@ def get_machine(flake: Flake, name: str) -> MachineInput:
         msg = f"Machine {name} does not exist"
         raise ClanError(msg)
 
-    return MachineInput(**machine_inv)
+    return machine_inv
 
 
 @API.register

@@ -223,7 +223,7 @@ def test_update_service_instance(
 
     updated_instances = list_service_instances(flake)
     updated_machines = (
-        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})  # type: ignore[call-overload]
     )
 
     assert updated_machines == {
@@ -253,7 +253,7 @@ def test_update_service_instance(
 
     updated_instances = list_service_instances(flake)
     updated_machines = (
-        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})  # type: ignore[call-overload]
     )
 
     assert updated_machines == {

@@ -142,12 +142,13 @@ export async function getClan(id: string): Promise<ClanEntity> {
   );
   const services: Record<string, ServiceEntity> = Object.fromEntries(
     servicesRes.data.modules.map((service) => [
-      service.usage_ref.name,
+      // FIXME: shouldn't need !
+      service.usage_ref.name!,
       {
         id: service.usage_ref.name,
         isCore: service.native,
         description: service.info.manifest.description,
-        source: service.usage_ref.input as string | null,
+        source: service.usage_ref.input ?? null,
         roles: service.info.roles as Record<string, ServiceRoleEntity>,
         rolesSchema: {},
         instances: service.instance_refs.map((instanceName) => {
@@ -163,7 +164,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
                     machine.instance_refs?.includes(instanceName),
                   )
                   .map(([id]) => id),
-                tags: Object.keys(role.tags!),
+                tags: Object.keys(role.tags ?? {}),
               })),
             },
           };
