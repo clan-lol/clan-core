@@ -217,7 +217,7 @@ let
   /**
     Refer to `optionToNode`'s doc for the definition of a node
   */
-  optionsToNode =
+  attrsOfOptionsToNode =
     ctx@{
       typePrefix,
       mode,
@@ -225,11 +225,11 @@ let
       submoduleInfo ? null,
       ...
     }:
-    options:
+    attrsOfOptions:
     let
       getRenamedType = name: renamedTypes.${name} or name;
 
-      relevantOptions = removeAttrs options [
+      relevantOptions = removeAttrs attrsOfOptions [
         "_module"
         "_freeformOptions"
       ];
@@ -240,7 +240,7 @@ let
       */
       nodesAttrs = lib.filterAttrs (_: v: v != null) (
         lib.mapAttrs (
-          name: option:
+          name: attrsOrOption:
           let
             subctx = ctx // {
               # We need to use toUpperFirst here because name might be "extraModules"
@@ -250,7 +250,10 @@ let
               shouldInlineBranchTypes = false;
             };
           in
-          if lib.isOption option then optionToNode subctx option else optionsToNode subctx option
+          if lib.isOption attrsOrOption then
+            optionToNode subctx attrsOrOption
+          else
+            attrsOfOptionsToNode subctx attrsOrOption
         ) relevantOptions
       );
 
@@ -262,7 +265,7 @@ let
           # something. If those are not the case, we silently ignore
           # freeformType. definitions are never empty, because freeformType has
           # a default value of null
-          freeformOption = options._module.freeformType or null;
+          freeformOption = attrsOfOptions._module.freeformType or null;
           nestedType =
             if freeformOption == null then
               null
@@ -510,7 +513,7 @@ let
     option:
     let
       subOptions = option.type.getSubOptions option.loc;
-      node = optionsToNode (
+      node = attrsOfOptionsToNode (
         ctx
         // {
           submoduleInfo = {
@@ -693,7 +696,7 @@ rec {
     }:
     options:
     let
-      inputNode = optionsToNode {
+      inputNode = attrsOfOptionsToNode {
         mode = "input";
         inherit
           typePrefix
@@ -702,7 +705,7 @@ rec {
           ;
       } options;
       inputResult = resolveRefs { } inputNode.jsonschema;
-      outputNode = optionsToNode {
+      outputNode = attrsOfOptionsToNode {
         mode = "output";
         inherit
           typePrefix
