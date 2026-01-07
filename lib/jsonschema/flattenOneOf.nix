@@ -28,7 +28,8 @@
 jsonschemas:
 let
   flatten = lib.foldl' (
-    flattened: type: if type ? oneOf then flatten flattened type.oneOf else mergeType flattened type
+    flattened: jsonschema:
+    if jsonschema ? oneOf then flatten flattened jsonschema.oneOf else mergeType flattened jsonschema
   );
 
   /**
@@ -50,29 +51,29 @@ let
     => [ int str ]
   */
   mergeType =
-    flattened: newType:
+    flattened: newJsonschema:
     let
       containingIndex = lib.lists.findFirstIndex (
         # existingType ⊇ newType
         # Some existing type already contains the newType
         # => we dont need to add the newType
-        existingType: isContainingType existingType newType
+        existingJsonschema: isContainingType existingJsonschema newJsonschema
       ) null flattened;
 
       containedIndex = lib.lists.findFirstIndex (
         # newType ⊇ existingType
         # the newType is a superset of an existing type
         # => we need to replace the existing type with the new one
-        existingType: isContainingType newType existingType
+        existingJsonschema: isContainingType newJsonschema existingJsonschema
       ) null flattened;
     in
     if containingIndex != null then
       # Return the same list
       flattened
     else if containedIndex != null then
-      clanLib.replaceElemAt flattened containedIndex newType
+      clanLib.replaceElemAt flattened containedIndex newJsonschema
     else
-      flattened ++ [ newType ];
+      flattened ++ [ newJsonschema ];
 
   /**
     Checks if t1 is a superset type of t2
