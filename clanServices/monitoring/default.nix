@@ -286,8 +286,9 @@
                   };
                 }
                 // lib.optionalAttrs settings.grafana.enable {
-                  "/" = {
+                  "/grafana/" = {
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.grafana.settings.server.http_port}/";
+                    proxyWebsockets = true;
                   };
                 };
               };
@@ -409,7 +410,7 @@
 
                   server = {
                     domain = config.networking.fqdn;
-                    root_url = "http" + lib.optionalString useSSL "s" + "://${config.networking.fqdn}/";
+                    root_url = "http" + lib.optionalString useSSL "s" + "://${config.networking.fqdn}/grafana/";
                   };
 
                   snapshots = {
