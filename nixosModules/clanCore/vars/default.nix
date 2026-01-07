@@ -15,6 +15,32 @@ in
     ./secret/fs.nix
     ./secret/sops
     ./secret/vm.nix
+
+    {
+      warnings =
+        lib.optionals
+          (
+            options.clanConfig.isDefined
+            &&
+              config.clanConfig.clanInternals.vars.settings.secretStore
+              != config.clan.core.vars.settings.secretStore
+          )
+          [
+            ''
+              [DEPRECATED] Machine-level vars backend configuration is deprecated and will be removed in a future release.
+
+              Please move your vars backend selection to the flake/clan level:
+
+              ```
+              # clan.nix / flake.nix
+
+              clan.vars.settings.secretStore = "${config.clan.core.vars.settings.secretStore}";
+              ```
+
+              Remove the machine-level configuration.
+            ''
+          ];
+    }
   ]
   ++ lib.optionals (_class == "nixos") [
     ./secret/password-store.nix
