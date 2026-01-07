@@ -9,7 +9,15 @@
 
   Example:
 
-  types := [ { type = "str" } { oneOf = [ { $ref = "#/$defs/ModelA" } ] } ]
+  types := [
+    { type = "str" }
+    { oneOf = [
+      { $ref = {
+        typeName = "ModuleA";
+        jsonschema = { type = "str" };
+      }
+    }
+  ]
 
   flattenOneOf types
   =>

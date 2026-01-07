@@ -7,6 +7,11 @@ let
   # Constants and Basic Helpers
   # ============================================================================
 
+  # To facilitate the flattening of branches in options like either, we give
+  # $ref an inlined structure where it contains both the type name and the
+  # referenced jsonschema.
+  # At the entrypoint, we then travel the jsonschema tree and convert them
+  # back to valid $ref.
   ref = typeName: jsonschema: {
     "$ref" = {
       inherit typeName jsonschema;
@@ -150,7 +155,7 @@ let
       // ctx.description;
     in
     {
-      jsonschema = if ctx.args.shouldInlineTypes then type else ref typeName type;
+      jsonschema = if ctx.args.shouldInlineBranchTypes then type else ref typeName type;
       inherit (ctx) isRequired;
     };
 
@@ -163,8 +168,11 @@ let
 
     ```nix
     {
-      # jsonschema property this option generates
-      property = {
+      # jsonschema this option generates. Notice this might not strictly be
+      # valid jsonschema when it contains $ref. To help facilitate flattening
+      # branches in types like either. See the ref function on the custom
+      # $ref structure
+      jsonschema = {
         type = "boolean";
       }
 
@@ -172,27 +180,11 @@ let
       # in something that generates to an jsonschema object, its `required`
       # should contain the propery name that corresponds to this option.
       isRequired = true | false
-
-      # Types that the node itself and its descendants generate, will be added
-      # to the root $defs property of the jsonschema, omitted if it contains no
-      # such types. Some example options that aways generate its own types:
-      # attrsOf, listOf, submodule, etc
-      defs = {
-        InventoryInput = {
-          type = "object";
-          properties = {};
-        };
-        InventoryMachineOutput = {
-          type = "object";
-          properties = {};
-        };
-      }
     }
     ```
   */
   optionToNode =
     args@{
-
       typePrefix,
       mode,
       # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
@@ -200,7 +192,7 @@ let
       # with other branches. only the outside type should create a new type.
       # But inside an attrs which is inside a branch, a custom type should be
       # created again;
-      shouldInlineTypes ? false,
+      shouldInlineBranchTypes ? false,
       typeRenames,
       ...
     }:
@@ -225,18 +217,12 @@ let
       };
 
       /**
-        Returns true, if the passed node is one of the following:
-
-        - array
-        - object
-        - enum
-        - oneOf
-
-        All other types return false
+        When a branch option like either eventually flattens to a single branch,
+        check if it should have its own type name based on the jsonschema type
       */
-      shouldDefineType =
+      shouldDefineBranchType =
         jsonschema:
-        !shouldInlineTypes
+        !shouldInlineBranchTypes
         && (
           (
             jsonschema ? type
@@ -302,7 +288,7 @@ let
                   args
                   // {
                     typePrefix = getName (typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name));
-                    shouldInlineTypes = true;
+                    shouldInlineBranchTypes = true;
                   }
                 )
                 {
@@ -327,7 +313,7 @@ let
         null
       else
         {
-          jsonschema = if shouldDefineType jsonschema then ref typeName jsonschema else jsonschema;
+          jsonschema = if shouldDefineBranchType jsonschema then ref typeName jsonschema else jsonschema;
           inherit isRequired;
         }
     else if option.type.name == "coercedTo" then
@@ -341,7 +327,7 @@ let
                   args
                   // {
                     typePrefix = getName (typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name));
-                    shouldInlineTypes = mode == "input";
+                    shouldInlineBranchTypes = mode == "input";
                   }
                 )
                 {
@@ -373,7 +359,10 @@ let
       else
         {
           jsonschema =
-            if mode == "input" && shouldDefineType jsonschema then ref typeName jsonschema else jsonschema;
+            if mode == "input" && shouldDefineBranchType jsonschema then
+              ref typeName jsonschema
+            else
+              jsonschema;
           inherit isRequired;
         }
     else if option.type.name == "attrs" then
@@ -414,7 +403,7 @@ let
           args
           // {
             typePrefix = getName (typePrefix + "Item");
-            shouldInlineTypes = false;
+            shouldInlineBranchTypes = false;
           }
         ) nestedOption;
         typeName = getName typePrefix + lib.toSentenceCase mode;
@@ -442,7 +431,7 @@ let
           args
           // {
             typePrefix = getName (typePrefix + "Item");
-            shouldInlineTypes = false;
+            shouldInlineBranchTypes = false;
           }
         ) nestedOption;
         typeName = getName typePrefix + lib.toSentenceCase mode;
@@ -498,7 +487,7 @@ let
               # and we want to turn it into "ExtraModules", toSentenceCase turns it
               # to "Extramodules" which is not what we want
               typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
-              shouldInlineTypes = false;
+              shouldInlineBranchTypes = false;
             };
           in
           if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
