@@ -60,7 +60,7 @@ def test_bubblewrap_allows_nix_store_read(temp_dir: Path) -> None:
     """Test that sandboxed process can read from nix store."""
     # Use ls to read from nix store (should work) and write result to file
     success_file = temp_dir / "nix_test.txt"
-    script = f'ls $(realpath $(which ls)) >/dev/null 2>&1 && echo "success" > "{success_file}"'
+    script = f'ls $(realpath $(which nix)) >/dev/null 2>&1 && echo "success" > "{success_file}"'
 
     cmd = bubblewrap_cmd(script, temp_dir)
     result = subprocess.run(cmd, check=False, capture_output=True, text=True)
