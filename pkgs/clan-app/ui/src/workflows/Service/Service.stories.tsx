@@ -80,24 +80,56 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
         data: {
           name: "jon",
           tags: ["all", "nixos", "tag1"],
+          deploy: {
+            buildHost: null,
+            targetHost: null,
+          },
+          description: null,
+          icon: null,
+          installedAt: null,
+          machineClass: "nixos",
         },
       },
       sara: {
         data: {
           name: "sara",
           tags: ["all", "darwin", "tag2"],
+          deploy: {
+            buildHost: null,
+            targetHost: null,
+          },
+          description: null,
+          icon: null,
+          installedAt: null,
+          machineClass: "nixos",
         },
       },
       kyra: {
         data: {
           name: "kyra",
           tags: ["all", "darwin", "tag2"],
+          deploy: {
+            buildHost: null,
+            targetHost: null,
+          },
+          description: null,
+          icon: null,
+          installedAt: null,
+          machineClass: "nixos",
         },
       },
       leila: {
         data: {
           name: "leila",
           tags: ["all", "darwin", "tag2"],
+          deploy: {
+            buildHost: null,
+            targetHost: null,
+          },
+          description: null,
+          icon: null,
+          installedAt: null,
+          machineClass: "nixos",
         },
       },
     },

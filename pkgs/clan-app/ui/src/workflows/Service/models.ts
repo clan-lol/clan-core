@@ -13,12 +13,12 @@ export interface ServiceStoreType {
   action: "create" | "update";
 }
 
-// TODO: Ideally we would impot this from a backend model package
+// TODO: Ideally we would import this from a backend model package
 interface InventoryInstance {
   name: string;
   module: {
     name: string;
-    input?: string | null;
+    input: string | null;
   };
   roles: Record<string, RoleType>;
 }

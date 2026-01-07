@@ -35,6 +35,7 @@ export const Service = (props: RouteSectionProps) => {
           identifier: ctx.clanURI,
         },
         instance_ref: instance.name,
+        // @ts-expect-error: Ignore this until we have a better solution
         roles: instance.roles,
       });
     } else {
@@ -43,6 +44,7 @@ export const Service = (props: RouteSectionProps) => {
           identifier: ctx.clanURI,
         },
         module_ref: instance.module,
+        // @ts-expect-error: Ignore this until we have a better solution
         roles: instance.roles,
       });
     }
