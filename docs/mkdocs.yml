@@ -186,7 +186,7 @@ nav:
           - services/official/zerotier.md
       - services/community.md
 
-  - Search Clan Options: "/option-search"
+  - Search Clan Options: "option-search/"
 
 docs_dir: site
 site_dir: out
