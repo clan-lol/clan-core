@@ -212,7 +212,7 @@ let
           inherit isRequired;
         };
       }
-      .${optionType};
+      .${optionType} or (throw "Unhandled option type, this is a bug in code");
 
   /**
     Refer to `optionToNode`'s doc for the definition of a node
