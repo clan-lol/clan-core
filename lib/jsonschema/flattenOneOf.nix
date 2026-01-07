@@ -2,34 +2,25 @@
   clanLib,
   lib,
 }:
-# FIXME: This function can result in infinite recursion when processing a type
-# like attrsOf enum with the default renameType. The reason is that enum will
-# have its own type name and by default it will be the same as the one for
-# attrsOf, and when deref is called on the two refs, it will reach the same
-# thing.
-# A proper fix is probably just throw an error when a user hasn't renamed the
-# type with renameType
 /**
-  Takes the 'defs' and the current 'types'
-  Returns a list of types that is the superset of all types in 'types'
+  Takes a list of types
+  Returns a list of types that is the superset of all types in 'types' and
+  with nested oneOfs flattened
 
   Example:
 
   types := [ { type = "str" } { oneOf = [ { $ref = "#/$defs/ModelA" } ] } ]
-  defs := { ModelA = { type = "str" }; ModelB ... };
 
-  flattenOneOf defs types
+  flattenOneOf types
   =>
   [ { type = "str" } ]
 
   ModelA would not be added to the output, since an superset of it is already contained
 */
-defs: types:
+jsonschemas:
 let
-  refPrefix = "#/$defs/";
-
   flatten = lib.foldl' (
-    accu: type: if type ? oneOf then flatten accu type.oneOf else mergeType accu type
+    flattened: type: if type ? oneOf then flatten flattened type.oneOf else mergeType flattened type
   );
 
   /**
@@ -51,43 +42,29 @@ let
     => [ int str ]
   */
   mergeType =
-    accu: newType:
+    flattened: newType:
     let
       containingIndex = lib.lists.findFirstIndex (
         # existingType ⊇ newType
         # Some existing type already contains the newType
         # => we dont need to add the newType
         existingType: isContainingType existingType newType
-      ) null accu.flattened;
+      ) null flattened;
 
       containedIndex = lib.lists.findFirstIndex (
         # newType ⊇ existingType
         # the newType is a superset of an existing type
         # => we need to replace the existing type with the new one
         existingType: isContainingType newType existingType
-      ) null accu.flattened;
+      ) null flattened;
     in
     if containingIndex != null then
       # Return the same list
-      accu
-      // {
-        removedTypes = accu.removedTypes ++ [ newType ];
-      }
+      flattened
     else if containedIndex != null then
-      let
-        oldType = lib.elemAt accu.flattened containedIndex;
-      in
-      # Replace
-      {
-        flattened = clanLib.replaceElemAt accu.flattened containedIndex newType;
-        removedTypes = accu.removedTypes ++ [ oldType ];
-      }
+      clanLib.replaceElemAt flattened containedIndex newType
     else
-      # Append the new type otherwise
-      accu
-      // {
-        flattened = accu.flattened ++ [ newType ];
-      };
+      flattened ++ [ newType ];
 
   /**
     Checks if t1 is a superset type of t2
@@ -249,11 +226,11 @@ let
     # Lookup the actual type and call this function again
     # with the resolved type
     else if t1 ? "$ref" then
-      isContainingType (derefType t1) t2
+      isContainingType t1."$ref".jsonschema t2
     # Lookup the actual type and call this function again
     # with the resolved type
     else if t2 ? "$ref" then
-      isContainingType t1 (derefType t2)
+      isContainingType t1 t2."$ref".jsonschema
 
     # Both t1 & t2 are "oneOf"
     # t1 := { oneOf = [ SCHEMA ]; }
@@ -304,46 +281,5 @@ let
     # All other cases
     else
       false;
-
-  refTypeName = type: lib.removePrefix refPrefix type."$ref";
-  /**
-    Looks up the "ref" in the accumulated dictionary
-
-    Example
-
-    ```pseudocode
-    # t1 / t2
-    {
-      "$ref": "#/$defs/modelA"
-    }
-
-    # defs
-    {
-      "modelA": {
-        "type": "int"
-      }
-    }
-    ```
-  */
-  derefType = type: defs.${refTypeName type};
-  findAllRefTypeNames =
-    t:
-    if t ? "$ref" then
-      refTypeName t
-    else if t.type or null == "array" then
-      findAllRefTypeNames t.items or [ ] ++ findAllRefTypeNames t.prefixItems or [ ]
-    else if t.type or null == "object" then
-      findAllRefTypeNames t.properties or [ ] ++ findAllRefTypeNames t.additionalProperties or [ ]
-    else if t ? oneOf then
-      lib.concatMap (branch: findAllRefTypeNames branch) t.oneOf
-    else
-      [ ];
-  result = flatten {
-    flattened = [ ];
-    removedTypes = [ ];
-  } types;
 in
-{
-  oneOf = result.flattened;
-  defs = lib.removeAttrs defs (findAllRefTypeNames result.removedTypes);
-}
+flatten [ ] jsonschemas

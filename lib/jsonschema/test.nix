@@ -793,53 +793,51 @@ in
       };
     };
   };
-  # testEitherComplexLists = {
-  #   expr =
-  #     fromType { renameType = { loc, name }: if loc == "listItem" then "MainListItem" else name; }
-  #       (
-  #         types.either
-  #           (types.listOf (
-  #             types.enum [
-  #               "a"
-  #               "b"
-  #               "c"
-  #             ]
-  #           ))
-  #           (
-  #             types.listOf (
-  #               types.enum [
-  #                 "a"
-  #                 "b"
-  #               ]
-  #             )
-  #           )
-  #       );
-  #   expected = {
-  #     MainInput = {
-  #       type = "object";
-  #       properties = {
-  #         opt = {
-  #           "$ref" = "#/$defs/MainOpt";
-  #         };
-  #       };
-  #       additionalProperties = false;
-  #       required = [ "opt" ];
-  #     };
-  #     MainOpt = {
-  #       type = "array";
-  #       items = {
-  #         "$ref" = "#/$defs/MainListItem";
-  #       };
-  #     };
-  #     MainListItem = {
-  #       enum = [
-  #         "a"
-  #         "b"
-  #         "c"
-  #       ];
-  #     };
-  #   };
-  # };
+  testEitherComplexLists = {
+    expr = fromType { } (
+      types.either
+        (types.listOf (
+          types.enum [
+            "a"
+            "b"
+            "c"
+          ]
+        ))
+        (
+          types.listOf (
+            types.enum [
+              "a"
+              "b"
+            ]
+          )
+        )
+    );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        type = "array";
+        items = {
+          "$ref" = "#/$defs/MainOptItemInput";
+        };
+      };
+      MainOptItemInput = {
+        enum = [
+          "a"
+          "b"
+          "c"
+        ];
+      };
+    };
+  };
   testCoercedTo = {
     expr = fromType { output = true; } (types.coercedTo types.int toString types.str);
     expected = {
@@ -914,13 +912,13 @@ in
         type = "object";
         properties = {
           opt = {
-            "$ref" = "#/$defs/MainOptToOutput";
+            "$ref" = "#/$defs/MainOptOutput";
           };
         };
         additionalProperties = false;
         required = [ "opt" ];
       };
-      MainOptToOutput = {
+      MainOptOutput = {
         type = "object";
         additionalProperties = {
           type = "string";
@@ -986,45 +984,6 @@ in
       };
     };
   };
-  testFlatten =
-    let
-      flattenOneOf = import ./flattenOneOf.nix { inherit lib clanLib; };
-    in
-    {
-      expr = flattenOneOf { } [
-        {
-          type = "array";
-          items = {
-            type = "string";
-          };
-        }
-        {
-          type = "object";
-          additionalProperties = {
-            type = "object";
-            additionalProperties = false;
-          };
-        }
-      ];
-      expected = {
-        defs = { };
-        oneOf = [
-          {
-            type = "array";
-            items = {
-              type = "string";
-            };
-          }
-          {
-            type = "object";
-            additionalProperties = {
-              type = "object";
-              additionalProperties = false;
-            };
-          }
-        ];
-      };
-    };
   AnyJson =
     lib.genAttrs'
       [
@@ -1072,18 +1031,5 @@ in
         type = "object";
       };
     };
-    # MainInput = {
-    #   title = "MainOpt";
-    #   type = "object";
-    #   additionalProperties = {
-    #     title = "OptModule";
-    #     type = "object";
-    #     additionalProperties = {
-    #       "$ref" = "#/$defs/AnyJson";
-    #     };
-    #   };
-    # };
-    # inherit AnyJson;
-    # };
   };
 }
