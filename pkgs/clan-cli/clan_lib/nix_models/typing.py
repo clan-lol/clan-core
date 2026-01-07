@@ -3,12 +3,29 @@
 #
 # fmt: off
 
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired, ReadOnly, TypedDict
 
 type AnyJson = bool | int | float | str | list[AnyJson] | dict[str, AnyJson] | None
 
 
 type ClanMachinesInput = dict[str, AnyJson]
+"""
+A mapping of machine names to their nixos configuration.
+
+???+ example
+
+    ```nix
+    machines = {
+      my-machine = {
+        # Your nixos configuration
+      };
+    };
+    ```
+
+"""
+
+
+type ClanMachinesOutput = dict[str, AnyJson]
 """
 A mapping of machine names to their nixos configuration.
 
@@ -32,7 +49,18 @@ An attribute set of exported modules.
 """
 
 
+type ClanModulesOutput = dict[str, AnyJson]
+"""
+An attribute set of exported modules.
+
+"""
+
+
 class EmptyDictInput(TypedDict):
+    pass
+
+
+class EmptyDictOutput(TypedDict):
     pass
 
 
@@ -43,6 +71,21 @@ class InstanceModuleInput(TypedDict):
 
     """
     name: NotRequired[str]
+    """
+    Attribute of the clan service module imported from the chosen input.
+
+    Defaults to the name of the instance.
+
+    """
+
+
+class InstanceModuleOutput(TypedDict):
+    input: ReadOnly[str | None]
+    """
+    Name of the input. Default to 'null' which means the module is local
+
+    """
+    name: ReadOnly[str]
     """
     Attribute of the clan service module imported from the chosen input.
 
@@ -81,14 +124,54 @@ Other types are passed through to the nixos configuration.
 """
 
 
+type InstanceRoleExtraModulesOutput = list[AnyJson]
+"""
+List of additionally imported `.nix` expressions.
+
+!!! Note
+    **The import only happens if the machine is part of the service or role.**
+
+Other types are passed through to the nixos configuration.
+
+???+ Example
+    To import the `special.nix` file
+
+    ```
+    . Clan Directory
+    ├── flake.nix
+    ...
+    └── modules
+        ├── special.nix
+        └── ...
+    ```
+
+    ```nix
+    {
+      extraModules = [ "modules/special.nix" ];
+    }
+    ```
+
+"""
+
+
 class InstanceRoleMachineInput(TypedDict):
     settings: NotRequired[AnyJson]
+
+
+class InstanceRoleMachineOutput(TypedDict):
+    settings: ReadOnly[AnyJson]
 
 
 type InstanceRoleMachinesInput = dict[str, InstanceRoleMachineInput]
 
 
+type InstanceRoleMachinesOutput = dict[str, InstanceRoleMachineOutput]
+
+
 type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
+
+
+type InstanceRoleTagDictOutput = dict[str, EmptyDictOutput]
 
 
 type InstanceRoleTagListInput = list[str]
@@ -143,6 +226,52 @@ class InventoryMetaInput(TypedDict):
     """
 
 
+class InventoryMetaOutput(TypedDict):
+    description: ReadOnly[str | None]
+    """
+    Optional freeform description
+
+    """
+    domain: ReadOnly[str]
+    """
+    Domain for the clan.
+
+    It will be used to wire clan-internal services and resolve the address
+    for each machine of the clan using `<hostname>.<meta.domain>`
+
+    This can either be:
+
+    - A top level domain (TLD). Set this to a valid, but not already
+      existing TLD if you're using a mesh network between your machines.
+      This will route requests between your machines over the mesh network.
+
+    - A regular domain. Set this to a valid domain you own if you want
+      to route requests between your machines over the public internet.
+      You will have to manually setup your public DNS of that domain to
+      route `<hostname>.<meta.domain>` to each of your machines.
+
+    """
+    icon: ReadOnly[str | None]
+    """
+    Under construction, will be used for the UI
+
+    """
+    name: ReadOnly[str]
+    """
+    Name of the clan.
+
+    Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.
+
+    Should only contain alphanumeric characters, `_` and `-`.
+
+    """
+    tld: ReadOnly[str | None]
+    """
+    Deprecated: Use `domain` instead.
+
+    """
+
+
 type InventoryModulesInput = dict[str, AnyJson]
 """
 A mapping of module names to their path.
@@ -177,7 +306,54 @@ Each module can be referenced by its `attributeName` in the `inventory.services`
 """
 
 
+type InventoryModulesOutput = dict[str, AnyJson]
+"""
+A mapping of module names to their path.
+
+Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
+
+!!! Important
+    Each module MUST fulfill the following requirements to be usable with the inventory:
+
+    - The module MUST have a `README.md` file with a `description`.
+    - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
+    - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
+
+    For further information see: [Module Authoring Guide](../../guides/services/community.md).
+
+???+ example
+    ```nix
+    clan-core.lib.clan {
+        # 1. Add the module to the available inventory modules
+        inventory.modules = {
+          custom-module = ./modules/my_module;
+        };
+        # 2. Use the module in the inventory
+        inventory.services = {
+          custom-module.instance_1 = {
+              roles.default.machines = [ "machineA" ];
+          };
+        };
+    };
+    ```
+
+"""
+
+
 type InventoryTagMachinesInput = list[str]
+"""
+!!! example "Predefined Tag"
+
+    Will be added to all machines that set `machineClass = "nixos"`
+
+    ```nix
+    inventory.machines.machineA.tags = [ "nixos" ];
+    ```
+
+"""
+
+
+type InventoryTagMachinesOutput = list[str]
 """
 !!! example "Predefined Tag"
 
@@ -242,7 +418,68 @@ class InventoryTagsInput(TypedDict):
     nixos: NotRequired[InventoryTagMachinesInput]
 
 
+class InventoryTagsOutput(TypedDict):
+    """
+    Tags of the inventory are used to group machines together.
+
+    It is recommended to use [`machine.tags`](#inventory.machines.tags) to define the tags of the machines.
+
+    This can be used to define custom tags that are either statically set or dynamically computed.
+
+    #### Static Tags
+
+    ???+ example "Static Tag Example"
+        ```nix
+        inventory.tags = {
+          foo = [ "machineA" "machineB" ];
+        };
+        ```
+
+        The tag `foo` will always be added to `machineA` and `machineB`.
+
+    #### Dynamic Tags
+
+    It is possible to compute tags based on the machines properties or based on other tags.
+
+    !!! danger
+        This is a powerful feature and should be used with caution.
+
+        It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+
+    ???+ example "Dynamic Tag Example"
+
+        allButFoo is a computed tag. It will be added to all machines except 'foo'
+
+        `all` is a predefined tag. See the docs of [`tags.all`](#inventory.tags.all).
+
+        ```nix
+        #  inventory.tags ↓       ↓ inventory.machines
+        inventory.tags = {config, machines...}: {
+          #                                                        ↓↓↓ The "all" tag
+          allButFoo = builtins.filter (name: name != "foo") config.all;
+        };
+        ```
+
+    !!! warning
+        Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+
+    """
+
+    all: ReadOnly[InventoryTagMachinesOutput]
+    darwin: ReadOnly[InventoryTagMachinesOutput]
+    nixos: ReadOnly[InventoryTagMachinesOutput]
+
+
 type MachineClassInput = Literal["nixos", "darwin"]
+"""
+The module system that should be used to construct the machine
+
+Set this to `darwin` for macOS machines
+
+"""
+
+
+type MachineClassOutput = Literal["nixos", "darwin"]
 """
 The module system that should be used to construct the machine
 
@@ -262,7 +499,41 @@ class MachineDeployInput(TypedDict):
     """
 
 
+class MachineDeployOutput(TypedDict):
+    buildHost: ReadOnly[str | None]
+    """
+    SSH address of the host to build the machine on
+    """
+    targetHost: ReadOnly[str | None]
+    """
+    SSH address of the host to deploy the machine to
+    """
+
+
 type MachineTagsInput = list[str]
+"""
+List of tags for the machine.
+
+The machine can be referenced by its tags in `inventory.services`
+
+???+ Example
+    ```nix
+    inventory.machines.machineA.tags = [ "tag1" "tag2" ];
+    ```
+
+    ```nix
+    services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
+    ```
+
+!!! Note
+    Tags can be used to determine the membership of the machine in the services.
+    Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
+
+
+"""
+
+
+type MachineTagsOutput = list[str]
 """
 List of tags for the machine.
 
@@ -292,6 +563,13 @@ A list of age plugins which must be available in the shell when encrypting and d
 """
 
 
+type SecretsAgePluginsOutput = list[str]
+"""
+A list of age plugins which must be available in the shell when encrypting and decrypting secrets.
+
+"""
+
+
 class TemplateClanInput(TypedDict):
     description: NotRequired[str]
     """
@@ -299,6 +577,19 @@ class TemplateClanInput(TypedDict):
 
     """
     path: str
+    """
+    Holds the path to the clan template.
+
+    """
+
+
+class TemplateClanOutput(TypedDict):
+    description: ReadOnly[str]
+    """
+    The name of the template.
+
+    """
+    path: ReadOnly[str]
     """
     Holds the path to the clan template.
 
@@ -318,6 +609,19 @@ class TemplateDiskoInput(TypedDict):
     """
 
 
+class TemplateDiskoOutput(TypedDict):
+    description: ReadOnly[str]
+    """
+    The name of the template.
+
+    """
+    path: ReadOnly[str]
+    """
+    Holds the path to the clan template.
+
+    """
+
+
 class TemplateMachineInput(TypedDict):
     description: NotRequired[str]
     """
@@ -331,7 +635,27 @@ class TemplateMachineInput(TypedDict):
     """
 
 
+class TemplateMachineOutput(TypedDict):
+    description: ReadOnly[str]
+    """
+    The name of the template.
+
+    """
+    path: ReadOnly[str]
+    """
+    Holds the path to the clan template.
+
+    """
+
+
 type TemplatesClanInput = dict[str, TemplateClanInput]
+"""
+Holds the different clan templates.
+
+"""
+
+
+type TemplatesClanOutput = dict[str, TemplateClanOutput]
 """
 Holds the different clan templates.
 
@@ -345,11 +669,36 @@ Holds different disko templates.
 """
 
 
+type TemplatesDiskoOutput = dict[str, TemplateDiskoOutput]
+"""
+Holds different disko templates.
+
+"""
+
+
 type TemplatesMachineInput = dict[str, TemplateMachineInput]
 """
 Holds the different machine templates.
 
 """
+
+
+type TemplatesMachineOutput = dict[str, TemplateMachineOutput]
+"""
+Holds the different machine templates.
+
+"""
+
+
+class TemplatesOutput(TypedDict):
+    """
+    Define Clan templates.
+
+    """
+
+    clan: ReadOnly[TemplatesClanOutput]
+    disko: ReadOnly[TemplatesDiskoOutput]
+    machine: ReadOnly[TemplatesMachineOutput]
 
 
 class InstanceRoleInput(TypedDict):
@@ -359,7 +708,17 @@ class InstanceRoleInput(TypedDict):
     tags: NotRequired[InstanceRoleTagsInput]
 
 
+class InstanceRoleOutput(TypedDict):
+    extraModules: ReadOnly[InstanceRoleExtraModulesOutput]
+    machines: ReadOnly[InstanceRoleMachinesOutput]
+    settings: ReadOnly[AnyJson]
+    tags: ReadOnly[InstanceRoleTagDictOutput]
+
+
 type InstanceRolesInput = dict[str, InstanceRoleInput]
+
+
+type InstanceRolesOutput = dict[str, InstanceRoleOutput]
 
 
 class MachineInput(TypedDict):
@@ -390,6 +749,34 @@ class MachineInput(TypedDict):
     tags: NotRequired[MachineTagsInput]
 
 
+class MachineOutput(TypedDict):
+    deploy: ReadOnly[MachineDeployOutput]
+    description: ReadOnly[str | None]
+    """
+    Optional freeform description
+
+    """
+    icon: ReadOnly[str | None]
+    """
+    Under construction, will be used for the UI
+
+    """
+    installedAt: ReadOnly[int | None]
+    """
+    Indicates when the machine was first installed.
+
+    Timestamp is in unix time (seconds since epoch).
+
+    """
+    machineClass: ReadOnly[MachineClassOutput]
+    name: ReadOnly[str]
+    """
+    Name of the machine or service
+
+    """
+    tags: ReadOnly[MachineTagsOutput]
+
+
 class SecretsAgeInput(TypedDict):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
@@ -399,6 +786,15 @@ class SecretsAgeInput(TypedDict):
     plugins: NotRequired[SecretsAgePluginsInput]
 
 
+class SecretsAgeOutput(TypedDict):
+    """
+    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
+
+    """
+
+    plugins: ReadOnly[SecretsAgePluginsOutput]
+
+
 class SecretsInput(TypedDict):
     """
     Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
@@ -406,6 +802,15 @@ class SecretsInput(TypedDict):
     """
 
     age: NotRequired[SecretsAgeInput]
+
+
+class SecretsOutput(TypedDict):
+    """
+    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
+
+    """
+
+    age: ReadOnly[SecretsAgeOutput]
 
 
 class TemplatesInput(TypedDict):
@@ -424,7 +829,18 @@ class InstanceInput(TypedDict):
     roles: NotRequired[InstanceRolesInput]
 
 
+class InstanceOutput(TypedDict):
+    module: ReadOnly[InstanceModuleOutput]
+    roles: ReadOnly[InstanceRolesOutput]
+
+
 type InstancesInput = dict[str, InstanceInput]
+"""
+Multi host service module instances
+"""
+
+
+type InstancesOutput = dict[str, InstanceOutput]
 """
 Multi host service module instances
 """
@@ -437,6 +853,59 @@ Machines in the inventory.
 Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
 
 """
+
+
+type InventoryMachinesOutput = dict[str, MachineOutput]
+"""
+Machines in the inventory.
+
+Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+
+"""
+
+
+class InventoryOutput(TypedDict):
+    """
+    The `Inventory` submodule.
+
+    For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
+
+    """
+
+    instances: ReadOnly[InstancesOutput]
+    machines: ReadOnly[InventoryMachinesOutput]
+    meta: ReadOnly[InventoryMetaOutput]
+    modules: ReadOnly[InventoryModulesOutput]
+    tags: ReadOnly[InventoryTagsOutput]
+
+
+class ClanOutput(TypedDict):
+    directory: ReadOnly[str]
+    """
+    The directory containing the clan.
+
+    A typical directory structure could look like this:
+
+    ```
+    .
+    ├── flake.nix
+    ├── assets
+    ├── machines
+    ├── modules
+    └── sops
+    ```
+
+    """
+    inventory: ReadOnly[InventoryOutput]
+    machines: ReadOnly[ClanMachinesOutput]
+    meta: ReadOnly[AnyJson]
+    """
+    Global information about the clan.
+
+    """
+    modules: ReadOnly[ClanModulesOutput]
+    secrets: ReadOnly[SecretsOutput]
+    templates: ReadOnly[TemplatesOutput]
 
 
 class InventoryInput(TypedDict):
