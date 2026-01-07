@@ -60,10 +60,6 @@ class EmptyDictInput(TypedDict):
     pass
 
 
-class EmptyDictOutput(TypedDict):
-    pass
-
-
 class InstanceModuleInput(TypedDict):
     input: NotRequired[str | None]
     """
@@ -171,13 +167,17 @@ type InstanceRoleMachinesOutput = dict[str, InstanceRoleMachineOutput]
 type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
 
 
-type InstanceRoleTagDictOutput = dict[str, EmptyDictOutput]
-
-
 type InstanceRoleTagListInput = list[str]
 
 
+class InstanceRoleTagOutput(TypedDict):
+    pass
+
+
 type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
+
+
+type InstanceRoleTagsOutput = dict[str, InstanceRoleTagOutput]
 
 
 class InventoryMetaInput(TypedDict):
@@ -712,7 +712,7 @@ class InstanceRoleOutput(TypedDict):
     extraModules: ReadOnly[InstanceRoleExtraModulesOutput]
     machines: ReadOnly[InstanceRoleMachinesOutput]
     settings: ReadOnly[AnyJson]
-    tags: ReadOnly[InstanceRoleTagDictOutput]
+    tags: ReadOnly[InstanceRoleTagsOutput]
 
 
 type InstanceRolesInput = dict[str, InstanceRoleInput]
