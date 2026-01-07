@@ -5,7 +5,6 @@
     ./clan-app/flake-module.nix
     ./clan-cli/flake-module.nix
     ./clan-core-flake/flake-module.nix
-    ./clan-vm-manager/flake-module.nix
     ./icon-update/flake-module.nix
     ./installer/flake-module.nix
     ./option-search/flake-module.nix
