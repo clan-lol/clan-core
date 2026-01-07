@@ -97,9 +97,6 @@ in
 
           }
         );
-    clan.core.vars.settings.secretModule = lib.mkIf (
-      config.clan.core.vars.settings.secretStore == "password-store"
-    ) "clan_lib.vars.secret_modules.password_store";
 
     system.activationScripts =
       lib.mkIf ((config.clan.core.vars.settings.secretStore == "password-store") && !useSystemdActivation)

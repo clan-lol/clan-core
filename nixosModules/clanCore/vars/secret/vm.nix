@@ -14,8 +14,4 @@
             "/etc/secrets/${file.config.generatorName}/${file.config.name}"
         );
       });
-  config.clan.core.vars.settings.secretModule = lib.mkIf (
-    config.clan.core.vars.settings.secretStore == "vm"
-  ) "clan_lib.vars.secret_modules.vm";
-
 }
