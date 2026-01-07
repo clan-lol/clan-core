@@ -467,8 +467,8 @@ let
       jsonschema = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
       typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
     in
-    # If this option can result in null for either input or output, it
-    # shouldn't be included in either
+    # If this option can result in null for either input or output, neither
+    # input or output should include this type
     if nodesAttrs.from == null || nodesAttrs.to == null then
       null
     else
