@@ -44,6 +44,32 @@ lib.fix (
 
         # Experimental
         exports = throw "clanLib.exports has been renamed. Use the utility in clanLib directly";
+        /**
+          Map the list and merge the list of sets into a new attribute set
+           # Inputs
+          `f`
+           : 1\. Function argument
+           `list`
+           : 2\. Function argument
+           # Type
+           ```
+          concatMapListToAttrs :: (a -> AttrSet) -> [a] -> AttrSet
+          ```
+           # Examples
+          :::{.example}
+          ## `clanLib.concatMapListToAttrs` usage example
+           ```nix
+          concatMapListToAttrs
+            (name: {
+              ${name} = name;
+              z = name;
+            })
+            [ "a" "b" ]
+          => { a = "a"; b = "b"; z = "b"; }
+          ```
+           :::
+        */
+        concatMapListToAttrs = f: list: lib.zipAttrsWith (_name: values: lib.last values) (map f list);
 
         /**
           Upper-case the first character, leave the rest alone

@@ -171,13 +171,13 @@ type InstanceRoleMachinesOutput = dict[str, InstanceRoleMachineOutput]
 type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
 
 
-type InstanceRoleTagDictOutput = dict[str, EmptyDictOutput]
-
-
 type InstanceRoleTagListInput = list[str]
 
 
 type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
+
+
+type InstanceRoleTagsOutput = dict[str, EmptyDictOutput]
 
 
 class InventoryMetaInput(TypedDict):
@@ -712,7 +712,7 @@ class InstanceRoleOutput(TypedDict):
     extraModules: ReadOnly[InstanceRoleExtraModulesOutput]
     machines: ReadOnly[InstanceRoleMachinesOutput]
     settings: ReadOnly[AnyJson]
-    tags: ReadOnly[InstanceRoleTagDictOutput]
+    tags: ReadOnly[InstanceRoleTagsOutput]
 
 
 type InstanceRolesInput = dict[str, InstanceRoleInput]

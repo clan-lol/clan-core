@@ -19,12 +19,11 @@ let
   ];
   jsonschema = self.clanLib.jsonschema.fromOptions {
     typePrefix = "Clan";
-    output = true;
     readOnly = {
       input = false;
       output = true;
     };
-    typeRenames = {
+    renamedTypes = {
       ClanInventory = "Inventory";
       InventoryTagsAll = "InventoryTagMachines";
       InventoryTagsDarwin = "InventoryTagMachines";
@@ -35,6 +34,7 @@ let
       InventoryInstances = "Instances";
       InstanceRoleTagsFrom = "InstanceRoleTagList";
       InstanceRoleTagsTo = "InstanceRoleTagDict";
+      InstanceRoleTagsItem = "EmptyDict";
       InstanceRoleTagDictItem = "EmptyDict";
       ClanOutputs = "Outputs";
       ClanSecrets = "Secrets";
