@@ -19,9 +19,10 @@ let
   ];
   jsonschema = self.clanLib.jsonschema.fromOptions {
     typePrefix = "Clan";
-    output = false;
+    output = true;
     readOnly = {
       input = false;
+      output = true;
     };
     typeRenames = {
       ClanInventory = "Inventory";

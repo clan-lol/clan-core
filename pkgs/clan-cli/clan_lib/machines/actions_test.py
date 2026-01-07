@@ -1,6 +1,7 @@
 import time
 from collections.abc import Callable
-from typing import cast
+from copy import deepcopy
+from typing import overload
 from unittest.mock import ANY, patch
 
 import pytest
@@ -9,11 +10,13 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines import actions as actions_module
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.clan import (
-    Clan,
-    InventoryMachine,
-    InventoryMachineTagsType,
-    Unknown,
+from clan_lib.nix_models.typing import (
+    ClanInput,
+    InstanceRoleTagListInput,
+    InventoryInput,
+    InventoryOutput,
+    MachineInput,
+    MachineOutput,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import get_value_by_path, set_value_by_path
@@ -32,10 +35,10 @@ from .actions import (
 
 @pytest.mark.with_core
 def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
-    clan_config: Clan = {
+    clan_config: ClanInput = {
         "machines": {
-            "jon": cast("Unknown", {}),  # Nixos Modules are not type checkable
-            "sara": cast("Unknown", {}),  # Nixos Modules are not type checkable
+            "jon": {},  # Nixos Modules are not type checkable
+            "sara": {},  # Nixos Modules are not type checkable
         },
     }
     flake = clan_flake(clan_config)
@@ -47,10 +50,10 @@ def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
 
 @pytest.mark.with_core
 def test_list_machines_full(clan_flake: Callable[..., Flake]) -> None:
-    clan_config: Clan = {
+    clan_config: ClanInput = {
         "machines": {
-            "jon": cast("Unknown", {}),
-            "sara": cast("Unknown", {}),
+            "jon": {},
+            "sara": {},
         },
     }
     flake = clan_flake(clan_config)
@@ -117,6 +120,20 @@ def test_list_machines_instance_refs(clan_flake: Callable[..., Flake]) -> None:
     assert machines["jon"].instance_refs == set({"admin", "borgbackup"})
 
 
+# Test helpers to copy the output type to make it mutable
+@overload
+def to_mutable(output: MachineOutput) -> MachineInput: ...
+
+
+@overload
+def to_mutable(output: InventoryOutput) -> InventoryInput: ...
+
+
+def to_mutable(output: object) -> object:
+    """Convert ReadOnly output to mutable input, creating a deep copy"""
+    return deepcopy(output)
+
+
 @pytest.mark.with_core
 def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -135,14 +152,15 @@ def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
     machine_jon = get_machine(flake, "jon")
 
     with patch(f"{actions_module.__name__}.InventoryStore._write") as mock_write:
-        set_machine(Machine("jon", flake), machine_jon)
+        machine_jon_input = to_mutable(machine_jon)
+        set_machine(Machine("jon", flake), machine_jon_input)
 
         # Assert _write was never called
         mock_write.assert_not_called()
 
         # Change something to make sure the mock_write is actually called
-        machine_jon["machineClass"] = "darwin"
-        set_machine(Machine("jon", flake), machine_jon)
+        machine_jon_input["machineClass"] = "darwin"
+        set_machine(Machine("jon", flake), machine_jon_input)
 
         # This is a bit internal - we want to make sure the write is called
         # with only the changed value, so we don't persist the whole machine
@@ -176,11 +194,12 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
 
     # No-op roundtrip should not change anything in the inventory
     machine_jon = get_machine(flake, "jon")
-    machine_jon["description"] = "description updated"
+    machine_jon_input = to_mutable(machine_jon)
+    machine_jon_input["description"] = "description updated"
 
     with patch(f"{actions_module.__name__}.InventoryStore._write") as mock_write:
         with pytest.raises(ClanError) as exc_info:
-            set_machine(Machine("jon", flake), machine_jon)
+            set_machine(Machine("jon", flake), machine_jon_input)
 
         assert "Path 'machines.jon.description' is readonly" in str(exc_info.value)
 
@@ -201,13 +220,14 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
         },
     )
 
-    def get_jon() -> InventoryMachine:
+    def get_jon() -> MachineOutput:
         return get_machine(flake, "jon")
 
     def set_jon(tags: list[str]) -> None:
         machine = get_jon()
-        machine["tags"] = tags
-        set_machine(Machine("jon", flake), machine)
+        machine_input = to_mutable(machine)
+        machine_input["tags"] = tags
+        set_machine(Machine("jon", flake), machine_input)
 
     # --- Add UI tags ---
     initial_tags = get_jon().get("tags", [])
@@ -256,8 +276,8 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     # TODO: Move this into the api
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    curr_tags = get_value_by_path(
-        inventory, "machines.jon.tags", [], InventoryMachineTagsType
+    curr_tags: InstanceRoleTagListInput = get_value_by_path(
+        inventory, "machines.jon.tags", []
     )
     new_tags = ["managed1", "managed2"]
     set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])

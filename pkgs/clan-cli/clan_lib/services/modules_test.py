@@ -14,7 +14,7 @@ from clan_lib.services.modules import (
 )
 
 if TYPE_CHECKING:
-    from clan_lib.nix_models.clan import Clan, Inventory
+    from clan_lib.nix_models.typing import ClanInput, InventoryInput
 
 
 @pytest.mark.with_core
@@ -41,7 +41,7 @@ def test_list_service_instances(
     service_modules = list_service_modules(flake)
 
     assert len(service_modules.modules)
-    assert any(m.usage_ref["name"] == "sshd" for m in service_modules.modules)
+    assert any(m.usage_ref.get("name") == "sshd" for m in service_modules.modules)
 
     instances = list_service_instances(flake)
 
@@ -76,11 +76,11 @@ def test_list_service_instances(
 def test_get_service_readmes(
     clan_flake: Callable[..., Flake],
 ) -> None:
-    clan_config: Clan = {"inventory": {}}
+    clan_config: ClanInput = {}
     flake = clan_flake(clan_config)
 
     service_modules = list_service_modules(flake)
-    service_names = [m.usage_ref["name"] for m in service_modules.modules]
+    service_names = [m.usage_ref["name"] for m in service_modules.modules]  # type: ignore[reportTypedDictNotRequiredAccess]
 
     collection = get_service_readmes(
         input_name=None,
@@ -98,8 +98,9 @@ def test_list_service_modules(
     clan_flake: Callable[..., Flake],
 ) -> None:
     # Nice! This is typechecked :)
-    clan_config: Clan = {
+    clan_config: ClanInput = {
         "inventory": {
+            "meta": {"name": "testclan"},
             "instances": {
                 # No module spec -> resolves to clan-core/admin
                 "admin": {},
@@ -112,7 +113,7 @@ def test_list_service_modules(
                         "input": "Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU",
                     }
                 },
-            }
+            },
         }
     }
     flake = clan_flake(clan_config)
@@ -145,7 +146,7 @@ def test_update_service_instance(
     clan_flake: Callable[..., Flake],
 ) -> None:
     # Data that can be mutated via API calls
-    mutable_inventory_json: Inventory = {
+    mutable_inventory_json: InventoryInput = {
         "instances": {
             "hello-world": {
                 "roles": {
@@ -222,7 +223,7 @@ def test_update_service_instance(
 
     updated_instances = list_service_instances(flake)
     updated_machines = (
-        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})  # type: ignore[call-overload]
     )
 
     assert updated_machines == {
@@ -252,7 +253,7 @@ def test_update_service_instance(
 
     updated_instances = list_service_instances(flake)
     updated_machines = (
-        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})
+        updated_instances["hello-world"].roles.get("morning", {}).get("machines", {})  # type: ignore[call-overload]
     )
 
     assert updated_machines == {
@@ -265,11 +266,12 @@ def test_delete_service_instance(
     clan_flake: Callable[..., Flake],
 ) -> None:
     # Data that can be mutated via API calls
-    mutable_inventory_json: Inventory = {
+    mutable_inventory_json: InventoryInput = {
+        "meta": {"name": "testclan"},
         "instances": {
             "to-remain": {"module": {"name": "admin"}},
             "to-delete": {"module": {"name": "admin"}},
-        }
+        },
     }
 
     flake = clan_flake({}, mutable_inventory_json=mutable_inventory_json)
@@ -295,10 +297,11 @@ def test_delete_static_service_instance(
     clan_flake: Callable[..., Flake],
 ) -> None:
     # Data that can be mutated via API calls
-    mutable_inventory_json: Inventory = {
+    mutable_inventory_json: InventoryInput = {
+        "meta": {"name": "testclan"},
         "instances": {
             "static": {"module": {"name": "admin"}},
-        }
+        },
     }
 
     flake = clan_flake(
@@ -328,10 +331,11 @@ def test_delete_static_service_instance(
 def test_inline_extra_modules(clan_flake: Callable[..., Flake]) -> None:
     """ExtraModules are excluded from serialization to allow arbitrary inlining"""
     # Data that can be mutated via API calls
-    mutable_inventory_json: Inventory = {
+    mutable_inventory_json: InventoryInput = {
+        "meta": {"name": "testclan"},
         "instances": {
             "static": {"module": {"name": "admin"}},
-        }
+        },
     }
     nix = r"""
     {

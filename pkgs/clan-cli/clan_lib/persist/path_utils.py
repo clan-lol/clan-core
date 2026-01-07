@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 
 PathTuple = tuple[str, ...]
 
@@ -123,16 +123,12 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
     return delete_by_path_tuple(d, tuple(keys))
 
 
-V = TypeVar("V")
-
-
 # TODO: Use PathTuple
-def get_value_by_path(
+def get_value_by_path[T](
     d: DictLike,
     path: str,
-    fallback: V | None = None,
-    expected_type: type[V] | None = None,  # noqa: ARG001
-) -> V:
+    fallback: T | None = None,
+) -> T:
     """Get the value at a specific dot-separated path in a nested dictionary.
 
     If the path does not exist, it returns fallback.
@@ -146,9 +142,9 @@ def get_value_by_path(
         current = current.setdefault(key, {})
 
     if isinstance(current, dict):
-        return cast("V", current.get(keys[-1], fallback))
+        return cast("T", current.get(keys[-1], fallback))
 
-    return cast("V", fallback)
+    return cast("T", fallback)
 
 
 def flatten_data_structured(

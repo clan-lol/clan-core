@@ -6,10 +6,11 @@ from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.clan import (
-    InventoryInstance,
-    InventoryMachine,
-    InventoryMachineTagsType,
+from clan_lib.nix_models.typing import (
+    InstancesOutput,
+    MachineInput,
+    MachineOutput,
+    MachineTagsInput,
 )
 from clan_lib.persist.introspection import retrieve_typed_field_names
 from clan_lib.persist.inventory_store import InventoryStore
@@ -45,14 +46,14 @@ class MachineState(TypedDict):
 
 @dataclass
 class MachineResponse:
-    data: InventoryMachine
+    data: MachineOutput
     # Reference the installed service instances
     instance_refs: set[str] = field(default_factory=set)
 
 
 def machine_instances(
     machine_name: str,
-    instances: dict[str, InventoryInstance],
+    instances: InstancesOutput,
     tag_map: dict[str, set[str]],
 ) -> set[str]:
     res: set[str] = set()
@@ -92,7 +93,7 @@ def list_machines(
     res: dict[str, MachineResponse] = {}
     for machine_name, machine in raw_machines.items():
         m = MachineResponse(
-            data=InventoryMachine(**machine),
+            data=machine,
             instance_refs=machine_instances(machine_name, instances, tag_map),
         )
 
@@ -108,7 +109,7 @@ def list_machines(
 
 
 @API.register
-def get_machine(flake: Flake, name: str) -> InventoryMachine:
+def get_machine(flake: Flake, name: str) -> MachineOutput:
     """Retrieve a machine's inventory details by name from the given flake.
 
     Args:
@@ -130,11 +131,11 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
         msg = f"Machine {name} does not exist"
         raise ClanError(msg)
 
-    return InventoryMachine(**machine_inv)
+    return machine_inv
 
 
 @API.register
-def set_machine(machine: Machine, update: InventoryMachine) -> None:
+def set_machine(machine: Machine, update: MachineInput) -> None:
     """Update the machine information in the inventory."""
     if machine.name != update.get("name", machine.name):
         msg = "Machine name mismatch"
@@ -172,7 +173,7 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     inventory_store = InventoryStore(machine.flake)
     attribute_props = inventory_store.get_attribute_props()
 
-    field_names = retrieve_typed_field_names(InventoryMachine)
+    field_names = retrieve_typed_field_names(MachineInput)
 
     protected_fields = {
         "name",  # name is always readonly
@@ -182,11 +183,13 @@ def get_machine_fields_schema(machine: Machine) -> dict[str, FieldSchema]:
     # TODO: handle this more generically. I.e via json schema
     persisted_data = inventory_store._get_persisted()  # noqa: SLF001
     inventory = inventory_store.read()
-    all_tags = get_value_by_path(
-        inventory, f"machines.{machine.name}.tags", [], InventoryMachineTagsType
+
+    all_tags: MachineTagsInput = get_value_by_path(
+        inventory, f"machines.{machine.name}.tags", []
     )
-    persisted_tags = get_value_by_path(
-        persisted_data, f"machines.{machine.name}.tags", [], InventoryMachineTagsType
+
+    persisted_tags: MachineTagsInput = get_value_by_path(
+        persisted_data, f"machines.{machine.name}.tags", []
     )
     nix_tags = list_difference(all_tags, persisted_tags)
 

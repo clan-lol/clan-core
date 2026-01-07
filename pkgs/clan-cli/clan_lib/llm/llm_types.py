@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Any, Literal, TypedDict
 
-from clan_lib.nix_models.clan import InventoryInstance
+from clan_lib.nix_models.typing import InstanceInput
 
 from .schemas import ChatMessage, SessionState
 
@@ -56,7 +56,7 @@ class ChatResult:
 
     """
 
-    proposed_instances: tuple[InventoryInstance, ...]
+    proposed_instances: tuple[InstanceInput, ...]
     conversation_history: tuple[ChatMessage, ...]
     assistant_message: str
     requires_user_response: bool

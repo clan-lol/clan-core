@@ -14,6 +14,7 @@ from typing import (
     Literal,
     NewType,
     NotRequired,
+    ReadOnly,
     Required,
     TypeAliasType,
     TypeVar,
@@ -293,7 +294,7 @@ def type_to_dict(
 
         # Used to mark optional fields in TypedDict
         # Here we just unwrap the type and return the schema for the inner type
-        if origin is NotRequired or origin is Required:
+        if origin is NotRequired or origin is Required or origin is ReadOnly:
             return type_to_dict(t.__args__[0], scope, type_map)
 
         if issubclass(origin, dict):
