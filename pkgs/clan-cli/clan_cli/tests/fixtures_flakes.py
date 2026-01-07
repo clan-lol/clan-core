@@ -329,15 +329,11 @@ def create_flake(
     clan_core_flake: Path | None = None,
     # names referring to pre-defined machines from ../machines
     machines: list[str] | None = None,
-    # alternatively specify the machines directly including their config
-    machine_configs: dict[str, dict] | None = None,
     inventory_expr: str = r"{}",
 ) -> Iterator[FlakeForTest]:
     """Creates a flake with the given name and machines.
     The machine names map to the machines in ./test_machines
     """
-    if machine_configs is None:
-        machine_configs = {}
     if machines is None:
         machines = []
     if isinstance(flake_template, Path):
@@ -363,12 +359,6 @@ def create_flake(
             flake,
             inventory_expr=inventory_expr,
         )
-
-    # generate machines from machineConfigs
-    for machine_name, machine_config in machine_configs.items():
-        settings_path = flake / "machines" / machine_name / "settings.json"
-        settings_path.parent.mkdir(parents=True, exist_ok=True)
-        settings_path.write_text(json.dumps(machine_config, indent=2))
 
     # in the flake.nix file replace the string __CLAN_URL__ with the the clan flake
     # provided by get_test_flake_toplevel
