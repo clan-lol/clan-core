@@ -283,26 +283,24 @@
               '';
             };
 
-            systemd.services.yggdrasil.serviceConfig.BindReadOnlyPaths = [
-              "%d/key:/key"
-            ];
-
+            # TODO remove this on next nixpkgs bump and use the secret key file directly
+            # Set up credential loading ourselves to work with both old and new nixpkgs modules
+            # Use mkForce to override any nixpkgs-set LoadCredential (new module adds its own)
             systemd.services.yggdrasil.serviceConfig.LoadCredential =
-              "key:${config.clan.core.vars.generators.yggdrasil.files.privateKey.path}";
+              lib.mkForce "private-key:${config.clan.core.vars.generators.yggdrasil.files.privateKey.path}";
+            systemd.services.yggdrasil.serviceConfig.BindReadOnlyPaths = lib.mkForce [
+              "%d/private-key:/private-key"
+            ];
 
             services.yggdrasil = {
               enable = true;
               openMulticastPort = true;
-              # We don't need this option, because we persist our keys with
-              # vars by ourselves. This option creates an unnecesary additional
-              # systemd service to save/load the keys and should be removed
-              # from the NixOS module entirely, as it can be replaced by the
-              # (at the time of writing undocumented) PrivateKeyPath= setting.
-              # See https://github.com/NixOS/nixpkgs/pull/440910#issuecomment-3301835895 for details.
+              # We persist our keys with vars.
               persistentKeys = false;
               settings = {
                 Listen = lib.mapAttrsToList (protocol: port: "${protocol}://[::]:${toString port}") settings.ports;
-                PrivateKeyPath = "/key";
+                # Point to the credential-mounted path (works with both old and new modules)
+                PrivateKeyPath = "/private-key";
                 IfName = "ygg";
                 Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
                 AllowedEncryptionPublicKeys = allowedPublicKeys;
