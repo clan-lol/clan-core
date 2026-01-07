@@ -54,7 +54,7 @@
               services.alloy =
                 let
                   serverAddress = lib.head (
-                    map (m: "https://${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                    map (m: "http://${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
                   );
 
                   enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
@@ -202,11 +202,20 @@
         { settings, ... }:
         {
           nixosModule =
-            { pkgs, config, ... }:
+            {
+              pkgs,
+              config,
+              lib,
+              ...
+            }:
             let
               networkingInterfaces = builtins.attrNames config.networking.interfaces;
+              defaultVirtualHost = config.services.nginx.virtualHosts."${config.networking.fqdn}";
+              useSSL = defaultVirtualHost.addSSL || defaultVirtualHost.forceSSL || defaultVirtualHost.onlySSL;
             in
             {
+              networking.firewall.allowedTCPPorts = [ 80 ] ++ lib.lists.optional useSSL 443;
+
               clan.core = {
                 postgresql = {
                   enable = true;
@@ -254,9 +263,6 @@
               services.nginx = {
                 enable = true;
                 virtualHosts."${config.networking.fqdn}" = {
-                  enableACME = true;
-                  forceSSL = true;
-
                   locations."/mimir/" = {
                     basicAuthFile = config.clan.core.vars.generators.mimir-auth.files.htpasswd.path;
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
@@ -390,7 +396,7 @@
 
                   server = {
                     domain = config.networking.fqdn;
-                    root_url = "https://${config.networking.fqdn}/";
+                    root_url = "http" + lib.optionalString useSSL "s" + "://${config.networking.fqdn}/";
                   };
 
                   snapshots = {
