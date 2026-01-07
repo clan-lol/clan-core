@@ -24,6 +24,7 @@ from typing import (
 )
 
 from clan_lib.api.serde import dataclass_to_dict
+from clan_lib.nix_models.typing import AnyJson
 
 # Annotation constants
 TUPLE_KEY_VALUE_PAIR_LENGTH = (
@@ -255,6 +256,8 @@ def type_to_dict(
         return type_to_dict(origtype, scope, type_map)
 
     if isinstance(t, TypeAliasType):
+        if t is AnyJson:
+            return {}
         # Handle PEP 695 type aliases (type X = Y syntax)
         return type_to_dict(
             t.__value__, scope, type_map, narrow_unsupported_union_types

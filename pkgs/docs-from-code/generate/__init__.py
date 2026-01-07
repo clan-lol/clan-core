@@ -313,7 +313,9 @@ def produce_clan_service_docs() -> None:
         service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
 
     for module_name, module_info in service_links.items():
-        output = f"# {module_name}\n\n"
+        # Add frontmatter to set custom edit URL pointing to the actual service source
+        output = f"---\nedit_url: https://git.clan.lol/clan/clan-core/_edit/main/clanServices/{module_name}/default.nix\n---\n\n"
+        output += f"# {module_name}\n\n"
         # output += f"`clan.modules.{module_name}`\n"
         output += f"*{module_info['manifest']['description']}*\n"
 

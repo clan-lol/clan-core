@@ -18,6 +18,20 @@ from ._webview_ffi import (
 )
 from .webview_bridge import WebviewBridge
 
+# Default URL patterns to allow (local URLs only)
+DEFAULT_URL_PATTERNS: list[str] = [
+    r"^file://.*$",
+    r"^blob:.*$",
+    r"^data:.*$",
+    r"^about:.*$",
+    r"^http://localhost(:[0-9]+)?(/.*)?$",
+    r"^http://127\.0\.0\.1(:[0-9]+)?(/.*)?$",
+    r"^http://\[::1\](:[0-9]+)?(/.*)?$",
+    r"^https://localhost(:[0-9]+)?(/.*)?$",
+    r"^https://127\.0\.0\.1(:[0-9]+)?(/.*)?$",
+    r"^https://\[::1\](:[0-9]+)?(/.*)?$",
+]
+
 if TYPE_CHECKING:
     from clan_app.middleware.base import Middleware
 
@@ -66,12 +80,15 @@ class Webview:
     window: int | None = None
     shared_threads: dict[str, WebThread] | None = None
     app_id: str | None = None
+    url_patterns: list[str] = field(default_factory=lambda: DEFAULT_URL_PATTERNS.copy())
+    url_blocked_callback: Callable[[str], None] | None = None
 
     # initialized later
     _bridge: WebviewBridge | None = None
     _handle: Any | None = None
     __callbacks: dict[str, Callable[..., Any]] = field(default_factory=dict)
     _middleware: list["Middleware"] = field(default_factory=list)
+    _url_blocked_callback: Any | None = None  # prevent GC of C callback
 
     @property
     def callbacks(self) -> dict[str, Callable[..., Any]]:
@@ -111,6 +128,13 @@ class Webview:
         # Since we can't use object.__setattr__, we'll initialize differently
         # by storing in __dict__ directly (this works for init=False fields)
         self._handle = handle
+
+        # Configure URL allowlist
+        for pattern in self.url_patterns:
+            self.add_url_pattern(pattern)
+
+        if self.url_blocked_callback:
+            self.set_url_blocked_callback(self.url_blocked_callback)
 
         if self.title:
             self.set_title(self.title)
@@ -292,6 +316,41 @@ class Webview:
 
     def eval(self, source: str) -> None:
         _webview_lib.webview_eval(self.handle, _encode_c_string(source))
+
+    # URL filtering methods
+    def add_url_pattern(self, pattern: str) -> int:
+        """Add a regex pattern to the URL whitelist.
+
+        Args:
+            pattern: POSIX extended regular expression pattern.
+
+        Returns:
+            0 on success, error code otherwise.
+
+        """
+        return _webview_lib.webview_add_url_pattern(
+            self.handle, _encode_c_string(pattern)
+        )
+
+    def set_url_blocked_callback(self, callback: Callable[[str], None]) -> int:
+        """Set a callback to be invoked when URL navigation is blocked.
+
+        Args:
+            callback: Function taking the blocked URL as argument, or None to remove.
+
+        Returns:
+            0 on success, error code otherwise.
+
+        """
+
+        def wrapper(_w: int, url: bytes, _arg: int) -> None:
+            callback(url.decode("utf-8"))
+
+        c_callback = _webview_lib.url_blocked_callback_t(wrapper)
+        self._url_blocked_callback = c_callback  # prevent GC
+        return _webview_lib.webview_set_url_blocked_callback(
+            self.handle, c_callback, None
+        )
 
 
 if __name__ == "__main__":

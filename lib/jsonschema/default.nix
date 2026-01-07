@@ -1,454 +1,697 @@
 {
   lib ? import <nixpkgs/lib>,
-}:
-{
-  excludedTypes ? [
-    "functionTo"
-    "package"
-  ],
-  filterSchema ?
-    schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema,
-  header ? {
-    "$schema" = "http://json-schema.org/draft-07/schema#";
-  },
-  specialArgs ? { },
+  clanLib,
 }:
 let
-  # remove _module attribute from options
-  clean = opts: builtins.removeAttrs opts [ "_module" ];
+  # ============================================================================
+  # Constants and Basic Helpers
+  # ============================================================================
 
-  # throw error if option type is not supported
-  notSupported =
+  refPrefix = "#/$defs/";
+  ref = typeName: {
+    "$ref" = refPrefix + typeName;
+  };
+  AnyJson = {
+    oneOf = [
+      { type = "null"; }
+      { type = "boolean"; }
+      { type = "integer"; }
+      { type = "number"; }
+      { type = "string"; }
+      {
+        type = "array";
+        items = ref "AnyJson";
+      }
+      {
+        type = "object";
+        additionalProperties = ref "AnyJson";
+      }
+    ];
+  };
+
+  flattenOneOf = import ./flattenOneOf.nix {
+    inherit lib clanLib;
+  };
+
+  # ============================================================================
+  # Type Checkers
+  # ============================================================================
+  #
+  isIncludedOption = option: option.visible or true;
+  #
+  isBoolOption =
     option:
-    lib.trace option throw ''
-      option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
-      location: ${lib.concatStringsSep "." option.loc}
-    '';
+    {
+      bool = true;
+      boolByOr = true;
+    }
+    .${option.type.name} or false;
+  #
+  isIntOption =
+    option:
+    {
+      # TODO: Add support for intMatching in jsonschema
+      int = true;
+      intBetween = true;
+      positiveInt = true;
+      unsignedInt = true;
+      unsignedInt8 = true;
+      # This also includes port
+      unsignedInt16 = true;
+      unsignedInt32 = true;
+      signedInt8 = true;
+      signedInt16 = true;
+      signedInt32 = true;
+    }
+    .${option.type.name} or false;
+  #
+  isFloatOption =
+    option:
+    {
+      float = true;
+      numberBetween = true;
+      numberNonnegative = true;
+      numberPositive = true;
+    }
+    .${option.type.name} or false;
+  #
+  isStrOption =
+    option:
+    {
+      str = true;
+      nonEmptyStr = true;
+      singleLineStr = true;
+      separatedString = true;
+      path = true;
+    }
+    .${option.type.name} or (
+      if lib.strings.hasPrefix "strMatching " option.type.name then
+        true
+      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
+        true
+      else
+        false
+    );
+  #
+  isAnyOption =
+    option:
+    {
+      anything = true;
+      unspecified = true;
+      raw = true;
+      # This is a special case for the deferred clan.service 'settings', we
+      # assume it is JSON serializable To get the type of a Deferred modules we
+      # need to know the interface of the place where it is evaluated. i.e. in
+      # case of a clan.service this is the interface of the service which
+      # dynamically changes depending on the service
+      #
+      # We can assign the type later, when we know the exact interface.
+      deferredModule = true;
+    }
+    .${option.type.name} or false;
 
-  # Exclude the option if its type is in the excludedTypes list
-  # or if the option has a defaultText attribute
-  isExcludedOption = option: (lib.elem (option.type.name or null) excludedTypes);
+  /**
+    Returns true, if the passed node is one of the following:
 
-  filterExcluded = lib.filter (opt: !isExcludedOption opt);
+    - array
+    - object
+    - enum
+    - oneOf
 
-  excludedOptionNames = [ "_freeformOptions" ];
-  filterExcludedAttrs = lib.filterAttrs (
-    name: opt: !isExcludedOption opt && !builtins.elem name excludedOptionNames
-  );
+    All other types return false
+  */
+  shouldDefineType =
+    property:
+    (
+      property ? type
+      && lib.elem property.type [
+        "array"
+        "object"
+      ]
+    )
+    || property ? enum
+    || property ? oneOf;
 
-  # Filter out options where the visible attribute is set to false
-  filterInvisibleOpts = lib.filterAttrs (_name: opt: opt.visible or true);
+  # ============================================================================
+  # Type Handlers
+  # ============================================================================
 
-  # Constant: Used for the 'any' type
-  allBasicTypes = [
-    "boolean"
-    "integer"
-    "number"
-    "string"
-    "array"
-    "object"
-    "null"
-  ];
+  mkSimpleNode = type: description: isRequired: {
+    property = {
+      inherit type;
+    }
+    // description;
+    inherit isRequired;
+  };
+
+  # Trivial nodes
+  handleBool = ctx: mkSimpleNode "boolean" ctx.description ctx.isRequired;
+  handleInt = ctx: mkSimpleNode "integer" ctx.description ctx.isRequired;
+  handleNumber = ctx: mkSimpleNode "number" ctx.description ctx.isRequired;
+  handleString = ctx: mkSimpleNode "string" ctx.description ctx.isRequired;
+
+  # creates a reference to the "AnyJSON" $ref
+  handleAnyJson = ctx: {
+    property = ref "AnyJson" // ctx.description;
+    inherit (ctx) isRequired;
+    defs = {
+      inherit AnyJson;
+    };
+  };
+
+  handleEnum =
+    ctx:
+    let
+      typeName = ctx.getName ctx.args.typePrefix + lib.toSentenceCase ctx.args.mode;
+      type = {
+        enum = ctx.option.type.functor.payload.values;
+      }
+      // ctx.description;
+      defs =
+        if ctx.args.shouldInlineTypes then
+          { }
+        else
+          {
+            ${typeName} = type;
+          };
+    in
+    {
+      property = if ctx.args.shouldInlineTypes then type else ref typeName;
+      inherit (ctx) isRequired;
+    }
+    // lib.optionalAttrs (defs != { }) {
+      defs = defs;
+    };
+
+  # ============================================================================
+  # Main Conversion Functions
+  # ============================================================================
+
+  /**
+    Takes a nix option and returns a node (or null) with this structure:
+
+    ```nix
+    {
+      # jsonschema property this option generates
+      property = {
+        type = "boolean";
+      }
+
+      # If this option has a default value. It's used to decide when contained
+      # in something that generates to an jsonschema object, its `required`
+      # should contain the propery name that corresponds to this option.
+      isRequired = true | false
+
+      # Types that the node itself and its descendants generate, will be added
+      # to the root $defs property of the jsonschema, omitted if it contains no
+      # such types. Some example options that aways generate its own types:
+      # attrsOf, listOf, submodule, etc
+      defs = {
+        InventoryInput = {
+          type = "object";
+          properties = {};
+        };
+        InventoryMachineOutput = {
+          type = "object";
+          properties = {};
+        };
+      }
+    }
+    ```
+  */
+  optionToNode =
+    args@{
+      typePrefix,
+      mode,
+      # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
+      # enum or one of shouldn't create a new type, because they might be merged
+      # with other branches. only the outside type should create a new type.
+      # But inside an attrs which is inside a branch, a custom type should be
+      # created again;
+      shouldInlineTypes ? false,
+      typeRenames,
+      ...
+    }:
+    option:
+    let
+      getName = finalName: typeRenames.${finalName} or finalName;
+      isRequired = mode == "output" || !(option ? default) && !(option ? defaultText);
+      description = lib.optionalAttrs (option ? description) {
+        description = option.description.text or option.description;
+      };
+
+      ctx = {
+        inherit
+          args
+          option
+          isRequired
+          description
+          getName
+          optionToNode
+          optionsToNode
+          ;
+      };
+    in
+    if !isIncludedOption option then
+      null
+    else if isBoolOption option then
+      handleBool ctx
+    else if isIntOption option then
+      handleInt ctx
+    else if isFloatOption option then
+      handleNumber ctx
+    else if isStrOption option then
+      handleString ctx
+    else if isAnyOption option then
+      handleAnyJson ctx
+    else if option.type.name == "enum" then
+      handleEnum ctx
+    else if option.type.name == "nullOr" then
+      let
+        nestedOption = {
+          type = option.type.nestedTypes.elemType;
+          _type = "option";
+          loc = option.loc;
+        };
+        node = optionToNode args nestedOption;
+        inherit
+          (flattenOneOf node.defs or { } (
+            [
+              { type = "null"; }
+            ]
+            ++ (lib.optional (node != null) node.property)
+          ))
+          oneOf
+          defs
+          ;
+        property =
+          (
+            if lib.length oneOf == 1 then
+              lib.head oneOf
+            else
+              {
+                inherit oneOf;
+              }
+          )
+          // description;
+      in
+      {
+        inherit property isRequired;
+      }
+      // lib.optionalAttrs (defs != { }) {
+        defs = defs;
+      }
+    else if option.type.name == "either" then
+      let
+        nodesAttrs =
+          lib.mapAttrs
+            (
+              name: type:
+              optionToNode
+                (
+                  args
+                  // {
+                    typePrefix = getName (typePrefix + lib.toSentenceCase name);
+                    shouldInlineTypes = true;
+                  }
+                )
+                {
+                  inherit type;
+                  _type = "option";
+                  loc = option.loc;
+                }
+            )
+            {
+              left = option.type.nestedTypes.left;
+              right = option.type.nestedTypes.right;
+            };
+        nodes = lib.concatAttrValues (
+          lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
+        );
+        inherit
+          (flattenOneOf (lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs) (
+            map (node: node.property) nodes
+          ))
+          oneOf
+          defs
+          ;
+        numOneOf = lib.length oneOf;
+        typeName = getName typePrefix + (lib.toSentenceCase mode);
+        property = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
+        shouldCreateDef = !shouldInlineTypes && shouldDefineType property;
+        defs' =
+          defs
+          // lib.optionalAttrs shouldCreateDef {
+            ${typeName} = property;
+          };
+      in
+      if nodesAttrs.left == null && nodesAttrs.right == null then
+        null
+      else
+        {
+          property = if shouldCreateDef then ref typeName else property;
+          inherit isRequired;
+        }
+        // lib.optionalAttrs (defs' != { }) {
+          defs = defs';
+        }
+    else if option.type.name == "coercedTo" then
+      let
+        nodesAttrs =
+          lib.mapAttrs
+            (
+              name: type:
+              optionToNode
+                (
+                  args
+                  // {
+                    typePrefix = getName (typePrefix + lib.toSentenceCase name);
+                    shouldInlineTypes = mode == "input";
+                  }
+                )
+                {
+                  inherit type;
+                  _type = "option";
+                  loc = option.loc;
+                }
+            )
+            {
+              from = option.type.nestedTypes.coercedType;
+              to = option.type.nestedTypes.finalType;
+            };
+        nodes = lib.concatAttrValues (
+          lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
+        );
+        typeName = getName typePrefix + lib.toSentenceCase mode;
+      in
+      # If this option can result in null for either input or output, it
+      # shouldn't be included in either
+      if nodesAttrs.from == null || nodesAttrs.to == null then
+        null
+      else if mode == "input" then
+        let
+          inherit
+            (flattenOneOf (lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs) (
+              map (node: node.property) nodes
+            ))
+            oneOf
+            defs
+            ;
+          numOneOf = lib.length oneOf;
+          property =
+            (
+              if numOneOf == 1 then
+                lib.head oneOf
+              else
+                {
+                  inherit oneOf;
+                }
+            )
+            // description;
+          shouldCreateDef = shouldDefineType property;
+          defs' =
+            defs
+            // lib.optionalAttrs shouldCreateDef {
+              ${typeName} = property;
+            };
+        in
+        {
+          property = if shouldCreateDef then ref typeName else property;
+          inherit isRequired;
+        }
+        // lib.optionalAttrs (defs' != { }) {
+          defs = defs';
+        }
+      else
+        let
+          node = nodesAttrs.to;
+        in
+        {
+          property = node.property // description;
+          inherit isRequired;
+        }
+        // lib.optionalAttrs (node ? defs) {
+          defs = node.defs;
+        }
+    else if option.type.name == "attrs" then
+      let
+        typeName = getName typePrefix + lib.toSentenceCase mode;
+      in
+      {
+        property = ref typeName;
+        inherit isRequired;
+        defs = {
+          ${typeName} = {
+            type = "object";
+            additionalProperties = ref "AnyJson";
+          }
+          // description;
+          inherit AnyJson;
+        };
+      }
+    else if option.type.name == "submodule" then
+      let
+        subOptions = option.type.getSubOptions option.loc;
+        node = optionsToNode (
+          args
+          // {
+            submoduleInfo = {
+              inherit isRequired;
+            }
+            // description;
+          }
+        ) subOptions;
+      in
+      node
+    else if option.type.name == "listOf" then
+      let
+        nestedOption = {
+          type = option.type.nestedTypes.elemType;
+          _type = "option";
+          loc = option.loc;
+        };
+        node = optionToNode (
+          args
+          // {
+            typePrefix = getName (typePrefix + "Item");
+            shouldInlineTypes = false;
+          }
+        ) nestedOption;
+        typeName = getName typePrefix + lib.toSentenceCase mode;
+      in
+      if node == null then
+        null
+      else
+        {
+          property = ref typeName;
+          inherit isRequired;
+          defs = node.defs or { } // {
+            ${typeName} = {
+              type = "array";
+              items = node.property;
+            }
+            // description;
+          };
+        }
+    else if option.type.name == "attrsOf" || option.type.name == "lazyAttrsOf" then
+      let
+        nestedOption = {
+          type = option.type.nestedTypes.elemType;
+          _type = "option";
+          loc = option.loc;
+        };
+        node = optionToNode (
+          args
+          // {
+            typePrefix = getName (typePrefix + "Item");
+            shouldInlineTypes = false;
+          }
+        ) nestedOption;
+        typeName = getName typePrefix + lib.toSentenceCase mode;
+      in
+      if node == null then
+        null
+      else
+        {
+          property = ref typeName;
+          inherit isRequired;
+          defs = node.defs or { } // {
+            ${typeName} = {
+              type = "object";
+              additionalProperties = node.property;
+            }
+            // description;
+          };
+        }
+    # throw error if option type is not supported
+    else
+      lib.trace option throw ''
+        option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
+        location: ${lib.concatStringsSep "." option.loc}
+      '';
+  /**
+    Refer to `toOptionNode`'s doc for the definition of a node
+  */
+  optionsToNode =
+    opts@{
+      typePrefix,
+      mode,
+      typeRenames,
+      submoduleInfo ? null,
+      ...
+    }:
+    options:
+    let
+      getName = finalName: typeRenames.${finalName} or finalName;
+
+      relevantOptions = removeAttrs options [
+        "_module"
+        "_freeformOptions"
+      ];
+
+      /**
+        Map every option to a node
+        Some options mapped to null get filtered out. i.e. those that are not "visible"
+      */
+      nodesAttrs = lib.filterAttrs (_: v: v != null) (
+        lib.mapAttrs (
+          name: option:
+          let
+            opts' = opts // {
+              # We need to use toUpperFirst here because name might be "extraModules"
+              # and we want to turn it into "ExtraModules", toSentenceCase turns it
+              # to "Extramodules" which is not what we want
+              typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
+              shouldInlineTypes = false;
+            };
+          in
+          if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
+        ) relevantOptions
+      );
+
+      freeformNode =
+        let
+          # freeformType will have more than 1 definitions if it's specified in
+          # multiple modules. In that case we assume they are all the same, and
+          # we just take the first one. We also assume it's always attsOf
+          # something. If those are not the case, we silently ignore
+          # freeformType. definitions are never empty, because freeformType has
+          # a default value of null
+          freeformOption = options._module.freeformType or null;
+          nestedType =
+            if freeformOption == null then
+              null
+            else
+              (lib.head freeformOption.definitions).nestedTypes.elemType or null;
+          nestedOption = {
+            type = nestedType;
+            _type = "option";
+            loc = freeformOption.loc;
+          };
+        in
+        if nestedType == null then
+          null
+        else
+          optionToNode (
+            opts
+            // {
+              typePrefix = getName (typePrefix + "Freeform");
+            }
+          ) nestedOption;
+      properties = lib.mapAttrs (_name: node: node.property // readOnly) nodesAttrs;
+      # Setting readOnly llows assigning an output
+      # type to the corresponding input type. Currently it will complain that a
+      # required property can not be passed to a non-required one.
+      # We do this in the unit tests:
+      #   machine_jon = get_machine(flake, "jon")
+      #   set_machine(Machine("jon", flake), machine_jon)
+      readOnly = lib.optionalAttrs (opts.readOnly.${mode} or true) {
+        readOnly = true;
+      };
+      required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
+      typeName = getName typePrefix + lib.toSentenceCase mode;
+    in
+    {
+      property = ref typeName;
+      # This property is `required` if none of its child properties has a
+      # default value (i.e., some of its child property's isRequired is true)
+      isRequired = if submoduleInfo == null then required != [ ] else submoduleInfo.isRequired;
+
+      defs = {
+        ${typeName} = {
+          type = "object";
+          additionalProperties = if freeformNode == null then false else freeformNode.property;
+          # Make sure to not add readOnly here
+          # a property should only have readOnly if it's a direct child of an
+          # object, by itself it doesn't know if that's the case;
+        }
+        // lib.optionalAttrs (submoduleInfo.description or null != null) {
+          description = submoduleInfo.description;
+        }
+        // lib.optionalAttrs (properties != { }) {
+          inherit properties;
+        }
+        // lib.optionalAttrs (required != [ ]) {
+          inherit required;
+        };
+      }
+      # Freeform type has a lower priority because a user might
+      # rename it to an existing type, in which case the existing type should
+      # be kept because a freeform type is less likely to have a description
+      // freeformNode.defs or { }
+      // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
+    };
 in
 rec {
-  # parses a nixos module to a jsonschema
-  parseModule =
-    module:
+  fromOptions =
+    {
+      typePrefix,
+      input ? true,
+      output ? true,
+      readOnly ? {
+        input = true;
+        output = true;
+      },
+      typeRenames ? { },
+    }:
+    options:
+    let
+      inputNode = optionsToNode {
+        mode = "input";
+        inherit
+          typePrefix
+          readOnly
+          typeRenames
+          ;
+      } options;
+      outputNode = optionsToNode {
+        mode = "output";
+        inherit
+          typePrefix
+          readOnly
+          typeRenames
+          ;
+      } options;
+    in
+    assert lib.assertMsg (input || output) "either input or output must be true";
+    assert lib.assertMsg (
+      input -> inputNode != null
+    ) "options must not result in an empty schema for input";
+    assert lib.assertMsg (
+      output -> outputNode != null
+    ) "options must not result in an empty schema for output";
+    {
+      "$schema" = "https://json-schema.org/draft/2020-12/schema";
+      "$defs" =
+        lib.optionalAttrs input inputNode.defs or { } // lib.optionalAttrs output outputNode.defs or { };
+    };
+  fromModule =
+    opts: module:
     let
       evaled = lib.evalModules {
-        modules = [ module ];
-        inherit specialArgs;
+        modules = lib.toList module;
       };
+      jsonschema = fromOptions opts evaled.options;
     in
-    filterSchema (_parseOptions evaled.options { });
-
-  # get default value from option
-
-  # Returns '{ default = Value; }'
-  # - '{}' if no default is present.
-  # - Value is "<thunk>" (string literal) if the option has a defaultText attribute. This means we cannot evaluate default safely
-  getDefaultFrom =
-    opt:
-    if opt ? defaultText then
-      {
-        # dont add default to jsonschema. It seems to alter the type
-        # default = "<thunk>";
-      }
-    else
-      lib.optionalAttrs (opt ? default) {
-        default = opt.default;
-      };
-
-  parseSubOptions =
-    {
-      option,
-      prefix ? [ ],
-    }:
-    let
-      subOptions = option.type.getSubOptions option.loc;
-    in
-    _parseOptions subOptions {
-      addHeader = false;
-      path = option.loc ++ prefix;
-    };
-
-  parseOptions = opts: args: filterSchema (_parseOptions opts args);
-
-  makeModuleInfo =
-    {
-      path,
-      required,
-      defaultText ? null,
-      ...
-    }@attrs:
-    let
-      sanitizedAttrs = removeAttrs attrs (lib.optionals (defaultText != null) [ "default" ]);
-    in
-    {
-      "$exportedModuleInfo" =
-        sanitizedAttrs
-        // {
-          inherit path required;
-        }
-        // lib.optionalAttrs (defaultText != null) {
-          inherit defaultText;
-        };
-    };
-
-  # parses a set of evaluated nixos options to a jsonschema
-  _parseOptions =
-    options:
-    {
-      # The top-level header object should specify at least the schema version
-      # Can be customized if needed
-      # By default the header is not added to the schema
-      addHeader ? true,
-      path ? [ ],
-    }:
-    let
-      options' = (filterInvisibleOpts (filterExcludedAttrs (clean options)));
-      # parse options to jsonschema properties
-      properties = (lib.mapAttrs (_name: option: (parseOption' (path ++ [ _name ]) option)) options');
-      # TODO: figure out how to handle if prop.anyOf is used
-      isRequired = prop: prop."$exportedModuleInfo".required or true;
-      requiredProps = lib.filterAttrs (_: prop: isRequired prop) (properties);
-
-      # json schema spec 6.5.3: required
-      # The value of this keyword MUST be an array. Elements of this array, if any, MUST be strings, and MUST be unique.
-      # ...
-      # Omitting this keyword has the same behavior as an empty array.
-      required = {
-        required = lib.attrNames requiredProps;
-      };
-      header' = if addHeader then header else { };
-
-      # freeformType is a special type
-      freeformDefs = options._module.freeformType.definitions or [ ];
-      checkFreeformDefs =
-        defs:
-        if (builtins.length defs) != 1 then
-          throw "_parseOptions: freeformType definitions not supported"
-        else
-          defs;
-      # It seems that freeformType has [ null ]
-      freeformProperties =
-        if freeformDefs != [ ] && builtins.head freeformDefs != null then
-          # freeformType has only one definition
-          parseOption {
-            # options._module.freeformType.definitions
-            type = builtins.head (checkFreeformDefs freeformDefs);
-            _type = "option";
-            loc = path;
-          }
-        else
-          { };
-    in
-    # return jsonschema
-    header'
-    // required
-    // {
-      type = "object";
-      inherit properties;
-      additionalProperties = false;
-    }
-    // freeformProperties;
-
-  # parses and evaluated nixos option to a jsonschema property definition
-  parseOption = parseOption' [ ];
-  parseOption' =
-    currentPath: option:
-    # lib.trace
-    (
-      let
-        default = (getDefaultFrom (option));
-        example = lib.optionalAttrs (option ? example) {
-          examples =
-            if (builtins.typeOf option.example) == "list" then option.example else [ option.example ];
-        };
-        description = lib.optionalAttrs (option ? description) {
-          description = option.description.text or option.description;
-        };
-        exposedModuleInfo = (
-          makeModuleInfo {
-            path = option.loc;
-            defaultText = option.defaultText or null;
-            required = !(option.defaultText or null != null || option ? default);
-            default = option.default or null;
-          }
-        );
-        # default =
-      in
-      # either type
-      # TODO: if all nested options are excluded, the parent should be excluded too
-      if
-        option.type.name or null == "either" || option.type.name or null == "coercedTo"
-      # return jsonschema property definition for either
-      then
-        let
-          optionsList' = [
-            {
-              type = option.type.nestedTypes.left or option.type.nestedTypes.coercedType;
-              _type = "option";
-              loc = option.loc;
-            }
-            {
-              type = option.type.nestedTypes.right or option.type.nestedTypes.finalType;
-              _type = "option";
-              loc = option.loc;
-            }
-          ];
-          optionsList = filterExcluded optionsList';
-        in
-        exposedModuleInfo // default // example // description // { oneOf = map parseOption optionsList; }
-      # handle nested options (not a submodule)
-      # foo.bar = mkOption { type = str; };
-      else if !option ? _type then
-        (_parseOptions option {
-          addHeader = false;
-          path = currentPath;
-        })
-      # throw if not an option
-      else if option._type != "option" && option._type != "option-type" then
-        throw "parseOption: not an option"
-      # parse nullOr
-      else if
-        option.type.name == "nullOr"
-      # return jsonschema property definition for nullOr
-      then
-        let
-          nestedOption = {
-            type = option.type.nestedTypes.elemType;
-            _type = "option";
-            loc = option.loc;
-          };
-        in
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          oneOf = [
-            { type = "null"; }
-          ]
-          ++ (lib.optional (!isExcludedOption nestedOption) (parseOption nestedOption));
-        }
-      # parse bool
-      else if
-        option.type.name == "bool"
-      # return jsonschema property definition for bool
-      then
-        exposedModuleInfo // default // example // description // { type = "boolean"; }
-      # parse float
-      else if
-        option.type.name == "float"
-      # return jsonschema property definition for float
-      then
-        exposedModuleInfo // default // example // description // { type = "number"; }
-      # parse int
-      else if
-        (option.type.name == "int" || option.type.name == "positiveInt")
-      # return jsonschema property definition for int
-      then
-        exposedModuleInfo // default // example // description // { type = "integer"; }
-      # TODO: Add support for intMatching in jsonschema
-      # parse port type aka. "unsignedInt16"
-      else if
-        option.type.name == "unsignedInt16"
-        || option.type.name == "unsignedInt"
-        || option.type.name == "pkcs11"
-        || option.type.name == "intBetween"
-      then
-        exposedModuleInfo // default // example // description // { type = "integer"; }
-      # parse string
-      # TODO: parse more precise string types
-      else if
-        option.type.name == "str"
-        || option.type.name == "singleLineStr"
-        || option.type.name == "passwdEntry str"
-        || option.type.name == "passwdEntry path"
-      # return jsonschema property definition for string
-      then
-        exposedModuleInfo // default // example // description // { type = "string"; }
-      # TODO: Add support for stringMatching in jsonschema
-      # parse stringMatching
-      else if lib.strings.hasPrefix "strMatching" option.type.name then
-        exposedModuleInfo // default // example // description // { type = "string"; }
-      # TODO: Add support for separatedString in jsonschema
-      else if lib.strings.hasPrefix "separatedString" option.type.name then
-        exposedModuleInfo // default // example // description // { type = "string"; }
-      # parse string
-      else if
-        option.type.name == "path"
-      # return jsonschema property definition for path
-      then
-        exposedModuleInfo // default // example // description // { type = "string"; }
-      # parse anything
-      else if
-        option.type.name == "anything"
-      # return jsonschema property definition for anything
-      then
-        exposedModuleInfo // default // example // description // { type = allBasicTypes; }
-      # parse unspecified
-      else if
-        option.type.name == "unspecified"
-      # return jsonschema property definition for unspecified
-      then
-        exposedModuleInfo // default // example // description // { type = allBasicTypes; }
-      # parse raw
-      else if
-        option.type.name == "raw"
-      # return jsonschema property definition for raw
-      then
-        exposedModuleInfo // default // example // description // { type = allBasicTypes; }
-      else if
-        # This is a special case for the deferred clan.service 'settings', we assume it is JSON serializable
-        # To get the type of a Deferred modules we need to know the interface of the place where it is evaluated.
-        # i.e. in case of a clan.service this is the interface of the service which dynamically changes depending on the service
-        # We assign "type" = []
-        # This means any value is valid — or like TypeScript's unknown.
-        # We can assign the type later, when we know the exact interface.
-        # tsType = "unknown" is a type that we preload for json2ts, such that it gets the correct type in typescript
-        (option.type.name == "deferredModule")
-      then
-        exposedModuleInfo // default // example // description // { tsType = "unknown"; }
-      # parse enum
-      else if
-        option.type.name == "enum"
-      # return jsonschema property definition for enum
-      then
-        exposedModuleInfo
-        // default
-        // example
-        // description
-        // {
-          enum = option.type.functor.payload.values;
-        }
-      # parse listOf submodule
-      else if
-        option.type.name == "listOf" && option.type.nestedTypes.elemType.name == "submodule"
-      # return jsonschema property definition for listOf submodule
-      then
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          type = "array";
-          items = parseSubOptions { inherit option; };
-        }
-      # parse list
-      else if
-        (option.type.name == "listOf")
-      # return jsonschema property definition for list
-      then
-        let
-          nestedOption = {
-            type = option.type.nestedTypes.elemType;
-            _type = "option";
-            loc = option.loc;
-          };
-        in
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          type = "array";
-        }
-        // (lib.optionalAttrs (!isExcludedOption nestedOption) { items = parseOption nestedOption; })
-      # parse list of unspecified
-      else if
-        (option.type.name == "listOf") && (option.type.nestedTypes.elemType.name == "unspecified")
-      # return jsonschema property definition for list
-      then
-        exposedModuleInfo // default // example // description // { type = "array"; }
-      # parse attrsOf submodule
-      else if
-        option.type.name == "attrsOf" && option.type.nestedTypes.elemType.name == "submodule"
-      # return jsonschema property definition for attrsOf submodule
-      then
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          type = "object";
-          additionalProperties = parseSubOptions {
-            inherit option;
-            prefix = [ "<name>" ];
-          };
-        }
-      # parse attrs
-      else if
-        option.type.name == "attrs"
-      # return jsonschema property definition for attrs
-      then
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          type = "object";
-          additionalProperties = true;
-        }
-      # parse attrsOf
-      # TODO: if nested option is excluded, the parent should be excluded too
-      else if
-        option.type.name == "attrsOf" || option.type.name == "lazyAttrsOf"
-      # return jsonschema property definition for attrs
-      then
-        let
-          nestedOption = {
-            type = option.type.nestedTypes.elemType;
-            _type = "option";
-            loc = option.loc;
-          };
-        in
-        default
-        // exposedModuleInfo
-        // example
-        // description
-        // {
-          type = "object";
-          additionalProperties =
-            if !isExcludedOption nestedOption then
-              parseOption {
-                type = option.type.nestedTypes.elemType;
-                _type = "option";
-                loc = option.loc;
-              }
-            else
-              false;
-        }
-      # parse submodule
-      else if
-        option.type.name == "submodule"
-      # return jsonschema property definition for submodule
-      # then (lib.attrNames (option.type.getSubOptions option.loc).opt)
-      then
-        default // exposedModuleInfo // example // description // parseSubOptions ({ inherit option; })
-      # throw error if option type is not supported
-      else
-        notSupported option
-    );
+    jsonschema;
 }

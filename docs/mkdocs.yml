@@ -3,6 +3,7 @@ site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: "_>"
 edit_uri: _edit/main/docs/site/
+remote_branch: doc-pages
 
 validation:
   omitted_files: warn
@@ -242,6 +243,9 @@ extra:
       link: https://github.com/clan-lol/clan-core
     - icon: fontawesome/solid/rss
       link: https://clan.lol/feed.xml
+
+hooks:
+  - edit_hook.py
 
 plugins:
   - search
