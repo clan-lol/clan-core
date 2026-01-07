@@ -3,4 +3,7 @@
 set -euo pipefail
 
 dir=$(nix build .#clan-types --no-link --print-out-paths)
-cp -f "$dir/typing.py" "$(dirname "$0")/typing.py"
+SCRIPT_DIR=$(dirname "$0")
+
+cd "$SCRIPT_DIR"
+cp -f "$dir/typing.py" "typing.py"
