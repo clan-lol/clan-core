@@ -17,7 +17,10 @@
         };
 
         roles = {
-          client.tags.all = { };
+          client = {
+            tags.all = { };
+            settings.useSSL = false;
+          };
           server.machines.machine1.settings.grafana.enable = true;
         };
       };
@@ -27,8 +30,6 @@
   nodes = {
     machine1 = {
       networking.domain = "clan";
-      security.acme.acceptTerms = true;
-      security.acme.defaults.email = "noreply@clan.lol";
     };
   };
 

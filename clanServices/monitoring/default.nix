@@ -37,6 +37,15 @@
                 "nginx.service"
               ];
             };
+
+            useSSL = lib.mkOption {
+              type = lib.types.bool;
+              description = ''
+                Whether to send metrics data via http or https.
+                Enable this if your monitoring server is addressable using https.
+              '';
+              example = true;
+            };
           };
         };
 
@@ -54,7 +63,9 @@
               services.alloy =
                 let
                   serverAddress = lib.head (
-                    map (m: "http://${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                    map (
+                      m: "http" + lib.optionalString settings.useSSL "s" + "://${m}.${config.clan.core.settings.domain}"
+                    ) (lib.attrNames roles.server.machines)
                   );
 
                   enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
@@ -393,7 +404,7 @@
                   security = {
                     admin_user = "$__file{${config.clan.core.vars.generators.grafana-admin.files.username.path}}";
                     admin_password = "$__file{${config.clan.core.vars.generators.grafana-admin.files.password.path}}";
-                    cookie_secure = true;
+                    cookie_secure = useSSL;
                   };
 
                   server = {

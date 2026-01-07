@@ -12,11 +12,13 @@ inventory.instances = {
       client = {
         # Enable monitoring for all machines in the clan.
         tags = [ "all" ];
+        # Decide whether or not your server is reachable via https.
+        settings.useSSL = true;
       };
 
       # Select one machine as the central monitoring server.
       # Hint: This is currently limited to exactly one server.
-      server.machines.teleferix.settings = {
+      server.machines.<machine>.settings = {
         # Optionally enable grafana for dashboards and alerts.
         grafana.enable = true;
       };
