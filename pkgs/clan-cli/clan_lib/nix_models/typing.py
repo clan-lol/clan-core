@@ -60,6 +60,10 @@ class EmptyDictInput(TypedDict):
     pass
 
 
+class EmptyDictOutput(TypedDict):
+    pass
+
+
 class InstanceModuleInput(TypedDict):
     input: NotRequired[str | None]
     """
@@ -170,14 +174,10 @@ type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
 type InstanceRoleTagListInput = list[str]
 
 
-class InstanceRoleTagOutput(TypedDict):
-    pass
-
-
 type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
 
 
-type InstanceRoleTagsOutput = dict[str, InstanceRoleTagOutput]
+type InstanceRoleTagsOutput = dict[str, EmptyDictOutput]
 
 
 class InventoryMetaInput(TypedDict):
