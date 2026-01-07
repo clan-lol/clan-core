@@ -4,4 +4,4 @@ hide:
   - navigation
   - toc
 ---
-<redoc src="/openapi.json" />
+<redoc src="../openapi.json" />
