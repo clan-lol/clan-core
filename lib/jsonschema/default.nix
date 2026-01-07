@@ -47,7 +47,7 @@ let
   #
   isIncludedOption = option: option.visible or true;
   #
-  getOptionType =
+  toBroaderOptionType =
     option:
     {
       bool = "boolean";
@@ -182,10 +182,10 @@ let
           shouldDefineBranchType
           ;
       };
-      optionType = getOptionType option;
+      broaderOptionType = toBroaderOptionType option;
       simpleNode = {
         jsonschema = {
-          type = optionType;
+          type = broaderOptionType;
         }
         // description;
         inherit isRequired;
@@ -212,7 +212,7 @@ let
           inherit isRequired;
         };
       }
-      .${optionType} or (throw "Unhandled option type, this is a bug in code");
+      .${broaderOptionType} or (throw "Unhandled broaderOptionType");
 
   /**
     Refer to `optionToNode`'s doc for the definition of a node
