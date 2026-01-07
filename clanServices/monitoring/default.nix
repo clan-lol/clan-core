@@ -218,7 +218,7 @@
 
               clan.core = {
                 postgresql = {
-                  enable = true;
+                  enable = settings.grafana.enable;
                   users.grafana = { };
                   databases.grafana = {
                     create.options = {
@@ -232,7 +232,8 @@
                   "/var/lib/mimir"
                   config.services.loki.dataDir
                 ];
-
+              }
+              // lib.optionalAttrs settings.grafana.enable {
                 vars.generators.grafana-admin = {
                   prompts = {
                     username = {
@@ -262,18 +263,19 @@
 
               services.nginx = {
                 enable = true;
-                virtualHosts."${config.networking.fqdn}" = {
-                  locations."/mimir/" = {
+                virtualHosts."${config.networking.fqdn}".locations = {
+                  "/mimir/" = {
                     basicAuthFile = config.clan.core.vars.generators.mimir-auth.files.htpasswd.path;
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
                   };
 
-                  locations."/loki/" = {
+                  "/loki/" = {
                     basicAuthFile = config.clan.core.vars.generators.loki-auth.files.htpasswd.path;
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
                   };
-
-                  locations."/" = {
+                }
+                // lib.optionalAttrs settings.grafana.enable {
+                  "/" = {
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.grafana.settings.server.http_port}/";
                   };
                 };
