@@ -350,6 +350,12 @@ in
               modules = [ ];
             };
           };
+          vars.settings = lib.mkOption {
+            type = types.submodule config.vars.settings;
+            default = {
+
+            };
+          };
 
           secrets = lib.mkOption { type = lib.types.raw; };
 
