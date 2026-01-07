@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types)
@@ -166,4 +166,29 @@ in
       '';
     };
   };
+
+  # TODO: Refactor this to use an explicit mapping instead of mkIf
+  imports = [
+    # SecretModules
+    {
+
+      secretModule = lib.mkIf (config.secretStore == "fs") "clan_lib.vars.secret_modules.fs";
+    }
+    {
+
+      secretModule = lib.mkIf (config.secretStore == "sops") "clan_lib.vars.secret_modules.sops";
+    }
+    {
+      secretModule = lib.mkIf (
+        config.secretStore == "password-store"
+      ) "clan_lib.vars.secret_modules.password_store";
+    }
+    {
+      secretModule = lib.mkIf (config.secretStore == "vm") "clan_lib.vars.secret_modules.vm";
+    }
+    # PublicModules
+    {
+      publicModule = lib.mkIf (config.publicStore == "in_repo") "clan_lib.vars.public_modules.in_repo";
+    }
+  ];
 }

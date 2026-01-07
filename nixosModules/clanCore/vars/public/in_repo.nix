@@ -9,7 +9,6 @@ let
 
   storeTypes = {
     "in_repo" = {
-      publicModule = "clan_lib.vars.public_modules.in_repo";
       fileModule = (
         file: {
           flakePath = mkIf (file.config.secret == false) (
@@ -43,6 +42,6 @@ let
 in
 {
   config.clan.core.vars.settings = {
-    inherit (storeTypes.${config.clan.core.vars.settings.publicStore}) publicModule fileModule;
+    inherit (storeTypes.${config.clan.core.vars.settings.publicStore}) fileModule;
   };
 }
