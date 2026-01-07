@@ -107,7 +107,7 @@ let
       else
         lib.trace option throw ''
           option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
-          location: ${lib.concatStringsSep "." option.loc}
+          location: ${lib.showOption option.loc}
         ''
     );
 
