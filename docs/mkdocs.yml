@@ -9,6 +9,8 @@ validation:
   omitted_files: warn
   absolute_links: ignore
   unrecognized_links: warn
+  nav:
+    not_found: ignore # Ignore option-search/ added during build
 
 markdown_extensions:
   - admonition
