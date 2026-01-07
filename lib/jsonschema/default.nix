@@ -452,7 +452,15 @@ let
     else if option.type.name == "submodule" then
       let
         subOptions = option.type.getSubOptions option.loc;
-        node = optionsToNode (args // { inherit description isRequired; }) subOptions;
+        node = optionsToNode (
+          args
+          // {
+            submoduleInfo = {
+              inherit isRequired;
+            }
+            // description;
+          }
+        ) subOptions;
       in
       node
     else if option.type.name == "listOf" then
@@ -529,9 +537,7 @@ let
       typePrefix,
       mode,
       typeRenames,
-      # A submodule can provide this value
-      isRequired,
-      description ? { },
+      submoduleInfo ? null,
       ...
     }:
     options:
@@ -551,14 +557,12 @@ let
         lib.mapAttrs (
           name: option:
           let
-            isRequired = mode == "output" || !(option ? default) && !(option ? defaultText);
             opts' = opts // {
               # We need to use toUpperFirst here because name might be "extraModules"
               # and we want to turn it into "ExtraModules", toSentenceCase turns it
               # to "Extramodules" which is not what we want
               typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
               shouldInlineTypes = false;
-              inherit isRequired;
             };
           in
           if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
@@ -607,48 +611,36 @@ let
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
       typeName = getName typePrefix + lib.toSentenceCase mode;
     in
-    if nodesAttrs == { } && freeformNode == null then
-      {
-        property = ref typeName;
-        # FIXME: shouldn't this depend on the default value of the submodule itself?
-        isRequired = isRequired;
-        defs = freeformNode.defs or { } // {
-          ${typeName} = {
-            type = "object";
-            additionalProperties = false;
-          };
+    {
+      property = ref typeName;
+      # This property is `required` if none of its child properties has a
+      # default value (i.e., some of its child property's isRequired is true)
+      isRequired = if submoduleInfo == null then required != [ ] else submoduleInfo.isRequired;
+
+      defs = {
+        ${typeName} = {
+          type = "object";
+          additionalProperties = if freeformNode == null then false else freeformNode.property;
+          # Make sure to not add readOnly here
+          # a property should only have readOnly if it's a direct child of an
+          # object, by itself it doesn't know if that's the case;
+        }
+        // lib.optionalAttrs (submoduleInfo.description or null != null) {
+          description = submoduleInfo.description;
+        }
+        // lib.optionalAttrs (properties != { }) {
+          inherit properties;
+        }
+        // lib.optionalAttrs (required != [ ]) {
+          inherit required;
         };
       }
-    else
-      {
-        property = ref typeName;
-        # This property is `required` if none of its child properties has a
-        # default value (i.e., some of its child property's isRequired is true)
-        isRequired = isRequired;
-
-        defs = {
-          ${typeName} = {
-            type = "object";
-            additionalProperties = if freeformNode == null then false else freeformNode.property;
-            # Make sure to not add readOnly here
-            # a property should only have readOnly if it's a direct child of an
-            # object, by itself it doesn't know if that's the case;
-          }
-          // description
-          // lib.optionalAttrs (properties != { }) {
-            inherit properties;
-          }
-          // lib.optionalAttrs (required != [ ]) {
-            inherit required;
-          };
-        }
-        # Freeform type has a lower priority because a user might
-        # rename it to an existing type, in which case the existing type should
-        # be kept because a freeform type is less likely to have a description
-        // freeformNode.defs or { }
-        // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
-      };
-
+      # Freeform type has a lower priority because a user might
+      # rename it to an existing type, in which case the existing type should
+      # be kept because a freeform type is less likely to have a description
+      // freeformNode.defs or { }
+      // lib.concatMapAttrs (_name: node: node.defs or { }) nodesAttrs;
+    };
 in
 rec {
   fromOptions =
@@ -666,7 +658,6 @@ rec {
     let
       inputNode = optionsToNode {
         mode = "input";
-        isRequired = true;
         inherit
           typePrefix
           readOnly
@@ -675,7 +666,6 @@ rec {
       } options;
       outputNode = optionsToNode {
         mode = "output";
-        isRequired = true;
         inherit
           typePrefix
           readOnly

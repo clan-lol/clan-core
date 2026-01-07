@@ -405,7 +405,7 @@ class SecretsInput(TypedDict):
 
     """
 
-    age: SecretsAgeInput
+    age: NotRequired[SecretsAgeInput]
 
 
 class TemplatesInput(TypedDict):
