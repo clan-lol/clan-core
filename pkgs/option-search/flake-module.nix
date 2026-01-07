@@ -11,7 +11,7 @@
     }:
     let
 
-      baseHref = "/option-search/";
+      baseHref = "./";
 
       coreOptions =
         (pkgs.nixosOptionsDoc {
