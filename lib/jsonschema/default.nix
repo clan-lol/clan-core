@@ -4,14 +4,15 @@
 }:
 let
   # ============================================================================
-  # Constants and Basic Helpers
+  # Constants
   # ============================================================================
 
   # To facilitate the flattening of branches in options like either, we give
   # $ref an inlined structure where it contains both the type name and the
   # referenced jsonschema.
-  # At the entrypoint, we then travel the jsonschema tree and convert them
-  # back to valid $ref.
+  #
+  # This is not valid jsonschema, So at the entrypoint, we travel the
+  # jsonschema tree and convert it back to a valid one.
   ref = typeName: jsonschema: {
     "$ref" = {
       inherit typeName jsonschema;
@@ -40,76 +41,55 @@ let
     };
   };
 
-  flattenOneOf = import ./flattenOneOf.nix {
-    inherit lib clanLib;
-  };
-
   # ============================================================================
-  # Type Checkers
+  # Option Checkers
   # ============================================================================
   #
   isIncludedOption = option: option.visible or true;
   #
-  isBoolOption =
+  getOptionType =
     option:
     {
-      bool = true;
-      boolByOr = true;
-    }
-    .${option.type.name} or false;
-  #
-  isIntOption =
-    option:
-    {
+      bool = "boolean";
+      boolByOr = "boolean";
+
       # TODO: Add support for intMatching in jsonschema
-      int = true;
-      intBetween = true;
-      positiveInt = true;
-      unsignedInt = true;
-      unsignedInt8 = true;
+      int = "integer";
+      intBetween = "integer";
+      positiveInt = "integer";
+      unsignedInt = "integer";
+      unsignedInt8 = "integer";
       # This also includes port
-      unsignedInt16 = true;
-      unsignedInt32 = true;
-      signedInt8 = true;
-      signedInt16 = true;
-      signedInt32 = true;
-    }
-    .${option.type.name} or false;
-  #
-  isFloatOption =
-    option:
-    {
-      float = true;
-      numberBetween = true;
-      numberNonnegative = true;
-      numberPositive = true;
-    }
-    .${option.type.name} or false;
-  #
-  isStrOption =
-    option:
-    {
-      str = true;
-      nonEmptyStr = true;
-      singleLineStr = true;
-      separatedString = true;
-      path = true;
-    }
-    .${option.type.name} or (
-      if lib.strings.hasPrefix "strMatching " option.type.name then
-        true
-      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
-        true
-      else
-        false
-    );
-  #
-  isAnyOption =
-    option:
-    {
-      anything = true;
-      unspecified = true;
-      raw = true;
+      unsignedInt16 = "integer";
+      unsignedInt32 = "integer";
+      signedInt8 = "integer";
+      signedInt16 = "integer";
+      signedInt32 = "integer";
+
+      float = "number";
+      numberBetween = "number";
+      numberNonnegative = "number";
+      numberPositive = "number";
+
+      str = "string";
+      nonEmptyStr = "string";
+      singleLineStr = "string";
+      separatedString = "string";
+      path = "string";
+
+      enum = "enum";
+      nullOr = "nullOr";
+      either = "either";
+      coercedTo = "coercedTo";
+      attrs = "attrs";
+      submodule = "submodule";
+      listOf = "listOf";
+      attrsOf = "attrsOf";
+      lazyAttrsOf = "attrsOf";
+
+      anything = "any";
+      unspecified = "any";
+      raw = "any";
       # This is a special case for the deferred clan.service 'settings', we
       # assume it is JSON serializable To get the type of a Deferred modules we
       # need to know the interface of the place where it is evaluated. i.e. in
@@ -117,47 +97,19 @@ let
       # dynamically changes depending on the service
       #
       # We can assign the type later, when we know the exact interface.
-      deferredModule = true;
+      deferredModule = "any";
     }
-    .${option.type.name} or false;
-
-  # ============================================================================
-  # Type Handlers
-  # ============================================================================
-
-  mkSimpleNode = type: description: isRequired: {
-    jsonschema = {
-      inherit type;
-    }
-    // description;
-    inherit isRequired;
-  };
-
-  # Trivial nodes
-  handleBool = ctx: mkSimpleNode "boolean" ctx.description ctx.isRequired;
-  handleInt = ctx: mkSimpleNode "integer" ctx.description ctx.isRequired;
-  handleNumber = ctx: mkSimpleNode "number" ctx.description ctx.isRequired;
-  handleString = ctx: mkSimpleNode "string" ctx.description ctx.isRequired;
-
-  # creates a reference to the "AnyJSON" $ref
-  handleAnyJson = ctx: {
-    jsonschema = AnyJson // ctx.description;
-    inherit (ctx) isRequired;
-  };
-
-  handleEnum =
-    ctx:
-    let
-      typeName = ctx.getName ctx.args.typePrefix + lib.toSentenceCase ctx.args.mode;
-      type = {
-        enum = ctx.option.type.functor.payload.values;
-      }
-      // ctx.description;
-    in
-    {
-      jsonschema = if ctx.args.shouldInlineBranchTypes then type else ref typeName type;
-      inherit (ctx) isRequired;
-    };
+    .${option.type.name} or (
+      if lib.strings.hasPrefix "strMatching " option.type.name then
+        "string"
+      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
+        "string"
+      else
+        lib.trace option throw ''
+          option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
+          location: ${lib.concatStringsSep "." option.loc}
+        ''
+    );
 
   # ============================================================================
   # Main Conversion Functions
@@ -184,7 +136,7 @@ let
     ```
   */
   optionToNode =
-    args@{
+    ctx@{
       typePrefix,
       mode,
       # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
@@ -193,29 +145,16 @@ let
       # But inside an attrs which is inside a branch, a custom type should be
       # created again;
       shouldInlineBranchTypes ? false,
-      typeRenames,
+      renamedTypes,
       ...
     }:
     option:
     let
-      getName = finalName: typeRenames.${finalName} or finalName;
       isRequired = mode == "output" || !(option ? default) && !(option ? defaultText);
       description = lib.optionalAttrs (option ? description) {
         description = option.description.text or option.description;
       };
-
-      ctx = {
-        inherit
-          args
-          option
-          isRequired
-          description
-          getName
-          optionToNode
-          optionsToNode
-          ;
-      };
-
+      getRenamedType = name: renamedTypes.${name} or name;
       /**
         When a branch option like either eventually flattens to a single branch,
         check if it should have its own type name based on the jsonschema type
@@ -234,240 +173,61 @@ let
           || jsonschema ? enum
           || jsonschema ? oneOf
         );
+      subctx = ctx // {
+        inherit
+          isRequired
+          description
+          getRenamedType
+          shouldInlineBranchTypes
+          shouldDefineBranchType
+          ;
+      };
+      optionType = getOptionType option;
+      simpleNode = {
+        jsonschema = {
+          type = optionType;
+        }
+        // description;
+        inherit isRequired;
+      };
     in
     if !isIncludedOption option then
       null
-    else if isBoolOption option then
-      handleBool ctx
-    else if isIntOption option then
-      handleInt ctx
-    else if isFloatOption option then
-      handleNumber ctx
-    else if isStrOption option then
-      handleString ctx
-    else if isAnyOption option then
-      handleAnyJson ctx
-    else if option.type.name == "enum" then
-      handleEnum ctx
-    else if option.type.name == "nullOr" then
-      let
-        nestedOption = {
-          type = option.type.nestedTypes.elemType;
-          _type = "option";
-          loc = option.loc;
-        };
-        node = optionToNode args nestedOption;
-        oneOf = flattenOneOf (
-          [
-            { type = "null"; }
-          ]
-          ++ (lib.optional (node != null) node.jsonschema)
-        );
-        jsonschema =
-          (
-            if lib.length oneOf == 1 then
-              lib.head oneOf
-            else
-              {
-                inherit oneOf;
-              }
-          )
-          // description;
-      in
-      {
-        inherit jsonschema isRequired;
-      }
-    else if option.type.name == "either" then
-      let
-        nodesAttrs =
-          lib.mapAttrs
-            (
-              name: type:
-              optionToNode
-                (
-                  args
-                  // {
-                    typePrefix = getName (typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name));
-                    shouldInlineBranchTypes = true;
-                  }
-                )
-                {
-                  inherit type;
-                  _type = "option";
-                  loc = option.loc;
-                }
-            )
-            {
-              left = option.type.nestedTypes.left;
-              right = option.type.nestedTypes.right;
-            };
-        nodes = lib.concatAttrValues (
-          lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
-        );
-        oneOf = flattenOneOf (map (node: node.jsonschema) nodes);
-        numOneOf = lib.length oneOf;
-        typeName = getName typePrefix + lib.toSentenceCase mode;
-        jsonschema = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
-      in
-      if nodesAttrs.left == null && nodesAttrs.right == null then
-        null
-      else
-        {
-          jsonschema = if shouldDefineBranchType jsonschema then ref typeName jsonschema else jsonschema;
-          inherit isRequired;
-        }
-    else if option.type.name == "coercedTo" then
-      let
-        nodesAttrs =
-          lib.mapAttrs
-            (
-              name: type:
-              optionToNode
-                (
-                  args
-                  // {
-                    typePrefix = getName (typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name));
-                    shouldInlineBranchTypes = mode == "input";
-                  }
-                )
-                {
-                  inherit type;
-                  _type = "option";
-                  loc = option.loc;
-                }
-            )
-            {
-              from = option.type.nestedTypes.coercedType;
-              to = option.type.nestedTypes.finalType;
-            };
-        nodes = lib.concatAttrValues (
-          lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
-        );
-        oneOf =
-          if mode == "input" then
-            flattenOneOf (map (node: node.jsonschema) nodes)
-          else
-            [ nodesAttrs.to.jsonschema ];
-        numOneOf = lib.length oneOf;
-        jsonschema = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
-        typeName = getName typePrefix + lib.toSentenceCase mode;
-      in
-      # If this option can result in null for either input or output, it
-      # shouldn't be included in either
-      if nodesAttrs.from == null || nodesAttrs.to == null then
-        null
-      else
-        {
-          jsonschema =
-            if mode == "input" && shouldDefineBranchType jsonschema then
-              ref typeName jsonschema
-            else
-              jsonschema;
-          inherit isRequired;
-        }
-    else if option.type.name == "attrs" then
-      let
-        typeName = getName typePrefix + lib.toSentenceCase mode;
-        jsonschema = {
-          type = "object";
-          additionalProperties = AnyJson;
-        }
-        // description;
-      in
-      {
-        jsonschema = ref typeName jsonschema;
-        inherit isRequired;
-      }
-    else if option.type.name == "submodule" then
-      let
-        subOptions = option.type.getSubOptions option.loc;
-        node = optionsToNode (
-          args
-          // {
-            submoduleInfo = {
-              inherit isRequired;
-            }
-            // description;
-          }
-        ) subOptions;
-      in
-      node
-    else if option.type.name == "listOf" then
-      let
-        nestedOption = {
-          type = option.type.nestedTypes.elemType;
-          _type = "option";
-          loc = option.loc;
-        };
-        node = optionToNode (
-          args
-          // {
-            typePrefix = getName (typePrefix + "Item");
-            shouldInlineBranchTypes = false;
-          }
-        ) nestedOption;
-        typeName = getName typePrefix + lib.toSentenceCase mode;
-        jsonschema = {
-          type = "array";
-          items = node.jsonschema;
-        }
-        // description;
-      in
-      if node == null then
-        null
-      else
-        {
-          jsonschema = ref typeName jsonschema;
-          inherit isRequired;
-        }
-    else if option.type.name == "attrsOf" || option.type.name == "lazyAttrsOf" then
-      let
-        nestedOption = {
-          type = option.type.nestedTypes.elemType;
-          _type = "option";
-          loc = option.loc;
-        };
-        node = optionToNode (
-          args
-          // {
-            typePrefix = getName (typePrefix + "Item");
-            shouldInlineBranchTypes = false;
-          }
-        ) nestedOption;
-        typeName = getName typePrefix + lib.toSentenceCase mode;
-        jsonschema = {
-          type = "object";
-          additionalProperties = node.jsonschema;
-        }
-        // description;
-      in
-      if node == null then
-        null
-      else
-        {
-          jsonschema = ref typeName jsonschema;
-          inherit isRequired;
-        }
-    # throw error if option type is not supported
     else
-      lib.trace option throw ''
-        option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
-        location: ${lib.concatStringsSep "." option.loc}
-      '';
+      {
+        boolean = simpleNode;
+        integer = simpleNode;
+        number = simpleNode;
+        string = simpleNode;
+        enum = mkEnumNode subctx option;
+        nullOr = mkNullOrNode subctx option;
+        either = mkEitherNode subctx option;
+        coercedTo = mkCoercedToNode subctx option;
+        attrs = mkAttrsNode subctx option;
+        submodule = mkSubmoduleNode subctx option;
+        listOf = mkListOfNode subctx option;
+        attrsOf = mkAttrsOfNode subctx option;
+        any = {
+          jsonschema = AnyJson // description;
+          inherit isRequired;
+        };
+      }
+      .${optionType};
+
   /**
-    Refer to `toOptionNode`'s doc for the definition of a node
+    Refer to `optionToNode`'s doc for the definition of a node
   */
   optionsToNode =
-    opts@{
+    ctx@{
       typePrefix,
       mode,
-      typeRenames,
+      renamedTypes,
       submoduleInfo ? null,
       ...
     }:
     options:
     let
-      getName = finalName: typeRenames.${finalName} or finalName;
+      getRenamedType = name: renamedTypes.${name} or name;
 
       relevantOptions = removeAttrs options [
         "_module"
@@ -482,15 +242,15 @@ let
         lib.mapAttrs (
           name: option:
           let
-            opts' = opts // {
+            subctx = ctx // {
               # We need to use toUpperFirst here because name might be "extraModules"
               # and we want to turn it into "ExtraModules", toSentenceCase turns it
               # to "Extramodules" which is not what we want
-              typePrefix = getName (opts.typePrefix + clanLib.toUpperFirst name);
+              typePrefix = getRenamedType (ctx.typePrefix + clanLib.toUpperFirst name);
               shouldInlineBranchTypes = false;
             };
           in
-          if lib.isOption option then optionToNode opts' option else optionsToNode opts' option
+          if lib.isOption option then optionToNode subctx option else optionsToNode subctx option
         ) relevantOptions
       );
 
@@ -518,9 +278,9 @@ let
           null
         else
           optionToNode (
-            opts
+            ctx
             // {
-              typePrefix = getName (typePrefix + "Freeform");
+              typePrefix = getRenamedType (typePrefix + "Freeform");
             }
           ) nestedOption;
       properties = lib.mapAttrs (
@@ -533,13 +293,13 @@ let
           # We do this in the unit tests:
           #   machine_jon = get_machine(flake, "jon")
           #   set_machine(Machine("jon", flake), machine_jon)
-          lib.optionalAttrs (opts.readOnly.${mode} or true) {
+          lib.optionalAttrs (ctx.readOnly.${mode} or true) {
             readOnly = true;
           }
       ) nodesAttrs;
 
       required = lib.attrNames (lib.filterAttrs (_name: node: node.isRequired) nodesAttrs);
-      typeName = getName typePrefix + lib.toSentenceCase mode;
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
       jsonschema = {
         type = "object";
         additionalProperties = if freeformNode == null then false else freeformNode.jsonschema;
@@ -563,6 +323,289 @@ let
       # default value (i.e., some of its child property's isRequired is true)
       isRequired = if submoduleInfo == null then required != [ ] else submoduleInfo.isRequired;
     };
+
+  mkEnumNode =
+    ctx@{
+      mode,
+      typePrefix,
+      isRequired,
+      description,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      typeName = getRenamedType (typePrefix + lib.toSentenceCase mode);
+      jsonschema = {
+        enum = option.type.functor.payload.values;
+      }
+      // description;
+    in
+    {
+      jsonschema = ref typeName jsonschema;
+      inherit isRequired;
+    };
+
+  mkNullOrNode =
+    ctx@{
+      mode,
+      isRequired,
+      description,
+      ...
+    }:
+    option:
+    let
+      nestedOption = {
+        type = option.type.nestedTypes.elemType;
+        _type = "option";
+        loc = option.loc;
+      };
+      node = optionToNode ctx nestedOption;
+      oneOf = flattenOneOf ([ { type = "null"; } ] ++ (lib.optional (node != null) node.jsonschema));
+      jsonschema = (if lib.length oneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
+    in
+    {
+      inherit jsonschema isRequired;
+    };
+
+  mkEitherNode =
+    ctx@{
+      mode,
+      typePrefix,
+      description,
+      isRequired,
+      shouldDefineBranchType,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      nodesAttrs =
+        lib.mapAttrs
+          (
+            name: type:
+            let
+              subctx = ctx // {
+                typePrefix = getRenamedType (
+                  typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name)
+                );
+                shouldInlineBranchTypes = true;
+              };
+            in
+            optionToNode subctx {
+              inherit type;
+              _type = "option";
+              loc = option.loc;
+            }
+          )
+          {
+            left = option.type.nestedTypes.left;
+            right = option.type.nestedTypes.right;
+          };
+      nodes = lib.concatAttrValues (
+        lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
+      );
+      oneOf = flattenOneOf (map (node: node.jsonschema) nodes);
+      numOneOf = lib.length oneOf;
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+      jsonschema = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
+    in
+    if nodesAttrs.left == null && nodesAttrs.right == null then
+      null
+    else
+      {
+        jsonschema = if shouldDefineBranchType jsonschema then ref typeName jsonschema else jsonschema;
+        inherit isRequired;
+      };
+
+  mkCoercedToNode =
+    ctx@{
+      mode,
+      typePrefix,
+      description,
+      isRequired,
+      getRenamedType,
+      shouldDefineBranchType,
+      ...
+    }:
+    option:
+    let
+      nodesAttrs =
+        lib.mapAttrs
+          (
+            name: type:
+            let
+              subctx = ctx // {
+                typePrefix = getRenamedType (
+                  typePrefix + lib.optionalString (numOneOf >= 2) (lib.toSentenceCase name)
+                );
+                shouldInlineBranchTypes = mode == "input";
+              };
+            in
+            optionToNode subctx {
+              inherit type;
+              _type = "option";
+              loc = option.loc;
+            }
+          )
+          {
+            from = option.type.nestedTypes.coercedType;
+            to = option.type.nestedTypes.finalType;
+          };
+      nodes = lib.concatAttrValues (
+        lib.mapAttrs (_name: node: if node == null then [ ] else [ node ]) nodesAttrs
+      );
+      oneOf =
+        if mode == "input" then
+          flattenOneOf (map (node: node.jsonschema) nodes)
+        else
+          [ nodesAttrs.to.jsonschema ];
+      numOneOf = lib.length oneOf;
+      jsonschema = (if numOneOf == 1 then lib.head oneOf else { inherit oneOf; }) // description;
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+    in
+    # If this option can result in null for either input or output, it
+    # shouldn't be included in either
+    if nodesAttrs.from == null || nodesAttrs.to == null then
+      null
+    else
+      {
+        jsonschema =
+          if mode == "input" && shouldDefineBranchType jsonschema then
+            ref typeName jsonschema
+          else
+            jsonschema;
+        inherit isRequired;
+      };
+
+  mkAttrsNode =
+    ctx@{
+      mode,
+      typePrefix,
+      description,
+      isRequired,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+      jsonschema = {
+        type = "object";
+        additionalProperties = AnyJson;
+      }
+      // description;
+    in
+    {
+      jsonschema = ref typeName jsonschema;
+      inherit isRequired;
+    };
+
+  mkSubmoduleNode =
+    ctx@{
+      isRequired,
+      description,
+      ...
+    }:
+    option:
+    let
+      subOptions = option.type.getSubOptions option.loc;
+      node = optionsToNode (
+        ctx
+        // {
+          submoduleInfo = {
+            inherit isRequired;
+          }
+          // description;
+        }
+      ) subOptions;
+    in
+    node;
+
+  mkListOfNode =
+    ctx@{
+      mode,
+      typePrefix,
+      isRequired,
+      description,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      nestedOption = {
+        type = option.type.nestedTypes.elemType;
+        _type = "option";
+        loc = option.loc;
+      };
+      node = optionToNode (
+        ctx
+        // {
+          typePrefix = getRenamedType (typePrefix + "Item");
+          shouldInlineBranchTypes = false;
+        }
+      ) nestedOption;
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+      jsonschema = {
+        type = "array";
+        items = node.jsonschema;
+      }
+      // description;
+    in
+    if node == null then
+      null
+    else
+      {
+        jsonschema = ref typeName jsonschema;
+        inherit isRequired;
+      };
+
+  mkAttrsOfNode =
+    ctx@{
+      mode,
+      typePrefix,
+      isRequired,
+      description,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      nestedOption = {
+        type = option.type.nestedTypes.elemType;
+        _type = "option";
+        loc = option.loc;
+      };
+      node = optionToNode (
+        ctx
+        // {
+          typePrefix = getRenamedType (typePrefix + "Item");
+          shouldInlineBranchTypes = false;
+        }
+      ) nestedOption;
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+      jsonschema = {
+        type = "object";
+        additionalProperties = node.jsonschema;
+      }
+      // description;
+    in
+    if node == null then
+      null
+    else
+      {
+        jsonschema = ref typeName jsonschema;
+        inherit isRequired;
+      };
+
+  # ============================================================================
+  # Jsonschema Handlers
+  # ============================================================================
+
+  flattenOneOf = import ./flattenOneOf.nix {
+    inherit lib clanLib;
+  };
+
   resolveRefs =
     resolvedNames: jsonschema:
     if jsonschema ? "$ref" then
@@ -588,7 +631,7 @@ let
         results = map (branch: resolveRefs resolvedNames branch) jsonschema.oneOf;
       in
       {
-        jsonschema = {
+        jsonschema = jsonschema // {
           oneOf = map (result: result.jsonschema) results;
         };
         defs = clanLib.concatMapListToAttrs (result: result.defs) results;
@@ -623,7 +666,12 @@ let
           // lib.optionalAttrs (additPropsResult != { }) {
             additionalProperties = additPropsResult.jsonschema;
           };
-        defs = lib.concatMapAttrs (_name: result: result.defs) propsResults // additPropsResult.defs or { };
+        # Letting defs in properties override those in additionalProperties is
+        # intentional. In the case of a submodule with freeform, and freeform
+        # results in the same jsonschema type as a proeprty, we want the
+        # property's jsonschema to override freenode's jsonschema, because the
+        # latter is less likely to contain a description
+        defs = additPropsResult.defs or { } // lib.concatMapAttrs (_name: result: result.defs) propsResults;
       }
     else
       {
@@ -641,7 +689,7 @@ rec {
         input = true;
         output = true;
       },
-      typeRenames ? { },
+      renamedTypes ? { },
     }:
     options:
     let
@@ -650,7 +698,7 @@ rec {
         inherit
           typePrefix
           readOnly
-          typeRenames
+          renamedTypes
           ;
       } options;
       inputResult = resolveRefs { } inputNode.jsonschema;
@@ -659,7 +707,7 @@ rec {
         inherit
           typePrefix
           readOnly
-          typeRenames
+          renamedTypes
           ;
       } options;
       outputResult = resolveRefs { } outputNode.jsonschema;

@@ -24,7 +24,7 @@ let
       input = false;
       output = true;
     };
-    typeRenames = {
+    renamedTypes = {
       ClanInventory = "Inventory";
       InventoryTagsAll = "InventoryTagMachines";
       InventoryTagsDarwin = "InventoryTagMachines";
