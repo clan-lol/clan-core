@@ -137,7 +137,6 @@ let
   */
   optionToNode =
     ctx@{
-      typePrefix,
       mode,
       # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
       # enum or one of shouldn't create a new type, because they might be merged
@@ -328,7 +327,7 @@ let
     };
 
   mkEnumNode =
-    ctx@{
+    {
       mode,
       typePrefix,
       isRequired,
@@ -351,7 +350,6 @@ let
 
   mkNullOrNode =
     ctx@{
-      mode,
       isRequired,
       description,
       ...
@@ -482,7 +480,7 @@ let
       };
 
   mkAttrsNode =
-    ctx@{
+    {
       mode,
       typePrefix,
       description,
@@ -490,7 +488,7 @@ let
       getRenamedType,
       ...
     }:
-    option:
+    _option:
     let
       typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
       jsonschema = {
