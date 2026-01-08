@@ -6,7 +6,7 @@ import { Combobox } from "@kobalte/core/combobox";
 import { Button } from "../Button/Button";
 
 // Base props common to both modes
-export interface TagSelectProps<T> {
+interface TagSelectProps<T> {
   onClick: () => void;
   label: string;
   values: T[];
@@ -19,10 +19,10 @@ export interface TagSelectProps<T> {
  * It does only handle click and focus interactions
  * Displays the selected items as tags
  */
-export function TagSelect<T extends { value: unknown }>(
+export function TagSelect<T extends { name: unknown }>(
   props: TagSelectProps<T>,
 ) {
-  const optionValue = "value";
+  const optionValue = "name";
   return (
     <div class="flex flex-col gap-1.5">
       <div class="flex w-full items-center gap-2 px-1.5 py-0">

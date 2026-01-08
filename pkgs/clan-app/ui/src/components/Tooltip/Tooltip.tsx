@@ -7,7 +7,7 @@ import { JSX } from "solid-js";
 import styles from "./Tooltip.module.css";
 import { Typography } from "../Typography/Typography";
 
-export interface TooltipProps extends KTooltipRootProps {
+interface TooltipProps extends KTooltipRootProps {
   inverted?: boolean;
   children: JSX.Element;
   description: JSX.Element;

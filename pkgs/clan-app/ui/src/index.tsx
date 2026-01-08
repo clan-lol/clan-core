@@ -1,18 +1,9 @@
-/* @refresh reload */
 import { render } from "solid-js/web";
 
 import "./index.css";
-import { QueryClientProvider } from "@tanstack/solid-query";
-import { Routes } from "@/src/routes";
-import { Router } from "@solidjs/router";
-import { Layout } from "@/src/routes/Layout";
-import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
-import { ApiClientProvider } from "./hooks/ApiClient";
-import { callApi } from "./hooks/api";
-import { DefaultQueryClient } from "@/src/hooks/queries";
-import { Toaster } from "solid-toast";
+import Entrypoint from "./Entrypoint";
 
-const root = document.getElementById("app");
+const root = document.getElementById("app")!;
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(
@@ -23,16 +14,4 @@ if (import.meta.env.DEV) {
   console.log("Development mode");
 }
 
-render(
-  () => (
-    <ApiClientProvider client={{ fetch: callApi }}>
-      {/* Temporary solution */}
-      <Toaster toastOptions={{}} />
-      <QueryClientProvider client={DefaultQueryClient}>
-        <SolidQueryDevtools initialIsOpen={true} />
-        <Router root={Layout}>{Routes}</Router>
-      </QueryClientProvider>
-    </ApiClientProvider>
-  ),
-  root!,
-);
+render(() => <Entrypoint />, root);

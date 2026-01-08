@@ -1,0 +1,32 @@
+import cx from "classnames";
+import { Show } from "solid-js";
+import styles from "./Sidebar.module.css";
+import SidebarHeader from "@/src/components/Sidebar/SidebarHeader";
+import SidebarBody from "@/src/components/Sidebar/SidebarBody";
+import SidebarMachine from "./SidebarMachine";
+import { MachineContextProvider, useMachinesContext } from "@/src/models";
+
+export default function Sidebar() {
+  const [machines] = useMachinesContext();
+  return (
+    <>
+      <div
+        class={cx(styles.sidebarContainer, {
+          [styles.machineSelected]: machines().activeMachine,
+        })}
+      >
+        <div class={styles.sidebar}>
+          <SidebarHeader />
+          <SidebarBody />
+        </div>
+      </div>
+      <Show when={machines().activeMachine}>
+        {(activeMachine) => (
+          <MachineContextProvider value={activeMachine}>
+            <SidebarMachine />
+          </MachineContextProvider>
+        )}
+      </Show>
+    </>
+  );
+}

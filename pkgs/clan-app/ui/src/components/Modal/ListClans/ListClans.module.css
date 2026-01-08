@@ -1,0 +1,15 @@
+.container {
+  @apply flex flex-col gap-2;
+  max-width: 42rem;
+  width: 100vw;
+  padding: 1rem;
+  background: #fff;
+}
+
+.header {
+  @apply flex items-center justify-between;
+}
+
+.clans {
+  @apply flex flex-col gap-2;
+}

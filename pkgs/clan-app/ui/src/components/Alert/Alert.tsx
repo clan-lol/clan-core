@@ -18,7 +18,7 @@ export interface AlertProps {
 }
 
 export const Alert = (props: AlertProps) => {
-  const size = () => props.size || "default";
+  const size = () => props.size ?? "default";
   const titleSize = () => (size() == "default" ? "default" : "xs");
   const bodySize = () => (size() == "default" ? "xs" : "xxs");
   const iconSize = () => (size() == "default" ? "1rem" : "0.75rem");

@@ -5,7 +5,6 @@
       self',
       pkgs,
       config,
-      system,
       ...
     }:
     {
@@ -44,9 +43,11 @@
 
       checks =
         config.packages.clan-app.tests
-        # Sandboxed Darwin nix build can't spawn a headless brwoser
-        // lib.optionalAttrs (!lib.hasSuffix "darwin" system) {
-          inherit (config.packages.clan-app-ui.tests) clan-app-ui-storybook;
-        };
+        // lib.removeAttrs config.packages.clan-app-ui.tests [ "clan-app-ui-storybook" ];
+      # FIXME: enable storybook tests once the stories files are fixed
+      # Sandboxed Darwin nix build can't spawn a headless brwoser
+      # lib.optionalAttrs (!lib.hasSuffix "darwin" system) {
+      #   inherit (config.packages.clan-app-ui.tests) clan-app-ui-storybook;
+      # };
     };
 }

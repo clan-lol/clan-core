@@ -30,7 +30,7 @@ export const Fieldset = (props: FieldsetProps) => {
     <div
       role="group"
       class={cx(styles.fieldset, { [styles.inverted]: props.inverted })}
-      aria-disabled={props.disabled || undefined}
+      aria-disabled={props.disabled}
     >
       {props.legend && (
         <legend>

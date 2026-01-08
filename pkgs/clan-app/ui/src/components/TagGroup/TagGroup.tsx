@@ -3,7 +3,7 @@ import cx from "classnames";
 import { For, mergeProps } from "solid-js";
 import { Tag } from "@/src/components/Tag/Tag";
 
-export interface TagGroupProps {
+interface TagGroupProps {
   labels: string[];
   inverted?: boolean;
 }

@@ -1,16 +1,16 @@
-import { SuccessData } from "@/src/hooks/api";
+import { DataSchema } from "@/src/models";
 import { Maybe } from "@modular-forms/solid";
 
 export const tooltipText = (
   name: string,
-  schema: SuccessData<"get_machine_fields_schema">,
+  schema: DataSchema,
   staticValue: Maybe<string> = undefined,
 ): Maybe<string> => {
   const entry = schema[name];
 
   // return the static value if there is no field schema entry, or the entry
   // indicates the field is writeable
-  if (!(entry && entry.readonly)) {
+  if (!entry?.readonly) {
     return staticValue;
   }
 

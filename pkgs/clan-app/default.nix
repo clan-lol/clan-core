@@ -16,6 +16,7 @@
   imagemagick,
   makeWrapper,
   libicns,
+  nodejs_24,
 }:
 let
   source =
@@ -45,6 +46,7 @@ let
   runtimeDependencies = [
     gobject-introspection
     gtk4
+    nodejs_24
   ];
 
   pyDeps = ps: [

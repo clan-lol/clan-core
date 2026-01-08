@@ -1,78 +1,39 @@
 import styles from "./SidebarBody.module.css";
-import { A } from "@solidjs/router";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
-import { For, Show } from "solid-js";
-import { MachineStatus } from "@/src/components/MachineStatus/MachineStatus";
-import { buildMachinePath, buildServicePath } from "@/src/hooks/clan";
-import { useMachineStateQuery } from "@/src/hooks/queries";
-import { SidebarProps } from "./Sidebar";
+import { Component, For, Show } from "solid-js";
+import MachineStatusComponent from "@/src/components/MachineStatus";
 import { Button } from "../Button/Button";
-import { useClanContext } from "@/src/routes/Clan/Clan";
-import { Instance } from "@/src/workflows/Service/models";
+import {
+  MachineContextProvider,
+  ServiceInstanceContextProvider,
+  useClanContext,
+  useMachineContext,
+  useMachinesContext,
+  useServiceInstanceContext,
+  useUIContext,
+} from "@/src/models";
 
-interface MachineProps {
-  clanURI: string;
-  machineID: string;
-  name: string;
-  serviceCount: number;
-}
-
-const MachineRoute = (props: MachineProps) => {
-  const statusQuery = useMachineStateQuery(props.clanURI, props.machineID);
-
-  const status = () =>
-    statusQuery.isSuccess ? statusQuery.data.status : undefined;
-
+const SidebarBody: Component = () => {
   return (
-    <A href={buildMachinePath(props.clanURI, props.machineID)}>
-      <div class="flex w-full flex-col gap-2">
-        <div class="flex flex-row items-center justify-between">
-          <Typography
-            hierarchy="label"
-            size="xs"
-            weight="bold"
-            color="primary"
-            inverted
-          >
-            {props.name}
-          </Typography>
-          <MachineStatus status={status()} />
-        </div>
-        <div class="flex w-full flex-row items-center gap-1">
-          <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
-          <Typography
-            hierarchy="label"
-            family="mono"
-            size="s"
-            inverted
-            color="primary"
-          >
-            {props.serviceCount}
-          </Typography>
-        </div>
-      </div>
-    </A>
+    <div class={styles.sidebarBody}>
+      <Accordion
+        class={styles.accordion}
+        multiple
+        defaultValue={["machines", "services"]}
+      >
+        <MachinesSection />
+        <ServicesSection />
+      </Accordion>
+    </div>
   );
 };
+export default SidebarBody;
 
-const Machines = () => {
-  const ctx = useClanContext();
-  if (!ctx) {
-    throw new Error("ClanContext not found");
-  }
-
-  const clanURI = ctx.clanURI;
-
-  const machines = () => {
-    if (!ctx.machinesQuery.isSuccess) {
-      return {};
-    }
-
-    const result = ctx.machinesQuery.data;
-    return Object.keys(result).length > 0 ? result : [];
-  };
+const MachinesSection: Component = () => {
+  const [, { showModal }] = useUIContext();
+  const [machines] = useMachinesContext();
 
   return (
     <Accordion.Item class={styles.accordionItem} value="machines">
@@ -99,7 +60,7 @@ const Machines = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <Show
-          when={machines()}
+          when={Object.keys(machines().all).length !== 0}
           fallback={
             <div class="flex w-full flex-col items-center justify-center gap-2.5">
               <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -109,7 +70,9 @@ const Machines = () => {
                 hierarchy="primary"
                 size="s"
                 icon="Machine"
-                onClick={() => ctx.setShowAddMachine(true)}
+                onClick={() =>
+                  showModal({ type: "AddMachine", position: [0, 0] })
+                }
               >
                 Add machine
               </Button>
@@ -117,14 +80,11 @@ const Machines = () => {
           }
         >
           <nav>
-            <For each={Object.entries(machines())}>
-              {([id, machine]) => (
-                <MachineRoute
-                  clanURI={clanURI}
-                  machineID={id}
-                  name={machine.data.name || id}
-                  serviceCount={machine?.instance_refs?.length ?? 0}
-                />
+            <For each={machines().sorted}>
+              {(machine) => (
+                <MachineContextProvider value={() => machine}>
+                  <MachineSection />
+                </MachineContextProvider>
               )}
             </For>
           </nav>
@@ -134,74 +94,48 @@ const Machines = () => {
   );
 };
 
-export const ServiceRoute = (props: {
-  clanURI: string;
-  label: string;
-  id: string;
-  instance: Instance;
-}) => (
-  <A
-    href={buildServicePath({
-      clanURI: props.clanURI,
-      id: props.id,
-      module: props.instance.module,
-    })}
-    replace={true}
-  >
-    <div class="flex w-full flex-col gap-2">
-      <div class="flex flex-row items-center justify-between">
-        <Typography
-          hierarchy="label"
-          size="xs"
-          weight="bold"
-          color="primary"
-          inverted
-        >
-          {props.label}
-        </Typography>
-        <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
+const MachineSection: Component = () => {
+  const [machine, { activateMachine }] = useMachineContext();
+  return (
+    <a
+      href="#"
+      onClick={(ev) => {
+        ev.preventDefault();
+        activateMachine();
+      }}
+    >
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <Typography
+            hierarchy="label"
+            size="xs"
+            weight="bold"
+            color="primary"
+            inverted
+          >
+            {machine().id}
+          </Typography>
+          <MachineStatusComponent status={machine().status} />
+        </div>
+        <div class="flex w-full flex-row items-center gap-1">
+          <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
+          <Typography
+            hierarchy="label"
+            family="mono"
+            size="s"
+            inverted
+            color="primary"
+          >
+            {machine().serviceInstances.length}
+          </Typography>
+        </div>
       </div>
-      {/* Same subtitle as Machine */}
-      {/* <div class="flex w-full flex-row items-center gap-1">
-        <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
-        <Typography
-          hierarchy="label"
-          family="mono"
-          size="s"
-          inverted
-          color="primary"
-        >
-          {props.instance.resolved.usage_ref.name}
-        </Typography>
-      </div> */}
-    </div>
-  </A>
-);
+    </a>
+  );
+};
 
-const Services = () => {
-  const ctx = useClanContext();
-  if (!ctx) {
-    throw new Error("ClanContext not found");
-  }
-
-  const serviceInstances = () => {
-    if (!ctx.serviceInstancesQuery.isSuccess) {
-      return [];
-    }
-
-    return Object.entries(ctx.serviceInstancesQuery.data)
-      .map(([id, instance]) => {
-        const moduleName = instance.module.name;
-
-        const label = moduleName == id ? moduleName : `${moduleName} (${id})`;
-        return {
-          id,
-          label,
-          instance: instance,
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
-  };
+const ServicesSection: Component = () => {
+  const [clan] = useClanContext();
 
   return (
     <Accordion.Item class={styles.accordionItem} value="services">
@@ -228,14 +162,11 @@ const Services = () => {
       </Accordion.Header>
       <Accordion.Content class={styles.accordionContent}>
         <nav>
-          <For each={serviceInstances()}>
-            {(mapped) => (
-              <ServiceRoute
-                clanURI={ctx.clanURI}
-                id={mapped.id}
-                label={mapped.label}
-                instance={mapped.instance}
-              />
+          <For each={clan().serviceInstances.sorted}>
+            {(instance) => (
+              <ServiceInstanceContextProvider value={() => instance}>
+                <ServiceInstanceEntry />
+              </ServiceInstanceContextProvider>
             )}
           </For>
         </nav>
@@ -244,72 +175,32 @@ const Services = () => {
   );
 };
 
-export const SidebarBody = (props: SidebarProps) => {
-  const sectionLabels = (props.staticSections || []).map(
-    (section) => section.title,
-  );
-
-  // controls which sections are open by default
-  // we want them all to be open by default
-  const defaultAccordionValues = ["machines", "services", ...sectionLabels];
-
+export const ServiceInstanceEntry: Component = () => {
+  const [instance, { activateServiceInstance }] = useServiceInstanceContext();
   return (
-    <div class={styles.sidebarBody}>
-      <Accordion
-        class={styles.accordion}
-        multiple
-        defaultValue={defaultAccordionValues}
-      >
-        <Machines />
-        <Services />
-
-        <For each={props.staticSections}>
-          {(section) => (
-            <Accordion.Item class={styles.accordionItem} value={section.title}>
-              <Accordion.Header class={styles.accordionHeader}>
-                <Accordion.Trigger class={styles.accordionTrigger}>
-                  <Typography
-                    hierarchy="label"
-                    family="mono"
-                    size="xs"
-                    inverted
-                    color="tertiary"
-                    transform="uppercase"
-                  >
-                    {section.title}
-                  </Typography>
-                  <Icon
-                    icon="CaretDown"
-                    color="tertiary"
-                    inverted
-                    size="0.75rem"
-                    in="SidebarBody-AccordionTrigger"
-                  />
-                </Accordion.Trigger>
-              </Accordion.Header>
-              <Accordion.Content class={styles.accordionContent}>
-                <nav>
-                  <For each={section.links || []}>
-                    {(link) => (
-                      <A href={link.path}>
-                        <Typography
-                          hierarchy="body"
-                          size="xs"
-                          weight="bold"
-                          color="primary"
-                          inverted
-                        >
-                          {link.label}
-                        </Typography>
-                      </A>
-                    )}
-                  </For>
-                </nav>
-              </Accordion.Content>
-            </Accordion.Item>
-          )}
-        </For>
-      </Accordion>
-    </div>
+    <a
+      href="#"
+      onClick={(ev) => {
+        ev.preventDefault();
+        activateServiceInstance();
+      }}
+    >
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <Typography
+            hierarchy="label"
+            size="xs"
+            weight="bold"
+            color="primary"
+            inverted
+          >
+            {instance().data.name == instance().service.id
+              ? instance().data.name
+              : `${instance().service.id} (${instance().data.name})`}
+          </Typography>
+          <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
+        </div>
+      </div>
+    </a>
   );
 };
