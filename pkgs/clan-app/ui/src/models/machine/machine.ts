@@ -10,38 +10,35 @@ import {
   Machines,
   MachinesMethods,
   ServiceInstance,
-  useClanContext,
-  useClansContext,
-  useMachinesContext,
 } from "..";
-import { mapObjectValues } from "@/src/util";
+import { DeepRequired, mapObjectValues } from "@/src/util";
 
 export type MachineEntity = {
   readonly data: MachineDataEntity;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
 };
-export type MachineDataEntity = {
-  deploy: {
-    buildHost?: string;
-    targetHost?: string;
-  };
-  description?: string;
-  machineClass: "nixos" | "darwin";
-  tags: string[];
-  position: MachinePosition;
-};
+export type MachineDataEntity = DeepRequired<MachineData>;
 export type MachinePosition = readonly [number, number];
 
 export type Machine = Omit<MachineEntity, "data"> & {
   readonly clan: Clan;
   readonly id: string;
-  data: MachineData;
+  data: DeepRequired<MachineData>;
   readonly isActive: boolean;
   readonly isHighlighted: boolean;
   readonly serviceInstances: ServiceInstance[];
 };
-export type MachineData = MachineDataEntity;
+export type MachineData = {
+  deploy?: {
+    buildHost?: string | null;
+    targetHost?: string | null;
+  };
+  description?: string | null;
+  machineClass?: "nixos" | "darwin";
+  tags?: string[];
+  position: MachinePosition;
+};
 
 export type MachineStatus =
   | "not_installed"

@@ -14,6 +14,7 @@ export async function createServiceInstance(
       },
       module_ref: {
         name: serviceId,
+        input: null,
       },
       roles: mapObjectValues(data.roles, ([, role]) => ({
         machines: Object.fromEntries(

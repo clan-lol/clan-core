@@ -3,8 +3,8 @@ import {
   InstallMachineOptions,
   InstallMachineProgress,
   MachineData,
-  MachineDataEntity,
   MachineDiskTemplatesEntity,
+  MachineEntity,
   MachineHardwareReport,
   MachineHardwareReportEntity,
   MachineSSH,
@@ -18,7 +18,7 @@ import { ClanMessageHandler, onMessage } from "./event";
 export async function updateMachineData(
   machineId: string,
   clanId: string,
-  data: Partial<MachineData>,
+  data: MachineData,
 ): Promise<void> {
   const { position, ...d } = data;
   await client.post("set_machine", {
@@ -185,7 +185,7 @@ export async function getMachineVarsPromptGroups(
 // TODO: make this one API call only
 export async function createMachine(
   machineId: string,
-  data: MachineDataEntity,
+  data: MachineData,
   clanId: string,
 ): Promise<void> {
   await client.post("create_machine", {
@@ -194,13 +194,7 @@ export async function createMachine(
         clan_dir: {
           identifier: clanId,
         },
-        machine: {
-          deploy: data.deploy,
-          description: data.description || null,
-          machineClass: data.machineClass,
-          tags: data.tags,
-          name: machineId,
-        },
+        machine: data,
       },
     },
   });

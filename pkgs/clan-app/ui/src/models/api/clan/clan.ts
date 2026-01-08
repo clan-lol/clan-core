@@ -132,7 +132,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
       return {
         id: machineId,
         data: {
-          ...(machine.data as MachineDataEntity),
+          ...machine.data,
           position: mp.getOrSetPosition(machineId),
         },
         dataSchema: schemaRes.data,
@@ -142,8 +142,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
   );
   const services: Record<string, ServiceEntity> = Object.fromEntries(
     servicesRes.data.modules.map((service) => [
-      // FIXME: shouldn't need !
-      service.usage_ref.name!,
+      service.usage_ref.name,
       {
         id: service.usage_ref.name,
         isCore: service.native,

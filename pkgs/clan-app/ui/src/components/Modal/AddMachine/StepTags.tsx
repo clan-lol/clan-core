@@ -45,7 +45,7 @@ export const StepTags = () => {
     stepSignal.next();
     await createMachine(store.general.id, {
       machineClass: store.general.machineClass,
-      description: store.general.description || undefined,
+      description: store.general.description || null,
       deploy: store.deploy,
       tags: store.tags.tags,
       position: modal().position,

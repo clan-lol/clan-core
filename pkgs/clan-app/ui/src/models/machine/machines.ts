@@ -31,11 +31,7 @@ export type MachinesMethods = {
     item: Machine | string,
     data: Partial<MachineData>,
   ): Promise<void>;
-  createMachine(
-    this: void,
-    id: string,
-    data: MachineDataEntity,
-  ): Promise<Machine>;
+  createMachine(this: void, id: string, data: MachineData): Promise<Machine>;
   toggleHighlightedMachines(
     this: void,
     items: (string | Machine)[] | string | Machine,
@@ -122,7 +118,7 @@ export function createMachinesMethods(
       const machine = createMachine(
         id,
         {
-          data,
+          data: data as MachineDataEntity,
           dataSchema: {},
           status: "not_installed",
         },
@@ -146,7 +142,10 @@ export function createMachinesMethods(
       }
       // TODO: Use partial update once supported by backend and solidjs
       // https://github.com/solidjs/solid/issues/2475
-      const d = { ...machine.data, ...data };
+      //
+      // FIXME: assign deploy is unecessary, currently it's only to make
+      // typescript happy
+      const d = { ...machine.data, ...data, deploy: machine.data.deploy };
       await api.clan.updateMachineData(machine.id, clan().id, d);
       setMachines("all", machine.id, "data", d);
     },

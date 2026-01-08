@@ -98,3 +98,7 @@ export function onClickOutside(
   document.addEventListener("mousedown", listener);
   onCleanup(() => document.removeEventListener("mousedown", listener));
 }
+
+export type DeepRequired<T> = Required<{
+  [K in keyof T]: T[K] extends Required<T[K]> ? T[K] : DeepRequired<T[K]>;
+}>;

@@ -9,7 +9,7 @@ import { MachineData, useMachineContext } from "@/src/models";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),
-  description: v.optional(v.string()),
+  description: v.optional(v.union([v.string(), v.null()])),
   machineClass: v.pipe(v.picklist(["nixos", "darwin"]), v.readonly()),
 });
 
@@ -37,7 +37,7 @@ export const SectionGeneral = () => {
       onSubmit={onSubmit}
       // FIXME: name is not editable, data shouldn't contain name
       // Make the name field just pure text
-      initialValues={machine().data as MachineData & { name: string }}
+      initialValues={machine().data}
     >
       {({ editing, Field }) => (
         <div class="flex flex-col gap-3">

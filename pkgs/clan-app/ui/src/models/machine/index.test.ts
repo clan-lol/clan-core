@@ -13,7 +13,11 @@ describe("machines", () => {
       ] = createMachinesStoreFixture({
         foo: {
           data: {
-            deploy: {},
+            deploy: {
+              buildHost: null,
+              targetHost: null,
+            },
+            description: "",
             machineClass: "nixos",
             tags: [],
             position: [0, 0],
@@ -48,7 +52,11 @@ describe("machines", () => {
       ] = createMachinesStoreFixture({
         foo: {
           data: {
-            deploy: {},
+            deploy: {
+              buildHost: null,
+              targetHost: null,
+            },
+            description: "",
             machineClass: "nixos",
             tags: [],
             position: [0, 0],
