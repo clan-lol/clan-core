@@ -116,7 +116,10 @@ export const ConfigureAddress = (props: {
         address,
         ...(port && { port }),
         password: password,
-        host_key_check: "none",
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
       },
     });
     const result = await call.result;
@@ -263,7 +266,10 @@ const CheckHardware = () => {
           address: store.install.targetHost,
           port,
           password: store.install.password,
-          host_key_check: "none",
+          ssh_options: {
+            StrictHostKeyChecking: "no",
+            UserKnownHostsFile: "/dev/null",
+          },
         },
         opts: {
           machine: {

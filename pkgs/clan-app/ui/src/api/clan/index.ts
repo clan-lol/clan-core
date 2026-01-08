@@ -77,7 +77,10 @@ export async function updateMachine({
         address: targetHost,
         port,
         password,
-        host_key_check: "none",
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
       },
     },
   });
@@ -113,7 +116,10 @@ export async function installMachine({
         address: targetHost,
         port,
         password,
-        host_key_check: "none",
+        ssh_options: {
+          StrictHostKeyChecking: "no",
+          UserKnownHostsFile: "/dev/null",
+        },
       },
     },
   });
