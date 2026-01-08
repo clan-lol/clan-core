@@ -722,7 +722,7 @@ type InstanceRolesOutput = dict[str, InstanceRoleOutput]
 
 
 class MachineInput(TypedDict):
-    deploy: MachineDeployInput
+    deploy: NotRequired[MachineDeployInput]
     description: NotRequired[str | None]
     """
     Optional freeform description
@@ -778,20 +778,10 @@ class MachineOutput(TypedDict):
 
 
 class SecretsAgeInput(TypedDict):
-    """
-    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
-
-    """
-
     plugins: NotRequired[SecretsAgePluginsInput]
 
 
 class SecretsAgeOutput(TypedDict):
-    """
-    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
-
-    """
-
     plugins: ReadOnly[SecretsAgePluginsOutput]
 
 
