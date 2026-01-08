@@ -550,6 +550,53 @@ in
       };
     };
   };
+  testSubmoduleNestedOptional = {
+    expr = fromType { } (
+      types.submodule {
+        options.foo.bar = lib.mkOption {
+          type = types.str;
+          default = "bar";
+        };
+        options.foo.baz = lib.mkOption {
+          type = types.port;
+          default = 22;
+        };
+      }
+    );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        required = [ "opt" ];
+        additionalProperties = false;
+      };
+      MainOptInput = {
+        type = "object";
+        properties = {
+          foo = {
+            "$ref" = "#/$defs/MainOptFooInput";
+          };
+        };
+        additionalProperties = false;
+      };
+      MainOptFooInput = {
+        type = "object";
+        properties = {
+          bar = {
+            type = "string";
+          };
+          baz = {
+            type = "integer";
+          };
+        };
+        additionalProperties = false;
+      };
+    };
+  };
   testEmptySubmodule = {
     expr = fromType { } (types.submodule { });
     expected = {

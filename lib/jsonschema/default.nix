@@ -247,6 +247,7 @@ let
               # to "Extramodules" which is not what we want
               typePrefix = getRenamedType (ctx.typePrefix + clanLib.toUpperFirst name);
               shouldInlineBranchTypes = false;
+              submoduleInfo = null;
             };
           in
           if lib.isOption attrsOrOption then
