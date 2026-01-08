@@ -10,10 +10,8 @@ from clan_lib.flake.flake import Flake
 from clan_lib.nix_models.typing import (
     InstanceInput,
     InstanceModuleInput,
-    InstanceModuleOutput,
     InstanceRolesInput,
-    InstanceRolesOutput,
-    InstancesOutput,
+    InstancesInput,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import (
@@ -171,7 +169,7 @@ class ModuleInfo:
 @dataclass
 class Module:
     # To use this module specify: InventoryInstanceModule :: { input, name } (foreign key)
-    usage_ref: InstanceModuleOutput
+    usage_ref: InstanceModuleInput
     info: ModuleInfo
     native: bool
     instance_refs: list[str]
@@ -184,8 +182,8 @@ class ClanModules:
 
 
 def find_instance_refs_for_module(
-    instances: InstancesOutput,
-    module_ref: InstanceModuleOutput,
+    instances: InstancesInput,
+    module_ref: InstanceModuleInput,
     core_input_name: str,
 ) -> list[str]:
     """Find all usages of a given module by its module_ref
@@ -325,7 +323,7 @@ def list_service_modules(flake: Flake) -> ClanModules:
 
 def resolve_service_module_ref(
     flake: Flake,
-    module_ref: InstanceModuleOutput,
+    module_ref: InstanceModuleInput,
 ) -> Module:
     """Checks if the module reference is valid
 
@@ -370,7 +368,7 @@ def resolve_service_module_ref(
 @API.register
 def get_service_module_schema(
     flake: Flake,
-    module_ref: InstanceModuleOutput,
+    module_ref: InstanceModuleInput,
 ) -> dict[str, Any]:
     """Returns the schema for a service module
 
@@ -397,7 +395,7 @@ def get_service_module_schema(
 @API.register
 def create_service_instance(
     flake: Flake,
-    module_ref: InstanceModuleOutput,
+    module_ref: InstanceModuleInput,
     roles: InstanceRolesInput,
 ) -> None:
     """Show information about a module"""
@@ -470,8 +468,8 @@ def create_service_instance(
 @dataclass
 class InventoryInstanceInfo:
     resolved: Module
-    module: InstanceModuleOutput
-    roles: InstanceRolesOutput
+    module: InstanceModuleInput
+    roles: InstanceRolesInput
 
 
 @API.register
@@ -483,12 +481,7 @@ def list_service_instances(flake: Flake) -> dict[str, InventoryInstanceInfo]:
     instances = inventory.get("instances", {})
     res: dict[str, InventoryInstanceInfo] = {}
     for instance_name, instance in instances.items():
-        persisted_ref = instance.get("module")
-        if not persisted_ref:
-            # Skip non resolvable refs
-            # raise ClanError("")
-            continue
-
+        persisted_ref = instance.get("module", {"name": instance_name})
         module = resolve_service_module_ref(flake, persisted_ref)
 
         if module is None:

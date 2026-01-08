@@ -53,7 +53,7 @@ export const SectionTags = (props: SectionTags) => {
 
   return (
     <Show when={machineQuery.isSuccess}>
-      <SidebarSectionForm<FormValues>
+      <SidebarSectionForm
         title="Tags"
         schema={schema}
         onSubmit={props.onSubmit}

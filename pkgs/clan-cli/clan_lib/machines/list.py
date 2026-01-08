@@ -9,7 +9,7 @@ from clan_lib.dirs import specific_machine_dir
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import get_machine, list_machines
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.typing import MachineOutput
+from clan_lib.nix_models.typing import MachineInput
 from clan_lib.services.modules import parse_frontmatter
 from clan_lib.templates.disk import MachineDiskMatter
 
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 def instantiate_inventory_to_machines(
     flake: Flake,
-    machines: dict[str, MachineOutput],
+    machines: dict[str, MachineInput],
 ) -> dict[str, Machine]:
     return {
         name: Machine.from_inventory(name, flake, _inventory_machine)
@@ -37,7 +37,7 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
 
 @dataclass
 class MachineDetails:
-    machine: MachineOutput
+    machine: MachineInput
     hw_config: HardwareConfig | None = None
     disk_schema: MachineDiskMatter | None = None
 

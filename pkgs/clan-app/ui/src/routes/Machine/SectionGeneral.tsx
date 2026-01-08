@@ -62,7 +62,7 @@ export const SectionGeneral = (props: SectionGeneralProps) => {
 
   return (
     <Show when={machineQuery.isSuccess}>
-      <SidebarSectionForm<FormValues>
+      <SidebarSectionForm
         title="General"
         schema={schema}
         onSubmit={props.onSubmit}

@@ -28,43 +28,16 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
       pandora: {
         data: {
           name: "pandora",
-          deploy: {
-            buildHost: null,
-            targetHost: null,
-          },
-          description: null,
-          icon: null,
-          installedAt: null,
-          machineClass: "nixos",
-          tags: [],
         },
       },
       enceladus: {
         data: {
           name: "enceladus",
-          deploy: {
-            buildHost: null,
-            targetHost: null,
-          },
-          description: null,
-          icon: null,
-          installedAt: null,
-          machineClass: "nixos",
-          tags: [],
         },
       },
       dione: {
         data: {
           name: "dione",
-          deploy: {
-            buildHost: null,
-            targetHost: null,
-          },
-          description: null,
-          icon: null,
-          installedAt: null,
-          machineClass: "nixos",
-          tags: [],
         },
       },
     },

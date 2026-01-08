@@ -1,5 +1,5 @@
 import json
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.path_utils import (
@@ -153,10 +153,12 @@ Please report this issue at https://git.clan.lol/clan/clan-core/issues
 
 empty: list[str] = []
 
+T = TypeVar("T")
 
-def merge_objects[T](
+
+def merge_objects(
     curr: T,
-    update: object,
+    update: T,
     merge_lists: bool = True,
     path: list[str] = empty,
 ) -> T:

@@ -83,7 +83,9 @@ def create_machine(
         opts.clan_dir.invalidate_cache()
         inventory = inventory_store.read()
 
-        curr_machine = inventory.get("machines", {}).get(machine_name)
+        curr_machine: MachineInput = inventory.get("machines", {}).get(
+            machine_name, {"deploy": {}}
+        )  # ignore: type[reportAssignmentType]
         new_machine = merge_objects(curr_machine, opts.machine)
 
         set_value_by_path(

@@ -39,7 +39,6 @@ export const Machine = (props: RouteSectionProps) => {
           },
         },
         update: {
-          deploy: {},
           ...machineQuery.data?.machine,
           ...values,
         },

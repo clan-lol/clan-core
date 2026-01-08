@@ -10,6 +10,7 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
+import { OperationNames, SuccessData } from "@/src/hooks/api";
 import { GenericSchema, GenericSchemaAsync } from "valibot";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
@@ -29,9 +30,12 @@ interface SidebarSectionFormProps<FormValues extends FieldValues> {
   }) => JSX.Element;
 }
 
-export function SidebarSectionForm<FormValues extends FieldValues>(
-  props: SidebarSectionFormProps<FormValues>,
-) {
+export function SidebarSectionForm<
+  T extends OperationNames,
+  FormValues extends FieldValues = SuccessData<T> extends FieldValues
+    ? SuccessData<T>
+    : never,
+>(props: SidebarSectionFormProps<FormValues>) {
   const [editing, setEditing] = createSignal(false);
 
   const [formStore, { Form, Field }] = createForm<FormValues>({
