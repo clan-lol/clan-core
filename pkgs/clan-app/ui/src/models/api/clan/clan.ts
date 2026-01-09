@@ -2,13 +2,11 @@ import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import client from "./client-call";
 import {
   ClanData,
-  ClanEntity,
-  ClanDataEntity,
-  ClanMetaEntity,
-  ClanMetaDataEntity,
+  ClanOutput,
+  ClanMetaOutput,
+  ClanDataOutput,
 } from "../../clan/clan";
 import {
-  MachineDataEntity,
   MachineEntity,
   MachinePositions,
   machinePositions,
@@ -20,7 +18,7 @@ import { ServiceEntity, ServiceRoleEntity } from "../../service/service";
 export async function getClans(
   ids: string[],
   activeIndex: number,
-): Promise<(ClanEntity | ClanMetaEntity)[]> {
+): Promise<(ClanOutput | ClanMetaOutput)[]> {
   return await Promise.all(
     ids.map(async (id, i) => {
       if (i === activeIndex) {
@@ -30,7 +28,7 @@ export async function getClans(
     }),
   );
 }
-export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
+export async function getClanMeta(id: string): Promise<ClanMetaOutput> {
   const clan = await client.post("get_clan_details", {
     body: {
       flake: {
@@ -40,11 +38,14 @@ export async function getClanMeta(id: string): Promise<ClanMetaEntity> {
   });
   return {
     id,
-    data: clan.data as ClanMetaDataEntity,
+    data: {
+      name: clan.data.name,
+      description: clan.data.description || "",
+    },
   };
 }
 
-export async function getClan(id: string): Promise<ClanEntity> {
+export async function getClan(id: string): Promise<ClanOutput> {
   const [
     clanRes,
     dataSchemaRes,
@@ -173,7 +174,11 @@ export async function getClan(id: string): Promise<ClanEntity> {
   );
   return {
     id,
-    data: clanRes.data as ClanData,
+    data: {
+      name: clanRes.data.name,
+      description: clanRes.data.description || "",
+      domain: clanRes.data.domain,
+    },
     dataSchema: dataSchemaRes.data,
     machines,
     services,
@@ -187,7 +192,7 @@ export async function getClan(id: string): Promise<ClanEntity> {
 // TODO: backend should provide an API that allows partial update
 export async function updateClanData(
   clanId: string,
-  data: Partial<ClanData>,
+  data: ClanData,
 ): Promise<void> {
   await client.post("set_clan_details", {
     body: {
@@ -196,9 +201,9 @@ export async function updateClanData(
           identifier: clanId,
         },
         meta: {
-          domain: "",
-          name: data.name!,
-          ...data,
+          name: data.name,
+          description: data.description,
+          domain: data.domain,
         },
       },
     },
@@ -209,18 +214,14 @@ export async function updateClanData(
 // TODO: allow users to select a template
 export async function createClan(
   id: string,
-  data: ClanDataEntity,
-): Promise<void> {
-  await client.post("create_clan", {
+  data: ClanData,
+): Promise<ClanDataOutput> {
+  const res = await client.post("create_clan", {
     body: {
       opts: {
         dest: id,
         template: "minimal",
-        initial: {
-          // FIXME: remove this once backend API types are fixed
-          domain: "",
-          ...data,
-        },
+        initial: data,
       },
     },
   });
@@ -250,4 +251,10 @@ export async function createClan(
       },
     }),
   ]);
+
+  return {
+    name: res.data.name,
+    description: res.data.description || "",
+    domain: res.data.domain,
+  };
 }

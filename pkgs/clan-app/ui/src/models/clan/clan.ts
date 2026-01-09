@@ -7,7 +7,6 @@ import {
   Machines,
   ServiceInstances,
   Services,
-  useClansContext,
 } from "..";
 import { reconcile, SetStoreFunction } from "solid-js/store";
 import { MachineEntity } from "../machine/machine";
@@ -15,57 +14,56 @@ import { createMachines } from "../machine/machines";
 import { createServices } from "../service/services";
 import { ServiceEntity } from "../service/service";
 import { createServiceInstances } from "../service/instances";
+import { DeepRequired } from "@/src/util";
 
-export type ClanEntity = {
+export type ClanMember = {
+  readonly type: "tag" | "machine";
+  readonly name: string;
+};
+
+export type ClanOutput = {
   readonly id: string;
-  readonly data: ClanDataEntity;
+  readonly data: ClanDataOutput;
   readonly dataSchema: DataSchema;
   readonly machines: Record<string, MachineEntity>;
   readonly services: Record<string, ServiceEntity>;
   readonly globalTags: Tags;
 };
 
-export type ClanDataEntity = ClanMetaDataEntity & {
+export type ClanData = {
+  name: string;
+  description?: string;
   domain?: string;
 };
-export type ClanMemberEntity = {
-  readonly type: "tag" | "machine";
-  readonly name: string;
-};
+export type ClanDataOutput = DeepRequired<ClanData>;
 
 export type Clan = Omit<
-  ClanEntity,
+  ClanOutput,
   "data" | "machines" | "services" | "serviceInstances"
 > & {
   readonly clans: Clans;
   readonly machines: Machines;
   readonly services: Services;
-  data: ClanData;
+  data: ClanDataOutput;
   readonly members: ClanMember[];
   readonly index: number;
   serviceInstances: ServiceInstances;
   readonly isActive: boolean;
 };
 
-export type ClanData = ClanDataEntity;
-
-export type ClanMetaEntity = {
+export type ClanMetaOutput = {
   readonly id: string;
-  readonly data: ClanMetaDataEntity;
+  readonly data: ClanMetaDataOutput;
 };
-export type ClanMetaDataEntity = {
-  name: string;
-  description?: string;
+export type ClanMetaDataOutput = {
+  readonly name: string;
+  readonly description: string;
 };
-export type ClanMeta = Omit<ClanMetaEntity, "data"> & {
-  readonly data: ClanMetaData;
+export type ClanMeta = Omit<ClanMetaOutput, "data"> & {
+  readonly data: ClanMetaDataOutput;
   readonly clans: Clans;
   readonly index: number;
 };
-
-export type ClanMetaData = ClanMetaDataEntity;
-
-export type ClanMember = ClanMemberEntity;
 
 export type Tags = {
   // TODO: rename backend's data.options to data.regular, options is too
@@ -78,7 +76,7 @@ export type ClanMethods = {
   setClan: SetStoreFunction<Clan>;
   activateClan(this: void): Promise<void>;
   deactivateClan(this: void): void;
-  updateClanData(this: void, data: Partial<ClanData>): Promise<void>;
+  updateClanData(this: void, data: ClanData): Promise<void>;
   removeClan(this: void): void;
   refreshClan(this: void): Promise<void>;
 };
@@ -120,16 +118,16 @@ export function createClanMethods(
       removeClan(clan());
     },
     async refreshClan(this: void) {
-      const entity = await api.clan.getClan(clan().id);
-      const newClan = createClan(entity, clans);
+      const output = await api.clan.getClan(clan().id);
+      const newClan = createClanFromOutput(output, clans);
       setClan(reconcile(newClan));
     },
   };
   return self;
 }
 
-export function createClan(entity: ClanEntity, clans: Clans): Clan {
-  const { id } = entity;
+export function createClanFromOutput(output: ClanOutput, clans: Clans): Clan {
+  const { id } = output;
   const clan: Accessor<Clan> = () => {
     const clan = clans.all.find((clan) => clan.id === id);
     if (!clan) {
@@ -139,13 +137,13 @@ export function createClan(entity: ClanEntity, clans: Clans): Clan {
     throw new Error(`Accessing a clan that has not been activated yet: ${id}`);
   };
   return {
-    ...entity,
+    ...output,
     get clans() {
       return clans;
     },
-    machines: createMachines(entity.machines, clan),
-    services: createServices(entity.services, clan),
-    serviceInstances: createServiceInstances(entity.services, clan),
+    machines: createMachines(output.machines, clan),
+    services: createServices(output.services, clan),
+    serviceInstances: createServiceInstances(output.services, clan),
     get members() {
       return [
         ...Object.keys(this.machines.all).map((name) => ({
@@ -165,9 +163,12 @@ export function createClan(entity: ClanEntity, clans: Clans): Clan {
     },
   };
 }
-export function createClanMeta(entity: ClanMetaEntity, clans: Clans): ClanMeta {
+export function createClanMetaFromOutput(
+  output: ClanMetaOutput,
+  clans: Clans,
+): ClanMeta {
   return {
-    ...entity,
+    ...output,
     get clans() {
       return clans;
     },

@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.flake.flake import Flake
-from clan_lib.nix_models.typing import ClanInput
+from clan_lib.nix_models.typing import ClanInput, InventoryMetaOutput
 
 
 @pytest.fixture(scope="session")
@@ -93,3 +93,28 @@ def clan_flake(
         return Flake(str(dest))
 
     return factory
+
+
+@pytest.fixture
+def patch_get_clan_details(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Callable[[Flake], InventoryMetaOutput]:
+    """Patch clan_lib.clan.create.get_clan_details
+
+    This patching is required for create_clan, because after the flake has been
+    create, it won't have a lock file, but get_clan_details needs to evalute the
+    flake which requires generating the lock file. This can break tests which
+    run in the sandbox and it doesn't allow such generation.
+    """
+
+    def get_clan_details(_flake: Flake) -> InventoryMetaOutput:
+        return {
+            "description": "",
+            "domain": "",
+            "name": "test-flake",
+            "icon": "",
+            "tld": "",
+        }
+
+    monkeypatch.setattr("clan_lib.clan.create.get_clan_details", get_clan_details)
+    return get_clan_details
