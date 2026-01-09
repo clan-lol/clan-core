@@ -6,6 +6,9 @@ let
     path
     bool
     nullOr
+    deferredModuleWith
+    submoduleWith
+    attrsOf
     ;
 
   fileModuleInterface = file: {
@@ -88,10 +91,14 @@ let
     };
   };
 
+  storeModule = {
+    options.pythonModule = mkOption { type = str; };
+  };
+
 in
 {
   options = {
-    secretStore = lib.mkOption {
+    secretStore = mkOption {
       type = lib.types.enum [
         "sops"
         "password-store"
@@ -106,17 +113,18 @@ in
       '';
     };
 
-    secretModule = lib.mkOption {
-      type = lib.types.str;
+    secretModule = mkOption {
+      type = str;
       internal = true;
       description = ''
         the python import path to the secret module
       '';
+      default = config.stores.${config.secretStore}.pythonModule;
     };
 
     # TODO: see if this is the right approach. Maybe revert to secretPathFunction
-    fileModule = lib.mkOption {
-      type = lib.types.deferredModuleWith {
+    fileModule = mkOption {
+      type = deferredModuleWith {
         staticModules = [
           fileModuleInterface
           (lib.mkRenamedOptionModule
@@ -147,7 +155,7 @@ in
       default = { };
     };
 
-    publicStore = lib.mkOption {
+    publicStore = mkOption {
       type = lib.types.enum [
         "in_repo"
       ];
@@ -158,37 +166,48 @@ in
       '';
     };
 
-    publicModule = lib.mkOption {
-      type = lib.types.str;
+    publicModule = mkOption {
+      type = str;
       internal = true;
       description = ''
         the python import path to the public module
       '';
+      default = config.publicStores.${config.publicStore}.pythonModule;
+    };
+
+    stores = mkOption {
+      internal = true;
+      visible = false;
+      type = attrsOf (submoduleWith {
+        modules = [ storeModule ];
+      });
+    };
+    publicStores = mkOption {
+      internal = true;
+      visible = false;
+      type = attrsOf (submoduleWith {
+        modules = [ storeModule ];
+      });
     };
   };
 
-  # TODO: Refactor this to use an explicit mapping instead of mkIf
-  imports = [
-    # SecretModules
-    {
-
-      secretModule = lib.mkIf (config.secretStore == "fs") "clan_lib.vars.secret_modules.fs";
-    }
-    {
-
-      secretModule = lib.mkIf (config.secretStore == "sops") "clan_lib.vars.secret_modules.sops";
-    }
-    {
-      secretModule = lib.mkIf (
-        config.secretStore == "password-store"
-      ) "clan_lib.vars.secret_modules.password_store";
-    }
-    {
-      secretModule = lib.mkIf (config.secretStore == "vm") "clan_lib.vars.secret_modules.vm";
-    }
-    # PublicModules
-    {
-      publicModule = lib.mkIf (config.publicStore == "in_repo") "clan_lib.vars.public_modules.in_repo";
-    }
-  ];
+  config.stores = {
+    fs = {
+      pythonModule = "clan_lib.vars.secret_modules.fs";
+    };
+    sops = {
+      pythonModule = "clan_lib.vars.secret_modules.sops";
+    };
+    "password-store" = {
+      pythonModule = "clan_lib.vars.secret_modules.password_store";
+    };
+    vm = {
+      pythonModule = "clan_lib.vars.secret_modules.vm";
+    };
+  };
+  config.publicStores = {
+    in_repo = {
+      pythonModule = "clan_lib.vars.public_modules.in_repo";
+    };
+  };
 }
