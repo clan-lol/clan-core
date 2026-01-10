@@ -7,6 +7,8 @@ let
     attrTag
     submodule
     path
+    nullOr
+    port
     ;
 in
 {
@@ -14,6 +16,20 @@ in
     name = mkOption {
       type = str;
       default = name;
+    };
+    port = mkOption {
+      type = port;
+      default = 22;
+      description = ''
+        SSH port to connect to.
+      '';
+    };
+    user = mkOption {
+      type = nullOr str;
+      default = null;
+      description = ''
+        SSH user to connect as. Defaults to root if not specified.
+      '';
     };
     SSHOptions = mkOption {
       type = listOf str;

@@ -3,7 +3,7 @@ import textwrap
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
@@ -25,14 +25,13 @@ class Peer:
     name: str
     _host: list[dict[str, str | dict[str, str]]]
     flake: Flake
+    port: int = field(default=22)
+    _user: str | None = field(default=None)
 
-    @staticmethod
-    def _format_address(address: str) -> str:
-        """Format address, adding brackets for IPv6 addresses if needed."""
-        # Check if it's an IPv6 address (contains colons and no brackets)
-        if ":" in address and not address.startswith("["):
-            return f"[{address}]"
-        return address
+    @property
+    def ssh_user(self) -> str:
+        """Return the SSH user, defaulting to 'root' if not specified."""
+        return self._user if self._user is not None else "root"
 
     @cached_property
     def host(self) -> list[str]:
@@ -40,7 +39,7 @@ class Peer:
         result = []
         for host_def in self._host:
             if "plain" in host_def and isinstance(host_def["plain"], str):
-                result.append(self._format_address(host_def["plain"]))
+                result.append(host_def["plain"])
             elif "var" in host_def and isinstance(host_def["var"], dict):
                 _var: dict[str, str] = host_def["var"]
                 machine_name = _var["machine"]
@@ -65,7 +64,7 @@ class Peer:
                         .lstrip("\n")
                     )
                     raise ClanError(msg)
-                result.append(self._format_address(var.value.decode().strip()))
+                result.append(var.value.decode().strip())
             else:
                 msg = f"Unknown Var Type {host_def}"
                 raise ClanError(msg)
@@ -181,10 +180,13 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
             ):
                 continue
 
+            peer_data = defined_exports["exports"][scope_name]["peer"]
             peers[peer_scope.machine] = Peer(
                 name=peer_scope.machine,
-                _host=defined_exports["exports"][scope_name]["peer"]["hosts"],
+                _host=peer_data["hosts"],
                 flake=flake,
+                port=peer_data.get("port", 22),
+                _user=peer_data.get("user"),
             )
 
         networks[network_name] = Network(

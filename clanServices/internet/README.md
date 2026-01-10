@@ -15,9 +15,12 @@ The example below shows how to configure a domain so server1 is reachable over t
         internet = {
             roles.default.machines.server1 = {
                 settings.host = "server1.example.com";
+                # settings.port defaults to 22, settings.user defaults to null (uses "root")
             };
             roles.default.machines.server2 = {
                 settings.host = "192.168.1.100";
+                settings.port = 45621;  # custom SSH port
+                settings.user = "admin";  # custom SSH user
             };
         };
 };
