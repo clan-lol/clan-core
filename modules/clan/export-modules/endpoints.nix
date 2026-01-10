@@ -8,7 +8,7 @@ let
 in
 {
   options = {
-    name = mkOption {
+    hosts = mkOption {
       type = listOf str;
       default = [ ];
     };
