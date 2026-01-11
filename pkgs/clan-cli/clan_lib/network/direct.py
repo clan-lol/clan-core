@@ -43,6 +43,11 @@ class NetworkTechnology(NetworkTechnologyBase):
 
     def remote(self, peer: Peer) -> list[Remote]:
         return [
-            Remote.from_ssh_uri(machine_name=peer.name, address=host)
+            Remote(
+                address=host,
+                user=peer.ssh_user,
+                port=peer.port,
+                command_prefix=peer.name,
+            )
             for host in peer.host
         ]

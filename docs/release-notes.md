@@ -19,7 +19,23 @@ Darwin Support
 
 ## Breaking Changes
 
-###Exports
+### Internet Service
+
+The `settings.host` option in the internet service now only accepts a hostname or IP address. Port and user must be specified separately using the new `settings.port` and `settings.user` options.
+
+**Migration:**
+
+- **Before:** `settings.host = "root@example.com:2222";`
+- **After:**
+  ```nix
+  settings.host = "example.com";
+  settings.port = 2222;
+  settings.user = "root";
+  ```
+
+The `settings.port` defaults to `22` and `settings.user` defaults to `null` (which uses `root`).
+
+### Exports
 - **Experimental** exports system has been redesigned.
   - Previous export definitions are no longer compatible
   - **Migration required**: Update your modules to use the standardized export options
