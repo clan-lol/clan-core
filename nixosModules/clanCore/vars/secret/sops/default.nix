@@ -23,9 +23,6 @@ in
     };
   };
 
-  config.clan.core.vars.settings.secretModule = lib.mkIf (
-    config.clan.core.vars.settings.secretStore == "sops"
-  ) "clan_lib.vars.secret_modules.sops";
   # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
   config.clan.core.vars.settings.fileModule =
     lib.mkIf (config.clan.core.vars.settings.secretStore == "sops")

@@ -37,6 +37,20 @@
               ip address or hostname (domain) of the machine
             '';
           };
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 22;
+            description = ''
+              SSH port to connect to the machine.
+            '';
+          };
+          user = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              SSH user to connect as. Defaults to root if not specified.
+            '';
+          };
           jumphosts = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -56,6 +70,8 @@
         exports = mkExports {
           peer = {
             hosts = [ { plain = settings.host; } ];
+            port = settings.port;
+            user = settings.user;
             SSHOptions = map (_x: "-J x") settings.jumphosts;
           };
         };

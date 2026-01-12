@@ -57,10 +57,9 @@
         "pkgs/clan-cli/clan_cli/tests/data/password-store/.gpg-id"
         "pkgs/clan-cli/clan_cli/tests/data/ssh_host_ed25519_key"
         "pkgs/clan-cli/clan_cli/tests/data/sshd_config"
-        "pkgs/clan-vm-manager/.vscode/lhebendanz.weaudit"
-        "pkgs/clan-vm-manager/bin/clan-vm-manager"
         "clanServices/hello-world/default.nix"
         "sops/secrets/test-backup-age.key/secret"
+        "pkgs/clan-cli/clan_lib/nix_models/typing.py"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"
@@ -103,21 +102,7 @@
           extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
           extraPythonPaths = [ "../../clan-cli" ];
         };
-      }
-      // (
-        if pkgs.stdenv.isLinux then
-          {
-            "clan-vm-manager" = {
-              directory = "pkgs/clan-vm-manager";
-              extraPythonPackages = self'.packages.clan-vm-manager.externalTestDeps ++ [
-                (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
-              ];
-              extraPythonPaths = [ "../clan-cli" ];
-            };
-          }
-        else
-          { }
-      );
+      };
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
     };

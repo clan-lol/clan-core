@@ -9,7 +9,7 @@ from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
-from clan_lib.nix_models.clan import InventoryMeta
+from clan_lib.nix_models.typing import InventoryMetaInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.patch_engine import merge_objects
 from clan_lib.persist.path_utils import set_value_by_path
@@ -26,7 +26,7 @@ class CreateOptions:
 
     src_flake: Flake | None = None
     setup_git: bool = True
-    initial: InventoryMeta | None = None
+    initial: InventoryMetaInput | None = None
     update_clan: bool = True
 
     # -- Internal use only --

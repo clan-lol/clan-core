@@ -4,16 +4,12 @@
     "strict": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": [
-      "vite/client",
-      "vite-plugin-solid-svg/types-component-solid",
-      "@vitest/browser/providers/playwright"
-    ],
+    "types": ["vite/client", "vite-plugin-solid-svg/types-component-solid"],
     "noEmit": true,
     "resolveJsonModule": true,
     "allowJs": true,
@@ -22,5 +18,7 @@
       "@/*": ["./*"],
       "@api/clan/client": ["./src/api/clan/client-call"]
     }
-  }
+  },
+  // TODO: enable this once storybook is fixed
+  "exclude": ["**/*.stories.tsx"]
 }

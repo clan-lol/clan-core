@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_cli.help import HelpFormatter
+
 from .list import register_list_parser
 from .overview import register_overview_parser
 from .ping import register_ping_parser
@@ -31,7 +33,7 @@ Examples:
   $ clan network list
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_list_parser(list_parser)
 
@@ -51,7 +53,7 @@ Examples:
   Check machine1 only on the tor network
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_ping_parser(ping_parser)
 
@@ -67,6 +69,6 @@ Examples:
   $ clan network overview
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_overview_parser(overview_parser)

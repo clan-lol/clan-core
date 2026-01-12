@@ -50,6 +50,8 @@ class NetworkTechnology(NetworkTechnologyBase):
         return [
             Remote(
                 address=host,
+                user=peer.ssh_user,
+                port=peer.port,
                 command_prefix=peer.name,
                 socks_port=self.proxy,
                 socks_wrapper=tor_wrapper,

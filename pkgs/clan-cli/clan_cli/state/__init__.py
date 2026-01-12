@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_cli.help import HelpFormatter
+
 from .list import register_state_parser
 
 
@@ -32,6 +34,6 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
   For more detailed information, visit: https://docs.clan.lol/guides/backups/backup-intro
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_state_parser(state_parser)

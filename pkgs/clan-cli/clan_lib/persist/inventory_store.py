@@ -6,11 +6,12 @@ from typing import Any, NotRequired, Protocol, TypedDict, cast
 
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
-from clan_lib.nix_models.clan import (
-    Inventory,
-    InventoryInstancesType,
-    InventoryMachinesType,
-    InventoryMetaType,
+from clan_lib.nix_models.typing import (
+    InstancesOutput,
+    InventoryInput,
+    InventoryMachinesOutput,
+    InventoryMetaOutput,
+    InventoryOutput,
 )
 from clan_lib.persist.patch_engine import calc_patches
 from clan_lib.persist.path_utils import (
@@ -80,7 +81,7 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 class PersistenceInfo:
     attribute_props: AttributeMap
     data_eval: "InventorySnapshot"
-    data_disk: "InventorySnapshot"
+    data_disk: "InventoryInput"
 
 
 class FlakeInterface(Protocol):
@@ -98,9 +99,9 @@ class InventorySnapshot(TypedDict):
     It contains only the keys that are convertible to python types and can be serialized to JSON.
     """
 
-    machines: NotRequired[InventoryMachinesType]
-    instances: NotRequired[InventoryInstancesType]
-    meta: NotRequired[InventoryMetaType]
+    machines: NotRequired[InventoryMachinesOutput]
+    instances: NotRequired[InstancesOutput]
+    meta: InventoryMetaOutput
 
 
 class InventoryStore:
@@ -162,23 +163,23 @@ class InventoryStore:
             filtered = cast("InventorySnapshot", raw_value)
         return sanitize(filtered, self._allowed_path_transforms, [])
 
-    def get_readonly_raw(self, keys: set[str]) -> Inventory:
+    def get_readonly_raw(self, keys: set[str]) -> InventoryOutput:
         attrs = "{" + ",".join(sorted(keys)) + "}"
         return self._flake.select(
             f"clanInternals.inventoryClass.inventorySerialization.{attrs}"
         )
 
-    def _get_persisted(self) -> InventorySnapshot:
+    def _get_persisted(self) -> InventoryInput:
         """Load the inventory FILE from the flake directory
         If no file is found, returns an empty dictionary
         """
         # TODO: make this configurable
         if not self.inventory_file.exists():
-            return {}
+            return cast("InventoryInput", {})
         with self.inventory_file.open() as f:
             try:
                 res: dict = json.load(f)
-                inventory = Inventory(res)  # type: ignore[misc]
+                inventory = cast("InventoryInput", res)
             except json.JSONDecodeError as e:
                 # Error decoding the inventory file
                 msg = f"Error decoding inventory file: {e}"
@@ -214,7 +215,7 @@ class InventoryStore:
         current_priority = self._get_introspection()
 
         data_eval: InventorySnapshot = self._load_merged_inventory()
-        data_disk: InventorySnapshot = self._get_persisted()
+        data_disk = self._get_persisted()
 
         attribute_props = compute_attribute_persistence(
             current_priority,

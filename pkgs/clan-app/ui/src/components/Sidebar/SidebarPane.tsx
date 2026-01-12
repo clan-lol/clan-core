@@ -5,7 +5,7 @@ import Icon from "../Icon/Icon";
 import { Button as KButton } from "@kobalte/core/button";
 import cx from "classnames";
 
-export interface SidebarPaneProps {
+interface SidebarPaneProps {
   title: string;
   onClose: () => void;
   subHeader?: JSX.Element;

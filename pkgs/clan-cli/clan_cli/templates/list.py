@@ -8,7 +8,7 @@ from clan_lib.templates import list_templates
 if TYPE_CHECKING:
     import argparse
 
-    from clan_lib.nix_models.clan import TemplateClanType
+    from clan_lib.nix_models.typing import TemplatesClanInput
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def list_command(args: argparse.Namespace) -> None:
 
     # Display all templates
     for template_type in sorted(templates.builtins):
-        builtin_template_set: TemplateClanType | None = templates.builtins.get(
+        builtin_template_set: TemplatesClanInput | None = templates.builtins.get(
             template_type,
             None,
         )  # type: ignore[assignment]
@@ -44,7 +44,7 @@ def list_command(args: argparse.Namespace) -> None:
         )
         last_idx = len(visible_inputs) - 1
         for input_idx, (input_name, input_templates) in enumerate(visible_inputs):
-            custom_templates: TemplateClanType = input_templates[template_type]  # type: ignore[literal-required]
+            custom_templates: TemplatesClanInput = input_templates[template_type]  # type: ignore[literal-required]
             is_last_input = input_idx == last_idx
             prefix = "│" if not is_last_input else " "
             if not is_last_input:

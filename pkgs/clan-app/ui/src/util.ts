@@ -1,43 +1,4 @@
-export const pick = <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> =>
-  keys.reduce(
-    (acc, key) => {
-      acc[key] = obj[key];
-      return acc;
-    },
-    {} as Pick<T, K>,
-  );
-
-export const removeEmptyStrings = <T>(obj: T): T => {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (typeof obj === "string") {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => removeEmptyStrings(item)) as T;
-  }
-
-  if (typeof obj === "object") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = {};
-    for (const key in obj) {
-      // eslint-disable-next-line no-prototype-builtins
-      if (obj.hasOwnProperty(key)) {
-        const value = obj[key];
-        if (value !== "") {
-          result[key] = removeEmptyStrings(value);
-        }
-      }
-    }
-
-    return result;
-  }
-
-  return obj;
-};
+import { Accessor, onCleanup } from "solid-js";
 
 // Join truthy values with dashes
 // joinByDash("button", "", false, null, "x")'s return type is "button-x"
@@ -50,8 +11,8 @@ export const joinByDash = <
 };
 
 // Turn a component's "in" attribute value to a list of css module class names
-export const getInClasses = <T extends Record<string, string>, U>(
-  styles: T,
+export const getInClasses = <U extends string>(
+  styles: Record<string, string>,
   localIn?: U | U[],
 ): string[] => {
   if (!localIn) {
@@ -87,3 +48,57 @@ type DashJoined<T extends readonly string[]> = T extends readonly [infer First]
         : never
       : never
     : "";
+
+export function mapObjectValues<T, U>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => U,
+): Record<string, U> {
+  return Object.fromEntries(
+    Object.entries(o).map((item, i, arr) => [item[0], fn(item, i, arr)]),
+  );
+}
+export async function asyncMapObjectValues<T, U>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => Promise<U>,
+): Promise<Record<string, U>> {
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(o).map(
+        async (item, i, arr) => [item[0], await fn(item, i, arr)] as const,
+      ),
+    ),
+  );
+}
+
+export function mapObjectKeys<T>(
+  o: Record<string, T>,
+  fn: (v: [string, T], i: number, arr: [string, T][]) => string,
+): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(o).map((item, i, arr) => [fn(item, i, arr), item[1]]),
+  );
+}
+export function isPosition(
+  a: readonly [number, number],
+  b: readonly [number, number],
+) {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+export function onClickOutside(
+  el: HTMLElement,
+  value: Accessor<() => void>,
+): void {
+  const listener = (ev: MouseEvent) => {
+    if (!el.contains(ev.target as Node)) {
+      const fn = value();
+      fn();
+    }
+  };
+  document.addEventListener("mousedown", listener);
+  onCleanup(() => document.removeEventListener("mousedown", listener));
+}
+
+export type DeepRequired<T> = Required<{
+  [K in keyof T]: T[K] extends Required<T[K]> ? T[K] : DeepRequired<T[K]>;
+}>;

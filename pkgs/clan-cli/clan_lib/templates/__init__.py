@@ -4,22 +4,23 @@ from dataclasses import dataclass
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix_models.clan import ClanTemplatesType
+from clan_lib.nix_models.typing import TemplatesInput
 
 log = logging.getLogger(__name__)
 
 
+# TODO: Use OutputTypes for listing templates
 @dataclass
 class TemplateList:
-    builtins: ClanTemplatesType
-    custom: dict[str, ClanTemplatesType]
+    builtins: TemplatesInput
+    custom: dict[str, TemplatesInput]
 
 
 def get_builtin_template_list() -> TemplateList:
     """Fallback to get only builtin clan templates with no custom templates."""
     builtin_flake = Flake(str(clan_templates()))
     builtin_templates = builtin_flake.select("clanInternals.templates")
-    custom_templates: dict[str, ClanTemplatesType] = {}
+    custom_templates: dict[str, TemplatesInput] = {}
     return TemplateList(builtin_templates, custom_templates)
 
 

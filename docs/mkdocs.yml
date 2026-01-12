@@ -3,11 +3,14 @@ site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: "_>"
 edit_uri: _edit/main/docs/site/
+remote_branch: doc-pages
 
 validation:
   omitted_files: warn
   absolute_links: ignore
   unrecognized_links: warn
+  nav:
+    not_found: ignore # Ignore option-search/ added during build
 
 markdown_extensions:
   - admonition
@@ -150,6 +153,8 @@ nav:
           - decisions/05-deployment-parameters.md
           - decisions/template.md
       - Glossary: reference/glossary.md
+      - Releases:
+          - releases/25-11.md
   - Services:
       - services/definition.md
       # Generated list from the list of official services
@@ -183,7 +188,7 @@ nav:
           - services/official/zerotier.md
       - services/community.md
 
-  - Search Clan Options: "/option-search"
+  - Search Clan Options: "option-search/"
 
 docs_dir: site
 site_dir: out
@@ -240,6 +245,9 @@ extra:
       link: https://github.com/clan-lol/clan-core
     - icon: fontawesome/solid/rss
       link: https://clan.lol/feed.xml
+
+hooks:
+  - edit_hook.py
 
 plugins:
   - search

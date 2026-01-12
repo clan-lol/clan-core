@@ -22,7 +22,7 @@ lib.fix (
         types = import ./types { inherit lib clanLib; };
 
         introspection = import ./introspection { inherit lib; };
-        jsonschema = import ./jsonschema { inherit lib; };
+        jsonschema = import ./jsonschema { inherit lib clanLib; };
         docs = import ./docs.nix { inherit lib; };
 
         flakes = import ./flakes.nix { inherit lib clanLib; };
@@ -44,7 +44,105 @@ lib.fix (
 
         # Experimental
         exports = throw "clanLib.exports has been renamed. Use the utility in clanLib directly";
+        /**
+          Map the list and merge the list of sets into a new attribute set
+           # Inputs
+          `f`
+           : 1\. Function argument
+           `list`
+           : 2\. Function argument
+           # Type
+           ```
+          concatMapListToAttrs :: (a -> AttrSet) -> [a] -> AttrSet
+          ```
+           # Examples
+          :::{.example}
+          ## `clanLib.concatMapListToAttrs` usage example
+           ```nix
+          concatMapListToAttrs
+            (name: {
+              ${name} = name;
+              z = name;
+            })
+            [ "a" "b" ]
+          => { a = "a"; b = "b"; z = "b"; }
+          ```
+           :::
+        */
+        concatMapListToAttrs = f: list: lib.zipAttrsWith (_name: values: lib.last values) (map f list);
 
+        /**
+          Upper-case the first character, leave the rest alone
+
+          # Inputs
+
+          `str`
+          : Input string
+
+          # Type
+
+          ```
+          toUpperFirst :: string -> string
+          ```
+
+          # Examples
+          :::{.example}
+          ## `toUpperFirst` usage example
+
+          ```nix
+          toUpperFirst "foo"
+          => "Foo"
+          hasPrefix "fooBar"
+          => "FooBar"
+          ```
+
+          :::
+        */
+        toUpperFirst =
+          str:
+          lib.throwIfNot (lib.isString str)
+            "toUpperFirst only accepts string values, but got ${lib.typeOf str}"
+            (
+              let
+                firstChar = lib.substring 0 1 str;
+                rest = lib.substring 1 (-1) str;
+              in
+              lib.addContextFrom str (lib.toUpper firstChar + rest)
+            );
+        /**
+          Replace a list's nth element with a new element
+
+          # Inputs
+
+          `list`
+          : Input list
+
+          `idx`
+          : index to replace
+
+          `newElem`
+          : new element to replace with
+
+          # Type
+
+          ```
+          replaceElemAt :: [a] -> int - b -> [a]
+          ```
+
+          # Examples
+          :::{.example}
+          ## `replaceElemAt` usage example
+
+          ```nix
+          lib.replaceElemAt` [1 2 3] 0 "a"
+          => ["a" 2 3]
+          ```
+
+          :::
+        */
+        replaceElemAt =
+          list: idx: newElem:
+          lib.imap0 (i: oldElem: if i == idx then newElem else oldElem) list;
       }
       // (import ./vars/default.nix { inherit lib; })
       // (import ./exports/exports.nix { inherit lib clanLib; });

@@ -6,6 +6,36 @@ from clan_lib.machines.machines import Machine
 from clan_lib.network.network import Network, Peer, networks_from_flake
 
 
+class TestPeerPortUser:
+    """Tests for Peer port and user fields."""
+
+    def test_peer_default_port_user(self) -> None:
+        """Peer should have default port=22 and _user=None, ssh_user='root'."""
+        flake = MagicMock(spec=Flake)
+        peer = Peer(
+            name="test",
+            _host=[{"plain": "example.com"}],
+            flake=flake,
+        )
+        assert peer.port == 22
+        assert peer._user is None
+        assert peer.ssh_user == "root"
+
+    def test_peer_custom_port_user(self) -> None:
+        """Peer should accept custom port and user."""
+        flake = MagicMock(spec=Flake)
+        peer = Peer(
+            name="test",
+            _host=[{"plain": "example.com"}],
+            flake=flake,
+            port=45621,
+            _user="admin",
+        )
+        assert peer.port == 45621
+        assert peer._user == "admin"
+        assert peer.ssh_user == "admin"
+
+
 @patch("clan_lib.network.network.get_machine_var")
 def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     # Create a mock flake
@@ -59,6 +89,8 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                             },
                         },
                     ],
+                    "port": 45621,
+                    "user": "admin",
                 },
             },
             "clan-core/internet:vpn-network:default:machine2": {
@@ -75,6 +107,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                             },
                         },
                     ],
+                    # No port/user - should use defaults
                 },
             },
             "clan-core/wireguard:local-network:default:machine1": {
@@ -103,6 +136,8 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                             "plain": "10.0.0.10",
                         },
                     ],
+                    "port": 22,
+                    # user not specified - should default to None, ssh_user to "root"
                 },
             },
         }
@@ -136,6 +171,16 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     assert isinstance(machine1_peer, Peer)
     assert machine1_peer.host == ["192.168.1.10"]
     assert machine1_peer.flake == flake
+    # Check port and user from exports
+    assert machine1_peer.port == 45621
+    assert machine1_peer._user == "admin"
+    assert machine1_peer.ssh_user == "admin"
+
+    # Check machine2 uses defaults when port/user not specified
+    machine2_peer = vpn_network.peers["machine2"]
+    assert machine2_peer.port == 22
+    assert machine2_peer._user is None
+    assert machine2_peer.ssh_user == "root"
 
     # Check local-network
     local_network = networks["local-network"]
@@ -144,3 +189,9 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     assert len(local_network.peers) == 2
     assert "machine1" in local_network.peers
     assert "machine3" in local_network.peers
+
+    # Check machine3 port/user
+    machine3_peer = local_network.peers["machine3"]
+    assert machine3_peer.port == 22
+    assert machine3_peer._user is None
+    assert machine3_peer.ssh_user == "root"

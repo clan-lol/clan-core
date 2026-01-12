@@ -11,13 +11,13 @@ from clan_lib.persist.write_rules import (
 )
 
 if TYPE_CHECKING:
-    from clan_lib.nix_models.clan import Clan
+    from clan_lib.nix_models.typing import ClanInput
 
 
 # Integration test
 @pytest.mark.with_core
 def test_write_integration(clan_flake: Callable[..., Flake]) -> None:
-    clan_nix: Clan = {}
+    clan_nix: ClanInput = {}
     flake = clan_flake(clan_nix)
     inventory_store = InventoryStore(flake)
     # downcast into a dict

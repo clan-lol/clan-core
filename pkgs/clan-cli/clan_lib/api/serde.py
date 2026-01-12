@@ -39,6 +39,7 @@ from typing import (
     Annotated,
     Any,
     Literal,
+    TypeAliasType,
     TypeVar,
     Union,
     cast,
@@ -199,7 +200,7 @@ JsonValue = str | float | dict[str, Any] | list[Any] | None
 
 
 def construct_value(
-    t: type | UnionType,
+    t: type | UnionType | TypeAliasType,
     field_value: JsonValue,
     loc: list[str] | None = None,
 ) -> Any:
@@ -230,6 +231,9 @@ def construct_value(
     if t is None and field_value:
         msg = f"Trying to construct field of type None. But got: {field_value}. loc: {loc}"
         raise ClanError(msg, location=f"{loc}")
+
+    if isinstance(t, TypeAliasType):
+        return construct_value(t.__value__, field_value, loc)
 
     if is_type_in_union(t, type(None)) and field_value is None:
         # Sometimes the field value is None, which is valid if the type hint allows None
@@ -406,7 +410,7 @@ def construct_dataclass[T: Any](
 
 
 def from_dict(
-    t: type | UnionType,
+    t: type | UnionType | TypeAliasType,
     data: dict[str, Any] | Any,
     path: list[str] | None = None,
 ) -> Any:

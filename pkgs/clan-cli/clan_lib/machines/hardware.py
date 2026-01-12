@@ -98,6 +98,7 @@ class HardwareGenerateOptions:
     machine: Machine
     backend: HardwareConfig = HardwareConfig.NIXOS_FACTER
     password: str | None = None
+    kexec: str | None = None
     debug: bool = False
 
 
@@ -150,6 +151,9 @@ def run_machine_hardware_info_init(
 
     if opts.debug:
         cmd += ["--debug"]
+
+    if opts.kexec:
+        cmd += ["--kexec", opts.kexec]
 
     # REMOVEME when nixos-anywhere > 1.12.0
     # In 1.12.0 and earlier, nixos-anywhere doesn't pass Nix options when attempting to get substituters

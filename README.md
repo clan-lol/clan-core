@@ -24,7 +24,7 @@ If you're new to Clan and eager to dive in, start with our quickstart guide and 
 
 In the Clan ecosystem, security is paramount. Learn how to handle secrets effectively:
 
-- **Secrets Management**: Securely manage secrets by consulting [Vars](https://docs.clan.lol/concepts/generators/)<!-- [secrets.md](docs/site/concepts/generators.md) -->.
+- **Secrets Management**: Securely manage secrets by consulting [Vars](https://docs.clan.lol/guides/vars/vars-overview/).
 
 ### Contributing to Clan
 

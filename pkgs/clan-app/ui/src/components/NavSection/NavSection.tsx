@@ -5,7 +5,7 @@ import Icon from "../Icon/Icon";
 import { Typography } from "../Typography/Typography";
 import { Show } from "solid-js";
 
-export interface NavSectionProps {
+interface NavSectionProps {
   label: string;
   description?: string;
   onClick: () => void;

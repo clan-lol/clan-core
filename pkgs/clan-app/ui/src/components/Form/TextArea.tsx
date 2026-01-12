@@ -82,7 +82,7 @@ export const TextArea = (props: TextAreaProps) => {
   createEffect(() => {
     if (local.autoResize && textareaRef) {
       // Access the value to create a dependency
-      const _ = other.value || other.defaultValue;
+      const _ = other.value ?? other.defaultValue;
       // Trigger resize on the next tick to ensure DOM is updated
       setTimeout(autoResize, 0);
     }
@@ -93,7 +93,7 @@ export const TextArea = (props: TextAreaProps) => {
       ref={(el: HTMLDivElement) => {
         // for some reason capturing the ref directly on TextField.TextArea works in Chrome
         // but not in webkit, so we capture the parent ref and query for the textarea
-        textareaRef = el.querySelector("textarea")! as HTMLTextAreaElement;
+        textareaRef = el.querySelector("textarea")!;
       }}
       class={cx(
         styles.textField,
@@ -130,7 +130,9 @@ export const TextArea = (props: TextAreaProps) => {
             if (typeof local.input.onInput === "function") {
               local.input.onInput(e);
             } else if (Array.isArray(local.input.onInput)) {
-              local.input.onInput.forEach((handler) => handler(e));
+              local.input.onInput.forEach((handler: (ev: Event) => void) =>
+                handler(e),
+              );
             }
           }}
           {...local.input}

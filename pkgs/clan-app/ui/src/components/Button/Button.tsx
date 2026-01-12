@@ -12,8 +12,6 @@ type Size = "default" | "s" | "xs";
 type Hierarchy = "primary" | "secondary";
 type Elasticity = "default" | "fit";
 
-type Action = () => Promise<void>;
-
 export interface ButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   hierarchy?: Hierarchy;
@@ -73,7 +71,7 @@ export const Button = (props: ButtonProps) => {
         },
       )}
       onClick={local.onClick}
-      disabled={local.disabled || local.loading}
+      disabled={local.disabled ?? local.loading}
       {...other}
     >
       <Loader hierarchy={local.hierarchy} loading={local.loading} in="Button" />

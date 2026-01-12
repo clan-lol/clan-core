@@ -5,7 +5,6 @@
     ./clan-app/flake-module.nix
     ./clan-cli/flake-module.nix
     ./clan-core-flake/flake-module.nix
-    ./clan-vm-manager/flake-module.nix
     ./icon-update/flake-module.nix
     ./installer/flake-module.nix
     ./option-search/flake-module.nix
@@ -28,8 +27,10 @@
         minifakeroot = pkgs.callPackage ./minifakeroot { };
         pending-reviews = pkgs.callPackage ./pending-reviews { };
         editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
-        classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
+        datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
+          pkgs.python3Packages.callPackage ./datamodel-code-generator { }
+        );
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         disko = inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko;

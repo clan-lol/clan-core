@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_cli.help import HelpFormatter
 from clan_cli.hyperlink import help_hyperlink
 
 from .check import register_check_parser
@@ -32,7 +33,7 @@ This creates the file ~/.config/sops/age/keys.txt
 
              """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_keygen_parser(keygen_parser)
 
@@ -49,7 +50,7 @@ Examples:
   Will check vars for the specified machine.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_check_parser(check_parser)
 
@@ -66,7 +67,7 @@ Examples:
   Will fix vars for the specified machine.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_fix_parser(fix_parser)
 
@@ -98,7 +99,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars/vars-backend/")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_list_parser(list_parser)
 
@@ -117,7 +118,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars/vars-backend/")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_get_parser(get_parser)
 
@@ -136,7 +137,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars/vars-backend/")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_set_parser(set_parser)
 
@@ -176,7 +177,7 @@ Examples:
 For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars/vars-backend/")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_generate_parser(parser_generate)
 
@@ -200,6 +201,6 @@ Examples:
 For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_upload_parser(parser_upload)

@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_cli.help import HelpFormatter
+
 from .build import register_build_parser
 from .create import register_create_parser
 from .delete import register_delete_parser
@@ -50,7 +52,7 @@ Examples:
   Will build all production machines.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_build_parser(build_parser)
 
@@ -82,7 +84,7 @@ Examples:
 For more detailed information, visit: https://docs.clan.lol/getting-started/update-machines
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_update_parser(update_parser)
 
@@ -116,7 +118,7 @@ Examples:
   Lists all machines that are associated with the "vm" tag through the inventory.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_list_parser(list_parser)
 
@@ -141,7 +143,7 @@ Examples:
   Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_init_hardware_config(init_hardware_config_parser)
 
@@ -153,6 +155,7 @@ Generates hardware specifics for a machine.
 Such as the host platform, available kernel modules, etc.
 The target must be a Linux based system reachable via SSH.
         """,
+        formatter_class=HelpFormatter,
         epilog=(
             """
 Examples:
@@ -162,7 +165,6 @@ Examples:
   the subdirectory for the given machine `[MACHINE]`.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
     )
     register_update_hardware_config(update_hardware_config_parser)
 
@@ -195,7 +197,7 @@ Further references:
 - https://docs.clan.lol/getting-started/prepare-virtual-machines/
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_install_parser(install_parser)
 
@@ -211,6 +213,6 @@ Further references:
   $ clan generations [MACHINE]
             """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_generations_parser(generations_parser)

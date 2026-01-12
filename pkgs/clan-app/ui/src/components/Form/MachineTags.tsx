@@ -24,7 +24,7 @@ interface MachineTag {
   disabled?: boolean;
 }
 
-export type MachineTagsProps = FieldProps & {
+type MachineTagsProps = FieldProps & {
   name: string;
   onChange: (values: string[]) => void;
   defaultValue?: string[];
@@ -57,17 +57,17 @@ export const MachineTags = (props: MachineTagsProps) => {
 
   // // convert default value string[] into MachineTag[]
   const defaultValue = sortedAndUniqueOptions(
-    (local.defaultValue || []).map((value) => ({ value })),
+    (local.defaultValue ?? []).map((value) => ({ value })),
   );
 
   // convert default options string[] into MachineTag[]
   const [availableOptions, setAvailableOptions] = createSignal<MachineTag[]>(
     sortedAndUniqueOptions([
-      ...(props.readonlyOptions || []).map((value) => ({
+      ...(props.readonlyOptions ?? []).map((value) => ({
         value,
         disabled: true,
       })),
-      ...(props.defaultOptions || []).map((value) => ({ value })),
+      ...(props.defaultOptions ?? []).map((value) => ({ value })),
     ]),
   );
 
@@ -187,7 +187,7 @@ export const MachineTags = (props: MachineTagsProps) => {
       optionTextValue="value"
       optionLabel="value"
       optionDisabled="disabled"
-      itemComponent={ItemComponent(props.inverted || false)}
+      itemComponent={ItemComponent(props.inverted ?? false)}
       placeholder="Start typing a name and press enter"
       onChange={() => {
         // noop, we handle this via the selectedOptions signal
@@ -220,7 +220,7 @@ export const MachineTags = (props: MachineTagsProps) => {
                   <Tag
                     inverted={props.inverted}
                     interactive={
-                      !(option.disabled || props.disabled || props.readOnly)
+                      !(option.disabled ?? props.disabled ?? props.readOnly)
                     }
                     icon={({ inverted }) =>
                       option.disabled ||

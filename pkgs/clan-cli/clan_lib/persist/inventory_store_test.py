@@ -129,7 +129,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
 
     # Remove the foo key from the persisted data
     # Cannot remove keys at the root level (root is always a total submodule)
-    data = {"protected": "protected"}  # type: ignore[typeddict-unknown-key]
+    data = {"protected": "protected"}  # type: ignore[typeddict-unknown-key, typeddict-item]
     with pytest.raises(ClanError) as e:
         store.write(data, "test", commit=False)  # type: ignore[arg-type]
     assert "Cannot delete path 'foo'" in str(e.value)

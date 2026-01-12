@@ -9,7 +9,7 @@ interface IconActionProps {
   handleActionClick: () => void;
 }
 
-export interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
+interface TagProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   children?: JSX.Element;
   icon?: (state: IconActionProps) => JSX.Element;
   inverted?: boolean;

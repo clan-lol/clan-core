@@ -40,6 +40,8 @@ class NetworkTechnology(NetworkTechnologyBase):
         return [
             Remote(
                 address=host,
+                user=peer.ssh_user,
+                port=peer.port,
                 command_prefix=peer.name,
             )
             for host in peer.host

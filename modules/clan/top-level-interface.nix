@@ -220,6 +220,7 @@ in
 
         For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
       '';
+      default = { };
     };
 
     vars = lib.mkOption {
@@ -349,6 +350,12 @@ in
               modules = [ ];
             };
           };
+          vars.settings = lib.mkOption {
+            type = types.submodule config.vars.settings;
+            default = {
+
+            };
+          };
 
           secrets = lib.mkOption { type = lib.types.raw; };
 
@@ -361,6 +368,16 @@ in
   };
 
   config.exportsModule = {
+
+    options.endpoints = lib.mkOption {
+      default = null;
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          imports = [ ./export-modules/endpoints.nix ];
+        }
+      );
+    };
+
     options.peer = lib.mkOption {
       default = null;
       type = lib.types.nullOr (
