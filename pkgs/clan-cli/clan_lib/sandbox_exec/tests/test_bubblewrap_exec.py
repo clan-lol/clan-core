@@ -6,7 +6,6 @@ import pytest
 from clan_lib.sandbox_exec import bubblewrap_cmd
 
 
-@pytest.mark.impure
 @pytest.mark.skipif(sys.platform != "linux", reason="linux only")
 def test_bubblewrap_allows_write_to_tmpdir(temp_dir: Path) -> None:
     """Test that sandboxed process can write to the allowed tmpdir."""
@@ -22,7 +21,6 @@ def test_bubblewrap_allows_write_to_tmpdir(temp_dir: Path) -> None:
     assert test_file.read_text().strip() == "test content"
 
 
-@pytest.mark.impure
 @pytest.mark.skipif(sys.platform != "linux", reason="linux only")
 def test_bubblewrap_denies_write_to_home(temp_dir: Path) -> None:
     """Test that sandboxed process cannot write to user home directory."""
@@ -54,7 +52,6 @@ def test_bubblewrap_denies_write_to_home(temp_dir: Path) -> None:
             pass
 
 
-@pytest.mark.impure
 @pytest.mark.skipif(sys.platform != "linux", reason="linux only")
 def test_bubblewrap_allows_nix_store_read(temp_dir: Path) -> None:
     """Test that sandboxed process can read from nix store."""
