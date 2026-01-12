@@ -80,6 +80,36 @@ in
     };
   };
 
-  flake.checks.x86_64-linux.nixos-test-flash-installer-disk =
-    self.nixosConfigurations.flash-installer.config.system.build.installTest;
+  perSystem =
+    { pkgs, ... }:
+    {
+      checks = lib.optionalAttrs pkgs.stdenv.isLinux {
+        nixos-test-flash-installer-boot = self.clanLib.test.baseTest {
+          name = "flash-installer-boot";
+          nodes.installer =
+            { modulesPath, ... }:
+            {
+              imports = [
+                self.nixosModules.clanCore
+                flashInstallerModule
+                (modulesPath + "/profiles/qemu-guest.nix")
+                (modulesPath + "/testing/test-instrumentation.nix")
+              ];
+              clan.core.settings.directory = ./.;
+              boot.loader.grub.enable = false;
+              # Override disk device for VM testing
+              disko.devices.disk.main.device = lib.mkForce "/dev/vda";
+              virtualisation.memorySize = 2048;
+            };
+          testScript = ''
+            start_all()
+            installer.wait_for_unit("multi-user.target")
+            installer.succeed("systemctl is-active sshd.service")
+            installer.succeed("command -v network-status")
+            # Verify tor hidden service is configured
+            installer.succeed("systemctl is-enabled hidden-ssh-announce.service")
+          '';
+        } { inherit pkgs self; };
+      };
+    };
 }
