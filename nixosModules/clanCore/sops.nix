@@ -34,7 +34,7 @@ in
       type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [ "admins" ];
-      description = "The default groups to for encryption use when no groups are specified.";
+      description = "The default groups to use for encryption when no groups are specified.";
     };
   };
   config = {
