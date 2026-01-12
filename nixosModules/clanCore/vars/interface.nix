@@ -82,6 +82,7 @@ in
         staticModules = [ ../../../modules/clan/vars/settings-opts.nix ];
       };
       internal = true;
+      visible = false;
       default = { };
     };
     pkgs = mkOption {
