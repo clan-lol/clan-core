@@ -36,26 +36,26 @@ This example demonstrates a setup with two machines and a few extra settings:
 
 ```{.nix .annotate title="clan.nix" hl_lines="3-7 15-19"}
 {
-    inventory.machines = {
-        jon-machine = {
-            deploy.targetHost = "root@192.168.0.2";
-            # Define tags here (optional)
-            tags = [ ]; 
-        };
-        sara-machine = {
-            # Define tags here (optional)
-            tags = [ ]; # 
-        };
-    };
-    # Define additional nixosConfiguration here
-    # Or in /machines/jon/configuration.nix (autoloaded)
-    machines = {
-        jon-machine = { config, pkgs, ... }: {
-            users.users.root.openssh.authorizedKeys.keys = [
-                "ssh-ed25519 AAAAC3NzaC..." # elided
-            ];
-        };
-    };
+  inventory.machines = {
+      jon-machine = {
+          deploy.targetHost = "root@192.168.0.2";
+          # Define tags here (optional)
+          tags = [ ]; 
+      };
+      sara-machine = {
+          # Define tags here (optional)
+          tags = [ ]; # 
+      };
+  };
+  # Define additional nixosConfiguration here
+  # Or in /machines/jon/configuration.nix (autoloaded)
+  machines = {
+      jon-machine = { config, pkgs, ... }: {
+          users.users.root.openssh.authorizedKeys.keys = [
+              "ssh-ed25519 AAAAC3NzaC..." # elided
+          ];
+      };
+  };
 }
 ```
 inventory.machines: Tags can be used to automatically assign services to a machine later on (don't worry, we don't need to set this now). Additional machines - like sara-machine in this example - will all be listed here if created via `clan machines create <name>`

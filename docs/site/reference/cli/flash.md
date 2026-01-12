@@ -14,7 +14,7 @@ Usage: `clan flash`
 
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: [getting-started](../../getting-started/deploy-to-physical-machine/flash-installer.md)
+For more detailed information, visit: [getting-started](../../getting-started/prepare-physical-machines.md)
             
 
 

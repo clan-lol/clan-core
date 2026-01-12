@@ -31,24 +31,24 @@ Add the configuration for a ZeroTier Network to your clan.nix file as follows:
 
 ```{.nix title="clan.nix" hl_lines="8-16"}
 {
-    inventory.machines = {
-        jon-machine = { };
-        sara-machine = { };
-    };
+  inventory.machines = {
+    jon-machine = { };
+    sara-machine = { };
+  };
 
-    inventory.instances = {
-        zerotier = { 
-            # Replace with the name (string) of your machine that you will use as zerotier-controller
-            # See: https://docs.zerotier.com/controller/
-            # Deploy this machine first to create the network secrets
-            roles.controller.machines."jon-machine" = { }; #edit your machine name
-            # Peers of the network
-            # this line means 'all' clan machines will be 'peers'
-            roles.peer.tags.all = { }; 
-        };
+  inventory.instances = {
+    zerotier = { 
+      # Replace with the name (string) of your machine that you will use as zerotier-controller
+      # See: https://docs.zerotier.com/controller/
+      # Deploy this machine first to create the network secrets
+      roles.controller.machines."jon-machine" = { }; #edit your machine name
+      # Peers of the network
+      # this line means 'all' clan machines will be 'peers'
+      roles.peer.tags.all = { }; 
     };
-    # ...
-    # elided
+  };
+  # ...
+  # elided
 }
 ```
 

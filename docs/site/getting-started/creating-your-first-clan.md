@@ -76,7 +76,9 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
                 sudo nixos-rebuild switch
                 ```
 
-            3. Verify installation:
+            3. Reboot your system.
+
+            4. Verify installation:
 
                 ```bash
                 direnv --version
@@ -112,6 +114,21 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 * **Target Device(s)**: Any number of physical and / or virtual Linux or macOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above.
 
     If your setup machine is running on NixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+
+
+* **SSH Keys On Setup Device**: If not already done, generate a key pair for your root user on the setup device.
+
+    ??? info "**Find or generate your keys**"
+
+        1.  As root, check if a key already exists:
+            ```shellSession
+            cat /root/.ssh/id_ed25519.pub
+            ```
+
+        2.  If not, generate one:
+            ```shellSession
+            ssh-keygen -t ed25519
+            ```
 
 * **In Case of Physical Target Device(s):** A USB drive with at least 1.5GB total space (all data on it will be lost)
 
@@ -194,15 +211,16 @@ Now, activate the environment using one of the following methods.
 You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
 
 - `meta.name` will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
-- `meta.domain` will function as your internal top level domain. Select something catchy, like clan.lol
+- `meta.domain` will function as your internal top level domain. Select something catchy!
+- `meta.description` is optional, we recommend using it for easy definitions
 
 Feel obliged to change the following lines
 
 ```{.nix title="clan.nix" hl_lines="3 4 5"}
 {
   # Ensure this is unique among all clans you want to use.
-  meta.name = "fancyclan";
-  meta.domain = "fancydomain";
+  meta.name = "MY-NEW-CLAN";
+  meta.domain = "mydomain";
   meta.description = "My selfhosted homelab";
 
   # ...
@@ -223,31 +241,15 @@ clan show
 You should see the default metadata for your new clan:
 
 ```shellSession
-Name: __CHANGE_ME__
-Description: None
+Name: MY-NEW-CLAN
+Description: My selfhosted homelab
+Domain: mydomain
 ```
 
-This confirms your setup is working correctly.
+This confirms your setup is working correctly. 
 
-You can now change the default name and domain by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
+If you receive an error message for `clan show`, check for syntax errors in your clan.nix file first.
 
-The meta.name will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
-
-The meta.domain will function as your internal top level domain. Select something catchy, like clan.lol
-
-Feel free to add `meta.description = "something smart"` beneath meta.domain if you would like to update the description for `clan show`.
-
-```{.nix title="clan.nix" hl_lines="3 4 5"}
-{
-  # Ensure this is unique among all clans you want to use.
-  meta.name = "__CHANGE_ME__";
-  meta.domain = "changeme";
-  meta.description = "optional";
-
-  # ...
-  # elided
-}
-```
 
 ## Up Next
 

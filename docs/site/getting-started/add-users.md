@@ -17,7 +17,7 @@ Defining users can be done in many different ways. We will highlight a few appro
 - Estimated time: 30min
 - A working clan setup with at least one machine
 
-## Adding Users using the [users](../services/official/users.md) service
+## Recommended: Adding Users via the [users](../services/official/users.md) service
 
 To add a first *user* this guide will be leveraging two things:
 
@@ -28,29 +28,27 @@ The example shows how to add a user called `jon`:
 
 ```{.nix title="clan.nix" hl_lines="7-21"}
 {
-    inventory.machines = {
-        jon = { };
-        sara = { };
+  inventory.machines = {
+      jon = { };
+      sara = { };
+  };
+  inventory.instances = {
+    jon-user = { # (1)
+      module.name = "users";
+      roles.default.tags.all = { }; # (2)
+      roles.default.settings = {
+        user = "jon"; # (3)
+        groups = [
+          "wheel" # Allow using 'sudo'
+          "networkmanager" # Allows to manage network connections.
+          "video" # Allows to access video devices.
+          "input" # Allows to access input devices.
+        ];
+      };
     };
-    inventory.instances = {
-        jon-user = { # (1)
-            module.name = "users";
-
-            roles.default.tags.all = { }; # (2)
-
-            roles.default.settings = {
-                user = "jon"; # (3)
-                groups = [
-                    "wheel" # Allow using 'sudo'
-                    "networkmanager" # Allows to manage network connections.
-                    "video" # Allows to access video devices.
-                    "input" # Allows to access input devices.
-                ];
-            };
-        };
-        # ...
-        # elided
-    };
+      # ...
+      # elided
+  };
 }
 ```
 

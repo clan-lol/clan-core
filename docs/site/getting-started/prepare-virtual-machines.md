@@ -41,6 +41,10 @@ clan machines init-hardware-config [YOUR-MACHINE-NAME] \
   --target-host myuser@<IP>
 ```
 
+This command may take a while. You will be prompted to enter the target machine's root password during the process.
+
+Do *not* reboot your target machine at this point! The system needs to stay in this kexec state for the remote deployment process.
+
 !!! Warning
     After running the above command, be aware that the SSH login user changes from `myuser` to `root`. For subsequent SSH connections to the target machine, use `root` as the login user. This change occurs because the system switches to the NixOS kernel using `kexec`.
 
