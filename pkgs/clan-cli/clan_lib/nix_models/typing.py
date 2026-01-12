@@ -777,6 +777,24 @@ class MachineOutput(TypedDict):
     tags: ReadOnly[MachineTagsOutput]
 
 
+type MachinesInput = dict[str, MachineInput]
+"""
+Machines in the inventory.
+
+Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+
+"""
+
+
+type MachinesOutput = dict[str, MachineOutput]
+"""
+Machines in the inventory.
+
+Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+
+"""
+
+
 class SecretsAgeInput(TypedDict):
     plugins: NotRequired[SecretsAgePluginsInput]
 
@@ -836,22 +854,19 @@ Multi host service module instances
 """
 
 
-type InventoryMachinesInput = dict[str, MachineInput]
-"""
-Machines in the inventory.
+class InventoryInput(TypedDict):
+    """
+    The `Inventory` submodule.
 
-Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+    For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
 
-"""
+    """
 
-
-type InventoryMachinesOutput = dict[str, MachineOutput]
-"""
-Machines in the inventory.
-
-Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
-
-"""
+    instances: NotRequired[InstancesInput]
+    machines: NotRequired[MachinesInput]
+    meta: InventoryMetaInput
+    modules: NotRequired[InventoryModulesInput]
+    tags: NotRequired[InventoryTagsInput]
 
 
 class InventoryOutput(TypedDict):
@@ -863,54 +878,10 @@ class InventoryOutput(TypedDict):
     """
 
     instances: ReadOnly[InstancesOutput]
-    machines: ReadOnly[InventoryMachinesOutput]
+    machines: ReadOnly[MachinesOutput]
     meta: ReadOnly[InventoryMetaOutput]
     modules: ReadOnly[InventoryModulesOutput]
     tags: ReadOnly[InventoryTagsOutput]
-
-
-class ClanOutput(TypedDict):
-    directory: ReadOnly[str]
-    """
-    The directory containing the clan.
-
-    A typical directory structure could look like this:
-
-    ```
-    .
-    ├── flake.nix
-    ├── assets
-    ├── machines
-    ├── modules
-    └── sops
-    ```
-
-    """
-    inventory: ReadOnly[InventoryOutput]
-    machines: ReadOnly[ClanMachinesOutput]
-    meta: ReadOnly[AnyJson]
-    """
-    Global information about the clan.
-
-    """
-    modules: ReadOnly[ClanModulesOutput]
-    secrets: ReadOnly[SecretsOutput]
-    templates: ReadOnly[TemplatesOutput]
-
-
-class InventoryInput(TypedDict):
-    """
-    The `Inventory` submodule.
-
-    For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
-
-    """
-
-    instances: NotRequired[InstancesInput]
-    machines: NotRequired[InventoryMachinesInput]
-    meta: InventoryMetaInput
-    modules: NotRequired[InventoryModulesInput]
-    tags: NotRequired[InventoryTagsInput]
 
 
 class ClanInput(TypedDict):
@@ -940,3 +911,32 @@ class ClanInput(TypedDict):
     modules: NotRequired[ClanModulesInput]
     secrets: NotRequired[SecretsInput]
     templates: NotRequired[TemplatesInput]
+
+
+class ClanOutput(TypedDict):
+    directory: ReadOnly[str]
+    """
+    The directory containing the clan.
+
+    A typical directory structure could look like this:
+
+    ```
+    .
+    ├── flake.nix
+    ├── assets
+    ├── machines
+    ├── modules
+    └── sops
+    ```
+
+    """
+    inventory: ReadOnly[InventoryOutput]
+    machines: ReadOnly[ClanMachinesOutput]
+    meta: ReadOnly[AnyJson]
+    """
+    Global information about the clan.
+
+    """
+    modules: ReadOnly[ClanModulesOutput]
+    secrets: ReadOnly[SecretsOutput]
+    templates: ReadOnly[TemplatesOutput]

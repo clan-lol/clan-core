@@ -9,9 +9,9 @@ from clan_lib.git import commit_file
 from clan_lib.nix_models.typing import (
     InstancesOutput,
     InventoryInput,
-    InventoryMachinesOutput,
     InventoryMetaOutput,
     InventoryOutput,
+    MachinesOutput,
 )
 from clan_lib.persist.patch_engine import calc_patches
 from clan_lib.persist.path_utils import (
@@ -99,7 +99,7 @@ class InventorySnapshot(TypedDict):
     It contains only the keys that are convertible to python types and can be serialized to JSON.
     """
 
-    machines: NotRequired[InventoryMachinesOutput]
+    machines: NotRequired[MachinesOutput]
     instances: NotRequired[InstancesOutput]
     meta: InventoryMetaOutput
 

@@ -29,7 +29,8 @@ let
       InventoryTagsDarwin = "InventoryTagMachines";
       InventoryTagsNixos = "InventoryTagMachines";
       InventoryTagsFreeform = "InventoryTagMachines";
-      InventoryMachinesItem = "Machine";
+      InventoryMachines = "Machines";
+      MachinesItem = "Machine";
       MachineMachineClass = "MachineClass";
       InventoryInstances = "Instances";
       InstanceRoleTagsFrom = "InstanceRoleTagList";
