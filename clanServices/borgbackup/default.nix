@@ -87,7 +87,7 @@
         options.startAt = lib.mkOption {
           type = lib.types.str;
           default = "*-*-* 01:00:00";
-          description = '''';
+          description = "";
         };
 
         options.destinations = lib.mkOption {
@@ -260,10 +260,10 @@
                     # additional files.
                     serviceConfig = {
                       ExecStartPre = [
-                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}''
+                        "+${pkgs.writeShellScript "borgbackup-job-${destName}-pre-backup-commands" preBackupScript}"
                       ];
                       ExecStopPost = [
-                        ''+${pkgs.writeShellScript "borgbackup-job-${destName}-post-backup-commands" postBackupScript}''
+                        "+${pkgs.writeShellScript "borgbackup-job-${destName}-post-backup-commands" postBackupScript}"
                       ];
                       # Disable timeouts to allow pre/post-backup commands (like database dumps) to complete
                       TimeoutStartSec = "infinity";

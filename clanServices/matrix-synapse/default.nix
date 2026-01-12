@@ -179,7 +179,7 @@
                   } /run/synapse-registration-shared-secret"
                 ];
                 serviceConfig.ExecStartPost = [
-                  ''+${pkgs.writeShellScript "matrix-synapse-create-users" usersScript}''
+                  "+${pkgs.writeShellScript "matrix-synapse-create-users" usersScript}"
                 ];
               };
 

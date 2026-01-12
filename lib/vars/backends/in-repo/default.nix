@@ -78,7 +78,7 @@ let
     in
     path;
 
-  exists = throw ''Not implemented for in-repo yet'';
+  exists = throw "Not implemented for in-repo yet";
 in
 {
   inherit getPath getPublicValue exists;

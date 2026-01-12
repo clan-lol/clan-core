@@ -29,7 +29,7 @@ in
     ];
 
     boot.kernelParams = [
-      ''systemd.machine_id=${var.value}''
+      "systemd.machine_id=${var.value}"
     ];
 
     environment.etc."machine-id".text = var.value;
