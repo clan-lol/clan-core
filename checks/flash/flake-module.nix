@@ -5,25 +5,15 @@
   ...
 }:
 {
-  clan.machines = lib.listToAttrs (
-    lib.map (
-      system:
-      lib.nameValuePair "test-flash-machine-${system}" {
+  clan.machines = lib.genAttrs' (lib.filter (lib.hasSuffix "linux") config.systems) (system: {
+    name = "test-flash-machine-${system}";
+    value =
+      { lib, ... }:
+      {
         # We need to use `mkForce` because we inherit from `test-install-machine`
         # which currently hardcodes `nixpkgs.hostPlatform`
         nixpkgs.hostPlatform = lib.mkForce system;
 
-        imports = [
-          self.nixosModules.test-flash-machine
-        ];
-      }
-    ) (lib.filter (lib.hasSuffix "linux") config.systems)
-  );
-
-  flake.nixosModules = {
-    test-flash-machine =
-      { lib, ... }:
-      {
         imports = [ self.nixosModules.test-install-machine-without-system ];
 
         clan.core.networking.targetHost = "test-flash-machine";
@@ -47,8 +37,7 @@
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target\n"
         ];
       };
-
-  };
+  });
 
   perSystem =
     {
