@@ -10,7 +10,6 @@ let
 
     {
       imports = [
-        ./iwd.nix
         self.nixosModules.installer
       ];
 
