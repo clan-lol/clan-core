@@ -25,6 +25,7 @@ describe("clan", () => {
               id: "/clan",
               data: {
                 name: "testclan",
+                description: "",
               },
               dataSchema: {},
               machines: {},

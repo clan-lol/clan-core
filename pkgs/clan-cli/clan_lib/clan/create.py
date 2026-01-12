@@ -4,12 +4,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.api import API
+from clan_lib.clan.get import get_clan_details
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
-from clan_lib.nix_models.typing import InventoryMetaInput
+from clan_lib.nix_models.typing import InventoryMetaInput, InventoryMetaOutput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.patch_engine import merge_objects
 from clan_lib.persist.path_utils import set_value_by_path
@@ -52,7 +53,7 @@ def git_command(directory: Path, *args: str) -> list[str]:
 
 
 @API.register
-def create_clan(opts: CreateOptions) -> None:
+def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
     """Create a new clan repository with the specified template.
 
     Args:
@@ -131,3 +132,5 @@ def create_clan(opts: CreateOptions) -> None:
             new_meta = merge_objects(curr_meta, opts.initial)
             set_value_by_path(inventory, "meta", new_meta)
             inventory_store.write(inventory, message="Init inventory")
+
+        return get_clan_details(flake)

@@ -43,6 +43,7 @@ export function createMachinesStoreFixture(
           id: "/clan",
           data: {
             name: "testclan",
+            description: "",
           },
           dataSchema: {},
           machines: entity,

@@ -5,6 +5,7 @@ import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import clan_cli.clan.create
 import pytest
@@ -100,6 +101,7 @@ def test_clan_create_api(
     test_lib_root: Path,
     clan_core: Path,
     hosts: list[Remote],
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     host_ip = hosts[0].address
     host_user = hosts[0].user

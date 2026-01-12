@@ -2,18 +2,19 @@ import { Accessor, createEffect, createMemo, on } from "solid-js";
 import { createStore, produce, SetStoreFunction } from "solid-js/store";
 import { captureStoreUpdates, NestedUpdate } from "@solid-primitives/deep";
 import api from "../api";
-import { Clan, ClanMeta, ClanDataEntity } from "..";
+import { Clan, ClanMeta } from "..";
 import {
-  ClanEntity,
-  ClanMetaEntity,
+  ClanOutput,
+  ClanMetaOutput,
   isClan,
-  createClan,
-  createClanMeta,
+  createClanFromOutput,
+  createClanMetaFromOutput,
+  ClanData,
 } from "./clan";
 import { mapObjectValues } from "@/src/util";
 
-export type ClansEntity = {
-  readonly all: (ClanEntity | ClanMetaEntity)[];
+export type ClansOutput = {
+  readonly all: (ClanOutput | ClanMetaOutput)[];
   readonly activeIndex: number;
 };
 export type Clans = {
@@ -21,7 +22,7 @@ export type Clans = {
   activeClan: Clan | null;
 };
 
-export async function initClans(): Promise<ClansEntity> {
+export async function initClans(): Promise<ClansOutput> {
   const ids = (() => {
     const s = localStorage.getItem("clanIds");
     if (s === null) {
@@ -73,21 +74,21 @@ export async function initClans(): Promise<ClansEntity> {
 }
 
 export function createClansStore(
-  entity: Accessor<ClansEntity>,
+  output: Accessor<ClansOutput>,
 ): readonly [Clans, SetStoreFunction<Clans>] {
   const [clans, setClans] = createStore<Clans>({
     all: [],
     activeClan: null,
   });
   createEffect(
-    on(entity, (entity) => {
-      const all = entity.all.map((clanEntity, i) =>
-        i === entity.activeIndex
-          ? createClan(clanEntity as ClanEntity, clans)
-          : createClanMeta(clanEntity as ClanMetaEntity, clans),
+    on(output, (output) => {
+      const all = output.all.map((clanOutput, i) =>
+        i === output.activeIndex
+          ? createClanFromOutput(clanOutput as ClanOutput, clans)
+          : createClanMetaFromOutput(clanOutput as ClanMetaOutput, clans),
       );
       const activeClan =
-        entity.activeIndex === -1 ? null : (all[entity.activeIndex] as Clan);
+        output.activeIndex === -1 ? null : (all[output.activeIndex] as Clan);
       setClans(
         produce((clans) => {
           clans.all = all;
@@ -116,7 +117,7 @@ export type ClansMethods = {
   createClan(
     this: void,
     id: string,
-    data: ClanDataEntity,
+    data: ClanData,
     opts?: { active?: boolean },
   ): Promise<Clan>;
   removeClan(this: void, item: Clan | ClanMeta | string): Clan | ClanMeta;
@@ -190,8 +191,8 @@ export function createClansMethods(
         );
         return clan;
       }
-      const entity = await api.clan.getClan(clan.id);
-      const newClan = createClan(entity, clans);
+      const output = await api.clan.getClan(clan.id);
+      const newClan = createClanFromOutput(output, clans);
       setClans(
         produce((clans) => {
           clans.all[i] = newClan;
@@ -208,8 +209,8 @@ export function createClansMethods(
         }
         return null;
       }
-      const entity = await api.clan.getClan(id);
-      const newClan = createClan(entity, clans);
+      const output = await api.clan.getClan(id);
+      const newClan = createClanFromOutput(output, clans);
       setClans(
         produce((clans) => {
           clans.all.push(newClan);
@@ -221,11 +222,11 @@ export function createClansMethods(
       return newClan;
     },
     async createClan(id, data, { active = true } = {}) {
-      await api.clan.createClan(id, data);
-      const newClan = createClan(
+      const output = await api.clan.createClan(id, data);
+      const newClan = createClanFromOutput(
         {
           id,
-          data,
+          data: output,
           dataSchema: {},
           machines: {},
           services: {},

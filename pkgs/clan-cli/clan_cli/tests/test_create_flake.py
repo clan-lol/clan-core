@@ -1,6 +1,7 @@
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 import pytest
 from clan_cli.tests.fixtures_flakes import FlakeForTest, substitute
@@ -18,10 +19,12 @@ def test_create_flake(
     temporary_home: Path,
     clan_core: Path,
     capture_output: CaptureOutput,
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
     monkeypatch.setenv("LOGNAME", "testuser")
+
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     # Replace the inputs.clan.url in the template flake.nix
@@ -61,6 +64,7 @@ def test_create_flake_existing_git(
     temporary_home: Path,
     clan_core: Path,
     capture_output: CaptureOutput,
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
@@ -98,6 +102,7 @@ def test_ui_template(
     temporary_home: Path,
     clan_core: Path,
     capture_output: CaptureOutput,
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
@@ -132,6 +137,7 @@ def test_create_flake_fallback_from_non_clan_directory(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     test_flake: FlakeForTest,
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     """Test that clan flakes create falls back to builtin templates from non-clan flake."""
     monkeypatch.chdir(test_flake.path)
@@ -150,6 +156,7 @@ def test_create_flake_with_local_template_reference(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     test_flake: FlakeForTest,
+    patch_get_clan_details: Any,  # noqa: ARG001
 ) -> None:
     monkeypatch.chdir(test_flake.path)
     new_clan_dir = temporary_home / "new-clan"
