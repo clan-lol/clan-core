@@ -117,12 +117,22 @@ in
             // lib.mapAttrs' (
               name: config: lib.nameValuePair "darwin-${name}" config.config.system.build.toplevel
             ) (self.darwinConfigurations or { })
-            // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") (
-              if system == "aarch64-darwin" then
-                lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs" && n != "option-search") packagesToBuild
-              else
-                packagesToBuild
-            )
+            // {
+              all-packages =
+                let
+                  packagesToCheck =
+                    if system == "aarch64-darwin" then
+                      lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs" && n != "option-search") packagesToBuild
+                    else
+                      packagesToBuild;
+                in
+                pkgs.runCommand "all-packages" { passthru.packages = packagesToCheck; } ''
+                  echo "Built all packages for ${system}:"
+                  ${lib.concatMapStringsSep "\n" (n: "echo '  - ${n}'") (lib.attrNames packagesToCheck)}
+                  echo ${toString (lib.attrValues packagesToCheck)} >/dev/null
+                  touch $out
+                '';
+            }
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") (
               if system == "aarch64-darwin" then
                 lib.filterAttrs (n: _: n != "docs") self'.devShells
