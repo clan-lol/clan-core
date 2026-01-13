@@ -40,6 +40,7 @@
 
             useSSL = lib.mkOption {
               type = lib.types.bool;
+              default = false;
               description = ''
                 Whether to send metrics data via http or https.
                 Enable this if your monitoring server is addressable using https.
