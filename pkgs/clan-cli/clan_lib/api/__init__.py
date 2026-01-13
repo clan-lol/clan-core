@@ -221,7 +221,7 @@ API.register(get_system_file)
                 serialized_hints = {
                     key: type_to_dict(
                         value,
-                        scope=name + " argument" if key != "return" else "return",
+                        scope=["return"] if key == "return" else ["argument", name],
                         narrow_unsupported_union_types=True,
                     )
                     for key, value in hints.items()
