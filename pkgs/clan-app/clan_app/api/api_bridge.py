@@ -94,7 +94,7 @@ class ApiBridge(Protocol):
             status="error",
             errors=[
                 ApiError(
-                    message="An internal error occured",
+                    message="An internal error occurred",
                     description=error_message,
                     location=location,
                 ),

@@ -131,7 +131,7 @@
         # Use networkd instead of the pile of shell scripts
         networking.useNetworkd = lib.mkDefault true;
       })
-      # Default the NixOS domain option to clan's meta.domain if not explicitely set otherwise
+      # Default the NixOS domain option to clan's meta.domain if not explicitly set otherwise
       # Only set if domain is defined (e.g., through inventory/flake configuration)
       (
         let

@@ -16,16 +16,16 @@ class WebThread:
     stop_event: threading.Event
 
 
-BAKEND_THREADS: dict[str, WebThread] | None = None
+BACKEND_THREADS: dict[str, WebThread] | None = None
 
 
 @API.register
 def delete_task(task_id: str) -> None:
     """Cancel a task by its op_key."""
-    if BAKEND_THREADS is None:
+    if BACKEND_THREADS is None:
         msg = "Backend threads not initialized"
         raise ClanError(msg)
-    future = BAKEND_THREADS.get(task_id)
+    future = BACKEND_THREADS.get(task_id)
 
     log.debug(f"Thread ID: {threading.get_ident()}")
     if future:
@@ -56,7 +56,7 @@ def run_task_blocking(somearg: str) -> str:
 @API.register
 def list_tasks() -> list[str]:
     """List all tasks."""
-    if BAKEND_THREADS is None:
+    if BACKEND_THREADS is None:
         msg = "Backend threads not initialized"
         raise ClanError(msg)
-    return list(BAKEND_THREADS.keys())
+    return list(BACKEND_THREADS.keys())

@@ -265,7 +265,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
                     "jon": {
                         "machineClass": "nixos",  # Static string is not writeable
                         "deploy": {},  # Empty dict is writeable
-                        # TOOD: Return writability for existing items
+                        # TODO: Return writability for existing items
                         "tags": ["nix1"],  # Static list is not partially writeable
                     },
                 },

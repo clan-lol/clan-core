@@ -8,7 +8,7 @@ and how to define a remote builder for your machine closures.
 
 ##Requirements
 * **Expected time for this step**: 15min
-* **A setup device **: Any machine that is part of your clan and that you have root access to, or the setup machine you used durign the previous steps.
+* **A setup device **: Any machine that is part of your clan and that you have root access to, or the setup machine you used during the previous steps.
 
 
 ## Setting `targetHost`
@@ -137,4 +137,4 @@ This is particularly useful when:
 
 
 ##Up Next
-Feel free to check out some of our recommandations and ideas for the future of your Clan adventure.
+Feel free to check out some of our recommendations and ideas for the future of your Clan adventure.

@@ -28,7 +28,7 @@
 
   roles.client = {
     description = ''
-      Enables a continuosly running Tor proxy on the machine, allowing access to other machines via the Tor network.
+      Enables a continuously running Tor proxy on the machine, allowing access to other machines via the Tor network.
       If not enabled, a Tor proxy will be started automatically when required.
     '';
     perInstance =

@@ -291,7 +291,7 @@ class TestIntegration:
         mock_api: MethodRegistry,
     ) -> None:
         shared_threads: dict[str, tasks.WebThread] = {}
-        tasks.BAKEND_THREADS = shared_threads
+        tasks.BACKEND_THREADS = shared_threads
 
         """Test a long-running blocking task."""
         server: HttpApiServer = HttpApiServer(

@@ -46,7 +46,7 @@ in
     };
     # The clan module
     clan =
-      # TODO: make these explizit options and deduplicate with lib.clan function
+      # TODO: make these explicit options and deduplicate with lib.clan function
       let
         nixpkgs = inputs.nixpkgs or clan-core.inputs.nixpkgs;
         nix-darwin = inputs.nix-darwin or clan-core.inputs.nix-darwin;

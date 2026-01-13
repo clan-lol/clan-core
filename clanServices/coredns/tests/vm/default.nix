@@ -95,7 +95,7 @@
     for m in machines:
         m.wait_for_unit("network-online.target")
 
-    # This should work, but is borken in tests i think? Instead we dig directly
+    # This should work, but is broken in tests i think? Instead we dig directly
 
     # client.succeed("curl -k -v http://one.foo")
     # client.succeed("curl -k -v http://two.foo")

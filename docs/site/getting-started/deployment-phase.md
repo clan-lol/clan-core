@@ -20,7 +20,7 @@ At this point, the process is the same for VMs and physical hardware.
 
 ## Deploying Your Machines
 
-Careful - This command is destructive! It will format your traget device's disk and install NixOS on it!
+Careful - This command is destructive! It will format your target device's disk and install NixOS on it!
 
 ```shell-session
 $ clan machines install [YOUR-MACHINE-NAME] --target-host root@<IP>
@@ -35,7 +35,7 @@ After the installation completes, your machine will reboot into the newly instal
 ## Checkpoint
 
 !!! Warning "Under construction"
-    We are still working on the best way to confirm a successfull deployment.
+    We are still working on the best way to confirm a successful deployment.
     For now, please see if the setup finished by logging in directly on the target machine(s).
     It should ask for `YOUR-MACHINE-NAME login:` and accept an empty password for root (or, if you set a password manually during deployment, that).
 

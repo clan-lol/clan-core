@@ -226,7 +226,7 @@ in
       description = ''
         Machines in the inventory.
 
-        Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+        Each machine declared here can be referenced via its `attributeName` by the `inventory.service`s `roles`.
       '';
       default = { };
       type = types.lazyAttrsOf (

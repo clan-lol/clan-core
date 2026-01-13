@@ -47,7 +47,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
       return;
     }
 
-    // TOOD: When a user clicks cancel button in the file picker, an error will
+    // TODO: When a user clicks cancel button in the file picker, an error will
     // be return, the backend should provide more data so we can target the
     // cancellation specifically and not swallow other errors
     const path = await pickDir({

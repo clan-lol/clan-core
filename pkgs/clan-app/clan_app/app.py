@@ -76,7 +76,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     # Create a shared threads dictionary for both HTTP and Webview modes
     shared_threads: dict[str, tasks.WebThread] = {}
-    tasks.BAKEND_THREADS = shared_threads
+    tasks.BACKEND_THREADS = shared_threads
 
     # Start HTTP API server if requested
     http_server = None

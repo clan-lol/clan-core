@@ -102,7 +102,7 @@ in
         Once the name can be claimed again.
         - Structure will change.
 
-        API will be declared as public after beeing simplified.
+        API will be declared as public after being simplified.
     '';
     type = types.submoduleWith {
       # TODO: Remove specialArgs

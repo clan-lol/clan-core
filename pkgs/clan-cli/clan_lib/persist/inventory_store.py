@@ -24,7 +24,7 @@ from clan_lib.persist.write_rules import AttributeMap, compute_attribute_persist
 
 
 def unwrap_known_unknown(value: Any) -> Any:
-    """Helper untility to unwrap our custom deferred module. (uniqueDeferredSerializableModule)
+    """Helper utility to unwrap our custom deferred module. (uniqueDeferredSerializableModule)
 
     This works because we control ClanLib.type.uniqueDeferredSerializableModule
 

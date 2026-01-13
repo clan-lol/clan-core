@@ -36,7 +36,7 @@ async function call<Method extends Methods>(
     >
   )[method];
   if (typeof fn != "function") {
-    throw new Error(`Cannot call clan non-existant method: ${method}`);
+    throw new Error(`Cannot call clan non-existent method: ${method}`);
   }
 
   const taskId = window.crypto.randomUUID();

@@ -180,7 +180,7 @@ def test_simple_deferred(setup_test_files: Path) -> None:
 
     assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}
 
-    # Remove the "deferredModle" "C" along with its settings
+    # Remove the "deferredModule" "C" along with its settings
     delete_by_path(data, "foo.c")  # type: ignore[arg-type]
     store.write(data, "test", commit=False)
     assert store.read() == {"foo": {"a": {}, "b": {}}}

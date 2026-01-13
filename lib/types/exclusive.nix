@@ -55,7 +55,7 @@ in
     {
       inherit eval;
       expr = lib.deepSeq eval.config.exportsModule 1;
-      # cannot test the emited warnings unfortunately
+      # cannot test the emitted warnings unfortunately
       expected = 1;
     };
 }

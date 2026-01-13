@@ -781,7 +781,7 @@ type MachinesInput = dict[str, MachineInput]
 """
 Machines in the inventory.
 
-Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+Each machine declared here can be referenced via its `attributeName` by the `inventory.service`s `roles`.
 
 """
 
@@ -790,7 +790,7 @@ type MachinesOutput = dict[str, MachineOutput]
 """
 Machines in the inventory.
 
-Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
+Each machine declared here can be referenced via its `attributeName` by the `inventory.service`s `roles`.
 
 """
 

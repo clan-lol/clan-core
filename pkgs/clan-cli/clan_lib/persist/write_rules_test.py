@@ -256,7 +256,7 @@ def test_attributes_totality() -> None:
 
 def test_totality_simple() -> None:
     introspection = {
-        "foo": {  # Foo is non-total all keys are potententially deleteable
+        "foo": {  # Foo is non-total all keys are potentially deletable
             "__this": {
                 "files": ["<unknown-file>"],
                 "headType": "attrsOf",
