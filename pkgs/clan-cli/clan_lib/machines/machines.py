@@ -28,11 +28,11 @@ class Machine:
     ) -> "Machine":
         return cls(name=name, flake=flake)
 
-    def get_inv_machine(self) -> "MachineOutput":
+    def get_inv_machine(self) -> MachineOutput:
         # Import on demand to avoid circular imports
         from clan_lib.machines.actions import get_machine  # noqa: PLC0415
 
-        return get_machine(self.flake, self.name)
+        return get_machine(self.flake, self.name).data
 
     def get_id(self) -> str:
         return f"{self.flake}#{self.name}"

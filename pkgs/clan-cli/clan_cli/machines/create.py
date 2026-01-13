@@ -8,6 +8,7 @@ from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_file
+from clan_lib.machines.actions import MachineResponse, get_machine
 from clan_lib.nix_models.typing import MachineDeployInput, MachineInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.patch_engine import merge_objects
@@ -31,7 +32,7 @@ class CreateOptions:
 def create_machine(
     opts: CreateOptions,
     commit: bool = True,
-) -> None:
+) -> MachineResponse:
     """Create a new machine in the clan directory.
 
     This function will create a new machine based on a template.
@@ -95,6 +96,7 @@ def create_machine(
 
     # Invalidate the cache since this modified the flake
     opts.clan_dir.invalidate_cache()
+    return get_machine(opts.clan_dir, machine_name)
 
 
 def create_command(args: argparse.Namespace) -> None:
