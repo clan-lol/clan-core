@@ -7,6 +7,17 @@
 
   roles.default = {
     description = "Placeholder role to apply the admin service";
+    perInstance =
+      { ... }:
+      {
+        nixosModule =
+          { ... }:
+          {
+            warnings = [
+              "The clanServices/admin module is deprecated and will be removed in a future release."
+            ];
+          };
+      };
     interface =
       { lib, ... }:
       {
