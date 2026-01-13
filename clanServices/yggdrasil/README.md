@@ -36,7 +36,7 @@ inventory = {
   };
 
   instances = {
-    # Deploy yggdraisl on all machines
+    # Deploy yggdrasil on all machines
     yggdrasil = {
       roles.default.tags.all = { };
     };
@@ -67,7 +67,7 @@ inventory = {
 
   instances = {
 
-    # Deploy yggdraisl on all machines
+    # Deploy yggrdasil on all machines
     yggdrasil = {
       roles.default.tags.all = [ "all" ];
     };
