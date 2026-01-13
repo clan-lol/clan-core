@@ -2,7 +2,6 @@ import difflib
 import logging
 import os
 import pprint
-import shutil
 import sys
 from collections.abc import Iterable
 from contextlib import ExitStack
@@ -15,7 +14,7 @@ from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
-from clan_lib.nix import nix_config, nix_shell, nix_test_store
+from clan_lib.nix import nix_config, nix_test_store
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -539,36 +538,6 @@ class Generator:
                 msg = f"prompt value for '{prompt_name}' in generator {self.name} not provided"
                 raise ClanError(msg) from e
 
-        def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
-            """Helper function to create bubblewrap command."""
-            test_store = nix_test_store()
-            real_bash_path = Path("bash")
-            if os.environ.get("IN_NIX_SANDBOX"):
-                bash_executable_path = Path(str(shutil.which("bash")))
-                real_bash_path = bash_executable_path.resolve()
-
-            # fmt: off
-            return nix_shell(
-                ["bash", "bubblewrap"],
-                [
-                    "bwrap",
-                    "--unshare-all",
-                    "--tmpfs",  "/",
-                    "--ro-bind", "/nix/store", "/nix/store",
-                    "--ro-bind", "/bin/sh", "/bin/sh",
-                    *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
-                    "--dev", "/dev",
-                    "--bind", str(tmpdir), str(tmpdir),
-                    "--chdir", "/",
-                    "--bind", "/proc", "/proc",
-                    "--uid", "1000",
-                    "--gid", "1000",
-                    "--",
-                    str(real_bash_path), "-c", generator,
-                ],
-            )
-            # fmt: on
-
         env = os.environ.copy()
         with ExitStack() as stack:
             _tmpdir = stack.enter_context(TemporaryDirectory(prefix="vars-"))
@@ -596,6 +565,8 @@ class Generator:
             final_script = self.final_script(machine)
 
             if sys.platform == "linux" and bwrap.bubblewrap_works():
+                from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
+
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
             elif sys.platform == "darwin":
                 from clan_lib.sandbox_exec import sandbox_exec_cmd  # noqa: PLC0415
