@@ -407,6 +407,7 @@
                     admin_user = "$__file{${config.clan.core.vars.generators.grafana-admin.files.username.path}}";
                     admin_password = "$__file{${config.clan.core.vars.generators.grafana-admin.files.password.path}}";
                     cookie_secure = useSSL;
+                    csrf_trusted_origins = config.networking.fqdn;
                   };
 
                   server = {
