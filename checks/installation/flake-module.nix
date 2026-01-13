@@ -27,7 +27,7 @@
     lib.map (
       system:
       lib.nameValuePair "test-install-machine-${system}" {
-        facter.reportPath = import ./facter-report.nix system;
+        hardware.facter.reportPath = import ./facter-report.nix system;
 
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
