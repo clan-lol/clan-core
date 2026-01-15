@@ -144,7 +144,7 @@
                         url = "${serverAddress}/mimir/api/v1/push"
                         basic_auth {
                           username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
-                          password_file = "${config.clan.core.vars.generators.mimir-auth.files.password.path}"
+                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/mimir-auth-password"
                         }
                       }
                     }
@@ -191,12 +191,19 @@
                         url = "${serverAddress}/loki/loki/api/v1/push"
                         basic_auth {
                           username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
-                          password_file = "${config.clan.core.vars.generators.loki-auth.files.password.path}"
+                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/loki-auth-password"
                         }
                       }
                     }
                   '';
                 };
+
+              systemd.services.alloy.serviceConfig = {
+                LoadCredential = [
+                  "mimir-auth-password:${config.clan.core.vars.generators.mimir-auth.files.password.path}"
+                  "loki-auth-password:${config.clan.core.vars.generators.loki-auth.files.password.path}"
+                ];
+              };
             };
         };
     };
@@ -254,13 +261,8 @@
                   };
 
                   files = {
-                    username = {
-                      secret = false;
-                    };
-                    password = {
-                      owner = "grafana";
-                      secret = true;
-                    };
+                    username.secret = false;
+                    password = { };
                   };
 
                   runtimeInputs = [
@@ -275,14 +277,19 @@
 
               services.nginx = {
                 enable = true;
+
+                preStart = ''
+                  ln -s "$CREDENTIALS_DIRECTORY" /run/nginx/credentials
+                '';
+
                 virtualHosts."${config.networking.fqdn}".locations = {
                   "/mimir/" = {
-                    basicAuthFile = config.clan.core.vars.generators.mimir-auth.files.htpasswd.path;
+                    basicAuthFile = "/run/nginx/credentials/mimir-auth-htpasswd";
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
                   };
 
                   "/loki/" = {
-                    basicAuthFile = config.clan.core.vars.generators.loki-auth.files.htpasswd.path;
+                    basicAuthFile = "/run/nginx/credentials/loki-auth-htpasswd";
                     proxyPass = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
                   };
                 }
@@ -292,6 +299,13 @@
                     proxyWebsockets = true;
                   };
                 };
+              };
+
+              systemd.services.nginx.serviceConfig = {
+                LoadCredential = [
+                  "mimir-auth-htpasswd:${config.clan.core.vars.generators.mimir-auth.files.htpasswd.path}"
+                  "loki-auth-htpasswd:${config.clan.core.vars.generators.loki-auth.files.htpasswd.path}"
+                ];
               };
 
               services.mimir = {
@@ -404,8 +418,8 @@
                   public_dashboards.enabled = false;
 
                   security = {
-                    admin_user = "$__file{${config.clan.core.vars.generators.grafana-admin.files.username.path}}";
-                    admin_password = "$__file{${config.clan.core.vars.generators.grafana-admin.files.password.path}}";
+                    admin_user = "$__file{/run/credentials/grafana.service/grafana-admin-username}";
+                    admin_password = "$__file{/run/credentials/grafana.service/grafana-admin-password}";
                     cookie_secure = useSSL;
                     csrf_trusted_origins = config.networking.fqdn;
                   };
@@ -448,6 +462,13 @@
                   ];
                 };
               };
+
+              systemd.services.grafana.serviceConfig = {
+                LoadCredential = [
+                  "grafana-admin-username:${config.clan.core.vars.generators.grafana-admin.files.username.path}"
+                  "grafana-admin-password:${config.clan.core.vars.generators.grafana-admin.files.password.path}"
+                ];
+              };
             };
         };
     };
@@ -460,16 +481,10 @@
         loki-auth = {
           share = true;
 
-          files."username" = {
-            secret = false;
-          };
-          files."password" = {
-            owner = "alloy";
-            secret = true;
-          };
-          files."htpasswd" = {
-            secret = true;
-            owner = "nginx";
+          files = {
+            "username".secret = false;
+            "password" = { };
+            "htpasswd" = { };
           };
 
           runtimeInputs = [
@@ -486,16 +501,10 @@
         mimir-auth = {
           share = true;
 
-          files."username" = {
-            secret = false;
-          };
-          files."password" = {
-            owner = "alloy";
-            secret = true;
-          };
-          files."htpasswd" = {
-            secret = true;
-            owner = "nginx";
+          files = {
+            "username".secret = false;
+            "password" = { };
+            "htpasswd" = { };
           };
 
           runtimeInputs = [
