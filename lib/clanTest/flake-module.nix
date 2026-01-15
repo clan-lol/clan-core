@@ -241,18 +241,6 @@ in
             # Since we have ephemeral machines, we set it here for the test
             system.stateVersion = config.system.nixos.release;
 
-            # Currently this is the default in NixOS, but we set it explicitly to avoid surprises
-            # Disable the initrd systemd service which has the following effect
-            #
-            # With the below on 'false' initrd runs a 'minimal shell script', called the stage-1 init.
-            # Benefits:
-            #     Simple and fast.
-            #     Easier to debug for very minimal or custom setups.
-            # Drawbacks:
-            #     Limited flexibility.
-            #     Harder to handle advanced setups (like TPM, LUKS, or LVM-on-LUKS) but not needed since we are in a test
-            #     No systemd journal logs from initrd.
-            boot.initrd.systemd.enable = false;
             # Make the test depend on its vars-check derivation to reduce CI jobs
             environment.etc."clan-vars-check".source = vars-check;
           }
