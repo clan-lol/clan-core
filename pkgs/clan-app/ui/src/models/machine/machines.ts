@@ -1,8 +1,15 @@
 import { Accessor } from "solid-js";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
-import { Clan, ClanMethods, Clans, ClansMethods, Machine } from "..";
-import { MachineData, MachineOutput, createMachineFromOutput } from "./machine";
+import {
+  Clan,
+  ClanMethods,
+  Clans,
+  ClansMethods,
+  Machine,
+  MachineDataChange,
+} from "..";
+import { MachineOutput, createMachineFromOutput } from "./machine";
 import { mapObjectValues } from "@/src/util";
 
 export type Machines = {
@@ -22,9 +29,13 @@ export type MachinesMethods = {
   updateMachineData(
     this: void,
     item: Machine | string,
-    data: Partial<MachineData>,
+    data: MachineDataChange,
   ): Promise<void>;
-  createMachine(this: void, id: string, data: MachineData): Promise<Machine>;
+  createMachine(
+    this: void,
+    id: string,
+    data: MachineDataChange,
+  ): Promise<Machine>;
   toggleHighlightedMachines(
     this: void,
     items: (string | Machine)[] | string | Machine,
@@ -127,12 +138,23 @@ export function createMachinesMethods(
       }
       // TODO: Use partial update once supported by backend and solidjs
       // https://github.com/solidjs/solid/issues/2475
-      //
-      // FIXME: assign deploy is unecessary, currently it's only to make
-      // typescript happy
-      const d = { ...machine.data, ...data, deploy: machine.data.deploy };
-      await api.clan.updateMachineData(machine.id, clan().id, d);
-      setMachines("all", machine.id, "data", d);
+      await api.clan.updateMachineData(machine.id, clan().id, {
+        ...machine.data,
+        ...data,
+        deploy: {
+          ...machine.data.deploy,
+          ...data.deploy,
+        },
+      });
+      // solid's setStore only merges shallowly, we need to fill the original
+      // values for deeply nested objects
+      setMachines("all", machine.id, "data", {
+        ...data,
+        deploy: {
+          ...machine.data.deploy,
+          ...data.deploy,
+        },
+      });
     },
     toggleHighlightedMachines(items) {
       if (!Array.isArray(items)) {

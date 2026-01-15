@@ -9,50 +9,52 @@ import {
   Service,
   ServiceInstances,
   ServiceInstancesMethods,
-  useClanContext,
-  useClansContext,
-  useServiceInstancesContext,
 } from "..";
-import { mapObjectValues } from "@/src/util";
+import { DeepImmutable, DeepRequired, mapObjectValues } from "@/src/util";
 
-export type ServiceInstanceEntity = {
-  readonly data: ServiceInstanceDataEntity;
-};
-export type ServiceInstanceDataEntity = {
-  readonly name: string;
-  readonly roles: Record<string, ServiceInstanceRoleEntity>;
+export type ServiceInstanceOutput = {
+  readonly data: ServiceInstanceDataOutput;
 };
 
-export type ServiceInstance = Omit<ServiceInstanceEntity, "data"> & {
+export type ServiceInstance = Omit<ServiceInstanceOutput, "data"> & {
   readonly clan: Clan;
   readonly service: Service;
   data: ServiceInstanceData;
   readonly isActive: boolean;
-  // readonly isNew: boolean;
 };
 
-export type ServiceInstanceData = Omit<ServiceInstanceDataEntity, "roles"> & {
+// FIXE: all properties should be optional,
+// backend should figure out filling in missing data
+export type ServiceInstanceDataChange = {
+  name: string;
+  roles: Record<string, ServiceInstanceRoleChange>;
+};
+export type ServiceInstanceData = {
+  name: string;
   roles: ServiceInstanceRoles;
 };
-
-export type ServiceInstanceRoleEntity = {
-  readonly settings: Record<string, unknown>;
-  readonly machines: string[];
-  readonly tags: string[];
-};
+export type ServiceInstanceDataOutput = DeepImmutable<
+  DeepRequired<ServiceInstanceDataChange>
+>;
 
 export type ServiceInstanceRoles = {
   all: Record<string, ServiceInstanceRole>;
   readonly sorted: ServiceInstanceRole[];
 };
-export type ServiceInstanceRole = Omit<
-  ServiceInstanceRoleEntity,
-  "settings"
-> & {
-  readonly id: string;
-  settings: Record<string, unknown>;
-  members: ClanMember[];
+
+export type ServiceInstanceRoleChange = {
+  settings?: Record<string, unknown>;
+  machines?: string[];
+  tags?: string[];
 };
+export type ServiceInstanceRole = {
+  readonly id: string;
+  readonly members: ClanMember[];
+} & DeepRequired<ServiceInstanceRoleChange>;
+
+export type ServiceInstanceRoleOutput = DeepImmutable<
+  DeepRequired<ServiceInstanceRoleChange>
+>;
 
 export type ServiceInstanceMethods = {
   setServiceInstance: SetStoreFunction<ServiceInstance>;
@@ -88,21 +90,21 @@ export function createInstanceMethods(
   return self;
 }
 
-export function createServiceInstance({
-  entity,
+export function createServiceInstanceFromOutput({
+  output,
   service,
   clan,
 }: {
-  entity: ServiceInstanceEntity;
+  output: ServiceInstanceOutput;
   service: Accessor<Service>;
   clan: Accessor<Clan>;
 }): ServiceInstance {
   return {
-    ...entity,
+    ...output,
     data: {
-      ...entity.data,
+      ...output.data,
       roles: {
-        all: mapObjectValues(entity.data.roles, ([roleId, role]) => ({
+        all: mapObjectValues(output.data.roles, ([roleId, role]) => ({
           ...role,
           id: roleId,
           members: [
@@ -139,22 +141,5 @@ export function createServiceInstance({
     get isActive() {
       return this.service.clan.serviceInstances.activeServiceInstance === this;
     },
-    // get isNew() {
-    //   return !!instancePath(this.data.name, this.service.clan.services.all);
-    // },
   };
 }
-
-// function instancePath(
-//   instanceName: string,
-//   services: Record<string, Service>,
-// ): readonly [string, number] | null {
-//   for (const [, service] of Object.entries(services)) {
-//     for (const [i, instance] of service.instances.entries()) {
-//       if (instance.data.name === instanceName) {
-//         return [service.id, i];
-//       }
-//     }
-//   }
-//   return null;
-// }

@@ -1,6 +1,6 @@
 import { Accessor } from "solid-js";
 import { Clan, Service } from "..";
-import { ServiceEntity, createService } from "./service";
+import { ServiceOutput, createServiceFromOutput } from "./service";
 import { mapObjectValues } from "@/src/util";
 
 export type Services = {
@@ -8,13 +8,13 @@ export type Services = {
   sorted: Service[];
 };
 
-export function createServices(
-  entities: Record<string, ServiceEntity>,
+export function createServicesFromOutputs(
+  outputs: Record<string, ServiceOutput>,
   clan: Accessor<Clan>,
 ): Services {
   const self: Services = {
-    all: mapObjectValues(entities, ([id, entity]) =>
-      createService(id, entity, clan),
+    all: mapObjectValues(outputs, ([id, output]) =>
+      createServiceFromOutput(id, output, clan),
     ),
     get sorted() {
       return Object.values(this.all).sort((a, b) => {

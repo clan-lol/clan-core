@@ -9,7 +9,7 @@ import {
   isClan,
   createClanFromOutput,
   createClanMetaFromOutput,
-  ClanData,
+  ClanDataChange,
 } from "./clan";
 import { mapObjectValues } from "@/src/util";
 
@@ -117,7 +117,7 @@ export type ClansMethods = {
   createClan(
     this: void,
     id: string,
-    data: ClanData,
+    data: ClanDataChange,
     opts?: { active?: boolean },
   ): Promise<Clan>;
   removeClan(this: void, item: Clan | ClanMeta | string): Clan | ClanMeta;

@@ -2,6 +2,7 @@ export { initClans } from "./clans";
 export type { Clans, ClansMethods, ClansOutput as ClansEntity } from "./clans";
 export type {
   Clan,
+  ClanDataChange,
   ClanData,
   ClanDataOutput,
   ClanMember,

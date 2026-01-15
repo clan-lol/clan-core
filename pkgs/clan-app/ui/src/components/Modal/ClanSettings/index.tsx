@@ -15,7 +15,7 @@ import { Fieldset } from "@/src/components/Form/Fieldset";
 import { Divider } from "@/src/components/Divider/Divider";
 import { Button } from "@/src/components/Button/Button";
 import { Alert } from "@/src/components/Alert/Alert";
-import { ClanData, useClanContext, useUIContext } from "@/src/models";
+import { ClanDataChange, useClanContext, useUIContext } from "@/src/models";
 import TitledModal from "../components/TitledModal";
 import ModalHeading from "../components/ModalHeading";
 
@@ -32,14 +32,14 @@ const ClanSettings: Component = () => {
   const [clan, { updateClanData, removeClan }] = useClanContext();
   const [saving, setSaving] = createSignal(false);
 
-  const [formStore, { Form, Field }] = createForm<ClanData>({
+  const [formStore, { Form, Field }] = createForm<ClanDataChange>({
     initialValues: clan().data,
-    validate: valiForm<ClanData>(schema),
+    validate: valiForm<ClanDataChange>(schema),
   });
 
   const readOnly = (name: FieldNames) => clan().dataSchema[name]?.readonly;
 
-  const onSubmit: SubmitHandler<ClanData> = async (data, event) => {
+  const onSubmit: SubmitHandler<ClanDataChange> = async (data, event) => {
     setSaving(true);
     // TODO: display the error in the UI
     // and resets the error when re-submit

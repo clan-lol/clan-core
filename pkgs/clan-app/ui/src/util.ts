@@ -99,6 +99,10 @@ export function onClickOutside(
   onCleanup(() => document.removeEventListener("mousedown", listener));
 }
 
-export type DeepRequired<T> = Required<{
-  [K in keyof T]: T[K] extends Required<T[K]> ? T[K] : DeepRequired<T[K]>;
-}>;
+export type DeepRequired<T> = T extends object
+  ? { [P in keyof T]-?: DeepRequired<T[P]> }
+  : T;
+
+export type DeepImmutable<T> = T extends object
+  ? { readonly [P in keyof T]: DeepImmutable<T[P]> }
+  : T;

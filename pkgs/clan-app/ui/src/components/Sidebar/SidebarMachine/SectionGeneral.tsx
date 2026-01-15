@@ -5,7 +5,7 @@ import { TextArea } from "@/src/components/Form/TextArea";
 import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { tooltipText } from "@/src/components/Form";
-import { MachineData, useMachineContext } from "@/src/models";
+import { MachineDataChange, useMachineContext } from "@/src/models";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),
@@ -26,7 +26,7 @@ export const SectionGeneral = () => {
     return machine().dataSchema[name]?.readonly;
   };
 
-  async function onSubmit(values: MachineData): Promise<void> {
+  async function onSubmit(values: MachineDataChange): Promise<void> {
     await updateMachineData(values);
   }
 
