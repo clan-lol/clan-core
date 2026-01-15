@@ -222,13 +222,23 @@ in
                       (_file: {
                         options = {
                           owner = mkOption {
-                            description = "The user name or id that will own the file.";
+                            description = ''
+                              The user name or id that will own the file on the target machine after deployment.
+
+                              Do not use this option to make secrets available to systemd services running as a non-root user.
+                              Instead use the systemd `LOAD_CREDENTIAL=` feature, as documented at https://systemd.io/CREDENTIALS/.
+                            '';
                             type = str;
                             default = "root";
                           };
                           group = mkOption {
                             type = str;
-                            description = "The group name or id that will own the file.";
+                            description = ''
+                              The group name or id that will own the file on the target machine after deployment.
+
+                              Do not use this option to make secrets available to systemd services running as a non-root user.
+                              Instead use the systemd `LOAD_CREDENTIAL=` feature, as documented at https://systemd.io/CREDENTIALS/.
+                            '';
                             default = if config.pkgs.stdenv.hostPlatform.isDarwin then "wheel" else "root";
                             defaultText = lib.literalExpression ''if pkgs.stdenv.hostPlatform.isDarwin then "wheel" else "root"'';
                           };
