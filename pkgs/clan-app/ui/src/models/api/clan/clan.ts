@@ -6,11 +6,7 @@ import {
   ClanMetaOutput,
   ClanDataOutput,
 } from "../../clan/clan";
-import {
-  MachineEntity,
-  MachinePositions,
-  machinePositions,
-} from "../../machine/machine";
+import { MachineOutput, machinePositions } from "../../machine/machine";
 import { asyncMapObjectValues, mapObjectValues } from "@/src/util";
 import { ServiceEntity, ServiceRoleEntity } from "../../service/service";
 
@@ -97,7 +93,8 @@ export async function getClan(id: string): Promise<ClanOutput> {
       },
     }),
   ]);
-  const machines: Record<string, MachineEntity> = await asyncMapObjectValues(
+  const clanMachinePositions = machinePositions.getOrSetForClan(id);
+  const machines: Record<string, MachineOutput> = await asyncMapObjectValues(
     machinesRes.data,
     async ([machineId, machine]) => {
       const [stateRes, schemaRes] = await Promise.all([
@@ -123,18 +120,17 @@ export async function getClan(id: string): Promise<ClanOutput> {
         }),
       ]);
 
-      let mp: MachinePositions;
-      if (!machinePositions[id]) {
-        mp = new MachinePositions({});
-        machinePositions[id] = mp;
-      } else {
-        mp = machinePositions[id];
-      }
       return {
         id: machineId,
         data: {
-          ...machine.data,
-          position: mp.getOrSetPosition(machineId),
+          deploy: {
+            buildHost: machine.data.deploy.buildHost || "",
+            targetHost: machine.data.deploy.targetHost || "",
+          },
+          description: machine.data.description || "",
+          machineClass: machine.data.machineClass,
+          tags: machine.data.tags,
+          position: clanMachinePositions.getOrSetPosition(machineId),
         },
         dataSchema: schemaRes.data,
         status: stateRes.data.status,

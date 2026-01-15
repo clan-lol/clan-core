@@ -1,15 +1,8 @@
 import { Accessor } from "solid-js";
 import { produce, SetStoreFunction } from "solid-js/store";
 import api from "../api";
-import {
-  Clan,
-  ClanMethods,
-  Clans,
-  MachineDataEntity,
-  ClansMethods,
-  Machine,
-} from "..";
-import { MachineData, MachineEntity, createMachine } from "./machine";
+import { Clan, ClanMethods, Clans, ClansMethods, Machine } from "..";
+import { MachineData, MachineOutput, createMachineFromOutput } from "./machine";
 import { mapObjectValues } from "@/src/util";
 
 export type Machines = {
@@ -114,16 +107,8 @@ export function createMachinesMethods(
     },
     deactivateMachine,
     async createMachine(id, data) {
-      await api.clan.createMachine(id, data, clan().id);
-      const machine = createMachine(
-        id,
-        {
-          data: data as MachineDataEntity,
-          dataSchema: {},
-          status: "not_installed",
-        },
-        clan,
-      );
+      const output = await api.clan.createMachine(id, data, clan().id);
+      const machine = createMachineFromOutput(id, output, clan);
       setMachines(
         "all",
         produce((all) => {
@@ -219,13 +204,13 @@ export function createMachinesMethods(
   return self;
 }
 
-export function createMachines(
-  entities: Record<string, MachineEntity>,
+export function createMachinesFromOutputs(
+  outputs: Record<string, MachineOutput>,
   clan: Accessor<Clan>,
 ): Machines {
   const self: Machines = {
-    all: mapObjectValues(entities, ([id, machine]) =>
-      createMachine(id, machine, clan),
+    all: mapObjectValues(outputs, ([id, machine]) =>
+      createMachineFromOutput(id, machine, clan),
     ),
     get sorted() {
       return Object.values(this.all).sort((a, b) => {

@@ -14,8 +14,8 @@ describe("machines", () => {
         foo: {
           data: {
             deploy: {
-              buildHost: null,
-              targetHost: null,
+              buildHost: "",
+              targetHost: "",
             },
             description: "",
             machineClass: "nixos",
@@ -53,8 +53,8 @@ describe("machines", () => {
         foo: {
           data: {
             deploy: {
-              buildHost: null,
-              targetHost: null,
+              buildHost: "",
+              targetHost: "",
             },
             description: "",
             machineClass: "nixos",
