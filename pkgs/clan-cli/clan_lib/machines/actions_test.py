@@ -149,7 +149,7 @@ def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
     )
 
     # No-op roundtrip should not change anything in the inventory
-    machine_jon = get_machine(flake, "jon")
+    machine_jon = get_machine(flake, "jon").data
 
     with patch(f"{actions_module.__name__}.InventoryStore._write") as mock_write:
         machine_jon_input = to_mutable(machine_jon)
@@ -193,7 +193,7 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
     )
 
     # No-op roundtrip should not change anything in the inventory
-    machine_jon = get_machine(flake, "jon")
+    machine_jon = get_machine(flake, "jon").data
     machine_jon_input = to_mutable(machine_jon)
     machine_jon_input["description"] = "description updated"
 
@@ -221,7 +221,7 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     )
 
     def get_jon() -> MachineOutput:
-        return get_machine(flake, "jon")
+        return get_machine(flake, "jon").data
 
     def set_jon(tags: list[str]) -> None:
         machine = get_jon()

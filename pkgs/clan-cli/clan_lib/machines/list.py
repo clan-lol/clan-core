@@ -88,7 +88,7 @@ def get_machine_details(machine: Machine) -> MachineDetails:
                 disk_schema = data  # type: ignore[assignment]
 
     return MachineDetails(
-        machine=machine_inv,
+        machine=machine_inv.data,
         hw_config=hw_config,
         disk_schema=disk_schema,
     )

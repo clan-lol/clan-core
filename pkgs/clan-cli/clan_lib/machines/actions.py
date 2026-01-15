@@ -109,7 +109,7 @@ def list_machines(
 
 
 @API.register
-def get_machine(flake: Flake, name: str) -> MachineOutput:
+def get_machine(flake: Flake, name: str) -> MachineResponse:
     """Retrieve a machine's inventory details by name from the given flake.
 
     Args:
@@ -126,12 +126,22 @@ def get_machine(flake: Flake, name: str) -> MachineOutput:
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
-    machine_inv = inventory.get("machines", {}).get(name)
-    if machine_inv is None:
+    machine = inventory.get("machines", {}).get(name)
+    if machine is None:
         msg = f"Machine {name} does not exist"
         raise ClanError(msg)
 
-    return machine_inv
+    tag_map: dict[str, set[str]] = {}
+
+    for tag in machine.get("tags", []):
+        tag_map[tag] = set(name)
+
+    instances = inventory.get("instances", {})
+
+    return MachineResponse(
+        data=machine,
+        instance_refs=machine_instances(name, instances, tag_map),
+    )
 
 
 @API.register
