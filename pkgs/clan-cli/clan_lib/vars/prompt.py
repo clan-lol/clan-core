@@ -4,7 +4,6 @@ import sys
 import termios
 import tty
 from dataclasses import dataclass, field
-from getpass import getpass
 from typing import Any, TypedDict
 
 from clan_lib.errors import ClanError
@@ -65,17 +64,17 @@ class Prompt:
         )
 
 
-def get_multiline_hidden_input() -> str:
-    """Get multiline input from the user without echoing the input.
-    This function allows the user to enter multiple lines of text,
-    and it will return the concatenated string of all lines entered.
-    The user can finish the input by pressing Ctrl-D (EOF).
+def get_hidden_input(*, multiline: bool) -> str:
+    """Get input from the user without echoing the input.
+
+    When multiline=True, allows multiple lines of text with Ctrl-D to finish.
+    When multiline=False, reads a single line, finishing on Enter.
     """
     # Save terminal settings
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
 
-    lines = []
+    lines: list[str] = []
     current_line: list[str] = []
 
     try:
@@ -98,6 +97,10 @@ def get_multiline_hidden_input() -> str:
 
             # Handle Enter key
             if char in {"\r", "\n"}:
+                if not multiline:
+                    # Single line mode: finish on Enter
+                    lines.append("".join(current_line))
+                    break
                 lines.append("".join(current_line))
                 current_line = []
                 # Print newline for visual feedback
@@ -157,14 +160,16 @@ def _prompt_for_confirmation(input_type: PromptType, text: str) -> tuple[str, st
     match input_type:
         case PromptType.MULTILINE_HIDDEN:
             print("Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):")
-            first_input = get_multiline_hidden_input()
+            first_input = get_hidden_input(multiline=True)
             print(
                 "Confirm by entering the same value again (press Ctrl-D to finish or Ctrl-C to cancel):"
             )
-            second_input = get_multiline_hidden_input()
+            second_input = get_hidden_input(multiline=True)
         case PromptType.HIDDEN:
-            first_input = getpass(f"{text} (hidden): ")
-            second_input = getpass(f"Confirm {text} (hidden): ")
+            print(f"{text} (hidden): ", end="", flush=True)
+            first_input = get_hidden_input(multiline=False)
+            print(f"Confirm {text} (hidden): ", end="", flush=True)
+            second_input = get_hidden_input(multiline=False)
         case _:
             msg = f"Unsupported input type for confirmation: {input_type}"
             raise ClanError(msg)
