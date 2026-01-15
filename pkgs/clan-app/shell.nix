@@ -97,9 +97,7 @@ mkShell {
     rm -rf .fonts || true
     cp -r ${self'.packages.fonts} .fonts
     chmod -R +w .fonts
-    mkdir -p api
-    cp -r ${clan-ts-api}/* api
-    chmod -R +w api
+    cp -r ${clan-ts-api}/API.ts src/models/api/clan/client/types.ts
     popd
 
     # configure process-compose

@@ -1,4 +1,4 @@
-import client from "./client-call";
+import client from "$clan-api-client";
 import {
   InstallMachineOptions,
   InstallMachineProgress,
@@ -21,7 +21,7 @@ export async function updateMachineData(
   data: MachineDataChange,
 ): Promise<void> {
   const { position, ...d } = data;
-  await client.post("set_machine", {
+  await client.call("set_machine", {
     body: {
       machine: {
         name: machineId,
@@ -38,7 +38,7 @@ export async function deleteMachine(
   machineId: string,
   clanId: string,
 ): Promise<void> {
-  await client.post("delete_machine", {
+  await client.call("delete_machine", {
     body: {
       machine: { flake: { identifier: clanId }, name: machineId },
     },
@@ -47,7 +47,7 @@ export async function deleteMachine(
 
 export async function isMachineSSHable(ssh: MachineSSH) {
   try {
-    await client.post("check_machine_ssh_login", {
+    await client.call("check_machine_ssh_login", {
       body: {
         remote: {
           ...ssh,
@@ -68,7 +68,7 @@ export async function getMachineHardwareReport(
   machineId: string,
   clanId: string,
 ): Promise<MachineHardwareReport | null> {
-  const res = await client.post("get_machine_hardware_summary", {
+  const res = await client.call("get_machine_hardware_summary", {
     body: {
       machine: {
         flake: {
@@ -90,7 +90,7 @@ export async function generateMachineHardwareReport(
   machineId: string,
   clanId: string,
 ): Promise<MachineHardwareReport | null> {
-  const res = await client.post("run_machine_hardware_info_init", {
+  const res = await client.call("run_machine_hardware_info_init", {
     body: {
       target_host: {
         address: ssh.address,
@@ -119,7 +119,7 @@ export async function getMachineDiskTemplates(
   machineId: string,
   clanId: string,
 ): Promise<MachineDiskTemplatesOutput> {
-  const res = await client.post("get_machine_disk_schemas", {
+  const res = await client.call("get_machine_disk_schemas", {
     body: {
       machine: {
         flake: {
@@ -144,7 +144,7 @@ export async function getMachineVarsPromptGroups(
   machineId: string,
   clanId: string,
 ): Promise<MachineVarsPromptGroupsOutput> {
-  const res = await client.post("get_generators", {
+  const res = await client.call("get_generators", {
     body: {
       machines: [
         {
@@ -188,7 +188,7 @@ export async function createMachine(
   data: MachineDataChange,
   clanId: string,
 ): Promise<MachineOutput> {
-  const res = await client.post("create_machine", {
+  const res = await client.call("create_machine", {
     body: {
       opts: {
         clan_dir: {
@@ -228,7 +228,7 @@ export async function installMachine(
   machineId: string,
   clanId: string,
 ): Promise<void> {
-  await client.post("set_machine_disk_schema", {
+  await client.call("set_machine_disk_schema", {
     signal: opts.signal,
     body: {
       machine: {
@@ -245,7 +245,7 @@ export async function installMachine(
     },
   });
   opts.onProgress?.("disk");
-  await client.post("run_generators", {
+  await client.call("run_generators", {
     signal: opts.signal,
     body: {
       // Extract generator names from prompt values
@@ -271,7 +271,7 @@ export async function installMachine(
     onMessage.addListener("run_machine_install", handler);
   }
   try {
-    await client.post("run_machine_install", {
+    await client.call("run_machine_install", {
       signal: opts.signal,
       body: {
         opts: {
@@ -309,7 +309,7 @@ export async function updateMachine(
     onMessage.addListener("run_machine_update", handler);
   }
   try {
-    await client.post("run_machine_update", {
+    await client.call("run_machine_update", {
       signal: opts.signal,
       body: {
         machine: {

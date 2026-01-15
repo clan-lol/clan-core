@@ -1,6 +1,6 @@
 import { mapObjectValues } from "@/src/util";
 import { ServiceInstanceDataChange } from "../../service";
-import client from "./client-call";
+import client from "$clan-api-client";
 import { ServiceInstanceDataOutput } from "../../service/instance";
 
 export async function createServiceInstance(
@@ -8,7 +8,7 @@ export async function createServiceInstance(
   serviceId: string,
   clanId: string,
 ): Promise<void> {
-  await client.post("create_service_instance", {
+  await client.call("create_service_instance", {
     body: {
       flake: {
         identifier: clanId,
@@ -31,7 +31,7 @@ export async function updateServiceInstanceData(
   data: ServiceInstanceDataChange,
   clanId: string,
 ): Promise<void> {
-  await client.post("set_service_instance", {
+  await client.call("set_service_instance", {
     body: {
       flake: {
         identifier: clanId,

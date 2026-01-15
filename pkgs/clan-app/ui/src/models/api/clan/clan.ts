@@ -1,5 +1,5 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
-import client from "./client-call";
+import client from "$clan-api-client";
 import {
   ClanDataChange,
   ClanOutput,
@@ -25,7 +25,7 @@ export async function getClans(
   );
 }
 export async function getClanMeta(id: string): Promise<ClanMetaOutput> {
-  const clan = await client.post("get_clan_details", {
+  const clan = await client.call("get_clan_details", {
     body: {
       flake: {
         identifier: id,
@@ -50,42 +50,42 @@ export async function getClan(id: string): Promise<ClanOutput> {
     servicesRes,
     serviceInstancesRes,
   ] = await Promise.all([
-    client.post("get_clan_details", {
+    client.call("get_clan_details", {
       body: {
         flake: {
           identifier: id,
         },
       },
     }),
-    client.post("get_clan_details_schema", {
+    client.call("get_clan_details_schema", {
       body: {
         flake: {
           identifier: id,
         },
       },
     }),
-    client.post("list_machines", {
+    client.call("list_machines", {
       body: {
         flake: {
           identifier: id,
         },
       },
     }),
-    client.post("list_tags", {
+    client.call("list_tags", {
       body: {
         flake: {
           identifier: id,
         },
       },
     }),
-    client.post("list_service_modules", {
+    client.call("list_service_modules", {
       body: {
         flake: {
           identifier: id,
         },
       },
     }),
-    client.post("list_service_instances", {
+    client.call("list_service_instances", {
       body: {
         flake: {
           identifier: id,
@@ -98,7 +98,7 @@ export async function getClan(id: string): Promise<ClanOutput> {
     machinesRes.data,
     async ([machineId, machine]) => {
       const [stateRes, schemaRes] = await Promise.all([
-        client.post("get_machine_state", {
+        client.call("get_machine_state", {
           body: {
             machine: {
               name: machineId,
@@ -108,7 +108,7 @@ export async function getClan(id: string): Promise<ClanOutput> {
             },
           },
         }),
-        client.post("get_machine_fields_schema", {
+        client.call("get_machine_fields_schema", {
           body: {
             machine: {
               name: machineId,
@@ -190,7 +190,7 @@ export async function updateClanData(
   clanId: string,
   data: ClanDataChange,
 ): Promise<void> {
-  await client.post("set_clan_details", {
+  await client.call("set_clan_details", {
     body: {
       options: {
         flake: {
@@ -212,7 +212,7 @@ export async function createClan(
   id: string,
   data: ClanDataChange,
 ): Promise<ClanDataOutput> {
-  const res = await client.post("create_clan", {
+  const res = await client.call("create_clan", {
     body: {
       opts: {
         dest: id,
@@ -223,7 +223,7 @@ export async function createClan(
   });
 
   await Promise.all([
-    client.post("create_service_instance", {
+    client.call("create_service_instance", {
       body: {
         flake: {
           identifier: id,
@@ -241,7 +241,7 @@ export async function createClan(
         },
       },
     }),
-    client.post("create_secrets_user", {
+    client.call("create_secrets_user", {
       body: {
         flake_dir: id,
       },
