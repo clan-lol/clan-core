@@ -90,7 +90,7 @@ def is_typed_dict(t: type) -> bool:
 
 
 # Function to get member names and their types
-def get_typed_dict_fields(typed_dict_class: type, scope: str) -> dict[str, type]:
+def get_typed_dict_fields(typed_dict_class: type, scope: list[str]) -> dict[str, type]:
     """Retrieve member names and their types from a TypedDict."""
     if not hasattr(typed_dict_class, "__annotations__"):
         msg = f"{typed_dict_class} is not a TypedDict."
@@ -113,10 +113,13 @@ def is_total(typed_dict_class: type) -> bool:
 
 def type_to_dict(
     t: Any,
-    scope: str = "",
+    scope: list[str] | None = None,
     type_map: dict[TypeVar, type] | None = None,
     narrow_unsupported_union_types: bool = False,
 ) -> dict:
+    if scope is None:
+        scope = []
+
     if type_map is None:
         type_map = {}
     if t is None:
@@ -131,7 +134,7 @@ def type_to_dict(
             # This matches the intent of JSONValue = str | int | float | bool | None | list[JSONValue] | dict[str, JSONValue]
             return {}  # Empty schema allows any type
 
-        msg = f"{scope} - String type annotation '{t}' cannot be resolved. This may indicate a forward reference or recursive type."
+        msg = f"{' '.join(scope)} - String type annotation '{t}' cannot be resolved. This may indicate a forward reference or recursive type."
         raise JSchemaTypeError(msg)
 
     if inspect.isclass(t) and t.__name__ == "Unknown":
@@ -151,7 +154,7 @@ def type_to_dict(
                 raise JSchemaTypeError(msg)
             properties[f.metadata.get("alias", f.name)] = type_to_dict(
                 f.type,
-                f"{scope} {t.__name__}.{f.name}",  # type: ignore[union-attr]
+                [*scope, f"{t.__name__}.{f.name}"],  # type: ignore[union-attr]
                 type_map,  # type: ignore[misc]
             )
 
@@ -169,7 +172,9 @@ def type_to_dict(
         required_fields = {
             f.name
             for f in fields
-            if f.default is MISSING and f.default_factory is MISSING
+            # If first item is return, we are dealing with the return type
+            if next(iter(scope), None) == "return"
+            or (f.default is MISSING and f.default_factory is MISSING)
         }
 
         # TODO: figure out why we needed to do this
@@ -199,7 +204,7 @@ def type_to_dict(
 
             dict_properties[field_name] = type_to_dict(
                 field_type,
-                f"{scope} {t.__name__}.{field_name}",
+                [*scope, f"{t.__name__}.{field_name}"],
                 type_map,
             )
 
@@ -227,7 +232,7 @@ def type_to_dict(
                 raise
 
         if len(supported) == 0:
-            msg = f"{scope} - No supported types in Union {t!s}, type_map: {type_map}"
+            msg = f"{' '.join(scope)} - No supported types in Union {t!s}, type_map: {type_map}"
             raise JSchemaTypeError(msg)
 
         if len(supported) == 1:
@@ -248,7 +253,7 @@ def type_to_dict(
         # And return the resolved type instead of the TypeVar
         resolved = type_map.get(t)
         if not resolved:
-            msg = f"{scope} - TypeVar {t} not found in type_map, map: {type_map}"
+            msg = f"{' '.join(scope)} - TypeVar {t} not found in type_map, map: {type_map}"
             raise JSchemaTypeError(msg)
         return type_to_dict(type_map.get(t), scope, type_map)
 
@@ -336,7 +341,7 @@ def type_to_dict(
                 "enum": [dataclass_to_dict(t(value)) for value in t],  # type: ignore[var-annotated]
             }
         if t is Any:
-            msg = f"{scope} - Usage of the Any type is not supported for API functions. In: {scope}"
+            msg = f"{' '.join(scope)} - Usage of the Any type is not supported for API functions. In: {scope}"
             raise JSchemaTypeError(msg)
         if t is pathlib.Path:
             return {
@@ -344,14 +349,14 @@ def type_to_dict(
                 "type": "string",
             }
         if t is dict:
-            msg = f"{scope} - Generic 'dict' type not supported. Use dict[str, Any] or any more expressive type."
+            msg = f"{' '.join(scope)} - Generic 'dict' type not supported. Use dict[str, Any] or any more expressive type."
             raise JSchemaTypeError(msg)
 
         # Optional[T] gets internally transformed Union[T,NoneType]
         if t is NoneType:
             return {"type": "null"}
 
-        msg = f"{scope} - Basic type '{t!s}' is not supported"
+        msg = f"{' '.join(scope)} - Basic type '{t!s}' is not supported"
         raise JSchemaTypeError(msg)
 
     # Handle ForwardRef types by resolving them to their actual types
@@ -373,11 +378,11 @@ def type_to_dict(
                 )
 
             except (ImportError, NameError, AttributeError, SyntaxError) as e:
-                msg = f"{scope} - Could not resolve ForwardRef('{type_name}', module='{module_name}'): {e}"
+                msg = f"{' '.join(scope)} - Could not resolve ForwardRef('{type_name}', module='{module_name}'): {e}"
                 raise JSchemaTypeError(msg) from e
 
-        msg = f"{scope} - ForwardRef without module or type name: {t}"
+        msg = f"{' '.join(scope)} - ForwardRef without module or type name: {t}"
         raise JSchemaTypeError(msg)
 
-    msg = f"{scope} - Type '{t!s}' is not supported"
+    msg = f"{' '.join(scope)} - Type '{t!s}' is not supported"
     raise JSchemaTypeError(msg)
