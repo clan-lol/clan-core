@@ -10,7 +10,7 @@ import {
 } from "../models";
 import { createClanMethods } from "../models/clan/clan";
 import { createClansMethods, createClansStore } from "../models/clan/clans";
-import { MachineEntity } from "../models/machine/machine";
+import { MachineOutput } from "../models/machine/machine";
 import { createMachinesMethods } from "../models/machine/machines";
 
 export function createClansStoreFixture(
@@ -30,7 +30,7 @@ export function createClansStoreFixture(
 }
 
 export function createMachinesStoreFixture(
-  entity: Record<string, MachineEntity>,
+  outputs: Record<string, MachineOutput>,
 ): readonly [
   readonly [Accessor<Machines>, MachinesMethods],
   readonly [Accessor<Clan>, ClanMethods],
@@ -46,7 +46,7 @@ export function createMachinesStoreFixture(
             description: "",
           },
           dataSchema: {},
-          machines: entity,
+          machines: outputs,
           services: {},
           globalTags: {
             regular: [],

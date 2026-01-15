@@ -3,13 +3,13 @@ import {
   InstallMachineOptions,
   InstallMachineProgress,
   MachineData,
-  MachineDiskTemplatesEntity,
-  MachineEntity,
+  MachineDiskTemplatesOutput,
   MachineHardwareReport,
-  MachineHardwareReportEntity,
+  MachineOutput,
+  machinePositions,
   MachineSSH,
-  MachineVarsPromptGroupsEntity,
-  MachineVarsPromptsEntity,
+  MachineVarsPromptGroupsOutput,
+  MachineVarsPromptsOutput,
   UpdateMachineOptions,
 } from "../../machine/machine";
 import { mapObjectValues } from "@/src/util";
@@ -89,7 +89,7 @@ export async function generateMachineHardwareReport(
   ssh: MachineSSH,
   machineId: string,
   clanId: string,
-): Promise<MachineHardwareReportEntity | null> {
+): Promise<MachineHardwareReport | null> {
   const res = await client.post("run_machine_hardware_info_init", {
     body: {
       target_host: {
@@ -118,7 +118,7 @@ export async function generateMachineHardwareReport(
 export async function getMachineDiskTemplates(
   machineId: string,
   clanId: string,
-): Promise<MachineDiskTemplatesEntity> {
+): Promise<MachineDiskTemplatesOutput> {
   const res = await client.post("get_machine_disk_schemas", {
     body: {
       machine: {
@@ -143,7 +143,7 @@ export async function getMachineDiskTemplates(
 export async function getMachineVarsPromptGroups(
   machineId: string,
   clanId: string,
-): Promise<MachineVarsPromptGroupsEntity> {
+): Promise<MachineVarsPromptGroupsOutput> {
   const res = await client.post("get_generators", {
     body: {
       machines: [
@@ -160,11 +160,11 @@ export async function getMachineVarsPromptGroups(
       include_previous_values: true,
     },
   });
-  const groups: MachineVarsPromptGroupsEntity = {};
+  const groups: MachineVarsPromptGroupsOutput = {};
   for (const generator of res.data) {
     for (const prompt of generator.prompts!) {
       const groupId = prompt.display?.group || "";
-      let group: MachineVarsPromptsEntity;
+      let group: MachineVarsPromptsOutput;
       if (!(groupId in groups)) {
         group = groups[groupId] = {};
       } else {
@@ -182,22 +182,45 @@ export async function getMachineVarsPromptGroups(
   }
   return groups;
 }
-// TODO: make this one API call only
+
 export async function createMachine(
   machineId: string,
   data: MachineData,
   clanId: string,
-): Promise<void> {
-  await client.post("create_machine", {
+): Promise<MachineOutput> {
+  const res = await client.post("create_machine", {
     body: {
       opts: {
         clan_dir: {
           identifier: clanId,
         },
-        machine: data,
+        machine: {
+          deploy: data.deploy,
+          description: data.description,
+          machineClass: data.machineClass,
+          tags: data.tags,
+          name: machineId,
+        },
       },
     },
   });
+  // FIXME: handle created instances
+  return {
+    data: {
+      deploy: {
+        buildHost: res.data.data.deploy.buildHost || "",
+        targetHost: res.data.data.deploy.targetHost || "",
+      },
+      description: res.data.data.description || "",
+      machineClass: res.data.data.machineClass,
+      tags: res.data.data.tags,
+      position: machinePositions
+        .getOrSetForClan(clanId)
+        .getOrSetPosition(machineId),
+    },
+    dataSchema: {},
+    status: "not_installed",
+  };
 }
 
 export async function installMachine(

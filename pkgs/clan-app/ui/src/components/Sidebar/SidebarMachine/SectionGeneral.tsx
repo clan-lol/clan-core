@@ -26,7 +26,7 @@ export const SectionGeneral = () => {
     return machine().dataSchema[name]?.readonly;
   };
 
-  async function onSubmit(values: Partial<MachineData>): Promise<void> {
+  async function onSubmit(values: MachineData): Promise<void> {
     await updateMachineData(values);
   }
 
@@ -34,9 +34,12 @@ export const SectionGeneral = () => {
     <SidebarSectionForm
       title="General"
       schema={schema}
+      // FIXME: either refactor form fields or figure out how to exclude
+      // position
+      // @ts-expect-error position is an editable field, but not by
+      // form field
       onSubmit={onSubmit}
       // FIXME: name is not editable, data shouldn't contain name
-      // Make the name field just pure text
       initialValues={machine().data}
     >
       {({ editing, Field }) => (

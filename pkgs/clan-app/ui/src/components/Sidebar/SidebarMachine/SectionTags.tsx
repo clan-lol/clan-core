@@ -13,7 +13,7 @@ export const SectionTags = () => {
   const [machine, { updateMachineData }] = useMachineContext();
   const [clan] = useClanContext();
 
-  const onSubmit = async (values: Partial<MachineData>) => {
+  const onSubmit = async (values: MachineData) => {
     await updateMachineData(values);
   };
 
@@ -26,6 +26,10 @@ export const SectionTags = () => {
     <SidebarSectionForm
       title="Tags"
       schema={schema}
+      // FIXME: either refactor form fields or figure out how to exclude
+      // position
+      // @ts-expect-error position is an editable field, but not by
+      // form field
       onSubmit={onSubmit}
       initialValues={{
         tags: machine().data.tags,

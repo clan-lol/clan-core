@@ -9,8 +9,8 @@ import {
   Services,
 } from "..";
 import { reconcile, SetStoreFunction } from "solid-js/store";
-import { MachineEntity } from "../machine/machine";
-import { createMachines } from "../machine/machines";
+import { MachineOutput } from "../machine/machine";
+import { createMachinesFromOutputs } from "../machine/machines";
 import { createServices } from "../service/services";
 import { ServiceEntity } from "../service/service";
 import { createServiceInstances } from "../service/instances";
@@ -25,7 +25,7 @@ export type ClanOutput = {
   readonly id: string;
   readonly data: ClanDataOutput;
   readonly dataSchema: DataSchema;
-  readonly machines: Record<string, MachineEntity>;
+  readonly machines: Record<string, MachineOutput>;
   readonly services: Record<string, ServiceEntity>;
   readonly globalTags: Tags;
 };
@@ -141,7 +141,7 @@ export function createClanFromOutput(output: ClanOutput, clans: Clans): Clan {
     get clans() {
       return clans;
     },
-    machines: createMachines(output.machines, clan),
+    machines: createMachinesFromOutputs(output.machines, clan),
     services: createServices(output.services, clan),
     serviceInstances: createServiceInstances(output.services, clan),
     get members() {

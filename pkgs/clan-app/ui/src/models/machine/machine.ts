@@ -13,28 +13,28 @@ import {
 } from "..";
 import { DeepRequired, mapObjectValues } from "@/src/util";
 
-export type MachineEntity = {
-  readonly data: MachineDataEntity;
+export type MachineOutput = {
+  readonly data: MachineDataOutput;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
 };
-export type MachineDataEntity = DeepRequired<MachineData>;
+export type MachineDataOutput = DeepRequired<MachineData>;
 export type MachinePosition = readonly [number, number];
 
-export type Machine = Omit<MachineEntity, "data"> & {
+export type Machine = Omit<MachineOutput, "data"> & {
   readonly clan: Clan;
   readonly id: string;
-  data: DeepRequired<MachineData>;
+  data: MachineDataOutput;
   readonly isActive: boolean;
   readonly isHighlighted: boolean;
   readonly serviceInstances: ServiceInstance[];
 };
 export type MachineData = {
   deploy?: {
-    buildHost?: string | null;
-    targetHost?: string | null;
+    buildHost?: string;
+    targetHost?: string;
   };
-  description?: string | null;
+  description?: string;
   machineClass?: "nixos" | "darwin";
   tags?: string[];
   position: MachinePosition;
@@ -52,22 +52,20 @@ export type MachineSSH = {
   password?: string;
 };
 
-export type MachineHardwareReportEntity = {
+export type MachineHardwareReport = {
   readonly type: "nixos-facter" | "nixos-generate-config";
 };
 
-export type MachineHardwareReport = MachineHardwareReportEntity;
-
-export type MachineDiskTemplatesEntity = Record<
+export type MachineDiskTemplatesOutput = Record<
   string,
-  MachineDiskTemplateEntity
+  MachineDiskTemplateOutput
 >;
-export type MachineDiskTemplateEntity = {
+export type MachineDiskTemplateOutput = {
   readonly name: string;
   readonly description: string;
-  readonly placeholders: Record<string, MachineDiskTemplatePlaceHolderEntity>;
+  readonly placeholders: Record<string, MachineDiskTemplatePlaceHolderOutput>;
 };
-export type MachineDiskTemplatePlaceHolderEntity = {
+export type MachineDiskTemplatePlaceHolderOutput = {
   readonly name: string;
   readonly values: string[];
   readonly required: boolean;
@@ -78,23 +76,23 @@ export type MachineDiskTemplates = {
   sorted: MachineDiskTemplate[];
 };
 export type MachineDiskTemplate = Omit<
-  MachineDiskTemplateEntity,
+  MachineDiskTemplateOutput,
   "placeholders"
 > & {
   readonly id: string;
   readonly placeholders: Record<string, MachineDiskTemplatePlaceHolder>;
 };
 export type MachineDiskTemplatePlaceHolder =
-  MachineDiskTemplatePlaceHolderEntity & {
+  MachineDiskTemplatePlaceHolderOutput & {
     readonly id: string;
   };
 
-export type MachineVarsPromptGroupsEntity = Record<
+export type MachineVarsPromptGroupsOutput = Record<
   string,
-  MachineVarsPromptsEntity
+  MachineVarsPromptsOutput
 >;
-export type MachineVarsPromptsEntity = Record<string, MachineVarsPromptEntity>;
-export type MachineVarsPromptEntity = {
+export type MachineVarsPromptsOutput = Record<string, MachineVarsPromptOutput>;
+export type MachineVarsPromptOutput = {
   readonly generator: string;
   readonly description: string;
   readonly name: string;
@@ -115,30 +113,30 @@ export type MachineVarsPrompts = {
   readonly all: Record<string, MachineVarsPrompt>;
   readonly sorted: MachineVarsPrompt[];
 };
-export type MachineVarsPrompt = MachineVarsPromptEntity & {
+export type MachineVarsPrompt = MachineVarsPromptOutput & {
   readonly id: string;
 };
 
 const CUBE_SPACING = 1;
-export class MachinePositions {
-  #all: Record<string, MachinePosition>;
-  #set: Set<string>;
+export class ClanMachinePositions {
+  #positions: Record<string, MachinePosition>;
+  #positionSet: Set<string>;
   constructor(all: Record<string, MachinePosition>) {
-    this.#all = all;
-    this.#set = new Set(Object.values(all).map(posStr));
+    this.#positions = all;
+    this.#positionSet = new Set(Object.values(all).map(posStr));
   }
   getOrSetPosition(machineId: string): MachinePosition {
-    if (this.#all[machineId]) {
-      return this.#all[machineId];
+    if (this.#positions[machineId]) {
+      return this.#positions[machineId];
     }
     const pos = this.#nextAvailable();
-    this.#all[machineId] = pos;
-    this.#set.add(posStr(pos));
+    this.#positions[machineId] = pos;
+    this.#positionSet.add(posStr(pos));
     return pos;
   }
 
   #hasPosition(p: MachinePosition): boolean {
-    return this.#set.has(posStr(p));
+    return this.#positionSet.has(posStr(p));
   }
 
   #nextAvailable(): MachinePosition {
@@ -188,31 +186,48 @@ export class MachinePositions {
   }
 }
 
-export const machinePositions: Record<string, MachinePositions> = (() => {
-  const s = localStorage.getItem("machinePositions");
-  if (s === null) {
-    return {};
+export class MachinePositions {
+  #clans: Record<string, ClanMachinePositions>;
+  constructor() {
+    const s = localStorage.getItem("machinePositions");
+    if (s === null) {
+      this.#clans = {};
+    } else {
+      try {
+        const all = JSON.parse(s) as Record<
+          string,
+          Record<string, MachinePosition>
+        >;
+        this.#clans = mapObjectValues(
+          all,
+          ([, p]) => new ClanMachinePositions(p),
+        );
+      } catch (err) {
+        console.error(
+          "Failed to parse machinePositions from localStorage, data was corrupted, assuming no machine positions were recorded",
+          err,
+        );
+        this.#clans = {};
+      }
+    }
   }
-  try {
-    const all = JSON.parse(s) as Record<
-      string,
-      Record<string, MachinePosition>
-    >;
-    return mapObjectValues(all, ([, p]) => new MachinePositions(p));
-  } catch (err) {
-    console.error(
-      "Failed to parse machinePositions from localStorage, data was corrupted, assuming no machine positions were recorded",
-      err,
-    );
-    return {};
+  getOrSetForClan(id: string): ClanMachinePositions {
+    if (this.#clans[id]) {
+      return this.#clans[id];
+    }
+    const p = new ClanMachinePositions({});
+    this.#clans[id] = p;
+    return p;
   }
-})();
+}
+
+export const machinePositions = new MachinePositions();
 
 export type MachineMethods = {
   setMachine: SetStoreFunction<Machine>;
   activateMachine(this: void): void;
   deactivateMachine(this: void): void;
-  updateMachineData(this: void, data: Partial<MachineData>): Promise<void>;
+  updateMachineData(this: void, data: MachineData): Promise<void>;
   installMachine(this: void, opts: InstallMachineOptions): Promise<void>;
   isMachineSSHable(this: void, ssh: MachineSSH): Promise<boolean>;
   getOrGenerateMachineHardwareReport(
@@ -303,18 +318,18 @@ export function createMachineMethods(
       );
     },
     async getMachineDiskTemplates() {
-      const entity = await api.clan.getMachineDiskTemplates(
+      const output = await api.clan.getMachineDiskTemplates(
         machine().id,
         clan().id,
       );
       const templates: MachineDiskTemplates = {
-        all: mapObjectValues(entity, ([id, entity]) => ({
-          ...entity,
+        all: mapObjectValues(output, ([id, output]) => ({
+          ...output,
           id,
           placeholders: mapObjectValues(
-            entity.placeholders,
-            ([id, entity]) => ({
-              ...entity,
+            output.placeholders,
+            ([id, output]) => ({
+              ...output,
               id,
             }),
           ),
@@ -328,16 +343,16 @@ export function createMachineMethods(
       return templates;
     },
     async getMachineVarsPromptGroups() {
-      const entity = await api.clan.getMachineVarsPromptGroups(
+      const output = await api.clan.getMachineVarsPromptGroups(
         machine().id,
         clan().id,
       );
       const groups: MachineVarsPromptGroups = {
-        all: mapObjectValues(entity, ([groupId, groupEntity]) => ({
+        all: mapObjectValues(output, ([groupId, groupOutput]) => ({
           id: groupId,
           prompts: {
-            all: mapObjectValues(groupEntity, ([promptId, promptEntity]) => ({
-              ...promptEntity,
+            all: mapObjectValues(groupOutput, ([promptId, promptOutput]) => ({
+              ...promptOutput,
               id: promptId,
             })),
             get sorted() {
@@ -362,13 +377,13 @@ export function createMachineMethods(
   return self;
 }
 
-export function createMachine(
+export function createMachineFromOutput(
   id: string,
-  entity: MachineEntity,
+  output: MachineOutput,
   clan: Accessor<Clan>,
 ): Machine {
   return {
-    ...entity,
+    ...output,
     id,
     get clan() {
       return clan();
