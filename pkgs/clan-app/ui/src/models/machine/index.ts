@@ -1,6 +1,7 @@
 export type { Machines, MachinesMethods } from "./machines";
 export type {
   Machine,
+  MachineDataChange,
   MachineData,
   MachinePosition,
   MachineStatus,

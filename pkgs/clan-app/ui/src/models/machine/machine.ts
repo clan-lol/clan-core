@@ -11,25 +11,24 @@ import {
   MachinesMethods,
   ServiceInstance,
 } from "..";
-import { DeepRequired, mapObjectValues } from "@/src/util";
+import { DeepImmutable, DeepRequired, mapObjectValues } from "@/src/util";
 
 export type MachineOutput = {
   readonly data: MachineDataOutput;
   readonly dataSchema: DataSchema;
   readonly status: MachineStatus;
 };
-export type MachineDataOutput = DeepRequired<MachineData>;
 export type MachinePosition = readonly [number, number];
 
 export type Machine = Omit<MachineOutput, "data"> & {
   readonly clan: Clan;
   readonly id: string;
-  data: MachineDataOutput;
+  data: MachineData;
   readonly isActive: boolean;
   readonly isHighlighted: boolean;
   readonly serviceInstances: ServiceInstance[];
 };
-export type MachineData = {
+export type MachineDataChange = {
   deploy?: {
     buildHost?: string;
     targetHost?: string;
@@ -37,8 +36,10 @@ export type MachineData = {
   description?: string;
   machineClass?: "nixos" | "darwin";
   tags?: string[];
-  position: MachinePosition;
+  position?: MachinePosition;
 };
+export type MachineData = DeepRequired<MachineDataChange>;
+export type MachineDataOutput = DeepImmutable<MachineData>;
 
 export type MachineStatus =
   | "not_installed"
@@ -227,7 +228,7 @@ export type MachineMethods = {
   setMachine: SetStoreFunction<Machine>;
   activateMachine(this: void): void;
   deactivateMachine(this: void): void;
-  updateMachineData(this: void, data: MachineData): Promise<void>;
+  updateMachineData(this: void, data: MachineDataChange): Promise<void>;
   installMachine(this: void, opts: InstallMachineOptions): Promise<void>;
   isMachineSSHable(this: void, ssh: MachineSSH): Promise<boolean>;
   getOrGenerateMachineHardwareReport(
@@ -384,6 +385,10 @@ export function createMachineFromOutput(
 ): Machine {
   return {
     ...output,
+    data: {
+      ...output.data,
+      tags: output.data.tags.slice(0),
+    },
     id,
     get clan() {
       return clan();

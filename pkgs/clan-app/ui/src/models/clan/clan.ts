@@ -11,10 +11,10 @@ import {
 import { reconcile, SetStoreFunction } from "solid-js/store";
 import { MachineOutput } from "../machine/machine";
 import { createMachinesFromOutputs } from "../machine/machines";
-import { createServices } from "../service/services";
-import { ServiceEntity } from "../service/service";
+import { createServicesFromOutputs } from "../service/services";
+import { ServiceOutput } from "../service/service";
 import { createServiceInstances } from "../service/instances";
-import { DeepRequired } from "@/src/util";
+import { DeepImmutable, DeepRequired } from "@/src/util";
 
 export type ClanMember = {
   readonly type: "tag" | "machine";
@@ -26,16 +26,20 @@ export type ClanOutput = {
   readonly data: ClanDataOutput;
   readonly dataSchema: DataSchema;
   readonly machines: Record<string, MachineOutput>;
-  readonly services: Record<string, ServiceEntity>;
+  readonly services: Record<string, ServiceOutput>;
   readonly globalTags: Tags;
 };
 
-export type ClanData = {
+export type ClanDataChange = {
+  // FIXME: name shouldn't be required to pass in every time,
+  // user should be allowed to not change the name when updating a clan
+  // backend should accept an optional name
   name: string;
   description?: string;
   domain?: string;
 };
-export type ClanDataOutput = DeepRequired<ClanData>;
+export type ClanData = DeepRequired<ClanDataChange>;
+export type ClanDataOutput = DeepImmutable<ClanData>;
 
 export type Clan = Omit<
   ClanOutput,
@@ -44,7 +48,7 @@ export type Clan = Omit<
   readonly clans: Clans;
   readonly machines: Machines;
   readonly services: Services;
-  data: ClanDataOutput;
+  data: ClanData;
   readonly members: ClanMember[];
   readonly index: number;
   serviceInstances: ServiceInstances;
@@ -76,7 +80,7 @@ export type ClanMethods = {
   setClan: SetStoreFunction<Clan>;
   activateClan(this: void): Promise<void>;
   deactivateClan(this: void): void;
-  updateClanData(this: void, data: ClanData): Promise<void>;
+  updateClanData(this: void, data: ClanDataChange): Promise<void>;
   removeClan(this: void): void;
   refreshClan(this: void): Promise<void>;
 };
@@ -110,9 +114,11 @@ export function createClanMethods(
     async updateClanData(this: void, data) {
       // TODO: Use partial update once supported by backend and solidjs
       // https://github.com/solidjs/solid/issues/2475
-      const d = { ...clan().data, ...data };
-      await api.clan.updateClanData(clan().id, d);
-      setClan("data", d);
+      await api.clan.updateClanData(clan().id, {
+        ...clan().data,
+        ...data,
+      });
+      setClan("data", data);
     },
     removeClan(this: void) {
       removeClan(clan());
@@ -142,7 +148,7 @@ export function createClanFromOutput(output: ClanOutput, clans: Clans): Clan {
       return clans;
     },
     machines: createMachinesFromOutputs(output.machines, clan),
-    services: createServices(output.services, clan),
+    services: createServicesFromOutputs(output.services, clan),
     serviceInstances: createServiceInstances(output.services, clan),
     get members() {
       return [

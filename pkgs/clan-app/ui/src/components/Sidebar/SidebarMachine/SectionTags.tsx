@@ -3,7 +3,11 @@ import { splitProps } from "solid-js";
 import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
 import { MachineTags } from "@/src/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
-import { MachineData, useClanContext, useMachineContext } from "@/src/models";
+import {
+  MachineDataChange,
+  useClanContext,
+  useMachineContext,
+} from "@/src/models";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),
@@ -13,7 +17,7 @@ export const SectionTags = () => {
   const [machine, { updateMachineData }] = useMachineContext();
   const [clan] = useClanContext();
 
-  const onSubmit = async (values: MachineData) => {
+  const onSubmit = async (values: MachineDataChange) => {
     await updateMachineData(values);
   };
 
@@ -26,10 +30,6 @@ export const SectionTags = () => {
     <SidebarSectionForm
       title="Tags"
       schema={schema}
-      // FIXME: either refactor form fields or figure out how to exclude
-      // position
-      // @ts-expect-error position is an editable field, but not by
-      // form field
       onSubmit={onSubmit}
       initialValues={{
         tags: machine().data.tags,

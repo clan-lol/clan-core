@@ -1,22 +1,22 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import { Clan, ServiceInstance } from "..";
-import { ServiceInstanceEntity } from "./instance";
+import { ServiceInstanceOutput } from "./instance";
 import { Accessor } from "solid-js";
 import { mapObjectValues } from "@/src/util";
 
-export type ServiceEntity = {
+export type ServiceOutput = {
   readonly description: string;
   readonly isCore: boolean;
   readonly source: string | null;
-  readonly roles: Record<string, ServiceRoleEntity>;
+  readonly roles: Record<string, ServiceRoleOutput>;
   readonly rolesSchema: Record<string, JSONSchema>;
-  readonly instances: ServiceInstanceEntity[];
+  readonly instances: ServiceInstanceOutput[];
 };
-export type ServiceRoleEntity = {
+export type ServiceRoleOutput = {
   readonly description: string;
 };
 
-export type Service = Omit<ServiceEntity, "roles" | "instances"> & {
+export type Service = Omit<ServiceOutput, "roles" | "instances"> & {
   readonly clan: Clan;
   readonly id: string;
   readonly roles: ServiceRoles;
@@ -26,23 +26,23 @@ export type ServiceRoles = {
   all: Record<string, ServiceRole>;
   sorted: ServiceRole[];
 };
-export type ServiceRole = ServiceRoleEntity & {
+export type ServiceRole = ServiceRoleOutput & {
   readonly id: string;
 };
 
-export function createService(
+export function createServiceFromOutput(
   id: string,
-  entity: ServiceEntity,
+  output: ServiceOutput,
   clan: Accessor<Clan>,
 ): Service {
   return {
-    ...entity,
+    ...output,
     id,
     get clan(): Clan {
       return clan();
     },
     roles: {
-      all: mapObjectValues(entity.roles, ([id, role]) => ({
+      all: mapObjectValues(output.roles, ([id, role]) => ({
         ...role,
         id,
       })),

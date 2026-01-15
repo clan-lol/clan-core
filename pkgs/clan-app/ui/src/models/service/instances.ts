@@ -8,10 +8,13 @@ import {
   ClansMethods,
   Service,
   ServiceInstance,
-  ServiceInstanceDataEntity,
-  createServiceInstance,
+  ServiceInstanceDataChange,
 } from "..";
-import { ServiceEntity } from "./service";
+import { ServiceOutput } from "./service";
+import {
+  createServiceInstanceFromOutput,
+  ServiceInstanceDataOutput,
+} from "./instance";
 
 export type ServiceInstances = {
   // clans, machines and services all use a Record<string, ...> type, instances
@@ -36,12 +39,12 @@ export type ServiceInstancesMethods = {
   ): ServiceInstance | null;
   addServiceInstance(
     this: void,
-    data: ServiceInstanceDataEntity,
+    data: ServiceInstanceDataOutput,
     service: Service,
   ): Promise<ServiceInstance>;
   updateServiceInstanceData(
     this: void,
-    data: ServiceInstanceDataEntity,
+    data: ServiceInstanceDataChange,
   ): Promise<void>;
 };
 export function createInstancesMethods(
@@ -128,12 +131,12 @@ export function createInstancesMethods(
     },
     deactivateServiceInstance,
     async addServiceInstance(
-      data: ServiceInstanceDataEntity,
+      data: ServiceInstanceDataOutput,
       service: Service,
     ): Promise<ServiceInstance> {
       await api.clan.createServiceInstance(data, service.id, clan().id);
-      const instance = createServiceInstance({
-        entity: { data },
+      const instance = createServiceInstanceFromOutput({
+        output: { data },
         service: () => service,
         clan: () => service.clan,
       });
@@ -153,7 +156,7 @@ export function createInstancesMethods(
 }
 
 export function createServiceInstances(
-  entities: Record<string, ServiceEntity>,
+  entities: Record<string, ServiceOutput>,
   clan: Accessor<Clan>,
 ): ServiceInstances {
   return {
@@ -166,8 +169,8 @@ export function createServiceInstances(
         return service;
       };
       return serviceEntity.instances.map((instanceEntity) =>
-        createServiceInstance({
-          entity: instanceEntity,
+        createServiceInstanceFromOutput({
+          output: instanceEntity,
           service,
           clan,
         }),

@@ -2,7 +2,7 @@ import client from "./client-call";
 import {
   InstallMachineOptions,
   InstallMachineProgress,
-  MachineData,
+  MachineDataChange,
   MachineDiskTemplatesOutput,
   MachineHardwareReport,
   MachineOutput,
@@ -18,7 +18,7 @@ import { ClanMessageHandler, onMessage } from "./event";
 export async function updateMachineData(
   machineId: string,
   clanId: string,
-  data: MachineData,
+  data: MachineDataChange,
 ): Promise<void> {
   const { position, ...d } = data;
   await client.post("set_machine", {
@@ -185,7 +185,7 @@ export async function getMachineVarsPromptGroups(
 
 export async function createMachine(
   machineId: string,
-  data: MachineData,
+  data: MachineDataChange,
   clanId: string,
 ): Promise<MachineOutput> {
   const res = await client.post("create_machine", {

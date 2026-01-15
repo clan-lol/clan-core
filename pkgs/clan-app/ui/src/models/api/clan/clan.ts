@@ -1,14 +1,14 @@
 import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import client from "./client-call";
 import {
-  ClanData,
+  ClanDataChange,
   ClanOutput,
   ClanMetaOutput,
   ClanDataOutput,
 } from "../../clan/clan";
 import { MachineOutput, machinePositions } from "../../machine/machine";
 import { asyncMapObjectValues, mapObjectValues } from "@/src/util";
-import { ServiceEntity, ServiceRoleEntity } from "../../service/service";
+import { ServiceOutput, ServiceRoleOutput } from "../../service/service";
 
 // TODO: make this one API call only
 export async function getClans(
@@ -137,7 +137,7 @@ export async function getClan(id: string): Promise<ClanOutput> {
       };
     },
   );
-  const services: Record<string, ServiceEntity> = Object.fromEntries(
+  const services: Record<string, ServiceOutput> = Object.fromEntries(
     servicesRes.data.modules.map((service) => [
       service.usage_ref.name,
       {
@@ -145,7 +145,7 @@ export async function getClan(id: string): Promise<ClanOutput> {
         isCore: service.native,
         description: service.info.manifest.description,
         source: service.usage_ref.input ?? null,
-        roles: service.info.roles as Record<string, ServiceRoleEntity>,
+        roles: service.info.roles as Record<string, ServiceRoleOutput>,
         rolesSchema: {},
         instances: service.instance_refs.map((instanceName) => {
           const instance = serviceInstancesRes.data[instanceName];
@@ -188,7 +188,7 @@ export async function getClan(id: string): Promise<ClanOutput> {
 // TODO: backend should provide an API that allows partial update
 export async function updateClanData(
   clanId: string,
-  data: ClanData,
+  data: ClanDataChange,
 ): Promise<void> {
   await client.post("set_clan_details", {
     body: {
@@ -210,7 +210,7 @@ export async function updateClanData(
 // TODO: allow users to select a template
 export async function createClan(
   id: string,
-  data: ClanData,
+  data: ClanDataChange,
 ): Promise<ClanDataOutput> {
   const res = await client.post("create_clan", {
     body: {
