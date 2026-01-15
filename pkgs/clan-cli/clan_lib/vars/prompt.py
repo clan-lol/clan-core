@@ -64,11 +64,15 @@ class Prompt:
         )
 
 
-def get_hidden_input(*, multiline: bool) -> str:
-    """Get input from the user without echoing the input.
+def get_input(*, multiline: bool, hidden: bool) -> str:
+    """Get input from the user using raw terminal mode.
 
-    When multiline=True, allows multiple lines of text with Ctrl-D to finish.
-    When multiline=False, reads a single line, finishing on Enter.
+    Args:
+        multiline: If True, allows multiple lines with Ctrl-D to finish.
+                   If False, reads a single line, finishing on Enter.
+        hidden: If True, input is not echoed to the terminal.
+                If False, input is visible as typed.
+
     """
     # Save terminal settings
     fd = sys.stdin.fileno()
@@ -78,7 +82,7 @@ def get_hidden_input(*, multiline: bool) -> str:
     current_line: list[str] = []
 
     try:
-        # Change terminal settings - disable echo
+        # Change terminal settings - use raw mode
         tty.setraw(fd)
 
         while True:
@@ -110,9 +114,17 @@ def get_hidden_input(*, multiline: bool) -> str:
             elif ord(char) == DEL_ASCII or ord(char) == BACKSPACE_ASCII:
                 if current_line:
                     current_line.pop()
+                    # Erase character on screen if not hidden
+                    if not hidden:
+                        sys.stdout.write("\b \b")
+                        sys.stdout.flush()
             # Regular character
             else:
                 current_line.append(char)
+                # Echo character if not hidden
+                if not hidden:
+                    sys.stdout.write(char)
+                    sys.stdout.flush()
 
     finally:
         # Restore terminal settings
@@ -160,40 +172,21 @@ def _prompt_for_confirmation(input_type: PromptType, text: str) -> tuple[str, st
     match input_type:
         case PromptType.MULTILINE_HIDDEN:
             print("Enter multiple lines (press Ctrl-D to finish or Ctrl-C to cancel):")
-            first_input = get_hidden_input(multiline=True)
+            first_input = get_input(multiline=True, hidden=True)
             print(
                 "Confirm by entering the same value again (press Ctrl-D to finish or Ctrl-C to cancel):"
             )
-            second_input = get_hidden_input(multiline=True)
+            second_input = get_input(multiline=True, hidden=True)
         case PromptType.HIDDEN:
             print(f"{text} (hidden): ", end="", flush=True)
-            first_input = get_hidden_input(multiline=False)
+            first_input = get_input(multiline=False, hidden=True)
             print(f"Confirm {text} (hidden): ", end="", flush=True)
-            second_input = get_hidden_input(multiline=False)
+            second_input = get_input(multiline=False, hidden=True)
         case _:
             msg = f"Unsupported input type for confirmation: {input_type}"
             raise ClanError(msg)
 
     return first_input, second_input
-
-
-def _get_regular_input(input_type: PromptType, text: str) -> str:
-    """Get regular (non-secret) input from user."""
-    try:
-        match input_type:
-            case PromptType.LINE:
-                return input(f"{text}: ")
-            case PromptType.MULTILINE:
-                print(f"{text} (Finish with Ctrl-D): ")
-                content = sys.stdin.read()
-                # Remove final newline if present to match hidden multi-line behavior
-                return content.rstrip("\n")
-            case _:
-                msg = f"Unsupported input type: {input_type}"
-                raise ClanError(msg)
-    except (KeyboardInterrupt, EOFError) as e:
-        msg = "User cancelled the input."
-        raise ClanError(msg) from e
 
 
 def ask(
@@ -215,6 +208,20 @@ def ask(
         return _get_secret_input_with_confirmation(ident, input_type, text)
 
     # Regular prompts don't need confirmation
-    result = _get_regular_input(input_type, text)
+    try:
+        match input_type:
+            case PromptType.LINE:
+                print(f"{text}: ", end="", flush=True)
+                result = get_input(multiline=False, hidden=False)
+            case PromptType.MULTILINE:
+                print(f"{text} (Finish with Ctrl-D): ")
+                result = get_input(multiline=True, hidden=False)
+            case _:
+                msg = f"Unsupported input type: {input_type}"
+                raise ClanError(msg)
+    except (KeyboardInterrupt, EOFError) as e:
+        msg = "User cancelled the input."
+        raise ClanError(msg) from e
+
     log.info("Input received. Processing...")
     return result
