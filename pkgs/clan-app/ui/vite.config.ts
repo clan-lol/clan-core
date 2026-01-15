@@ -31,9 +31,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "./"),
         // Different script can be used based on different env vars
-        "@api/clan/client": path.resolve(
+        "$clan-api-client": path.resolve(
           __dirname,
-          "./src/api/clan/client-call",
+          "src/models/api/clan/client/rpc",
         ),
       },
     },

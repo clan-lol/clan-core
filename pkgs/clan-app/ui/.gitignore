@@ -1,4 +1,4 @@
-app/api
+src/models/api/clan/client/types.ts
 app/.fonts
 
 .vite

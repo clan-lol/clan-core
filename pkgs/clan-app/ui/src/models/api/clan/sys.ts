@@ -1,11 +1,11 @@
 import { BlockDevice, FlashInstallerOptions } from "../../sys";
-import client from "./client-call";
+import client from "./client/rpc";
 
 export async function pickFile({
   title,
   initialPath,
 }: { title?: string; initialPath?: string } = {}): Promise<string> {
-  const res = await client.post("get_system_file", {
+  const res = await client.call("get_system_file", {
     body: {
       file_request: {
         mode: "get_system_file",
@@ -21,7 +21,7 @@ export async function pickDir({
   title,
   initialPath,
 }: { title?: string; initialPath?: string } = {}): Promise<string> {
-  const res = await client.post("get_system_file", {
+  const res = await client.call("get_system_file", {
     body: {
       file_request: {
         mode: "select_folder",
@@ -34,12 +34,12 @@ export async function pickDir({
 }
 
 export async function pickClanDir(): Promise<string> {
-  const res = await client.get("get_clan_folder");
+  const res = await client.call("get_clan_folder");
   return res.data.identifier;
 }
 
 export async function getFlashableDevices(): Promise<BlockDevice[]> {
-  const res = await client.get("list_system_storage_devices");
+  const res = await client.call("list_system_storage_devices");
   return res.data.blockdevices.flatMap((device) => {
     if (device.ro) {
       return [];
@@ -61,7 +61,7 @@ export async function getFlashableDevices(): Promise<BlockDevice[]> {
 export async function flashInstaller(
   opts: FlashInstallerOptions,
 ): Promise<void> {
-  await client.post("run_machine_flash", {
+  await client.call("run_machine_flash", {
     body: {
       system_config: {
         ssh_keys_path: [opts.sshKeysDir],

@@ -1,4 +1,4 @@
-import { API } from "@/api/API";
+import { API } from "./types";
 
 type Methods = keyof API;
 type Header = {
@@ -67,17 +67,4 @@ async function call<Method extends Methods>(
   return res.body as SuccessResponse<Method>;
 }
 
-export default {
-  async get<Method extends Methods>(
-    url: Method,
-    { signal }: { signal?: AbortSignal } = {},
-  ) {
-    return await call(url, { signal });
-  },
-  async post<Method extends Methods>(
-    url: Method,
-    { signal, body }: { signal?: AbortSignal; body: Body<Method> },
-  ) {
-    return await call(url, { signal, body });
-  },
-};
+export default { call };
