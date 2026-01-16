@@ -226,18 +226,20 @@ class Machine:
         else:
             msg = f"Failed to start container {self.name}"
             raise RuntimeError(msg)
-        childs = (
+        children = (
             Path(f"/proc/{self.process.pid}/task/{self.process.pid}/children")
             .read_text()
             .split()
         )
-        if len(childs) != 1:
-            msg = f"Expected exactly one child process for systemd-nspawn, got {childs}"
+        if len(children) != 1:
+            msg = (
+                f"Expected exactly one child process for systemd-nspawn, got {children}"
+            )
             raise RuntimeError(msg)
         try:
-            return int(childs[0])
+            return int(children[0])
         except ValueError as e:
-            msg = f"Failed to parse child process id {childs[0]}"
+            msg = f"Failed to parse child process id {children[0]}"
             raise RuntimeError(msg) from e
 
     def get_unit_info(self, unit: str) -> dict[str, str]:
@@ -575,7 +577,7 @@ class Driver:
         for machine in self.machines:
             nspawn_uuid = uuid.uuid4()
 
-            # We lauch a sleep here, so we can pgrep the process cmdline for
+            # We launch a sleep here, so we can pgrep the process cmdline for
             # the uuid
             sleep = shutil.which("sleep")
             if sleep is None:

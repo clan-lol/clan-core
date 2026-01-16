@@ -104,7 +104,7 @@ let
     Checks if the given scope string matches the expected components
     Returns the parsed scope if all checks pass, otherwise throws an error.
 
-    If a parameter is '""' or omited, it is not checked.
+    If a parameter is '""' or omitted, it is not checked.
   */
   checkScope =
     {
@@ -182,16 +182,16 @@ let
   /**
     filters an attribute set by name predicate
 
-    Vendored from nixpks to make it more safe for self-recusion
+    Vendored from nixpks to make it more safe for self-recursion
     In contrast the 'value' is not passed to the predicate.
-    This ensures maximum value lazyness
+    This ensures maximum value laziness
   */
   filterAttrsByName = pred: set: removeAttrs set (lib.filter (name: !pred name) (lib.attrNames set));
 
   /**
     Filters exports by scope parts
 
-    Parameters are optional, if set to "" or omited it includes all.
+    Parameters are optional, if set to "" or omitted it includes all.
 
     Some important equivalences:
 

@@ -632,7 +632,7 @@ def test_delete_key_non_writeable() -> None:
 
     attribute_props = compute_attribute_persistence(prios, data_eval, data_disk)
 
-    # TOOD: Collapse these paths, by early stopping the recursion in
+    # TODO: Collapse these paths, by early stopping the recursion in
     # compute_attribute_persistence
     assert attribute_props == {
         ("foo",): {PersistenceAttribute.READONLY},

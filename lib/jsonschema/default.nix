@@ -130,7 +130,7 @@ let
 
       # If this option has a default value. It's used to decide when contained
       # in something that generates to an jsonschema object, its `required`
-      # should contain the propery name that corresponds to this option.
+      # should contain the property name that corresponds to this option.
       isRequired = true | false
     }
     ```
@@ -138,7 +138,7 @@ let
   optionToNode =
     ctx@{
       mode,
-      # Inside a branch of `eitehr` or input mode of `coercedTo`, types like
+      # Inside a branch of `either` or input mode of `coercedTo`, types like
       # enum or one of shouldn't create a new type, because they might be merged
       # with other branches. only the outside type should create a new type.
       # But inside an attrs which is inside a branch, a custom type should be
@@ -670,7 +670,7 @@ let
           };
         # Letting defs in properties override those in additionalProperties is
         # intentional. In the case of a submodule with freeform, and freeform
-        # results in the same jsonschema type as a proeprty, we want the
+        # results in the same jsonschema type as a property, we want the
         # property's jsonschema to override freenode's jsonschema, because the
         # latter is less likely to contain a description
         defs = additPropsResult.defs or { } // lib.concatMapAttrs (_name: result: result.defs) propsResults;

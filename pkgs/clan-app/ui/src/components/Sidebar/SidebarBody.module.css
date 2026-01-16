@@ -5,7 +5,7 @@
 
   @apply border border-inv-3 rounded-bl-md rounded-br-md;
 
-  /* TODO: This is weird, we shouldn't disable native browser features, a11y impacts incomming */
+  /* TODO: This is weird, we shouldn't disable native browser features, a11y impacts incoming */
   &::-webkit-scrollbar {
     display: none;
   }

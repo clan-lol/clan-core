@@ -45,7 +45,7 @@
         config.packages.clan-app.tests
         // lib.removeAttrs config.packages.clan-app-ui.tests [ "clan-app-ui-storybook" ];
       # FIXME: enable storybook tests once the stories files are fixed
-      # Sandboxed Darwin nix build can't spawn a headless brwoser
+      # Sandboxed Darwin nix build can't spawn a headless browser
       # lib.optionalAttrs (!lib.hasSuffix "darwin" system) {
       #   inherit (config.packages.clan-app-ui.tests) clan-app-ui-storybook;
       # };

@@ -188,7 +188,7 @@
       };
   };
 
-  # Empty role, so we can add non-ca machins to the instance to trust the CA
+  # Empty role, so we can add non-ca machines to the instance to trust the CA
   roles.default = {
     description = "A machine that trusts the CA and can get certificates issued by it.";
     interface =

@@ -126,7 +126,7 @@ def _determine_props_recursive(
     persisted: dict[str, Any],
     current_path: PathTuple = (),
     inherited_priority: int | None = None,
-    parent_redonly: bool = False,
+    parent_readonly: bool = False,
     results: AttributeMap | None = None,
     parent_total: bool = True,
     *,
@@ -173,7 +173,7 @@ def _determine_props_recursive(
 
         # Check if this should be non-writeable due to inheritance
         force_non_writeable = should_inherit_non_writeable(
-            effective_priority, parent_redonly
+            effective_priority, parent_readonly
         )
 
         if force_non_writeable:
@@ -187,7 +187,7 @@ def _determine_props_recursive(
                     {},  # Doesn't matter since all children will be non-writeable
                     path,
                     effective_priority,
-                    parent_redonly=True,
+                    parent_readonly=True,
                     results=results,
                     parent_total=get_totality(value),
                     inventory_file_name=inventory_file_name,
@@ -218,7 +218,7 @@ def _determine_props_recursive(
                     persisted.get(key, {}),
                     path,
                     effective_priority,
-                    parent_redonly=False,
+                    parent_readonly=False,
                     results=results,
                     parent_total=get_totality(value),
                     inventory_file_name=inventory_file_name,

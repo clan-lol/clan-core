@@ -19,7 +19,7 @@ from clan_cli.tests.helpers import cli
                     machines.sara = { tags = [ "foo" "baz" ]; };
                 }""",
             },
-            ["jon"],  # explizit names
+            ["jon"],  # explicit names
             [],  # filter tags
             ["jon"],  # expected
         ),
@@ -57,7 +57,7 @@ def test_get_machines_for_update_single_name(
                     machines.sara = { tags = [ "foo" "baz" ]; };
                 }""",
             },
-            [],  # explizit names
+            [],  # explicit names
             ["foo"],  # filter tags
             ["jon", "sara"],  # expected
         ),
@@ -95,7 +95,7 @@ def test_get_machines_for_update_tags(
                     machines.sara = { tags = [ "foo" "baz" ]; };
                 }""",
             },
-            ["sara"],  # explizit names
+            ["sara"],  # explicit names
             ["foo"],  # filter tags
             ["sara"],  # expected
         ),
@@ -133,7 +133,7 @@ def test_get_machines_for_update_tags_and_name(
                     machines.sara = { tags = [ "foo" "baz" ]; };
                 }""",
             },
-            [],  # no explizit names
+            [],  # no explicit names
             [],  # no filter tags
             ["jon", "sara", "vm1", "vm2"],  # all machines
         ),

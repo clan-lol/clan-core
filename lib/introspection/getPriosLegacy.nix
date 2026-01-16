@@ -42,7 +42,7 @@ let
                 [
                   {
                     inherit options;
-                    _file = "<artifical submodule>";
+                    _file = "<artificial submodule>";
                   }
                 ]
                 ++ map (config: { inherit config; }) defs.${attrName}

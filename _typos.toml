@@ -1,0 +1,18 @@
+[files]
+extend-exclude = [
+	"**/secret",
+	"**/value",
+	"**.rev",
+	"**/facter-report.nix",
+	"**/key.json",
+	"pkgs/clan-cli/clan_lib/machines/test_suggestions.py",
+]
+
+[default.extend-words]
+facter = "facter"
+metalness = "metalness"   # would be corrected to metallicity, not sure which one's preferred
+hda = "hda"               # snd_hda_intel
+dynamicdns = "dynamicdns"
+
+[default.extend-identifiers]
+pn = "pn"

@@ -36,7 +36,7 @@ def test_flake_caching(flake: ClanFlake) -> None:
 
 
 @pytest.mark.with_core
-def test_cache_persistance(flake: ClanFlake) -> None:
+def test_cache_persistence(flake: ClanFlake) -> None:
     flake.machines["machine1"] = create_test_machine_config()
     flake.refresh()
 
@@ -543,8 +543,8 @@ def test_reinserting_store_path_value() -> None:
 
 
 @pytest.mark.with_core
-def test_get_nonexistant_after_maybe(flake: ClanFlake) -> None:
-    """Test that if a nonexistant value is cached,
+def test_get_nonexistent_after_maybe(flake: ClanFlake) -> None:
+    """Test that if a nonexistent value is cached,
     that the cache miss is not falsely stored as the value.
     """
     my_flake = Flake(str(flake.path))

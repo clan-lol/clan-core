@@ -5,7 +5,7 @@ PathTuple = tuple[str, ...]
 
 
 def list_difference(all_items: list, filter_items: list) -> list:
-    """Applys a filter to a list and returns the items in all_items that are not in filter_items
+    """Applies a filter to a list and returns the items in all_items that are not in filter_items
 
     Example:
     all_items = [1, 2, 3, 4]
@@ -98,7 +98,7 @@ def delete_by_path_tuple(d: DictLike, path: PathTuple) -> Any:
     except KeyError:
         # TODO(@hsjobeki): It should be save to raise an error here.
         # Possibly data was already deleted
-        # msg = f"Canot delete. Path '{path}' not found in data '{d}'"
+        # msg = f"Cannot delete. Path '{path}' not found in data '{d}'"
         # raise KeyError(msg) from exc
         return {}
     else:

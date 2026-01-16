@@ -70,7 +70,7 @@ def calc_patches(
     """Calculate the patches to apply to the inventory using structured paths.
 
     Given its current state and the update to apply.
-    Calulates the necessary SET patches and DELETE paths.
+    Calculates the necessary SET patches and DELETE paths.
     While validating persistence rules.
 
     Args:

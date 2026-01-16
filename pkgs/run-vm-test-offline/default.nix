@@ -34,5 +34,5 @@ writeShellApplication {
       runuser -u $(printf "%q" "$currentUser") ./result/bin/nixos-test-driver
     "
   '';
-  meta.description = "Run interactivly NixOS VM tests in an sandbox without network access";
+  meta.description = "Run interactively NixOS VM tests in an sandbox without network access";
 }

@@ -13,7 +13,7 @@ let
       # Deprecated parameter
       shared ? null,
     }@args:
-    lib.warnIf (args ? backend) "Argument 'backend' to getPublicValue is deprecated. It can be omited."
+    lib.warnIf (args ? backend) "Argument 'backend' to getPublicValue is deprecated. It can be omitted."
       (
         let
           # Backwards compatibility: if shared is set, use it to determine machine value

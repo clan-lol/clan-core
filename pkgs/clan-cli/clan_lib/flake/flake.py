@@ -389,7 +389,7 @@ class FlakeCacheEntry:
         selectors: list[Selector],
     ) -> None:
         selector: Selector
-        # if we have no more selectors, it means we select all keys from now one and futher down
+        # if we have no more selectors, it means we select all keys from now one and further down
         selector = Selector(type=SelectorType.ALL) if selectors == [] else selectors[0]
 
         # first we find out if we have all subkeys already
@@ -1022,7 +1022,7 @@ class Flake:
                 # We can always build this derivation locally, since /bin/sh is system independent,
                 # remote builders would introduce needless overhead.
                 preferLocalBuild = true;
-                # Save the roundtrip to check the binary caches for trival substitutions
+                # Save the roundtrip to check the binary caches for trivial substitutions
                 allowSubstitutes = false;
 
                 passAsFile = [ "result" ];

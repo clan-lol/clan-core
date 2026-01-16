@@ -333,25 +333,25 @@ def resolve_service_module_ref(
     :raises ClanError: If the module_ref is invalid or missing required fields
     """
     service_modules = list_service_modules(flake)
-    avilable_modules = service_modules.modules
+    available_modules = service_modules.modules
 
     input_ref = module_ref.get("input", None)
 
     if input_ref is None or input_ref == service_modules.core_input_name:
         # Take only the native modules
-        module_set = [m for m in avilable_modules if m.native]
+        module_set = [m for m in available_modules if m.native]
     else:
         # Match the input ref
         module_set = [
-            m for m in avilable_modules if m.usage_ref.get("input", None) == input_ref
+            m for m in available_modules if m.usage_ref.get("input", None) == input_ref
         ]
 
     if not module_set:
-        inputs = {m.usage_ref.get("input") for m in avilable_modules}
+        inputs = {m.usage_ref.get("input") for m in available_modules}
         msg = f"module set for input '{input_ref}' not found"
         msg += f"\nAvilable input_refs: {inputs}"
         msg += "\nOmit the input field to use the built-in modules\n"
-        msg += "\n".join([m.usage_ref["name"] for m in avilable_modules if m.native])
+        msg += "\n".join([m.usage_ref["name"] for m in available_modules if m.native])
         raise ClanError(msg)
 
     module_name = module_ref.get("name")

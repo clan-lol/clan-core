@@ -166,7 +166,7 @@ in
                               default = evalMachineSettings instance.name role.name null role.config.settings { };
                               type = types.raw;
                               description = ''
-                                Final evaluated settings of the curent-machine
+                                Final evaluated settings of the current-machine
 
                                 This contains the merged and evaluated settings of the role interface,
                                 the role settings and the machine settings.
@@ -174,7 +174,7 @@ in
                                 Type: 'configuration' as returned by 'lib.evalModules'
                               '';
                               apply = lib.warn ''
-                                === WANRING ===
+                                === WARNING ===
                                 'roles.<roleName>.settings' do not contain machine specific settings.
 
                                 Prefer `machines.<machineName>.settings` instead. (i.e `perInstance: roles.<roleName>.machines.<machineName>.settings`)
@@ -216,7 +216,7 @@ in
                                               machine.config.settings;
                                           type = types.raw;
                                           description = ''
-                                            Final evaluated settings of the curent-machine
+                                            Final evaluated settings of the current-machine
 
                                             This contains the merged and evaluated settings of the role interface,
                                             the role settings and the machine settings.

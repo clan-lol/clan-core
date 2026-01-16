@@ -185,7 +185,7 @@
                 SERVER_ENABLED = if cfg.server.enable then "yes" else "no";
                 PERIOD = "${toString cfg.period}m";
                 LISTENING_ADDRESS = ":${toString cfg.server.port}";
-                GODEBUG = "netdns=go"; # We need to set this untill this has been merged. https://github.com/NixOS/nixpkgs/pull/432758
+                GODEBUG = "netdns=go"; # We need to set this until this has been merged. https://github.com/NixOS/nixpkgs/pull/432758
               };
 
               serviceConfig =

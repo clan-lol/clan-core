@@ -52,7 +52,7 @@ const images = await fetch(
   },
 );
 
-type ImageResonse =
+type ImageResponse =
   | {
       err: null;
       images: {
@@ -62,7 +62,7 @@ type ImageResonse =
   | {
       err: string;
     };
-const urlSet: ImageResonse = await images.json();
+const urlSet: ImageResponse = await images.json();
 
 if (urlSet.err !== null) {
   console.error("Could not get image paths", { urlSet });

@@ -9,7 +9,7 @@ from clan_lib.persist.inventory_store import InventoryStore
 @pytest.mark.parametrize(
     "test_flake_with_core",
     [
-        # Emtpy inventory
+        # Empty inventory
         {"inventory_expr": r"{ }"},
         # Empty machines
         {
@@ -25,7 +25,7 @@ from clan_lib.persist.inventory_store import InventoryStore
         # -
         # {
         #     "inventory_expr": r"""{
-        #         modules.messager = { ... }: { };
+        #         modules.messenger = { ... }: { };
         #     }"""
         # },
     ],

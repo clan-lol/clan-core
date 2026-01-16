@@ -58,7 +58,7 @@ in
       functor = {
         inherit (self) name;
         type = self;
-        # Non mergable type
+        # Non mergeable type
         binOp = _a: _b: null;
       };
     }
@@ -70,7 +70,7 @@ in
     If defined in two places (i.e. once in clan-core, once in the user flake)
     it prints the given warning
 
-    If its exlusively set, then it remains silent
+    If its exclusively set, then it remains silent
 
     Mimics the behavior of "readOnly" in a soft way
   */

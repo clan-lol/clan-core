@@ -6,7 +6,7 @@
 {
   # TODO: factor these out into a separate interface.nix.
   # Also think about moving these options out of `system.clan`.
-  # Maybe we should not re-use the already polluted confg.system namespace
+  # Maybe we should not re-use the already polluted config.system namespace
   #   and instead have a separate top-level namespace like `clanOutputs`, with
   #   well defined options marked as `internal = true;`.
   options.system.clan = lib.mkOption {

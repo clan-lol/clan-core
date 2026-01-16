@@ -19,7 +19,7 @@ class DummyFlake:
 local_path = DummyFlake(".")
 
 
-def test_transform_url_self_explizit_dot() -> None:
+def test_transform_url_self_explicit_dot() -> None:
     user_input = ".#new-machine"
     expected_selector = 'clan.templates.machine."new-machine"'
 
@@ -210,7 +210,7 @@ def test_locked_input_template_no_dot() -> None:
     assert flake_ref == str(local_path.path)
 
 
-def test_explizit_path_default_minimal_rel_1() -> None:
+def test_explicit_path_default_minimal_rel_1() -> None:
     user_input = "."
     expected_selector = "clan.templates.machine.default"
 
@@ -223,7 +223,7 @@ def test_explizit_path_default_minimal_rel_1() -> None:
     assert flake_ref == user_input
 
 
-def test_explizit_path_default_minimal_rel_2() -> None:
+def test_explicit_path_default_minimal_rel_2() -> None:
     user_input = "./"
     expected_selector = "clan.templates.machine.default"
 
@@ -236,7 +236,7 @@ def test_explizit_path_default_minimal_rel_2() -> None:
     assert flake_ref == user_input
 
 
-def test_explizit_path_default_minimal_parent_1() -> None:
+def test_explicit_path_default_minimal_parent_1() -> None:
     user_input = ".."
     expected_selector = "clan.templates.machine.default"
 
@@ -249,7 +249,7 @@ def test_explizit_path_default_minimal_parent_1() -> None:
     assert flake_ref == user_input
 
 
-def test_explizit_path_default_minimal_parent_2() -> None:
+def test_explicit_path_default_minimal_parent_2() -> None:
     user_input = "../"
     expected_selector = "clan.templates.machine.default"
 
@@ -275,7 +275,7 @@ def test_internal_dot_template() -> None:
     assert flake_ref == str(local_path.path)
 
 
-def test_explizit_rel_path_default() -> None:
+def test_explicit_rel_path_default() -> None:
     user_input = "./path/to/flake"
     expected_selector = "clan.templates.machine.default"
 
@@ -288,7 +288,7 @@ def test_explizit_rel_path_default() -> None:
     assert flake_ref == user_input
 
 
-def test_explizit_abs_path_default() -> None:
+def test_explicit_abs_path_default() -> None:
     user_input = "/path/to/flake"
     expected_selector = "clan.templates.machine.default"
 
@@ -301,7 +301,7 @@ def test_explizit_abs_path_default() -> None:
     assert flake_ref == user_input
 
 
-def test_explizit_home_path_default() -> None:
+def test_explicit_home_path_default() -> None:
     user_input = "~/path/to/flake"
     expected_selector = "clan.templates.machine.default"
 

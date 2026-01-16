@@ -15,7 +15,7 @@ import { mapObjectValues } from "@/src/util";
 export type Machines = {
   all: Record<string, Machine>;
   readonly sorted: Machine[];
-  // Idealy this should be Set<string>, but solidjs' produce function
+  // Ideally this should be Set<string>, but solidjs' produce function
   // doesn't work with Sets or Maps
   highlightedMachines: Record<string, Machine>;
   activeMachine: Machine | null;

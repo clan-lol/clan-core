@@ -69,7 +69,7 @@ const Prose = () => (
               </Typography>
               <Typography hierarchy="body" size="xs" weight="normal">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Suspendisse varius enim in eros elementum tristique. Duis
+                Suspendisse various enim in eros elementum tristique. Duis
                 cursus,
               </Typography>
             </div>

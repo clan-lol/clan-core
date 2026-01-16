@@ -160,7 +160,7 @@ export class MachineRepr {
           machine.isActive ? BASE_SELECTED_COLOR : BASE_COLOR,
         );
 
-        // TOOD: Find a different way to show both selected & highlighted
+        // TODO: Find a different way to show both selected & highlighted
         // I.e. via outline or pulsing
         // selected > highlighted > normal
         (this.baseMesh.material as THREE.MeshPhongMaterial).emissive.set(

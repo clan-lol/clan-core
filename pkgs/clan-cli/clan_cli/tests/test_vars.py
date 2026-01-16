@@ -1800,7 +1800,7 @@ def test_dynamic_invalidation(
     # this ensures that validation can depend on parent generators while still only requiring a single pass
     #
     # @hsjobeki: The above sentence is incorrect we don't re-evaluate in between generator runs.
-    # Otherwise we would need to evaluate all machines N-times. Resulting in M*N evaluations each beeing very expensive.
+    # Otherwise we would need to evaluate all machines N-times. Resulting in M*N evaluations each being very expensive.
     # Machine evaluation is highly expensive .
     # The generator will thus run again, and produce a different result in the second run.
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])

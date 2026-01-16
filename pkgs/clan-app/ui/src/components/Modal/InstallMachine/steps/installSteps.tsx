@@ -44,7 +44,7 @@ import {
 import { createAsync } from "@solidjs/router";
 import ModalHeading from "../../components/ModalHeading";
 
-const ConfigureAdressSchema = v.object({
+const ConfigureAddressSchema = v.object({
   targetHost: v.pipe(
     v.string("Please set a target host."),
     v.nonEmpty("Please set a target host."),
@@ -58,7 +58,7 @@ const ConfigureAdressSchema = v.object({
   password: v.optional(v.string()),
 });
 
-type ConfigureAdressForm = v.InferInput<typeof ConfigureAdressSchema>;
+type ConfigureAddressForm = v.InferInput<typeof ConfigureAddressSchema>;
 
 export const ConfigureAddress: Component<{
   forUpdating?: boolean;
@@ -67,8 +67,8 @@ export const ConfigureAddress: Component<{
   const stepSignal = useStepper<InstallSteps>();
   const [store, set] = getStepStore<InstallStoreType>(stepSignal);
 
-  const [formStore, { Form, Field }] = createForm<ConfigureAdressForm>({
-    validate: valiForm(ConfigureAdressSchema),
+  const [formStore, { Form, Field }] = createForm<ConfigureAddressForm>({
+    validate: valiForm(ConfigureAddressSchema),
     initialValues: {
       targetHost: store.install?.targetHost,
       port: store.install?.port,
@@ -78,7 +78,7 @@ export const ConfigureAddress: Component<{
   const [isReachable, setIsReachable] = createSignal(false);
   const [loading, setLoading] = createSignal<boolean>(false);
   // TODO: push values to the parent form Store
-  const handleSubmit: SubmitHandler<ConfigureAdressForm> = (values, event) => {
+  const handleSubmit: SubmitHandler<ConfigureAddressForm> = (values, event) => {
     set("install", {
       targetHost: values.targetHost,
       port: values.port,

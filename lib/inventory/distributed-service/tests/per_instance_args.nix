@@ -84,8 +84,8 @@ let
           settings.timeout = "bar-peer-jon";
         };
       };
-      # TODO: move this into a seperate test.
-      # Seperate out the check that this module is never imported
+      # TODO: move this into a separate test.
+      # Separate out the check that this module is never imported
       # import the module "B" (undefined)
       # All machines have this instance
       instances."instance_zaza" = {

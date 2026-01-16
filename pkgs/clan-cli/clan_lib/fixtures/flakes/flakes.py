@@ -19,7 +19,7 @@ def offline_template(tmp_path_factory: Any, offline_session_flake_hook: Any) -> 
 
     shutil.copytree(template, dst_dir, dirs_exist_ok=True, symlinks=True)
 
-    # Emtpy clan.nix file for evaluation of the template
+    # Empty clan.nix file for evaluation of the template
     clan_nix_file = dst_dir / "clan.nix"
     with (clan_nix_file).open("w") as f:
         f.write(r"""{ }""")
@@ -102,7 +102,7 @@ def patch_get_clan_details(
     """Patch clan_lib.clan.create.get_clan_details
 
     This patching is required for create_clan, because after the flake has been
-    create, it won't have a lock file, but get_clan_details needs to evalute the
+    create, it won't have a lock file, but get_clan_details needs to evaluate the
     flake which requires generating the lock file. This can break tests which
     run in the sandbox and it doesn't allow such generation.
     """
