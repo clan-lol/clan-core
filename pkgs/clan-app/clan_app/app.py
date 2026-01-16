@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import time
+import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -107,6 +108,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
             f"Swagger: http://{app_opts.http_host}:{app_opts.http_port}/api/swagger",
         )
 
+        webbrowser.open_new_tab(content_uri)
         log.info("Press Ctrl+C to stop the server")
         try:
             # Keep the main thread alive

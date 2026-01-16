@@ -121,6 +121,7 @@ export type ClansMethods = {
     opts?: { active?: boolean },
   ): Promise<Clan>;
   removeClan(this: void, item: Clan | ClanMeta | string): Clan | ClanMeta;
+  isValidClanDir(this: void, path: string): Promise<boolean>;
 };
 export function createClansMethods(
   clans: Clans,
@@ -260,6 +261,9 @@ export function createClansMethods(
         }),
       );
       return clan;
+    },
+    async isValidClanDir(path) {
+      return await api.clan.isValidClanDir(path);
     },
   };
   return self;

@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --configLoader native",
     "build": "vite build && node gtk.webview.js",
     "serve": "vite preview",
     "test": "vitest run",

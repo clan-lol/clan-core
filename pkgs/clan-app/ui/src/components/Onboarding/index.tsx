@@ -1,12 +1,4 @@
-import {
-  Accessor,
-  createSignal,
-  JSX,
-  Match,
-  Setter,
-  Show,
-  Switch,
-} from "solid-js";
+import { Accessor, createSignal, JSX, Match, Setter, Switch } from "solid-js";
 import styles from "./Onboarding.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
@@ -28,7 +20,7 @@ import * as v from "valibot";
 import { HostFileInput } from "@/src/components/Form/HostFileInput";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
 import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import { useClansContext, useUIContext } from "@/src/models";
+import { config, useClansContext, useUIContext } from "@/src/models";
 import { useSysContext } from "@/src/models";
 
 type Step = {
@@ -147,15 +139,27 @@ export default function Onboarding(): JSX.Element {
 
                 <Fieldset name="location">
                   <Field name="directory">
-                    {(field, props) => (
-                      <HostFileInput
-                        {...props}
-                        windowTitle="Select a folder for you new Clan"
-                        label="Select directory"
-                        orientation="horizontal"
-                        required={true}
-                      />
-                    )}
+                    {(field, input) =>
+                      config.clanAPIType === "http" ? (
+                        <TextInput
+                          label="Clan Directory Path"
+                          required
+                          orientation="horizontal"
+                          input={{
+                            ...input,
+                            placeholder: "/path/to/your/clan",
+                          }}
+                        />
+                      ) : (
+                        <HostFileInput
+                          {...input}
+                          windowTitle="Select a folder for you new Clan"
+                          label="Select directory"
+                          orientation="horizontal"
+                          required={true}
+                        />
+                      )
+                    }
                   </Field>
                 </Fieldset>
 
@@ -218,10 +222,16 @@ function Welcome(props: {
   setStep: Setter<Step>;
 }): JSX.Element {
   const [, { pickClanDir }] = useSysContext();
+  const [, { showModal }] = useUIContext();
   const [, { loadClan }] = useClansContext();
   const [loading, setLoading] = createSignal(false);
 
   async function onSelect(): Promise<void> {
+    if (config.clanAPIType === "http") {
+      showModal({ type: "LoadClanDir" });
+      return;
+    }
+
     setLoading(true);
     // TODO display error, currently we don't get anything to distinguish between cancel or an actual error
     let path;

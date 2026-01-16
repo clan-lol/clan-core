@@ -1,3 +1,4 @@
+import { config } from "@/src/models";
 import { Methods, Body, Header, Response, SuccessResponse } from "./client";
 
 async function call<Method extends Methods>(
@@ -12,22 +13,6 @@ async function call<Method extends Methods>(
     signal?: AbortSignal | undefined;
   } = {},
 ): Promise<SuccessResponse<Method>> {
-  const fn = (
-    window as unknown as Record<
-      Method,
-      (args: {
-        body?: Body<Method> | undefined;
-        header?: Header | undefined;
-      }) => Promise<{
-        body: Response<Method>;
-        header: Record<string, unknown>;
-      }>
-    >
-  )[method];
-  if (typeof fn != "function") {
-    throw new Error(`Cannot call clan non-existent method: ${method}`);
-  }
-
   const taskId = window.crypto.randomUUID();
   let isDone = false;
   signal?.addEventListener("abort", () => {
@@ -37,13 +22,22 @@ async function call<Method extends Methods>(
     })();
   });
 
-  const res = await fn({
-    body,
-    header: {
-      ...header,
-      op_key: taskId,
-    },
+  const result = await fetch(`${config.clanAPIBase}/api/v1/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal,
+    body: JSON.stringify({
+      body,
+      header: {
+        ...header,
+        op_key: taskId,
+      },
+    }),
   });
+  const res = (await result.json()) as {
+    body: Response<Method>;
+    header: Record<string, unknown>;
+  };
   isDone = true;
 
   if (res.body.status == "error") {
