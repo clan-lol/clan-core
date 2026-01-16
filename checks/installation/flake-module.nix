@@ -145,7 +145,23 @@
       pkgs,
       ...
     }:
+    let
+      closureInfo = pkgs.closureInfo {
+        rootPaths = [
+          self.packages.${pkgs.stdenv.hostPlatform.system}.clan-core-flake
+          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
+          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
+          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
+          pkgs.stdenv.drvPath
+          pkgs.bash.drvPath
+          pkgs.buildPackages.xorg.lndir
+        ]
+        ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
+        ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
+      };
+    in
     {
+      legacyPackages.closureInfo = closureInfo;
       # On aarch64-linux, hangs on reboot with after installation:
       # vm-test-run-test-installation-> installer # [  288.002871] reboot: Restarting system
       # vm-test-run-test-installation-> server # [test-install-machine] ### Done! ###
@@ -177,22 +193,7 @@
               };
             }
           );
-
           installTestClanCli = installTestPkgs.clan-cli-full;
-
-          closureInfo = pkgs.closureInfo {
-            rootPaths = [
-              self.packages.${pkgs.stdenv.hostPlatform.system}.clan-core-flake
-              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
-              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
-              self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
-              pkgs.stdenv.drvPath
-              pkgs.bash.drvPath
-              pkgs.buildPackages.xorg.lndir
-            ]
-            ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-            ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
-          };
         in
         pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
           /*
