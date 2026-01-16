@@ -249,9 +249,7 @@ class SecretStore(StoreBase):
             for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
-                        out_file = (
-                            output_dir / "partitioning" / generator.name / file.name
-                        )
+                        out_file = output_dir / generator.name / file.name
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
 
