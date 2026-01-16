@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import subprocess
 import time
 import webbrowser
 from dataclasses import dataclass
@@ -26,11 +27,13 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class ClanAppOptions:
-    content_uri: str
     debug: bool
-    http_api: bool = False
-    http_host: str = "127.0.0.1"
-    http_port: int = 8080
+    dev: bool
+    dev_host: str
+    dev_port: int
+    http_api: bool
+    http_host: str
+    http_port: int
 
 
 def delete_old_logs(log_manager: LogManager) -> None:
@@ -55,8 +58,41 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     log.debug("Debug mode enabled")
 
-    if app_opts.content_uri:
-        content_uri = app_opts.content_uri
+    if app_opts.dev:
+        content_uri = f"http://{app_opts.dev_host}:{app_opts.dev_port}"
+
+        npm = shutil.which("npm")
+        if npm is None:
+            msg = "npm not found"
+            raise RuntimeError(msg)
+
+        env = os.environ.copy()
+        if app_opts.http_api:
+            env["VITE_CLAN_API_BASE"] = (
+                f"http://{app_opts.http_host}:{app_opts.http_port}"
+            )
+
+        process = subprocess.Popen(
+            [
+                npm,
+                "run",
+                "dev",
+                "--",
+                "--host",
+                app_opts.dev_host,
+                "--port",
+                str(app_opts.dev_port),
+            ],
+            cwd=Path(__file__).parent.parent / "ui",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=env,
+            text=True,
+        )
+
+        for line in process.stdout:
+            if "VITE" in line:
+                break
     else:
         site_index: Path = Path(os.getenv("WEBUI_PATH", ".")).resolve() / "index.html"
         content_uri = f"file://{site_index}"

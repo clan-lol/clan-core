@@ -63,7 +63,6 @@
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"
-        "*/bin/clan-app"
         "*/bin/clan-config"
       ];
       treefmt.settings.formatter.ruff-format.excludes = [
