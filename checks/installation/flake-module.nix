@@ -47,6 +47,9 @@
           self.clanLib.test.minifyModule
         ];
 
+        # Disable system.checks to avoid rebuild mismatches in tests
+        system.checks = lib.mkForce [ ];
+
         networking.hostName = "test-install-machine";
 
         environment.etc."install-successful".text = "ok";
@@ -155,6 +158,7 @@
           pkgs.stdenv.drvPath
           pkgs.bash.drvPath
           pkgs.buildPackages.xorg.lndir
+          pkgs.makeShellWrapper
         ]
         ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
         ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
