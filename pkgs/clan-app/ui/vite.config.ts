@@ -3,38 +3,17 @@ import wyw from "@wyw-in-js/vite";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
 import { patchCssModules } from "vite-css-modules";
-import path from "node:path";
-import { exec } from "child_process";
-
-// watch also clan-cli to catch api changes
-const clanCliDir = path.resolve(__dirname, "../../clan-cli");
-
-function regenPythonApiOnFileChange() {
-  return {
-    name: "run-python-script-on-change",
-    handleHotUpdate() {
-      exec("reload-python-api.sh", (err, stdout, stderr) => {
-        if (err) {
-          console.error(`reload-python-api.sh error:\n${stderr}`);
-        }
-      });
-    },
-    configureServer(server: import("vite").ViteDevServer) {
-      server.watcher.add([clanCliDir]);
-    },
-  };
-}
 
 export default defineConfig(({ mode }) => {
   return {
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./"),
-        // Different script can be used based on different env vars
-        "$clan-api-client": path.resolve(
-          __dirname,
-          "src/models/api/clan/client/rpc",
-        ),
+        "@": new URL(".", import.meta.url).pathname,
+        "$clan-api-client": new URL(
+          "src/models/api/clan/client/" +
+            (process.env.VITE_CLAN_API_BASE ? "http" : "rpc"),
+          import.meta.url,
+        ).pathname,
       },
     },
     base: "./",
@@ -50,7 +29,6 @@ export default defineConfig(({ mode }) => {
         },
       }),
       solidSvg(),
-      regenPythonApiOnFileChange(),
       patchCssModules({ generateSourceTypes: true }),
     ],
     server: {

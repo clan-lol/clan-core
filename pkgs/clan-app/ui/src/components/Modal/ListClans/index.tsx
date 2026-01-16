@@ -1,7 +1,7 @@
 import cx from "classnames";
 import styles from "./ListClans.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import { batch, Component, For } from "solid-js";
+import { Component, For } from "solid-js";
 import { NavSection } from "@/src/components/NavSection/NavSection";
 import { useClansContext, useUIContext } from "@/src/models";
 import TitledModal from "../components/TitledModal";

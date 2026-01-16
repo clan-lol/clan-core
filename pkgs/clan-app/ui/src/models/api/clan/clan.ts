@@ -185,6 +185,17 @@ export async function getClan(id: string): Promise<ClanOutput> {
   };
 }
 
+export async function isValidClanDir(path: string): Promise<boolean> {
+  const res = await client.call("check_clan_valid", {
+    body: {
+      flake: {
+        identifier: path,
+      },
+    },
+  });
+  return res.data;
+}
+
 // TODO: backend should provide an API that allows partial update
 export async function updateClanData(
   clanId: string,

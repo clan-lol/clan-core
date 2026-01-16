@@ -19,6 +19,9 @@ export type Modal =
   | {
       type: "UpdateMachine";
       machine: Machine;
+    }
+  | {
+      type: "LoadClanDir";
     };
 
 export type ModalMethods = {

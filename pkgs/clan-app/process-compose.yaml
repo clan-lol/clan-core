@@ -10,12 +10,14 @@ processes:
       npm install
       vite
     ready_log_line: "VITE"
+    environment:
+      - VITE_CLAN_API_BASE=http://localhost:3912
 
   clan-app:
     namespace: "app"
     command: |
       cd $(git rev-parse --show-toplevel)/pkgs/clan-app
-      ./bin/clan-app --debug --content-uri http://localhost:3000
+      ./bin/clan-app --debug --content-uri http://localhost:3000 --http-api --http-port 3912
     depends_on:
       clan-app-ui:
         condition: "process_log_ready"
