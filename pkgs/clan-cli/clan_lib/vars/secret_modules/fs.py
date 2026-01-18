@@ -37,9 +37,19 @@ class SecretStore(StoreBase):
     def exists(self, generator: "Generator", name: str) -> bool:
         return (self.dir / generator.name / name).exists()
 
-    def get(self, generator: Generator, name: str) -> bytes:
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,
+    ) -> bytes:
         secret_file = self.dir / generator.name / name
-        return secret_file.read_bytes()
+        if cache is not None and secret_file in cache:
+            return cache[secret_file]
+        value = secret_file.read_bytes()
+        if cache is not None:
+            cache[secret_file] = value
+        return value
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         del machine, phases  # Unused but kept for API compatibility

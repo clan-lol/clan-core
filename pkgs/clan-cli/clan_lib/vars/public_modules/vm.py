@@ -53,7 +53,12 @@ class VarsStore(StoreBase):
         return None
 
     # get a single fact
-    def get(self, generator: Generator, name: str) -> bytes:
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,  # noqa: ARG002
+    ) -> bytes:
         machine = self.get_machine(generator)
         fact_path = self.get_dir(machine) / generator.name / name
         if fact_path.exists():

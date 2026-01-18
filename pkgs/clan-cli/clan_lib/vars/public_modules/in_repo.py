@@ -46,7 +46,12 @@ class VarsStore(StoreBase):
         return file_path
 
     # get a single fact
-    def get(self, generator: Generator, name: str) -> bytes:
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,  # noqa: ARG002
+    ) -> bytes:
         return (self.directory(generator, name) / "value").read_bytes()
 
     def exists(self, generator: Generator, name: str) -> bool:
