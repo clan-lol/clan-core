@@ -15,9 +15,6 @@
   # to the installation test.
   clan.machines = {
     test-install-machine-without-system = {
-      fileSystems."/".device = lib.mkDefault "/dev/vda";
-      boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
       imports = [
         self.nixosModules.test-install-machine-without-system
       ];
@@ -27,11 +24,10 @@
     lib.map (
       system:
       lib.nameValuePair "test-install-machine-${system}" {
+        # !!! Important do not add any configuration here
+        # This is one of ~10 shallow abstractions over
+        # flake.nixosModules.test-install-machine-without-system
         hardware.facter.reportPath = import ./facter-report.nix system;
-
-        fileSystems."/".device = lib.mkDefault "/dev/vda";
-        boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
         imports = [ self.nixosModules.test-install-machine-without-system ];
       }
     ) (lib.filter (lib.hasSuffix "linux") config.systems)
@@ -49,6 +45,10 @@
 
         # Disable system.checks to avoid rebuild mismatches in tests
         system.checks = lib.mkForce [ ];
+
+        # Default fs and bootloader
+        fileSystems."/".device = lib.mkDefault "/dev/vda";
+        boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
         networking.hostName = "test-install-machine";
 
