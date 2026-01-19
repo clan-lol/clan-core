@@ -103,7 +103,17 @@ def main() -> int:
 
     # Start vite dev server in background
     process_manager.vite_process = subprocess.Popen(
-        ["npm", "run", "dev", "--", "--host", args.dev_host, "--port", args.dev_port],
+        [
+            "npm",
+            "run",
+            "dev",
+            "--",
+            "--strictPort",
+            "--host",
+            args.dev_host,
+            "--port",
+            args.dev_port,
+        ],
         cwd=UI_DIR,
         env=env,
     )
