@@ -1,5 +1,5 @@
-import { Typography } from "@/src/components/Typography/Typography";
-import { BackButton, NextButton, StepLayout } from "@/src/components/Steps";
+import { Typography } from "@/components/Typography/Typography";
+import { BackButton, NextButton, StepLayout } from "@/components/Steps";
 import {
   createForm,
   FieldValues,
@@ -8,12 +8,12 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
-import { Fieldset } from "@/src/components/Form/Fieldset";
+import { Fieldset } from "@/components/Form/Fieldset";
 import * as v from "valibot";
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import { InstallSteps, InstallStoreType, PromptValues } from "..";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { Alert } from "@/src/components/Alert/Alert";
+import { TextInput } from "@/components/Form/TextInput";
+import { Alert } from "@/components/Alert/Alert";
 import {
   batch,
   Component,
@@ -25,22 +25,22 @@ import {
   Suspense,
   Switch,
 } from "solid-js";
-import { Divider } from "@/src/components/Divider/Divider";
-import { Orienter } from "@/src/components/Form/Orienter";
-import { Button } from "@/src/components/Button/Button";
-import { Select } from "@/src/components/Select/Select";
-import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import Icon from "@/src/components/Icon";
-import { Loader } from "@/src/components/Loader/Loader";
+import { Divider } from "@/components/Divider/Divider";
+import { Orienter } from "@/components/Form/Orienter";
+import { Button } from "@/components/Button/Button";
+import { Select } from "@/components/Select/Select";
+import { LoadingBar } from "@/components/LoadingBar/LoadingBar";
+import Icon from "@/components/Icon";
+import { Loader } from "@/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
-import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
+import usbLogo from "@/assets/logos/usb-stick-min.png?url";
 import {
   useMachineContext,
   useUIContext,
   MachineHardwareReport,
   MachineVarsPromptGroups,
   InstallMachineProgress,
-} from "@/src/models";
+} from "@/models";
 import { createAsync } from "@solidjs/router";
 import ModalHeading from "../../components/ModalHeading";
 

@@ -7,15 +7,15 @@ import {
   valiForm,
 } from "@modular-forms/solid";
 import styles from "./ClanSettings.module.css";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { tooltipText } from "@/src/components/Form";
-import { TextArea } from "@/src/components/Form/TextArea";
+import { TextInput } from "@/components/Form/TextInput";
+import { tooltipText } from "@/components/Form";
+import { TextArea } from "@/components/Form/TextArea";
 import { batch, Component, createSignal, Show, splitProps } from "solid-js";
-import { Fieldset } from "@/src/components/Form/Fieldset";
-import { Divider } from "@/src/components/Divider/Divider";
-import { Button } from "@/src/components/Button/Button";
-import { Alert } from "@/src/components/Alert/Alert";
-import { ClanDataChange, useClanContext, useUIContext } from "@/src/models";
+import { Fieldset } from "@/components/Form/Fieldset";
+import { Divider } from "@/components/Divider/Divider";
+import { Button } from "@/components/Button/Button";
+import { Alert } from "@/components/Alert/Alert";
+import { ClanDataChange, useClanContext, useUIContext } from "@/models";
 import TitledModal from "../components/TitledModal";
 import ModalHeading from "../components/ModalHeading";
 

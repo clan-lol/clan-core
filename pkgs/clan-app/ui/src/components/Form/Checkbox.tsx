@@ -4,7 +4,7 @@ import {
   Checkbox as KCheckbox,
 } from "@kobalte/core/checkbox";
 
-import Icon from "@/src/components/Icon";
+import Icon from "@/components/Icon";
 
 import cx from "classnames";
 import { Label } from "./Label";
@@ -13,7 +13,7 @@ import styles from "./Checkbox.module.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
 import { Match, mergeProps, splitProps, Switch } from "solid-js";
-import { keepTruthy } from "@/src/util";
+import { keepTruthy } from "@/util";
 
 export type CheckboxProps = FieldProps &
   KCheckboxRootProps & {

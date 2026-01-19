@@ -1,6 +1,6 @@
 import cx from "classnames";
-import Icon from "@/src/components/Icon";
-import { Typography } from "@/src/components/Typography/Typography";
+import Icon from "@/components/Icon";
+import { Typography } from "@/components/Typography/Typography";
 import { Button } from "@kobalte/core/button";
 import { Alert as KAlert } from "@kobalte/core/alert";
 import { Show } from "solid-js";

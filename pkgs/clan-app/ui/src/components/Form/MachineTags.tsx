@@ -10,14 +10,14 @@ import {
 } from "solid-js";
 import Icon from "../Icon";
 import cx from "classnames";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Tag } from "@/src/components/Tag/Tag";
+import { Typography } from "@/components/Typography/Typography";
+import { Tag } from "@/components/Tag/Tag";
 
-import { Label } from "@/src/components/Form/Label";
-import { Orienter } from "@/src/components/Form/Orienter";
+import { Label } from "@/components/Form/Label";
+import { Orienter } from "@/components/Form/Orienter";
 import { CollectionNode } from "@kobalte/core";
 import styles from "./MachineTags.module.css";
-import { keepTruthy } from "@/src/util";
+import { keepTruthy } from "@/util";
 
 interface MachineTag {
   value: string;

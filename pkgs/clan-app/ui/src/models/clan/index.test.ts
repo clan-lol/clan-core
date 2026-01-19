@@ -1,4 +1,4 @@
-import { createClansStoreFixture } from "@/src/tests/utils";
+import { createClansStoreFixture } from "@/tests/utils";
 import { testEffect } from "@solidjs/testing-library";
 import { createEffect } from "solid-js";
 import { describe, test, vi } from "vitest";

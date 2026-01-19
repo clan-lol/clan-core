@@ -3,8 +3,8 @@ import { Badge } from "@kobalte/core/badge";
 import cx from "classnames";
 import { Component, Match, Show, Switch } from "solid-js";
 import Icon from "../Icon";
-import { Typography } from "@/src/components/Typography/Typography";
-import { MachineStatus } from "@/src/models";
+import { Typography } from "@/components/Typography/Typography";
+import { MachineStatus } from "@/models";
 
 const MachineStatusComponent: Component<{
   label?: string;

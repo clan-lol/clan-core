@@ -1,4 +1,4 @@
-import { Tag } from "@/src/components/Tag/Tag";
+import { Tag } from "@/components/Tag/Tag";
 import { Meta, StoryObj } from "storybook-solidjs-vite";
 import { fn } from "storybook/test";
 import Icon from "../Icon/Icon";

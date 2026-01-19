@@ -1,5 +1,5 @@
-import MachineGraph from "@/src/components/MachineGraph";
-import Sidebar from "@/src/components/Sidebar";
+import MachineGraph from "@/components/MachineGraph";
+import Sidebar from "@/components/Sidebar";
 
 export default function Workspace() {
   return (

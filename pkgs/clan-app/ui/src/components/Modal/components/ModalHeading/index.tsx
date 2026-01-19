@@ -1,6 +1,6 @@
 import { Component, JSX, Show } from "solid-js";
 import styles from "./ModalHeading.module.css";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 
 const ModalHeading: Component<{ text: string; tail?: JSX.Element }> = (
   props,

@@ -1,4 +1,4 @@
-import { TagGroup } from "@/src/components/TagGroup/TagGroup";
+import { TagGroup } from "@/components/TagGroup/TagGroup";
 import { Meta, StoryObj } from "storybook-solidjs-vite";
 
 const meta: Meta<typeof TagGroup> = {

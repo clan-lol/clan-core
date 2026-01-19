@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
-import { Button } from "@/src/components/Button/Button";
+import { Button } from "@/components/Button/Button";
 import styles from "./SidebarSectionInstall.module.css";
-import { useMachineContext, useUIContext } from "@/src/models";
+import { useMachineContext, useUIContext } from "@/models";
 
 export const SidebarSectionUpdate = () => {
   const [, { showModal }] = useUIContext();

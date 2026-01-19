@@ -1,7 +1,7 @@
 import { describe, test, vi } from "vitest";
 import { testEffect } from "@solidjs/testing-library";
 import { createEffect } from "solid-js";
-import { createMachinesStoreFixture } from "@/src/tests/utils";
+import { createMachinesStoreFixture } from "@/tests/utils";
 
 describe("machines", () => {
   test("activate", ({ expect }) => {

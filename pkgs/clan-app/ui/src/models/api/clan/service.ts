@@ -1,4 +1,4 @@
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 import { ServiceInstanceDataChange } from "../../service";
 import client from "$clan-api-client";
 import { ServiceInstanceDataOutput } from "../../service/instance";

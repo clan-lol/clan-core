@@ -1,9 +1,9 @@
 import cx from "classnames";
 import styles from "./ListClans.module.css";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 import { Component, For } from "solid-js";
-import { NavSection } from "@/src/components/NavSection/NavSection";
-import { useClansContext, useUIContext } from "@/src/models";
+import { NavSection } from "@/components/NavSection/NavSection";
+import { useClansContext, useUIContext } from "@/models";
 import TitledModal from "../components/TitledModal";
 
 const ListClans: Component = () => {

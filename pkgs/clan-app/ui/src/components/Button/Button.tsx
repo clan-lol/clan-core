@@ -4,9 +4,9 @@ import { Typography } from "../Typography/Typography";
 import { Button as KobalteButton } from "@kobalte/core/button";
 
 import styles from "./Button.module.css";
-import Icon from "@/src/components/Icon";
-import { Loader } from "@/src/components/Loader/Loader";
-import { getInClasses, joinByDash, keepTruthy } from "@/src/util";
+import Icon from "@/components/Icon";
+import { Loader } from "@/components/Loader/Loader";
+import { getInClasses, joinByDash, keepTruthy } from "@/util";
 
 type Size = "default" | "s" | "xs";
 type Hierarchy = "primary" | "secondary";

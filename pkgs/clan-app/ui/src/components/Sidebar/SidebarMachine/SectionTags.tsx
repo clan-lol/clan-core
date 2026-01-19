@@ -1,13 +1,9 @@
 import * as v from "valibot";
 import { splitProps } from "solid-js";
-import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
-import { MachineTags } from "@/src/components/Form/MachineTags";
+import { SidebarSectionForm } from "@/components/Sidebar/SidebarSectionForm";
+import { MachineTags } from "@/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
-import {
-  MachineDataChange,
-  useClanContext,
-  useMachineContext,
-} from "@/src/models";
+import { MachineDataChange, useClanContext, useMachineContext } from "@/models";
 
 const schema = v.object({
   tags: v.pipe(v.optional(v.array(v.string()))),

@@ -1,10 +1,10 @@
 import cx from "classnames";
 import { Show } from "solid-js";
 import styles from "./Sidebar.module.css";
-import SidebarHeader from "@/src/components/Sidebar/SidebarHeader";
-import SidebarBody from "@/src/components/Sidebar/SidebarBody";
+import SidebarHeader from "@/components/Sidebar/SidebarHeader";
+import SidebarBody from "@/components/Sidebar/SidebarBody";
 import SidebarMachine from "./SidebarMachine";
-import { MachineContextProvider, useMachinesContext } from "@/src/models";
+import { MachineContextProvider, useMachinesContext } from "@/models";
 
 export default function Sidebar() {
   const [machines] = useMachinesContext();

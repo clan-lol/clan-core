@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Tooltip } from "@/src/components/Tooltip/Tooltip";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Tooltip } from "@/components/Tooltip/Tooltip";
+import { Typography } from "@/components/Typography/Typography";
 
 const meta: Meta<typeof Tooltip> = {
   title: "Components/Tooltip",

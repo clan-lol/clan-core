@@ -12,7 +12,7 @@ import {
   MachineVarsPromptsOutput,
   UpdateMachineOptions,
 } from "../../machine/machine";
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 import { ClanMessageHandler, onMessage } from "./event";
 // TODO: backend should provide an API that allows partial update
 export async function updateMachineData(

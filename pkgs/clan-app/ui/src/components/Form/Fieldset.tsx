@@ -1,7 +1,7 @@
 import styles from "./Fieldset.module.css";
 import { JSX } from "solid-js";
 import cx from "classnames";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 import { FieldProps } from "./Field";
 
 export type FieldsetFieldProps = Pick<

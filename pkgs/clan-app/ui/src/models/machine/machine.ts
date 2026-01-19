@@ -11,7 +11,7 @@ import {
   MachinesMethods,
   ServiceInstance,
 } from "..";
-import { DeepImmutable, DeepRequired, mapObjectValues } from "@/src/util";
+import { DeepImmutable, DeepRequired, mapObjectValues } from "@/util";
 
 export type MachineOutput = {
   readonly data: MachineDataOutput;

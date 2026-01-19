@@ -1,6 +1,6 @@
-import { BackButton, NextButton, StepLayout } from "@/src/components/Steps";
+import { BackButton, NextButton, StepLayout } from "@/components/Steps";
 import * as v from "valibot";
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import {
   createForm,
   getError,
@@ -9,8 +9,8 @@ import {
 } from "@modular-forms/solid";
 import styles from "./AddMachine.module.css";
 import { AddMachineSteps, AddMachineStoreType } from ".";
-import { Fieldset } from "@/src/components/Form/Fieldset";
-import { TextInput } from "@/src/components/Form/TextInput";
+import { Fieldset } from "@/components/Form/Fieldset";
+import { TextInput } from "@/components/Form/TextInput";
 import ModalHeading from "../components/ModalHeading";
 
 const HostSchema = v.object({

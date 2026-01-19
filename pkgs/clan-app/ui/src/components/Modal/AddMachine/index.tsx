@@ -3,7 +3,7 @@ import {
   defineSteps,
   StepperProvider,
   useStepper,
-} from "@/src/components/Steps/stepper";
+} from "@/components/Steps/stepper";
 import { GeneralForm, StepGeneral } from "./StepGeneral";
 import { Component } from "solid-js";
 import { StepHost } from "./StepHost";

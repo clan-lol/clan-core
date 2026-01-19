@@ -11,8 +11,8 @@ import {
   valiForm,
 } from "@modular-forms/solid";
 import { GenericSchema, GenericSchemaAsync } from "valibot";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Button } from "@/src/components/Button/Button";
+import { Typography } from "@/components/Typography/Typography";
+import { Button } from "@/components/Button/Button";
 
 import { Loader } from "../../components/Loader/Loader";
 import { SidebarSection } from "./SidebarSection";

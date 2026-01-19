@@ -5,7 +5,7 @@ import { renderLoop } from "./RenderLoop";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import jsonfont from "three/examples/fonts/helvetiker_regular.typeface.json";
-import { Machine } from "@/src/models";
+import { Machine } from "@/models";
 
 // Constants
 const BASE_SIZE = 0.9;

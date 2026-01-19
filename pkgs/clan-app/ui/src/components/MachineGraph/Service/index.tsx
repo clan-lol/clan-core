@@ -1,16 +1,12 @@
-import { Search } from "@/src/components/Search/Search";
-import { Typography } from "@/src/components/Typography/Typography";
-import Icon from "@/src/components/Icon";
+import { Search } from "@/components/Search/Search";
+import { Typography } from "@/components/Typography/Typography";
+import Icon from "@/components/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { css } from "@linaria/core";
-import {
-  Service,
-  useClanContext,
-  useServiceInstancesContext,
-} from "@/src/models";
+import { Service, useClanContext, useServiceInstancesContext } from "@/models";
 import { Component, Show } from "solid-js";
-import { useUIContext } from "@/src/models/ui";
-import { onClickOutside } from "@/src/util";
+import { useUIContext } from "@/models/ui";
+import { onClickOutside } from "@/util";
 
 // TODO: Move this to typography styles
 const tag = css`

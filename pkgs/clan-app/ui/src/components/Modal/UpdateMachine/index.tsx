@@ -3,7 +3,7 @@ import {
   getStepStore,
   StepperProvider,
   useStepper,
-} from "@/src/components/Steps/stepper";
+} from "@/components/Steps/stepper";
 import { Component, createSignal, onCleanup, Show, Suspense } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
@@ -12,20 +12,20 @@ import {
 } from "../InstallMachine/steps/installSteps";
 
 import { InstallStoreType } from "../InstallMachine";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Button } from "@/src/components/Button/Button";
-import Icon from "@/src/components/Icon";
-import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
+import { Typography } from "@/components/Typography/Typography";
+import { Button } from "@/components/Button/Button";
+import Icon from "@/components/Icon";
+import { LoadingBar } from "@/components/LoadingBar/LoadingBar";
+import usbLogo from "@/assets/logos/usb-stick-min.png?url";
 import TitledModal from "../components/TitledModal";
 import {
   MachineContextProvider,
   Modal,
   useMachineContext,
   useUIContext,
-} from "@/src/models";
+} from "@/models";
 import { createAsync } from "@solidjs/router";
-import { UpdateMachineProgress } from "@/src/models/machine/machine";
+import { UpdateMachineProgress } from "@/models/machine/machine";
 
 const UpdateMachine = () => {
   const [ui] = useUIContext();

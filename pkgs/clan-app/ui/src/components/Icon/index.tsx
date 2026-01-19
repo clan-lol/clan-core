@@ -5,7 +5,7 @@ import { Dynamic } from "solid-js/web";
 import styles from "./Icon.module.css";
 import { Color } from "../colors";
 import colorsStyles from "../colors.module.css";
-import { getInClasses, mapObjectKeys } from "@/src/util";
+import { getInClasses, mapObjectKeys } from "@/util";
 
 const icons = mapObjectKeys(
   import.meta.glob<Component<ComponentProps<"svg">>>(

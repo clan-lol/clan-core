@@ -20,7 +20,7 @@
     "allowJs": true,
     "isolatedModules": true,
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
       "$clan-api-client": ["./src/models/api/clan/client/rpc"]
     }
   },

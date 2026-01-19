@@ -18,7 +18,7 @@ import {
   onMount,
   splitProps,
 } from "solid-js";
-import { keepTruthy } from "@/src/util";
+import { keepTruthy } from "@/util";
 
 export type TextInputProps = FieldProps &
   TextFieldRootProps & {

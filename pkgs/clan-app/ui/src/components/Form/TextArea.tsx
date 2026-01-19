@@ -12,7 +12,7 @@ import { createEffect, createSignal, mergeProps, splitProps } from "solid-js";
 import styles from "./TextField.module.css";
 import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
-import { keepTruthy } from "@/src/util";
+import { keepTruthy } from "@/util";
 
 export type TextAreaProps = FieldProps &
   TextFieldRootProps & {

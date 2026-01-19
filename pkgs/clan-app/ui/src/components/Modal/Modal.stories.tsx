@@ -1,10 +1,10 @@
 import { Meta, StoryObj } from "storybook-solidjs-vite";
 import { fn } from "storybook/test";
-import { Modal } from "@/src/components/Modal/Modal";
-import { Fieldset, FieldsetFieldProps } from "@/src/components/Form/Fieldset";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { TextArea } from "@/src/components/Form/TextArea";
-import { Checkbox } from "@/src/components/Form/Checkbox";
+import { Modal } from "@/components/Modal/Modal";
+import { Fieldset, FieldsetFieldProps } from "@/components/Form/Fieldset";
+import { TextInput } from "@/components/Form/TextInput";
+import { TextArea } from "@/components/Form/TextArea";
+import { Checkbox } from "@/components/Form/Checkbox";
 import { Button } from "../Button/Button";
 
 const meta: Meta<typeof Modal> = {

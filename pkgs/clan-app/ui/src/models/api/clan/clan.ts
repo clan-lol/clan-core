@@ -7,7 +7,7 @@ import {
   ClanDataOutput,
 } from "../../clan/clan";
 import { MachineOutput, machinePositions } from "../../machine/machine";
-import { asyncMapObjectValues, mapObjectValues } from "@/src/util";
+import { asyncMapObjectValues, mapObjectValues } from "@/util";
 import { ServiceOutput, ServiceRoleOutput } from "../../service/service";
 
 // TODO: make this one API call only

@@ -1,11 +1,8 @@
-import { SidebarSection } from "@/src/components/Sidebar/SidebarSection";
+import { SidebarSection } from "@/components/Sidebar/SidebarSection";
 import { For } from "solid-js";
-import { ServiceInstanceEntry } from "@/src/components/Sidebar/SidebarBody";
+import { ServiceInstanceEntry } from "@/components/Sidebar/SidebarBody";
 import styles from "./SectionServices.module.css";
-import {
-  ServiceInstanceContextProvider,
-  useMachineContext,
-} from "@/src/models";
+import { ServiceInstanceContextProvider, useMachineContext } from "@/models";
 
 export const SectionServices = () => {
   const [machine] = useMachineContext();

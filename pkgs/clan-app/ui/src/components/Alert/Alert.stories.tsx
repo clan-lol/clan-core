@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Alert, AlertProps } from "@/src/components/Alert/Alert";
+import { Alert, AlertProps } from "@/components/Alert/Alert";
 import { expect, fn } from "storybook/test";
 
 const AlertExamples = (props: AlertProps) => (
