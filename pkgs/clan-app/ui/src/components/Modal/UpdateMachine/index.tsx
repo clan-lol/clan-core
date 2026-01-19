@@ -16,7 +16,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import usbLogo from "@/logos/usb-stick-min.png?url";
+import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
 import TitledModal from "../components/TitledModal";
 import {
   MachineContextProvider,

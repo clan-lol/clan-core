@@ -33,7 +33,7 @@ import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import Icon from "@/src/components/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
-import usbLogo from "@/logos/usb-stick-min.png?url";
+import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
 import {
   useMachineContext,
   useUIContext,
