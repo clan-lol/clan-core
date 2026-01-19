@@ -40,6 +40,7 @@ in
         in
         pkgs.callPackage package {
           clanCore = self.filter {
+            name = "clan-core-source-without-tests";
             exclude = [
               (
                 _root: path: _type:
