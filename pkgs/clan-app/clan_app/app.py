@@ -26,11 +26,11 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class ClanAppOptions:
-    content_uri: str
     debug: bool
-    http_api: bool = False
-    http_host: str = "127.0.0.1"
-    http_port: int = 8080
+    content_uri: str | None
+    http_api: bool
+    http_host: str
+    http_port: int
 
 
 def delete_old_logs(log_manager: LogManager) -> None:

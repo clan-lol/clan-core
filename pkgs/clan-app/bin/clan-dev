@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+import argparse
+import atexit
+import os
+import signal
+import socket
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).parent.resolve()
+UI_DIR = SCRIPT_DIR.parent / "ui"
+
+
+class ProcessManager:
+    def __init__(self) -> None:
+        self.vite_process: subprocess.Popen[bytes] | None = None
+
+    def cleanup(self) -> None:
+        if self.vite_process is not None:
+            self.vite_process.terminate()
+            try:
+                self.vite_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.vite_process.kill()
+
+
+process_manager = ProcessManager()
+
+
+def signal_handler(_signum: int, _frame: object) -> None:
+    process_manager.cleanup()
+    sys.exit(0)
+
+
+def wait_for_vite(host: str, port: str, timeout: int = 60) -> bool:
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        proc = process_manager.vite_process
+        if proc is not None and proc.poll() is not None:
+            print("Vite process died unexpectedly", file=sys.stderr)
+            return False
+        try:
+            with socket.create_connection((host, int(port)), timeout=1):
+                pass
+        except OSError:
+            time.sleep(0.5)
+        else:
+            return True
+    return False
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Development server for clan-app with hot-reload"
+    )
+    parser.add_argument(
+        "-b",
+        "--browser",
+        action="store_true",
+        help="Run in browser mode with HTTP API instead of webview",
+    )
+    parser.add_argument(
+        "--dev-host",
+        type=str,
+        default=os.environ.get("DEV_HOST", "localhost"),
+        help="Host for the vite dev server (default: localhost)",
+    )
+    parser.add_argument(
+        "--dev-port",
+        type=str,
+        default=os.environ.get("DEV_PORT", "3000"),
+        help="Port for the vite dev server (default: 3000)",
+    )
+    parser.add_argument(
+        "--http-host",
+        type=str,
+        default=os.environ.get("HTTP_HOST", "localhost"),
+        help="Host for the HTTP API server (default: localhost)",
+    )
+    parser.add_argument(
+        "--http-port",
+        type=str,
+        default=os.environ.get("HTTP_PORT", "3192"),
+        help="Port for the HTTP API server (default: 3192)",
+    )
+    args = parser.parse_args()
+
+    atexit.register(process_manager.cleanup)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    env = os.environ.copy()
+    # Set VITE_CLAN_API_BASE only in browser mode to use HTTP client
+    # Without it, vite uses the RPC client for webview mode
+    if args.browser:
+        env["VITE_CLAN_API_BASE"] = f"http://{args.http_host}:{args.http_port}"
+
+    # Start vite dev server in background
+    process_manager.vite_process = subprocess.Popen(
+        ["npm", "run", "dev", "--", "--host", args.dev_host, "--port", args.dev_port],
+        cwd=UI_DIR,
+        env=env,
+    )
+
+    print("Waiting for vite dev server...")
+    if not wait_for_vite(args.dev_host, args.dev_port):
+        print("Failed to start vite dev server", file=sys.stderr)
+        return 1
+    print("Vite dev server ready")
+
+    # Build clan-app command
+    module_path = SCRIPT_DIR.parent
+    cmd = [
+        sys.executable,
+        str(module_path / "clan_app"),
+        "--debug",
+        "--content-uri",
+        f"http://{args.dev_host}:{args.dev_port}",
+    ]
+
+    if args.browser:
+        cmd.extend(
+            ["--http-api", "--http-host", args.http_host, "--http-port", args.http_port]
+        )
+
+    # Run clan-app
+    result = subprocess.run(cmd, check=False)
+    return result.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())
