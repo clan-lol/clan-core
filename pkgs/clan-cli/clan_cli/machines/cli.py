@@ -28,6 +28,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     build_parser = subparser.add_parser(
         "build",
+        aliases=["b"],
         help="Build machine configurations",
         epilog=(
             """
