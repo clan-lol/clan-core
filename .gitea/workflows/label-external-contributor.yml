@@ -1,0 +1,32 @@
+name: Label External Contributors
+
+on:
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  label-external:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check org membership and label PR
+        env:
+          GITEA_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          PR_AUTHOR: ${{ gitea.event.pull_request.user.login }}
+          PR_NUMBER: ${{ gitea.event.pull_request.number }}
+        run: |
+          status=$(nix run --inputs-from . nixpkgs#curl -- -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token $GITEA_TOKEN" \
+            "https://git.clan.lol/api/v1/orgs/clan/members/$PR_AUTHOR")
+
+          if [ "$status" = "404" ]; then
+            echo "User $PR_AUTHOR is not an org member, adding label"
+            nix run --inputs-from . nixpkgs#curl -- -X POST \
+              -H "Authorization: token $GITEA_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"labels": ["Type/Community Contribution"]}' \
+              "https://git.clan.lol/api/v1/repos/clan/clan-core/issues/$PR_NUMBER/labels"
+            echo "Label added successfully"
+          else
+            echo "User $PR_AUTHOR is an org member (status: $status), skipping label"
+          fi
