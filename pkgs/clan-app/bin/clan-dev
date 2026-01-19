@@ -95,6 +95,10 @@ def main() -> int:
     # Set VITE_CLAN_API_BASE only in browser mode to use HTTP client
     # Without it, vite uses the RPC client for webview mode
     if args.browser:
+        print(
+            "\x1b[1;33mThe HTTP API allows abritary code execution, make sure it's only used for development\x1b[0m",
+            file=sys.stderr,
+        )
         env["VITE_CLAN_API_BASE"] = f"http://{args.http_host}:{args.http_port}"
 
     # Start vite dev server in background
