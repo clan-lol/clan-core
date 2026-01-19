@@ -83,7 +83,7 @@ in
   perSystem =
     { pkgs, ... }:
     {
-      checks = lib.optionalAttrs pkgs.stdenv.isLinux {
+      checks = lib.optionalAttrs (pkgs.system == "x86_64-linux") {
         nixos-test-flash-installer-boot = self.clanLib.test.baseTest {
           name = "flash-installer-boot";
           nodes.installer =
