@@ -5,7 +5,7 @@ let
     lib.evalModules {
       modules = [
         {
-          options.exportsModule = lib.mkOption {
+          options.exclusive = lib.mkOption {
             type = clanLib.types.exclusiveDeferredModule {
               warning = ''
                 Why this needs to be set only once
@@ -23,7 +23,7 @@ in
       eval = test [
         # In clan-core
         {
-          exportsModule = {
+          exclusive = {
             options.foo = lib.mkOption { };
           };
         }
@@ -31,7 +31,7 @@ in
     in
     {
       inherit eval;
-      expr = lib.deepSeq eval.config.exportsModule 1;
+      expr = lib.deepSeq eval.config.exclusive 1;
       expected = 1;
     };
   test_set_twice =
@@ -39,13 +39,13 @@ in
       eval = test [
         # In clan-core
         {
-          exportsModule = {
+          exclusive = {
             options.foo = lib.mkOption { };
           };
         }
         # The user
         {
-          exportsModule = {
+          exclusive = {
             options.foo = lib.mkOption { };
             options.bar = lib.mkOption { };
           };
@@ -54,8 +54,8 @@ in
     in
     {
       inherit eval;
-      expr = lib.deepSeq eval.config.exportsModule 1;
-      # cannot test the emitted warnings unfortunately
+      expr = lib.deepSeq eval.config.exclusive 1;
+      # cannot test the emited warnings unfortunately
       expected = 1;
     };
 }
