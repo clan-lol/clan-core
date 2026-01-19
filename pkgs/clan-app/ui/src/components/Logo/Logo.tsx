@@ -1,4 +1,4 @@
-import Clan from "@/logos/clan.svg";
+import Clan from "@/src/assets/logos/clan.svg";
 import { Dynamic } from "solid-js/web";
 import { Color } from "@/src/components/colors";
 import colorsStyles from "../colors.module.css";

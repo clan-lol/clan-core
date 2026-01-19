@@ -18,7 +18,7 @@ import { Button } from "@/src/components/Button/Button";
 import Icon from "@/src/components/Icon";
 import { onCleanup, Show, Suspense } from "solid-js";
 import cx from "classnames";
-import usbLogo from "@/logos/usb-stick-min.png?url";
+import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
 import { useSysContext } from "@/src/models";
 import { createAsync } from "@solidjs/router";
 import ModalHeading from "../../components/ModalHeading";
