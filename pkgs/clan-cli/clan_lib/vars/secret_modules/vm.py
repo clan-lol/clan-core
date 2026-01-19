@@ -43,10 +43,20 @@ class SecretStore(StoreBase):
         machine = self.get_machine(generator)
         return (self.get_dir(machine) / generator.name / name).exists()
 
-    def get(self, generator: Generator, name: str) -> bytes:
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,
+    ) -> bytes:
         machine = self.get_machine(generator)
         secret_file = self.get_dir(machine) / generator.name / name
-        return secret_file.read_bytes()
+        if cache is not None and secret_file in cache:
+            return cache[secret_file]
+        value = secret_file.read_bytes()
+        if cache is not None:
+            cache[secret_file] = value
+        return value
 
     def delete(self, generator: Generator, name: str) -> Iterable[Path]:
         machine = self.get_machine(generator)

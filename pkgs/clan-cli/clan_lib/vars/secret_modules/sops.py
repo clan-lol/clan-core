@@ -200,11 +200,22 @@ class SecretStore(StoreBase):
         )
         return secret_folder
 
-    def get(self, generator: Generator, name: str) -> bytes:
-        return decrypt_secret(
-            self.secret_path(generator, name),
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,
+    ) -> bytes:
+        path = self.secret_path(generator, name)
+        if cache is not None and path in cache:
+            return cache[path]
+        value = decrypt_secret(
+            path,
             age_plugins=load_age_plugins(self.flake),
         ).encode("utf-8")
+        if cache is not None:
+            cache[path] = value
+        return value
 
     def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
         secret_dir = self.directory(generator, name)

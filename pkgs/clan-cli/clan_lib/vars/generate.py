@@ -1,8 +1,12 @@
 import logging
 from collections.abc import Callable
 from collections.abc import Generator as GeneratorType
+from typing import TYPE_CHECKING
 
 from clan_lib.api import API
+
+if TYPE_CHECKING:
+    from pathlib import Path
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.persist.inventory_store import InventoryStore
@@ -62,15 +66,20 @@ def get_generators(
     flake.precache(get_generators_precache_selectors(list(all_machines)))
     requested_machines = [machine.name for machine in machines]
 
+    # Cache decrypted secrets to avoid repeated decryption for shared generators
+    secret_cache: dict[Path, bytes] = {}
+
     all_generators_list = Generator.get_machine_generators(
         all_machines,
         flake,
         include_previous_values=include_previous_values,
+        secret_cache=secret_cache,
     )
     requested_generators_list = Generator.get_machine_generators(
         requested_machines,
         flake,
         include_previous_values=include_previous_values,
+        secret_cache=secret_cache,
     )
 
     all_generators = {generator.key: generator for generator in all_generators_list}
@@ -168,7 +177,9 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
-    all_generators = get_generators(machines, full_closure=True)
+    all_generators = get_generators(
+        machines, full_closure=True, include_previous_values=True
+    )
     if isinstance(generators, list):
         # List of generator names - use them exactly as provided
         if len(generators) == 0:
@@ -176,10 +187,12 @@ def run_generators(
         generators_to_run = [g for g in all_generators if g.key.name in generators]
     else:
         # None or single string - use get_generators with closure parameter
+        # include_previous_values=True so prompts can be pre-filled
         generators_to_run = get_generators(
             machines,
             full_closure=full_closure,
             generator_name=generators,
+            include_previous_values=True,
         )
 
     # If prompt function provided, ask all prompts

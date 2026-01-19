@@ -104,9 +104,21 @@ class SecretStore(StoreBase):
         self._run_pass(*pass_call, input=value, check=True)
         return None  # we manage the files outside of the git repo
 
-    def get(self, generator: Generator, name: str) -> bytes:
-        pass_name = str(self.entry_dir(generator, name))
-        return self._run_pass("show", pass_name).stdout
+    def get(
+        self,
+        generator: Generator,
+        name: str,
+        cache: dict[Path, bytes] | None = None,
+    ) -> bytes:
+        # Use entry_dir as cache key (it's a logical path, not filesystem path)
+        cache_key = self.entry_dir(generator, name)
+        if cache is not None and cache_key in cache:
+            return cache[cache_key]
+        pass_name = str(cache_key)
+        value = self._run_pass("show", pass_name).stdout
+        if cache is not None:
+            cache[cache_key] = value
+        return value
 
     def exists(self, generator: Generator, name: str) -> bool:
         pass_name = str(self.entry_dir(generator, name))

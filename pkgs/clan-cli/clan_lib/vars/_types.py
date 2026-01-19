@@ -52,7 +52,12 @@ class StoreBase(ABC):
 
     # get a single fact
     @abstractmethod
-    def get(self, generator: "Generator", name: str) -> bytes:
+    def get(
+        self,
+        generator: "Generator",
+        name: str,
+        cache: dict[Path, bytes] | None = None,
+    ) -> bytes:
         pass
 
     @abstractmethod

@@ -252,6 +252,7 @@ class Generator:
         machine_names: Iterable[str],
         flake: "Flake",
         include_previous_values: bool = False,
+        secret_cache: dict[Path, bytes] | None = None,
     ) -> list["Generator"]:
         """Get all generators for a machine from the flake.
 
@@ -259,6 +260,7 @@ class Generator:
             machine_names: The names of the machines.
             flake: The flake to get the generators from.
             include_previous_values: Whether to include previous values in the generators.
+            secret_cache: Optional cache for decrypted secrets to avoid repeated decryption.
 
         Returns:
             list[Generator]: A list of (unsorted) generators for the machine.
@@ -399,6 +401,7 @@ class Generator:
                         prompt.previous_value = generator.get_previous_value(
                             machine,
                             prompt,
+                            secret_cache=secret_cache,
                         )
 
         return generators
@@ -407,6 +410,7 @@ class Generator:
         self,
         machine: "Machine",
         prompt: Prompt,
+        secret_cache: dict[Path, bytes] | None = None,
     ) -> str | None:
         if not prompt.persist:
             return None
@@ -416,7 +420,7 @@ class Generator:
             return pub_store.get(self, prompt.name).decode()
         sec_store = machine.secret_vars_store
         if sec_store.exists(self, prompt.name):
-            return sec_store.get(self, prompt.name).decode()
+            return sec_store.get(self, prompt.name, cache=secret_cache).decode()
         return None
 
     def final_script_selector(self, machine_name: str) -> str:
@@ -504,6 +508,7 @@ class Generator:
                 prompt.prompt_type,
                 prompt.description if prompt.description != prompt.name else None,
                 self.machines,
+                previous_value=prompt.previous_value,
             )
         return prompt_values
 
