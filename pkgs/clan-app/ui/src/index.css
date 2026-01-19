@@ -7,33 +7,33 @@
 @font-face {
   font-family: "Geist";
   font-weight: 400;
-  src: url(../.fonts/Geist-Regular.woff2) format("woff2");
+  src: url(./assets/fonts/Geist-Regular.woff2) format("woff2");
 }
 @font-face {
   font-family: "Geist";
   font-weight: 500;
-  src: url(../.fonts/Geist-Medium.woff2) format("woff2");
+  src: url(./assets/fonts/Geist-Medium.woff2) format("woff2");
 }
 @font-face {
   font-family: "Geist";
   font-weight: 600;
-  src: url(../.fonts/Geist-SemiBold.woff2) format("woff2");
+  src: url(./assets/fonts/Geist-SemiBold.woff2) format("woff2");
 }
 
 @font-face {
   font-family: "Geist Mono";
   font-weight: 400;
-  src: url(../.fonts/GeistMono-Regular.woff2) format("woff2");
+  src: url(./assets/fonts/GeistMono-Regular.woff2) format("woff2");
 }
 @font-face {
   font-family: "Geist Mono";
   font-weight: 500;
-  src: url(../.fonts/GeistMono-Medium.woff2) format("woff2");
+  src: url(./assets/fonts/GeistMono-Medium.woff2) format("woff2");
 }
 @font-face {
   font-family: "Geist Mono";
   font-weight: 600;
-  src: url(../.fonts/GeistMono-SemiBold.woff2) format("woff2");
+  src: url(./assets/fonts/GeistMono-SemiBold.woff2) format("woff2");
 }
 
 :root {

@@ -94,9 +94,9 @@ mkShell {
     export NODE_PATH="$(pwd)/node_modules"
     export PATH="$NODE_PATH/.bin:$(pwd)/bin:$PATH"
 
-    rm -rf .fonts || true
-    cp -r ${self'.packages.fonts} .fonts
-    chmod -R +w .fonts
+    rm -rf src/assets/fonts
+    cp -r ${self'.packages.fonts} src/assets/fonts
+    chmod -R +w src/assets/fonts
     cp -r ${clan-ts-api}/API.ts src/models/api/clan/client/types.ts
     popd
 
