@@ -4,7 +4,7 @@ import { Typography } from "../Typography/Typography";
 import { Button as KobalteButton } from "@kobalte/core/button";
 
 import styles from "./Button.module.css";
-import Icon, { IconVariant } from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
 import { getInClasses, joinByDash, keepTruthy } from "@/src/util";
 
@@ -18,8 +18,8 @@ export interface ButtonProps
   size?: Size;
   ghost?: boolean;
   children?: JSX.Element;
-  icon?: IconVariant;
-  endIcon?: IconVariant;
+  icon?: string;
+  endIcon?: string;
   loading?: boolean;
   elasticity?: Elasticity;
   in?:
@@ -78,7 +78,7 @@ export const Button = (props: ButtonProps) => {
 
       {local.icon && (
         <Icon
-          icon={local.icon}
+          name={local.icon}
           in={keepTruthy(
             "Button",
             joinByDash("Button", local.hierarchy),
@@ -101,7 +101,7 @@ export const Button = (props: ButtonProps) => {
 
       {local.endIcon && local.children && (
         <Icon
-          icon={local.endIcon}
+          name={local.endIcon}
           in={keepTruthy(
             "Button",
             joinByDash("Button", local.hierarchy),

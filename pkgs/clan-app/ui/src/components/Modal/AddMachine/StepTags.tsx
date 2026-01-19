@@ -82,7 +82,7 @@ export const StepTags = () => {
           footer={
             <div class="flex justify-between">
               <BackButton />
-              <Button hierarchy="primary" type="submit" endIcon="Flash">
+              <Button hierarchy="primary" type="submit" endIcon="flash">
                 Create Machine
               </Button>
             </div>

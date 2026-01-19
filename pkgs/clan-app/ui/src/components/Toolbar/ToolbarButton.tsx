@@ -1,13 +1,13 @@
 import styles from "./Toolbar.module.css";
 import cx from "classnames";
 import { Button } from "@kobalte/core/button";
-import Icon, { IconVariant } from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import type { JSX } from "solid-js";
 import { Tooltip } from "../Tooltip/Tooltip";
 
 interface ToolbarButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  icon: IconVariant;
+  icon: string;
   description: JSX.Element;
   selected?: boolean;
 }
@@ -21,7 +21,7 @@ export const ToolbarButton = (props: ToolbarButtonProps) => {
         })}
         {...props}
       >
-        <Icon icon={props.icon} inverted={!props.selected} />
+        <Icon name={props.icon} inverted={!props.selected} />
       </Button>
     </Tooltip>
   );

@@ -2,7 +2,7 @@ import { onCleanup, onMount } from "solid-js";
 import styles from "./ContextMenu.module.css";
 import { Typography } from "../Typography/Typography";
 import { Divider } from "../Divider/Divider";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 
 export const Menu = (props: {
   x: number;
@@ -77,7 +77,7 @@ export const Menu = (props: {
         >
           <span class="flex items-center gap-2">
             Delete
-            <Icon icon="Trash" font-size="inherit" />
+            <Icon name="trash" font-size="inherit" />
           </span>
         </Typography>
       </li>

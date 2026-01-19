@@ -1,5 +1,5 @@
 import cx from "classnames";
-import Icon, { IconVariant } from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@kobalte/core/button";
 import { Alert as KAlert } from "@kobalte/core/alert";
@@ -7,7 +7,7 @@ import { Show } from "solid-js";
 import styles from "./Alert.module.css";
 
 export interface AlertProps {
-  icon?: IconVariant;
+  icon?: string;
   type: "success" | "error" | "warning" | "info";
   size?: "default" | "s";
   title: string;
@@ -33,7 +33,7 @@ export const Alert = (props: AlertProps) => {
       })}
     >
       {props.icon && (
-        <Icon icon={props.icon} color="inherit" size={iconSize()} />
+        <Icon name={props.icon} color="inherit" size={iconSize()} />
       )}
       <div class={styles.alertContent}>
         <Typography
@@ -57,7 +57,7 @@ export const Alert = (props: AlertProps) => {
           onClick={props.onDismiss}
           aria-label={`Dismiss ${props.type} alert`}
         >
-          <Icon icon="Close" color="primary" size="0.75rem" />
+          <Icon name="close" color="primary" size="0.75rem" />
         </Button>
       )}
     </KAlert>

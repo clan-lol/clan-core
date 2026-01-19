@@ -41,7 +41,7 @@ const ChoiceLocalInstaller = () => {
           <div class="flex justify-start">
             <Button
               hierarchy="secondary"
-              icon="ArrowLeft"
+              icon="arrow-left"
               onClick={() => stepSignal.previous()}
             />
           </div>

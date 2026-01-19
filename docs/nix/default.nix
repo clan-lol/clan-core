@@ -22,7 +22,7 @@ pkgs.stdenv.mkDerivation {
       # Docs directory
       ../../docs
       # Icons needed for the build
-      ../../pkgs/clan-app/ui/icons
+      ../../pkgs/clan-app/ui/src/assets/icons
       # Any other directories that might be referenced for code snippets
       # Add them here as needed based on what mkdocs actually uses
     ];
@@ -61,7 +61,7 @@ pkgs.stdenv.mkDerivation {
     ln -snf ${fira-code}/share/fonts/truetype/FiraCode-VF.ttf ./site/static/
 
     # Copy icons into place
-    cp -af ../pkgs/clan-app/ui/icons ./site/static/
+    cp -af ../pkgs/clan-app/ui/src/assets/icons ./site/static/
   '';
 
   buildPhase = ''

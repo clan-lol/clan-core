@@ -1,7 +1,7 @@
 import { createSignal, JSX, Show } from "solid-js";
 import styles from "./SidebarPane.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Button as KButton } from "@kobalte/core/button";
 import cx from "classnames";
 
@@ -32,7 +32,7 @@ export const SidebarPane = (props: SidebarPaneProps) => {
           {props.title}
         </Typography>
         <KButton onClick={onClose}>
-          <Icon icon="Close" color="primary" size="0.75rem" inverted={true} />
+          <Icon name="close" color="primary" size="0.75rem" inverted={true} />
         </KButton>
       </div>
       <Show when={props.subHeader}>

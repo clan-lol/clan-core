@@ -724,14 +724,14 @@ const MachineGraph: Component = () => {
           <ToolbarButton
             description="Select machine"
             name="Select"
-            icon="Cursor"
+            icon="cursor"
             onClick={() => setToolbarMode({ type: "select" })}
             selected={ui.toolbarMode.type === "select"}
           />
           <ToolbarButton
             description="Create new machine"
             name="new-machine"
-            icon="NewMachine"
+            icon="new-machine"
             onClick={onClickToolbarAdd}
             selected={ui.toolbarMode.type === "create"}
           />
@@ -739,7 +739,7 @@ const MachineGraph: Component = () => {
           <ToolbarButton
             description="Add new Service"
             name="modules"
-            icon="Services"
+            icon="services"
             selected={ui.toolbarMode.type === "service"}
             onClick={() => {
               deactivateMachine();
@@ -747,7 +747,7 @@ const MachineGraph: Component = () => {
             }}
           />
           <ToolbarButton
-            icon="Update"
+            icon="update"
             name="Reload"
             description="Reload machines"
             onClick={async () => await refreshClan()}

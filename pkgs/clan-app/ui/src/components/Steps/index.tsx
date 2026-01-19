@@ -27,7 +27,7 @@ export const NextButton = (props: NextButtonProps) => {
       type="submit"
       hierarchy="primary"
       disabled={!stepSignal.hasNext()}
-      endIcon="ArrowRight"
+      endIcon="arrow-right"
       {...props}
     >
       {props.children || "Next"}
@@ -42,7 +42,7 @@ export const BackButton = (props: BackButtonProps) => {
     <Button
       hierarchy="secondary"
       disabled={!stepSignal.hasPrevious()}
-      icon="ArrowLeft"
+      icon="arrow-left"
       onClick={() => {
         stepSignal.previous();
       }}

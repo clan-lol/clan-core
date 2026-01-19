@@ -2,7 +2,7 @@ import styles from "./MachineStatus.module.css";
 import { Badge } from "@kobalte/core/badge";
 import cx from "classnames";
 import { Component, Match, Show, Switch } from "solid-js";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { MachineStatus } from "@/src/models";
 
@@ -42,7 +42,7 @@ const MachineStatusComponent: Component<{
           )}
           <Show
             when={props.status != "not_installed"}
-            fallback={<Icon icon="Offline" inverted={true} />}
+            fallback={<Icon name="offline" inverted={true} />}
           >
             <div class={styles.indicator} />
           </Show>

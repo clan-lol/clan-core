@@ -1,7 +1,7 @@
 import cx from "classnames";
 import styles from "./NavSection.module.css";
 import { Button } from "@kobalte/core/button";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Typography } from "../Typography/Typography";
 import { Show } from "solid-js";
 
@@ -29,7 +29,7 @@ export const NavSection = (props: NavSectionProps) => {
           </Typography>
         </Show>
       </div>
-      <Icon icon="CaretRight" />
+      <Icon name="caret-right" />
     </Button>
   );
 };

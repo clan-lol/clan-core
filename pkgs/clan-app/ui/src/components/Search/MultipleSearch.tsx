@@ -1,4 +1,4 @@
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Button } from "../Button/Button";
 import styles from "./Search.module.css";
 import { Combobox } from "@kobalte/core/combobox";
@@ -111,7 +111,7 @@ export function SearchMultiple<T extends Option>(
           <>
             {props.headerChildren}
             <div class={styles.inputContainer}>
-              <Icon icon="Search" color="quaternary" />
+              <Icon name="search" color="quaternary" />
               <Combobox.Input
                 ref={(el) => {
                   inputEl = el;
@@ -128,7 +128,7 @@ export function SearchMultiple<T extends Option>(
                 hierarchy="primary"
                 size="s"
                 ghost
-                icon="CloseCircle"
+                icon="close-circle"
                 onClick={() => {
                   state.clear();
                   setInputValue("");

@@ -15,7 +15,7 @@ import { Typography } from "@/src/components/Typography/Typography";
 import { Alert } from "@/src/components/Alert/Alert";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import { Button } from "@/src/components/Button/Button";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { onCleanup, Show, Suspense } from "solid-js";
 import cx from "classnames";
 import usbLogo from "@/logos/usb-stick-min.png?url";
@@ -229,7 +229,7 @@ const ChooseDisk = () => {
                   dense
                   size="s"
                   type="error"
-                  icon="Info"
+                  icon="info"
                   title="You're about to format this drive"
                   description="It will erase all existing data"
                 />
@@ -308,7 +308,7 @@ const FlashDone = () => {
         <div class="flex size-full h-72 w-svw max-w-[30rem] flex-col items-center justify-end bg-inv-4">
           <div class="flex size-full max-w-md flex-col items-center justify-center gap-3 pt-6 fg-inv-1">
             <div class="rounded-full bg-semantic-success-4">
-              <Icon icon="Checkmark" in="WorkflowPanelTitle" />
+              <Icon name="checkmark" in="WorkflowPanelTitle" />
             </div>
             <Typography
               hierarchy="title"

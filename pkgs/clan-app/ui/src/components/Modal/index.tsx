@@ -20,7 +20,7 @@ const modals: Record<string, Component> = mapObjectKeys(
     },
   ),
   ([path]) => {
-    const result = /^.\/(?:([^/]+)\/index\.tsx|([^/]+)\.tsx)$/.exec(path);
+    const result = /^\.\/(?:([^/]+)\/index\.tsx|([^/]+)\.tsx)$/.exec(path);
     const name = result && (result[1] || result[2]);
     if (!name) {
       throw new Error("Failed to extract the modal name from import.meta.glob");

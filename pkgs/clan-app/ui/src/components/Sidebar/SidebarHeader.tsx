@@ -1,5 +1,5 @@
 import styles from "./SidebarHeader.module.css";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { Typography } from "../Typography/Typography";
 import { Component, createSignal, For } from "solid-js";
@@ -37,7 +37,7 @@ const SidebarHeader: Component = () => {
             </Typography>
           </div>
           <DropdownMenu.Icon>
-            <Icon icon={"CaretDown"} inverted={!open()} size="0.75rem" />
+            <Icon name="caret-down" inverted={!open()} size="0.75rem" />
           </DropdownMenu.Icon>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
@@ -47,7 +47,7 @@ const SidebarHeader: Component = () => {
               onSelect={() => showModal({ type: "ClanSettings" })}
             >
               <Icon
-                icon="Settings"
+                name="Settings"
                 size="0.75rem"
                 inverted={true}
                 color="tertiary"
@@ -71,7 +71,7 @@ const SidebarHeader: Component = () => {
                   hierarchy="secondary"
                   ghost
                   size="xs"
-                  icon="Plus"
+                  icon="plus"
                   onClick={() => deactivateClan()}
                 >
                   Add
