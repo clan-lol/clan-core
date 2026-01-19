@@ -1,5 +1,5 @@
 src/models/api/clan/client/types.ts
-app/.fonts
+src/assets/fonts
 
 .vite
 *.css.d.ts

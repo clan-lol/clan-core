@@ -22,7 +22,7 @@ buildNpmPackage (finalAttrs: {
   preBuild = ''
     mkdir -p api
     cp -r ${clan-ts-api}/API.ts src/models/api/clan/client/types.ts
-    cp -r ${fonts} ".fonts"
+    cp -r ${fonts} src/assets/fonts
   '';
 
   # todo figure out why this fails only inside of Nix

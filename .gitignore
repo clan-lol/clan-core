@@ -36,13 +36,6 @@ dist
 # TODO: remove after bug in select is fixed
 select
 
-# Generated files
-pkgs/clan-app/ui/api/API.json
-pkgs/clan-app/ui/api/API.ts
-pkgs/clan-app/ui/api/modules_schemas.json
-pkgs/clan-app/ui/api/schema.json
-pkgs/clan-app/ui/.fonts
-
 # To avoid accidentally committing large files
 # Can be added with `git add -f` after reviewing the filesize
 # Large files should be avoided or stored externally i.e. a gitea release
