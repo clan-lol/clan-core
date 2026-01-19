@@ -17,8 +17,6 @@
         imports = [ self.nixosModules.test-install-machine-without-system ];
 
         clan.core.networking.targetHost = "test-flash-machine";
-        fileSystems."/".device = lib.mkDefault "/dev/vda";
-        boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
         # We don't want our system to define any `vars` generators as these can't
         # be generated as the flake is inside `/nix/store`.
