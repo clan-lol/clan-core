@@ -1,6 +1,7 @@
 {
-  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-  inputs.nixpkgs.follows = "clan-core/nixpkgs";
+  inputs.clan-core.url = "https://__replace__";
+  inputs.nixpkgs.url = "https://__replace__";
+  inputs.clan-core.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs =
     { self, clan-core, ... }:

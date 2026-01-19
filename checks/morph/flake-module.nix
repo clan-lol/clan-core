@@ -25,6 +25,22 @@
       pkgs,
       ...
     }:
+    let
+      clan-core-flake = self.filter {
+        name = "clan-core-flake-filtered";
+        include = [
+          "flake.nix"
+          "flake.lock"
+          "checks"
+          "clanServices"
+          "darwinModules"
+          "flakeModules"
+          "lib"
+          "modules"
+          "nixosModules"
+        ];
+      };
+    in
     {
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
         nixos-test-morph = self.clanLib.test.baseTest {
@@ -60,9 +76,7 @@
           testScript = ''
             start_all()
             actual.fail("cat /etc/testfile")
-            actual.succeed("env CLAN_DIR=${
-              self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake
-            } clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
+            actual.succeed("env CLAN_DIR=${clan-core-flake} clan machines morph test-morph-template --i-will-be-fired-for-using-this --debug --name test-morph-machine")
             assert actual.succeed("cat /etc/testfile") == "morphed"
           '';
         } { inherit pkgs self; };

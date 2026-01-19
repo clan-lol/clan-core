@@ -125,10 +125,24 @@
           {
             nixos-test-update =
               let
+                clan-core-flake = self.filter {
+                  name = "clan-core-flake-filtered";
+                  include = [
+                    "flake.nix"
+                    "flake.lock"
+                    "checks"
+                    "clanServices"
+                    "darwinModules"
+                    "flakeModules"
+                    "lib"
+                    "modules"
+                    "nixosModules"
+                  ];
+                };
                 closureInfo = pkgs.closureInfo {
                   rootPaths = [
                     self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
-                    self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake
+                    clan-core-flake
                     self.clanInternals.machines.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
@@ -170,7 +184,7 @@
                         # Prepare test flake and Nix store
                         flake_dir = prepare_test_flake(
                             temp_dir,
-                            "${self.checks.${pkgs.stdenv.hostPlatform.system}.clan-core-for-checks}",
+                            "${clan-core-flake}",
                             "${closureInfo}"
                         )
                         (flake_dir / ".clan-flake").write_text("")  # Ensure .clan-flake exists
