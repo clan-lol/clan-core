@@ -44,6 +44,7 @@ in
                 --flake ${
                   self.filter {
                     include = [
+                      "flake.nix"
                       "lib"
                       "flakeModules"
                     ];

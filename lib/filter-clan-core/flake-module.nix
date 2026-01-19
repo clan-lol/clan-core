@@ -1,4 +1,4 @@
-{ self, ... }:
+{ self, lib, ... }:
 let
   nixFilter = import ./nix-filter.nix;
 in
@@ -6,14 +6,15 @@ in
   flake.filter =
     {
       name ? "source",
-      include ? [ ],
-      exclude ? [ ],
+      include ? null,
+      exclude ? null,
     }:
-    nixFilter.filter {
-      inherit name exclude;
-      include = include ++ [
-        "flake.nix"
-      ];
-      root = self;
-    };
+    nixFilter.filter (
+      {
+        inherit name;
+        root = self;
+      }
+      // (lib.optionalAttrs (include != null) { include = include; })
+      // (lib.optionalAttrs (exclude != null) { exclude = exclude; })
+    );
 }

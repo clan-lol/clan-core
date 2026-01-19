@@ -18,6 +18,7 @@
       clanCoreWithVendoredDeps = self'.packages.clan-core-flake.override {
         clanCore = self.filter {
           include = [
+            "flake.nix"
             "clanModules"
             "flakeModules"
             "lib"

@@ -118,6 +118,7 @@ rec {
             --flake ${
               self.filter {
                 include = [
+                  "flake.nix"
                   "clanServices"
                   "flakeModules"
                   "inventory.json"
@@ -143,6 +144,7 @@ rec {
             --flake ${
               self.filter {
                 include = [
+                  "flake.nix"
                   "flakeModules"
                   "inventory.json"
                   "lib"
