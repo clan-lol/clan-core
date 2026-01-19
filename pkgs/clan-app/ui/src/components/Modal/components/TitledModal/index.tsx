@@ -1,9 +1,9 @@
 import { FlowComponent } from "solid-js";
 import { Dialog } from "@kobalte/core/dialog";
 import styles from "./TitledModal.module.css";
-import { Typography } from "@/src/components/Typography/Typography";
-import Icon from "@/src/components/Icon";
-import { useUIContext } from "@/src/models";
+import { Typography } from "@/components/Typography/Typography";
+import Icon from "@/components/Icon";
+import { useUIContext } from "@/models";
 
 const TitledModal: FlowComponent<{ title: string }> = (props) => {
   const [, { closeModal }] = useUIContext();

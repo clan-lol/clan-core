@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { SidebarPane } from "@/src/components/Sidebar/SidebarPane";
+import { SidebarPane } from "@/components/Sidebar/SidebarPane";
 import { SidebarSection } from "./SidebarSection";
-import { Divider } from "@/src/components/Divider/Divider";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { TextArea } from "@/src/components/Form/TextArea";
-import { Checkbox } from "@/src/components/Form/Checkbox";
-import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
+import { Divider } from "@/components/Divider/Divider";
+import { TextInput } from "@/components/Form/TextInput";
+import { TextArea } from "@/components/Form/TextArea";
+import { Checkbox } from "@/components/Form/Checkbox";
+import { SidebarSectionForm } from "@/components/Sidebar/SidebarSectionForm";
 import * as v from "valibot";
 import { splitProps } from "solid-js";
-import { Typography } from "@/src/components/Typography/Typography";
-import { MachineTags } from "@/src/components/Form/MachineTags";
+import { Typography } from "@/components/Typography/Typography";
+import { MachineTags } from "@/components/Form/MachineTags";
 import { setValue } from "@modular-forms/solid";
 
 const profiles = {

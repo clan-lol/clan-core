@@ -13,7 +13,7 @@ import {
 import styles from "./Select.module.css";
 import { Typography } from "../Typography/Typography";
 import cx from "classnames";
-import { keepTruthy } from "@/src/util";
+import { keepTruthy } from "@/util";
 
 interface Option {
   value: string;

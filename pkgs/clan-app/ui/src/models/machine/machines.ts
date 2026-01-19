@@ -10,7 +10,7 @@ import {
   MachineDataChange,
 } from "..";
 import { MachineOutput, createMachineFromOutput } from "./machine";
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 
 export type Machines = {
   all: Record<string, Machine>;

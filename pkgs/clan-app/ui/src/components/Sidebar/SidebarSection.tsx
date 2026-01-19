@@ -1,6 +1,6 @@
 import { JSX, Show } from "solid-js";
 import styles from "./SidebarSection.module.css";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 
 interface SidebarSectionProps {
   title: string;

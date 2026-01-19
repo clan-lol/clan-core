@@ -22,15 +22,15 @@ import cx from "classnames";
 import { Portal } from "solid-js/web";
 import { Menu } from "../ContextMenu/ContextMenu";
 import { createMachineMesh, MachineRepr } from "./MachineRepr";
-import ServiceDialog from "@/src/components/MachineGraph/Service";
+import ServiceDialog from "@/components/MachineGraph/Service";
 import {
   useClanContext,
   useMachinesContext,
   useServiceInstancesContext,
-} from "@/src/models";
-import ServiceInstanceDialog from "@/src/components/MachineGraph/ServiceInstance";
-import { isPosition } from "@/src/util";
-import { useUIContext } from "@/src/models/ui";
+} from "@/models";
+import ServiceInstanceDialog from "@/components/MachineGraph/ServiceInstance";
+import { isPosition } from "@/util";
+import { useUIContext } from "@/models/ui";
 
 const MachineGraph: Component = () => {
   let container: HTMLDivElement;

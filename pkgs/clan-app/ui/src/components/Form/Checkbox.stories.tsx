@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import cx from "classnames";
-import { Checkbox, CheckboxProps } from "@/src/components/Form/Checkbox";
+import { Checkbox, CheckboxProps } from "@/components/Form/Checkbox";
 
 const Examples = (props: CheckboxProps) => (
   <div class="flex flex-col gap-8">

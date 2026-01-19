@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     resolve: {
       alias: {
-        "@": new URL(".", import.meta.url).pathname,
+        "@": new URL("src", import.meta.url).pathname,
         "$clan-api-client": new URL(
           "src/models/api/clan/client/" +
             (process.env.VITE_CLAN_API_BASE ? "http" : "rpc"),

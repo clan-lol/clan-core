@@ -1,9 +1,9 @@
 import { Component, createSignal, onMount } from "solid-js";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { Button } from "@/src/components/Button/Button";
-import { Alert } from "@/src/components/Alert/Alert";
+import { TextInput } from "@/components/Form/TextInput";
+import { Button } from "@/components/Button/Button";
+import { Alert } from "@/components/Alert/Alert";
 import TitledModal from "../components/TitledModal";
-import { useClansContext, useUIContext } from "@/src/models";
+import { useClansContext, useUIContext } from "@/models";
 
 const LoadClanDir: Component = () => {
   const [, { closeModal }] = useUIContext();

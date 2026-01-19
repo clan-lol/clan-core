@@ -3,13 +3,13 @@ import {
   Fieldset,
   FieldsetFieldProps,
   FieldsetProps,
-} from "@/src/components/Form/Fieldset";
+} from "@/components/Form/Fieldset";
 import cx from "classnames";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { TextArea } from "@/src/components/Form/TextArea";
-import { Checkbox } from "@/src/components/Form/Checkbox";
+import { TextInput } from "@/components/Form/TextInput";
+import { TextArea } from "@/components/Form/TextArea";
+import { Checkbox } from "@/components/Form/Checkbox";
 import { FieldProps } from "./Field";
-import { HostFileInput } from "@/src/components/Form/HostFileInput";
+import { HostFileInput } from "@/components/Form/HostFileInput";
 
 const FieldsetExamples = (props: FieldsetProps) => (
   <div class="flex flex-col gap-8">

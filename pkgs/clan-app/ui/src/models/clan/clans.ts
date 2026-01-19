@@ -11,7 +11,7 @@ import {
   createClanMetaFromOutput,
   ClanDataChange,
 } from "./clan";
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 
 export type ClansOutput = {
   readonly all: (ClanOutput | ClanMetaOutput)[];

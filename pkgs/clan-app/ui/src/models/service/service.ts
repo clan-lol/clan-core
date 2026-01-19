@@ -2,7 +2,7 @@ import { JSONSchema } from "json-schema-typed/draft-2020-12";
 import { Clan, ServiceInstance } from "..";
 import { ServiceInstanceOutput } from "./instance";
 import { Accessor } from "solid-js";
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 
 export type ServiceOutput = {
   readonly description: string;

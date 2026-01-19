@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { NavSection } from "@/src/components/NavSection/NavSection";
+import { NavSection } from "@/components/NavSection/NavSection";
 
 const meta: Meta<typeof NavSection> = {
   title: "Components/NavSection",

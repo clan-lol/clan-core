@@ -3,7 +3,7 @@ import cx from "classnames";
 import {
   HostFileInput,
   HostFileInputProps,
-} from "@/src/components/Form/HostFileInput";
+} from "@/components/Form/HostFileInput";
 
 const Examples = (props: HostFileInputProps) => (
   <div class="flex flex-col gap-8">

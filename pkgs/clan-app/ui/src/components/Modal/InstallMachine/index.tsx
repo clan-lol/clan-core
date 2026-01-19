@@ -2,14 +2,14 @@ import {
   createStepper,
   StepperProvider,
   useStepper,
-} from "@/src/components/Steps/stepper";
+} from "@/components/Steps/stepper";
 import { Component } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { initialSteps } from "./steps/Initial";
 import { createInstallerSteps } from "./steps/createInstaller";
 import { installSteps } from "./steps/installSteps";
 
-import { MachineContextProvider, Modal, useUIContext } from "@/src/models";
+import { MachineContextProvider, Modal, useUIContext } from "@/models";
 import TitledModal from "../components/TitledModal";
 
 const InstallMachine: Component = () => {

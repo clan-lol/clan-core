@@ -2,7 +2,6 @@ import { defineConfig, mergeConfig } from "vitest/config";
 import viteConfig from "./vite.config";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
-import path from "node:path";
 
 export default defineConfig((configEnv) =>
   mergeConfig(
@@ -12,7 +11,7 @@ export default defineConfig((configEnv) =>
         // The plugin will run tests for the stories defined in your Storybook config
         // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
         storybookTest({
-          configDir: path.resolve(__dirname, ".storybook"),
+          configDir: new URL(".storybook", import.meta.url).pathname,
         }),
       ],
       test: {

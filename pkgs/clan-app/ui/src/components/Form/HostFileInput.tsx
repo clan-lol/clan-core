@@ -8,9 +8,9 @@ import { FieldProps } from "./Field";
 import { Orienter } from "./Orienter";
 import { createSignal, JSX, splitProps } from "solid-js";
 import { Tooltip } from "@kobalte/core/tooltip";
-import { Typography } from "@/src/components/Typography/Typography";
-import { keepTruthy } from "@/src/util";
-import { useSysContext } from "@/src/models";
+import { Typography } from "@/components/Typography/Typography";
+import { keepTruthy } from "@/util";
+import { useSysContext } from "@/models";
 
 export type HostFileInputProps = FieldProps & {
   name: string;

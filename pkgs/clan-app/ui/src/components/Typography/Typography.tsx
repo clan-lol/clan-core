@@ -2,9 +2,9 @@ import { mergeProps, type ValidComponent, type JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import cx from "classnames";
 import styles from "./Typography.module.css";
-import { Color } from "@/src/components/colors";
+import { Color } from "@/components/colors";
 import colorsStyles from "../colors.module.css";
-import { getInClasses } from "@/src/util";
+import { getInClasses } from "@/util";
 
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";

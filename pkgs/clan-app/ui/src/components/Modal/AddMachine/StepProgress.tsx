@@ -1,10 +1,10 @@
 import { Show } from "solid-js";
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import styles from "./AddMachine.module.css";
 import { AddMachineSteps, AddMachineStoreType } from ".";
-import { Loader } from "@/src/components/Loader/Loader";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Alert } from "@/src/components/Alert/Alert";
+import { Loader } from "@/components/Loader/Loader";
+import { Typography } from "@/components/Typography/Typography";
+import { Alert } from "@/components/Alert/Alert";
 import ModalHeading from "../components/ModalHeading";
 
 export const StepProgress = () => {

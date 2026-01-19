@@ -1,9 +1,9 @@
 import styles from "./SidebarBody.module.css";
 import { Accordion } from "@kobalte/core/accordion";
 import Icon from "../Icon";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 import { Component, For, Show } from "solid-js";
-import MachineStatusComponent from "@/src/components/MachineStatus";
+import MachineStatusComponent from "@/components/MachineStatus";
 import { Button } from "../Button/Button";
 import {
   MachineContextProvider,
@@ -13,7 +13,7 @@ import {
   useMachinesContext,
   useServiceInstanceContext,
   useUIContext,
-} from "@/src/models";
+} from "@/models";
 
 const SidebarBody: Component = () => {
   return (

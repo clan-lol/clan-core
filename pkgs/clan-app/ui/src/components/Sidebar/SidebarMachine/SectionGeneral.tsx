@@ -1,11 +1,11 @@
 import * as v from "valibot";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { Divider } from "@/src/components/Divider/Divider";
-import { TextArea } from "@/src/components/Form/TextArea";
+import { TextInput } from "@/components/Form/TextInput";
+import { Divider } from "@/components/Divider/Divider";
+import { TextArea } from "@/components/Form/TextArea";
 import { splitProps } from "solid-js";
-import { SidebarSectionForm } from "@/src/components/Sidebar/SidebarSectionForm";
-import { tooltipText } from "@/src/components/Form";
-import { MachineDataChange, useMachineContext } from "@/src/models";
+import { SidebarSectionForm } from "@/components/Sidebar/SidebarSectionForm";
+import { tooltipText } from "@/components/Form";
+import { MachineDataChange, useMachineContext } from "@/models";
 
 const schema = v.object({
   name: v.pipe(v.string(), v.readonly()),

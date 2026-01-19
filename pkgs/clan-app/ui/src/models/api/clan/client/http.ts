@@ -1,4 +1,4 @@
-import { config } from "@/src/models";
+import { config } from "@/models";
 import { Methods, Body, Header, Response, SuccessResponse } from "./client";
 
 async function call<Method extends Methods>(

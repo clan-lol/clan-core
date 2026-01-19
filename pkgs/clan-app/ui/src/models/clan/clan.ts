@@ -14,7 +14,7 @@ import { createMachinesFromOutputs } from "../machine/machines";
 import { createServicesFromOutputs } from "../service/services";
 import { ServiceOutput } from "../service/service";
 import { createServiceInstances } from "../service/instances";
-import { DeepImmutable, DeepRequired } from "@/src/util";
+import { DeepImmutable, DeepRequired } from "@/util";
 
 export type ClanMember = {
   readonly type: "tag" | "machine";

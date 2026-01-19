@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Divider } from "@/src/components/Divider/Divider";
+import { Divider } from "@/components/Divider/Divider";
 
 const meta: Meta<typeof Divider> = {
   title: "Components/Divider",

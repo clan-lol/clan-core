@@ -1,7 +1,7 @@
 import styles from "./Toolbar.module.css";
 import cx from "classnames";
 import { Button } from "@kobalte/core/button";
-import Icon from "@/src/components/Icon";
+import Icon from "@/components/Icon";
 import type { JSX } from "solid-js";
 import { Tooltip } from "../Tooltip/Tooltip";
 

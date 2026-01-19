@@ -1,7 +1,7 @@
 import styles from "./Tag.module.css";
 
 import cx from "classnames";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 import { createSignal, JSX, mergeProps, Show } from "solid-js";
 
 interface IconActionProps {

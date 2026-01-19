@@ -3,7 +3,7 @@ import {
   getStepStore,
   StepperProvider,
   useStepper,
-} from "@/src/components/Steps/stepper";
+} from "@/components/Steps/stepper";
 import {
   createEffect,
   Show,
@@ -13,19 +13,19 @@ import {
   onCleanup,
   batch,
 } from "solid-js";
-import Icon from "@/src/components/Icon";
+import Icon from "@/components/Icon";
 import { Combobox } from "@kobalte/core/combobox";
-import { Typography } from "@/src/components/Typography/Typography";
+import { Typography } from "@/components/Typography/Typography";
 
 import { createForm, FieldValues } from "@modular-forms/solid";
 import styles from "./ServiceInstance.module.css";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { Button } from "@/src/components/Button/Button";
+import { TextInput } from "@/components/Form/TextInput";
+import { Button } from "@/components/Button/Button";
 import cx from "classnames";
-import { BackButton } from "@/src/components/Steps";
-import { SearchMultiple } from "@/src/components/Search/MultipleSearch";
-import { TagSelect } from "@/src/components/Search/TagSelect";
-import { Tag } from "@/src/components/Tag/Tag";
+import { BackButton } from "@/components/Steps";
+import { SearchMultiple } from "@/components/Search/MultipleSearch";
+import { TagSelect } from "@/components/Search/TagSelect";
+import { Tag } from "@/components/Tag/Tag";
 import {
   ClanMember,
   useClanContext,
@@ -33,7 +33,7 @@ import {
   useUIContext,
   useServiceInstancesContext,
   ToolbarMode,
-} from "@/src/models";
+} from "@/models";
 import { produce, SetStoreFunction, unwrap } from "solid-js/store";
 
 type Role = {

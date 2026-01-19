@@ -1,8 +1,8 @@
 import { Component } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { Dialog } from "@kobalte/core/dialog";
-import { mapObjectKeys } from "@/src/util";
-import { useUIContext } from "@/src/models";
+import { mapObjectKeys } from "@/util";
+import { useUIContext } from "@/models";
 import styles from "./Modal.module.css";
 
 const modals: Record<string, Component> = mapObjectKeys(

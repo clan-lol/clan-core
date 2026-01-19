@@ -1,12 +1,12 @@
-import { SidebarPane } from "@/src/components/Sidebar/SidebarPane";
+import { SidebarPane } from "@/components/Sidebar/SidebarPane";
 import { SectionGeneral } from "./SectionGeneral";
-import { SectionTags } from "@/src/components/Sidebar/SidebarMachine/SectionTags";
-import { SidebarSectionInstall } from "@/src/components/Sidebar/SidebarMachine/SidebarSectionInstall";
+import { SectionTags } from "@/components/Sidebar/SidebarMachine/SectionTags";
+import { SidebarSectionInstall } from "@/components/Sidebar/SidebarMachine/SidebarSectionInstall";
 
 import styles from "./SidebarMachine.module.css";
-import { SectionServices } from "@/src/components/Sidebar/SidebarMachine/SectionServices";
-import { SidebarSectionUpdate } from "@/src/components/Sidebar/SidebarMachine/SidebarSectionUpdate";
-import { useMachineContext } from "@/src/models";
+import { SectionServices } from "@/components/Sidebar/SidebarMachine/SectionServices";
+import { SidebarSectionUpdate } from "@/components/Sidebar/SidebarMachine/SidebarSectionUpdate";
+import { useMachineContext } from "@/models";
 
 export default function SidebarMachine() {
   const [machine, { deactivateMachine }] = useMachineContext();

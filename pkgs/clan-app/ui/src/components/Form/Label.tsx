@@ -1,14 +1,14 @@
 import { mergeProps, Show } from "solid-js";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Tooltip } from "@/src/components/Tooltip/Tooltip";
-import Icon from "@/src/components/Icon";
+import { Typography } from "@/components/Typography/Typography";
+import { Tooltip } from "@/components/Tooltip/Tooltip";
+import Icon from "@/components/Icon";
 import { TextField } from "@kobalte/core/text-field";
 import { Checkbox } from "@kobalte/core/checkbox";
 import { Combobox } from "@kobalte/core/combobox";
 import { Select } from "@kobalte/core/select";
 import styles from "./Label.module.css";
 import cx from "classnames";
-import { getInClasses } from "@/src/util";
+import { getInClasses } from "@/util";
 
 type Size = "default" | "s";
 

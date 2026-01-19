@@ -1,7 +1,7 @@
 import styles from "./TagGroup.module.css";
 import cx from "classnames";
 import { For, mergeProps } from "solid-js";
-import { Tag } from "@/src/components/Tag/Tag";
+import { Tag } from "@/components/Tag/Tag";
 
 interface TagGroupProps {
   labels: string[];

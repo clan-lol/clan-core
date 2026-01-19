@@ -1,25 +1,25 @@
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import { createForm, SubmitHandler, valiForm } from "@modular-forms/solid";
 import * as v from "valibot";
 import { InstallSteps, InstallStoreType } from "..";
-import { Fieldset } from "@/src/components/Form/Fieldset";
-import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { Select } from "@/src/components/Select/Select";
+import { Fieldset } from "@/components/Form/Fieldset";
+import { HostFileInput } from "@/components/Form/HostFileInput";
+import { Select } from "@/components/Select/Select";
 import {
   BackButton,
   NextButton,
   StepFooter,
   StepLayout,
-} from "@/src/components/Steps";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Alert } from "@/src/components/Alert/Alert";
-import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import { Button } from "@/src/components/Button/Button";
-import Icon from "@/src/components/Icon";
+} from "@/components/Steps";
+import { Typography } from "@/components/Typography/Typography";
+import { Alert } from "@/components/Alert/Alert";
+import { LoadingBar } from "@/components/LoadingBar/LoadingBar";
+import { Button } from "@/components/Button/Button";
+import Icon from "@/components/Icon";
 import { onCleanup, Show, Suspense } from "solid-js";
 import cx from "classnames";
-import usbLogo from "@/src/assets/logos/usb-stick-min.png?url";
-import { useSysContext } from "@/src/models";
+import usbLogo from "@/assets/logos/usb-stick-min.png?url";
+import { useSysContext } from "@/models";
 import { createAsync } from "@solidjs/router";
 import ModalHeading from "../../components/ModalHeading";
 

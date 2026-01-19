@@ -1,6 +1,6 @@
-import { NextButton, StepLayout } from "@/src/components/Steps";
+import { NextButton, StepLayout } from "@/components/Steps";
 import * as v from "valibot";
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import {
   clearError,
   createForm,
@@ -13,14 +13,14 @@ import {
 } from "@modular-forms/solid";
 import styles from "./AddMachine.module.css";
 import { AddMachineSteps, AddMachineStoreType } from ".";
-import { Fieldset } from "@/src/components/Form/Fieldset";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { Divider } from "@/src/components/Divider/Divider";
-import { TextArea } from "@/src/components/Form/TextArea";
-import { Select } from "@/src/components/Select/Select";
+import { Fieldset } from "@/components/Form/Fieldset";
+import { TextInput } from "@/components/Form/TextInput";
+import { Divider } from "@/components/Divider/Divider";
+import { TextArea } from "@/components/Form/TextArea";
+import { Select } from "@/components/Select/Select";
 import { Show } from "solid-js";
-import { Alert } from "@/src/components/Alert/Alert";
-import { useMachinesContext } from "@/src/models";
+import { Alert } from "@/components/Alert/Alert";
+import { useMachinesContext } from "@/models";
 import ModalHeading from "../components/ModalHeading";
 
 const PlatformOptions = [

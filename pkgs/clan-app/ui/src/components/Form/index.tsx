@@ -1,4 +1,4 @@
-import { DataSchema } from "@/src/models";
+import { DataSchema } from "@/models";
 import { Maybe } from "@modular-forms/solid";
 
 export const tooltipText = (

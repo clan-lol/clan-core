@@ -1,10 +1,10 @@
 import styles from "./SidebarHeader.module.css";
-import Icon from "@/src/components/Icon";
+import Icon from "@/components/Icon";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { Typography } from "../Typography/Typography";
 import { Component, createSignal, For } from "solid-js";
 import { Button } from "../Button/Button";
-import { useClanContext, useClansContext, useUIContext } from "@/src/models";
+import { useClanContext, useClansContext, useUIContext } from "@/models";
 
 const SidebarHeader: Component = () => {
   const [, { showModal }] = useUIContext();

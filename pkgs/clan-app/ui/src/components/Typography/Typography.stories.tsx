@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
 import { Family, Hierarchy, Typography, Weight } from "./Typography";
 import { Component, For, Show } from "solid-js";
-import { AllColors } from "@/src/components/colors";
+import { AllColors } from "@/components/colors";
 
 interface TypographyExamplesProps {
   weights: Weight[];

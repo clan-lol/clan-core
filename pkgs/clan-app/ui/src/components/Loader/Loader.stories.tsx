@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Loader, LoaderProps } from "@/src/components/Loader/Loader";
+import { Loader, LoaderProps } from "@/components/Loader/Loader";
 
 const LoaderExamples = (props: LoaderProps) => (
   <div class="grid grid-cols-8">

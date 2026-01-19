@@ -10,7 +10,7 @@ import {
   ServiceInstances,
   ServiceInstancesMethods,
 } from "..";
-import { DeepImmutable, DeepRequired, mapObjectValues } from "@/src/util";
+import { DeepImmutable, DeepRequired, mapObjectValues } from "@/util";
 
 export type ServiceInstanceOutput = {
   readonly data: ServiceInstanceDataOutput;

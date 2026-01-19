@@ -1,11 +1,11 @@
 import { Accessor, createSignal, JSX, Match, Setter, Switch } from "solid-js";
 import styles from "./Onboarding.module.css";
-import { Typography } from "@/src/components/Typography/Typography";
-import { Button } from "@/src/components/Button/Button";
-import { Alert } from "@/src/components/Alert/Alert";
+import { Typography } from "@/components/Typography/Typography";
+import { Button } from "@/components/Button/Button";
+import { Alert } from "@/components/Alert/Alert";
 
-import { Divider } from "@/src/components/Divider/Divider";
-import { Logo } from "@/src/components/Logo/Logo";
+import { Divider } from "@/components/Divider/Divider";
+import { Logo } from "@/components/Logo/Logo";
 import {
   createForm,
   getError,
@@ -13,15 +13,15 @@ import {
   SubmitHandler,
   valiForm,
 } from "@modular-forms/solid";
-import { TextInput } from "@/src/components/Form/TextInput";
-import { TextArea } from "@/src/components/Form/TextArea";
-import { Fieldset } from "@/src/components/Form/Fieldset";
+import { TextInput } from "@/components/Form/TextInput";
+import { TextArea } from "@/components/Form/TextArea";
+import { Fieldset } from "@/components/Form/Fieldset";
 import * as v from "valibot";
-import { HostFileInput } from "@/src/components/Form/HostFileInput";
-import { Tooltip } from "@/src/components/Tooltip/Tooltip";
-import { CubeConstruction } from "@/src/components/CubeConstruction/CubeConstruction";
-import { config, useClansContext, useUIContext } from "@/src/models";
-import { useSysContext } from "@/src/models";
+import { HostFileInput } from "@/components/Form/HostFileInput";
+import { Tooltip } from "@/components/Tooltip/Tooltip";
+import { CubeConstruction } from "@/components/CubeConstruction/CubeConstruction";
+import { config, useClansContext, useUIContext } from "@/models";
+import { useSysContext } from "@/models";
 
 type Step = {
   type: "welcome" | "setup" | "creating";

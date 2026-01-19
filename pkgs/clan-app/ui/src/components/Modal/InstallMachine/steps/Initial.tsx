@@ -1,8 +1,8 @@
-import { defineSteps, useStepper } from "@/src/components/Steps/stepper";
+import { defineSteps, useStepper } from "@/components/Steps/stepper";
 import { InstallSteps } from "..";
-import { Button } from "@/src/components/Button/Button";
-import { StepLayout } from "@/src/components/Steps";
-import { NavSection } from "@/src/components/NavSection/NavSection";
+import { Button } from "@/components/Button/Button";
+import { StepLayout } from "@/components/Steps";
+import { NavSection } from "@/components/NavSection/NavSection";
 
 const ChoiceLocalOrRemote = () => {
   const stepSignal = useStepper<InstallSteps>();

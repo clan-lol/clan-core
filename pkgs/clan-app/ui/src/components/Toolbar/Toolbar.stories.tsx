@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Toolbar } from "@/src/components/Toolbar/Toolbar";
+import { Toolbar } from "@/components/Toolbar/Toolbar";
 import { ToolbarButton } from "./ToolbarButton";
 
 const meta: Meta<typeof Toolbar> = {

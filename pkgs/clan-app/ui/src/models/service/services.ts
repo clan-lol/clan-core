@@ -1,7 +1,7 @@
 import { Accessor } from "solid-js";
 import { Clan, Service } from "..";
 import { ServiceOutput, createServiceFromOutput } from "./service";
-import { mapObjectValues } from "@/src/util";
+import { mapObjectValues } from "@/util";
 
 export type Services = {
   all: Record<string, Service>;

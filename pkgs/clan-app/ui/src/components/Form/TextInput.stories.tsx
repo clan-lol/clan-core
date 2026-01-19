@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import cx from "classnames";
-import { TextInput, TextInputProps } from "@/src/components/Form/TextInput";
+import { TextInput, TextInputProps } from "@/components/Form/TextInput";
 import Icon from "../Icon/Icon";
 import { Button } from "@kobalte/core/button";
 

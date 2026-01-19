@@ -1,6 +1,6 @@
-import { BackButton, StepLayout } from "@/src/components/Steps";
+import { BackButton, StepLayout } from "@/components/Steps";
 import * as v from "valibot";
-import { getStepStore, useStepper } from "@/src/components/Steps/stepper";
+import { getStepStore, useStepper } from "@/components/Steps/stepper";
 import {
   createForm,
   setValue,
@@ -9,11 +9,11 @@ import {
 } from "@modular-forms/solid";
 import styles from "./AddMachine.module.css";
 import { AddMachineSteps, AddMachineStoreType } from ".";
-import { Fieldset } from "@/src/components/Form/Fieldset";
-import { MachineTags } from "@/src/components/Form/MachineTags";
-import { Button } from "@/src/components/Button/Button";
-import { useMachinesContext, useUIContext } from "@/src/models";
-import { Modal } from "@/src/models";
+import { Fieldset } from "@/components/Form/Fieldset";
+import { MachineTags } from "@/components/Form/MachineTags";
+import { Button } from "@/components/Button/Button";
+import { useMachinesContext, useUIContext } from "@/models";
+import { Modal } from "@/models";
 import ModalHeading from "../components/ModalHeading";
 
 const TagsSchema = v.object({

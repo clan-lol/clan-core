@@ -1,7 +1,7 @@
 import { JSX } from "solid-js";
 import { useStepper } from "./stepper";
-import { Button, ButtonProps } from "@/src/components/Button/Button";
-import { InstallSteps } from "@/src/components/Modal/InstallMachine";
+import { Button, ButtonProps } from "@/components/Button/Button";
+import { InstallSteps } from "@/components/Modal/InstallMachine";
 import styles from "./Steps.module.css";
 
 interface StepLayoutProps {
