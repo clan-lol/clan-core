@@ -23,12 +23,6 @@ buildNpmPackage (finalAttrs: {
     mkdir -p api
     cp -r ${clan-ts-api}/API.ts src/models/api/clan/client/types.ts
     cp -r ${fonts} ".fonts"
-
-    # only needed for the next couple weeks to make sure this file doesn't make it back into the git history
-    if [[ -f "${./ui}/src/routes/Onboarding/background.jpg" ]]; then
-        echo "background.jpg found, exiting"
-        exit 1
-    fi
   '';
 
   # todo figure out why this fails only inside of Nix
