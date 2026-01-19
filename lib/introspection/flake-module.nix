@@ -26,6 +26,7 @@ in
               self.filter {
                 name = "lib";
                 include = [
+                  "flake.nix"
                   "flakeModules"
                   "lib"
                 ];
