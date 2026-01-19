@@ -30,7 +30,7 @@ import { Orienter } from "@/src/components/Form/Orienter";
 import { Button } from "@/src/components/Button/Button";
 import { Select } from "@/src/components/Select/Select";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { Loader } from "@/src/components/Loader/Loader";
 import { Button as KButton } from "@kobalte/core/button";
 import usbLogo from "@/logos/usb-stick-min.png?url";
@@ -191,7 +191,7 @@ export const ConfigureAddress: Component<{
                 fallback={<NextButton type="submit">Next</NextButton>}
               >
                 <Button
-                  endIcon="ArrowRight"
+                  endIcon="arrow-right"
                   onClick={tryReachable}
                   hierarchy="secondary"
                   loading={loading()}
@@ -260,7 +260,7 @@ const CheckHardware = () => {
                   <Button
                     disabled={updatingHardwareReport()}
                     hierarchy="secondary"
-                    icon="Report"
+                    icon="report"
                     loading={updatingHardwareReport()}
                     in="CheckHardware"
                     onClick={handleUpdateSummary}
@@ -273,7 +273,7 @@ const CheckHardware = () => {
                   <Divider orientation="horizontal" />
                   <Alert
                     size="s"
-                    icon={machineHardwareReport() ? "Checkmark" : "Close"}
+                    icon={machineHardwareReport() ? "checkmark" : "close"}
                     type={machineHardwareReport() ? "info" : "warning"}
                     title={
                       machineHardwareReport()
@@ -529,7 +529,7 @@ const PromptsFields: Component<{
                                       }}
                                     >
                                       <Icon
-                                        icon={
+                                        name={
                                           isCleartext() ? "EyeClose" : "EyeOpen"
                                         }
                                         color="quaternary"
@@ -637,7 +637,7 @@ const InstallSummary = () => {
           footer={
             <div class="flex justify-between">
               <BackButton />
-              <NextButton type="button" onClick={handleInstall} endIcon="Flash">
+              <NextButton type="button" onClick={handleInstall} endIcon="flash">
                 Install
               </NextButton>
             </div>
@@ -735,7 +735,7 @@ const InstallDone = () => {
         <div class="flex size-full h-72 w-svw max-w-[30rem] flex-col items-center justify-center bg-inv-4">
           <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
             <div class="rounded-full bg-semantic-success-4">
-              <Icon icon="Checkmark" in="WorkflowPanelTitle" />
+              <Icon name="checkmark" in="WorkflowPanelTitle" />
             </div>
             <Typography
               hierarchy="title"
@@ -748,7 +748,7 @@ const InstallDone = () => {
             <div class="mt-3 flex w-full justify-center">
               <Button
                 hierarchy="primary"
-                endIcon="Close"
+                endIcon="close"
                 size="s"
                 onClick={() => closeModal()}
               >

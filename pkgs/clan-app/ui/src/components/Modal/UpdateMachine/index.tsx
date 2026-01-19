@@ -14,7 +14,7 @@ import {
 import { InstallStoreType } from "../InstallMachine";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Button } from "@/src/components/Button/Button";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { LoadingBar } from "@/src/components/LoadingBar/LoadingBar";
 import usbLogo from "@/logos/usb-stick-min.png?url";
 import TitledModal from "../components/TitledModal";
@@ -110,7 +110,7 @@ const UpdateDone = () => {
         <div class="flex h-72 w-svw max-w-[30rem] flex-col items-center justify-center bg-inv-4">
           <div class="flex w-full max-w-md flex-col items-center gap-3 py-6 fg-inv-1">
             <div class="rounded-full bg-semantic-success-4">
-              <Icon icon="Checkmark" in="WorkflowPanelTitle" />
+              <Icon name="checkmark" in="WorkflowPanelTitle" />
             </div>
             <Typography
               hierarchy="title"
@@ -123,7 +123,7 @@ const UpdateDone = () => {
             <div class="mt-3 flex w-full justify-center">
               <Button
                 hierarchy="primary"
-                endIcon="Close"
+                endIcon="close"
                 size="s"
                 onClick={() => closeModal()}
               >

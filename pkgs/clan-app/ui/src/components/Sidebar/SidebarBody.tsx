@@ -1,6 +1,6 @@
 import styles from "./SidebarBody.module.css";
 import { Accordion } from "@kobalte/core/accordion";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Component, For, Show } from "solid-js";
 import MachineStatusComponent from "@/src/components/MachineStatus";
@@ -50,7 +50,7 @@ const MachinesSection: Component = () => {
             Your Machines
           </Typography>
           <Icon
-            icon="CaretDown"
+            name="caret-down"
             color="tertiary"
             inverted
             size="0.75rem"
@@ -69,7 +69,7 @@ const MachinesSection: Component = () => {
               <Button
                 hierarchy="primary"
                 size="s"
-                icon="Machine"
+                icon="machine"
                 onClick={() =>
                   showModal({ type: "AddMachine", position: [0, 0] })
                 }
@@ -118,7 +118,7 @@ const MachineSection: Component = () => {
           <MachineStatusComponent status={machine().status} />
         </div>
         <div class="flex w-full flex-row items-center gap-1">
-          <Icon icon="Flash" size="0.75rem" inverted color="tertiary" />
+          <Icon name="flash" size="0.75rem" inverted color="tertiary" />
           <Typography
             hierarchy="label"
             family="mono"
@@ -152,7 +152,7 @@ const ServicesSection: Component = () => {
             Services
           </Typography>
           <Icon
-            icon="CaretDown"
+            name="caret-down"
             color="tertiary"
             inverted
             size="0.75rem"
@@ -198,7 +198,7 @@ export const ServiceInstanceEntry: Component = () => {
               ? instance().data.name
               : `${instance().service.id} (${instance().data.name})`}
           </Typography>
-          <Icon icon="Code" size="0.75rem" inverted color="tertiary" />
+          <Icon name="code" size="0.75rem" inverted color="tertiary" />
         </div>
       </div>
     </a>

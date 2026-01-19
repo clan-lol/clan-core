@@ -9,7 +9,12 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": ["vite/client", "vite-plugin-solid-svg/types-component-solid"],
+    "types": [
+      // vite-plugin-solid-svg needs to be in the front as per:
+      // https://github.com/jfgodoy/vite-plugin-solid-svg/tree/main?tab=readme-ov-file#typescript
+      "vite-plugin-solid-svg/types-component-solid",
+      "vite/client"
+    ],
     "noEmit": true,
     "resolveJsonModule": true,
     "allowJs": true,

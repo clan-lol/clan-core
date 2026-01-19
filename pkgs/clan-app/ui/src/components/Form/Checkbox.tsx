@@ -4,7 +4,7 @@ import {
   Checkbox as KCheckbox,
 } from "@kobalte/core/checkbox";
 
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 
 import cx from "classnames";
 import { Label } from "./Label";
@@ -35,7 +35,7 @@ export const Checkbox = (props: CheckboxProps) => {
 
   const iconChecked = (
     <Icon
-      icon="Checkmark"
+      name="checkmark"
       inverted={local.inverted}
       color="secondary"
       size="100%"
@@ -44,7 +44,7 @@ export const Checkbox = (props: CheckboxProps) => {
 
   const iconUnchecked = (
     <Icon
-      icon="Close"
+      name="close"
       inverted={local.inverted}
       color="secondary"
       size="100%"

@@ -89,7 +89,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
           <Button
             hierarchy="secondary"
             size={labelProps.size}
-            icon="Folder"
+            icon="folder"
             onClick={onSelectFile}
             disabled={rootProps.disabled ?? local.readOnly}
             elasticity={
@@ -136,7 +136,7 @@ export const HostFileInput = (props: HostFileInputProps) => {
               }
               hierarchy="secondary"
               size={labelProps.size}
-              icon="Folder"
+              icon="folder"
               onClick={onSelectFile}
               disabled={rootProps.disabled ?? local.readOnly}
             >

@@ -1,5 +1,5 @@
 import { Select as KSelect, SelectPortalProps } from "@kobalte/core/select";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Orienter } from "../Form/Orienter";
 import { Label, LabelProps } from "../Form/Label";
 import {
@@ -116,7 +116,7 @@ export const Select = (props: SelectProps) => {
       itemComponent={(props) => (
         <KSelect.Item item={props.item} class="flex gap-1 p-2">
           <KSelect.ItemIndicator>
-            <Icon icon="Checkmark" />
+            <Icon name="checkmark" />
           </KSelect.ItemIndicator>
           <KSelect.ItemLabel>
             <Typography
@@ -206,7 +206,7 @@ export const Select = (props: SelectProps) => {
             class={styles.icon}
             data-loading={loading() || undefined}
           >
-            <Icon icon="Expand" color="inherit" />
+            <Icon name="expand" color="inherit" />
           </KSelect.Icon>
         </KSelect.Trigger>
       </Orienter>
@@ -239,7 +239,7 @@ export const Select = (props: SelectProps) => {
                   class={styles.icon}
                   data-loading={loading() || undefined}
                 >
-                  <Icon icon="Expand" color="inherit" />
+                  <Icon name="expand" color="inherit" />
                 </KSelect.Icon>
               </KSelect.Trigger>
             )}

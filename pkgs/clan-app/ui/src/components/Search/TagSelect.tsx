@@ -1,4 +1,4 @@
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import { Typography } from "../Typography/Typography";
 import { For, JSX, Show } from "solid-js";
 import styles from "./TagSelect.module.css";
@@ -37,9 +37,9 @@ export function TagSelect<T extends { name: unknown }>(
         >
           {props.label}
         </Typography>
-        <Icon icon="Info" color="tertiary" inverted size={11} />
+        <Icon name="info" color="tertiary" inverted size={11} />
         <Button
-          icon="Settings"
+          icon="settings"
           hierarchy="primary"
           ghost
           size="xs"
@@ -63,7 +63,7 @@ export function TagSelect<T extends { name: unknown }>(
                 onClick={props.onClick}
               >
                 <div class="flex flex-wrap items-center gap-2 px-2 py-3">
-                  <Icon icon="Search" color="quaternary" inverted />
+                  <Icon name="search" color="quaternary" inverted />
                   <Show when={state.selectedOptions().length === 0}>
                     <Typography
                       color="tertiary"

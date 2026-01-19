@@ -86,7 +86,7 @@ export default function Onboarding(): JSX.Element {
                 <Button
                   hierarchy="secondary"
                   ghost={true}
-                  icon="ArrowLeft"
+                  icon="arrow-left"
                   onClick={() => setStep({ type: "welcome" })}
                 />
                 <Typography hierarchy="headline" size="default" weight="bold">
@@ -167,7 +167,7 @@ export default function Onboarding(): JSX.Element {
                   <Button
                     type="submit"
                     hierarchy="primary"
-                    endIcon="ArrowRight"
+                    endIcon="arrow-right"
                   >
                     Next
                   </Button>
@@ -207,7 +207,7 @@ function Background(): JSX.Element {
           hierarchy="primary"
           ghost
           size="s"
-          icon="Grid"
+          icon="grid"
           onClick={() => showModal({ type: "ListClans" })}
         >
           All Clans
@@ -261,7 +261,7 @@ function Welcome(props: {
       {props.step().error && (
         <Alert
           type="error"
-          icon="Info"
+          icon="info"
           title="Your Clan creation failed"
           description={props.step().error ?? ""}
         />

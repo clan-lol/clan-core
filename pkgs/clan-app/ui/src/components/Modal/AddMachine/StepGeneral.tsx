@@ -93,7 +93,7 @@ export const StepGeneral = () => {
               <Show when={formError()}>
                 <Alert
                   type="error"
-                  icon="WarningFilled"
+                  icon="warning-filled"
                   title="Error"
                   description={formError()}
                 />

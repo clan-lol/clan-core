@@ -1,6 +1,6 @@
 import { Search } from "@/src/components/Search/Search";
 import { Typography } from "@/src/components/Typography/Typography";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { css } from "@linaria/core";
 import {
@@ -67,7 +67,7 @@ const SelectService: Component = () => {
             return (
               <div class="flex items-center justify-between gap-2 overflow-hidden rounded-md px-2 py-1 pr-4">
                 <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-white">
-                  <Icon icon="Code" />
+                  <Icon name="code" />
                 </div>
                 <div class="flex w-full flex-col">
                   <Combobox.ItemLabel class="flex gap-1.5">

@@ -78,7 +78,7 @@ export function SidebarSectionForm<FormValues extends FieldValues>(
                 <Button
                   hierarchy="primary"
                   size="xs"
-                  icon="Checkmark"
+                  icon="checkmark"
                   ghost
                   type="submit"
                 >
@@ -89,7 +89,7 @@ export function SidebarSectionForm<FormValues extends FieldValues>(
               hierarchy="primary"
               ghost
               size="xs"
-              icon={editing() ? "Close" : "Edit"}
+              icon={editing() ? "close" : "edit"}
               onClick={editOrClose}
             />
           </>

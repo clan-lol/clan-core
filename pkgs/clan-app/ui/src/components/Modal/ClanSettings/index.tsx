@@ -156,7 +156,7 @@ const ClanSettings: Component = () => {
             <Button
               hierarchy="primary"
               size="s"
-              icon="Trash"
+              icon="trash"
               disabled={removeDisabled()}
               onClick={onRemove}
             >

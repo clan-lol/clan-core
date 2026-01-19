@@ -2,7 +2,7 @@ import { FlowComponent } from "solid-js";
 import { Dialog } from "@kobalte/core/dialog";
 import styles from "./TitledModal.module.css";
 import { Typography } from "@/src/components/Typography/Typography";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { useUIContext } from "@/src/models";
 
 const TitledModal: FlowComponent<{ title: string }> = (props) => {
@@ -14,7 +14,7 @@ const TitledModal: FlowComponent<{ title: string }> = (props) => {
           {props.title}
         </Typography>
         <Dialog.CloseButton on:click={() => closeModal()}>
-          <Icon icon="Close" size="0.75rem" />
+          <Icon name="close" size="0.75rem" />
         </Dialog.CloseButton>
       </div>
       {props.children}

@@ -1,7 +1,7 @@
 import { mergeProps, Show } from "solid-js";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Tooltip } from "@/src/components/Tooltip/Tooltip";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { TextField } from "@kobalte/core/text-field";
 import { Checkbox } from "@kobalte/core/checkbox";
 import { Combobox } from "@kobalte/core/combobox";
@@ -68,7 +68,7 @@ export const Label = (props: LabelProps) => {
               description={local.tooltip}
             >
               <Icon
-                icon="Info"
+                name="info"
                 color="tertiary"
                 inverted={local.inverted}
                 size={local.size == "default" ? "0.85em" : "0.75rem"}

@@ -28,7 +28,14 @@ export default defineConfig(({ mode }) => {
           presets: ["@babel/preset-typescript", "solid"],
         },
       }),
-      solidSvg(),
+      solidSvg({
+        svgo: {
+          enabled: true,
+          svgoConfig: {
+            plugins: ["removeXMLNS"],
+          },
+        },
+      }),
       patchCssModules({ generateSourceTypes: true }),
     ],
     server: {

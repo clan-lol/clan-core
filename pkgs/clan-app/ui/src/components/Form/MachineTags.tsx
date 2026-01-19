@@ -8,7 +8,7 @@ import {
   Show,
   splitProps,
 } from "solid-js";
-import Icon from "../Icon/Icon";
+import Icon from "../Icon";
 import cx from "classnames";
 import { Typography } from "@/src/components/Typography/Typography";
 import { Tag } from "@/src/components/Tag/Tag";
@@ -108,7 +108,7 @@ export const MachineTags = (props: MachineTagsProps) => {
             </Typography>
           </Combobox.ItemLabel>
           <Combobox.ItemIndicator class={styles.itemIndicator}>
-            <Icon icon="Checkmark" inverted={inverted} />
+            <Icon name="checkmark" inverted={inverted} />
           </Combobox.ItemIndicator>
         </Combobox.Item>
       );
@@ -227,8 +227,8 @@ export const MachineTags = (props: MachineTagsProps) => {
                       props.disabled ||
                       props.readOnly ? undefined : (
                         <Icon
+                          name="close"
                           role="button"
-                          icon={"Close"}
                           size="0.5rem"
                           inverted={inverted}
                           onClick={() =>
@@ -249,7 +249,7 @@ export const MachineTags = (props: MachineTagsProps) => {
               <Show when={!props.readOnly}>
                 <Combobox.Trigger class={styles.trigger}>
                   <Icon
-                    icon="Tag"
+                    name="tag"
                     color="secondary"
                     inverted={props.inverted}
                     in={keepTruthy(

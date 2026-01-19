@@ -13,7 +13,7 @@ import {
   onCleanup,
   batch,
 } from "solid-js";
-import Icon from "@/src/components/Icon/Icon";
+import Icon from "@/src/components/Icon";
 import { Combobox } from "@kobalte/core/combobox";
 import { Typography } from "@/src/components/Typography/Typography";
 
@@ -161,7 +161,7 @@ const ConfigureServiceInstance = () => {
     <Form onSubmit={onSubmit}>
       <div class={cx(styles.header, styles.backgroundAlt)}>
         <div class="overflow-hidden rounded-sm">
-          <Icon icon="Services" size={36} inverted />
+          <Icon name="services" size={36} inverted />
         </div>
         <div class="flex flex-col">
           <Typography hierarchy="body" size="s" weight="medium" inverted>
@@ -183,7 +183,7 @@ const ConfigureServiceInstance = () => {
           </Field>
         </div>
         <Button
-          icon="Close"
+          icon="close"
           ghost
           size="s"
           in="ConfigureService"
@@ -201,7 +201,7 @@ const ConfigureServiceInstance = () => {
                     inverted
                     icon={(tag) => (
                       <Icon
-                        icon={member.type === "machine" ? "Machine" : "Tag"}
+                        name={member.type === "machine" ? "machine" : "tag"}
                         size="0.5rem"
                         inverted={tag.inverted}
                       />
@@ -289,8 +289,8 @@ const ConfigureRole = () => {
             renderItem={(item, opts) => (
               <div class={cx("flex w-full items-center gap-2 px-3 py-2")}>
                 <Combobox.ItemIndicator>
-                  <Show when={opts.selected} fallback={<Icon icon="Code" />}>
-                    <Icon icon="Checkmark" color="primary" inverted />
+                  <Show when={opts.selected} fallback={<Icon name="code" />}>
+                    <Icon name="checkmark" color="primary" inverted />
                   </Show>
                 </Combobox.ItemIndicator>
                 <Combobox.ItemLabel class="flex items-center gap-2">
@@ -318,7 +318,7 @@ const ConfigureRole = () => {
                   </Show>
                 </Combobox.ItemLabel>
                 <Icon
-                  icon={item.type === "machine" ? "Machine" : "Tag"}
+                  name={item.type === "machine" ? "Machine" : "Tag"}
                   color="quaternary"
                   inverted
                   in="ConfigureRole"

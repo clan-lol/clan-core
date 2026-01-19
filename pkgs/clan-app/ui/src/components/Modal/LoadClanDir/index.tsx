@@ -52,7 +52,7 @@ const LoadClanDir: Component = () => {
     <TitledModal title="Select existing Clan">
       <form onSubmit={handleSubmit} class="flex flex-col gap-4 bg-white p-4">
         {error() && (
-          <Alert type="error" icon="Info" title="Error" description={error()} />
+          <Alert type="error" icon="info" title="Error" description={error()} />
         )}
 
         <TextInput
