@@ -26,7 +26,7 @@ direnv: export +AR +AS +CC +CLAN_CORE_PATH +CONFIG_SHELL +CXX +DETERMINISTIC_BUI
 Once that has loaded, you can run the local dev environment by running:
 
 ```
-$ clan-app
+$ clan-dev
 ```
 
 This runs the UI as a standalone app, which is a webview app.
@@ -34,7 +34,7 @@ This runs the UI as a standalone app, which is a webview app.
 You can also run
 
 ```
-$ clan-app browser
+$ clan-dev -b
 ```
 
 Which runs the UI in your default browser.
@@ -59,13 +59,13 @@ you will need to update the snapshots with `npm run test-storybook-update-snapsh
 gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
 
 # Start the application with the debugger attached
-GTK_DEBUG=interactive clan-app
+GTK_DEBUG=interactive clan-dev
 ```
 
 Debugging crashes in the `webview` library can be done by executing:
 
 ```bash
-$ ./pygdb.sh ./bin/clan-app
+$ ./pygdb.sh ./bin/clan-dev
 ```
 
 I recommend creating the file `.local.env` with the content:
@@ -81,5 +81,5 @@ where `WEBVIEW_LIB_DIR` points to a local checkout of the webview lib source, th
 To activate profiling you can run
 
 ```bash
-CLAN_CLI_PERF=1 clan-app
+CLAN_CLI_PERF=1 clan-dev
 ```
