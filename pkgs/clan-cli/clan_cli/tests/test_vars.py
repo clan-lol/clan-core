@@ -866,16 +866,22 @@ def test_prompt_prefill_on_regeneration(
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
 
     # Configure first prompt - persisted so it can be re-used
-    my_generator["prompts"]["prompt1"]["description"] = "First prompt"
-    my_generator["prompts"]["prompt1"]["persist"] = True
-    my_generator["prompts"]["prompt1"]["type"] = "line"
-    my_generator["files"]["prompt1"]["secret"] = False
+    my_generator["prompts"]["10_prompt1"]["description"] = "First prompt"
+    my_generator["prompts"]["10_prompt1"]["persist"] = True
+    my_generator["prompts"]["10_prompt1"]["type"] = "line"
+    my_generator["files"]["10_prompt1"]["secret"] = False
 
     # Configure a secret prompt (starts as single-line hidden)
-    my_generator["prompts"]["secret_prompt"]["description"] = "Secret value"
-    my_generator["prompts"]["secret_prompt"]["persist"] = True
-    my_generator["prompts"]["secret_prompt"]["type"] = "hidden"
-    my_generator["files"]["secret_prompt"]["secret"] = True
+    my_generator["prompts"]["20_secret_prompt"]["description"] = "Secret value"
+    my_generator["prompts"]["20_secret_prompt"]["persist"] = True
+    my_generator["prompts"]["20_secret_prompt"]["type"] = "hidden"
+    my_generator["files"]["20_secret_prompt"]["secret"] = True
+
+    # Configure a multiline prompt for testing backspace across newlines
+    my_generator["prompts"]["30_multiline_prompt"]["description"] = "Multiline input"
+    my_generator["prompts"]["30_multiline_prompt"]["persist"] = True
+    my_generator["prompts"]["30_multiline_prompt"]["type"] = "multiline"
+    my_generator["files"]["30_multiline_prompt"]["secret"] = False
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
@@ -903,6 +909,19 @@ def test_prompt_prefill_on_regeneration(
     child.sendline("secret123")
     child.expect("Confirm")
     child.sendline("secret123")
+    # Multiline prompt - enter two lines with arrow keys interspersed (should be ignored)
+    # Arrow key escape sequences: Up=\x1b[A, Down=\x1b[B, Right=\x1b[C, Left=\x1b[D
+    child.expect("Multiline input")
+    child.send("li")
+    child.send("\x1b[A")  # Up arrow - should be ignored
+    child.send("ne")
+    child.send("\x1b[D")  # Left arrow - should be ignored
+    child.sendline("1")  # Complete "line1" and press Enter
+    child.send("\x1b[B")  # Down arrow - should be ignored
+    child.send("line")
+    child.send("\x1b[C")  # Right arrow - should be ignored
+    child.send("2")
+    child.send("\x04")  # Ctrl-D to finish
     child.expect(pexpect.EOF)
     child.close()
     assert child.exitstatus == 0, f"First generation failed: {child.before}"
@@ -912,16 +931,19 @@ def test_prompt_prefill_on_regeneration(
     in_repo_store = in_repo.VarsStore(flake=flake_obj)
     sops_store = sops.SecretStore(flake=flake_obj)
     generator = Generator("my_generator", machines=["my_machine"], _flake=flake_obj)
-    assert in_repo_store.get(generator, "prompt1").decode() == "initial_value"
-    assert sops_store.get(generator, "secret_prompt").decode() == "secret123"
+    assert in_repo_store.get(generator, "10_prompt1").decode() == "initial_value"
+    assert sops_store.get(generator, "20_secret_prompt").decode() == "secret123"
+    assert (
+        in_repo_store.get(generator, "30_multiline_prompt").decode() == "line1\nline2"
+    )
 
     # Now extend the generator with a second prompt and change secret to multiline
-    my_generator["prompts"]["prompt2"]["description"] = "Second prompt"
-    my_generator["prompts"]["prompt2"]["persist"] = True
-    my_generator["prompts"]["prompt2"]["type"] = "line"
-    my_generator["files"]["prompt2"]["secret"] = False
-    # Change secret_prompt to multiline-hidden
-    my_generator["prompts"]["secret_prompt"]["type"] = "multiline-hidden"
+    my_generator["prompts"]["15_prompt2"]["description"] = "Second prompt"
+    my_generator["prompts"]["15_prompt2"]["persist"] = True
+    my_generator["prompts"]["15_prompt2"]["type"] = "line"
+    my_generator["files"]["15_prompt2"]["secret"] = False
+    # Change 20_secret_prompt to multiline-hidden
+    my_generator["prompts"]["20_secret_prompt"]["type"] = "multiline-hidden"
     flake.refresh()
 
     # Second generation:
@@ -959,25 +981,37 @@ def test_prompt_prefill_on_regeneration(
     child.sendline("secret_line1")
     child.sendline("secret_line2")
     child.send("\x04")  # Ctrl-D to finish confirmation
+    # Multiline prompt - test backspace across newlines
+    # Pre-filled: "line1\nline2" (cursor at end of "line2")
+    # Backspace 6 times: delete "line2" (5 chars) + newline (1 char)
+    child.expect("Multiline input")
+    child.send("\x7f" * 6)  # DEL to delete "line2" + newline
+    child.sendline("modified")  # Type new text
+    child.send("\x04")  # Ctrl-D to finish
     child.expect(pexpect.EOF)
     child.close()
     assert child.exitstatus == 0, f"Second generation failed: {child.before}"
 
     # Verify that the first prompt value is preserved (user pressed enter on prefilled)
-    assert in_repo_store.get(generator, "prompt1").decode() == "initial_value", (
+    assert in_repo_store.get(generator, "10_prompt1").decode() == "initial_value", (
         "First prompt value should be preserved when user presses enter"
     )
 
     # Verify that the second prompt has the new value
-    assert in_repo_store.get(generator, "prompt2").decode() == "second_value", (
+    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
         "Second prompt should have the newly entered value"
     )
 
     # Verify multiline secret value
     assert (
-        sops_store.get(generator, "secret_prompt").decode()
+        sops_store.get(generator, "20_secret_prompt").decode()
         == "secret_line1\nsecret_line2"
     ), "Secret prompt should have multiline value"
+
+    # Verify backspace across newlines worked in multiline prompt
+    assert (
+        in_repo_store.get(generator, "30_multiline_prompt").decode() == "line1modified"
+    ), "Backspace should be able to delete across newline boundaries in multiline input"
 
     # Third generation:
     # - prompt1: delete pre-filled value with backspace and enter new value
@@ -1010,23 +1044,26 @@ def test_prompt_prefill_on_regeneration(
     # Secret prompt (multiline-hidden) shows marker, Ctrl-D to keep previous value
     child.expect("Enter multiple lines")
     child.send("\x04")  # Ctrl-D to keep previous value
+    # Multiline prompt - keep previous value
+    child.expect("Multiline input")
+    child.send("\x04")  # Ctrl-D to keep previous value
     child.expect(pexpect.EOF)
     child.close()
     assert child.exitstatus == 0, f"Third generation failed: {child.before}"
 
     # Verify that the first prompt value was changed
-    assert in_repo_store.get(generator, "prompt1").decode() == "modified_value", (
+    assert in_repo_store.get(generator, "10_prompt1").decode() == "modified_value", (
         "First prompt value should be modified after backspace and new input"
     )
 
     # Verify that the second prompt value is preserved
-    assert in_repo_store.get(generator, "prompt2").decode() == "second_value", (
+    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
         "Second prompt value should be preserved when user presses enter"
     )
 
     # Verify multiline secret value is preserved
     assert (
-        sops_store.get(generator, "secret_prompt").decode()
+        sops_store.get(generator, "20_secret_prompt").decode()
         == "secret_line1\nsecret_line2"
     ), "Secret prompt multiline value should be preserved when user presses Ctrl-D"
 
