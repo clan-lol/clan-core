@@ -23,7 +23,7 @@ export type ServiceInstance = Omit<ServiceInstanceOutput, "data"> & {
   readonly isActive: boolean;
 };
 
-// FIXE: all properties should be optional,
+// FIXME: all properties should be optional,
 // backend should figure out filling in missing data
 export type ServiceInstanceDataChange = {
   name: string;
