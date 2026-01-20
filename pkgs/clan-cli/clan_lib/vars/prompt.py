@@ -18,6 +18,7 @@ CTRL_D_ASCII = 4  # EOF character
 CTRL_C_ASCII = 3  # Interrupt character
 DEL_ASCII = 127  # Delete character
 BACKSPACE_ASCII = 8  # Backspace character
+ESC_ASCII = 27  # Escape character (starts escape sequences like arrow keys)
 
 
 class PromptType(enum.Enum):
@@ -120,6 +121,16 @@ def get_input(multiline: bool, hidden: bool, previous_value: str | None = None) 
             if ord(char) == CTRL_C_ASCII:
                 raise KeyboardInterrupt
 
+            # Ignore escape sequences (arrow keys, etc.)
+            # Arrow keys send sequences like: ESC [ A (up), ESC [ B (down), etc.
+            if ord(char) == ESC_ASCII:
+                next_char = sys.stdin.read(1)
+                if next_char == "[":
+                    # CSI sequence - read one more char to complete it
+                    sys.stdin.read(1)
+                # Ignore the entire escape sequence
+                continue
+
             # Handle the "keep previous value" marker for hidden input
             if showing_previous_marker:
                 # Clear the marker from display
@@ -164,6 +175,16 @@ def get_input(multiline: bool, hidden: bool, previous_value: str | None = None) 
                     # Erase character on screen if not hidden
                     if not hidden:
                         sys.stdout.write("\b \b")
+                        sys.stdout.flush()
+                elif lines:
+                    # At beginning of line but there are previous lines
+                    # Go back to the end of the previous line
+                    current_line = list(lines.pop())
+                    if not hidden:
+                        # Move cursor up, go to start of line, rewrite content
+                        sys.stdout.write("\x1b[A\r")  # Up one line, carriage return
+                        sys.stdout.write("".join(current_line))  # Rewrite line content
+                        sys.stdout.write("\x1b[K")  # Clear to end of line
                         sys.stdout.flush()
             # Regular character
             else:
