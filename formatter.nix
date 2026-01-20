@@ -9,7 +9,6 @@
 
       treefmt.programs.mypy.enable = true;
       treefmt.programs.nixfmt.enable = true;
-      treefmt.programs.nixfmt.package = pkgs.nixfmt-rfc-style;
       treefmt.programs.deadnix.enable = true;
       treefmt.programs.sizelint.enable = true;
       treefmt.programs.sizelint.failOnWarn = true;
