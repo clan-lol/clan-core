@@ -10,16 +10,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check org membership and label PR
+        # Use env for all interpolations to prevent shell injection attacks
         env:
-          GITEA_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          GITEA_TOKEN: ${{ secrets.CI_BOT_LABEL_TOKEN }}
           PR_AUTHOR: ${{ gitea.event.pull_request.user.login }}
           PR_NUMBER: ${{ gitea.event.pull_request.number }}
         run: |
+          set -e
+          # Check org membership (returns 200 for member, 404 for non-member)
           status=$(nix run --inputs-from . nixpkgs#curl -- -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: token $GITEA_TOKEN" \
             "https://git.clan.lol/api/v1/orgs/clan/members/$PR_AUTHOR")
 
-          if [ "$status" = "404" ]; then
+          if [ "$status" = "200" ]; then
+            echo "User $PR_AUTHOR is an org member, skipping label"
+          elif [ "$status" = "404" ]; then
             echo "User $PR_AUTHOR is not an org member, adding label"
             nix run --inputs-from . nixpkgs#curl -- -X POST \
               -H "Authorization: token $GITEA_TOKEN" \
@@ -28,5 +33,6 @@ jobs:
               "https://git.clan.lol/api/v1/repos/clan/clan-core/issues/$PR_NUMBER/labels"
             echo "Label added successfully"
           else
-            echo "User $PR_AUTHOR is an org member (status: $status), skipping label"
+            echo "Unexpected status $status when checking membership for $PR_AUTHOR"
+            exit 1
           fi
