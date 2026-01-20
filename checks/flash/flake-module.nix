@@ -44,6 +44,20 @@
       ...
     }:
     let
+      clan-core-flake = self.filter {
+        name = "clan-core-flake-filtered";
+        include = [
+          "flake.nix"
+          "flake.lock"
+          "checks"
+          "clanServices"
+          "darwinModules"
+          "flakeModules"
+          "lib"
+          "modules"
+          "nixosModules"
+        ];
+      };
       nixosConfig = self.nixosConfigurations."test-flash-machine-${pkgs.stdenv.hostPlatform.system}";
       #extraSystemConfigJSON = ''{"i18n": {"defaultLocale": "de_DE.UTF-8"}, "console": {"keyMap": "de"}, "services": {"xserver": {"xkb": {"layout": "de"}}}, "users": {"users": {"root": {"openssh": {"authorizedKeys": {"keys": ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target\n"]}}}}}}'';
       extraSystemConfig = {
@@ -153,7 +167,7 @@
               #   we cannot setup loop devices for the mount
               testScript = ''
                 start_all()
-                flake_dir = "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}"
+                flake_dir = "${clan-core-flake}"
                 machine.succeed("echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIRWUusawhlIorx7VFeQJHmMkhl9X3QpnvOdhnV/bQNG root@target' > ./test_id_ed25519.pub")
                 # Some distros like to automount disks with spaces
                 machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdc && mount /dev/vdc "/mnt/with spaces"')

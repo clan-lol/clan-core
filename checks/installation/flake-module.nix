@@ -149,9 +149,23 @@
       ...
     }:
     let
+      clan-core-flake = self.filter {
+        name = "clan-core-flake-filtered";
+        include = [
+          "flake.nix"
+          "flake.lock"
+          "checks"
+          "clanServices"
+          "darwinModules"
+          "flakeModules"
+          "lib"
+          "modules"
+          "nixosModules"
+        ];
+      };
       closureInfo = pkgs.closureInfo {
         rootPaths = [
-          self.packages.${pkgs.stdenv.hostPlatform.system}.clan-core-flake
+          clan-core-flake
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
@@ -284,7 +298,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
+                      "${clan-core-flake}",
                       "${closureInfo}"
                   )
 
@@ -376,7 +390,7 @@
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
                       temp_dir,
-                      "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
+                      "${clan-core-flake}",
                       "${closureInfo}"
                   )
 

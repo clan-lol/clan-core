@@ -98,6 +98,22 @@ in
 
       # the test's flake.nix with locked clan-core input
       flakeForSandbox =
+        let
+          clan-core-flake = self.filter {
+            name = "clan-core-flake-filtered";
+            include = [
+              "flake.nix"
+              "flake.lock"
+              "checks"
+              "clanServices"
+              "darwinModules"
+              "flakeModules"
+              "lib"
+              "modules"
+              "nixosModules"
+            ];
+          };
+        in
         hostPkgs.runCommand "offline-flake-for-test-${config.name}"
           {
             nativeBuildInputs = [ hostPkgs.nix ];
@@ -105,19 +121,15 @@ in
           ''
             cp -r ${config.clan.directory} $out
             chmod +w -R $out
-            substituteInPlace $out/flake.nix \
-              --replace-fail \
-                "https://git.clan.lol/clan/clan-core/archive/main.tar.gz" \
-                "${clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-core-flake}"
 
             # Create a proper lock file for the test flake
             export HOME=$(mktemp -d)
             nix flake lock $out \
               --extra-experimental-features 'nix-command flakes' \
-              --override-input clan-core ${
-                clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-core-flake
-              } \
-              --override-input nixpkgs ${clan-core.inputs.nixpkgs}
+              --override-input nixpkgs ${clan-core.inputs.nixpkgs} \
+              --override-input clan-core ${clan-core-flake} \
+              --override-input clan-core/flake-parts ${clan-core.inputs.flake-parts} \
+              --override-input clan-core/treefmt-nix ${clan-core.inputs.treefmt-nix}
           '';
     in
     {
