@@ -13,6 +13,7 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.graph import requested_closure
+from clan_lib.vars.prompt import ask
 from clan_lib.vars.secret_modules import sops
 
 log = logging.getLogger(__name__)
@@ -145,13 +146,46 @@ strategies (e.g., interactive CLI, GUI, or programmatic).
 """
 
 
+def _default_prompt_func(auto_accept_prompts: bool) -> PromptFunc:
+    """Create a prompt function that optionally auto-accepts previous values.
+
+    Args:
+        auto_accept_prompts: If True, use previous values without asking when available.
+
+    Returns:
+        A prompt function suitable for run_generators.
+
+    """
+
+    def prompt_func(g: Generator) -> dict[str, str]:
+        prompt_values: dict[str, str] = {}
+        for prompt in g.prompts:
+            # Auto-accept if enabled and previous value exists
+            if auto_accept_prompts and prompt.previous_value is not None:
+                prompt_values[prompt.name] = prompt.previous_value
+            else:
+                # Ask interactively
+                var_id = f"{g.name}/{prompt.name}"
+                prompt_values[prompt.name] = ask(
+                    var_id,
+                    prompt.prompt_type,
+                    prompt.description if prompt.description != prompt.name else None,
+                    g.machines,
+                    previous_value=prompt.previous_value,
+                )
+        return prompt_values
+
+    return prompt_func
+
+
 @API.register
 def run_generators(
     machines: list[Machine],
     generators: str | list[str] | None = None,
     full_closure: bool = False,
-    prompt_values: dict[str, dict[str, str]] | PromptFunc = lambda g: g.ask_prompts(),
+    prompt_values: dict[str, dict[str, str]] | PromptFunc | None = None,
     no_sandbox: bool = False,
+    auto_accept_prompts: bool = False,
 ) -> None:
     """Run the specified generators for machines.
 
@@ -167,7 +201,11 @@ def run_generators(
             Only used when generators is None or a string.
         prompt_values: A dictionary mapping generator names to their prompt values,
             or a function that returns prompt values for a generator.
+            If None, uses the default prompt function.
         no_sandbox: Whether to disable sandboxing when executing the generator.
+        auto_accept_prompts: If True, automatically use previous prompt values when
+            available instead of asking interactively. Only applies when prompt_values
+            is None (using default prompt function).
 
     Raises:
         ClanError: If the machine or generator is not found, or if there are issues with
@@ -195,9 +233,15 @@ def run_generators(
             include_previous_values=True,
         )
 
-    # If prompt function provided, ask all prompts
+    # Handle prompt values - can be None, callable, or dict
     # TODO: make this more lazy and ask for every generator on execution
-    if callable(prompt_values):
+    if prompt_values is None:
+        # Use default prompt function with auto_accept_prompts setting
+        prompt_func = _default_prompt_func(auto_accept_prompts)
+        prompt_values = {
+            generator.name: prompt_func(generator) for generator in generators_to_run
+        }
+    elif callable(prompt_values):
         prompt_values = {
             generator.name: prompt_values(generator) for generator in generators_to_run
         }

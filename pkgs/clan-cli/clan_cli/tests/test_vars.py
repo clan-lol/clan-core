@@ -841,19 +841,20 @@ def test_prompt_prefill_on_regeneration(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
 ) -> None:
-    """Test that existing prompt values are pre-filled on regeneration.
+    """Test prompt handling: pre-fill, editing, arrow key handling, and auto-accept.
 
-    When a maintainer adds new prompts to a generator and regeneration is triggered,
-    the system should:
-    1. Pre-fill existing prompts with their previous values
-    2. Allow users to press enter to keep the previous value
-    3. Only require input for the new prompts
+    This test covers:
+    1. Pre-filling existing prompts with previous values on regeneration
+    2. Keeping previous values by pressing Enter
+    3. Editing values with backspace (including across newlines in multiline)
+    4. Arrow keys being ignored (not breaking input)
+    5. Auto-accepting existing prompts when running without --regenerate
 
-    This test:
-    1. Creates a generator with one prompt and generates
-    2. Extends the generator with a second prompt
-    3. Regenerates with Enter for the first prompt (keeping previous value)
-    4. Verifies the first prompt retains its original value
+    Test flow:
+    - First gen: Enter initial values for prompt1, secret_prompt, multiline_prompt
+    - Second gen (--regenerate): Add prompt2, test multiline backspace across newlines
+    - Third gen (--regenerate): Test editing prompt1 with backspace
+    - Fourth gen (NO --regenerate): Add prompt3, verify auto-accept of existing prompts
     """
     flake = flake_with_sops
     # Add clan_cli's parent to PYTHONPATH so subprocess can find it
@@ -1066,6 +1067,50 @@ def test_prompt_prefill_on_regeneration(
         sops_store.get(generator, "20_secret_prompt").decode()
         == "secret_line1\nsecret_line2"
     ), "Secret prompt multiline value should be preserved when user presses Ctrl-D"
+
+    # Fourth generation: Test auto-accept without --regenerate
+    # Add a new prompt to trigger regeneration, but run WITHOUT --regenerate
+    # Existing prompts should be auto-accepted, only new prompt should be asked
+    my_generator["prompts"]["25_prompt3"]["description"] = "Third prompt"
+    my_generator["prompts"]["25_prompt3"]["persist"] = True
+    my_generator["prompts"]["25_prompt3"]["type"] = "line"
+    my_generator["files"]["25_prompt3"]["secret"] = False
+    flake.refresh()
+
+    child = pexpect.spawn(
+        sys.executable,
+        [
+            "-m",
+            "clan_cli",
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            # Note: no --regenerate flag - existing prompts should be auto-accepted
+        ],
+        timeout=30,
+        encoding="utf-8",
+        env=spawn_env,
+    )
+    # Should NOT prompt for existing prompts - only for the new third prompt
+    child.expect("Third prompt:")
+    child.sendline("third_value")
+    child.expect(pexpect.EOF)
+    child.close()
+    assert child.exitstatus == 0, f"Fourth generation failed: {child.before}"
+
+    # Verify existing values are preserved (auto-accepted)
+    assert in_repo_store.get(generator, "10_prompt1").decode() == "modified_value", (
+        "First prompt should be auto-accepted without --regenerate"
+    )
+    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
+        "Second prompt should be auto-accepted without --regenerate"
+    )
+    # Verify new prompt value was set
+    assert in_repo_store.get(generator, "25_prompt3").decode() == "third_value", (
+        "Third prompt should have the newly entered value"
+    )
 
 
 @pytest.mark.with_core

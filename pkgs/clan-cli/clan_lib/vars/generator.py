@@ -512,6 +512,20 @@ class Generator:
             )
         return prompt_values
 
+    def get_previous_prompts(self) -> dict[str, str]:
+        """Get all previous prompt values without interactive asking.
+
+        Returns:
+            Dictionary mapping prompt names to their previous values.
+            Only includes prompts that have a previous value set.
+
+        """
+        return {
+            prompt.name: prompt.previous_value
+            for prompt in self.prompts
+            if prompt.previous_value is not None
+        }
+
     def execute(
         self,
         machine: "Machine",
