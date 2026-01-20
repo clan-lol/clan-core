@@ -14,6 +14,11 @@
       treefmt.programs.sizelint.enable = true;
       treefmt.programs.sizelint.failOnWarn = true;
       treefmt.programs.clang-format.enable = true;
+      treefmt.programs.typos = {
+        enable = true;
+        threads = 4;
+        configFile = "./_typos.toml";
+      };
       treefmt.settings.global.excludes = [
         "*.png"
         "*.svg"
