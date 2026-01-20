@@ -154,6 +154,7 @@ def test_clan_create_api(
         name="testuser",
         keys=sops_keys,
         force=False,
+        flake_dir=dest_clan_dir,
     )
 
     # ===== CREATE MACHINE/s ======

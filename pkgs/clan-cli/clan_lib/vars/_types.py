@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
@@ -32,6 +33,7 @@ class GeneratorUpdate:
 class StoreBase(ABC):
     def __init__(self, flake: Flake) -> None:
         self.flake = flake
+        self.clan_dir = get_clan_dir(flake)
 
     @property
     @abstractmethod
@@ -138,7 +140,7 @@ class StoreBase(ABC):
         return Path("per-machine") / machine / generator.name / var_name
 
     def directory(self, generator: "Generator", var_name: str) -> Path:
-        return self.flake.path / "vars" / self.rel_dir(generator, var_name)
+        return self.clan_dir / "vars" / self.rel_dir(generator, var_name)
 
     def set(
         self,

@@ -9,7 +9,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import IO
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
+from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.git import commit_files
 
 from . import sops
@@ -139,10 +141,11 @@ def collect_keys_for_path(path: Path) -> set[sops.SopsKey]:
 
 
 def encrypt_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     secret_path: Path,
     age_plugins: list[str],
     value: IO[bytes] | str | bytes | None,
+    flake_dir: Path,
     add_users: list[str] | None = None,
     add_machines: list[str] | None = None,
     add_groups: list[str] | None = None,
@@ -155,7 +158,7 @@ def encrypt_secret(
     if add_users is None:
         add_users = []
 
-    admin_keys = sops.ensure_admin_public_keys(flake_dir)
+    admin_keys = sops.ensure_admin_public_keys(clan_dir)
 
     if not admin_keys:
         msg = (
@@ -175,7 +178,7 @@ def encrypt_secret(
         files_to_commit.extend(
             allow_member(
                 users_folder(secret_path),
-                sops_users_folder(flake_dir),
+                sops_users_folder(clan_dir),
                 user,
                 age_plugins,
                 do_update_keys,
@@ -186,7 +189,7 @@ def encrypt_secret(
         files_to_commit.extend(
             allow_member(
                 machines_folder(secret_path),
-                sops_machines_folder(flake_dir),
+                sops_machines_folder(clan_dir),
                 machine,
                 age_plugins,
                 do_update_keys,
@@ -197,7 +200,7 @@ def encrypt_secret(
         files_to_commit.extend(
             allow_member(
                 groups_folder(secret_path),
-                sops_groups_folder(flake_dir),
+                sops_groups_folder(clan_dir),
                 group,
                 age_plugins,
                 do_update_keys,
@@ -212,7 +215,7 @@ def encrypt_secret(
         files_to_commit.extend(
             allow_member(
                 users_folder(secret_path),
-                sops_users_folder(flake_dir),
+                sops_users_folder(clan_dir),
                 username,
                 age_plugins,
                 do_update_keys,
@@ -230,8 +233,8 @@ def encrypt_secret(
         )
 
 
-def remove_secret(flake_dir: Path, secret: str) -> None:
-    path = sops_secrets_folder(flake_dir) / secret
+def remove_secret(clan_dir: Path, secret: str, flake_dir: Path) -> None:
+    path = sops_secrets_folder(clan_dir) / secret
     if not path.exists():
         msg = f"Secret '{secret}' does not exist"
         raise ClanError(msg)
@@ -244,7 +247,9 @@ def remove_secret(flake_dir: Path, secret: str) -> None:
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_secret(args.flake.path, args.secret)
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
+    remove_secret(clan_dir, args.secret, flake_dir=flake.path)
 
 
 def add_secret_argument(parser: argparse.ArgumentParser) -> None:
@@ -374,7 +379,8 @@ def list_command(args: argparse.Namespace) -> None:
     def filter_fn(name: str) -> bool:
         return args.pattern in name
 
-    lst = list_secrets(args.flake.path, filter_fn if args.pattern else None)
+    clan_dir = get_clan_dir(args.flake)
+    lst = list_secrets(clan_dir, filter_fn if args.pattern else None)
     if len(lst) > 0:
         print("\n".join(lst))
 
@@ -392,9 +398,10 @@ def decrypt_secret(secret_path: Path, age_plugins: list[str]) -> str:
 
 
 def get_command(args: argparse.Namespace) -> None:
+    clan_dir = get_clan_dir(args.flake)
     print(
         decrypt_secret(
-            sops_secrets_folder(args.flake.path) / args.secret,
+            sops_secrets_folder(clan_dir) / args.secret,
             age_plugins=load_age_plugins(args.flake),
         ),
         end="",
@@ -407,6 +414,8 @@ def is_tty_interactive() -> bool:
 
 
 def set_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     env_value = os.environ.get("SOPS_NIX_SECRET")
     secret_value: str | IO[bytes] | None = sys.stdin.buffer
     if args.edit:
@@ -416,10 +425,11 @@ def set_command(args: argparse.Namespace) -> None:
     elif is_tty_interactive():
         secret_value = getpass.getpass(prompt="Paste your secret: ")
     encrypt_secret(
-        args.flake.path,
-        sops_secrets_folder(args.flake.path) / args.secret,
-        load_age_plugins(args.flake),
+        clan_dir,
+        sops_secrets_folder(clan_dir) / args.secret,
+        load_age_plugins(flake),
         secret_value,
+        flake.path,
         args.user,
         args.machine,
         args.group,
@@ -427,9 +437,10 @@ def set_command(args: argparse.Namespace) -> None:
 
 
 def rename_command(args: argparse.Namespace) -> None:
-    flake_dir = args.flake.path
-    old_path = sops_secrets_folder(flake_dir) / args.secret
-    new_path = sops_secrets_folder(flake_dir) / args.new_name
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
+    old_path = sops_secrets_folder(clan_dir) / args.secret
+    new_path = sops_secrets_folder(clan_dir) / args.new_name
     if not old_path.exists():
         msg = f"Secret '{args.secret}' does not exist"
         raise ClanError(msg)
@@ -439,7 +450,7 @@ def rename_command(args: argparse.Namespace) -> None:
     old_path.rename(new_path)
     commit_files(
         [old_path, new_path],
-        flake_dir,
+        flake.path,
         f"Rename secret {args.secret} to {args.new_name}",
     )
 

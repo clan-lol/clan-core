@@ -69,8 +69,10 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
                 update_clan=not args.no_update,
             ),
         )
+        flake_dir = Path(args.name).resolve()
         create_secrets_user_auto(
-            flake_dir=Path(args.name).resolve(),
+            clan_dir=flake_dir,
+            flake_dir=flake_dir,
             user=args.user,
             force=True,
         )

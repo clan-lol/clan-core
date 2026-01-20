@@ -6,7 +6,9 @@ from pathlib import Path
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import SopsKey, maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_lib.vars.keygen import create_secrets_user, get_user_or_default
+from clan_lib.api.directory import get_clan_dir
+from clan_lib.flake import Flake  # noqa: TC002
+from clan_lib.vars.keygen import get_user_or_default
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +39,7 @@ def _select_keys_interactive(pub_keys: list[SopsKey]) -> list[SopsKey]:
 
 
 def create_secrets_user_interactive(
+    clan_dir: Path,
     flake_dir: Path,
     user: str | None = None,
     force: bool = False,
@@ -73,14 +76,36 @@ def create_secrets_user_interactive(
 
     # persist the generated or chosen admin pubkey in the repo
     add_user(
-        flake_dir=flake_dir,
+        clan_dir=clan_dir,
         name=user,
         keys=pub_keys,
         force=force,
+        flake_dir=flake_dir,
+    )
+
+
+def _create_secrets_user_non_interactive(
+    clan_dir: Path,
+    flake_dir: Path,
+    user: str | None = None,
+    force: bool = False,
+) -> None:
+    """Initialize sops keys for vars non-interactively."""
+    user = get_user_or_default(user)
+    pub_keys = maybe_get_admin_public_keys()
+    if not pub_keys:
+        pub_keys = [generate_key()]
+    add_user(
+        clan_dir=clan_dir,
+        name=user,
+        keys=pub_keys,
+        force=force,
+        flake_dir=flake_dir,
     )
 
 
 def create_secrets_user_auto(
+    clan_dir: Path,
     flake_dir: Path,
     user: str | None = None,
     force: bool = False,
@@ -88,12 +113,14 @@ def create_secrets_user_auto(
     """Detect if the user is in interactive mode or not and choose the appropriate routine."""
     if sys.stdin.isatty():
         create_secrets_user_interactive(
+            clan_dir=clan_dir,
             flake_dir=flake_dir,
             user=user,
             force=force,
         )
     else:
-        create_secrets_user(
+        _create_secrets_user_non_interactive(
+            clan_dir=clan_dir,
             flake_dir=flake_dir,
             user=user,
             force=force,
@@ -103,15 +130,19 @@ def create_secrets_user_auto(
 def _command(
     args: argparse.Namespace,
 ) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     if args.no_interactive:
-        create_secrets_user(
-            flake_dir=args.flake.path,
+        _create_secrets_user_non_interactive(
+            clan_dir=clan_dir,
+            flake_dir=flake.path,
             user=args.user,
             force=args.force,
         )
     else:
         create_secrets_user_auto(
-            flake_dir=args.flake.path,
+            clan_dir=clan_dir,
+            flake_dir=flake.path,
             user=args.user,
             force=args.force,
         )

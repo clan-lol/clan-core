@@ -188,6 +188,7 @@ class Generator:
 
         return [
             "clanInternals.?secrets.?age.?plugins",
+            "clanInternals.inventoryClass.relativeDirectory",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{generators_selector}",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{files_selector}",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.?sops.?defaultGroups",

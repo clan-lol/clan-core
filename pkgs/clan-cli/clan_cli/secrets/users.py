@@ -5,8 +5,9 @@ import sys
 from collections.abc import Iterable
 from pathlib import Path
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
-from clan_lib.flake import require_flake
+from clan_lib.flake import Flake, require_flake
 from clan_lib.git import commit_files
 
 from . import groups, secrets, sops
@@ -31,18 +32,19 @@ log = logging.getLogger(__name__)
 
 
 def add_user(
-    flake_dir: Path,
+    clan_dir: Path,
     name: str,
     keys: Iterable[sops.SopsKey],
     force: bool,
+    flake_dir: Path,
 ) -> None:
-    path = sops_users_folder(flake_dir) / name
+    path = sops_users_folder(clan_dir) / name
 
     write_keys(path, keys, overwrite=force)
     updated_paths = [path]
 
-    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, [], filter_user_secrets))
+    filter_user_secrets = get_secrets_filter_for_user(clan_dir, name)
+    updated_paths.extend(update_secrets(clan_dir, [], filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -50,10 +52,15 @@ def add_user(
     )
 
 
-def remove_user(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
+def remove_user(
+    clan_dir: Path,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
+) -> None:
     updated_paths: list[Path] = []
     # Remove the user from any group where it belonged:
-    groups_dir = sops_groups_folder(flake_dir)
+    groups_dir = sops_groups_folder(clan_dir)
     if groups_dir.exists():
         for group in groups_dir.iterdir():
             group_folder = groups_dir / group
@@ -65,26 +72,26 @@ def remove_user(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
             log.info(f"Removing user {name} from group {group}")
             updated_paths.extend(
                 groups.remove_member(
-                    flake_dir, group.name, groups.users_folder, name, age_plugins
+                    clan_dir, group.name, groups.users_folder, name, age_plugins
                 ),
             )
     # Remove the user's key:
-    updated_paths.extend(remove_object(sops_users_folder(flake_dir), name))
+    updated_paths.extend(remove_object(sops_users_folder(clan_dir), name))
     # Remove the user from any secret where it was used:
-    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
+    filter_user_secrets = get_secrets_filter_for_user(clan_dir, name)
+    updated_paths.extend(update_secrets(clan_dir, age_plugins, filter_user_secrets))
     commit_files(updated_paths, flake_dir, f"Remove user {name}")
 
 
-def get_user(flake_dir: Path, name: str) -> set[sops.SopsKey]:
-    keys = read_keys(sops_users_folder(flake_dir) / name)
+def get_user(clan_dir: Path, name: str) -> set[sops.SopsKey]:
+    keys = read_keys(sops_users_folder(clan_dir) / name)
     return {
         sops.SopsKey(key.pubkey, name, key.key_type, source=key.source) for key in keys
     }
 
 
-def list_users(flake_dir: Path) -> list[str]:
-    path = sops_users_folder(flake_dir)
+def list_users(clan_dir: Path) -> list[str]:
+    path = sops_users_folder(clan_dir)
 
     def validate(name: str) -> bool:
         return (
@@ -96,14 +103,15 @@ def list_users(flake_dir: Path) -> list[str]:
 
 
 def add_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     user: str,
     secret: str,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     updated_paths = secrets.allow_member(
-        secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
-        sops_users_folder(flake_dir),
+        secrets.users_folder(sops_secrets_folder(clan_dir) / secret),
+        sops_users_folder(clan_dir),
         user,
         age_plugins=age_plugins,
     )
@@ -115,13 +123,14 @@ def add_secret(
 
 
 def remove_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     user: str,
     secret: str,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
+        secrets.users_folder(sops_secrets_folder(clan_dir) / secret),
         user,
         age_plugins,
     )
@@ -133,25 +142,27 @@ def remove_secret(
 
 
 def list_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    lst = list_users(flake.path)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    lst = list_users(clan_dir)
     if len(lst) > 0:
         print("\n".join(lst))
 
 
 def add_user_key(
-    flake_dir: Path,
+    clan_dir: Path,
     name: str,
     keys: Iterable[sops.SopsKey],
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
-    path = sops_users_folder(flake_dir) / name
+    path = sops_users_folder(clan_dir) / name
 
     append_keys(path, keys)
     updated_paths = [path]
 
-    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
+    filter_user_secrets = get_secrets_filter_for_user(clan_dir, name)
+    updated_paths.extend(update_secrets(clan_dir, age_plugins, filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -160,18 +171,19 @@ def add_user_key(
 
 
 def remove_user_key(
-    flake_dir: Path,
+    clan_dir: Path,
     name: str,
     keys: Iterable[sops.SopsKey],
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
-    path = sops_users_folder(flake_dir) / name
+    path = sops_users_folder(clan_dir) / name
 
     remove_keys(path, keys)
     updated_paths = [path]
 
-    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
+    filter_user_secrets = get_secrets_filter_for_user(clan_dir, name)
+    updated_paths.extend(update_secrets(clan_dir, age_plugins, filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -210,52 +222,70 @@ def _key_args(args: argparse.Namespace) -> Iterable[sops.SopsKey]:
 
 
 def add_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-
-    add_user(flake.path, args.user, _key_args(args), args.force)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    add_user(clan_dir, args.user, _key_args(args), args.force, flake_dir=flake.path)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    keys = get_user(flake.path, args.user)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    keys = get_user(clan_dir, args.user)
     json.dump([key.as_dict() for key in keys], sys.stdout, indent=2, sort_keys=True)
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    remove_user(flake.path, args.user, load_age_plugins(flake))
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    remove_user(clan_dir, args.user, load_age_plugins(flake), flake_dir=flake.path)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
     add_secret(
-        flake.path,
+        clan_dir,
         args.user,
         args.secret,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
     remove_secret(
-        flake.path,
+        clan_dir,
         args.user,
         args.secret,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
 def add_key_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-
-    add_user_key(flake.path, args.user, _key_args(args), load_age_plugins(flake))
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    add_user_key(
+        clan_dir,
+        args.user,
+        _key_args(args),
+        load_age_plugins(flake),
+        flake_dir=flake.path,
+    )
 
 
 def remove_key_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-
-    remove_user_key(flake.path, args.user, _key_args(args), load_age_plugins(flake))
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    remove_user_key(
+        clan_dir,
+        args.user,
+        _key_args(args),
+        load_age_plugins(flake),
+        flake_dir=flake.path,
+    )
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:

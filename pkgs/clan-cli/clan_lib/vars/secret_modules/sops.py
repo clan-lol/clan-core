@@ -68,21 +68,29 @@ class SecretStore(StoreBase):
         if not has_secrets:
             return
 
-        if has_machine(self.flake.path, machine):
+        if has_machine(self.clan_dir, machine):
             return
         priv_key, pub_key = sops.generate_private_key()
         age_plugins = load_age_plugins(self.flake)
         encrypt_secret(
-            self.flake.path,
-            sops_secrets_folder(self.flake.path) / f"{machine}-age.key",
+            self.clan_dir,
+            sops_secrets_folder(self.clan_dir) / f"{machine}-age.key",
             age_plugins,
             priv_key,
+            self.flake.path,
             add_groups=self.flake.select_machine(
                 machine,
                 "config.clan.core.sops.defaultGroups",
             ),
         )
-        add_machine(self.flake.path, machine, pub_key, False, age_plugins)
+        add_machine(
+            self.clan_dir,
+            machine,
+            pub_key,
+            False,
+            age_plugins,
+            flake_dir=self.flake.path,
+        )
 
     @property
     def store_name(self) -> str:
@@ -94,15 +102,15 @@ class SecretStore(StoreBase):
         generator: Generator,
         secret_name: str,
     ) -> bool:
-        key_dir = sops_users_folder(self.flake.path) / user
+        key_dir = sops_users_folder(self.clan_dir) / user
         return self.key_has_access(key_dir, generator, secret_name)
 
     def machine_has_access(
         self, generator: Generator, secret_name: str, machine: str
     ) -> bool:
-        if not has_machine(self.flake.path, machine):
+        if not has_machine(self.clan_dir, machine):
             return False
-        key_dir = sops_machines_folder(self.flake.path) / machine
+        key_dir = sops_machines_folder(self.clan_dir) / machine
         return self.key_has_access(key_dir, generator, secret_name)
 
     def key_has_access(
@@ -187,10 +195,11 @@ class SecretStore(StoreBase):
         secret_folder.mkdir(parents=True, exist_ok=True)
         # initialize the secret
         encrypt_secret(
-            self.flake.path,
+            self.clan_dir,
             secret_folder,
             load_age_plugins(self.flake),
             value,
+            self.flake.path,
             add_machines=[machine] if var.deploy else [],
             add_groups=self.flake.select_machine(
                 machine,
@@ -223,8 +232,7 @@ class SecretStore(StoreBase):
         return [secret_dir]
 
     def delete_store(self, machine: str) -> Iterable[Path]:
-        flake_root = self.flake.path
-        store_folder = flake_root / "vars/per-machine" / machine
+        store_folder = self.clan_dir / "vars/per-machine" / machine
         if not store_folder.exists():
             return []
         shutil.rmtree(store_folder)
@@ -236,11 +244,11 @@ class SecretStore(StoreBase):
         vars_generators = Generator.get_machine_generators([machine], self.flake)
         if "users" in phases or "services" in phases:
             key_name = f"{machine}-age.key"
-            if not has_secret(sops_secrets_folder(self.flake.path) / key_name):
+            if not has_secret(sops_secrets_folder(self.clan_dir) / key_name):
                 # skip uploading the secret, not managed by us
                 return
             key = decrypt_secret(
-                sops_secrets_folder(self.flake.path) / key_name,
+                sops_secrets_folder(self.clan_dir) / key_name,
                 age_plugins=load_age_plugins(self.flake),
             )
             (output_dir / "key.txt").touch(mode=0o600)
@@ -305,10 +313,11 @@ class SecretStore(StoreBase):
         self.ensure_machine_key(machine)
         secret_folder = self.secret_path(generator, name)
         add_secret(
-            self.flake.path,
+            self.clan_dir,
             machine,
             secret_folder,
             age_plugins=load_age_plugins(self.flake),
+            flake_dir=self.flake.path,
         )
 
     def collect_keys_for_secret(self, machine: str, path: Path) -> set[sops.SopsKey]:
@@ -324,12 +333,12 @@ class SecretStore(StoreBase):
         ):
             keys.update(
                 collect_keys_for_type(
-                    self.flake.path / "sops" / "groups" / group / "machines",
+                    self.clan_dir / "sops" / "groups" / group / "machines",
                 ),
             )
             keys.update(
                 collect_keys_for_type(
-                    self.flake.path / "sops" / "groups" / group / "users",
+                    self.clan_dir / "sops" / "groups" / group / "users",
                 ),
             )
 
@@ -405,7 +414,7 @@ class SecretStore(StoreBase):
                 ):
                     allow_member(
                         groups_folder(secret_path),
-                        sops_groups_folder(self.flake.path),
+                        sops_groups_folder(self.clan_dir),
                         group,
                         # we just want to create missing symlinks, we call update_keys below:
                         do_update_keys=False,

@@ -78,7 +78,7 @@ def create_machine(
         if commit:
             commit_file(
                 machine_dir,
-                repo_dir=clan_dir,
+                flake_dir=clan_dir,
                 commit_message=f"Add machine {machine_name}",
             )
         opts.clan_dir.invalidate_cache()

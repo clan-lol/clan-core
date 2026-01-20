@@ -1,7 +1,8 @@
 import argparse
 from pathlib import Path
 
-from clan_lib.flake import require_flake
+from clan_lib.api.directory import get_clan_dir
+from clan_lib.flake import Flake, require_flake
 from clan_lib.git import commit_files
 
 from clan_cli.machines.types import machine_name_type, validate_hostname
@@ -20,9 +21,14 @@ from .types import public_or_private_age_key_type, secret_name_type
 
 
 def add_machine(
-    flake_dir: Path, name: str, pubkey: str, force: bool, age_plugins: list[str]
+    clan_dir: Path,
+    name: str,
+    pubkey: str,
+    force: bool,
+    age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
-    machine_path = sops_machines_folder(flake_dir) / name
+    machine_path = sops_machines_folder(clan_dir) / name
     write_key(
         machine_path,
         sops.SopsKey(pubkey, "", sops.KeyType.AGE, source=str(machine_path)),
@@ -30,8 +36,8 @@ def add_machine(
     )
     paths = [machine_path]
 
-    filter_machine_secrets = get_secrets_filter_for_machine(flake_dir, name)
-    paths.extend(update_secrets(flake_dir, age_plugins, filter_machine_secrets))
+    filter_machine_secrets = get_secrets_filter_for_machine(clan_dir, name)
+    paths.extend(update_secrets(clan_dir, age_plugins, filter_machine_secrets))
     commit_files(
         paths,
         flake_dir,
@@ -39,10 +45,15 @@ def add_machine(
     )
 
 
-def remove_machine(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
-    removed_paths = remove_object(sops_machines_folder(flake_dir), name)
-    filter_machine_secrets = get_secrets_filter_for_machine(flake_dir, name)
-    removed_paths.extend(update_secrets(flake_dir, age_plugins, filter_machine_secrets))
+def remove_machine(
+    clan_dir: Path,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
+) -> None:
+    removed_paths = remove_object(sops_machines_folder(clan_dir), name)
+    filter_machine_secrets = get_secrets_filter_for_machine(clan_dir, name)
+    removed_paths.extend(update_secrets(clan_dir, age_plugins, filter_machine_secrets))
     commit_files(
         removed_paths,
         flake_dir,
@@ -50,53 +61,55 @@ def remove_machine(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
     )
 
 
-def get_machine_pubkey(flake_dir: Path, name: str) -> str:
-    key = read_key(sops_machines_folder(flake_dir) / name)
+def get_machine_pubkey(clan_dir: Path, name: str) -> str:
+    key = read_key(sops_machines_folder(clan_dir) / name)
     return key.pubkey
 
 
-def has_machine(flake_dir: Path, name: str) -> bool:
+def has_machine(clan_dir: Path, name: str) -> bool:
     """Checks if a machine exists in the sops machines folder"""
-    return (sops_machines_folder(flake_dir) / name / "key.json").exists()
+    return (sops_machines_folder(clan_dir) / name / "key.json").exists()
 
 
-def list_sops_machines(flake_dir: Path) -> list[str]:
+def list_sops_machines(clan_dir: Path) -> list[str]:
     """Lists all machines in the sops machines folder"""
-    path = sops_machines_folder(flake_dir)
+    path = sops_machines_folder(clan_dir)
 
     def validate(name: str) -> bool:
-        return validate_hostname(name) and has_machine(flake_dir, name)
+        return validate_hostname(name) and has_machine(clan_dir, name)
 
     return list_objects(path, validate)
 
 
 def add_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     machine: str,
     secret_path: Path,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     paths = secrets.allow_member(
         secrets.machines_folder(secret_path),
-        sops_machines_folder(flake_dir),
+        sops_machines_folder(clan_dir),
         machine,
         age_plugins=age_plugins,
     )
     commit_files(
         paths,
         flake_dir,
-        f"Add {machine} to secret {secret_path.relative_to(flake_dir)}",
+        f"Add {machine} to secret {secret_path.relative_to(clan_dir)}",
     )
 
 
 def remove_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     machine: str,
     secret: str,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
+        secrets.machines_folder(sops_secrets_folder(clan_dir) / secret),
         machine,
         age_plugins=age_plugins,
     )
@@ -108,50 +121,64 @@ def remove_secret(
 
 
 def list_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    lst = list_sops_machines(flake.path)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    lst = list_sops_machines(clan_dir)
     if len(lst) > 0:
         print("\n".join(lst))
 
 
 def add_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
     add_machine(
-        flake.path,
+        clan_dir,
         args.machine,
         args.key,
         args.force,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
 def get_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    print(get_machine_pubkey(flake.path, args.machine))
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    print(get_machine_pubkey(clan_dir, args.machine))
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
-    remove_machine(flake.path, args.machine, age_plugins=load_age_plugins(flake))
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
+    remove_machine(
+        clan_dir,
+        args.machine,
+        age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
+    )
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
     add_secret(
-        flake.path,
+        clan_dir,
         args.machine,
-        sops_secrets_folder(flake.path) / args.secret,
+        sops_secrets_folder(clan_dir) / args.secret,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    flake = require_flake(args.flake)
+    flake: Flake = require_flake(args.flake)
+    clan_dir = get_clan_dir(flake)
     remove_secret(
-        flake.path,
+        clan_dir,
         args.machine,
         args.secret,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
