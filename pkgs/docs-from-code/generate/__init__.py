@@ -105,7 +105,7 @@ def render_option(
     read_only = option.get("readOnly")
 
     res = f"""
-{"#" * level} {sanitize(name) if short_head is None else sanitize(short_head)} {"{: #" + sanitize_anchor(name) + "}" if level > 1 else ""}
+{"#" * level} {sanitize(name) if short_head is None else sanitize(short_head)}
 
 """
 
@@ -246,7 +246,7 @@ def produce_clan_core_docs() -> None:
                 f"[clan_core.{submodule_name}] Rendering option of: {submodule_name}... {outfile}",
             )
             init_level = 1
-            root = options_to_tree(split_options, debug=True)
+            root = options_to_tree(split_options)
 
             print(f"Submodule {submodule_name} - suboptions", len(root.suboptions))
 
@@ -403,7 +403,7 @@ Typically needed by module authors to define roles, behavior and metadata for di
     with Path(CLAN_SERVICE_INTERFACE).open() as f:
         options: dict[str, dict[str, Any]] = json.load(f)
 
-        options_tree = options_to_tree(options, debug=True)
+        options_tree = options_to_tree(options)
         # Find the inventory options
 
         # Render the inventory options
@@ -588,8 +588,10 @@ def options_docs_from_tree(
     def render_tree(option: Option, level: int = init_level) -> str:
         output = ""
 
-        should_render = not option.name.startswith("<") and not option.name.startswith(
-            "_",
+        should_render = (
+            not option.name.startswith("<")
+            and not option.name.startswith("_")
+            and not option.name.startswith("*")
         )
         if should_render:
             # short_name = option_short_name(option.name)

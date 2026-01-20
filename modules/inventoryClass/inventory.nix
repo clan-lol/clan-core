@@ -124,7 +124,7 @@ in
       description = ''
         Tags of the inventory are used to group machines together.
 
-        It is recommended to use [`machine.tags`](#inventory.machines.tags) to define the tags of the machines.
+        It is recommended to use [`machine.tags`](#tags_1) to define the tags of the machines.
 
         This can be used to define custom tags that are either statically set or dynamically computed.
 
@@ -152,7 +152,7 @@ in
 
             allButFoo is a computed tag. It will be added to all machines except 'foo'
 
-            `all` is a predefined tag. See the docs of [`tags.all`](#inventory.tags.all).
+            `all` is a predefined tag. See the docs of [`tags.all`](#all).
 
             ```nix
             #  inventory.tags ↓       ↓ inventory.machines
