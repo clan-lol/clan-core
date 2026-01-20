@@ -92,7 +92,7 @@ in
           builder = "/bin/sh";
           args = [
             "-c"
-            ''touch $out''
+            "touch $out"
           ];
         };
       };
