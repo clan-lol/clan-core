@@ -11,7 +11,7 @@ Clan enables encryption of secrets (such as passwords & keys) ensuring security 
 
 By default, Clan uses the [sops](https://github.com/getsops/sops) format
 and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
-Clan can also be configured to be used with other secret store [backends](../reference/clan.core/vars.md#clan.core.vars.settings.secretStore).
+Clan can also be configured to be used with other secret store [backends](../reference/clan.core/vars.md#secretstore).
 
 ## Create Your Admin Keypair
 

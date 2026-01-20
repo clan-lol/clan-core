@@ -821,7 +821,7 @@ in
 
         Exports are used to share and expose information between instances.
 
-        Define exports in the [`perInstance`](#roles.perInstance) or [`perMachine`](#perMachine) scope.
+        Define exports in the [`perInstance`](#perinstance) or [`perMachine`](#permachine) scope.
 
         Accessing the exports:
 
