@@ -891,7 +891,16 @@ in
                 ) instanceCfg.roles.${roleName}.extraModules);
               };
               darwinModule = {
-                imports = [ instanceRes.darwinModule ];
+                imports = [
+                  instanceRes.darwinModule
+                ]
+                ++ (map (
+                  s:
+                  if builtins.typeOf s == "string" then
+                    lib.warn "String types for 'extraModules' will be deprecated - ${s}" "${directory}/${s}"
+                  else
+                    lib.setDefaultModuleLocation "via inventory.instances.${instanceName}.roles.${roleName}" s
+                ) instanceCfg.roles.${roleName}.extraModules);
               };
             }
 
