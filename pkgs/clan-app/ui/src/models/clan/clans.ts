@@ -289,6 +289,7 @@ function persistClansChanges(
   clans: Clans,
 ): void {
   let clansChanged = false;
+  let clanChanged = false;
   let activeClanChanged = false;
   let machinesChanged = false;
   let machinePositionsChanged = false;
@@ -296,6 +297,8 @@ function persistClansChanges(
   for (const change of changes) {
     if (isPath(change, ["all"])) {
       clansChanged = true;
+    } else if (isPath(change, ["all", "*"])) {
+      clanChanged = true;
     } else if (
       isAnyPath(change, [
         ["all", "*", "machines", "all"],
@@ -314,11 +317,15 @@ function persistClansChanges(
   }
 
   if (clansChanged) {
+    clanChanged = true;
     machinesChanged = true;
     localStorage.setItem(
       "clanIds",
       JSON.stringify(clans.all.map(({ id }) => id)),
     );
+  }
+  if (clanChanged) {
+    machinesChanged = true;
   }
   if (activeClanChanged) {
     localStorage.setItem(

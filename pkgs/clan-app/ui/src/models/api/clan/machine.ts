@@ -204,6 +204,7 @@ export async function createMachine(
       },
     },
   });
+  const clanMachinePositions = machinePositions.getOrSetForClan(clanId);
   // FIXME: handle created instances
   return {
     data: {
@@ -214,9 +215,9 @@ export async function createMachine(
       description: res.data.data.description || "",
       machineClass: res.data.data.machineClass,
       tags: res.data.data.tags,
-      position: machinePositions
-        .getOrSetForClan(clanId)
-        .getOrSetPosition(machineId),
+      position: data.position
+        ? clanMachinePositions.setPosition(machineId, data.position)
+        : clanMachinePositions.getOrSetPosition(machineId),
     },
     dataSchema: {},
     status: "not_installed",
