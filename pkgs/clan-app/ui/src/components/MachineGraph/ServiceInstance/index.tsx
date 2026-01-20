@@ -12,6 +12,7 @@ import {
   Component,
   onCleanup,
   batch,
+  on,
 } from "solid-js";
 import Icon from "@/components/Icon";
 import { Combobox } from "@kobalte/core/combobox";
@@ -63,32 +64,36 @@ const ServiceInstanceWorkflow: Component = (props) => {
     ServiceStoreType,
     SetStoreFunction<ServiceStoreType>,
   ];
-  createEffect(() => {
-    const instance = instances().activeServiceInstance;
-    if (instance) {
-      setStore({
-        instanceName: instance.data.name,
-        roles: instance.data.roles.sorted.map((role) => ({
-          id: role.id,
-          settings: unwrap(role.settings),
-          members: role.members.slice(0),
-        })),
-        currentRole: null,
-      });
-      return;
-    }
-    const service = (ui.toolbarMode as ToolbarServiceInstanceMode).service!;
-    setStore({
-      // Default to the module name, until we support multiple instances
-      instanceName: service.id,
-      roles: service.roles.sorted.map((role) => ({
-        id: role.id,
-        settings: {},
-        members: [],
-      })),
-      currentRole: null,
-    });
-  });
+  createEffect(
+    on(
+      () => instances().activeServiceInstance,
+      (activeServiceInstance) => {
+        if (activeServiceInstance) {
+          setStore({
+            instanceName: activeServiceInstance.data.name,
+            roles: activeServiceInstance.data.roles.sorted.map((role) => ({
+              id: role.id,
+              settings: unwrap(role.settings),
+              members: role.members.slice(0),
+            })),
+            currentRole: null,
+          });
+        } else if (ui.toolbarMode?.type === "service") {
+          const service = ui.toolbarMode.service!;
+          setStore({
+            // TODO: default to the module name, until we support multiple instances
+            instanceName: service.id,
+            roles: service.roles.sorted.map((role) => ({
+              id: role.id,
+              settings: {},
+              members: [],
+            })),
+            currentRole: null,
+          });
+        }
+      },
+    ),
+  );
 
   return (
     <div class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2">
