@@ -118,6 +118,7 @@ const ConfigureServiceInstance = () => {
       deactivateServiceInstance,
     },
   ] = useServiceInstancesContext();
+  const [, { unhighlightMachines }] = useMachinesContext();
   const [clan] = useClanContext();
   const stepper = useStepper<ServiceSteps>();
 
@@ -161,6 +162,12 @@ const ConfigureServiceInstance = () => {
       setToolbarMode({ type: "select" });
     });
   };
+
+  // When going back from ConfigureRole to ConfigureServiceInstance
+  // The machines might be in highlight mode
+  onMount(() => {
+    unhighlightMachines();
+  });
 
   return (
     <Form onSubmit={onSubmit}>
