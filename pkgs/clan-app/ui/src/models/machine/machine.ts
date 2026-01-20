@@ -135,6 +135,15 @@ export class ClanMachinePositions {
     this.#positionSet.add(posStr(pos));
     return pos;
   }
+  setPosition(machineId: string, pos: MachinePosition): MachinePosition {
+    const oldPos = this.#positions[machineId];
+    if (oldPos) {
+      this.#positionSet.delete(posStr(oldPos));
+    }
+    this.#positions[machineId] = pos;
+    this.#positionSet.add(posStr(pos));
+    return pos;
+  }
 
   #hasPosition(p: MachinePosition): boolean {
     return this.#positionSet.has(posStr(p));
