@@ -22,6 +22,14 @@
         fileSystems."/".device = lib.mkDefault "/dev/vda";
         boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
+        # Override from test-install-machine-without-system
+        system.activationScripts.test-vars-activation.text = lib.mkForce ''
+          test -e /etc/secret-vars/activation/test-activation/test || {
+            echo "\nTEST ERROR: Activation secret not found!\n" >&2
+            exit 1
+          }
+        '';
+
         imports = [
           self.nixosModules.test-install-machine-without-system
         ];
@@ -186,6 +194,9 @@
           pkgs.bash.drvPath
           pkgs.buildPackages.xorg.lndir
           pkgs.makeShellWrapper
+          # Needed for password-store
+          pkgs.shellcheck-minimal
+          pkgs.move-mount-beneath
         ]
         ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
         ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
@@ -492,7 +503,7 @@
                       "init-hardware-config",
                       "--debug",
                       "--flake", str(flake_dir),
-                      "--yes", "test-install-machine-without-system",
+                      "--yes", "test-install-machine-without-system-with-password-store",
                       "--host-key-check", "none",
                       "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
                       "-i", ssh_conn.ssh_key,
