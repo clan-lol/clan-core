@@ -37,7 +37,7 @@ const SetupSchema = v.object({
       "Name must be alphanumeric and can contain underscores and dashes, without spaces.",
     ),
   ),
-  description: v.pipe(v.string(), v.nonEmpty("Please describe your clan.")),
+  description: v.optional(v.string()),
   directory: v.pipe(v.string(), v.nonEmpty("Please select a directory.")),
 });
 
@@ -124,7 +124,6 @@ export default function Onboarding(): JSX.Element {
                     {(field, input) => (
                       <TextArea
                         label="Description"
-                        required
                         orientation="horizontal"
                         validationState={
                           getError(setupForm, "description")
