@@ -23,7 +23,7 @@
   onMount(async () => {
     // @ts-expect-error
     pagefind = await import("/pagefind/pagefind.js");
-    pagefind!.init();
+    pagefind?.init();
   });
   $effect(() => {
     (async () => {

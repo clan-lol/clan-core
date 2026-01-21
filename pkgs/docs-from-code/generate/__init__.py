@@ -389,6 +389,8 @@ def produce_clan_service_author_docs() -> None:
         raise ClanError(msg)
 
     output = """
+# Clan service
+
 This document describes the structure and configurable attributes of a `clan.service` module.
 
 Typically needed by module authors to define roles, behavior and metadata for distributed services.
