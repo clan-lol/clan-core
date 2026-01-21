@@ -15,6 +15,7 @@
 lib.evalModules {
   class = "clan.service";
   specialArgs._ctx = prefix;
+  specialArgs.clanLib = clanLib;
   modules = [
     # Base module
     ./inventory/distributed-service/service-module.nix
