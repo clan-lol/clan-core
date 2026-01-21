@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import override
 
 from clan_lib.cmd import Log, RunOpts
+from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
@@ -86,12 +87,16 @@ class SecretStore(StoreBase):
         # We need bytes support here, so we can not use clan cmd.
         # If you change this to run( add bytes support to it first!
         # otherwise we mangle binary secrets (which is annoying to debug)
-        return subprocess.run(
+        result = subprocess.run(
             cmd,
             input=input,
             capture_output=True,
-            check=check,
+            check=False,
         )
+        if check and result.returncode != 0:
+            msg = f"Pass failed with: {result.stderr.decode()}"
+            raise ClanError(msg)
+        return result
 
     def _set(
         self,
@@ -244,9 +249,7 @@ class SecretStore(StoreBase):
             for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
-                        out_file = (
-                            output_dir / "partitioning" / generator.name / file.name
-                        )
+                        out_file = output_dir / generator.name / file.name
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
 

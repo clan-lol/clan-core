@@ -36,6 +36,7 @@ class Step(str, Enum):
 
 
 def notify_install_step(current: Step) -> None:
+    print(f"NOTIFY STEP: {current}")
     message_queue.put(
         {
             "topic": current,
@@ -234,6 +235,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         def run_phase(phase: str) -> None:
             notification = install_steps.get(phase, Step.NIXOS_ANYWHERE)
             notify_install_step(notification)
+            # breakpoint()
             run(
                 [*cmd, "--phases", phase],
                 RunOpts(
