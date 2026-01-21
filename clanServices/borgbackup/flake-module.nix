@@ -3,9 +3,8 @@ let
   module = ./default.nix;
 in
 {
-  clan.modules = {
-    borgbackup = module;
-  };
+  clan.modules.borgbackup = module;
+
   perSystem =
     { ... }:
     {
