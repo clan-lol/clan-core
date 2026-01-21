@@ -348,6 +348,7 @@
                   os.environ["PASSAGE_IDENTITIES_FILE"] = str(age_key_file)
 
                   # Initialize password store as a git repository
+                  # ---
 
                   # Path(f"{password_store_dir}/.passage").mkdir(parents=True)
                   # subprocess.run(["age-keygen", "-o", f"{password_store_dir}/.passage/identities"], cwd=password_store_dir, check=True)
@@ -363,6 +364,9 @@
                       cwd=password_store_dir,
                       check=True,
                   )
+
+                  # --- End of password store initialization
+                  ###
 
                   # Prepare test flake and Nix store
                   flake_dir = prepare_test_flake(
@@ -392,8 +396,6 @@
                       "--option", "store", os.environ['CLAN_TEST_STORE']
                   ]
                   subprocess.run(clan_cmd, check=True)
-
-                  # TODO: init password-store
 
                   # Run clan install from host using port forwarding
                   print("Starting 'clan machines install'...")
