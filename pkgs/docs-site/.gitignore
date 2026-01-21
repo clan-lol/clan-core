@@ -27,3 +27,4 @@ src/routes/docs/services/official
 
 # Icons and other assets
 src/lib/assets/icons
+src/routes/docs
