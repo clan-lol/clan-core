@@ -1,5 +1,8 @@
 # nixosModule
 { config, lib, ... }:
+let
+  testAgeKey = lib.strings.trim (builtins.readFile ../../checks/assets/test-age-key.txt);
+in
 {
   # configures a static age-key to skip the age-key generation
   sops.age.keyFile = "/run/age-key.txt";
@@ -11,7 +14,7 @@
     in
     {
       age-key.text = ''
-        echo AGE-SECRET-KEY-1PL0M9CWRCG3PZ9DXRTTLMCVD57U6JDFE8K7DNVQ35F4JENZ6G3MQ0RQLRV > /run/age-key.txt
+        echo ${testAgeKey} > /run/age-key.txt
       '';
     }
     // lib.optionalAttrs hasRegularSecrets {
