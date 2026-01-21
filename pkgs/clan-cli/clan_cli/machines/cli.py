@@ -59,6 +59,7 @@ Examples:
 
     update_parser = subparser.add_parser(
         "update",
+        aliases=["u"],
         help="Update one or more machines",
         epilog=(
             """

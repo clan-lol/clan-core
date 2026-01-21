@@ -21,7 +21,7 @@ def test_machines_metavar_completeness() -> None:
     """Test that the metavar in machines CLI includes all registered subcommands
     except those explicitly ignored.
     """
-    ignored_subcommands = ["morph", "b"]
+    ignored_subcommands = ["morph", "b", "u"]
 
     parser = argparse.ArgumentParser()
     register_machines_parser(parser)
