@@ -26,8 +26,8 @@ buildNpmPackage {
 
     chmod +w -R src/routes/docs/reference
 
-    mkdir -p static/icons
-    cp -af ${../clan-app/ui/icons}/* ./static/icons
-    chmod +w -R static/icons
+    mkdir -p src/lib/assets/icons
+    cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
+    chmod +w -R src/lib/assets/icons
   '';
 }

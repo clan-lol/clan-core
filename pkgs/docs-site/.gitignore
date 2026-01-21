@@ -26,4 +26,4 @@ src/routes/docs/reference/clan.core
 src/routes/docs/services/official
 
 # Icons and other assets
-static/icons
+src/lib/assets/icons
