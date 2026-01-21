@@ -3,9 +3,8 @@ let
   module = ./default.nix;
 in
 {
-  clan.modules = {
-    data-mesher = module;
-  };
+  clan.modules.data-mesher = module;
+
   perSystem =
     { ... }:
     {
