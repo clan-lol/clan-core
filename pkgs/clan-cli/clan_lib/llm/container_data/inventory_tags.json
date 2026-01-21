@@ -1,7 +1,0 @@
-{
-  "tags": {
-    "all": ["gchq-local", "qube-email", "wintux"],
-    "darwin": [],
-    "nixos": ["gchq-local", "qube-email", "wintux"]
-  }
-}
