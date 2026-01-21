@@ -4,6 +4,9 @@
   lib,
   ...
 }:
+let
+  test-install-machine-without-system = ../installation/installation-machine.nix;
+in
 {
   clan.machines = lib.genAttrs' (lib.filter (lib.hasSuffix "linux") config.systems) (system: {
     name = "test-flash-machine-${system}";
@@ -14,7 +17,7 @@
         # which currently hardcodes `nixpkgs.hostPlatform`
         nixpkgs.hostPlatform = lib.mkForce system;
 
-        imports = [ self.nixosModules.test-install-machine-without-system ];
+        imports = [ test-install-machine-without-system ];
 
         clan.core.networking.targetHost = "test-flash-machine";
 
