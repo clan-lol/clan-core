@@ -34,16 +34,6 @@
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         disko = inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko;
-      }
-      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-        # https://github.com/NixOS/nixpkgs/commit/275411d99d123478fad2c77b916cf7c886f41d38
-        ollama = pkgs.ollama.overrideAttrs (old: {
-          postPatch = old.postPatch or "" + ''
-            rm -rf app
-            rm -f ml/backend/ggml/ggml_test.go
-            rm -f ml/nn/pooling/pooling_test.go
-          '';
-        });
       };
     };
 }

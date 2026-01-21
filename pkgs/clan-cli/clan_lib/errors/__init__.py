@@ -186,16 +186,3 @@ class ClanCmdError(ClanError):
 
     def __repr__(self) -> str:
         return f"ClanCmdError({self.cmd})"
-
-
-class ClanAiError(ClanError):
-    """Exception raised for errors during AI/LLM operations."""
-
-    def __init__(
-        self,
-        msg: str,
-        *,
-        description: str | None = None,
-        location: str = "AI Processing",
-    ) -> None:
-        super().__init__(msg, description=description, location=location)

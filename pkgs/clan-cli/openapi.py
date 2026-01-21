@@ -45,7 +45,6 @@ TOP_LEVEL_RESOURCES = {
     "generator",  # vars generators operations
     "service",  # clan.service management
     "system",  # system operations
-    "llm",  # llm operations
 }
 
 
