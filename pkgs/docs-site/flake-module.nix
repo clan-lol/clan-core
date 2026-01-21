@@ -1,6 +1,11 @@
 {
   perSystem =
-    { pkgs, self', ... }:
+    {
+      pkgs,
+      self',
+      config,
+      ...
+    }:
     {
       packages.docs-site = pkgs.callPackage ./default.nix { inherit (self'.packages) module-docs; };
 
@@ -8,5 +13,7 @@
         shellHook = self'.packages.docs-site.preBuild;
         inputsFrom = [ self'.packages.docs-site ];
       };
+
+      checks = config.packages.docs-site.tests;
     };
 }

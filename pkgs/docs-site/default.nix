@@ -4,7 +4,7 @@
   nodejs_latest,
   module-docs,
 }:
-buildNpmPackage {
+buildNpmPackage (finalAttrs: {
   pname = "clan-site";
   version = "0.0.1";
   nodejs = nodejs_latest;
@@ -30,4 +30,19 @@ buildNpmPackage {
     cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
     chmod +w -R src/lib/assets/icons
   '';
-}
+  passthru = {
+    tests = {
+      "${finalAttrs.pname}-lint" = buildNpmPackage {
+        name = "${finalAttrs.pname}-lint";
+        inherit (finalAttrs)
+          nodejs
+          src
+          npmDeps
+          npmConfigHook
+          preBuild
+          ;
+        npmBuildScript = "lint";
+      };
+    };
+  };
+})
