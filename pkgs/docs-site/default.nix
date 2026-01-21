@@ -20,11 +20,11 @@ buildNpmPackage {
     # Copy generated reference docs
     mkdir -p src/routes/docs/reference
     cp -r ${module-docs}/reference/* src/routes/docs/reference
+    chmod +w -R src/routes/docs/reference
 
     mkdir -p src/routes/docs/services
     cp -r ${module-docs}/services/* src/routes/docs/services
-
-    chmod +w -R src/routes/docs/reference
+    chmod +w -R src/routes/docs/services
 
     mkdir -p src/lib/assets/icons
     cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
