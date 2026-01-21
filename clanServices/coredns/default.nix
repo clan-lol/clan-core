@@ -147,9 +147,9 @@
               lib.attrNames roles.server.machines
             );
 
-            services.resolved.domains = map (m: "~${roles.server.machines.${m}.settings.tld}") (
-              lib.attrNames roles.server.machines
-            );
+            services.resolved.settings.Resolve.Domains = map (
+              m: "~${roles.server.machines.${m}.settings.tld}"
+            ) (lib.attrNames roles.server.machines);
 
             services.unbound = {
               enable = true;

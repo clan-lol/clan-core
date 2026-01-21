@@ -94,12 +94,15 @@ in
             services.ncps.enable = true;
             services.ncps.server.addr = ":${builtins.toString settings.port}";
             services.ncps.cache = {
-              inherit (settings) dataPath;
+              storage.local = settings.dataPath;
               allowPutVerb = true;
               secretKeyPath = config.clan.core.vars.generators."${ncps-var}-private".files.sign-key.path;
               hostName = config.networking.hostName;
+              upstream = {
+                urls = settings.caches;
+                inherit (settings) publicKeys;
+              };
             };
-            services.ncps.upstream = { inherit (settings) caches publicKeys; };
           };
       };
   };
