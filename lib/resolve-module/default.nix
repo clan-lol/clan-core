@@ -17,7 +17,7 @@ let
     Flake doesn't provide input with name '${moduleSpec.input}'
 
     Choose one of the following inputs:
-    - ${builtins.concatStringsSep "\n- " (lib.attrNames (flakeInputs))}
+    - ${builtins.concatStringsSep "\n- " (lib.attrNames flakeInputs)}
 
     To import any official module from '<clan-core>' remove the 'input' attribute from the module definition
     Remove the following line from the module definition:

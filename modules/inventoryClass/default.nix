@@ -54,7 +54,7 @@ let
     # Remove extraModules from serialization,
     # identified by: prefix + pathLength + name
     # inventory.instances.*.roles.*.extraModules
-    path: _value: !(lib.length path == 5 && ((lib.last path)) == "extraModules")
+    path: _value: !(lib.length path == 5 && (lib.last path) == "extraModules")
   ) exposedInventory;
 in
 {
@@ -87,7 +87,7 @@ in
     };
     machines = mkOption {
       type = types.attrsOf (
-        types.submodule ({
+        types.submodule {
           options = {
             machineImports = mkOption {
               type = types.listOf types.raw;
@@ -96,7 +96,7 @@ in
               type = types.listOf types.raw;
             };
           };
-        })
+        }
       );
     };
     introspection = lib.mkOption {

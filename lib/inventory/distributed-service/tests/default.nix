@@ -19,7 +19,7 @@ let
   createTestClan =
     testClan:
     let
-      res = clanLib.clan ({
+      res = clanLib.clan {
         # Static / mocked
         specialArgs = {
           clan-core = {
@@ -35,7 +35,7 @@ let
         imports = [
           testClan
         ];
-      });
+      };
     in
     res;
 

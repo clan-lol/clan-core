@@ -7,7 +7,7 @@
   options.result.api = lib.mkOption {
     visible = false;
     default = { };
-    type = lib.types.submodule ({
+    type = lib.types.submodule {
       options.schema = lib.mkOption {
         description = ''
           The API schema for configuring the service.
@@ -24,7 +24,7 @@
         '';
         default = lib.mapAttrs (_roleName: v: clanLib.jsonschema.fromModule v.interface) config.roles;
       };
-    });
+    };
   };
 
   config.result.assertions = (

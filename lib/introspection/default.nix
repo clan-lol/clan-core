@@ -31,7 +31,7 @@ let
       # Vendored merge from lib.types.attrsOf
       # Because we still cannot access highest prio for the individual attrs yet.
       elemType = type.nestedTypes.elemType;
-      mergedAttrs = lib.zipAttrsWith (name: defs: lib.modules.mergeDefinitions ([ name ]) elemType defs) (
+      mergedAttrs = lib.zipAttrsWith (name: defs: lib.modules.mergeDefinitions [ name ] elemType defs) (
         pushPositions definitionsWithLocations
       );
       headType = unwrapNullOr elemType;
@@ -160,7 +160,7 @@ let
             throw "Yet Unsupported type: ${type.name}";
       in
       if opt ? type && opt.type.name == "submodule" then
-        (definitionInfo) // submodulePrios
+        definitionInfo // submodulePrios
       else if opt ? type && (opt.type.name == "attrsOf" || opt.type.name == "lazyAttrsOf") then
         definitionInfo // (handleAttrsOf opt.type opt.definitionsWithLocations opt.valueMeta.attrs)
       # TODO: Add index support in nixpkgs, otherwise we cannot

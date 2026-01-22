@@ -33,7 +33,7 @@
             availableTags = lib.foldlAttrs (
               acc: _: v:
               v.tags or [ ] ++ acc
-            ) [ ] (machines);
+            ) [ ] machines;
 
             tagMembers = builtins.attrNames (lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) machines);
           in

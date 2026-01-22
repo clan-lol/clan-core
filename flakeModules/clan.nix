@@ -21,7 +21,7 @@ in
     (lib.mkRenamedOptionModule [ "clan" ] [ "flake" "clan" ])
   ];
 
-  options.perSystem = mkPerSystemOption ({
+  options.perSystem = mkPerSystemOption {
     options.clan.pkgs = lib.mkOption {
       description = ''
         Packages for system
@@ -36,7 +36,7 @@ in
       type = types.raw;
       default = null;
     };
-  });
+  };
 
   options.flake = {
     # CLI compat

@@ -82,7 +82,7 @@ let
 
       in
       if opt ? type && opt.type.name == "submodule" then
-        (prio) // submodulePrios
+        prio // submodulePrios
       else if opt ? type && (opt.type.name == "attrsOf" || opt.type.name == "lazyAttrsOf") then
         prio
         // (prioPerValue {

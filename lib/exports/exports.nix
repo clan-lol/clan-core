@@ -48,7 +48,7 @@ let
         buildScopeKey: Global exports (":::") are not yet supported.
       ''
       lib.throwIf
-      ((serviceName == "" && machineName == ""))
+      (serviceName == "" && machineName == "")
       ''
         buildScopeKey requires at least 'serviceName' or 'machineName'
 
@@ -91,7 +91,7 @@ let
         fix:
         - use the provided 'mkExports' utility or
         - use buildScopeKey
-      '' (parts);
+      '' parts;
     in
     {
       serviceName = lib.elemAt checkedParts 0;

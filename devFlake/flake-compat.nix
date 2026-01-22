@@ -120,7 +120,7 @@ let
     flakeSrc:
     let
       flake = import (flakeSrc + "/flake.nix");
-      outputs = flakeSrc // (flake.outputs ({ self = outputs; }));
+      outputs = flakeSrc // (flake.outputs { self = outputs; });
     in
     outputs;
 

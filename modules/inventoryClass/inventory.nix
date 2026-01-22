@@ -230,7 +230,7 @@ in
       '';
       default = { };
       type = types.lazyAttrsOf (
-        types.submoduleWith ({
+        types.submoduleWith {
           modules = [
             (
               { name, ... }:
@@ -308,7 +308,7 @@ in
               }
             )
           ];
-        })
+        }
       );
     };
 
