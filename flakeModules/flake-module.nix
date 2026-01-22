@@ -9,7 +9,9 @@
 {
   flake.flakeModules = {
     clan = import ./clan.nix {
-      clan-core = self;
+      clanLib = self.lib;
+      coreInputs = self.inputs;
+      coreModules = self.modules;
       inherit flake-parts-lib;
     };
     default = config.flake.flakeModules.clan;
