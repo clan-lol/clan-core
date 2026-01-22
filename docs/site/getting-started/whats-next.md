@@ -1,3 +1,5 @@
+# What's next?
+
 ### Summary
 
 Congratulations! You have successfully created your first Clan.
@@ -35,7 +37,7 @@ This command helps ensure that your system configuration is correct and free fro
 
 ### Backups
 
-We recommend to set up backups at this point on all machines. 
+We recommend to set up backups at this point on all machines.
 
 Please follow our [detailed backup guide](../guides/backups/backup-intro.md) and keep your files safe.
 

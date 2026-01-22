@@ -198,7 +198,7 @@ Examples:
   $ clan vars upload [MACHINE]
   Will upload secrets to a specific machine.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/vars/sops/secrets")}
         """
         ),
         formatter_class=HelpFormatter,

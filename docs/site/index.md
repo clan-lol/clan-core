@@ -3,7 +3,7 @@ hide:
   - toc
 ---
 
-# Sovereign Infrastructure, by Design
+# Sovereign Infrastructure by Design
 
 A declarative framework for reliable, self-hosted computing.
 
