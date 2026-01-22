@@ -224,7 +224,7 @@ Feel obliged to change the following lines
   meta.description = "My selfhosted homelab";
 
   # ...
-  # elided
+  # omitted
 }
 ```
 

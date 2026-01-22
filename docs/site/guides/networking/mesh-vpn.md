@@ -64,7 +64,7 @@ For the purpose of this guide we have two machines:
     {
       inherit (clan) nixosConfigurations nixosModules clanInternals;
 
-      # elided for brevity
+      # omitted for brevity
     };
 }
 ```
@@ -120,7 +120,7 @@ $ clan vars list <machineName>
 
 ```{.console, .no-copy}
 $ clan vars list controller
-# ... elided
+# …
 zerotier/zerotier-identity-secret: ********
 zerotier/zerotier-ip: fd0a:b849:2928:1234:c99:930a:a959:2928
 zerotier/zerotier-network-id: 0aa959282834000c

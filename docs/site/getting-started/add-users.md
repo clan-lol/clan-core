@@ -46,8 +46,8 @@ The example shows how to add a user called `jon`:
         ];
       };
     };
-      # ...
-      # elided
+      # …
+      # omitted
   };
 }
 ```
@@ -112,8 +112,8 @@ We can use this property of clan services to bind a nixosModule to the user, whi
 
             roles.default.extraModules = [ ./users/jon/home.nix ]; # (1)
         };
-        # ...
-        # elided
+        # …
+        # omitted
     };
 }
 ```
