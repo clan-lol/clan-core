@@ -100,7 +100,10 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     with (
         TemporaryDirectory(prefix="nixos-install-") as _base_directory,
     ):
+        # /tmp-234/
         base_directory = Path(_base_directory).resolve()
+
+        # /tmp-234/activation_secrets/
         activation_secrets = base_directory / "activation_secrets"
 
         # Notify the UI about what we are doing
@@ -110,15 +113,18 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         secrets_target_dir = machine.secret_vars_store.get_upload_directory(
             machine.name
         )
+        # /tmp-234/activation_secrets/var/lib/sops-nix
         upload_dir = activation_secrets / secrets_target_dir.lstrip("/")
 
         upload_dir.mkdir(parents=True)
+        # /tmp-234/activation_secrets/var/lib/sops-nix/{activation,key.txt}
         machine.secret_vars_store.populate_dir(
             machine.name,
             upload_dir,
             phases=["activation", "users", "services"],
         )
 
+        # /tmp-234/activation_secrets/var/lib/sops-nix/{gen_1/file_1,gen_2/file_2}
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
@@ -131,10 +137,13 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             "nixos-anywhere",
             "--flake",
             f"{machine.flake}#{machine.name}",
+            # Mark the
             "--extra-files",
             str(activation_secrets),
         ]
 
+        # for every file in the partitioning_secrets file-tree
+        # Append one command "--disk-encryption-keys file_x"
         for path in partitioning_secrets.rglob("*"):
             if path.is_file():
                 cmd.extend(
