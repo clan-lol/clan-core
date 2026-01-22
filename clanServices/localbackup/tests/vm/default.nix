@@ -36,9 +36,11 @@
 
       preBackupScript = ''
         touch /run/prebackup
+        touch /run/backup-tmp
       '';
       postBackupScript = ''
         touch /run/postbackup
+        rm /run/backup-tmp
       '';
     };
   };
@@ -59,9 +61,10 @@
     machine.wait_until_succeeds("! systemctl is-active localbackup-job-serverone >&2")
     # check hooks
     machine.succeed("cat /run/prebackup && cat /run/postbackup")
+    machine.fail("cat /run/backup-tmp")
     machine.succeed("cat /run/mount-external-disk && cat /run/unmount-external-disk")
 
-    #cleanup
+    # cleanup
     machine.succeed("rm /run/prebackup /run/postbackup /run/mount-external-disk /run/unmount-external-disk")
 
     # list
