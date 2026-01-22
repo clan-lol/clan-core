@@ -5,7 +5,7 @@
   outputs =
     { self, Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU, ... }:
     let
-      clan = Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU.lib.clan ({
+      clan = Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU.lib.clan {
         inherit self;
         imports = [
           ./clan.nix
@@ -19,7 +19,7 @@
             }
           )
         ];
-      });
+      };
     in
     {
       clan = clan.config;

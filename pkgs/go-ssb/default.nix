@@ -3,7 +3,7 @@
   buildGoModule,
   fetchFromGitHub,
 }:
-buildGoModule rec {
+buildGoModule {
   pname = "go-ssb";
   version = "0.2.1";
 
@@ -29,6 +29,6 @@ buildGoModule rec {
     description = "Go implementation of ssb (work in progress)";
     homepage = "https://github.com/ssbc/go-ssb";
     license = licenses.mit;
-    maintainers = with maintainers; [ ];
+    maintainers = [ ];
   };
 }

@@ -3,7 +3,7 @@ let
   sanitizePath =
     rootPath: path:
     let
-      storePrefix = builtins.unsafeDiscardStringContext ("${rootPath}");
+      storePrefix = builtins.unsafeDiscardStringContext "${rootPath}";
       pathStr = lib.removePrefix "/" (
         lib.removePrefix storePrefix (builtins.unsafeDiscardStringContext (toString path))
       );

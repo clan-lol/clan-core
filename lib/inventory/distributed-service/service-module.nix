@@ -505,7 +505,7 @@ in
                   '';
                   type = types.deferredModuleWith {
                     staticModules = [
-                      ({
+                      {
                         options.exports = mkOption {
                           type = types.lazyAttrsOf types.deferredModule;
                           default = { };
@@ -592,7 +592,7 @@ in
                             ```
                           '';
                         };
-                      })
+                      }
                     ];
                   };
                   default = { };
@@ -673,7 +673,7 @@ in
       '';
       type = types.deferredModuleWith {
         staticModules = [
-          ({
+          {
             options.exports = mkOption {
               type = types.lazyAttrsOf types.deferredModule;
               default = { };
@@ -749,7 +749,7 @@ in
                 ```
               '';
             };
-          })
+          }
         ];
       };
       default = { };

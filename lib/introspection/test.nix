@@ -477,16 +477,16 @@ in
             );
           };
         }
-        ({
+        {
           _file = "inventory.json";
           machines.jon = {
             prim = 3;
           };
-        })
-        ({
+        }
+        {
           # _file = "clan.nix";
           machines.jon = { };
-        })
+        }
 
       ];
     in
@@ -552,21 +552,21 @@ in
             );
           };
         }
-        ({
+        {
           _file = "inventory.json";
           list = [
             # Incomplete entry, should not break introspection
             { }
             { }
           ];
-        })
-        ({
+        }
+        {
           _file = "clan.nix";
           list = [
             { }
             { }
           ];
-        })
+        }
       ];
     in
     {
@@ -625,22 +625,22 @@ in
             );
           };
         }
-        ({
+        {
           _file = "inventory.json";
           machines = [
             {
               prim = 10;
             }
           ];
-        })
-        ({
+        }
+        {
           _file = "clan.nix";
           machines = [
             {
               prim = 3;
             }
           ];
-        })
+        }
       ];
     in
     {
@@ -677,14 +677,14 @@ in
             );
           };
         }
-        ({
+        {
           _file = "config.nix";
           extraModules = [
             "modules/common.nix"
             ./some/path.nix
             { config = { }; }
           ];
-        })
+        }
       ];
       result = slib.getPrios { options = evaluated.options; };
     in
