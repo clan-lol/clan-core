@@ -560,12 +560,20 @@ type SecretsAgePluginsInput = list[str]
 """
 A list of age plugins which must be available in the shell when encrypting and decrypting secrets.
 
+Each entry can be either:
+- A package name from nixpkgs (e.g., `"age-plugin-yubikey"`)
+- A flake reference for packages not in nixpkgs (e.g., `"github:owner/repo#package"`)
+
 """
 
 
 type SecretsAgePluginsOutput = list[str]
 """
 A list of age plugins which must be available in the shell when encrypting and decrypting secrets.
+
+Each entry can be either:
+- A package name from nixpkgs (e.g., `"age-plugin-yubikey"`)
+- A flake reference for packages not in nixpkgs (e.g., `"github:owner/repo#package"`)
 
 """
 
