@@ -45,7 +45,7 @@ class MockFlake:
             let
                 pkgs = import {nixpkgs} {{}};
                 inherit (pkgs) lib;
-                clanLib = import {Path(clan_core_path)}/lib {{ inherit lib; self = null; nixpkgs = {nixpkgs}; }};
+                clanLib = import {Path(clan_core_path)}/lib {{ inherit lib; }};
                 select = (import {select}/select.nix).select;
                 result = import {self._file} {{ inherit pkgs lib clanLib; }};
             in

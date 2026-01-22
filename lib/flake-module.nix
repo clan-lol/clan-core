@@ -19,7 +19,7 @@ rec {
   flake.clanLib =
     let
       clanLib = import ./default.nix {
-        inherit lib inputs self;
+        inherit lib;
       };
     in
     # Extend clanLib here by lib.clan
