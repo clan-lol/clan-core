@@ -266,6 +266,7 @@ class SecretStore(StoreBase):
             for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
+                        # TODO: generator with name "activation" would disable all activation secrets
                         target_path = output_dir / generator.name / file.name
                         target_path.parent.mkdir(
                             parents=True,
