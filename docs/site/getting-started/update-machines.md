@@ -5,11 +5,10 @@ The Clan command line interface enables you to update machines remotely over SSH
 In this guide we will teach you how to set a `targetHost` in Nix,
 and how to define a remote builder for your machine closures.
 
+## Requirements
 
-##Requirements
 * **Expected time for this step**: 15min
-* **A setup device **: Any machine that is part of your clan and that you have root access to, or the setup machine you used during the previous steps.
-
+* **A setup device**: Any machine that is part of your clan and that you have root access to, or the setup machine you used during the previous steps.
 
 ## Setting `targetHost`
 
@@ -18,7 +17,6 @@ This eliminates the need to specify `--target-host` in CLI commands.
 
 ```{.nix title="clan.nix" hl_lines="10"}
 {
-    # Ensure this is unique among all clans you want to use.
     meta.name = "my-clan";
     meta.domain = "ccc";
 
@@ -29,7 +27,7 @@ This eliminates the need to specify `--target-host` in CLI commands.
             deploy.targetHost = "root@192.168.192.4"; # (1)
         };
     };
-    # [...]
+
 }
 ```
 
@@ -72,12 +70,12 @@ During an update, clan will ssh into the `buildHost` and run `nixos-rebuild` fro
 
 ```{.nix hl_lines="5" .no-copy}
 clan {
-    # ...
     machines = {
         "jon" = {
             clan.core.networking.buildHost = "root@<host_or_ip>";
         };
     };
+
 };
 ```
 
@@ -108,7 +106,6 @@ one can set the `clan.core.deployment.requireExplicitUpdate` option to true:
 
 ```{.nix hl_lines="5" .no-copy}
 clan {
-    # ...
     machines = {
         "jon" = {
             clan.core.deployment.requireExplicitUpdate = true;

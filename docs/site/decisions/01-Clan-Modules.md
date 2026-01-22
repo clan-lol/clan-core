@@ -247,7 +247,7 @@ The following thoughts went into this:
       roles.client.tags.<tagName>.settings = {};
     };
     "instance2" = {
-      # ...
+
     };
   };
 }

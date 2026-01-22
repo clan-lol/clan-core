@@ -136,14 +136,10 @@ inventory.instances = {
             # See next example, for a workaround.
             extraModules = [ self.nixosModules.borgbackup ];
 
-            # Or inline module definition, (needs to be json compatible)
+            # Or inline module definition
             extraModules = [
               {
                 # Your module configuration here
-                # ...
-                #
-                # If the module needs to contain non-serializable expressions:
-                imports = [ ./path/to/non-serializable.nix ];
               }
             ];
         };

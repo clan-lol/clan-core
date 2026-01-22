@@ -99,7 +99,6 @@
                         _class = "clan.service";
                         manifest.name = "example-service";
 
-                        # ... elided
                       }
                       ```
                     '';

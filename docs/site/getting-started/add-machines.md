@@ -40,11 +40,11 @@ This example demonstrates a setup with two machines and a few extra settings:
       jon-machine = {
           deploy.targetHost = "root@192.168.0.2";
           # Define tags here (optional)
-          tags = [ ]; 
+          tags = [ ];
       };
       sara-machine = {
           # Define tags here (optional)
-          tags = [ ]; # 
+          tags = [ ]; #
       };
   };
   # Define additional nixosConfiguration here
@@ -85,7 +85,6 @@ machines: It is advised to add the *ssh key* of your setup device's root user he
 
     # Set nixosOptions here
     # Or import your own modules via 'imports'
-    # ...
 }
 ```
 </details>
@@ -101,7 +100,7 @@ machines: It is advised to add the *ssh key* of your setup device's root user he
 git rm -rf ./machines/sara-machine
 ```
 
-Make sure to also remove or update any references to that machine in your nix files and inventory.json 
+Make sure to also remove or update any references to that machine in your nix files and inventory.json
 
 </details>
 

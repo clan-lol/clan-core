@@ -18,7 +18,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 
 * **One Setup Device**: A Linux machine from which the setup commands will be run.
 
-    !!! Warning "Operating System Recommendations" 
+    !!! Warning "Operating System Recommendations"
         We are currently working on more refined operating system recommendations.
 
         - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
@@ -223,8 +223,6 @@ Feel obliged to change the following lines
   meta.domain = "mydomain";
   meta.description = "My selfhosted homelab";
 
-  # ...
-  # omitted
 }
 ```
 
@@ -246,7 +244,7 @@ Description: My selfhosted homelab
 Domain: mydomain
 ```
 
-This confirms your setup is working correctly. 
+This confirms your setup is working correctly.
 
 If you receive an error message for `clan show`, check for syntax errors in your clan.nix file first.
 

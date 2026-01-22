@@ -17,7 +17,7 @@ Quick reference for diagnosing and fixing vars issues.
    script = ''
      openssl rand -hex 32 > $out/secret  # openssl not found!
    '';
-   
+
    # Correct
    runtimeInputs = [ pkgs.openssl ];
    ```
@@ -28,7 +28,7 @@ Quick reference for diagnosing and fixing vars issues.
    script = ''
      echo "secret" > ./myfile
    '';
-   
+
    # Correct
    script = ''
      echo "secret" > $out/myfile
@@ -43,7 +43,7 @@ Quick reference for diagnosing and fixing vars issues.
      # Wrong - only generates one file
      echo "data" > $out/config
    '';
-   
+
    # Correct - must generate all declared files
    script = ''
      echo "data" > $out/config
@@ -61,12 +61,12 @@ Quick reference for diagnosing and fixing vars issues.
    ```nix
    # Wrong - secret files can't use .value
    files."secret" = { secret = true; };
-   # ...
-   environment.etc."app.conf".text = 
+
+   environment.etc."app.conf".text =
      config.clan.core.vars.generators.app.files."secret".value;
-   
+
    # Correct - use .path for secrets
-   environment.etc."app.conf".source = 
+   environment.etc."app.conf".source =
      config.clan.core.vars.generators.app.files."secret".path;
    ```
 
@@ -74,8 +74,8 @@ Quick reference for diagnosing and fixing vars issues.
    ```nix
    # Better for non-secrets
    files."cert.pem" = { secret = false; };
-   # ...
-   sslCertificate = 
+
+   sslCertificate =
      config.clan.core.vars.generators.ca.files."cert.pem".value;
    ```
 
@@ -90,7 +90,7 @@ clan.core.vars.generators.child = {
   script = ''
     cat $in/parent/file > $out/newfile
   '';
-  
+
   # Correct
   dependencies = [ "parent" ];
   script = ''
@@ -242,9 +242,9 @@ clan vars list my-machine
 Check that:
 
 1. Your machine is properly configured in the flake
-  
+
 2. Your user has access to the machine's secrets
-   
+
 3. The age key is available in the expected location
 
 ### Password Store Issues
@@ -264,7 +264,7 @@ If these solutions don't resolve your issue:
 1. Check the [clan-core issue tracker](https://git.clan.lol/clan/clan-core/issues)
 2. Ask in the Clan community channels
 3. Provide:
-  
+
      - The generator configuration
 
      - The exact error message
