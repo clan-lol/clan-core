@@ -1,4 +1,12 @@
-{ clan-core, flake-parts-lib }:
+# Attention!
+# Don't add 'clan-core' to this list.
+# Instead explicitly forward the attribute for transparency and explizitness.
+{
+  flake-parts-lib,
+  coreModules,
+  coreInputs,
+  clanLib,
+}:
 # Downstream flake arguments
 {
   self,
@@ -48,8 +56,8 @@ in
     clan =
       # TODO: make these explicit options and deduplicate with lib.clan function
       let
-        nixpkgs = inputs.nixpkgs or clan-core.inputs.nixpkgs;
-        nix-darwin = inputs.nix-darwin or clan-core.inputs.nix-darwin;
+        nixpkgs = inputs.nixpkgs or coreInputs.nixpkgs;
+        nix-darwin = inputs.nix-darwin or coreInputs.nix-darwin;
       in
       lib.mkOption {
         description = "Clan module. Define your clan inside here";
@@ -61,14 +69,14 @@ in
             inherit nixpkgs nix-darwin;
           };
           modules = [
-            clan-core.modules.clan.default
+            coreModules.clan.default
 
             # Inject the users flake-config from flake-parts
             { _dependencies.flake-config = config; }
           ];
         };
         # Important: !This logic needs to be kept in sync with lib.clan function!
-        apply = config: clan-core.lib.checkConfig config.checks config;
+        apply = config: clanLib.checkConfig config.checks config;
       };
 
     # Mapped flake toplevel outputs
