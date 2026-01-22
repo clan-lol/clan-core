@@ -128,10 +128,12 @@ class Packages:
             allowed_packages = cls.allowed_packages
 
         if "#" in package:
-            log.warning(
-                "Allowing package %s for debugging as it looks like a flakeref",
-                package,
-            )
+            # Flake references for age plugins are officially supported
+            if "age-plugin" not in package:
+                log.warning(
+                    "Allowing package %s for debugging as it looks like a flakeref",
+                    package,
+                )
             return
 
         if package not in allowed_packages:

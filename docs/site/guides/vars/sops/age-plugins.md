@@ -49,7 +49,14 @@ AGE-PLUGIN-FIDO2-HMAC-1QQPQZRFR7ZZ2WCV...
 
 ## Configuring Plugins in `flake.nix`
 
-To use `age` plugins with Clan, you need to configure them in your `flake.nix` file. Here’s an example:
+To use `age` plugins with Clan, you need to configure them in your `flake.nix` file.
+
+Each plugin entry can be either:
+
+- A package name from nixpkgs (e.g., `"age-plugin-yubikey"`)
+- A flake reference for plugins not in nixpkgs (e.g., `"github:owner/repo#package"`)
+
+Here's an example:
 
 ```nix title="flake.nix"
 {
@@ -65,11 +72,13 @@ To use `age` plugins with Clan, you need to configure them in your `flake.nix` f
       meta.name = "myclan";
       meta.domain = "ccc";
 
-      # Add YubiKey and FIDO2 HMAC plugins
-      # Note: Plugins must be available in nixpkgs.
+      # Add age plugins
       secrets.age.plugins = [
+        # Plugins available in nixpkgs can be specified by name
         "age-plugin-yubikey"
         "age-plugin-fido2-hmac"
+        # Plugins not in nixpkgs can be specified as flake references
+        "github:pinpox/age-plugin-picohsm#default"
       ];
 
       machines = {
