@@ -36,7 +36,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 
         1.  Run the recommended installer:
             ```shellSession
-            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+            curl --proto '=https' --tlsv1.2 -sSf -L https://artifacts.nixos.org/nix-installer | sh -s -- install
             ```
 
         2.  After installation, ensure flakes are enabled by adding this line to `~/.config/nix/nix.conf`:

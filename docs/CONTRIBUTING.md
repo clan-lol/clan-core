@@ -15,10 +15,10 @@ Let's get your development environment up and running:
 
 1. **Install Nix Package Manager**:
 
-      - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/DeterminateSystems/nix-installer/releases) or running this command:
+      - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/NixOS/nix-installer/releases) or running this command:
 
       ```bash
-      curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+      curl --proto '=https' --tlsv1.2 -sSf -L https://artifacts.nixos.org/nix-installer | sh -s -- install
       ```
 
 2. **Install direnv**:
