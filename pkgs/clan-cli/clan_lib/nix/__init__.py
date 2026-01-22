@@ -15,7 +15,15 @@ log = logging.getLogger(__name__)
 
 
 def nix_command(flags: list[str]) -> list[str]:
-    args = ["nix", "--extra-experimental-features", "nix-command flakes", *flags]
+    args = [
+        "nix",
+        "--extra-experimental-features",
+        "nix-command flakes",
+        "--option",
+        "warn-dirty",
+        "false",
+        *flags,
+    ]
     if store := nix_test_store():
         args += ["--store", str(store)]
     return args
