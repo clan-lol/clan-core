@@ -111,7 +111,7 @@ If the root password instead should only be entered once and shared across all m
 {config, pkgs, ...}: {
   clan.core.vars.generators.root-password = {
     share = true;
-    # ...
+
   }
 }
 ```

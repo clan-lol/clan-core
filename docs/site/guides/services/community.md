@@ -18,17 +18,15 @@ If you export the module from your flake, other people will be able to import it
 i.e. `@hsjobeki/customNetworking`
 
 ```nix title="flake.nix"
-# ...
 outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } ({
     imports = [ inputs.clan-core.flakeModules.default ];
-    # ...
     # Sometimes this attribute set is defined in clan.nix
     clan = {
         # If needed: Exporting the module for other people
         modules."@hsjobeki/customNetworking" = import ./service-modules/networking.nix;
         # We could also inline the complete module spec here
         # For example
-        # {...}: { _class = "clan.service"; ... };
+        # modules."@hsjobeki/customNetworking" ) = {...}: { _class = "clan.service"; ... };
     };
 })
 ```
@@ -43,7 +41,6 @@ The imported module file must fulfill at least the following requirements:
 {
     _class = "clan.service";
     manifest.name = "zerotier-networking";
-    # ...
 }
 ```
 
@@ -69,7 +66,6 @@ Here is a short guide with some conventions:
     # Define what roles exist
     roles.peer = {};
     roles.controller = {};
-    # ...
 }
 ```
 
@@ -107,7 +103,7 @@ Next we need to define the settings and the behavior of these distinct roles.
                 #
                 # Add one systemd service for every instance
                 systemd.services.zerotier-client-${instanceName} = {
-                    # ... depend on the '.config' and 'perInstance arguments'
+
                 };
             };
         }
@@ -139,7 +135,6 @@ Next we need to define the settings and the behavior of these distinct roles.
             networking.enable = true;
         };
     };
-    # ...
 }
 ```
 
@@ -168,7 +163,7 @@ The following example shows how to create a local instance of machine specific s
             };
           in
             {
-                # ...
+
             };
     };
 }
@@ -202,17 +197,14 @@ Imagine your module looks like this
 {
     _class = "clan.service";
     manifest.name = "messaging"
-    # ...
 }
 ```
 
 To import the module use `importApply`
 
 ```nix title="flake.nix"
-# ...
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
-    # ...
     # Sometimes this attribute set is defined in clan.nix
     clan = {
         # Register the module
@@ -228,18 +220,15 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 {
     _class = "clan.service";
     manifest.name = "messaging"
-    # ...
-    # config.myClan
+
 }
 ```
 
 Then wrap the module and forward the variable `self` from the outer context into the module
 
 ```nix title="flake.nix"
-# ...
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
-    # ...
     # Sometimes this attribute set is defined in clan.nix
     clan = {
         # Register the module

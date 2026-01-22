@@ -73,12 +73,10 @@ Which can be imported into individual machines to make the user available on tha
 ```bash
 .
 ├── machines
-│   ├── jon
-# ......
+│   └── jon
 ├── users
 │   ├── jon
-│   │   └── default.nix # <- a NixOS module; sets some options
-# ... ... ...
+│   │   └── default.nix
 ```
 
 ## Alternative 2: Using [home-manager](https://github.com/nix-community/home-manager)
