@@ -1,6 +1,5 @@
 {
   lib,
-  ...
 }:
 lib.fix (
   let
