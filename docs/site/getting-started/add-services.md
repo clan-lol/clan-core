@@ -47,8 +47,8 @@ Add the configuration for a ZeroTier Network to your clan.nix file as follows:
       roles.peer.tags.all = { }; 
     };
   };
-  # ...
-  # elided
+  # …
+  # omitted
 }
 ```
 
@@ -72,12 +72,11 @@ Adding ssh keys is one of the most recommended services:
             roles.default.tags.all = { };
             roles.default.settings = {
                 allowedKeys = {
-                    "root" = "ssh-ed25519 AAAAC3N...";  
+                    "root" = "ssh-ed25519 AAAAC3N…";  
                 };
             };
         };
-        # ...
-        # elided
+        # …
     };
 }
 ```

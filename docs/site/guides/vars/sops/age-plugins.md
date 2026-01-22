@@ -73,14 +73,14 @@ To use `age` plugins with Clan, you need to configure them in your `flake.nix` f
       ];
 
       machines = {
-        # Machine configurations (elided for brevity)
+        # Machine configurations (omitted for brevity)
       };
     };
   in
   {
     inherit (clan) nixosConfigurations nixosModules clanInternals;
 
-    # Additional configurations (elided for brevity)
+    # Additional configurations (omitted for brevity)
   };
 }
 ```

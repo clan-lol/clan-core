@@ -60,7 +60,7 @@ To export data from your service, use the `mkExports` helper function available 
       };
 
       nixosModule = { ... }: {
-        # ...elided
+        # …
       };
     };
   };

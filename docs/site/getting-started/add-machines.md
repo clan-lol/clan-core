@@ -52,7 +52,7 @@ This example demonstrates a setup with two machines and a few extra settings:
   machines = {
       jon-machine = { config, pkgs, ... }: {
           users.users.root.openssh.authorizedKeys.keys = [
-              "ssh-ed25519 AAAAC3NzaC..." # elided
+              "ssh-ed25519 AAAAC3NzaC…"
           ];
       };
   };
