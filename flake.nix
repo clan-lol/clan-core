@@ -110,7 +110,9 @@
             ]
           ++ lib.optional (pathExists ./flakeModules/clan.nix) (
             import ./flakeModules/clan.nix {
-              clan-core = inputs.self;
+              clanLib = inputs.self.lib;
+              coreInputs = inputs.self.inputs;
+              coreModules = inputs.self.modules;
               inherit flake-parts-lib;
             }
           )
