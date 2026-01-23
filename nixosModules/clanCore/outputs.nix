@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   ...
 }:
@@ -12,46 +11,6 @@
   options.system.clan = lib.mkOption {
     type = lib.types.submodule {
       options = {
-        deployment.data = lib.mkOption {
-          type = lib.types.attrs;
-          description = ''
-            the data to be written to the deployment.json file
-          '';
-        };
-        deployment.file = lib.mkOption {
-          type = lib.types.path;
-          description = ''
-            the location of the deployment.json file
-          '';
-          default = throw ''
-            deployment.json file generation has been removed in favor of direct selectors.
-
-            Please upgrade your clan-cli to the latest version.
-
-            The deployment data is now accessed directly from the configuration
-            instead of being written to a separate JSON file.
-          '';
-          defaultText = "error: deployment.json file generation has been removed in favor of direct selectors.";
-        };
-        deployment.buildHost = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = ''
-            the hostname of the build host where nixos-rebuild is run
-          '';
-        };
-        deployment.targetHost = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = ''
-            the hostname of the target host to be deployed to
-          '';
-        };
-        deployment.requireExplicitUpdate = lib.mkOption {
-          type = lib.types.bool;
-          description = ''
-            if true, the deployment will not be updated automatically.
-          '';
-          default = false;
-        };
         deployment.nixosMobileWorkaround = lib.mkOption {
           type = lib.types.bool;
           description = ''
@@ -74,14 +33,5 @@
     description = ''
       utility outputs for clan management of this machine
     '';
-  };
-  # optimization for faster secret generate/upload and machines update
-  config = {
-    system.clan.deployment.data = {
-      sops.defaultGroups = config.clan.core.sops.defaultGroups;
-      inherit (config.clan.core.networking) targetHost buildHost;
-      inherit (config.system.clan.deployment) nixosMobileWorkaround;
-      inherit (config.clan.deployment) requireExplicitUpdate;
-    };
   };
 }
