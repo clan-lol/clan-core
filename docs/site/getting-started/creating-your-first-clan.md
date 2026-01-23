@@ -1,3 +1,5 @@
+# Creating your first Clan
+
 ## Summary
 
 Ready to manage your fleet of machines?

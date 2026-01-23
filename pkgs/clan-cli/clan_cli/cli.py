@@ -305,7 +305,7 @@ Examples:
   $ clan secrets get [SECRET]
   Will display the content of the specified secret.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/vars/sops/secrets")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -342,7 +342,7 @@ Examples:
     This is especially useful for resetting certain passwords while leaving the rest
     of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/vars/sops/secrets")}
         """
         ),
         formatter_class=HelpFormatter,

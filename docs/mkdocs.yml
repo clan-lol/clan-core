@@ -77,7 +77,7 @@ nav:
           - Troubleshooting: guides/vars/vars-troubleshooting.md
           - Sops Backend:
               - Yubikeys & Age Plugins: guides/vars/sops/age-plugins.md
-          - Managing Users (OLD): guides/secrets.md
+              - Managing Users: guides/vars/sops/secrets.md
       - Backups:
           - Introduction to Backups: guides/backups/backup-intro.md
           - Minimal Example: guides/backups/minimal-example.md
