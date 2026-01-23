@@ -43,7 +43,7 @@ let
   perSystem =
     f: system:
     f {
-      inherit system;
+      # inherit system;
       pkgs = pkgsFor.${system};
     };
 
@@ -246,10 +246,10 @@ in
 
       systems = lib.genAttrs supportedSystems (
         perSystem (
-          { system, pkgs }:
+          { pkgs }:
           {
-            exports = lib.mapAttrs (exportName: v: {
-              generators = lib.mapAttrs (genName: gen: {
+            exports = lib.mapAttrs (_exportName: v: {
+              generators = lib.mapAttrs (_genName: gen: {
                 # import the deferredModule
                 imports = [ gen ];
                 config.pkgs = pkgs;

@@ -76,18 +76,8 @@ in
       default = config._module.args.name;
       defaultText = "Name of the generator";
     };
-    dependencies = mkOption {
-      description = ''
-        A list of other generators that this generator depends on.
-        The output values of these generators will be available to the generator script as files.
+    # Machine injects the dependency option
 
-        For example:
-
-        **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
-      '';
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
     validation = mkOption {
       description = ''
         A set of values that invalidate the generated values.
