@@ -1,4 +1,4 @@
-import config from "$lib/config";
+import config from "~/config";
 import type {
   Markdown,
   Frontmatter as MarkdownFrontmatter,
@@ -26,14 +26,13 @@ export class Docs {
   navItems: NavItem[] = [];
   async init() {
     this.#articles = Object.fromEntries(
-      Object.entries(
-        import.meta.glob<Markdown>("../../routes/docs/**/*.md"),
-      ).map(([key, fn]) => {
-        return [key.slice("../../routes/docs".length, -".md".length), fn];
-      }),
+      Object.entries(import.meta.glob<Markdown>("../../docs/**/*.md")).map(
+        ([key, fn]) => {
+          return [key.slice("../../docs".length, -".md".length), fn];
+        },
+      ),
     );
 
-    console.log(this.#articles);
     this.navItems = await Promise.all(
       config.docs.navItems.map((navItem) => this.#normalizeNavItem(navItem)),
     );

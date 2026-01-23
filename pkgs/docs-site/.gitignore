@@ -19,12 +19,6 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-
-# Generated docs
-src/routes/docs/reference/options
-src/routes/docs/reference/clan.core
-src/routes/docs/services/official
-
 # Icons and other assets
 src/lib/assets/icons
-src/routes/docs
+src/docs

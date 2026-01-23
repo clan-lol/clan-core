@@ -32,6 +32,9 @@
             ;
           inherit (inputs) nixpkgs;
         };
+        docs-markdowns = pkgs.callPackage ./docs-markdowns.nix {
+          inherit (self'.packages) module-docs clan-cli-docs;
+        };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
       };
       checks.docs-integrity =

@@ -10,7 +10,7 @@ export const navItems: NavItemInput[] = [
     items: [
       {
         label: "Overview",
-        slug: "/reference/overview",
+        slug: "/reference",
       },
       {
         label: "Options",
@@ -20,6 +20,6 @@ export const navItems: NavItemInput[] = [
   },
   {
     label: "Test",
-    link: "/test/overview",
+    link: "/test",
   },
 ];

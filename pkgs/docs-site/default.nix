@@ -2,7 +2,7 @@
   buildNpmPackage,
   importNpmLock,
   nodejs_latest,
-  module-docs,
+  docs-markdowns,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clan-site";
@@ -17,18 +17,13 @@ buildNpmPackage (finalAttrs: {
   npmConfigHook = importNpmLock.npmConfigHook;
 
   preBuild = ''
-    # Copy generated reference docs
-    mkdir -p src/routes/docs/reference
-    cp -r ${module-docs}/reference/* src/routes/docs/reference
-    chmod +w -R src/routes/docs/reference
-
-    mkdir -p src/routes/docs/services
-    cp -r ${module-docs}/services/* src/routes/docs/services
-    chmod +w -R src/routes/docs/services
+    mkdir -p src/docs
+    cp -r ${docs-markdowns}/* src/docs
+    chmod -R +w src/docs
+    mv src/docs/reference/index.md src/docs/reference.md
 
     mkdir -p src/lib/assets/icons
     cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
-    chmod +w -R src/lib/assets/icons
   '';
   passthru = {
     tests = {
