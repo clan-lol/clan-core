@@ -432,6 +432,13 @@ def run(
         msg=options.error_msg,
     )
 
+    if cmdlog.isEnabledFor(logging.DEBUG) and options.trace:
+        print_trace(
+            f"Command exited with return code {process.returncode}",
+            cmdlog,
+            options.prefix,
+        )
+
     if options.check and process.returncode != 0:
         if is_async_cancelled():
             cmd_out.msg = "Command cancelled"

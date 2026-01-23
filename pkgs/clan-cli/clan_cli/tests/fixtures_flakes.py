@@ -15,9 +15,8 @@ from clan_cli.tests.fixture_error import FixtureError
 from clan_cli.tests.root import CLAN_CORE
 from clan_cli.tests.temporary_dir import TEMPDIR
 from clan_lib import cmd
+from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import (
-    TemplateType,
-    clan_templates,
     nixpkgs_source,
     specific_machine_dir,
 )
@@ -81,12 +80,7 @@ def substitute(
         clan_core_replacement = f"path://{clan_core_flake}"
 
         if not nix_test_store():
-            _flake = Flake(str(clan_core_flake))
-            _flake.prefetch()
-
-            assert _flake.hash, "Clan core flake hash is empty"
-            assert _flake.store_path, "Clan core flake store path is empty"
-            clan_core_replacement = f"path://{_flake.store_path}?narHash={_flake.hash}"
+            clan_core_replacement = f"path://{clan_core_flake}"
 
     with file.open() as f:
         for line in f:
@@ -176,6 +170,8 @@ class ClanFlake:
         self._flake_template = flake_template
         self.inventory = nested_dict()
         self.machines = nested_dict()
+        self.clan_nix = nested_dict()
+        self.clan_nix_raw: str | None = None
 
         clan_core_flake = Flake(str(CLAN_CORE))
 
@@ -185,13 +181,7 @@ class ClanFlake:
         # and we need to prefetch the clan core flake, this would fail in a nix build
         # But is required for local testing
         if not nix_test_store():
-            clan_core_flake.prefetch()
-
-            assert clan_core_flake.hash, "Clan core flake hash is empty"
-            assert clan_core_flake.store_path, "Clan core flake store path is empty"
-            clan_core_replacement = (
-                f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}"
-            )
+            clan_core_replacement = f"path://{clan_core_flake}"
 
         self.substitutions: dict[str, str] = {
             "git+https://git.clan.lol/clan/clan-core": clan_core_replacement,
@@ -236,21 +226,12 @@ class ClanFlake:
         shutil.copytree(self._flake_template, self.path)
         sp.run(["chmod", "+w", "-R", str(self.path)], check=True)
         self.substitute()
-        if not (self.path / ".git").exists():
-            with locked_open(Path(lock_nix), "w"):
-                sp.run(
-                    [
-                        "nix",
-                        "flake",
-                        "lock",
-                        "--extra-experimental-features",
-                        "flakes nix-command",
-                    ],
-                    cwd=self.path,
-                    check=True,
-                )
-                with pytest.MonkeyPatch.context() as mp:
-                    init_git(mp, self.path)
+        run(
+            nix_command(["flake", "lock"]),
+            RunOpts(cwd=self.path),
+        )
+        with pytest.MonkeyPatch.context() as mp:
+            init_git(mp, self.path)
 
     def refresh(self) -> None:
         if not self.path.exists():
@@ -259,6 +240,15 @@ class ClanFlake:
         if self.inventory:
             inventory_path = self.path / "inventory.json"
             inventory_path.write_text(json.dumps(self.inventory, indent=2))
+        if self.clan_nix and self.clan_nix_raw is not None:
+            msg = "Cannot set both clan_nix and clan_nix_raw. Please choose one."
+            raise FixtureError(msg)
+        if self.clan_nix:
+            clan_nix_path = self.path / "clan.json"
+            clan_nix_path.write_text(json.dumps(self.clan_nix, indent=2))
+        if self.clan_nix_raw is not None:
+            clan_nix_path = self.path / "clan.nix"
+            clan_nix_path.write_text(self.clan_nix_raw)
         imports = "\n".join(
             [f"clan-core.clanModules.{module}" for module in self.clan_modules],
         )
@@ -290,15 +280,11 @@ class ClanFlake:
 
 @pytest.fixture(scope="session")
 def minimal_flake_template() -> Iterator[ClanFlake]:
-    with (
-        tempfile.TemporaryDirectory(prefix="minimal-flake-", dir=TEMPDIR) as _dirpath,
-        pytest.MonkeyPatch.context() as mp,
-    ):
+    with tempfile.TemporaryDirectory(prefix="minimal-flake-", dir=TEMPDIR) as _dirpath:
         temporary_home = Path(_dirpath).resolve()
-        mp.setenv("HOME", str(temporary_home))
         flake = ClanFlake(
             temporary_home=temporary_home,
-            flake_template=clan_templates(TemplateType.CLAN) / "minimal",
+            flake_template=Path(__file__).parent / "templates" / "minimal-test-flake",
         )
         flake.init_from_template()
         yield flake
