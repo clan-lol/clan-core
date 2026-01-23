@@ -3,8 +3,10 @@ import json
 import sys
 from pathlib import Path
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
+from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.nix import nix_shell
 
 from clan_cli.secrets.sops import load_age_plugins
@@ -13,6 +15,8 @@ from .secrets import encrypt_secret, sops_secrets_folder
 
 
 def import_sops(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     file = Path(args.sops_file)
     file_type = file.suffix
 
@@ -38,17 +42,18 @@ def import_sops(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 continue
-            if (sops_secrets_folder(args.flake.path) / secret_name / "secret").exists():
+            if (sops_secrets_folder(clan_dir) / secret_name / "secret").exists():
                 print(
                     f"WARNING: {secret_name} already exists, skipping",
                     file=sys.stderr,
                 )
                 continue
             encrypt_secret(
-                args.flake.path,
-                sops_secrets_folder(args.flake.path) / secret_name,
-                load_age_plugins(args.flake),
+                clan_dir,
+                sops_secrets_folder(clan_dir) / secret_name,
+                load_age_plugins(flake),
                 v,
+                flake.path,
                 add_users=args.user,
                 add_machines=args.machine,
                 add_groups=args.group,

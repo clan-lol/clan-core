@@ -1,4 +1,5 @@
 pytest_plugins = [
+    "clan_cli.tests.age_keys",
     "clan_cli.tests.fixtures_flakes",
     "clan_cli.tests.hosts",
     "clan_cli.tests.sshd",

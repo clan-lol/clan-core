@@ -3,7 +3,9 @@ import os
 from collections.abc import Callable
 from pathlib import Path
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
+from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.git import commit_files
 
 from clan_cli.machines.types import machine_name_type, validate_hostname
@@ -24,12 +26,12 @@ from .types import (
 )
 
 
-def machines_folder(flake_dir: Path, group: str) -> Path:
-    return sops_groups_folder(flake_dir) / group / "machines"
+def machines_folder(clan_dir: Path, group: str) -> Path:
+    return sops_groups_folder(clan_dir) / group / "machines"
 
 
-def users_folder(flake_dir: Path, group: str) -> Path:
-    return sops_groups_folder(flake_dir) / group / "users"
+def users_folder(clan_dir: Path, group: str) -> Path:
+    return sops_groups_folder(clan_dir) / group / "users"
 
 
 class Group:
@@ -46,9 +48,9 @@ class Group:
         self.flake_dir = flake_dir
 
 
-def list_groups(flake_dir: Path) -> list[Group]:
+def list_groups(clan_dir: Path) -> list[Group]:
     groups: list[Group] = []
-    groups_dir = sops_groups_folder(flake_dir)
+    groups_dir = sops_groups_folder(clan_dir)
     if not groups_dir.exists():
         return groups
 
@@ -56,13 +58,13 @@ def list_groups(flake_dir: Path) -> list[Group]:
         group_folder = groups_dir / group
         if not group_folder.is_dir():
             continue
-        machines_path = machines_folder(flake_dir, group.name)
+        machines_path = machines_folder(clan_dir, group.name)
         machines = (
             sorted(f.name for f in machines_path.iterdir() if validate_hostname(f.name))
             if machines_path.is_dir()
             else []
         )
-        users_path = users_folder(flake_dir, group.name)
+        users_path = users_folder(clan_dir, group.name)
         users = (
             sorted(
                 f.name for f in users_path.iterdir() if VALID_USER_NAME.match(f.name)
@@ -70,12 +72,14 @@ def list_groups(flake_dir: Path) -> list[Group]:
             if users_path.is_dir()
             else []
         )
-        groups.append(Group(flake_dir, group.name, machines, users))
+        groups.append(Group(clan_dir, group.name, machines, users))
     return groups
 
 
 def list_command(args: argparse.Namespace) -> None:
-    for group in list_groups(args.flake.path):
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
+    for group in list_groups(clan_dir):
         print(group.name)
         if group.machines:
             print("machines:")
@@ -97,32 +101,30 @@ def list_directory(directory: Path) -> str:
     return msg
 
 
-def update_group_keys(
-    flake_dir: Path, group: str, age_plugins: list[str]
-) -> list[Path]:
+def update_group_keys(clan_dir: Path, group: str, age_plugins: list[str]) -> list[Path]:
     def filter_group_secrets(secret: Path) -> bool:
         return (secret / "groups" / group).is_symlink()
 
     return secrets.update_secrets(
-        flake_dir, filter_secrets=filter_group_secrets, age_plugins=age_plugins
+        clan_dir, filter_secrets=filter_group_secrets, age_plugins=age_plugins
     )
 
 
 def add_member(
-    flake_dir: Path,
+    clan_dir: Path,
     group_name: str,
     get_group_folder: Callable[[Path, str], Path],
     get_source_folder: Callable[[Path], Path],
     name: str,
     age_plugins: list[str],
 ) -> list[Path]:
-    source_folder = get_source_folder(flake_dir)
+    source_folder = get_source_folder(clan_dir)
     source = source_folder / name
     if not source.exists():
         msg = f"{name} does not exist in {source_folder}: "
         msg += list_directory(source_folder)
         raise ClanError(msg)
-    group_folder = get_group_folder(flake_dir, group_name)
+    group_folder = get_group_folder(clan_dir, group_name)
     group_folder.mkdir(parents=True, exist_ok=True)
     user_target = group_folder / name
     if user_target.exists():
@@ -134,19 +136,19 @@ def add_member(
     changed_files = [user_target]
     group_name = group_folder.parent.name
     changed_files.extend(
-        update_group_keys(flake_dir, group_name, age_plugins=age_plugins)
+        update_group_keys(clan_dir, group_name, age_plugins=age_plugins)
     )
     return changed_files
 
 
 def remove_member(
-    flake_dir: Path,
+    clan_dir: Path,
     group_name: str,
     get_group_folder: Callable[[Path, str], Path],
     name: str,
     age_plugins: list[str],
 ) -> list[Path]:
-    group_folder = get_group_folder(flake_dir, group_name)
+    group_folder = get_group_folder(clan_dir, group_name)
     target = group_folder / name
     if not target.exists():
         msg = f"{name} does not exist in group in {group_folder}: "
@@ -161,14 +163,20 @@ def remove_member(
     if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
-    updated_files.extend(update_group_keys(flake_dir, group_name, age_plugins))
+    updated_files.extend(update_group_keys(clan_dir, group_name, age_plugins))
 
     return updated_files
 
 
-def add_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
+def add_user(
+    clan_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
+) -> None:
     updated_files = add_member(
-        flake_dir,
+        clan_dir,
         group,
         users_folder,
         sops_users_folder,
@@ -183,14 +191,26 @@ def add_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> 
 
 
 def add_user_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     add_user(
-        args.flake.path, args.group, args.user, age_plugins=load_age_plugins(args.flake)
+        clan_dir,
+        args.group,
+        args.user,
+        age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
-def remove_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
+def remove_user(
+    clan_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
+) -> None:
     updated_files = remove_member(
-        flake_dir,
+        clan_dir,
         group,
         users_folder,
         name,
@@ -204,12 +224,22 @@ def remove_user(flake_dir: Path, group: str, name: str, age_plugins: list[str]) 
 
 
 def remove_user_command(args: argparse.Namespace) -> None:
-    remove_user(args.flake.path, args.group, args.user, load_age_plugins(args.flake))
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
+    remove_user(
+        clan_dir, args.group, args.user, load_age_plugins(flake), flake_dir=flake.path
+    )
 
 
-def add_machine(flake_dir: Path, group: str, name: str, age_plugins: list[str]) -> None:
+def add_machine(
+    clan_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
+) -> None:
     updated_files = add_member(
-        flake_dir,
+        clan_dir,
         group,
         machines_folder,
         sops_machines_folder,
@@ -224,19 +254,26 @@ def add_machine(flake_dir: Path, group: str, name: str, age_plugins: list[str]) 
 
 
 def add_machine_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     add_machine(
-        args.flake.path,
+        clan_dir,
         args.group,
         args.machine,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
 def remove_machine(
-    flake_dir: Path, group: str, name: str, age_plugins: list[str]
+    clan_dir: Path,
+    group: str,
+    name: str,
+    age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     updated_files = remove_member(
-        flake_dir,
+        clan_dir,
         group,
         machines_folder,
         name,
@@ -250,8 +287,14 @@ def remove_machine(
 
 
 def remove_machine_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     remove_machine(
-        args.flake.path, args.group, args.machine, load_age_plugins(args.flake)
+        clan_dir,
+        args.group,
+        args.machine,
+        load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
@@ -270,26 +313,26 @@ def add_group_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def add_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     group: str,
     name: str,
     age_plugins: list[str],
 ) -> None:
     secrets.allow_member(
-        secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
-        sops_groups_folder(flake_dir),
+        secrets.groups_folder(sops_secrets_folder(clan_dir) / name),
+        sops_groups_folder(clan_dir),
         group,
         age_plugins=age_plugins,
     )
 
 
-def get_groups(flake_dir: Path, what: str, name: str) -> list[str]:
+def get_groups(clan_dir: Path, what: str, name: str) -> list[str]:
     """Returns the list of group names the given user or machine is part of."""
     if what not in {"users", "machines"}:
         msg = f"Invalid 'what' parameter: {what}. Must be 'users' or 'machines'"
         raise ClanError(msg)
 
-    groups_dir = sops_groups_folder(flake_dir)
+    groups_dir = sops_groups_folder(clan_dir)
     if not groups_dir.exists():
         return []
 
@@ -301,22 +344,25 @@ def get_groups(flake_dir: Path, what: str, name: str) -> list[str]:
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     add_secret(
-        args.flake.path,
+        clan_dir,
         args.group,
         args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
     )
 
 
 def remove_secret(
-    flake_dir: Path,
+    clan_dir: Path,
     group: str,
     name: str,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
+        secrets.groups_folder(sops_secrets_folder(clan_dir) / name),
         group,
         age_plugins=age_plugins,
     )
@@ -328,11 +374,14 @@ def remove_secret(
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     remove_secret(
-        args.flake.path,
+        clan_dir,
         args.group,
         args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 

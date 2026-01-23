@@ -73,4 +73,5 @@ def delete_machine(machine: Machine) -> None:
             machine.flake.path,
             machine.name,
             age_plugins=load_age_plugins(machine.flake),
+            flake_dir=machine.flake.path,
         )

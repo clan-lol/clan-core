@@ -35,10 +35,10 @@ def create_secrets_user(
     pub_keys = maybe_get_admin_public_keys()
     if not pub_keys:
         pub_keys = [generate_key()]
-    # TODO set flake_dir=flake.path / "vars"
     add_user(
-        flake_dir=flake_dir,
+        clan_dir=flake_dir,
         name=user,
         keys=pub_keys,
         force=force,
+        flake_dir=flake_dir,
     )

@@ -1725,7 +1725,7 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 4 cache misses:
+    # We expect exactly 3 cache misses:
     # 1. Inventory selectors (from list_full_machines)
     # 2. Generator metadata selectors (from generate_command precache)
     # 3. finalScript and sops selectors (from run_generators precache)
@@ -1737,7 +1737,7 @@ def test_generate_secret_var_password_store_minimal_select_calls(
         )
 
     assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 4 cache misses for password_store backend, "
+        f"Expected exactly 3 cache misses for password_store backend, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -1881,7 +1881,7 @@ def test_cache_misses_for_vars_operations(
     # We get 3 cache misses when generating for both machines:
     # 1. Inventory selectors (from list_full_machines)
     # 2. Generator metadata selectors (from generate_command precache)
-    # 3. finalScript and sops selectors (from run_generators precache)
+    # 3. finalScript selectors (from run_generators precache)
 
     generate_command(
         argparse.Namespace(

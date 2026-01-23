@@ -4,7 +4,9 @@ import logging
 import os
 import sys
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
+from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.git import commit_files
 
 from . import sops
@@ -68,7 +70,8 @@ def show_command(_args: argparse.Namespace) -> None:
 
 
 def update_command(args: argparse.Namespace) -> None:
-    flake_dir = args.flake.path
+    flake: Flake = args.flake
+    clan_dir = get_clan_dir(flake)
     # Only necessary for the `secrets` test in `clan-infra` currently
     # https://git.clan.lol/clan/clan-infra/src/commit/4cab8e49c3ac0e0395c67abaf789d806807bfb08/checks/secrets.nix
     # TODO: add a `check` command instead that never loads age plugins
@@ -76,10 +79,10 @@ def update_command(args: argparse.Namespace) -> None:
     should_load_age_plugins = os.environ.get("CLAN_LOAD_AGE_PLUGINS", "true") != "false"
     commit_files(
         update_secrets(
-            flake_dir,
-            load_age_plugins(args.flake) if should_load_age_plugins else [],
+            clan_dir,
+            load_age_plugins(flake) if should_load_age_plugins else [],
         ),
-        flake_dir,
+        flake.path,
         "Updated secrets with new keys",
     )
 

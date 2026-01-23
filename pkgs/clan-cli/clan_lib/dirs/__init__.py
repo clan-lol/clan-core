@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import sys
@@ -8,9 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
-from clan_lib.cmd import run
 from clan_lib.errors import ClanError
-from clan_lib.nix import nix_eval
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
@@ -250,32 +247,7 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
     # Get the source directory from nix store
     root_directory = flake.select("sourceInfo")
 
-    # Get the configured directory using nix eval instead of flake.select
-    # to avoid the select bug with clanInternals.inventoryClass.directory
-    directory_result = run(
-        nix_eval(
-            flags=[
-                f"{flake.identifier}#clanInternals.inventoryClass.directory",
-            ],
-        ),
-    )
-    directory = json.loads(directory_result.stdout.strip())
+    # Get the relative directory path directly from the inventory
+    relative_directory = flake.select("clanInternals.inventoryClass.relativeDirectory")
 
-    # Both directories are in the nix store, but we need to calculate the relative path
-    # to get the actual configured value (e.g., "./direct-config")
-    root_path = Path(root_directory)
-    directory_path = Path(directory)
-
-    # No custom directory is set
-    if root_path == directory_path:
-        return (root_directory, "")
-
-    try:
-        relative_path = directory_path.relative_to(root_path)
-        return (root_directory, str(relative_path))
-    except ValueError as e:
-        msg = (
-            f"Directory path '{directory}' is not relative to root directory '{root_directory}'."
-            "This indicates a configuration issue with the clan directory setting."
-        )
-        raise ClanError(msg) from e
+    return (root_directory, relative_directory)

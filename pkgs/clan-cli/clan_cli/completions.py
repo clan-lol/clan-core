@@ -8,8 +8,10 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.cmd import run
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
@@ -222,7 +224,7 @@ def complete_secrets(
         else "."
     )
 
-    secrets = list_secrets(Flake(flake).path)
+    secrets = list_secrets(get_clan_dir(Flake(flake)))
 
     return dict.fromkeys(secrets, "secret")
 
@@ -240,7 +242,7 @@ def complete_users(
         else "."
     )
 
-    users = list_users(Path(flake))
+    users = list_users(get_clan_dir(Flake(flake)))
 
     return dict.fromkeys(users, "user")
 
@@ -258,7 +260,7 @@ def complete_groups(
         else "."
     )
 
-    groups_list = list_groups(Path(flake))
+    groups_list = list_groups(get_clan_dir(Flake(flake)))
     groups = [group.name for group in groups_list]
 
     return dict.fromkeys(groups, "group")
@@ -345,7 +347,12 @@ def complete_vars_for_machine(
     else:
         flake_path = Path()
 
-    vars_dir = flake_path / "vars" / "per-machine" / machine_name
+    try:
+        clan_dir_path = get_clan_dir(Flake(str(flake_path)))
+    except ClanError:
+        clan_dir_path = flake_path
+
+    vars_dir = clan_dir_path / "vars" / "per-machine" / machine_name
     vars_list: list[str] = []
 
     if vars_dir.exists() and vars_dir.is_dir():
