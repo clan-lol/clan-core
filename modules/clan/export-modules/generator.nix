@@ -56,6 +56,7 @@ in
         This is usually inherited from the nixos pkgs set.
       '';
       internal = true;
+      visible = false;
     };
     settings = mkOption {
       type = raw;
@@ -64,6 +65,14 @@ in
         This is usually inherited from the settings of the current context (machine).
       '';
       internal = true;
+      visible = false;
+      # Docs generation needs a file module
+      # Since we don't know what the user configured, we cannot display sub-options
+      # -> render an empty module
+      # See vars.settings for available module choices and sub-options of each module
+      default = {
+        fileModule = { };
+      };
     };
 
     name = mkOption {
