@@ -1,6 +1,6 @@
 <script lang="ts">
   import favicon from "$lib/assets/favicon.svg";
-  import type { NavItem } from "$lib";
+  import type { NavItem } from "$lib/models/docs";
   import { onNavigate } from "$app/navigation";
   import { onMount } from "svelte";
   import type {
@@ -8,6 +8,7 @@
     PagefindSearchFragment,
   } from "vite-plugin-pagefind/types";
   import "./global.css";
+  import { resolve } from "$app/paths";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);
@@ -21,19 +22,21 @@
   let query = $state("");
   let searchResults: PagefindSearchFragment[] = $state([]);
   onMount(async () => {
-    // @ts-expect-error
-    pagefind = await import("/pagefind/pagefind.js");
-    pagefind?.init();
+    const pf = (await import(
+      /* @vite-ignore */ resolve("/pagefind/pagefind.js")
+    )) as Pagefind;
+    await pf.init();
+    pagefind = pf;
   });
   $effect(() => {
     (async () => {
-      query;
-      const search = await pagefind?.debouncedSearch(query);
-      if (search) {
-        searchResults = await Promise.all(
-          search.results.slice(0, 5).map((r) => r.data()),
-        );
+      if (!pagefind) {
+        return;
       }
+      const search = await pagefind.debouncedSearch(query);
+      searchResults = await Promise.all(
+        search.results.slice(0, 5).map((r) => r.data()),
+      );
     })();
   });
 
@@ -55,14 +58,16 @@
       <input type="search" bind:value={query} />
       {#if searchResults.length > 0}
         <ul>
-          {#each searchResults as searchResult}
+          {#each searchResults as searchResult (searchResult.excerpt)}
             <li class="search-result">
               <div class="search-result-title">
+                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
                 <a href={searchResult.url.slice(0, -".html".length)}
                   >{searchResult.meta.title}</a
                 >
               </div>
               <div class="search-result-excerpt">
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html searchResult.excerpt}
               </div>
             </li>
@@ -83,7 +88,7 @@
 </main>
 
 {#snippet navItems(items: NavItem[])}
-  {#each items as item}
+  {#each items as item (item.label)}
     {@render navItem(item)}
   {/each}
 {/snippet}
@@ -100,7 +105,7 @@
     </li>
   {:else}
     <li>
-      <a href={item.link}>{item.label}</a>
+      <a href={resolve(item.link)}>{item.label}</a>
     </li>
   {/if}
 {/snippet}

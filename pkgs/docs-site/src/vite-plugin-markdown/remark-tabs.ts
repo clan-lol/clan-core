@@ -14,7 +14,7 @@ export default function remarkTabs() {
         className: "md-tabs",
       };
       let tabIndex = 0;
-      let tabTitles: string[] = [];
+      const tabTitles: string[] = [];
       for (const [i, child] of node.children.entries()) {
         if (child.type != "containerDirective" || child.name != "tab") {
           continue;

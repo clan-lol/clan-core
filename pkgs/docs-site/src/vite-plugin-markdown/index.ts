@@ -21,12 +21,29 @@ import remarkTabs from "./remark-tabs";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
 import remarkLinkMigration from "./link-migration";
 
-export type Options = {
+export interface Markdown {
+  content: string;
+  frontmatter: Frontmatter;
+  toc: Heading[];
+}
+
+export interface Frontmatter {
+  order?: number;
+  title: string;
+}
+
+export interface Heading {
+  id: string;
+  content: string;
+  children: Heading[];
+}
+
+export interface Options {
   codeLightTheme?: string;
   codeDarkTheme?: string;
   minLineNumberLines?: number;
   tocMaxDepth?: number;
-};
+}
 
 export default function ({
   codeLightTheme = "catppuccin-latte",

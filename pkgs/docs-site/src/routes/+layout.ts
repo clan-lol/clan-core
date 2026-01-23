@@ -1,4 +1,4 @@
-import { Docs } from "$lib";
+import { Docs } from "$lib/models/docs";
 
 export const prerender = true;
 

@@ -8,12 +8,10 @@
     "build": "vite build && pagefind --site build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "format": "prettier --write .",
-    "lint": "prettier --check ."
+    "lint": "prettier --check . && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && eslint --flag unstable_native_nodejs_ts_config ."
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@fontsource-variable/geist": "^5.2.8",
     "@shikijs/rehype": "^3.21.0",
     "@shikijs/transformers": "^3.21.0",
@@ -23,6 +21,8 @@
     "@types/mdast": "^4.0.4",
     "@types/node": "^25.0.9",
     "cssnano": "^7.1.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-svelte": "^3.14.0",
     "github-slugger": "^2.0.0",
     "hast-util-heading-rank": "^3.0.0",
     "hast-util-to-string": "^3.0.1",
@@ -44,7 +44,9 @@
     "remark-toc": "^9.0.0",
     "svelte": "^5.47.1",
     "svelte-check": "^4.3.5",
+    "svelte-eslint-parser": "^1.4.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.1",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
     "vfile": "^6.0.3",

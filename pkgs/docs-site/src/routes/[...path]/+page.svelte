@@ -1,7 +1,8 @@
 <script lang="ts">
-  import "$lib/markdown/main.css";
-  import { visit, type Heading as ArticleHeading } from "$lib/docs";
+  import "~/vite-plugin-markdown/main.css";
+  import { visit, type Heading as ArticleHeading } from "$lib/models/docs";
   import { onMount } from "svelte";
+  import { resolve } from "$app/paths";
   const { data } = $props();
 
   type Heading = ArticleHeading & {
@@ -28,6 +29,7 @@
 
   $effect(() => {
     // Make sure the effect is triggered on content change
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     data.content;
     observer?.disconnect();
     observer = new IntersectionObserver(onIntersectionChange, {
@@ -46,8 +48,11 @@
       if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
         return;
       }
-      const tabsEl = targetTabEl.closest(".md-tabs")!;
-      const tabEls = tabsEl.querySelectorAll(".md-tabs-tab")!;
+      const tabsEl = targetTabEl.closest(".md-tabs");
+      if (!tabsEl) {
+        return;
+      }
+      const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
       const tabIndex = Array.from(tabEls).indexOf(targetTabEl);
       if (tabIndex == -1) {
         return;
@@ -86,14 +91,19 @@
         if (heading.id != entry.target.id) {
           return;
         }
+        const { rootBounds } = entry;
+        if (!rootBounds) {
+          return;
+        }
+
         heading.element = entry.target;
         heading.scrolledPast =
           entry.intersectionRatio < 1 &&
-          entry.boundingClientRect.top < entry.rootBounds!.top
-            ? entry.rootBounds!.top - entry.boundingClientRect.top
+          entry.boundingClientRect.top < rootBounds.top
+            ? rootBounds.top - entry.boundingClientRect.top
             : 0;
         return false;
-      })!;
+      });
     }
     let last: Heading | null = null;
     let current: Heading | null = null;
@@ -158,11 +168,15 @@
     {/if}
   </div>
   <div class="content" bind:this={contentEl}>
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html data.content}
   </div>
   <footer>
     {#if data.frontmatter.previous}
-      <a class="pointer previous" href={data.frontmatter.previous.link}>
+      <a
+        class="pointer previous"
+        href={resolve(data.frontmatter.previous.link)}
+      >
         <div class="pointer-arrow">&lt;</div>
         <div>
           <div class="pointer-label">Previous</div>
@@ -173,7 +187,7 @@
       <div class="pointer previous"></div>
     {/if}
     {#if data.frontmatter.next}
-      <a class="pointer next" href={data.frontmatter.next.link}>
+      <a class="pointer next" href={resolve(data.frontmatter.next.link)}>
         <div>
           <div class="pointer-label">Next</div>
           <div class="pointer-title">{data.frontmatter.next.label}</div>
@@ -187,7 +201,7 @@
 </div>
 
 {#snippet tocLinks(headings: Heading[])}
-  {#each headings as heading}
+  {#each headings as heading (heading.id)}
     {@render tocLink(heading)}
   {/each}
 {/snippet}

@@ -1,57 +1,59 @@
-import config from "~/config";
+import config from "$lib/config";
 import type {
   Markdown,
   Frontmatter as MarkdownFrontmatter,
-  Heading as MarkdownHeading,
-} from "./markdown";
-export type Article = Markdown & {
-  path: string;
+  Heading,
+} from "~/vite-plugin-markdown";
+
+export type Path = `/${string}`;
+export interface Article extends Markdown {
+  path: Path;
   frontmatter: Frontmatter;
   toc: Heading[];
-};
-export type Frontmatter = MarkdownFrontmatter & {
-  previous?: ArticleSibling;
-  next?: ArticleSibling;
-};
-export type ArticleSibling = {
+}
+export interface Frontmatter extends MarkdownFrontmatter {
+  previous?: SiblingArticle;
+  next?: SiblingArticle;
+}
+export interface SiblingArticle {
   label: string;
-  link: string;
-};
-export type Heading = MarkdownHeading;
+  link: Path;
+}
+export type { Heading };
+
 export class Docs {
-  #allArticles: Record<string, () => Promise<Markdown>> = {};
-  #loadedArticles: Record<string, Article> = {};
+  #articles: Record<Path, (() => Promise<Markdown>) | Article> = {};
   navItems: NavItem[] = [];
   async init() {
-    this.#allArticles = Object.fromEntries(
-      Object.entries(import.meta.glob<Markdown>("../routes/docs/**/*.md")).map(
-        ([key, fn]) => [key.slice("../routes/docs".length, -".md".length), fn],
-      ),
+    this.#articles = Object.fromEntries(
+      Object.entries(
+        import.meta.glob<Markdown>("../../routes/docs/**/*.md"),
+      ).map(([key, fn]) => {
+        return [key.slice("../../routes/docs".length, -".md".length), fn];
+      }),
     );
+
+    console.log(this.#articles);
     this.navItems = await Promise.all(
-      config.navItems.map((navItem) => this.#normalizeNavItem(navItem)),
+      config.docs.navItems.map((navItem) => this.#normalizeNavItem(navItem)),
     );
     return this;
   }
 
-  async getArticle(path: string): Promise<Article | null> {
-    const article = this.#loadedArticles[path];
-    if (article) {
+  async getArticle(path: Path): Promise<Article | null> {
+    const article = this.#articles[path];
+    if (typeof article !== "function") {
       return article;
     }
-    const loadArticle = this.#allArticles[path];
-    if (!loadArticle) {
-      return null;
-    }
-    return this.#normalizeArticle(await loadArticle(), path);
+    return this.#normalizeArticle(await article(), path);
   }
 
-  async getArticles(paths: string[]): Promise<(Article | null)[]> {
+  async getArticles(paths: Path[]): Promise<(Article | null)[]> {
     return await Promise.all(paths.map((path) => this.getArticle(path)));
   }
 
-  async #normalizeNavItem(navItem: RawNavItem): Promise<NavItem> {
-    if (typeof navItem === "string") {
+  async #normalizeNavItem(navItem: NavItemInput): Promise<NavItem> {
+    if (isPath(navItem)) {
       const article = await this.getArticle(navItem);
       if (!article) {
         throw new Error(`Doc not found: ${navItem}`);
@@ -88,7 +90,7 @@ export class Docs {
     }
 
     if ("autogenerate" in navItem) {
-      const paths = Object.keys(this.#allArticles).filter((path) =>
+      const paths = (Object.keys(this.#articles) as Path[]).filter((path) =>
         path.startsWith(navItem.autogenerate.directory + "/"),
       );
       const articles = (await this.getArticles(paths)) as Article[];
@@ -143,11 +145,11 @@ export class Docs {
     };
   }
 
-  #normalizeArticle(md: Markdown, path: string): Article {
+  #normalizeArticle(md: Markdown, path: Path): Article {
     let index = -1;
     const navLinks: NavLink[] = [];
-    let previous: ArticleSibling | undefined;
-    let next: ArticleSibling | undefined;
+    let previous: SiblingArticle | undefined;
+    let next: SiblingArticle | undefined;
     visitNavItems(this.navItems, (navItem) => {
       if (!("link" in navItem)) {
         return;
@@ -188,7 +190,7 @@ export class Docs {
 
 export function visit<T extends { children: T[] }>(
   items: T[],
-  fn: (item: T, parents: T[]) => false | void,
+  fn: (item: T, parents: T[]) => false | undefined,
 ): void {
   _visit(items, [], fn);
 }
@@ -196,8 +198,8 @@ export function visit<T extends { children: T[] }>(
 function _visit<T extends { children: T[] }>(
   items: T[],
   parents: T[],
-  fn: (item: T, parents: T[]) => false | void,
-): false | void {
+  fn: (item: T, parents: T[]) => false | undefined,
+): false | undefined {
   for (const item of items) {
     if (fn(item, parents) === false) {
       return false;
@@ -208,53 +210,53 @@ function _visit<T extends { children: T[] }>(
   }
 }
 
-export type RawNavItem =
-  | string
+export type NavItemInput =
+  | Path
   | {
       label: string;
-      items: RawNavItem[];
+      items: NavItemInput[];
       collapsed?: boolean;
       badge?: RawBadge;
     }
   | {
       label: string;
-      autogenerate: { directory: string };
+      autogenerate: { directory: Path };
       collapsed?: boolean;
       badge?: RawBadge;
     }
   | {
       label?: string;
-      slug: string;
+      slug: Path;
       badge?: RawBadge;
     }
   | {
       label: string;
-      link: string;
+      link: Path;
       badge?: RawBadge;
     };
 
 export type NavItem = NavGroup | NavLink;
 
-export type NavGroup = {
+export interface NavGroup {
   label: string;
   items: NavItem[];
   collapsed: boolean;
   badge?: Badge;
-};
+}
 
-export type NavLink = {
+export interface NavLink {
   label: string;
-  link: string;
+  link: Path;
   badge?: Badge;
   external: boolean;
-};
+}
 
 export type RawBadge = string | Badge;
 
-export type Badge = {
+export interface Badge {
   text: string;
   variant: "caution" | "normal";
-};
+}
 
 function normalizeBadge(badge: RawBadge | undefined): Badge | undefined {
   if (!badge) {
@@ -271,7 +273,7 @@ function normalizeBadge(badge: RawBadge | undefined): Badge | undefined {
 
 function visitNavItems(
   navItems: NavItem[],
-  visit: (navItem: NavItem, parents: NavItem[]) => false | void,
+  visit: (navItem: NavItem, parents: NavItem[]) => false | undefined,
 ): void {
   _visitNavItems(navItems, [], visit);
 }
@@ -279,8 +281,8 @@ function visitNavItems(
 function _visitNavItems(
   navItems: NavItem[],
   parents: NavItem[],
-  visit: (heading: NavItem, parents: NavItem[]) => false | void,
-): false | void {
+  visit: (heading: NavItem, parents: NavItem[]) => false | undefined,
+): false | undefined {
   for (const navItem of navItems) {
     if (visit(navItem, parents) === false) {
       return false;
@@ -293,4 +295,8 @@ function _visitNavItems(
       }
     }
   }
+}
+
+function isPath(s: unknown): s is Path {
+  return typeof s === "string" && s.startsWith("/");
 }

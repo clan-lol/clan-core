@@ -4,7 +4,7 @@ import { toString } from "hast-util-to-string";
 import GithubSlugger from "github-slugger";
 import { visit } from "unist-util-visit";
 import { headingRank } from "hast-util-heading-rank";
-import type { Heading } from "..";
+import type { Heading } from ".";
 
 const startingRank = 1;
 /**
@@ -20,9 +20,7 @@ export default function rehypeTocSlug({
     const toc: Heading[] = [];
     let h1Exist = false;
     const parentHeadings: Heading[] = [];
-    const frontmatter: Record<string, any> = file.data.matter
-      ? file.data.matter
-      : {};
+    const frontmatter = (file.data.matter || {}) as Record<string, unknown>;
     frontmatter.title = "";
     visit(tree, "element", (node) => {
       const rank = headingRank(node);

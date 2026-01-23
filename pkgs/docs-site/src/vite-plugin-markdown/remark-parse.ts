@@ -7,6 +7,7 @@ import {
 import type { Extension } from "micromark-util-types";
 
 export default function remarkParse(this: Processor) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const self = this;
   this.parser = (document, file) => {
     matter(file, { strip: true });
