@@ -21,7 +21,7 @@ Let's get your development environment up and running:
       curl --proto '=https' --tlsv1.2 -sSf -L https://artifacts.nixos.org/nix-installer | sh -s -- install
       ```
 
-2. **Install direnv**:
+2. **Install [direnv](https://direnv.net/)**:
 
       - To automatically setup a devshell on entering the directory
 

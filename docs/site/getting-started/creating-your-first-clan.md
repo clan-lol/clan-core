@@ -56,7 +56,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
         ```
         Then, run `nixos-rebuild switch` to apply the changes.
 
-*  **direnv**: Many commands in this guide will require direnv to be installed on your setup device.
+*  **[direnv](https://direnv.net/)**: Many commands in this guide will require direnv to be installed on your setup device.
 
     ??? info "**How to install direnv**"
 
