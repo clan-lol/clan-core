@@ -4,7 +4,6 @@
     {
       self',
       pkgs,
-      lib,
       ...
     }:
     {
@@ -34,19 +33,6 @@
           inherit (inputs) nixpkgs;
         };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
-        serve-docs = pkgs.writeShellApplication {
-          name = "serve-docs";
-          runtimeInputs = [
-            pkgs.miniserve
-          ]
-          ++ lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.xdg-utils;
-          text = ''
-            (sleep 1 && ${
-              if pkgs.stdenv.hostPlatform.isDarwin then "open" else "xdg-open"
-            } http://localhost:8080) &
-            miniserve --index=index.html ${self'.packages.docs}
-          '';
-        };
       };
       checks.docs-integrity =
         pkgs.runCommand "docs-integrity"
