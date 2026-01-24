@@ -1,0 +1,50 @@
+.md-tabs-bar {
+  display: none;
+  gap: 7px;
+  align-items: flex-end;
+}
+.md-tabs-tab {
+  padding: 8px 0;
+}
+.md-tabs-container {
+  margin: 20px 0;
+}
+.js {
+  .md-tabs-bar {
+    display: flex;
+  }
+  .md-tabs-container {
+    margin: 0;
+    > .md-tabs-tab {
+      display: none;
+    }
+  }
+  .md-tabs {
+    margin: 20px 0;
+  }
+  .md-tabs-tab {
+    background: #d7dadf;
+    padding: 8px 18px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    cursor: pointer;
+    &.is-active {
+      background: #eff1f5;
+
+      .md-tabs.is-singleton & {
+        padding: 8px 16px;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        flex: 1;
+        border-bottom: 1px solid #d8dbe1;
+      }
+    }
+  }
+  .md-tabs-content {
+    display: none;
+    margin: 0 var(--pageMargin);
+    &.is-active {
+      display: block;
+    }
+  }
+}

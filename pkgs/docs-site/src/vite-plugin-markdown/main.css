@@ -1,0 +1,14 @@
+@import url("./css/shiki.css");
+@import url("./css/admonition.css");
+@import url("./css/tabs.css");
+
+code {
+  font-family:
+    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+    "DejaVu Sans Mono", monospace;
+  font-weight: normal;
+}
+
+pre {
+  overflow: auto;
+}

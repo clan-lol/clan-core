@@ -1,0 +1,81 @@
+.shiki {
+  margin: 0 -15px;
+  padding: 15px 0;
+  background-color: var(--shiki-light-bg);
+
+  &,
+  & span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style);
+    font-weight: var(--shiki-light-font-weight);
+    text-decoration: var(--shiki-light-text-decoration);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &,
+    & span,
+    html.dark &,
+    html.dark & span {
+      color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
+      font-style: var(--shiki-dark-font-style);
+      font-weight: var(--shiki-dark-font-weight);
+      text-decoration: var(--shiki-dark-text-decoration);
+    }
+  }
+
+  code {
+    display: block;
+  }
+  .line {
+    width: 100%;
+    padding: 0 15px;
+    display: inline-block;
+  }
+
+  /* line numbers */
+  &.line-numbers code {
+    counter-reset: step;
+    counter-increment: step 0;
+  }
+  &.line-numbers .line::before {
+    content: counter(step);
+    counter-increment: step;
+    width: 1rem;
+    margin-right: 1em;
+    display: inline-block;
+    text-align: right;
+    color: rgba(115, 138, 148, 0.4);
+  }
+
+  /* indent guides */
+  .indent {
+    display: inline-block;
+    position: relative;
+    left: var(--indent-offset);
+  }
+  .indent:empty {
+    height: 1lh;
+    vertical-align: bottom;
+  }
+
+  .indent::before {
+    content: "";
+    position: absolute;
+    opacity: 0.15;
+    width: 1px;
+    height: 100%;
+    background-color: currentColor;
+  }
+
+  /* diff */
+  .line.diff.remove {
+    background-color: #db0a0a41;
+  }
+  .line.diff.add {
+    background-color: #0adb4954;
+  }
+  .line.highlighted {
+    background-color: #00000024;
+  }
+}
