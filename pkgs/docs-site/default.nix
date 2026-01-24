@@ -15,6 +15,7 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmConfigHook = importNpmLock.npmConfigHook;
+  dontNpmPrune = true;
 
   preBuild = ''
     mkdir -p src/docs
