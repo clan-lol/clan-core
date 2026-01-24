@@ -9,6 +9,7 @@
   #   and instead have a separate top-level namespace like `clanOutputs`, with
   #   well defined options marked as `internal = true;`.
   options.system.clan = lib.mkOption {
+    default = { };
     type = lib.types.submodule {
       options = {
         deployment.nixosMobileWorkaround = lib.mkOption {
