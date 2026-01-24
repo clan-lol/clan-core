@@ -165,7 +165,7 @@ def update_command(args: argparse.Namespace) -> None:
             [
                 *Generator.get_machine_selectors(machine_names),
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.?system.?clan.?deployment.?nixosMobileWorkaround",
             ]
         )
 
