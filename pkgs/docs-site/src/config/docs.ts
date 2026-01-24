@@ -23,3 +23,6 @@ export const navItems: NavItemInput[] = [
     link: "/test",
   },
 ];
+
+export const minLineNumberLines = 4;
+export const tocMaxDepth = 3;

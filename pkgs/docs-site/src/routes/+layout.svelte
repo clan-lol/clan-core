@@ -9,24 +9,23 @@
   } from "vite-plugin-pagefind/types";
   import "./global.css";
   import { resolve } from "$app/paths";
+  import config from "~/config";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);
   let menuOpen = $state(false);
-  onNavigate(() => {
-    menuOpen = false;
-    query = "";
-    document.documentElement.classList.remove("no-scroll");
-  });
   let pagefind: Pagefind | undefined;
   let query = $state("");
   let searchResults: PagefindSearchFragment[] = $state([]);
   onMount(async () => {
-    const pf = (await import(
-      /* @vite-ignore */ resolve("/pagefind/pagefind.js")
-    )) as Pagefind;
+    const pf = (await import(resolve("/pagefind/pagefind.js"))) as Pagefind;
     await pf.init();
     pagefind = pf;
+  });
+  onNavigate(() => {
+    menuOpen = false;
+    query = "";
+    document.documentElement.classList.remove("no-scroll");
   });
   $effect(() => {
     (async () => {
@@ -35,7 +34,7 @@
       }
       const search = await pagefind.debouncedSearch(query);
       searchResults = await Promise.all(
-        search.results.slice(0, 5).map((r) => r.data()),
+        search.results.slice(0, config.searchResultLimit).map((r) => r.data()),
       );
     })();
   });
@@ -63,7 +62,7 @@
               <div class="search-result-title">
                 <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
                 <a href={searchResult.url.slice(0, -".html".length)}
-                  >{searchResult.meta.title}</a
+                  >{searchResult.meta["title"]}</a
                 >
               </div>
               <div class="search-result-excerpt">

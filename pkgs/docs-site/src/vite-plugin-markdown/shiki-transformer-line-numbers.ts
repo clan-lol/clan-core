@@ -12,7 +12,7 @@ export default function transformerLineNumbers({
         return;
       }
       const lines = code.children.reduce((lines, node) => {
-        if (node.type !== "element" || node.properties.class != "line") {
+        if (node.type !== "element" || node.properties["class"] !== "line") {
           return lines;
         }
         return lines + 1;
@@ -20,7 +20,7 @@ export default function transformerLineNumbers({
       if (lines < minLines) {
         return;
       }
-      pre.properties.class += " line-numbers";
+      pre.properties["class"] += " line-numbers";
     },
   };
 }

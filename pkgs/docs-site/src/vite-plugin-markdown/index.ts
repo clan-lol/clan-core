@@ -7,10 +7,10 @@ import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import {
+  transformerMetaHighlight,
   transformerNotationDiff,
   transformerNotationHighlight,
   transformerRenderIndentGuides,
-  transformerMetaHighlight,
 } from "@shikijs/transformers";
 import type { PluginOption } from "vite";
 import rehypeTocSlug from "./rehype-toc-slug";
@@ -20,6 +20,7 @@ import remarkAdmonition from "./remark-admonition";
 import remarkTabs from "./remark-tabs";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
 import remarkLinkMigration from "./link-migration";
+import config from "~/config";
 
 export interface Markdown {
   content: string;
@@ -45,16 +46,18 @@ export interface Options {
   tocMaxDepth?: number;
 }
 
-export default function ({
+export default function VitePluginMarkdown({
   codeLightTheme = "catppuccin-latte",
   codeDarkTheme = "catppuccin-macchiato",
-  minLineNumberLines = 4,
-  tocMaxDepth = 3,
+  minLineNumberLines = config.docs.minLineNumberLines,
+  tocMaxDepth = config.docs.tocMaxDepth,
 }: Options = {}): PluginOption {
   return {
     name: "markdown-loader",
     async transform(code, id) {
-      if (id.slice(-3) !== ".md") return;
+      if (id.slice(-".md".length) !== ".md") {
+        return "";
+      }
 
       const file = await unified()
         .use(remarkParse)
@@ -97,8 +100,8 @@ export default function ({
 
       return `
 export const content = ${JSON.stringify(String(file))};
-export const frontmatter = ${JSON.stringify(file.data.matter)};
-export const toc = ${JSON.stringify(file.data.toc)};`;
+export const frontmatter = ${JSON.stringify(file.data["matter"])};
+export const toc = ${JSON.stringify(file.data["toc"])};`;
     },
   };
 }

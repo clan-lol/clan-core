@@ -1,4 +1,3 @@
-// import { type Config } from "prettier";
 import sveltePlugin from "prettier-plugin-svelte";
 
 const config = {

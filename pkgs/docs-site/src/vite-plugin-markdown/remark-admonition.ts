@@ -1,5 +1,6 @@
 import { visit } from "unist-util-visit";
-import type { Paragraph, Text, Root } from "mdast";
+import type { Paragraph, Root, Text } from "mdast";
+import type { ContainerDirectiveData } from "mdast-util-directive";
 
 const names = ["note", "important", "danger", "tip"];
 
@@ -7,17 +8,18 @@ const names = ["note", "important", "danger", "tip"];
 export default function remarkAdmonition() {
   return (tree: Root) => {
     visit(tree, (node) => {
-      if (node.type != "containerDirective" || !names.includes(node.name)) {
+      if (node.type !== "containerDirective" || !names.includes(node.name)) {
         return;
       }
 
-      const data = (node.data ||= {});
+      const data: ContainerDirectiveData = {};
+      node.data ||= data;
       data.hName = "div";
       data.hProperties = {
         className: `md-admonition is-${node.name}`,
       };
       let title: string;
-      if (node.children?.[0].data?.directiveLabel) {
+      if (node.children?.[0]?.data?.directiveLabel) {
         const p = node.children.shift() as Paragraph;
         title = (p.children[0] as Text).value;
       } else {

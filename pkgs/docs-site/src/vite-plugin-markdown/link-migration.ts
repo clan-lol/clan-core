@@ -13,10 +13,12 @@ export default function remarkLinkMigration() {
         return;
       }
       // Skip external links, links pointing to /docs already and anchors
-      if (!node.url || /^(https?:)?\/\/|mailto:|^#/.test(node.url)) return;
+      if (!node.url || /^(?:https?:)?\/\/|mailto:|^#/.test(node.url)) {
+        return;
+      }
 
       // Remove repeated leading ../  or ./
-      const cleanUrl = node.url.replace(/^\.\.?|((\.\.?)\/)+|\.md$/g, "");
+      const cleanUrl = node.url.replace(/^\.\.?|(?:\.\.?\/)+|\.md$/g, "");
       if (!cleanUrl.startsWith("/")) {
         throw new Error(`invalid doc link: ${cleanUrl}`);
       }

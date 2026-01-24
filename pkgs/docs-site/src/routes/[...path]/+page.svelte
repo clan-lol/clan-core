@@ -1,6 +1,6 @@
 <script lang="ts">
   import "~/vite-plugin-markdown/main.css";
-  import { visit, type Heading as ArticleHeading } from "$lib/models/docs";
+  import { type Heading as ArticleHeading, visit } from "$lib/models/docs";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
   const { data } = $props();
@@ -43,7 +43,7 @@
   });
 
   onMount(() => {
-    const onClick = (ev: MouseEvent) => {
+    function onClick(ev: MouseEvent): void {
       const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
       if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
         return;
@@ -54,7 +54,7 @@
       }
       const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
       const tabIndex = Array.from(tabEls).indexOf(targetTabEl);
-      if (tabIndex == -1) {
+      if (tabIndex === -1) {
         return;
       }
       const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
@@ -68,7 +68,7 @@
         tabContentEl.classList.remove("is-active"),
       );
       tabContentEl.classList.add("is-active");
-    };
+    }
     document.addEventListener("click", onClick);
     return () => {
       document.removeEventListener("click", onClick);
@@ -76,19 +76,23 @@
   });
 
   function normalizeHeadings(headings: ArticleHeading[]): Heading[] {
+    // Use casting because the element property is supposed to be set by
+    // svelte's bind: this
+    const index = nextHeadingIndex;
+    nextHeadingIndex += 1;
     return headings.map((heading) => ({
       ...heading,
-      index: nextHeadingIndex++,
+      index,
       scrolledPast: 0,
       children: normalizeHeadings(heading.children),
     })) as Heading[];
   }
 
-  async function onIntersectionChange(entries: IntersectionObserverEntry[]) {
+  function onIntersectionChange(entries: IntersectionObserverEntry[]) {
     // Record each heading's scrolledPast
     for (const entry of entries) {
       visit(headings, (heading) => {
-        if (heading.id != entry.target.id) {
+        if (heading.id !== entry.target.id) {
           return;
         }
         const { rootBounds } = entry;
@@ -102,7 +106,7 @@
           entry.boundingClientRect.top < rootBounds.top
             ? rootBounds.top - entry.boundingClientRect.top
             : 0;
-        return false;
+        return "break";
       });
     }
     let last: Heading | null = null;
@@ -111,9 +115,10 @@
     visit(headings, (heading) => {
       if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
         current = last;
-        return false;
+        return "break";
       }
       last = heading;
+      return;
     });
     currentHeading = current;
   }
@@ -156,14 +161,13 @@
         >
       </button>
     </h2>
-    {#if tocOpen}
+    {#if tocOpen && headings[0]}
+      {@const [heading] = headings}
       <ul class="toc-menu">
         <li>
-          <a href={`#${headings[0].id}`} onclick={scrollToTop}
-            >{headings[0].content}</a
-          >
+          <a href={`#${heading.id}`} onclick={scrollToTop}>{heading.content}</a>
         </li>
-        {@render tocLinks(headings[0].children)}
+        {@render tocLinks(heading.children)}
       </ul>
     {/if}
   </div>
@@ -214,7 +218,7 @@
         scrollToHeading(ev, heading);
       }}>{heading.content}</a
     >
-    {#if heading.children.length != 0}
+    {#if heading.children.length !== 0}
       <ul>
         {@render tocLinks(heading.children)}
       </ul>

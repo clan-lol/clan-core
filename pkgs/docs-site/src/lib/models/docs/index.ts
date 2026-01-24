@@ -1,9 +1,12 @@
 import config from "~/config";
 import type {
+  Heading,
   Markdown,
   Frontmatter as MarkdownFrontmatter,
-  Heading,
 } from "~/vite-plugin-markdown";
+import { visitNavItems } from "./visit";
+
+export { visit } from "./visit";
 
 export type Path = `/${string}`;
 export interface Article extends Markdown {
@@ -12,8 +15,8 @@ export interface Article extends Markdown {
   toc: Heading[];
 }
 export interface Frontmatter extends MarkdownFrontmatter {
-  previous?: SiblingArticle;
-  next?: SiblingArticle;
+  previous: SiblingArticle | null;
+  next: SiblingArticle | null;
 }
 export interface SiblingArticle {
   label: string;
@@ -27,9 +30,7 @@ export class Docs {
   async init() {
     this.#articles = Object.fromEntries(
       Object.entries(import.meta.glob<Markdown>("../../docs/**/*.md")).map(
-        ([key, fn]) => {
-          return [key.slice("../../docs".length, -".md".length), fn];
-        },
+        ([key, fn]) => [key.slice("../../docs".length, -".md".length), fn],
       ),
     );
 
@@ -41,6 +42,10 @@ export class Docs {
 
   async getArticle(path: Path): Promise<Article | null> {
     const article = this.#articles[path];
+    if (!article) {
+      return null;
+    }
+
     if (typeof article !== "function") {
       return article;
     }
@@ -61,13 +66,14 @@ export class Docs {
         label: article.frontmatter.title,
         link: navItem,
         external: false,
+        badge: null,
       };
     }
 
     if ("items" in navItem) {
       return {
         ...navItem,
-        collapsed: !!navItem.collapsed,
+        collapsed: Boolean(navItem.collapsed),
         badge: normalizeBadge(navItem.badge),
         items: await Promise.all(
           navItem.items.map((navItem) => this.#normalizeNavItem(navItem)),
@@ -90,9 +96,9 @@ export class Docs {
 
     if ("autogenerate" in navItem) {
       const paths = (Object.keys(this.#articles) as Path[]).filter((path) =>
-        path.startsWith(navItem.autogenerate.directory + "/"),
-      );
-      const articles = (await this.getArticles(paths)) as Article[];
+          path.startsWith(`${navItem.autogenerate.directory}/`),
+        ),
+        articles = (await this.getArticles(paths)) as Article[];
 
       let titleMissing = false;
       // Check frontmatter for title
@@ -102,22 +108,22 @@ export class Docs {
           titleMissing = true;
         }
       }
-      if (titleMissing) throw new Error("Aborting due to errors.");
+      if (titleMissing) {
+        throw new Error("Aborting due to errors.");
+      }
 
       articles.sort((a, b) => {
-        const orderA = a.frontmatter.order;
-        const orderB = b.frontmatter.order;
-        if (orderA != null && orderB != null) {
-          return orderA - orderB;
+        if ("order" in a.frontmatter && "order" in b.frontmatter) {
+          return a.frontmatter.order - b.frontmatter.order;
         }
-        if (orderA != null) {
+        if ("order" in a.frontmatter) {
           return -1;
         }
-        if (orderB != null) {
+        if ("order" in b.frontmatter) {
           return 1;
         }
-        const titleA = a.frontmatter.title ?? a.path;
-        const titleB = a.frontmatter.title ?? a.path;
+        const titleA = a.frontmatter.title ?? a.path,
+          titleB = a.frontmatter.title ?? a.path;
         return titleA.localeCompare(titleB);
       });
       const items = await Promise.all(
@@ -132,7 +138,7 @@ export class Docs {
         label:
           navItem.label ?? navItem.autogenerate.directory.split("/").at(-1),
         items,
-        collapsed: !!navItem.collapsed,
+        collapsed: Boolean(navItem.collapsed),
         badge: normalizeBadge(navItem.badge),
       };
     }
@@ -140,39 +146,40 @@ export class Docs {
     return {
       ...navItem,
       badge: normalizeBadge(navItem.badge),
-      external: /^(https?:)?\/\//.test(navItem.link),
+      external: /^(?:https?:)?\/\//.test(navItem.link),
     };
   }
 
   #normalizeArticle(md: Markdown, path: Path): Article {
     let index = -1;
     const navLinks: NavLink[] = [];
-    let previous: SiblingArticle | undefined;
-    let next: SiblingArticle | undefined;
+    let next: SiblingArticle | null = null;
+    let previous: SiblingArticle | null = null;
     visitNavItems(this.navItems, (navItem) => {
       if (!("link" in navItem)) {
         return;
       }
-      if (index != -1) {
+      if (index !== -1) {
         next = {
           label: navItem.label,
           link: navItem.link,
         };
-        return false;
+        return "break";
       }
-      if (navItem.link != path) {
+      if (navItem.link !== path) {
         navLinks.push(navItem);
         return;
       }
       index = navLinks.length;
       navLinks.push(navItem);
-      if (index != 0) {
-        const navLink = navLinks[index - 1];
+      const navLink = navLinks[index - 1];
+      if (navLink) {
         previous = {
           label: navLink.label,
           link: navLink.link,
         };
       }
+      return;
     });
     return {
       ...md,
@@ -187,51 +194,29 @@ export class Docs {
   }
 }
 
-export function visit<T extends { children: T[] }>(
-  items: T[],
-  fn: (item: T, parents: T[]) => false | undefined,
-): void {
-  _visit(items, [], fn);
-}
-
-function _visit<T extends { children: T[] }>(
-  items: T[],
-  parents: T[],
-  fn: (item: T, parents: T[]) => false | undefined,
-): false | undefined {
-  for (const item of items) {
-    if (fn(item, parents) === false) {
-      return false;
-    }
-    if (_visit(item.children, [...parents, item], fn) === false) {
-      return false;
-    }
-  }
-}
-
 export type NavItemInput =
   | Path
   | {
       label: string;
       items: NavItemInput[];
       collapsed?: boolean;
-      badge?: RawBadge;
+      badge?: BadgeInput;
     }
   | {
       label: string;
       autogenerate: { directory: Path };
       collapsed?: boolean;
-      badge?: RawBadge;
+      badge?: BadgeInput;
     }
   | {
       label?: string;
       slug: Path;
-      badge?: RawBadge;
+      badge?: BadgeInput;
     }
   | {
       label: string;
       link: Path;
-      badge?: RawBadge;
+      badge?: BadgeInput;
     };
 
 export type NavItem = NavGroup | NavLink;
@@ -240,26 +225,26 @@ export interface NavGroup {
   label: string;
   items: NavItem[];
   collapsed: boolean;
-  badge?: Badge;
+  badge: Badge | null;
 }
 
 export interface NavLink {
   label: string;
   link: Path;
-  badge?: Badge;
+  badge: Badge | null;
   external: boolean;
 }
 
-export type RawBadge = string | Badge;
+export type BadgeInput = string | Badge;
 
 export interface Badge {
   text: string;
   variant: "caution" | "normal";
 }
 
-function normalizeBadge(badge: RawBadge | undefined): Badge | undefined {
+function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
   if (!badge) {
-    return undefined;
+    return null;
   }
   if (typeof badge === "string") {
     return {
@@ -268,32 +253,6 @@ function normalizeBadge(badge: RawBadge | undefined): Badge | undefined {
     };
   }
   return badge;
-}
-
-function visitNavItems(
-  navItems: NavItem[],
-  visit: (navItem: NavItem, parents: NavItem[]) => false | undefined,
-): void {
-  _visitNavItems(navItems, [], visit);
-}
-
-function _visitNavItems(
-  navItems: NavItem[],
-  parents: NavItem[],
-  visit: (heading: NavItem, parents: NavItem[]) => false | undefined,
-): false | undefined {
-  for (const navItem of navItems) {
-    if (visit(navItem, parents) === false) {
-      return false;
-    }
-    if ("items" in navItem) {
-      if (
-        _visitNavItems(navItem.items, [...parents, navItem], visit) === false
-      ) {
-        return false;
-      }
-    }
-  }
 }
 
 function isPath(s: unknown): s is Path {

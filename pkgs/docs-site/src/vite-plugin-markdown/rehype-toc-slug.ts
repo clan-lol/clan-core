@@ -20,11 +20,13 @@ export default function rehypeTocSlug({
     const toc: Heading[] = [];
     let h1Exist = false;
     const parentHeadings: Heading[] = [];
-    const frontmatter = (file.data.matter || {}) as Record<string, unknown>;
-    frontmatter.title = "";
+    const frontmatter = (file.data["matter"] || {}) as Record<string, unknown>;
+    frontmatter["title"] = "";
     visit(tree, "element", (node) => {
       const rank = headingRank(node);
-      if (!rank) return;
+      if (!rank) {
+        return;
+      }
 
       let { id } = node.properties;
       if (id) {
@@ -33,12 +35,13 @@ export default function rehypeTocSlug({
         );
       }
       const content = toString(node);
-      id = node.properties.id = slugger.slug(content);
+      id = slugger.slug(content);
+      node.properties["id"] = id;
 
       if (parentHeadings.length > tocMaxDepth) {
         return;
       }
-      if (rank == 1) {
+      if (rank === 1) {
         if (h1Exist) {
           console.error(
             `WARNING: only one "# title" is allowed, ignoring the rest: ${file.path}`,
@@ -46,20 +49,20 @@ export default function rehypeTocSlug({
           return;
         }
         h1Exist = true;
-        frontmatter.title = content;
+        frontmatter["title"] = content;
       }
       const heading = { id, content, children: [] };
       const currentRank = parentHeadings.length - 1 + startingRank;
       if (rank > currentRank) {
         (parentHeadings.at(-1)?.children ?? toc).push(heading);
         parentHeadings.push(heading);
-      } else if (rank == currentRank) {
+      } else if (rank === currentRank) {
         (parentHeadings.at(-2)?.children ?? toc).push(heading);
         parentHeadings.pop();
         parentHeadings.push(heading);
       } else {
         const i = rank - startingRank - 1;
-        (parentHeadings?.[i].children ?? toc).push(heading);
+        (parentHeadings?.[i]?.children ?? toc).push(heading);
         while (parentHeadings.length > i + 1) {
           parentHeadings.pop();
         }
@@ -67,6 +70,6 @@ export default function rehypeTocSlug({
       }
     });
 
-    file.data.toc = toc;
+    file.data["toc"] = toc;
   };
 }
