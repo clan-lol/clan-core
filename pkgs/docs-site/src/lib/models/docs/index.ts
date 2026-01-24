@@ -96,9 +96,9 @@ export class Docs {
 
     if ("autogenerate" in navItem) {
       const paths = (Object.keys(this.#articles) as Path[]).filter((path) =>
-          path.startsWith(`${navItem.autogenerate.directory}/`),
-        ),
-        articles = (await this.getArticles(paths)) as Article[];
+        path.startsWith(`${navItem.autogenerate.directory}/`),
+      );
+      const articles = (await this.getArticles(paths)) as Article[];
 
       let titleMissing = false;
       // Check frontmatter for title

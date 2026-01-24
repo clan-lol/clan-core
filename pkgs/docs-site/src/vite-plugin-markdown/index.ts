@@ -54,7 +54,7 @@ export default function VitePluginMarkdown({
   return {
     name: "markdown-loader",
     async transform(code, id) {
-      if (id.slice(-".md".length) !== ".md") {
+      if (!id.endsWith(".md")) {
         return "";
       }
 
