@@ -29,8 +29,8 @@ export class Docs {
   navItems: NavItem[] = [];
   async init() {
     this.#articles = Object.fromEntries(
-      Object.entries(import.meta.glob<Markdown>("../../docs/**/*.md")).map(
-        ([key, fn]) => [key.slice("../../docs".length, -".md".length), fn],
+      Object.entries(import.meta.glob<Markdown>("../../../docs/**/*.md")).map(
+        ([key, fn]) => [key.slice("../../../docs".length, -".md".length), fn],
       ),
     );
 

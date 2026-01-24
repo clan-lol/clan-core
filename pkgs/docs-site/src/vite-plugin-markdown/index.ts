@@ -55,7 +55,7 @@ export default function VitePluginMarkdown({
     name: "markdown-loader",
     async transform(code, id) {
       if (!id.endsWith(".md")) {
-        return "";
+        return;
       }
 
       const file = await unified()
