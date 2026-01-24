@@ -18,8 +18,8 @@ If you only plan to use virtual machines, you can skip this step.
 * A USB drive with at least 1.5GB total space (!! all data will be lost !!)
 * A Linux/NixOS machine with internet access to create the boot stick. You can use your setup device or any other machine for this step.
 * One or more physical target machines (!! all data will be lost !!)
-   
-    Minimum target 
+
+    Minimum target
 system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
 
 
@@ -159,7 +159,7 @@ sudo umount /dev/sdb1
 
 ## Checkpoint 1: Boot From USB Stick on Target Device
 
-To see if your new Clan USB boot stick works, plug it into a target device and boot from the USB drive with **secure boot turned off**. 
+To see if your new Clan USB boot stick works, plug it into a target device and boot from the USB drive with **secure boot turned off**.
 
 For step by step instructions go to [Disabling Secure Boot](../guides/secure-boot.md)
 
@@ -292,6 +292,6 @@ If you are using our template `[MACHINE]` would be `jon`
 
 If all your machines are physical, you can continue with disk preparations here:
 
-[Next Step (Choose Disk Format)](configure-disk.md){ .md-button .md-button--primary }
+[Next Step (Choose Disk Format)](./configure-disk.md){ .md-button .md-button--primary }
 
 Alternatively, feel free to also add virtual machines into the mix during the next step!
