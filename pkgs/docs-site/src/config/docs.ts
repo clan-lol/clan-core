@@ -26,3 +26,5 @@ export const navItems: NavItemInput[] = [
 
 export const minLineNumberLines = 4;
 export const tocMaxDepth = 3;
+export const codeLightTheme = "catppuccin-latte";
+export const codeDarkTheme = "catppuccin-macchiato";

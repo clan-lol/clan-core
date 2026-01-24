@@ -20,7 +20,6 @@ import remarkAdmonition from "./remark-admonition";
 import remarkTabs from "./remark-tabs";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
 import remarkLinkMigration from "./link-migration";
-import config from "~/config";
 
 export interface Markdown {
   content: string;
@@ -40,18 +39,18 @@ export interface Heading {
 }
 
 export interface Options {
-  codeLightTheme?: string;
-  codeDarkTheme?: string;
-  minLineNumberLines?: number;
-  tocMaxDepth?: number;
+  codeLightTheme: string;
+  codeDarkTheme: string;
+  minLineNumberLines: number;
+  tocMaxDepth: number;
 }
 
 export default function VitePluginMarkdown({
-  codeLightTheme = "catppuccin-latte",
-  codeDarkTheme = "catppuccin-macchiato",
-  minLineNumberLines = config.docs.minLineNumberLines,
-  tocMaxDepth = config.docs.tocMaxDepth,
-}: Options = {}): PluginOption {
+  codeLightTheme,
+  codeDarkTheme,
+  minLineNumberLines,
+  tocMaxDepth,
+}: Options): PluginOption {
   return {
     name: "markdown-loader",
     async transform(code, id) {

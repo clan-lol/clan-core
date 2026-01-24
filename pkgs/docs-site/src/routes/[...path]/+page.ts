@@ -1,7 +1,9 @@
 import { error } from "@sveltejs/kit";
 import { HttpNotFound } from "$lib/util";
+import type { PageLoad } from "./$types";
+import type { Article } from "~/lib/models/docs";
 
-export async function load({ params, parent }) {
+export const load: PageLoad<Article> = async ({ params, parent }) => {
   const { docs } = await parent();
   const article = await docs.getArticle(`/${params.path}`);
   if (!article) {
@@ -9,4 +11,4 @@ export async function load({ params, parent }) {
   }
 
   return article;
-}
+};
