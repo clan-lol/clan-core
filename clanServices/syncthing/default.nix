@@ -34,7 +34,7 @@
                 devices = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [ ];
-                  description = "List of device names to share this folder with. Empty list means all peers and extraDevices.";
+                  description = "List of device names that share this folder. Empty list means all peers and extraDevices.";
                 };
                 ignorePerms = lib.mkOption {
                   type = lib.types.bool;
