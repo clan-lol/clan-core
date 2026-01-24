@@ -1,13 +1,13 @@
 {
   buildNpmPackage,
   importNpmLock,
-  nodejs_latest,
+  nodejs_24,
   docs-markdowns,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clan-site";
   version = "0.0.1";
-  nodejs = nodejs_latest;
+  nodejs = nodejs_24;
   src = ./.;
 
   npmDeps = importNpmLock {
