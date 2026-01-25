@@ -7,6 +7,7 @@ from clan_lib import nix_selectors
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import list_machines
+from clan_lib.nix import nix_config
 
 if TYPE_CHECKING:
     from clan_lib.nix_models.typing import (
@@ -81,14 +82,9 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
                 f"  Error: {e}"
             )
 
-    # Test combinations
-    test_pairs = [
-        # darwin machines
-        ("aarch64-darwin", "sara"),
-        # linux machines
-        ("x86_64-linux", "jon"),
-    ]
-    for system, machine_name in test_pairs:
+    config = nix_config()
+    system = config["system"]
+    for machine_name in machines:
         # Test
         for machine_selector_fn in nix_selectors.MACHINE_SELECTORS:
             selector_str = machine_selector_fn(system, machine_name)
@@ -102,18 +98,6 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
                 )
 
         generator_name = "testgen"
-
-        if machine_name == "sara":
-            # Skip darwin tests for vars:
-            # Problem: cannot "build" darwin 'finalScript' on a linux host
-            # nix-select tries to "nix build" it, which is a bit too much
-            # This is an architecture flaw of nix-select
-            # Fix this:
-            # Failed: Generator selector 'generator_final_script' failed
-            #  Selector: clanInternals.machines.aarch64-darwin.sara.config.clan.core.vars.generators."testgen".finalScript
-            #  Error: Error on: $ clan select 'clanInternals.machines.aarch64-darwin.sara.config.clan.core.vars.generators."testgen".finalScript'
-            #  Reason: Cannot build '/nix/store/446shaypn9ks936wz5v74ha0a4r5l3yf-generator-testgen.drv'.. Use flag '--debug' to see full nix trace.
-            continue
 
         for generator_selector_fn in nix_selectors.GENERATOR_SELECTORS:
             selector_str = generator_selector_fn(system, machine_name, generator_name)
