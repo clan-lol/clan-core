@@ -34,6 +34,9 @@
             # needed for test_generate_test_vars.py
             "checks/service-dummy-test"
             "checks/flake-module.nix"
+
+            # Needed for eval attribute tests
+            "darwinModules"
           ];
         };
       };
