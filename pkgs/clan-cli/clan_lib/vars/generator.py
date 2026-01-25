@@ -18,11 +18,13 @@ from clan_lib.nix_selectors import (
     generator_final_script,
     inventory_relative_directory,
     secrets_age_plugins,
+    vars_age_secret_location,
     vars_generators_files,
     vars_generators_metadata,
     vars_password_store_pass_command,
     vars_password_store_secret_location,
     vars_settings_public_module,
+    vars_settings_recipients,
     vars_settings_secret_module,
     vars_sops_default_groups,
     vars_sops_secret_upload_dir,
@@ -134,6 +136,8 @@ def get_machine_selectors(machine_names: Iterable[str]) -> list[str]:
         vars_sops_secret_upload_dir(system, list(machine_names)),
         vars_password_store_pass_command(system, list(machine_names)),
         vars_password_store_secret_location(system, list(machine_names)),
+        vars_settings_recipients(),
+        vars_age_secret_location(system, list(machine_names)),
     ]
 
 

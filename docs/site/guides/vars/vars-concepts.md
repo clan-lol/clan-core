@@ -15,7 +15,7 @@ graph LR
     A[Generator Script] --> B[Output Files]
     C[User Prompts] --> A
     D[Dependencies] --> A
-    B --> E[Secret Storage<br/>sops/password-store]
+    B --> E[Secret Storage<br/>sops/age/password-store]
     B --> F[Nix Store<br/>public files]
     E --> G[Machine Deployment]
     F --> G
@@ -30,7 +30,7 @@ Unlike imperative secret management, vars are declared in your NixOS configurati
 #### 2. Separation of Concerns
 
 - **Generation logic**: Defined in generator scripts
-- **Storage**: Handled by pluggable backends (sops, password-store, etc.)
+- **Storage**: Handled by pluggable backends (sops, age, password-store)
 - **Deployment**: Managed by NixOS activation scripts
 - **Access control**: Enforced through file permissions and ownership
 
@@ -59,8 +59,9 @@ This prevents accidental exposure of secrets in the nix store.
 
 The vars system uses pluggable storage backends:
 
-- **sops** (default): Integrates with Clan's existing sops encryption
-- **password-store**: For users already using pass
+- **[sops](sops/secrets)** (default): Integrates with sops-nix for on-machine decryption
+- **[age](age/age-backend)**: Direct age encryption with admin-side decryption
+- **password-store**: For users already using pass/passage
 
 Each backend handles encryption/decryption transparently, allowing the same generator definitions to work across different security models.
 
