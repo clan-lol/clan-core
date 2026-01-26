@@ -21,6 +21,12 @@ from clan_lib.nix_selectors import (
     secrets_age_plugins,
     vars_generators_files,
     vars_generators_metadata,
+    vars_password_store_pass_command,
+    vars_password_store_secret_location,
+    vars_settings_public_module,
+    vars_settings_secret_module,
+    vars_sops_default_groups,
+    vars_sops_secret_upload_dir,
 )
 from clan_lib.vars.graph import GeneratorGraphNode
 
@@ -204,12 +210,12 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
             inventory_relative_directory(),
             vars_generators_metadata(system, machine_names),
             vars_generators_files(system, machine_names),
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.?sops.?defaultGroups",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.publicModule",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?sops.?secretUploadDirectory",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?passCommand",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.?password-store.?secretLocation",
+            vars_sops_default_groups(system, machine_names),
+            vars_settings_public_module(system, machine_names),
+            vars_settings_secret_module(system, machine_names),
+            vars_sops_secret_upload_dir(system, machine_names),
+            vars_password_store_pass_command(system, machine_names),
+            vars_password_store_secret_location(system, machine_names),
         ]
 
     @classmethod
