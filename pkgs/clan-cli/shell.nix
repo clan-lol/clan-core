@@ -43,7 +43,6 @@ mkShell {
 
      # used for tests without flakes
     export NIXPKGS=${self.inputs.nixpkgs.outPath}
-    export NIX_SELECT=${self.inputs.nix-select.outPath}
 
     # Add current package to PYTHONPATH
     export PYTHONPATH="$PKG_ROOT''${PYTHONPATH:+:$PYTHONPATH:}"

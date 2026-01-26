@@ -91,15 +91,11 @@ let
         chmod -R +w $out
 
         # In cases where the devshell created this file, this will already exist
-        rm -f $out/clan_lib/nixpkgs
-        rm -f $out/clan_lib/select
-        rm -f $out/clan_lib/disko
+        rm -f $out/clan_lib/runtime-deps
 
         substituteInPlace $out/clan_lib/flake/flake.py \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
-        ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
-        ln -sf ${nix-select} $out/clan_lib/select
-        ln -sf ${disko'} $out/clan_lib/disko
+        ln -sf ${runtimeDepsFlake} $out/clan_lib/runtime-deps
         cp -r ${../../templates} $out/clan_lib/clan_core_templates
       '';
 
@@ -124,37 +120,15 @@ let
   );
   sourceWithTests = cliSource ./.;
 
-  # Create a custom nixpkgs for use within the project
-  nixpkgs' =
-    runCommand "nixpkgs"
-      {
-        # Not all versions have `nix flake update --flake` option
-        nativeBuildInputs = [ nix ];
-      }
-      ''
-        mkdir $out
-        cat > $out/flake.nix << EOF
-        {
-          description = "dependencies for the clan-cli";
-
-          inputs = {
-            nixpkgs.url = "path://${nixpkgs}";
-          };
-
-          outputs = _inputs: { };
-        }
-        EOF
-        ln -sf ${nixpkgs} $out/path
-        HOME=$TMPDIR nix flake update --flake $out \
-          --store ./. \
-          --extra-experimental-features 'nix-command flakes'
-      '';
-
-  # Create a disko wrapper flake that re-exports disko's outputs
-  # This ensures the flake.lock pins all inputs for offline use in VM tests
-  # We include nixpkgs and make disko follow it to avoid network fetches
-  disko' =
-    runCommand "disko"
+  # Create a single runtime flake that bundles all dependencies for clan-cli
+  # This flake includes:
+  # - nixpkgs: for nix-shell package dependencies (via --inputs-from)
+  # - disko: for disk partitioning during flash operations
+  # - nix-select: for efficient attribute selection from flakes
+  # Having one flake with a locked flake.lock ensures offline reproducibility
+  # and reduces store size compared to separate flakes
+  runtimeDepsFlake =
+    runCommand "clan-runtime"
       {
         nativeBuildInputs = [ nix ];
       }
@@ -162,17 +136,24 @@ let
         mkdir $out
         cat > $out/flake.nix << EOF
         {
-          description = "disko dependency for clan-cli";
+          description = "Runtime dependencies for clan-cli";
 
           inputs = {
             nixpkgs.url = "path://${nixpkgs}";
             disko.url = "path://${diskoInput}";
             disko.inputs.nixpkgs.follows = "nixpkgs";
+            nix-select.url = "path://${nix-select}";
           };
 
-          outputs = { self, disko, nixpkgs }: disko;
+          outputs = { disko, ... }: {
+            # Re-export disko packages so they can be accessed without fetching disko's nixpkgs
+            inherit (disko) packages;
+          };
         }
         EOF
+        # Symlink sources for direct access
+        ln -sf ${nixpkgs} $out/nixpkgs
+        ln -sf ${nix-select} $out/nix-select
         HOME=$TMPDIR nix flake update --flake $out \
           --store ./. \
           --extra-experimental-features 'nix-command flakes'
@@ -324,7 +305,6 @@ pythonRuntime.pkgs.buildPythonApplication {
 
           # used for tests without flakes
           export NIXPKGS=${nixpkgs}
-          export NIX_SELECT=${nix-select}
 
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
@@ -342,8 +322,7 @@ pythonRuntime.pkgs.buildPythonApplication {
         '';
   };
 
-  passthru.nixpkgs = nixpkgs';
-  passthru.disko = disko';
+  passthru.runtimeDepsFlake = runtimeDepsFlake;
   passthru.devshellPyDeps = ps: (pyTestDeps ps) ++ (pyDeps ps) ++ (devDeps ps);
   passthru.pythonRuntime = pythonRuntime;
   passthru.runtimeDependencies = bundledRuntimeDependencies;
@@ -360,9 +339,7 @@ pythonRuntime.pkgs.buildPythonApplication {
   postInstall = ''
     cp -arf clan_lib/clan_core_templates/* $out/${pythonRuntime.sitePackages}/clan_lib/clan_core_templates
 
-    cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_lib/nixpkgs
-    cp -r ${disko'} $out/${pythonRuntime.sitePackages}/clan_lib/disko
-    ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_lib/select
+    cp -r ${runtimeDepsFlake} $out/${pythonRuntime.sitePackages}/clan_lib/runtime-deps
     installShellCompletion --bash --name clan \
       <(${pythonRuntimeWithDeps.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

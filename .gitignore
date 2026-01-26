@@ -8,13 +8,11 @@ testdir
 democlan
 example_clan
 result*
-/pkgs/clan-cli/clan_lib/nixpkgs
-/pkgs/clan-cli/clan_lib/disko
+/pkgs/clan-cli/clan_lib/runtime-deps
 /pkgs/clan-cli/clan_cli/webui/assets
 nixos.qcow2
 *.glade~
 /docs/out
-/pkgs/clan-cli/clan_lib/select
 .local.env
 
 # macOS stuff
