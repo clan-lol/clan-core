@@ -7,8 +7,8 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from clan_lib.cmd import run
-from clan_lib.errors import ClanError
+from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.locked_open import locked_open
 
 log = logging.getLogger(__name__)
@@ -150,28 +150,113 @@ class Packages:
         return False
 
 
+@cache
+def _resolve_package_path(nixpkgs_path: str, package: str) -> str | None:
+    """Resolve and cache a package's store path.
+
+    Uses nix build to resolve the store path for a package from nixpkgs.
+    The result is cached using @functools.cache, keyed by nixpkgs_path and package.
+
+    Args:
+        nixpkgs_path: Resolved nixpkgs flake path (used as cache key component)
+        package: Package name (e.g., "git")
+
+    Returns:
+        Store path string, or None if resolution fails
+
+    """
+    cmd = nix_command(
+        [
+            "build",
+            "--inputs-from",
+            nixpkgs_path,
+            f"nixpkgs#{package}",
+            "--print-out-paths",
+            "--no-link",
+        ]
+    )
+    try:
+        proc = run(cmd, RunOpts(log=Log.NONE, check=True))
+        store_path = proc.stdout.strip()
+    except ClanCmdError:
+        log.warning("Failed to resolve package %s", package)
+        return None
+    else:
+        if store_path and Path(store_path).exists():
+            return store_path
+        log.warning("Resolved empty or non-existent store path for %s", package)
+        return None
+
+
+def _nix_shell_fallback(
+    packages: list[str],
+    cmd: list[str],
+) -> list[str]:
+    """Fall back to nix shell for packages that couldn't be resolved.
+
+    Args:
+        packages: Package names from nixpkgs (without nixpkgs# prefix)
+        cmd: Command to wrap
+
+    Returns:
+        Command list prefixed with nix shell invocation
+
+    """
+    from clan_lib.dirs import runtime_deps_flake  # noqa: PLC0415
+
+    return [
+        *nix_command(["shell", "--inputs-from", f"{runtime_deps_flake()!s}"]),
+        *[f"nixpkgs#{pkg}" for pkg in packages],
+        "-c",
+        *cmd,
+    ]
+
+
 #   Features:
 #     - allow list for programs (need to be specified in allowed-packages.json)
 #     - be abe to compute a closure of all deps for testing
 #     - build clan distributions that ship some or all packages (eg. clan-cli-full)
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
+    """Wrap a command with nix shell for required packages.
+
+    Uses cached store paths when available for improved performance.
+    Falls back to nix shell for packages that cannot be resolved.
+
+    Args:
+        packages: List of package names (e.g., "git", "openssh")
+        cmd: Command to wrap
+
+    Returns:
+        Command list, either with PATH modification or nix shell wrapper
+
+    """
     for program in packages:
         Packages.ensure_allowed(program)
+
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
-    missing_packages = [
-        f"nixpkgs#{package}"
-        for package in packages
-        if not Packages.is_provided(package)
-    ]
+
+    missing_packages = [pkg for pkg in packages if not Packages.is_provided(pkg)]
+
     if not missing_packages:
         return cmd
 
+    # Try to resolve packages via cache
     from clan_lib.dirs import runtime_deps_flake  # noqa: PLC0415
 
-    return [
-        *nix_command(["shell", "--inputs-from", f"{runtime_deps_flake()!s}"]),
-        *missing_packages,
-        "-c",
-        *cmd,
-    ]
+    nixpkgs_path = str(runtime_deps_flake().resolve())
+
+    resolved_paths: list[str] = []
+    for pkg in missing_packages:
+        path = _resolve_package_path(nixpkgs_path, pkg)
+        if path is None:
+            # Fall back to nix shell for all packages
+            return _nix_shell_fallback(missing_packages, cmd)
+        resolved_paths.append(path)
+
+    # All packages resolved - use PATH modification
+    path_additions = [f"{p}/bin" for p in resolved_paths]
+    current_path = os.environ.get("PATH", "")
+    new_path = ":".join([*path_additions, current_path])
+
+    return ["env", f"PATH={new_path}", *cmd]
