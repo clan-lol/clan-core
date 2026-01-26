@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 {
   perSystem =
     {
@@ -41,9 +41,8 @@
           export PRJ_ROOT=$(git rev-parse --show-toplevel)
 
           # vendoring / needed for impure tests
-          ln -sfT ${self'.packages.clan-cli.nixpkgs} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/nixpkgs"
+          ln -sfT ${self'.packages.clan-cli.runtimeDepsFlake} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/runtime-deps"
           ln -sfT ${inputs.nix-select} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/select"
-          ln -sfT ${self'.packages.clan-cli.disko} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/disko"
 
           # Generate clan types
           cp ${self'.packages.clan-types}/typing.py $PRJ_ROOT/pkgs/clan-cli/clan_lib/nix_models/typing.py

@@ -217,21 +217,23 @@ def module_root() -> Path:
     return Path(__file__).parent.parent
 
 
+def runtime_deps_flake() -> Path:
+    """Returns the path to the bundled runtime deps flake containing nixpkgs and disko."""
+    return (module_root() / "runtime-deps").resolve()
+
+
 def nixpkgs_flake() -> Path:
-    return (module_root() / "nixpkgs").resolve()
+    """Returns the path to the runtime deps flake (for --inputs-from nixpkgs)."""
+    return runtime_deps_flake()
 
 
 def nixpkgs_source() -> Path:
-    return (module_root() / "nixpkgs" / "path").resolve()
+    """Returns the path to the nixpkgs source tree."""
+    return (runtime_deps_flake() / "path").resolve()
 
 
 def select_source() -> Path:
     return (module_root() / "select").resolve()
-
-
-def disko_flake() -> Path:
-    """Returns the path to the bundled disko flake."""
-    return (module_root() / "disko").resolve()
 
 
 def get_clan_directories(flake: "Flake") -> tuple[str, str]:
