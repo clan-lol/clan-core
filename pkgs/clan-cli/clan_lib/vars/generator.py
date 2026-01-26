@@ -16,7 +16,12 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 from clan_lib.nix import nix_config, nix_test_store
-from clan_lib.nix_selectors import inventory_relative_directory, secrets_age_plugins
+from clan_lib.nix_selectors import (
+    inventory_relative_directory,
+    secrets_age_plugins,
+    vars_generators_files,
+    vars_generators_metadata,
+)
 from clan_lib.vars.graph import GeneratorGraphNode
 
 from .prompt import Prompt, ask
@@ -194,14 +199,11 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
         config = nix_config()
         system = config["system"]
 
-        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
-        files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
-
         return [
             secrets_age_plugins(),
             inventory_relative_directory(),
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{generators_selector}",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{files_selector}",
+            vars_generators_metadata(system, machine_names),
+            vars_generators_files(system, machine_names),
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.?sops.?defaultGroups",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.publicModule",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
