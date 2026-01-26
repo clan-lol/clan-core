@@ -1,22 +1,22 @@
-import type { Element } from "hast";
+import type { ShikiTransformer } from "shiki";
 
 export default function transformerLineNumbers({
   minLines,
 }: {
   minLines: number;
-}) {
+}): ShikiTransformer {
   return {
-    pre(pre: Element) {
-      const code = pre.children?.[0] as Element | undefined;
-      if (!code) {
+    pre(pre) {
+      const code = pre.children?.[0];
+      if (!code || !("children" in code)) {
         return;
       }
-      const lines = code.children.reduce((lines, node) => {
-        if (node.type !== "element" || node.properties["class"] !== "line") {
-          return lines;
+      let lines = 0;
+      for (const node of code.children) {
+        if (node.type === "element" && node.properties["class"] === "line") {
+          lines += 1;
         }
-        return lines + 1;
-      }, 0);
+      }
       if (lines < minLines) {
         return;
       }

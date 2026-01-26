@@ -1,27 +1,30 @@
-import { visit } from "unist-util-visit";
-import type { Paragraph, Root, Text } from "mdast";
 import type { ContainerDirectiveData } from "mdast-util-directive";
+import { isDirectiveParagraph } from "./util";
+import type { Plugin } from "unified";
+import type { Root } from "mdast";
+import { visit } from "unist-util-visit";
 
-const names = ["note", "important", "danger", "tip"];
+const names = new Set(["note", "important", "danger", "tip"]);
 
 // Adapted from https://github.com/remarkjs/remark-directive
-export default function remarkAdmonition() {
-  return (tree: Root) => {
+const remarkAdmonition: Plugin<[], Root> = function () {
+  return (tree) => {
     visit(tree, (node) => {
-      if (node.type !== "containerDirective" || !names.includes(node.name)) {
+      if (node.type !== "containerDirective" || !names.has(node.name)) {
         return;
       }
 
       const data: ContainerDirectiveData = {};
-      node.data ||= data;
+      node.data ??= data;
       data.hName = "div";
       data.hProperties = {
         className: `md-admonition is-${node.name}`,
       };
       let title: string;
-      if (node.children?.[0]?.data?.directiveLabel) {
-        const p = node.children.shift() as Paragraph;
-        title = (p.children[0] as Text).value;
+      const p = node.children?.[0];
+      if (isDirectiveParagraph(p) && p.children?.[0]?.type === "text") {
+        node.children.shift();
+        title = p.children[0].value;
       } else {
         title = node.name;
       }
@@ -52,4 +55,5 @@ export default function remarkAdmonition() {
       ];
     });
   };
-}
+};
+export default remarkAdmonition;

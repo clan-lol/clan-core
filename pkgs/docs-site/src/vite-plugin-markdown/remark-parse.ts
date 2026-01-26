@@ -1,25 +1,13 @@
-import type { Data, Processor } from "unified";
+import { fromMarkdown } from "mdast-util-from-markdown";
 import { matter } from "vfile-matter";
-import {
-  type Extension as MarkdownExtension,
-  fromMarkdown,
-} from "mdast-util-from-markdown";
-import type { Extension } from "micromark-util-types";
+import type { Plugin } from "unified";
+import type { Root } from "mdast";
 
-export default function remarkParse(this: Processor) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
-  this.parser = (_document, file) => {
+const remarkParse: Plugin = function () {
+  // eslint-disable-next-line no-this-in-exported-function
+  this.parser = function parser(_document, file): Root {
     matter(file, { strip: true });
-    // FIXME: fromMarkdown has a broken type definition, fix it and upstream
-    const extensions = (self.data("micromarkExtensions" as unknown as Data) ||
-      []) as unknown as Extension[];
-    const mdastExtensions = (self.data(
-      "fromMarkdownExtensions" as unknown as Data,
-    ) || []) as unknown as MarkdownExtension[];
-    return fromMarkdown(String(file), {
-      extensions,
-      mdastExtensions,
-    });
+    return fromMarkdown(String(file));
   };
-}
+};
+export default remarkParse;

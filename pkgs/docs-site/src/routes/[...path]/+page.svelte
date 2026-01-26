@@ -1,8 +1,10 @@
 <script lang="ts">
   import "~/vite-plugin-markdown/main.css";
-  import { type Heading as ArticleHeading, visit } from "$lib/models/docs";
+  import type { Heading as ArticleHeading } from "$lib/models/docs";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
+  import { visit } from "$lib/models/docs";
+
   const { data } = $props();
 
   type Heading = ArticleHeading & {
@@ -29,7 +31,7 @@
 
   $effect(() => {
     // Make sure the effect is triggered on content change
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    // eslint-disable-next-line no-unused-expressions
     data.content;
     observer?.disconnect();
     observer = new IntersectionObserver(onIntersectionChange, {
@@ -43,37 +45,40 @@
   });
 
   onMount(() => {
-    function onClick(ev: MouseEvent): void {
-      const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
-      if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
-        return;
-      }
-      const tabsEl = targetTabEl.closest(".md-tabs");
-      if (!tabsEl) {
-        return;
-      }
-      const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
-      const tabIndex = Array.from(tabEls).indexOf(targetTabEl);
-      if (tabIndex === -1) {
-        return;
-      }
-      const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
-      const tabContentEl = tabContentEls[tabIndex];
-      if (!tabContentEl) {
-        return;
-      }
-      tabEls.forEach((tabEl) => tabEl.classList.remove("is-active"));
-      targetTabEl.classList.add("is-active");
-      tabContentEls.forEach((tabContentEl) =>
-        tabContentEl.classList.remove("is-active"),
-      );
-      tabContentEl.classList.add("is-active");
-    }
     document.addEventListener("click", onClick);
-    return () => {
+    return (): void => {
       document.removeEventListener("click", onClick);
     };
   });
+
+  function onClick(ev: MouseEvent): void {
+    const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
+    if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
+      return;
+    }
+    const tabsEl = targetTabEl.closest(".md-tabs");
+    if (!tabsEl) {
+      return;
+    }
+    const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
+    const tabIndex = [...tabEls].indexOf(targetTabEl);
+    if (tabIndex === -1) {
+      return;
+    }
+    const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
+    const tabContentEl = tabContentEls[tabIndex];
+    if (!tabContentEl) {
+      return;
+    }
+    for (const tabEl of tabEls) {
+      tabEl.classList.remove("is-active");
+    }
+    targetTabEl.classList.add("is-active");
+    for (const tabContentEl of tabContentEls) {
+      tabContentEl.classList.remove("is-active");
+    }
+    tabContentEl.classList.add("is-active");
+  }
 
   function normalizeHeadings(headings: ArticleHeading[]): Heading[] {
     // Use casting because the element property is supposed to be set by
@@ -88,7 +93,7 @@
     })) as Heading[];
   }
 
-  function onIntersectionChange(entries: IntersectionObserverEntry[]) {
+  function onIntersectionChange(entries: IntersectionObserverEntry[]): void {
     // Record each heading's scrolledPast
     for (const entry of entries) {
       visit(headings, (heading) => {
@@ -123,14 +128,14 @@
     currentHeading = current;
   }
 
-  function scrollToHeading(ev: Event, heading: Heading) {
+  function scrollToHeading(ev: Event, heading: Heading): void {
     ev.preventDefault();
     heading.element.scrollIntoView({
       behavior: "smooth",
     });
     tocOpen = false;
   }
-  function scrollToTop(ev: Event) {
+  function scrollToTop(ev: Event): void {
     ev.preventDefault();
     window.scrollTo({
       top: 0,

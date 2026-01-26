@@ -1,10 +1,27 @@
-import config from "~/config";
 import type {
   Heading,
   Markdown,
   Frontmatter as MarkdownFrontmatter,
 } from "~/vite-plugin-markdown";
+import config from "~/config";
 import { visitNavItems } from "./visit";
+
+function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
+  if (badge == null) {
+    return null;
+  }
+  if (typeof badge === "string") {
+    return {
+      text: badge,
+      variant: "normal",
+    };
+  }
+  return badge;
+}
+
+function isPath(s: unknown): s is Path {
+  return typeof s === "string" && s.startsWith("/");
+}
 
 export { visit } from "./visit";
 
@@ -27,7 +44,7 @@ export type { Heading };
 export class Docs {
   #articles: Record<Path, (() => Promise<Markdown>) | Article> = {};
   navItems: NavItem[] = [];
-  async init() {
+  async init(): Promise<Docs> {
     this.#articles = Object.fromEntries(
       Object.entries(import.meta.glob<Markdown>("../../../docs/**/*.md")).map(
         ([key, fn]) => [key.slice("../../../docs".length, -".md".length), fn],
@@ -35,7 +52,9 @@ export class Docs {
     );
 
     this.navItems = await Promise.all(
-      config.docs.navItems.map((navItem) => this.#normalizeNavItem(navItem)),
+      config.docs.navItems.map(
+        async (navItem) => await this.#normalizeNavItem(navItem),
+      ),
     );
     return this;
   }
@@ -53,7 +72,9 @@ export class Docs {
   }
 
   async getArticles(paths: Path[]): Promise<(Article | null)[]> {
-    return await Promise.all(paths.map((path) => this.getArticle(path)));
+    return await Promise.all(
+      paths.map(async (path) => await this.getArticle(path)),
+    );
   }
 
   async #normalizeNavItem(navItem: NavItemInput): Promise<NavItem> {
@@ -76,7 +97,9 @@ export class Docs {
         collapsed: Boolean(navItem.collapsed),
         badge: normalizeBadge(navItem.badge),
         items: await Promise.all(
-          navItem.items.map((navItem) => this.#normalizeNavItem(navItem)),
+          navItem.items.map(
+            async (navItem) => await this.#normalizeNavItem(navItem),
+          ),
         ),
       };
     }
@@ -127,11 +150,12 @@ export class Docs {
         return titleA.localeCompare(titleB);
       });
       const items = await Promise.all(
-        articles.map((article) =>
-          this.#normalizeNavItem({
-            label: article.frontmatter.title,
-            link: article.path,
-          }),
+        articles.map(
+          async (article) =>
+            await this.#normalizeNavItem({
+              label: article.frontmatter.title,
+              link: article.path,
+            }),
         ),
       );
       return {
@@ -240,21 +264,4 @@ export type BadgeInput = string | Badge;
 export interface Badge {
   text: string;
   variant: "caution" | "normal";
-}
-
-function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
-  if (!badge) {
-    return null;
-  }
-  if (typeof badge === "string") {
-    return {
-      text: badge,
-      variant: "normal",
-    };
-  }
-  return badge;
-}
-
-function isPath(s: unknown): s is Path {
-  return typeof s === "string" && s.startsWith("/");
 }

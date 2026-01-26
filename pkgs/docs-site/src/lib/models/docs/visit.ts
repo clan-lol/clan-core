@@ -29,10 +29,11 @@ export function visitNavItems(
       if (visitor(navItem, parents) === "break") {
         return "break";
       }
-      if ("items" in navItem) {
-        if (visitItems(navItem.items, [...parents, navItem]) === "break") {
-          return "break";
-        }
+      if (
+        "items" in navItem &&
+        visitItems(navItem.items, [...parents, navItem]) === "break"
+      ) {
+        return "break";
       }
     }
     return;

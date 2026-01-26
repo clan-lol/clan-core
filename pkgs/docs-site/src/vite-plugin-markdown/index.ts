@@ -1,11 +1,3 @@
-import { unified } from "unified";
-import { VFile } from "vfile";
-import remarkRehype from "remark-rehype";
-import rehypeStringify from "rehype-stringify";
-import rehypeShiki from "@shikijs/rehype";
-import remarkGfm from "remark-gfm";
-import remarkDirective from "remark-directive";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import {
   transformerMetaHighlight,
   transformerNotationDiff,
@@ -13,13 +5,21 @@ import {
   transformerRenderIndentGuides,
 } from "@shikijs/transformers";
 import type { PluginOption } from "vite";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypeShiki from "@shikijs/rehype";
+import rehypeStringify from "rehype-stringify";
 import rehypeTocSlug from "./rehype-toc-slug";
-import transformerLineNumbers from "./shiki-transformer-line-numbers";
-import remarkParse from "./remark-parse";
-import remarkAdmonition from "./remark-admonition";
-import remarkTabs from "./remark-tabs";
 import rehypeWrapHeadings from "./rehype-wrap-headings";
+import remarkAdmonition from "./remark-admonition";
+import remarkDirective from "remark-directive";
+import remarkGfm from "remark-gfm";
 import remarkLinkMigration from "./link-migration";
+import remarkParse from "./remark-parse";
+import remarkRehype from "remark-rehype";
+import remarkTabs from "./remark-tabs";
+import transformerLineNumbers from "./shiki-transformer-line-numbers";
+import { unified } from "unified";
+import { VFile } from "vfile";
 
 export interface Markdown {
   content: string;
