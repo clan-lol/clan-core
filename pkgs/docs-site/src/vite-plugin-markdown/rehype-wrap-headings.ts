@@ -1,11 +1,12 @@
-import { visit } from "unist-util-visit";
 import { headingRank } from "hast-util-heading-rank";
-import type { Nodes } from "hast";
+import type { Plugin } from "unified";
+import type { Root } from "hast";
+import { visit } from "unist-util-visit";
 
-export default function rehypeWrapHeadings() {
-  return (tree: Nodes) => {
+const rehypeWrapHeadings: Plugin<[], Root> = function () {
+  return (tree) => {
     visit(tree, "element", (node) => {
-      if (!headingRank(node)) {
+      if (headingRank(node) == null) {
         return;
       }
       node.children = [
@@ -18,4 +19,5 @@ export default function rehypeWrapHeadings() {
       ];
     });
   };
-}
+};
+export default rehypeWrapHeadings;

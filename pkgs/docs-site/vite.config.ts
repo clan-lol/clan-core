@@ -1,8 +1,8 @@
-import { sveltekit } from "@sveltejs/kit/vite";
-import { pagefind } from "vite-plugin-pagefind";
+import config from "./src/config";
 import { defineConfig } from "vite";
 import markdown from "./src/vite-plugin-markdown";
-import config from "./src/config";
+import { pagefind } from "vite-plugin-pagefind";
+import { sveltekit } from "@sveltejs/kit/vite";
 
 export default defineConfig({
   plugins: [

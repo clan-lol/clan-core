@@ -1,15 +1,15 @@
 <script lang="ts">
-  import favicon from "$lib/assets/favicon.svg";
-  import type { NavItem } from "$lib/models/docs";
-  import { onNavigate } from "$app/navigation";
-  import { onMount } from "svelte";
+  import "./global.css";
   import type {
     Pagefind,
     PagefindSearchFragment,
   } from "vite-plugin-pagefind/types";
-  import "./global.css";
-  import { resolve } from "$app/paths";
   import config from "~/config";
+  import favicon from "$lib/assets/favicon.svg";
+  import type { NavItem } from "$lib/models/docs";
+  import { onMount } from "svelte";
+  import { onNavigate } from "$app/navigation";
+  import { resolve } from "$app/paths";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);
@@ -28,7 +28,7 @@
     document.documentElement.classList.remove("no-scroll");
   });
   $effect(() => {
-    (async () => {
+    (async (): Promise<void> => {
       if (!pagefind) {
         return;
       }
@@ -39,7 +39,7 @@
     })();
   });
 
-  function toggleMenu() {
+  function toggleMenu(): void {
     menuOpen = !menuOpen;
     window.scrollTo({ top: 0 });
     document.documentElement.classList.toggle("no-scroll", menuOpen);

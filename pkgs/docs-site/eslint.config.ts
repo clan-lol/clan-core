@@ -1,26 +1,32 @@
-import eslint from "@eslint/js";
-import prettier from "eslint-config-prettier/flat";
-import tseslint from "typescript-eslint";
-import globals from "globals";
-import svelte from "eslint-plugin-svelte";
+// The actual linting is handled by oxlint (see .oxlintrc.json)
+// We use eslint as a formatter to do things like sort imports which prettier
+// doesn't do. Your editor should be configured to run
+//
+// eslint --flag unstable_native_nodejs_ts_config --no-inline-config
+// prettier -w .
+//
+// In that order, when saving a file
 import { defineConfig } from "eslint/config";
+import importPlugin from "eslint-plugin-import";
+import perfectionist from "eslint-plugin-perfectionist";
+import svelte from "eslint-plugin-svelte";
 import svelteConfig from "./svelte.config.ts";
+import ts from "typescript-eslint";
 
 export default defineConfig(
   {
     ignores: [".svelte-kit/**/*", "build/**/*", "static/pagefind/**/*"],
   },
-  eslint.configs.all,
-  prettier,
-  tseslint.configs.strict,
-  tseslint.configs.stylistic,
-  svelte.configs.recommended,
-  svelte.configs.prettier,
+  ts.configs.base,
+  svelte.configs.base,
+  {
+    files: ["**/*.js", "**/*.ts"],
+  },
   {
     files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
     languageOptions: {
       parserOptions: {
-        parser: tseslint.parser,
+        parser: ts.parser,
         projectService: true,
         extraFileExtensions: [".svelte"],
         svelteConfig,
@@ -28,50 +34,28 @@ export default defineConfig(
     },
   },
   {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
+    plugins: {
+      import: importPlugin,
+      perfectionist,
     },
     rules: {
-      // Typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
-      // See: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-      "no-undef": "off",
-      "sort-imports": "off",
-      "sort-keys": "off",
-      "sort-vars": "off",
-      "id-length": "off",
-      "one-var": "off",
-      "no-shadow": "off",
-      "max-lines-per-function": "off",
-      "max-statements": "off",
-      "max-lines": "off",
-      "require-unicode-regexp": "off",
-      // We use exactOptionalPropertyTypes in tsconfig.json, which might require dot notation
-      "dot-notation": "off",
-      "init-declarations": "off",
-      // This is a duplicate of @typescript-eslint/no-this-alias, which is more configurable
-      "consistent-this": "off",
-      "no-ternary": "off",
-      "no-continue": "off",
-      // Rely on typescript to catch return type error
-      "consistent-return": "off",
-      // In clash with ts(7030): Not all code paths return a value
-      "no-useless-return": "off",
-      "no-warning-comments": "off",
-      "no-use-before-define": ["error", { functions: false }],
-      "no-console": ["error", { allow: ["warn", "error"] }],
-      "no-magic-numbers": ["error", { ignore: [-2, -1, 0, 1, 2] }],
-      "func-style": ["error", "declaration", { allowTypeAnnotation: true }],
-      "capitalized-comments": [
-        "off",
-        "always",
-        { ignoreConsecutiveComments: true },
-      ],
-      "@typescript-eslint/no-invalid-void-type": [
+      "import/enforce-node-protocol-usage": ["error", "always"],
+      "import/newline-after-import": "error",
+      "import/no-duplicates": "error",
+      "perfectionist/sort-array-includes": "error",
+      "perfectionist/sort-imports": [
         "error",
-        { allowAsThisParameter: true },
+        {
+          sortBy: "specifier",
+          newlinesBetween: 0,
+          tsconfig: { rootDir: "." },
+          groups: [
+            "side-effect",
+            "wildcard-import",
+            "multiline-import",
+            "singleline-import",
+          ],
+        },
       ],
     },
   },

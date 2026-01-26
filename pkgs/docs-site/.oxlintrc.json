@@ -1,0 +1,90 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "perf": "error",
+    "style": "error",
+    "restriction": "error",
+    "nursery": "warn"
+  },
+  "plugins": [
+    "eslint",
+    "unicorn",
+    "typescript",
+    "oxc",
+    "import",
+    "promise",
+    "node"
+  ],
+  "jsPlugins": ["eslint-plugin-svelte"],
+  "rules": {
+    // Typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
+    // See: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+    "no-undef": "off",
+    "sort-keys": "off",
+    "no-named-export": "off",
+    "group-exports": "off",
+    "prefer-default-export": "off",
+    "no-async-await": "off",
+    "no-namespace": "off",
+    // File name should provide the meaning
+    "no-anonymous-default-export": "off",
+    "no-default-export": "off",
+    "sort-imports": ["error", { "ignoreCase": true }],
+    // Identifiers like i, or T in generic types are pretty conventional
+    "id-length": "off",
+    "no-optional-chaining": "off",
+    "max-lines-per-function": "off",
+    "max-statements": "off",
+    "init-declarations": "off",
+    "no-rest-spread-properties": "off",
+    // In clash with ts(7030): Not all code paths return a value
+    "no-useless-return": "off",
+    // The same as typescript/no-this-alias
+    "no-this-assignment": "off",
+    "no-continue": "off",
+    "no-ternary": "off",
+    "no-unassigned-import": "off",
+    "max-dependencies": "off",
+    "no-warning-comments": "off",
+    "consistent-type-specifier-style": ["error", "prefer-top-level"],
+    // Rely on ts(2454) instead
+    "no-unassigned-vars": "off",
+    "no-null": "off",
+    // Compare null using == is conventional to detech null or undefined
+    "no-eq-null": "off",
+    // Casting to a narrower type is sometime necessary
+    "no-unsafe-type-assertion": "off",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "func-names": ["error", "as-needed"],
+    "capitalized-comments": [
+      "error",
+      "always",
+      { "ignoreConsecutiveComments": true }
+    ],
+    "func-style": ["error", "declaration", { "allowTypeAnnotation": true }],
+    "no-magic-numbers": ["error", { "ignore": [-2, -1, 0, 1, 2] }],
+    // Clearly show that a promise is being returned
+    "typescript/return-await": ["error", "always"],
+    "eslint/no-duplicate-imports": [
+      "error",
+      { "allowSeparateTypeImports": true }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.d.ts"],
+      "rules": {
+        "require-module-specifiers": "off"
+      }
+    }
+  ],
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": []
+}

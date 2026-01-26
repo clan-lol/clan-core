@@ -1,16 +1,18 @@
-import { visit } from "unist-util-visit";
-import type { Paragraph, Root, Text } from "mdast";
 import type { ContainerDirectiveData } from "mdast-util-directive";
+import { isDirectiveParagraph } from "./util";
+import type { Plugin } from "unified";
+import type { Root } from "mdast";
+import { visit } from "unist-util-visit";
 
-export default function remarkTabs() {
-  return (tree: Root) => {
+const remarkTabs: Plugin<[], Root> = function () {
+  return (tree) => {
     visit(tree, (node) => {
       if (node.type !== "containerDirective" || node.name !== "tabs") {
         return;
       }
 
       const data: ContainerDirectiveData = {};
-      node.data ||= data;
+      node.data ??= data;
       data.hName = "div";
       data.hProperties = {
         className: "md-tabs",
@@ -22,9 +24,10 @@ export default function remarkTabs() {
           continue;
         }
         let tabTitle: string;
-        if (child.children?.[0]?.data?.directiveLabel) {
-          const p = child.children.shift() as Paragraph;
-          tabTitle = (p.children[0] as Text).value;
+        const p = child.children?.[0];
+        if (isDirectiveParagraph(p) && p.children?.[0]?.type === "text") {
+          child.children.shift();
+          tabTitle = p.children[0].value;
         } else {
           tabTitle = "(empty)";
         }
@@ -65,7 +68,7 @@ export default function remarkTabs() {
         tabIndex += 1;
       }
       if (tabTitles.length === 1) {
-        data.hProperties["className"] += " is-singleton";
+        data.hProperties.class += " is-singleton";
       }
       // Add tab bar for when js is enabled
       node.children = [
@@ -92,4 +95,5 @@ export default function remarkTabs() {
       ];
     });
   };
-}
+};
+export default remarkTabs;
