@@ -21,6 +21,7 @@
   zerotierone,
   minifakeroot,
   nixosConfigurations,
+  diskoInput,
   ...
 }@args:
 let
@@ -92,11 +93,13 @@ let
         # In cases where the devshell created this file, this will already exist
         rm -f $out/clan_lib/nixpkgs
         rm -f $out/clan_lib/select
+        rm -f $out/clan_lib/disko
 
         substituteInPlace $out/clan_lib/flake/flake.py \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
         ln -sf ${nix-select} $out/clan_lib/select
+        ln -sf ${disko'} $out/clan_lib/disko
         cp -r ${../../templates} $out/clan_lib/clan_core_templates
       '';
 
@@ -142,6 +145,34 @@ let
         }
         EOF
         ln -sf ${nixpkgs} $out/path
+        HOME=$TMPDIR nix flake update --flake $out \
+          --store ./. \
+          --extra-experimental-features 'nix-command flakes'
+      '';
+
+  # Create a disko wrapper flake that re-exports disko's outputs
+  # This ensures the flake.lock pins all inputs for offline use in VM tests
+  # We include nixpkgs and make disko follow it to avoid network fetches
+  disko' =
+    runCommand "disko"
+      {
+        nativeBuildInputs = [ nix ];
+      }
+      ''
+        mkdir $out
+        cat > $out/flake.nix << EOF
+        {
+          description = "disko dependency for clan-cli";
+
+          inputs = {
+            nixpkgs.url = "path://${nixpkgs}";
+            disko.url = "path://${diskoInput}";
+            disko.inputs.nixpkgs.follows = "nixpkgs";
+          };
+
+          outputs = { self, disko, nixpkgs }: disko;
+        }
+        EOF
         HOME=$TMPDIR nix flake update --flake $out \
           --store ./. \
           --extra-experimental-features 'nix-command flakes'
@@ -312,6 +343,7 @@ pythonRuntime.pkgs.buildPythonApplication {
   };
 
   passthru.nixpkgs = nixpkgs';
+  passthru.disko = disko';
   passthru.devshellPyDeps = ps: (pyTestDeps ps) ++ (pyDeps ps) ++ (devDeps ps);
   passthru.pythonRuntime = pythonRuntime;
   passthru.runtimeDependencies = bundledRuntimeDependencies;
@@ -329,6 +361,7 @@ pythonRuntime.pkgs.buildPythonApplication {
     cp -arf clan_lib/clan_core_templates/* $out/${pythonRuntime.sitePackages}/clan_lib/clan_core_templates
 
     cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_lib/nixpkgs
+    cp -r ${disko'} $out/${pythonRuntime.sitePackages}/clan_lib/disko
     ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_lib/select
     installShellCompletion --bash --name clan \
       <(${pythonRuntimeWithDeps.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)

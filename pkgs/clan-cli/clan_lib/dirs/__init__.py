@@ -229,6 +229,11 @@ def select_source() -> Path:
     return (module_root() / "select").resolve()
 
 
+def disko_flake() -> Path:
+    """Returns the path to the bundled disko flake."""
+    return (module_root() / "disko").resolve()
+
+
 def get_clan_directories(flake: "Flake") -> tuple[str, str]:
     """Get the clan source directory and computed clan directory paths.
 
