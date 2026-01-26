@@ -167,10 +167,10 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     if not missing_packages:
         return cmd
 
-    from clan_lib.dirs import nixpkgs_flake  # noqa: PLC0415
+    from clan_lib.dirs import runtime_deps_flake  # noqa: PLC0415
 
     return [
-        *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
+        *nix_command(["shell", "--inputs-from", f"{runtime_deps_flake()!s}"]),
         *missing_packages,
         "-c",
         *cmd,

@@ -218,13 +218,8 @@ def module_root() -> Path:
 
 
 def runtime_deps_flake() -> Path:
-    """Returns the path to the bundled runtime deps flake containing nixpkgs and disko."""
+    """Returns the path to the bundled runtime deps flake."""
     return (module_root() / "runtime-deps").resolve()
-
-
-def nixpkgs_flake() -> Path:
-    """Returns the path to the runtime deps flake (for --inputs-from nixpkgs)."""
-    return runtime_deps_flake()
 
 
 def nixpkgs_source() -> Path:
