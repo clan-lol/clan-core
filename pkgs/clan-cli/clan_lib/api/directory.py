@@ -6,6 +6,7 @@ from typing import Any, Literal
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
+from clan_lib.nix_selectors import inventory_relative_directory
 
 from . import API
 
@@ -126,7 +127,7 @@ def get_clan_directory_relative(flake: Flake) -> str:
 
     """
     # Get the relative directory path directly from the inventory
-    relative_directory = flake.select("clanInternals.inventoryClass.relativeDirectory")
+    relative_directory = flake.select(inventory_relative_directory())
 
     if not isinstance(relative_directory, str):
         msg = "Relative directory should be a string"

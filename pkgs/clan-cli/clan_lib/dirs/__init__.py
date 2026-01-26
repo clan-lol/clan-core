@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.errors import ClanError
+from clan_lib.nix_selectors import inventory_relative_directory
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
@@ -200,7 +201,7 @@ def machines_dir(flake: "Flake") -> Path:
     # Returns "" if no custom directory is set
     # Fall back to "" if the option doesn't exist (backwards compatibility)
     try:
-        clan_dir = flake.select("clanInternals.inventoryClass.relativeDirectory")
+        clan_dir = flake.select(inventory_relative_directory())
     except ClanError:
         # Option doesn't exist in older clan-core versions
         # Assume no custom directory
@@ -251,6 +252,6 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
     root_directory = flake.select("sourceInfo")
 
     # Get the relative directory path directly from the inventory
-    relative_directory = flake.select("clanInternals.inventoryClass.relativeDirectory")
+    relative_directory = flake.select(inventory_relative_directory())
 
     return (root_directory, relative_directory)
