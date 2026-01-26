@@ -14,6 +14,10 @@ from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import run_machine_update
 from clan_lib.network.network import get_best_remote
 from clan_lib.nix import nix_config
+from clan_lib.nix_selectors import (
+    deployment_nixos_mobile_workaround,
+    deployment_require_explicit_update,
+)
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
@@ -164,8 +168,8 @@ def update_command(args: argparse.Namespace) -> None:
         flake.precache(
             [
                 *Generator.get_machine_selectors(machine_names),
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
+                deployment_require_explicit_update(system, machine_names),
+                deployment_nixos_mobile_workaround(system, machine_names),
             ]
         )
 

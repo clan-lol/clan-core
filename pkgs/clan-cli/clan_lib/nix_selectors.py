@@ -76,16 +76,6 @@ def clan_exports() -> str:
 # MACHINE SELECTORS (system, machine)
 
 
-@machine_selector
-def deployment_require_explicit_update(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.deployment.requireExplicitUpdate"
-
-
-@machine_selector
-def deployment_nixos_mobile_workaround(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.system.clan.deployment.nixosMobileWorkaround"
-
-
 # MULTI-MACHINE SELECTORS (system, machines[])
 
 
@@ -127,6 +117,16 @@ def vars_password_store_pass_command(system: str, machines: Iterable[str]) -> st
 @machines_selector
 def vars_password_store_secret_location(system: str, machines: Iterable[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
+
+
+@machines_selector
+def deployment_require_explicit_update(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.deployment.requireExplicitUpdate"
+
+
+@machines_selector
+def deployment_nixos_mobile_workaround(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.system.clan.deployment.nixosMobileWorkaround"
 
 
 # GENERATOR SELECTORS (system, machine, generator)
