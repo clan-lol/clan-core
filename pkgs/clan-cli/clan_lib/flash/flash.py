@@ -13,7 +13,7 @@ from clan_lib.cmd import Log, RunOpts, cmd_with_root, run
 from clan_lib.dirs import runtime_deps_flake
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_shell
+from clan_lib.nix import Packages, nix_command
 from clan_lib.vars.generate import run_generators
 from clan_lib.vars.generator import Generator
 
@@ -178,10 +178,15 @@ def run_machine_flash(
             disko_install.extend(["--option", "dry-run", "true"])
             disko_install.extend(extra_args)
 
-            cmd = nix_shell(
-                [f"path:{runtime_deps_flake()}#disko-install"],
-                disko_install,
-            )
+            if Packages.is_provided("disko"):
+                cmd = disko_install
+            else:
+                cmd = [
+                    *nix_command(
+                        ["shell", f"path:{runtime_deps_flake()}#disko-install", "-c"]
+                    ),
+                    *disko_install,
+                ]
             run(
                 cmd,
                 RunOpts(
