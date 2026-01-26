@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.errors import ClanError
-from clan_lib.nix_selectors import inventory_relative_directory
+from clan_lib.nix_selectors import inventory_relative_directory, source_info
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
@@ -249,7 +249,7 @@ def get_clan_directories(flake: "Flake") -> tuple[str, str]:
 
     """
     # Get the source directory from nix store
-    root_directory = flake.select("sourceInfo")
+    root_directory = flake.select(source_info())
 
     # Get the relative directory path directly from the inventory
     relative_directory = flake.select(inventory_relative_directory())

@@ -54,6 +54,11 @@ def generator_selector[T: GeneratorSel](func: T) -> T:
 
 
 @static_selector
+def source_info() -> str:
+    return "sourceInfo"
+
+
+@static_selector
 def secrets_age_plugins() -> str:
     return "clanInternals.?secrets.?age.?plugins"
 
