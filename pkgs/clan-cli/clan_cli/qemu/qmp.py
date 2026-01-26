@@ -14,7 +14,7 @@ import json
 import logging
 import socket
 import types
-from typing import Any
+from typing import Any, Self
 
 from clan_lib.errors import ClanError
 
@@ -137,7 +137,7 @@ class QEMUMonitorProtocol:
                 raise QMPConnectError(msg)
             self.__sock.settimeout(None)
 
-    def __enter__(self) -> "QEMUMonitorProtocol":
+    def __enter__(self) -> Self:
         # Implement context manager enter function.
         return self
 

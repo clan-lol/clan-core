@@ -5,7 +5,7 @@ import types
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import IO, Any, ParamSpec, TypeVar
+from typing import IO, Any, ParamSpec, Self, TypeVar
 
 from clan_lib.errors import ClanError
 
@@ -302,7 +302,7 @@ class AsyncRuntime:
             msg = f"{err_count} hosts failed with an error. Check the logs above"
             raise ClanError(msg)
 
-    def __enter__(self) -> "AsyncRuntime":
+    def __enter__(self) -> Self:
         """Enter the runtime context related to this object."""
         return self
 

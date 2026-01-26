@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from functools import cache, cached_property
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Any
+from typing import Any, Self
 
 from colorama import Fore, Style
 
@@ -642,7 +642,7 @@ class Driver:
         """Run the test script (for non-interactive test runs)"""
         self.test_script()
 
-    def __enter__(self) -> "Driver":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
