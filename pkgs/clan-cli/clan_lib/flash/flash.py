@@ -10,7 +10,7 @@ from clan_cli.vars.upload import populate_secret_vars
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, cmd_with_root, run
-from clan_lib.dirs import runtime_deps_flake
+from clan_lib.dirs import disko_flake
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
@@ -179,7 +179,7 @@ def run_machine_flash(
             disko_install.extend(extra_args)
 
             cmd = nix_shell(
-                [f"{runtime_deps_flake()}#disko-install"],
+                [f"{disko_flake()}#disko-install"],
                 disko_install,
             )
             run(
