@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pexpect  # type: ignore[import-untyped]
 import pytest
+from clan_cli.secrets.secrets import decrypt_secret
 from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
@@ -25,6 +26,8 @@ from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, run
 from clan_lib.vars.generate import (
+    GeneratorPromptIdentifier,
+    get_generator_prompt_previous_values,
     get_generators,
     run_generators,
 )
@@ -1357,7 +1360,6 @@ def test_api_set_prompts(
     generators = get_generators(
         machines=[machine],
         full_closure=True,
-        include_previous_values=True,
     )
     # get_generators should bind the store
     assert generators[0].files[0]._store is not None
@@ -1366,6 +1368,71 @@ def test_api_set_prompts(
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"
     assert generators[0].prompts[0].previous_value == "input2"
+
+
+@pytest.mark.with_core
+def test_get_generator_prompt_previous_values(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test the get_generator_prompt_previous_values API endpoint."""
+    flake_ = flake_with_sops
+
+    config = flake_.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["prompts"]["prompt1"]["persist"] = True
+    my_generator["script"] = 'cat "$prompts"/prompt1 > "$out"/my_value'
+    flake_.refresh()
+    monkeypatch.chdir(flake_.path)
+
+    # First run to store a value
+    run_generators(
+        machines=[Machine(name="my_machine", flake=Flake(str(flake_.path)))],
+        generators=["my_generator"],
+        prompt_values={
+            "my_generator": {
+                "prompt1": "test_value",
+            },
+        },
+    )
+
+    machine = Machine(name="my_machine", flake=Flake(str(flake_.path)))
+
+    # Test fetching existing value
+    results = get_generator_prompt_previous_values(
+        machine=machine,
+        prompt_identifiers=[
+            GeneratorPromptIdentifier(
+                generator_name="my_generator", prompt_name="prompt1"
+            ),
+        ],
+    )
+    assert len(results) == 1
+    assert results[0].generator_name == "my_generator"
+    assert results[0].prompt_name == "prompt1"
+    assert results[0].value == "test_value"
+
+    # Test error on non-existent generator
+    with pytest.raises(ClanError, match="Generator 'nonexistent' not found"):
+        get_generator_prompt_previous_values(
+            machine=machine,
+            prompt_identifiers=[
+                GeneratorPromptIdentifier(
+                    generator_name="nonexistent", prompt_name="prompt1"
+                ),
+            ],
+        )
+
+    # Test error on non-existent prompt
+    with pytest.raises(ClanError, match="Prompt 'nonexistent' not found"):
+        get_generator_prompt_previous_values(
+            machine=machine,
+            prompt_identifiers=[
+                GeneratorPromptIdentifier(
+                    generator_name="my_generator", prompt_name="nonexistent"
+                ),
+            ],
+        )
 
 
 @pytest.mark.with_core
@@ -2100,4 +2167,80 @@ def test_dynamic_invalidation(
     assert (
         generators_1["dependent_generator"]["files"]["my_value"]["value"]
         != generators_2["dependent_generator"]["files"]["my_value"]["value"]
+    )
+
+
+@pytest.mark.with_core
+def test_get_generators_only_decrypts_requested_machines(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that get_generators only decrypts secrets for requested machines.
+
+    This verifies the fix for the bug where `clan machines update <machine>`
+    would try to decrypt secrets for all machines in the flake, not just the
+    target machine. Users who don't have access to decrypt secrets for other
+    machines should still be able to update their target machine.
+    """
+    flake = flake_with_sops
+
+    # Create two machines with secret prompts
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
+    m1_gen = m1_config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    m1_gen["prompts"]["secret_prompt"]["type"] = "hidden"
+    m1_gen["prompts"]["secret_prompt"]["persist"] = True
+    m1_gen["files"]["secret_prompt"]["secret"] = True
+
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
+    m2_gen = m2_config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    m2_gen["prompts"]["secret_prompt"]["type"] = "hidden"
+    m2_gen["prompts"]["secret_prompt"]["persist"] = True
+    m2_gen["files"]["secret_prompt"]["secret"] = True
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate secrets for both machines
+    run_generators(
+        machines=[Machine(name="machine1", flake=Flake(str(flake.path)))],
+        generators=["my_generator"],
+        prompt_values={"my_generator": {"secret_prompt": "secret1"}},
+    )
+    run_generators(
+        machines=[Machine(name="machine2", flake=Flake(str(flake.path)))],
+        generators=["my_generator"],
+        prompt_values={"my_generator": {"secret_prompt": "secret2"}},
+    )
+
+    # Track which secrets are decrypted
+    decrypted_paths: list[Path] = []
+
+    def tracking_decrypt(path: Path, age_plugins: list[str]) -> str:
+        decrypted_paths.append(path)
+        return decrypt_secret(path, age_plugins)
+
+    # Patch where it's used, not where it's defined (the import happens at module load)
+    monkeypatch.setattr(
+        "clan_lib.vars.secret_modules.sops.decrypt_secret", tracking_decrypt
+    )
+
+    # Get generators for just machine1 with previous values
+    machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
+    generators = get_generators(
+        machines=[machine1],
+        full_closure=True,
+    )
+
+    # Verify we got the generator with previous value
+    assert len(generators) == 1
+    assert generators[0].name == "my_generator"
+    assert generators[0].prompts[0].previous_value == "secret1"
+
+    # Verify we only decrypted machine1's secret, not machine2's
+    decrypted_path_strs = [str(p) for p in decrypted_paths]
+    assert any("machine1" in p for p in decrypted_path_strs), (
+        f"Should have decrypted machine1's secret, got: {decrypted_path_strs}"
+    )
+    assert not any("machine2" in p for p in decrypted_path_strs), (
+        f"Should NOT have decrypted machine2's secret, got: {decrypted_path_strs}"
     )

@@ -156,10 +156,28 @@ export async function getMachineVarsPromptGroups(
       ],
       // TODO: Make this configurable
       full_closure: false,
-      // TODO: Make this configurable
-      include_previous_values: true,
     },
   });
+
+  // Collect all prompts that have persist=true
+  const persistedPrompts: { generatorName: string; promptName: string }[] = [];
+  for (const generator of res.data) {
+    for (const prompt of generator.prompts) {
+      if (prompt.persist) {
+        persistedPrompts.push({
+          generatorName: generator.name,
+          promptName: prompt.name,
+        });
+      }
+    }
+  }
+
+  // Fetch previous values for persisted prompts
+  const previousValues =
+    persistedPrompts.length > 0
+      ? await getPreviousPromptValues(machineId, clanId, persistedPrompts)
+      : {};
+
   const groups: MachineVarsPromptGroupsOutput = {};
   for (const generator of res.data) {
     for (const prompt of generator.prompts) {
@@ -170,17 +188,48 @@ export async function getMachineVarsPromptGroups(
       } else {
         group = groups[groupId];
       }
+      const key = `${generator.name}/${prompt.name}`;
       group[prompt.name] = {
         generator: generator.name,
         type: prompt.prompt_type,
         description: prompt.description,
         name: prompt.display?.label || prompt.name,
-        value: prompt.previous_value || "",
+        value: previousValues[key] || "",
         required: prompt.display?.required ?? false,
       };
     }
   }
   return groups;
+}
+
+export async function getPreviousPromptValues(
+  machineId: string,
+  clanId: string,
+  promptIds: { generatorName: string; promptName: string }[],
+): Promise<Record<string, string>> {
+  const res = await client.call("get_generator_prompt_previous_values", {
+    body: {
+      machine: { name: machineId, flake: { identifier: clanId } },
+      prompt_identifiers: promptIds.map((id) => ({
+        generator_name: id.generatorName,
+        prompt_name: id.promptName,
+      })),
+    },
+  });
+
+  return Object.fromEntries(
+    res.data
+      .filter(
+        (
+          r,
+        ): r is {
+          generator_name: string;
+          prompt_name: string;
+          value: string;
+        } => r.value !== null,
+      )
+      .map((r) => [`${r.generator_name}/${r.prompt_name}`, r.value]),
+  );
 }
 
 export async function createMachine(
