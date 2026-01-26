@@ -16,6 +16,7 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.nix_selectors import secrets_age_plugins
 from clan_lib.vars.graph import GeneratorGraphNode
 
 from .prompt import Prompt, ask
@@ -197,7 +198,7 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
         files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
 
         return [
-            "clanInternals.?secrets.?age.?plugins",
+            secrets_age_plugins(),
             "clanInternals.inventoryClass.relativeDirectory",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{generators_selector}",
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.{files_selector}",

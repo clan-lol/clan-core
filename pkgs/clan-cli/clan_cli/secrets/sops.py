@@ -18,6 +18,7 @@ from clan_lib.dirs import runtime_deps_flake, user_config_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_shell
+from clan_lib.nix_selectors import secrets_age_plugins
 
 from .folders import sops_users_folder
 
@@ -219,7 +220,7 @@ class Operation(enum.StrEnum):
 
 
 def load_age_plugins(flake: Flake) -> list[str]:
-    result = flake.select("clanInternals.?secrets.?age.?plugins")
+    result = flake.select(secrets_age_plugins())
     plugins = result["secrets"]["age"]["plugins"]
     if plugins == {}:
         plugins = []
