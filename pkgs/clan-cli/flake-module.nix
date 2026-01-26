@@ -58,6 +58,7 @@
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
+          diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;
           inherit (self'.packages) zerotierone minifakeroot;
           templateDerivation = templateDerivation;
@@ -72,6 +73,7 @@
         };
         clan-cli-full = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
+          diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;
           inherit (self'.packages) zerotierone minifakeroot;
           clan-core-path = clanCoreWithVendoredDeps;

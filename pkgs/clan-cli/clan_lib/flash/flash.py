@@ -10,9 +10,8 @@ from clan_cli.vars.upload import populate_secret_vars
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, cmd_with_root, run
-from clan_lib.dirs import clan_core_flake
+from clan_lib.dirs import disko_flake
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
 from clan_lib.vars.generate import run_generators
@@ -37,9 +36,6 @@ class SystemConfig:
 class Disk:
     name: str
     device: str
-
-
-installer_machine = Machine(name="flash-installer", flake=Flake(str(clan_core_flake())))
 
 
 def build_system_config_nix(system_config: SystemConfig) -> dict[str, Any]:
@@ -87,10 +83,10 @@ def build_system_config_nix(system_config: SystemConfig) -> dict[str, Any]:
 # TODO: unify this with machine install
 @API.register
 def run_machine_flash(
+    machine: Machine,
     disks: list[Disk],
     system_config: SystemConfig,
     # Optional parameters
-    machine: Machine = installer_machine,
     mode: Literal["format", "mount"] = "format",
     dry_run: bool = False,
     write_efi_boot_entries: bool = False,
@@ -183,7 +179,7 @@ def run_machine_flash(
             disko_install.extend(extra_args)
 
             cmd = nix_shell(
-                [f"{clan_core_flake()}#disko"],
+                [f"{disko_flake()}#disko-install"],
                 disko_install,
             )
             run(

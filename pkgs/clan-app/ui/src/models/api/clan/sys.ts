@@ -63,6 +63,12 @@ export async function flashInstaller(
 ): Promise<void> {
   await client.call("run_machine_flash", {
     body: {
+      machine: {
+        name: "flash-installer",
+        flake: {
+          identifier: "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
+        },
+      },
       system_config: {
         ssh_keys_path: [opts.sshKeysDir],
       },
