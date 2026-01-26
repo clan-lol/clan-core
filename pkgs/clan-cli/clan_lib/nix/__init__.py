@@ -127,15 +127,6 @@ class Packages:
         else:
             allowed_packages = cls.allowed_packages
 
-        if "#" in package:
-            # Flake references for age plugins are officially supported
-            if "age-plugin" not in package:
-                log.warning(
-                    "Allowing package %s for debugging as it looks like a flakeref",
-                    package,
-                )
-            return
-
         if package not in allowed_packages:
             msg = f"Package not allowed: '{package}', allowed packages are:\n{'\n'.join(allowed_packages)}"
             raise ClanError(msg)
@@ -147,9 +138,6 @@ class Packages:
             cls.static_packages = set(
                 os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":"),
             )
-
-        if "#" in program:
-            return True
 
         if program in cls.static_packages:
             if shutil.which(program) is None:
@@ -175,7 +163,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
         f"nixpkgs#{package}"
         for package in packages
         if not Packages.is_provided(package)
-    ] + [package for package in packages if "#" in package]
+    ]
     if not missing_packages:
         return cmd
 
