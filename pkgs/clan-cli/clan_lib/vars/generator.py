@@ -252,7 +252,6 @@ class Generator:
         cls: type["Generator"],
         machine_names: Iterable[str],
         flake: "Flake",
-        include_previous_values: bool = False,
         secret_cache: dict[Path, bytes] | None = None,
     ) -> list["Generator"]:
         """Get all generators for a machine from the flake.
@@ -260,7 +259,6 @@ class Generator:
         Args:
             machine_names: The names of the machines.
             flake: The flake to get the generators from.
-            include_previous_values: Whether to include previous values in the generators.
             secret_cache: Optional cache for decrypted secrets to avoid repeated decryption.
 
         Returns:
@@ -395,15 +393,12 @@ class Generator:
                     # Always add per-machine generators
                     generators.append(generator)
 
-            # TODO: This should be done in a non-mutable way.
-            if include_previous_values:
-                for generator in generators:
-                    for prompt in generator.prompts:
-                        prompt.previous_value = generator.get_previous_value(
-                            machine,
-                            prompt,
-                            secret_cache=secret_cache,
-                        )
+            # Set lazy evaluation context for prompts (evaluated on access)
+            for generator in generators:
+                for prompt in generator.prompts:
+                    prompt._machine = machine  # noqa: SLF001
+                    prompt._generator = generator  # noqa: SLF001
+                    prompt._secret_cache = secret_cache  # noqa: SLF001
 
         return generators
 

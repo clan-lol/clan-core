@@ -1,13 +1,14 @@
 import logging
 from collections.abc import Callable
 from collections.abc import Generator as GeneratorType
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from pathlib import Path
-from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
@@ -19,6 +20,74 @@ from clan_lib.vars.secret_modules import sops
 log = logging.getLogger(__name__)
 
 debug_condition = False
+
+
+@dataclass
+class GeneratorPromptIdentifier:
+    generator_name: str
+    prompt_name: str
+
+
+@dataclass
+class GeneratorPromptValue:
+    generator_name: str
+    prompt_name: str
+    value: str | None
+
+
+@API.register
+def get_generator_prompt_previous_values(
+    machine: Machine,
+    prompt_identifiers: list[GeneratorPromptIdentifier],
+) -> list[GeneratorPromptValue]:
+    """Get previous values for specific prompts.
+
+    Args:
+        machine: The machine to get previous values for
+        prompt_identifiers: List of (generator_name, prompt_name) to fetch
+
+    Returns:
+        Previous values for the requested prompts.
+
+    """
+    generators = Generator.get_machine_generators([machine.name], machine.flake)
+    secret_cache: dict[Path, bytes] = {}
+    results = []
+
+    for identifier in prompt_identifiers:
+        gen = next((g for g in generators if g.name == identifier.generator_name), None)
+        if gen is None:
+            msg = f"Generator '{identifier.generator_name}' not found for machine '{machine.name}'"
+            raise ClanError(msg)
+
+        prompt = next(
+            (p for p in gen.prompts if p.name == identifier.prompt_name), None
+        )
+        if prompt is None:
+            msg = f"Prompt '{identifier.prompt_name}' not found in generator '{identifier.generator_name}'"
+            raise ClanError(msg)
+
+        if not prompt.persist:
+            # Non-persisted prompts have no previous value
+            results.append(
+                GeneratorPromptValue(
+                    generator_name=identifier.generator_name,
+                    prompt_name=identifier.prompt_name,
+                    value=None,
+                )
+            )
+            continue
+
+        prev_value = gen.get_previous_value(machine, prompt, secret_cache=secret_cache)
+        results.append(
+            GeneratorPromptValue(
+                generator_name=identifier.generator_name,
+                prompt_name=identifier.prompt_name,
+                value=prev_value,
+            )
+        )
+
+    return results
 
 
 def get_generators_precache_selectors(machine_names: list[str]) -> list[str]:
@@ -45,7 +114,6 @@ def get_generators(
     machines: list[Machine],
     full_closure: bool,
     generator_name: str | None = None,
-    include_previous_values: bool = False,
 ) -> list[Generator]:
     """Get generators for a machine, with optional closure computation.
 
@@ -53,7 +121,6 @@ def get_generators(
         machines: The machines to get generators for.
         full_closure: If True, include all dependency generators. If False, only include missing ones.
         generator_name: Name of a specific generator to get, or None for all generators.
-        include_previous_values: If True, populate prompts with their previous values.
 
     Returns:
         List of generators based on the specified selection and closure mode.
@@ -73,13 +140,11 @@ def get_generators(
     all_generators_list = Generator.get_machine_generators(
         all_machines,
         flake,
-        include_previous_values=include_previous_values,
         secret_cache=secret_cache,
     )
     requested_generators_list = Generator.get_machine_generators(
         requested_machines,
         flake,
-        include_previous_values=include_previous_values,
         secret_cache=secret_cache,
     )
 
@@ -215,9 +280,7 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
-    all_generators = get_generators(
-        machines, full_closure=True, include_previous_values=True
-    )
+    all_generators = get_generators(machines, full_closure=True)
     if isinstance(generators, list):
         # List of generator names - use them exactly as provided
         if len(generators) == 0:
@@ -225,12 +288,10 @@ def run_generators(
         generators_to_run = [g for g in all_generators if g.key.name in generators]
     else:
         # None or single string - use get_generators with closure parameter
-        # include_previous_values=True so prompts can be pre-filled
         generators_to_run = get_generators(
             machines,
             full_closure=full_closure,
             generator_name=generators,
-            include_previous_values=True,
         )
 
     # Handle prompt values - can be None, callable, or dict

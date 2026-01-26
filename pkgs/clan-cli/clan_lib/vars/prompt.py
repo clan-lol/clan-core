@@ -4,9 +4,14 @@ import sys
 import termios
 import tty
 from dataclasses import dataclass, field
-from typing import Any, TypedDict
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from clan_lib.errors import ClanError
+
+if TYPE_CHECKING:
+    from clan_lib.machines.machines import Machine
+    from clan_lib.vars.generator import Generator
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +47,6 @@ class Prompt:
     prompt_type: PromptType
 
     persist: bool = False
-    previous_value: str | None = None
     display: Display = field(
         default_factory=lambda: Display(
             {
@@ -53,6 +57,38 @@ class Prompt:
             },
         ),
     )
+
+    # Private context for lazy evaluation (excluded from serialization)
+    _machine: "Machine | None" = field(default=None, repr=False, compare=False)
+    _generator: "Generator | None" = field(default=None, repr=False, compare=False)
+    _secret_cache: dict[Path, bytes] | None = field(
+        default=None, repr=False, compare=False
+    )
+    _previous_value: str | None = field(default=None, repr=False, compare=False)
+    _evaluated: bool = field(default=False, repr=False, compare=False)
+
+    @property
+    def previous_value(self) -> str | None:
+        """Lazily compute and cache the previous value."""
+        if self._evaluated:
+            return self._previous_value
+
+        self._evaluated = True
+        if self._machine is None or self._generator is None:
+            return None
+
+        self._previous_value = self._generator.get_previous_value(
+            self._machine,
+            self,
+            secret_cache=self._secret_cache,
+        )
+        return self._previous_value
+
+    @previous_value.setter
+    def previous_value(self, value: str | None) -> None:
+        """Allow direct setting of previous_value (for testing)."""
+        self._previous_value = value
+        self._evaluated = True
 
     @classmethod
     def from_nix(cls: type["Prompt"], data: dict[str, Any]) -> "Prompt":
