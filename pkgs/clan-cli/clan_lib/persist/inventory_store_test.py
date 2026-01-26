@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 
+from clan_lib.dirs import nixpkgs_source, select_source
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
@@ -29,12 +30,10 @@ class MockFlake:
         nix_options: list[str] | None = None,
     ) -> Any:
         del nix_options  # Unused but kept for API compatibility
-        nixpkgs = os.environ.get("NIXPKGS")
-        select = os.environ.get("NIX_SELECT")
+        nixpkgs = nixpkgs_source()
+        select = select_source()
         clan_core_path = os.environ.get("CLAN_CORE_PATH")
 
-        assert nixpkgs, "NIXPKGS environment variable is not set"
-        assert select, "NIX_SELECT environment variable is not set"
         assert clan_core_path, "CLAN_CORE_PATH environment variable is not set"
 
         cmd = nix_eval(

@@ -229,11 +229,12 @@ def nixpkgs_flake() -> Path:
 
 def nixpkgs_source() -> Path:
     """Returns the path to the nixpkgs source tree."""
-    return (runtime_deps_flake() / "path").resolve()
+    return (runtime_deps_flake() / "nixpkgs").resolve()
 
 
 def select_source() -> Path:
-    return (module_root() / "select").resolve()
+    """Returns the path to the nix-select source."""
+    return (runtime_deps_flake() / "nix-select").resolve()
 
 
 def get_clan_directories(flake: "Flake") -> tuple[str, str]:

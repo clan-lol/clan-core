@@ -92,12 +92,10 @@ let
 
         # In cases where the devshell created this file, this will already exist
         rm -f $out/clan_lib/runtime-deps
-        rm -f $out/clan_lib/select
 
         substituteInPlace $out/clan_lib/flake/flake.py \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${runtimeDepsFlake} $out/clan_lib/runtime-deps
-        ln -sf ${nix-select} $out/clan_lib/select
         cp -r ${../../templates} $out/clan_lib/clan_core_templates
       '';
 
@@ -126,6 +124,7 @@ let
   # This flake includes:
   # - nixpkgs: for nix-shell package dependencies (via --inputs-from)
   # - disko: for disk partitioning during flash operations
+  # - nix-select: for efficient attribute selection from flakes
   # Having one flake with a locked flake.lock ensures offline reproducibility
   # and reduces store size compared to separate flakes
   runtimeDepsFlake =
@@ -143,6 +142,7 @@ let
             nixpkgs.url = "path://${nixpkgs}";
             disko.url = "path://${diskoInput}";
             disko.inputs.nixpkgs.follows = "nixpkgs";
+            nix-select.url = "path://${nix-select}";
           };
 
           outputs = { disko, ... }: {
@@ -151,8 +151,9 @@ let
           };
         }
         EOF
-        # Symlink nixpkgs source for direct access (used by nixpkgs_source())
-        ln -sf ${nixpkgs} $out/path
+        # Symlink sources for direct access
+        ln -sf ${nixpkgs} $out/nixpkgs
+        ln -sf ${nix-select} $out/nix-select
         HOME=$TMPDIR nix flake update --flake $out \
           --store ./. \
           --extra-experimental-features 'nix-command flakes'
@@ -304,7 +305,6 @@ pythonRuntime.pkgs.buildPythonApplication {
 
           # used for tests without flakes
           export NIXPKGS=${nixpkgs}
-          export NIX_SELECT=${nix-select}
 
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
@@ -340,7 +340,6 @@ pythonRuntime.pkgs.buildPythonApplication {
     cp -arf clan_lib/clan_core_templates/* $out/${pythonRuntime.sitePackages}/clan_lib/clan_core_templates
 
     cp -r ${runtimeDepsFlake} $out/${pythonRuntime.sitePackages}/clan_lib/runtime-deps
-    ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_lib/select
     installShellCompletion --bash --name clan \
       <(${pythonRuntimeWithDeps.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

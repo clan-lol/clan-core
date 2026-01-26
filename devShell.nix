@@ -42,7 +42,6 @@
 
           # vendoring / needed for impure tests
           ln -sfT ${self'.packages.clan-cli.runtimeDepsFlake} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/runtime-deps"
-          ln -sfT ${inputs.nix-select} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/select"
 
           # Generate clan types
           cp ${self'.packages.clan-types}/typing.py $PRJ_ROOT/pkgs/clan-cli/clan_lib/nix_models/typing.py

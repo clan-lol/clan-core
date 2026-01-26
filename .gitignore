@@ -13,7 +13,6 @@ result*
 nixos.qcow2
 *.glade~
 /docs/out
-/pkgs/clan-cli/clan_lib/select
 .local.env
 
 # macOS stuff
