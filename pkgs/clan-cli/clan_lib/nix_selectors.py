@@ -77,36 +77,6 @@ def clan_exports() -> str:
 
 
 @machine_selector
-def vars_sops_default_groups(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.?sops.?defaultGroups"
-
-
-@machine_selector
-def vars_settings_public_module(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.settings.publicModule"
-
-
-@machine_selector
-def vars_settings_secret_module(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.settings.secretModule"
-
-
-@machine_selector
-def vars_sops_secret_upload_dir(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.?sops.?secretUploadDirectory"
-
-
-@machine_selector
-def vars_password_store_pass_command(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.?password-store.?passCommand"
-
-
-@machine_selector
-def vars_password_store_secret_location(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.?password-store.?secretLocation"
-
-
-@machine_selector
 def deployment_require_explicit_update(system: str, machine: str) -> str:
     return f"clanInternals.machines.{system}.{machine}.config.clan.deployment.requireExplicitUpdate"
 
@@ -127,6 +97,36 @@ def vars_generators_metadata(system: str, machines: Iterable[str]) -> str:
 @machines_selector
 def vars_generators_files(system: str, machines: Iterable[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
+
+
+@machines_selector
+def vars_sops_default_groups(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.?sops.?defaultGroups"
+
+
+@machines_selector
+def vars_settings_public_module(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.publicModule"
+
+
+@machines_selector
+def vars_settings_secret_module(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.secretModule"
+
+
+@machines_selector
+def vars_sops_secret_upload_dir(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?sops.?secretUploadDirectory"
+
+
+@machines_selector
+def vars_password_store_pass_command(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?passCommand"
+
+
+@machines_selector
+def vars_password_store_secret_location(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
 
 
 # GENERATOR SELECTORS (system, machine, generator)
