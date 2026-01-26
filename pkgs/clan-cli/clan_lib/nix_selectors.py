@@ -9,11 +9,11 @@ This ensures:
 3. API surface is explicit and discoverable
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 type StaticSel = Callable[[], str]
 type MachineSel = Callable[[str, str], str]
-type MachinesSel = Callable[[str, list[str]], str]
+type MachinesSel = Callable[[str, Iterable[str]], str]
 type GeneratorSel = Callable[[str, str, str], str]
 
 # Tests registries
@@ -77,16 +77,6 @@ def clan_exports() -> str:
 
 
 @machine_selector
-def vars_generators_metadata(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
-
-
-@machine_selector
-def vars_generators_files(system: str, machine: str) -> str:
-    return f"clanInternals.machines.{system}.{machine}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
-
-
-@machine_selector
 def vars_sops_default_groups(system: str, machine: str) -> str:
     return f"clanInternals.machines.{system}.{machine}.config.clan.core.?sops.?defaultGroups"
 
@@ -127,6 +117,16 @@ def deployment_nixos_mobile_workaround(system: str, machine: str) -> str:
 
 
 # MULTI-MACHINE SELECTORS (system, machines[])
+
+
+@machines_selector
+def vars_generators_metadata(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
+
+
+@machines_selector
+def vars_generators_files(system: str, machines: Iterable[str]) -> str:
+    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
 
 
 # GENERATOR SELECTORS (system, machine, generator)

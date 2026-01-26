@@ -109,3 +109,15 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
                     f"  Selector: {selector_str}\n"
                     f"  Error: {e}"
                 )
+
+    # Select multiple machines
+    for machines_selector_fn in nix_selectors.MACHINES_SELECTORS:
+        selector_str = machines_selector_fn(system, machines)
+        try:
+            flake.select(selector_str)
+        except ClanError as e:
+            pytest.fail(
+                f"Machines selector '{machines_selector_fn.__name__}' failed\n"
+                f"  Selector: {selector_str}\n"
+                f"  Error: {e}"
+            )
