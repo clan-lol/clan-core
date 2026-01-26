@@ -904,6 +904,10 @@ class Flake:
             log.debug(f"Prefetching flake {self.identifier}")
         try:
             flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
+            if trace_prefetch:
+                log.debug(
+                    f"prefetching done for {self.identifier} output: {flake_prefetch.stdout}"
+                )
         except ClanCmdError as e:
             if (
                 f"error: getting status of '{self.identifier}': No such file or directory"

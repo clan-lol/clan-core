@@ -20,6 +20,12 @@ if platform == "darwin":
 @pytest.fixture
 def temporary_home(temp_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
+
+    # Despite the new temporary home, we want nix to keep using the global nix cache
+    cache_home = os.getenv("NIX_CACHE_HOME", os.environ["HOME"] + "/.cache")
+    monkeypatch.setenv("NIX_CACHE_HOME", cache_home + "/nix")
+
+    # Patch the home
     monkeypatch.setenv("HOME", str(temp_dir))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(temp_dir / ".config"))
 

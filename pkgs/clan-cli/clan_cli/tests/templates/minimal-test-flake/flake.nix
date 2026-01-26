@@ -1,0 +1,35 @@
+{
+  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+  inputs.nixpkgs.follows = "clan-core/nixpkgs";
+
+  outputs =
+    inputs@{
+      self,
+      clan-core,
+      nixpkgs,
+      ...
+    }:
+    let
+      lib = nixpkgs.lib;
+      # Usage see: https://docs.clan.lol
+      clan = clan-core.lib.clan {
+        imports =
+          lib.optionals (lib.pathExists ./clan.json) [
+            (lib.importJSON ./clan.json)
+          ]
+          ++ lib.optionals (lib.pathExists ./clan.nix) [
+            ./clan.nix
+          ];
+        inherit self;
+        # Change this to your clan name
+        # Setting a name is required
+        meta.name = inputs.nixpkgs.lib.mkDefault "__clan__";
+        meta.domain = inputs.nixpkgs.lib.mkDefault "changeme";
+      };
+    in
+    {
+      # all machines managed by Clan
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
+      clan = clan.config;
+    };
+}

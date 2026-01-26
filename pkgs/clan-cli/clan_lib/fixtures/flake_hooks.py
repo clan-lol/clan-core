@@ -17,7 +17,7 @@ def substitute_flake_inputs(clan_dir: Path, clan_core_path: Path) -> None:
     )
     flake_nix.write_text(content)
 
-    run(nix_command(["flake", "update"]), RunOpts(cwd=clan_dir))
+    run(nix_command(["flake", "lock"]), RunOpts(cwd=clan_dir))
 
     flake_lock = clan_dir / "flake.lock"
     assert flake_lock.exists(), "flake.lock should exist after flake update"
