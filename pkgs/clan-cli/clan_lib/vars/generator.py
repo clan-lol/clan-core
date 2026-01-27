@@ -8,7 +8,7 @@ from contextlib import ExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
@@ -75,12 +75,24 @@ def dependencies_as_dir(
             file_path.write_bytes(file)
 
 
+class Comparable(Protocol):
+    def key(self) -> Any: ...
+
+
 @dataclass(frozen=True)
 class GeneratorKey:
     """A key uniquely identifying a generator within a clan."""
 
     machine: str | None
     name: str
+
+    def key(self) -> tuple[str | None, str]:
+        return (self.machine or "", self.name)
+
+    def __str__(self) -> str:
+        if self.machine is None:
+            return f"{self.name} (shared)"
+        return f"{self.name} (machine: {self.machine})"
 
 
 @dataclass
