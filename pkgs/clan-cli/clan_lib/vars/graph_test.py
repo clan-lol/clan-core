@@ -2,16 +2,17 @@ from unittest.mock import Mock
 
 from clan_lib.vars.generator import (
     Generator,
+    GeneratorGraphNode,
     GeneratorKey,
 )
 from clan_lib.vars.graph import all_missing_closure, requested_closure
 
 
-def generator_names(generator: list[Generator]) -> list[str]:
-    return [gen.name for gen in generator]
+def generator_names(generator: list[GeneratorGraphNode]) -> list[str]:
+    return [str(gen.key.key()) for gen in generator]
 
 
-def generator_keys(generator: list[Generator]) -> set[GeneratorKey]:
+def generator_keys(generator: list[GeneratorGraphNode]) -> set[GeneratorKey]:
     return {gen.key for gen in generator}
 
 

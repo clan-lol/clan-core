@@ -78,6 +78,8 @@ def dependencies_as_dir(
 class Comparable(Protocol):
     def key(self) -> Any: ...
 
+    def __str__(self) -> str: ...
+
 
 @dataclass(frozen=True)
 class GeneratorKey:
@@ -95,8 +97,18 @@ class GeneratorKey:
         return f"{self.name} (machine: {self.machine})"
 
 
+class GeneratorGraphNode[T: Comparable](Protocol):
+    dependencies: list[T]
+
+    @property
+    def key(self) -> GeneratorKey: ...
+
+    @property
+    def exists(self) -> bool: ...
+
+
 @dataclass
-class Generator:
+class Generator(GeneratorGraphNode[GeneratorKey]):
     name: str
     files: list[Var] = field(default_factory=list)
     share: bool = False

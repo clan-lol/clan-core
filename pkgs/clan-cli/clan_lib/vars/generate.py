@@ -153,7 +153,7 @@ def get_generators(
         generator.key: generator for generator in requested_generators_list
     }
 
-    result_closure = []
+    result_closure: list[Generator] = []
     if generator_name is None:  # all generators selected
         if full_closure:
             result_closure = graph.requested_closure(

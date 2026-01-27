@@ -7,9 +7,9 @@ from clan_lib.errors import ClanError
 from clan_lib.vars.generator import Comparable
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Mapping
 
-    from .generator import Comparable, Generator
+    from .generator import Comparable, GeneratorGraphNode
 
 
 class GeneratorNotFoundError(ClanError):
@@ -18,7 +18,7 @@ class GeneratorNotFoundError(ClanError):
 
 def missing_dependency_closure[T: Comparable](
     requested_generators: Iterable[T],
-    generators: dict[T, Generator],
+    generators: Mapping[T, GeneratorGraphNode[T]],
 ) -> set[T]:
     closure = set(requested_generators)
     # extend the graph to include all dependencies which are not on disk
@@ -44,7 +44,7 @@ def missing_dependency_closure[T: Comparable](
 
 def add_missing_dependencies[T: Comparable](
     requested_generators: Iterable[T],
-    generators: dict[T, Generator],
+    generators: Mapping[T, GeneratorGraphNode],
 ) -> set[T]:
     closure = set(requested_generators)
     return missing_dependency_closure(closure, generators) | closure
@@ -52,11 +52,11 @@ def add_missing_dependencies[T: Comparable](
 
 def add_dependents[T: Comparable](
     requested_generators: Iterable[T],
-    generators: dict[T, Generator],
+    generators: Mapping[T, GeneratorGraphNode],
 ) -> set[T]:
     closure = set(requested_generators)
     # build reverse dependency graph (graph of dependents)
-    dependents_graph: dict[Comparable, set[Comparable]] = {}
+    dependents_graph: dict[T, set[T]] = {}
     for gen_key, gen in generators.items():
         for dep_key in gen.dependencies:
             if dep_key not in dependents_graph:
@@ -73,10 +73,10 @@ def add_dependents[T: Comparable](
     return closure
 
 
-def toposort_closure[T: Comparable](
+def toposort_closure[T: Comparable, N: GeneratorGraphNode](
     _closure: Iterable[T],
-    generators: dict[T, Generator],
-) -> list[Generator]:
+    generators: Mapping[T, N],
+) -> list[N]:
     closure = set(_closure)
     # return the topological sorted list of generators to execute
     final_dep_graph = {}
@@ -89,10 +89,10 @@ def toposort_closure[T: Comparable](
 
 
 # just the missing generators including their dependents
-def all_missing_closure[T: Comparable](
+def all_missing_closure[T: Comparable, N: GeneratorGraphNode](
     requested_generators: Iterable[T],
-    generators: dict[T, Generator],
-) -> list[Generator]:
+    generators: Mapping[T, N],
+) -> list[N]:
     """From a set of generators, return all incomplete generators in topological order.
 
     incomplete
@@ -107,10 +107,10 @@ def all_missing_closure[T: Comparable](
 
 
 # only a selected list of generators including their missing dependencies and their dependents
-def requested_closure[T: Comparable](
+def requested_closure[T: Comparable, N: GeneratorGraphNode](
     requested_generators: Iterable[T],
-    generators: dict[T, Generator],
-) -> list[Generator]:
+    generators: Mapping[T, N],
+) -> list[N]:
     closure = set(requested_generators)
     # extend the graph to include all dependencies which are not on disk
     closure = add_missing_dependencies(closure, generators)
