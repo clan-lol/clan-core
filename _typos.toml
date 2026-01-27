@@ -13,6 +13,7 @@ facter = "facter"
 metalness = "metalness"   # would be corrected to metallicity, not sure which one's preferred
 hda = "hda"               # snd_hda_intel
 dynamicdns = "dynamicdns"
+substituters = "substituters"
 
 [default.extend-identifiers]
 pn = "pn"

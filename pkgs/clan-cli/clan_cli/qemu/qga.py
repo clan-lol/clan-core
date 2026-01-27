@@ -2,6 +2,7 @@ import base64
 import time
 import types
 from dataclasses import dataclass
+from typing import Self
 
 from clan_lib.errors import ClanError
 
@@ -24,7 +25,7 @@ class QgaSession:
         self.client = QEMUMonitorProtocol(address)
         self.client.connect(negotiate=False)
 
-    def __enter__(self) -> "QgaSession":
+    def __enter__(self) -> Self:
         # Implement context manager enter function.
         return self
 

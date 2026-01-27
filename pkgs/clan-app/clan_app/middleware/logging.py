@@ -4,7 +4,7 @@ import os
 import sys
 import types
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from clan_lib.async_run import AsyncContext, get_async_ctx, set_async_ctx
 from clan_lib.custom_logger import RegisteredHandler, setup_logging
@@ -95,7 +95,7 @@ class LoggingMiddleware(Middleware):
                 self.handler: RegisteredHandler | None = None
                 self.original_ctx: AsyncContext | None = None
 
-            def __enter__(self) -> "LoggingContextManager":
+            def __enter__(self) -> Self:
                 file_obj = self.log_file.open("ab")
                 self.log_f = TeeStream(file_obj, sys.stderr)
                 self.original_ctx = get_async_ctx()

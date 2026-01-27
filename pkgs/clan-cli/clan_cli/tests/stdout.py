@@ -1,4 +1,5 @@
 import types
+from typing import Self
 
 import pytest
 
@@ -9,7 +10,7 @@ class CaptureOutput:
         self.capsys_disabled = capsys.disabled()
         self.capsys_disabled.__enter__()
 
-    def __enter__(self) -> "CaptureOutput":
+    def __enter__(self) -> Self:
         self.capsys_disabled.__exit__(None, None, None)
         self.capsys.readouterr()
         return self
