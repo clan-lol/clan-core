@@ -156,7 +156,7 @@
                     )
                   ''}
 
-                  declare -A preCommandErrors
+                  declare -A preCommandErrors=()
                   ${lib.concatMapStringsSep "\n" (
                     state:
                     lib.optionalString (state.preBackupCommand != null) ''
@@ -167,8 +167,35 @@
                     ''
                   ) (builtins.attrValues config.clan.core.state)}
 
+                  if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
+                    echo "pre-backup commands failed for the following services:"
+                    for state in "''${!preCommandErrors[@]}"; do
+                      echo "  $state"
+                    done
+                    exit 1
+                  fi
+
                   rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
                   rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
+
+                  declare -A postCommandErrors=()
+                  ${lib.concatMapStringsSep "\n" (
+                    state:
+                    lib.optionalString (state.postBackupCommand != null) ''
+                      echo "Running post-backup command for ${state.name}"
+                      if ! /run/current-system/sw/bin/${state.postBackupCommand}; then
+                        postCommandErrors["${state.name}"]=1
+                      fi
+                    ''
+                  ) (lib.attrValues config.clan.core.state)}
+
+                  if [[ ''${#postCommandErrors[@]} -gt 0 ]]; then
+                    echo "post-backup commands failed for the following services:"
+                    for state in "''${!postCommandErrors[@]}"; do
+                      echo "  $state"
+                    done
+                    exit 1
+                  fi
                 '') (builtins.attrValues settings.targets)}'')
               (pkgs.writeShellScriptBin "localbackup-list" ''
                 set -efu -o pipefail

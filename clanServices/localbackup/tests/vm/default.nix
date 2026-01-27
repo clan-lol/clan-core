@@ -31,7 +31,18 @@
   };
 
   nodes.machine = {
-    clan.core.state.test-backups.folders = [ "/var/test-backups" ];
+    clan.core.state.test-backups = {
+      folders = [ "/var/test-backups" ];
+
+      preBackupScript = ''
+        touch /run/prebackup
+        touch /run/backup-tmp
+      '';
+      postBackupScript = ''
+        touch /run/postbackup
+        rm /run/backup-tmp
+      '';
+    };
   };
 
   testScript = ''
@@ -48,6 +59,13 @@
     # create
     machine.succeed("localbackup-create >&2")
     machine.wait_until_succeeds("! systemctl is-active localbackup-job-serverone >&2")
+    # check hooks
+    machine.succeed("cat /run/prebackup && cat /run/postbackup")
+    machine.fail("cat /run/backup-tmp")
+    machine.succeed("cat /run/mount-external-disk && cat /run/unmount-external-disk")
+
+    # cleanup
+    machine.succeed("rm /run/prebackup /run/postbackup /run/mount-external-disk /run/unmount-external-disk")
 
     # list
     snapshot_list = machine.succeed("localbackup-list").strip()
@@ -58,5 +76,7 @@
 
     machine.succeed("NAME=/mnt/external-disk/snapshot.0 FOLDERS=/var/test-backups /run/current-system/sw/bin/localbackup-restore >&2")
     assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
+    # check hooks
+    machine.succeed("cat /run/mount-external-disk && cat /run/unmount-external-disk")
   '';
 }
