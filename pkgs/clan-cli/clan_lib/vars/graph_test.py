@@ -80,31 +80,31 @@ def test_required_generators() -> None:
     }
 
     assert generator_names(requested_closure([gen_1.key], generators)) == [
-        "gen_1",
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
+        "('test_machine', 'gen_1')",
+        "('test_machine', 'gen_2')",
+        "('test_machine', 'gen_2a')",
+        "('test_machine', 'gen_2b')",
     ]
     assert generator_names(requested_closure([gen_2.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
+        "('test_machine', 'gen_2')",
+        "('test_machine', 'gen_2a')",
+        "('test_machine', 'gen_2b')",
     ]
     assert generator_names(requested_closure([gen_2a.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
+        "('test_machine', 'gen_2')",
+        "('test_machine', 'gen_2a')",
+        "('test_machine', 'gen_2b')",
     ]
     assert generator_names(requested_closure([gen_2b.key], generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
+        "('test_machine', 'gen_2')",
+        "('test_machine', 'gen_2a')",
+        "('test_machine', 'gen_2b')",
     ]
 
     assert generator_names(all_missing_closure(generators.keys(), generators)) == [
-        "gen_2",
-        "gen_2a",
-        "gen_2b",
+        "('test_machine', 'gen_2')",
+        "('test_machine', 'gen_2a')",
+        "('test_machine', 'gen_2b')",
     ]
 
 
