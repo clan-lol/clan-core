@@ -42,7 +42,7 @@ clan-core ships its native/builtin templates. Those are referenced if the select
 
 For example:
 
-`clan flakes create --template=flake-parts`
+`clan init --template=flake-parts`
 
 would use the native `<builtin>.flake-parts` template
 
@@ -52,17 +52,17 @@ Selectors follow a very similar pattern as Nix's native attribute selection beha
 
 Just like `nix build .` would build `packages.x86-linux.default` of the flake in `./.`
 
-`clan flakes create --template=.` would create a clan from your **local** `default` clan template (`templates.clan.default`).
+`clan init --template=.` would create a clan from your **local** `default` clan template (`templates.clan.default`).
 
 In fact this command would be equivalent, just make it more explicit
 
-`clan flakes create --template=.#clan.templates.clan.default` (explicit path)
+`clan init --template=.#clan.templates.clan.default` (explicit path)
 
 ## Remote templates
 
 Just like with Nix you could specify a remote url or path to the flake containing the template
 
-`clan flakes create --template=github:owner/repo#foo`
+`clan init --template=github:owner/repo#foo`
 
 !!! Note "Implementation Note"
     Not all features of Nix's attribute selection are currently matched.

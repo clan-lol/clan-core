@@ -1,4 +1,3 @@
-# !/usr/bin/env python3
 import argparse
 import logging
 from pathlib import Path
@@ -12,7 +11,35 @@ from clan_cli.vars.keygen import create_secrets_user_auto
 log = logging.getLogger(__name__)
 
 
-def register_create_parser(parser: argparse.ArgumentParser) -> None:
+def init_command(args: argparse.Namespace) -> None:
+    # Ask for a path interactively if none provided
+    if args.name is None:
+        user_input = input("Enter a name for the new clan: ").strip()
+        if not user_input:
+            msg = "Error: name is required."
+            raise ClanError(msg)
+
+        args.name = Path(user_input)
+
+    create_clan(
+        CreateOptions(
+            dest=Path(args.name),
+            template=args.template,
+            setup_git=not args.no_git,
+            src_flake=args.flake,
+            update_clan=not args.no_update,
+        ),
+    )
+    flake_dir = Path(args.name).resolve()
+    create_secrets_user_auto(
+        clan_dir=flake_dir,
+        flake_dir=flake_dir,
+        user=args.user,
+        force=True,
+    )
+
+
+def register_parser(parser: argparse.ArgumentParser) -> None:
     template_action = parser.add_argument(
         "--template",
         type=str,
@@ -50,35 +77,4 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         default=None,
     )
 
-    def create_flake_command(args: argparse.Namespace) -> None:
-        log.warning(
-            "DEPRECATED: 'clan flakes create' is deprecated and will be removed "
-            "in a future release. Please use 'clan init' instead."
-        )
-        # Ask for a path interactively if none provided
-        if args.name is None:
-            user_input = input("Enter a name for the new clan: ").strip()
-            if not user_input:
-                msg = "Error: name is required."
-                raise ClanError(msg)
-
-            args.name = Path(user_input)
-
-        create_clan(
-            CreateOptions(
-                dest=Path(args.name),
-                template=args.template,
-                setup_git=not args.no_git,
-                src_flake=args.flake,
-                update_clan=not args.no_update,
-            ),
-        )
-        flake_dir = Path(args.name).resolve()
-        create_secrets_user_auto(
-            clan_dir=flake_dir,
-            flake_dir=flake_dir,
-            user=args.user,
-            force=True,
-        )
-
-    parser.set_defaults(func=create_flake_command)
+    parser.set_defaults(func=init_command)

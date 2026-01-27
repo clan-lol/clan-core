@@ -131,6 +131,7 @@ nav:
           - reference/cli/backups.md
           - reference/cli/flakes.md
           - reference/cli/flash.md
+          - reference/cli/init.md
           - reference/cli/machines.md
           - reference/cli/select.md
           - reference/cli/secrets.md

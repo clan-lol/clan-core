@@ -18,6 +18,7 @@ from . import (
     templates,
     vms,
 )
+from . import init as init_cli
 from .arg_actions import AppendOptionAction
 from .clan import show
 from .flash import cli as flash_cli
@@ -140,6 +141,30 @@ Examples:
     )
     show_parser.set_defaults(func=show.show_command)
 
+    parser_init = subparsers.add_parser(
+        "init",
+        help="Initialize a new clan",
+        description="Initialize a new clan",
+        epilog=(
+            f"""
+Examples:
+
+  $ clan init my-clan
+  Will create a new clan in the directory 'my-clan' using the default template.
+
+  $ clan init my-clan --template=minimal
+  Will create a new clan using the 'minimal' template.
+
+  $ clan init . --no-git
+  Will create a new clan in the current directory without setting up git.
+
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
+        """
+        ),
+        formatter_class=HelpFormatter,
+    )
+    init_cli.register_parser(parser_init)
+
     parser_backups = subparsers.add_parser(
         "backups",
         aliases=["b"],
@@ -175,10 +200,12 @@ For more detailed information visit: {help_hyperlink("backups", "https://docs.cl
         description="Create a clan flake inside the current directory",
         epilog=(
             f"""
+DEPRECATED: Use 'clan init' instead.
+
 Examples:
-  $ clan flakes create [DIR]
-  Will create a new clan flake in the specified directory and create it if it
-  doesn't exist yet. The flake will be created from a default template.
+  $ clan init [DIR]
+  Will create a new clan in the specified directory and create it if it
+  doesn't exist yet. The clan will be created from a default template.
 
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
         """
@@ -207,13 +234,13 @@ Usage differs based on the template type
 
 Clan templates
 
-  $ clan flakes create --template=default
+  $ clan init --template=default
   Create a clan from the shipped (<builtin>) 'default' clan template
 
-  $ clan flakes create --template=.#myTemplate
+  $ clan init --template=.#myTemplate
   Create a clan from the `myTemplate` template defined in the current flake
 
-  $ clan flakes create --template=github:owner/repo#foo
+  $ clan init --template=github:owner/repo#foo
   Specifies a remote url or path to the flake containing the template 'foo'
 
 ---
