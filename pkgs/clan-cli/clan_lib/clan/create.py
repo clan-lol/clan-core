@@ -73,10 +73,11 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
         try:
             nix_metadata(str(opts.src_flake))
         except ClanError:
-            log.exception(
-                f"Found a repository, but it is not a valid flake: {opts.src_flake}",
+            log.debug(
+                "Found a repository, but it is not a valid flake: %s. "
+                "Falling back to builtin template.",
+                opts.src_flake,
             )
-            log.warning("Setting src_flake to None")
             opts.src_flake = None
 
     if opts.src_flake is None:
