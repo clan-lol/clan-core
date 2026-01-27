@@ -14,10 +14,10 @@ from tempfile import NamedTemporaryFile
 from typing import IO, Any
 
 from clan_lib.cmd import Log, RunOpts, run
-from clan_lib.dirs import user_config_dir
+from clan_lib.dirs import runtime_deps_flake, user_config_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix import nix_shell
+from clan_lib.nix import nix_command, nix_shell
 
 from .folders import sops_users_folder
 
@@ -290,7 +290,21 @@ def sops_run(
                 raise ClanError(msg)
         sops_cmd.append(str(secret_path))
 
-        cmd = nix_shell(["sops", "gnupg", *age_plugins], sops_cmd)
+        # Separate nixpkgs packages from flake references
+        nixpkgs_plugins = [p for p in age_plugins if "#" not in p]
+        flake_refs = [p for p in age_plugins if "#" in p]
+
+        cmd = nix_shell(["sops", "gnupg", *nixpkgs_plugins], sops_cmd)
+
+        # Wrap with nix shell for flake refs if needed
+        if flake_refs and not os.environ.get("IN_NIX_SANDBOX"):
+            cmd = [
+                *nix_command(["shell", "--inputs-from", str(runtime_deps_flake())]),
+                *flake_refs,
+                "-c",
+                *cmd,
+            ]
+
         opts = (
             dataclasses.replace(run_opts, env=environ)
             if run_opts
