@@ -117,17 +117,18 @@ def run_machine_flash(
         if extra_args is None:
             extra_args = []
 
-        run_generators([machine], generators=None, full_closure=False)
+        if machine.flake.is_local:
+            run_generators([machine], generators=None, full_closure=False)
+
+            for generator in Generator.get_machine_generators(
+                [machine.name], machine.flake
+            ):
+                for file in generator.files:
+                    if file.needed_for == "partitioning":
+                        msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"
+                        raise ClanError(msg)
 
         system_config_nix = build_system_config_nix(system_config)
-
-        for generator in Generator.get_machine_generators(
-            [machine.name], machine.flake
-        ):
-            for file in generator.files:
-                if file.needed_for == "partitioning":
-                    msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"
-                    raise ClanError(msg)
 
         with TemporaryDirectory(prefix="disko-install-") as _tmpdir:
             tmpdir = Path(_tmpdir)
