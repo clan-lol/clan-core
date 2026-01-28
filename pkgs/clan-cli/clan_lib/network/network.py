@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from clan_cli.vars.get import get_machine_var
 
 from clan_lib.errors import ClanError
+from clan_lib.exports.scope import parse_export
 from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
 from clan_lib.ssh.remote import Remote
@@ -130,19 +131,6 @@ class NetworkTechnologyBase(ABC):
     @abstractmethod
     def connection(self, network: Network) -> Iterator[Network]:
         pass
-
-
-@dataclass
-class ExportScope:
-    service: str
-    instance: str
-    role: str
-    machine: str
-
-
-def parse_export(exports: str) -> ExportScope:
-    [service, instance, role, machine] = exports.split(":")
-    return ExportScope(service, instance, role, machine)
 
 
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
