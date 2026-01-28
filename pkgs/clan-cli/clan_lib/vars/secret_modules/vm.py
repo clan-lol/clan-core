@@ -5,8 +5,8 @@ from pathlib import Path
 from clan_lib.dirs import vm_state_dir
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars.var import Var
 
 
 class SecretStore(StoreBase):
@@ -29,7 +29,7 @@ class SecretStore(StoreBase):
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,
@@ -39,13 +39,13 @@ class SecretStore(StoreBase):
         secret_file.write_bytes(value)
         return None  # we manage the files outside of the git repo
 
-    def exists(self, generator: "Generator", name: str) -> bool:
+    def exists(self, generator: "GeneratorStore", name: str) -> bool:
         machine = self.get_machine(generator)
         return (self.get_dir(machine) / generator.name / name).exists()
 
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -58,7 +58,7 @@ class SecretStore(StoreBase):
             cache[secret_file] = value
         return value
 
-    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
         machine = self.get_machine(generator)
         secret_dir = self.get_dir(machine) / generator.name
         secret_file = secret_dir / name

@@ -4,8 +4,8 @@ from pathlib import Path
 
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars.var import Var
 
 
 class SecretStore(StoreBase):
@@ -24,7 +24,7 @@ class SecretStore(StoreBase):
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,  # noqa: ARG002
@@ -34,12 +34,12 @@ class SecretStore(StoreBase):
         secret_file.write_bytes(value)
         return None  # we manage the files outside of the git repo
 
-    def exists(self, generator: "Generator", name: str) -> bool:
+    def exists(self, generator: "GeneratorStore", name: str) -> bool:
         return (self.dir / generator.name / name).exists()
 
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -58,7 +58,7 @@ class SecretStore(StoreBase):
         shutil.copytree(self.dir, output_dir)
         shutil.rmtree(self.dir)
 
-    def delete(self, generator: Generator, name: str) -> list[Path]:
+    def delete(self, generator: GeneratorStore, name: str) -> list[Path]:
         secret_file = self.dir / generator.name / name
         if secret_file.exists():
             secret_file.unlink()
