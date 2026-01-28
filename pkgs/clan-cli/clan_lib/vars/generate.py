@@ -13,7 +13,11 @@ if TYPE_CHECKING:
 from clan_lib.machines.machines import Machine
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
-from clan_lib.vars.generator import Generator
+from clan_lib.vars.generator import (
+    Generator,
+    get_machine_generators,
+    get_machine_selectors,
+)
 from clan_lib.vars.graph import requested_closure
 from clan_lib.vars.prompt import ask
 from clan_lib.vars.secret_modules import sops
@@ -51,7 +55,7 @@ def get_generator_prompt_previous_values(
         Previous values for the requested prompts.
 
     """
-    generators = Generator.get_machine_generators([machine.name], machine.flake)
+    generators = get_machine_generators([machine.name], machine.flake)
     secret_cache: dict[Path, bytes] = {}
     results = []
 
@@ -105,9 +109,7 @@ def get_generators_precache_selectors(machine_names: list[str]) -> list[str]:
         List of selectors to precache.
 
     """
-    return InventoryStore.default_selectors() + Generator.get_machine_selectors(
-        machine_names
-    )
+    return InventoryStore.default_selectors() + get_machine_selectors(machine_names)
 
 
 @API.register
@@ -138,12 +140,12 @@ def get_generators(
     # Cache decrypted secrets to avoid repeated decryption for shared generators
     secret_cache: dict[Path, bytes] = {}
 
-    all_generators_list = Generator.get_machine_generators(
+    all_generators_list = get_machine_generators(
         all_machines,
         flake,
         secret_cache=secret_cache,
     )
-    requested_generators_list = Generator.get_machine_generators(
+    requested_generators_list = get_machine_generators(
         requested_machines,
         flake,
         secret_cache=secret_cache,
@@ -183,7 +185,7 @@ def _ensure_healthy(
     Fails if any of the generators' health checks fail.
     """
     if generators is None:
-        generators = Generator.get_machine_generators([machine.name], machine.flake)
+        generators = get_machine_generators([machine.name], machine.flake)
 
     public_health_check_msg = machine.public_vars_store.health_check(
         machine.name,

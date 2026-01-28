@@ -51,7 +51,7 @@ def vars_status(
     flake: Flake,
     generator_name: None | str = None,
 ) -> VarStatus:
-    from .generator import Generator  # noqa: PLC0415
+    from .generator import get_machine_generators  # noqa: PLC0415
 
     machine = Machine(name=machine_name, flake=flake)
     missing_secret_vars = []
@@ -60,7 +60,7 @@ def vars_status(
     unfixed_secret_vars = []
     invalid_generators = []
 
-    generators = Generator.get_machine_generators([machine.name], machine.flake)
+    generators = get_machine_generators([machine.name], machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

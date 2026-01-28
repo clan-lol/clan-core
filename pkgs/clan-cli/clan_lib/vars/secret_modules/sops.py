@@ -54,9 +54,9 @@ class SecretStore(StoreBase):
     def ensure_machine_key(self, machine: str) -> None:
         """Ensure machine has sops keys initialized."""
         # no need to generate keys if we don't manage secrets
-        from clan_lib.vars.generator import Generator  # noqa: PLC0415
+        from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
 
-        vars_generators = Generator.get_machine_generators([machine], self.flake)
+        vars_generators = get_machine_generators([machine], self.flake)
         if not vars_generators:
             return
         has_secrets = False
@@ -152,9 +152,9 @@ class SecretStore(StoreBase):
 
         """
         if generators is None:
-            from clan_lib.vars.generator import Generator  # noqa: PLC0415
+            from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
 
-            generators = Generator.get_machine_generators([machine], self.flake)
+            generators = get_machine_generators([machine], self.flake)
         file_found = False
         outdated = []
         for generator in generators:
@@ -238,9 +238,9 @@ class SecretStore(StoreBase):
         return [store_folder]
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_lib.vars.generator import Generator  # noqa: PLC0415
+        from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
 
-        vars_generators = Generator.get_machine_generators([machine], self.flake)
+        vars_generators = get_machine_generators([machine], self.flake)
         if "users" in phases or "services" in phases:
             key_name = f"{machine}-age.key"
             if not has_secret(sops_secrets_folder(self.clan_dir) / key_name):
@@ -389,9 +389,9 @@ class SecretStore(StoreBase):
         )
 
         if generators is None:
-            from clan_lib.vars.generator import Generator  # noqa: PLC0415
+            from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
 
-            generators = Generator.get_machine_generators([machine], self.flake)
+            generators = get_machine_generators([machine], self.flake)
         file_found = False
         for generator in generators:
             for file in generator.files:
