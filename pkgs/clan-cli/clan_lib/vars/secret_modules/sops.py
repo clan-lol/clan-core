@@ -1,5 +1,5 @@
 import shutil
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -27,8 +27,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator
+from clan_lib.vars._types import GeneratorStore, StoreBase
 from clan_lib.vars.var import Var
 
 
@@ -99,14 +98,14 @@ class SecretStore(StoreBase):
     def user_has_access(
         self,
         user: str,
-        generator: Generator,
+        generator: GeneratorStore,
         secret_name: str,
     ) -> bool:
         key_dir = sops_users_folder(self.clan_dir) / user
         return self.key_has_access(key_dir, generator, secret_name)
 
     def machine_has_access(
-        self, generator: Generator, secret_name: str, machine: str
+        self, generator: GeneratorStore, secret_name: str, machine: str
     ) -> bool:
         if not has_machine(self.clan_dir, machine):
             return False
@@ -116,7 +115,7 @@ class SecretStore(StoreBase):
     def key_has_access(
         self,
         key_dir: Path,
-        generator: Generator,
+        generator: GeneratorStore,
         secret_name: str,
     ) -> bool:
         secret_path = self.secret_path(generator, secret_name)
@@ -124,14 +123,14 @@ class SecretStore(StoreBase):
         recipients = sops.get_recipients(secret_path)
         return len(recipient.intersection(recipients)) > 0
 
-    def secret_path(self, generator: Generator, secret_name: str) -> Path:
+    def secret_path(self, generator: GeneratorStore, secret_name: str) -> Path:
         return self.directory(generator, secret_name)
 
     @override
     def health_check(
         self,
         machine: str,
-        generators: list[Generator] | None = None,
+        generators: Sequence[GeneratorStore] | None = None,
         file_name: str | None = None,
     ) -> str | None:
         """Check if SOPS secrets need to be re-encrypted due to recipient changes.
@@ -184,7 +183,7 @@ class SecretStore(StoreBase):
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,
@@ -211,7 +210,7 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -226,7 +225,7 @@ class SecretStore(StoreBase):
             cache[path] = value
         return value
 
-    def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
+    def delete(self, generator: "GeneratorStore", name: str) -> Iterable[Path]:
         secret_dir = self.directory(generator, name)
         shutil.rmtree(secret_dir)
         return [secret_dir]
@@ -302,12 +301,12 @@ class SecretStore(StoreBase):
             self.populate_dir(machine, sops_upload_dir, phases)
             upload(host, sops_upload_dir, Path(self.get_upload_directory(machine)))
 
-    def exists(self, generator: Generator, name: str) -> bool:
+    def exists(self, generator: GeneratorStore, name: str) -> bool:
         secret_folder = self.secret_path(generator, name)
         return (secret_folder / "secret").exists()
 
     def ensure_machine_has_access(
-        self, generator: Generator, name: str, machine: str
+        self, generator: GeneratorStore, name: str, machine: str
     ) -> None:
         if self.machine_has_access(generator, name, machine):
             return
@@ -346,7 +345,7 @@ class SecretStore(StoreBase):
         return keys
 
     def needs_fix(
-        self, generator: Generator, name: str, machine: str
+        self, generator: GeneratorStore, name: str, machine: str
     ) -> tuple[bool, str | None]:
         secret_path = self.secret_path(generator, name)
         current_recipients = sops.get_recipients(secret_path)
@@ -366,7 +365,7 @@ class SecretStore(StoreBase):
     def fix(
         self,
         machine: str,
-        generators: list[Generator] | None = None,
+        generators: Sequence[GeneratorStore] | None = None,
         file_name: str | None = None,
     ) -> None:
         """Fix sops secrets by re-encrypting them with the current set of recipient keys.

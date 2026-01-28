@@ -7,8 +7,8 @@ from clan_lib.dirs import vm_state_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars.var import Var
 
 log = logging.getLogger(__name__)
 
@@ -35,14 +35,14 @@ class VarsStore(StoreBase):
         )
         return vars_dir
 
-    def exists(self, generator: Generator, name: str) -> bool:
+    def exists(self, generator: GeneratorStore, name: str) -> bool:
         machine = self.get_machine(generator)
         fact_path = self.get_dir(machine) / generator.name / name
         return fact_path.exists()
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,
@@ -55,7 +55,7 @@ class VarsStore(StoreBase):
     # get a single fact
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,  # noqa: ARG002
     ) -> bytes:
@@ -66,7 +66,7 @@ class VarsStore(StoreBase):
         msg = f"Fact {name} for service {generator.name} not found"
         raise ClanError(msg)
 
-    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
         machine = self.get_machine(generator)
         fact_dir = self.get_dir(machine) / generator.name
         fact_file = fact_dir / name

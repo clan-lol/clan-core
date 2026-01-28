@@ -1,3 +1,4 @@
+import dataclasses
 import difflib
 import logging
 import os
@@ -447,6 +448,13 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
 
     def validation(self) -> str | None:
         return self.validation_hash
+
+    def with_toggled_share(self, machine: str) -> "Generator":
+        return dataclasses.replace(
+            self,
+            share=not self.share,
+            machines=[] if not self.share else [machine],
+        )
 
     def decrypt_dependencies(
         self,

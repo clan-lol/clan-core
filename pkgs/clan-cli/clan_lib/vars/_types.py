@@ -1,10 +1,9 @@
-import dataclasses
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
@@ -12,7 +11,7 @@ from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 
 if TYPE_CHECKING:
-    from .generator import Generator, Var
+    from .var import Var
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +21,19 @@ def string_repr(value: bytes) -> str:
         return value.decode()
     except UnicodeDecodeError:
         return "<binary blob>"
+
+
+class GeneratorStore(Protocol):
+    """Protocol defining the generator interface that stores need."""
+
+    name: str
+    share: bool
+    machines: list[str]
+    files: list["Var"]
+    validation_hash: str | None
+
+    def validation(self) -> str | None: ...
+    def with_toggled_share(self, machine: str) -> "GeneratorStore": ...
 
 
 @dataclass
@@ -40,7 +52,7 @@ class StoreBase(ABC):
     def store_name(self) -> str:
         pass
 
-    def get_machine(self, generator: "Generator") -> str:
+    def get_machine(self, generator: "GeneratorStore") -> str:
         """Get machine name from generator, asserting it's not None for now."""
         if generator.share:
             return "__shared"
@@ -56,7 +68,7 @@ class StoreBase(ABC):
     @abstractmethod
     def get(
         self,
-        generator: "Generator",
+        generator: "GeneratorStore",
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -65,7 +77,7 @@ class StoreBase(ABC):
     @abstractmethod
     def _set(
         self,
-        generator: "Generator",
+        generator: "GeneratorStore",
         var: "Var",
         value: bytes,
         machine: str,
@@ -73,7 +85,7 @@ class StoreBase(ABC):
         """Override this method to implement the actual creation of the file"""
 
     @abstractmethod
-    def exists(self, generator: "Generator", name: str) -> bool:
+    def exists(self, generator: "GeneratorStore", name: str) -> bool:
         pass
 
     @property
@@ -84,7 +96,7 @@ class StoreBase(ABC):
     def health_check(
         self,
         machine: str,
-        generators: list["Generator"] | None = None,
+        generators: Sequence["GeneratorStore"] | None = None,
         file_name: str | None = None,
     ) -> str | None:
         """Check the health of the store for the given machine and generators.
@@ -107,7 +119,7 @@ class StoreBase(ABC):
     def fix(
         self,
         machine: str,
-        generators: list["Generator"] | None = None,
+        generators: Sequence["GeneratorStore"] | None = None,
         file_name: str | None = None,
     ) -> None:
         """Fix any issues with the store for the given machine and generators.
@@ -133,18 +145,18 @@ class StoreBase(ABC):
         )
         raise ClanError(msg)
 
-    def rel_dir(self, generator: "Generator", var_name: str) -> Path:
+    def rel_dir(self, generator: "GeneratorStore", var_name: str) -> Path:
         if generator.share:
             return Path("shared") / generator.name / var_name
         machine = self.get_machine(generator)
         return Path("per-machine") / machine / generator.name / var_name
 
-    def directory(self, generator: "Generator", var_name: str) -> Path:
+    def directory(self, generator: "GeneratorStore", var_name: str) -> Path:
         return self.clan_dir / "vars" / self.rel_dir(generator, var_name)
 
     def set(
         self,
-        generator: "Generator",
+        generator: "GeneratorStore",
         var: "Var",
         value: bytes,
         machine: str,
@@ -154,11 +166,7 @@ class StoreBase(ABC):
 
         # if generator was switched from shared to per-machine or vice versa,
         # remove the old var first
-        prev_generator = dataclasses.replace(
-            generator,
-            share=not generator.share,
-            machines=[] if not generator.share else [machine],
-        )
+        prev_generator = generator.with_toggled_share(machine)
         if self.exists(prev_generator, var.name):
             changed_files += self.delete(prev_generator, var.name)
 
@@ -200,7 +208,7 @@ class StoreBase(ABC):
         return changed_files
 
     @abstractmethod
-    def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
+    def delete(self, generator: "GeneratorStore", name: str) -> Iterable[Path]:
         """Remove a var from the store.
 
         :return: An iterable of affected paths in the git repository. This
@@ -222,7 +230,7 @@ class StoreBase(ABC):
           may be empty if the store was outside of the repository.
         """
 
-    def get_validation(self, generator: "Generator") -> str | None:
+    def get_validation(self, generator: "GeneratorStore") -> str | None:
         """Return the invalidation hash that indicates if a generator needs to be re-run
         due to a change in its definition
         """
@@ -232,7 +240,7 @@ class StoreBase(ABC):
         return hash_file.read_text().strip()
 
     def set_validation(
-        self, generator: "Generator", hash_str: str | None
+        self, generator: "GeneratorStore", hash_str: str | None
     ) -> list[Path]:
         # """Store the invalidation hash that indicates if a generator needs to be re-run"""
         """Store the invalidation hash that indicates if a generator needs to be re-run
@@ -256,7 +264,7 @@ class StoreBase(ABC):
         hash_file.write_text(hash_str)
         return [hash_file]
 
-    def hash_is_valid(self, generator: "Generator") -> bool:
+    def hash_is_valid(self, generator: "GeneratorStore") -> bool:
         """Check if the invalidation hash is up to date
         If the hash is not set in nix and hasn't been stored before, it is considered valid
             -> this provides backward and forward compatibility

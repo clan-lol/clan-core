@@ -14,8 +14,9 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars.generator import Generator
+from clan_lib.vars.var import Var
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class SecretStore(StoreBase):
             raise ValueError(msg)
         return self._pass_cmd
 
-    def entry_dir(self, generator: Generator, name: str) -> Path:
+    def entry_dir(self, generator: GeneratorStore, name: str) -> Path:
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(
@@ -100,7 +101,7 @@ class SecretStore(StoreBase):
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,  # noqa: ARG002
@@ -111,7 +112,7 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -125,7 +126,7 @@ class SecretStore(StoreBase):
             cache[cache_key] = value
         return value
 
-    def exists(self, generator: Generator, name: str) -> bool:
+    def exists(self, generator: GeneratorStore, name: str) -> bool:
         pass_name = str(self.entry_dir(generator, name))
         # Check if the file exists with either .age or .gpg extension
         store_dir = self.store_dir()
@@ -133,7 +134,7 @@ class SecretStore(StoreBase):
         gpg_file = store_dir / f"{pass_name}.gpg"
         return age_file.exists() or gpg_file.exists()
 
-    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
         pass_name = str(self.entry_dir(generator, name))
         self._run_pass("rm", "--force", pass_name, check=True)
         return []

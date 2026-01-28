@@ -5,8 +5,8 @@ from pathlib import Path
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
-from clan_lib.vars._types import StoreBase
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars.var import Var
 
 
 class VarsStore(StoreBase):
@@ -24,7 +24,7 @@ class VarsStore(StoreBase):
 
     def _set(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         var: Var,
         value: bytes,
         machine: str,  # noqa: ARG002
@@ -48,16 +48,16 @@ class VarsStore(StoreBase):
     # get a single fact
     def get(
         self,
-        generator: Generator,
+        generator: GeneratorStore,
         name: str,
         cache: dict[Path, bytes] | None = None,  # noqa: ARG002
     ) -> bytes:
         return (self.directory(generator, name) / "value").read_bytes()
 
-    def exists(self, generator: Generator, name: str) -> bool:
+    def exists(self, generator: GeneratorStore, name: str) -> bool:
         return (self.directory(generator, name) / "value").exists()
 
-    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
         fact_folder = self.directory(generator, name)
         fact_file = fact_folder / "value"
         fact_file.unlink()

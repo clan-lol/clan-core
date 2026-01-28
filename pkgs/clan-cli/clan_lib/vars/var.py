@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from ._types import StoreBase
-    from .generator import Generator
+    from ._types import GeneratorStore, StoreBase
 
 
 @dataclass
@@ -22,12 +21,12 @@ class Var:
 
     # TODO: those shouldn't be set here
     _store: "StoreBase | None" = None
-    _generator: "Generator | None" = None
+    _generator: "GeneratorStore | None" = None
 
     def store(self, store: "StoreBase") -> None:
         self._store = store
 
-    def generator(self, generator: "Generator") -> None:
+    def generator(self, generator: "GeneratorStore") -> None:
         self._generator = generator
 
     @property
