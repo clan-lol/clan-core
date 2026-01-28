@@ -13,6 +13,7 @@ from clan_lib.errors import ClanError
 from clan_lib.exports.scope import parse_export
 from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
+from clan_lib.nix_selectors import clan_exports
 from clan_lib.ssh.remote import Remote
 
 if TYPE_CHECKING:
@@ -136,11 +137,11 @@ class NetworkTechnologyBase(ABC):
 def networks_from_flake(flake: Flake) -> dict[str, Network]:
     # TODO more precaching, for example for vars
 
-    flake.precache(["clan.?exports"])
+    flake.precache([clan_exports()])
 
     networks: dict[str, Network] = {}
 
-    defined_exports = flake.select("clan.?exports")
+    defined_exports = flake.select(clan_exports())
 
     if "exports" not in defined_exports:
         msg = """ NO EXPORTS! """

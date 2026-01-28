@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.network.network import Network, Peer, networks_from_flake
+from clan_lib.nix_selectors import clan_exports
 
 
 class TestPeerPortUser:
@@ -150,7 +151,7 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
     networks = networks_from_flake(flake)
 
     # Verify the flake.select was called with the correct pattern
-    flake.select.assert_called_once_with("clan.?exports")
+    flake.select.assert_called_once_with(clan_exports())
 
     # Verify the returned networks
     assert len(networks) == 2

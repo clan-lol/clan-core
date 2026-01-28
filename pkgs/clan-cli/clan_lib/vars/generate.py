@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
+from clan_lib.nix_selectors import secrets_age_plugins
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -319,7 +320,7 @@ def run_generators(
             yield Machine(name=machine_name, flake=flake)
 
     # preheat the select cache, to reduce repeated calls during execution
-    selectors = ["clanInternals.?secrets.?age.?plugins"]
+    selectors = [secrets_age_plugins()]
     for generator in generators_to_run:
         machine = next(get_generator_machines(generator))
         selectors.append(generator.final_script_selector(machine.name))
