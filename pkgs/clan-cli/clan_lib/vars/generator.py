@@ -8,13 +8,14 @@ from contextlib import ExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING
 
 from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
 from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.vars.graph import GeneratorGraphNode
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -75,12 +76,6 @@ def dependencies_as_dir(
             file_path.write_bytes(file)
 
 
-class Comparable(Protocol):
-    def key(self) -> Any: ...
-
-    def __str__(self) -> str: ...
-
-
 @dataclass(frozen=True)
 class GeneratorKey:
     """A key uniquely identifying a generator within a clan."""
@@ -95,16 +90,6 @@ class GeneratorKey:
         if self.machine is None:
             return f"{self.name} (shared)"
         return f"{self.name} (machine: {self.machine})"
-
-
-class GeneratorGraphNode[T: Comparable](Protocol):
-    dependencies: list[T]
-
-    @property
-    def key(self) -> GeneratorKey: ...
-
-    @property
-    def exists(self) -> bool: ...
 
 
 @dataclass
