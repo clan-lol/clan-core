@@ -2,13 +2,13 @@ import logging
 
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.vars.generator import Generator
+from clan_lib.vars.generator import get_machine_generators
 
 log = logging.getLogger(__name__)
 
 
 def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
-    generators = Generator.get_machine_generators([machine.name], machine.flake)
+    generators = get_machine_generators([machine.name], machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

@@ -1,7 +1,7 @@
 import logging
 
 from clan_lib.machines.machines import Machine
-from clan_lib.vars.generator import Generator, Var
+from clan_lib.vars.generator import Var, get_machine_generators
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def get_machine_vars(machine: Machine) -> list[Var]:
     all_vars = []
 
     # Only load the specific machine's generators for better performance
-    generators = Generator.get_machine_generators([machine.name], machine.flake)
+    generators = get_machine_generators([machine.name], machine.flake)
 
     for generator in generators:
         for var in generator.files:

@@ -15,7 +15,7 @@ from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import GeneratorStore, StoreBase
-from clan_lib.vars.generator import Generator
+from clan_lib.vars.generator import get_machine_generators
 from clan_lib.vars.var import Var
 
 log = logging.getLogger(__name__)
@@ -167,7 +167,7 @@ class SecretStore(StoreBase):
         if not git_hash:
             return b""
 
-        generators = Generator.get_machine_generators([machine], self.flake)
+        generators = get_machine_generators([machine], self.flake)
         manifest = [
             f"{generator.name}/{file.name}".encode()
             for generator in generators
@@ -196,7 +196,7 @@ class SecretStore(StoreBase):
         return local_hash != remote_hash.encode()
 
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        vars_generators = Generator.get_machine_generators([machine], self.flake)
+        vars_generators = get_machine_generators([machine], self.flake)
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz",

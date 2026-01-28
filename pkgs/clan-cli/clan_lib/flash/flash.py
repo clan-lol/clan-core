@@ -15,7 +15,7 @@ from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import Packages, nix_command
 from clan_lib.vars.generate import run_generators
-from clan_lib.vars.generator import Generator
+from clan_lib.vars.generator import get_machine_generators
 
 from .automount import pause_automounting
 from .list import list_keymaps, list_languages
@@ -120,9 +120,7 @@ def run_machine_flash(
         if machine.flake.is_local:
             run_generators([machine], generators=None, full_closure=False)
 
-            for generator in Generator.get_machine_generators(
-                [machine.name], machine.flake
-            ):
+            for generator in get_machine_generators([machine.name], machine.flake):
                 for file in generator.files:
                     if file.needed_for == "partitioning":
                         msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"

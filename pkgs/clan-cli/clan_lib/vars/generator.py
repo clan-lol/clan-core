@@ -105,6 +105,269 @@ class GeneratorKey:
         return f"{self.name} (machine: {self.machine})"
 
 
+def get_machine_selectors(machine_names: Iterable[str]) -> list[str]:
+    """Get all selectors needed to fetch generators and files for the given machines.
+
+    Args:
+        machine_names: The names of the machines.
+
+    Returns:
+        list[str]: A list of selectors to fetch all generators and files for the machines.
+
+    """
+    config = nix_config()
+    system = config["system"]
+
+    return [
+        secrets_age_plugins(),
+        inventory_relative_directory(),
+        vars_generators_metadata(system, machine_names),
+        vars_generators_files(system, machine_names),
+        vars_sops_default_groups(system, machine_names),
+        vars_settings_public_module(system, machine_names),
+        vars_settings_secret_module(system, machine_names),
+        vars_sops_secret_upload_dir(system, machine_names),
+        vars_password_store_pass_command(system, machine_names),
+        vars_password_store_secret_location(system, machine_names),
+    ]
+
+
+def validate_dependencies(
+    generator_name: str,
+    machine_name: str,
+    dependencies: list[str],
+    generators_data: dict[str, dict],
+) -> list["GeneratorKey"]:
+    """Validate and build dependency keys for a generator.
+
+    Args:
+        generator_name: Name of the generator that has dependencies
+        machine_name: Name of the machine the generator belongs to
+        dependencies: List of dependency generator names
+        generators_data: Dictionary of all available generators for this machine
+
+    Returns:
+        List of GeneratorKey objects
+
+    Raises:
+        ClanError: If a dependency does not exist
+
+    """
+    deps_list = []
+    for dep in dependencies:
+        if dep not in generators_data:
+            msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
+            raise ClanError(msg)
+        deps_list.append(
+            GeneratorKey(
+                machine=None if generators_data[dep]["share"] else machine_name,
+                name=dep,
+            )
+        )
+    return deps_list
+
+
+def find_generator_differences(
+    gen_name: str,
+    ref_machine: str,
+    ref_data: dict,
+    ref_files: dict,
+    curr_machine: str,
+    curr_data: dict,
+    curr_files: dict,
+) -> list[str]:
+    """Find differences between two generator definitions.
+
+    Compares the following fields:
+
+    files, prompts, dependencies, validationHash
+
+    Returns:
+        List of field names that differ.
+
+    """
+    differences = []
+
+    if ref_files != curr_files:
+        log.debug(
+            f"Files differ for generator '{gen_name}':\n{pretty_diff_objects(ref_files, curr_files, ref_machine, curr_machine)}"
+        )
+        differences.append("files")
+    if ref_data.get("prompts") != curr_data.get("prompts"):
+        log.debug(
+            f"Prompts differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('prompts'), curr_data.get('prompts'), ref_machine, curr_machine)}"
+        )
+        differences.append("prompts")
+    if ref_data.get("dependencies") != curr_data.get("dependencies"):
+        log.debug(
+            f"Dependencies differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('dependencies'), curr_data.get('dependencies'), ref_machine, curr_machine)}"
+        )
+        differences.append("dependencies")
+    if ref_data.get("validationHash") != curr_data.get("validationHash"):
+        log.debug(
+            f"Validation hash differs for generator '{gen_name}':\n"
+            f"  {ref_machine}={ref_data.get('validationHash')}\n"
+            f"  {curr_machine}={curr_data.get('validationHash')}"
+        )
+        differences.append("validation_hash")
+
+    return differences
+
+
+def get_machine_generators(
+    machine_names: Iterable[str],
+    flake: "Flake",
+    secret_cache: dict[Path, bytes] | None = None,
+) -> list["Generator"]:
+    """Get all generators for a machine from the flake.
+
+    Args:
+        machine_names: The names of the machines.
+        flake: The flake to get the generators from.
+        secret_cache: Optional cache for decrypted secrets to avoid repeated decryption.
+
+    Returns:
+        list[Generator]: A list of (unsorted) generators for the machine.
+
+    """
+    generators_selector = (
+        "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
+    )
+    files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
+    flake.precache(get_machine_selectors(machine_names))
+
+    generators: list[Generator] = []
+    shared_generators_raw: dict[
+        str, tuple[str, dict, dict]
+    ] = {}  # name -> (machine_name, gen_data, files_data)
+
+    for machine_name in machine_names:
+        # Get all generator metadata in one select (safe fields only)
+        generators_data = flake.select_machine(
+            machine_name,
+            generators_selector,
+        )
+        if not generators_data:
+            continue
+
+        # Get all file metadata in one select
+        files_data = flake.select_machine(
+            machine_name,
+            files_selector,
+        )
+
+        machine = Machine(name=machine_name, flake=flake)
+        pub_store = machine.public_vars_store
+        sec_store = machine.secret_vars_store
+
+        for gen_name, gen_data in generators_data.items():
+            # Check for conflicts in shared generator definitions using raw data
+            if gen_data["share"]:
+                if gen_name in shared_generators_raw:
+                    prev_machine, prev_gen_data, prev_files_data = (
+                        shared_generators_raw[gen_name]
+                    )
+                    prev_gen_files = filter_machine_specific_attrs(
+                        prev_files_data.get(gen_name, {})
+                    )
+                    curr_gen_files = filter_machine_specific_attrs(
+                        files_data.get(gen_name, {})
+                    )
+
+                    # Build list of differences with details
+                    differences = find_generator_differences(
+                        gen_name=gen_name,
+                        ref_machine=prev_machine,
+                        ref_data=prev_gen_data,
+                        ref_files=prev_gen_files,
+                        curr_machine=machine_name,
+                        curr_data=gen_data,
+                        curr_files=curr_gen_files,
+                    )
+                    if differences:
+                        msg = f"Machines {prev_machine} and {machine_name} have different definitions for shared generator '{gen_name}' (differ in: {', '.join(differences)})"
+                        raise ClanError(msg)
+
+                else:
+                    shared_generators_raw[gen_name] = (
+                        machine_name,
+                        gen_data,
+                        files_data,
+                    )
+            # Build files from the files_data
+            files = []
+            gen_files = files_data.get(gen_name, {})
+            for file_name, file_data in gen_files.items():
+                var = Var(
+                    id=f"{gen_name}/{file_name}",
+                    name=file_name,
+                    secret=file_data["secret"],
+                    deploy=file_data["deploy"],
+                    owner=file_data["owner"],
+                    group=file_data["group"],
+                    mode=(
+                        file_data["mode"]
+                        if isinstance(file_data["mode"], int)
+                        else int(file_data["mode"], 8)
+                    ),
+                    needed_for=file_data["neededFor"],
+                    _store=pub_store if not file_data["secret"] else sec_store,
+                )
+                files.append(var)
+
+            # Build prompts
+            prompts = [Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()]
+
+            share = gen_data["share"]
+
+            generator = Generator(
+                name=gen_name,
+                share=share,
+                files=files,
+                dependencies=validate_dependencies(
+                    gen_name,
+                    machine_name,
+                    gen_data["dependencies"],
+                    generators_data,
+                ),
+                validation_hash=gen_data.get("validationHash"),
+                prompts=prompts,
+                # shared generators can have multiple machines, machine-specific have one
+                machines=[machine_name],
+                _flake=flake,
+                _public_store=pub_store,
+                _secret_store=sec_store,
+            )
+
+            # link generator to its files
+            for file in files:
+                file.generator(generator)
+
+            if share:
+                # For shared generators, check if we already created it
+                existing = next(
+                    (g for g in generators if g.name == gen_name and g.share), None
+                )
+                if existing:
+                    # Just append the machine to the existing generator
+                    existing.machines.append(machine_name)
+                else:
+                    # Add the new shared generator
+                    generators.append(generator)
+            else:
+                # Always add per-machine generators
+                generators.append(generator)
+
+        # Set lazy evaluation context for prompts (evaluated on access)
+        for generator in generators:
+            for prompt in generator.prompts:
+                prompt._machine = machine  # noqa: SLF001
+                prompt._generator = generator  # noqa: SLF001
+                prompt._secret_cache = secret_cache  # noqa: SLF001
+
+    return generators
+
+
 @dataclass
 class Generator(GeneratorGraphNode[GeneratorKey]):
     name: str
@@ -119,41 +382,6 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
-
-    @staticmethod
-    def validate_dependencies(
-        generator_name: str,
-        machine_name: str,
-        dependencies: list[str],
-        generators_data: dict[str, dict],
-    ) -> list[GeneratorKey]:
-        """Validate and build dependency keys for a generator.
-
-        Args:
-            generator_name: Name of the generator that has dependencies
-            machine_name: Name of the machine the generator belongs to
-            dependencies: List of dependency generator names
-            generators_data: Dictionary of all available generators for this machine
-
-        Returns:
-            List of GeneratorKey objects
-
-        Raises:
-            ClanError: If a dependency does not exist
-
-        """
-        deps_list = []
-        for dep in dependencies:
-            if dep not in generators_data:
-                msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
-                raise ClanError(msg)
-            deps_list.append(
-                GeneratorKey(
-                    machine=None if generators_data[dep]["share"] else machine_name,
-                    name=dep,
-                )
-            )
-        return deps_list
 
     @property
     def key(self) -> GeneratorKey:
@@ -187,239 +415,6 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
         return self._secret_store.hash_is_valid(
             self
         ) and self._public_store.hash_is_valid(self)
-
-    @classmethod
-    def get_machine_selectors(
-        cls: type["Generator"],
-        machine_names: Iterable[str],
-    ) -> list[str]:
-        """Get all selectors needed to fetch generators and files for the given machines.
-
-        Args:
-            machine_names: The names of the machines.
-
-        Returns:
-            list[str]: A list of selectors to fetch all generators and files for the machines.
-
-        """
-        config = nix_config()
-        system = config["system"]
-
-        return [
-            secrets_age_plugins(),
-            inventory_relative_directory(),
-            vars_generators_metadata(system, machine_names),
-            vars_generators_files(system, machine_names),
-            vars_sops_default_groups(system, machine_names),
-            vars_settings_public_module(system, machine_names),
-            vars_settings_secret_module(system, machine_names),
-            vars_sops_secret_upload_dir(system, machine_names),
-            vars_password_store_pass_command(system, machine_names),
-            vars_password_store_secret_location(system, machine_names),
-        ]
-
-    @classmethod
-    def _find_generator_differences(
-        cls: type["Generator"],
-        gen_name: str,
-        ref_machine: str,
-        ref_data: dict,
-        ref_files: dict,
-        curr_machine: str,
-        curr_data: dict,
-        curr_files: dict,
-    ) -> list[str]:
-        """Find differences between two generator definitions.
-
-        Compares the following fields:
-
-        files, prompts, dependencies, validationHash
-
-        Returns:
-            List of field names that differ.
-
-        """
-        differences = []
-
-        if ref_files != curr_files:
-            log.debug(
-                f"Files differ for generator '{gen_name}':\n{pretty_diff_objects(ref_files, curr_files, ref_machine, curr_machine)}"
-            )
-            differences.append("files")
-        if ref_data.get("prompts") != curr_data.get("prompts"):
-            log.debug(
-                f"Prompts differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('prompts'), curr_data.get('prompts'), ref_machine, curr_machine)}"
-            )
-            differences.append("prompts")
-        if ref_data.get("dependencies") != curr_data.get("dependencies"):
-            log.debug(
-                f"Dependencies differ for generator '{gen_name}':\n{pretty_diff_objects(ref_data.get('dependencies'), curr_data.get('dependencies'), ref_machine, curr_machine)}"
-            )
-            differences.append("dependencies")
-        if ref_data.get("validationHash") != curr_data.get("validationHash"):
-            log.debug(
-                f"Validation hash differs for generator '{gen_name}':\n"
-                f"  {ref_machine}={ref_data.get('validationHash')}\n"
-                f"  {curr_machine}={curr_data.get('validationHash')}"
-            )
-            differences.append("validation_hash")
-
-        return differences
-
-    @classmethod
-    def get_machine_generators(
-        cls: type["Generator"],
-        machine_names: Iterable[str],
-        flake: "Flake",
-        secret_cache: dict[Path, bytes] | None = None,
-    ) -> list["Generator"]:
-        """Get all generators for a machine from the flake.
-
-        Args:
-            machine_names: The names of the machines.
-            flake: The flake to get the generators from.
-            secret_cache: Optional cache for decrypted secrets to avoid repeated decryption.
-
-        Returns:
-            list[Generator]: A list of (unsorted) generators for the machine.
-
-        """
-        generators_selector = "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
-        files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
-        flake.precache(cls.get_machine_selectors(machine_names))
-
-        generators: list[Generator] = []
-        shared_generators_raw: dict[
-            str, tuple[str, dict, dict]
-        ] = {}  # name -> (machine_name, gen_data, files_data)
-
-        for machine_name in machine_names:
-            # Get all generator metadata in one select (safe fields only)
-            generators_data = flake.select_machine(
-                machine_name,
-                generators_selector,
-            )
-            if not generators_data:
-                continue
-
-            # Get all file metadata in one select
-            files_data = flake.select_machine(
-                machine_name,
-                files_selector,
-            )
-
-            machine = Machine(name=machine_name, flake=flake)
-            pub_store = machine.public_vars_store
-            sec_store = machine.secret_vars_store
-
-            for gen_name, gen_data in generators_data.items():
-                # Check for conflicts in shared generator definitions using raw data
-                if gen_data["share"]:
-                    if gen_name in shared_generators_raw:
-                        prev_machine, prev_gen_data, prev_files_data = (
-                            shared_generators_raw[gen_name]
-                        )
-                        prev_gen_files = filter_machine_specific_attrs(
-                            prev_files_data.get(gen_name, {})
-                        )
-                        curr_gen_files = filter_machine_specific_attrs(
-                            files_data.get(gen_name, {})
-                        )
-
-                        # Build list of differences with details
-                        differences = cls._find_generator_differences(
-                            gen_name=gen_name,
-                            ref_machine=prev_machine,
-                            ref_data=prev_gen_data,
-                            ref_files=prev_gen_files,
-                            curr_machine=machine_name,
-                            curr_data=gen_data,
-                            curr_files=curr_gen_files,
-                        )
-                        if differences:
-                            msg = f"Machines {prev_machine} and {machine_name} have different definitions for shared generator '{gen_name}' (differ in: {', '.join(differences)})"
-                            raise ClanError(msg)
-
-                    else:
-                        shared_generators_raw[gen_name] = (
-                            machine_name,
-                            gen_data,
-                            files_data,
-                        )
-                # Build files from the files_data
-                files = []
-                gen_files = files_data.get(gen_name, {})
-                for file_name, file_data in gen_files.items():
-                    var = Var(
-                        id=f"{gen_name}/{file_name}",
-                        name=file_name,
-                        secret=file_data["secret"],
-                        deploy=file_data["deploy"],
-                        owner=file_data["owner"],
-                        group=file_data["group"],
-                        mode=(
-                            file_data["mode"]
-                            if isinstance(file_data["mode"], int)
-                            else int(file_data["mode"], 8)
-                        ),
-                        needed_for=file_data["neededFor"],
-                        _store=pub_store if not file_data["secret"] else sec_store,
-                    )
-                    files.append(var)
-
-                # Build prompts
-                prompts = [
-                    Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()
-                ]
-
-                share = gen_data["share"]
-
-                generator = cls(
-                    name=gen_name,
-                    share=share,
-                    files=files,
-                    dependencies=cls.validate_dependencies(
-                        gen_name,
-                        machine_name,
-                        gen_data["dependencies"],
-                        generators_data,
-                    ),
-                    validation_hash=gen_data.get("validationHash"),
-                    prompts=prompts,
-                    # shared generators can have multiple machines, machine-specific have one
-                    machines=[machine_name],
-                    _flake=flake,
-                    _public_store=pub_store,
-                    _secret_store=sec_store,
-                )
-
-                # link generator to its files
-                for file in files:
-                    file.generator(generator)
-
-                if share:
-                    # For shared generators, check if we already created it
-                    existing = next(
-                        (g for g in generators if g.name == gen_name and g.share), None
-                    )
-                    if existing:
-                        # Just append the machine to the existing generator
-                        existing.machines.append(machine_name)
-                    else:
-                        # Add the new shared generator
-                        generators.append(generator)
-                else:
-                    # Always add per-machine generators
-                    generators.append(generator)
-
-            # Set lazy evaluation context for prompts (evaluated on access)
-            for generator in generators:
-                for prompt in generator.prompts:
-                    prompt._machine = machine  # noqa: SLF001
-                    prompt._generator = generator  # noqa: SLF001
-                    prompt._secret_cache = secret_cache  # noqa: SLF001
-
-        return generators
 
     def get_previous_value(
         self,
@@ -482,7 +477,7 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
             Dictionary mapping generator names to their variable values
 
         """
-        generators = self.get_machine_generators([machine.name], machine.flake)
+        generators = get_machine_generators([machine.name], machine.flake)
         result: dict[str, dict[str, bytes]] = {}
 
         for dep_key in set(self.dependencies):

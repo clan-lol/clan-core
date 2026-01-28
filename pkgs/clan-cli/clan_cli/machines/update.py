@@ -22,7 +22,7 @@ from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars.generate import run_generators
-from clan_lib.vars.generator import Generator
+from clan_lib.vars.generator import get_machine_selectors
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -167,7 +167,7 @@ def update_command(args: argparse.Namespace) -> None:
 
         flake.precache(
             [
-                *Generator.get_machine_selectors(machine_names),
+                *get_machine_selectors(machine_names),
                 deployment_require_explicit_update(system, machine_names),
                 deployment_nixos_mobile_workaround(system, machine_names),
             ]
