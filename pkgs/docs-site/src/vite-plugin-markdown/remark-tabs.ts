@@ -1,5 +1,5 @@
 import type { ContainerDirectiveData } from "mdast-util-directive";
-import { isDirectiveParagraph } from "./util";
+import { isDirectiveParagraph } from "./util.ts";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
@@ -15,7 +15,7 @@ const remarkTabs: Plugin<[], Root> = function () {
       node.data ??= data;
       data.hName = "div";
       data.hProperties = {
-        className: "md-tabs",
+        class: "md-tabs",
       };
       let tabIndex = 0;
       const tabTitles: string[] = [];
@@ -38,7 +38,7 @@ const remarkTabs: Plugin<[], Root> = function () {
           data: {
             hName: "div",
             hProperties: {
-              className: "md-tabs-container",
+              class: "md-tabs-container",
             },
           },
           children: [
@@ -47,7 +47,7 @@ const remarkTabs: Plugin<[], Root> = function () {
               data: {
                 hName: "div",
                 hProperties: {
-                  className: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
+                  class: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
                 },
               },
               children: [{ type: "text", value: tabTitle }],
@@ -58,7 +58,7 @@ const remarkTabs: Plugin<[], Root> = function () {
               data: {
                 hName: "div",
                 hProperties: {
-                  className: `md-tabs-content ${tabIndex === 0 ? "is-active" : ""}`,
+                  class: `md-tabs-content ${tabIndex === 0 ? "is-active" : ""}`,
                 },
               },
               children: child.children,
@@ -77,7 +77,7 @@ const remarkTabs: Plugin<[], Root> = function () {
           data: {
             hName: "div",
             hProperties: {
-              className: "md-tabs-bar",
+              class: "md-tabs-bar",
             },
           },
           children: tabTitles.map((tabTitle, tabIndex) => ({
@@ -85,7 +85,7 @@ const remarkTabs: Plugin<[], Root> = function () {
             data: {
               hName: "div",
               hProperties: {
-                className: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
+                class: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
               },
             },
             value: tabTitle,

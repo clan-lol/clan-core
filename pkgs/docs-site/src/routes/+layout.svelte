@@ -4,9 +4,9 @@
     Pagefind,
     PagefindSearchFragment,
   } from "vite-plugin-pagefind/types";
-  import config from "~/config";
+  import config from "~/config/index.js";
   import favicon from "$lib/assets/favicon.svg";
-  import type { NavItem } from "$lib/models/docs";
+  import type { NavItem } from "$lib/models/docs/index.ts";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -17,8 +17,11 @@
   let pagefind: Pagefind | undefined;
   let query = $state("");
   let searchResults: PagefindSearchFragment[] = $state([]);
+
   onMount(async () => {
-    const pf = (await import(resolve("/pagefind/pagefind.js"))) as Pagefind;
+    const pf = (await import(
+      /* @vite-ignore */ resolve("/pagefind/pagefind.js")
+    )) as Pagefind;
     await pf.init();
     pagefind = pf;
   });

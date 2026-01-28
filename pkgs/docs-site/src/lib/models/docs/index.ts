@@ -2,9 +2,9 @@ import type {
   Heading,
   Markdown,
   Frontmatter as MarkdownFrontmatter,
-} from "~/vite-plugin-markdown";
-import config from "~/config";
-import { visitNavItems } from "./visit";
+} from "~/vite-plugin-markdown/index.ts";
+import config from "~/config/index.ts";
+import { visitNavItems } from "./visit.ts";
 
 function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
   if (badge == null) {
@@ -23,7 +23,7 @@ function isPath(s: unknown): s is Path {
   return typeof s === "string" && s.startsWith("/");
 }
 
-export { visit } from "./visit";
+export { visit } from "./visit.ts";
 
 export type Path = `/${string}`;
 export interface Article extends Markdown {

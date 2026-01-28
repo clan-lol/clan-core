@@ -1,4 +1,4 @@
-import type { NavItem } from ".";
+import type { NavItem } from "./index.ts";
 
 export type VisitorResult = undefined | "break";
 

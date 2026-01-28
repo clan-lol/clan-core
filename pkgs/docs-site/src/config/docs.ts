@@ -1,4 +1,4 @@
-import type { NavItemInput } from "$lib/models/docs";
+import type { NavItemInput } from "$lib/models/docs/index.ts";
 
 export const navItems: NavItemInput[] = [
   {

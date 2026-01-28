@@ -1,9 +1,9 @@
 <script lang="ts">
   import "~/vite-plugin-markdown/main.css";
-  import type { Heading as ArticleHeading } from "$lib/models/docs";
+  import type { Heading as ArticleHeading } from "$lib/models/docs/index.ts";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { visit } from "$lib/models/docs";
+  import { visit } from "$lib/models/docs/index.ts";
 
   const { data } = $props();
 

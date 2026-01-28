@@ -1,6 +1,6 @@
-import config from "./src/config";
+import config from "./src/config/index.ts";
 import { defineConfig } from "vite";
-import markdown from "./src/vite-plugin-markdown";
+import markdown from "./src/vite-plugin-markdown/index.ts";
 import { pagefind } from "vite-plugin-pagefind";
 import { sveltekit } from "@sveltejs/kit/vite";
 
