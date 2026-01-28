@@ -19,7 +19,7 @@ const remarkLinkMigration: Plugin<[], Root> = function () {
       }
 
       // Remove repeated leading ../  or ./
-      const cleanUrl = node.url.replaceAll(/^\.\.?|(?:\.\.?\/)+|\.md$/g, "");
+      const cleanUrl = node.url.replaceAll(/^\.\.?|^(?:\.\.?\/)+|\.md$/g, "");
       if (!cleanUrl.startsWith("/")) {
         throw new Error(`invalid doc link: ${cleanUrl}`);
       }

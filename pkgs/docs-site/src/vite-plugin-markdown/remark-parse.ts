@@ -4,10 +4,16 @@ import type { Plugin } from "unified";
 import type { Root } from "mdast";
 
 const remarkParse: Plugin = function () {
-  // eslint-disable-next-line no-this-in-exported-function
+  const data = this.data.bind(this);
   this.parser = function parser(_document, file): Root {
     matter(file, { strip: true });
-    return fromMarkdown(String(file));
+    // Adapted from https://github.com/remarkjs/remark/blob/main/packages/remark-parse/lib/index.js
+    return fromMarkdown(String(file), {
+      ...data("settings"),
+      // These extensions are set by remark-gfm
+      extensions: data("micromarkExtensions") ?? [],
+      mdastExtensions: data("fromMarkdownExtensions") ?? [],
+    });
   };
 };
 export default remarkParse;

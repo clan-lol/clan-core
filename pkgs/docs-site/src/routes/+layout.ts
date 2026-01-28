@@ -1,4 +1,4 @@
-import { Docs } from "$lib/models/docs";
+import { Docs } from "$lib/models/docs/index.ts";
 import type { LayoutLoad } from "./$types";
 
 export const prerender = true;

@@ -1,5 +1,5 @@
 import type { ContainerDirectiveData } from "mdast-util-directive";
-import { isDirectiveParagraph } from "./util";
+import { isDirectiveParagraph } from "./util.ts";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
@@ -18,7 +18,7 @@ const remarkAdmonition: Plugin<[], Root> = function () {
       node.data ??= data;
       data.hName = "div";
       data.hProperties = {
-        className: `md-admonition is-${node.name}`,
+        class: `md-admonition is-${node.name}`,
       };
       let title: string;
       const p = node.children?.[0];
@@ -34,14 +34,14 @@ const remarkAdmonition: Plugin<[], Root> = function () {
           type: "paragraph",
           data: {
             hName: "div",
-            hProperties: { className: ["md-admonition-title"] },
+            hProperties: { class: "md-admonition-title" },
           },
           children: [
             {
               type: "text",
               data: {
                 hName: "span",
-                hProperties: { className: ["md-admonition-icon"] },
+                hProperties: { class: "md-admonition-icon" },
               },
               value: "",
             },

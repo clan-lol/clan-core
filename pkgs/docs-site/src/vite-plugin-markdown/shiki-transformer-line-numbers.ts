@@ -1,3 +1,4 @@
+import { addClassToHast } from "shiki";
 import type { ShikiTransformer } from "shiki";
 
 export default function transformerLineNumbers({
@@ -13,14 +14,14 @@ export default function transformerLineNumbers({
       }
       let lines = 0;
       for (const node of code.children) {
-        if (node.type === "element" && node.properties["class"] === "line") {
+        if (node.type === "element" && node.properties.class === "line") {
           lines += 1;
         }
       }
       if (lines < minLines) {
         return;
       }
-      pre.properties["class"] += " line-numbers";
+      addClassToHast(pre, "line-numbers");
     },
   };
 }

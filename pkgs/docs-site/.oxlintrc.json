@@ -72,6 +72,30 @@
     "eslint/no-duplicate-imports": [
       "error",
       { "allowSeparateTypeImports": true }
+    ],
+    "no-inline-comments": ["error", { "ignorePattern": "@vite-ignore" }],
+    // We require explicit file extensions in import paths to align with Node.js
+    // ESM requirements. Since our Vite config and plugins already run as ES
+    // modules, we’re maintaining this style across the entire project for
+    // consistency.
+    "extensions": [
+      "error",
+      "always",
+      {
+        "checkTypeImports": true,
+        "pathGroupOverrides": [
+          { "pattern": ".", "action": "enforce" },
+          { "pattern": "..", "action": "enforce" },
+          { "pattern": "./$types", "action": "ignore" },
+          { "pattern": "./*", "action": "enforce" },
+          { "pattern": "../*", "action": "enforce" },
+          { "pattern": "~", "action": "enforce" },
+          { "pattern": "~/*", "action": "enforce" },
+          { "pattern": "$lib", "action": "enforce" },
+          { "pattern": "$lib/**", "action": "enforce" },
+          { "pattern": "**", "action": "ignore" }
+        ]
+      }
     ]
   },
   "overrides": [

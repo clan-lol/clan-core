@@ -1,6 +1,6 @@
 import type { Article } from "~/lib/models/docs";
 import { error } from "@sveltejs/kit";
-import { HttpNotFound } from "$lib/util";
+import { HttpNotFound } from "~/lib/util/index.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad<Article> = async ({ params, parent }) => {

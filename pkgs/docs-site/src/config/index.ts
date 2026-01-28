@@ -1,4 +1,4 @@
-import * as docs from "./docs";
+import * as docs from "./docs.ts";
 
 export default {
   docs,
