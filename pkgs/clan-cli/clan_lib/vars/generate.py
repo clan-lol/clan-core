@@ -15,10 +15,10 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
 from clan_lib.vars.generator import (
     Generator,
+    GeneratorKey,
     get_machine_generators,
     get_machine_selectors,
 )
-from clan_lib.vars.graph import requested_closure
 from clan_lib.vars.prompt import ask
 from clan_lib.vars.secret_modules import sops
 
@@ -156,25 +156,23 @@ def get_generators(
         generator.key: generator for generator in requested_generators_list
     }
 
-    result_closure: list[Generator] = []
-    if generator_name is None:  # all generators selected
-        if full_closure:
-            result_closure = graph.requested_closure(
-                requested_generators.keys(), all_generators
-            )
-        else:
-            result_closure = graph.all_missing_closure(
-                requested_generators.keys(), all_generators
-            )
-    # specific generator selected
-    elif full_closure:
-        roots = [key for key in requested_generators if key.name == generator_name]
-        result_closure = requested_closure(roots, all_generators)
+    # Select root generators
+    roots: list[GeneratorKey]
+    if generator_name is None:
+        roots = list(requested_generators.keys())
     else:
         roots = [key for key in requested_generators if key.name == generator_name]
-        result_closure = graph.all_missing_closure(roots, all_generators)
 
-    return result_closure
+        # Abort if the generator is not found
+        if not roots:
+            msg = f"Generator '{generator_name}' not found in machines {requested_machines}"
+            raise ClanError(msg)
+
+    # Compute closure based on mode
+    closure_func = (
+        graph.requested_closure if full_closure else graph.all_missing_closure
+    )
+    return closure_func(roots, all_generators)
 
 
 def _ensure_healthy(
