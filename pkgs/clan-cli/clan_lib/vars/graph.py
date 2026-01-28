@@ -1,15 +1,32 @@
 from __future__ import annotations
 
 from graphlib import TopologicalSorter
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 from clan_lib.errors import ClanError
-from clan_lib.vars.generator import Comparable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from .generator import Comparable, GeneratorGraphNode
+
+class Comparable(Protocol):
+    def key(self) -> Any: ...
+
+    """Returns any comparable object. Passed to sorted()"""
+
+    def __str__(self) -> str: ...
+
+    """Returns a string representation"""
+
+
+class GeneratorGraphNode[T: Comparable](Protocol):
+    dependencies: list[T]
+
+    @property
+    def key(self) -> T: ...
+
+    @property
+    def exists(self) -> bool: ...
 
 
 class GeneratorNotFoundError(ClanError):
