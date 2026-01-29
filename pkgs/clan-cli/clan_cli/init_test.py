@@ -162,3 +162,32 @@ def test_init_with_local_template_reference(
     )
 
     assert (new_clan_dir / "flake.nix").exists()
+
+
+@pytest.mark.with_core
+def test_init_substitutes_placeholders(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    patch_get_clan_details: Any,  # noqa: ARG001
+) -> None:
+    """Test that clan init substitutes {{name}} and {{domain}} placeholders."""
+    flake_dir = temporary_home / "my-test-clan"
+
+    monkeypatch.setenv("LOGNAME", "testuser")
+    cli.run(["init", str(flake_dir), "--template=default", "--no-update"])
+
+    assert flake_dir.exists()
+    assert flake_dir.is_dir()
+
+    clan_nix = flake_dir / "clan.nix"
+    content = clan_nix.read_text()
+
+    assert '"my-test-clan"' in content, (
+        "Placeholders were not substituted with directory name"
+    )
+    assert "{{name}}" not in content, (
+        "Placeholders were not substituted with directory name"
+    )
+    assert "{{domain}}" not in content, (
+        "Placeholders were not substituted with directory name"
+    )
