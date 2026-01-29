@@ -495,19 +495,31 @@ def setup_filesystems(container: ContainerInfo) -> None:
     container.nix_store_dir.mkdir(parents=True)
     container.nix_store_dir.chmod(0o755)
 
-    # Recreate symlinks
+    # Read store-paths from closure info to know which paths to mount
+    # Only mount paths that are in the closure to avoid mismatch with nix database
+    closure_paths: set[str] = set()
+    store_paths_file = container.closure_info / "store-paths"
+    if store_paths_file.exists():
+        closure_paths = set(store_paths_file.read_text().strip().split("\n"))
+
+    # Recreate symlinks (only for paths in closure)
     for file in Path("/nix/store").iterdir():
         if file.is_symlink():
+            if str(file) not in closure_paths:
+                continue
             target = file.readlink()
             sym = container.nix_store_dir / file.name
             sym.symlink_to(target)
 
-    # Read /proc/mounts and replicate every bind mount
+    # Read /proc/mounts and replicate bind mounts only for paths in closure
     with Path("/proc/self/mounts").open() as f:
         for line in f:
             columns = line.split(" ")
             source = Path(columns[1])
             if source.parent != Path("/nix/store/"):
+                continue
+            # Only mount paths that are in the closure
+            if str(source) not in closure_paths:
                 continue
             target = container.nix_store_dir / source.name
             if source.is_dir():
@@ -515,8 +527,6 @@ def setup_filesystems(container: ContainerInfo) -> None:
             else:
                 target.touch()
             try:
-                if "acl" in target.name:
-                    print(f"mount({source}, {target})")
                 mount(source, target, "none", MS_BIND)
             except OSError as e:
                 msg = f"mount({source}, {target}) failed"
