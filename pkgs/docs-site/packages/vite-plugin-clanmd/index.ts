@@ -8,7 +8,7 @@ import type { PluginOption } from "vite";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
 import rehypeStringify from "rehype-stringify";
-import rehypeTocSlug from "./rehype-toc-slug.ts";
+import rehypeTocSlug from "./rehype-toc.ts";
 import rehypeWrapHeadings from "./rehype-wrap-headings.ts";
 import remarkAdmonition from "./remark-admonition.ts";
 import remarkDirective from "remark-directive";
@@ -42,14 +42,14 @@ export interface Options {
   codeLightTheme: string;
   codeDarkTheme: string;
   minLineNumberLines: number;
-  tocMaxDepth: number;
+  maxTocExtractionDepth: number;
 }
 
 export default function VitePluginMarkdown({
   codeLightTheme,
   codeDarkTheme,
   minLineNumberLines,
-  tocMaxDepth,
+  maxTocExtractionDepth,
 }: Options): PluginOption {
   return {
     name: "markdown-loader",
@@ -67,7 +67,7 @@ export default function VitePluginMarkdown({
         .use(remarkTabs)
         .use(remarkRehype)
         .use(rehypeTocSlug, {
-          tocMaxDepth,
+          maxTocExtractionDepth,
         })
         .use(rehypeWrapHeadings)
         .use(rehypeAutolinkHeadings)

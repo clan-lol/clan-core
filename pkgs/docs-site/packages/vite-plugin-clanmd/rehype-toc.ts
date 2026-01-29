@@ -11,19 +11,20 @@ const startingRank = 1;
 /**
  * Adds `id`s to headings and extract out a toc
  */
-const rehypeTocSlug: Plugin<[{ tocMaxDepth: number }], Root> = function ({
-  tocMaxDepth,
+const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
+  maxTocExtractionDepth,
 }) {
   return (tree, file) => {
     const slugger = new GithubSlugger();
     const toc: Heading[] = [];
     let h1Exist = false;
     const parentHeadings: Heading[] = [];
-    const frontmatter = file.data.matter;
-    if (!frontmatter) {
-      throw new Error("frontmatter not found");
+    let { matter } = file.data;
+    if (!matter) {
+      matter = {};
+      file.data = matter;
     }
-    frontmatter["title"] = "";
+    matter["title"] = "";
     visit(tree, "element", (node) => {
       const rank = headingRank(node);
       if (rank == null) {
@@ -40,7 +41,7 @@ const rehypeTocSlug: Plugin<[{ tocMaxDepth: number }], Root> = function ({
       id = slugger.slug(content);
       node.properties["id"] = id;
 
-      if (parentHeadings.length > tocMaxDepth) {
+      if (parentHeadings.length > maxTocExtractionDepth) {
         return;
       }
       if (rank === 1) {
@@ -51,7 +52,7 @@ const rehypeTocSlug: Plugin<[{ tocMaxDepth: number }], Root> = function ({
           return;
         }
         h1Exist = true;
-        frontmatter["title"] = content;
+        matter["title"] = content;
       }
       const heading = { id, content, children: [] };
       const currentRank = parentHeadings.length - 1 + startingRank;
@@ -70,7 +71,7 @@ const rehypeTocSlug: Plugin<[{ tocMaxDepth: number }], Root> = function ({
       parentHeadings.push(heading);
     });
 
-    file.data["toc"] = toc;
+    file.data.toc = toc;
   };
 };
-export default rehypeTocSlug;
+export default rehypeToc;

@@ -32,6 +32,11 @@ export default defineConfig(
         svelteConfig,
       },
     },
+    rules: {
+      "svelte/no-raw-special-elements": "error",
+      "svelte/no-useless-mustaches": "error",
+      "svelte/prefer-const": "error",
+    },
   },
   {
     plugins: {
@@ -40,7 +45,11 @@ export default defineConfig(
     },
     rules: {
       "import/enforce-node-protocol-usage": ["error", "always"],
+      "import/no-relative-packages": "error",
+      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
       "import/newline-after-import": "error",
+      "import/no-useless-path-segments": "error",
+      "import/no-absolute-path": "error",
       "import/no-duplicates": "error",
       "perfectionist/sort-array-includes": "error",
       "perfectionist/sort-imports": [

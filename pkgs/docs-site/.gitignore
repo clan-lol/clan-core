@@ -20,5 +20,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Icons and other assets
-src/lib/assets/icons
-src/docs
+/src/lib/assets/icons
+/src/docs
