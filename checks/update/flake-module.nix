@@ -141,13 +141,16 @@
                 };
                 closureInfo = pkgs.closureInfo {
                   rootPaths = [
-                    self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli
+                    self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full
+                    self.packages.${pkgs.stdenv.hostPlatform.system}.nix
                     clan-core-flake
                     self.clanInternals.machines.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
                     pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
                     pkgs.bubblewrap
+                    pkgs.makeShellWrapper
+                    pkgs.openssh.dev
                   ]
                   ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
                   ++ builtins.map (import ../installation/facter-report.nix) (
