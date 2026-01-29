@@ -34,7 +34,7 @@
                 devices = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [ ];
-                  description = "List of device names to share this folder with. Empty list means all peers and extraDevices.";
+                  description = "List of device names that share this folder. Empty list means all peers and extraDevices.";
                 };
                 ignorePerms = lib.mkOption {
                   type = lib.types.bool;
@@ -130,6 +130,7 @@
       {
         settings,
         roles,
+        machine,
         ...
       }:
       {
@@ -169,6 +170,10 @@
 
             validDevices = lib.filterAttrs (_: device: device.id != "") allDevices;
 
+            foldersForDevice = lib.filterAttrs (
+              _folderName: folderConfig: folderConfig.devices == [ ] || lib.elem machine.name folderConfig.devices
+            ) settings.folders;
+
             syncthingFolders = lib.mapAttrs (
               _folderName: folderConfig:
               let
@@ -179,7 +184,7 @@
               // {
                 devices = targetDevices;
               }
-            ) settings.folders;
+            ) foldersForDevice;
           in
           {
             imports = [

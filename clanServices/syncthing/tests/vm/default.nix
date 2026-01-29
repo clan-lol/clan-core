@@ -93,9 +93,13 @@
       # music - machine 1 & 4
       machine1.wait_for_file("/var/lib/syncthing/music")
       machine4.wait_for_file("/var/lib/syncthing/music")
+      machine2.fail("test -e /var/lib/syncthing/music")
+      machine3.fail("test -e /var/lib/syncthing/music")
       # pictures - machine 3 & 4
       machine3.wait_for_file("/var/lib/syncthing/pictures")
       machine4.wait_for_file("/var/lib/syncthing/pictures")
+      machine1.fail("test -e /var/lib/syncthing/pictures")
+      machine2.fail("test -e /var/lib/syncthing/pictures")
 
       machine1.succeed("echo document > /var/lib/syncthing/documents/document")
       machine1.succeed("echo music > /var/lib/syncthing/music/music")
@@ -106,7 +110,11 @@
       machine4.wait_for_file("/var/lib/syncthing/documents/document", 20)
 
       machine4.wait_for_file("/var/lib/syncthing/music/music", 20)
+      machine2.fail("test -e /var/lib/syncthing/music/music")
+      machine3.fail("test -e /var/lib/syncthing/music/music")
 
       machine4.wait_for_file("/var/lib/syncthing/pictures/picture", 20)
+      machine1.fail("test -e /var/lib/syncthing/pictures/picture")
+      machine2.fail("test -e /var/lib/syncthing/pictures/picture")
     '';
 }
