@@ -26,6 +26,12 @@ class Shared:
     def rel_prefix(self) -> Path:
         return Path("shared")
 
+    def sortable_key(self) -> str:
+        return ""
+
+    def __str__(self) -> str:
+        return "shared"
+
 
 @dataclass(frozen=True)
 class PerMachine:
@@ -39,6 +45,12 @@ class PerMachine:
     def rel_prefix(self) -> Path:
         return Path("per-machine") / self.machine
 
+    def sortable_key(self) -> str:
+        return self.machine
+
+    def __str__(self) -> str:
+        return f"machine: {self.machine}"
+
 
 # determines where a generator's output lives on disk.
 Placement = Shared | PerMachine
@@ -48,11 +60,19 @@ Placement = Shared | PerMachine
 class GeneratorId:
     """Identifies a generator uniquely inside a clan.
 
-    Two generators are the same iff they share ``(name, placement)``.
+    Two generators are the same if they share `(name, placement)`
+    Where two placements are equal if they are of the same class and matching .sortable_key()
     """
 
     name: str
     placement: Placement
+
+    def key(self) -> tuple[str, str]:
+        """Sortable key for use in graph operations (satisfies ``Comparable``)."""
+        return (self.placement.sortable_key(), self.name)
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.placement})"
 
     def rel_dir(self) -> Path:
         """Relative directory under `vars/` for this generator's output.

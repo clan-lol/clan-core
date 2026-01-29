@@ -11,7 +11,6 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
 from clan_lib.vars.generator import (
     Generator,
-    GeneratorKey,
     get_machine_generators,
     get_machine_selectors,
 )
@@ -20,6 +19,9 @@ from clan_lib.vars.secret_modules import sops
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from clan_lib.vars._types import GeneratorId
+
 
 log = logging.getLogger(__name__)
 
@@ -156,7 +158,7 @@ def get_generators(
     }
 
     # Select root generators
-    roots: list[GeneratorKey]
+    roots: list[GeneratorId]
     if generator_name is None:
         roots = list(requested_generators.keys())
     else:
