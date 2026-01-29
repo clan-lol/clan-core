@@ -16,6 +16,60 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class Shared:
+    """Output shared across all machines.
+
+    Returns a path fragment: `shared`
+    """
+
+    def rel_prefix(self) -> Path:
+        return Path("shared")
+
+
+@dataclass(frozen=True)
+class PerMachine:
+    """Output bound to exactly one machine.
+
+    Path fragment: `per-machine/{machine}`
+    """
+
+    machine: str
+
+    def rel_prefix(self) -> Path:
+        return Path("per-machine") / self.machine
+
+
+# determines where a generator's output lives on disk.
+Placement = Shared | PerMachine
+
+
+@dataclass(frozen=True)
+class GeneratorId:
+    """Identifies a generator uniquely inside a clan.
+
+    Two generators are the same iff they share ``(name, placement)``.
+    """
+
+    name: str
+    placement: Placement
+
+    def rel_dir(self) -> Path:
+        """Relative directory under `vars/` for this generator's output.
+
+        See Example:
+
+                Placement
+        |<----------------------->|
+        `per-machine/{machine_name}/{generator.name}`
+                                    |<----------->|
+                                    Name of this Generator
+
+        Typically a generator tracks its files inside that directory `rel_dir`
+        """
+        return self.placement.rel_prefix() / self.name
+
+
 def string_repr(value: bytes) -> str:
     try:
         return value.decode()
@@ -31,6 +85,9 @@ class GeneratorStore(Protocol):
     machines: list[str]
     files: list["Var"]
     validation_hash: str | None
+
+    @property
+    def gen_id(self) -> GeneratorId: ...
 
     def validation(self) -> str | None: ...
     def with_toggled_share(self, machine: str) -> "GeneratorStore": ...
@@ -146,10 +203,7 @@ class StoreBase(ABC):
         raise ClanError(msg)
 
     def rel_dir(self, generator: "GeneratorStore", var_name: str) -> Path:
-        if generator.share:
-            return Path("shared") / generator.name / var_name
-        machine = self.get_machine(generator)
-        return Path("per-machine") / machine / generator.name / var_name
+        return generator.gen_id.rel_dir() / var_name
 
     def directory(self, generator: "GeneratorStore", var_name: str) -> Path:
         return self.clan_dir / "vars" / self.rel_dir(generator, var_name)

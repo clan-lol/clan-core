@@ -40,6 +40,8 @@ if TYPE_CHECKING:
 
 from clan_lib.machines.machines import Machine
 
+from ._types import GeneratorId, PerMachine, Shared
+
 log = logging.getLogger(__name__)
 
 
@@ -382,6 +384,17 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
+
+    @property
+    def gen_id(self) -> GeneratorId:
+        if self.share:
+            return GeneratorId(name=self.name, placement=Shared())
+        if len(self.machines) != 1:
+            msg = f"Generator {self.name} must have exactly one machine, but has {len(self.machines)}: {', '.join(self.machines)}"
+            raise ClanError(msg)
+        return GeneratorId(
+            name=self.name, placement=PerMachine(machine=self.machines[0])
+        )
 
     @property
     def key(self) -> GeneratorKey:
