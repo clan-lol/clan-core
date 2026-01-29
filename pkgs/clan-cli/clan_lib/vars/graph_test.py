@@ -1,9 +1,9 @@
 from unittest.mock import Mock
 
+from clan_lib.vars._types import GeneratorId, PerMachine, Shared
 from clan_lib.vars.generator import (
     Generator,
     GeneratorGraphNode,
-    GeneratorKey,
 )
 from clan_lib.vars.graph import all_missing_closure, requested_closure
 
@@ -12,7 +12,7 @@ def generator_names(generator: list[GeneratorGraphNode]) -> list[str]:
     return [str(gen.key.key()) for gen in generator]
 
 
-def generator_keys(generator: list[GeneratorGraphNode]) -> set[GeneratorKey]:
+def generator_keys(generator: list[GeneratorGraphNode]) -> set[GeneratorId]:
     return {gen.key for gen in generator}
 
 
@@ -75,7 +75,7 @@ def test_required_generators() -> None:
         _public_store=public_store,
         _secret_store=secret_store,
     )
-    generators: dict[GeneratorKey, Generator] = {
+    generators: dict[GeneratorId, Generator] = {
         generator.key: generator for generator in [gen_1, gen_2, gen_2a, gen_2b]
     }
 
@@ -138,20 +138,20 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
         _public_store=public_store,
         _secret_store=secret_store,
     )
-    generators: dict[GeneratorKey, Generator] = {
+    generators: dict[GeneratorId, Generator] = {
         generator.key: generator for generator in [shared_gen, gen_1, gen_2]
     }
 
     assert generator_keys(all_missing_closure(generators.keys(), generators)) == {
-        GeneratorKey(name="shared_gen", machine=None),
-        GeneratorKey(name="gen_1", machine=machine_1),
-        GeneratorKey(name="gen_2", machine=machine_2),
+        GeneratorId(name="shared_gen", placement=Shared()),
+        GeneratorId(name="gen_1", placement=PerMachine(machine=machine_1)),
+        GeneratorId(name="gen_2", placement=PerMachine(machine=machine_2)),
     }, (
         "All generators should be included in all_missing_closure due to shared dependency"
     )
 
     assert generator_keys(requested_closure([shared_gen.key], generators)) == {
-        GeneratorKey(name="shared_gen", machine=None),
-        GeneratorKey(name="gen_1", machine=machine_1),
-        GeneratorKey(name="gen_2", machine=machine_2),
+        GeneratorId(name="shared_gen", placement=Shared()),
+        GeneratorId(name="gen_1", placement=PerMachine(machine=machine_1)),
+        GeneratorId(name="gen_2", placement=PerMachine(machine=machine_2)),
     }, "All generators should be included in requested_closure due to shared dependency"

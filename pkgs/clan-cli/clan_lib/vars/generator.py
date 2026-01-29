@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 from clan_lib.machines.machines import Machine
 
-from ._types import GeneratorId, PerMachine, Shared
+from ._types import GeneratorId, PerMachine, Placement, Shared
 
 log = logging.getLogger(__name__)
 
@@ -91,22 +91,6 @@ def dependencies_as_dir(
             file_path.write_bytes(file)
 
 
-@dataclass(frozen=True)
-class GeneratorKey:
-    """A key uniquely identifying a generator within a clan."""
-
-    machine: str | None
-    name: str
-
-    def key(self) -> tuple[str | None, str]:
-        return (self.machine or "", self.name)
-
-    def __str__(self) -> str:
-        if self.machine is None:
-            return f"{self.name} (shared)"
-        return f"{self.name} (machine: {self.machine})"
-
-
 def get_machine_selectors(machine_names: Iterable[str]) -> list[str]:
     """Get all selectors needed to fetch generators and files for the given machines.
 
@@ -139,7 +123,7 @@ def validate_dependencies(
     machine_name: str,
     dependencies: list[str],
     generators_data: dict[str, dict],
-) -> list["GeneratorKey"]:
+) -> list[GeneratorId]:
     """Validate and build dependency keys for a generator.
 
     Args:
@@ -149,7 +133,7 @@ def validate_dependencies(
         generators_data: Dictionary of all available generators for this machine
 
     Returns:
-        List of GeneratorKey objects
+        List of GeneratorId objects
 
     Raises:
         ClanError: If a dependency does not exist
@@ -160,12 +144,12 @@ def validate_dependencies(
         if dep not in generators_data:
             msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
             raise ClanError(msg)
-        deps_list.append(
-            GeneratorKey(
-                machine=None if generators_data[dep]["share"] else machine_name,
-                name=dep,
-            )
+        placement: Placement = (
+            Shared()
+            if generators_data[dep]["share"]
+            else PerMachine(machine=machine_name)
         )
+        deps_list.append(GeneratorId(name=dep, placement=placement))
     return deps_list
 
 
@@ -371,12 +355,12 @@ def get_machine_generators(
 
 
 @dataclass
-class Generator(GeneratorGraphNode[GeneratorKey]):
+class Generator(GeneratorGraphNode[GeneratorId]):
     name: str
     files: list[Var] = field(default_factory=list)
     share: bool = False
     prompts: list[Prompt] = field(default_factory=list)
-    dependencies: list[GeneratorKey] = field(default_factory=list)
+    dependencies: list[GeneratorId] = field(default_factory=list)
 
     validation_hash: str | None = None
 
@@ -397,16 +381,8 @@ class Generator(GeneratorGraphNode[GeneratorKey]):
         )
 
     @property
-    def key(self) -> GeneratorKey:
-        if self.share:
-            # must be a shared generator
-            machine = None
-        elif len(self.machines) != 1:
-            msg = f"Shared generator {self.name} must have exactly one machine, but has {len(self.machines)}: {', '.join(self.machines)}"
-            raise ClanError(msg)
-        else:
-            machine = self.machines[0]
-        return GeneratorKey(machine=machine, name=self.name)
+    def key(self) -> GeneratorId:
+        return self.gen_id
 
     def __hash__(self) -> int:
         return hash(self.key)
