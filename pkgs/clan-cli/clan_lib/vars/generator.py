@@ -370,7 +370,7 @@ class Generator(GeneratorGraphNode[GeneratorId]):
     _secret_store: "StoreBase | None" = None
 
     @property
-    def gen_id(self) -> GeneratorId:
+    def key(self) -> GeneratorId:
         if self.share:
             return GeneratorId(name=self.name, placement=Shared())
         if len(self.machines) != 1:
@@ -379,10 +379,6 @@ class Generator(GeneratorGraphNode[GeneratorId]):
         return GeneratorId(
             name=self.name, placement=PerMachine(machine=self.machines[0])
         )
-
-    @property
-    def key(self) -> GeneratorId:
-        return self.gen_id
 
     def __hash__(self) -> int:
         return hash(self.key)

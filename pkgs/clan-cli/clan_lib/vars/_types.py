@@ -107,7 +107,7 @@ class GeneratorStore(Protocol):
     validation_hash: str | None
 
     @property
-    def gen_id(self) -> GeneratorId: ...
+    def key(self) -> GeneratorId: ...
 
     def validation(self) -> str | None: ...
     def with_toggled_share(self, machine: str) -> "GeneratorStore": ...
@@ -223,7 +223,7 @@ class StoreBase(ABC):
         raise ClanError(msg)
 
     def rel_dir(self, generator: "GeneratorStore", var_name: str) -> Path:
-        return generator.gen_id.rel_dir() / var_name
+        return generator.key.rel_dir() / var_name
 
     def directory(self, generator: "GeneratorStore", var_name: str) -> Path:
         return self.clan_dir / "vars" / self.rel_dir(generator, var_name)
