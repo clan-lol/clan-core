@@ -17,6 +17,7 @@ const config: Config = {
       handleMissingId: "warn",
     },
     alias: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       "~": new URL("src", import.meta.url).pathname,
     },
   },

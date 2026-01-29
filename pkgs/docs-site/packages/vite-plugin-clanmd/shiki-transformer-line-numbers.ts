@@ -4,11 +4,11 @@ import type { ShikiTransformer } from "shiki";
 export default function transformerLineNumbers({
   minLines,
 }: {
-  minLines: number;
+  readonly minLines: number;
 }): ShikiTransformer {
   return {
-    pre(pre) {
-      const code = pre.children?.[0];
+    pre(pre): void {
+      const [code] = pre.children;
       if (!code || !("children" in code)) {
         return;
       }

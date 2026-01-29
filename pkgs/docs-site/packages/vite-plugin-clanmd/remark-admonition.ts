@@ -21,8 +21,8 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         class: `md-admonition is-${node.name}`,
       };
       let title: string;
-      const p = node.children?.[0];
-      if (isDirectiveParagraph(p) && p.children?.[0]?.type === "text") {
+      const [p] = node.children;
+      if (isDirectiveParagraph(p) && p.children[0]?.type === "text") {
         node.children.shift();
         title = p.children[0].value;
       } else {

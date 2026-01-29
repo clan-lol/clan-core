@@ -1,5 +1,5 @@
 import GithubSlugger from "github-slugger";
-import type { Heading } from "./index.ts";
+import type { Heading } from "./modules.d.ts";
 import { headingRank } from "hast-util-heading-rank";
 import type { Plugin } from "unified";
 import type { Root } from "hast";
@@ -64,7 +64,7 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
         parentHeadings.pop();
       } else {
         const i = rank - startingRank - 1;
-        (parentHeadings?.[i]?.children ?? toc).push(heading);
+        (parentHeadings[i]?.children ?? toc).push(heading);
         while (parentHeadings.length > i + 1) {
           parentHeadings.pop();
         }

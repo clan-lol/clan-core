@@ -1,6 +1,7 @@
 <script lang="ts">
   import "vite-plugin-clanmd/main.css";
   import type { Heading as ArticleHeading } from "$lib/models/docs/index.ts";
+  import { on } from "svelte/events";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
   import { visit } from "$lib/models/docs/index.ts";
@@ -26,61 +27,97 @@
     if (tocOpen) {
       return defaultTocContent;
     }
-    return currentHeading?.content || defaultTocContent;
+    return currentHeading?.content ?? defaultTocContent;
   });
 
   $effect(() => {
     // Make sure the effect is triggered on content change
-    // eslint-disable-next-line no-unused-expressions
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     data.content;
     observer?.disconnect();
-    observer = new IntersectionObserver(onIntersectionChange, {
-      threshold: 1,
-      rootMargin: `${-tocEl.offsetHeight}px 0px 0px`,
-    });
+    observer = new IntersectionObserver(
+      (entries) => {
+        // Record each heading's scrolledPast
+        for (const entry of entries) {
+          visit(headings, (heading) => {
+            if (heading.id !== entry.target.id) {
+              return;
+            }
+            const {
+              rootBounds,
+              target,
+              intersectionRatio,
+              boundingClientRect,
+            } = entry;
+            if (!rootBounds) {
+              return;
+            }
+
+            heading.element = target;
+            heading.scrolledPast =
+              intersectionRatio < 1 && boundingClientRect.top < rootBounds.top
+                ? rootBounds.top - boundingClientRect.top
+                : 0;
+            return "break";
+          });
+        }
+        let last: Heading | null = null;
+        let current: Heading | null = null;
+        // Find the last heading with scrolledPast > 0
+        visit(headings, (heading) => {
+          if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
+            current = last;
+            return "break";
+          }
+          last = heading;
+          return;
+        });
+        currentHeading = current;
+      },
+      {
+        threshold: 1,
+        rootMargin: `${-tocEl.offsetHeight}px 0px 0px`,
+      },
+    );
     const els = contentEl.querySelectorAll("h1,h2,h3,h4,h5,h6");
     for (const el of els) {
       observer.observe(el);
     }
   });
 
-  onMount(() => {
-    document.addEventListener("click", onClick);
-    return (): void => {
-      document.removeEventListener("click", onClick);
-    };
-  });
+  onMount(() =>
+    // Click tab to activate
+    on(document, "click", (ev) => {
+      const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
+      if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
+        return;
+      }
+      const tabsEl = targetTabEl.closest(".md-tabs");
+      if (!tabsEl) {
+        return;
+      }
+      const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
+      const tabIndex = [...tabEls].indexOf(targetTabEl);
+      if (tabIndex === -1) {
+        return;
+      }
+      const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
+      const tabContentEl = tabContentEls[tabIndex];
+      if (!tabContentEl) {
+        return;
+      }
+      for (const tabEl of tabEls) {
+        tabEl.classList.remove("is-active");
+      }
+      targetTabEl.classList.add("is-active");
+      for (const tabContentEl of tabContentEls) {
+        tabContentEl.classList.remove("is-active");
+      }
+      tabContentEl.classList.add("is-active");
+    }),
+  );
 
-  function onClick(ev: MouseEvent): void {
-    const targetTabEl = (ev.target as HTMLElement).closest(".md-tabs-tab");
-    if (!targetTabEl || targetTabEl.classList.contains(".is-active")) {
-      return;
-    }
-    const tabsEl = targetTabEl.closest(".md-tabs");
-    if (!tabsEl) {
-      return;
-    }
-    const tabEls = tabsEl.querySelectorAll(".md-tabs-tab");
-    const tabIndex = [...tabEls].indexOf(targetTabEl);
-    if (tabIndex === -1) {
-      return;
-    }
-    const tabContentEls = tabsEl.querySelectorAll(".md-tabs-content");
-    const tabContentEl = tabContentEls[tabIndex];
-    if (!tabContentEl) {
-      return;
-    }
-    for (const tabEl of tabEls) {
-      tabEl.classList.remove("is-active");
-    }
-    targetTabEl.classList.add("is-active");
-    for (const tabContentEl of tabContentEls) {
-      tabContentEl.classList.remove("is-active");
-    }
-    tabContentEl.classList.add("is-active");
-  }
-
-  function normalizeHeadings(headings: ArticleHeading[]): Heading[] {
+  function normalizeHeadings(headings: readonly ArticleHeading[]): Heading[] {
     // Use casting because the element property is supposed to be set by
     // svelte's bind: this
     const index = nextHeadingIndex;
@@ -93,44 +130,9 @@
     })) as Heading[];
   }
 
-  function onIntersectionChange(entries: IntersectionObserverEntry[]): void {
-    // Record each heading's scrolledPast
-    for (const entry of entries) {
-      visit(headings, (heading) => {
-        if (heading.id !== entry.target.id) {
-          return;
-        }
-        const { rootBounds } = entry;
-        if (!rootBounds) {
-          return;
-        }
-
-        heading.element = entry.target;
-        heading.scrolledPast =
-          entry.intersectionRatio < 1 &&
-          entry.boundingClientRect.top < rootBounds.top
-            ? rootBounds.top - entry.boundingClientRect.top
-            : 0;
-        return "break";
-      });
-    }
-    let last: Heading | null = null;
-    let current: Heading | null = null;
-    // Find the last heading with scrolledPast > 0
-    visit(headings, (heading) => {
-      if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
-        current = last;
-        return "break";
-      }
-      last = heading;
-      return;
-    });
-    currentHeading = current;
-  }
-
-  function scrollToHeading(ev: Event, heading: Heading): void {
+  function scrollToHeading(ev: Event, headingEl: Element): void {
     ev.preventDefault();
-    heading.element.scrollIntoView({
+    headingEl.scrollIntoView({
       behavior: "smooth",
     });
     tocOpen = false;
@@ -145,10 +147,16 @@
   }
 </script>
 
-<div class="container">
+<div>
   <div class="toc">
-    <h2 class="toc-title" bind:this={tocEl}>
-      <button class="toc-label" onclick={() => (tocOpen = !tocOpen)}>
+    <h2 bind:this={tocEl} class="toc-title">
+      <button
+        class="toc-label"
+        onclick={(): void => {
+          tocOpen = !tocOpen;
+        }}
+        type="button"
+      >
         <span>
           {currentTocContent}
         </span>
@@ -176,7 +184,7 @@
       </ul>
     {/if}
   </div>
-  <div class="content" bind:this={contentEl}>
+  <div bind:this={contentEl} class="content">
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html data.content}
   </div>
@@ -219,11 +227,11 @@
   <li>
     <a
       href={`#${heading.id}`}
-      onclick={(ev) => {
-        scrollToHeading(ev, heading);
+      onclick={(ev): void => {
+        scrollToHeading(ev, heading.element);
       }}>{heading.content}</a
     >
-    {#if heading.children.length !== 0}
+    {#if heading.children.length > 0}
       <ul>
         {@render tocLinks(heading.children)}
       </ul>

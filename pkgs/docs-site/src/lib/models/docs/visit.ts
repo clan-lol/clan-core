@@ -3,10 +3,13 @@ import type { NavItem } from "./index.ts";
 export type VisitorResult = undefined | "break";
 
 export function visit<T extends { children: T[] }>(
-  items: T[],
-  visitor: (item: T, parents: T[]) => VisitorResult,
+  items: readonly T[],
+  visitor: (item: T, parents: readonly T[]) => VisitorResult,
 ): void {
-  function visitItems(items: T[], parents: T[]): VisitorResult {
+  function visitItems(
+    items: readonly T[],
+    parents: readonly T[],
+  ): VisitorResult {
     for (const item of items) {
       if (visitor(item, parents) === "break") {
         return "break";
@@ -21,10 +24,13 @@ export function visit<T extends { children: T[] }>(
 }
 
 export function visitNavItems(
-  navItems: NavItem[],
-  visitor: (navItem: NavItem, parents: NavItem[]) => VisitorResult,
+  navItems: readonly NavItem[],
+  visitor: (navItem: NavItem, parents: readonly NavItem[]) => VisitorResult,
 ): void {
-  function visitItems(navItems: NavItem[], parents: NavItem[]): VisitorResult {
+  function visitItems(
+    navItems: readonly NavItem[],
+    parents: readonly NavItem[],
+  ): VisitorResult {
     for (const navItem of navItems) {
       if (visitor(navItem, parents) === "break") {
         return "break";

@@ -6,7 +6,7 @@
   } from "vite-plugin-pagefind/types";
   import config from "~/config/index.js";
   import favicon from "$lib/assets/favicon.svg";
-  import type { NavItem } from "$lib/models/docs/index.ts";
+  import type { NavItem, Path } from "$lib/models/docs/index.ts";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -37,7 +37,9 @@
       }
       const search = await pagefind.debouncedSearch(query);
       searchResults = await Promise.all(
-        search.results.slice(0, config.searchResultLimit).map((r) => r.data()),
+        search.results
+          .slice(0, config.searchResultLimit)
+          .map(async (r) => await r.data()),
       );
     })();
   });
@@ -50,11 +52,11 @@
 </script>
 
 <svelte:head>
-  <link rel="icon" href={favicon} />
+  <link href={favicon} rel="icon" />
 </svelte:head>
 
 <div class="global-bar">
-  <span class="logo">Clan Docs</span>
+  <span>Clan Docs</span>
   <nav>
     <div class="search">
       <input type="search" bind:value={query} />
@@ -64,8 +66,10 @@
             <li class="search-result">
               <div class="search-result-title">
                 <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-                <a href={searchResult.url.slice(0, -".html".length)}
-                  >{searchResult.meta["title"]}</a
+                <a
+                  href={resolve(
+                    searchResult.url.slice(0, -".html".length) as Path,
+                  )}>{searchResult.meta["title"]}</a
                 >
               </div>
               <div class="search-result-excerpt">
@@ -78,7 +82,7 @@
       {/if}
     </div>
     <div class={["menu", menuOpen && "open"]}>
-      <button onclick={toggleMenu}>Menu</button>
+      <button onclick={toggleMenu} type="button">Menu</button>
       <ul>
         {@render navItems(docs.navItems)}
       </ul>
@@ -89,7 +93,7 @@
   {@render children?.()}
 </main>
 
-{#snippet navItems(items: NavItem[])}
+{#snippet navItems(items: readonly NavItem[])}
   {#each items as item (item.label)}
     {@render navItem(item)}
   {/each}
@@ -99,7 +103,7 @@
   {#if "items" in item}
     <li>
       <details open={!item.collapsed}>
-        <summary><span class="label group">{item.label}</span></summary>
+        <summary><span>{item.label}</span></summary>
         <ul>
           {@render navItems(item.items)}
         </ul>

@@ -1,7 +1,16 @@
 import type { Extension as FromMarkdownExtension } from "mdast-util-from-markdown";
-import type { Heading } from "./index.ts";
 import type { Extension as MicromarkExtensions } from "micromark-extension-gfm";
 
+export interface Frontmatter {
+  [k: string]: unknown;
+  title: string;
+}
+
+export interface Heading {
+  id: string;
+  content: string;
+  children: Heading[];
+}
 declare module "vfile" {
   interface DataMap {
     matter: Frontmatter;
@@ -17,7 +26,7 @@ declare module "unified" {
 }
 declare module "mdast-util-from-markdown" {
   interface Options {
-    extensions: MicromarkExtensions[];
+    readonly extensions: MicromarkExtensions[];
   }
 }
 
@@ -28,9 +37,4 @@ declare module "hast" {
   interface Properties {
     class?: string;
   }
-}
-
-export interface Frontmatter {
-  title: string;
-  [k: string]: unknown;
 }

@@ -1,10 +1,13 @@
+import type {
+  Frontmatter as FrontmatterData,
+  Heading as HeadingData,
+} from "./modules.d.ts";
 import {
   transformerMetaHighlight,
   transformerNotationDiff,
   transformerNotationHighlight,
   transformerRenderIndentGuides,
 } from "@shikijs/transformers";
-import type { Frontmatter } from "./modules.d.ts";
 import type { PluginOption } from "vite";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
@@ -23,27 +26,25 @@ import { unified } from "unified";
 import { VFile } from "vfile";
 
 export interface Markdown {
-  content: string;
-  frontmatter: Frontmatter;
-  toc: Heading[];
+  readonly content: string;
+  readonly frontmatter: Frontmatter;
+  readonly toc: readonly Heading[];
 }
 
-export type { Frontmatter };
+export type Frontmatter = Readonly<FrontmatterData>;
 
-export interface Heading {
-  id: string;
-  content: string;
-  children: Heading[];
-}
+export type Heading = Readonly<Omit<HeadingData, "children">> & {
+  readonly children: readonly Heading[];
+};
 
 export interface Options {
-  codeLightTheme: string;
-  codeDarkTheme: string;
-  minLineNumberLines: number;
-  maxTocExtractionDepth: number;
+  readonly codeLightTheme: string;
+  readonly codeDarkTheme: string;
+  readonly minLineNumberLines: number;
+  readonly maxTocExtractionDepth: number;
 }
 
-export default function VitePluginMarkdown({
+export default function vitePluginMarkdown({
   codeLightTheme,
   codeDarkTheme,
   minLineNumberLines,
@@ -51,7 +52,7 @@ export default function VitePluginMarkdown({
 }: Options): PluginOption {
   return {
     name: "markdown-loader",
-    async transform(code, id) {
+    async transform(code, id): Promise<string | undefined> {
       if (!id.endsWith(".md")) {
         return;
       }
@@ -97,8 +98,8 @@ export default function VitePluginMarkdown({
 
       return `
 export const content = ${JSON.stringify(String(file))};
-export const frontmatter = ${JSON.stringify(file.data["matter"])};
-export const toc = ${JSON.stringify(file.data["toc"])};`;
+export const frontmatter = ${JSON.stringify(file.data.matter)};
+export const toc = ${JSON.stringify(file.data.toc)};`;
     },
   };
 }
