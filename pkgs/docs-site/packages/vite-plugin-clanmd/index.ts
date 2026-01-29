@@ -4,6 +4,7 @@ import {
   transformerNotationHighlight,
   transformerRenderIndentGuides,
 } from "@shikijs/transformers";
+import type { Frontmatter } from "./modules.d.ts";
 import type { PluginOption } from "vite";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
@@ -27,10 +28,7 @@ export interface Markdown {
   toc: Heading[];
 }
 
-export interface Frontmatter {
-  order?: number;
-  title: string;
-}
+export type { Frontmatter };
 
 export interface Heading {
   id: string;

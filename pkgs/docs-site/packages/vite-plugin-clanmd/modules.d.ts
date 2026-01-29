@@ -4,7 +4,7 @@ import type { Extension as MicromarkExtensions } from "micromark-extension-gfm";
 
 declare module "vfile" {
   interface DataMap {
-    matter: Record<string, unknown>;
+    matter: Frontmatter;
     toc: Heading[];
   }
 }
@@ -30,4 +30,7 @@ declare module "hast" {
   }
 }
 
-export {};
+export interface Frontmatter {
+  title: string;
+  [k: string]: unknown;
+}

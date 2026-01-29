@@ -21,10 +21,11 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
     const parentHeadings: Heading[] = [];
     let { matter } = file.data;
     if (!matter) {
-      matter = {};
+      matter = {
+        title: "",
+      };
       file.data = matter;
     }
-    matter["title"] = "";
     visit(tree, "element", (node) => {
       const rank = headingRank(node);
       if (rank == null) {
@@ -52,7 +53,7 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
           return;
         }
         h1Exist = true;
-        matter["title"] = content;
+        matter.title = content;
       }
       const heading = { id, content, children: [] };
       const currentRank = parentHeadings.length - 1 + startingRank;

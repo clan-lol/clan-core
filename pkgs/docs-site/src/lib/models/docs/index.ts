@@ -32,6 +32,7 @@ export interface Article extends Markdown {
   toc: Heading[];
 }
 export interface Frontmatter extends MarkdownFrontmatter {
+  order?: number;
   previous: SiblingArticle | null;
   next: SiblingArticle | null;
 }
