@@ -2,7 +2,7 @@ import type {
   Heading,
   Markdown,
   Frontmatter as MarkdownFrontmatter,
-} from "~/vite-plugin-markdown/index.ts";
+} from "vite-plugin-clanmd";
 import config from "~/config/index.ts";
 import { visitNavItems } from "./visit.ts";
 
