@@ -13,10 +13,17 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "search.exclude": {
-    "**/.direnv": true
+    "**/runtime-deps/**": true,
+    "**/.direnv/**": true
   },
   "python.linting.mypyPath": "mypy",
   "python.linting.mypyEnabled": true,
   "python.linting.enabled": true,
-  "python.defaultInterpreterPath": "python"
+  "python.defaultInterpreterPath": "python",
+  "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.exclude": ["**/clan_lib/runtime-deps/**", "**/.direnv/**"],
+  "files.watcherExclude": {
+    "**/runtime-deps/**": true,
+    "**/.direnv/**": true
+  }
 }
