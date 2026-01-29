@@ -20,6 +20,18 @@ from clan_lib.validator.hostname import hostname
 log = logging.getLogger(__name__)
 
 
+def substitute_clan_placeholders(clan_dir: Path, values: dict[str, str]) -> None:
+    """Substitute {{placeholder}} patterns in clan.nix or flake.nix after template copy."""
+    for filename in ["clan.nix", "flake.nix"]:
+        nix_file = clan_dir / filename
+        if not nix_file.exists():
+            continue
+        content = nix_file.read_text()
+        for name, value in values.items():
+            content = content.replace("{{" + name + "}}", value)
+        nix_file.write_text(content)
+
+
 @dataclass
 class CreateOptions:
     dest: Path
@@ -90,6 +102,15 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
         post_process=opts._postprocess_flake_hook,  # noqa: SLF001
     ) as _clan_dir:
         flake = Flake(str(Path(opts.dest).absolute()))
+
+        # Substitute placeholders in clan.nix before git init
+        placeholders: dict[str, str] = {}
+        if opts.initial and "name" in opts.initial:
+            placeholders["name"] = opts.initial["name"]
+        else:
+            placeholders["name"] = dest.name
+        placeholders["domain"] = placeholders["name"]
+        substitute_clan_placeholders(dest, placeholders)
 
         if opts.setup_git:
             run(git_command(dest, "init"))

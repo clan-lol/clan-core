@@ -10,8 +10,8 @@
         inherit self;
         # Change this to your clan name
         # Setting a name is required
-        meta.name = inputs.nixpkgs.lib.mkDefault "__clan__";
-        meta.domain = inputs.nixpkgs.lib.mkDefault "changeme";
+        meta.name = inputs.nixpkgs.lib.mkDefault "{{name}}";
+        meta.domain = inputs.nixpkgs.lib.mkDefault "{{domain}}";
       };
     in
     {
