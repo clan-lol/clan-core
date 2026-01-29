@@ -1,16 +1,12 @@
 import logging
 from collections.abc import Callable
-from collections.abc import Generator as GeneratorType
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
-from clan_lib.nix_selectors import secrets_age_plugins
-
-if TYPE_CHECKING:
-    from pathlib import Path
 from clan_lib.machines.machines import Machine
+from clan_lib.nix_selectors import secrets_age_plugins
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
 from clan_lib.vars.generator import (
@@ -21,6 +17,9 @@ from clan_lib.vars.generator import (
 )
 from clan_lib.vars.prompt import ask
 from clan_lib.vars.secret_modules import sops
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -315,28 +314,22 @@ def run_generators(
     # get the flake via any machine (they are all the same)
     flake = machines[0].flake
 
-    def get_generator_machines(generator: Generator) -> GeneratorType[Machine]:
-        for machine_name in generator.machines:
-            yield Machine(name=machine_name, flake=flake)
-
     # preheat the select cache, to reduce repeated calls during execution
     selectors = [secrets_age_plugins()]
     for generator in generators_to_run:
-        machine = next(get_generator_machines(generator))
-        selectors.append(generator.final_script_selector(machine.name))
+        selectors.append(generator.final_script_selector(generator.machines[0]))
         selectors.append(
             flake.machine_selector(
-                machine.name, "config.clan.core.?sops.?defaultGroups"
+                generator.machines[0], "config.clan.core.?sops.?defaultGroups"
             )
         )
     flake.precache(selectors)
 
     # execute generators
     for generator in generators_to_run:
-        all_machines = list(get_generator_machines(generator))
-        if not all_machines:
+        if not generator.machines:
             continue
-        first_machine = all_machines[0]
+        first_machine = Machine(name=generator.machines[0], flake=flake)
         generator.execute(
             machine=first_machine,
             prompt_values=prompt_values.get(generator.name, {}),
@@ -349,7 +342,13 @@ def run_generators(
             for file in generator.files:
                 if not file.secret or not file.exists or not file.deploy:
                     continue
-                for machine in get_generator_machines(generator):
+                for machine in [
+                    Machine(name=machine_name, flake=flake)
+                    for machine_name in generator.machines
+                ]:
+                    # Workaround because of a poorly designed Store interface
+                    # Recipients should always have access
+                    # TODO: Introduce recipient interface into the StoreBase
                     if not isinstance(machine.secret_vars_store, sops.SecretStore):
                         continue
                     machine.secret_vars_store.ensure_machine_has_access(
