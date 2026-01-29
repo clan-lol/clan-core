@@ -3,9 +3,15 @@ test:
 let
   inherit (pkgs) lib;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };
+  # Use patched nix for container tests to handle overlay filesystem chmod issues
+  hostPkgs = pkgs.extend (
+    _final: _prev: {
+      nix = self.packages.${pkgs.stdenv.hostPlatform.system}.nix;
+    }
+  );
 in
 (nixos-lib.runTest {
-  hostPkgs = pkgs;
+  inherit hostPkgs;
   # speed-up evaluation
   defaults =
     { config, options, ... }:

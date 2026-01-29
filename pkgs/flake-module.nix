@@ -32,6 +32,8 @@
         datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
           pkgs.python3Packages.callPackage ./datamodel-code-generator { }
         );
+        # Patched nix with chmod warning fix for overlay filesystems
+        nix = pkgs.callPackage ./nix { };
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         disko = inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko;

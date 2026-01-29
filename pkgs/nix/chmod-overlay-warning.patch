@@ -1,0 +1,46 @@
+From 09b54aadd50f6eec9a7b143e1c106df8e74926c2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
+Date: Thu, 29 Jan 2026 14:47:43 +0100
+Subject: [PATCH] libutil: handle overlay filesystem chmod errors in
+ _deletePath
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On overlay filesystems (commonly used in containers and NixOS tests),
+chmod operations may fail with EPERM, EACCES, or EROFS on paths that
+exist in the read-only lower layer. Since the directory may already be
+accessible with the required permissions from the lower layer, we can
+safely continue in this case.
+
+This fixes 'nix build' failures inside containers where /nix/store is
+mounted as an overlay with a read-only lower layer containing pre-seeded
+store paths.
+
+Signed-off-by: Jörg Thalheim <joerg@thalheim.io>
+---
+ src/libutil/file-system.cc | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/libutil/file-system.cc b/src/libutil/file-system.cc
+index 5cd702193..cec4a322e 100644
+--- a/src/libutil/file-system.cc
++++ b/src/libutil/file-system.cc
+@@ -484,8 +484,12 @@ static void _deletePath(
+         /* Make the directory accessible. */
+         const auto PERM_MASK = S_IRUSR | S_IWUSR | S_IXUSR;
+         if ((st.st_mode & PERM_MASK) != PERM_MASK) {
+-            if (fchmodat(parentfd, name.c_str(), st.st_mode | PERM_MASK, 0) == -1)
+-                throw SysError("chmod %1%", path);
++            if (fchmodat(parentfd, name.c_str(), st.st_mode | PERM_MASK, 0) == -1) {
++                /* On overlay filesystems, chmod may fail with EPERM/EACCES/EROFS
++                   on paths in the read-only lower layer. Continue if accessible. */
++                if (errno != EPERM && errno != EACCES && errno != EROFS)
++                    throw SysError("chmod %1%", path);
++            }
+         }
+ 
+         int fd = openat(parentfd, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
+-- 
+2.52.0
+
