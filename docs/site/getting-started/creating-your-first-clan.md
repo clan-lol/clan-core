@@ -152,7 +152,7 @@ In your Clan, you will create and manage your machines, users, and services. It 
     **Note:** This creates a new directory in your current location. Depending on your connection speed, this step may take a few minutes.
 
     ```shellSession
-    nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- flakes create
+    nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
     ```
 
 3. Enter a **name** in the prompt, for example `MY-NEW-CLAN`:
