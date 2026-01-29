@@ -101,10 +101,12 @@ class GeneratorStore(Protocol):
     """Protocol defining the generator interface that stores need."""
 
     name: str
-    share: bool
     machines: list[str]
     files: list["Var"]
     validation_hash: str | None
+
+    @property
+    def share(self) -> bool: ...
 
     @property
     def key(self) -> GeneratorId: ...

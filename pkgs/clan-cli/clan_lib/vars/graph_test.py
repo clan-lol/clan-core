@@ -35,6 +35,16 @@ def create_mock_stores(exists_map: dict[str, bool]) -> tuple[Mock, Mock]:
     return public_store, secret_store
 
 
+def _pm(name: str, machine: str) -> GeneratorId:
+    """Helper: create a per-machine GeneratorId."""
+    return GeneratorId(name=name, placement=PerMachine(machine=machine))
+
+
+def _shared(name: str) -> GeneratorId:
+    """Helper: create a shared GeneratorId."""
+    return GeneratorId(name=name, placement=Shared())
+
+
 def test_required_generators() -> None:
     # Create mock stores
     exists_map = {
@@ -49,6 +59,7 @@ def test_required_generators() -> None:
     machine_name = "test_machine"
     gen_1 = Generator(
         name="gen_1",
+        _key=_pm("gen_1", machine_name),
         dependencies=[],
         machines=[machine_name],
         _public_store=public_store,
@@ -56,6 +67,7 @@ def test_required_generators() -> None:
     )
     gen_2 = Generator(
         name="gen_2",
+        _key=_pm("gen_2", machine_name),
         dependencies=[gen_1.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -63,6 +75,7 @@ def test_required_generators() -> None:
     )
     gen_2a = Generator(
         name="gen_2a",
+        _key=_pm("gen_2a", machine_name),
         dependencies=[gen_2.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -70,6 +83,7 @@ def test_required_generators() -> None:
     )
     gen_2b = Generator(
         name="gen_2b",
+        _key=_pm("gen_2b", machine_name),
         dependencies=[gen_2.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -118,14 +132,15 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     machine_2 = "machine_2"
     shared_gen = Generator(
         name="shared_gen",
+        _key=_shared("shared_gen"),
         dependencies=[],
-        share=True,  # Mark as shared generator
         machines=[machine_1, machine_2],  # Shared across both machines
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_1 = Generator(
         name="gen_1",
+        _key=_pm("gen_1", machine_1),
         dependencies=[shared_gen.key],
         machines=[machine_1],
         _public_store=public_store,
@@ -133,6 +148,7 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     )
     gen_2 = Generator(
         name="gen_2",
+        _key=_pm("gen_2", machine_2),
         dependencies=[shared_gen.key],
         machines=[machine_2],
         _public_store=public_store,
@@ -143,15 +159,15 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     }
 
     assert generator_keys(all_missing_closure(generators.keys(), generators)) == {
-        GeneratorId(name="shared_gen", placement=Shared()),
-        GeneratorId(name="gen_1", placement=PerMachine(machine=machine_1)),
-        GeneratorId(name="gen_2", placement=PerMachine(machine=machine_2)),
+        _shared("shared_gen"),
+        _pm("gen_1", machine_1),
+        _pm("gen_2", machine_2),
     }, (
         "All generators should be included in all_missing_closure due to shared dependency"
     )
 
     assert generator_keys(requested_closure([shared_gen.key], generators)) == {
-        GeneratorId(name="shared_gen", placement=Shared()),
-        GeneratorId(name="gen_1", placement=PerMachine(machine=machine_1)),
-        GeneratorId(name="gen_2", placement=PerMachine(machine=machine_2)),
+        _shared("shared_gen"),
+        _pm("gen_1", machine_1),
+        _pm("gen_2", machine_2),
     }, "All generators should be included in requested_closure due to shared dependency"
