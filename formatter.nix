@@ -111,6 +111,10 @@
         "clan-cli" = {
           directory = "pkgs/clan-cli";
           extraPythonPackages = (self'.packages.clan-cli.devshellPyDeps pkgs.python3Packages);
+          options = [
+            "--config-file"
+            "pyproject.toml"
+          ];
         };
         "clan-app" = {
           directory = "pkgs/ui/clan-app";
