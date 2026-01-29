@@ -172,6 +172,7 @@
                     import tempfile
                     import os
                     import subprocess
+                    from pathlib import Path
                     from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
                     from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
 
@@ -191,6 +192,12 @@
                             "${closureInfo}"
                         )
                         (flake_dir / ".clan-flake").write_text("")  # Ensure .clan-flake exists
+
+                        # Generate passage identity for the test driver (needed for clan vars keygen)
+                        passage_dir = Path(temp_dir) / ".passage"
+                        passage_dir.mkdir(parents=True, exist_ok=True)
+                        subprocess.run(["${pkgs.age}/bin/age-keygen", "-o", str(passage_dir / "identities")], check=True)
+                        os.environ["HOME"] = temp_dir
 
                         # Set up SSH connection
                         ssh_conn = setup_ssh_connection(
@@ -268,6 +275,15 @@
                             "NIX_SSHOPTS": "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
                           },
                         )
+
+                        # generate passage identity for password-store on remote
+                        subprocess.run([
+                            "ssh",
+                            "-o", "UserKnownHostsFile=/dev/null",
+                            "-o", "StrictHostKeyChecking=no",
+                            "root@192.168.1.1",
+                            "mkdir -p /root/.passage && ${pkgs.age}/bin/age-keygen -o /root/.passage/identities",
+                        ], check=True)
 
                         # generate sops keys
                         subprocess.run([
