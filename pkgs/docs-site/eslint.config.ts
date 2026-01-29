@@ -38,7 +38,6 @@ export default defineConfig(
       "no-undef": "off",
       // Key order sometimes has an conventional order, e.g., "name" comes be "age"
       "sort-keys": "off",
-      "one-var": "off",
       "no-named-export": "off",
       "group-exports": "off",
       "prefer-default-export": "off",
@@ -67,9 +66,9 @@ export default defineConfig(
       "no-unassigned-import": "off",
       "max-dependencies": "off",
       "no-warning-comments": "off",
-      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
       // Rely on ts(2454) instead
       "no-unassigned-vars": "off",
+      "one-var": ["error", "never"],
       "require-unicode-regexp": ["error", { requireFlag: "v" }],
       eqeqeq: ["error", "always", { null: "ignore" }],
       "no-console": ["error", { allow: ["warn", "error"] }],
@@ -118,10 +117,11 @@ export default defineConfig(
       ],
       "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
       "no-inline-comments": ["error", { ignorePattern: "@vite-ignore" }],
-      // We require explicit file extensions in import paths to align with Node.js
-      // ESM requirements. Since our Vite config and plugins already run as ES
-      // Modules, we’re maintaining this style across the entire project for
-      // Consistency.
+      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      // We require explicit file extensions in import paths to align with
+      // Node.js ESM requirements. Since our Vite config and plugins already run
+      // as ES Modules, we’re maintaining this style across the entire project
+      // for Consistency.
       "import/extensions": [
         "error",
         "always",
@@ -141,7 +141,6 @@ export default defineConfig(
           ],
         },
       ],
-
       "unicorn/prefer-export-from": ["error", { ignoreUsedVariables: true }],
       // Sometimes inline functions are need to infer types
       "unicorn/consistent-function-scoping": "off",
@@ -217,10 +216,8 @@ export default defineConfig(
       // Template like {@render navItems(item.items)} report such an error,
       // where it shouldn't
       "@typescript-eslint/no-confusing-void-expression": "off",
+      // Calling Svelte snippets can report such an error where it shouldn't
       "@typescript-eslint/no-use-before-define": "off",
-      "svelte/no-raw-special-elements": "error",
-      "svelte/no-useless-mustaches": "error",
-      "svelte/prefer-const": "error",
       "svelte/block-lang": ["error", { script: ["ts"] }],
       // Deprecated rule
       // https://sveltejs.github.io/eslint-plugin-svelte/rules/no-navigation-without-base/
