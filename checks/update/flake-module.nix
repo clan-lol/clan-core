@@ -365,16 +365,7 @@
                         # Verify the second update was successful
                         machine.succeed("test -f /etc/build-host-update-successful")
                   '';
-                }
-                {
-                  # Use patched systemd for systemd-nspawn container tests
-                  pkgs = pkgs.extend (
-                    _final: _prev: {
-                      systemd = self.packages.${pkgs.stdenv.hostPlatform.system}.systemd;
-                    }
-                  );
-                  inherit self;
-                };
+              } { inherit pkgs self; };
           };
     };
 }
