@@ -142,6 +142,44 @@ lib.fix (
         replaceElemAt =
           list: idx: newElem:
           lib.imap0 (i: oldElem: if i == idx then newElem else oldElem) list;
+
+        /**
+          Create a removed option that throws when used.
+
+          This is useful for interface modules where NixOS assertions aren't available.
+
+          # Inputs
+
+          `name`
+          : Option name for the error message
+
+          `message`
+          : Migration instructions or reason for removal
+
+          # Type
+
+          ```
+          mkRemovedOption :: string -> string -> option
+          ```
+
+          # Examples
+          :::{.example}
+          ## `mkRemovedOption` usage example
+
+          ```nix
+          options.oldOption = clanLib.mkRemovedOption "oldOption" "Use 'newOption' instead.";
+          ```
+
+          :::
+        */
+        mkRemovedOption =
+          name: message:
+          lib.mkOption {
+            visible = false;
+            default = null;
+            type = lib.types.raw;
+            apply = _: throw "The option '${name}' was removed. ${message}";
+          };
       }
       // (import ./vars/default.nix { inherit lib; })
       // (import ./exports/exports.nix { inherit lib clanLib; });
