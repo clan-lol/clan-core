@@ -158,23 +158,34 @@
                   );
                 };
               in
-              self.clanLib.test.containerTest
-                {
-                  name = "update";
-                  nodes.machine = {
-                    imports = [ self.nixosModules.test-update-machine ];
-                  };
-                  extraPythonPackages = _p: [
-                    self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
-                  ];
+              self.clanLib.test.containerTest {
+                name = "update";
+                nodes.machine = {
+                  imports = [ self.nixosModules.test-update-machine ];
+                };
+                extraPythonPackages = _p: [
+                  self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
+                ];
 
-                  testScript = ''
+                testScript =
+                  let
+                    testDeps = lib.makeBinPath [
+                      pkgs.age
+                      pkgs.nix
+                      pkgs.openssh
+                      pkgs.rsync
+                      self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full
+                    ];
+                  in
+                  ''
                     import tempfile
                     import os
                     import subprocess
                     from pathlib import Path
                     from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
                     from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
+
+                    os.environ["PATH"] = "${testDeps}:" + os.environ.get("PATH", "")
 
                     start_all()
                     machine.wait_for_unit("multi-user.target")
@@ -196,7 +207,7 @@
                         # Generate passage identity for the test driver (needed for clan vars keygen)
                         passage_dir = Path(temp_dir) / ".passage"
                         passage_dir.mkdir(parents=True, exist_ok=True)
-                        subprocess.run(["${pkgs.age}/bin/age-keygen", "-o", str(passage_dir / "identities")], check=True)
+                        subprocess.run(["age-keygen", "-o", str(passage_dir / "identities")], check=True)
                         os.environ["HOME"] = temp_dir
 
                         # Set up SSH connection
@@ -212,7 +223,7 @@
 
                         # Note: update command doesn't accept -i flag, SSH key must be in ssh-agent
                         # Start ssh-agent and add the key
-                        agent_output = subprocess.check_output(["${pkgs.openssh}/bin/ssh-agent", "-s"], text=True)
+                        agent_output = subprocess.check_output(["ssh-agent", "-s"], text=True)
                         for line in agent_output.splitlines():
                             if line.startswith("SSH_AUTH_SOCK="):
                                 os.environ["SSH_AUTH_SOCK"] = line.split("=", 1)[1].split(";")[0]
@@ -220,10 +231,8 @@
                                 os.environ["SSH_AGENT_PID"] = line.split("=", 1)[1].split(";")[0]
 
                         # Add the SSH key to the agent
-                        subprocess.run(["${pkgs.openssh}/bin/ssh-add", ssh_conn.ssh_key], check=True)
+                        subprocess.run(["ssh-add", ssh_conn.ssh_key], check=True)
 
-
-                        ##############
                         print("TEST: update with --build-host local")
                         with open(machine_config_path, "w") as f:
                             f.write("""
@@ -233,10 +242,9 @@
                         """)
 
                         # rsync the flake into the container
-                        os.environ["PATH"] = f"{os.environ['PATH']}:${pkgs.openssh}/bin"
                         subprocess.run(
                           [
-                              "${pkgs.rsync}/bin/rsync",
+                              "rsync",
                               "-a",
                               "--delete",
                               "-e",
@@ -259,7 +267,7 @@
                         # install the clan-cli package into the container's Nix store
                         subprocess.run(
                           [
-                              "${pkgs.nix}/bin/nix",
+                              "nix",
                               "copy",
                               "--from",
                               f"{temp_dir}/store",
@@ -319,7 +327,6 @@
                         machine.succeed("test -f /etc/update-build-local-successful")
 
 
-                        ##############
                         print("TEST: update with --target-host")
 
                         with open(machine_config_path, "w") as f:
@@ -331,7 +338,7 @@
 
                         # Generate sops keys
                         subprocess.run([
-                            "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
+                            "clan",
                             "vars",
                             "keygen",
                             "--flake", flake_dir,
@@ -339,7 +346,7 @@
 
                         # Run clan update command
                         subprocess.run([
-                            "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
+                            "clan",
                             "machines",
                             "update",
                             "--debug",
@@ -354,7 +361,6 @@
                         machine.succeed("test -f /etc/target-host-update-successful")
 
 
-                        ##############
                         print("TEST: update with --build-host")
                         # Update configuration again
                         with open(machine_config_path, "w") as f:
@@ -366,7 +372,7 @@
 
                         # Run clan update command with --build-host
                         subprocess.run([
-                            "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
+                            "clan",
                             "machines",
                             "update",
                             "--debug",
