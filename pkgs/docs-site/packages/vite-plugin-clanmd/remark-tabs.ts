@@ -24,8 +24,8 @@ const remarkTabs: Plugin<[], Root> = function () {
           continue;
         }
         let tabTitle: string;
-        const p = child.children?.[0];
-        if (isDirectiveParagraph(p) && p.children?.[0]?.type === "text") {
+        const [p] = child.children;
+        if (isDirectiveParagraph(p) && p.children[0]?.type === "text") {
           child.children.shift();
           tabTitle = p.children[0].value;
         } else {

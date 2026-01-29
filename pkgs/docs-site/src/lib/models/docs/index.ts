@@ -27,11 +27,12 @@ export { visit } from "./visit.ts";
 
 export type Path = `/${string}`;
 export interface Article extends Markdown {
-  path: Path;
-  frontmatter: Frontmatter;
-  toc: Heading[];
+  readonly path: Path;
+  readonly frontmatter: Frontmatter;
+  readonly toc: readonly Heading[];
 }
 export interface Frontmatter extends MarkdownFrontmatter {
+  order?: number;
   previous: SiblingArticle | null;
   next: SiblingArticle | null;
 }
@@ -42,8 +43,8 @@ export interface SiblingArticle {
 export type { Heading };
 
 export class Docs {
+  navItems: readonly NavItem[] = [];
   #articles: Record<Path, (() => Promise<Markdown>) | Article> = {};
-  navItems: NavItem[] = [];
   async init(): Promise<Docs> {
     this.#articles = Object.fromEntries(
       Object.entries(import.meta.glob<Markdown>("../../../docs/**/*.md")).map(
@@ -71,7 +72,7 @@ export class Docs {
     return this.#normalizeArticle(await article(), path);
   }
 
-  async getArticles(paths: Path[]): Promise<(Article | null)[]> {
+  async getArticles(paths: readonly Path[]): Promise<(Article | null)[]> {
     return await Promise.all(
       paths.map(async (path) => await this.getArticle(path)),
     );
@@ -145,9 +146,7 @@ export class Docs {
         if ("order" in b.frontmatter) {
           return 1;
         }
-        const titleA = a.frontmatter.title ?? a.path,
-          titleB = a.frontmatter.title ?? a.path;
-        return titleA.localeCompare(titleB);
+        return a.frontmatter.title.localeCompare(b.frontmatter.title);
       });
       const items = await Promise.all(
         articles.map(
@@ -159,8 +158,7 @@ export class Docs {
         ),
       );
       return {
-        label:
-          navItem.label ?? navItem.autogenerate.directory.split("/").at(-1),
+        label: navItem.label,
         items,
         collapsed: Boolean(navItem.collapsed),
         badge: normalizeBadge(navItem.badge),
@@ -221,47 +219,47 @@ export class Docs {
 export type NavItemInput =
   | Path
   | {
-      label: string;
-      items: NavItemInput[];
-      collapsed?: boolean;
-      badge?: BadgeInput;
+      readonly label: string;
+      readonly items: readonly NavItemInput[];
+      readonly collapsed?: boolean;
+      readonly badge?: BadgeInput;
     }
   | {
-      label: string;
-      autogenerate: { directory: Path };
-      collapsed?: boolean;
-      badge?: BadgeInput;
+      readonly label: string;
+      readonly autogenerate: { readonly directory: Path };
+      readonly collapsed?: boolean;
+      readonly badge?: BadgeInput;
     }
   | {
-      label?: string;
-      slug: Path;
-      badge?: BadgeInput;
+      readonly label?: string;
+      readonly slug: Path;
+      readonly badge?: BadgeInput;
     }
   | {
-      label: string;
-      link: Path;
-      badge?: BadgeInput;
+      readonly label: string;
+      readonly link: Path;
+      readonly badge?: BadgeInput;
     };
 
 export type NavItem = NavGroup | NavLink;
 
 export interface NavGroup {
-  label: string;
-  items: NavItem[];
-  collapsed: boolean;
-  badge: Badge | null;
+  readonly label: string;
+  readonly items: readonly NavItem[];
+  readonly collapsed: boolean;
+  readonly badge: Badge | null;
 }
 
 export interface NavLink {
-  label: string;
-  link: Path;
-  badge: Badge | null;
-  external: boolean;
+  readonly label: string;
+  readonly link: Path;
+  readonly badge: Badge | null;
+  readonly external: boolean;
 }
 
 export type BadgeInput = string | Badge;
 
 export interface Badge {
-  text: string;
-  variant: "caution" | "normal";
+  readonly text: string;
+  readonly variant: "caution" | "normal";
 }

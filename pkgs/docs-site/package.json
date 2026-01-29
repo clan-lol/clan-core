@@ -6,14 +6,20 @@
   "workspaces": [
     "packages/vite-plugin-clanmd"
   ],
+  "engines": {
+    "node": ">= 22.0.0"
+  },
+  "engineStrict": true,
   "scripts": {
     "dev": "vite dev --configLoader native",
     "build": "vite build --configLoader native && pagefind --site build",
     "preview": "vite preview --configLoader native",
     "prepare": "svelte-kit sync || echo ''",
-    "lint": "svelte-kit sync && prettier --check . && eslint --flag unstable_native_nodejs_ts_config --no-inline-config && oxlint --type-aware && svelte-check"
+    "lint": "svelte-kit sync && prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check"
   },
   "devDependencies": {
+    "@eslint/core": "^1.0.1",
+    "@eslint/js": "^9.39.2",
     "@fontsource-variable/geist": "^5.2.8",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.50.1",
@@ -21,9 +27,14 @@
     "@types/node": "^25.1.0",
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^17.23.2",
     "eslint-plugin-perfectionist": "^5.4.0",
+    "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-svelte": "^3.14.0",
+    "eslint-plugin-unicorn": "^62.0.0",
+    "globals": "^17.2.0",
     "oxlint": "^1.41.0",
     "oxlint-tsgolint": "^0.11.1",
     "pagefind": "^1.4.0",
@@ -35,6 +46,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
     "vite": "^7.3.1",
+    "vite-plugin-clanmd": "^0.0.1",
     "vite-plugin-pagefind": "^1.0.7"
   }
 }

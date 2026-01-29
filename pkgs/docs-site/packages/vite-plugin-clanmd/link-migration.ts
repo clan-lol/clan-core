@@ -14,12 +14,12 @@ const remarkLinkMigration: Plugin<[], Root> = function () {
         return;
       }
       // Skip external links, links pointing to /docs already and anchors
-      if (!node.url || /^(?:https?:)?\/\/|mailto:|^#/.test(node.url)) {
+      if (!node.url || /^(?:https?:)?\/\/|mailto:|^#/v.test(node.url)) {
         return;
       }
 
       // Remove repeated leading ../  or ./
-      const cleanUrl = node.url.replaceAll(/^\.\.?|^(?:\.\.?\/)+|\.md$/g, "");
+      const cleanUrl = node.url.replaceAll(/^\.\.?|^(?:\.\.?\/)+|\.md$/gv, "");
       if (!cleanUrl.startsWith("/")) {
         throw new Error(`invalid doc link: ${cleanUrl}`);
       }

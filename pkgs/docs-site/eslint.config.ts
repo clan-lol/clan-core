@@ -1,30 +1,199 @@
-// The actual linting is handled by oxlint (see .oxlintrc.json)
-// We use eslint as a formatter to do things like sort imports which prettier
-// doesn't do. Your editor should be configured to run
-//
-// eslint --flag unstable_native_nodejs_ts_config --no-inline-config
-// prettier -w .
-//
-// In that order, when saving a file
 import { defineConfig } from "eslint/config";
+import globals from "globals";
 import importPlugin from "eslint-plugin-import";
+import js from "@eslint/js";
+import node from "eslint-plugin-n";
 import perfectionist from "eslint-plugin-perfectionist";
+import prettier from "eslint-config-prettier";
+import promisePlugin from "eslint-plugin-promise";
 import svelte from "eslint-plugin-svelte";
 import svelteConfig from "./svelte.config.ts";
 import ts from "typescript-eslint";
+import unicorn from "eslint-plugin-unicorn";
 
 export default defineConfig(
   {
-    ignores: [".svelte-kit/**/*", "build/**/*", "static/pagefind/**/*"],
+    ignores: [".svelte-kit", "build", "static/pagefind"],
   },
-  ts.configs.base,
-  svelte.configs.base,
+  js.configs.all,
+  ts.configs.all,
+  unicorn.configs.all,
+  svelte.configs.all,
+  promisePlugin.configs["flat/recommended"],
+  prettier,
+  svelte.configs.prettier,
   {
-    files: ["**/*.js", "**/*.ts"],
+    files: ["**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
+  },
+  {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    rules: {
+      // Typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
+      // See: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+      "no-undef": "off",
+      // Key order sometimes has an conventional order, e.g., "name" comes be "age"
+      "sort-keys": "off",
+      "one-var": "off",
+      "no-named-export": "off",
+      "group-exports": "off",
+      "prefer-default-export": "off",
+      "no-async-await": "off",
+      "no-namespace": "off",
+      // Explicitly using == null is conventional to check either null or undefined
+      "no-eq-null": "off",
+      // File name should provide the meaning
+      "no-anonymous-default-export": "off",
+      "no-default-export": "off",
+      // Rely on perfectionist/sort-imports instead
+      "sort-imports": "off",
+      // Identifiers like i, or T in generic types are pretty conventional
+      "id-length": "off",
+      "no-optional-chaining": "off",
+      "max-lines-per-function": "off",
+      "max-statements": "off",
+      "max-lines": "off",
+      "no-rest-spread-properties": "off",
+      // In clash with ts(7030): Not all code paths return a value
+      "no-useless-return": "off",
+      // The same as typescript/no-this-alias
+      "no-this-assignment": "off",
+      "no-continue": "off",
+      "no-ternary": "off",
+      "no-unassigned-import": "off",
+      "max-dependencies": "off",
+      "no-warning-comments": "off",
+      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      // Rely on ts(2454) instead
+      "no-unassigned-vars": "off",
+      "require-unicode-regexp": ["error", { requireFlag: "v" }],
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      "no-console": ["error", { allow: ["warn", "error"] }],
+      "func-names": ["error", "as-needed"],
+      "capitalized-comments": [
+        "error",
+        "always",
+        { ignoreConsecutiveComments: true },
+      ],
+      "func-style": ["error", "declaration", { allowTypeAnnotation: true }],
+      "@typescript-eslint/no-magic-numbers": [
+        "error",
+        { ignore: [-2, -1, 0, 1, 2] },
+      ],
+      // Clearly show that a promise is being returned
+      "@typescript-eslint/return-await": ["error", "always"],
+      // Rely on noImplicitReturns from tsconfig as recommanded:
+      // https://typescript-eslint.io/rules/consistent-return
+      "@typescript-eslint/consistent-return": "off",
+      "@typescript-eslint/prefer-readonly-parameter-types": [
+        "error",
+        {
+          allow: [
+            { from: "lib", name: "Event" },
+            { from: "lib", name: "Element" },
+          ],
+          ignoreInferredTypes: true,
+        },
+      ],
+      // It's pretty common to declare a variable and then set it in conditional
+      // branches
+      "@typescript-eslint/init-declarations": "off",
+      // Recommended to be off
+      // https://typescript-eslint.io/rules/no-invalid-this/
+      "@typescript-eslint/no-invalid-this": "off",
+      // Without shadowing, new names are constantly required for potentially
+      // the same object
+      "@typescript-eslint/no-shadow": "off",
+      // Use #private fields for accessibility
+      "@typescript-eslint/explicit-member-accessibility": "off",
+      // Casting to a narrower type is sometime necessary
+      "@typescript-eslint/no-unsafe-type-assertion": "off",
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        { ignoreIIFE: true },
+      ],
+      "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
+      "no-inline-comments": ["error", { ignorePattern: "@vite-ignore" }],
+      // We require explicit file extensions in import paths to align with Node.js
+      // ESM requirements. Since our Vite config and plugins already run as ES
+      // Modules, we’re maintaining this style across the entire project for
+      // Consistency.
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          checkTypeImports: true,
+          pathGroupOverrides: [
+            { pattern: ".", action: "enforce" },
+            { pattern: "..", action: "enforce" },
+            { pattern: "./$types", action: "ignore" },
+            { pattern: "./*", action: "enforce" },
+            { pattern: "../*", action: "enforce" },
+            { pattern: "~", action: "enforce" },
+            { pattern: "~/*", action: "enforce" },
+            { pattern: "$lib", action: "enforce" },
+            { pattern: "$lib/**", action: "enforce" },
+            { pattern: "**", action: "ignore" },
+          ],
+        },
+      ],
+
+      "unicorn/prefer-export-from": ["error", { ignoreUsedVariables: true }],
+      // Sometimes inline functions are need to infer types
+      "unicorn/consistent-function-scoping": "off",
+      // Even though it would be nice to be able to only use undefined
+      // The fact that `undefined` can be overwriten makes it unsafe to use
+      "unicorn/no-null": "off",
+      // Pretty common to use a, b, i, x, y etc. Impossible to list them all
+      "unicorn/prevent-abbreviations": "off",
+    },
+  },
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      // Module argument files can use `export {}`
+      "unicorn/require-module-specifiers": "off",
+    },
+  },
+  {
+    files: ["./*.ts", "./packages/vite-plugin-clanmd/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    ...node.configs["flat/all"],
+    rules: {
+      ...node.configs["flat/all"].rules,
+      // Rely on import/extensions instead
+      "n/file-extension-in-import": "off",
+      // Rely on typescript to report non-exist imports
+      "n/no-missing-import": "off",
+    },
+  },
+  {
+    files: ["./src/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+    rules: {
+      // Ideally, ["error", { requireFlag: "v" }] should be used, but browser
+      // support is not great right now
+      "require-unicode-regexp": "off",
+    },
   },
   {
     files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
     languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
       parserOptions: {
         parser: ts.parser,
         projectService: true,
@@ -33,9 +202,31 @@ export default defineConfig(
       },
     },
     rules: {
+      // Types are not inferred correctly by typescript-eslint for page/layout
+      // data props for example
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      // Type are not inferred correctly by typescript-eslint for page/layout
+      // data props for example
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      // Type are not inferred correctly by typescript-eslint for page/layout
+      // data props for example
+      "@typescript-eslint/no-unsafe-call": "off",
+      // Type are not inferred correctly by typescript-eslint for page/layout
+      // data props for example
+      "@typescript-eslint/no-unsafe-argument": "off",
+      // Template like {@render navItems(item.items)} report such an error,
+      // where it shouldn't
+      "@typescript-eslint/no-confusing-void-expression": "off",
+      "@typescript-eslint/no-use-before-define": "off",
       "svelte/no-raw-special-elements": "error",
       "svelte/no-useless-mustaches": "error",
       "svelte/prefer-const": "error",
+      "svelte/block-lang": ["error", { script: ["ts"] }],
+      // Deprecated rule
+      // https://sveltejs.github.io/eslint-plugin-svelte/rules/no-navigation-without-base/
+      "svelte/no-navigation-without-base": "off",
+      "svelte/no-unused-class-name": "off",
+      "svelte/consistent-selector-style": "off",
     },
   },
   {
