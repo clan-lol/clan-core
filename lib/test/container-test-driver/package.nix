@@ -22,6 +22,7 @@ let
     nativeBuildInputs = [ python3Packages.setuptools ];
     format = "pyproject";
     src = ./.;
+
     passthru.devShell = mkShell {
       packages = [
         (python3.withPackages (_ps: package.propagatedBuildInputs))

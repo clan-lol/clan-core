@@ -6,7 +6,9 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
+import sys
 import time
 import types
 import uuid
@@ -21,6 +23,30 @@ from typing import Any
 from colorama import Fore, Style
 
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
+
+
+def wait_for_signal() -> None:
+    """Wait for SIGUSR1 to continue.
+
+    Useful for debugging hermetic container tests. Add this call where you want
+    to pause, then use inject-network.py to add network access and continue.
+    """
+    print(f"\n{'=' * 60}")
+    print("DEBUG MODE: Test paused, waiting for SIGUSR1...")
+    print(f"{'=' * 60}\n")
+
+    continue_flag = [False]
+
+    def signal_handler(_signum: int, _frame: Any) -> None:
+        continue_flag[0] = True
+
+    old_handler = signal.signal(signal.SIGUSR1, signal_handler)
+    try:
+        while not continue_flag[0]:
+            time.sleep(1)
+    finally:
+        signal.signal(signal.SIGUSR1, old_handler)
+    print("Signal received, continuing...")
 
 
 @cache
@@ -624,12 +650,22 @@ class Driver:
                 ),
             )
 
+            # Print network injection command
+            inject_script = Path(__file__).parent / "inject_network.py"
+            print(
+                "\nTo inject external network and continue test, run:",
+            )
+            print(
+                f"{Style.BRIGHT}{Fore.GREEN}sudo {sys.executable} {inject_script} {nspawn_uuid}{Style.RESET_ALL}",
+            )
+
     def test_symbols(self) -> dict[str, Any]:
         general_symbols = {
             "start_all": self.start_all,
             "machines": self.machines,
             "driver": self,
             "Machine": Machine,  # for typing
+            "wait_for_signal": wait_for_signal,  # for debugging
         }
         machine_symbols = {pythonize_name(m.name): m for m in self.machines}
         # If there's exactly one machine, make it available under the name

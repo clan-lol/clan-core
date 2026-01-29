@@ -6,4 +6,5 @@ from collections.abc import Callable
 from test_driver import Machine
 
 start_all: Callable[[], None]
+wait_for_signal: Callable[[], None]
 machines: list[Machine]
