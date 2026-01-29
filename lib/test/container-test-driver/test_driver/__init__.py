@@ -6,7 +6,9 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
+import sys
 import time
 import types
 import uuid
@@ -21,6 +23,30 @@ from typing import Any, Self
 from colorama import Fore, Style
 
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
+
+
+def wait_for_signal() -> None:
+    """Wait for SIGUSR1 to continue.
+
+    Useful for debugging hermetic container tests. Add this call where you want
+    to pause, then use inject-network.py to add network access and continue.
+    """
+    print(f"\n{'=' * 60}")
+    print("DEBUG MODE: Test paused, waiting for SIGUSR1...")
+    print(f"{'=' * 60}\n")
+
+    continue_flag = [False]
+
+    def signal_handler(_signum: int, _frame: Any) -> None:
+        continue_flag[0] = True
+
+    old_handler = signal.signal(signal.SIGUSR1, signal_handler)
+    try:
+        while not continue_flag[0]:
+            time.sleep(1)
+    finally:
+        signal.signal(signal.SIGUSR1, old_handler)
+    print("Signal received, continuing...")
 
 
 @cache
@@ -495,19 +521,31 @@ def setup_filesystems(container: ContainerInfo) -> None:
     container.nix_store_dir.mkdir(parents=True)
     container.nix_store_dir.chmod(0o755)
 
-    # Recreate symlinks
+    # Read store-paths from closure info to know which paths to mount
+    # Only mount paths that are in the closure to avoid mismatch with nix database
+    closure_paths: set[str] = set()
+    store_paths_file = container.closure_info / "store-paths"
+    if store_paths_file.exists():
+        closure_paths = set(store_paths_file.read_text().strip().split("\n"))
+
+    # Recreate symlinks (only for paths in closure)
     for file in Path("/nix/store").iterdir():
         if file.is_symlink():
+            if str(file) not in closure_paths:
+                continue
             target = file.readlink()
             sym = container.nix_store_dir / file.name
             sym.symlink_to(target)
 
-    # Read /proc/mounts and replicate every bind mount
+    # Read /proc/mounts and replicate bind mounts only for paths in closure
     with Path("/proc/self/mounts").open() as f:
         for line in f:
             columns = line.split(" ")
             source = Path(columns[1])
             if source.parent != Path("/nix/store/"):
+                continue
+            # Only mount paths that are in the closure
+            if str(source) not in closure_paths:
                 continue
             target = container.nix_store_dir / source.name
             if source.is_dir():
@@ -515,8 +553,6 @@ def setup_filesystems(container: ContainerInfo) -> None:
             else:
                 target.touch()
             try:
-                if "acl" in target.name:
-                    print(f"mount({source}, {target})")
                 mount(source, target, "none", MS_BIND)
             except OSError as e:
                 msg = f"mount({source}, {target}) failed"
@@ -614,12 +650,22 @@ class Driver:
                 ),
             )
 
+            # Print network injection command
+            inject_script = Path(__file__).parent / "inject_network.py"
+            print(
+                "\nTo inject external network and continue test, run:",
+            )
+            print(
+                f"{Style.BRIGHT}{Fore.GREEN}sudo {sys.executable} {inject_script} {nspawn_uuid}{Style.RESET_ALL}",
+            )
+
     def test_symbols(self) -> dict[str, Any]:
         general_symbols = {
             "start_all": self.start_all,
             "machines": self.machines,
             "driver": self,
             "Machine": Machine,  # for typing
+            "wait_for_signal": wait_for_signal,  # for debugging
         }
         machine_symbols = {pythonize_name(m.name): m for m in self.machines}
         # If there's exactly one machine, make it available under the name

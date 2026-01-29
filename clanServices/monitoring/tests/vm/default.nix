@@ -59,7 +59,7 @@
       credentials = f"prometheus:{password}"
 
       print("Using credentials:", credentials)
-      peer1.succeed(f"curl -k -u {credentials}  https://localhost:9990/telegraf.json")
+      peer1.wait_until_succeeds(f"curl -k -u {credentials}  https://localhost:9990/telegraf.json")
       peer1.succeed(f"curl -k -u {credentials}  https://localhost:9273/metrics")
 
       cert_path = "${nodes.peer1.clan.core.vars.generators.telegraf-certs.files.crt.path}"

@@ -74,9 +74,9 @@
       clare.succeed("systemctl status harmonia")
 
       # Check that ncps is listening on its default port
-      alice.wait_until_succeeds("curl bob:8502/nix-cache-info", 10)
+      alice.wait_until_succeeds("curl bob:8502/nix-cache-info")
       # Check that harmonia is accessible from bob
-      bob.wait_until_succeeds("curl clare:5000/nix-cache-info", 10)
+      bob.wait_until_succeeds("curl clare:5000/nix-cache-info")
 
       build_log = clare.succeed("""${trivialBuild}""")
       # Ensure Clare is really building the derivation

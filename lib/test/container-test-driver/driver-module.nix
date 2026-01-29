@@ -7,7 +7,7 @@
 let
   testDriver = hostPkgs.callPackage ./package.nix {
     inherit (config) extraPythonPackages;
-    inherit (hostPkgs.pkgs) util-linux systemd nix;
+    inherit (hostPkgs) util-linux systemd nix;
   };
   containers =
     testScript:
