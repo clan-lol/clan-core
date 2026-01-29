@@ -146,7 +146,6 @@
                     clan-core-flake
                     self.clanInternals.machines.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel
                     pkgs.stdenv.drvPath
-                    pkgs.bash.drvPath
                     pkgs.buildPackages.xorg.lndir
                     pkgs.bubblewrap
                     pkgs.makeShellWrapper
