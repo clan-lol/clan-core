@@ -14,6 +14,12 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_shell
+from clan_lib.nix_selectors import (
+    vars_generators_files,
+    vars_generators_metadata,
+    vars_settings_public_module,
+    vars_settings_secret_module,
+)
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.ssh.create import create_secret_key_nixos_anywhere
@@ -85,11 +91,10 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     machine_name = machine.name
     machine.flake.precache(
         [
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.validationHash",
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.{{share,dependencies,prompts}}",
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}",
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.secretModule",
-            f"clanInternals.machines.{system}.{machine_name}.config.clan.core.vars.settings.publicModule",
+            vars_generators_metadata(system, [machine_name]),
+            vars_generators_files(system, [machine_name]),
+            vars_settings_secret_module(system, [machine_name]),
+            vars_settings_public_module(system, [machine_name]),
         ],
     )
 
