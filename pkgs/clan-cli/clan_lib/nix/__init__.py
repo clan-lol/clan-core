@@ -4,10 +4,12 @@ import os
 import shutil
 import tempfile
 from functools import cache
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.dirs import clan_tmp_dir, nixpkgs_source, runtime_deps_flake
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.locked_open import locked_open
 
@@ -96,8 +98,6 @@ def nix_eval(flags: list[str]) -> list[str]:
         ],
     )
     if os.environ.get("IN_NIX_SANDBOX"):
-        from clan_lib.dirs import nixpkgs_source  # noqa: PLC0415
-
         return [
             *default_flags,
             "--override-input",
@@ -151,11 +151,33 @@ class Packages:
 
 
 @cache
-def _resolve_package_path(nixpkgs_path: str, package: str) -> str | None:
+def _get_nix_shell_cache_dir(nixpkgs_path: Path) -> Path:
+    """Get the cache directory for nix shell store paths.
+
+    The cache directory is based on a hash of the nixpkgs path, so it
+    automatically invalidates when nixpkgs changes.
+
+    Args:
+        nixpkgs_path: Resolved nixpkgs flake path
+
+    Returns:
+        Path to the cache directory
+
+    """
+    hashed = sha256(str(nixpkgs_path).encode()).hexdigest()[:16]
+    cache_dir = Path(clan_tmp_dir()) / "nix_shell_cache" / hashed
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir
+
+
+def _resolve_package_path(nixpkgs_path: Path, package: str) -> Path | None:
     """Resolve and cache a package's store path.
 
-    Uses nix build to resolve the store path for a package from nixpkgs.
-    The result is cached using @functools.cache, keyed by nixpkgs_path and package.
+    Uses symlinks as both cache and GC roots. The symlink is created by
+    nix build --out-link, which prevents the garbage collector from removing
+    the store path as long as the symlink exists.
+
+    The cache is stored in clan_tmp_dir() and keyed by nixpkgs_path hash.
 
     Args:
         nixpkgs_path: Resolved nixpkgs flake path (used as cache key component)
@@ -165,27 +187,42 @@ def _resolve_package_path(nixpkgs_path: str, package: str) -> str | None:
         Store path string, or None if resolution fails
 
     """
+    cache_dir = _get_nix_shell_cache_dir(nixpkgs_path)
+    cache_link = cache_dir / package
+
+    # Check if we have a cached symlink that points to an existing store path
+    if cache_link.is_symlink():
+        store_path = cache_link.resolve()
+        if Path(store_path).exists():
+            return store_path
+        # Symlink is broken (store path was garbage collected), remove it
+        log.debug("Cached store path for %s no longer exists, re-resolving", package)
+        cache_link.unlink(missing_ok=True)
+
+    # Resolve the package and create symlink as GC root
     cmd = nix_command(
         [
             "build",
             "--inputs-from",
-            nixpkgs_path,
+            str(nixpkgs_path),
             f"nixpkgs#{package}",
             "--print-out-paths",
-            "--no-link",
+            "--out-link",
+            str(cache_link),
         ]
     )
     try:
         proc = run(cmd, RunOpts(log=Log.NONE, check=True))
-        store_path = proc.stdout.strip()
+        store_path = Path(proc.stdout.strip())
     except ClanCmdError:
         log.warning("Failed to resolve package %s", package)
         return None
-    else:
-        if store_path and Path(store_path).exists():
-            return store_path
+
+    if not store_path or not Path(store_path).exists():
         log.warning("Resolved empty or non-existent store path for %s", package)
         return None
+
+    return store_path
 
 
 def _nix_shell_fallback(
@@ -202,8 +239,6 @@ def _nix_shell_fallback(
         Command list prefixed with nix shell invocation
 
     """
-    from clan_lib.dirs import runtime_deps_flake  # noqa: PLC0415
-
     return [
         *nix_command(["shell", "--inputs-from", f"{runtime_deps_flake()!s}"]),
         *[f"nixpkgs#{pkg}" for pkg in packages],
@@ -242,11 +277,10 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
         return cmd
 
     # Try to resolve packages via cache
-    from clan_lib.dirs import runtime_deps_flake  # noqa: PLC0415
 
-    nixpkgs_path = str(runtime_deps_flake().resolve())
+    nixpkgs_path = runtime_deps_flake().resolve()
 
-    resolved_paths: list[str] = []
+    resolved_paths: list[Path] = []
     for pkg in missing_packages:
         path = _resolve_package_path(nixpkgs_path, pkg)
         if path is None:
@@ -255,8 +289,8 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
         resolved_paths.append(path)
 
     # All packages resolved - use PATH modification
-    path_additions = [f"{p}/bin" for p in resolved_paths]
+    path_additions = [str(p / "bin") for p in resolved_paths]
     current_path = os.environ.get("PATH", "")
-    new_path = ":".join([*path_additions, current_path])
+    new_path = os.pathsep.join([*path_additions, current_path])
 
     return ["env", f"PATH={new_path}", *cmd]
