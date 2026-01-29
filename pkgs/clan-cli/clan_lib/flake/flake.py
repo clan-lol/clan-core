@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import os
@@ -6,7 +7,7 @@ import shlex
 import traceback
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from functools import cache
+from functools import cache, cached_property
 from hashlib import sha1
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
         MachineResponse,
     )
     from clan_lib.machines.machines import Machine
+    from clan_lib.vars._types import StoreBase
 
 log = logging.getLogger(__name__)
 
@@ -882,6 +884,18 @@ class Flake:
             self._cache.load_from_file(path)
         except (OSError, json.JSONDecodeError, KeyError, ValueError) as e:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
+
+    @cached_property
+    def public_vars_store(self) -> "StoreBase":
+        public_module = self.select("clanInternals.vars.settings.publicModule")
+        module = importlib.import_module(public_module)
+        return module.VarsStore(flake=self)
+
+    @cached_property
+    def secret_vars_store(self) -> "StoreBase":
+        secret_module = self.select("clanInternals.vars.settings.secretModule")
+        module = importlib.import_module(secret_module)
+        return module.VarsStore(flake=self)
 
     def prefetch(self) -> None:
         """Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline"""
