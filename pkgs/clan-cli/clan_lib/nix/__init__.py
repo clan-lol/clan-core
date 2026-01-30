@@ -12,6 +12,7 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import clan_tmp_dir, nixpkgs_source, runtime_deps_flake
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.locked_open import locked_open
+from clan_lib.nix.cache_cleanup import maybe_cleanup_cache
 
 log = logging.getLogger(__name__)
 
@@ -167,6 +168,10 @@ def _get_nix_shell_cache_dir(nixpkgs_path: Path) -> Path:
     hashed = sha256(str(nixpkgs_path).encode()).hexdigest()[:16]
     cache_dir = Path(clan_tmp_dir()) / "nix_shell_cache" / hashed
     cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Touch the directory to update mtime (marks it as "recently used")
+    cache_dir.touch(exist_ok=True)
+
     return cache_dir
 
 
@@ -194,6 +199,8 @@ def _resolve_package_path(nixpkgs_path: Path, package: str) -> Path | None:
     if cache_link.is_symlink():
         store_path = cache_link.resolve()
         if Path(store_path).exists():
+            # Touch parent dir to mark as recently used
+            cache_dir.touch(exist_ok=True)
             return store_path
         # Symlink is broken (store path was garbage collected), remove it
         log.debug("Cached store path for %s no longer exists, re-resolving", package)
@@ -276,8 +283,10 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     if not missing_packages:
         return cmd
 
-    # Try to resolve packages via cache
+    # Lazy cleanup: runs at most once per hour per process
+    maybe_cleanup_cache()
 
+    # Try to resolve packages via cache
     nixpkgs_path = runtime_deps_flake().resolve()
 
     resolved_paths: list[Path] = []
