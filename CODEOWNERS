@@ -6,7 +6,7 @@ lib/inventoryClass/.* @hsjobeki
 
 modules/.* @hsjobeki
 
-pkgs/clan-app/ui/.* @hsjobeki @brianmcgee
+pkgs/clan-app/ui/.* @hsjobeki @hgl
 pkgs/clan-app/clan_app/.* @qubasa @hsjobeki
 
 pkgs/clan-cli/clan_cli/.* @lassulus @mic92 @kenji
