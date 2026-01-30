@@ -1,15 +1,15 @@
 <script lang="ts">
-  import "./global.css";
+  import type { NavItem } from "$lib/models/docs.ts";
   import type {
     Pagefind,
     PagefindSearchFragment,
   } from "vite-plugin-pagefind/types";
-  import config from "~/config/index.js";
+  import { asset, resolve } from "$app/paths";
+  import config from "$config";
   import favicon from "$lib/assets/favicon.svg";
-  import type { NavItem, Path } from "$lib/models/docs/index.ts";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
-  import { resolve } from "$app/paths";
+  import "../base.css";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);
@@ -20,7 +20,7 @@
 
   onMount(async () => {
     const pf = (await import(
-      /* @vite-ignore */ resolve("/pagefind/pagefind.js")
+      /* @vite-ignore */ asset("/pagefind/pagefind.js")
     )) as Pagefind;
     await pf.init();
     pagefind = pf;
@@ -38,7 +38,7 @@
       const search = await pagefind.debouncedSearch(query);
       searchResults = await Promise.all(
         search.results
-          .slice(0, config.searchResultLimit)
+          .slice(0, config.docs.searchResultLimit)
           .map(async (r) => await r.data()),
       );
     })();
@@ -55,21 +55,19 @@
   <link href={favicon} rel="icon" />
 </svelte:head>
 
-<div class="global-bar">
+<header class="global-bar">
   <span>Clan Docs</span>
   <nav>
     <div class="search">
       <input type="search" bind:value={query} />
-      {#if searchResults.length > 0}
+      {#if searchResults.length !== 0}
         <ul>
           {#each searchResults as searchResult (searchResult.excerpt)}
             <li class="search-result">
               <div class="search-result-title">
                 <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-                <a
-                  href={resolve(
-                    searchResult.url.slice(0, -".html".length) as Path,
-                  )}>{searchResult.meta["title"]}</a
+                <a href={searchResult.url.slice(0, -".html".length)}
+                  >{searchResult.meta["title"]}</a
                 >
               </div>
               <div class="search-result-excerpt">
@@ -88,7 +86,7 @@
       </ul>
     </div>
   </nav>
-</div>
+</header>
 <main>
   {@render children?.()}
 </main>
@@ -108,6 +106,11 @@
           {@render navItems(item.items)}
         </ul>
       </details>
+    </li>
+  {:else if item.external}
+    <li>
+      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+      <a href={item.link}>{item.label}</a>
     </li>
   {:else}
     <li>

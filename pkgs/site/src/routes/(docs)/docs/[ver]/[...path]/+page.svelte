@@ -1,10 +1,10 @@
 <script lang="ts">
-  import "vite-plugin-clanmd/main.css";
-  import type { Heading as ArticleHeading } from "$lib/models/docs/index.ts";
+  import type { Heading as ArticleHeading } from "$lib/models/docs.ts";
   import { on } from "svelte/events";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { visit } from "$lib/models/docs/index.ts";
+  import { visit } from "$lib/util.ts";
+  import "vite-plugin-clanmd/main.css";
 
   const { data } = $props();
 
@@ -39,7 +39,7 @@
       (entries) => {
         // Record each heading's scrolledPast
         for (const entry of entries) {
-          visit(headings, (heading) => {
+          visit(headings, "children", (heading) => {
             if (heading.id !== entry.target.id) {
               return;
             }
@@ -64,7 +64,7 @@
         let last: Heading | null = null;
         let current: Heading | null = null;
         // Find the last heading with scrolledPast > 0
-        visit(headings, (heading) => {
+        visit(headings, "children", (heading) => {
           if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
             current = last;
             return "break";
@@ -152,7 +152,7 @@
     <h2 bind:this={tocEl} class="toc-title">
       <button
         class="toc-label"
-        onclick={(): void => {
+        onclick={() => {
           tocOpen = !tocOpen;
         }}
         type="button"
@@ -231,7 +231,7 @@
         scrollToHeading(ev, heading.element);
       }}>{heading.content}</a
     >
-    {#if heading.children.length > 0}
+    {#if heading.children.length !== 0}
       <ul>
         {@render tocLinks(heading.children)}
       </ul>

@@ -1,7 +1,6 @@
 import type { BlockContent, DefinitionContent, Paragraph } from "mdast";
 
 export function isDirectiveParagraph(
-  // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
   node: BlockContent | DefinitionContent | undefined,
 ): node is Paragraph {
   return node?.type === "paragraph" && node.data?.directiveLabel == null;

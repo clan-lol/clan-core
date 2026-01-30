@@ -1,7 +1,7 @@
-import { fromMarkdown } from "mdast-util-from-markdown";
-import { matter } from "vfile-matter";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { matter } from "vfile-matter";
 
 const remarkParse: Plugin = function () {
   const data = this.data.bind(this);

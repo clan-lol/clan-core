@@ -2,13 +2,8 @@ import type {
   Frontmatter as FrontmatterData,
   Heading as HeadingData,
 } from "./modules.d.ts";
-import {
-  transformerMetaHighlight,
-  transformerNotationDiff,
-  transformerNotationHighlight,
-  transformerRenderIndentGuides,
-} from "@shikijs/transformers";
-import type { PluginOption } from "vite";
+import type { PluginOption, ResolvedConfig } from "vite";
+import pkg from "./package.json" with { type: "json" };
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
 import rehypeStringify from "rehype-stringify";
@@ -17,11 +12,17 @@ import rehypeWrapHeadings from "./rehype-wrap-headings.ts";
 import remarkAdmonition from "./remark-admonition.ts";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
-import remarkLinkMigration from "./link-migration.ts";
+import remarkLinkResolve from "./remark-link-resolve.ts";
 import remarkParse from "./remark-parse.ts";
 import remarkRehype from "remark-rehype";
 import remarkTabs from "./remark-tabs.ts";
 import transformerLineNumbers from "./shiki-transformer-line-numbers.ts";
+import {
+  transformerMetaHighlight,
+  transformerNotationDiff,
+  transformerNotationHighlight,
+  transformerRenderIndentGuides,
+} from "@shikijs/transformers";
 import { unified } from "unified";
 import { VFile } from "vfile";
 
@@ -42,16 +43,23 @@ export interface Options {
   readonly codeDarkTheme: string;
   readonly minLineNumberLines: number;
   readonly maxTocExtractionDepth: number;
+  readonly linkResolves: Readonly<Record<string, `/${string}`>>;
 }
 
-export default function vitePluginMarkdown({
+export default function vitePluginClanmd({
   codeLightTheme,
   codeDarkTheme,
   minLineNumberLines,
   maxTocExtractionDepth,
+  linkResolves,
 }: Options): PluginOption {
+  let config: ResolvedConfig;
   return {
-    name: "markdown-loader",
+    name: pkg.name,
+    configResolved(resolvedConfig) {
+      config = resolvedConfig;
+    },
+
     async transform(code, id): Promise<string | undefined> {
       if (!id.endsWith(".md")) {
         return;
@@ -59,7 +67,7 @@ export default function vitePluginMarkdown({
 
       const file = await unified()
         .use(remarkParse)
-        .use(remarkLinkMigration)
+        .use(remarkLinkResolve, linkResolves)
         .use(remarkGfm)
         .use(remarkDirective)
         .use(remarkAdmonition)
@@ -91,6 +99,7 @@ export default function vitePluginMarkdown({
         .use(rehypeStringify)
         .process(
           new VFile({
+            cwd: config.root,
             path: id,
             value: code,
           }),
