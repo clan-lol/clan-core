@@ -305,10 +305,13 @@ def get_machine_generators(
             prompts = [Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()]
 
             share = gen_data["share"]
+            placement: Placement = (
+                Shared() if share else PerMachine(machine=machine_name)
+            )
 
             generator = Generator(
                 name=gen_name,
-                share=share,
+                _key=GeneratorId(name=gen_name, placement=placement),
                 files=files,
                 dependencies=validate_dependencies(
                     gen_name,
@@ -357,8 +360,8 @@ def get_machine_generators(
 @dataclass
 class Generator(GeneratorGraphNode[GeneratorId]):
     name: str
+    _key: GeneratorId
     files: list[Var] = field(default_factory=list)
-    share: bool = False
     prompts: list[Prompt] = field(default_factory=list)
     dependencies: list[GeneratorId] = field(default_factory=list)
 
@@ -370,15 +373,12 @@ class Generator(GeneratorGraphNode[GeneratorId]):
     _secret_store: "StoreBase | None" = None
 
     @property
+    def share(self) -> bool:
+        return isinstance(self._key.placement, Shared)
+
+    @property
     def key(self) -> GeneratorId:
-        if self.share:
-            return GeneratorId(name=self.name, placement=Shared())
-        if len(self.machines) != 1:
-            msg = f"Generator {self.name} must have exactly one machine, but has {len(self.machines)}: {', '.join(self.machines)}"
-            raise ClanError(msg)
-        return GeneratorId(
-            name=self.name, placement=PerMachine(machine=self.machines[0])
-        )
+        return self._key
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -439,11 +439,14 @@ class Generator(GeneratorGraphNode[GeneratorId]):
         return self.validation_hash
 
     def with_toggled_share(self, machine: str) -> "Generator":
-        return dataclasses.replace(
-            self,
-            share=not self.share,
-            machines=[] if not self.share else [machine],
-        )
+        new_machines: list[str]
+        if self.share:
+            new_key = GeneratorId(name=self.name, placement=PerMachine(machine=machine))
+            new_machines = [machine]
+        else:
+            new_key = GeneratorId(name=self.name, placement=Shared())
+            new_machines = []
+        return dataclasses.replace(self, _key=new_key, machines=new_machines)
 
     def decrypt_dependencies(
         self,
