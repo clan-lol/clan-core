@@ -1,7 +1,7 @@
 import type {
   Frontmatter as FrontmatterData,
   Heading as HeadingData,
-} from "./modules";
+} from "./modules.d.ts";
 import {
   transformerMetaHighlight,
   transformerNotationDiff,
