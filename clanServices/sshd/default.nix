@@ -10,7 +10,7 @@
   manifest.readme = builtins.readFile ./README.md;
 
   roles.client = {
-    description = "Installs the SSH CA public key into known_hosts for the configured domains, so this machine can verify servers’ host certificates without TOFU prompts.";
+    description = "Installs the SSH CA public key into known_hosts for the configured domains, so this machine can verify servers' host certificates without TOFU prompts.";
     interface =
       { lib, ... }:
       {
@@ -80,6 +80,15 @@
       { lib, ... }:
       {
         options = {
+          authorizedKeys = lib.mkOption {
+            default = { };
+            type = lib.types.attrsOf lib.types.str;
+            description = "SSH public keys authorized for root access. WARNING: Removing these keys will lock you out of SSH access to this machine.";
+            example = {
+              "admin-key" = "ssh-ed25519 AAAA...";
+            };
+          };
+
           hostKeys.rsa.enable = lib.mkEnableOption "generating a RSA host key";
 
           certificate = {
@@ -108,6 +117,8 @@
             ...
           }:
           {
+            users.users.root.openssh.authorizedKeys.keys = builtins.attrValues settings.authorizedKeys;
+
             clan.core.vars.generators = {
               openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
                 share = true;
