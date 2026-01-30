@@ -165,7 +165,7 @@ export async function getMachineVarsPromptGroups(
     for (const prompt of generator.prompts) {
       if (prompt.persist) {
         persistedPrompts.push({
-          generatorName: generator.name,
+          generatorName: generator.key.name,
           promptName: prompt.name,
         });
       }
@@ -188,9 +188,9 @@ export async function getMachineVarsPromptGroups(
       } else {
         group = groups[groupId];
       }
-      const key = `${generator.name}/${prompt.name}`;
+      const key = `${generator.key.name}/${prompt.name}`;
       group[prompt.name] = {
-        generator: generator.name,
+        generator: generator.key.name,
         type: prompt.prompt_type,
         description: prompt.description,
         name: prompt.display?.label || prompt.name,
