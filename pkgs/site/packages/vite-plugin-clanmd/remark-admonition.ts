@@ -1,7 +1,7 @@
 import type { ContainerDirectiveData } from "mdast-util-directive";
-import { isDirectiveParagraph } from "./util.ts";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
+import { isDirectiveParagraph } from "./util.ts";
 import { visit } from "unist-util-visit";
 
 const names = new Set(["note", "important", "danger", "tip"]);

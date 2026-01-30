@@ -1,5 +1,5 @@
-import { addClassToHast } from "shiki";
 import type { ShikiTransformer } from "shiki";
+import { addClassToHast } from "shiki";
 
 export default function transformerLineNumbers({
   minLines,

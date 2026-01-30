@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "workspaces": [
+    "packages/vite-plugin-config",
     "packages/vite-plugin-clanmd"
   ],
   "engines": {
@@ -47,6 +48,7 @@
     "typescript-eslint": "^8.54.0",
     "vite": "^7.3.1",
     "vite-plugin-clanmd": "^0.0.1",
+    "vite-plugin-config": "^0.0.1",
     "vite-plugin-pagefind": "^1.0.7"
   }
 }

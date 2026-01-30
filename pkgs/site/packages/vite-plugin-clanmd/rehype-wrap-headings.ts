@@ -1,6 +1,6 @@
-import { headingRank } from "hast-util-heading-rank";
 import type { Plugin } from "unified";
 import type { Root } from "hast";
+import { headingRank } from "hast-util-heading-rank";
 import { visit } from "unist-util-visit";
 
 const rehypeWrapHeadings: Plugin<[], Root> = function () {

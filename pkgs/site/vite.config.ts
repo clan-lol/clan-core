@@ -1,7 +1,8 @@
 import clanmd from "vite-plugin-clanmd";
-import config from "./src/config/index.ts";
+import configPlugin from "vite-plugin-config";
 import { defineConfig } from "vite";
 import { pagefind } from "vite-plugin-pagefind";
+import siteConfig from "./site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 
 export default defineConfig({
@@ -12,11 +13,19 @@ export default defineConfig({
   },
   plugins: [
     sveltekit(),
+    configPlugin({
+      config: siteConfig,
+    }),
     clanmd({
-      codeLightTheme: config.docs.codeLightTheme,
-      codeDarkTheme: config.docs.codeDarkTheme,
-      minLineNumberLines: config.docs.minLineNumberLines,
-      maxTocExtractionDepth: config.docs.maxTocExtractionDepth,
+      codeLightTheme: siteConfig.docs.codeLightTheme,
+      codeDarkTheme: siteConfig.docs.codeDarkTheme,
+      minLineNumberLines: siteConfig.docs.minLineNumberLines,
+      maxTocExtractionDepth: siteConfig.docs.maxTocExtractionDepth,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      linkResolves: {
+        "src/docs": `/docs/${siteConfig.ver}`,
+      },
+      /* eslint-enable @typescript-eslint/naming-convention */
     }),
     pagefind({
       outputDirectory: "build",

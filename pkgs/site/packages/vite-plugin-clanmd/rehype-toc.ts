@@ -1,8 +1,8 @@
-import GithubSlugger from "github-slugger";
 import type { Heading } from "./modules.d.ts";
-import { headingRank } from "hast-util-heading-rank";
 import type { Plugin } from "unified";
 import type { Root } from "hast";
+import GithubSlugger from "github-slugger";
+import { headingRank } from "hast-util-heading-rank";
 import { toString } from "hast-util-to-string";
 import { visit } from "unist-util-visit";
 
