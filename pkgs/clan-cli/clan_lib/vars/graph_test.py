@@ -3,9 +3,12 @@ from unittest.mock import Mock
 from clan_lib.vars._types import GeneratorId, PerMachine, Shared
 from clan_lib.vars.generator import (
     Generator,
-    GeneratorGraphNode,
 )
-from clan_lib.vars.graph import all_missing_closure, requested_closure
+from clan_lib.vars.graph import (
+    GeneratorGraphNode,
+    all_missing_closure,
+    requested_closure,
+)
 
 
 def generator_names(generator: list[GeneratorGraphNode]) -> list[str]:
@@ -59,7 +62,7 @@ def test_required_generators() -> None:
     machine_name = "test_machine"
     gen_1 = Generator(
         name="gen_1",
-        _key=_pm("gen_1", machine_name),
+        key=_pm("gen_1", machine_name),
         dependencies=[],
         machines=[machine_name],
         _public_store=public_store,
@@ -67,7 +70,7 @@ def test_required_generators() -> None:
     )
     gen_2 = Generator(
         name="gen_2",
-        _key=_pm("gen_2", machine_name),
+        key=_pm("gen_2", machine_name),
         dependencies=[gen_1.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -75,7 +78,7 @@ def test_required_generators() -> None:
     )
     gen_2a = Generator(
         name="gen_2a",
-        _key=_pm("gen_2a", machine_name),
+        key=_pm("gen_2a", machine_name),
         dependencies=[gen_2.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -83,7 +86,7 @@ def test_required_generators() -> None:
     )
     gen_2b = Generator(
         name="gen_2b",
-        _key=_pm("gen_2b", machine_name),
+        key=_pm("gen_2b", machine_name),
         dependencies=[gen_2.key],
         machines=[machine_name],
         _public_store=public_store,
@@ -132,7 +135,7 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     machine_2 = "machine_2"
     shared_gen = Generator(
         name="shared_gen",
-        _key=_shared("shared_gen"),
+        key=_shared("shared_gen"),
         dependencies=[],
         machines=[machine_1, machine_2],  # Shared across both machines
         _public_store=public_store,
@@ -140,7 +143,7 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     )
     gen_1 = Generator(
         name="gen_1",
-        _key=_pm("gen_1", machine_1),
+        key=_pm("gen_1", machine_1),
         dependencies=[shared_gen.key],
         machines=[machine_1],
         _public_store=public_store,
@@ -148,7 +151,7 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     )
     gen_2 = Generator(
         name="gen_2",
-        _key=_pm("gen_2", machine_2),
+        key=_pm("gen_2", machine_2),
         dependencies=[shared_gen.key],
         machines=[machine_2],
         _public_store=public_store,

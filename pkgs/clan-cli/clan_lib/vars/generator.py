@@ -28,7 +28,6 @@ from clan_lib.nix_selectors import (
     vars_sops_default_groups,
     vars_sops_secret_upload_dir,
 )
-from clan_lib.vars.graph import GeneratorGraphNode
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -311,7 +310,7 @@ def get_machine_generators(
 
             generator = Generator(
                 name=gen_name,
-                _key=GeneratorId(name=gen_name, placement=placement),
+                key=GeneratorId(name=gen_name, placement=placement),
                 files=files,
                 dependencies=validate_dependencies(
                     gen_name,
@@ -358,9 +357,9 @@ def get_machine_generators(
 
 
 @dataclass
-class Generator(GeneratorGraphNode[GeneratorId]):
+class Generator:
     name: str
-    _key: GeneratorId
+    key: GeneratorId
     files: list[Var] = field(default_factory=list)
     prompts: list[Prompt] = field(default_factory=list)
     dependencies: list[GeneratorId] = field(default_factory=list)
@@ -374,11 +373,7 @@ class Generator(GeneratorGraphNode[GeneratorId]):
 
     @property
     def share(self) -> bool:
-        return isinstance(self._key.placement, Shared)
-
-    @property
-    def key(self) -> GeneratorId:
-        return self._key
+        return isinstance(self.key.placement, Shared)
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -446,7 +441,7 @@ class Generator(GeneratorGraphNode[GeneratorId]):
         else:
             new_key = GeneratorId(name=self.name, placement=Shared())
             new_machines = []
-        return dataclasses.replace(self, _key=new_key, machines=new_machines)
+        return dataclasses.replace(self, key=new_key, machines=new_machines)
 
     def decrypt_dependencies(
         self,
