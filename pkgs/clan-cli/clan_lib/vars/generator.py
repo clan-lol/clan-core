@@ -309,7 +309,6 @@ def get_machine_generators(
             )
 
             generator = Generator(
-                name=gen_name,
                 key=GeneratorId(name=gen_name, placement=placement),
                 files=files,
                 dependencies=validate_dependencies(
@@ -358,7 +357,6 @@ def get_machine_generators(
 
 @dataclass
 class Generator:
-    name: str
     key: GeneratorId
     files: list[Var] = field(default_factory=list)
     prompts: list[Prompt] = field(default_factory=list)
@@ -374,6 +372,10 @@ class Generator:
     @property
     def share(self) -> bool:
         return isinstance(self.key.placement, Shared)
+
+    @property
+    def name(self) -> str:
+        return self.key.name
 
     def __hash__(self) -> int:
         return hash(self.key)
