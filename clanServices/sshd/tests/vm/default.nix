@@ -20,6 +20,7 @@ in
           module.input = "self";
           roles.server.machines."server".settings = {
             authorizedKeys.test-key = testPubKey;
+            generateRootKey = true;
             certificate.searchDomains = [ "example.com" ];
             hostKeys.rsa.enable = true;
           };
@@ -59,5 +60,13 @@ in
 
     # Test SSH authentication from client to server using the authorized key
     client.succeed("ssh -o StrictHostKeyChecking=accept-new -i /tmp/test-key root@server 'echo SSH_SUCCESS'")
+
+    # Check that the generated root key public key is in authorized_keys
+    server.succeed("grep 'root@server' /etc/ssh/authorized_keys.d/root")
+
+    # Copy the generated private key from server to client and test SSH with it
+    client.succeed("scp -i /tmp/test-key root@server:/var/run/secrets/vars/sshd-root-key/id_ed25519 /tmp/generated-key")
+    client.succeed("chmod 600 /tmp/generated-key")
+    client.succeed("ssh -i /tmp/generated-key root@server 'echo GENERATED_KEY_SUCCESS'")
   '';
 }

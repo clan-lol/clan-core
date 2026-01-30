@@ -22,11 +22,7 @@ The `admin` clanService is deprecated. Its functionality has been split into ded
 
 ```nix
 instances = {
-  admin-main = {
-    module = {
-      name = "admin";
-      input = "clan-core";
-    };
+  admin = {
     roles.default.tags.all = { };
     roles.default.settings = {
       allowedKeys = {
@@ -43,11 +39,7 @@ instances = {
 
 ```nix
 instances = {
-  sshd-main = {
-    module = {
-      name = "sshd";
-      input = "clan-core";
-    };
+  sshd = {
     roles.server.tags.all = { };
     roles.server.settings = {
       authorizedKeys = {
@@ -84,7 +76,7 @@ instances = {
 
 ## Vars Migration
 
-The admin service generated variables with different names than the new services. After migration, you'll need to regenerate these variables:
+The admin service generated vars with different names than the new services. After migration, you'll need to regenerate these vars:
 
 | Admin var path | New service var path |
 |----------------|----------------------|
@@ -92,7 +84,7 @@ The admin service generated variables with different names than the new services
 | `admin-ssh-rsa/*` | `openssh-rsa/*` |
 | `admin-ssh/*` | `openssh/*` |
 
-Run `clan vars generate <machine>` after updating your configuration to generate the new variables.
+Run `clan vars generate <machine>` after updating your configuration to generate the new vars.
 
 ## Complete Example
 
@@ -103,11 +95,7 @@ Here's a full migration example:
 ```nix
 {
   flake.clan.inventory.instances = {
-    admin-config = {
-      module = {
-        name = "admin";
-        input = "clan-core";
-      };
+    admin = {
       roles.default.machines.my-server = { };
       roles.default.settings = {
         allowedKeys = {
@@ -125,11 +113,7 @@ Here's a full migration example:
 ```nix
 {
   flake.clan.inventory.instances = {
-    sshd-config = {
-      module = {
-        name = "sshd";
-        input = "clan-core";
-      };
+    sshd = {
       roles.server.machines.my-server = { };
       roles.server.settings = {
         authorizedKeys = {
