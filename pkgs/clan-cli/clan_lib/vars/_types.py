@@ -100,7 +100,6 @@ def string_repr(value: bytes) -> str:
 class GeneratorStore(Protocol):
     """Protocol defining the generator interface that stores need."""
 
-    name: str
     machines: list[str]
     files: list["Var"]
     validation_hash: str | None
@@ -110,6 +109,9 @@ class GeneratorStore(Protocol):
 
     @property
     def key(self) -> GeneratorId: ...
+
+    @property
+    def name(self) -> str: ...
 
     def validation(self) -> str | None: ...
     def with_toggled_share(self, machine: str) -> "GeneratorStore": ...
@@ -354,7 +356,7 @@ class StoreBase(ABC):
 
     @abstractmethod
     def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        pass
+        """Populate a local tmp_directory with the secrets for the given machine."""
 
     @abstractmethod
     def get_upload_directory(self, machine: str) -> str:
@@ -368,4 +370,4 @@ class StoreBase(ABC):
 
     @abstractmethod
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
-        pass
+        """Upload the secrets for the given machine to the target host."""
