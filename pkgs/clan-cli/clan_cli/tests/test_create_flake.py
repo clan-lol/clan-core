@@ -133,6 +133,36 @@ def test_ui_template(
 
 
 @pytest.mark.with_core
+def test_create_flake_in_git_repo_without_flake_nix(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    caplog: pytest.LogCaptureFixture,
+    patch_get_clan_details: Any,  # noqa: ARG001
+) -> None:
+    """Regression: creating a clan inside a plain git repo must not fail or log errors."""
+    run(["git", "init", str(temporary_home)])
+
+    new_clan_dir = temporary_home / "my-new-clan"
+    monkeypatch.setenv("LOGNAME", "testuser")
+
+    with caplog.at_level(logging.WARNING):
+        cli.run(
+            [
+                "flakes",
+                "create",
+                str(new_clan_dir),
+                "--template=default",
+                "--no-update",
+            ],
+        )
+
+    assert (new_clan_dir / "flake.nix").exists()
+    assert "not a valid flake" not in caplog.text, (
+        "No warnings or errors about invalid flakes should be logged"
+    )
+
+
+@pytest.mark.with_core
 def test_create_flake_fallback_from_non_clan_directory(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
