@@ -324,6 +324,7 @@ def get_machine_generators(
                 _flake=flake,
                 _public_store=pub_store,
                 _secret_store=sec_store,
+                _secret_cache=secret_cache if secret_cache is not None else {},
             )
 
             # link generator to its files
@@ -345,12 +346,6 @@ def get_machine_generators(
                 # Always add per-machine generators
                 generators.append(generator)
 
-        # Set lazy evaluation context for prompts (evaluated on access)
-        for generator in generators:
-            for prompt in generator.prompts:
-                prompt._generator = generator  # noqa: SLF001
-                prompt._secret_cache = secret_cache  # noqa: SLF001
-
     return generators
 
 
@@ -367,6 +362,11 @@ class Generator:
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
+
+    _secret_cache: dict[Path, bytes] = field(default_factory=dict, repr=False)
+    _previous_values: dict[str, str | None] = field(
+        default_factory=dict, repr=False, compare=False
+    )
 
     @property
     def share(self) -> bool:
@@ -400,22 +400,32 @@ class Generator:
     def get_previous_value(
         self,
         prompt: Prompt,
-        secret_cache: dict[Path, bytes] | None = None,
     ) -> str | None:
+        """Lazily compute and cache the previous value for a prompt.
+
+        Uses self._secret_cache for decryption caching across prompts,
+        and self._previous_values for result-level caching.
+        """
         if not prompt.persist:
             return None
+
+        if prompt.name in self._previous_values:
+            return self._previous_values[prompt.name]
 
         if self._public_store is None or self._secret_store is None:
             msg = "Stores must be set to get previous values"
             raise ClanError(msg)
 
+        result: str | None = None
         if self._public_store.exists(self, prompt.name):
-            return self._public_store.get(self, prompt.name).decode()
-        if self._secret_store.exists(self, prompt.name):
-            return self._secret_store.get(
-                self, prompt.name, cache=secret_cache
+            result = self._public_store.get(self, prompt.name).decode()
+        elif self._secret_store.exists(self, prompt.name):
+            result = self._secret_store.get(
+                self, prompt.name, cache=self._secret_cache
             ).decode()
-        return None
+
+        self._previous_values[prompt.name] = result
+        return result
 
     def final_script_selector(self, machine_name: str) -> str:
         if self._flake is None:
@@ -516,23 +526,9 @@ class Generator:
                 prompt.prompt_type,
                 prompt.description if prompt.description != prompt.name else None,
                 self.machines,
-                previous_value=prompt.previous_value,
+                previous_value=self.get_previous_value(prompt),
             )
         return prompt_values
-
-    def get_previous_prompts(self) -> dict[str, str]:
-        """Get all previous prompt values without interactive asking.
-
-        Returns:
-            Dictionary mapping prompt names to their previous values.
-            Only includes prompts that have a previous value set.
-
-        """
-        return {
-            prompt.name: prompt.previous_value
-            for prompt in self.prompts
-            if prompt.previous_value is not None
-        }
 
     def execute(
         self,
