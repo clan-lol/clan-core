@@ -2,7 +2,7 @@ import clanmd from "vite-plugin-clanmd";
 import configPlugin from "vite-plugin-config";
 import { defineConfig } from "vite";
 import { pagefind } from "vite-plugin-pagefind";
-import siteConfig from "./site.config.ts";
+import siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 
 export default defineConfig({

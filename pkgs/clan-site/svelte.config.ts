@@ -1,6 +1,6 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
-import siteConfig from "./site.config.ts";
+import siteConfig from "./clan-site.config.ts";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 const svelteConfig: Config = {
