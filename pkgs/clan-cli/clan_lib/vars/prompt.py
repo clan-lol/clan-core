@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, TypedDict
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from clan_lib.machines.machines import Machine
     from clan_lib.vars.generator import Generator
 
 log = logging.getLogger(__name__)
@@ -59,7 +58,6 @@ class Prompt:
     )
 
     # Private context for lazy evaluation (excluded from serialization)
-    _machine: "Machine | None" = field(default=None, repr=False, compare=False)
     _generator: "Generator | None" = field(default=None, repr=False, compare=False)
     _secret_cache: dict[Path, bytes] | None = field(
         default=None, repr=False, compare=False
@@ -74,11 +72,10 @@ class Prompt:
             return self._previous_value
 
         self._evaluated = True
-        if self._machine is None or self._generator is None:
+        if self._generator is None:
             return None
 
         self._previous_value = self._generator.get_previous_value(
-            self._machine,
             self,
             secret_cache=self._secret_cache,
         )

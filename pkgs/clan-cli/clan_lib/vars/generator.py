@@ -348,7 +348,6 @@ def get_machine_generators(
         # Set lazy evaluation context for prompts (evaluated on access)
         for generator in generators:
             for prompt in generator.prompts:
-                prompt._machine = machine  # noqa: SLF001
                 prompt._generator = generator  # noqa: SLF001
                 prompt._secret_cache = secret_cache  # noqa: SLF001
 
@@ -400,19 +399,22 @@ class Generator:
 
     def get_previous_value(
         self,
-        machine: "Machine",
         prompt: Prompt,
         secret_cache: dict[Path, bytes] | None = None,
     ) -> str | None:
         if not prompt.persist:
             return None
 
-        pub_store = machine.public_vars_store
-        if pub_store.exists(self, prompt.name):
-            return pub_store.get(self, prompt.name).decode()
-        sec_store = machine.secret_vars_store
-        if sec_store.exists(self, prompt.name):
-            return sec_store.get(self, prompt.name, cache=secret_cache).decode()
+        if self._public_store is None or self._secret_store is None:
+            msg = "Stores must be set to get previous values"
+            raise ClanError(msg)
+
+        if self._public_store.exists(self, prompt.name):
+            return self._public_store.get(self, prompt.name).decode()
+        if self._secret_store.exists(self, prompt.name):
+            return self._secret_store.get(
+                self, prompt.name, cache=secret_cache
+            ).decode()
         return None
 
     def final_script_selector(self, machine_name: str) -> str:
@@ -423,11 +425,11 @@ class Generator:
             machine_name, f'config.clan.core.vars.generators."{self.name}".finalScript'
         )
 
-    def final_script(self, machine: "Machine") -> Path:
+    def final_script(self, machine_name: str) -> Path:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        output = Path(self._flake.select(self.final_script_selector(machine.name)))
+        output = Path(self._flake.select(self.final_script_selector(machine_name)))
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
         return output
@@ -447,22 +449,26 @@ class Generator:
 
     def decrypt_dependencies(
         self,
-        machine: "Machine",
-        secret_vars_store: "StoreBase",
-        public_vars_store: "StoreBase",
+        machine_name: str,
     ) -> dict[str, dict[str, bytes]]:
         """Decrypt and retrieve all dependency values for this generator.
 
         Args:
-            machine: The machine context
-            secret_vars_store: Store for secret variables
-            public_vars_store: Store for public variables
+            machine_name: The machine name used to look up generators.
 
         Returns:
             Dictionary mapping generator names to their variable values
 
         """
-        generators = get_machine_generators([machine.name], machine.flake)
+        if (
+            self._flake is None
+            or self._public_store is None
+            or self._secret_store is None
+        ):
+            msg = "Flake and stores must be set to decrypt dependencies"
+            raise ClanError(msg)
+
+        generators = get_machine_generators([machine_name], self._flake)
         result: dict[str, dict[str, bytes]] = {}
 
         for dep_key in set(self.dependencies):
@@ -473,7 +479,7 @@ class Generator:
                 None,
             )
             if dep_generator is None:
-                msg = f"Generator {dep_key.name} not found in machine {machine.name}"
+                msg = f"Generator {dep_key.name} not found in machine {machine_name}"
                 raise ClanError(msg)
 
             # Check that shared generators don't depend on machine-specific generators
@@ -484,12 +490,12 @@ class Generator:
             dep_files = dep_generator.files
             for file in dep_files:
                 if file.secret:
-                    result[dep_key.name][file.name] = secret_vars_store.get(
+                    result[dep_key.name][file.name] = self._secret_store.get(
                         dep_generator,
                         file.name,
                     )
                 else:
-                    result[dep_key.name][file.name] = public_vars_store.get(
+                    result[dep_key.name][file.name] = self._public_store.get(
                         dep_generator,
                         file.name,
                     )
@@ -530,27 +536,31 @@ class Generator:
 
     def execute(
         self,
-        machine: "Machine",
+        machine_name: str,
         prompt_values: dict[str, str] | None = None,
         no_sandbox: bool = False,
     ) -> None:
         """Execute this generator to produce its output files.
 
         Args:
-            machine: The machine to execute the generator for
+            machine_name: The machine name for nix evaluation and store operations.
             prompt_values: Optional dictionary of prompt values. If not provided, prompts will be asked interactively.
             no_sandbox: Whether to disable sandboxing when executing the generator
 
         """
+        if (
+            self._flake is None
+            or self._public_store is None
+            or self._secret_store is None
+        ):
+            msg = "Flake and stores must be set to execute generator"
+            raise ClanError(msg)
+
         if prompt_values is None:
             prompt_values = self.ask_prompts()
 
         # build temporary file tree of dependencies
-        decrypted_dependencies = self.decrypt_dependencies(
-            machine,
-            machine.secret_vars_store,
-            machine.public_vars_store,
-        )
+        decrypted_dependencies = self.decrypt_dependencies(machine_name)
 
         def get_prompt_value(prompt_name: str) -> str:
             try:
@@ -583,7 +593,7 @@ class Generator:
                     value = get_prompt_value(prompt.name)
                     prompt_file.write_text(value)
 
-            final_script = self.final_script(machine)
+            final_script = self.final_script(machine_name)
 
             if sys.platform == "linux" and bwrap.bubblewrap_works():
                 from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
@@ -621,35 +631,31 @@ class Generator:
                             msg += f"  - {f.name}\n"
                     raise ClanError(msg)
                 if file.secret:
-                    file_paths = machine.secret_vars_store.set(
+                    file_paths = self._secret_store.set(
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine.name,
+                        machine_name,
                     )
                     secret_changed = True
                 else:
-                    file_paths = machine.public_vars_store.set(
+                    file_paths = self._public_store.set(
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine.name,
+                        machine_name,
                     )
                     public_changed = True
                 files_to_commit.extend(file_paths)
 
             validation = self.validation()
             if public_changed:
-                files_to_commit += machine.public_vars_store.set_validation(
-                    self, validation
-                )
+                files_to_commit += self._public_store.set_validation(self, validation)
             if secret_changed:
-                files_to_commit += machine.secret_vars_store.set_validation(
-                    self, validation
-                )
+                files_to_commit += self._secret_store.set_validation(self, validation)
 
         commit_files(
             files_to_commit,
-            machine.flake_dir,
-            f"Update vars via generator {self.name} for machine {machine.name}",
+            self._flake.path,
+            f"Update vars via generator {self.name} for machine {machine_name}",
         )
