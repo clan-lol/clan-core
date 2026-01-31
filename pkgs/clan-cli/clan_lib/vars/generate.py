@@ -57,7 +57,6 @@ def get_generator_prompt_previous_values(
 
     """
     generators = get_machine_generators([machine.name], machine.flake)
-    secret_cache: dict[Path, bytes] = {}
     results = []
 
     for identifier in prompt_identifiers:
@@ -84,7 +83,7 @@ def get_generator_prompt_previous_values(
             )
             continue
 
-        prev_value = gen.get_previous_value(prompt, secret_cache=secret_cache)
+        prev_value = gen.get_previous_value(prompt)
         results.append(
             GeneratorPromptValue(
                 generator_name=identifier.generator_name,
@@ -227,9 +226,10 @@ def _default_prompt_func(auto_accept_prompts: bool) -> PromptFunc:
     def prompt_func(g: Generator) -> dict[str, str]:
         prompt_values: dict[str, str] = {}
         for prompt in g.prompts:
+            previous_value = g.get_previous_value(prompt)
             # Auto-accept if enabled and previous value exists
-            if auto_accept_prompts and prompt.previous_value is not None:
-                prompt_values[prompt.name] = prompt.previous_value
+            if auto_accept_prompts and previous_value is not None:
+                prompt_values[prompt.name] = previous_value
             else:
                 # Ask interactively
                 var_id = f"{g.name}/{prompt.name}"
@@ -238,7 +238,7 @@ def _default_prompt_func(auto_accept_prompts: bool) -> PromptFunc:
                     prompt.prompt_type,
                     prompt.description if prompt.description != prompt.name else None,
                     g.machines,
-                    previous_value=prompt.previous_value,
+                    previous_value=previous_value,
                 )
         return prompt_values
 

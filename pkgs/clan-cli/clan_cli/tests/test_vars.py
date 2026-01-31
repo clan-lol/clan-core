@@ -1389,7 +1389,7 @@ def test_api_set_prompts(
     assert len(generators) == 1
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"
-    assert generators[0].prompts[0].previous_value == "input2"
+    assert generators[0].get_previous_value(generators[0].prompts[0]) == "input2"
 
 
 @pytest.mark.with_core
@@ -2266,7 +2266,7 @@ def test_get_generators_only_decrypts_requested_machines(
     # Verify we got the generator with previous value
     assert len(generators) == 1
     assert generators[0].name == "my_generator"
-    assert generators[0].prompts[0].previous_value == "secret1"
+    assert generators[0].get_previous_value(generators[0].prompts[0]) == "secret1"
 
     # Verify we only decrypted machine1's secret, not machine2's
     decrypted_path_strs = [str(p) for p in decrypted_paths]
