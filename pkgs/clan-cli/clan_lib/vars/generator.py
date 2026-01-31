@@ -424,7 +424,10 @@ class Generator:
                 self, prompt.name, cache=self._secret_cache
             ).decode()
 
-        self._previous_values[prompt.name] = result
+        if result is not None:
+            # Cache the result. Don't cache "None"
+            self._previous_values[prompt.name] = result
+
         return result
 
     def final_script_selector(self, machine_name: str) -> str:
