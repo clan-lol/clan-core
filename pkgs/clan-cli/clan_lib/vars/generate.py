@@ -84,7 +84,7 @@ def get_generator_prompt_previous_values(
             )
             continue
 
-        prev_value = gen.get_previous_value(machine, prompt, secret_cache=secret_cache)
+        prev_value = gen.get_previous_value(prompt, secret_cache=secret_cache)
         results.append(
             GeneratorPromptValue(
                 generator_name=identifier.generator_name,
@@ -331,9 +331,8 @@ def run_generators(
     for generator in generators_to_run:
         if not generator.machines:
             continue
-        first_machine = Machine(name=generator.machines[0], flake=flake)
         generator.execute(
-            machine=first_machine,
+            machine_name=generator.machines[0],
             prompt_values=prompt_values.get(generator.name, {}),
             no_sandbox=no_sandbox,
         )
