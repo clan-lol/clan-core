@@ -73,9 +73,9 @@
         "clanServices/hello-world/default.nix"
         "sops/secrets/test-backup-age.key/secret"
         "pkgs/clan-cli/clan_lib/nix_models/typing.py"
-        # site does its own fmt checking while linting
+        # Clan site does its own fmt checking while linting
         # because of the difficult of supporting prettier plugins
-        "pkgs/site/*"
+        "pkgs/clan-site/*"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"
