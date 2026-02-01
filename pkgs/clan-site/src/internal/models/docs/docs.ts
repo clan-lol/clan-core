@@ -50,6 +50,9 @@ export class Docs {
           if (path === "/index") {
             return ["/", fn];
           }
+          if (path.endsWith("/index")) {
+            return [path.slice(0, -"/index".length), fn];
+          }
           return [path, fn];
         },
       ),

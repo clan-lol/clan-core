@@ -19,8 +19,6 @@ buildNpmPackage (finalAttrs: {
   preBuild = ''
     mkdir -p src/docs
     cp -r ${docs-markdowns}/* src/docs
-    chmod -R +w src/docs
-    mv src/docs/reference/index.md src/docs/reference.md
 
     mkdir -p src/lib/assets/icons
     cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
