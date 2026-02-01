@@ -68,10 +68,17 @@
                       description = "The field name for the secret";
                     };
                     extraSettings = lib.mkOption {
-                      type = lib.types.attrsOf lib.types.str;
+                      type = lib.types.attrsOf (
+                        lib.types.oneOf [
+                          lib.types.str
+                          lib.types.int
+                          lib.types.bool
+                        ]
+                      );
                       default = { };
                       description = ''
                         Extra settings for the provider.
+                        Supports strings, integers, and booleans for JSON compatibility.
                         Provider specific settings: https://github.com/qdm12/ddns-updater#configuration
                       '';
                     };
