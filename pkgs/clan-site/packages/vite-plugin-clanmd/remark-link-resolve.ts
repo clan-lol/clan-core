@@ -43,20 +43,7 @@ const remarkLinkResolve: Plugin<[Record<string, `/${string}`>], Root> =
       const relative = path.relative(file.cwd, file.path);
       const results = await Promise.allSettled(
         nodes.map(async (node) => {
-          let target = node.url.replace(/#.*/v, "");
-          if (relative === "src/docs/reference.md") {
-            switch (target) {
-              case "../reference/clan.core/index.md":
-              case "../reference/cli/index.md":
-              case "../services/definition.md": {
-                target = target.slice(1);
-                break;
-              }
-              default: {
-                break;
-              }
-            }
-          }
+          const target = node.url.replace(/#.*/v, "");
           const p = path.resolve(file.cwd, relative, "..", target);
           try {
             await fs.access(p, fs.constants.R_OK);
