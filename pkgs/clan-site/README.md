@@ -1,38 +1,31 @@
-# sv
+# Clan Site
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+This is the source code for the whole clan site. It includes the home page, the blog, the documentation etc.
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+To start the dev server
 
 ```sh
-npm run dev
+clan-site
+```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+Add `-b` to open the site in a new browser tab
+
+```sh
+clan-site -b
 ```
 
 ## Building
 
-To create a production version of your app:
+To create a production version of the site:
 
 ```sh
-npm run build
+clan-site build
 ```
 
-You can preview the production build with `npm run preview`.
+Add `-b` to preview the build result in a new browser tab
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+clan-site build -b
+```

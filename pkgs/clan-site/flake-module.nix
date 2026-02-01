@@ -2,16 +2,16 @@
   perSystem =
     {
       pkgs,
-      self',
       config,
       ...
     }:
     {
-      packages.clan-site = pkgs.callPackage ./default.nix { inherit (self'.packages) docs-markdowns; };
+      packages.clan-site = pkgs.callPackage ./default.nix {
+        inherit (config.packages) docs-markdowns;
+      };
 
-      devShells.clan-site = pkgs.mkShell {
-        shellHook = self'.packages.clan-site.preBuild;
-        inputsFrom = [ self'.packages.clan-site ];
+      devShells.clan-site = pkgs.callPackage ./shell.nix {
+        inherit (config.packages) clan-site;
       };
 
       checks = config.packages.clan-site.tests;
