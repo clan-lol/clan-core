@@ -598,7 +598,7 @@ class Generator:
 
             final_script = self.final_script(machine_name)
 
-            if sys.platform == "linux" and bwrap.bubblewrap_works():
+            if sys.platform == "linux" and bwrap.bubblewrap_works() and not no_sandbox:
                 from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
 
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
