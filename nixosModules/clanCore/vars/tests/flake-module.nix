@@ -15,6 +15,7 @@
             { pkgs, lib, ... }:
             {
               clan.core.vars.settings.secretStore = "password-store";
+              clan.core.vars.enableConsistencyCheck = false;
 
               # Create a test var that will be installed
               clan.core.vars.generators.test-secret = {

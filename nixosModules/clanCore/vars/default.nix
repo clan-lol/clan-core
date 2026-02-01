@@ -15,31 +15,34 @@ in
     ./secret/fs.nix
     ./secret/sops
     ./secret/vm.nix
-
     {
-      warnings =
-        lib.optionals
-          (
-            options.clanConfig.isDefined
-            &&
-              config.clanConfig.clanInternals.vars.settings.secretStore
-              != config.clan.core.vars.settings.secretStore
-          )
-          [
-            ''
-              [DEPRECATED] Machine-level vars backend configuration is deprecated and will be removed in a future release.
+      assertions = lib.mkIf config.clan.core.vars.enableConsistencyCheck [
+        {
+          assertion =
+            !(
+              options.clanConfig.isDefined
+              &&
+                config.clanConfig.clanInternals.vars.settings.secretStore
+                != config.clan.core.vars.settings.secretStore
+            );
+          message = ''
+            [DEPRECATED] Machine-level vars backend configuration is deprecated and will be removed in a future release.
 
-              Please move your vars backend selection to the flake/clan level:
+            Machine: '${config.clan.core.settings.machine.name}' uses (${config.clan.core.vars.settings.secretStore}),
+            while your clan uses (${config.clanConfig.clanInternals.vars.settings.secretStore})
 
-              ```
-              # clan.nix / flake.nix
+            Please move your vars backend selection to the 'clan' level:
 
-              clan.vars.settings.secretStore = "${config.clan.core.vars.settings.secretStore}";
-              ```
+            ```
+            # clan.nix / flake.nix
 
-              Remove the machine-level configuration.
-            ''
-          ];
+            clan.vars.settings.secretStore = "${config.clan.core.vars.settings.secretStore}";
+            ```
+
+            Remove the machine-level configuration.
+          '';
+        }
+      ];
     }
   ]
   ++ lib.optionals (_class == "nixos") [
@@ -62,6 +65,17 @@ in
         {
           inherit pkgs;
           globalSettings = lib.mkIf options.clanConfig.isDefined config.clanConfig.vars.settings;
+        }
+        {
+          options.enableConsistencyCheck = lib.mkOption {
+            default = true;
+            internal = true;
+            visible = false;
+            description = ''
+              Disable consistency assertions between this machine and its hosting clan.
+              Tempoprary workaround because the nixos test-framework uses clan-core as clan.
+            '';
+          };
         }
       ];
     };

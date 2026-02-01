@@ -18,6 +18,10 @@
       { lib, ... }:
       {
         clan.core.vars.settings.secretStore = lib.mkForce "password-store";
+        # Temporary Hack!!
+        # Disable the consistency check between clan-core and this machine.
+        # Since clan-core is a clan which uses sops, we need to disable assertions.
+        clan.core.vars.enableConsistencyCheck = false;
 
         # Override from test-install-machine-without-system
         system.activationScripts.test-vars-activation.text = lib.mkForce ''
