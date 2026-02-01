@@ -3,8 +3,8 @@
 {
   imports = [
     ./clan-app/flake-module.nix
+    ./clan-site/flake-module.nix
     ./clan-cli/flake-module.nix
-    ./site/flake-module.nix
     ./clan-core-flake/flake-module.nix
     ./icon-update/flake-module.nix
     ./installer/flake-module.nix

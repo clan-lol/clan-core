@@ -1,0 +1,13 @@
+{
+  "name": "vite-plugin-config",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.ts",
+  "engines": {
+    "node": ">= 22.0.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}
