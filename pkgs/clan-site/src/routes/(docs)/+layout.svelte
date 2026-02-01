@@ -9,7 +9,7 @@
   import favicon from "$lib/assets/favicon.svg";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
-  import "../base.css";
+  import "~/base.css";
 
   const { data, children } = $props();
   const docs = $derived(data.docs);

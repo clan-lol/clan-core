@@ -31,10 +31,6 @@ export interface ExternlNavLink {
 
 export type Badge = Exclude<BadgeInput, string>;
 
-function isPath(s: unknown): s is Path {
-  return typeof s === "string" && s.startsWith("/");
-}
-
 export function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
   if (badge == null) {
     return null;
@@ -147,4 +143,8 @@ export async function normalizeNavItem(
     badge: normalizeBadge(navItem.badge),
     external,
   };
+}
+
+function isPath(s: unknown): s is Path {
+  return typeof s === "string" && s.startsWith("/");
 }

@@ -23,6 +23,19 @@ const svelteConfig: Config = {
       "~": new URL("src", import.meta.url).pathname,
       $internal: new URL("src/internal", import.meta.url).pathname,
     },
+    typescript: {
+      config(config) {
+        config["include"] = [...(config["include"] as string[]), "../*.ts"];
+        const compOpts = config["compilerOptions"] as Record<string, unknown>;
+        config["compilerOptions"] = {
+          ...compOpts,
+          paths: {
+            ...(compOpts["paths"] as Record<string, unknown>),
+            $config: ["../clan-site.config.ts"],
+          },
+        };
+      },
+    },
     version: {
       name: siteConfig.ver,
     },

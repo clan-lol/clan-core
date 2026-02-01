@@ -11,6 +11,7 @@ export interface Heading {
   content: string;
   children: Heading[];
 }
+
 declare module "vfile" {
   interface DataMap {
     matter: Frontmatter;

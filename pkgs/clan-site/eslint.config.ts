@@ -1,6 +1,6 @@
 import { defineConfig } from "eslint/config";
 import globals from "globals";
-import importPlugin from "eslint-plugin-import";
+import { importX } from "eslint-plugin-import-x";
 import js from "@eslint/js";
 import node from "eslint-plugin-n";
 import perfectionist from "eslint-plugin-perfectionist";
@@ -17,9 +17,11 @@ export default defineConfig(
   },
   js.configs.all,
   ts.configs.all,
+  // @ts-expect-error @typescript-eslint's config is not strict enough to support tsconfig's exactOptionalPropertyTypes
+  importX.flatConfigs.recommended,
+  importX.flatConfigs.typescript,
   unicorn.configs.all,
   svelte.configs.all,
-  promisePlugin.configs["flat/recommended"],
   prettier,
   svelte.configs.prettier,
   {
@@ -31,6 +33,14 @@ export default defineConfig(
     },
   },
   {
+    plugins: {
+      // Only some of eslint-plugin-promise's rules make sense, so they are
+      // turned on individually
+      promise: promisePlugin,
+      // All perfectionist's rules are for sorting things, so they are
+      // turned on individually
+      perfectionist,
+    },
     /* eslint-disable @typescript-eslint/naming-convention */
     rules: {
       // Typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
@@ -38,42 +48,27 @@ export default defineConfig(
       "no-undef": "off",
       // Key order sometimes has an conventional order, e.g., "name" comes be "age"
       "sort-keys": "off",
-      "no-named-export": "off",
-      "group-exports": "off",
-      "prefer-default-export": "off",
-      "no-async-await": "off",
-      "no-namespace": "off",
       // Explicitly using == null is conventional to check either null or undefined
       "no-eq-null": "off",
       // File name should provide the meaning
-      "no-anonymous-default-export": "off",
       "no-default-export": "off",
       // Rely on perfectionist/sort-imports instead
       "sort-imports": "off",
       // Identifiers like i, or T in generic types are pretty conventional
       "id-length": "off",
-      // Having to break up statements like const foo = (bar["key"] ??= "val")
-      // is painful. All issues mentioned by the rule's document can eithter be
-      // solve by typescript
-      "no-multi-assign": "off",
-      "no-optional-chaining": "off",
       "max-lines-per-function": "off",
       "max-statements": "off",
       "max-lines": "off",
       "max-classes-per-file": "off",
-      "no-rest-spread-properties": "off",
       // In clash with ts(7030): Not all code paths return a value
       "no-useless-return": "off",
-      // The same as typescript/no-this-alias
-      "no-this-assignment": "off",
       "no-continue": "off",
       "no-ternary": "off",
-      "no-unassigned-import": "off",
       "max-dependencies": "off",
       "no-warning-comments": "off",
-      // Rely on ts(2454) instead
-      "no-unassigned-vars": "off",
       "one-var": ["error", "never"],
+      "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
+      "no-inline-comments": ["error", { ignorePattern: "@vite-ignore" }],
       "require-unicode-regexp": ["error", { requireFlag: "v" }],
       eqeqeq: ["error", "always", { null: "ignore" }],
       "no-console": ["error", { allow: ["warn", "error"] }],
@@ -113,6 +108,10 @@ export default defineConfig(
       "@typescript-eslint/explicit-member-accessibility": "off",
       // Casting to a narrower type is sometime necessary
       "@typescript-eslint/no-unsafe-type-assertion": "off",
+      "@typescript-eslint/no-use-before-define": [
+        "error",
+        { functions: false },
+      ],
       "@typescript-eslint/no-floating-promises": [
         "error",
         { ignoreIIFE: true },
@@ -129,14 +128,29 @@ export default defineConfig(
           ignorePrimitives: { string: true },
         },
       ],
-      "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
-      "no-inline-comments": ["error", { ignorePattern: "@vite-ignore" }],
-      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      // This creates a lot of false positive. Rely on typescript to catch duplicates instead.
+      // https://github.com/un-ts/eslint-plugin-import-x/issues/308
+      "import-x/no-duplicates": "off",
+      // Typescript already reports such errors
+      "import-x/no-unresolved": "off",
+      // Typescript already reports such errors
+      "import-x/default": "off",
+      // Sometimes a package exports a named export that is the same as a
+      // property of the default export, which this rules incorrectly warns
+      "import-x/no-named-as-default-member": "off",
+      "import-x/no-deprecated": "error",
+      "import-x/no-extraneous-dependencies": "error",
+      "import-x/no-mutable-exports": "error",
+      "import-x/no-empty-named-blocks": "error",
+      "import-x/newline-after-import": "error",
+      // Enforce only way to import default exports
+      "import-x/no-named-default": "error",
+      "import-x/consistent-type-specifier-style": ["error", "prefer-top-level"],
       // We require explicit file extensions in import paths to align with
       // Node.js ESM requirements. Since our Vite config and plugins already run
       // as ES Modules, we’re maintaining this style across the entire project
       // for Consistency.
-      "import/extensions": [
+      "import-x/extensions": [
         "error",
         "always",
         {
@@ -155,6 +169,15 @@ export default defineConfig(
           ],
         },
       ],
+      "promise/no-multiple-resolved": "error",
+      "promise/no-new-statics": "error",
+      "promise/no-promise-in-callback": "error",
+      "promise/prefer-await-to-callbacks": "error",
+      "promise/prefer-await-to-then": "error",
+      "promise/param-names": "error",
+      "promise/valid-params": "error",
+      // The same as import/no-empty-named-blocks
+      "unicorn/require-module-specifiers": "off",
       "unicorn/prefer-export-from": ["error", { ignoreUsedVariables: true }],
       // Sometimes inline functions are need to infer types
       "unicorn/consistent-function-scoping": "off",
@@ -175,17 +198,27 @@ export default defineConfig(
           name: "err",
         },
       ],
+      "perfectionist/sort-named-imports": "error",
+      "perfectionist/sort-imports": [
+        "error",
+        {
+          sortBy: "specifier",
+          newlinesBetween: 0,
+          tsconfig: { rootDir: "." },
+          groups: ["type", "value-import", "side-effect", "unknown"],
+        },
+      ],
     },
   },
   {
     files: ["**/*.d.ts"],
     rules: {
       // Module argument files can use `export {}`
-      "unicorn/require-module-specifiers": "off",
+      "import/no-empty-named-blocks": "off",
     },
   },
   {
-    files: ["./*.ts", "./packages/vite-plugin-clanmd/**/*.ts"],
+    files: ["./*.ts", "./packages/vite-plugin-*/**/*.ts"],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -211,10 +244,11 @@ export default defineConfig(
       // Ideally, ["error", { requireFlag: "v" }] should be used, but browser
       // support is not great right now
       "require-unicode-regexp": "off",
+      "import-x/no-nodejs-modules": "error",
     },
   },
   {
-    files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+    files: ["**/*.svelte", "**/*.svelte.ts"],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -242,39 +276,12 @@ export default defineConfig(
       // Template like {@render navItems(item.items)} report such an error,
       // where it shouldn't
       "@typescript-eslint/no-confusing-void-expression": "off",
-      // Calling Svelte snippets can report such an error where it shouldn't
-      "@typescript-eslint/no-use-before-define": "off",
       "svelte/block-lang": ["error", { script: ["ts"] }],
       // Deprecated rule
       // https://sveltejs.github.io/eslint-plugin-svelte/rules/no-navigation-without-base/
       "svelte/no-navigation-without-base": "off",
       "svelte/no-unused-class-name": "off",
       "svelte/consistent-selector-style": "off",
-    },
-  },
-  {
-    plugins: {
-      import: importPlugin,
-      perfectionist,
-    },
-    rules: {
-      "import/enforce-node-protocol-usage": ["error", "always"],
-      "import/no-relative-packages": "error",
-      "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-      "import/newline-after-import": "error",
-      "import/no-useless-path-segments": "error",
-      "import/no-absolute-path": "error",
-      "import/no-duplicates": "error",
-      "perfectionist/sort-named-imports": "error",
-      "perfectionist/sort-imports": [
-        "error",
-        {
-          sortBy: "specifier",
-          newlinesBetween: 0,
-          tsconfig: { rootDir: "." },
-          groups: ["type", "value-import", "side-effect", "unknown"],
-        },
-      ],
     },
   },
 );

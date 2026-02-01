@@ -1,11 +1,8 @@
 declare module "eslint-plugin-promise" {
-  import type { ConfigObject } from "@eslint/core";
+  import type { RuleDefinition } from "@eslint/core";
 
-  /* eslint-disable @typescript-eslint/naming-convention */
   const plugin: {
-    configs: {
-      "flat/recommended": ConfigObject;
-    };
+    rules: Record<string, RuleDefinition>;
   };
   export default plugin;
 }
