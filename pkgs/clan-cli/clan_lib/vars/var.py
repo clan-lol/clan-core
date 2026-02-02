@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
+from clan_lib.term_log import log_machine
 
 if TYPE_CHECKING:
     from ._types import GeneratorStore, StoreBase
@@ -57,7 +58,13 @@ class Var:
         if self._generator is None:
             msg = "Generator cannot be None"
             raise ClanError(msg)
-        return self._store.set(self._generator, self, value, machine)
+        return self._store.set(
+            self._generator,
+            self,
+            value,
+            machine,
+            log_info=lambda msg: log_machine(msg, machine_name=machine),
+        )
 
     @property
     def exists(self) -> bool:
