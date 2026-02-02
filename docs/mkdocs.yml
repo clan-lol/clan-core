@@ -97,7 +97,8 @@ nav:
           - Community Disko Templates: guides/disko-templates/community.md
       - Migrations:
           - Convert existing NixOS configurations: guides/migrations/convert-existing-NixOS-configuration.md
-          - clan modules to clan services: guides/migrations/migrate-inventory-services.md
+          - Admin clan service: guides/migrations/migrate-admin-service.md
+          - Clan modules to clan services: guides/migrations/migrate-inventory-services.md
           - Facts to Vars: guides/migrations/migration-facts-vars.md
           - Disk id: guides/migrations/disk-id.md
       - Disk Encryption: guides/disk-encryption.md

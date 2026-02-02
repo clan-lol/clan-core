@@ -14,7 +14,7 @@
           { ... }:
           {
             warnings = [
-              "The clanServices/admin module is deprecated and will be removed in a future release."
+              "The clanServices/admin module is deprecated. See the migration guide: https://docs.clan.lol/main/guides/migrations/migrate-admin-service/"
             ];
           };
       };
