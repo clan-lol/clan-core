@@ -112,12 +112,12 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         # Use entry_dir as cache key (it's a logical path, not filesystem path)
-        cache_key = self.entry_dir(generator.key, name)
+        cache_key = self.entry_dir(generator, name)
         if cache is not None and cache_key in cache:
             return cache[cache_key]
         pass_name = str(cache_key)
@@ -210,7 +210,7 @@ class SecretStore(StoreBase):
                         if not file.secret:
                             continue
                         tar_file = tarfile.TarInfo(name=f"{generator.name}/{file.name}")
-                        content = self.get(generator, file.name)
+                        content = self.get(generator.key, file.name)
                         tar_file.size = len(content)
                         tar_file.mode = file.mode
                         user_tar.addfile(tarinfo=tar_file, fileobj=io.BytesIO(content))
@@ -231,7 +231,7 @@ class SecretStore(StoreBase):
                             tar.addfile(tarinfo=tar_dir)
                             dir_exists = True
                         tar_file = tarfile.TarInfo(name=f"{generator.name}/{file.name}")
-                        content = self.get(generator, file.name)
+                        content = self.get(generator.key, file.name)
                         tar_file.size = len(content)
                         tar_file.mode = file.mode
                         tar_file.uname = file.owner

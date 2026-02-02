@@ -39,11 +39,11 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
-        secret_file = self.dir / generator.key.name / name
+        secret_file = self.dir / generator.name / name
         if cache is not None and secret_file in cache:
             return cache[secret_file]
         value = secret_file.read_bytes()

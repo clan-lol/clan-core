@@ -210,11 +210,11 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
-        path = self.secret_path(generator.key, name)
+        path = self.secret_path(generator, name)
         if cache is not None and path in cache:
             return cache[path]
         value = decrypt_secret(

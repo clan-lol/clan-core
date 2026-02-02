@@ -137,7 +137,7 @@ class StoreBase(ABC):
     @abstractmethod
     def get(
         self,
-        generator: "GeneratorStore",
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -241,7 +241,7 @@ class StoreBase(ABC):
                 old_val = None
                 old_val_str = "********"
             else:
-                old_val = self.get(generator, var.name)
+                old_val = self.get(generator.key, var.name)
                 old_val_str = string_repr(old_val)
         else:
             old_val = None

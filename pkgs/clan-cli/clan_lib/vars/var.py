@@ -41,7 +41,7 @@ class Var:
             msg = f"Var {self.id} has not been generated yet"
             raise ValueError(msg)
         # try decode the value or return <binary blob>
-        return self._store.get(self._generator, self.name)
+        return self._store.get(self._generator.key, self.name)
 
     @property
     def printable_value(self) -> str:

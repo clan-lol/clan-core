@@ -210,9 +210,9 @@ def test_generate_public_and_secret_vars(
     assert not in_repo_store.exists(my_generator.key, "my_secret")
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator.key, "my_secret")
-    assert sops_store.get(my_generator, "my_secret").decode().startswith("secret")
+    assert sops_store.get(my_generator.key, "my_secret").decode().startswith("secret")
     assert sops_store.exists(dependent_generator.key, "my_secret")
-    secret_value = sops_store.get(dependent_generator, "my_secret").decode()
+    secret_value = sops_store.get(dependent_generator.key, "my_secret").decode()
     assert secret_value.startswith("shared")
 
     assert "my_generator/my_value: public" in vars_text
@@ -254,7 +254,7 @@ def test_generate_public_and_secret_vars(
     # test stuff actually changed after regeneration
     public_value_new = get_machine_var(machine, "my_generator/my_value").printable_value
     assert public_value_new != public_value, "Value should change after regeneration"
-    secret_value_new = sops_store.get(dependent_generator, "my_secret").decode()
+    secret_value_new = sops_store.get(dependent_generator.key, "my_secret").decode()
     assert secret_value_new != secret_value, (
         "Secret value should change after regeneration"
     )
@@ -289,7 +289,7 @@ def test_generate_public_and_secret_vars(
     )
     # test that the dependent generator is also regenerated (because it depends on my_shared_generator)
     secret_value_after_regeneration = sops_store.get(
-        dependent_generator,
+        dependent_generator.key,
         "my_secret",
     ).decode()
     assert secret_value_after_regeneration != secret_value_new, (
@@ -332,7 +332,7 @@ def test_generate_public_and_secret_vars(
     assert sops_store.exists(dependent_generator.key, "my_secret"), (
         "Dependent generator's secret should be generated"
     )
-    secret_value_clean = sops_store.get(dependent_generator, "my_secret").decode()
+    secret_value_clean = sops_store.get(dependent_generator.key, "my_secret").decode()
     assert secret_value_clean == shared_value_clean, (
         "Dependent generator's secret should match the shared value"
     )
@@ -384,9 +384,9 @@ def test_generate_secret_var_sops_with_default_group(
     assert not in_repo_store.exists(first_generator.key, "my_secret")
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(first_generator.key, "my_secret")
-    assert sops_store.get(first_generator, "my_secret").decode() == "hello\n"
+    assert sops_store.get(first_generator.key, "my_secret").decode() == "hello\n"
     assert sops_store.exists(second_generator.key, "my_secret")
-    assert sops_store.get(second_generator, "my_secret").decode() == "hello\n"
+    assert sops_store.get(second_generator.key, "my_secret").decode() == "hello\n"
 
     # add another user to the group and check if secret gets re-encrypted
     pubkey_user2 = sops_setup.keys[1]
@@ -664,7 +664,7 @@ def test_generate_secret_var_password_store(
         machines=["my_machine"],
         _flake=flake_obj,
     )
-    assert store.get(generator, "my_secret").decode() == "hello\n"
+    assert store.get(generator.key, "my_secret").decode() == "hello\n"
     vars_text = stringify_all_vars(machine)
     assert "my_generator/my_secret" in vars_text
 
@@ -754,15 +754,15 @@ def test_generate_secret_for_multiple_machines(
 
     assert in_repo_store1.exists(gen1.key, "my_value")
     assert in_repo_store2.exists(gen2.key, "my_value")
-    assert in_repo_store1.get(gen1, "my_value").decode() == "machine1\n"
-    assert in_repo_store2.get(gen2, "my_value").decode() == "machine2\n"
+    assert in_repo_store1.get(gen1.key, "my_value").decode() == "machine1\n"
+    assert in_repo_store2.get(gen2.key, "my_value").decode() == "machine2\n"
     # check if secret vars have been created correctly
     sops_store1 = sops.SecretStore(flake=flake_obj)
     sops_store2 = sops.SecretStore(flake=flake_obj)
     assert sops_store1.exists(gen1.key, "my_secret")
     assert sops_store2.exists(gen2.key, "my_secret")
-    assert sops_store1.get(gen1, "my_secret").decode() == "machine1\n"
-    assert sops_store2.get(gen2, "my_secret").decode() == "machine2\n"
+    assert sops_store1.get(gen1.key, "my_secret").decode() == "machine1\n"
+    assert sops_store2.get(gen2.key, "my_secret").decode() == "machine2\n"
 
 
 @pytest.mark.with_core
@@ -845,18 +845,20 @@ def test_prompt(
     # Verify that non-persistent prompts created public vars correctly
     in_repo_store = in_repo.VarsStore(flake=flake_obj)
     assert in_repo_store.exists(my_generator.key, "line_value")
-    assert in_repo_store.get(my_generator, "line_value").decode() == "line input"
+    assert in_repo_store.get(my_generator.key, "line_value").decode() == "line input"
 
     assert in_repo_store.exists(my_generator.key, "multiline_value")
     assert (
-        in_repo_store.get(my_generator, "multiline_value").decode()
+        in_repo_store.get(my_generator.key, "multiline_value").decode()
         == "my\nmultiline\ninput\n"
     )
 
     # Verify that persistent prompt was stored as a secret
     sops_store = sops.SecretStore(flake=flake_obj)
     assert sops_store.exists(my_generator_with_details.key, "prompt_persist")
-    assert sops_store.get(my_generator, "prompt_persist").decode() == "prompt_persist"
+    assert (
+        sops_store.get(my_generator.key, "prompt_persist").decode() == "prompt_persist"
+    )
 
 
 @pytest.mark.with_core
@@ -959,10 +961,11 @@ def test_prompt_prefill_on_regeneration(
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
-    assert in_repo_store.get(generator, "10_prompt1").decode() == "initial_value"
-    assert sops_store.get(generator, "20_secret_prompt").decode() == "secret123"
+    assert in_repo_store.get(generator.key, "10_prompt1").decode() == "initial_value"
+    assert sops_store.get(generator.key, "20_secret_prompt").decode() == "secret123"
     assert (
-        in_repo_store.get(generator, "30_multiline_prompt").decode() == "line1\nline2"
+        in_repo_store.get(generator.key, "30_multiline_prompt").decode()
+        == "line1\nline2"
     )
 
     # Now extend the generator with a second prompt and change secret to multiline
@@ -1021,24 +1024,25 @@ def test_prompt_prefill_on_regeneration(
     assert child.exitstatus == 0, f"Second generation failed: {child.before}"
 
     # Verify that the first prompt value is preserved (user pressed enter on prefilled)
-    assert in_repo_store.get(generator, "10_prompt1").decode() == "initial_value", (
+    assert in_repo_store.get(generator.key, "10_prompt1").decode() == "initial_value", (
         "First prompt value should be preserved when user presses enter"
     )
 
     # Verify that the second prompt has the new value
-    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
+    assert in_repo_store.get(generator.key, "15_prompt2").decode() == "second_value", (
         "Second prompt should have the newly entered value"
     )
 
     # Verify multiline secret value
     assert (
-        sops_store.get(generator, "20_secret_prompt").decode()
+        sops_store.get(generator.key, "20_secret_prompt").decode()
         == "secret_line1\nsecret_line2"
     ), "Secret prompt should have multiline value"
 
     # Verify backspace across newlines worked in multiline prompt
     assert (
-        in_repo_store.get(generator, "30_multiline_prompt").decode() == "line1modified"
+        in_repo_store.get(generator.key, "30_multiline_prompt").decode()
+        == "line1modified"
     ), "Backspace should be able to delete across newline boundaries in multiline input"
 
     # Third generation:
@@ -1080,18 +1084,18 @@ def test_prompt_prefill_on_regeneration(
     assert child.exitstatus == 0, f"Third generation failed: {child.before}"
 
     # Verify that the first prompt value was changed
-    assert in_repo_store.get(generator, "10_prompt1").decode() == "modified_value", (
-        "First prompt value should be modified after backspace and new input"
-    )
+    assert (
+        in_repo_store.get(generator.key, "10_prompt1").decode() == "modified_value"
+    ), "First prompt value should be modified after backspace and new input"
 
     # Verify that the second prompt value is preserved
-    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
+    assert in_repo_store.get(generator.key, "15_prompt2").decode() == "second_value", (
         "Second prompt value should be preserved when user presses enter"
     )
 
     # Verify multiline secret value is preserved
     assert (
-        sops_store.get(generator, "20_secret_prompt").decode()
+        sops_store.get(generator.key, "20_secret_prompt").decode()
         == "secret_line1\nsecret_line2"
     ), "Secret prompt multiline value should be preserved when user presses Ctrl-D"
 
@@ -1128,14 +1132,14 @@ def test_prompt_prefill_on_regeneration(
     assert child.exitstatus == 0, f"Fourth generation failed: {child.before}"
 
     # Verify existing values are preserved (auto-accepted)
-    assert in_repo_store.get(generator, "10_prompt1").decode() == "modified_value", (
-        "First prompt should be auto-accepted without --regenerate"
-    )
-    assert in_repo_store.get(generator, "15_prompt2").decode() == "second_value", (
+    assert (
+        in_repo_store.get(generator.key, "10_prompt1").decode() == "modified_value"
+    ), "First prompt should be auto-accepted without --regenerate"
+    assert in_repo_store.get(generator.key, "15_prompt2").decode() == "second_value", (
         "Second prompt should be auto-accepted without --regenerate"
     )
     # Verify new prompt value was set
-    assert in_repo_store.get(generator, "25_prompt3").decode() == "third_value", (
+    assert in_repo_store.get(generator.key, "25_prompt3").decode() == "third_value", (
         "Third prompt should have the newly entered value"
     )
 
@@ -1245,8 +1249,8 @@ def test_shared_vars_regeneration(
     # generate for machine 2
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
     # child value should be the same on both machines
-    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
-        child_gen_m2, "my_value"
+    assert in_repo_store_1.get(child_gen_m1.key, "my_value") == in_repo_store_2.get(
+        child_gen_m2.key, "my_value"
     ), "Child values should be the same after initial generation"
 
     # regenerate on all machines
@@ -1254,8 +1258,8 @@ def test_shared_vars_regeneration(
         ["vars", "generate", "--flake", str(flake.path), "--regenerate"],
     )
     # ensure child value after --regenerate is the same on both machines
-    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
-        child_gen_m2, "my_value"
+    assert in_repo_store_1.get(child_gen_m1.key, "my_value") == in_repo_store_2.get(
+        child_gen_m2.key, "my_value"
     ), "Child values should be the same after regenerating all machines"
 
     # regenerate for machine 1
@@ -1263,8 +1267,8 @@ def test_shared_vars_regeneration(
         ["vars", "generate", "--flake", str(flake.path), "machine1", "--regenerate"]
     )
     # ensure child value after --regenerate is the same on both machines
-    assert in_repo_store_1.get(child_gen_m1, "my_value") == in_repo_store_2.get(
-        child_gen_m2, "my_value"
+    assert in_repo_store_1.get(child_gen_m1.key, "my_value") == in_repo_store_2.get(
+        child_gen_m2.key, "my_value"
     ), "Child values should be the same after regenerating machine1"
 
 
@@ -1316,13 +1320,13 @@ def test_multi_machine_shared_vars(
     # generate for machine 1
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
     # read out values for machine 1
-    m1_secret = sops_store_1.get(generator_m1, "my_secret")
-    m1_value = in_repo_store_1.get(generator_m1, "my_value")
+    m1_secret = sops_store_1.get(generator_m1.key, "my_secret")
+    m1_value = in_repo_store_1.get(generator_m1.key, "my_value")
     # generate for machine 2
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
     # ensure values are the same for both machines
-    assert sops_store_2.get(generator_m2, "my_secret") == m1_secret
-    assert in_repo_store_2.get(generator_m2, "my_value") == m1_value
+    assert sops_store_2.get(generator_m2.key, "my_secret") == m1_secret
+    assert in_repo_store_2.get(generator_m2.key, "my_value") == m1_value
 
     # ensure shared secret stays available for all machines after regeneration
     # regenerate for machine 1
@@ -1330,9 +1334,9 @@ def test_multi_machine_shared_vars(
         ["vars", "generate", "--flake", str(flake.path), "machine1", "--regenerate"],
     )
     # ensure values changed
-    new_secret_1 = sops_store_1.get(generator_m1, "my_secret")
-    new_value_1 = in_repo_store_1.get(generator_m1, "my_value")
-    new_secret_2 = sops_store_2.get(generator_m2, "my_secret")
+    new_secret_1 = sops_store_1.get(generator_m1.key, "my_secret")
+    new_value_1 = in_repo_store_1.get(generator_m1.key, "my_value")
+    new_secret_2 = sops_store_2.get(generator_m2.key, "my_secret")
     assert new_secret_1 != m1_secret
     assert new_value_1 != m1_value
     # ensure that both machines still have access to the same secret
@@ -1372,7 +1376,7 @@ def test_api_set_prompts(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
     assert store.exists(my_generator.key, "prompt1")
-    assert store.get(my_generator, "prompt1").decode() == "input1"
+    assert store.get(my_generator.key, "prompt1").decode() == "input1"
     run_generators(
         machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
         generators=["my_generator"],
@@ -1382,7 +1386,7 @@ def test_api_set_prompts(
             },
         },
     )
-    assert store.get(my_generator, "prompt1").decode() == "input2"
+    assert store.get(my_generator.key, "prompt1").decode() == "input2"
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     generators = get_generators(
@@ -1693,8 +1697,8 @@ def test_share_mode_switch_regenerates_secret(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
 
-    initial_public = in_repo_store.get(generator_not_shared, "my_value").decode()
-    initial_secret = sops_store.get(generator_not_shared, "my_secret").decode()
+    initial_public = in_repo_store.get(generator_not_shared.key, "my_value").decode()
+    initial_secret = sops_store.get(generator_not_shared.key, "my_secret").decode()
 
     # Verify initial values exist and have expected format
     assert initial_public.startswith("public")
@@ -1714,8 +1718,8 @@ def test_share_mode_switch_regenerates_secret(
         key=GeneratorId(name="my_generator", placement=Shared()),
     )
 
-    new_public = in_repo_store.get(generator_shared, "my_value").decode()
-    new_secret = sops_store.get(generator_shared, "my_secret").decode()
+    new_public = in_repo_store.get(generator_shared.key, "my_value").decode()
+    new_secret = sops_store.get(generator_shared.key, "my_secret").decode()
 
     # Verify that both values have changed (regenerated)
     assert new_public != initial_public, (
@@ -1850,7 +1854,7 @@ def test_generate_secret_var_password_store_minimal_select_calls(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
     assert store.exists(generator.key, "my_secret")
-    assert store.get(generator, "my_secret").decode() == "hello\n"
+    assert store.get(generator.key, "my_secret").decode() == "hello\n"
 
 
 @pytest.mark.with_core
@@ -1940,20 +1944,20 @@ def test_generate_secret_var_sops_minimal_select_calls(
         assert sops_store.exists(gen1.key, "secret1"), (
             f"secret1 missing for {machine_name}"
         )
-        assert sops_store.get(gen1, "secret1").decode() == "secret1"
+        assert sops_store.get(gen1.key, "secret1").decode() == "secret1"
         assert in_repo_store.exists(gen1.key, "value1"), (
             f"value1 missing for {machine_name}"
         )
-        assert in_repo_store.get(gen1, "value1").decode() == "value1"
+        assert in_repo_store.get(gen1.key, "value1").decode() == "value1"
 
         assert sops_store.exists(gen2.key, "secret2"), (
             f"secret2 missing for {machine_name}"
         )
-        assert sops_store.get(gen2, "secret2").decode() == "secret2"
+        assert sops_store.get(gen2.key, "secret2").decode() == "secret2"
         assert in_repo_store.exists(gen2.key, "value2"), (
             f"value2 missing for {machine_name}"
         )
-        assert in_repo_store.get(gen2, "value2").decode() == "value2"
+        assert in_repo_store.get(gen2.key, "value2").decode() == "value2"
 
 
 @pytest.mark.with_core
@@ -2121,7 +2125,7 @@ def test_shared_generator_allows_machine_specific_differences(
     )
 
     assert sops_store.exists(shared_generator.key, "file")
-    assert sops_store.get(shared_generator, "file").decode() == "secret"
+    assert sops_store.get(shared_generator.key, "file").decode() == "secret"
 
 
 @pytest.mark.with_core

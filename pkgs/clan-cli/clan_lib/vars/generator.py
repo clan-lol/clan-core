@@ -398,8 +398,8 @@ class Generator:
 
         # Also check if validation hashes are up to date
         return self._secret_store.hash_is_valid(
-            self.key, target_hash=self.validation()
-        ) and self._public_store.hash_is_valid(self.key, target_hash=self.validation())
+            self.key, self.validation()
+        ) and self._public_store.hash_is_valid(self.key, self.validation())
 
     def get_previous_value(
         self,
@@ -422,10 +422,10 @@ class Generator:
 
         result: str | None = None
         if self._public_store.exists(self.key, prompt.name):
-            result = self._public_store.get(self, prompt.name).decode()
+            result = self._public_store.get(self.key, prompt.name).decode()
         elif self._secret_store.exists(self.key, prompt.name):
             result = self._secret_store.get(
-                self, prompt.name, cache=self._secret_cache
+                self.key, prompt.name, cache=self._secret_cache
             ).decode()
 
         if result is not None:
@@ -508,12 +508,12 @@ class Generator:
             for file in dep_files:
                 if file.secret:
                     result[dep_key.name][file.name] = self._secret_store.get(
-                        dep_generator,
+                        dep_generator.key,
                         file.name,
                     )
                 else:
                     result[dep_key.name][file.name] = self._public_store.get(
-                        dep_generator,
+                        dep_generator.key,
                         file.name,
                     )
         return result

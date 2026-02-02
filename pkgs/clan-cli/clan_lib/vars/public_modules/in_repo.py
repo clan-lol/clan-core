@@ -48,11 +48,11 @@ class VarsStore(StoreBase):
     # get a single fact
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,  # noqa: ARG002
     ) -> bytes:
-        return (self.directory(generator.key, name) / "value").read_bytes()
+        return (self.directory(generator, name) / "value").read_bytes()
 
     def exists(self, generator: GeneratorId, name: str) -> bool:
         return (self.directory(generator, name) / "value").exists()
