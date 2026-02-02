@@ -212,11 +212,11 @@ Now, activate the environment using one of the following methods.
 
 You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
 
-- `meta.name` will reflect the name of your clan. It is recommended to use the same name you entered during the creation process.
+- `meta.name` will reflect the name of your clan.
 - `meta.domain` will function as your internal top level domain. Select something catchy!
-- `meta.description` is optional, we recommend using it for easy definitions
+- `meta.description` is optional, we recommend using it for easy definitions.
 
-Feel obliged to change the following lines
+Feel free to customize the highlighted values in the future:
 
 ```{.nix title="clan.nix" hl_lines="3 4 5"}
 {
