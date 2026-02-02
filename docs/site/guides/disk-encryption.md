@@ -134,7 +134,7 @@ ssh-keygen -q -N "" -C "" -t rsa -b 4096 -f ./initrd_host_rsa_key
 scp ./initrd_host* root@nixos-installer.local:/mnt/var/lib/
 ```
 
-6. Install nixos to the mounted partitions
+6. Install NixOS to the mounted partitions
 ```bash
 clan machines install gchq-local --target-host root@nixos-installer --phases install
 ```

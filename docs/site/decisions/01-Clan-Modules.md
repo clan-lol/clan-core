@@ -85,9 +85,9 @@ Problems with the current way of writing clanModules:
     };
     ```
    This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
-   Resolving this problem means that new inventory modules cannot be plain nixos modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
+   Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
 
-4. Writing modules for multiple instances is cumbersome. Currently the clanModule author has to write one or multiple `fold` operations for potentially every nixos option to define how multiple service instances merge into every single one option. The new idea behind this adr is to pull the common fold function into the outer context provide it as a common helper. (See the example below. `perInstance` analog to the well known `perSystem` of flake-parts)
+4. Writing modules for multiple instances is cumbersome. Currently the clanModule author has to write one or multiple `fold` operations for potentially every NixOS option to define how multiple service instances merge into every single one option. The new idea behind this adr is to pull the common fold function into the outer context provide it as a common helper. (See the example below. `perInstance` analog to the well known `perSystem` of flake-parts)
 
 5. Each role has a different interface. We need to render that interface into json-schema which includes creating an unnecessary test machine currently. Defining the interface at a higher level (outside of any machine context) allows faster evaluation and an isolation by design from any machine.
 This allows rendering the UI (options tree) of a service by just knowing the service and the corresponding roles without creating a dummy machine.
@@ -123,7 +123,7 @@ This submodules `options` will be evaluated to build the UI for that module dyna
 
 Some common result attributes are produced by modules of this proposal, those will be referenced later in this document but are commonly defined as:
 
-- `nixosModule` A single nixos module. (`{config, ...}:{ environment.systemPackages = []; }`)
+- `nixosModule` A single NixOS module. (`{config, ...}:{ environment.systemPackages = []; }`)
 - `services.<serviceName>` An attribute set of `_class = clan.service`. Which contain the same thing as this whole ADR proposes.
 - `vars` To be defined. Reserved for now.
 

@@ -30,14 +30,14 @@ VM tests should be avoided wherever it is possible to implement a cheaper unit t
 
 ### Finding examples for VM tests
 
-Existing nixos vm tests in clan-core can be found by using ripgrep:
+Existing NixOS VM tests in clan-core can be found by using ripgrep:
 ```shellSession
 rg self.clanLib.test.baseTest
 ```
 
 ### Locating definitions of failing VM tests
 
-All nixos vm tests in clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
+All NixOS VM tests in clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
 If a test fails in CI:
 
   - look for the job name of the test near the top if the CI Job page, like, for example `gitea:clan/clan-core#checks.x86_64-linux.borgbackup/1242`
@@ -57,7 +57,7 @@ $ rg "borgbackup =" ./checks
 
 ### Adding vm tests
 
-Create a nixos test module under `/checks/{name}/default.nix` and import it in `/checks/flake-module.nix`.
+Create a NixOS test module under `/checks/{name}/default.nix` and import it in `/checks/flake-module.nix`.
 
 
 ### Running VM tests
@@ -146,7 +146,7 @@ To get an interactive shell at a specific line in the VM test script, add a `bre
 
 ## NixOS Container Tests
 
-Those are very similar to NixOS VM tests, as in they run virtualized nixos machines, but instead of using VMs, they use containers which are much cheaper to launch.
+Those are very similar to NixOS VM tests, as in they run virtualized NixOS machines, but instead of using VMs, they use containers which are much cheaper to launch.
 As of now the container test driver is a downstream development in clan-core.
 Basically everything stated under the NixOS VM tests sections applies here, except some limitations.
 
@@ -224,13 +224,13 @@ Due to superior efficiency,
 ### When to use python tests
 
 - writing unit tests for python functions and modules, or bugfixes of such
-- all integrations tests that do not require building or running a nixos machine
+- all integrations tests that do not require building or running a NixOS machine
 - impure integrations tests that require internet access (very rare, try to avoid)
 
 
 ### When not to use python tests
 
-- integrations tests that require building or running a nixos machine (use NixOS VM or container tests instead)
+- integrations tests that require building or running a NixOS machine (use NixOS VM or container tests instead)
 - testing behavior of a nix function or library (use nix eval tests instead)
 
 ### Finding examples of python tests
