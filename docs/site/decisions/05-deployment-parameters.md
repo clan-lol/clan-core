@@ -17,7 +17,7 @@ Add evalHost to make this clear and configurable for the user. This would leave 
 
 for the update and install operation.
 
-`evalHost` would be the machine that evaluates the nixos configuration. if evalHost is not localhost, we upload the non secret vars and the nix archived flake (this is usually the same operation) to the evalMachine.
+`evalHost` would be the machine that evaluates the NixOS configuration. if evalHost is not localhost, we upload the non secret vars and the nix archived flake (this is usually the same operation) to the evalMachine.
 
 `buildHost` would be what is used by the machine to build, it would correspond to `--build-host` on the nixos-rebuild command or `--builders` for nix build.
 

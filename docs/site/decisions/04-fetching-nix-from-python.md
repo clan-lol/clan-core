@@ -20,7 +20,7 @@ Downsides:
   * in the past var generation script were added here, which added a huge build time overhead for every time we wanted to do any action
 * duplicated nix code
   * values need duplicated nix code, once to define them at the correct place in the module system (clan.core.vars.generators) and code to accumulate them again for the deployment.json (system.clan.deployment.data)
-  * This duality adds unnecessary dependencies to the nixos module system.
+  * This duality adds unnecessary dependencies to the NixOS module system.
 
 Benefits:
 
