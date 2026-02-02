@@ -5,7 +5,7 @@ from pathlib import Path
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
-from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
 from clan_lib.vars.var import Var
 
 
@@ -32,7 +32,7 @@ class VarsStore(StoreBase):
         if not self.flake.is_local:
             msg = f"Storing var '{var.id}' in a flake is only supported for local flakes: {self.flake}"
             raise ClanError(msg)
-        folder = self.directory(generator, var.name)
+        folder = self.directory(generator.key, var.name)
         file_path = folder / "value"
         if folder.exists():
             if not file_path.exists():
@@ -48,16 +48,16 @@ class VarsStore(StoreBase):
     # get a single fact
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,  # noqa: ARG002
     ) -> bytes:
         return (self.directory(generator, name) / "value").read_bytes()
 
-    def exists(self, generator: GeneratorStore, name: str) -> bool:
+    def exists(self, generator: GeneratorId, name: str) -> bool:
         return (self.directory(generator, name) / "value").exists()
 
-    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorId, name: str) -> Iterable[Path]:
         fact_folder = self.directory(generator, name)
         fact_file = fact_folder / "value"
         fact_file.unlink()

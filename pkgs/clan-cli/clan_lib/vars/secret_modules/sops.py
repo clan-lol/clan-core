@@ -27,7 +27,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
-from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
 from clan_lib.vars.var import Var
 
 
@@ -98,14 +98,14 @@ class SecretStore(StoreBase):
     def user_has_access(
         self,
         user: str,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         secret_name: str,
     ) -> bool:
         key_dir = sops_users_folder(self.clan_dir) / user
         return self.key_has_access(key_dir, generator, secret_name)
 
     def machine_has_access(
-        self, generator: GeneratorStore, secret_name: str, machine: str
+        self, generator: GeneratorId, secret_name: str, machine: str
     ) -> bool:
         if not has_machine(self.clan_dir, machine):
             return False
@@ -115,7 +115,7 @@ class SecretStore(StoreBase):
     def key_has_access(
         self,
         key_dir: Path,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         secret_name: str,
     ) -> bool:
         secret_path = self.secret_path(generator, secret_name)
@@ -123,7 +123,7 @@ class SecretStore(StoreBase):
         recipients = sops.get_recipients(secret_path)
         return len(recipient.intersection(recipients)) > 0
 
-    def secret_path(self, generator: GeneratorStore, secret_name: str) -> Path:
+    def secret_path(self, generator: GeneratorId, secret_name: str) -> Path:
         return self.directory(generator, secret_name)
 
     @override
@@ -165,7 +165,7 @@ class SecretStore(StoreBase):
                         file_found = True
                     else:
                         continue
-                if file.secret and self.exists(generator, file.name):
+                if file.secret and self.exists(generator.key, file.name):
                     needs_update, msg = self.needs_fix(generator, file.name, machine)
                     if needs_update:
                         outdated.append((generator.name, file.name, msg))
@@ -189,7 +189,7 @@ class SecretStore(StoreBase):
         machine: str,
     ) -> Path | None:
         self.ensure_machine_key(machine)
-        secret_folder = self.secret_path(generator, var.name)
+        secret_folder = self.secret_path(generator.key, var.name)
         # create directory if it doesn't exist
         secret_folder.mkdir(parents=True, exist_ok=True)
         # initialize the secret
@@ -210,7 +210,7 @@ class SecretStore(StoreBase):
 
     def get(
         self,
-        generator: GeneratorStore,
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -225,7 +225,7 @@ class SecretStore(StoreBase):
             cache[path] = value
         return value
 
-    def delete(self, generator: "GeneratorStore", name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorId, name: str) -> Iterable[Path]:
         secret_dir = self.directory(generator, name)
         shutil.rmtree(secret_dir)
         return [secret_dir]
@@ -301,17 +301,17 @@ class SecretStore(StoreBase):
             self.populate_dir(machine, sops_upload_dir, phases)
             upload(host, sops_upload_dir, Path(self.get_upload_directory(machine)))
 
-    def exists(self, generator: GeneratorStore, name: str) -> bool:
+    def exists(self, generator: GeneratorId, name: str) -> bool:
         secret_folder = self.secret_path(generator, name)
         return (secret_folder / "secret").exists()
 
     def ensure_machine_has_access(
         self, generator: GeneratorStore, name: str, machine: str
     ) -> None:
-        if self.machine_has_access(generator, name, machine):
+        if self.machine_has_access(generator.key, name, machine):
             return
         self.ensure_machine_key(machine)
-        secret_folder = self.secret_path(generator, name)
+        secret_folder = self.secret_path(generator.key, name)
         add_secret(
             self.clan_dir,
             machine,
@@ -347,7 +347,7 @@ class SecretStore(StoreBase):
     def needs_fix(
         self, generator: GeneratorStore, name: str, machine: str
     ) -> tuple[bool, str | None]:
-        secret_path = self.secret_path(generator, name)
+        secret_path = self.secret_path(generator.key, name)
         current_recipients = sops.get_recipients(secret_path)
         wanted_recipients = self.collect_keys_for_secret(machine, secret_path)
         needs_update = current_recipients != wanted_recipients
@@ -404,7 +404,7 @@ class SecretStore(StoreBase):
                 if not file.secret:
                     continue
 
-                secret_path = self.secret_path(generator, file.name)
+                secret_path = self.secret_path(generator.key, file.name)
 
                 age_plugins = load_age_plugins(self.flake)
 

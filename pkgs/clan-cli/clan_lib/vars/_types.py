@@ -137,7 +137,7 @@ class StoreBase(ABC):
     @abstractmethod
     def get(
         self,
-        generator: "GeneratorStore",
+        generator: GeneratorId,
         name: str,
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
@@ -154,7 +154,7 @@ class StoreBase(ABC):
         """Override this method to implement the actual creation of the file"""
 
     @abstractmethod
-    def exists(self, generator: "GeneratorStore", name: str) -> bool:
+    def exists(self, generator: GeneratorId, name: str) -> bool:
         pass
 
     @property
@@ -214,10 +214,10 @@ class StoreBase(ABC):
         )
         raise ClanError(msg)
 
-    def rel_dir(self, generator: "GeneratorStore", var_name: str) -> Path:
-        return generator.key.rel_dir() / var_name
+    def rel_dir(self, generator: GeneratorId, var_name: str) -> Path:
+        return generator.rel_dir() / var_name
 
-    def directory(self, generator: "GeneratorStore", var_name: str) -> Path:
+    def directory(self, generator: GeneratorId, var_name: str) -> Path:
         return self.clan_dir / "vars" / self.rel_dir(generator, var_name)
 
     def set(
@@ -233,15 +233,15 @@ class StoreBase(ABC):
         # if generator was switched from shared to per-machine or vice versa,
         # remove the old var first
         prev_generator = generator.with_toggled_share(machine)
-        if self.exists(prev_generator, var.name):
-            changed_files += self.delete(prev_generator, var.name)
+        if self.exists(prev_generator.key, var.name):
+            changed_files += self.delete(prev_generator.key, var.name)
 
-        if self.exists(generator, var.name):
+        if self.exists(generator.key, var.name):
             if self.is_secret_store:
                 old_val = None
                 old_val_str = "********"
             else:
-                old_val = self.get(generator, var.name)
+                old_val = self.get(generator.key, var.name)
                 old_val_str = string_repr(old_val)
         else:
             old_val = None
@@ -274,7 +274,7 @@ class StoreBase(ABC):
         return changed_files
 
     @abstractmethod
-    def delete(self, generator: "GeneratorStore", name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorId, name: str) -> Iterable[Path]:
         """Remove a var from the store.
 
         :return: An iterable of affected paths in the git repository. This
@@ -296,7 +296,7 @@ class StoreBase(ABC):
           may be empty if the store was outside of the repository.
         """
 
-    def get_validation(self, generator: "GeneratorStore") -> str | None:
+    def get_validation(self, generator: GeneratorId) -> str | None:
         """Return the invalidation hash that indicates if a generator needs to be re-run
         due to a change in its definition
         """
@@ -306,7 +306,7 @@ class StoreBase(ABC):
         return hash_file.read_text().strip()
 
     def set_validation(
-        self, generator: "GeneratorStore", hash_str: str | None
+        self, generator: GeneratorId, hash_str: str | None
     ) -> list[Path]:
         # """Store the invalidation hash that indicates if a generator needs to be re-run"""
         """Store the invalidation hash that indicates if a generator needs to be re-run
@@ -330,13 +330,12 @@ class StoreBase(ABC):
         hash_file.write_text(hash_str)
         return [hash_file]
 
-    def hash_is_valid(self, generator: "GeneratorStore") -> bool:
+    def hash_is_valid(self, generator: GeneratorId, target_hash: str | None) -> bool:
         """Check if the invalidation hash is up to date
         If the hash is not set in nix and hasn't been stored before, it is considered valid
             -> this provides backward and forward compatibility
         """
         stored_hash = self.get_validation(generator)
-        target_hash = generator.validation()
         # if the hash is neither set in nix nor on disk, it is considered valid (provides backwards compat)
         if target_hash is None and stored_hash is None:
             return True

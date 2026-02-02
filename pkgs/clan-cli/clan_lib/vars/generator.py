@@ -280,7 +280,7 @@ def get_machine_generators(
                         files_data,
                     )
             # Build files from the files_data
-            files = []
+            files: list[Var] = []
             gen_files = files_data.get(gen_name, {})
             for file_name, file_data in gen_files.items():
                 var = Var(
@@ -393,13 +393,13 @@ class Generator:
         # Check if all files exist
         for file in self.files:
             store = self._secret_store if file.secret else self._public_store
-            if not store.exists(self, file.name):
+            if not store.exists(self.key, file.name):
                 return False
 
         # Also check if validation hashes are up to date
         return self._secret_store.hash_is_valid(
-            self
-        ) and self._public_store.hash_is_valid(self)
+            self.key, self.validation()
+        ) and self._public_store.hash_is_valid(self.key, self.validation())
 
     def get_previous_value(
         self,
@@ -421,11 +421,11 @@ class Generator:
             raise ClanError(msg)
 
         result: str | None = None
-        if self._public_store.exists(self, prompt.name):
-            result = self._public_store.get(self, prompt.name).decode()
-        elif self._secret_store.exists(self, prompt.name):
+        if self._public_store.exists(self.key, prompt.name):
+            result = self._public_store.get(self.key, prompt.name).decode()
+        elif self._secret_store.exists(self.key, prompt.name):
             result = self._secret_store.get(
-                self, prompt.name, cache=self._secret_cache
+                self.key, prompt.name, cache=self._secret_cache
             ).decode()
 
         if result is not None:
@@ -508,12 +508,12 @@ class Generator:
             for file in dep_files:
                 if file.secret:
                     result[dep_key.name][file.name] = self._secret_store.get(
-                        dep_generator,
+                        dep_generator.key,
                         file.name,
                     )
                 else:
                     result[dep_key.name][file.name] = self._public_store.get(
-                        dep_generator,
+                        dep_generator.key,
                         file.name,
                     )
         return result
@@ -653,9 +653,13 @@ class Generator:
 
             validation = self.validation()
             if public_changed:
-                files_to_commit += self._public_store.set_validation(self, validation)
+                files_to_commit += self._public_store.set_validation(
+                    self.key, validation
+                )
             if secret_changed:
-                files_to_commit += self._secret_store.set_validation(self, validation)
+                files_to_commit += self._secret_store.set_validation(
+                    self.key, validation
+                )
 
         commit_files(
             files_to_commit,
