@@ -27,7 +27,7 @@ def create_mock_stores(exists_map: dict[str, bool]) -> tuple[Mock, Mock]:
     def mock_exists(generator: Generator, _file_name: str) -> bool:
         return exists_map.get(generator.name, False)
 
-    def mock_hash_valid(generator: Generator) -> bool:
+    def mock_hash_valid(generator: GeneratorId, _target_hash: str) -> bool:
         return exists_map.get(generator.name, False)
 
     public_store.exists.side_effect = mock_exists
