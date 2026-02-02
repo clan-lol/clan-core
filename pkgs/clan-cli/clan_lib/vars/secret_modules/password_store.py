@@ -14,7 +14,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
-from clan_lib.vars._types import GeneratorStore, StoreBase
+from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
 from clan_lib.vars.generator import get_machine_generators
 from clan_lib.vars.var import Var
 
@@ -75,7 +75,7 @@ class SecretStore(StoreBase):
             raise ValueError(msg)
         return self._pass_cmd
 
-    def entry_dir(self, generator: GeneratorStore, name: str) -> Path:
+    def entry_dir(self, generator: GeneratorId, name: str) -> Path:
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(
@@ -106,7 +106,7 @@ class SecretStore(StoreBase):
         value: bytes,
         machine: str,  # noqa: ARG002
     ) -> Path | None:
-        pass_call = ["insert", "-m", str(self.entry_dir(generator, var.name))]
+        pass_call = ["insert", "-m", str(self.entry_dir(generator.key, var.name))]
         self._run_pass(*pass_call, input=value, check=True)
         return None  # we manage the files outside of the git repo
 
@@ -117,7 +117,7 @@ class SecretStore(StoreBase):
         cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         # Use entry_dir as cache key (it's a logical path, not filesystem path)
-        cache_key = self.entry_dir(generator, name)
+        cache_key = self.entry_dir(generator.key, name)
         if cache is not None and cache_key in cache:
             return cache[cache_key]
         pass_name = str(cache_key)
@@ -126,7 +126,7 @@ class SecretStore(StoreBase):
             cache[cache_key] = value
         return value
 
-    def exists(self, generator: GeneratorStore, name: str) -> bool:
+    def exists(self, generator: GeneratorId, name: str) -> bool:
         pass_name = str(self.entry_dir(generator, name))
         # Check if the file exists with either .age or .gpg extension
         store_dir = self.store_dir()
@@ -134,7 +134,7 @@ class SecretStore(StoreBase):
         gpg_file = store_dir / f"{pass_name}.gpg"
         return age_file.exists() or gpg_file.exists()
 
-    def delete(self, generator: GeneratorStore, name: str) -> Iterable[Path]:
+    def delete(self, generator: GeneratorId, name: str) -> Iterable[Path]:
         pass_name = str(self.entry_dir(generator, name))
         self._run_pass("rm", "--force", pass_name, check=True)
         return []

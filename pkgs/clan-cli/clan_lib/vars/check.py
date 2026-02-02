@@ -80,7 +80,7 @@ def vars_status(
             file.generator(generator)
 
             if file.secret:
-                if not machine.secret_vars_store.exists(generator, file.name):
+                if not machine.secret_vars_store.exists(generator.key, file.name):
                     machine.info(
                         f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing.",
                     )
@@ -91,7 +91,7 @@ def vars_status(
                     and file.deploy
                     and file.exists
                     and not machine.secret_vars_store.machine_has_access(
-                        generator=generator,
+                        generator=generator.key,
                         secret_name=file.name,
                         machine=machine.name,
                     )
@@ -115,15 +115,19 @@ def vars_status(
                         )
                         unfixed_secret_vars.append(file)
 
-            elif not machine.public_vars_store.exists(generator, file.name):
+            elif not machine.public_vars_store.exists(generator.key, file.name):
                 machine.info(
                     f"Public var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing.",
                 )
                 missing_public_vars.append(file)
         # check if invalidation hash is up to date
         if not (
-            machine.secret_vars_store.hash_is_valid(generator)
-            and machine.public_vars_store.hash_is_valid(generator)
+            machine.secret_vars_store.hash_is_valid(
+                generator.key, generator.validation()
+            )
+            and machine.public_vars_store.hash_is_valid(
+                generator.key, generator.validation()
+            )
         ):
             invalid_generators.append(generator.name)
             machine.info(

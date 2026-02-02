@@ -280,7 +280,7 @@ def get_machine_generators(
                         files_data,
                     )
             # Build files from the files_data
-            files = []
+            files: list[Var] = []
             gen_files = files_data.get(gen_name, {})
             for file_name, file_data in gen_files.items():
                 var = Var(
@@ -393,13 +393,13 @@ class Generator:
         # Check if all files exist
         for file in self.files:
             store = self._secret_store if file.secret else self._public_store
-            if not store.exists(self, file.name):
+            if not store.exists(self.key, file.name):
                 return False
 
         # Also check if validation hashes are up to date
         return self._secret_store.hash_is_valid(
-            self
-        ) and self._public_store.hash_is_valid(self)
+            self.key, target_hash=self.validation()
+        ) and self._public_store.hash_is_valid(self.key, target_hash=self.validation())
 
     def get_previous_value(
         self,
@@ -421,9 +421,9 @@ class Generator:
             raise ClanError(msg)
 
         result: str | None = None
-        if self._public_store.exists(self, prompt.name):
+        if self._public_store.exists(self.key, prompt.name):
             result = self._public_store.get(self, prompt.name).decode()
-        elif self._secret_store.exists(self, prompt.name):
+        elif self._secret_store.exists(self.key, prompt.name):
             result = self._secret_store.get(
                 self, prompt.name, cache=self._secret_cache
             ).decode()
@@ -653,9 +653,13 @@ class Generator:
 
             validation = self.validation()
             if public_changed:
-                files_to_commit += self._public_store.set_validation(self, validation)
+                files_to_commit += self._public_store.set_validation(
+                    self.key, validation
+                )
             if secret_changed:
-                files_to_commit += self._secret_store.set_validation(self, validation)
+                files_to_commit += self._secret_store.set_validation(
+                    self.key, validation
+                )
 
         commit_files(
             files_to_commit,

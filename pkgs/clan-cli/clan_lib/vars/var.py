@@ -37,7 +37,7 @@ class Var:
         if self._generator is None:
             msg = "Generator cannot be None"
             raise ClanError(msg)
-        if not self._store.exists(self._generator, self.name):
+        if not self._store.exists(self._generator.key, self.name):
             msg = f"Var {self.id} has not been generated yet"
             raise ValueError(msg)
         # try decode the value or return <binary blob>
@@ -67,14 +67,14 @@ class Var:
         if self._generator is None:
             msg = "Generator cannot be None"
             raise ClanError(msg)
-        return self._store.exists(self._generator, self.name)
+        return self._store.exists(self._generator.key, self.name)
 
     def __str__(self) -> str:
         if self._store is None or self._generator is None:
             return f"{self.id}: <not initialized>"
 
         # TODO: we don't want __str__ with side effects, this should be a separate method
-        if self._store.exists(self._generator, self.name):
+        if self._store.exists(self._generator.key, self.name):
             if self.secret:
                 return f"{self.id}: ********"
             return f"{self.id}: {self.printable_value}"
