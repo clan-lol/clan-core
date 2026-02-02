@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+from clan_lib.flake.flake import Flake
 from clan_lib.ssh.host import Host
 
 if TYPE_CHECKING:
@@ -227,8 +227,12 @@ class StoreBase(ABC):
         value: bytes,
         machine: str,
         is_migration: bool = False,
+        log_info: Callable | None = None,
     ) -> list[Path]:
         changed_files: list[Path] = []
+
+        if log_info is None:
+            log_info = log.info
 
         # if generator was switched from shared to per-machine or vice versa,
         # remove the old var first
@@ -248,17 +252,10 @@ class StoreBase(ABC):
             old_val_str = "<not set>"
         new_file = self._set(generator, var, value, machine)
         action_str = "Migrated" if is_migration else "Updated"
-        log_info: Callable
-        if generator.share:
-            log_info = log.info
-        else:
-            from clan_lib.machines.machines import Machine  # noqa: PLC0415
 
-            machine_obj = Machine(name=generator.machines[0], flake=self.flake)
-            log_info = machine_obj.info
         machines_str = f" for machines: {', '.join(generator.machines)}"
         if self.is_secret_store:
-            log.info(
+            log_info(
                 f"{action_str} secret var {generator.name}/{var.name}{machines_str}\n"
             )
         elif value != old_val:

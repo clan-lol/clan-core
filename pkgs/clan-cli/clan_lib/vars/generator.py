@@ -28,6 +28,7 @@ from clan_lib.nix_selectors import (
     vars_sops_default_groups,
     vars_sops_secret_upload_dir,
 )
+from clan_lib.term_log import log_machine
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -639,6 +640,9 @@ class Generator:
                         file,
                         secret_file.read_bytes(),
                         machine_name,
+                        log_info=lambda msg: log_machine(
+                            msg, machine_name=machine_name
+                        ),
                     )
                     secret_changed = True
                 else:
@@ -647,6 +651,9 @@ class Generator:
                         file,
                         secret_file.read_bytes(),
                         machine_name,
+                        log_info=lambda msg: log_machine(
+                            msg, machine_name=machine_name
+                        ),
                     )
                     public_changed = True
                 files_to_commit.extend(file_paths)
