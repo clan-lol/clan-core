@@ -133,18 +133,6 @@ class StoreBase(ABC):
     def store_name(self) -> str:
         pass
 
-    def get_machine(self, generator: "GeneratorStore") -> str:
-        """Get machine name from generator, asserting it's not None for now."""
-        if generator.share:
-            return "__shared"
-        if not generator.machines:
-            msg = f"Generator '{generator.name}' has no machine associated"
-            raise ClanError(msg)
-        if len(generator.machines) != 1:
-            msg = f"Generator '{generator.name}' has {len(generator.machines)} machines, expected exactly 1"
-            raise ClanError(msg)
-        return generator.machines[0]
-
     # get a single fact
     @abstractmethod
     def get(

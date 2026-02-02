@@ -46,10 +46,8 @@ def test_import_from_cli() -> None:
     importlib.import_module("clan_cli.vars.secret_modules.fs")
     importlib.import_module("clan_cli.vars.secret_modules.password_store")
     importlib.import_module("clan_cli.vars.secret_modules.sops")
-    importlib.import_module("clan_cli.vars.secret_modules.vm")
     # Public Store
     importlib.import_module("clan_cli.vars.public_modules.in_repo")
-    importlib.import_module("clan_cli.vars.public_modules.vm")
 
 
 def invalidate_flake_cache(flake_path: Path) -> None:
