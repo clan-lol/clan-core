@@ -359,6 +359,10 @@ class Generator:
     validation_hash: str | None = None
 
     machines: list[str] = field(default_factory=list)
+    """
+    List of fixed length 1 for machine-specific generators, or
+    multiple machines for shared generators.
+    """
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
@@ -528,7 +532,7 @@ class Generator:
                 var_id,
                 prompt.prompt_type,
                 prompt.description if prompt.description != prompt.name else None,
-                self.machines,
+                self.machines,  # For pretty printing of "ask" context
                 previous_value=self.get_previous_value(prompt),
             )
         return prompt_values

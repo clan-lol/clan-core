@@ -201,9 +201,6 @@ in
     "password-store" = {
       pythonModule = "clan_lib.vars.secret_modules.password_store";
     };
-    vm = {
-      pythonModule = "clan_lib.vars.secret_modules.vm";
-    };
   };
   config.publicStores = {
     in_repo = {
