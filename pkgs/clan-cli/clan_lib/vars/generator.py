@@ -598,7 +598,8 @@ class Generator:
 
             final_script = self.final_script(machine_name)
 
-            if sys.platform == "linux" and bwrap.bubblewrap_works() and not no_sandbox:
+            use_sandbox = not no_sandbox
+            if sys.platform == "linux" and bwrap.bubblewrap_works() and use_sandbox:
                 from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
 
                 cmd = bubblewrap_cmd(str(final_script), tmpdir)
@@ -608,7 +609,7 @@ class Generator:
                 cmd = stack.enter_context(sandbox_exec_cmd(str(final_script), tmpdir))
             else:
                 # For non-sandboxed execution
-                if not no_sandbox:
+                if use_sandbox:
                     msg = (
                         f"Cannot safely execute generator {self.name}: Sandboxing is not available on this system\n"
                         f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"

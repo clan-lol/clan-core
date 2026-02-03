@@ -349,24 +349,30 @@ in
 
         ${optionalString (pkgs.stdenv.hostPlatform.isLinux) ''
           # prepare sandbox user on platforms where this is supported
-          mkdir -p /etc
 
-          cat > /etc/group <<EOF
+          # If /etc does not exist, create minimal /etc
+          # This is needed for sandboxed/non-sandboxed execution to work correctly
+          # In case of 'non-sandboxed' execution, /etc exists already, so we don't need to do this
+          if [[ ! -d /etc ]]; then
+            mkdir -p /etc
+
+            cat > /etc/group <<EOF
           root:x:0:
           nixbld:!:$(id -g):
           nogroup:x:65534:
           EOF
 
-          cat > /etc/passwd <<EOF
+            cat > /etc/passwd <<EOF
           root:x:0:0:Nix build user:/build:/noshell
           nixbld:x:$(id -u):$(id -g):Nix build user:/build:/noshell
           nobody:x:65534:65534:Nobody:/:/noshell
           EOF
 
-          cat > /etc/hosts <<EOF
+            cat > /etc/hosts <<EOF
           127.0.0.1 localhost
           ::1 localhost
           EOF
+          fi
         ''}
         ${promptsToFilesScript filePromptNames}
         ${config.script}
