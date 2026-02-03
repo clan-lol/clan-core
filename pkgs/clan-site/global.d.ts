@@ -1,12 +1,3 @@
-declare module "eslint-plugin-promise" {
-  import type { RuleDefinition } from "@eslint/core";
-
-  const plugin: {
-    rules: Record<string, RuleDefinition>;
-  };
-  export default plugin;
-}
-
 // TODO: fina a way to generate the Config type automatically
 // from svelte.config.ts
 declare module "$config" {

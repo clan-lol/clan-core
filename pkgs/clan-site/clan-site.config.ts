@@ -1,5 +1,6 @@
+import process from "node:process";
+
 export default {
-  // eslint-disable-next-line n/no-process-env
   ver: process.env["SITE_VER"] || "unstable",
   docs: {
     searchResultLimit: 5,
