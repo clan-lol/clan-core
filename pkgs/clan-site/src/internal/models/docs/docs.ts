@@ -2,7 +2,7 @@ import type {
   Heading,
   Markdown,
   Frontmatter as MarkdownFrontmatter,
-} from "vite-plugin-clanmd";
+} from "@clan/vite-plugin-markdown";
 import type { NavItem, NavLink } from "./nav.ts";
 import type { Path } from "$config";
 import config from "$config";

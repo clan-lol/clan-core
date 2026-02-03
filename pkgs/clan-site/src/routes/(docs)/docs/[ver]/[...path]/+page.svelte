@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
   import { visit } from "$lib/util.ts";
-  import "vite-plugin-clanmd/main.css";
+  import "@clan/vite-plugin-markdown/main.css";
 
   const { data } = $props();
 

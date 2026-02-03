@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "workspaces": [
-    "./packages/*"
+    "packages/*"
   ],
   "engines": {
     "node": ">= 22.0.0"
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@clan/coding-standard-svelte": "^0.0.1",
+    "@clan/vite-plugin-markdown": "^0.0.1",
     "@fontsource-variable/geist": "^5.2.8",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.50.1",
@@ -33,8 +34,7 @@
     "svelte-check": "^4.3.5",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-clanmd": "^0.0.1",
-    "vite-plugin-config": "^0.0.1",
-    "vite-plugin-pagefind": "^1.0.7"
+    "vite-plugin-pagefind": "^1.0.7",
+    "vite-plugin-value": "^0.0.1"
   }
 }
