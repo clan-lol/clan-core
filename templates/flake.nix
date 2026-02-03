@@ -4,9 +4,9 @@
     let
       templates = {
         disko = {
-          single-disk = {
+          ext4-single-disk = {
             description = "A simple ext4 disk with a single partition";
-            path = ./disk/single-disk;
+            path = ./disk/ext4-single-disk;
           };
         };
 

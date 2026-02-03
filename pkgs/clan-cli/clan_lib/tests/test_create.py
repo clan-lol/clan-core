@@ -270,7 +270,7 @@ def test_clan_create_api(
     assert disk_devs is not None
 
     placeholders = {"mainDisk": disk_devs[0]}
-    set_machine_disk_schema(machine, "single-disk", placeholders)
+    set_machine_disk_schema(machine, "ext4-single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
     # ===== Test that clan network list works ======

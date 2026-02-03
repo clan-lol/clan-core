@@ -54,7 +54,7 @@ def test_templates_apply_machine_and_disk(
     machine = Machine(name="test-apply-machine", flake=Flake(flake_path))
     set_machine_disk_schema(
         machine,
-        "single-disk",
+        "ext4-single-disk",
         {"mainDisk": "/dev/sda"},
         force=False,
         check_hw=False,  # Skip hardware validation for test

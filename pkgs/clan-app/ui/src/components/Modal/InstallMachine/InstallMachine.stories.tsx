@@ -28,12 +28,12 @@ const mockFetcher: Fetcher = <K extends OperationNames>(
       ] as SuccessQuery<"list_system_storage_devices">["data"]["blockdevices"],
     },
     get_machine_disk_schemas: {
-      "single-disk": {
+      "ext4-single-disk": {
         readme: "This is a single disk installation schema",
         frontmatter: {
           description: "Single disk installation schema",
         },
-        name: "single-disk",
+        name: "ext4-single-disk",
         placeholders: {
           mainDisk: {
             label: "Main Disk",

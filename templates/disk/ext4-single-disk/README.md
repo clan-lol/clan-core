@@ -1,5 +1,5 @@
 ---
-description = "Simple single disk schema"
+description = "Simple single disk schema in ext4"
 ---
 # Description
 

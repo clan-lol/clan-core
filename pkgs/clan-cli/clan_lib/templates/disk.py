@@ -67,7 +67,7 @@ class DiskSchema:
 
 # must be manually kept in sync with the ${clancore}/templates/disks directory
 templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
-    "single-disk": {
+    "ext4-single-disk": {
         # Placeholders
         "mainDisk": lambda hw_report: Placeholder(
             label="Main disk",

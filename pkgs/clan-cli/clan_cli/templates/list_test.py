@@ -18,7 +18,7 @@ def test_templates_list(
     assert "Available 'clan' templates" in output.out
     assert "Available 'disko' templates" in output.out
     assert "Available 'machine' templates" in output.out
-    assert "single-disk" in output.out
+    assert "ext4-single-disk" in output.out
     assert "<builtin>" in output.out
     assert "default:" in output.out
     assert "minimal:" in output.out
