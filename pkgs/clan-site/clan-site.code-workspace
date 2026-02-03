@@ -17,8 +17,8 @@
       "flags": ["unstable_native_nodejs_ts_config"],
     },
     "eslint.validate": ["javascript", "typescript", "svelte"],
-    "eslint.format.enable": true,
     "eslint.workingDirectories": [{ "mode": "auto" }],
     "eslint.runtime": "node",
   },
+  "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
 }

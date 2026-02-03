@@ -25,7 +25,11 @@ const svelteConfig: Config = {
     },
     typescript: {
       config(config) {
-        config["include"] = [...(config["include"] as string[]), "../*.ts"];
+        config["include"] = [
+          ...(config["include"] as string[]),
+          "../*.ts",
+          "../packages/**/*.ts",
+        ];
         const compOpts = config["compilerOptions"] as Record<string, unknown>;
         config["compilerOptions"] = {
           ...compOpts,
