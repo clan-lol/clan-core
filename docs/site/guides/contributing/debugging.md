@@ -1,5 +1,5 @@
 
-Here are some methods for debugging and testing the clan-cli
+Here are some methods for debugging and testing the clan CLI
 
 ## Using a Development Branch
 
@@ -51,9 +51,9 @@ wintux
 
 ```
 
-## VSCode
+## VS Code
 
-If you're using VSCode, it has a handy feature that makes paths to source code files clickable in the integrated terminal. Combined with the previously mentioned techniques, this allows you to open a Clan in VSCode, execute a command like `clan machines list --debug`, and receive a printed path to the code that initiates the subprocess. With the `Ctrl` key (or `Cmd` on macOS) and a mouse click, you can jump directly to the corresponding line in the code file and add a `breakpoint()` function to it, to inspect the internal state.
+If you're using VS Code, it has a handy feature that makes paths to source code files clickable in the integrated terminal. Combined with the previously mentioned techniques, this allows you to open a Clan in VS Code, execute a command like `clan machines list --debug`, and receive a printed path to the code that initiates the subprocess. With the `Ctrl` key (or `Cmd` on macOS) and a mouse click, you can jump directly to the corresponding line in the code file and add a `breakpoint()` function to it, to inspect the internal state.
 
 
 

@@ -89,7 +89,7 @@ Problems with the current way of writing clanModules:
 
 4. Writing modules for multiple instances is cumbersome. Currently the clanModule author has to write one or multiple `fold` operations for potentially every NixOS option to define how multiple service instances merge into every single one option. The new idea behind this adr is to pull the common fold function into the outer context provide it as a common helper. (See the example below. `perInstance` analog to the well known `perSystem` of flake-parts)
 
-5. Each role has a different interface. We need to render that interface into json-schema which includes creating an unnecessary test machine currently. Defining the interface at a higher level (outside of any machine context) allows faster evaluation and an isolation by design from any machine.
+5. Each role has a different interface. We need to render that interface into JSON Schema which includes creating an unnecessary test machine currently. Defining the interface at a higher level (outside of any machine context) allows faster evaluation and an isolation by design from any machine.
 This allows rendering the UI (options tree) of a service by just knowing the service and the corresponding roles without creating a dummy machine.
 
 6. The interface of defining config is wrong. It is possible to define config that applies to multiple machine at once. It is possible to define config that applies to
@@ -148,7 +148,7 @@ Note: `lib.mkIf` can be used on i.e. `roleName` to make the scope more specific.
 ### `services.<serviceName>`
 
 This allows to define nested services.
-i.e the *service* `backup` might define a nested *service* `ssh` which sets up an ssh connection.
+i.e the *service* `backup` might define a nested *service* `ssh` which sets up an SSH connection.
 
 This can be defined in `perMachine` and `perInstance`
 

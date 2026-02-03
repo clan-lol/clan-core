@@ -141,4 +141,4 @@ Now files are defined under the `files` attribute and are secret by default.
 ## Happy Migration
 
 We hope this gives you a clear path to start and finish your migration from `facts` to `vars`.
-Please do not hesitate reaching out if something is still unclear - either through [matrix](https://matrix.to/#/#clan:clan.lol) or through our git [forge](https://git.clan.lol/clan/clan-core).
+Please do not hesitate reaching out if something is still unclear - either through [matrix](https://matrix.to/#/#clan:clan.lol) or through our Git [forge](https://git.clan.lol/clan/clan-core).

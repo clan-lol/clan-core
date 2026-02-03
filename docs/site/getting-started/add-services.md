@@ -10,7 +10,7 @@ In Clan, services are multi-host and role-based:
 
 - You can use tags instead of explicit machine names.
 
-In this step of the guide, we will add two of the most frequently used services to your new setup: Networking and ssh.
+In this step of the guide, we will add two of the most frequently used services to your new setup: Networking and SSH.
 
 To learn more about services in general, visit [Clan Services](../guides/services/introduction-to-services.md)
 
@@ -56,7 +56,7 @@ Or read [guides/services](../guides/services/community.md) if you want to bring 
 
 ## Adding more recommended defaults: SSH Access
 
-Adding ssh keys is one of the most recommended services:
+Adding SSH keys is one of the most recommended services:
 
 ```{.nix title="clan.nix" hl_lines="7-14"}
 {
@@ -78,7 +78,7 @@ Adding ssh keys is one of the most recommended services:
 }
 ```
 
-The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convenient administration to all machines.
+The `admin` service will generate a **root-password** and **add your SSH key** that allows for convenient administration to all machines.
 
 This method is equivalent to directly setting `authorizedKeys` like in [configuring a machine](../getting-started/add-machines.md#configuring-a-machine)
 

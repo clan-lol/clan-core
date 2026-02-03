@@ -18,14 +18,14 @@ The [NixOS VM Testing Framework](https://nixos.org/manual/nixos/stable/index.htm
 ### When to use VM tests
 
 - testing that a service defined through a clan module works as expected after deployment
-- testing clan-cli subcommands which require accessing a remote machine
+- testing clan CLI subcommands which require accessing a remote machine
 
 ### When not to use VM tests
 
 NixOS VM Tests are slow and expensive. They should only be used for testing high level integration of components.
 VM tests should be avoided wherever it is possible to implement a cheaper unit test instead.
 
-- testing detailed behavior of a certain clan-cli command -> use unit testing via pytest instead
+- testing detailed behavior of a certain clan CLI command -> use unit testing via pytest instead
 - regression testing -> add a unit test
 
 ### Finding examples for VM tests

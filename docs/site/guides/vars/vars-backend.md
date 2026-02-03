@@ -86,7 +86,7 @@ Updated var root-password/password-hash
 With the last step, a new file was created in your repository:
 `vars/per-machine/my-machine/root-password/password-hash/value`
 
-If the repository is a git repository, a commit was created automatically:
+If the repository is a Git repository, a commit was created automatically:
 ```shellSession
 $ git log -n1
 commit ... (HEAD -> master)

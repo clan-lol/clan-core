@@ -29,7 +29,7 @@ lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
 Below is the configuration for `initrd.nix`.
-Replace `<yourkey>` with your ssh public key.
+Replace `<yourkey>` with your SSH public key.
 Replace `kernelModules` with the ethernet module loaded one on your target machine.
 ```nix hl_lines="18 29"
 {config, pkgs, ...}:
@@ -121,14 +121,14 @@ zfs set keylocation=prompt zroot/root
 CTRL+D
 ```
 
-4. Locally generate ssh host keys. You only need to generate ones for the algorithms you're using in `authorizedKeys`.
+4. Locally generate SSH host keys. You only need to generate ones for the algorithms you're using in `authorizedKeys`.
 
 ```bash
 ssh-keygen -q -N "" -C "" -t ed25519 -f ./initrd_host_ed25519_key
 ssh-keygen -q -N "" -C "" -t rsa -b 4096 -f ./initrd_host_rsa_key
 ```
 
-5. Securely copy your local initrd ssh host keys to the installer's `/mnt` directory:
+5. Securely copy your local initrd SSH host keys to the installer's `/mnt` directory:
 
 ```bash
 scp ./initrd_host* root@nixos-installer.local:/mnt/var/lib/
