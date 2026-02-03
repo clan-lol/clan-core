@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_selectors import secrets_age_plugins
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import secrets_age_plugins, vars_sops_default_groups
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
 from clan_lib.vars.generator import (
@@ -321,9 +322,7 @@ def run_generators(
     for generator in generators_to_run:
         selectors.append(generator.final_script_selector(generator.machines[0]))
         selectors.append(
-            flake.machine_selector(
-                generator.machines[0], "config.clan.core.?sops.?defaultGroups"
-            )
+            vars_sops_default_groups(current_system(), [generator.machines[0]])
         )
     flake.precache(selectors)
 

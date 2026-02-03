@@ -71,6 +71,12 @@ def nix_config() -> dict[str, Any]:
     return config
 
 
+def current_system() -> str:
+    """The (nix) system of the machine where this code is executed"""
+    config = nix_config()
+    return config["system"]
+
+
 def nix_test_store() -> Path | None:
     store = os.environ.get("CLAN_TEST_STORE", None)
     lock_nix = os.environ.get("LOCK_NIX", "")
