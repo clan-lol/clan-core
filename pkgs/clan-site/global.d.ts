@@ -1,5 +1,5 @@
 // TODO: fina a way to generate the Config type automatically
-// from svelte.config.ts
+// from clan-site.config.ts
 declare module "$config" {
   export interface Config {
     ver: string;
