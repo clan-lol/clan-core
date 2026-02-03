@@ -44,14 +44,14 @@ in
             exclude = [
               (
                 _root: path: _type:
-                (builtins.match ".*/test_[^/]+\.py" path) != null # matches test_*.py
-                || (builtins.match ".*/[^/]+_test\.py" path) != null # matches *_test.py
+                (builtins.match ".*/test_[^/]+\\.py" path) != null # matches test_*.py
+                || (builtins.match ".*/[^/]+_test\\.py" path) != null # matches *_test.py
               )
               # exclude all pkgs/clan-cli/clan_cli/tests, except flake-module.nix
               (
                 _root: path: _type:
                 (builtins.match ".*/pkgs/clan-cli/clan_cli/tests/.*" path) != null
-                && (builtins.match ".*/pkgs/clan-cli/clan_cli/tests/flake-module\.nix" path) == null
+                && (builtins.match ".*/pkgs/clan-cli/clan_cli/tests/flake-module\\.nix" path) == null
               )
             ];
           };
