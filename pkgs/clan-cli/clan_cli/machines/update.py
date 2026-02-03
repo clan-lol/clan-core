@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from functools import partial
 from typing import TYPE_CHECKING, get_args
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
@@ -73,9 +74,13 @@ def run_update_with_network(
             )
 
 
-def requires_explicit_update(m: Machine) -> bool:
+def requires_explicit_update(
+    system: str,
+    m: Machine,
+) -> bool:
     try:
-        if m.select("config.clan.deployment.requireExplicitUpdate"):
+        res = m.flake.select(deployment_require_explicit_update(system, [m.name]))
+        if res[m.name]:
             return False
     except (ClanError, AttributeError):
         pass
@@ -107,9 +112,11 @@ def get_machines_for_update(
     # Implicit update all machines / with tags
     # Using tags is not an explicit update
     if not explicit_names:
+        config = nix_config()
+        system = config["system"]
         machines_to_update = list(
             filter(
-                requires_explicit_update,
+                partial(requires_explicit_update, system),
                 instantiate_inventory_to_machines(
                     flake, {name: m.data for name, m in machines_with_tags.items()}
                 ).values(),
