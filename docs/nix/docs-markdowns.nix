@@ -10,6 +10,6 @@ runCommand "docs-markdowns" { } ''
   cp -r ${module-docs}/services/* $out/services
   chmod +w $out/reference
   cp -r ${module-docs}/reference/* $out/reference
-  chmod -R +w $out/reference/cli
+  mkdir -p $out/reference/cli
   cp -r ${clan-cli-docs}/* $out/reference/cli
 ''
