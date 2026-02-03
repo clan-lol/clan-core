@@ -1,9 +1,9 @@
-import configPlugin from "vite-plugin-config";
 import { defineConfig } from "vite";
 import markdown from "@clan/vite-plugin-markdown";
 import { pagefind } from "vite-plugin-pagefind";
 import siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
+import valuePlugin from "vite-plugin-value";
 
 export default defineConfig({
   server: {
@@ -13,8 +13,9 @@ export default defineConfig({
   },
   plugins: [
     sveltekit(),
-    configPlugin({
-      config: siteConfig,
+    valuePlugin({
+      name: "$config",
+      value: siteConfig,
     }),
     markdown({
       codeLightTheme: siteConfig.docs.codeLightTheme,
