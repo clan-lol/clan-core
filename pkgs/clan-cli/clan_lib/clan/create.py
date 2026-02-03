@@ -41,6 +41,7 @@ class CreateOptions:
     setup_git: bool = True
     initial: InventoryMetaInput | None = None
     update_clan: bool = True
+    domain: str | None = None
 
     # -- Internal use only --
     #
@@ -110,7 +111,12 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
             placeholders["name"] = opts.initial["name"]
         else:
             placeholders["name"] = dest.name
-        placeholders["domain"] = placeholders["name"]
+        if opts.domain:
+            placeholders["domain"] = opts.domain
+        elif opts.initial and "domain" in opts.initial:
+            placeholders["domain"] = opts.initial["domain"]
+        else:
+            placeholders["domain"] = "clan"
         substitute_clan_placeholders(dest, placeholders)
 
         if opts.setup_git:
