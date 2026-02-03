@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 from pathlib import Path
 
 from clan_lib.clan.create import CreateOptions, create_clan
@@ -12,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def init_command(args: argparse.Namespace) -> None:
-    # Ask for a path interactively if none provided
+    # Ask for a name interactively if none provided
     if args.name is None:
         user_input = input("Enter a name for the new clan: ").strip()
         if not user_input:
@@ -21,6 +22,14 @@ def init_command(args: argparse.Namespace) -> None:
 
         args.name = Path(user_input)
 
+    # Ask for a domain interactively if none provided
+    if args.domain is None:
+        if sys.stdin.isatty():
+            user_input = input("Enter domain for the clan [clan]: ").strip()
+            args.domain = user_input if user_input else "clan"
+        else:
+            args.domain = "clan"
+
     create_clan(
         CreateOptions(
             dest=Path(args.name),
@@ -28,6 +37,7 @@ def init_command(args: argparse.Namespace) -> None:
             setup_git=not args.no_git,
             src_flake=args.flake,
             update_clan=not args.no_update,
+            domain=args.domain,
         ),
     )
     flake_dir = Path(args.name).resolve()
@@ -62,6 +72,12 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         nargs="?",
         help="Name of the clan to create. If not provided, will prompt for a name.",
+    )
+
+    parser.add_argument(
+        "--domain",
+        type=str,
+        help="Domain for the clan. Used for internal service routing as <hostname>.<domain>. If not provided, will prompt (defaults to 'clan').",
     )
 
     parser.add_argument(

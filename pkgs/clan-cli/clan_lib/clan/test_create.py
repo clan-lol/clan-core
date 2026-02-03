@@ -122,6 +122,7 @@ def test_create_substitutes_placeholders(
     opts = CreateOptions(
         dest=dest,
         template=template,
+        domain="clan",
         _postprocess_flake_hook=offline_flake_hook,
     )
     create_clan(opts)
@@ -129,7 +130,7 @@ def test_create_substitutes_placeholders(
     assert dest.exists()
     assert dest.is_dir()
 
-    # Verify placeholders were substituted using directory name
+    # Verify placeholders were substituted
     # Check both clan.nix and flake.nix since templates differ
     clan_nix = dest / "clan.nix"
     flake_nix = dest / "flake.nix"
@@ -140,10 +141,17 @@ def test_create_substitutes_placeholders(
     if flake_nix.exists():
         content += flake_nix.read_text()
 
-    # Ensure placeholders were substituted with directory name
-    assert '"test_clan"' in content
+    # Ensure placeholders were substituted
     assert "{{name}}" not in content
     assert "{{domain}}" not in content
+    assert (
+        'meta.name = "test_clan"' in content
+        or 'meta.name = inputs.nixpkgs.lib.mkDefault "test_clan"' in content
+    )
+    assert (
+        'meta.domain = "clan"' in content
+        or 'meta.domain = inputs.nixpkgs.lib.mkDefault "clan"' in content
+    )
 
 
 @pytest.mark.with_core
