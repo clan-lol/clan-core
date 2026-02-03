@@ -106,14 +106,14 @@ def get_machine_selectors(machine_names: Iterable[str]) -> list[str]:
     return [
         secrets_age_plugins(),
         inventory_relative_directory(),
-        vars_generators_metadata(system, machine_names),
-        vars_generators_files(system, machine_names),
-        vars_sops_default_groups(system, machine_names),
-        vars_settings_public_module(system, machine_names),
-        vars_settings_secret_module(system, machine_names),
-        vars_sops_secret_upload_dir(system, machine_names),
-        vars_password_store_pass_command(system, machine_names),
-        vars_password_store_secret_location(system, machine_names),
+        vars_generators_metadata(system, list(machine_names)),
+        vars_generators_files(system, list(machine_names)),
+        vars_sops_default_groups(system, list(machine_names)),
+        vars_settings_public_module(system, list(machine_names)),
+        vars_settings_secret_module(system, list(machine_names)),
+        vars_sops_secret_upload_dir(system, list(machine_names)),
+        vars_password_store_pass_command(system, list(machine_names)),
+        vars_password_store_secret_location(system, list(machine_names)),
     ]
 
 

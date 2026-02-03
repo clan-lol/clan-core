@@ -9,11 +9,11 @@ This ensures:
 3. API surface is explicit and discoverable
 """
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 
 type StaticSel = Callable[[], str]
 type MachineSel = Callable[[str, str], str]
-type MachinesSel = Callable[[str, Iterable[str]], str]
+type MachinesSel = Callable[[str, list[str]], str]
 type GeneratorSel = Callable[[str, str, str], str]
 
 # Tests registries
@@ -80,52 +80,52 @@ def clan_exports() -> str:
 
 
 @machines_selector
-def vars_generators_metadata(system: str, machines: Iterable[str]) -> str:
+def vars_generators_metadata(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
 
 
 @machines_selector
-def vars_generators_files(system: str, machines: Iterable[str]) -> str:
+def vars_generators_files(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
 
 
 @machines_selector
-def vars_sops_default_groups(system: str, machines: Iterable[str]) -> str:
+def vars_sops_default_groups(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.?sops.?defaultGroups"
 
 
 @machines_selector
-def vars_settings_public_module(system: str, machines: Iterable[str]) -> str:
+def vars_settings_public_module(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.publicModule"
 
 
 @machines_selector
-def vars_settings_secret_module(system: str, machines: Iterable[str]) -> str:
+def vars_settings_secret_module(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.secretModule"
 
 
 @machines_selector
-def vars_sops_secret_upload_dir(system: str, machines: Iterable[str]) -> str:
+def vars_sops_secret_upload_dir(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?sops.?secretUploadDirectory"
 
 
 @machines_selector
-def vars_password_store_pass_command(system: str, machines: Iterable[str]) -> str:
+def vars_password_store_pass_command(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?passCommand"
 
 
 @machines_selector
-def vars_password_store_secret_location(system: str, machines: Iterable[str]) -> str:
+def vars_password_store_secret_location(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
 
 
 @machines_selector
-def deployment_require_explicit_update(system: str, machines: Iterable[str]) -> str:
+def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.deployment.requireExplicitUpdate"
 
 
 @machines_selector
-def deployment_nixos_mobile_workaround(system: str, machines: Iterable[str]) -> str:
+def deployment_nixos_mobile_workaround(system: str, machines: list[str]) -> str:
     return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.system.clan.deployment.nixosMobileWorkaround"
 
 

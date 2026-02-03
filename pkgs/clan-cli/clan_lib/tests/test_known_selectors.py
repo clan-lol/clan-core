@@ -112,7 +112,7 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
 
     # Select multiple machines
     for machines_selector_fn in nix_selectors.MACHINES_SELECTORS:
-        selector_str = machines_selector_fn(system, machines)
+        selector_str = machines_selector_fn(system, list(machines))
         try:
             flake.select(selector_str)
         except ClanError as e:
