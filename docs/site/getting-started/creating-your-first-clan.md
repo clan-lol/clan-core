@@ -4,7 +4,7 @@
 
 Ready to manage your fleet of machines?
 
-In this guide, we will create a declarative infrastructure using **clan**, **git**, and **nix flakes**.
+In this guide, we will create a declarative infrastructure using **clan**, **Git**, and **nix flakes**.
 
 At the end of this getting started guide, you will have a centrally managed fleet of Clan devices at your disposal.
 

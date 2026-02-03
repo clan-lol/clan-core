@@ -100,7 +100,7 @@ Define how to create files from inputs:
 ### 2. **Storage Backends**
 Handle secret storage and deployment:
 
-- **sops**: Encrypted files in git (recommended)
+- **sops**: Encrypted files in Git (recommended)
 
 - **password-store**: GPG/age-based secret storage
 

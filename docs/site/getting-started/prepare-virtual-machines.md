@@ -18,7 +18,7 @@ In this step, we will prepare your virtual machines to be deployed from your set
 
 * **Machine configuration**: In the previous steps, we defined a Clan, at least one user (e.g. jon) and at least one machine (e.g. jon-machine). These are the minimum requirements for the following VM preparations.
 
-* **Network Root Access**: Target and setup machine need to be able to reach each other, root access is required on both, and ssh access needs to be available on the targets (configured already if you followed all optional steps up to this point).
+* **Network Root Access**: Target and setup machine need to be able to reach each other, root access is required on both, and SSH access needs to be available on the targets (configured already if you followed all optional steps up to this point).
 
 * **kexec**: Clan supports any cloud machine if it supports `kexec`.
 

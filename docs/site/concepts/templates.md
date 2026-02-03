@@ -60,7 +60,7 @@ In fact this command would be equivalent, just make it more explicit
 
 ## Remote templates
 
-Just like with Nix you could specify a remote url or path to the flake containing the template
+Just like with Nix you could specify a remote URL or path to the flake containing the template
 
 `clan init --template=github:owner/repo#foo`
 

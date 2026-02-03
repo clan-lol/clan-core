@@ -24,7 +24,7 @@ A third approach would be to:
 
 1. Commit ADRs before they are approved, so that the next ADR number gets assigned;
 1. Open a PR for the proposed ADR;
-1. Update the ADR file committed in step 1, so that its markdown contents point to the PR that tracks it.
+1. Update the ADR file committed in step 1, so that its Markdown contents point to the PR that tracks it.
 
 ## Consequences
 

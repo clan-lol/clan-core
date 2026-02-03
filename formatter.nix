@@ -141,10 +141,18 @@
               - '\b(nixos|Nixos|NIXOS|nixOS)\b(?![-a-zA-Z])'
           '';
 
+          jargonLint = pkgs.fetchFromGitHub {
+            owner = "jargonLint";
+            repo = "jargonLint";
+            rev = "f6c2cf752f0e20488dacc519014d29a8dea90e93";
+            hash = "sha256-hILZXwq5kUeOBR7Q8cePlHMeXUI2Tlgz9INhgKd0X5w=";
+          };
+
           valeStylesDir = pkgs.runCommand "vale-styles" { } ''
             mkdir -p $out/config/vocabularies/ClanCore
             mkdir -p $out/ClanCore
             cp ${valeTermsRule} $out/ClanCore/Terms.yml
+            cp -r ${jargonLint}/vale/styles/jargonLint $out/
           '';
 
           valeConfig = pkgs.writeText "vale.ini" ''
@@ -154,13 +162,14 @@
             Vocab = ClanCore
 
             [*.md]
-            BasedOnStyles = ClanCore
+            BasedOnStyles = ClanCore, jargonLint
           '';
         in
         {
           command = lib.getExe pkgs.vale;
           options = [ "--config=${valeConfig}" ];
           includes = [ "docs/**/*.md" ];
+          excludes = [ ];
         };
     };
 }

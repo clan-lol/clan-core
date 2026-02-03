@@ -10,7 +10,7 @@ Currently we use two different accessing methods:
 
 ### Method 1: deployment.json
 
-A json file that serializes some predefined values into a JSON file as build-time artifact.
+A JSON file that serializes some predefined values into a JSON file as build-time artifact.
 
 Downsides:
 

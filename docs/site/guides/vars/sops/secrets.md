@@ -233,7 +233,7 @@ To fetch an age key from an SSH host key:
 
 ### Migration: Importing existing sops-based keys / sops-nix
 
-`clan secrets` stores each secret in a single file, whereas [sops](https://github.com/Mic92/sops-nix) commonly allows to put all secrets in a yaml or json document.
+`clan secrets` stores each secret in a single file, whereas [sops](https://github.com/Mic92/sops-nix) commonly allows to put all secrets in a YAML or JSON document.
 
 If you already happened to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these files:
 
