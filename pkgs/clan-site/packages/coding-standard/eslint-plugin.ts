@@ -162,7 +162,7 @@ function base({
         ],
         // We require explicit file extensions in import paths to align with
         // Node.js ESM requirements. Since our Vite config and plugins already run
-        // as ES Modules, we’re maintaining this style across the entire project
+        // as ES Modules, we're maintaining this style across the entire project
         // for Consistency.
         "import-x/extensions": [
           "error",
