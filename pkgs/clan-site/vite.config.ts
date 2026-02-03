@@ -1,6 +1,6 @@
-import clanmd from "vite-plugin-clanmd";
 import configPlugin from "vite-plugin-config";
 import { defineConfig } from "vite";
+import markdown from "@clan/vite-plugin-markdown";
 import { pagefind } from "vite-plugin-pagefind";
 import siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
@@ -16,7 +16,7 @@ export default defineConfig({
     configPlugin({
       config: siteConfig,
     }),
-    clanmd({
+    markdown({
       codeLightTheme: siteConfig.docs.codeLightTheme,
       codeDarkTheme: siteConfig.docs.codeDarkTheme,
       minLineNumberLines: siteConfig.docs.minLineNumberLines,
