@@ -4,6 +4,18 @@
     let
       templates = {
         disko = {
+          btrfs-single-disk-subvolumes = {
+            description = "Single disk schema with Btrfs subvolumes and automated btrbk snapshots";
+            path = ./disk/btrfs-single-disk-subvolumes;
+          };
+          btrfs-single-disk-subvolumes-impermanance-script = {
+            description = "Single disk schema with Btrfs subvolumes, Btrfs-based ephemeral root (rollback), and automated btrbk snapshots";
+            path = ./disk/btrfs-single-disk-subvolumes-impermanance-script;
+          };
+          btrfs-single-disk-subvolumes-impermanance-tmpfs = {
+            description = "Single disk schema with Btrfs subvolumes, ephemeral tmpfs root, and automated btrbk snapshots";
+            path = ./disk/btrfs-single-disk-subvolumes-impermanance-tmpfs;
+          };
           ext4-single-disk = {
             description = "A simple ext4 disk with a single partition";
             path = ./disk/ext4-single-disk;
