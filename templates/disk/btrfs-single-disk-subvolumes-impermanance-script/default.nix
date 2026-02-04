@@ -4,6 +4,11 @@ let
   rootPartition = "${config.disko.devices.disk."main".device}-part3";
 in
 {
+  boot.loader.grub = {
+    efiInstallAsRemovable = true;
+    efiSupport = true;
+  };
+
   disko.devices = {
     disk = {
       "main" = {
