@@ -40,6 +40,13 @@ Services provided by the community, with no stability guarantees!
     Sets up a nix cache to share the nix store between machines in your network 
 
 
+- [@schallerclan/dns](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/dns.nix)
+
+    ---
+
+    Clan-internal DNS and service exposure with support for multiple records (e.g. A, AAAA, CNAME) and multiple IPs
+
+
 
 </div>
 
