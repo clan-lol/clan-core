@@ -1,8 +1,9 @@
 {
+  boot.loader.grub = {
+    efiInstallAsRemovable = true;
+    efiSupport = true;
+  };
 
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.efiInstallAsRemovable = true;
-  boot.loader.grub.enable = true;
   disko.devices = {
     disk = {
       main = {
