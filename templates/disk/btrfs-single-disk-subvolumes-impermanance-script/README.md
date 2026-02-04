@@ -12,7 +12,7 @@ This schema defines a GPT-based disk layout optimized for a "stateless" NixOS co
 ### Partitions
 
 1. **BIOS Boot Partition**
-   - Provides compatibility for GRUB MBR booting on GPT disks.
+   - Provides compatibility for MBR booting on GPT disks.
    - Size: `1M`
    - Type: `EF02`
 
