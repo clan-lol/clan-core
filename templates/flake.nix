@@ -17,7 +17,7 @@
             path = ./disk/btrfs-single-disk-subvolumes-impermanance-tmpfs;
           };
           ext4-single-disk = {
-            description = "A simple ext4 disk with a single partition";
+            description = "Single disk schema with a classic GPT layout, ext4 root filesystem";
             path = ./disk/ext4-single-disk;
           };
         };

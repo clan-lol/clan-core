@@ -1,23 +1,29 @@
 ---
-description = "Simple single disk schema in ext4"
+description = "Single disk schema with a classic GPT layout, ext4 root filesystem"
 ---
-# Description
 
-This schema defines a GPT-based disk layout.
+This schema defines a traditional and highly compatible disk layout, supporting both modern EFI systems and legacy BIOS compatibility. It uses the reliable **ext4** filesystem for the root partition.
 
-### **Disk Overview**
+### Disk Overview
 
-- **Name**: `main-{{uuid}}`
-- **Device**: `{{mainDisk}}`
+- Name: `main-{{uuid}}`
+- Device: `{{mainDisk}}`
 
-### **Partitions**
+### Partitions
 
-1. **EFI System Partition (ESP)**
-   - Size: `500M`.
-   - Filesystem: `vfat`.
-   - Mount Point: `/boot` (secure `umask=0077`).
+1. **BIOS Boot Partition**
+   - Provides compatibility for MBR booting on GPT disks.
+   - Size: `1M`
+   - Type: `EF02`
 
-2. **Root Partition**
+2. **EFI System Partition (ESP)**
+   - Size: `500M`
+   - Type: `EF00`
+   - Filesystem: `vfat`
+   - Mount Point: `/boot`
+   - Options: `umask=0077` (restrictive permissions for security).
+
+3. **Root Partition**
    - Size: Remaining disk space (`100%`).
    - Filesystem: `ext4`.
    - Mount Point: `/`.
