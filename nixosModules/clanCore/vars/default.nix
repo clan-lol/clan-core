@@ -15,6 +15,7 @@ in
     ./secret/fs.nix
     ./secret/sops
     ./secret/vm.nix
+    ./secret/password-store.nix
     {
       assertions = lib.mkIf config.clan.core.vars.enableConsistencyCheck [
         {
@@ -44,9 +45,6 @@ in
         }
       ];
     }
-  ]
-  ++ lib.optionals (_class == "nixos") [
-    ./secret/password-store.nix
   ];
 
   options.clan.core.vars = lib.mkOption {

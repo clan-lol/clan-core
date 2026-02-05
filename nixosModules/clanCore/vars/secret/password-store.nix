@@ -1,4 +1,5 @@
 {
+  _class,
   config,
   options,
   lib,
@@ -42,8 +43,11 @@ let
     '';
   };
   useSystemdActivation =
-    (options.systemd ? sysusers && config.systemd.sysusers.enable)
-    || (options.services ? userborn && config.services.userborn.enable);
+    _class == "nixos"
+    && (
+      (options.systemd ? sysusers && config.systemd.sysusers.enable)
+      || (options.services ? userborn && config.services.userborn.enable)
+    );
 
   normalSecrets = lib.any (
     gen: lib.any (file: file.neededFor == "services") (lib.attrValues gen.files)
@@ -54,8 +58,6 @@ let
 
 in
 {
-  _class = "nixos";
-
   options.clan.core.vars.password-store = {
     secretLocation = lib.mkOption {
       type = lib.types.path;
@@ -97,7 +99,9 @@ in
 
           }
         );
-
+  }
+  # NixOS-specific options (not applicable to Darwin)
+  // lib.optionalAttrs (_class == "nixos") {
     system.activationScripts =
       lib.mkIf ((config.clan.core.vars.settings.secretStore == "password-store") && !useSystemdActivation)
         {
