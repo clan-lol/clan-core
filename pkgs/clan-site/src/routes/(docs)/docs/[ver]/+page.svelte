@@ -83,6 +83,9 @@
   }
   h2 {
     margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    color: #415e63;
   }
   .hero {
     width: 640px;

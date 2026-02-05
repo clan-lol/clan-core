@@ -180,9 +180,9 @@
     }
 
     h2 {
-      font-size: inherit;
-      font-weight: inherit;
-      color: #415e63;
+      font-size: 24px;
+      font-weight: 700px;
+      color: inherit;
     }
   }
   .container {
