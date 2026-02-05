@@ -1,13 +1,10 @@
-import type {
-  Frontmatter as FrontmatterData,
-  Heading as HeadingData,
-} from "./modules.d.ts";
 import type { PluginOption, ResolvedConfig } from "vite";
+import pathutil from "node:path";
 import pkg from "./package.json" with { type: "json" };
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
 import rehypeStringify from "rehype-stringify";
-import rehypeTocSlug from "./rehype-toc.ts";
+import rehypeToc from "./rehype-toc.ts";
 import rehypeWrapHeadings from "./rehype-wrap-headings.ts";
 import remarkAdmonition from "./remark-admonition.ts";
 import remarkDirective from "remark-directive";
@@ -26,17 +23,34 @@ import {
 import { unified } from "unified";
 import { VFile } from "vfile";
 
+export interface FrontmatterInput {
+  [k: string]: unknown;
+  title?: string;
+}
+export interface Frontmatter {
+  readonly title: string;
+  readonly order?: number;
+}
+
+export interface HeadingInput {
+  id: string;
+  content: string;
+  children: HeadingInput[];
+}
+
+export interface Heading {
+  readonly id: string;
+  readonly content: string;
+  readonly children: readonly Heading[];
+}
+
 export interface Markdown {
+  readonly path: string;
+  readonly relativePath: string;
   readonly content: string;
   readonly frontmatter: Frontmatter;
   readonly toc: readonly Heading[];
 }
-
-export type Frontmatter = Readonly<FrontmatterData>;
-
-export type Heading = Readonly<Omit<HeadingData, "children">> & {
-  readonly children: readonly Heading[];
-};
 
 export interface Options {
   readonly codeLightTheme: string;
@@ -60,8 +74,8 @@ export default function vitePluginClanmd({
       config = resolvedConfig;
     },
 
-    async transform(code, id): Promise<string | undefined> {
-      if (!id.endsWith(".md")) {
+    async transform(code, path): Promise<string | undefined> {
+      if (!path.endsWith(".md")) {
         return;
       }
 
@@ -73,7 +87,7 @@ export default function vitePluginClanmd({
         .use(remarkAdmonition)
         .use(remarkTabs)
         .use(remarkRehype)
-        .use(rehypeTocSlug, {
+        .use(rehypeToc, {
           maxTocExtractionDepth,
         })
         .use(rehypeWrapHeadings)
@@ -100,15 +114,19 @@ export default function vitePluginClanmd({
         .process(
           new VFile({
             cwd: config.root,
-            path: id,
+            path,
             value: code,
           }),
         );
 
-      return `
-export const content = ${JSON.stringify(String(file))};
-export const frontmatter = ${JSON.stringify(file.data.matter)};
-export const toc = ${JSON.stringify(file.data.toc)};`;
+      const md = {
+        path,
+        relativePath: pathutil.relative(path, config.root),
+        content: String(file),
+        frontmatter: file.data.matter,
+        toc: file.data.toc,
+      };
+      return `export default ${JSON.stringify(md)};`;
     },
   };
 }

@@ -1,89 +1,90 @@
 <script lang="ts">
-  import type { Heading as ArticleHeading } from "$lib/models/docs.ts";
+  /* eslint-disable svelte/no-unused-class-name */
   import { on } from "svelte/events";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { visit } from "$lib/util.ts";
   import "@clan/vite-plugin-markdown/main.css";
 
   const { data } = $props();
+  const article = $derived(data.docs.article);
 
-  type Heading = ArticleHeading & {
-    index: number;
-    scrolledPast: number;
-    element: Element;
-    children: Heading[];
-  };
+  // TODO: add back for mobile
+  // type Heading = ArticleHeading & {
+  //   index: number;
+  //   scrolledPast: number;
+  //   element: Element;
+  //   children: Heading[];
+  // };
+  //
+  // let nextHeadingIndex = 0;
+  // const headings = $derived(normalizeHeadings(article.toc));
+  // let tocEl: HTMLElement;
+  // let contentEl: HTMLElement;
+  // let observer: IntersectionObserver | undefined;
+  // let currentHeading: Heading | null = $state(null);
+  // Let tocOpen = $state(false);
+  // const defaultTocContent = "Table of contents";
+  // const currentTocContent = $derived.by(() => {
+  //   if (tocOpen) {
+  //     return defaultTocContent;
+  //   }
+  //   return currentHeading?.content ?? defaultTocContent;
+  // });
+  //
+  // $effect(() => {
+  //   // Make sure the effect is triggered on content change
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  //   article.content;
+  //   observer?.disconnect();
+  //   observer = new IntersectionObserver(
+  //     (entries) => {
+  //       // Record each heading's scrolledPast
+  //       for (const entry of entries) {
+  //         visit(headings, "children", (heading) => {
+  //           if (heading.id !== entry.target.id) {
+  //             return;
+  //           }
+  //           const {
+  //             rootBounds,
+  //             target,
+  //             intersectionRatio,
+  //             boundingClientRect,
+  //           } = entry;
+  //           if (!rootBounds) {
+  //             return;
+  //           }
 
-  let nextHeadingIndex = 0;
-  const headings = $derived(normalizeHeadings(data.toc));
-  let tocOpen = $state(false);
-  let tocEl: HTMLElement;
-  let contentEl: HTMLElement;
-  let currentHeading: Heading | null = $state(null);
-  let observer: IntersectionObserver | undefined;
-  const defaultTocContent = "Table of contents";
-  const currentTocContent = $derived.by(() => {
-    if (tocOpen) {
-      return defaultTocContent;
-    }
-    return currentHeading?.content ?? defaultTocContent;
-  });
-
-  $effect(() => {
-    // Make sure the effect is triggered on content change
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    data.content;
-    observer?.disconnect();
-    observer = new IntersectionObserver(
-      (entries) => {
-        // Record each heading's scrolledPast
-        for (const entry of entries) {
-          visit(headings, "children", (heading) => {
-            if (heading.id !== entry.target.id) {
-              return;
-            }
-            const {
-              rootBounds,
-              target,
-              intersectionRatio,
-              boundingClientRect,
-            } = entry;
-            if (!rootBounds) {
-              return;
-            }
-
-            heading.element = target;
-            heading.scrolledPast =
-              intersectionRatio < 1 && boundingClientRect.top < rootBounds.top
-                ? rootBounds.top - boundingClientRect.top
-                : 0;
-            return "break";
-          });
-        }
-        let last: Heading | null = null;
-        let current: Heading | null = null;
-        // Find the last heading with scrolledPast > 0
-        visit(headings, "children", (heading) => {
-          if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
-            current = last;
-            return "break";
-          }
-          last = heading;
-          return;
-        });
-        currentHeading = current;
-      },
-      {
-        threshold: 1,
-        rootMargin: `${-tocEl.offsetHeight}px 0px 0px`,
-      },
-    );
-    const els = contentEl.querySelectorAll("h1,h2,h3,h4,h5,h6");
-    for (const el of els) {
-      observer.observe(el);
-    }
-  });
+  //           heading.element = target;
+  //           heading.scrolledPast =
+  //             intersectionRatio < 1 && boundingClientRect.top < rootBounds.top
+  //               ? rootBounds.top - boundingClientRect.top
+  //               : 0;
+  //           return "break";
+  //         });
+  //       }
+  //       let last: Heading | null = null;
+  //       let current: Heading | null = null;
+  //       // Find the last heading with scrolledPast > 0
+  //       visit(headings, "children", (heading) => {
+  //         if (last && last.scrolledPast > 0 && heading.scrolledPast === 0) {
+  //           current = last;
+  //           return "break";
+  //         }
+  //         last = heading;
+  //         return;
+  //       });
+  //       currentHeading = current;
+  //     },
+  //     {
+  //       threshold: 1,
+  //       rootMargin: `${-tocEl.offsetHeight}px 0px 0px`,
+  //     },
+  //   );
+  //   const els = contentEl.querySelectorAll("h1,h2,h3,h4,h5,h6");
+  //   for (const el of els) {
+  //     observer.observe(el);
+  //   }
+  // });
 
   onMount(() =>
     // Click tab to activate
@@ -117,38 +118,39 @@
     }),
   );
 
-  function normalizeHeadings(headings: readonly ArticleHeading[]): Heading[] {
-    // Use casting because the element property is supposed to be set by
-    // svelte's bind: this
-    const index = nextHeadingIndex;
-    nextHeadingIndex += 1;
-    return headings.map((heading) => ({
-      ...heading,
-      index,
-      scrolledPast: 0,
-      children: normalizeHeadings(heading.children),
-    })) as Heading[];
-  }
-
-  function scrollToHeading(ev: Event, headingEl: Element): void {
-    ev.preventDefault();
-    headingEl.scrollIntoView({
-      behavior: "smooth",
-    });
-    tocOpen = false;
-  }
-  function scrollToTop(ev: Event): void {
-    ev.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-    tocOpen = false;
-  }
+  // TODO: add back for mobile
+  // function normalizeHeadings(headings: readonly ArticleHeading[]): Heading[] {
+  //   // Use casting because the element property is supposed to be set by
+  //   // svelte's bind: this
+  //   const index = nextHeadingIndex;
+  //   nextHeadingIndex += 1;
+  //   return headings.map((heading) => ({
+  //     ...heading,
+  //     index,
+  //     scrolledPast: 0,
+  //     children: normalizeHeadings(heading.children),
+  //   })) as Heading[];
+  // }
+  //
+  // function scrollToHeading(ev: Event, headingEl: Element): void {
+  //   ev.preventDefault();
+  //   headingEl.scrollIntoView({
+  //     behavior: "smooth",
+  //   });
+  //   tocOpen = false;
+  // }
+  // function scrollToTop(ev: Event): void {
+  //   ev.preventDefault();
+  //   window.scrollTo({
+  //     top: 0,
+  //     behavior: "smooth",
+  //   });
+  //   tocOpen = false;
+  // }
 </script>
 
 <div>
-  <div class="toc">
+  <!-- <div class="toc">
     <h2 bind:this={tocEl} class="toc-title">
       <button
         class="toc-label"
@@ -183,31 +185,28 @@
         {@render tocLinks(heading.children)}
       </ul>
     {/if}
-  </div>
-  <div bind:this={contentEl} class="content">
+  </div> -->
+  <div class="content">
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    {@html data.content}
+    {@html article.content}
   </div>
   <footer>
-    {#if data.frontmatter.previous}
-      <a
-        class="pointer previous"
-        href={resolve(data.frontmatter.previous.link)}
-      >
+    {#if article.previous}
+      <a class="pointer previous" href={resolve(article.previous.path)}>
         <div class="pointer-arrow">&lt;</div>
         <div>
           <div class="pointer-label">Previous</div>
-          <div class="pointer-title">{data.frontmatter.previous.label}</div>
+          <div class="pointer-title">{article.previous.label}</div>
         </div>
       </a>
     {:else}
       <div class="pointer previous"></div>
     {/if}
-    {#if data.frontmatter.next}
-      <a class="pointer next" href={resolve(data.frontmatter.next.link)}>
+    {#if article.next}
+      <a class="pointer next" href={resolve(article.next.path)}>
         <div>
           <div class="pointer-label">Next</div>
-          <div class="pointer-title">{data.frontmatter.next.label}</div>
+          <div class="pointer-title">{article.next.label}</div>
         </div>
         <div class="pointer-arrow">&gt;</div>
       </a>
@@ -217,7 +216,7 @@
   </footer>
 </div>
 
-{#snippet tocLinks(headings: Heading[])}
+<!-- {#snippet tocLinks(headings: Heading[])}
   {#each headings as heading (heading.id)}
     {@render tocLink(heading)}
   {/each}
@@ -237,7 +236,7 @@
       </ul>
     {/if}
   </li>
-{/snippet}
+{/snippet} -->
 
 <style>
   .toc {
@@ -290,7 +289,6 @@
   }
   .content {
     padding: 0 15px;
-    width: 100vw;
 
     :global {
       & :is(h1, h2, h3, h4, h5, h6) {

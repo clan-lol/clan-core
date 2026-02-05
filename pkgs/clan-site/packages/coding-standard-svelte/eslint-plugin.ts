@@ -26,7 +26,7 @@ function base({
   })();
   return [
     standard.base({ gitignore }),
-    svelte.configs.all,
+    svelte.configs["flat/recommended"],
     svelte.configs.prettier,
     {
       files: [
@@ -66,11 +66,14 @@ function base({
         // where it shouldn't
         "@typescript-eslint/no-confusing-void-expression": "off",
         "svelte/block-lang": ["error", { script: ["ts"] }],
-        // Deprecated rule
-        // https://sveltejs.github.io/eslint-plugin-svelte/rules/no-navigation-without-base/
-        "svelte/no-navigation-without-base": "off",
-        "svelte/no-unused-class-name": "off",
-        "svelte/consistent-selector-style": "off",
+        "svelte/no-add-event-listener": "error",
+        "svelte/no-target-blank": "error",
+        "svelte/no-inline-styles": "error",
+        "svelte/no-unused-class-name": "error",
+        "svelte/prefer-class-directive": "error",
+        "svelte/prefer-style-directive": "error",
+        "svelte/require-event-prefix": "error",
+        "svelte/spaced-html-comment": "error",
       },
     },
   ];

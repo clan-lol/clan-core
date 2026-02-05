@@ -11,6 +11,7 @@
     "strict": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
 
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

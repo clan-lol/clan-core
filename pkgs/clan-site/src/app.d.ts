@@ -1,7 +1,11 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
-declare global {
-  namespace App {}
-}
+import type { Docs } from "$lib/models/docs.ts";
 
-export {};
+declare global {
+  // See https://svelte.dev/docs/kit/types#app.d.ts
+  // for information about these interfaces
+  namespace App {
+    interface PageData {
+      docs?: Docs;
+    }
+  }
+}

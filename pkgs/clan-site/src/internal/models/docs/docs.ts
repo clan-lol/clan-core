@@ -1,19 +1,19 @@
-import type {
-  Heading,
-  Markdown,
-  Frontmatter as MarkdownFrontmatter,
-} from "@clan/vite-plugin-markdown";
-import type { NavItem, NavLink } from "./nav.ts";
+import type { Heading, Markdown } from "@clan/vite-plugin-markdown";
+import type { NavItem, NavSibling } from "./nav.ts";
 import type { Path } from "$config";
 import config from "$config";
-import { normalizeNavItem } from "./nav.ts";
-import { visit } from "$lib/util.ts";
-
-export const docsBase: `/docs/${string}` = `/docs/${config.ver}`;
-
-export type { Heading };
+import {
+  findNavSiblings,
+  normalizeNavItems,
+  setActiveNavItems,
+} from "./nav.ts";
+import { mapObjectKeys } from "$lib/util.ts";
 
 export type DocsPath = `/docs/${string}`;
+export const docsBase: DocsPath = `/docs/${config.ver}`;
+export const docsDir = "src/docs";
+
+export type { Heading };
 
 export class ArticleNotExistError extends Error {
   override name = "ArticleNotExistError";
@@ -24,109 +24,95 @@ export class ArticleNotExistError extends Error {
   }
 }
 
-export interface Article extends Markdown {
+export interface Article {
+  readonly title: string;
   readonly path: DocsPath;
-  readonly frontmatter: Frontmatter;
+  readonly content: string;
+  readonly previous: NavSibling | null;
+  readonly next: NavSibling | null;
   readonly toc: readonly Heading[];
 }
-export interface Frontmatter extends MarkdownFrontmatter {
-  order?: number;
-  previous: SiblingArticle | null;
-  next: SiblingArticle | null;
+
+const markdownLoaders = mapObjectKeys(
+  import.meta.glob<Markdown>("../../../docs/**/*.md", { import: "default" }),
+  ([key]) => {
+    const path = key.slice("../../../docs".length, -".md".length);
+    if (path === "/index") {
+      return "/";
+    }
+    if (path.endsWith("/index")) {
+      return path.slice(0, -"/index".length);
+    }
+    return path;
+  },
+);
+
+export async function loadMarkdown(path: Path): Promise<Markdown> {
+  const load = markdownLoaders[path];
+  if (!load) {
+    throw new ArticleNotExistError(`${docsBase}${path}`);
+  }
+  return await load();
 }
-export interface SiblingArticle {
-  label: string;
-  link: DocsPath;
+
+export async function recursiveloadMarkdowns(path: Path): Promise<Markdown[]> {
+  const paths = (Object.keys(markdownLoaders) as Path[]).filter((p) =>
+    p.startsWith(`${path}/`),
+  );
+  return await Promise.all(paths.map(async (p) => await loadMarkdown(p)));
 }
 
 export class Docs {
-  navItems: readonly NavItem[] = [];
-  #articles: Record<Path, (() => Promise<Markdown>) | Article> = {};
-  async init(): Promise<Docs> {
-    this.#articles = Object.fromEntries(
-      Object.entries(import.meta.glob<Markdown>("../../../docs/**/*.md")).map(
-        ([key, fn]) => {
-          const path = key.slice("../../../docs".length, -".md".length);
-          if (path === "/index") {
-            return ["/", fn];
-          }
-          if (path.endsWith("/index")) {
-            return [path.slice(0, -"/index".length), fn];
-          }
-          return [path, fn];
-        },
-      ),
-    );
+  readonly navItems: readonly NavItem[] = [];
+  #article: Article;
 
-    this.navItems = await Promise.all(
-      config.docs.nav.map(
-        async (navItem) => await normalizeNavItem(this, navItem),
-      ),
-    );
-    return this;
+  private constructor(navItems: readonly NavItem[], article: Article) {
+    this.navItems = navItems;
+    this.#article = article;
   }
 
-  async loadArticle(path: Path): Promise<Article> {
-    const article = this.#articles[path];
-    if (!article) {
-      throw new ArticleNotExistError(`${docsBase}${path}`);
-    }
-
-    if (typeof article !== "function") {
-      return article;
-    }
-    return this.#loadArticle(await article(), path);
+  get article(): Article {
+    return this.#article;
   }
 
-  async loadAutoGenArticle(autoGenPath: Path): Promise<Article[]> {
-    const paths = (Object.keys(this.#articles) as Path[]).filter((path) =>
-      path.startsWith(`${autoGenPath}/`),
-    );
-    return await Promise.all(
-      paths.map(async (path) => await this.loadArticle(path)),
-    );
+  static async load(path: Path): Promise<Docs> {
+    const navItems = await normalizeNavItems(config.docs.nav);
+    const article = await loadArticle(path, navItems);
+    const docs = new Docs(navItems, article);
+    await docs.loadArticle(path);
+    return docs;
   }
 
-  #loadArticle(md: Markdown, path: Path): Article {
-    let index = -1;
-    const navLinks: NavLink[] = [];
-    let next: SiblingArticle | null = null;
-    let previous: SiblingArticle | null = null;
-    visit(this.navItems, "items", (navItem) => {
-      if (!("link" in navItem) || navItem.external) {
-        return;
-      }
-      if (index !== -1) {
-        next = {
-          label: navItem.label,
-          link: navItem.link,
-        };
-        return "break";
-      }
-      if (navItem.link !== path) {
-        navLinks.push(navItem);
-        return;
-      }
-      index = navLinks.length;
-      navLinks.push(navItem);
-      const navLink = navLinks[index - 1];
-      if (navLink) {
-        previous = {
-          label: navLink.label,
-          link: navLink.link,
-        };
-      }
-      return;
-    });
+  async loadArticle(path: Path): Promise<void> {
+    this.#article = await loadArticle(path, this.navItems);
+  }
+}
+
+async function loadArticle(
+  path: Path,
+  navItems: readonly NavItem[],
+): Promise<Article> {
+  if (path === "/") {
+    setActiveNavItems(navItems, path);
     return {
-      ...md,
-      path: `${docsBase}${path}`,
-      frontmatter: {
-        ...md.frontmatter,
-        previous,
-        next,
-      },
-      toc: md.toc,
+      title: config.docs.indexArticleTitle,
+      content: "",
+      path: docsBase,
+      toc: [],
+      previous: null,
+      next: null,
     };
   }
+  const md = await loadMarkdown(path);
+  setActiveNavItems(navItems, path);
+  const [previous, next] = findNavSiblings(navItems, path);
+
+  return {
+    title: md.frontmatter.title,
+    content: md.content,
+    path: `${docsBase}${path}`,
+    toc: md.toc,
+    previous,
+    next,
+  };
 }
