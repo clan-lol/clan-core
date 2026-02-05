@@ -70,6 +70,9 @@
                 virtualisation.useNixStoreImage = true;
                 virtualisation.writableStore = true;
 
+                # Disable substituters to speed up tests
+                nix.settings.substituters = lib.mkForce [ ];
+
                 environment.systemPackages = [ self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full ];
               };
           };
