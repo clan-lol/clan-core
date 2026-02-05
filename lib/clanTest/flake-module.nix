@@ -47,6 +47,7 @@ in
                 outPath = flakeDir;
               };
               clan-core = clan-core;
+              systems = config.clan.test.systemsFile;
             }
           );
         in
@@ -129,7 +130,15 @@ in
               --override-input nixpkgs ${clan-core.inputs.nixpkgs} \
               --override-input clan-core ${clan-core-flake} \
               --override-input clan-core/flake-parts ${clan-core.inputs.flake-parts} \
-              --override-input clan-core/treefmt-nix ${clan-core.inputs.treefmt-nix}
+              --override-input clan-core/treefmt-nix ${clan-core.inputs.treefmt-nix} \
+              --override-input clan-core/nix-select ${clan-core.inputs.nix-select} \
+              --override-input clan-core/data-mesher ${clan-core.inputs.data-mesher} \
+              --override-input clan-core/sops-nix ${clan-core.inputs.sops-nix} \
+              --override-input clan-core/disko ${clan-core.inputs.disko} \
+              --override-input clan-core/systems ${clan-core.inputs.systems} \
+              --override-input systems 'path://${config.clan.test.systemsFile}'
+
+            nix flake info $out --extra-experimental-features 'nix-command flakes'
           '';
     in
     {
@@ -211,6 +220,26 @@ in
                     default = flakeForSandbox;
                     type = types.path;
                     description = "The flake.nix to use for the test.";
+                    readOnly = true;
+                  };
+                  test.flake = mkOption {
+                    default = clanFlakeResult;
+                    type = types.raw;
+                    description = "The clan flake evaluated to access attributes at test eval time";
+                    readOnly = true;
+                  };
+                  test.machinesCross = mkOption {
+                    default = machinesCross;
+                    type = types.raw;
+                    description = "The machines built for all supported platforms";
+                    readOnly = true;
+                  };
+                  test.systemsFile = mkOption {
+                    default = builtins.toFile "flake.systems.nix" ''
+                      [ "${hostPkgs.stdenv.hostPlatform.system}" ]
+                    '';
+                    type = types.path;
+                    description = "The systems.nix file for the test flake.";
                     readOnly = true;
                   };
                 };
