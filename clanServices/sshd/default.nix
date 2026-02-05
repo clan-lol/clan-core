@@ -89,6 +89,8 @@
             };
           };
 
+          generateRootKey = lib.mkEnableOption "Generates an SSH key pair for ssh root access.";
+
           hostKeys.rsa.enable = lib.mkEnableOption "generating a RSA host key";
 
           certificate = {
@@ -117,9 +119,22 @@
             ...
           }:
           {
-            users.users.root.openssh.authorizedKeys.keys = builtins.attrValues settings.authorizedKeys;
+            users.users.root.openssh.authorizedKeys.keys =
+              builtins.attrValues settings.authorizedKeys
+              ++ lib.optional (
+                settings.generateRootKey
+                && config.clan.core.vars.generators.sshd-root-key.files."id_ed25519.pub".exists
+              ) config.clan.core.vars.generators.sshd-root-key.files."id_ed25519.pub".value;
 
             clan.core.vars.generators = {
+              sshd-root-key = lib.mkIf settings.generateRootKey {
+                files."id_ed25519" = { };
+                files."id_ed25519.pub".secret = false;
+                runtimeInputs = [ pkgs.openssh ];
+                script = ''
+                  ssh-keygen -t ed25519 -N "" -C "root@${config.clan.core.settings.machine.name}" -f "$out"/id_ed25519
+                '';
+              };
               openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
                 share = true;
                 files.id_ed25519.deploy = false;
