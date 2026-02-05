@@ -5,7 +5,7 @@ export type {
   Badge,
   NavGroup,
   NavItem,
-  NavPath,
+  NavPathItem,
   NavSibling,
-  NavURL,
+  NavURLItem,
 } from "$internal/models/docs/nav.ts";

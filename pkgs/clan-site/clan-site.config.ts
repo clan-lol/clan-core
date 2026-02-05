@@ -24,7 +24,7 @@ export type NavItem =
     }
   | {
       readonly label: string;
-      readonly recursiveImport: Path;
+      readonly auto: Path;
       readonly collapsed?: boolean;
       readonly badge?: Badge;
     }
@@ -35,7 +35,7 @@ export type NavItem =
     }
   | {
       readonly label: string;
-      readonly path: string;
+      readonly path: Path;
       readonly badge?: Badge;
     }
   | {
@@ -90,7 +90,7 @@ const config: Config = {
           },
           {
             label: "Options",
-            recursiveImport: "/reference/options",
+            auto: "/reference/options",
           },
         ],
       },

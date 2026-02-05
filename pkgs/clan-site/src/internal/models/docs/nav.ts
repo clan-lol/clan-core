@@ -4,32 +4,28 @@ import type {
   Path,
 } from "$config";
 import type { DocsPath } from "./docs.ts";
-import {
-  docsBase,
-  docsDir,
-  loadMarkdown,
-  recursiveloadMarkdowns,
-} from "./docs.ts";
+import { Docs, docsDir, loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
 import { visit } from "$lib/util.ts";
 
-export type NavItem = NavGroup | NavPath | NavURL;
+export type NavItem = NavGroup | NavPathItem | NavURLItem;
 
 export interface NavGroup {
   readonly label: string;
   readonly items: readonly NavItem[];
+  readonly path: DocsPath;
   readonly collapsed: boolean;
   readonly badge: Badge | null;
   isActive: boolean;
 }
 
-export interface NavPath {
+export interface NavPathItem {
   readonly label: string;
   readonly path: DocsPath;
   readonly badge: Badge | null;
   isActive: boolean;
 }
 
-export interface NavURL {
+export interface NavURLItem {
   readonly label: string;
   readonly url: string;
 }
@@ -69,18 +65,24 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem);
     return {
       label: md.frontmatter.title,
-      path: `${docsBase}${navItem}` as const,
+      path: `${Docs.base}${navItem}` as const,
       badge: null,
       isActive: false,
     };
   }
 
   if ("items" in navItem) {
+    const items = await normalizeNavItems(navItem.items);
+    const pathItem = findFirstNavPathItem(items);
+    if (!pathItem) {
+      throw new Error(`Nav group ${navItem.label} contains no path item`);
+    }
     return {
       label: navItem.label,
+      path: pathItem.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      items: await normalizeNavItems(navItem.items),
+      items,
       isActive: false,
     };
   }
@@ -89,15 +91,14 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem.slug);
     return {
       label: navItem.label ?? md.frontmatter.title,
-      path: `${docsBase}${navItem.slug}` as const,
+      path: `${Docs.base}${navItem.slug}` as const,
       badge: normalizeBadge(navItem.badge),
       isActive: false,
     };
   }
 
-  if ("recursiveImport" in navItem) {
-    const mds = await recursiveloadMarkdowns(navItem.recursiveImport);
-
+  if ("auto" in navItem) {
+    const mds = await recursiveLoadMarkdowns(navItem.auto);
     const missintPaths: string[] = [];
     for (const md of mds) {
       if (!md.frontmatter.title) {
@@ -129,13 +130,18 @@ export async function normalizeNavItem(
         async (md) =>
           await normalizeNavItem({
             label: md.frontmatter.title,
-            url: `${docsBase}${md.relativePath.slice(docsDir.length)}`,
+            path: md.relativePath.slice(docsDir.length) as Path,
           }),
       ),
     );
+    const navPath = findFirstNavPathItem(items);
+    if (!navPath) {
+      throw new Error(`Nav group ${navItem.label} contains no path item`);
+    }
     return {
       label: navItem.label,
       items,
+      path: navPath.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
       isActive: false,
@@ -144,7 +150,7 @@ export async function normalizeNavItem(
   if ("path" in navItem) {
     return {
       label: navItem.label,
-      path: `${docsBase}${navItem.path}` as const,
+      path: `${Docs.base}${navItem.path}` as const,
       badge: normalizeBadge(navItem.badge),
       isActive: false,
     };
@@ -163,7 +169,7 @@ export function setActiveNavItems(
     if (!("isActive" in navItem) || !("path" in navItem)) {
       return;
     }
-    if (navItem.path === `${docsBase}${path}`) {
+    if (navItem.path === `${Docs.base}${path}`) {
       navItem.isActive = true;
       // FIXME: this type casting shouldn't be necessary, fix visit's type instead
       for (const parent of parents as readonly NavGroup[]) {
@@ -180,7 +186,7 @@ export function findNavSiblings(
   path: Path,
 ): readonly [NavSibling | null, NavSibling | null] {
   let index = -1;
-  const navPaths: NavPath[] = [];
+  const navPaths: NavPathItem[] = [];
   let prev: NavSibling | null = null;
   let next: NavSibling | null = null;
   visit(navItems, "items", (navItem) => {
@@ -210,4 +216,22 @@ export function findNavSiblings(
     return;
   });
   return [prev, next];
+}
+
+export function findFirstNavPathItem(
+  navItems: readonly NavItem[],
+): NavPathItem | null {
+  for (const navItem of navItems) {
+    if ("items" in navItem) {
+      const item = findFirstNavPathItem(navItem.items);
+      if (item) {
+        return item;
+      }
+      continue;
+    }
+    if ("path" in navItem) {
+      return navItem;
+    }
+  }
+  return null;
 }

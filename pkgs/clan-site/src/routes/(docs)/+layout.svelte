@@ -12,7 +12,6 @@
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
-  import "~/base.css";
 
   const { children } = $props();
   if (!page.data.docs) {
@@ -41,7 +40,7 @@
   });
   $effect(() => {
     (async (): Promise<void> => {
-      if (!pagefind) {
+      if (!query || !pagefind) {
         return;
       }
       const search = await pagefind.debouncedSearch(query);
@@ -69,18 +68,16 @@
   />
 </svelte:head>
 
-<div class="container">
+<div class="container" data-page-id="docs">
   <header>
     <div class="logo"><ClanLogo /> Document</div>
     <nav class="nav">
       <ul>
         {#each docs.navItems as navItem (navItem.label)}
-          {#if "items" in navItem}
+          {#if "path" in navItem}
             <li>
-              <a href={resolve(`/docs/${config.ver}`)}>{navItem.label}</a>
+              <a href={resolve(navItem.path)}>{navItem.label}</a>
             </li>
-          {:else if "path" in navItem}
-            <li><a href={resolve(navItem.path)}>{navItem.label}</a></li>
           {:else}
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
             <li><a href={navItem.url}>{navItem.label}</a></li>
@@ -161,30 +158,6 @@
 {/snippet}
 
 <style>
-  :global {
-    body {
-      color: #000;
-      font:
-        500 18px/1.37 "Mona Sans",
-        sans-serif;
-      background: #e1ecf0;
-    }
-
-    a {
-      text-decoration: none;
-    }
-    h1 {
-      font-size: 40px;
-      font-weight: 700px;
-      color: inherit;
-    }
-
-    h2 {
-      font-size: 24px;
-      font-weight: 700px;
-      color: inherit;
-    }
-  }
   .container {
     min-height: 100vh;
     display: flex;

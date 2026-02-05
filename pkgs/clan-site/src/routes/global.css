@@ -1,0 +1,51 @@
+@import "@fontsource-variable/geist";
+
+html {
+  box-sizing: border-box;
+
+  &.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+  }
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: "Geist Variable";
+  font-size: 16px;
+  margin: 0;
+
+  &:has([data-page-id="docs"]) {
+    color: #000;
+    font:
+      500 18px/1.37 "Mona Sans",
+      sans-serif;
+    background: #e1ecf0;
+  }
+}
+
+h1 {
+  margin: 2em 0;
+  font-size: 40px;
+  font-weight: 700px;
+  color: inherit;
+}
+
+h2 {
+  margin: 2em 0 0.5em;
+  font-size: 24px;
+  font-weight: 700px;
+  color: inherit;
+}
+
+h3 {
+  margin: 2em 0 1em;
+}
+
+a {
+  text-decoration: none;
+}

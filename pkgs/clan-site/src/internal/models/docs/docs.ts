@@ -10,7 +10,6 @@ import {
 import { mapObjectKeys } from "$lib/util.ts";
 
 export type DocsPath = `/docs/${string}`;
-export const docsBase: DocsPath = `/docs/${config.ver}`;
 export const docsDir = "src/docs";
 
 export type { Heading };
@@ -47,22 +46,9 @@ const markdownLoaders = mapObjectKeys(
   },
 );
 
-export async function loadMarkdown(path: Path): Promise<Markdown> {
-  const load = markdownLoaders[path];
-  if (!load) {
-    throw new ArticleNotExistError(`${docsBase}${path}`);
-  }
-  return await load();
-}
-
-export async function recursiveloadMarkdowns(path: Path): Promise<Markdown[]> {
-  const paths = (Object.keys(markdownLoaders) as Path[]).filter((p) =>
-    p.startsWith(`${path}/`),
-  );
-  return await Promise.all(paths.map(async (p) => await loadMarkdown(p)));
-}
-
 export class Docs {
+  static base: DocsPath = `/docs/${config.ver}`;
+
   readonly navItems: readonly NavItem[] = [];
   #article: Article;
 
@@ -97,7 +83,7 @@ async function loadArticle(
     return {
       title: config.docs.indexArticleTitle,
       content: "",
-      path: docsBase,
+      path: Docs.base,
       toc: [],
       previous: null,
       next: null,
@@ -110,9 +96,24 @@ async function loadArticle(
   return {
     title: md.frontmatter.title,
     content: md.content,
-    path: `${docsBase}${path}`,
+    path: `${Docs.base}${path}`,
     toc: md.toc,
     previous,
     next,
   };
+}
+
+export async function loadMarkdown(path: Path): Promise<Markdown> {
+  const load = markdownLoaders[path];
+  if (!load) {
+    throw new ArticleNotExistError(`${Docs.base}${path}`);
+  }
+  return await load();
+}
+
+export async function recursiveLoadMarkdowns(path: Path): Promise<Markdown[]> {
+  const paths = (Object.keys(markdownLoaders) as Path[]).filter((p) =>
+    p.startsWith(`${path}/`),
+  );
+  return await Promise.all(paths.map(async (p) => await loadMarkdown(p)));
 }
