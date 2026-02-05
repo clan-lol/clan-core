@@ -40,7 +40,7 @@
   });
   $effect(() => {
     (async (): Promise<void> => {
-      if (!pagefind) {
+      if (!query || !pagefind) {
         return;
       }
       const search = await pagefind.debouncedSearch(query);
