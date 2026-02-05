@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -12,8 +11,20 @@ from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_config, nix_eval, nix_shell
-from clan_lib.ssh.create import create_secret_key_nixos_anywhere
+from clan_lib.machines.nixos_anywhere import (
+    add_debug,
+    add_kexec,
+    add_nix_options,
+    add_nixos_anywhere_key,
+    add_password_options,
+    add_ssh_port,
+    add_target,
+    add_target_private_key,
+    add_test_store_workaround,
+    setup_environ,
+    wrap_nix_shell,
+)
+from clan_lib.nix import nix_config, nix_eval
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -126,50 +137,23 @@ def run_machine_hardware_info_init(
         str(opts.backend.config_path(machine)),
     ]
 
-    environ = os.environ.copy()
-    if target_host.password:
-        cmd += [
-            "--env-password",
-            "--ssh-option",
-            "IdentitiesOnly=yes",
-        ]
-        environ["SSHPASS"] = target_host.password
-
-    if target_host.private_key:
-        cmd += ["--ssh-option", f"IdentityFile={target_host.private_key}"]
-
-    if target_host.port:
-        cmd += ["--ssh-port", str(target_host.port)]
-
-    key_pair = create_secret_key_nixos_anywhere()
-    cmd += ["-i", str(key_pair.private)]
+    environ = setup_environ(target_host)
+    cmd = add_password_options(cmd, target_host)
+    cmd = add_target_private_key(cmd, target_host)
+    cmd = add_ssh_port(cmd, target_host)
+    cmd, _ = add_nixos_anywhere_key(cmd)
 
     backup_file = None
     if hw_file.exists():
         backup_file = hw_file.with_suffix(".bak")
         hw_file.replace(backup_file)
 
-    if opts.debug:
-        cmd += ["--debug"]
-
-    if opts.kexec:
-        cmd += ["--kexec", opts.kexec]
-
-    # REMOVEME when nixos-anywhere > 1.12.0
-    # In 1.12.0 and earlier, nixos-anywhere doesn't pass Nix options when attempting to get substituters
-    # which leads to the installation test failing with the error of not being able to substitute flake-parts
-    # see: https://github.com/nix-community/nixos-anywhere/pull/596
-    if "CLAN_TEST_STORE" in environ:
-        cmd += ["--no-use-machine-substituters"]
-
-    # Add nix options to nixos-anywhere
-    cmd.extend(opts.machine.flake.nix_options or [])
-
-    cmd += [target_host.target]
-    cmd = nix_shell(
-        ["nixos-anywhere"],
-        cmd,
-    )
+    cmd = add_debug(cmd, opts.debug)
+    cmd = add_kexec(cmd, opts.kexec)
+    cmd = add_test_store_workaround(cmd, environ)
+    cmd = add_nix_options(cmd, machine)
+    cmd = add_target(cmd, target_host)
+    cmd = wrap_nix_shell(cmd, target_host)
 
     run(
         cmd,
