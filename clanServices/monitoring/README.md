@@ -1,3 +1,6 @@
+!!! Danger "Experimental"
+    This service is experimental and will change in the future.1
+
 ## Usage
 
 ```nix
