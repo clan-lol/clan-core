@@ -194,8 +194,9 @@ class ClanSelectError(ClanError):
     ) -> None:
         attribute = None
         if cmd_error and description is None:
-            # Match for "error: <rest of error>"
-            error_match = re.search(r"error: (.+)", str(cmd_error))
+            # Match for "error: <rest of error>" including multiline messages
+            # Use re.DOTALL to make . match newlines as well
+            error_match = re.search(r"error: (.+)", str(cmd_error), re.DOTALL)
             if error_match:
                 description = error_match.group(1).strip()
         if selectors == []:
