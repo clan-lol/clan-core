@@ -33,14 +33,14 @@ Services provided by the community, with no stability guarantees!
     Sets up the [EasyTier Mesh VPN](https://github.com/EasyTier/EasyTier), uses WireGuard under the hood.
 
 
-- [Nix Cache](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/nix-cache)
+- [Nix Cache](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/nix-cache) :octicons-link-external-16:
 
     ---
 
     Sets up a nix cache to share the nix store between machines in your network 
 
 
-- [@schallerclan/dns](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/dns.nix)
+- [@schallerclan/dns](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/dns.nix) :octicons-link-external-16:
 
     ---
 
