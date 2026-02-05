@@ -86,6 +86,8 @@
           "nix-command"
           "flakes"
         ];
+        # Disable substituters to speed up tests
+        substituters = lib.mkForce [ ];
       };
 
       # Define the mounts that exist in the container to prevent them from being stopped

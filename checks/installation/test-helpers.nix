@@ -4,7 +4,12 @@
 let
   # Common target VM configuration used by both installation and update tests
   target =
-    { modulesPath, pkgs, ... }:
+    {
+      lib,
+      modulesPath,
+      pkgs,
+      ...
+    }:
     {
       imports = [
         (modulesPath + "/../tests/common/auto-format-root-device.nix")
@@ -18,8 +23,7 @@ let
         pkgs.nixos-facter
       ];
       # Disable cache.nixos.org to speed up tests
-      nix.settings.substituters = [ ];
-      nix.settings.trusted-public-keys = [ ];
+      nix.settings.substituters = lib.mkForce [ ];
       virtualisation.emptyDiskImages = [ 512 ];
       virtualisation.diskSize = 8 * 1024;
       virtualisation.rootDevice = "/dev/vdb";
