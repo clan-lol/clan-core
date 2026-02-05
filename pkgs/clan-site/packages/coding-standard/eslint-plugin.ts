@@ -88,6 +88,9 @@ function base({
           "error",
           { ignore: [-2, -1, 0, 1, 2] },
         ],
+        // This rule is currently broken, we need T | void as a return type
+        // https://github.com/typescript-eslint/typescript-eslint/issues/8755
+        "@typescript-eslint/no-invalid-void-type": "off",
         // It would be very nice to enforce this, but unfortunately this rule
         // doesn't use type information, and can fail in cases where the return
         // can already be inferred. For example
@@ -137,6 +140,12 @@ function base({
           "error",
           {
             varsIgnorePattern: "^_.*",
+          },
+        ],
+        "@typescript-eslint/no-empty-function": [
+          "error",
+          {
+            allow: ["private-constructors", "overrideMethods"],
           },
         ],
         // This creates a lot of false positive. Rely on typescript to catch duplicates instead.
@@ -215,6 +224,7 @@ function base({
           },
         ],
         "unicorn/custom-error-definition": "error",
+        "perfectionist/sort-named-exports": "error",
         "perfectionist/sort-named-imports": "error",
         "perfectionist/sort-imports": [
           "error",

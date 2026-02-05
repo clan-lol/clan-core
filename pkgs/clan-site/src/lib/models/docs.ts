@@ -1,16 +1,11 @@
-export type {
-  Heading,
-  Article,
-  Frontmatter,
-  SiblingArticle,
-} from "$internal/models/docs/docs.ts";
-export { Docs, ArticleNotExistError } from "$internal/models/docs/docs.ts";
+export type { Article, Heading } from "$internal/models/docs/docs.ts";
+export { ArticleNotExistError, Docs } from "$internal/models/docs/docs.ts";
 
 export type {
-  NavItem,
-  NavGroup,
-  NavLink,
   Badge,
+  NavGroup,
+  NavItem,
+  NavPath,
+  NavSibling,
+  NavURL,
 } from "$internal/models/docs/nav.ts";
-
-export type { visit } from "$internal/models/docs/visit.ts";

@@ -3,30 +3,40 @@ import type {
   NavItem as NavItemInput,
   Path,
 } from "$config";
-import type { Docs } from "./docs.ts";
-import { docsBase } from "./docs.ts";
+import type { DocsPath } from "./docs.ts";
+import {
+  docsBase,
+  docsDir,
+  loadMarkdown,
+  recursiveloadMarkdowns,
+} from "./docs.ts";
+import { visit } from "$lib/util.ts";
 
-export type NavItem = NavGroup | NavLink | ExternlNavLink;
+export type NavItem = NavGroup | NavPath | NavURL;
 
 export interface NavGroup {
   readonly label: string;
   readonly items: readonly NavItem[];
   readonly collapsed: boolean;
   readonly badge: Badge | null;
+  isActive: boolean;
 }
 
-export interface NavLink {
+export interface NavPath {
   readonly label: string;
-  readonly link: `/docs/${string}`;
-  readonly external: false;
+  readonly path: DocsPath;
   readonly badge: Badge | null;
+  isActive: boolean;
 }
 
-export interface ExternlNavLink {
+export interface NavURL {
   readonly label: string;
-  readonly link: string;
-  readonly external: true;
-  readonly badge: Badge | null;
+  readonly url: string;
+}
+
+export interface NavSibling {
+  readonly label: string;
+  readonly path: DocsPath;
 }
 
 export type Badge = Exclude<BadgeInput, string>;
@@ -44,63 +54,65 @@ export function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
   return badge;
 }
 
+export async function normalizeNavItems(
+  navItems: readonly NavItemInput[],
+): Promise<readonly NavItem[]> {
+  return await Promise.all(
+    navItems.map(async (navItem) => await normalizeNavItem(navItem)),
+  );
+}
+
 export async function normalizeNavItem(
-  docs: Docs,
   navItem: NavItemInput,
 ): Promise<NavItem> {
-  if (isPath(navItem)) {
-    const article = await docs.loadArticle(navItem);
+  if (typeof navItem === "string") {
+    const md = await loadMarkdown(navItem);
     return {
-      label: article.frontmatter.title,
-      link: `${docsBase}${navItem}` as const,
-      external: false,
+      label: md.frontmatter.title,
+      path: `${docsBase}${navItem}` as const,
       badge: null,
+      isActive: false,
     };
   }
 
   if ("items" in navItem) {
     return {
-      ...navItem,
+      label: navItem.label,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      items: await Promise.all(
-        navItem.items.map(
-          async (navItem) => await normalizeNavItem(docs, navItem),
-        ),
-      ),
+      items: await normalizeNavItems(navItem.items),
+      isActive: false,
     };
   }
 
   if ("slug" in navItem) {
-    const article = await docs.loadArticle(navItem.slug);
+    const md = await loadMarkdown(navItem.slug);
     return {
-      label: navItem.label ?? article.frontmatter.title,
-      link: `${docsBase}${navItem.slug}` as const,
-      external: false,
+      label: navItem.label ?? md.frontmatter.title,
+      path: `${docsBase}${navItem.slug}` as const,
       badge: normalizeBadge(navItem.badge),
+      isActive: false,
     };
   }
 
-  if ("autogenerate" in navItem) {
-    const articles = await docs.loadAutoGenArticle(
-      navItem.autogenerate.directory,
-    );
+  if ("recursiveImport" in navItem) {
+    const mds = await recursiveloadMarkdowns(navItem.recursiveImport);
 
-    const titleMissingArticlePaths: string[] = [];
-    for (const article of articles) {
-      if (!article.frontmatter.title) {
-        titleMissingArticlePaths.push(article.path);
+    const missintPaths: string[] = [];
+    for (const md of mds) {
+      if (!md.frontmatter.title) {
+        missintPaths.push(md.path);
       }
     }
-    if (titleMissingArticlePaths.length !== 0) {
+    if (missintPaths.length !== 0) {
       throw new Error(
-        titleMissingArticlePaths
+        missintPaths
           .map((path) => `Missing # title in doc: ${path}`)
           .join("\n"),
       );
     }
 
-    articles.sort((a, b) => {
+    mds.sort((a, b) => {
       if ("order" in a.frontmatter && "order" in b.frontmatter) {
         return a.frontmatter.order - b.frontmatter.order;
       }
@@ -113,11 +125,11 @@ export async function normalizeNavItem(
       return a.frontmatter.title.localeCompare(b.frontmatter.title);
     });
     const items = await Promise.all(
-      articles.map(
-        async (article) =>
-          await normalizeNavItem(docs, {
-            label: article.frontmatter.title,
-            link: article.path,
+      mds.map(
+        async (md) =>
+          await normalizeNavItem({
+            label: md.frontmatter.title,
+            url: `${docsBase}${md.relativePath.slice(docsDir.length)}`,
           }),
       ),
     );
@@ -126,25 +138,76 @@ export async function normalizeNavItem(
       items,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
+      isActive: false,
     };
   }
-  const external = /^(?:https?:)?\/\//.test(navItem.link);
-  if (external) {
+  if ("path" in navItem) {
     return {
-      ...navItem,
-      link: navItem.link,
+      label: navItem.label,
+      path: `${docsBase}${navItem.path}` as const,
       badge: normalizeBadge(navItem.badge),
-      external,
+      isActive: false,
     };
   }
   return {
-    ...navItem,
-    link: `${docsBase}${navItem.link}` as const,
-    badge: normalizeBadge(navItem.badge),
-    external,
+    label: navItem.label,
+    url: navItem.url,
   };
 }
 
-function isPath(s: unknown): s is Path {
-  return typeof s === "string" && s.startsWith("/");
+export function setActiveNavItems(
+  navItems: readonly NavItem[],
+  path: Path,
+): void {
+  visit(navItems, "items", (navItem, parents) => {
+    if (!("isActive" in navItem) || !("path" in navItem)) {
+      return;
+    }
+    if (navItem.path === `${docsBase}${path}`) {
+      navItem.isActive = true;
+      // FIXME: this type casting shouldn't be necessary, fix visit's type instead
+      for (const parent of parents as readonly NavGroup[]) {
+        parent.isActive = true;
+      }
+      return;
+    }
+    return;
+  });
+}
+
+export function findNavSiblings(
+  navItems: readonly NavItem[],
+  path: Path,
+): readonly [NavSibling | null, NavSibling | null] {
+  let index = -1;
+  const navPaths: NavPath[] = [];
+  let prev: NavSibling | null = null;
+  let next: NavSibling | null = null;
+  visit(navItems, "items", (navItem) => {
+    if (!("path" in navItem)) {
+      return;
+    }
+    if (index !== -1) {
+      next = {
+        label: navItem.label,
+        path: navItem.path,
+      };
+      return "break";
+    }
+    if (navItem.path !== path) {
+      navPaths.push(navItem);
+      return;
+    }
+    index = navPaths.length;
+    navPaths.push(navItem);
+    const navPath = navPaths[index - 1];
+    if (navPath) {
+      prev = {
+        label: navPath.label,
+        path: navPath.path,
+      };
+    }
+    return;
+  });
+  return [prev, next];
 }

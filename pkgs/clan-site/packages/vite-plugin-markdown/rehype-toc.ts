@@ -1,4 +1,4 @@
-import type { Heading } from "./modules.d.ts";
+import type { HeadingInput } from "./index.ts";
 import type { Plugin } from "unified";
 import type { Root } from "hast";
 import GithubSlugger from "github-slugger";
@@ -16,15 +16,13 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
 }) {
   return (tree, file) => {
     const slugger = new GithubSlugger();
-    const toc: Heading[] = [];
+    const toc: HeadingInput[] = [];
     let h1Exist = false;
-    const parentHeadings: Heading[] = [];
+    const parentHeadings: HeadingInput[] = [];
     let { matter } = file.data;
     if (!matter) {
-      matter = {
-        title: "",
-      };
-      file.data = matter;
+      matter = {};
+      file.data.matter = matter;
     }
     visit(tree, "element", (node) => {
       const rank = headingRank(node);
@@ -71,8 +69,14 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
       }
       parentHeadings.push(heading);
     });
-
     file.data.toc = toc;
+    // TODO: remove this, explicitly add a title for each article
+    if (!("title" in matter)) {
+      const s = (file.basename ?? "")
+        .slice(0, -".md".length)
+        .replaceAll("-", " ");
+      matter.title = `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
+    }
   };
 };
 export default rehypeToc;

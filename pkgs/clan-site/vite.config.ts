@@ -3,6 +3,7 @@ import markdown from "@clan/vite-plugin-markdown";
 import { pagefind } from "vite-plugin-pagefind";
 import siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
+import svg from "@poppanator/sveltekit-svg";
 import valuePlugin from "vite-plugin-value";
 
 export default defineConfig({
@@ -13,6 +14,11 @@ export default defineConfig({
   },
   plugins: [
     sveltekit(),
+    svg({
+      svgoOptions: {
+        plugins: ["removeXMLNS"],
+      },
+    }),
     valuePlugin({
       name: "$config",
       value: siteConfig,
