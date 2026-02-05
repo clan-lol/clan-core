@@ -46,7 +46,11 @@ Services provided by the community, with no stability guarantees!
 
     Clan-internal DNS and service exposure with support for multiple records (e.g. A, AAAA, CNAME) and multiple IPs
 
+- [@schallerclan/tailscale](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/tailscale.nix) :octicons-link-external-16:
 
+    ---
+
+    Connect to a tailscale network. Very basic tailscale support.
 
 </div>
 
