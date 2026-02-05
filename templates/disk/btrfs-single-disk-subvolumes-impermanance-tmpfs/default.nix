@@ -109,7 +109,6 @@
       onCalendar = "*/2:00";
       settings = {
         subvolume = "/persist";
-        snapshot_create = "onchange";
         snapshot_dir = "/persist";
         snapshot_preserve = "16h 7d 3w 2m";
         snapshot_preserve_min = "3d";
