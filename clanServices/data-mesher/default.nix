@@ -31,8 +31,16 @@ in
             description = "Log level";
           };
 
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 7946;
+            description = ''
+              Port to listen on for cluster communication.
+            '';
+          };
+
           bootstrapNodes = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf lib.types.str);
+            type = lib.types.listOf lib.types.str;
             description = ''
               A list of bootstrap nodes that act as an initial gateway when joining
               the cluster.
@@ -43,30 +51,15 @@ in
             ];
           };
 
-          network = {
-            interface = lib.mkOption {
-              type = lib.types.str;
-              description = ''
-                The interface over which cluster communication should be performed.
-                All the ip addresses associate with this interface will be part of
-                our host claim, including both ipv4 and ipv6.
-
-                This should be set to an internal/VPN interface.
-              '';
-              example = "tailscale0";
-            };
-
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 7946;
-              description = ''
-                Port to listen on for cluster communication.
-              '';
-            };
-
-            # Removed in v2
-            tld = mkRemovedOption "network.tld" "data-mesher v2 removed network-wide TLD. Use 'files' for file-based sync.";
-            hostTTL = mkRemovedOption "network.hostTTL" "data-mesher v2 removed host TTL. Use 'files' for file-based sync.";
+          interfaces = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            description = ''
+              We will bind to each each interface listed, listening for connections on `cluster.port`.
+            '';
+            example = [
+              "eth1"
+              "tailscale0"
+            ];
           };
 
           files = lib.mkOption {
@@ -87,34 +80,136 @@ in
           };
 
           # Removed in v2
+
+          network = {
+            interface = mkRemovedOption "network.interface" "Use 'interfaces' instead.";
+
+            port = mkRemovedOption "network.port" "Use 'port' instead.";
+
+            # Removed in v2
+            tld = mkRemovedOption "network.tld" "data-mesher v2 removed network-wide TLD. Use 'files' for file-based sync.";
+            hostTTL = mkRemovedOption "network.hostTTL" "data-mesher v2 removed host TTL. Use 'files' for file-based sync.";
+          };
+
           extraHostNames = mkRemovedOption "extraHostNames" "data-mesher v2 removed host name claims. Use 'files' for file-based sync.";
         };
       };
     perInstance =
       { settings, ... }:
       {
-        nixosModule = {
-          services.data-mesher = {
-            enable = true;
-            openFirewall = true;
+        nixosModule = (
+          { config, pkgs, ... }:
+          let
+            dmConfig = config.services.data-mesher;
+          in
+          {
+            assertions = [
+              {
+                assertion = settings.bootstrapNodes != [ ];
+                message = "data-mesher: At least one bootstrap node must be provided in 'bootstrapNodes'.";
+              }
+            ];
 
-            settings = {
-              log_level = settings.logLevel;
-              cluster = {
-                port = settings.network.port;
-                join_interval = "30s";
-                push_pull_interval = "30s";
-                interface = settings.network.interface;
-                bootstrap_nodes = settings.bootstrapNodes;
+            clan.core.vars.generators =
+              let
+                # ensure generated secret files are readable by the data-mesher process
+                # non secret files are going to be world-readable from the nix store
+                mkSecretFile =
+                  attrs:
+                  attrs
+                  // {
+                    owner = dmConfig.user;
+                    group = dmConfig.group;
+                  };
+              in
+              {
+                data-mesher-ca = {
+                  share = true;
+                  files = {
+                    "ca.key".deploy = false;
+                    "ca.pub".secret = false;
+                  };
+                  runtimeInputs = [
+                    dmConfig.package
+                  ];
+                  script = ''
+                    data-mesher generate ca --public-key-path "$out/ca.pub" --private-key-path "$out/ca.key"
+                  '';
+                };
+
+                data-mesher-node-identity = {
+                  dependencies = [
+                    "data-mesher-ca"
+                  ];
+                  files = {
+                    "identity.key" = mkSecretFile { };
+                    "identity.pub".secret = false;
+                    "identity.cert" = mkSecretFile { };
+                  };
+                  runtimeInputs = [
+                    dmConfig.package
+                  ];
+                  script = ''
+                    data-mesher generate node-key \
+                        --public-key-path "$out/identity.pub" \
+                        --private-key-path "$out/identity.key"
+
+                    data-mesher certificate sign \
+                        --ca-key "$in/data-mesher-ca/ca.key" \
+                        --node-key "$out/identity.pub" \
+                        --output "$out/identity.cert" \
+                        --validity 2160h    # 90 days for now TODO: expose this in the clan module
+                  '';
+                };
+
+                data-mesher-node-keyring = {
+                  share = true;
+                  files."pre_shared_key" = mkSecretFile { };
+                  runtimeInputs = [
+                    pkgs.openssl
+                  ];
+                  script = ''
+                    openssl rand -base64 32 > "$out/pre_shared_key"
+                  '';
+                };
               };
 
-              http.port = 7331;
-              http.interface = "lo";
+            services.data-mesher = {
+              enable = true;
+              openFirewall = true;
 
-              inherit (settings) files;
+              settings = {
+                log_level = settings.logLevel;
+                cluster = {
+                  port = settings.port;
+                  join_interval = "30s";
+                  push_pull_interval = "30s";
+                  interfaces = settings.interfaces;
+                  bootstrap_nodes = settings.bootstrapNodes;
+
+                  encryption =
+                    let
+                      gen = config.clan.core.vars.generators;
+                    in
+                    {
+                      enable = true;
+                      keyring = [
+                        gen.data-mesher-node-keyring.files."pre_shared_key".path
+                      ];
+                      identity_key = gen.data-mesher-node-identity.files."identity.key".path;
+                      identity_cert = gen.data-mesher-node-identity.files."identity.cert".path;
+                      certificate_authorities = [ gen.data-mesher-ca.files."ca.pub".path ];
+                    };
+                };
+
+                http.port = 7331;
+                http.interfaces = [ "lo" ]; # todo expose in options
+
+                inherit (settings) files;
+              };
             };
-          };
-        };
+          }
+        );
       };
   };
 
