@@ -2,7 +2,7 @@ Services provided by the community, with no stability guarantees!
 
 <div class="grid cards" markdown>
 
--  [Desktop Service](https://github.com/pinpox/nixos/tree/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/desktop) :octicons-link-external-16:
+-  [@pinpox/desktop](https://github.com/pinpox/nixos/tree/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/desktop) :octicons-link-external-16:
 
     ---
 
@@ -11,14 +11,14 @@ Services provided by the community, with no stability guarantees!
     and allows using multiple desktop environments or compositors at once.
 
 
--  [Localsend](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/localsend.nix) :octicons-link-external-16:
+-  [@pinpox/localsend](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/localsend.nix) :octicons-link-external-16:
 
     ---
 
     Sets up [localsend](https://localsend.org), an application to share files to nearby devices.
 
 
--  [WireGuard Star](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/wireguard.nix) :octicons-link-external-16:
+-  [@pinpox/wireguard](https://github.com/pinpox/nixos/blob/3a50bf20d0f6897d5619087f83a0fe6a4118f806/clan-service-modules/wireguard.nix) :octicons-link-external-16:
 
     ---
 
