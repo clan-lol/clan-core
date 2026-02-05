@@ -4,12 +4,7 @@ import type {
   Path,
 } from "$config";
 import type { DocsPath } from "./docs.ts";
-import {
-  docsBase,
-  docsDir,
-  loadMarkdown,
-  recursiveLoadMarkdowns,
-} from "./docs.ts";
+import { Docs, docsDir, loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
 import { visit } from "$lib/util.ts";
 
 export type NavItem = NavGroup | NavPathItem | NavURLItem;
@@ -70,7 +65,7 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem);
     return {
       label: md.frontmatter.title,
-      path: `${docsBase}${navItem}` as const,
+      path: `${Docs.base}${navItem}` as const,
       badge: null,
       isActive: false,
     };
@@ -96,7 +91,7 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem.slug);
     return {
       label: navItem.label ?? md.frontmatter.title,
-      path: `${docsBase}${navItem.slug}` as const,
+      path: `${Docs.base}${navItem.slug}` as const,
       badge: normalizeBadge(navItem.badge),
       isActive: false,
     };
@@ -155,7 +150,7 @@ export async function normalizeNavItem(
   if ("path" in navItem) {
     return {
       label: navItem.label,
-      path: `${docsBase}${navItem.path}` as const,
+      path: `${Docs.base}${navItem.path}` as const,
       badge: normalizeBadge(navItem.badge),
       isActive: false,
     };
@@ -174,7 +169,7 @@ export function setActiveNavItems(
     if (!("isActive" in navItem) || !("path" in navItem)) {
       return;
     }
-    if (navItem.path === `${docsBase}${path}`) {
+    if (navItem.path === `${Docs.base}${path}`) {
       navItem.isActive = true;
       // FIXME: this type casting shouldn't be necessary, fix visit's type instead
       for (const parent of parents as readonly NavGroup[]) {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { asset, resolve } from "$app/paths";
   import config from "$config";
+  import { Docs } from "$lib/models/docs.ts";
   import heroImage from "$lib/assets/docs-hero.jpg";
   import IconCode from "$lib/assets/icons/code.svg?component";
   import IconFlash from "$lib/assets/icons/flash.svg?component";
@@ -27,9 +28,8 @@
 <div class="actions">
   <a
     class="button primary"
-    href={resolve(
-      `/docs/${config.ver}/getting-started/creating-your-first-clan`,
-    )}><IconFlash width="16" />Create Clan</a
+    href={resolve(`${Docs.base}/getting-started/creating-your-first-clan`)}
+    ><IconFlash width="16" />Create Clan</a
   >
   <a class="button" href="https://git.clan.lol/clan/clan-core" rel="external"
     ><IconCode width="16" />View on Gitea</a
