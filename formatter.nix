@@ -15,6 +15,7 @@
       treefmt.programs.mypy.enable = true;
       treefmt.programs.nixfmt.enable = true;
       treefmt.programs.deadnix.enable = true;
+      treefmt.programs.flake-edit.enable = true;
       treefmt.programs.nixf-diagnose.enable = true;
       treefmt.programs.nixf-diagnose.ignore = [
         "sema-primop-removed-prefix"
