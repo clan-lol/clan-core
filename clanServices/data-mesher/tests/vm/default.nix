@@ -37,7 +37,7 @@
             ];
           };
 
-          network.interface = "eth1";
+          interfaces = [ "eth1" ];
 
           bootstrapNodes = [
             "[2001:db8:1::1]:7946" # alpha
