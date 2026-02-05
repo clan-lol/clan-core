@@ -174,6 +174,8 @@ in
                 };
               };
 
+            environment.systemPackages = [ dmConfig.package ];
+
             services.data-mesher = {
               enable = true;
               openFirewall = true;
