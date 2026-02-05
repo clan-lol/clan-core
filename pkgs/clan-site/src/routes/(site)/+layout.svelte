@@ -1,7 +1,6 @@
 <script lang="ts">
   import config from "$config";
   import { resolve } from "$app/paths";
-  import "~/base.css";
 
   const { children } = $props();
 </script>

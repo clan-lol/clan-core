@@ -12,7 +12,6 @@
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
-  import "~/base.css";
 
   const { children } = $props();
   if (!page.data.docs) {
@@ -69,7 +68,7 @@
   />
 </svelte:head>
 
-<div class="container">
+<div class="container" data-page-id="docs">
   <header>
     <div class="logo"><ClanLogo /> Document</div>
     <nav class="nav">
@@ -159,30 +158,6 @@
 {/snippet}
 
 <style>
-  :global {
-    body {
-      color: #000;
-      font:
-        500 18px/1.37 "Mona Sans",
-        sans-serif;
-      background: #e1ecf0;
-    }
-
-    a {
-      text-decoration: none;
-    }
-    h1 {
-      font-size: 40px;
-      font-weight: 700px;
-      color: inherit;
-    }
-
-    h2 {
-      font-size: 24px;
-      font-weight: 700px;
-      color: inherit;
-    }
-  }
   .container {
     min-height: 100vh;
     display: flex;
