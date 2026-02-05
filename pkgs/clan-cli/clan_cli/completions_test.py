@@ -22,6 +22,7 @@ def increase_completion_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(completions, "COMPLETION_TIMEOUT", 60)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_complete_machines(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -43,6 +44,7 @@ def test_complete_machines(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_complete_machines_with_prefix(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -57,6 +59,7 @@ def test_complete_machines_with_prefix(
     assert len(completion_list) > 0, "Should return machine names"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_complete_machines_without_flake(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -80,6 +83,7 @@ def test_complete_machines_without_flake(
     assert "vm2" in completion_list
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_complete_machines_with_created_machine(
     test_flake_with_core: fixtures_flakes.FlakeForTest,

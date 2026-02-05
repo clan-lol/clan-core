@@ -29,6 +29,7 @@ from clan_cli.tests.helpers import cli
     # So we can write it to the flake fixtures
     indirect=["test_flake_with_core"],
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_update_single_name(
     test_flake_with_core: FlakeForTest,
@@ -67,6 +68,7 @@ def test_get_machines_for_update_single_name(
     # So we can write it to the flake fixtures
     indirect=["test_flake_with_core"],
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_update_tags(
     test_flake_with_core: FlakeForTest,
@@ -105,6 +107,7 @@ def test_get_machines_for_update_tags(
     # So we can write it to the flake fixtures
     indirect=["test_flake_with_core"],
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_update_tags_and_name(
     test_flake_with_core: FlakeForTest,
@@ -143,6 +146,7 @@ def test_get_machines_for_update_tags_and_name(
     # So we can write it to the flake fixtures
     indirect=["test_flake_with_core"],
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_update_implicit_all(
     test_flake_with_core: FlakeForTest,

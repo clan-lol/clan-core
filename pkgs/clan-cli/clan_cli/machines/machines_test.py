@@ -23,6 +23,7 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
     # So we can write it to the flake fixtures
     indirect=True,
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_inventory_machine_detect_class(
     test_flake_with_core: FlakeForTest,

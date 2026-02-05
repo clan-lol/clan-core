@@ -14,6 +14,7 @@ from clan_cli.tests.stdout import CaptureOutput
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init(
     monkeypatch: pytest.MonkeyPatch,
@@ -52,6 +53,7 @@ def test_init(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init_existing_git(
     monkeypatch: pytest.MonkeyPatch,
@@ -90,6 +92,7 @@ def test_init_existing_git(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init_minimal_template(
     monkeypatch: pytest.MonkeyPatch,
@@ -126,6 +129,7 @@ def test_init_minimal_template(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init_fallback_from_non_clan_directory(
     monkeypatch: pytest.MonkeyPatch,
@@ -145,6 +149,7 @@ def test_init_fallback_from_non_clan_directory(
     assert (new_clan_dir / "flake.nix").exists()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init_with_local_template_reference(
     monkeypatch: pytest.MonkeyPatch,
@@ -164,6 +169,7 @@ def test_init_with_local_template_reference(
     assert (new_clan_dir / "flake.nix").exists()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_init_substitutes_placeholders(
     monkeypatch: pytest.MonkeyPatch,

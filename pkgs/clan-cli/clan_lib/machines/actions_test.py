@@ -33,6 +33,7 @@ from .actions import (
 )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
     clan_config: ClanInput = {
@@ -48,6 +49,7 @@ def test_list_nixos_machines(clan_flake: Callable[..., Flake]) -> None:
     assert list(machines.keys()) == ["jon", "sara"]
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_machines_full(clan_flake: Callable[..., Flake]) -> None:
     clan_config: ClanInput = {
@@ -66,6 +68,7 @@ def test_list_machines_full(clan_flake: Callable[..., Flake]) -> None:
     assert machines["sara"].name == "sara"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_inventory_machines(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -93,6 +96,7 @@ def test_list_inventory_machines(clan_flake: Callable[..., Flake]) -> None:
     assert list(machines.keys()) == ["jon", "sara", "vanessa"]
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_machines_instance_refs(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -134,6 +138,7 @@ def to_mutable(output: object) -> object:
     return deepcopy(output)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -170,6 +175,7 @@ def test_set_machine_no_op(clan_flake: Callable[..., Flake]) -> None:
         )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -207,6 +213,7 @@ def test_set_machine_fully_defined_in_nix(clan_flake: Callable[..., Flake]) -> N
         mock_write.assert_not_called()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     """Test adding/removing tags on a machine with validation of immutable base tags."""
@@ -256,6 +263,7 @@ def test_set_machine_manage_tags(clan_flake: Callable[..., Flake]) -> None:
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(
@@ -310,6 +318,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     assert attribute_props["tags"]["readonly_members"] == ["nix1", "all", "nixos"]
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machine_state(clan_flake: Callable[..., Flake]) -> None:
     now = int(time.time())

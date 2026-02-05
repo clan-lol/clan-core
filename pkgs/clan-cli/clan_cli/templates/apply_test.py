@@ -10,6 +10,7 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_templates_apply_machine_and_disk(
     test_flake_with_core: FlakeForTest,

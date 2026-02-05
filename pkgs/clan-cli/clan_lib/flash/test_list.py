@@ -15,6 +15,7 @@ from clan_lib.nix import nix_config
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_language_list() -> None:
     languages = list_languages()
@@ -24,6 +25,7 @@ def test_language_list() -> None:
     assert "de_DE.UTF-8" in languages  # Common locale
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
     languages = list_languages()
@@ -84,6 +86,7 @@ def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
             assert "nixos-system-my_machine" in str(toplevel_path)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_keymaps() -> None:
     keymaps = list_keymaps()

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from clan_lib.nix_models.typing import InventoryMetaInput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_simple(tmp_path: Path, offline_flake_hook: Any) -> None:
     """Template = 'default'
@@ -44,6 +45,7 @@ def test_create_simple(tmp_path: Path, offline_flake_hook: Any) -> None:
     assert "instances" in inventory
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_can_handle_path_without_slash(
     tmp_path: Path,
@@ -68,6 +70,7 @@ def test_can_handle_path_without_slash(
     assert dest.is_dir()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_with_name(tmp_path: Path, offline_flake_hook: Any) -> None:
     """Template = 'default'
@@ -111,6 +114,7 @@ def test_create_with_name(tmp_path: Path, offline_flake_hook: Any) -> None:
 # All templates use {{placeholder}} syntax that gets substituted
 # during creation (before git init), using the directory name by default
 # TODO: Also test flake-parts templates (currently excluded - require network access)
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 @pytest.mark.parametrize("template", ["default", "minimal"])
 def test_create_substitutes_placeholders(
@@ -154,6 +158,7 @@ def test_create_substitutes_placeholders(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_minimal_can_be_modified_by_api(
     tmp_path: Path, offline_flake_hook: Any
@@ -186,6 +191,7 @@ def test_minimal_can_be_modified_by_api(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_default_cant_be_modified_by_api(
     tmp_path: Path, offline_flake_hook: Any

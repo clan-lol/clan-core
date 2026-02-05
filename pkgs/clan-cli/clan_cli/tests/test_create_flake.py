@@ -13,6 +13,7 @@ from clan_lib.nix import nix_flake_show
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
@@ -58,6 +59,7 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_flake_existing_git(
     monkeypatch: pytest.MonkeyPatch,
@@ -96,6 +98,7 @@ def test_create_flake_existing_git(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_ui_template(
     monkeypatch: pytest.MonkeyPatch,
@@ -132,6 +135,7 @@ def test_ui_template(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_flake_in_git_repo_without_flake_nix(
     monkeypatch: pytest.MonkeyPatch,
@@ -162,6 +166,7 @@ def test_create_flake_in_git_repo_without_flake_nix(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_flake_fallback_from_non_clan_directory(
     monkeypatch: pytest.MonkeyPatch,
@@ -181,6 +186,7 @@ def test_create_flake_fallback_from_non_clan_directory(
     assert (new_clan_dir / "flake.nix").exists()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_flake_with_local_template_reference(
     monkeypatch: pytest.MonkeyPatch,

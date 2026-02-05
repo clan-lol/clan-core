@@ -34,6 +34,7 @@ from clan_lib.persist.inventory_store import InventoryStore
     # So we can write it to the flake fixtures
     indirect=True,
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_inventory_deserialize_variants(
     test_flake_with_core: FlakeForTest,

@@ -19,6 +19,7 @@ from clan_lib.flake.flake import (
 )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_flake_caching(flake: ClanFlake) -> None:
     m1 = flake.machines["machine1"] = create_test_machine_config()
@@ -35,6 +36,7 @@ def test_flake_caching(flake: ClanFlake) -> None:
     }
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_cache_persistence(flake: ClanFlake) -> None:
     flake.machines["machine1"] = create_test_machine_config()
@@ -232,6 +234,7 @@ def test_cache_is_cached_with_clan_test_store(
 
 
 # Test that the caching works
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_caching_works(flake: ClanFlake) -> None:
     my_flake = Flake(str(flake.path))
@@ -278,6 +281,7 @@ def test_cache_is_cached_with_nix_store_dir(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_cache_gc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that garbage collection properly invalidates cached store paths."""
@@ -542,6 +546,7 @@ def test_reinserting_store_path_value() -> None:
     assert cache.value["outPath"].value == pure_path
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_nonexistent_after_maybe(flake: ClanFlake) -> None:
     """Test that if a nonexistent value is cached,

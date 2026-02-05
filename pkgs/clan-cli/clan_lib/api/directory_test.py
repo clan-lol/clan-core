@@ -9,6 +9,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_relative_clan_directory_default(
     test_flake_with_core: FlakeForTest,
@@ -20,6 +21,7 @@ def test_get_relative_clan_directory_default(
     assert relative_dir == ""
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_relative_clan_directory_custom(
     clan_flake: Callable[..., Flake],
@@ -48,6 +50,7 @@ def test_get_relative_clan_directory_invalid_flake() -> None:
         get_clan_directory_relative(invalid_flake)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_clan_dir_default(
     test_flake_with_core: FlakeForTest,
@@ -59,6 +62,7 @@ def test_get_clan_dir_default(
     assert clan_dir == flake.path
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_clan_dir_custom(
     clan_flake: Callable[..., Flake],

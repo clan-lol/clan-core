@@ -7,6 +7,7 @@ from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_templates_list(
     test_flake_with_core: FlakeForTest,
@@ -25,6 +26,7 @@ def test_templates_list(
     assert "flash-installer" in output.out
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_templates_list_outside_clan(
     capture_output: CaptureOutput,

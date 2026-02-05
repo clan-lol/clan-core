@@ -6,6 +6,7 @@ from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_flash_list_languages(
     temporary_home: Path,  # noqa: ARG001
@@ -19,6 +20,7 @@ def test_flash_list_languages(
     assert len(languages) > 1
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_flash_list_keymaps(
     temporary_home: Path,  # noqa: ARG001

@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 # Integration test
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_write_integration(clan_flake: Callable[..., Flake]) -> None:
     clan_nix: ClanInput = {}

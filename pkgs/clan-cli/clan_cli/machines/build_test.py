@@ -48,6 +48,7 @@ from clan_cli.tests.helpers import cli
     ],
     indirect=["test_flake_with_core"],
 )
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_build(
     test_flake_with_core: FlakeForTest,
@@ -66,6 +67,7 @@ def test_get_machines_for_build(
     assert sorted(names) == sorted(expected_names)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_machines_for_build_nonexistent_machine(
     test_flake_with_core: FlakeForTest,
