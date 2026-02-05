@@ -41,6 +41,7 @@ in
         && !(hasPrefix "nixos-" name)
         && !(hasPrefix "darwin-test-" name)
         && !(hasPrefix "service-" name)
+        && !(hasPrefix "clan-test-" name)
         && !(hasPrefix "vars-check-" name)
         && !(hasPrefix "devShell-" name)
         && !(elem name [
@@ -92,6 +93,7 @@ in
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
             service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
+            clan-test-iso = import ./clan-test-iso nixosTestArgs;
           };
 
           packagesToBuild = lib.removeAttrs self'.packages [
