@@ -1,8 +1,4 @@
-{
-  lib,
-  self,
-  ...
-}:
+{ ... }:
 let
   module = ./default.nix;
 in
@@ -10,15 +6,10 @@ in
   clan.modules.monitoring = module;
 
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
       clan.nixosTests.monitoring = {
-        imports = [
-          (lib.modules.importApply ./tests/vm/default.nix {
-            inherit (self) packages;
-            inherit pkgs;
-          })
-        ];
+        imports = [ ./tests/vm/default.nix ];
         clan.modules.monitoring = module;
       };
     };

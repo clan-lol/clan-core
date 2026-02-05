@@ -4,6 +4,14 @@
 
 ## New features
 
+### New Monitoring Service
+Clan now provides a monitoring service based on the grafana stack.
+The service consists of a server and a client role.
+Servers store metrics and logs.
+They also provide optional dashboards for visualization and an alerting system.
+Clients are machines that create metrics and logs.
+Those are sent to the central monitoring server for storage and visualization.
+
 ## ncps
 
 - Added the ncps nix proxy binary cache service.
@@ -18,6 +26,14 @@ Darwin Support
 - Added `clan.core.networking.extraHosts` for managing /etc/hosts on darwin via launchd
 
 ## Breaking Changes
+
+### Monitoring Service
+The old monitoring service including telegraf has been marked deprecated for a while.
+The following things related to the old monitoring stack have been removed:
+- the telegraf role in `inventory.instances.monitoring.roles.telegraf`
+- options related to the telegraf role:
+  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
+  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.interfaces`
 
 ### Internet Service
 
