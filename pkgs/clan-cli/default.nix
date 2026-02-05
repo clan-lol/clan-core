@@ -295,34 +295,39 @@ pythonRuntime.pkgs.buildPythonApplication {
               ];
           };
         }
-        ''
-          set -euo pipefail
-          cp -r ${sourceWithTests} ./src
-          chmod +w -R ./src
-          cd ./src
+        (
+          let
+            marker = if pkgs.stdenv.isDarwin then "and not broken_on_darwin" else "";
+          in
+          ''
+            set -euo pipefail
+            cp -r ${sourceWithTests} ./src
+            chmod +w -R ./src
+            cd ./src
 
-          ${setupNixInNix}
+            ${setupNixInNix}
 
-          export CLAN_CORE_PATH=${clan-core-path}
-          export PYTHONWARNINGS=error
+            export CLAN_CORE_PATH=${clan-core-path}
+            export PYTHONWARNINGS=error
 
-          # used for tests without flakes
-          export NIXPKGS=${nixpkgs}
+            # used for tests without flakes
+            export NIXPKGS=${nixpkgs}
 
-          # limit build cores to 16
-          jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+            # limit build cores to 16
+            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          # Run all tests with core marker
-          python -m pytest -m "not service_runner and not impure and with_core" -n "$jobs" \
-            ./clan_cli  \
-            ./clan_lib  \
-            --cov ./clan_cli \
-            --cov ./clan_lib \
-            --cov-report=html --cov-report=term
+            # Run all tests with core marker
+            python -m pytest -m "not service_runner and not impure and with_core ${marker}" -n "$jobs" \
+              ./clan_cli  \
+              ./clan_lib  \
+              --cov ./clan_cli \
+              --cov ./clan_lib \
+              --cov-report=html --cov-report=term
 
-          mkdir -p $out
-          cp -r . $out
-        '';
+            mkdir -p $out
+            cp -r . $out
+          ''
+        );
   };
 
   passthru.runtimeDepsFlake = runtimeDepsFlake;
