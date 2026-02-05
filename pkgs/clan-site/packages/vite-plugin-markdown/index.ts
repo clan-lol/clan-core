@@ -121,7 +121,7 @@ export default function vitePluginClanmd({
 
       const md = {
         path,
-        relativePath: pathutil.relative(path, config.root),
+        relativePath: pathutil.relative(config.root, path),
         content: String(file),
         frontmatter: file.data.matter,
         toc: file.data.toc,

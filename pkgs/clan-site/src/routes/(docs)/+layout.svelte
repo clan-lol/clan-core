@@ -75,12 +75,10 @@
     <nav class="nav">
       <ul>
         {#each docs.navItems as navItem (navItem.label)}
-          {#if "items" in navItem}
+          {#if "path" in navItem}
             <li>
-              <a href={resolve(`/docs/${config.ver}`)}>{navItem.label}</a>
+              <a href={resolve(navItem.path)}>{navItem.label}</a>
             </li>
-          {:else if "path" in navItem}
-            <li><a href={resolve(navItem.path)}>{navItem.label}</a></li>
           {:else}
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
             <li><a href={navItem.url}>{navItem.label}</a></li>

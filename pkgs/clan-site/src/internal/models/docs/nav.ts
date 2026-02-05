@@ -8,28 +8,29 @@ import {
   docsBase,
   docsDir,
   loadMarkdown,
-  recursiveloadMarkdowns,
+  recursiveLoadMarkdowns,
 } from "./docs.ts";
 import { visit } from "$lib/util.ts";
 
-export type NavItem = NavGroup | NavPath | NavURL;
+export type NavItem = NavGroup | NavPathItem | NavURLItem;
 
 export interface NavGroup {
   readonly label: string;
   readonly items: readonly NavItem[];
+  readonly path: DocsPath;
   readonly collapsed: boolean;
   readonly badge: Badge | null;
   isActive: boolean;
 }
 
-export interface NavPath {
+export interface NavPathItem {
   readonly label: string;
   readonly path: DocsPath;
   readonly badge: Badge | null;
   isActive: boolean;
 }
 
-export interface NavURL {
+export interface NavURLItem {
   readonly label: string;
   readonly url: string;
 }
@@ -76,11 +77,17 @@ export async function normalizeNavItem(
   }
 
   if ("items" in navItem) {
+    const items = await normalizeNavItems(navItem.items);
+    const pathItem = findFirstNavPathItem(items);
+    if (!pathItem) {
+      throw new Error(`Nav group ${navItem.label} contains no path item`);
+    }
     return {
       label: navItem.label,
+      path: pathItem.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      items: await normalizeNavItems(navItem.items),
+      items,
       isActive: false,
     };
   }
@@ -95,9 +102,8 @@ export async function normalizeNavItem(
     };
   }
 
-  if ("recursiveImport" in navItem) {
-    const mds = await recursiveloadMarkdowns(navItem.recursiveImport);
-
+  if ("auto" in navItem) {
+    const mds = await recursiveLoadMarkdowns(navItem.auto);
     const missintPaths: string[] = [];
     for (const md of mds) {
       if (!md.frontmatter.title) {
@@ -129,13 +135,18 @@ export async function normalizeNavItem(
         async (md) =>
           await normalizeNavItem({
             label: md.frontmatter.title,
-            url: `${docsBase}${md.relativePath.slice(docsDir.length)}`,
+            path: md.relativePath.slice(docsDir.length) as Path,
           }),
       ),
     );
+    const navPath = findFirstNavPathItem(items);
+    if (!navPath) {
+      throw new Error(`Nav group ${navItem.label} contains no path item`);
+    }
     return {
       label: navItem.label,
       items,
+      path: navPath.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
       isActive: false,
@@ -180,7 +191,7 @@ export function findNavSiblings(
   path: Path,
 ): readonly [NavSibling | null, NavSibling | null] {
   let index = -1;
-  const navPaths: NavPath[] = [];
+  const navPaths: NavPathItem[] = [];
   let prev: NavSibling | null = null;
   let next: NavSibling | null = null;
   visit(navItems, "items", (navItem) => {
@@ -210,4 +221,22 @@ export function findNavSiblings(
     return;
   });
   return [prev, next];
+}
+
+export function findFirstNavPathItem(
+  navItems: readonly NavItem[],
+): NavPathItem | null {
+  for (const navItem of navItems) {
+    if ("items" in navItem) {
+      const item = findFirstNavPathItem(navItem.items);
+      if (item) {
+        return item;
+      }
+      continue;
+    }
+    if ("path" in navItem) {
+      return navItem;
+    }
+  }
+  return null;
 }
