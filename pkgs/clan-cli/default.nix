@@ -228,9 +228,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           mkdir -p $out
           cp -r . $out
         '';
-  }
-  // lib.optionalAttrs (!stdenv.isDarwin) {
-    # disabled on macOS until we fix all remaining issues
+
     clan-pytest-with-core =
       runCommand "clan-pytest-with-core"
         {
@@ -241,55 +239,60 @@ pythonRuntime.pkgs.buildPythonApplication {
             nix
           ];
           closureInfo = pkgs.closureInfo {
-            rootPaths = [
-              templateDerivation
-              pkgs.bash
-              pkgs.coreutils
-              pkgs.jq.dev
-              pkgs.stdenv
-              pkgs.stdenvNoCC
-              pkgs.openssh
-              pkgs.shellcheck-minimal
-              pkgs.mkpasswd
-              pkgs.xkcdpass
-              pkgs.pass
-              pkgs.passage
-              zerotierone
-              # needed by vars generate tests
-              (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
-              minifakeroot
-              nix-select
-              ../../nixosModules/clanCore/zerotier/generate.py
+            rootPaths =
+              # Not available on darwin
+              (lib.optionals (!pkgs.stdenv.isDarwin) [
+                # needed by flash list tests
+                pkgs.kbd.out
+                pkgs.glibcLocales
 
-              # needed by flash list tests
-              pkgs.kbd.out
-              pkgs.glibcLocales
+                # REMOVEME: once we drop support for 25.11
+                (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
 
-              # Pre-built VMs for impure tests
-              pkgs.stdenv.drvPath
-              pkgs.bash.drvPath
-              pkgs.buildPackages.xorg.lndir
-              (pkgs.perl.withPackages (
-                p: with p; [
-                  ConfigIniFiles
-                  FileSlurp
-                ]
-              ))
-              (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
-              pkgs.desktop-file-utils
-              pkgs.dbus
-              pkgs.unzip
-              pkgs.libxslt
-              pkgs.getconf
-              # REMOVEME: once we drop support for 25.11
-              (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
+                # Tests from linux
+                nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.build.toplevel
+                nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.build.toplevel
 
-              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.build.toplevel
-              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.build.toplevel
+                nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
+                nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
+              ])
+              ++ [
+                templateDerivation
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.jq.dev
+                pkgs.stdenv
+                pkgs.stdenvNoCC
+                pkgs.openssh
+                pkgs.shellcheck-minimal
+                pkgs.mkpasswd
+                pkgs.xkcdpass
+                pkgs.pass
+                pkgs.passage
+                zerotierone
+                # needed by vars generate tests
+                (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
+                minifakeroot
+                nix-select
+                ../../nixosModules/clanCore/zerotier/generate.py
 
-              nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
-              nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
-            ];
+                # Pre-built VMs for impure tests
+                pkgs.stdenv.drvPath
+                pkgs.bash.drvPath
+                pkgs.buildPackages.xorg.lndir
+                (pkgs.perl.withPackages (
+                  p: with p; [
+                    ConfigIniFiles
+                    FileSlurp
+                  ]
+                ))
+                (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
+                pkgs.desktop-file-utils
+                pkgs.dbus
+                pkgs.unzip
+                pkgs.libxslt
+                pkgs.getconf
+              ];
           };
         }
         ''
