@@ -1,9 +1,12 @@
 import logging
+from pathlib import Path
 
 import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 
+from clan_lib.errors import ClanCmdError, CmdOut
 from clan_lib.flake.flake import (
+    ClanSelectError,
     Flake,
     FlakeCache,
     FlakeCacheEntry,
@@ -220,3 +223,130 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     assert res1["clan-core"].get("clan") is not None
 
     flake2.invalidate_cache()
+
+
+def _create_mock_cmd_error(stderr: str) -> ClanCmdError:
+    """Create a mock ClanCmdError with the given stderr."""
+    cmd_out = CmdOut(
+        stdout="",
+        stderr=stderr,
+        env=None,
+        cwd=Path("/tmp"),  # noqa: S108
+        command_list=["nix", "build"],
+        returncode=1,
+        msg=None,
+    )
+    return ClanCmdError(cmd_out)
+
+
+def test_clan_select_error_single_line_error() -> None:
+    """Test that ClanSelectError correctly extracts single line error messages."""
+    stderr = """
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: attribute 'foo' missing
+Return Code: 1
+"""
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["foo.bar"],
+        cmd_error=cmd_error,
+    )
+    assert error.description is not None
+    assert "attribute 'foo' missing" in error.description
+
+
+def test_clan_select_error_multiline_error() -> None:
+    """Test that ClanSelectError correctly extracts multiline error messages."""
+    stderr = """
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: Instance: 'instances.monitoring' uses the following roles:
+       ["telegraf"]
+
+       But the clan-service module 'monitoring' only defines roles:
+       ["client","server"]
+
+       Error context: <clan-core>-monitoring
+
+Return Code: 1
+"""
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["instances.monitoring"],
+        cmd_error=cmd_error,
+    )
+    assert error.description is not None
+    # Verify the full multiline message is captured, not just the first line
+    assert (
+        "Instance: 'instances.monitoring' uses the following roles:"
+        in error.description
+    )
+    assert '["telegraf"]' in error.description
+    assert (
+        "But the clan-service module 'monitoring' only defines roles:"
+        in error.description
+    )
+    assert '["client","server"]' in error.description
+    assert "Error context: <clan-core>-monitoring" in error.description
+
+
+def test_clan_select_error_multiline_preserves_structure() -> None:
+    """Test that ClanSelectError preserves the structure of multiline errors."""
+    stderr = """error: evaluation aborted with the following error message:
+
+       This is line 1.
+       This is line 2.
+       This is line 3.
+
+"""
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["test"],
+        cmd_error=cmd_error,
+    )
+    assert error.description is not None
+    assert "line 1" in error.description
+    assert "line 2" in error.description
+    assert "line 3" in error.description
+
+
+def test_clan_select_error_no_cmd_error() -> None:
+    """Test ClanSelectError without cmd_error uses provided description."""
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["foo.bar"],
+        cmd_error=None,
+        description="Custom description",
+    )
+    assert error.description == "Custom description"
+
+
+def test_clan_select_error_explicit_description_overrides_cmd_error() -> None:
+    """Test that explicit description is not overridden by cmd_error extraction."""
+    stderr = "error: some error from nix"
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["foo.bar"],
+        cmd_error=cmd_error,
+        description="Explicit description",
+    )
+    # When description is explicitly provided, it should not be overridden
+    assert error.description == "Explicit description"
+
+
+def test_clan_select_error_no_error_pattern_in_stderr() -> None:
+    """Test ClanSelectError when stderr doesn't contain 'error:' pattern."""
+    stderr = "some other output without error pattern"
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["foo.bar"],
+        cmd_error=cmd_error,
+    )
+    # No description should be extracted if pattern doesn't match
+    assert error.description is None
