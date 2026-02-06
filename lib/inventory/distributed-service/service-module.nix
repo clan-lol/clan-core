@@ -347,6 +347,8 @@ in
               # TODO: Restrict?
               traits = mkOption {
                 type = types.listOf types.str;
+                default = [ ];
+                description = "List of export interface traits this service implements.";
               };
 
               features = mkOption {
