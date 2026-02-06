@@ -155,7 +155,7 @@ in
 {
   _class = "clan.service";
   manifest.name = "clan-core/wireguard";
-  manifest.description = "Wireguard-based VPN mesh network with automatic IPv6 address allocation";
+  manifest.description = "WireGuard-based VPN mesh network with automatic IPv6 address allocation";
   manifest.categories = [
     "System"
     "Network"

@@ -4,7 +4,7 @@
 This service sets up a certificate authority (CA) that can issue certificates to
 other machines in your clan. For this the `ca` role is used.
 It additionally provides a `default` role, that can be applied to all machines
-in your clan and will make sure they trust your CA.
+in your Clan and will make sure they trust your CA.
 
 ## Example Usage
 

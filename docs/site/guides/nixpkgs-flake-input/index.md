@@ -161,4 +161,4 @@ If you want to inject your own packages see the next point
 }
 ```
 
-For more examples see our [clan templates](https://git.clan.lol/clan/clan-core/src/branch/main/templates)
+For more examples see our [Clan templates](https://git.clan.lol/clan/clan-core/src/branch/main/templates)

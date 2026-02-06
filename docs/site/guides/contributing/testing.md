@@ -1,15 +1,15 @@
 # Testing your contributions
 
-Each feature added to clan should be tested extensively via automated tests.
+Each feature added to Clan should be tested extensively via automated tests.
 
 This document covers different methods of automated testing, including creating, running and debugging such tests.
 
-In order to test the behavior of clan, different testing frameworks are used depending on the concern:
+In order to test the behavior of Clan, different testing frameworks are used depending on the concern:
 
 - NixOS VM tests: for high level integration
 - NixOS container tests: for high level integration
 - Python tests via pytest: for unit tests and integration tests
-- Nix eval tests: for nix functions, libraries, modules, etc.
+- Nix eval tests: for Nix functions, libraries, modules, etc.
 
 ## NixOS VM Tests
 
@@ -17,15 +17,15 @@ The [NixOS VM Testing Framework](https://nixos.org/manual/nixos/stable/index.htm
 
 ### When to use VM tests
 
-- testing that a service defined through a clan module works as expected after deployment
-- testing clan CLI subcommands which require accessing a remote machine
+- testing that a service defined through a Clan module works as expected after deployment
+- testing Clan CLI subcommands which require accessing a remote machine
 
 ### When not to use VM tests
 
 NixOS VM Tests are slow and expensive. They should only be used for testing high level integration of components.
 VM tests should be avoided wherever it is possible to implement a cheaper unit test instead.
 
-- testing detailed behavior of a certain clan CLI command -> use unit testing via pytest instead
+- testing detailed behavior of a certain Clan CLI command -> use unit testing via pytest instead
 - regression testing -> add a unit test
 
 ### Finding examples for VM tests
@@ -37,7 +37,7 @@ rg self.clanLib.test.baseTest
 
 ### Locating definitions of failing VM tests
 
-All NixOS VM tests in clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
+All NixOS VM tests in Clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
 If a test fails in CI:
 
   - look for the job name of the test near the top if the CI Job page, like, for example `gitea:clan/clan-core#checks.x86_64-linux.borgbackup/1242`
@@ -130,7 +130,7 @@ Locate the definition (see above) and add print statements, like, for example `p
 
 #### Interactive Shell
 
-- Execute the vm test outside the nix Sandbox via the following command:
+- Execute the vm test outside the Nix sandbox via the following command:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
 - Then run the commands in the machines manually, like for example:
   ```python3
@@ -152,7 +152,7 @@ Basically everything stated under the NixOS VM tests sections applies here, exce
 
 ### Using Container Tests vs VM Tests
 
-Container tests are **enabled by default** for all tests using the clan testing framework.
+Container tests are **enabled by default** for all tests using the Clan testing framework.
 They offer significant performance advantages over VM tests:
 
 - **Faster startup**
@@ -269,7 +269,7 @@ nix build .#checks.x86_64-linux.clan-pytest-{with,without}-core
 
 #### Running a specific python test
 
-To run a specific python test outside the nix sandbox
+To run a specific python test outside the Nix sandbox
 
 1. Enter the development environment of the python package, by either:
   - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
@@ -296,15 +296,15 @@ pytest ./path/to/test_file.py:test_function_name -sn0
 
 ### When to use nix eval tests
 
-Nix eval tests are good for testing any nix logic, including
+Nix eval tests are good for testing any Nix logic, including
 
-- nix functions
-- nix libraries
+- Nix functions
+- Nix libraries
 - modules for the NixOS module system
 
 When not to use
 
-- tests that require building nix derivations (except some very cheap ones)
+- tests that require building Nix derivations (except some very cheap ones)
 - tests that require running programs written in other languages
 - tests that require building or running NixOS machines
 
@@ -355,7 +355,7 @@ In this case the test is defined in the file `lib/values/flake-module.nix` line 
 
 ### Adding nix eval tests
 
-In clan core, the following pattern is usually followed:
+In Clan core, the following pattern is usually followed:
 
 - tests are put in a `test.nix` file
 - a CI Job is exposed via a `flake-module.nix`

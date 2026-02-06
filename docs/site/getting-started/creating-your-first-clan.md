@@ -4,7 +4,7 @@
 
 Ready to manage your fleet of machines?
 
-In this guide, we will create a declarative infrastructure using **clan**, **Git**, and **nix flakes**.
+In this guide, we will create a declarative infrastructure using **Clan**, **git**, and **Nix Flakes**.
 
 At the end of this getting started guide, you will have a centrally managed fleet of Clan devices at your disposal.
 
@@ -147,7 +147,7 @@ In your Clan, you will create and manage your machines, users, and services. It 
     cd <MY-DIRECTORY>
     ```
 
-2. Create a new clan flake:
+2. Create a new Clan flake:
 
     **Note:** This creates a new directory in your current location. Depending on your connection speed, this step may take a few minutes.
 
@@ -228,17 +228,17 @@ Feel free to customize the highlighted values in the future:
 }
 ```
 
-See [clan options](../reference/options/clan.md) for all available options.
+See [Clan options](../reference/options/clan.md) for all available options.
 
 ## Checkpoint
 
-Once your [environment is active](#activating-the-environment), verify that the clan command is available by running:
+Once your [environment is active](#activating-the-environment), verify that the Clan command is available by running:
 
 ```shellSession
 clan show
 ```
 
-You should see the default metadata for your new clan:
+You should see the default metadata for your new Clan:
 
 ```shellSession
 Name: MY-NEW-CLAN
@@ -253,4 +253,4 @@ If you receive an error message for `clan show`, check for syntax errors in your
 
 ## Up Next
 
-We will add machines to your freshly created clan during the next step.
+We will add machines to your freshly created Clan during the next step.

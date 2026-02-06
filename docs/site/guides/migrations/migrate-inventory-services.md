@@ -338,7 +338,7 @@ The following features from the old `services` format are no longer supported in
 
 The `extraModules` attribute is still supported in the new instances format! The key change is how modules are specified:
 
-**Old format (string paths relative to clan root):**
+**Old format (string paths relative to Clan root):**
 ```nix
 roles.client.extraModules = [ "nixosModules/borgbackup.nix" ];
 ```

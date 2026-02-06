@@ -4,7 +4,7 @@ Accepted
 
 ## Context
 
-In the long term we envision the clan application will consist of the following user facing tools in the long term.
+In the long term we envision the Clan application will consist of the following user facing tools in the long term.
 
 - `CLI`
 - `TUI`
@@ -71,7 +71,7 @@ Integration tests and smaller unit-tests should both be utilized to ensure the s
 
 Note: Library function don't have to be JSON-serializable in general.
 
-Persistence includes but is not limited to: creating Git commits, writing to inventory.json, reading and writing vars, and interacting with persisted data in general.
+Persistence includes but is not limited to: creating git commits, writing to inventory.json, reading and writing vars, and interacting with persisted data in general.
 
 ## Benefits / Drawbacks
 
@@ -79,7 +79,7 @@ Persistence includes but is not limited to: creating Git commits, writing to inv
 - (+) Consistency and inherent behavior
 - (+) Performance & Scalability
 - (+) Different frontends for different user groups
-- (+) Documentation per library function makes it convenient to interact with the clan resources.
+- (+) Documentation per library function makes it convenient to interact with the Clan resources.
 - (+) Testing the library ensures stability of the underlyings for all layers above.
 - (-) Complexity overhead
 - (-) library needs to be designed / documented

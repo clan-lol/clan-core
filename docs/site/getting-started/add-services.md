@@ -1,6 +1,6 @@
 ## Summary
 
-A service in clan is a self-contained, reusable unit of system configuration that provides a specific piece of functionality across one or more machines.
+A service in Clan is a self-contained, reusable unit of system configuration that provides a specific piece of functionality across one or more machines.
 
 Think of it as a recipe for running a tool — like automatic backups, VPN networking, monitoring, etc.
 
@@ -15,7 +15,7 @@ In this step of the guide, we will add two of the most frequently used services 
 To learn more about services in general, visit [Clan Services](../guides/services/introduction-to-services.md)
 
 !!! Important
-It is recommended to always add at least one networking service such as `zerotier` that can reach all your clan machines from your setup computer. We will do so in the following steps.
+It is recommended to always add at least one networking service such as `zerotier` that can reach all your Clan machines from your Setup Device. We will do so in the following steps.
 
 ## Requirements
 

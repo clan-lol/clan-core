@@ -5,7 +5,7 @@ For a high level overview about `vars` see our [blog post](https://clan.lol/blog
 This guide will help you migrate your modules that still use our [`facts`](../../guides/migrations/migration-facts-vars.md) backend
 to the [`vars`](../../guides/vars/vars-overview.md) backend.
 
-The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
+The `vars` [module](../../reference/clan.core/vars.md) and the Clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
 
 !!! warning "Facts System Removed"
 
@@ -141,4 +141,4 @@ Now files are defined under the `files` attribute and are secret by default.
 ## Happy Migration
 
 We hope this gives you a clear path to start and finish your migration from `facts` to `vars`.
-Please do not hesitate reaching out if something is still unclear - either through [matrix](https://matrix.to/#/#clan:clan.lol) or through our Git [forge](https://git.clan.lol/clan/clan-core).
+Please do not hesitate reaching out if something is still unclear - either through [matrix](https://matrix.to/#/#clan:clan.lol) or through our git [forge](https://git.clan.lol/clan/clan-core).

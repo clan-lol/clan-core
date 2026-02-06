@@ -1,6 +1,6 @@
 
 
-In this section we go over how to manage your collection of backups with the clan command.
+In this section we go over how to manage your collection of backups with the Clan command.
 
 ### Listing states
 

@@ -4,32 +4,32 @@ only reachable within your clan.
 This guide explains how to set up such secure, clan-internal web services using
 a custom top-level domain (TLD) with SSL certificates.
 
-Your services will be accessible only within your clan network and secured with
-proper SSL certificates that all clan machines trust.
+Your services will be accessible only within your Clan network and secured with
+proper SSL certificates that all Clan machines trust.
 
 ## Overview
 
-By combining the `coredns` and `certificates` clan services, you can:
+By combining the `coredns` and `certificates` Clan services, you can:
 
-- Create a custom TLD for your clan (e.g. `.c`)
+- Create a custom TLD for your Clan (e.g. `.c`)
 - Host internal web services accessible via HTTPS (e.g. `https://api.c`, `https://dashboard.c`)
-- Automatically provision and trust SSL certificates across all clan machines
+- Automatically provision and trust SSL certificates across all Clan machines
 - Keep internal services secure and isolated from the public internet
 
-The setup uses two clan services working together:
+The setup uses two Clan services working together:
 
-- **coredns service**: Provides DNS resolution for your custom TLD within the clan
+- **coredns service**: Provides DNS resolution for your custom TLD within the Clan
 - **certificates service**: Creates a certificate authority (CA) and issues SSL certificates for your TLD
 
 ### DNS Resolution Flow
 
-1. A clan machine tries to access `https://service.c`
+1. A Clan machine tries to access `https://service.c`
 2. The machine queries its local DNS resolver (unbound)
-3. For `.c` domains, the query is forwarded to your clan's CoreDNS server. All
+3. For `.c` domains, the query is forwarded to your Clan's CoreDNS server. All
    other domains will be resolved as usual.
 4. CoreDNS returns the IP address of the machine hosting the service
 5. The machine connects directly to the service over HTTPS
-6. The SSL certificate is trusted because all machines trust your clan's CA
+6. The SSL certificate is trusted because all machines trust your Clan's CA
 
 ## Step-by-Step Setup
 

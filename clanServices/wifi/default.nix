@@ -9,11 +9,11 @@ in
 {
   _class = "clan.service";
   manifest.name = "wifi";
-  manifest.description = "Pre configure wifi networks to connect to";
+  manifest.description = "Pre-configure Wi-Fi networks to connect to";
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
-    description = "Placeholder role to apply the wifi service";
+    description = "Placeholder role to apply the Wi-Fi service";
     interface = {
       options.networks = lib.mkOption {
         type = lib.types.attrsOf (
@@ -24,12 +24,12 @@ in
                 enable = lib.mkOption {
                   type = lib.types.bool;
                   default = true;
-                  description = "Enable this wifi network";
+                  description = "Enable this Wi-Fi network";
                 };
                 autoConnect = lib.mkOption {
                   type = lib.types.bool;
                   default = true;
-                  description = "Automatically try to join this wifi network";
+                  description = "Automatically try to join this Wi-Fi network";
                 };
                 keyMgmt = lib.mkOption {
                   type = lib.types.str;
@@ -53,7 +53,7 @@ in
           };
         };
         description = ''
-          List of wifi networks to configure for connection.
+          List of Wi-Fi networks to configure for connection.
           Each attribute name is an internal identifier (not the SSID).
           For each network, you will be prompted to enter the SSID and password as secrets.
         '';
@@ -77,7 +77,7 @@ in
               value = {
                 prompts.network-name.type = "line";
                 prompts.network-name.persist = true;
-                prompts.network-name.description = "name of the wifi network";
+                prompts.network-name.description = "name of the Wi-Fi network";
                 prompts.password.type = "hidden";
                 prompts.password.persist = true;
                 share = true;
@@ -109,7 +109,7 @@ in
             # service to generate the environment file containing all secrets, as
             #   expected by the nixos NetworkManager-ensure-profile service
             systemd.services."NetworkManager-setup-secrets-${instanceName}" = {
-              description = "Generate wifi secrets for NetworkManager";
+              description = "Generate Wi-Fi secrets for NetworkManager";
               requiredBy = [ "NetworkManager-ensure-profiles.service" ];
               partOf = [ "NetworkManager-ensure-profiles.service" ];
               before = [ "NetworkManager-ensure-profiles.service" ];

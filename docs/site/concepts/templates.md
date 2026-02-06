@@ -52,7 +52,7 @@ Selectors follow a very similar pattern as Nix's native attribute selection beha
 
 Just like `nix build .` would build `packages.x86-linux.default` of the flake in `./.`
 
-`clan init --template=.` would create a clan from your **local** `default` clan template (`templates.clan.default`).
+`clan init --template=.` would create a Clan from your **local** `default` Clan template (`templates.clan.default`).
 
 In fact this command would be equivalent, just make it more explicit
 

@@ -31,7 +31,7 @@ Let's get your development environment up and running:
 
 3. **Add direnv to your shell**:
 
-      - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
+      - direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
         You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
 
       ```bash
@@ -62,7 +62,7 @@ Let's get your development environment up and running:
 
       - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-8. **(Optional) Install Git Hooks**
+8. **(Optional) Install git Hooks**
 
       - To syntax check your code you can run:
 

@@ -48,7 +48,7 @@ using `SOPS_AGE_KEY_FILE`.
 For more information see the [SOPS] guide on [encrypting with age].
 
 !!! note
-    It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
+    It's safe to add any secrets created by the Clan CLI and placed in your repository to version control systems like `git`.
 
 ## Add Your Public Key(s)
 
@@ -244,7 +244,7 @@ If you already happened to use sops-nix, you can migrate by using the `clan secr
 This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a `./sops` folder of your repository.
 Each member of the group `admins` in this case will be able to decrypt the secrets with their respective key.
 
-Since our clan secret module will auto-import secrets that are encrypted for a particular NixOS machine,
+Since our Clan secret module will auto-import secrets that are encrypted for a particular NixOS machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
 
 
@@ -265,7 +265,7 @@ The secrets system conceptually knows two different entities:
 
 ### Inherited implications
 
-By default clan uses [sops](https://github.com/getsops/sops) through [sops-nix](https://github.com/Mic92/sops-nix) for managing its secrets which inherits some implications that are important to understand:
+By default Clan uses [sops](https://github.com/getsops/sops) through [sops-nix](https://github.com/Mic92/sops-nix) for managing its secrets which inherits some implications that are important to understand:
 
 - **Public/Private keys**: Entities are identified via their public keys. Each Entity can use their respective private key to decrypt a secret.
 - **Public keys are stored**: All Public keys are stored inside the repository

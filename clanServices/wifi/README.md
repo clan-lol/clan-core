@@ -1,4 +1,4 @@
-This module allows you to pre-configure WiFi networks for automatic connection.  
+This module allows you to pre-configure Wi-Fi networks for automatic connection.  
 Each attribute in `settings.network` serves as an internal identifier, not the actual SSID.  
 After defining your networks, you will be prompted for the SSID and password for each one.
 
