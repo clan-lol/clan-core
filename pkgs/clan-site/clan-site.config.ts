@@ -1,8 +1,11 @@
+import pathutil from "node:path";
 import process from "node:process";
 
 export interface Config {
   ver: string;
   docs: {
+    dir: string;
+    base: DocsPath;
     searchResultLimit: number;
     minLineNumberLines: number;
     maxTocExtractionDepth: number;
@@ -14,6 +17,8 @@ export interface Config {
 }
 
 export type Path = `/${string}`;
+export type DocsPath = `/docs/${string}`;
+
 export type NavItem =
   | Path
   | {
@@ -51,9 +56,12 @@ export type Badge =
       readonly variant: "caution" | "normal";
     };
 
+const ver = process.env["SITE_VER"] || "unstable";
 const config: Config = {
-  ver: process.env["SITE_VER"] || "unstable",
+  ver,
   docs: {
+    dir: pathutil.normalize("src/docs"),
+    base: `/docs/${ver}`,
     searchResultLimit: 5,
     minLineNumberLines: 4,
     maxTocExtractionDepth: 3,

@@ -1,10 +1,11 @@
 import type {
   Badge as BadgeInput,
+  DocsPath,
   NavItem as NavItemInput,
   Path,
 } from "$config";
-import type { DocsPath } from "./docs.ts";
-import { Docs, docsDir, loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
+import config from "$config";
+import { Docs, loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
 import { visit } from "$lib/util.ts";
 
 export type NavItem = NavGroup | NavPathItem | NavURLItem;
@@ -130,7 +131,7 @@ export async function normalizeNavItem(
         async (md) =>
           await normalizeNavItem({
             label: md.frontmatter.title,
-            path: md.relativePath.slice(docsDir.length) as Path,
+            path: md.relativePath.slice(config.docs.dir.length) as Path,
           }),
       ),
     );

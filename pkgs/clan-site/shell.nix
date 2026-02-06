@@ -49,9 +49,6 @@ mkShellNoCC {
             npm install
           fi
           npm run build
-          if [[ -n $browser ]]; then
-            npm run preview -- --open
-          fi
         esac
       '';
     })

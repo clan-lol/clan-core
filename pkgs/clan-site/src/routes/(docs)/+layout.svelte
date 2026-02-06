@@ -3,7 +3,7 @@
   import type {
     Pagefind,
     PagefindSearchFragment,
-  } from "vite-plugin-pagefind/types";
+  } from "@clan/vite-plugin-pagefind";
   import { asset, resolve } from "$app/paths";
   import ClanLogo from "$lib/assets/icons/clan-logo.svg?component";
   import config from "$config";
@@ -29,7 +29,7 @@
 
   onMount(async () => {
     const pf = (await import(
-      /* @vite-ignore */ asset("/pagefind/pagefind.js")
+      /* @vite-ignore */ asset("/_pagefind/docs/pagefind.js")
     )) as Pagefind;
     await pf.init();
     pagefind = pf;
