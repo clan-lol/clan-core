@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { asset, resolve } from "$app/paths";
   import config from "$config";
   import { Docs } from "$lib/models/docs.ts";
   import heroImage from "$lib/assets/docs-hero.jpg";
   import IconCode from "$lib/assets/icons/code.svg?component";
   import IconFlash from "$lib/assets/icons/flash.svg?component";
+  import { resolve } from "$app/paths";
 </script>
 
 <header>
@@ -14,7 +14,7 @@
 
 <img
   class="hero"
-  src={asset(heroImage)}
+  src={heroImage}
   width="640"
   height="360"
   alt="Documentation Hero"

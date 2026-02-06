@@ -1,6 +1,6 @@
+import type { DocsPath, Path } from "$config";
 import type { Heading, Markdown } from "@clan/vite-plugin-markdown";
 import type { NavItem, NavSibling } from "./nav.ts";
-import type { Path } from "$config";
 import config from "$config";
 import {
   findNavSiblings,
@@ -8,9 +8,6 @@ import {
   setActiveNavItems,
 } from "./nav.ts";
 import { mapObjectKeys } from "$lib/util.ts";
-
-export type DocsPath = `/docs/${string}`;
-export const docsDir = "src/docs";
 
 export type { Heading };
 
@@ -47,8 +44,7 @@ const markdownLoaders = mapObjectKeys(
 );
 
 export class Docs {
-  static base: DocsPath = `/docs/${config.ver}`;
-
+  static readonly base = config.docs.base;
   readonly navItems: readonly NavItem[] = [];
   #article: Article;
 
