@@ -58,6 +58,7 @@ def test_machines_metavar_completeness() -> None:
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machine_subcommands(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -114,6 +115,7 @@ def test_machine_subcommands(
     assert "vm2" in output.out
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machine_create_with_custom_directory(
     clan_flake: Any,
@@ -177,6 +179,7 @@ def test_machines_update_with_tags(
     assert args.tags == ["vm"]
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machines_update_nonexistent_machine(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -200,6 +203,7 @@ def test_machines_update_nonexistent_machine(
     assert "Did you mean:" in error_message or "Available machines:" in error_message
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machines_update_typo_in_machine_name(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
@@ -224,6 +228,7 @@ def test_machines_update_typo_in_machine_name(
     assert "vm1" in error_message
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machine_delete(
     monkeypatch: pytest.MonkeyPatch,

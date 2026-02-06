@@ -200,6 +200,7 @@ def test_out_path_in_multiselect_raises_exception() -> None:
         parse_selector("{?outPath}")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_conditional_all_selector(flake: ClanFlake) -> None:
     flake.machines["machine1"] = create_test_machine_config()

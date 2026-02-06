@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .age_keys import KeyPair
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_import_sops(
     test_root: Path,

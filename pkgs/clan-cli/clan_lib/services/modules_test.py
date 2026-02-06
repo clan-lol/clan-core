@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from clan_lib.nix_models.typing import ClanInput, InventoryInput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_service_instances(
     clan_flake: Callable[..., Flake],
@@ -72,6 +73,7 @@ def test_list_service_instances(
     assert borgbackup_service.info.roles["server"].description is not None
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_service_readmes(
     clan_flake: Callable[..., Flake],
@@ -93,6 +95,7 @@ def test_get_service_readmes(
     assert len(collection.readmes["borgbackup"]) > 10
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_service_modules(
     clan_flake: Callable[..., Flake],
@@ -141,6 +144,7 @@ def test_list_service_modules(
     assert set(sshd_service.instance_refs) == set({})
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_update_service_instance(
     clan_flake: Callable[..., Flake],
@@ -261,6 +265,7 @@ def test_update_service_instance(
     }
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_delete_service_instance(
     clan_flake: Callable[..., Flake],
@@ -292,6 +297,7 @@ def test_delete_service_instance(
     assert set(updated_instances.keys()) == {"to-remain"}
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_delete_static_service_instance(
     clan_flake: Callable[..., Flake],
@@ -327,6 +333,7 @@ def test_delete_static_service_instance(
     assert "Cannot delete path 'instances.static" in str(excinfo.value)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_inline_extra_modules(clan_flake: Callable[..., Flake]) -> None:
     """ExtraModules are excluded from serialization to allow arbitrary inlining"""

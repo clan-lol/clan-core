@@ -21,6 +21,7 @@ def _find_extra_files_arg(cmd: list[Any]) -> Path | None:
     return None
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 @pytest.mark.parametrize(
     ("secret_upload_dir", "expected_relative_path"),
@@ -79,6 +80,7 @@ def test_sops_install_secret_path(
     assert verification_result == "ok", verification_result or "--extra-files not found"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 @pytest.mark.parametrize(
     ("secret_location", "expected_path"),

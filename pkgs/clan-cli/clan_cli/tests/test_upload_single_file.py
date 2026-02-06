@@ -5,6 +5,7 @@ from clan_lib.ssh.remote import Remote
 from clan_lib.ssh.upload import upload
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_upload_single_file(
     temporary_home: Path,

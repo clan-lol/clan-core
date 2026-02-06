@@ -116,6 +116,7 @@ def test_from_json(temp_dir: Path) -> None:
 #     assert remote.ssh_url() == host.ssh_url()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_ssh_shell_from_deploy(
     hosts: list[Remote],

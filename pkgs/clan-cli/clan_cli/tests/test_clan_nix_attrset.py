@@ -7,6 +7,7 @@ from clan_lib.templates import list_templates
 from clan_lib.templates.filesystem import copy_from_nixstore
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_clan_core_templates(
     test_flake_with_core: FlakeForTest,

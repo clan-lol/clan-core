@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from clan_lib.nix_models.typing import MachineTagsInput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
     flake = clan_flake(

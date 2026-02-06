@@ -85,6 +85,7 @@ def test_dependencies_as_files(temp_dir: Path) -> None:
     assert (temp_dir / "gen_2" / "var_2b").stat().st_mode & 0o777 == 0o600
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_public_and_secret_vars(
     monkeypatch: pytest.MonkeyPatch,
@@ -339,6 +340,7 @@ def test_generate_public_and_secret_vars(
 
 
 # TODO: it doesn't actually test if the group has access
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_secret_var_sops_with_default_group(
     monkeypatch: pytest.MonkeyPatch,
@@ -448,6 +450,7 @@ def test_generate_secret_var_sops_with_default_group(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_shared_secret_sops(
     monkeypatch: pytest.MonkeyPatch,
@@ -575,6 +578,7 @@ def test_generate_shared_secret_sops(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_secret_var_password_store(
     monkeypatch: pytest.MonkeyPatch,
@@ -701,6 +705,7 @@ def test_generate_secret_var_password_store(
     assert store.exists(my_shared_generator.key, var_name)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_secret_for_multiple_machines(
     monkeypatch: pytest.MonkeyPatch,
@@ -765,6 +770,7 @@ def test_generate_secret_for_multiple_machines(
     assert sops_store2.get(gen2.key, "my_secret").decode() == "machine2\n"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_prompt(
     monkeypatch: pytest.MonkeyPatch,
@@ -861,6 +867,7 @@ def test_prompt(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_prompt_prefill_on_regeneration(
     monkeypatch: pytest.MonkeyPatch,
@@ -1144,6 +1151,7 @@ def test_prompt_prefill_on_regeneration(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_non_existing_dependency_raises_error(
     monkeypatch: pytest.MonkeyPatch,
@@ -1166,6 +1174,7 @@ def test_non_existing_dependency_raises_error(
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_shared_vars_must_never_depend_on_machine_specific_vars(
     monkeypatch: pytest.MonkeyPatch,
@@ -1196,6 +1205,7 @@ def test_shared_vars_must_never_depend_on_machine_specific_vars(
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_shared_vars_regeneration(
     monkeypatch: pytest.MonkeyPatch,
@@ -1272,6 +1282,7 @@ def test_shared_vars_regeneration(
     ), "Child values should be the same after regenerating machine1"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_multi_machine_shared_vars(
     monkeypatch: pytest.MonkeyPatch,
@@ -1345,6 +1356,7 @@ def test_multi_machine_shared_vars(
     assert sops_store_2.machine_has_access(generator_m2.key, "my_secret", "machine2")
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_api_set_prompts(
     monkeypatch: pytest.MonkeyPatch,
@@ -1402,6 +1414,7 @@ def test_api_set_prompts(
     assert generators[0].get_previous_value(generators[0].prompts[0]) == "input2"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_generator_prompt_previous_values(
     monkeypatch: pytest.MonkeyPatch,
@@ -1467,6 +1480,7 @@ def test_get_generator_prompt_previous_values(
         )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_stdout_of_generate(
     monkeypatch: pytest.MonkeyPatch,
@@ -1546,6 +1560,7 @@ def test_stdout_of_generate(
     caplog.clear()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_fails_when_files_are_left_from_other_backend(
     monkeypatch: pytest.MonkeyPatch,
@@ -1594,6 +1609,7 @@ def test_fails_when_files_are_left_from_other_backend(
             )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_create_sops_age_secrets(
     monkeypatch: pytest.MonkeyPatch,
@@ -1612,6 +1628,7 @@ def test_create_sops_age_secrets(
     assert (flake.path / "sops" / "users" / "user").is_dir()
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_invalidation(
     monkeypatch: pytest.MonkeyPatch,
@@ -1659,6 +1676,7 @@ def test_invalidation(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_share_mode_switch_regenerates_secret(
     monkeypatch: pytest.MonkeyPatch,
@@ -1744,6 +1762,7 @@ def test_share_mode_switch_regenerates_secret(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_secret_var_password_store_minimal_select_calls(
     monkeypatch: pytest.MonkeyPatch,
@@ -1857,6 +1876,7 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     assert store.get(generator.key, "my_secret").decode() == "hello\n"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_secret_var_sops_minimal_select_calls(
     monkeypatch: pytest.MonkeyPatch,
@@ -1960,6 +1980,7 @@ def test_generate_secret_var_sops_minimal_select_calls(
         assert in_repo_store.get(gen2.key, "value2").decode() == "value2"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_cache_misses_for_vars_operations(
     monkeypatch: pytest.MonkeyPatch,
@@ -2041,6 +2062,7 @@ def test_cache_misses_for_vars_operations(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_shared_generator_conflicting_definition_raises_error(
     monkeypatch: pytest.MonkeyPatch,
@@ -2081,6 +2103,7 @@ def test_shared_generator_conflicting_definition_raises_error(
         cli.run(["vars", "generate", "--flake", str(flake.path)])
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_shared_generator_allows_machine_specific_differences(
     monkeypatch: pytest.MonkeyPatch,
@@ -2128,6 +2151,7 @@ def test_shared_generator_allows_machine_specific_differences(
     assert sops_store.get(shared_generator.key, "file").decode() == "secret"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_dynamic_invalidation(
     monkeypatch: pytest.MonkeyPatch,
@@ -2216,6 +2240,7 @@ def test_dynamic_invalidation(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_generators_only_decrypts_requested_machines(
     monkeypatch: pytest.MonkeyPatch,

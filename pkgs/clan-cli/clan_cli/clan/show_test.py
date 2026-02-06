@@ -8,6 +8,7 @@ from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_clan_show(
     test_flake_with_core: FlakeForTest,

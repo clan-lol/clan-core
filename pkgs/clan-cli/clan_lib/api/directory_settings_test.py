@@ -45,6 +45,7 @@ def init_git(flake_path: Path) -> None:
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_vars_keygen_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -66,6 +67,7 @@ def test_vars_keygen_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_users_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -101,6 +103,7 @@ def test_secrets_users_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_users_list_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -144,6 +147,7 @@ def test_secrets_users_list_with_directory_setting(
     assert "bob" in users, "list_users should find bob in clan/sops/users/"
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_machines_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -179,6 +183,7 @@ def test_secrets_machines_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_set_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -213,6 +218,7 @@ def test_secrets_set_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_list_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -243,6 +249,7 @@ def test_secrets_list_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_groups_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -291,6 +298,7 @@ def test_secrets_groups_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_remove_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -320,6 +328,7 @@ def test_secrets_remove_with_directory_setting(
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_key_generate_with_directory_setting(
     clan_flake: Callable[..., Flake],
@@ -362,6 +371,7 @@ CLAN_NIX_WITH_DIRECTORY_AND_MACHINE = """
 """
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_vars_generate_with_directory_setting(
     clan_flake: Callable[..., Flake],

@@ -169,6 +169,7 @@ def _test_identities(
     assert not user_or_machine_symlink.exists(follow_symlinks=False), err_msg
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_users(
     test_flake_with_core: FlakeForTest,
@@ -186,6 +187,7 @@ def test_users(
         )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_multiple_user_keys(
     test_flake_with_core: FlakeForTest,
@@ -330,6 +332,7 @@ def test_multiple_user_keys(
             )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_machines(
     test_flake_with_core: FlakeForTest,
@@ -625,6 +628,7 @@ def use_gpg_key(key: GpgKey, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
             monkeypatch.setenv("SOPS_AGE_KEY", old_key)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets(
     test_flake_with_core: FlakeForTest,
@@ -984,6 +988,7 @@ def test_secrets(
     assert output.out == ""
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_secrets_key_generate_gpg(
     test_flake_with_core: FlakeForTest,

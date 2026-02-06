@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     )
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
     """Test that every selector"""

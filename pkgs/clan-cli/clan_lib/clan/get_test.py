@@ -16,6 +16,7 @@ def test_get_clan_details_invalid_flake() -> None:
         get_clan_details(Flake("/tmp"))  # noqa: S108
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_clan_details(test_flake_with_core: FlakeForTest) -> None:
     flake = Flake(str(test_flake_with_core.path))

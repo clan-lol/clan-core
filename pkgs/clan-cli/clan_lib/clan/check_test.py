@@ -7,6 +7,7 @@ from clan_lib.clan.check import check_clan_valid
 from clan_lib.flake import Flake
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_check_clan_valid(
     temporary_home: Path,

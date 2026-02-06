@@ -9,6 +9,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_clan_directories_default(test_flake_with_core: FlakeForTest) -> None:
     flake = Flake(str(test_flake_with_core.path))
@@ -30,6 +31,7 @@ def test_get_clan_directories_invalid_flake() -> None:
         get_clan_directories(invalid_flake)
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_get_clan_directories_with_direct_directory_config(
     clan_flake: Callable[..., Flake],

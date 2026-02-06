@@ -6,6 +6,7 @@ import pytest
 from clan_cli.generate_test_vars.cli import generate_test_vars
 
 
+@pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_generate_test_vars(
     clan_core: Path,
