@@ -176,8 +176,8 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
 2. Use `cntr` and `psgrep` to attach to the Nix sandbox. This allows you to interactively debug your code while it's paused. For example:
 
    ```bash
-   psgrep <your_python_process_name>
-   cntr attach <container id, container name or process id>
+   psgrep $PROCESS_NAME
+   cntr attach $CONTAINER_ID
    ```
 
 Or you can also use the [Nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)

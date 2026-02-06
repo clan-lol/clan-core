@@ -66,12 +66,12 @@ sudo umount /dev/sdb1
       --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
       --keymap us \
       --language en_US.UTF-8 \
-      --disk main /dev/sd<X> \
+      --disk main /dev/$DISK_DEVICE \
       flash-installer
     ```
     !!! Note
         Replace `$HOME/.ssh/id_ed25519.pub` with a path to your SSH public key.
-        Replace `/dev/sd<X>` with the drive path you want to flash
+        Replace `/dev/$DISK_DEVICE` with the drive path you want to flash
 
     !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
 
@@ -81,7 +81,7 @@ sudo umount /dev/sdb1
 
         To add an ssh public key into the installer image append the option:
         ```
-        --ssh-pubkey <pubkey_path>
+        --ssh-pubkey $PUBKEY_PATH
         ```
         If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
         This ssh key will be installed into the root user.
@@ -145,10 +145,10 @@ sudo umount /dev/sdb1
     ```
 
     Use the `dd` utility to write the NixOS installer image to your USB drive.
-    Replace `/dev/sd<X>` with your external drive from above.
+    Replace `/dev/$DISK_DEVICE` with your external drive from above.
 
     ```shellSession
-    sudo dd bs=4M conv=fsync status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/sd<X>
+    sudo dd bs=4M conv=fsync status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/$DISK_DEVICE
     ```
 
     - **Connect to the installer
@@ -202,7 +202,7 @@ If the connection was successful, you should see something like this:
 ```{.console, .no-copy}
 State                 connected
 Connected network     FRITZ!Box (Your router device)
-IPv4 address          192.168.188.50 (Your new local ip)
+IPv4 address          192.168.XXX.XXX
 ```
 
 Press ++ctrl+d++ to exit `IWD`.
@@ -234,7 +234,7 @@ This is an example of the booted installer.
 │ ┌─────────────────────────────────────────────────────────────────────────────────┐ │
 │ │Root password: cheesy-capital-unwell  # password (2)                             │ │
 │ │Local network addresses:                                                         │ │
-│ │enp1s0           UP    192.168.178.169/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
+│ │enp1s0           UP    192.168.XXX.XXX/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
 │ │enp2s0           DOWN                                                            │ │
 │ │wlan0            DOWN # connect to wlan (3)                                      │ │
 │ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
@@ -270,22 +270,22 @@ The following command will generate a hardware report with [nixos-facter](https:
 === "Password"
     **Password**
     ```terminal
-    clan machines init-hardware-config [MACHINE] \
-        --target-host root@192.168.178.169
+    clan machines init-hardware-config $MACHINE_NAME \
+        --target-host root@192.168.XXX.XXX
     ```
 === "QR Code"
     **QR Code**
     **Using a JSON String or File Path**:
     Copy the JSON string contained in the QR Code and provide its path or paste it directly:
     ```terminal
-    clan machines init-hardware-config [MACHINE] --json [JSON]
+    clan machines init-hardware-config $MACHINE_NAME --json $JSON
     ```
     **Using an Image Containing the QR Code**:
     Provide the path to an image file containing the QR code displayed by the installer:
     ```terminal
-    clan machines init-hardware-config [MACHINE] --png [PATH]
+    clan machines init-hardware-config $MACHINE_NAME --png $PATH
     ```
-If you are using our template `[MACHINE]` would be `jon`
+If you are using our template, `$MACHINE_NAME` would be `jon`.
 
 
 ## Up Next

@@ -5,7 +5,7 @@ The disks of the target devices need to be configured before the rollout can sta
 ## Requirements
 * SSH access from your setup device to all target devices
 
-* Double check that each machine has a hardware report saved under ```machines/YOUR-MACHINE-NAME/facter.json```
+* Double check that each machine has a hardware report saved under ```machines/$MACHINE_NAME/facter.json```
 
 
 ## Configuring Target Disks
@@ -40,7 +40,7 @@ For this guide we will select the `single-disk` template, that uses `A simple ex
 To setup a disk schema for a machine run
 
 ```bash
-clan templates apply disk single-disk YOUR-MACHINE-NAME --set mainDisk ""
+clan templates apply disk single-disk $MACHINE_NAME --set mainDisk ""
 ```
 
 Which should fail and give the valid options for the specific hardware:
@@ -53,7 +53,7 @@ Invalid value  for placeholder mainDisk - Valid options:
 Re-run the command with the correct disk:
 
 ```bash
-clan templates apply disk single-disk YOUR-MACHINE-NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+clan templates apply disk single-disk $MACHINE_NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
 It should now be successful, in our example for jon-machine with an output like:
@@ -62,7 +62,7 @@ It should now be successful, in our example for jon-machine with an output like:
 Applied disk template 'single-disk' to machine 'jon-machine'
 ```
 
-A disko.nix file is created in `machines/YOUR-MACHINE-NAME` at this point-
+A disko.nix file is created in `machines/$MACHINE_NAME` at this point.
 You can have a look and customize it if needed.
 
 !!! Danger

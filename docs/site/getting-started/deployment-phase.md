@@ -9,9 +9,9 @@ At this point, the process is the same for VMs and physical hardware.
 
 - Make sure that you prepared your machines according to their type by following the previous steps.
 
-- Double check that each machine has a hardware report saved under ```machines/YOUR-MACHINE-NAME/facter.json```
+- Double check that each machine has a hardware report saved under ```machines/$MACHINE_NAME/facter.json```
 
-- Double check that each machine has a disk configuration saved under ```machines/YOUR-MACHINE-NAME/disko.nix```
+- Double check that each machine has a disk configuration saved under ```machines/$MACHINE_NAME/disko.nix```
 
 - Make sure your physical targets are booted from the stick as described
 
@@ -23,7 +23,7 @@ At this point, the process is the same for VMs and physical hardware.
 Careful - This command is destructive! It will format your target device's disk and install NixOS on it!
 
 ```shell-session
-$ clan machines install [YOUR-MACHINE-NAME] --target-host root@<IP>
+$ clan machines install $MACHINE_NAME --target-host root@$TARGET_IP
 ```
 Depending on your hardware configurations and network speed, this step may take a few minutes per machine.
 
@@ -37,7 +37,7 @@ After the installation completes, your machine will reboot into the newly instal
 !!! Warning "Under construction"
     We are still working on the best way to confirm a successful deployment.
     For now, please see if the setup finished by logging in directly on the target machine(s).
-    It should ask for `YOUR-MACHINE-NAME login:` and accept an empty password for root (or, if you set a password manually during deployment, that).
+    It should ask for `$MACHINE_NAME login:` and accept an empty password for root (or, if you set a password manually during deployment, that).
 
 
 ## Up Next

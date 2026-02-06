@@ -84,7 +84,7 @@ The admin service generated vars with different names than the new services. Aft
 | `admin-ssh-rsa/*` | `openssh-rsa/*` |
 | `admin-ssh/*` | `openssh/*` |
 
-Run `clan vars generate <machine>` after updating your configuration to generate the new vars.
+Run `clan vars generate $MACHINE_NAME` after updating your configuration to generate the new vars.
 
 ## Complete Example
 
