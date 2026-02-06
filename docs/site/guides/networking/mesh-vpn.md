@@ -1,6 +1,6 @@
 This guide provides detailed instructions for configuring
 [ZeroTier VPN](https://zerotier.com) within Clan. Follow the
-outlined steps to set up a machine as a VPN controller (`<CONTROLLER>`) and to
+outlined steps to set up a machine as a VPN controller and to
 include a new machine into the VPN.
 
 ## Concept
@@ -63,8 +63,6 @@ For the purpose of this guide we have two machines:
     in
     {
       inherit (clan) nixosConfigurations nixosModules clanInternals;
-
-      # omitted for brevity
     };
 }
 ```
@@ -115,12 +113,11 @@ Which made it a good fit for starting the project.
 In the repo:
 
 ```console
-$ clan vars list <machineName>
+$ clan vars list $MACHINE_NAME
 ```
 
 ```{.console, .no-copy}
 $ clan vars list controller
-# …
 zerotier/zerotier-identity-secret: ********
 zerotier/zerotier-ip: fd0a:b849:2928:1234:c99:930a:a959:2928
 zerotier/zerotier-network-id: 0aa959282834000c
@@ -137,15 +134,15 @@ $ sudo zerotier-cli info
 === "with ZeroTierIP"
 
       ```bash
-      $ sudo zerotier-members allow --member-ip <IP>
+      $ sudo zerotier-members allow --member-ip $ZEROTIER_IP
       ```
 
-      Substitute `<IP>` with the ZeroTier IP obtained previously.
+      Substitute `$ZEROTIER_IP` with the ZeroTier IP obtained previously.
 
 === "with ZeroTierID"
 
       ```bash
-      $ sudo zerotier-members allow <ID>
+      $ sudo zerotier-members allow $ZEROTIER_ID
       ```
 
-      Substitute `<ID>` with the ZeroTier ID obtained previously.
+      Substitute `$ZEROTIER_ID` with the ZeroTier ID obtained previously.

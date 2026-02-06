@@ -39,14 +39,11 @@ Add the configuration for a ZeroTier Network to your clan.nix file as follows:
       # Replace with the name (string) of your machine that you will use as zerotier-controller
       # See: https://docs.zerotier.com/controller/
       # Deploy this machine first to create the network secrets
-      roles.controller.machines."jon-machine" = { }; #edit your machine name
-      # Peers of the network
-      # this line means 'all' clan machines will be 'peers'
+      roles.controller.machines."jon-machine" = { };
+      # All clan machines will be peers of the network
       roles.peer.tags.all = { };
     };
   };
-  # …
-  # omitted
 }
 ```
 
@@ -73,7 +70,6 @@ Adding SSH keys is one of the most recommended services:
                 };
             };
         };
-        # …
     };
 }
 ```

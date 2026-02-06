@@ -61,13 +61,13 @@ inventory = {
 
       # DNS server for the .c TLD
       roles.server.machines.dns-server.settings = {
-        ip = "192.168.1.10";  # IP of your DNS server machine
+        ip = "192.168.XXX.XXX";
         tld = "c";
       };
 
-      # Machine hosting services (example: ca.c and admin.c)
+      # Machine hosting services (e.g. ca.c and admin.c)
       roles.default.machines.web-server.settings = {
-        ip = "192.168.1.20";  # IP of your web server
+        ip = "192.168.XXX.XXX";
         services = [ "ca" "admin" ];
       };
     };
@@ -86,14 +86,14 @@ Add this to your inventory:
 ```nix
 inventory = {
   instances = {
-    # ... coredns configuration from above ...
+    # coredns configuration from above
 
     certificates = {
 
       # Set up CA for .c domain
       roles.ca.machines.dns-server.settings = {
         tlds = [ "c" ];
-        acmeEmail = "admin@example.com";  # Optional: your email
+        acmeEmail = "admin@example.com";
       };
 
       # Add default role to all machines to trust the CA
@@ -123,19 +123,19 @@ nventory = {
 
       # DNS server for the .c TLD
       roles.server.machines.caserver.settings = {
-        ip = "192.168.8.5";
+        ip = "192.168.XXX.XXX";
         tld = "c";
       };
 
-      # machine hosting https://ca.c (our CA for SSL)
+      # Machine hosting https://ca.c (CA for SSL)
       roles.default.machines.caserver.settings = {
-        ip = "192.168.8.5";
+        ip = "192.168.XXX.XXX";
         services = [ "ca" ];
       };
 
-      # machine hosting https://blub.c (some internal web-service)
+      # Machine hosting https://blub.c (internal web service)
       roles.default.machines.webserver.settings = {
-        ip = "192.168.8.6";
+        ip = "192.168.XXX.XXX";
         services = [ "blub" ];
       };
     };
@@ -186,7 +186,7 @@ systemctl status systemd-resolved
 3. **Test DNS directly**:
 ```bash
 # Query the DNS server directly
-dig @192.168.8.5 ca.c
+dig @192.168.XXX.XXX ca.c
 ```
 
 ### Certificate Issues

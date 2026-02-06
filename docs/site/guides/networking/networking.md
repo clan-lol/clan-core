@@ -22,7 +22,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
               settings.host = "server1.example.com";
             };
             roles.default.machines.server2 = {
-              settings.host = "192.168.1.100";
+              settings.host = "192.168.XXX.XXX";
             };
           };
 
@@ -113,7 +113,7 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
         inventory.machines.server = {
           # WARNING: This bypasses all networking modules!
           # Use for: Static IPs, DNS names, known hostnames
-          deploy.targetHost = "root@192.168.1.100";
+          deploy.targetHost = "root@192.168.XXX.XXX";
         };
       };
     in
@@ -124,7 +124,7 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
 ```
 
 **When to use inventory-level:**
-- Static IP addresses: `"root@192.168.1.100"`
+- Static IP addresses: `"root@192.168.XXX.XXX"`
 - DNS names: `"user@server.example.com"`
 - Any address that doesn't change based on machine configuration
 

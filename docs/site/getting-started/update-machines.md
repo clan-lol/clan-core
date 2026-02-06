@@ -24,7 +24,7 @@ This eliminates the need to specify `--target-host` in CLI commands.
         # Define machines here.
         # The machine name will be used as the hostname.
         jon = {
-            deploy.targetHost = "root@192.168.192.4"; # (1)
+            deploy.targetHost = "root@192.168.XXX.XXX"; # (1)
         };
     };
 
@@ -72,7 +72,7 @@ During an update, Clan will ssh into the `buildHost` and run `nixos-rebuild` fro
 clan {
     machines = {
         "jon" = {
-            clan.core.networking.buildHost = "root@<host_or_ip>";
+            clan.core.networking.buildHost = "root@$BUILD_HOST";
         };
     };
 
@@ -87,7 +87,7 @@ For the full list of flags refer to the [Clan CLI](../reference/cli/index.md)
 
 ```bash
 # Build on a remote host
-clan machines update jon --build-host root@192.168.1.10
+clan machines update jon --build-host root@192.168.XXX.XXX
 
 # Build locally (useful for testing or when the target has limited resources)
 clan machines update jon --build-host local

@@ -27,13 +27,12 @@ in
   disko.devices = {
     disk = {
       "main" = {
-        # suffix is to prevent disk name collisions
+        # suffix prevents disk name collisions
         name = "main-" + suffix;
         type = "disk";
         # Set the following in flake.nix for each machine:
-        # device = <uuid>;
+        # device = $DISK_UUID;
         content = {
-          # edlied
         };
       };
     };
@@ -46,7 +45,7 @@ in
 Run the following command to retrieve the generated disk ID for your machine:
 
 ```bash
-clan vars list <machineName>
+clan vars list $MACHINE_NAME
 ```
 
 Which should print the generated `disk-id/diskId` value in clear text
@@ -54,7 +53,6 @@ You should see output like:
 
 ```shellSession
 disk-id/diskId: fcef30a749f8451d8f60c46e1ead726f
-# …
 ```
 
 Copy this value — you'll need it in the next step.
@@ -84,8 +82,6 @@ We are going to make three changes:
         # disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
         #        ↓ Copy the '/dev/disk/by-id' into here instead
         device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
-
-        # edlied;
       };
     };
   };

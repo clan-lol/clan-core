@@ -37,8 +37,8 @@ The command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the
 
 
 ```terminal
-clan machines init-hardware-config [YOUR-MACHINE-NAME] \
-  --target-host myuser@<IP>
+clan machines init-hardware-config $MACHINE_NAME \
+  --target-host myuser@$TARGET_IP
 ```
 
 This command may take a while. You will be prompted to enter the target machine's root password during the process.
@@ -52,7 +52,7 @@ Do *not* reboot your target machine at this point! The system needs to stay in t
 ## Checkpoint: Confirming the Hardware Reports
 
 For each machine, check if the hardware report was saved under 
-```machines/YOUR-MACHINE-NAME/facter.json```
+```machines/$MACHINE_NAME/facter.json```
  on your setup device.
 
 

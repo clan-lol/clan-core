@@ -53,7 +53,7 @@ For more information see the [SOPS] guide on [encrypting with age].
 ## Add Your Public Key(s)
 
 ```console
-clan secrets users add $USER --age-key <your_public_key>
+clan secrets users add $USER --age-key $YOUR_PUBLIC_KEY
 ```
 
 It's best to choose the same username as on your Setup/Admin Machine that you use to control the deployment with.
@@ -63,18 +63,18 @@ Once run, this will create the following files:
 ```{.console, .no-copy}
 sops/
 └── users/
-    └── <your_username>/
+    └── $YOUR_USERNAME/
         └── key.json
 ```
 If you followed the quickstart tutorial all necessary secrets are initialized at this point.
 
 !!! note
-    You can add multiple age keys for a user by providing multiple `--age-key <your_public_key>` flags:
+    You can add multiple age keys for a user by providing multiple `--age-key $YOUR_PUBLIC_KEY` flags:
 
     ```console
     clan secrets users add $USER \
-        --age-key <your_public_key_1> \
-        --age-key <your_public_key_2> \
+        --age-key $YOUR_PUBLIC_KEY_1 \
+        --age-key $YOUR_PUBLIC_KEY_2 \
         ...
     ```
 
@@ -102,13 +102,13 @@ clan secrets users get alice
 To add a new key to your user:
 
 ```console
-clan secrets users add-key $USER --age-key <your_public_key>
+clan secrets users add-key $USER --age-key $YOUR_PUBLIC_KEY
 ```
 
 To remove a key from your user:
 
 ```console
-clan secrets users remove-key $USER --age-key <your_public_key>
+clan secrets users remove-key $USER --age-key $YOUR_PUBLIC_KEY
 ```
 
 [age]: https://github.com/FiloSottile/age
@@ -155,18 +155,18 @@ In your NixOS configuration you can get a path to secrets like this `config.sops
 
 ## Assigning Access
 
-When using `clan secrets set <secret>` without arguments, secrets are encrypted for the key of the user named like your current $USER.
+When using `clan secrets set $SECRET_NAME` without arguments, secrets are encrypted for the key of the user named like your current `$USER`.
 
 To add machines/users to an existing secret use:
 
 ```bash
- clan secrets machines add-secret <machine_name> <secret_name>
+ clan secrets machines add-secret $MACHINE_NAME $SECRET_NAME
 ```
 
 Alternatively specify users and machines while creating a secret:
 
 ```bash
-clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
+clan secrets set --machine $MACHINE_1 --machine $MACHINE_2 --user $USER_1 --user $USER_2 $SECRET_NAME
 ```
 
 ## Advanced
@@ -188,7 +188,7 @@ Here's how to get started:
    Assign users to a new group, e.g., `admins`:
 
    ```bash
-   clan secrets groups add-user admins <username>
+   clan secrets groups add-user admins $USERNAME
    ```
 
 2. **Listing Groups**:
@@ -200,7 +200,7 @@ Here's how to get started:
 3. **Assigning Secrets to Groups**:
 
    ```bash
-   clan secrets groups add-secret <group_name> <secret_name>
+   clan secrets groups add-secret $GROUP_NAME $SECRET_NAME
    ```
 
 **TIP** To encrypt all secrets of a machine for a specific group, use the following NixOS configuration:
@@ -213,7 +213,7 @@ Here's how to get started:
 
 ### Adding Machine Keys
 
-New machines in Clan come with age keys stored in `./sops/machines/<machine_name>`. To list these machines:
+New machines in Clan come with age keys stored in `./sops/machines/$MACHINE_NAME`. To list these machines:
 
 ```bash
  clan secrets machines list
@@ -222,13 +222,13 @@ New machines in Clan come with age keys stored in `./sops/machines/<machine_name
 For existing machines, add their keys:
 
 ```bash
- clan secrets machines add <machine_name> <age_key>
+ clan secrets machines add $MACHINE_NAME $AGE_KEY
 ```
 
 To fetch an age key from an SSH host key:
 
 ```bash
- ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
+ ssh-keyscan $DOMAIN_NAME | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 ```
 
 ### Migration: Importing existing sops-based keys / sops-nix

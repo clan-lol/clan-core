@@ -29,8 +29,8 @@ lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
 Below is the configuration for `initrd.nix`.
-Replace `<yourkey>` with your SSH public key.
-Replace `kernelModules` with the ethernet module loaded one on your target machine.
+Replace `$SSH_PUBLIC_KEY` with your SSH public key.
+Replace `kernelModules` with the ethernet module loaded on your target machine.
 ```nix hl_lines="18 29"
 {config, pkgs, ...}:
 
@@ -49,7 +49,7 @@ Replace `kernelModules` with the ethernet module loaded one on your target machi
     ssh = {
       enable = true;
       port = 7172;
-      authorizedKeys = [ "<yourkey>" ];
+      authorizedKeys = [ "$SSH_PUBLIC_KEY" ];
       hostKeys = [
         "/var/lib/initrd_host_ed25519_key"
         "/var/lib/initrd_host_rsa_key"
@@ -92,7 +92,7 @@ nano /tmp/secret.key
 3. Discard the old disk partition data:
 
 ```bash
-blkdiscard /dev/disk/by-id/<installdisk>
+blkdiscard /dev/disk/by-id/$DISK_ID
 ```
 
 4. Run `clan` machines install, only running kexec and disko, with the following command:
@@ -157,7 +157,7 @@ zpool export zroot
 1. SSH into the initrd environment using the `initrd_rsa_key` and provided port:
 
 ```bash
-ssh -p 7172 root@192.168.178.141
+ssh -p 7172 root@192.168.XXX.XXX
 ```
 
 2. Run the `systemd-tty-ask-password-agent` utility to query a password:
@@ -168,4 +168,4 @@ systemd-tty-ask-password-agent
 
 After completing these steps, your NixOS should be successfully installed and ready for use.
 
-**Note:** Replace `root@nixos-installer.local` and `192.168.178.141` with the appropriate user and IP addresses for your setup. Also, adjust `<SYS_PATH>` to reflect the correct system path for your environment.
+**Note:** Replace `root@nixos-installer.local` and `192.168.XXX.XXX` with the appropriate user and IP addresses for your setup.
