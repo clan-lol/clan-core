@@ -68,7 +68,7 @@ output parameters.
 The existing `nixosConfigurations` output of your flake will be created by
 clan. In addition, a new `clanInternals` output will be added. Since both of
 these are provided by the output of `clan-core.lib.clan`, a common syntax is to use a
-`let...in` statement to create your clan and access it's parameters in the flake
+`let...in` statement to create your Clan and access it's parameters in the flake
 outputs.
 
 For the provide flake example, your flake should now look like this:

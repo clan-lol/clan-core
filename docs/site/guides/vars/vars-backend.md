@@ -24,7 +24,7 @@ In this example, a `vars` `generator` is used to:
 - store the hash in a file
 - expose the file path to the NixOS configuration
 
-Create a new nix file `root-password.nix` with the following content and import it into your `configuration.nix`
+Create a new Nix file `root-password.nix` with the following content and import it into your `configuration.nix`
 ```nix
 {config, pkgs, ...}: {
 
@@ -86,7 +86,7 @@ Updated var root-password/password-hash
 With the last step, a new file was created in your repository:
 `vars/per-machine/my-machine/root-password/password-hash/value`
 
-If the repository is a Git repository, a commit was created automatically:
+If the repository is a git repository, a commit was created automatically:
 ```shellSession
 $ git log -n1
 commit ... (HEAD -> master)
@@ -104,7 +104,7 @@ clan machines update my_machine
 
 ## Share root password between machines
 
-If we just imported the `root-password.nix` from above into more machines, clan would ask for a new password for each additional machine.
+If we just imported the `root-password.nix` from above into more machines, Clan would ask for a new password for each additional machine.
 
 If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
 ```nix

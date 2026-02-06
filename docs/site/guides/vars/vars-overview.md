@@ -1,5 +1,5 @@
 
-The vars system is clan's declarative solution for managing generated files, secrets, and dynamic configuration in your NixOS deployments. It eliminates the manual steps of generating credentials, certificates, and other dynamic values by automating these processes within your infrastructure-as-code workflow.
+The vars system is Clan's declarative solution for managing generated files, secrets, and dynamic configuration in your NixOS deployments. It eliminates the manual steps of generating credentials, certificates, and other dynamic values by automating these processes within your infrastructure-as-code workflow.
 
 ## What Problems Does Vars Solve?
 
@@ -48,7 +48,7 @@ users.users.root.hashedPasswordFile =
 - **🔐 Secure**: Automatic secret storage and encrypted deployment
 - **👥 Collaborative**: Built-in sharing for team environments
 - **🚀 Automated**: No manual intervention required for deployments
-- **🔗 Integrated**: Works seamlessly with clan's deployment workflow
+- **🔗 Integrated**: Works seamlessly with Clan's deployment workflow
 
 ## How It Works
 
@@ -100,7 +100,7 @@ Define how to create files from inputs:
 ### 2. **Storage Backends**
 Handle secret storage and deployment:
 
-- **sops**: Encrypted files in Git (recommended)
+- **sops**: Encrypted files in git (recommended)
 
 - **password-store**: GPG/age-based secret storage
 

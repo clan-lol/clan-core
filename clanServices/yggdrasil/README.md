@@ -7,7 +7,7 @@ This module sets up [yggdrasil](https://yggdrasil-network.github.io/) across you
 
 Yggdrasil is designed to be a future-proof and decentralised alternative to the
 structured routing protocols commonly used today on the internet. Inside your
-clan, it will allow you to reach all of your machines.
+Clan, it will allow you to reach all of your machines.
 
 If you have other services in your inventory which export peers (e.g. the
 `internet` or the VPN services) as [service
@@ -18,7 +18,7 @@ the best routing based on available connections.
 
 The yggdrasil IPv6-address will be added to `/etc/hosts` using the
 [meta.domain](https://docs.clan.lol/reference/options/clan/#meta.domain)
-settings, allowing you to reach each host in the clan via
+settings, allowing you to reach each host in the Clan via
 `<hostname>.<meta.domain>`.
 
 Yggdrasil also does auto-discovery of local peers per default.
@@ -122,7 +122,7 @@ documentation](https://yggdrasil-network.github.io/configurationref.html#allowed
 > need an IPv6 firewall.
 
 This service therefore also sets up firewall rules, such that the `ygg` network
-interface only accepts traffic from clan member IPs.
+interface only accepts traffic from Clan member IPs.
 
 By default, multicast peer discovery is enabled on all network interfaces,
 allowing automatic discovery of local peers. Since Yggdrasil provides end-to-end

@@ -25,7 +25,7 @@ client machine with a destination pointing to a Hetzner Storage Box.
 
 This guide explains how to set up and manage
 [BorgBackup](https://borgbackup.readthedocs.io/) for secure, efficient backups
-in a clan network. BorgBackup provides:
+in a Clan network. BorgBackup provides:
 
 - Space efficient storage of backups with deduplication
 - Secure, authenticated encryption
@@ -45,7 +45,7 @@ client can have multiple backup destinations configured.
 ### 2. Server
 
 Servers act as backup repositories, receiving and storing backups from client
-machines. They can be dedicated backup servers within your clan network.
+machines. They can be dedicated backup servers within your Clan network.
 
 ## Backup destinations
 

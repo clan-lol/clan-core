@@ -67,7 +67,7 @@ inventory.instances = {
 
 ## Module Settings
 
-Each role might expose configurable options. See clan's [clanServices
+Each role might expose configurable options. See Clan's [clanServices
 reference](../../services/definition.md) for all available options.
 
 Settings can be set in per-machine or per-role. The latter is applied to all
@@ -119,7 +119,7 @@ inventory.instances = {
 
 ## Sharing additional Nix configuration
 
-Sometimes you need to add custom NixOS configuration alongside your clan
+Sometimes you need to add custom NixOS configuration alongside your Clan
 services. The `extraModules` option allows you to include additional NixOS
 configuration that is applied for every machine assigned to that role.
 

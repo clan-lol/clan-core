@@ -44,6 +44,6 @@ Please follow our [detailed backup guide](../guides/backups/backup-intro.md) and
 
 ### Migrate Existing Devices
 
-You can [migrate additional existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) into your clan following our extended guides.
+You can [migrate additional existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) into your Clan following our extended guides.
 
 

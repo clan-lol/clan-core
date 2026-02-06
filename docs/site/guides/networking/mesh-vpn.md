@@ -5,7 +5,7 @@ include a new machine into the VPN.
 
 ## Concept
 
-By default all machines within one clan are connected via a chosen network technology.
+By default all machines within one Clan are connected via a chosen network technology.
 
 ```{.no-copy}
 Clan
@@ -14,7 +14,7 @@ Clan
     Node B
 ```
 
-This guide shows you how to configure `zerotier` through clan's `Inventory` System.
+This guide shows you how to configure `zerotier` through Clan's `Inventory` System.
 
 ## The Controller
 

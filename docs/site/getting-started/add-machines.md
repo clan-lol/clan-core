@@ -12,14 +12,14 @@ When finishing it, you will have prepared at least one machine that can be rolle
 ##Requirements
 
 - Estimated time: 30min
-- You have created a clan during the previous step
+- You have created a Clan during the previous step
 - You are logged in as root on your setup device
-- direnv is running in your clan folder (see previous step for setup)
+- direnv is running in your Clan folder (see previous step for setup)
 
 
 ## Creating a Machine
 
-Navigate to your clan folder and run the following command to create a machine for our test user Jon:
+Navigate to your Clan folder and run the following command to create a machine for our test user Jon:
 
 ```nix
 clan machines create jon-machine
@@ -100,7 +100,7 @@ machines: It is advised to add the *SSH key* of your setup device's root user he
 git rm -rf ./machines/sara-machine
 ```
 
-Make sure to also remove or update any references to that machine in your nix files and inventory.json
+Make sure to also remove or update any references to that machine in your Nix files and inventory.json
 
 </details>
 

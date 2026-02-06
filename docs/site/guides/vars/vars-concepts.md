@@ -57,7 +57,7 @@ This prevents accidental exposure of secrets in the nix store.
 
 The vars system uses pluggable storage backends:
 
-- **sops** (default): Integrates with clan's existing sops encryption
+- **sops** (default): Integrates with Clan's existing sops encryption
 - **password-store**: For users already using pass
 
 Each backend handles encryption/decryption transparently, allowing the same generator definitions to work across different security models.

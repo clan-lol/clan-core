@@ -21,7 +21,7 @@ The following tutorial will walk through setting up a Backup service where the t
 
 ## Services
 
-The inventory defines `instances` of clan services. Membership of `machines` is defined via `roles` exclusively.
+The inventory defines `instances` of Clan services. Membership of `machines` is defined via `roles` exclusively.
 
 See each [modules documentation](../../services/definition.md) for its available roles.
 

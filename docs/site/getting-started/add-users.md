@@ -10,12 +10,12 @@
 
 The users we define in this step will be the users that can actually log in to your previously created machines. You can define which user has access to which machine in detail, but in this example all users can log into all machines.
 
-Defining users can be done in many different ways. We will highlight a few approaches here and recommend using clan's [users](../services/official/users.md) service.
+Defining users can be done in many different ways. We will highlight a few approaches here and recommend using Clan's [users](../services/official/users.md) service.
 
 ## Requirements
 
 - Estimated time: 30min
-- A working clan setup with at least one machine
+- A working Clan setup with at least one machine
 
 ## Recommended: Adding Users via the [users](../services/official/users.md) service
 
@@ -81,10 +81,10 @@ Which can be imported into individual machines to make the user available on tha
 
 ## Alternative 2: Using [home-manager](https://github.com/nix-community/home-manager)
 
-When using clan's `users` service, it is possible to define extraModules.
-In fact this is always possible when using clan's services.
+When using Clan's `users` service, it is possible to define extraModules.
+In fact this is always possible when using Clan's services.
 
-We can use this property of clan services to bind a nixosModule to the user, which configures home-manager.
+We can use this property of Clan services to bind a NixOS module to the user, which configures home-manager.
 
 ```{.nix title="clan.nix" hl_lines="22"}
 {
@@ -140,4 +140,4 @@ We can use this property of clan services to bind a nixosModule to the user, whi
 
 ## Up Next
 
-In the next step, we will add a few recommended services to your clan setup.
+In the next step, we will add a few recommended services to your Clan setup.

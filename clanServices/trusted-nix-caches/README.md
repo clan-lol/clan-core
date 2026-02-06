@@ -1,4 +1,4 @@
-Sets up nix to trust and use the clan cache
+Sets up Nix to trust and use the Clan cache
 
 ## Usage
 

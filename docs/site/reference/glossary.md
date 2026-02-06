@@ -1,6 +1,6 @@
 # :material-api: Glossary
 
-## clan
+## Clan
 Collection of machines interconnected in a network.
 
 ## clan-app
@@ -14,7 +14,7 @@ Module that enables configuration via the inventory.
 Legacy `clanModules` also support configuration outside the inventory.
 
 ## clanService
-Service defined and managed through a clan configuration.
+Service defined and managed through a Clan configuration.
 
 ## clanURL
 Flake URL-like syntax used to link to clans.

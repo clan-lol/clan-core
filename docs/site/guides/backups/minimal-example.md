@@ -1,4 +1,4 @@
-In this guide we will explain how to install a simple peer-to-peer backup system through the inventory. Such that machines will backup it's state to other machines in the clan, ensuring redundancy and data safety.
+In this guide we will explain how to install a simple peer-to-peer backup system through the inventory. Such that machines will backup it's state to other machines in the Clan, ensuring redundancy and data safety.
 
 
 ### What is BorgBackup?
@@ -51,7 +51,7 @@ In a Clan Service, roles define how machines participate in the backup system. E
 
 - **Client**: These machines create backups and send them to designated destinations. Clients can be configured to back up to multiple destinations, ensuring redundancy and reliability.
 
-- **Server**: These machines act as repositories, receiving and securely storing backups from client machines. Servers can be dedicated backup nodes within your clan network, providing centralized storage for all backups.
+- **Server**: These machines act as repositories, receiving and securely storing backups from client machines. Servers can be dedicated backup nodes within your Clan network, providing centralized storage for all backups.
 
 
 ## Backup destinations
@@ -64,4 +64,4 @@ Destinations can be:
 - **Third-party services**: Such as Hetzner's Storage Box
 
 
-However, if BorgBackup does not meet your needs, you can implement your own backup clan service.
+However, if BorgBackup does not meet your needs, you can implement your own backup Clan service.

@@ -1,5 +1,5 @@
 
-Here are some methods for debugging and testing the clan CLI
+Here are some methods for debugging and testing the Clan CLI
 
 ## Using a Development Branch
 
@@ -92,7 +92,7 @@ These options help you pinpoint the source and context of print messages and deb
 
 ## Analyzing Performance
 
-To understand what's causing slow performance, set the environment variable `export CLAN_CLI_PERF=1`. When you complete a clan command, you'll see a summary of various performance metrics, helping you identify what's taking up time.
+To understand what's causing slow performance, set the environment variable `export CLAN_CLI_PERF=1`. When you complete a Clan command, you'll see a summary of various performance metrics, helping you identify what's taking up time.
 
 ## See all possible packages and tests
 
@@ -180,5 +180,5 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    cntr attach <container id, container name or process id>
    ```
 
-Or you can also use the [nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)
+Or you can also use the [Nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)
 

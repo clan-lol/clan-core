@@ -1,10 +1,10 @@
 # WireGuard VPN Service
 
-This service provides a WireGuard-based VPN mesh network with automatic IPv6 address allocation and routing between clan machines.
+This service provides a WireGuard-based VPN mesh network with automatic IPv6 address allocation and routing between Clan machines.
 
 ## Overview
 
-The WireGuard service creates a secure mesh network between clan machines using two roles:
+The WireGuard service creates a secure mesh network between Clan machines using two roles:
 - **Controllers**: Machines with public endpoints that act as connection points and routers
 - **Peers**: Machines that connect through controllers to access the network
 
@@ -199,7 +199,7 @@ This means the configured port (default: 51820) is already in use by another ser
 
 ### Key Management
 
-Keys are automatically generated and stored in the clan vars system. To regenerate keys:
+Keys are automatically generated and stored in the Clan vars system. To regenerate keys:
 
 ```bash
 # Regenerate keys for a specific machine and instance
@@ -213,7 +213,7 @@ clan machines update <machine-name>
 
 - All traffic is encrypted using WireGuard's modern cryptography
 - Private keys never leave the machines they're generated on
-- Public keys are distributed through the clan vars system
+- Public keys are distributed through the Clan vars system
 - Controllers must have publicly accessible endpoints
 - Firewall rules are automatically configured for the WireGuard ports
 

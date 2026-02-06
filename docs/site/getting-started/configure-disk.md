@@ -9,7 +9,7 @@ The disks of the target devices need to be configured before the rollout can sta
 
 
 ## Configuring Target Disks
-By default clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
+By default Clan uses [disko](https://github.com/nix-community/disko) which allows for declarative disk partitioning.
 
 To see what disk templates are available, run `clan templates list`:
 
@@ -34,7 +34,7 @@ For this guide we will select the `single-disk` template, that uses `A simple ex
 
 !!! tip
     For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
-    You can also [contribute a disk template to clan core](https://docs.clan.lol/guides/disko-templates/community/)
+    You can also [contribute a disk template to Clan core](https://docs.clan.lol/guides/disko-templates/community/)
 
 
 To setup a disk schema for a machine run

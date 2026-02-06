@@ -1,6 +1,6 @@
 # Can I still use `nixos-rebuild`?
 
-**Yes, you can still use `nixos-rebuild` with clan!**
+**Yes, you can still use `nixos-rebuild` with Clan!**
 
 Clan is built on top of standard `NixOS` and uses `nixos-rebuild` internally.
 However, there are important considerations when using `nixos-rebuild` directly instead of `clan machines update`.
@@ -8,7 +8,7 @@ However, there are important considerations when using `nixos-rebuild` directly 
 ## Important Considerations
 
 !!! warning "Vars Must Be Uploaded First"
-    If your configuration uses clan vars, failing to run `clan vars upload` before `nixos-rebuild` will result in missing secrets and potentially broken services.
+    If your configuration uses Clan vars, failing to run `clan vars upload` before `nixos-rebuild` will result in missing secrets and potentially broken services.
 
 !!! info "Build Host Configuration"
     Clan automatically handles build host configuration based on your machine settings.
@@ -16,14 +16,14 @@ However, there are important considerations when using `nixos-rebuild` directly 
 
 ## How Clan Uses nixos-rebuild
 
-Clan doesn't replace `nixos-rebuild` - it enhances it. When you run `clan machines update`, clan:
+Clan doesn't replace `nixos-rebuild` - it enhances it. When you run `clan machines update`, Clan:
 
 1. Generates and uploads secrets/variables (if any)
 2. Uploads the flake source to the target/build host (if needed)
 3. Runs `nixos-rebuild switch` with the appropriate options
 4. Handles remote building and deployment automatically
 
-Under the hood, clan executes commands like:
+Under the hood, Clan executes commands like:
 
 ```bash
 nixos-rebuild switch --fast --build-host buildHost --flake /path/to/flake#machine-name
@@ -31,7 +31,7 @@ nixos-rebuild switch --fast --build-host buildHost --flake /path/to/flake#machin
 
 ## When You Need `clan vars upload`
 
-If your clan configuration uses **variables (vars)** - generated secrets, keys, or configuration values - you **must** run `clan vars upload` before using `nixos-rebuild` directly.
+If your Clan configuration uses **variables (vars)** - generated secrets, keys, or configuration values - you **must** run `clan vars upload` before using `nixos-rebuild` directly.
 
 ### Systems that use vars include:
 
@@ -64,5 +64,5 @@ nixos-rebuild switch --flake .#my-machine --target-host root@target-ip --build-h
 
 ## Related Documentation
 
-- [Update Your Machines](../getting-started/update-machines.md) - Using clan's update command
+- [Update Your Machines](../getting-started/update-machines.md) - Using Clan's update command
 - [Variables (Vars)](../guides/vars/vars-overview.md) - Understanding the vars system

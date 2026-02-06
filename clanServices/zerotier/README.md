@@ -27,7 +27,7 @@ This guide explains how to set up and manage a [ZeroTier VPN](https://zerotier.c
 ### 1. Controller
 
 The [Controller](https://docs.zerotier.com/controller/) manages network membership and is responsible for admitting new peers.
-When a new node is added to the clan, the controller must be updated to ensure it has the latest member list.
+When a new node is added to the Clan, the controller must be updated to ensure it has the latest member list.
 
 - **Key Points:**
   - Must be online to admit new machines to the VPN.
@@ -50,4 +50,4 @@ They connect to other peers, moons, and the controller as needed.
 
 - **Purpose:**
   - General role for all machines that are neither controllers nor moons.
-  - Ideal for most clan members devices.
+  - Ideal for most Clan members devices.

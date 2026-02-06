@@ -8,7 +8,7 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/zerotier";
-  manifest.description = "Zerotier Mesh VPN Service for secure P2P networking between machines";
+  manifest.description = "ZeroTier Mesh VPN Service for secure P2P networking between machines";
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
 
@@ -23,7 +23,7 @@
   }) config.instances;
 
   roles.peer = {
-    description = "A peer that connects to your private Zerotier network.";
+    description = "A peer that connects to your private ZeroTier network.";
     perInstance =
       {
         instanceName,
@@ -122,7 +122,7 @@
   };
 
   roles.controller = {
-    description = "Manages network membership and is responsible for admitting new peers to your Zerotier network.";
+    description = "Manages network membership and is responsible for admitting new peers to your ZeroTier network.";
     interface =
       { lib, ... }:
       {

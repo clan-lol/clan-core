@@ -2,7 +2,7 @@
 
 ## Service Module Specification
 
-This section explains how to author a clan service module.
+This section explains how to author a Clan service module.
 We discussed the initial architecture in [01-clan-service-modules](../../decisions/01-Clan-Modules.md) and decided to rework the format.
 
 For the full specification and current state see: **[Service Author Reference](../../reference/options/clan_service.md)**

@@ -100,7 +100,7 @@ Currently we merge options and config together but that may produce conflicts. T
 
 We will create a new module class which is defined by `_class = "clan.service"` ([documented here](https://nixos.org/manual/nixpkgs/stable/#module-system-lib-evalModules-param-class)).
 
-Existing clan modules will still work by continuing to be plain NixOS modules. All new modules can set `_class = "clan.service";` to use the proposed features.
+Existing Clan modules will still work by continuing to be plain NixOS modules. All new modules can set `_class = "clan.service";` to use the proposed features.
 
 In short the change introduces a new module class that makes the currently necessary folding of `clan.service`s `instances` and `roles` a common operation. The module author can define the inner function of the fold operations which is called a `clan.service` module.
 
