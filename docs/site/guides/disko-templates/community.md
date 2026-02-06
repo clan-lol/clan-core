@@ -12,7 +12,7 @@ A disk template consists of exactly two files
 - `default.nix`
 - `README.md`
 
-```sh
+```text
 └── single-disk
     ├── default.nix
     └── README.md
@@ -27,7 +27,7 @@ The user can choose any valid options from the hardware report.
 The file itself is then copied to `machines/{machineName}/disko.nix` and will be automatically loaded by the machine.
 
 `single-disk/default.nix`
-```
+```nix
 {
   disko.devices = {
     disk = {
@@ -63,7 +63,7 @@ Introducing new local or global placeholders requires contributing to clan-core 
 Some placeholders provide predefined functionality
 
 - `uuid`: In most cases we recommend adding a unique id to all disks. This prevents the system to false boot from i.e. hot-plugged devices.
-    ```
+    ```nix
     disko.devices = {
       disk = {
         main = {

@@ -1,4 +1,4 @@
-# Testing your contributions
+## Testing your contributions
 
 Each feature added to Clan should be tested extensively via automated tests.
 
@@ -11,16 +11,16 @@ In order to test the behavior of Clan, different testing frameworks are used dep
 - Python tests via pytest: for unit tests and integration tests
 - Nix eval tests: for Nix functions, libraries, modules, etc.
 
-## NixOS VM Tests
+### NixOS VM Tests
 
 The [NixOS VM Testing Framework](https://nixos.org/manual/nixos/stable/index.html#sec-nixos-tests) is used to create high level integration tests, by running one or more VMs generated from a specified config. Commands can be executed on the booted machine(s) to verify a deployment of a service works as expected. All machines within a test are connected by a virtual network. Internet access is not available.
 
-### When to use VM tests
+#### When to use VM tests
 
 - testing that a service defined through a Clan module works as expected after deployment
 - testing Clan CLI subcommands which require accessing a remote machine
 
-### When not to use VM tests
+#### When not to use VM tests
 
 NixOS VM Tests are slow and expensive. They should only be used for testing high level integration of components.
 VM tests should be avoided wherever it is possible to implement a cheaper unit test instead.
@@ -28,14 +28,14 @@ VM tests should be avoided wherever it is possible to implement a cheaper unit t
 - testing detailed behavior of a certain Clan CLI command -> use unit testing via pytest instead
 - regression testing -> add a unit test
 
-### Finding examples for VM tests
+#### Finding examples for VM tests
 
 Existing NixOS VM tests in clan-core can be found by using ripgrep:
 ```shellSession
 rg self.clanLib.test.baseTest
 ```
 
-### Locating definitions of failing VM tests
+#### Locating definitions of failing VM tests
 
 All NixOS VM tests in Clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
 If a test fails in CI:
@@ -55,30 +55,30 @@ $ rg "borgbackup =" ./checks
 
 -> the location of that test is `/checks/flake-module.nix` line `41`.
 
-### Adding vm tests
+#### Adding vm tests
 
 Create a NixOS test module under `/checks/{name}/default.nix` and import it in `/checks/flake-module.nix`.
 
 
-### Running VM tests
+#### Running VM tests
 
 ```shellSession
 nix build .#checks.x86_64-linux.{test-attr-name}
 ```
 (replace `{test-attr-name}` with the name of the test)
 
-### Testing services with vars
+#### Testing services with vars
 
 Services that define their own vars (using `clan.core.vars.generators`) require generating test vars before running the tests.
 
-#### Understanding the `clan.directory` setting
+##### Understanding the `clan.directory` setting
 
 The `clan.directory` option is critical for vars generation and loading in tests. This setting determines:
 
 1. **Where vars are generated**: When you run `update-vars`, it creates `vars/` and `sops/` directories inside the path specified by `clan.directory`
 2. **Where vars are loaded from**: During test execution, machines look for their vars and secrets relative to `clan.directory`
 
-#### Generating test vars
+##### Generating test vars
 
 For services that define vars, you must first run:
 
@@ -92,7 +92,7 @@ This generates the necessary var files in the directory specified by `clan.direc
 nix run .#checks.x86_64-linux.{test-attr-name}
 ```
 
-#### Example: service-dummy-test
+##### Example: service-dummy-test
 
 The `service-dummy-test` is a good example of a test that uses vars. To run it:
 
@@ -104,7 +104,7 @@ nix run .#checks.x86_64-linux.service-dummy-test.update-vars
 nix run .#checks.x86_64-linux.service-dummy-test
 ```
 
-#### Common issues
+##### Common issues
 
 If `update-vars` fails, you may need to ensure that:
 
@@ -120,37 +120,37 @@ If `update-vars` fails, you may need to ensure that:
 
 You can reference `/checks/service-dummy-test/` to see a complete working example of a test with vars, including the correct directory structure.
 
-### Debugging VM tests
+#### Debugging VM tests
 
 The following techniques can be used to debug a VM test:
 
-#### Print Statements
+##### Print Statements
 
 Locate the definition (see above) and add print statements, like, for example `print(client.succeed("systemctl --failed"))`, then re-run the test via `nix build` (see above)
 
-#### Interactive Shell
+##### Interactive Shell
 
 - Execute the vm test outside the Nix sandbox via the following command:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
 - Then run the commands in the machines manually, like for example:
-  ```python3
+  ```python
     start_all()
     machine1.succeed("echo hello")
   ```
 
-#### Breakpoints
+##### Breakpoints
 
 To get an interactive shell at a specific line in the VM test script, add a `breakpoint()` call before the line to debug, then run the test outside of the sandbox via:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver`
 
 
-## NixOS Container Tests
+### NixOS Container Tests
 
 Those are very similar to NixOS VM tests, as in they run virtualized NixOS machines, but instead of using VMs, they use containers which are much cheaper to launch.
 As of now the container test driver is a downstream development in clan-core.
 Basically everything stated under the NixOS VM tests sections applies here, except some limitations.
 
-### Using Container Tests vs VM Tests
+#### Using Container Tests vs VM Tests
 
 Container tests are **enabled by default** for all tests using the Clan testing framework.
 They offer significant performance advantages over VM tests:
@@ -176,7 +176,7 @@ To control whether a test uses containers or VMs, use the `clan.test.useContaine
 - Testing hardware-specific features
 - When you need full system isolation
 
-### System Requirements for Container Tests
+#### System Requirements for Container Tests
 
 Container tests require the **`uid-range`** system feature** in the Nix sandbox.
 This feature allows Nix to allocate a range of UIDs for containers to use, enabling `systemd-nspawn` containers to run properly inside the Nix build sandbox.
@@ -201,12 +201,12 @@ nix.settings.system-features = [ "uid-range" ];
 - Container tests set `requiredSystemFeatures = [ "uid-range" ];` in their derivation (see `lib/test/container-test-driver/driver-module.nix:98`)
 - Without this feature, containers cannot properly manage user namespaces and will fail to start
 
-### Limitations
+#### Limitations
 
 - Cannot run in interactive mode, however while the container test runs, it logs a nsenter command that can be used to log into each of the containers.
 - Early implementation and limited by features.
 
-### Where to find examples for NixOS container tests
+#### Where to find examples for NixOS container tests
 
 Existing NixOS container tests in clan-core can be found by using `ripgrep`:
 
@@ -215,35 +215,35 @@ rg self.clanLib.test.containerTest
 ```
 
 
-## Python tests via pytest
+### Python tests via pytest
 
 Since the Clan CLI is written in python, the `pytest` framework is used to define unit tests and integration tests via python
 
 Due to superior efficiency,
 
-### When to use python tests
+#### When to use python tests
 
 - writing unit tests for python functions and modules, or bugfixes of such
 - all integrations tests that do not require building or running a NixOS machine
 - impure integrations tests that require internet access (very rare, try to avoid)
 
 
-### When not to use python tests
+#### When not to use python tests
 
 - integrations tests that require building or running a NixOS machine (use NixOS VM or container tests instead)
 - testing behavior of a nix function or library (use nix eval tests instead)
 
-### Finding examples of python tests
+#### Finding examples of python tests
 
 Existing python tests in clan-core can be found by using `ripgrep`:
 ```shellSession
 rg "import pytest"
 ```
 
-### Locating definitions of failing python tests
+#### Locating definitions of failing python tests
 
 If any python test fails in the CI pipeline, an error message like this can be found at the end of the log:
-```
+```{.text .no-copy}
 ...
 FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
 ...
@@ -251,15 +251,15 @@ FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanErr
 
 In this case the test is defined in the file `/tests/test_machines_cli.py` via the test function `test_machine_delete`.
 
-### Adding python tests
+#### Adding python tests
 
 If a specific python module is tested, the test should be located near the tested module in a subdirectory called `./tests`
 If the test is not clearly related to a specific module, put it in the top-level `./tests` directory of the tested python package. For `clan-cli` this would be `/pkgs/clan-cli/clan_cli/tests`.
 All filenames must be prefixed with `test_` and test functions prefixed with `test_` for pytest to discover them.
 
-### Running python tests
+#### Running python tests
 
-#### Running all python tests
+##### Running all python tests
 
 To run all python tests which are executed in the CI pipeline locally, use this `nix build` command
 
@@ -267,7 +267,7 @@ To run all python tests which are executed in the CI pipeline locally, use this 
 nix build .#checks.x86_64-linux.clan-pytest-{with,without}-core
 ```
 
-#### Running a specific python test
+##### Running a specific python test
 
 To run a specific python test outside the Nix sandbox
 
@@ -280,7 +280,7 @@ To run a specific python test outside the Nix sandbox
 The flags `-sn0` are useful to forwards all stdout/stderr output to the terminal and be able to debug interactively via `breakpoint()`.
 
 
-### Debugging python tests
+#### Debugging python tests
 
 To debug a specific python test, find its definition (see above) and make sure to enter the correct dev environment for that python package.
 
@@ -288,13 +288,13 @@ Modify the test and add `breakpoint()` statements to it.
 
 Execute the test using the flags `-sn0` in order to get an interactive shell at the breakpoint:
 
-```shelSession
+```shellSession
 pytest ./path/to/test_file.py:test_function_name -sn0
 ```
 
-## Nix Eval Tests
+### Nix Eval Tests
 
-### When to use nix eval tests
+#### When to use nix eval tests
 
 Nix eval tests are good for testing any Nix logic, including
 
@@ -308,7 +308,7 @@ When not to use
 - tests that require running programs written in other languages
 - tests that require building or running NixOS machines
 
-### Finding examples of nix eval tests
+#### Finding examples of nix eval tests
 
 Existing nix eval tests can be found via this `ripgrep` command:
 
@@ -316,7 +316,7 @@ Existing nix eval tests can be found via this `ripgrep` command:
 rg "nix-unit --eval-store"
 ```
 
-### Locating definitions of failing nix eval tests
+#### Locating definitions of failing nix eval tests
 
 Failing nix eval tests look like this:
 
@@ -353,7 +353,7 @@ grmpf@grmpf-nix ~/p/c/clan-core (test-docs)>
 
 In this case the test is defined in the file `lib/values/flake-module.nix` line 21
 
-### Adding nix eval tests
+#### Adding nix eval tests
 
 In Clan core, the following pattern is usually followed:
 
@@ -363,7 +363,7 @@ In Clan core, the following pattern is usually followed:
 
 For example, see `/lib/values/{test.nix,flake-module.nix}`.
 
-### Running nix eval tests
+#### Running nix eval tests
 
 Since all nix eval tests are exposed via the flake outputs, they can be ran via `nix build`:
 
@@ -378,15 +378,15 @@ Example:
 nix-unit --flake .#legacyPackages.x86_64-linux.{test-attr-name}
 ```
 
-### Debugging nix eval tests
+#### Debugging nix eval tests
 
 Follow the instructions above to find the definition of the test, then use one of the following techniques:
 
-#### Print debugging
+##### Print debugging
 
 Add `lib.trace` or `lib.traceVal` statements in order to print some variables during evaluation
 
-#### Nix repl
+##### Nix repl
 
 Use `nix repl` to evaluate and inspect the test.
 

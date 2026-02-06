@@ -1,8 +1,8 @@
-# Auto-included Files
+## Auto-included Files
 
 Clan automatically imports specific files from each machine directory and registers them, reducing the need for manual configuration.
 
-## Machine Registration
+### Machine Registration
 
 Every folder under `machines/{machineName}` is automatically registered as a Clan machine.
 
@@ -22,7 +22,7 @@ The following files are detected and imported for every Clan machine:
 - [x] `machines/{machineName}/disko.nix`
   Disk layout configuration. See the [disko quickstart](https://github.com/nix-community/disko/blob/master/docs/quickstart.md) for more info.
 
-## Other Auto-included Files
+### Other Auto-included Files
 
 * **`inventory.json`**
   Managed by Clan's API.

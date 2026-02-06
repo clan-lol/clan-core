@@ -1,4 +1,4 @@
-# What's next?
+## What's next?
 
 ### Summary
 
@@ -15,7 +15,7 @@ Typically, this step is handled automatically when a machine is deployed. Howeve
 
 To generate all necessary variables and secrets, execute the following command:
 
-```sh
+```bash
 clan vars generate
 ```
 

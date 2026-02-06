@@ -1,4 +1,4 @@
-# How Templates work
+## How Templates work
 
 Clan offers the ability to use templates for creating different resources.
 It comes with some `<builtin>` templates and discovers all exposed templates from its flake's `inputs`
@@ -34,7 +34,7 @@ Available 'machine' templates
     └── test-morph-template: Morph a machine
 ```
 
-## Using `<builtin>` Templates
+### Using `<builtin>` Templates
 
 Templates are referenced via the `--template` `selector`
 
@@ -46,7 +46,7 @@ For example:
 
 would use the native `<builtin>.flake-parts` template
 
-## Selectors follow nix flake `reference#attribute` syntax
+### Selectors follow nix flake `reference#attribute` syntax
 
 Selectors follow a very similar pattern as Nix's native attribute selection behavior.
 
@@ -58,7 +58,7 @@ In fact this command would be equivalent, just make it more explicit
 
 `clan init --template=.#clan.templates.clan.default` (explicit path)
 
-## Remote templates
+### Remote templates
 
 Just like with Nix you could specify a remote URL or path to the flake containing the template
 

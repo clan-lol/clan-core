@@ -1,12 +1,12 @@
-# Connecting to Your Machines
+## Connecting to Your Machines
 
 Clan provides automatic networking with fallback mechanisms to reliably connect to your machines.
 
-## Option 1: Automatic Networking with Fallback (Recommended)
+### Option 1: Automatic Networking with Fallback (Recommended)
 
 Clan's networking module automatically manages connections through various network technologies with intelligent fallback. When you run `clan ssh` or `clan machines update`, Clan tries each configured network by priority until one succeeds.
 
-### Basic Setup with Internet Service
+#### Basic Setup with Internet Service
 
 For machines with public IPs or DNS names, use the `internet` service to configure direct SSH while keeping fallback options:
 
@@ -39,7 +39,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 }
 ```
 
-### Advanced Setup with Multiple Networks
+#### Advanced Setup with Multiple Networks
 
 ```{.nix title="flake.nix" hl_lines="7-10 13-16 19-21"}
 {
@@ -73,7 +73,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 }
 ```
 
-### How It Works
+#### How It Works
 
 Clan automatically tries networks in order of priority:
 1. Direct internet connections (if configured)
@@ -83,7 +83,7 @@ Clan automatically tries networks in order of priority:
 
 If one network fails, Clan automatically tries the next.
 
-### Useful Commands
+#### Useful Commands
 
 ```bash
 # View all configured networks and their status
@@ -96,12 +96,12 @@ clan network ping machine1
 clan network overview
 ```
 
-## Option 2: Manual targetHost (Bypasses Fallback!)
+### Option 2: Manual targetHost (Bypasses Fallback!)
 
 !!! warning
     Setting `targetHost` directly **disables all automatic networking and fallback**. Only use this if you need complete control and don't want Clan's intelligent connection management.
 
-### Using Inventory (For Static Addresses)
+#### Using Inventory (For Static Addresses)
 
 Use inventory-level `targetHost` when the address is **static** and doesn't depend on NixOS configuration:
 
@@ -128,7 +128,7 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
 - DNS names: `"user@server.example.com"`
 - Any address that doesn't change based on machine configuration
 
-### Using NixOS Configuration (For Dynamic Addresses)
+#### Using NixOS Configuration (For Dynamic Addresses)
 
 Use machine-level `targetHost` when you need to **interpolate values from the NixOS configuration**:
 
@@ -159,7 +159,7 @@ Use machine-level `targetHost` when you need to **interpolate values from the Ni
     **Inventory-level** (`deploy.targetHost`) is evaluated immediately and works with static strings.
     **Machine-level** (`clan.core.networking.targetHost`) is evaluated after NixOS configuration and can access `config.*` values.
 
-## Quick Decision Guide
+### Quick Decision Guide
 
 | Scenario | Recommended Approach | Why |
 |----------|---------------------|-----|
@@ -169,7 +169,7 @@ Use machine-level `targetHost` when you need to **interpolate values from the Ni
 | Testing/debugging | Manual targetHost | Full control, no magic |
 | Single static machine | Manual targetHost | Simple, no overhead |
 
-## Command-Line Override
+### Command-Line Override
 
 The `--target-host` flag bypasses ALL networking configuration:
 

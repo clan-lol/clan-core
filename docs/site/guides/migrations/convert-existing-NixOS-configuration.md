@@ -151,7 +151,7 @@ it every time you interact with Clan, it is recommended to set up
 
 Verify everything works as expected by running `clan machines list`.
 
-```
+```{.shellSession .no-copy}
 ❯ nix develop
 [user@host:~/my-nixos-config]$ clan machines list
 berlin

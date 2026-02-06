@@ -1,4 +1,4 @@
-# Migrate modules from `facts` to `vars`
+## Migrate modules from `facts` to `vars`
 
 For a high level overview about `vars` see our [blog post](https://clan.lol/blog/vars/).
 
@@ -20,14 +20,14 @@ The `vars` [module](../../reference/clan.core/vars.md) and the Clan [command](..
     Alternative:
     Roll back to a clan-core version before December 2025 and use the automatic migration feature.
 
-## Keep Existing Values (Historical)
+### Keep Existing Values (Historical)
 
 **Note:** This section describes the automatic migration feature that has been removed.
 
 In order to keep existing values and move them from `facts` to `vars`
 we used to be able to set the corresponding option in the vars module:
 
-```
+```nix
 migrateFact = "fact-name"
 ```
 
@@ -48,7 +48,7 @@ vars.generators.vaultwarden = {
 
 And this would have read as follows: The vaultwarden `vars` module generates the admin file.
 
-## Prompts
+### Prompts
 
 Because prompts can be a necessity for certain systems `vars` have a shorthand for defining them.
 A prompt is a request for user input. Let us look how user input used to be handled in facts:
@@ -83,7 +83,7 @@ vars.generators.forgejo-api = {
 };
 ```
 
-## Migration of a complete module
+### Migration of a complete module
 
 Let us look closer at how we would migrate an existing generator for syncthing.
 This is the `fact` module of syncthing:
@@ -138,7 +138,7 @@ Most of the usage patterns stay the same, but `vars` have a more ergonomic inter
 There are not two different ways to define files anymore (public/secret).
 Now files are defined under the `files` attribute and are secret by default.
 
-## Happy Migration
+### Happy Migration
 
 We hope this gives you a clear path to start and finish your migration from `facts` to `vars`.
 Please do not hesitate reaching out if something is still unclear - either through [matrix](https://matrix.to/#/#clan:clan.lol) or through our git [forge](https://git.clan.lol/clan/clan-core).

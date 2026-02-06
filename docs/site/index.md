@@ -3,7 +3,7 @@ hide:
   - toc
 ---
 
-# Sovereign Infrastructure by Design
+## Sovereign Infrastructure by Design
 
 A declarative framework for reliable, self-hosted computing.
 
@@ -12,7 +12,7 @@ A declarative framework for reliable, self-hosted computing.
 [Get started](./getting-started/creating-your-first-clan.md){ .md-button .md-button--primary }
 [View on Gitea](https://git.clan.lol/clan/clan-core){ .md-button }
 
-## What is Clan?
+### What is Clan?
 
 - Declarative framework for managing fleets of machines without a central controller
 - Peer-to-peer infrastructure management built on [NixOS](https://nixos.org/)
@@ -20,7 +20,7 @@ A declarative framework for reliable, self-hosted computing.
 - Integrates with [sops-nix](https://github.com/Mic92/sops-nix), [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), and [disko](https://github.com/nix-community/disko) for provisioning and secrets
 - Extensible via [community-maintained Clan Services](./services/definition.md) applied across multiple machines
 
-## Guides
+### Guides
 
 <div class="grid cards" markdown>
 
@@ -44,7 +44,7 @@ A declarative framework for reliable, self-hosted computing.
 
 </div>
 
-## Reference
+### Reference
 
 <div class="grid cards" markdown>
 
@@ -68,7 +68,7 @@ A declarative framework for reliable, self-hosted computing.
 
 </div>
 
-## Blog
+### Blog
 
 <div class="grid cards" markdown>
 

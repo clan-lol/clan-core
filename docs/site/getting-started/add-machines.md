@@ -21,7 +21,7 @@ When finishing it, you will have prepared at least one machine that can be rolle
 
 Navigate to your Clan folder and run the following command to create a machine for our test user Jon:
 
-```nix
+```bash
 clan machines create jon-machine
 ```
 

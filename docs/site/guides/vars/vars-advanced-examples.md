@@ -1,9 +1,9 @@
-# Advanced Vars Examples
+## Advanced Vars Examples
 
 This guide demonstrates complex, real-world patterns for the vars system. 
 
 
-## Certificate Authority with Intermediate Certificates
+### Certificate Authority with Intermediate Certificates
 
 This example shows how to create a complete certificate authority with root and intermediate certificates using dependencies.
 
@@ -72,7 +72,7 @@ This example shows how to create a complete certificate authority with root and 
 }
 ```
 
-## Multi-Service Secret Sharing
+### Multi-Service Secret Sharing
 
 Generate secrets that multiple services can use:
 
@@ -115,7 +115,7 @@ Generate secrets that multiple services can use:
 }
 ```
 
-## SSH Host Keys with Certificates
+### SSH Host Keys with Certificates
 
 Generate SSH host keys and sign them with a CA:
 
@@ -167,7 +167,7 @@ Generate SSH host keys and sign them with a CA:
 }
 ```
 
-## WireGuard Mesh Network
+### WireGuard Mesh Network
 
 Create a WireGuard configuration with pre-shared keys:
 
@@ -206,7 +206,7 @@ Create a WireGuard configuration with pre-shared keys:
 }
 ```
 
-## Conditional Generation Based on Machine Role
+### Conditional Generation Based on Machine Role
 
 Generate different secrets based on machine configuration:
 
@@ -248,7 +248,7 @@ Generate different secrets based on machine configuration:
 }
 ```
 
-## Backup Encryption Keys
+### Backup Encryption Keys
 
 Generate and manage backup encryption keys:
 
@@ -282,7 +282,7 @@ Generate and manage backup encryption keys:
 }
 ```
 
-## Tips and Best Practices
+### Tips and Best Practices
 
 1. **Use dependencies** to build complex multi-stage generations
 2. **Share generators** when the same secret is needed across machines

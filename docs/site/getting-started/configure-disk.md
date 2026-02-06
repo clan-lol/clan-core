@@ -5,7 +5,7 @@ The disks of the target devices need to be configured before the rollout can sta
 ## Requirements
 * SSH access from your setup device to all target devices
 
-* Double check that each machine has a hardware report saved under ```machines/$MACHINE_NAME/facter.json```
+* Double check that each machine has a hardware report saved under `machines/$MACHINE_NAME/facter.json`
 
 
 ## Configuring Target Disks

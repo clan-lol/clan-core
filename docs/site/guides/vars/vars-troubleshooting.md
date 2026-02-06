@@ -1,10 +1,10 @@
-# Troubleshooting Vars
+## Troubleshooting Vars
 
 Quick reference for diagnosing and fixing vars issues.
 
-## Common Issues
+### Common Issues
 
-### Generator Script Fails
+#### Generator Script Fails
 
 **Symptom**: Error during `clan vars generate` or deployment
 
@@ -51,7 +51,7 @@ Quick reference for diagnosing and fixing vars issues.
    '';
    ```
 
-### Cannot Access Generated Files
+#### Cannot Access Generated Files
 
 **Symptom**: "attribute 'value' missing" or file not found
 
@@ -79,7 +79,7 @@ Quick reference for diagnosing and fixing vars issues.
      config.clan.core.vars.generators.ca.files."cert.pem".value;
    ```
 
-### Dependencies Not Available
+#### Dependencies Not Available
 
 **Symptom**: "No such file or directory" when accessing `$in/...`
 
@@ -99,7 +99,7 @@ clan.core.vars.generators.child = {
 };
 ```
 
-### Permission Denied
+#### Permission Denied
 
 **Symptom**: Service cannot read generated secret file
 
@@ -113,7 +113,7 @@ files."service.key" = {
 };
 ```
 
-### Vars Not Regenerating
+#### Vars Not Regenerating
 
 **Symptom**: Changes to generator script don't trigger regeneration
 
@@ -122,7 +122,7 @@ files."service.key" = {
 clan vars generate my-machine --generator my-generator --regenerate
 ```
 
-### Prompts Not Working
+#### Prompts Not Working
 
 **Symptom**: Script fails with "No such file or directory" for prompts
 
@@ -140,16 +140,16 @@ script = ''
 '';
 ```
 
-## Debugging Techniques
+### Debugging Techniques
 
-### 1. Check Generator Status
+#### 1. Check Generator Status
 
 See what vars are set:
 ```bash
 clan vars list my-machine
 ```
 
-### 2. Inspect Generated Files
+#### 2. Inspect Generated Files
 
 For shared vars:
 ```bash
@@ -161,7 +161,7 @@ For per-machine vars:
 ls -la vars/per-machine/my-machine/my-generator/
 ```
 
-### 3. Test Generators Locally
+#### 3. Test Generators Locally
 
 Create a test script to debug:
 ```nix
@@ -184,24 +184,24 @@ Run with:
 nix-build test-generator.nix
 ```
 
-### 4. Enable Debug Logging
+#### 4. Enable Debug Logging
 
 Set debug mode:
 ```bash
 clan --debug vars generate my-machine
 ```
 
-### 5. Check File Permissions
+#### 5. Check File Permissions
 
 Verify generated secret permissions:
 ```bash
-# On the target machine
+# On the target device
 ls -la /run/secrets/
 ```
 
-## Recovery Procedures
+### Recovery Procedures
 
-### Regenerate All Vars
+#### Regenerate All Vars
 
 If vars are corrupted or need refresh:
 ```bash
@@ -212,7 +212,7 @@ clan vars generate my-machine --regenerate
 clan vars generate my-machine --generator my-generator --regenerate
 ```
 
-### Manual Secret Injection
+#### Manual Secret Injection
 
 For recovery or testing:
 ```bash
@@ -220,7 +220,7 @@ For recovery or testing:
 echo "temporary-secret" | clan vars set my-machine my-generator/my-file
 ```
 
-### Restore from Backup
+#### Restore from Backup
 
 Vars are stored in the repository:
 ```bash
@@ -231,9 +231,9 @@ git checkout HEAD~1 -- vars/
 clan vars list my-machine
 ```
 
-## Storage Backend Issues
+### Storage Backend Issues
 
-### SOPS Decryption Fails
+#### SOPS Decryption Fails
 
 **Symptom**: "Failed to decrypt" or permission errors
 
@@ -247,7 +247,7 @@ Check that:
 
 3. The age key is available in the expected location
 
-### Password Store Issues
+#### Password Store Issues
 
 **Symptom**: "pass: store not initialized"
 
@@ -257,7 +257,7 @@ export PASSWORD_STORE_DIR=/path/to/clan/vars
 pass init your-gpg-key
 ```
 
-## Getting Help
+### Getting Help
 
 If these solutions don't resolve your issue:
 

@@ -1,7 +1,7 @@
 ## Summary
 
-To install Clan on physical machines, you need to start our custom installer image from a boot device.
-The minimal system will then be reachable by your setup machine and a deployment can be triggered remotely.
+To install Clan on physical devices, you need to start our custom installer image from a boot device.
+The minimal system will then be reachable by your setup device and a deployment can be triggered remotely.
 
 If you only plan to use virtual machines, you can skip this step.
 
@@ -16,8 +16,8 @@ If you only plan to use virtual machines, you can skip this step.
 
 * Estimated time for this step: 20 minutes
 * A USB drive with at least 1.5GB total space (!! all data will be lost !!)
-* A Linux/NixOS machine with internet access to create the boot stick. You can use your setup device or any other machine for this step.
-* One or more physical target machines (!! all data will be lost !!)
+* A Linux/NixOS device with internet access to create the boot stick. You can use your setup device or any other device for this step.
+* One or more physical target devices (!! all data will be lost !!)
 
     Minimum target
 system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
@@ -80,7 +80,7 @@ sudo umount /dev/sdb1
     - **SSH-Pubkey Option**
 
         To add an ssh public key into the installer image append the option:
-        ```
+        ```bash
         --ssh-pubkey $PUBKEY_PATH
         ```
         If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
@@ -90,19 +90,19 @@ sudo umount /dev/sdb1
 
         On boot, the installer will display on-screen the IP address it received from the network.
         If you need to configure Wi-Fi first, refer to the next section.
-        If Multicast-DNS (Avahi) is enabled on your own machine, you can also access the installer using the `flash-installer.local` address.
+        If Multicast-DNS (Avahi) is enabled on your own device, you can also access the installer using the `flash-installer.local` address.
 
     - **List Keymaps**
 
         You can get a list of all keymaps with the following command:
-        ```
+        ```bash
         clan flash list keymaps
         ```
 
     - **List Languages**
 
         You can get a list of all languages with the following command:
-        ```
+        ```bash
         clan flash list languages
         ```
 
@@ -134,13 +134,13 @@ sudo umount /dev/sdb1
 
     On Linux, you can use the `lsblk` utility to identify the correct disko
 
-    ```
+    ```bash
     lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
     On macOS use `diskutil`:
 
-    ```
+    ```bash
     diskutil list
     ```
 
@@ -155,7 +155,7 @@ sudo umount /dev/sdb1
 
       On boot, the installer will display on-screen the IP address it received from the network.
       If you need to configure Wi-Fi first, refer to the next section.
-      If Multicast-DNS (Avahi) is enabled on your own machine, you can also access the installer using the `nixos-installer.local` address.
+      If Multicast-DNS (Avahi) is enabled on your own device, you can also access the installer using the `nixos-installer.local` address.
 
 ## Checkpoint 1: Boot From USB Stick on Target Device
 
@@ -269,7 +269,7 @@ There are two ways to deploy your machine:
 The following command will generate a hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and writes it back into your machine folder. This command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
 === "Password"
     **Password**
-    ```terminal
+    ```bash
     clan machines init-hardware-config $MACHINE_NAME \
         --target-host root@192.168.XXX.XXX
     ```
@@ -277,12 +277,12 @@ The following command will generate a hardware report with [nixos-facter](https:
     **QR Code**
     **Using a JSON String or File Path**:
     Copy the JSON string contained in the QR Code and provide its path or paste it directly:
-    ```terminal
+    ```bash
     clan machines init-hardware-config $MACHINE_NAME --json $JSON
     ```
     **Using an Image Containing the QR Code**:
     Provide the path to an image file containing the QR code displayed by the installer:
-    ```terminal
+    ```bash
     clan machines init-hardware-config $MACHINE_NAME --png $PATH
     ```
 If you are using our template, `$MACHINE_NAME` would be `jon`.

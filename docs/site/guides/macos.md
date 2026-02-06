@@ -1,15 +1,15 @@
-# Managing macOS Machines with Clan
+## Managing macOS Machines with Clan
 
 This guide explains how to manage macOS machines using Clan.
 
-## Supported Features
+### Supported Features
 
 Currently, Clan supports the following features for macOS:
 
 - `clan machines update` for existing [nix-darwin](https://github.com/nix-darwin/nix-darwin) installations
 - Support for [vars](../guides/vars/vars-overview.md)
 
-## Add Your Machine to Your Clan Flake
+### Add Your Machine to Your Clan Flake
 
 In this example, we'll name the machine `yourmachine`. Replace this with your preferred machine name.
 
@@ -35,7 +35,7 @@ clan-core.lib.clan {
 }
 ```
 
-## Add a `configuration.nix` for Your Machine
+### Add a `configuration.nix` for Your Machine
 
 Create the file `./machines/yourmachine/configuration.nix` with the following content (replace `yourmachine` with your chosen machine name):
 
@@ -48,36 +48,36 @@ Create the file `./machines/yourmachine/configuration.nix` with the following co
 
 After creating the file, run `git add` to ensure Nix recognizes it.
 
-## Generate Vars (If Needed)
+### Generate Vars (If Needed)
 
 If your machine uses vars, generate them with:
 
-```
+```bash
 clan vars generate yourmachine
 ```
 
 Replace `yourmachine` with your chosen machine name.
 
-## Install Nix
+### Install Nix
 
-Install Nix on your macOS machine using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
+Install Nix on your macOS device using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
 
 
-## Install nix-darwin
+### Install nix-darwin
 
-Upload your Clan flake to the macOS machine. Then, from within your flake directory, run:
+Upload your Clan flake to the macOS device. Then, from within your flake directory, run:
 
-```sh
+```bash
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#yourmachine
 ```
 
 Replace `yourmachine` with your chosen machine name.
 
-## Manage Your Machine with Clan
+### Manage Your Machine with Clan
 
 Once all the steps above are complete, you can start managing your machine with:
 
-```
+```bash
 clan machines update yourmachine
 ```
 

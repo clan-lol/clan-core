@@ -123,7 +123,7 @@ zerotier/zerotier-ip: fd0a:b849:2928:1234:c99:930a:a959:2928
 zerotier/zerotier-network-id: 0aa959282834000c
 ```
 
-On the machine:
+On the device:
 
 ```bash
 $ sudo zerotier-cli info

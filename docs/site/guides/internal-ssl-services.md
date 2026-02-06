@@ -108,7 +108,7 @@ inventory = {
 Here's a complete working example:
 
 ```nix
-nventory = {
+inventory = {
   machines = {
     caserver = { };  # DNS server + CA + web services
     webserver = { }; # Additional web services

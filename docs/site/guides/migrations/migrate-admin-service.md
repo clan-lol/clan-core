@@ -1,11 +1,11 @@
-# Migrating from `admin` clanService to `sshd` and `users`
+## Migrating from `admin` clanService to `sshd` and `users`
 
 The `admin` clanService is deprecated. Its functionality has been split into dedicated services:
 
 - **sshd** (server role): SSH authorized keys, host certificates, RSA host key generation
 - **users**: Root password management
 
-## Option Mappings
+### Option Mappings
 
 | Admin Option | New Service | New Option |
 |-------------|-------------|------------|
@@ -14,9 +14,9 @@ The `admin` clanService is deprecated. Its functionality has been split into ded
 | `rsaHostKey.enable` | sshd (server) | `hostKeys.rsa.enable` |
 | (root password) | users | `user = "root"` |
 
-## Migration Steps
+### Migration Steps
 
-### Step 1: Replace admin with sshd
+#### Step 1: Replace admin with sshd
 
 **Before** (admin service):
 
@@ -54,7 +54,7 @@ instances = {
 };
 ```
 
-### Step 2: Add root password via users service (if needed)
+#### Step 2: Add root password via users service (if needed)
 
 If you relied on the admin service's root password generation, add the users service:
 
@@ -74,7 +74,7 @@ instances = {
 };
 ```
 
-## Vars Migration
+### Vars Migration
 
 The admin service generated vars with different names than the new services. After migration, you'll need to regenerate these vars:
 
@@ -86,7 +86,7 @@ The admin service generated vars with different names than the new services. Aft
 
 Run `clan vars generate $MACHINE_NAME` after updating your configuration to generate the new vars.
 
-## Complete Example
+### Complete Example
 
 Here's a full migration example:
 
@@ -139,7 +139,7 @@ Here's a full migration example:
 }
 ```
 
-## Additional sshd Features
+### Additional sshd Features
 
 The sshd service provides additional features not available in the admin service:
 
