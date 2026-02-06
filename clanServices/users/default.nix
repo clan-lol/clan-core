@@ -17,6 +17,7 @@
         options = {
           user = lib.mkOption {
             type = lib.types.str;
+            defaultText = "$'{instanceName}";
             example = "alice";
             description = "The user the password should be generated for.";
           };
@@ -75,7 +76,7 @@
       };
 
     perInstance =
-      { settings, ... }:
+      { extendSettings, instanceName, ... }:
       {
         nixosModule =
           {
@@ -84,6 +85,9 @@
             lib,
             ...
           }:
+          let
+            settings = extendSettings { user = lib.mkOptionDefault instanceName; };
+          in
           {
             users.users.${settings.user} = {
               isNormalUser = if settings.user == "root" then false else true;
