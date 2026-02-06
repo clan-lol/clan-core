@@ -1,5 +1,5 @@
 ## Summary
-The disks of the target devices need to be configured before the rollout can start.
+Configure the disk layout for each target device so it is ready for the deployment step.
 
 
 ## Requirements

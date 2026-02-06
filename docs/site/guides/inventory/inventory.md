@@ -1,13 +1,11 @@
 
-`Inventory` is an abstract service layer for consistently configuring distributed services across machine boundaries.
+The `Inventory` lets you configure distributed services (backups, networking, peer-to-peer apps, etc.) across multiple machines from a single place.
 
 ## Concept
 
-Its concept is slightly different to what NixOS veterans might be used to. The inventory is a service definition on a higher level, not a machine configuration. This allows you to define a consistent and coherent service.
+Unlike per-machine NixOS configuration, the inventory defines services at a higher level. Clan automatically derives the modules and settings to enable on each machine based on its `role`, so you only describe the service once.
 
-The inventory logic will automatically derive the modules and configurations to enable on each machine in your `clan` based on its `role`. This makes it super easy to setup distributed `services` such as Backups, Networking, traditional cloud services, or peer-to-peer based applications.
-
-The following tutorial will walk through setting up a Backup service where the terms `Service` and `Role` will become more clear.
+The following tutorial walks through setting up a Backup service where the terms `Service` and `Role` will become more clear.
 
 !!! example "Experimental status"
     The inventory implementation is not considered stable yet.

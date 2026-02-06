@@ -1,9 +1,7 @@
 ## Summary
-Your Clan is deployed. For changes to the existing Clan, you will use the machine update workflow from now on.
+Push configuration changes to your deployed machines over SSH using `clan machines update`.
 
-The Clan command line interface enables you to update machines remotely over SSH.
-In this guide we will teach you how to set a `targetHost` in Nix,
-and how to define a remote builder for your machine closures.
+This guide also covers setting a persistent `targetHost` in Nix and, optionally, defining a remote builder.
 
 ## Requirements
 

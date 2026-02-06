@@ -5,9 +5,7 @@
 
 ### Overview
 
-Exports are a mechanism for services to share structured data.
-
-They provide a way for different machines and service instances to discover and access information they need from each other,
+Exports let you share structured data between machines and service instances, for example network addresses, credentials, or discovery information.
 
 ### Use Cases
 

@@ -1,4 +1,4 @@
-This guide explains how to set up a [Hetzner Storage Box](https://docs.hetzner.com/storage/storage-box/general) as a backup destination instead of using an internal Clan backup server. Follow the steps below to configure and verify the setup.
+Configure a [Hetzner Storage Box](https://docs.hetzner.com/storage/storage-box/general) as an off-site backup destination for your Clan machines.
 
 ### Step 1: Create a Hetzner Storage Box
 

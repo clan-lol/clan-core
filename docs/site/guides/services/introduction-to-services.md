@@ -1,13 +1,10 @@
-Clan's services are a modular way to define and deploy services across
-machines.
+Instantiate a Clan service, assign machines to roles, and configure
+settings so you can deploy multi-host functionality (backups, VPNs,
+monitoring, etc.) from your inventory.
 
-This guide shows how to **instantiate** a **service**, explains how service
-definitions are structured and how to pick or create services
-from modules exposed by flakes.
-
-A similar term: **Multi-host-modules** was introduced previously in the [nixus
-repository](https://github.com/infinisil/nixus) and represents a similar
-concept.
+Clan services are a modular way to define and deploy services across machines.
+A similar concept, **multi-host modules**, was introduced in the
+[nixus repository](https://github.com/infinisil/nixus).
 
 ______________________________________________________________________
 

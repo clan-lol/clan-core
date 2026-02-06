@@ -1,5 +1,5 @@
 
-This guide explains how to protect your data using Clan's integrated backup system. You'll learn how to define what to back up, configure backup destinations, automate the process, and restore data when needed. Clan uses [BorgBackup](https://www.borgbackup.org/) under the hood for secure, deduplicated, and encrypted backups.
+Set up automated, encrypted backups for your Clan machines so you can restore files and databases when needed. Clan uses [BorgBackup](https://www.borgbackup.org/) under the hood for secure, deduplicated backups.
 
 
 ## Basic File and Directory Backups

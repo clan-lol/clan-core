@@ -1,11 +1,4 @@
-A common use case you might have is to host services and applications which are
-only reachable within your clan.
-
-This guide explains how to set up such secure, clan-internal web services using
-a custom top-level domain (TLD) with SSL certificates.
-
-Your services will be accessible only within your Clan network and secured with
-proper SSL certificates that all Clan machines trust.
+Set up clan-internal web services with HTTPS on a custom top-level domain (e.g. `https://dashboard.c`), accessible only within your Clan network and secured with SSL certificates that all machines trust automatically.
 
 ## Overview
 

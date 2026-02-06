@@ -1,6 +1,5 @@
 
-
-In this section we go over how to manage your collection of backups with the Clan command.
+List, create, and restore backups using the `clan backups` CLI commands.
 
 ### Listing states
 

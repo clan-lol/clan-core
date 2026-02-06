@@ -1,8 +1,6 @@
-The `clan vars` subcommand is a powerful tool for managing machine-specific variables in a declarative and reproducible way. This guide will walk you through its usage, from setting up a generator to sharing and updating variables across machines.
+Declare a vars generator, generate a hashed root password, deploy it to a machine, and then share and rotate that password across multiple machines.
 
-For a detailed API reference, see the [vars module documentation](../../reference/clan.core/vars.md).
-
-In this guide, you will learn how to:
+This guide covers the full `clan vars` workflow:
 
 1. Declare a `generator` in the machine's NixOS configuration.
 2. Inspect the status of variables using the Clan CLI.
@@ -12,7 +10,7 @@ In this guide, you will learn how to:
 6. Share the root password between multiple machines.
 7. Change the root password when needed.
 
-By the end of this guide, you will have a clear understanding of how to use `clan vars` to manage sensitive data, such as passwords, in a secure and efficient manner.
+For a detailed API reference, see the [vars module documentation](../../reference/clan.core/vars.md).
 
 
 ## Declare the generator

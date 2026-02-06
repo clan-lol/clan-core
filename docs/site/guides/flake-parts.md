@@ -1,4 +1,4 @@
-Clan supports integration with [flake-parts](https://flake.parts/), a framework for constructing your `flake.nix` using modules. Follow these steps to integrate Clan with flake-parts:
+Set up Clan inside a [flake-parts](https://flake.parts/) project so you can use Clan options alongside flake-parts modules.
 
 ## Step 1: Update Your Flake Inputs
 

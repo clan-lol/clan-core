@@ -1,5 +1,5 @@
 
-The vars system is Clan's declarative solution for managing generated files, secrets, and dynamic configuration in your NixOS deployments. It eliminates the manual steps of generating credentials, certificates, and other dynamic values by automating these processes within your infrastructure-as-code workflow.
+The vars system lets you declaratively generate and deploy secrets, credentials, certificates, and other dynamic files as part of your NixOS configuration, without any manual steps.
 
 ## What Problems Does Vars Solve?
 
