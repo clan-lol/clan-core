@@ -132,7 +132,7 @@ in
       apply =
         attrs:
         lib.mapAttrs (n: v: {
-          options.${n} = lib.mkOption { type = lib.types.submodule v; };
+          options.${n} = lib.mkOption { type = lib.types.submodule v; default = { }; };
         }) attrs;
       description = ''
         bla bla

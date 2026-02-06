@@ -29,7 +29,7 @@
         roles.default.machines.outsider = { };
       };
 
-      # Test that yggdrasil correctly consumes exports from all
+      # Test that yggdrasil correctly consumes exports from other
       # networking services
 
       # TODO: Should we also test other VPNs e.g. wireguard?
@@ -42,7 +42,7 @@
         roles.default.machines.outsider.settings.host = "outsider";
       };
 
-      # # Zerotier provides peer.host exports
+      # Zerotier provides peer.host exports
       instances."zerotier" = {
         module.name = "zerotier";
         roles.peer.machines.peer1 = { };
