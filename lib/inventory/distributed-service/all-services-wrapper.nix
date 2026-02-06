@@ -63,12 +63,12 @@ in
           # 3. merge exports with the enabled interfaces
           allExports = lib.mapAttrsToList (_id: service: service.exports) config.allServices;
           allManifests = lib.mapAttrsToList (
-            _id: service: lib.mapAttrs (n: v: service.manifest) service.exports
+            _id: service: lib.mapAttrs (_n: _v: service.manifest) service.exports
           ) config.allServices;
 
           # Service exports cannot collide.
           # That means manifests for one export are always the same
-          manifestByName = lib.zipAttrsWith (key: ms: lib.head ms) allManifests;
+          manifestByName = lib.zipAttrsWith (_key: ms: lib.head ms) allManifests;
 
           mergedByName = lib.zipAttrsWith (
             name: exports:
@@ -115,8 +115,7 @@ in
                 } name
               );
             in
-            lib.seq checked
-            {
+            lib.seq checked {
               imports = throwEnableTraits exports ++ enabledInterfaceModules;
             }
           ) allExports;

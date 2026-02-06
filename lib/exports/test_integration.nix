@@ -16,7 +16,7 @@
         machines.sara = { };
 
         # Override to decouple from implementation state
-        exportInterfaces = lib.mkForce ({
+        exportInterfaces = lib.mkForce {
           networking =
             { ... }:
             {
@@ -31,7 +31,7 @@
                 type = lib.types.str;
               };
             };
-        });
+        };
 
         ####### Service module "A"
         modules.service-A =
