@@ -133,7 +133,7 @@ Locate the definition (see above) and add print statements, like, for example `p
 - Execute the vm test outside the Nix sandbox via the following command:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
 - Then run the commands in the machines manually, like for example:
-  ```python3
+  ```python
     start_all()
     machine1.succeed("echo hello")
   ```
@@ -243,7 +243,7 @@ rg "import pytest"
 #### Locating definitions of failing python tests
 
 If any python test fails in the CI pipeline, an error message like this can be found at the end of the log:
-```
+```{.text .no-copy}
 ...
 FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
 ...
@@ -288,7 +288,7 @@ Modify the test and add `breakpoint()` statements to it.
 
 Execute the test using the flags `-sn0` in order to get an interactive shell at the breakpoint:
 
-```shelSession
+```shellSession
 pytest ./path/to/test_file.py:test_function_name -sn0
 ```
 

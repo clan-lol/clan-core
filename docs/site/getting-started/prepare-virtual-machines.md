@@ -36,7 +36,7 @@ The following command will generate the hardware report with [nixos-facter](http
 The command will use [kexec](https://wiki.archlinux.org/title/Kexec) to boot the target into a minimal NixOS environment to gather the hardware information.
 
 
-```terminal
+```bash
 clan machines init-hardware-config $MACHINE_NAME \
   --target-host myuser@$TARGET_IP
 ```
@@ -51,9 +51,7 @@ Do *not* reboot your target machine at this point! The system needs to stay in t
 
 ## Checkpoint: Confirming the Hardware Reports
 
-For each machine, check if the hardware report was saved under 
-```machines/$MACHINE_NAME/facter.json```
- on your setup device.
+For each machine, check if the hardware report was saved under `machines/$MACHINE_NAME/facter.json` on your setup device.
 
 
 ## Up Next

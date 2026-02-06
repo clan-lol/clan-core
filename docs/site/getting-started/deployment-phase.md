@@ -9,9 +9,9 @@ At this point, the process is the same for VMs and physical hardware.
 
 - Make sure that you prepared your machines according to their type by following the previous steps.
 
-- Double check that each machine has a hardware report saved under ```machines/$MACHINE_NAME/facter.json```
+- Double check that each machine has a hardware report saved under `machines/$MACHINE_NAME/facter.json`
 
-- Double check that each machine has a disk configuration saved under ```machines/$MACHINE_NAME/disko.nix```
+- Double check that each machine has a disk configuration saved under `machines/$MACHINE_NAME/disko.nix`
 
 - Make sure your physical targets are booted from the stick as described
 
@@ -22,8 +22,8 @@ At this point, the process is the same for VMs and physical hardware.
 
 Careful - This command is destructive! It will format your target device's disk and install NixOS on it!
 
-```shell-session
-$ clan machines install $MACHINE_NAME --target-host root@$TARGET_IP
+```bash
+clan machines install $MACHINE_NAME --target-host root@$TARGET_IP
 ```
 Depending on your hardware configurations and network speed, this step may take a few minutes per machine.
 

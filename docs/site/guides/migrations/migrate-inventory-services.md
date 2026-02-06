@@ -301,7 +301,7 @@ The following table shows the migration status of each deprecated clanModule:
 
 This error occurs when using lists instead of attribute sets for tags or machines:
 
-```
+```{.text .no-copy}
 error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64.roles.client.tags' is not of type `attribute set of (submodule)'.
 ```
 
@@ -311,7 +311,7 @@ error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64
 
 This error indicates the module structure is incorrect:
 
-```
+```{.text .no-copy}
 error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 ```
 
@@ -321,7 +321,7 @@ error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 
 This suggests the instance configuration is trying to use imports incorrectly:
 
-```
+```{.text .no-copy}
 error: attribute 'pkgs' missing
 ```
 

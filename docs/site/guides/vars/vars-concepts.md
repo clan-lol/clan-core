@@ -103,7 +103,7 @@ This is useful for:
 
 Complex systems can be built by composing simple generators:
 
-```
+```text
 root-ca → intermediate-ca → service-cert
          ↓
      ocsp-responder

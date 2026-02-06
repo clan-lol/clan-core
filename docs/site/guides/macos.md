@@ -52,7 +52,7 @@ After creating the file, run `git add` to ensure Nix recognizes it.
 
 If your machine uses vars, generate them with:
 
-```
+```bash
 clan vars generate yourmachine
 ```
 
@@ -67,7 +67,7 @@ Install Nix on your macOS machine using one of the methods described in the [nix
 
 Upload your Clan flake to the macOS machine. Then, from within your flake directory, run:
 
-```sh
+```bash
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#yourmachine
 ```
 
@@ -77,7 +77,7 @@ Replace `yourmachine` with your chosen machine name.
 
 Once all the steps above are complete, you can start managing your machine with:
 
-```
+```bash
 clan machines update yourmachine
 ```
 

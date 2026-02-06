@@ -42,7 +42,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
             ```
 
         2.  After installation, ensure flakes are enabled by adding this line to `~/.config/nix/nix.conf`:
-            ```
+            ```ini
             experimental-features = nix-command flakes
             ```
 
@@ -157,7 +157,7 @@ In your Clan, you will create and manage your machines, users, and services. It 
 
 3. Enter a **name** in the prompt, for example `MY-NEW-CLAN`:
 
-    ```terminalSession
+    ```{.shellSession .no-copy}
     Enter a name for the new clan: MY-NEW-CLAN
     ```
 

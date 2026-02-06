@@ -27,7 +27,7 @@ The `vars` [module](../../reference/clan.core/vars.md) and the Clan [command](..
 In order to keep existing values and move them from `facts` to `vars`
 we used to be able to set the corresponding option in the vars module:
 
-```
+```nix
 migrateFact = "fact-name"
 ```
 

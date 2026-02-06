@@ -205,7 +205,7 @@ Here's how to get started:
 
 **TIP** To encrypt all secrets of a machine for a specific group, use the following NixOS configuration:
 
-```
+```nix
 {
   clan.core.sops.defaultGroups = [ "groupname" ]
 }
