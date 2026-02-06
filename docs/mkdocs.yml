@@ -107,6 +107,7 @@ nav:
           - guides/contributing/CONTRIBUTING.md
           - guides/contributing/debugging.md
           - guides/contributing/testing.md
+          - guides/contributing/styleguide.md
 
   - Reference:
       - Overview: reference/index.md
