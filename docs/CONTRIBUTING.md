@@ -120,3 +120,7 @@ And thus can point to test already opened PRs for example.
 - Every new module name should be in kebab-case.
 - Every vars definition, where possible should be in kebab-case.
 - Command line help descriptions should start capitalized and should not end in a period.
+
+## Documentation Style Guidelines
+
+Please refer to our [Style Guide for Documentation and Blog Posts](https://docs.clan.lol/main/guides/contributing/styleguide/) when writing documentation.
