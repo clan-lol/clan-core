@@ -8,9 +8,9 @@
 
 ## Summary
 
-The users we define in this step will be the users that can actually log in to your previously created machines. You can define which user has access to which machine in detail, but in this example all users can log into all machines.
+Create user accounts that can log in to your machines. In this example every user can access every machine, but per-machine access is also possible.
 
-Defining users can be done in many different ways. We will highlight a few approaches here and recommend using Clan's [users](../services/official/users.md) service.
+Several approaches exist; we recommend Clan's [users](../services/official/users.md) service and show alternatives below.
 
 ## Requirements
 

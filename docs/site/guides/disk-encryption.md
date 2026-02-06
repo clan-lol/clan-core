@@ -1,5 +1,5 @@
 
-This guide provides an example setup for a single-disk ZFS system with native encryption, accessible for decryption remotely.
+Set up a ZFS-encrypted disk with remote unlock over SSH, so you can decrypt your server after a reboot without physical access.
 
 !!! Warning
     This configuration only applies to `systemd-boot` enabled systems and **requires** UEFI booting.

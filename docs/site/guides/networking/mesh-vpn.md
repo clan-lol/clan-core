@@ -1,7 +1,5 @@
-This guide provides detailed instructions for configuring
-[ZeroTier VPN](https://zerotier.com) within Clan. Follow the
-outlined steps to set up a machine as a VPN controller and to
-include a new machine into the VPN.
+Connect your Clan machines over a [ZeroTier VPN](https://zerotier.com) by
+setting up one machine as a controller and adding new machines as peers.
 
 ## Concept
 

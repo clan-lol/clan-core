@@ -1,4 +1,4 @@
-This guide will help you convert your existing NixOS configurations into a Clan.
+Convert your existing NixOS flake into a Clan, keeping your current hosts and configuration while gaining access to Clan's services, inventory, and CLI.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or

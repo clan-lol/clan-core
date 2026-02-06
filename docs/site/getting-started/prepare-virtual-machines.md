@@ -1,6 +1,6 @@
 ## Summary
 
-In this step, we will prepare your virtual machines to be deployed from your setup device and integrated into your Clan automatically.
+Generate a hardware report for each virtual target device so Clan can deploy to it remotely.
 
 
 ## Requirements

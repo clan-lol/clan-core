@@ -1,12 +1,8 @@
 ##Summary
 
-In Clan, machines describe all client devices from cloud VMs to bare metal laptops and are defined using Nix code inside the flake.
+Register at least one machine in your Clan so it can be rolled out to a target device in the next steps.
 
-The creation of machines will be the same process for all kinds of devices and only later branch into specific steps.
-
-This general guide will navigate you through the machine creation.
-
-When finishing it, you will have prepared at least one machine that can be rolled out to a target device in the next steps.
+The process is the same for all device types (cloud VMs, bare metal laptops, or anything else) and only branches into specific steps later.
 
 
 ##Requirements

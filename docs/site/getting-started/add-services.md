@@ -1,16 +1,8 @@
 ## Summary
 
-A service in Clan is a self-contained, reusable unit of system configuration that provides a specific piece of functionality across one or more machines.
+Give your Clan networking and SSH access so your devices can reach each other and you can administer them remotely.
 
-Think of it as a recipe for running a tool — like automatic backups, VPN networking, monitoring, etc.
-
-In Clan, services are multi-host and role-based:
-
-- Roles map machines to logical service responsibilities, enabling structured and clean deployments.
-
-- You can use tags instead of explicit machine names.
-
-In this step of the guide, we will add two of the most frequently used services to your new setup: Networking and SSH.
+Both are configured as Clan services: self-contained units of configuration that you assign to machines via roles and tags.
 
 To learn more about services in general, visit [Clan Services](../guides/services/introduction-to-services.md)
 

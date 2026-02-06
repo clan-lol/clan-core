@@ -1,4 +1,4 @@
-In this guide we will explain how to install a simple peer-to-peer backup system through the inventory. Such that machines will backup it's state to other machines in the Clan, ensuring redundancy and data safety.
+Configure a peer-to-peer backup system through the inventory so your machines back up their state to other machines in the Clan, ensuring redundancy and data safety.
 
 
 ### What is BorgBackup?

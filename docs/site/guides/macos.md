@@ -1,6 +1,6 @@
 ## Managing macOS Machines with Clan
 
-This guide explains how to manage macOS machines using Clan.
+Add a macOS device to your Clan and manage it with `clan machines update`.
 
 ### Supported Features
 
