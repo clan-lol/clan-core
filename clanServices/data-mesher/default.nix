@@ -105,7 +105,11 @@ in
         exportedFiles = lib.foldl' (
           acc: exportValue:
           let
-            dmFiles = if exportValue.dataMesher != null then exportValue.dataMesher.files else { };
+            dmFiles =
+              if exportValue ? dataMesher && exportValue.dataMesher != null then
+                exportValue.dataMesher.files
+              else
+                { };
           in
           lib.foldlAttrs (
             innerAcc: fileName: keys:

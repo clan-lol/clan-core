@@ -349,5 +349,6 @@ in
     peer = import ./export-modules/peer.nix;
     networking = import ./export-modules/networking.nix;
     dataMesher = import ./export-modules/data-mesher.nix;
+    endpoints = import ./export-modules/endpoints.nix;
   };
 }
