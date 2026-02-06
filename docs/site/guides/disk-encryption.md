@@ -16,7 +16,7 @@ lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 
 === "**Single Disk**"
     Below is the configuration for `disko.nix`
-    ```nix hl_lines="13 53"
+    ```nix hl_lines="19 48"
       --8<-- "docs/code-examples/disko-single-disk.nix"
     ```
 
@@ -24,7 +24,7 @@ lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 
 === "**Raid 1**"
     Below is the configuration for `disko.nix`
-    ```nix hl_lines="13 53 54"
+    ```nix hl_lines="19 48 49"
       --8<-- "docs/code-examples/disko-raid.nix"
     ```
 
@@ -60,7 +60,7 @@ Replace `kernelModules` with the ethernet module loaded one on your target machi
     "xhci_pci"
   ];
 
-  # Find out the required network card driver by running `lspci -k` on the target machine
+  # Find out the required network card driver by running `nix shell nixpkgs#pciutils -c lspci -k` on the target machine
   boot.initrd.kernelModules = [ "r8169" ];
 }
 ```
@@ -72,7 +72,7 @@ Before starting the installation process, ensure that the SSH public key is copi
 1. Copy your public SSH key to the installer, if it has not been copied already:
 
 ```bash
-ssh-copy-id -o PreferredAuthentications=password -o PubkeyAuthentication=no root@nixos-installer.local
+ssh-copy-id root@nixos-installer.local -i ~/.config/clan/nixos-anywhere/keys/id_ed25519
 ```
 
 ## Prepare Secret Key and Partition Disks
@@ -125,12 +125,12 @@ CTRL+D
 
 ```bash
 ssh-keygen -q -N "" -C "" -t ed25519 -f ./initrd_host_ed25519_key
-ssh-keygen -q -N "" -C "" -t rsa -b 4096 -f ./initrd_host_rsa_key
 ```
 
 5. Securely copy your local initrd SSH host keys to the installer's `/mnt` directory:
 
 ```bash
+ssh root@nixos-installer.local mkdir -p /mnt/var/lib/
 scp ./initrd_host* root@nixos-installer.local:/mnt/var/lib/
 ```
 
