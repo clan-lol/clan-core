@@ -18,7 +18,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 
 * **Estimated time for this step:** 20 minutes
 
-* **One Setup Device**: A Linux machine from which the setup commands will be run.
+* **One Setup Device**: A Linux device from which the setup commands will be run.
 
     !!! Warning "Operating System Recommendations"
         We are currently working on more refined operating system recommendations.
@@ -115,7 +115,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 
 * **Target Device(s)**: Any number of physical and / or virtual Linux or macOS devices with SSH root access to. The minimum hardware requirements are equal to the setup device specs above.
 
-    If your setup machine is running on NixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
+    If your setup device is running on NixOS, it can also be included in the Clan we are going to build, but we will not address this option in this guide.
 
 
 * **SSH Keys On Setup Device**: If not already done, generate a key pair for your root user on the setup device.

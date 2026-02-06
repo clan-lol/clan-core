@@ -60,12 +60,12 @@ Replace `yourmachine` with your chosen machine name.
 
 ### Install Nix
 
-Install Nix on your macOS machine using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
+Install Nix on your macOS device using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
 
 
 ### Install nix-darwin
 
-Upload your Clan flake to the macOS machine. Then, from within your flake directory, run:
+Upload your Clan flake to the macOS device. Then, from within your flake directory, run:
 
 ```bash
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#yourmachine

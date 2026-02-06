@@ -8,7 +8,7 @@ and how to define a remote builder for your machine closures.
 ## Requirements
 
 * **Expected time for this step**: 15min
-* **A Setup Device**: Any machine that is part of your Clan and that you have root access to, or the Setup Device you used during the previous steps.
+* **A Setup Device**: Any device that is part of your Clan and that you have root access to, or the setup device you used during the previous steps.
 
 ## Setting `targetHost`
 
@@ -96,7 +96,7 @@ clan machines update jon --build-host local
 !!! Note
     Make sure the CPU architecture of the `buildHost` matches that of the `targetHost`
 
-    For example, if deploying to a macOS machine with an ARM64-Darwin architecture, you need a second macOS machine with the same architecture to build it.
+    For example, if deploying to a macOS device with an ARM64-Darwin architecture, you need a second macOS device with the same architecture to build it.
 
 
 ### Excluding a machine from `clan machine update`
@@ -121,7 +121,7 @@ This is useful for machines that are not always online or are not part of the re
 When updating remote machines, flake inputs are usually fetched by the build host.
 However, if flake inputs require authentication (e.g., private repositories),
 
-Use the `--upload-inputs` flag to upload all inputs from your local machine:
+Use the `--upload-inputs` flag to upload all inputs from your local device:
 
 ```bash
 clan machines update jon --upload-inputs
@@ -129,7 +129,7 @@ clan machines update jon --upload-inputs
 
 This is particularly useful when:
 - The Flake references private git repositories
-- Authentication credentials are only available on local machine
+- Authentication credentials are only available on the local device
 - The build host doesn't have access to certain network resources
 
 

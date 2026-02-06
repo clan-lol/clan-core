@@ -52,7 +52,7 @@ When you want to use `nixos-rebuild` directly:
 #### Step 1: Upload vars (if needed)
 
 ```bash
-# Upload secret vars to the target machine
+# Upload secret vars to the target device
 clan vars upload my-machine
 ```
 

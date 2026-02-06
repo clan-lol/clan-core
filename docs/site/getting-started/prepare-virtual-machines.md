@@ -1,6 +1,6 @@
 ## Summary
 
-In this step, we will prepare your virtual machines to be deployed from your setup machine and integrated into your Clan automatically.
+In this step, we will prepare your virtual machines to be deployed from your setup device and integrated into your Clan automatically.
 
 
 ## Requirements
@@ -18,9 +18,9 @@ In this step, we will prepare your virtual machines to be deployed from your set
 
 * **Machine configuration**: In the previous steps, we defined a Clan, at least one user (e.g. jon) and at least one machine (e.g. jon-machine). These are the minimum requirements for the following VM preparations.
 
-* **Network Root Access**: Target and setup machine need to be able to reach each other, root access is required on both, and SSH access needs to be available on the targets (configured already if you followed all optional steps up to this point).
+* **Network Root Access**: Target and setup device need to be able to reach each other, root access is required on both, and SSH access needs to be available on the targets (configured already if you followed all optional steps up to this point).
 
-* **kexec**: Clan supports any cloud machine if it supports `kexec`.
+* **kexec**: Clan supports any cloud device if it supports `kexec`.
 
 
 ??? tip "NixOS can cause strange issues when booting in certain cloud environments."
@@ -29,7 +29,7 @@ In this step, we will prepare your virtual machines to be deployed from your set
 
 ## Generating Hardware Reports
 
-A hardware report needs to  be created on each target machine before the actual deployment.
+A hardware report needs to be created on each target device before the actual deployment.
 
 The following command will generate the hardware report with [nixos-facter](https://github.com/nix-community/nixos-facter) and write it back into the respective machine folder on your setup device. 
 
@@ -41,12 +41,12 @@ clan machines init-hardware-config $MACHINE_NAME \
   --target-host myuser@$TARGET_IP
 ```
 
-This command may take a while. You will be prompted to enter the target machine's root password during the process.
+This command may take a while. You will be prompted to enter the target device's root password during the process.
 
-Do *not* reboot your target machine at this point! The system needs to stay in this kexec state for the remote deployment process.
+Do *not* reboot your target device at this point! The system needs to stay in this kexec state for the remote deployment process.
 
 !!! Warning
-    After running the above command, be aware that the SSH login user changes from `myuser` to `root`. For subsequent SSH connections to the target machine, use `root` as the login user. This change occurs because the system switches to the NixOS kernel using `kexec`.
+    After running the above command, be aware that the SSH login user changes from `myuser` to `root`. For subsequent SSH connections to the target device, use `root` as the login user. This change occurs because the system switches to the NixOS kernel using `kexec`.
 
 
 ## Checkpoint: Confirming the Hardware Reports
@@ -56,4 +56,4 @@ For each machine, check if the hardware report was saved under `machines/$MACHIN
 
 ## Up Next
 
-After the report is generated for all target machines, we will configure the disk layout in the next step and then deploy the machines remotely.
+After the report is generated for all target devices, we will configure the disk layout in the next step and then deploy the machines remotely.

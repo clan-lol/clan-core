@@ -186,8 +186,7 @@ Users learn the NixOS module system by seeing patterns first.
 - ZeroTier
 - git
 - direnv
-- Setup Machine / Target Machines
-- devices / systems
+- Setup Device / Target Devices
 
 ---
 

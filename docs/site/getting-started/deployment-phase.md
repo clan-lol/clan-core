@@ -29,14 +29,14 @@ Depending on your hardware configurations and network speed, this step may take 
 
 You will be asked to set passwords for root and users. You can leave these fields empty, Clan will take care of it.
 
-After the installation completes, your machine will reboot into the newly installed NixOS system and your users will be able to log in.
+After the installation completes, your device will reboot into the newly installed NixOS system and your users will be able to log in.
 
 
 ## Checkpoint
 
 !!! Warning "Under construction"
     We are still working on the best way to confirm a successful deployment.
-    For now, please see if the setup finished by logging in directly on the target machine(s).
+    For now, please see if the setup finished by logging in directly on the target device(s).
     It should ask for `$MACHINE_NAME login:` and accept an empty password for root (or, if you set a password manually during deployment, that).
 
 

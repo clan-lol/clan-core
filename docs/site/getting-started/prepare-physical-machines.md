@@ -1,7 +1,7 @@
 ## Summary
 
-To install Clan on physical machines, you need to start our custom installer image from a boot device.
-The minimal system will then be reachable by your setup machine and a deployment can be triggered remotely.
+To install Clan on physical devices, you need to start our custom installer image from a boot device.
+The minimal system will then be reachable by your setup device and a deployment can be triggered remotely.
 
 If you only plan to use virtual machines, you can skip this step.
 
@@ -16,8 +16,8 @@ If you only plan to use virtual machines, you can skip this step.
 
 * Estimated time for this step: 20 minutes
 * A USB drive with at least 1.5GB total space (!! all data will be lost !!)
-* A Linux/NixOS machine with internet access to create the boot stick. You can use your setup device or any other machine for this step.
-* One or more physical target machines (!! all data will be lost !!)
+* A Linux/NixOS device with internet access to create the boot stick. You can use your setup device or any other device for this step.
+* One or more physical target devices (!! all data will be lost !!)
 
     Minimum target
 system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
@@ -90,7 +90,7 @@ sudo umount /dev/sdb1
 
         On boot, the installer will display on-screen the IP address it received from the network.
         If you need to configure Wi-Fi first, refer to the next section.
-        If Multicast-DNS (Avahi) is enabled on your own machine, you can also access the installer using the `flash-installer.local` address.
+        If Multicast-DNS (Avahi) is enabled on your own device, you can also access the installer using the `flash-installer.local` address.
 
     - **List Keymaps**
 
@@ -155,7 +155,7 @@ sudo umount /dev/sdb1
 
       On boot, the installer will display on-screen the IP address it received from the network.
       If you need to configure Wi-Fi first, refer to the next section.
-      If Multicast-DNS (Avahi) is enabled on your own machine, you can also access the installer using the `nixos-installer.local` address.
+      If Multicast-DNS (Avahi) is enabled on your own device, you can also access the installer using the `nixos-installer.local` address.
 
 ## Checkpoint 1: Boot From USB Stick on Target Device
 

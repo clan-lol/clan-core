@@ -195,7 +195,7 @@ clan --debug vars generate my-machine
 
 Verify generated secret permissions:
 ```bash
-# On the target machine
+# On the target device
 ls -la /run/secrets/
 ```
 

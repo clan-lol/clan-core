@@ -86,7 +86,7 @@ Unfortunately, there are currently no checkpoints available.
 
 ## Up Next
 
-We will deploy your configuration to either a bare metal physical machine or a virtual machine.
+We will deploy your configuration to either a bare metal physical device or a virtual device.
 
 Please select your path accordingly:
 
@@ -94,4 +94,4 @@ Please select your path accordingly:
 
 [Next Step: Prepare Virtual Machines](./prepare-virtual-machines.md){ .md-button .md-button--primary }
 
-You can have a mix of both if you like. In that case, simply follow the respective guide per machine type.
+You can have a mix of both if you like. In that case, simply follow the respective guide per device type.

@@ -30,7 +30,7 @@ lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 
 Below is the configuration for `initrd.nix`.
 Replace `$SSH_PUBLIC_KEY` with your SSH public key.
-Replace `kernelModules` with the ethernet module loaded on your target machine.
+Replace `kernelModules` with the ethernet module loaded on your target device.
 ```nix hl_lines="18 29"
 {config, pkgs, ...}:
 
@@ -60,7 +60,7 @@ Replace `kernelModules` with the ethernet module loaded on your target machine.
     "xhci_pci"
   ];
 
-  # Find out the required network card driver by running `nix shell nixpkgs#pciutils -c lspci -k` on the target machine
+  # Find out the required network card driver by running `nix shell nixpkgs#pciutils -c lspci -k` on the target device
   boot.initrd.kernelModules = [ "r8169" ];
 }
 ```
@@ -150,7 +150,7 @@ zfs set -u mountpoint=/home zroot/root/home
 zpool export zroot
 ```
 
-8. Perform a reboot of the machine and remove the USB installer.
+8. Perform a reboot of the device and remove the USB installer.
 
 ## Accessing the Initial Ramdisk (initrd) Environment
 
