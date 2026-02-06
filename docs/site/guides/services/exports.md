@@ -1,15 +1,15 @@
-# Exports
+## Exports
 
 !!! Danger "Experimental"
     This feature is still experimental and will change in the future.
 
-## Overview
+### Overview
 
 Exports are a mechanism for services to share structured data.
 
 They provide a way for different machines and service instances to discover and access information they need from each other,
 
-## Use Cases
+### Use Cases
 
 Exports are useful when you need to:
 
@@ -24,7 +24,7 @@ Examples:
 - A database cluster where replicas need the primary's connection string
 - A monitoring system where agents need the metrics collector's address
 
-## How Exports Work
+### How Exports Work
 
 Exports use a scope-based system to publish data.
 Each export is tagged with a scope that identifies its source:
@@ -46,7 +46,7 @@ Each export is tagged with a scope that identifies its source:
 
     The internal format is subject to change.
 
-## Defining Exports in Your Service
+### Defining Exports in Your Service
 
 To export data from your service, use the `mkExports` helper function available in the `perInstance` or `perMachine` context:
 
@@ -68,11 +68,11 @@ To export data from your service, use the `mkExports` helper function available 
 
 The `mkExports` function automatically creates the appropriate scope for your exports based on the current service, instance, role, and machine context.
 
-## Accessing Exports
+### Accessing Exports
 
 Within your service module, you can access exports using the `clanLib.exports` helper functions.
 
-### `selectExports` - Query Multiple Exports
+#### `selectExports` - Query Multiple Exports
 
 Get all exports matching specific criteria
 
@@ -98,11 +98,11 @@ Get all exports matching specific criteria
 
 Returns an attribute set where keys are scope identifiers and values are the exported data.
 
-## Helper Functions
+### Helper Functions
 
 `clanLib` provides several helper functions for working with exports:
 
-### `buildScopeKey`
+#### `buildScopeKey`
 
 Build a scope key string from components:
 
@@ -116,7 +116,7 @@ clanLib.buildScopeKey {
 # => "myservice:prod:server:backend01" (internal information)
 ```
 
-### `parseScope`
+#### `parseScope`
 
 Parse a scope string into its components:
 
@@ -130,7 +130,7 @@ clanLib.parseScope "myservice:prod:server:backend01"
 # }
 ```
 
-### `getExport`
+#### `getExport`
 
 Retrieve a single export by scope:
 
@@ -141,7 +141,7 @@ clanLib.getExport
 # => <some data>
 ```
 
-### `selectExports`
+#### `selectExports`
 
 Filter exports matching specific criteria:
 
@@ -163,7 +163,7 @@ clanLib.selectExports
 # }
 ```
 
-## Export Scope Rules
+### Export Scope Rules
 
 When defining exports, certain restrictions apply based on context:
 
@@ -175,7 +175,7 @@ When defining exports, certain restrictions apply based on context:
 
 These restrictions prevent accidental conflicts and maintain clear data ownership.
 
-## Best Practices
+### Best Practices
 
 1. **Use the helper functions**: Always use `clanLib.*` functions instead of accessing the internal format directly
 
@@ -183,11 +183,11 @@ These restrictions prevent accidental conflicts and maintain clear data ownershi
     - Machine-level data (IPs, hostnames) - export in `perInstance`
     - Instance-level configuration - export
 
-## Examples
+### Examples
 
 For real-world use cases, see the [clan-services](https://git.clan.lol/clan/clan-core/src/branch/main/clanServices)
 
-## Further Reading
+### Further Reading
 
 - [Service Author Reference](../../reference/options/clan_service.md)
 - [Introduction to clanServices](./introduction-to-services.md)

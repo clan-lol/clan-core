@@ -1,15 +1,15 @@
-# Contributing to Clan
+## Contributing to Clan
 
 **Continuous Integration (CI)**: Each pull request gets automatically tested by gitea. If any errors are detected, it will block pull requests until they're resolved.
 
 **Dependency Management**: We use the [Nix package manager](https://nixos.org/) to manage dependencies and ensure reproducibility, making your development process more robust.
 
-## Supported Operating Systems
+### Supported Operating Systems
 
 - Linux
 - macOS
 
-## Getting Started with the Development Environment
+### Getting Started with the Development Environment
 
 Let's get your development environment up and running:
 
@@ -76,14 +76,14 @@ Let's get your development environment up and running:
       ./scripts/pre-commit
       ```
 
-## Related Projects
+### Related Projects
 
 - **Data Mesher**: [data-mesher](https://git.clan.lol/clan/data-mesher)
 - **NixOS Facter**: [nixos-facter](https://github.com/nix-community/nixos-facter)
 - **NixOS Anywhere**: [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
 - **Disko**: [disko](https://github.com/nix-community/disko)
 
-### Override related projects for local development
+#### Override related projects for local development
 
 If you have a bug fix or feature that involves a related project, clone the relevant repository and replace its invocation in your local setup.
 
@@ -115,12 +115,12 @@ run(
 The `<path_to_local_src>` doesn't need to be a local path, it can be any valid [flakeref](https://nix.dev/manual/nix/2.26/command-ref/new-cli/nix3-flake.html#flake-references).
 And thus can point to test already opened PRs for example.
 
-## Standards
+### Standards
 
 - Every new module name should be in kebab-case.
 - Every vars definition, where possible should be in kebab-case.
 - Command line help descriptions should start capitalized and should not end in a period.
 
-## Documentation Style Guidelines
+### Documentation Style Guidelines
 
 Please refer to our [Style Guide for Documentation and Blog Posts](https://docs.clan.lol/main/guides/contributing/styleguide/) when writing documentation.

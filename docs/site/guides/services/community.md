@@ -1,13 +1,13 @@
-# Authoring a 'clan.service' module
+## Authoring a 'clan.service' module
 
-## Service Module Specification
+### Service Module Specification
 
 This section explains how to author a Clan service module.
 We discussed the initial architecture in [01-clan-service-modules](../../decisions/01-Clan-Modules.md) and decided to rework the format.
 
 For the full specification and current state see: **[Service Author Reference](../../reference/options/clan_service.md)**
 
-### A Minimal module
+#### A Minimal module
 
 First of all we need to register our module into the `clan.modules` attribute. Make sure to choose a unique name so the module doesn't have a name collision with any of the core modules.
 
@@ -46,7 +46,7 @@ The imported module file must fulfill at least the following requirements:
 
 For more attributes see: **[Service Author Reference](../../reference/options/clan_service.md)**
 
-### Adding functionality to the module
+#### Adding functionality to the module
 
 While the very minimal module is valid in itself, it has no way of adding any machines to it, because it doesn't specify any roles.
 
@@ -138,7 +138,7 @@ Next we need to define the settings and the behavior of these distinct roles.
 }
 ```
 
-## Using values from a NixOS machine inside the module
+### Using values from a NixOS machine inside the module
 
 !!! Example "Experimental Status"
     This feature is experimental and should be used with care.
@@ -174,7 +174,7 @@ The following example shows how to create a local instance of machine specific s
 
     Exposing the changed settings to other machines would come with a huge performance penalty, thats why we don't want to offer it.
 
-## Passing `self` or `pkgs` to the module
+### Passing `self` or `pkgs` to the module
 
 Passing any dependencies in general must be done manually.
 
@@ -185,7 +185,7 @@ In general we found the following two best practices:
 
 Both have pros and cons. After all using `importApply` is the easier one, but might be more limiting sometimes.
 
-### Using `importApply`
+#### Using `importApply`
 
 Using [importApply](https://github.com/NixOS/nixpkgs/pull/230588) is essentially the same as `import file` followed by a function-application; but preserves the error location.
 
@@ -213,7 +213,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 })
 ```
 
-### Using a wrapper module
+#### Using a wrapper module
 
 ```nix title="messaging.nix"
 { config, ... }:
@@ -246,7 +246,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 The benefit of this approach is that downstream users can override the value of
 `myClan` by using `mkForce` or other priority modifiers.
 
-## Example: A machine-type service
+### Example: A machine-type service
 
 Users often have different types of machines. These could be any classification
 you like, for example "servers" and "desktops". Having such distictions, allows
@@ -286,7 +286,7 @@ instances.machine-type = {
 
 ---
 
-## Sharing Data Between Machines with Exports
+### Sharing Data Between Machines with Exports
 
 Services often need to share configuration data between machines. For example, clients need to know the server's IP address, or peers in a mesh network need to discover each other.
 
@@ -296,7 +296,7 @@ Services often need to share configuration data between machines. For example, c
 
 ---
 
-## Further Reading
+### Further Reading
 
 - [Service Exports Guide](./exports.md) - How to share data between services
 - [Reference Documentation for Service Authors](../../reference/options/clan_service.md)

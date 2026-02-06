@@ -1,11 +1,11 @@
-# Style Guide for Documentation and Blog Posts
+## Style Guide for Documentation and Blog Posts
 
 A consistent style greatly increases the usability of all documentation and communication.  
 Please use this page as a reference and style guide for our internal and external documentation, blog posts, and all other Clan communication.
 
-## Writing Principles
+### Writing Principles
 
-### Knowledge Expectations
+#### Knowledge Expectations
 
 **What readers know:**
 
@@ -23,7 +23,7 @@ If specific knowledge is required, mention it at the start of the page.
 
 ---
 
-### Show, Don't Tell
+#### Show, Don't Tell
 
 The fastest path to understanding is a working example.  
 People learn by doing, not by reading about doing.
@@ -37,7 +37,7 @@ People learn by doing, not by reading about doing.
 
 ---
 
-### Grammar and Style
+#### Grammar and Style
 
 **Sentence structure:**
 
@@ -59,7 +59,7 @@ Users care about *hardware scanning*, not *the tool that does it*.
 
 ---
 
-### Content Organization
+#### Content Organization
 
 Lead with value. State what the reader will accomplish before explaining how.
 
@@ -86,7 +86,7 @@ Use **progressive disclosure**. Introduce concepts only when needed.
 
 ---
 
-### Code Examples
+#### Code Examples
 
 **Keep examples focused:**
 
@@ -119,7 +119,7 @@ services.openssh.enable = true; # Required for Clan deployment
 
 ---
 
-### Hide Nix Where Possible
+#### Hide Nix Where Possible
 
 Nix knowledge is a barrier, not a feature.
 
@@ -143,7 +143,7 @@ This creates `machines/webserver/default.nix`, where you can configure it via Ni
 
 ---
 
-### Teach Nix Through Examples, Not Theory
+#### Teach Nix Through Examples, Not Theory
 
 *(After respecting the prior point)*
 
@@ -156,9 +156,9 @@ Users learn the NixOS module system by seeing patterns first.
 
 ---
 
-## Style Guidelines
+### Style Guidelines
 
-### General Rules
+#### General Rules
 
 - Abbreviate keys like `ssh-ed25519 AAAAC3NzaC…`
 - Abbreviate IP addresses like `192.168.XXX.XXX`
@@ -174,7 +174,7 @@ Users learn the NixOS module system by seeing patterns first.
 
 ---
 
-### Capitalization
+#### Capitalization
 
 - Clan
 - GB / RAM / HDD
@@ -191,13 +191,13 @@ Users learn the NixOS module system by seeing patterns first.
 
 ---
 
-### Code in Text
+#### Code in Text
 
 Inline code is marked like ```this```.
 
 ---
 
-### Code Snippets
+#### Code Snippets
 
 ```text
 multi
@@ -207,7 +207,7 @@ code
 
 ---
 
-### Highlight Code in a Snippet
+#### Highlight Code in a Snippet
 
 Use ```hl_lines``` to highlight specific lines. 
 
@@ -226,7 +226,7 @@ Example: hl_lines="2 4-6"
 
 ---
 
-### Under Construction Flags
+#### Under Construction Flags
 
 !!! warning "HeadlineText"
     Use ```!!! warning HeadlineText```
@@ -235,7 +235,7 @@ Example: hl_lines="2 4-6"
 
 ---
 
-### Fold-out Info Areas
+#### Fold-out Info Areas
 
 ??? info "HeadlineText"
     Use ```??? info "HeadlineText"```

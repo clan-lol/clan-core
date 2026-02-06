@@ -1,12 +1,12 @@
-# Understanding Clan Vars - Concepts & Architecture
+## Understanding Clan Vars - Concepts & Architecture
 
 This guide explains the architecture and design principles behind the vars system.
 
-## Architecture Overview
+### Architecture Overview
 
 The vars system provides a declarative, reproducible way to manage generated files (especially secrets) in NixOS configurations.
 
-## Data Flow
+### Data Flow
 
 ```mermaid
 graph LR
@@ -19,20 +19,20 @@ graph LR
     F --> G
 ```
 
-## Key Design Principles
+### Key Design Principles
 
-### 1. Declarative Generation
+#### 1. Declarative Generation
 
 Unlike imperative secret management, vars are declared in your NixOS configuration and generated deterministically. This ensures reproducibility across deployments.
 
-### 2. Separation of Concerns
+#### 2. Separation of Concerns
 
 - **Generation logic**: Defined in generator scripts
 - **Storage**: Handled by pluggable backends (sops, password-store, etc.)
 - **Deployment**: Managed by NixOS activation scripts
 - **Access control**: Enforced through file permissions and ownership
 
-### 3. Composability Through Dependencies
+#### 3. Composability Through Dependencies
 
 Generators can depend on outputs from other generators, enabling complex workflows:
 
@@ -45,7 +45,7 @@ A → B → C
 
 This allows building sophisticated systems like certificate authorities where intermediate certificates depend on root certificates.
 
-### 4. Type Safety
+#### 4. Type Safety
 
 The vars system distinguishes between:
 - **Secret files**: Only accessible via `.path`, deployed to `/run/secrets/`
@@ -53,7 +53,7 @@ The vars system distinguishes between:
 
 This prevents accidental exposure of secrets in the nix store.
 
-## Storage Backend Architecture
+### Storage Backend Architecture
 
 The vars system uses pluggable storage backends:
 
@@ -62,15 +62,15 @@ The vars system uses pluggable storage backends:
 
 Each backend handles encryption/decryption transparently, allowing the same generator definitions to work across different security models.
 
-## Timing and Lifecycle
+### Timing and Lifecycle
 
-### Generation Phases
+#### Generation Phases
 
 1. **Pre-deployment**: `clan vars generate` creates vars before deployment
 2. **During deployment**: Missing vars are generated automatically
 3. **Regeneration**: Explicit regeneration with `--regenerate` flag
 
-### The `neededFor` Option
+#### The `neededFor` Option
 
 Control when vars are available during system activation:
 
@@ -81,9 +81,9 @@ files."early-secret" = {
 };
 ```
 
-## Advanced Patterns
+### Advanced Patterns
 
-### Multi-Machine Coordination
+#### Multi-Machine Coordination
 
 The `share` option enables cross-machine secret sharing:
 
@@ -99,7 +99,7 @@ This is useful for:
 - Mesh VPN pre-shared keys
 - Cluster join tokens
 
-### Generator Composition
+#### Generator Composition
 
 Complex systems can be built by composing simple generators:
 
@@ -111,7 +111,7 @@ root-ca → intermediate-ca → service-cert
 
 Each generator focuses on one task, making the system modular and testable.
 
-## Key Advantages
+### Key Advantages
 
 Compared to manual secret management, vars provides:
 

@@ -1,9 +1,9 @@
-# Migrating from using `clanModules` to `clanServices`
+## Migrating from using `clanModules` to `clanServices`
 
 **Audience**: This is a guide for **people using `clanModules`**.
 If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../../guides/services/community.md)
 
-## What's Changing?
+### What's Changing?
 
 Clan is transitioning from the legacy `clanModules` system to the `clanServices` system. This guide will help you migrate your service definitions from the old format (`inventory.services`) to the new format (`inventory.instances`).
 
@@ -17,7 +17,7 @@ Clan is transitioning from the legacy `clanModules` system to the `clanServices`
 
 ---
 
-## Before: Old `services` Definition
+### Before: Old `services` Definition
 
 ```nix
 services = {
@@ -35,7 +35,7 @@ services = {
 };
 ```
 
-### Complex Example: Multi-service Setup
+#### Complex Example: Multi-service Setup
 
 ```nix
 # Old format
@@ -68,7 +68,7 @@ services = {
 
 ---
 
-## ✅ After: New `instances` Definition with `clanServices`
+### ✅ After: New `instances` Definition with `clanServices`
 
 ```nix
 instances = {
@@ -101,7 +101,7 @@ instances = {
 };
 ```
 
-### Complex Example Migrated
+#### Complex Example Migrated
 
 ```nix
 # New format
@@ -153,9 +153,9 @@ instances = {
 
 ---
 
-## Steps to Migrate
+### Steps to Migrate
 
-### Move `services` entries to `instances`
+#### Move `services` entries to `instances`
 
 Check if a service that you use has been migrated [In our reference](../../services/definition.md)
 
@@ -175,7 +175,7 @@ Each nested service-instance-pair becomes a flat key, like `borgbackup.simple �
 
 ---
 
-### Add `module.name` and `module.input`
+#### Add `module.name` and `module.input`
 
 Each instance must declare the module name and flake input it comes from:
 
@@ -196,7 +196,7 @@ Then refer to it as `input = "clan-core"`.
 
 ---
 
-### Move role and machine config under `roles`
+#### Move role and machine config under `roles`
 
 In the new system:
 
@@ -212,7 +212,7 @@ roles.default.machines."test-inventory-machine".settings = {
 };
 ```
 
-### Important Type Changes
+#### Important Type Changes
 
 The new `instances` format uses **attribute sets** instead of **lists** for tags and machines:
 
@@ -226,7 +226,7 @@ roles.client.tags.backup = { };
 roles.server.machines.blob64 = { };
 ```
 
-### Handling Multiple Machines/Tags
+#### Handling Multiple Machines/Tags
 
 When you need to assign multiple machines or tags to a role:
 
@@ -241,7 +241,7 @@ roles.moon.machines.eve = { };
 
 ---
 
-## Migration Status of clanModules
+### Migration Status of clanModules
 
 The following table shows the migration status of each deprecated clanModule:
 
@@ -295,9 +295,9 @@ The following table shows the migration status of each deprecated clanModule:
     * `inventory.services` is no longer recommended; use `inventory.instances` instead.
     * Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
 
-## Troubleshooting Common Migration Errors
+### Troubleshooting Common Migration Errors
 
-### Error: "not of type `attribute set of (submodule)`"
+#### Error: "not of type `attribute set of (submodule)`"
 
 This error occurs when using lists instead of attribute sets for tags or machines:
 
@@ -307,7 +307,7 @@ error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64
 
 **Solution**: Convert lists to attribute sets as shown in the "Important Type Changes" section above.
 
-### Error: "unsupported attribute `module`"
+#### Error: "unsupported attribute `module`"
 
 This error indicates the module structure is incorrect:
 
@@ -317,7 +317,7 @@ error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 
 **Solution**: Ensure the `module` attribute has exactly two fields: `name` and `input`.
 
-### Error: "attribute 'pkgs' missing"
+#### Error: "attribute 'pkgs' missing"
 
 This suggests the instance configuration is trying to use imports incorrectly:
 
@@ -327,14 +327,14 @@ error: attribute 'pkgs' missing
 
 **Solution**: Use the `module = { name = "..."; input = "..."; }` format instead of `imports`.
 
-### Removed Features
+#### Removed Features
 
 The following features from the old `services` format are no longer supported in `instances`:
 
 - Top-level `config` attribute (use `roles.<role>.settings` instead)
 - Direct module imports (use the `module` declaration instead)
 
-### extraModules Support
+#### extraModules Support
 
 The `extraModules` attribute is still supported in the new instances format! The key change is how modules are specified:
 
@@ -376,7 +376,7 @@ instances = {
 };
 ```
 
-## Further reference
+### Further reference
 
 * [Inventory Concept](../../guides/inventory/inventory.md)
 * [Authoring a 'clan.service' module](../../guides/services/community.md)

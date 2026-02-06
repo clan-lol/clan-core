@@ -1,4 +1,4 @@
-# Using Age Plugins with Clan Vars
+## Using Age Plugins with Clan Vars
 
 This guide explains how to set up YubiKey and other plugins for `clan vars` secrets.
 
@@ -6,7 +6,7 @@ By default the `clan vars` subcommand uses the `age` encryption tool, which supp
 
 ---
 
-## Supported Age Plugins
+### Supported Age Plugins
 
 Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesome-age?tab=readme-ov-file#plugins) you can use with Clan. (Last updated: **September 12, 2025**)
 
@@ -25,7 +25,7 @@ Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesom
 
 ---
 
-## Using Plugin-Generated Keys
+### Using Plugin-Generated Keys
 
 If you want to use `fido2 tokens` to encrypt your secret instead of the normal age secret key then you need to prefix your age secret key with the corresponding plugin name. In our case we want to use the `age-plugin-fido2-hmac` plugin so we replace `AGE-SECRET-KEY` with `AGE-PLUGIN-FIDO2-HMAC`.
 
@@ -47,7 +47,7 @@ AGE-PLUGIN-FIDO2-HMAC-1QQPQZRFR7ZZ2WCV...
 
 
 
-## Configuring Plugins in `flake.nix`
+### Configuring Plugins in `flake.nix`
 
 To use `age` plugins with Clan, you need to configure them in your `flake.nix` file.
 

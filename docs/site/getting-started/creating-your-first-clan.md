@@ -1,6 +1,6 @@
-# Creating your first Clan
+## Creating your first Clan
 
-## Summary
+### Summary
 
 Ready to manage your fleet of machines?
 
@@ -11,7 +11,7 @@ At the end of this getting started guide, you will have a centrally managed flee
 If you want to [migrate your existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead of following this guide for a completely fresh setup, please find the corresponding links in our Guides database instead. Note that you can also always migrate your existing systems into the new Clan after following this getting started guide, too.
 
 
-## Requirements
+### Requirements
 
 * **Expected knowledge levels for this guide:**
     Linux 2/5 - NixOS 0/5 - Computer Networks 1/5
@@ -135,7 +135,7 @@ If you want to [migrate your existing systems](../guides/migrations/convert-exis
 * **In Case of Physical Target Device(s):** A USB drive with at least 1.5GB total space (all data on it will be lost)
 
 
-## Create a New Clan
+### Create a New Clan
 
 A "Clan" is the top level concept of the environment you are building.
 
@@ -161,7 +161,7 @@ In your Clan, you will create and manage your machines, users, and services. It 
     Enter a name for the new clan: MY-NEW-CLAN
     ```
 
-## Project Structure
+### Project Structure
 
 Your new directory, `MY-NEW-CLAN`, should contain the following structure:
 
@@ -180,7 +180,7 @@ MY-NEW-CLAN/
     Use `clan templates list` and `clan templates --help` for available templates & more. Keep in mind that the exact files may change as templates evolve.
 
 
-## Activating the Environment
+### Activating the Environment
 
 To get started, `cd` into your new project directory.
 
@@ -208,7 +208,7 @@ Now, activate the environment using one of the following methods.
     nix develop
     ```
 
-## Renaming Your Clan
+### Renaming Your Clan
 
 You can now change the default name and tld by editing the `meta.name` and `meta.domain` fields in your `clan.nix` file.
 
@@ -230,7 +230,7 @@ Feel free to customize the highlighted values in the future:
 
 See [Clan options](../reference/options/clan.md) for all available options.
 
-## Checkpoint
+### Checkpoint
 
 Once your [environment is active](#activating-the-environment), verify that the Clan command is available by running:
 
@@ -251,6 +251,6 @@ This confirms your setup is working correctly.
 If you receive an error message for `clan show`, check for syntax errors in your clan.nix file first.
 
 
-## Up Next
+### Up Next
 
 We will add machines to your freshly created Clan during the next step.
