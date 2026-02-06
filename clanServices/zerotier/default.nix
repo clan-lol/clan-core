@@ -11,6 +11,10 @@
   manifest.description = "Zerotier Mesh VPN Service for secure P2P networking between machines";
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
+  manifest.traits = [
+    "networking"
+    "peer"
+  ];
 
   exports = lib.mapAttrs' (instanceName: _: {
     name = clanLib.buildScopeKey {

@@ -14,6 +14,10 @@
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
+  manifest.traits = [
+    "networking"
+    "peer"
+  ];
 
   exports = lib.mapAttrs' (instanceName: _: {
     name = clanLib.buildScopeKey {
