@@ -14,7 +14,7 @@
     "Network"
   ];
   manifest.readme = builtins.readFile ./README.md;
-  manifest.traits = [
+  manifest.exports.out = [
     "networking"
     "peer"
   ];

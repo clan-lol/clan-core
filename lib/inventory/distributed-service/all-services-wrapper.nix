@@ -69,8 +69,8 @@ in
           mergedByName = lib.zipAttrsWith (
             name: exports:
             let
-              availableTraits = ''
-                Available traits
+              availableContract = ''
+                Available export interfaces
 
                 ${lib.join "\n" (lib.attrNames exportInterfaces)}
               '';
@@ -81,19 +81,19 @@ in
                   Export interface: '${t}' doesn't exist
                   Service: '${manifest.name}'
 
-                  - Remove it from 'manifest.traits'
+                  - Remove it from 'manifest.exports.out'
                   - Add it to 'clan.exportInterfaces.${t}'
 
-                  ${availableTraits}
+                  ${availableContract}
                 '')
-              ) manifest.traits;
+              ) manifest.exports.out;
 
-              throwEnableTraits = lib.throwIf (lib.length manifest.traits == 0) ''
+              throwEnableTraits = lib.throwIf (lib.length manifest.exports.out == 0) ''
                 Service: '${manifest.name}' doesn't allow exports
 
-                - Add 'manifest.traits = [ ]' to the service
+                - Add 'manifest.exports.out = [ ]' to the service
 
-                ${availableTraits}
+                ${availableContract}
               '';
 
               checked = (

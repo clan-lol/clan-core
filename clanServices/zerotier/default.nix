@@ -11,7 +11,7 @@
   manifest.description = "ZeroTier Mesh VPN Service for secure P2P networking between machines";
   manifest.categories = [ "Utility" ];
   manifest.readme = builtins.readFile ./README.md;
-  manifest.traits = [
+  manifest.exports.out = [
     "networking"
     "peer"
   ];
