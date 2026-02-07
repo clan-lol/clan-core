@@ -1,171 +1,136 @@
 
-Set up a ZFS-encrypted disk with remote unlock over SSH, so you can decrypt your server after a reboot without physical access.
+# Disk Encryption
 
-!!! Warning
-    This configuration only applies to `systemd-boot` enabled systems and **requires** UEFI booting.
+This guide walks you through setting up a ZFS system with native encryption and remote decryption via SSH. After completing this guide, your machine's root filesystem will be encrypted, and you will be able to unlock it remotely over the network during boot.
 
 !!! Info "Secure Boot"
     This guide is compatible with systems that have [secure boot disabled](../guides/secure-boot.md). If you encounter boot issues, check if secure boot needs to be disabled in your UEFI settings.
 
-Replace the highlighted lines with your own disk-id.
-You can find our your disk-id by executing:
+## Disk Layout Configuration
+
+Replace the highlighted lines below with your own disk ID.
+You can find out your disk ID by running:
 ```bash
-lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 ```
 
 
 === "**Single Disk**"
-    Below is the configuration for `disko.nix`
-    ```nix hl_lines="19 48"
+    - Copy the configuration below into `machines/<mymachine>/disko.nix`.
+    - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
+
+    ```nix title="disko.nix" hl_lines="21 81 87"
       --8<-- "docs/code-examples/disko-single-disk.nix"
     ```
+
+    1. Hardcodes this disk as a bootable disk
+    2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
+    3. Stalls the boot process until the decryption secret file appears at the expected location
+    4. Tells ZFS to read the decryption passphrase from a file
+    5. Replace with the disk ID from the `lsblk` output above
 
 
 
 === "**Raid 1**"
-    Below is the configuration for `disko.nix`
-    ```nix hl_lines="19 48 49"
+    - Copy the configuration below into `machines/<mymachine>/disko.nix`.
+    - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
+
+    ```nix title="disko.nix" hl_lines="21 81 82 88 89"
       --8<-- "docs/code-examples/disko-raid.nix"
     ```
 
-Below is the configuration for `initrd.nix`.
-Replace `$SSH_PUBLIC_KEY` with your SSH public key.
-Replace `kernelModules` with the ethernet module loaded on your target device.
-```nix hl_lines="18 29"
-{config, pkgs, ...}:
+    1. Hardcodes this disk as a bootable disk
+    2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
+    3. Stalls the boot process until the decryption secret file appears at the expected location
+    4. Tells ZFS to read the decryption passphrase from a file
+    5. Replace with the disk IDs from the `lsblk` output above
 
-{
 
-  boot.initrd.systemd = {
-    enable = true;
-  };
+## Initrd SSH Configuration
 
-  # uncomment this if you want to be asked for the decryption password on login
-  #users.root.shell = "/bin/systemd-tty-ask-password-agent";
+Next, copy the configuration below into `machines/<mymachine>/initrd.nix` and include it in your `configuration.nix`.
+Don't forget to `git add machines/<mymachine>/initrd.nix` so that Nix sees the file.
 
-  boot.initrd.network = {
-    enable = true;
-
-    ssh = {
-      enable = true;
-      port = 7172;
-      authorizedKeys = [ "$SSH_PUBLIC_KEY" ];
-      hostKeys = [
-        "/var/lib/initrd_host_ed25519_key"
-        "/var/lib/initrd_host_rsa_key"
-      ];
-    };
-  };
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-  ];
-
-  # Find out the required network card driver by running `nix shell nixpkgs#pciutils -c lspci -k` on the target device
-  boot.initrd.kernelModules = [ "r8169" ];
-}
+```nix title="initrd.nix" hl_lines="41 29"
+--8<-- "docs/code-examples/initrd.nix"
 ```
 
-## Copying SSH Public Key
+1. Replace `<My_SSH_Public_Key>` with your SSH public key.
+2. Replace with the network driver used by the target device. You can find the correct module by running `nix shell nixpkgs#pciutils -c lspci -k` on the target.
+3. Marks the generated secret as needed during the activation phase, so it will be available in the initrd.
 
-Before starting the installation process, ensure that the SSH public key is copied to the NixOS installer.
+## Installation
 
-1. Copy your public SSH key to the installer, if it has not been copied already:
+### Copy SSH Public Key
+
+Before starting the installation, ensure that your SSH public key is on the NixOS installer.
+
+Copy your public SSH key to the installer if you have not done so already:
 
 ```bash
 ssh-copy-id root@nixos-installer.local -i ~/.config/clan/nixos-anywhere/keys/id_ed25519
 ```
 
-## Prepare Secret Key and Partition Disks
+### Prepare Disks and Install
 
-1. Access the installer using SSH:
+1. SSH into the installer:
 
-```bash
-ssh root@nixos-installer.local
-```
+    ```bash
+    ssh root@nixos-installer.local
+    ```
 
-2. Create a `secret.key` file in `/tmp` using `nano` or another text editor:
+2. Wipe the existing partition table from the target disk:
 
-```bash
-nano /tmp/secret.key
-```
+    ```bash
+    blkdiscard /dev/disk/by-id/<installdisk>
+    ```
 
-3. Discard the old disk partition data:
+3. Run kexec and partition the disks:
 
-```bash
-blkdiscard /dev/disk/by-id/$DISK_ID
-```
+    ```bash
+    clan machines install <mymachine> --target-host root@nixos-installer.local --phases kexec,disko
+    ```
 
-4. Run `clan` machines install, only running kexec and disko, with the following command:
+4. Check the logs for errors before proceeding.
 
-```bash
-clan machines install gchq-local --target-host root@nixos-installer --phases kexec,disko
-```
+5. Install NixOS onto the partitioned disks:
 
-## ZFS Pool Import and System Installation
+    ```bash
+    clan machines install <mymachine> --target-host root@nixos-installer.local --phases install
+    ```
 
-1. SSH into the installer once again:
+6. Reboot the machine and remove the USB installer.
 
-```bash
-ssh root@nixos-installer.local
-```
+## Remote Decryption
 
-2. Run the following command on the remote installation environment:
+After rebooting, the machine will pause in the initrd and wait for the encryption key before continuing to boot. You can verify connectivity by SSHing into the initrd environment:
 
 ```bash
-zfs set keylocation=prompt zroot/root
+ssh root@<your-machines-ip> -p 7172
 ```
 
-3. Disconnect from the SSH session:
+To automate the decryption step, create the following script:
 
-```bash
-CTRL+D
+- Save it as `machines/<mymachine>/decrypt.sh`.
+- Make it executable with `chmod +x machines/<mymachine>/decrypt.sh`.
+- Run it whenever the machine boots to deliver the encryption key.
+
+```bash title="decrypt.sh" hl_lines="4 5"
+#!/usr/bin/env bash
+set -euxo pipefail
+
+HOST="192.0.2.1" # (1)
+MACHINE="<mymachine>" # (2)
+while ! ping -W 1 -c 1 "$HOST"; do
+  sleep 1
+done
+while ! timeout --foreground 10 ssh -p 7172 "root@$HOST" true; do
+  sleep 1
+done
+
+# Ensure that /run/partitioning-secrets/zfs/key only ever exists with the full key
+clan vars get "$MACHINE" zfs/key | ssh -p 7172 "root@${HOST}" "mkdir -p /run/partitioning-secrets/zfs && cat > /run/partitioning-secrets/zfs/key.tmp && mv /run/partitioning-secrets/zfs/key.tmp /run/partitioning-secrets/zfs/key"
 ```
 
-4. Locally generate SSH host keys. You only need to generate ones for the algorithms you're using in `authorizedKeys`.
-
-```bash
-ssh-keygen -q -N "" -C "" -t ed25519 -f ./initrd_host_ed25519_key
-```
-
-5. Securely copy your local initrd SSH host keys to the installer's `/mnt` directory:
-
-```bash
-ssh root@nixos-installer.local mkdir -p /mnt/var/lib/
-scp ./initrd_host* root@nixos-installer.local:/mnt/var/lib/
-```
-
-6. Install NixOS to the mounted partitions
-```bash
-clan machines install gchq-local --target-host root@nixos-installer --phases install
-```
-
-7. After the installation process, unmount `/mnt/boot`, change the ZFS mountpoints and unmount all the ZFS volumes by exporting the zpool:
-
-```bash
-umount /mnt/boot
-cd /
-zfs set -u mountpoint=/ zroot/root/nixos
-zfs set -u mountpoint=/tmp zroot/root/tmp
-zfs set -u mountpoint=/home zroot/root/home
-zpool export zroot
-```
-
-8. Perform a reboot of the device and remove the USB installer.
-
-## Accessing the Initial Ramdisk (initrd) Environment
-
-1. SSH into the initrd environment using the `initrd_rsa_key` and provided port:
-
-```bash
-ssh -p 7172 root@192.168.XXX.XXX
-```
-
-2. Run the `systemd-tty-ask-password-agent` utility to query a password:
-
-```bash
-systemd-tty-ask-password-agent
-```
-
-After completing these steps, your NixOS should be successfully installed and ready for use.
-
-**Note:** Replace `root@nixos-installer.local` and `192.168.XXX.XXX` with the appropriate user and IP addresses for your setup.
+1. Replace with your machine's IP address
+2. Replace with your machine's name

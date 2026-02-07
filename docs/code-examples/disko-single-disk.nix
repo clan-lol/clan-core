@@ -1,5 +1,7 @@
 {
+  config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,7 +18,8 @@ let
           type = "EF02"; # for grub MBR
           priority = 1;
         };
-        "ESP" = lib.mkIf (idx == "nvme-eui.002538b931b59865") {
+        "ESP" = lib.mkIf (idx == "ata-HGST_HUS726020ALE610_K5HEJXVD") {
+          # (1)
           size = "1G";
           type = "EF00";
           content = {
@@ -41,11 +44,47 @@ in
   imports = [ ];
 
   config = {
-    boot.loader.systemd-boot.enable = true;
+
+    # generates the encryption key
+    clan.core.vars.generators.zfs = {
+      files.key.neededFor = "partitioning"; # (2)
+      runtimeInputs = [
+        pkgs.xkcdpass
+      ];
+      script = ''
+        xkcdpass -d - -n 8 | tr -d '\n' > $out/key
+      '';
+    };
+
+    # service that waits for the zfs key
+    boot.initrd.systemd.services.zfs-import-zroot = {
+      # (3)
+      preStart = ''
+        while [ ! -f ${config.clan.core.vars.generators.zfs.files.key.path} ]; do 
+          sleep 1
+        done
+      '';
+      unitConfig = {
+        StartLimitIntervalSec = 0;
+      };
+      serviceConfig = {
+        RestartSec = "1s";
+        Restart = "on-failure";
+      };
+    };
+
+    boot.loader.grub = {
+      enable = true;
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+      devices = [
+        "/dev/disk/by-id/ata-HGST_HUS726020ALE610_K5HEJXVD" # (5)
+      ];
+    };
 
     disko.devices = {
       disk = {
-        x = mirrorBoot "nvme-eui.002538b931b59865";
+        x = mirrorBoot "ata-HGST_HUS726020ALE610_K5HEJXVD";
       };
       zpool = {
         zroot = {
@@ -64,7 +103,7 @@ in
                 mountpoint = "none";
                 encryption = "aes-256-gcm";
                 keyformat = "passphrase";
-                keylocation = "file:///tmp/secret.key";
+                keylocation = "file://${config.clan.core.vars.generators.zfs.files.key.path}"; # (4)
               };
             };
             "root/nixos" = {
