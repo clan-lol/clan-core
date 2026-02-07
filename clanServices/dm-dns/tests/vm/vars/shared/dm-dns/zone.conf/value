@@ -1,0 +1,2 @@
+local-zone: "test." transparent
+local-data: "myapp.test. CNAME server.test."

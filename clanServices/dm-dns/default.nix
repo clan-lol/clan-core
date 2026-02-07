@@ -90,11 +90,7 @@
               lib.mapAttrsToList (
                 ip: hostnames:
                 map (
-                  hostname:
-                  if lib.hasInfix ":" ip then
-                    ''"${hostname}. AAAA ${ip}"''
-                  else
-                    ''"${hostname}. A ${ip}"''
+                  hostname: if lib.hasInfix ":" ip then ''"${hostname}. AAAA ${ip}"'' else ''"${hostname}. A ${ip}"''
                 ) (lib.filter (h: h != "localhost") hostnames)
               ) config.networking.hosts
             );

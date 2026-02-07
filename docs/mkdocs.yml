@@ -167,6 +167,7 @@ nav:
           - services/official/certificates.md
           - services/official/coredns.md
           - services/official/data-mesher.md
+          - services/official/dm-dns.md
           - services/official/dyndns.md
           - services/official/emergency-access.md
           - services/official/garage.md

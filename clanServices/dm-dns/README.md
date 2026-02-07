@@ -10,13 +10,14 @@ clan-internal hostnames.
 
 In practice, this means a service which provides some endpoint (e.g. a web UI)
 at `https://myservice.<clan domain>` is reachable from any machine in your clan
-with this service enabled. This allows easely hosting clan-internal services.
+with this service enabled. This allows easily hosting clan-internal services.
 
-It is recommended to combine this service with the [pki service](../pki/README.md), to
+It is recommended to combine this service with the [pki
+service](https://docs.clan.lol/main/services/official/pki), to
 have your internal services be secured with SSL.
 
 This service requires the following dependencies to work:
-- [**data-mesher**](../data-mesher/README.md): Must be configured and running on all machines
+- [**data-mesher**](https://docs.clan.lol/main/services/official/data-mesher): Must be configured and running on all machines
 - **endpoints exports**: Other services must export [`endpoints.hosts`](https://docs.clan.lol/reference/options/clan_service/#exports) for DNS
   entries to be generated
 
