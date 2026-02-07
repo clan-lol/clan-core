@@ -1,6 +1,11 @@
 !!! Danger "Experimental"
     This service is experimental and will change in the future.
 
+!!! Danger "Deprecated"
+    This service is superseded by the `pki` service, which provides a simpler,
+    purely static alternative using plain OpenSSL generators without running a
+    CA daemon.
+
 This service sets up a certificate authority (CA) that can issue certificates to
 other machines in your clan. For this the `ca` role is used.
 It additionally provides a `default` role, that can be applied to all machines

@@ -180,6 +180,7 @@ nav:
           - services/official/monitoring.md
           - services/official/ncps.md
           - services/official/packages.md
+          - services/official/pki.md
           - services/official/sshd.md
           - services/official/syncthing.md
           - services/official/trusted-nix-caches.md
