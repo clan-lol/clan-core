@@ -38,7 +38,7 @@
           { ... }:
           {
             manifest.name = "A";
-            manifest.traits = [
+            manifest.exports.out = [
               "networking"
             ];
 
@@ -77,7 +77,7 @@
           { exports, ... }:
           {
             manifest.name = "B";
-            manifest.traits = [ "bar" ];
+            manifest.exports.out = [ "bar" ];
 
             roles.default = {
               perInstance =

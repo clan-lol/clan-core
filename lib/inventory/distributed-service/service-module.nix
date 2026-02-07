@@ -345,10 +345,15 @@ in
               };
 
               # TODO: Restrict?
-              traits = mkOption {
+              exports.out = mkOption {
                 type = types.listOf types.str;
                 default = [ ];
-                description = "List of export interface traits this service implements.";
+                description = "List of export interface this service adds.";
+              };
+              exports.inputs = mkOption {
+                type = types.listOf types.str;
+                default = [ ];
+                description = "List of export interface this service consumes.";
               };
 
               features = mkOption {

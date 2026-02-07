@@ -18,10 +18,6 @@ in
 {
   # TODO: merge these options into clan options
   options = {
-    # exportsModule = mkOption {
-    #   type = types.deferredModule;
-    #   readOnly = true;
-    # };
     allServices = mkOption {
       visible = false;
       type = attrsWith {
@@ -73,8 +69,8 @@ in
           mergedByName = lib.zipAttrsWith (
             name: exports:
             let
-              availableTraits = ''
-                Available traits
+              availableContract = ''
+                Available export interfaces
 
                 ${lib.join "\n" (lib.attrNames exportInterfaces)}
               '';
@@ -85,19 +81,19 @@ in
                   Export interface: '${t}' doesn't exist
                   Service: '${manifest.name}'
 
-                  - Remove it from 'manifest.traits'
+                  - Remove it from 'manifest.exports.out'
                   - Add it to 'clan.exportInterfaces.${t}'
 
-                  ${availableTraits}
+                  ${availableContract}
                 '')
-              ) manifest.traits;
+              ) manifest.exports.out;
 
-              throwEnableTraits = lib.throwIf (lib.length manifest.traits == 0) ''
+              throwEnableTraits = lib.throwIf (lib.length manifest.exports.out == 0) ''
                 Service: '${manifest.name}' doesn't allow exports
 
-                - Add 'manifest.traits = [ ]' to the service
+                - Add 'manifest.exports.out = [ ]' to the service
 
-                ${availableTraits}
+                ${availableContract}
               '';
 
               checked = (
@@ -121,54 +117,6 @@ in
           ) allExports;
         in
         mergedByName;
-
-      # collect exports from all services
-      # default =
-      #   lib.zipAttrsWith
-      #     (_name: imds: {
-      #       imports =
-      #         /**
-      #           Enable 'trait' interfaces
-      #         */
-      #         map (t: exportInterfaces.${t} or (throw ''
-      #           Service Trait: ${t} doesn't exist
-      #           Service: '${(lib.head imds).service.manifest.name}'
-
-      #           To define it set 'clan.exportInterfaces.${t}'
-      #         '')) (lib.head imds).service.manifest.traits
-
-      #         # Map the exports into them
-      #         ++ (map (s: builtins.addErrorContext "" s.exports) imds);
-      #     })
-      #     (
-      #       lib.mapAttrsToList (
-      #         _service_id: service:
-      #         lib.mapAttrs (
-      #           exportName: exports:
-      #           lib.seq
-      #             (specialArgs.clanLib.checkScope {
-      #               serviceName = service.manifest.name;
-      #               errorDetails = ''
-      #                 Export validation failed in service '${service.manifest.name}'
-
-      #                 Context:
-      #                   - Service: ${service.manifest.name}
-      #                   - Source: exports
-
-      #                 Problem: Services can only export to their own scope (here: "${service.manifest.name}:::")
-
-      #                 Refer to https://docs.clan.lol for more information on exports.
-      #               '';
-      #             } exportName)
-
-      #             # intermediate
-      #             {
-      #               inherit exports;
-      #               inherit service;
-      #             }
-      #         ) service.exports
-      #       ) config.mappedServices
-      # );
     };
   };
 }
