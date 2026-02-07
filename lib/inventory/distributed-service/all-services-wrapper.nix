@@ -3,6 +3,7 @@
   directory,
   exports,
   exportInterfaces,
+  meta,
 }:
 {
   lib,
@@ -29,6 +30,7 @@ in
             inherit
               exports
               directory
+              meta
               ;
           };
           modules = [

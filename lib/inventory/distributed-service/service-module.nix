@@ -7,6 +7,7 @@
   exports,
   clanLib,
   directory,
+  meta,
   ...
 }:
 let
@@ -60,6 +61,10 @@ let
         roleName
         "settings"
       ];
+
+      specialArgs = {
+        inherit meta;
+      };
 
       modules = [
         (lib.setDefaultModuleLocation "Via clan.service module: roles.${roleName}.interface"
@@ -451,7 +456,8 @@ in
 
                     Note:
 
-                    - `machine.config` is not available here, since the role is definition is abstract.
+                    - `machine.config` is not available here, since the role definition is abstract.
+                    - `meta` is available as a module argument (e.g. for option defaults and examples).
                     - *defaults* that depend on the *machine* or *instance* should be added to *settings* later in 'perInstance' or 'perMachine'
                   '';
                   type = types.deferredModule;
@@ -499,6 +505,8 @@ in
                         timeout = 30;
                       }
                       ```
+                    - `meta`: The inventory meta configuration, including `meta.domain` and `meta.name`.
+
                     - `extendSettings`: A function that takes a module and returns a new module with extended settings.
                       ```nix
                       extendSettings {
@@ -630,7 +638,12 @@ in
                             } =
                               v;
                           };
-                          inherit instanceName roles exports;
+                          inherit
+                            instanceName
+                            roles
+                            exports
+                            meta
+                            ;
                           machine = {
                             name = machineName;
                             roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
@@ -792,7 +805,7 @@ in
                 in
                 uniqueStrings (collectRoles machineScope.instances);
             };
-            inherit exports;
+            inherit exports meta;
             inherit (machineScope) instances;
             mkExports = v: {
               ${

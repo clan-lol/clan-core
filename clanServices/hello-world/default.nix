@@ -17,7 +17,7 @@
   roles.morning = {
     description = "A morning greeting machine";
     interface =
-      { lib, ... }:
+      { lib, meta, ... }:
       {
         # Here we define the settings for this role. They will be accessible
         # via `roles.morning.settings` in the role
@@ -42,6 +42,9 @@
 
         # All roles of this service, with their assigned machines
         roles,
+
+        # Inventory meta configuration (e.g. meta.domain, meta.name)
+        meta,
         ...
       }:
       {
@@ -87,7 +90,7 @@
 
   # This part gets applied to all machines, regardless of their role.
   perMachine =
-    { machine, ... }:
+    { machine, meta, ... }:
     {
       nixosModule =
         { pkgs, ... }:

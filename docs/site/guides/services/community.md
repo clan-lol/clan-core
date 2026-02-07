@@ -78,13 +78,14 @@ Next we need to define the settings and the behavior of these distinct roles.
 
     # Define what roles exist
     roles.peer = {
-        interface = {
+        interface = { meta, ... }: {
             # These options can be set via 'roles.client.settings'
+            # 'meta' is available here (e.g. meta.domain, meta.name)
             options.ipRanges = mkOption { type = listOf str; };
         };
 
         # Maps over all instances and produces one result per instance.
-        perInstance = { instanceName, settings, machine, roles, ... }: {
+        perInstance = { instanceName, settings, machine, roles, meta, ... }: {
         # Analog to 'perSystem' of flake-parts.
             # For every instance of this service we will add a nixosModule to a peer-machine
             nixosModule = { config, ... }: {
@@ -117,7 +118,7 @@ Next we need to define the settings and the behavior of these distinct roles.
     };
 
     # Maps over all machines and produces one result per machine.
-    perMachine = { instances, machine, ... }: {
+    perMachine = { instances, machine, meta, ... }: {
     # Analog to 'perSystem' of flake-parts.
         # For every machine of this service we will add exactly one nixosModule to a machine
         nixosModule = { config, ... }: {

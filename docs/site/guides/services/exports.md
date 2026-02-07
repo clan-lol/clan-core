@@ -51,7 +51,7 @@ To export data from your service, use the `mkExports` helper function available 
 ```nix
 { clanLib, ... }: {
   roles.peer = {
-    perInstance = { instanceName, mkExports, roles, ... }: {
+    perInstance = { instanceName, mkExports, roles, meta, ... }: {
       exports = mkExports {
         # Your exported data here
         peer.host.plain = "192.192.192.12";
