@@ -40,11 +40,12 @@ in
             '';
           };
 
-          bootstrapNodes = lib.mkOption {
+          extraBootstrapNodes = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+            default = [ ];
             description = ''
-              A list of bootstrap nodes that act as an initial gateway when joining
-              the cluster.
+              Additional bootstrap nodes that act as an initial gateway when joining
+              the cluster. These are merged with machines from the 'bootstrap' role.
             '';
             example = [
               "192.168.1.1:7946"
@@ -96,7 +97,13 @@ in
         };
       };
     perInstance =
-      { settings, exports, ... }:
+      {
+        settings,
+        exports,
+        roles,
+        machine,
+        ...
+      }:
       let
         # Collect all export values
         allExports = lib.attrValues exports;
@@ -128,12 +135,25 @@ in
           { config, pkgs, ... }:
           let
             dmConfig = config.services.data-mesher;
+
+            # Bootstrap nodes derived from machines in the 'bootstrap' role, excluding ourselves
+            bootstrapRoleMachines =
+              if roles ? bootstrap then
+                lib.filter (name: name != machine.name) (lib.attrNames roles.bootstrap.machines)
+              else
+                [ ];
+            bootstrapNodesFromRole = map (
+              name: "${name}.${config.clan.core.settings.domain}:${toString settings.port}"
+            ) bootstrapRoleMachines;
+
+            # Merge role-derived bootstrap nodes with manually specified extra nodes
+            allBootstrapNodes = bootstrapNodesFromRole ++ settings.extraBootstrapNodes;
           in
           {
             assertions = [
               {
-                assertion = settings.bootstrapNodes != [ ];
-                message = "data-mesher: At least one bootstrap node must be provided in 'bootstrapNodes'.";
+                assertion = allBootstrapNodes != [ ];
+                message = "data-mesher: At least one bootstrap node must be provided either via the 'bootstrap' role or 'extraBootstrapNodes'.";
               }
             ];
 
@@ -214,7 +234,7 @@ in
                   join_interval = "30s";
                   push_pull_interval = "30s";
                   interfaces = settings.interfaces;
-                  bootstrap_nodes = settings.bootstrapNodes;
+                  bootstrap_nodes = allBootstrapNodes;
 
                   encryption =
                     let
@@ -239,6 +259,16 @@ in
             };
           }
         );
+      };
+  };
+
+  roles.bootstrap = {
+    description = "A data-mesher bootstrap node that acts as an initial gateway when joining the cluster.";
+    interface = { };
+    perInstance =
+      { ... }:
+      {
+        nixosModule = { ... }: { };
       };
   };
 

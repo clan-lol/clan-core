@@ -39,7 +39,7 @@
 
           interfaces = [ "eth1" ];
 
-          bootstrapNodes = [
+          extraBootstrapNodes = [
             "[2001:db8:1::1]:7946" # alpha
             "[2001:db8:1::2]:7946" # beta
             "[2001:db8:1::3]:7946" # gamma
