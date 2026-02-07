@@ -38,9 +38,7 @@
             extractEndpoint = host: lib.removeSuffix ".${domain}" host;
 
             allHosts = lib.concatLists (
-              lib.mapAttrsToList (
-                _scopeKey: exportValue: exportValue.endpoints.hosts or [ ]
-              ) machineExports
+              lib.mapAttrsToList (_scopeKey: exportValue: exportValue.endpoints.hosts or [ ]) machineExports
             );
 
             internalHosts = lib.filter isInternalHost allHosts;
@@ -151,31 +149,30 @@
             services.nginx.virtualHosts = lib.mkIf (internalHosts != [ ]) nginxSSLOverrides;
 
             # Root CA + endpoint certificate generators
-            clan.core.vars.generators =
-              {
-                "pki-root-ca" = {
-                  share = true;
+            clan.core.vars.generators = {
+              "pki-root-ca" = {
+                share = true;
 
-                  files."ca.key" = {
-                    secret = true;
-                    deploy = false;
-                  };
-                  files."ca.crt".secret = false;
-
-                  runtimeInputs = [ pkgs.openssl ];
-
-                  script = ''
-                    openssl genrsa -out $out/ca.key 4096
-
-                    openssl req -x509 -new -nodes \
-                      -key $out/ca.key \
-                      -sha256 -days 3650 \
-                      -subj "/CN=Clan Root CA" \
-                      -out $out/ca.crt
-                  '';
+                files."ca.key" = {
+                  secret = true;
+                  deploy = false;
                 };
-              }
-              // endpointCertGenerators;
+                files."ca.crt".secret = false;
+
+                runtimeInputs = [ pkgs.openssl ];
+
+                script = ''
+                  openssl genrsa -out $out/ca.key 4096
+
+                  openssl req -x509 -new -nodes \
+                    -key $out/ca.key \
+                    -sha256 -days 3650 \
+                    -subj "/CN=Clan Root CA" \
+                    -out $out/ca.crt
+                '';
+              };
+            }
+            // endpointCertGenerators;
           };
       };
   };

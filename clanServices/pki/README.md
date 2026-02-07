@@ -1,12 +1,12 @@
 Lightweight PKI (Public Key Infrastructure) for clan networks using plain
 OpenSSL. Unlike the `certificates` service which runs step-ca as a daemon, this
-service is purely static — it only uses generators to create certificates with
+service is purely static - it only uses generators to create certificates with
 no running services.
 
 This allows you to host services inside your clan under the domain set via
 [`meta.domain`](https://docs.clan.lol/reference/options/clan/#meta.domain) in
 your inventory and access them over HTTPS. If you use Caddy or nginx as a
-reverse proxy, pki automatically configures them with the right certificates —
+reverse proxy, pki automatically configures them with the right certificates -
 your reverse proxy handles both internal clan domains and external domains
 transparently, without any manual TLS setup.
 
