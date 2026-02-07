@@ -10,6 +10,10 @@
   manifest.name = "clan-core/yggdrasil";
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
   manifest.readme = builtins.readFile ./README.md;
+  manifest.traits = [
+    "networking"
+    "peer"
+  ];
 
   exports = lib.mapAttrs' (instanceName: _: {
     name = clanLib.buildScopeKey {

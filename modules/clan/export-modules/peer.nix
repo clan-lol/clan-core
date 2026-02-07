@@ -41,6 +41,7 @@ in
 
         Each entry can be either a hostname (plain string) or an attribute set (reference to a 'var')
       '';
+      default = [ ];
       type = listOf (attrTag {
         plain = mkOption {
           type = str;

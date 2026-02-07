@@ -62,7 +62,7 @@ in
     flakeInputs = mkOption {
       type = types.raw;
     };
-    exportsModule = mkOption {
+    exportInterfaces = mkOption {
       type = types.raw;
     };
 
