@@ -1,5 +1,6 @@
 {
   clanLib,
+  lib,
   ...
 }:
 let
@@ -95,7 +96,33 @@ in
         };
       };
     perInstance =
-      { settings, ... }:
+      { settings, exports, ... }:
+      let
+        # Collect all export values
+        allExports = lib.attrValues exports;
+
+        # Extract and merge dataMesher.files from all exports
+        exportedFiles = lib.foldl' (
+          acc: exportValue:
+          let
+            dmFiles =
+              if exportValue ? dataMesher && exportValue.dataMesher != null then
+                exportValue.dataMesher.files
+              else
+                { };
+          in
+          lib.foldlAttrs (
+            innerAcc: fileName: keys:
+            innerAcc // { ${fileName} = (innerAcc.${fileName} or [ ]) ++ keys; }
+          ) acc dmFiles
+        ) { } allExports;
+
+        # Merge with manually configured files (keys are concatenated)
+        mergedFiles = lib.foldlAttrs (
+          acc: fileName: keys:
+          acc // { ${fileName} = (acc.${fileName} or [ ]) ++ keys; }
+        ) exportedFiles settings.files;
+      in
       {
         nixosModule = (
           { config, pkgs, ... }:
@@ -207,7 +234,7 @@ in
                 http.port = 7331;
                 http.interfaces = [ "lo" ]; # todo expose in options
 
-                inherit (settings) files;
+                files = mergedFiles;
               };
             };
           }

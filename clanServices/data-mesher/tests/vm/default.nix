@@ -57,7 +57,7 @@
     def upload_file(node, filename, content, key_path="${./admin.key}"):
         """Create a file and upload it via the cli"""
         node.succeed(f"echo -n '{content}' > /tmp/{filename}")
-        node.succeed(f"data-mesher file update /tmp/{filename} --url http://[::1]:7331 --key-path {key_path}")
+        node.succeed(f"data-mesher file update /tmp/{filename} --url http://[::1]:7331 --key {key_path}")
 
     def wait_for_file(node, filename, expected_content, timeout=60):
         """Wait until a file exists with the expected content"""
@@ -69,7 +69,7 @@
 
     def delete_file(node, filename, key_path="${./admin.key}"):
         """Delete a file via the cli (creates a tombstone)"""
-        node.succeed(f"data-mesher file delete {filename} --url http://[::1]:7331 --key-path {key_path}")
+        node.succeed(f"data-mesher file delete {filename} --url http://[::1]:7331 --key {key_path}")
 
     def wait_for_file_deleted(node, filename, timeout=60):
         """Wait until a file no longer exists"""
