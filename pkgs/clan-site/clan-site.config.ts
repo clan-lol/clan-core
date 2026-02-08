@@ -113,7 +113,5 @@ const config: Config = {
     ],
   },
 };
-// FIXME: not sure why this conflicts with ambient.d.ts
-// https://github.com/microsoft/TypeScript/issues/63105
-// @ts-expect-error fix this once we know why it fails
+
 export default config;
