@@ -15,8 +15,9 @@ from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
-from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.nix import current_system, nix_config, nix_test_store
 from clan_lib.nix_selectors import (
+    generator_final_script,
     inventory_relative_directory,
     secrets_age_plugins,
     vars_generators_files,
@@ -435,19 +436,15 @@ class Generator:
 
         return result
 
-    def final_script_selector(self, machine_name: str) -> str:
-        if self._flake is None:
-            msg = "Flake cannot be None"
-            raise ClanError(msg)
-        return self._flake.machine_selector(
-            machine_name, f'config.clan.core.vars.generators."{self.name}".finalScript'
-        )
-
     def final_script(self, machine_name: str) -> Path:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
-        output = Path(self._flake.select(self.final_script_selector(machine_name)))
+
+        system = current_system()
+        output = Path(
+            self._flake.select(generator_final_script(system, machine_name, self.name))
+        )
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
         return output

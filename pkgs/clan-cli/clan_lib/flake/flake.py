@@ -17,12 +17,14 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import clan_tmp_dir, select_source
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.nix import (
+    current_system,
     nix_build,
     nix_command,
     nix_config,
     nix_metadata,
     nix_test_store,
 )
+from clan_lib.nix_selectors import get_machine_prefix
 
 if TYPE_CHECKING:
     from clan_lib.machines.actions import (
@@ -1173,20 +1175,6 @@ class Flake:
                 description=f"Attribute '{e.args[0]}' not found in flake",
             ) from e
 
-    def machine_selector(self, machine_name: str, selector: str) -> str:
-        """Create a selector for a specific machine.
-
-        Args:
-            machine_name: The name of the machine
-            selector: The attribute selector string relative to the machine config
-        Returns:
-            The full selector string for the machine
-
-        """
-        config = nix_config()
-        system = config["system"]
-        return f'clanInternals.machines."{system}"."{machine_name}".{selector}'
-
     def select_machine(self, machine_name: str, selector: str) -> Any:
         """Select a nix attribute for a specific machine.
 
@@ -1196,7 +1184,9 @@ class Flake:
             apply: Optional function to apply to the result
 
         """
-        return self.select(self.machine_selector(machine_name, selector))
+        system = current_system()
+        prefix = get_machine_prefix()
+        return self.select(f'{prefix}."{system}"."{machine_name}".{selector}')
 
     def list_machines(
         self,

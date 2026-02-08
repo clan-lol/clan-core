@@ -17,6 +17,7 @@ from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
 from clan_lib.nix_models.typing import MachineInput
+from clan_lib.nix_selectors import set_machine_prefix
 from clan_lib.vars.generate import run_generators
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.prompt import PromptType
@@ -75,23 +76,6 @@ class TestFlake(Flake):
     @property
     def path(self) -> Path:
         return self.test_dir
-
-    def machine_selector(self, machine_name: str, selector: str) -> str:
-        """Create a selector for a specific machine.
-
-        Args:
-            machine_name: The name of the machine
-            selector: The attribute selector string relative to the machine config
-        Returns:
-            The full selector string for the machine
-
-        """
-        config = nix_config()
-        system = config["system"]
-        test_system = system
-        if system.endswith("-darwin"):
-            test_system = system.rstrip("darwin") + "linux"
-        return f'checks."{test_system}".{self.check_attr}.machinesCross."{system}"."{machine_name}".{selector}'
 
     # we don't want to evaluate all machines of the flake. Only the ones defined in the test
     def set_machine_names(self, machine_names: list[str]) -> None:
@@ -222,6 +206,7 @@ def generate_test_vars(
         test_system = system.rstrip("darwin") + "linux"
 
     flake = TestFlake(check_attr, test_dir, str(repo_root))
+    set_machine_prefix(f'checks."{test_system}".{check_attr}.machinesCross')
     machine_names = get_machine_names(
         repo_root,
         check_attr,
