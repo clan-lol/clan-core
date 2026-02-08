@@ -59,12 +59,9 @@ class TestFlake(Flake):
       clan-core#checks.<system>.<test_name>
     """
 
-    def __init__(
-        self, check_attr: str, test_dir: Path, *args: Any, **kwargs: Any
-    ) -> None:
-        """Initialize the TestFlake with the check attribute."""
+    def __init__(self, test_dir: Path, *args: Any, **kwargs: Any) -> None:
+        """Initialize the TestFlake with the test directory."""
         super().__init__(*args, **kwargs)
-        self.check_attr = check_attr
         self.test_dir = test_dir
 
     @override
@@ -109,29 +106,13 @@ class TestMachine(Machine):
         name: str,
         flake: Flake,
         test_dir: Path,
-        check_attr: str,
     ) -> None:
         super().__init__(name, flake)
-        self.check_attr = check_attr
         self.test_dir = test_dir
 
     @property
     def flake_dir(self) -> Path:
         return self.test_dir
-
-    def select(self, attr: str) -> Any:
-        """Build the machine and return the path to the result
-        accepts a secret store and a public store
-        """
-        config = nix_config()
-        system = config["system"]
-        test_system = system
-        if system.endswith("-darwin"):
-            test_system = system.rstrip("darwin") + "linux"
-
-        return self.flake.select(
-            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}',
-        )
 
 
 @dataclass
@@ -205,7 +186,7 @@ def generate_test_vars(
     if system.endswith("-darwin"):
         test_system = system.rstrip("darwin") + "linux"
 
-    flake = TestFlake(check_attr, test_dir, str(repo_root))
+    flake = TestFlake(test_dir, str(repo_root))
     set_machine_prefix(f'checks."{test_system}".{check_attr}.machinesCross')
     machine_names = get_machine_names(
         repo_root,
@@ -225,9 +206,7 @@ def generate_test_vars(
     # This hack does not work because flake.invalidate_cache resets _path
     flake._path = test_dir  # noqa: SLF001
 
-    machines = [
-        TestMachine(name, flake, test_dir, check_attr) for name in machine_names
-    ]
+    machines = [TestMachine(name, flake, test_dir) for name in machine_names]
     user = "admin"
     admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
     admin_key_path.parent.mkdir(parents=True, exist_ok=True)
