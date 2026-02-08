@@ -14,13 +14,13 @@ export default function vitePluginConfig({
       if (id === specifier) {
         return id;
       }
-      return null;
+      return;
     },
     load(id) {
       if (id === specifier) {
         return `export default ${JSON.stringify(value)}`;
       }
-      return null;
+      return;
     },
   };
 }

@@ -5,8 +5,8 @@ import path from "node:path";
 import { visit } from "unist-util-visit";
 
 class NonExistLinkError extends Error {
-  override name = "NonExistLinkError";
-  constructor({
+  public override name = "NonExistLinkError";
+  public constructor({
     source,
     target,
     targetAbsolute,
@@ -77,10 +77,10 @@ const remarkLinkResolve: Plugin<[Record<string, `/${string}`>], Root> =
         }
         const { node, targetAbsolute } = result.value;
         const relative = path.relative(file.cwd, targetAbsolute);
-        for (const dir of Object.keys(replacements)) {
+        for (const [dir, replacement] of Object.entries(replacements)) {
           if (relative.startsWith(`${dir}/`)) {
             const url = relative.slice(dir.length + 1, -".md".length);
-            node.url = `${replacements[dir]}/${url}`;
+            node.url = `${replacement}/${url}`;
           }
         }
       }

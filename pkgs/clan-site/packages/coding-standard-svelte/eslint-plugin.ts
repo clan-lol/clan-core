@@ -15,7 +15,7 @@ function base({
   // If non-serializable properties are included, running ESLint with the --cache flag will fail.
   // In that case, remove the non-serializable properties
   const sc = ((): SvelteKitConfig | SvelteConfig => {
-    if (!("kit" in svelteConfig) || svelteConfig.kit.typescript == null) {
+    if (!("kit" in svelteConfig) || !svelteConfig.kit.typescript) {
       return svelteConfig;
     }
     const { typescript: _, ...kit } = svelteConfig.kit;
@@ -48,7 +48,6 @@ function base({
         },
       },
       extends: standard.browser,
-      /* eslint-disable @typescript-eslint/naming-convention */
       rules: {
         // Types are not inferred correctly by typescript-eslint for page/layout
         // data props for example

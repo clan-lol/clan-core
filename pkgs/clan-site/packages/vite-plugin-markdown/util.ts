@@ -1,11 +1,9 @@
 import type { BlockContent, DefinitionContent, Paragraph } from "mdast";
 
-export function isDirectiveParagraph(
+export function isParagraphDirective(
   node: BlockContent | DefinitionContent | undefined,
 ): node is Paragraph {
-  return node?.type === "paragraph" && node.data?.directiveLabel == null;
+  return (
+    node?.type === "paragraph" && typeof node.data?.directiveLabel === "boolean"
+  );
 }
-
-export type DeepReadOnly<T> = T extends object
-  ? { readonly [P in keyof T]: DeepReadOnly<T[P]> }
-  : T;

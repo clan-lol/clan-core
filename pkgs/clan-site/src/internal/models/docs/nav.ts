@@ -15,14 +15,14 @@ export interface NavGroup {
   readonly items: readonly NavItem[];
   readonly path: DocsPath;
   readonly collapsed: boolean;
-  readonly badge: Badge | null;
+  readonly badge: Badge | undefined;
   isActive: boolean;
 }
 
 export interface NavPathItem {
   readonly label: string;
   readonly path: DocsPath;
-  readonly badge: Badge | null;
+  readonly badge: Badge | undefined;
   isActive: boolean;
 }
 
@@ -38,9 +38,14 @@ export interface NavSibling {
 
 export type Badge = Exclude<BadgeInput, string>;
 
-export function normalizeBadge(badge: BadgeInput | undefined): Badge | null {
-  if (badge == null) {
-    return null;
+export function normalizeBadge(
+  badge: BadgeInput | undefined,
+): Badge | undefined {
+  // TODO: typescript-eslint complains, but nullable string and nullable object
+  // are allowed, figure out why it's false positive
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (!badge) {
+    return;
   }
   if (typeof badge === "string") {
     return {
@@ -67,7 +72,7 @@ export async function normalizeNavItem(
     return {
       label: md.frontmatter.title,
       path: `${Docs.base}${navItem}` as const,
-      badge: null,
+      badge: undefined,
       isActive: false,
     };
   }
@@ -185,11 +190,11 @@ export function setActiveNavItems(
 export function findNavSiblings(
   navItems: readonly NavItem[],
   path: Path,
-): readonly [NavSibling | null, NavSibling | null] {
+): readonly [NavSibling | undefined, NavSibling | undefined] {
   let index = -1;
   const navPaths: NavPathItem[] = [];
-  let prev: NavSibling | null = null;
-  let next: NavSibling | null = null;
+  let prev: NavSibling | undefined;
+  let next: NavSibling | undefined;
   visit(navItems, "items", (navItem) => {
     if (!("path" in navItem)) {
       return;
@@ -221,7 +226,7 @@ export function findNavSiblings(
 
 export function findFirstNavPathItem(
   navItems: readonly NavItem[],
-): NavPathItem | null {
+): NavPathItem | undefined {
   for (const navItem of navItems) {
     if ("items" in navItem) {
       const item = findFirstNavPathItem(navItem.items);
@@ -234,5 +239,5 @@ export function findFirstNavPathItem(
       return navItem;
     }
   }
-  return null;
+  return;
 }

@@ -31,7 +31,6 @@ const svelteConfig: Config = {
       relative: DEV,
     },
     alias: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "~": new URL("src", import.meta.url).pathname,
       $internal: new URL("src/internal", import.meta.url).pathname,
     },

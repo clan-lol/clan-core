@@ -1,4 +1,4 @@
-import type { PageLoad } from "./$types";
+import type { PageLoad } from "./$types.d.ts";
 import { ArticleNotExistError, Docs } from "$lib/models/docs.ts";
 import { error } from "@sveltejs/kit";
 import { HTTP_NOT_FOUND } from "$lib/util.ts";

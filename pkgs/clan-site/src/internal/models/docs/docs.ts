@@ -12,9 +12,9 @@ import { mapObjectKeys } from "$lib/util.ts";
 export type { Heading };
 
 export class ArticleNotExistError extends Error {
-  override name = "ArticleNotExistError";
-  path: DocsPath;
-  constructor(path: DocsPath) {
+  public override name = "ArticleNotExistError";
+  public path: DocsPath;
+  public constructor(path: DocsPath) {
     super(`Document article not found, path: ${path}`);
     this.path = path;
   }
@@ -24,8 +24,8 @@ export interface Article {
   readonly title: string;
   readonly path: DocsPath;
   readonly content: string;
-  readonly previous: NavSibling | null;
-  readonly next: NavSibling | null;
+  readonly previous: NavSibling | undefined;
+  readonly next: NavSibling | undefined;
   readonly toc: readonly Heading[];
 }
 
@@ -44,20 +44,8 @@ const markdownLoaders = mapObjectKeys(
 );
 
 export class Docs {
-  static readonly base = config.docs.base;
-  readonly navItems: readonly NavItem[] = [];
-  #article: Article;
-
-  private constructor(navItems: readonly NavItem[], article: Article) {
-    this.navItems = navItems;
-    this.#article = article;
-  }
-
-  get article(): Article {
-    return this.#article;
-  }
-
-  static async load(path: Path): Promise<Docs> {
+  public static readonly base = config.docs.base;
+  public static async load(path: Path): Promise<Docs> {
     const navItems = await normalizeNavItems(config.docs.nav);
     const article = await loadArticle(path, navItems);
     const docs = new Docs(navItems, article);
@@ -65,7 +53,18 @@ export class Docs {
     return docs;
   }
 
-  async loadArticle(path: Path): Promise<void> {
+  public readonly navItems: readonly NavItem[] = [];
+  #article: Article;
+  public get article(): Article {
+    return this.#article;
+  }
+
+  private constructor(navItems: readonly NavItem[], article: Article) {
+    this.navItems = navItems;
+    this.#article = article;
+  }
+
+  public async loadArticle(path: Path): Promise<void> {
     this.#article = await loadArticle(path, this.navItems);
   }
 }
@@ -81,8 +80,8 @@ async function loadArticle(
       content: "",
       path: Docs.base,
       toc: [],
-      previous: null,
-      next: null,
+      previous: undefined,
+      next: undefined,
     };
   }
   const md = await loadMarkdown(path);

@@ -26,14 +26,14 @@ const rehypeToc: Plugin<[{ maxTocExtractionDepth: number }], Root> = function ({
     }
     visit(tree, "element", (node) => {
       const rank = headingRank(node);
-      if (rank == null) {
+      if (rank === undefined) {
         return;
       }
 
-      let { id } = node.properties;
-      if (id == null) {
+      let id = node.properties["id"] as string | undefined;
+      if (id) {
         console.error(
-          `WARNING: h${rank} has an existing id, it will be overwritten with an auto-generated one: ${file.path}`,
+          `WARNING: h${rank.toFixed(0)} has an existing id, it will be overwritten with an auto-generated one: ${file.path}`,
         );
       }
       const content = toString(node);
