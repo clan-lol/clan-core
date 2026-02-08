@@ -10,11 +10,36 @@ This ensures:
 """
 
 from collections.abc import Callable
+from contextvars import ContextVar
+
+# Default prefix for machine selectors
+DEFAULT_MACHINE_PREFIX = "clanInternals.machines"
+
+# Context variable for machine selector prefix
+# Set this via set_machine_prefix() when working with a specific flake
+_machine_prefix: ContextVar[str] = ContextVar(
+    "machine_prefix", default=DEFAULT_MACHINE_PREFIX
+)
+
+
+def set_machine_prefix(prefix: str) -> None:
+    """Set the machine selector prefix for the current context.
+
+    Call this when you have a custom flake;
+    i.e. where machines are exposed in checks.{system}.machinesCross
+    """
+    _machine_prefix.set(prefix)
+
+
+def get_machine_prefix() -> str:
+    """Get the current machine selector prefix."""
+    return _machine_prefix.get()
+
 
 type StaticSel = Callable[[], str]
-type MachineSel = Callable[[str, str], str]
-type MachinesSel = Callable[[str, list[str]], str]
-type GeneratorSel = Callable[[str, str, str], str]
+type MachineSel = Callable[[str, str], str]  # system, machine
+type MachinesSel = Callable[[str, list[str]], str]  # system, machines
+type GeneratorSel = Callable[[str, str, str], str]  # system, machine, generator
 
 # Tests registries
 # Populated by decorators
@@ -81,52 +106,62 @@ def clan_exports() -> str:
 
 @machines_selector
 def vars_generators_metadata(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
 
 
 @machines_selector
 def vars_generators_files(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
 
 
 @machines_selector
 def vars_sops_default_groups(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.?sops.?defaultGroups"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.?sops.?defaultGroups"
 
 
 @machines_selector
 def vars_settings_public_module(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.publicModule"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.publicModule"
 
 
 @machines_selector
 def vars_settings_secret_module(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.secretModule"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.secretModule"
 
 
 @machines_selector
 def vars_sops_secret_upload_dir(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?sops.?secretUploadDirectory"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?sops.?secretUploadDirectory"
 
 
 @machines_selector
 def vars_password_store_pass_command(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?passCommand"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?passCommand"
 
 
 @machines_selector
 def vars_password_store_secret_location(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
 
 
 @machines_selector
 def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.deployment.requireExplicitUpdate"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.deployment.requireExplicitUpdate"
 
 
 @machines_selector
 def deployment_nixos_mobile_workaround(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.system.clan.deployment.nixosMobileWorkaround"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.system.clan.deployment.nixosMobileWorkaround"
 
 
 # GENERATOR SELECTORS (system, machine, generator)
@@ -134,4 +169,5 @@ def deployment_nixos_mobile_workaround(system: str, machines: list[str]) -> str:
 
 @generator_selector
 def generator_final_script(system: str, machine: str, generator: str) -> str:
-    return f'clanInternals.machines.{system}.{machine}.config.clan.core.vars.generators."{generator}".finalScript'
+    prefix = get_machine_prefix()
+    return f'{prefix}.{system}.{machine}.config.clan.core.vars.generators."{generator}".finalScript'
