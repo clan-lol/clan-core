@@ -1,7 +1,7 @@
 import type { ContainerDirectiveData } from "mdast-util-directive";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
-import { isDirectiveParagraph } from "./util.ts";
+import { isParagraphDirective } from "./util.ts";
 import { visit } from "unist-util-visit";
 
 const remarkTabs: Plugin<[], Root> = function () {
@@ -25,7 +25,7 @@ const remarkTabs: Plugin<[], Root> = function () {
         }
         let tabTitle: string;
         const [p] = child.children;
-        if (isDirectiveParagraph(p) && p.children[0]?.type === "text") {
+        if (isParagraphDirective(p) && p.children[0]?.type === "text") {
           child.children.shift();
           tabTitle = p.children[0].value;
         } else {
@@ -68,7 +68,7 @@ const remarkTabs: Plugin<[], Root> = function () {
         tabIndex += 1;
       }
       if (tabTitles.length === 1) {
-        data.hProperties.class += " is-singleton";
+        data.hProperties.class = `${data.hProperties.class ?? ""} is-singleton`;
       }
       // Add tab bar for when js is enabled
       node.children = [

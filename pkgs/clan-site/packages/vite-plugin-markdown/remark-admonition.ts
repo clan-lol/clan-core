@@ -1,7 +1,7 @@
 import type { ContainerDirectiveData } from "mdast-util-directive";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
-import { isDirectiveParagraph } from "./util.ts";
+import { isParagraphDirective } from "./util.ts";
 import { visit } from "unist-util-visit";
 
 const names = new Set(["note", "important", "danger", "tip"]);
@@ -22,7 +22,7 @@ const remarkAdmonition: Plugin<[], Root> = function () {
       };
       let title: string;
       const [p] = node.children;
-      if (isDirectiveParagraph(p) && p.children[0]?.type === "text") {
+      if (isParagraphDirective(p) && p.children[0]?.type === "text") {
         node.children.shift();
         title = p.children[0].value;
       } else {
