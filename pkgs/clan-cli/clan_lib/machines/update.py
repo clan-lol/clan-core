@@ -193,6 +193,12 @@ def run_machine_update(
                 "switch",
                 *nix_options,
             ]
+        else:
+            msg = f"""Unsupported machine type: {machine._class_}
+
+Update for this type is not handled yet.
+"""
+            raise ClanError(msg)
 
         # If we build on the target host, we need to become root for building.
         # We are not using --use-remote-sudo here, so that our sudo ask proxy work: https://git.clan.lol/clan/clan-core/pulls/3642
