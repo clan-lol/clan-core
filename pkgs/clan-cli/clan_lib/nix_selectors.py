@@ -106,7 +106,17 @@ def clan_exports() -> str:
     return "clan.?exports"
 
 
-## Module selectors
+@static_selector
+def inventory_input_modules() -> str:
+    return "clanInternals.inventoryClass.modulesPerSource"
+
+
+@static_selector
+def inventory_static_modules() -> str:
+    return "clanInternals.inventoryClass.staticModules"
+
+
+## MODULE SELECTORS (input_name, module)
 
 
 @module_selector
