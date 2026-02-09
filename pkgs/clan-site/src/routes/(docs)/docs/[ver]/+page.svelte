@@ -82,87 +82,96 @@
   header {
     margin: 80px 0 32px;
   }
+
   h1 {
     margin: 0;
   }
+
   h2 {
     margin: 0;
-    font-size: inherit;
-    font-weight: inherit;
     color: #415e63;
+    font-weight: inherit;
+    font-size: inherit;
   }
+
   .hero {
     width: 640px;
     height: auto;
-    border-radius: 24px;
     margin-left: -24px;
+    border-radius: 24px;
   }
+
   .actions {
     display: flex;
-    justify-content: center;
     gap: 10px;
+    justify-content: center;
     margin: 36px 0 48px;
   }
+
   .button {
     display: flex;
     gap: 8px;
-    border-radius: 3px;
+    padding: 8px 16px;
     border: 1px solid #90b2b7;
+    border-radius: 3px;
     background: #d8e8eb;
     color: #000;
-    padding: 8px 16px;
     box-shadow: inset 2px 2px 0 0 #fff;
     font-size: 16px;
+
     &.primary {
-      color: #fff;
       border-color: #0d1416;
       background-color: #162324;
+      color: #fff;
       box-shadow: inset 2px 2px 0 0 #2c4347;
     }
   }
 
   section {
-    background: #f7f9fa;
     margin: 48px -24px;
     padding: 24px;
     border-radius: 16px;
+    background: #f7f9fa;
 
     h2 {
-      font-size: 24px;
-      font-weight: 700;
       color: inherit;
+      font-weight: 700;
+      font-size: 24px;
     }
+
     dl {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
+
     dt {
-      font-size: 36px;
       padding: 24px;
+      font-size: 36px;
     }
+
     dd {
-      margin: 0 4px 4px 4px;
+      height: 95px;
+      margin: 0 4px 4px;
+      padding: 37px 23px 0;
       background: url($lib/assets/purple-orange-gradient.jpg);
       background-size: cover;
-      height: 95px;
-      padding: 37px 23px 0;
       color: #fff;
       font-size: 14px;
 
       .card:first-child & {
-        color: #000;
         background-image: url($lib/assets/blue-orange-gradient.jpg);
+        color: #000;
       }
     }
+
     .card {
-      flex: 1 1 240px;
-      border-radius: 6px;
-      border: 1px solid #d8e8eb;
-      background: #fff;
       display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
+      flex: 1 1 240px;
+      flex-flow: column wrap;
+      border: 1px solid #d8e8eb;
+      border-radius: 6px;
+      background: #fff;
     }
   }
 </style>

@@ -19,6 +19,7 @@ export function base({
 }): Parameters<typeof defineConfig>[0] {
   return [
     gitignore ? includeIgnoreFile(fileURLToPath(gitignore)) : [],
+    { ignores: ["**/*.js"] },
     js.configs.recommended,
     ts.configs.strictTypeChecked,
     ts.configs.stylisticTypeChecked,

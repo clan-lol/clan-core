@@ -4,8 +4,15 @@
   "version": "0.0.1",
   "type": "module",
   "exports": {
-    "./eslint": "./eslint-plugin.ts",
-    "./prettier": "./prettier-config.ts"
+    "./eslint": {
+      "import": "./eslint.ts"
+    },
+    "./prettier": {
+      "import": "./prettier.ts"
+    },
+    "./stylelint": {
+      "import": "./stylelint.ts"
+    }
   },
   "engines": {
     "node": ">= 22.0.0"
@@ -21,10 +28,13 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-unicorn": "^62.0.0",
     "globals": "^17.3.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^7.0.1",
     "typescript-eslint": "^8.54.0"
   },
   "peerDependencies": {
     "eslint": ">=9.0.0",
-    "prettier": ">=3.0.0"
+    "prettier": ">=3.0.0",
+    "stylelint": ">=17.0.0"
   }
 }

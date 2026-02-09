@@ -9,7 +9,7 @@
 <style>
   .container {
     width: 640px;
-    padding: 0 24px;
     margin: 0 auto;
+    padding: 0 24px;
   }
 </style>

@@ -246,84 +246,97 @@
 
     h2 {
       margin: 0;
-      font-size: 16px;
-      font-weight: normal;
       padding: 15px 20px;
       background: #e5e5e5;
+      font-weight: normal;
+      font-size: 16px;
     }
   }
+
   button {
     padding: 0;
-    background: transparent;
     border: 0;
-    font: inherit;
+    background: transparent;
     color: inherit;
+    font: inherit;
   }
+
   .toc-title {
     display: flex;
     justify-content: space-between;
   }
+
   .toc-label {
     display: flex;
     gap: 3px;
     align-items: center;
   }
+
   .toc-menu {
     position: absolute;
     top: 100%;
-    left: 0;
     right: 0;
+    left: 0;
     margin: 0;
     padding: 15px 20px;
     background: #fff;
-    list-style: none;
     box-shadow: 0 3px 5px #00000020;
+    list-style: none;
 
     ul {
-      list-style: none;
       padding: 0 15px;
+      list-style: none;
     }
+
     li {
       padding: 3px 0;
     }
   }
+
   .content {
     padding: 0 15px;
 
     :global {
       & :is(h1, h2, h3, h4, h5, h6) {
-        margin-left: calc(-1 * var(--pageMargin));
         display: flex;
         align-items: center;
-        &.is-scrolledPast {
+        margin-left: -24px;
+
+        &.is-scrolled-past {
           opacity: 0;
         }
+
         &.is-ghost {
           position: fixed;
+          left: 0;
           z-index: 1;
           margin: 0;
-          left: 0;
 
           > span {
             transform-origin: left top;
           }
         }
+
         a {
           text-decoration: none;
         }
+
         .icon {
           display: flex;
           align-items: center;
         }
+
         .icon::before {
           content: "🔗";
           font-size: 14px;
           visibility: hidden;
         }
+
         &:hover {
           .icon::before {
             visibility: visible;
           }
+
           &.is-ghost {
             .icon::before {
               visibility: hidden;
@@ -336,31 +349,36 @@
 
   footer {
     display: flex;
-    justify-content: space-between;
     gap: 15px;
+    justify-content: space-between;
     margin: 20px 15px;
   }
+
   .pointer {
     display: flex;
-    align-items: center;
     flex: 1;
-    box-shadow: 0 2px 5px #00000030;
-    border-radius: 8px;
-    padding: 20px;
     gap: 10px;
-    text-decoration: none;
+    align-items: center;
+    padding: 20px;
+    border-radius: 8px;
     color: inherit;
+    box-shadow: 0 2px 5px #00000030;
+    text-decoration: none;
   }
+
   .pointer:empty {
     box-shadow: none;
   }
+
   .pointer.next {
-    text-align: right;
     justify-content: end;
+    text-align: right;
   }
+
   .pointer-title {
     font-size: 26px;
   }
+
   .pointer-label {
     font-size: 16px;
   }
