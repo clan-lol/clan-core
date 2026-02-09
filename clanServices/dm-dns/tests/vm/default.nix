@@ -20,9 +20,17 @@
           roles.default.machines.client = { };
           roles.default.extraModules = [
             (
-              { pkgs, lib, ... }:
+              { pkgs, ... }:
               {
                 environment.systemPackages = [ pkgs.dnsutils ];
+              }
+            )
+          ];
+          roles.push.machines.server = { };
+          roles.push.extraModules = [
+            (
+              { lib, ... }:
+              {
                 # Deploy the signing key so the test can use it to push zone files
                 clan.core.vars.generators.dm-dns-signing-key.files."signing.key".deploy = lib.mkForce true;
               }
