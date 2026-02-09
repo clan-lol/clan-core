@@ -5,7 +5,7 @@ import type {
   Path,
 } from "$config";
 import config from "$config";
-import { Docs, loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
+import { loadMarkdown, recursiveLoadMarkdowns } from "./docs.ts";
 import { visit } from "$lib/util.ts";
 
 export type NavItem = NavGroup | NavPathItem | NavURLItem;
@@ -16,14 +16,12 @@ export interface NavGroup {
   readonly path: DocsPath;
   readonly collapsed: boolean;
   readonly badge: Badge | undefined;
-  isActive: boolean;
 }
 
 export interface NavPathItem {
   readonly label: string;
   readonly path: DocsPath;
   readonly badge: Badge | undefined;
-  isActive: boolean;
 }
 
 export interface NavURLItem {
@@ -37,6 +35,10 @@ export interface NavSibling {
 }
 
 export type Badge = Exclude<BadgeInput, string>;
+
+export async function getNavItems(): Promise<readonly NavItem[]> {
+  return await normalizeNavItems(config.docsNav);
+}
 
 export function normalizeBadge(
   badge: BadgeInput | undefined,
@@ -71,9 +73,8 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem);
     return {
       label: md.frontmatter.title,
-      path: `${Docs.base}${navItem}` as const,
+      path: `${config.docsBase}${navItem === "/" ? "" : navItem}` as const,
       badge: undefined,
-      isActive: false,
     };
   }
 
@@ -89,7 +90,6 @@ export async function normalizeNavItem(
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
       items,
-      isActive: false,
     };
   }
 
@@ -97,9 +97,8 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem.slug);
     return {
       label: navItem.label ?? md.frontmatter.title,
-      path: `${Docs.base}${navItem.slug}` as const,
+      path: `${config.docsBase}${navItem.slug}` as const,
       badge: normalizeBadge(navItem.badge),
-      isActive: false,
     };
   }
 
@@ -136,7 +135,10 @@ export async function normalizeNavItem(
         async (md) =>
           await normalizeNavItem({
             label: md.frontmatter.title,
-            path: md.relativePath.slice(config.docs.dir.length) as Path,
+            path: md.relativePath.slice(
+              config.docsDir.length,
+              -".md".length,
+            ) as Path,
           }),
       ),
     );
@@ -150,41 +152,19 @@ export async function normalizeNavItem(
       path: navPath.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      isActive: false,
     };
   }
   if ("path" in navItem) {
     return {
       label: navItem.label,
-      path: `${Docs.base}${navItem.path}` as const,
+      path: `${config.docsBase}${navItem.path === "/" ? "" : navItem.path}` as const,
       badge: normalizeBadge(navItem.badge),
-      isActive: false,
     };
   }
   return {
     label: navItem.label,
     url: navItem.url,
   };
-}
-
-export function setActiveNavItems(
-  navItems: readonly NavItem[],
-  path: Path,
-): void {
-  visit(navItems, "items", (navItem, parents) => {
-    if (!("isActive" in navItem) || !("path" in navItem)) {
-      return;
-    }
-    if (navItem.path === `${Docs.base}${path}`) {
-      navItem.isActive = true;
-      // FIXME: this type casting shouldn't be necessary, fix visit's type instead
-      for (const parent of parents as readonly NavGroup[]) {
-        parent.isActive = true;
-      }
-      return;
-    }
-    return;
-  });
 }
 
 export function findNavSiblings(

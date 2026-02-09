@@ -1,11 +1,11 @@
 import type { defineConfig } from "eslint/config";
 import type { SvelteConfig } from "@sveltejs/vite-plugin-svelte";
 import type { Config as SvelteKitConfig } from "@sveltejs/kit";
-import standard from "@clan/coding-standard/eslint";
+import * as standard from "@clan/coding-standard/eslint";
 import svelte from "eslint-plugin-svelte";
 import ts from "typescript-eslint";
 
-function base({
+export function base({
   gitignore,
   svelteConfig,
 }: {
@@ -47,7 +47,7 @@ function base({
           svelteConfig: sc,
         },
       },
-      extends: standard.browser,
+      extends: standard.universal,
       rules: {
         // Types are not inferred correctly by typescript-eslint for page/layout
         // data props for example
@@ -58,6 +58,9 @@ function base({
         // Type are not inferred correctly by typescript-eslint for page/layout
         // data props for example
         "@typescript-eslint/no-unsafe-call": "off",
+        // Type are not inferred correctly by typescript-eslint for page/layout
+        // data props for example
+        "@typescript-eslint/no-unsafe-return": "off",
         // Type are not inferred correctly by typescript-eslint for page/layout
         // data props for example
         "@typescript-eslint/no-unsafe-argument": "off",
@@ -78,5 +81,5 @@ function base({
   ];
 }
 
-const { node, browser } = standard;
-export default { base, node, browser };
+const { browser, node, universal } = standard;
+export { browser, node, universal };

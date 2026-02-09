@@ -1,5 +1,5 @@
 import { defineConfig } from "eslint/config";
-import standard from "@clan/coding-standard-svelte/eslint";
+import * as standard from "@clan/coding-standard-svelte/eslint";
 import svelteConfig from "./svelte.config.ts";
 
 export default defineConfig(

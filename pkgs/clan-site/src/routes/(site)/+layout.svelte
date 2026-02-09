@@ -9,7 +9,7 @@
   <nav>
     <ol>
       <li><a href={resolve("/")}>Home</a></li>
-      <li><a href={resolve(`/docs/${config.ver}`)}>Documentation</a></li>
+      <li><a href={resolve(config.docsBase)}>Documentation</a></li>
     </ol>
   </nav>
 </header>

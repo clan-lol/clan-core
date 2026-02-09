@@ -1,6 +1,5 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
-import process from "node:process";
 import siteConfig from "./clan-site.config.ts";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
@@ -13,7 +12,7 @@ const svelteConfig: Config = {
     // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter: adapter({
       pages: "build",
-      assets: `build/_assets/${siteConfig.ver}`,
+      assets: `build/_assets/${siteConfig.version}`,
       strict: true,
     }),
     prerender: {
@@ -27,12 +26,11 @@ const svelteConfig: Config = {
       //  src/hooks.server.ts
       assets: DEV
         ? ""
-        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${siteConfig.ver}`,
+        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${siteConfig.version}`,
       relative: DEV,
     },
     alias: {
       "~": new URL("src", import.meta.url).pathname,
-      $internal: new URL("src/internal", import.meta.url).pathname,
     },
     typescript: {
       config(config) {
@@ -52,7 +50,7 @@ const svelteConfig: Config = {
       },
     },
     version: {
-      name: siteConfig.ver,
+      name: siteConfig.version,
     },
   },
   extensions: [".svelte"],

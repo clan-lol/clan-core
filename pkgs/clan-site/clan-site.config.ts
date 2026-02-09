@@ -1,29 +1,66 @@
-import pathutil from "node:path";
-import process from "node:process";
-
-export interface Config {
-  ver: string;
-  docs: {
-    dir: string;
-    base: DocsPath;
-    searchResultLimit: number;
-    minLineNumberLines: number;
-    maxTocExtractionDepth: number;
-    codeLightTheme: string;
-    codeDarkTheme: string;
-    indexArticleTitle: string;
-    nav: NavItem[];
-  };
-}
+const version = process.env["SITE_VER"] || "unstable";
+export default {
+  version,
+  searchResultLimit: 5,
+  codeMinLineNumberLines: 4,
+  codeLightTheme: "catppuccin-latte",
+  codeDarkTheme: "catppuccin-macchiato",
+  maxTocExtractionDepth: 3,
+  docsDir: "src/docs",
+  docsBase: `/docs/${version}` satisfies DocsPath,
+  docsNav: [
+    {
+      label: "Getting Started",
+      items: [
+        "/",
+        "/getting-started/creating-your-first-clan",
+        "/getting-started/add-machines",
+        "/getting-started/add-users",
+        "/getting-started/add-services",
+        "/getting-started/prepare-physical-machines",
+        "/getting-started/prepare-virtual-machines",
+        "/getting-started/configure-disk",
+        "/getting-started/deployment-phase",
+        "/getting-started/update-machines",
+        "/getting-started/whats-next",
+      ],
+    },
+    {
+      label: "Gudies",
+      items: ["/guides/inventory/inventory"],
+    },
+    {
+      label: "Reference",
+      items: [
+        {
+          label: "Overview",
+          slug: "/reference",
+        },
+        {
+          label: "Options",
+          auto: "/reference/options",
+        },
+      ],
+    },
+    {
+      label: "Services",
+      items: ["/services/definition"],
+    },
+    {
+      label: "Test",
+      path: "/test",
+    },
+  ] satisfies readonly DocsNavItem[],
+};
 
 export type Path = `/${string}`;
 export type DocsPath = `/docs/${string}`;
 
-export type NavItem =
+export type DocsNavItem =
   | Path
   | {
       readonly label: string;
-      readonly items: readonly NavItem[];
+      readonly items: readonly DocsNavItem[];
       readonly collapsed?: boolean;
       readonly badge?: Badge;
     }
@@ -55,63 +92,3 @@ export type Badge =
       readonly text: string;
       readonly variant: "caution" | "normal";
     };
-
-const ver = process.env["SITE_VER"] || "unstable";
-const config: Config = {
-  ver,
-  docs: {
-    dir: pathutil.normalize("src/docs"),
-    base: `/docs/${ver}`,
-    searchResultLimit: 5,
-    minLineNumberLines: 4,
-    maxTocExtractionDepth: 3,
-    codeLightTheme: "catppuccin-latte",
-    codeDarkTheme: "catppuccin-macchiato",
-    indexArticleTitle: "Sovereign Infrastructure by Design",
-    nav: [
-      {
-        label: "Getting Started",
-        items: [
-          "/",
-          "/getting-started/creating-your-first-clan",
-          "/getting-started/add-machines",
-          "/getting-started/add-users",
-          "/getting-started/add-services",
-          "/getting-started/prepare-physical-machines",
-          "/getting-started/prepare-virtual-machines",
-          "/getting-started/configure-disk",
-          "/getting-started/deployment-phase",
-          "/getting-started/update-machines",
-          "/getting-started/whats-next",
-        ],
-      },
-      {
-        label: "Gudies",
-        items: ["/guides/inventory/inventory"],
-      },
-      {
-        label: "Reference",
-        items: [
-          {
-            label: "Overview",
-            slug: "/reference",
-          },
-          {
-            label: "Options",
-            auto: "/reference/options",
-          },
-        ],
-      },
-      {
-        label: "Services",
-        items: ["/services/definition"],
-      },
-      {
-        label: "Test",
-        path: "/test",
-      },
-    ],
-  },
-};
-
-export default config;

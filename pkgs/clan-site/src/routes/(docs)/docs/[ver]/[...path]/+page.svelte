@@ -6,7 +6,7 @@
   import "@clan/vite-plugin-markdown/main.css";
 
   const { data } = $props();
-  const article = $derived(data.docs.article);
+  const article = $derived(data.docsArticle);
 
   // TODO: add back for mobile
   // type Heading = ArticleHeading & {
