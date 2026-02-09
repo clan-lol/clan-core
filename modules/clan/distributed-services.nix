@@ -108,6 +108,11 @@ in
       # TODO: Remove specialArgs
       specialArgs = {
         inherit clanLib;
+        _ctx = [
+          "clan"
+          "_services"
+          "allServices"
+        ];
       };
       modules = [
         (import ../../lib/inventory/distributed-service/all-services-wrapper.nix {

@@ -2,7 +2,12 @@
 # manifest.features.API = true
 # It converts the roles.interface to a json-schema
 { clanLib, prefix }:
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  name,
+  ...
+}:
 {
   options.result.api = lib.mkOption {
     visible = false;
@@ -38,7 +43,6 @@
     lib.mapAttrs' (roleName: _role: {
       name = "${roleName}";
       value = {
-        # TODO: make the path to access the schema shorter
         message = ''
           `roles.${roleName}.interface` is not JSON serializable.
 
@@ -48,7 +52,9 @@
 
           To see the evaluation problem run
 
-          nix eval .#${lib.concatStringsSep "." prefix}.config.result.api.schema.${roleName}
+          nix eval .#${
+            lib.concatStringsSep "." (prefix ++ [ ''"${name}"'' ])
+          }.result.api.schema.${roleName} --json
         '';
         assertion = (builtins.tryEval (lib.deepSeq config.result.api.schema.${roleName} true)).success;
       };
