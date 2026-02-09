@@ -1,30 +1,31 @@
 .md-admonition {
-  border-left: 4px solid;
-  padding: 1rem;
   margin: 1rem 0;
+  padding: 1rem;
+  border-left: 4px solid;
 
   .md-admonition-title {
-    text-transform: capitalize;
-    font-weight: 600;
     display: flex;
-    align-items: center;
-    justify-content: start;
     gap: 0.5rem;
+    justify-content: start;
+    align-items: center;
+    font-weight: 600;
+    text-transform: capitalize;
   }
+
   .md-admonition-icon {
     display: inline-flex;
-    align-items: center;
+    flex-shrink: 0;
     justify-content: center;
+    align-items: center;
     width: 1.25rem;
     height: 1.25rem;
-    flex-shrink: 0;
 
     &::before {
       content: "";
       display: block;
       width: 1rem;
       height: 1rem;
-      background-color: currentColor;
+      background-color: currentcolor;
     }
   }
 }
@@ -33,9 +34,11 @@
 .md-admonition.is-note {
   border-left-color: #3b82f6;
   background-color: #eff6ff;
+
   .md-admonition-title {
     color: #1e40af;
   }
+
   .md-admonition-icon::before {
     mask: url("$lib/assets/icons/info.svg") no-repeat center;
     mask-size: contain;
@@ -45,9 +48,11 @@
 .md-admonition.is-important {
   border-left-color: #facc15;
   background-color: #fffbeb;
+
   .md-admonition-title {
     color: #b45309;
   }
+
   .md-admonition-icon::before {
     mask: url("$lib/assets/icons/attention.svg") no-repeat center;
     mask-size: contain;
@@ -61,6 +66,7 @@
   .md-admonition-title {
     color: #b91c1c;
   }
+
   .md-admonition-icon::before {
     mask: url("$lib/assets/icons/warning-filled.svg") no-repeat center;
     mask-size: contain;
@@ -74,6 +80,7 @@
   .md-admonition-title {
     color: #065f46;
   }
+
   .md-admonition-icon::before {
     mask: url("$lib/assets/icons/heart.svg") no-repeat center;
     mask-size: contain;

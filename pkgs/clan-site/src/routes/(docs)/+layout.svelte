@@ -172,10 +172,11 @@
 
 <style>
   .container {
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
   }
+
   header {
     display: flex;
     justify-content: space-between;
@@ -186,66 +187,72 @@
 
   .nav {
     > ul {
-      list-style: none;
       display: flex;
       margin: 0;
       margin-right: -8px;
       padding: 0;
+      list-style: none;
+
       a {
         display: block;
-        font-size: 14px;
-        color: inherit;
         padding: 24px 16px;
+        color: inherit;
+        font-size: 14px;
       }
     }
   }
+
   .logo {
     display: flex;
     gap: 10px;
     align-items: center;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 20px;
 
     :global(svg) {
       height: 28px;
     }
   }
+
   .main {
     display: flex;
     flex: 1;
   }
+
   aside {
+    flex: none;
     width: 260px;
     padding: 0 24px;
-    flex: none;
   }
+
   .search {
     & > ul {
       position: fixed;
-      z-index: 10;
+      top: 0;
       left: 0;
-      top: var(--globalBarHeight);
+      z-index: 10;
       width: 100vw;
       height: 100vh;
       background: #fff;
     }
   }
+
   .search-bar {
-    border-radius: 2px;
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    margin: 24px 0;
+    padding: 6px 8px;
     border: #7b9b9f;
+    border-radius: 2px;
     background: #fff;
     font-size: 14px;
-    padding: 6px 8px;
-    margin: 24px 0;
-    display: flex;
-    align-items: center;
-    gap: 7px;
 
     & > input {
       flex: 1;
+      padding: 0;
       border: none;
       outline: none;
-      padding: 0;
       font: inherit;
       font-size: 14px;
 
@@ -254,48 +261,55 @@
       }
     }
   }
+
   .search-result {
     padding: 15px;
     border-bottom: 1px solid #a3a3a3;
   }
+
   .search-result-title {
     padding: 0 0 15px;
   }
+
   .search-result-excerpt {
     color: #666;
   }
 
   .nav-title {
-    text-transform: uppercase;
-    font-size: 12px;
     color: #415e63;
     font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
   }
+
   .toc ul {
-    list-style: none;
-    padding: 0;
     margin: 0;
     margin-top: 12px;
+    padding: 0;
+    list-style: none;
 
     > li {
       border-radius: 6px;
+
       &.active {
         background-color: #fff;
       }
+
       a {
         display: block;
+        padding: 8px 12px;
         color: inherit;
         font-size: 14px;
         line-height: 1.25;
-        padding: 8px 12px;
       }
     }
   }
+
   main {
     flex: 1;
-    background: #fff;
     margin-right: 24px;
     margin-bottom: 24px;
     border-radius: 12px;
+    background: #fff;
   }
 </style>

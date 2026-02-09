@@ -12,6 +12,7 @@
     },
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
+      "source.fixAll.stylelint": "explicit",
     },
     "eslint.codeActionsOnSave.options": {
       "flags": ["unstable_native_nodejs_ts_config"],
@@ -19,6 +20,14 @@
     "eslint.validate": ["javascript", "typescript", "svelte"],
     "eslint.workingDirectories": [{ "mode": "auto" }],
     "eslint.runtime": "node",
+    "stylelint.validate": ["css", "svelte"],
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
   },
-  "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
+  ],
 }
