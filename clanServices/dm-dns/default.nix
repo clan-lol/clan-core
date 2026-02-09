@@ -13,6 +13,82 @@
   manifest.exports.out = [ "dataMesher" ];
   manifest.exports.inputs = [ "endpoints" ];
 
+  # Push role — machines that can sign and send the zone file to data-mesher
+  roles.push = {
+    description = "Can push DNS zone files to the clan via data-mesher";
+    interface = { };
+
+    perInstance =
+      {
+        mkExports,
+        machine,
+        ...
+      }:
+      {
+        exports = mkExports {
+          dataMesher.files = {
+            "dns/cnames" = [
+              (clanLib.getPublicValue {
+                flake = directory;
+                generator = "dm-dns-signing-key";
+                file = "signing.pub";
+                default = throw ''
+                  dm-dns: Signing key not yet generated.
+                  Run 'clan vars generate ${machine.name} -g dm-dns-signing-key' to generate it.
+                '';
+              })
+            ];
+          };
+        };
+
+        nixosModule =
+          { config, pkgs, ... }:
+          {
+            # Signing key for zone file distribution via data-mesher
+            clan.core.vars.generators.dm-dns-signing-key = {
+              share = true;
+              files = {
+                "signing.key" = { };
+                "signing.pub".secret = false;
+              };
+              runtimeInputs = [ config.services.data-mesher.package ];
+              script = ''
+                data-mesher generate signing-key \
+                  --private-key-path "$out/signing.key" \
+                  --public-key-path "$out/signing.pub"
+              '';
+            };
+
+            environment.systemPackages = [
+              (pkgs.writeShellApplication {
+                name = "dm-send-dns";
+                runtimeInputs = [ config.services.data-mesher.package ];
+                text = ''
+                  KEY="${config.clan.core.vars.generators.dm-dns-signing-key.files."signing.key".path}"
+                  if [ ! -r "$KEY" ]; then
+                    echo "Error: cannot read signing key at $KEY (are you root?)"
+                    exit 1
+                  fi
+
+                  ZONE="${config.clan.core.vars.generators.dm-dns.files."zone.conf".path}"
+                  if [ ! -r "$ZONE" ]; then
+                    echo "Error: cannot read zone file at $ZONE"
+                    exit 1
+                  fi
+
+                  data-mesher file update "$ZONE" \
+                    --url http://localhost:7331 \
+                    --key "$KEY" \
+                    --name "dns/cnames"
+
+                  echo "DNS zone file pushed to data-mesher"
+                '';
+              })
+            ];
+          };
+      };
+  };
+
   roles.default = {
     description = "DNS zone propagation via data-mesher and unbound";
 
@@ -26,21 +102,7 @@
       }:
       {
 
-        exports = mkExports {
-          dataMesher.files = {
-            "dns/cnames" = [
-              (clanLib.getPublicValue {
-                flake = directory;
-                generator = "dm-dns-signing-key";
-                file = "signing.pub";
-                default = throw ''
-                  dm-dns: Signing key not yet generated.
-                  Run 'clan vars generate' to generate the dm-dns signing key before deploying.
-                '';
-              })
-            ];
-          };
-        };
+        exports = mkExports { };
 
         nixosModule =
           {
@@ -98,21 +160,6 @@
             dmFilesDir = "/var/lib/data-mesher/files/dns";
           in
           {
-            # Signing key for zone file distribution via data-mesher
-            clan.core.vars.generators.dm-dns-signing-key = {
-              share = true;
-              files = {
-                "signing.key".deploy = false;
-                "signing.pub".secret = false;
-              };
-              runtimeInputs = [ config.services.data-mesher.package ];
-              script = ''
-                data-mesher generate signing-key \
-                  --private-key-path "$out/signing.key" \
-                  --public-key-path "$out/signing.pub"
-              '';
-            };
-
             # Zone file content to be signed and pushed to data-mesher
             clan.core.vars.generators.dm-dns = {
               share = true;
