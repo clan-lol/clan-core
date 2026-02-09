@@ -140,6 +140,14 @@ def inventory_module_schema(input_name: str, module: str) -> str:
 # MACHINE SELECTORS (system, machine)
 
 
+# Technically a machine selector
+# But can only be evaluated after successful bootstrapping
+# @machine_selector
+def machine_toplevel(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.system.build.toplevel"
+
+
 # MULTI-MACHINE SELECTORS (system, machines[])
 
 
