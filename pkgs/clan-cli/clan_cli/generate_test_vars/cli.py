@@ -17,7 +17,7 @@ from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
 from clan_lib.nix_models.typing import MachineInput
-from clan_lib.nix_selectors import set_machine_prefix
+from clan_lib.nix_selectors import machine_prefix_context
 from clan_lib.vars.generate import run_generators
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.prompt import PromptType
@@ -187,67 +187,67 @@ def generate_test_vars(
         test_system = system.rstrip("darwin") + "linux"
 
     flake = TestFlake(test_dir, str(repo_root))
-    set_machine_prefix(f'checks."{test_system}".{check_attr}.machinesCross')
-    machine_names = get_machine_names(
-        repo_root,
-        check_attr,
-        test_system,
-    )
-
-    flake.set_machine_names(machine_names)
-
-    flake.precache(
-        [
-            f"checks.{test_system}.{check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-        ],
-    )
-
-    # This hack is necessary because the sops store uses flake.path to find the machine keys
-    # This hack does not work because flake.invalidate_cache resets _path
-    flake._path = test_dir  # noqa: SLF001
-
-    machines = [TestMachine(name, flake, test_dir) for name in machine_names]
-    user = "admin"
-    admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
-    admin_key_path.parent.mkdir(parents=True, exist_ok=True)
-    os.environ["SOPS_AGE_KEY_FILE"] = str(admin_key_path)
-    admin_key_path.write_text(
-        json.dumps(
-            {
-                "publickey": sops_pub_key,
-                "type": "age",
-            },
-            indent=2,
+    with machine_prefix_context(f'checks."{test_system}".{check_attr}.machinesCross'):
+        machine_names = get_machine_names(
+            repo_root,
+            check_attr,
+            test_system,
         )
-        + "\n",
-    )
 
-    def mocked_prompts(
-        generator: Generator,
-    ) -> dict[str, str]:
-        prompt_values: dict[str, str] = {}
-        for prompt in generator.prompts:
-            var_id = f"{generator.name}/{prompt.name}"
-            if prompt.prompt_type == PromptType.HIDDEN:
-                prompt_values[prompt.name] = "fake_hidden_value"
-            elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
-                prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
-            elif prompt.prompt_type == PromptType.MULTILINE:
-                prompt_values[prompt.name] = "fake\nmultiline\nvalue"
-            elif prompt.prompt_type == PromptType.LINE:
-                prompt_values[prompt.name] = "fake_line_value"
-            else:
-                msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
-                raise ClanError(msg)
-        return prompt_values
+        flake.set_machine_names(machine_names)
 
-    with NamedTemporaryFile("w") as f:
-        f.write("# created: 2023-07-17T10:51:45+02:00\n")
-        f.write(f"# public key: {sops_pub_key}\n")
-        f.write(sops_priv_key)
-        f.seek(0)
-        os.environ["SOPS_AGE_KEY_FILE"] = f.name
-        run_generators(list(machines), prompt_values=mocked_prompts)
+        flake.precache(
+            [
+                f"checks.{test_system}.{check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            ],
+        )
+
+        # This hack is necessary because the sops store uses flake.path to find the machine keys
+        # This hack does not work because flake.invalidate_cache resets _path
+        flake._path = test_dir  # noqa: SLF001
+
+        machines = [TestMachine(name, flake, test_dir) for name in machine_names]
+        user = "admin"
+        admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
+        admin_key_path.parent.mkdir(parents=True, exist_ok=True)
+        os.environ["SOPS_AGE_KEY_FILE"] = str(admin_key_path)
+        admin_key_path.write_text(
+            json.dumps(
+                {
+                    "publickey": sops_pub_key,
+                    "type": "age",
+                },
+                indent=2,
+            )
+            + "\n",
+        )
+
+        def mocked_prompts(
+            generator: Generator,
+        ) -> dict[str, str]:
+            prompt_values: dict[str, str] = {}
+            for prompt in generator.prompts:
+                var_id = f"{generator.name}/{prompt.name}"
+                if prompt.prompt_type == PromptType.HIDDEN:
+                    prompt_values[prompt.name] = "fake_hidden_value"
+                elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
+                    prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
+                elif prompt.prompt_type == PromptType.MULTILINE:
+                    prompt_values[prompt.name] = "fake\nmultiline\nvalue"
+                elif prompt.prompt_type == PromptType.LINE:
+                    prompt_values[prompt.name] = "fake_line_value"
+                else:
+                    msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
+                    raise ClanError(msg)
+            return prompt_values
+
+        with NamedTemporaryFile("w") as f:
+            f.write("# created: 2023-07-17T10:51:45+02:00\n")
+            f.write(f"# public key: {sops_pub_key}\n")
+            f.write(sops_priv_key)
+            f.seek(0)
+            os.environ["SOPS_AGE_KEY_FILE"] = f.name
+            run_generators(list(machines), prompt_values=mocked_prompts)
 
 
 def main() -> None:

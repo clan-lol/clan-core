@@ -186,10 +186,14 @@ class SecretStore(StoreBase):
         if not local_hash:
             return True
 
+        secret_location = self.flake.select(
+            vars_password_store_secret_location(current_system(), [machine])
+        )[machine]["password-store"]["secretLocation"]
+
         remote_hash = host.run(
             [
                 "cat",
-                f"{self.flake.select_machine(machine, 'config.clan.core.vars.password-store.secretLocation')}/.pass_info",
+                f"{secret_location}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
