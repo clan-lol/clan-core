@@ -22,7 +22,14 @@
             distributor = { $schema" = "http://json-schema.org/<version>"; ... }
           }
         '';
-        default = lib.mapAttrs (_roleName: v: clanLib.jsonschema.fromModule v.interface) config.roles;
+        default = lib.mapAttrs (
+          _roleName: r:
+          clanLib.jsonschema.fromModule {
+            typePrefix = "";
+            input = true;
+            output = false;
+          } r.interface
+        ) config.roles;
       };
     };
   };
