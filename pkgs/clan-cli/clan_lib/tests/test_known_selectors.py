@@ -83,6 +83,22 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
                 f"  Error: {e}"
             )
 
+    # TODO: Test all modules
+    for module_selector_fn in nix_selectors.MODULE_SELECTORS:
+        selector_str = module_selector_fn(
+            # clan-core
+            "Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU",
+            "*",
+        )
+        try:
+            flake.select(selector_str)
+        except ClanError as e:
+            pytest.fail(
+                f"Machines selector '{module_selector_fn.__name__}' failed\n"
+                f"  Selector: {selector_str}\n"
+                f"  Error: {e}"
+            )
+
     config = nix_config()
     system = config["system"]
     for machine_name in machines:
