@@ -167,6 +167,7 @@ nav:
           - services/official/certificates.md
           - services/official/coredns.md
           - services/official/data-mesher.md
+          - services/official/dm-dns.md
           - services/official/dyndns.md
           - services/official/emergency-access.md
           - services/official/garage.md
@@ -180,6 +181,7 @@ nav:
           - services/official/monitoring.md
           - services/official/ncps.md
           - services/official/packages.md
+          - services/official/pki.md
           - services/official/sshd.md
           - services/official/syncthing.md
           - services/official/trusted-nix-caches.md
