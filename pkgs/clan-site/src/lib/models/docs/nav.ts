@@ -135,7 +135,10 @@ export async function normalizeNavItem(
         async (md) =>
           await normalizeNavItem({
             label: md.frontmatter.title,
-            path: md.relativePath.slice(config.docsDir.length) as Path,
+            path: md.relativePath.slice(
+              config.docsDir.length,
+              -".md".length,
+            ) as Path,
           }),
       ),
     );

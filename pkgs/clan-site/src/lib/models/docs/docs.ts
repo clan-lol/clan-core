@@ -78,9 +78,11 @@ export async function loadMarkdown(path: Path): Promise<Markdown> {
   return await load();
 }
 
-export async function recursiveLoadMarkdowns(path: Path): Promise<Markdown[]> {
+export async function recursiveLoadMarkdowns(
+  pathPrefix: Path,
+): Promise<Markdown[]> {
   const paths = (Object.keys(markdownLoaders) as Path[]).filter((p) =>
-    p.startsWith(`${path}/`),
+    p.startsWith(`${pathPrefix}/`),
   );
   return await Promise.all(paths.map(async (p) => await loadMarkdown(p)));
 }
