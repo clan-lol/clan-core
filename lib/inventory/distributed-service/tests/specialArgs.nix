@@ -37,6 +37,7 @@ in
       "clanLib"
       "directory"
       "exports"
+      "meta"
     ];
   };
 }
