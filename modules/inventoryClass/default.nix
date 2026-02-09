@@ -134,16 +134,25 @@ in
       # { sourceName :: { moduleName :: { roleName :: Schema }}}
       readOnly = true;
       type = lib.types.raw;
-      default = lib.mapAttrs (
-        _inputName: moduleSet:
+      default =
+        let
+          inputsWithModules = lib.filterAttrs (_inputName: v: v ? clan.modules) config.flakeInputs;
+        in
         lib.mapAttrs (
-          _moduleName: module:
-          (clanLib.evalService {
-            modules = [ module ];
-            prefix = [ ];
-          }).config.result.api.schema
-        ) moduleSet
-      ) config.modulesPerSource;
+          inputName: v:
+          lib.mapAttrs (
+            moduleName: module:
+            (clanLib.evalService {
+              modules = [ module ];
+              prefix = [
+                inputName
+                "clan"
+                "modules"
+                moduleName
+              ];
+            }).config.result.api.schema
+          ) v.clan.modules
+        ) inputsWithModules;
     };
     templatesPerSource = lib.mkOption {
       # { sourceName :: { moduleName :: {} }}

@@ -15,6 +15,7 @@ from clan_lib.nix_models.typing import (
     InstanceRolesOutput,
     InstancesOutput,
 )
+from clan_lib.nix_selectors import inventory_module_schema
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import (
     delete_by_path_tuple,
@@ -389,9 +390,7 @@ def get_service_module_schema(
         msg = "Not implemented for: input_name is None"
         raise ClanError(msg)
 
-    return flake.select(
-        f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}",
-    )
+    return flake.select(inventory_module_schema(input_name, module_name))
 
 
 @API.register

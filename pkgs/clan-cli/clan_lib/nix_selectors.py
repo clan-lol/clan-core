@@ -40,6 +40,7 @@ type StaticSel = Callable[[], str]
 type MachineSel = Callable[[str, str], str]  # system, machine
 type MachinesSel = Callable[[str, list[str]], str]  # system, machines
 type GeneratorSel = Callable[[str, str, str], str]  # system, machine, generator
+type ModuleSel = Callable[[str, str], str]  # input, module
 
 # Tests registries
 # Populated by decorators
@@ -48,6 +49,7 @@ STATIC_SELECTORS: list[StaticSel] = []
 MACHINE_SELECTORS: list[MachineSel] = []
 MACHINES_SELECTORS: list[MachinesSel] = []
 GENERATOR_SELECTORS: list[GeneratorSel] = []
+MODULE_SELECTORS: list[ModuleSel] = []
 
 
 # Decorator functions
@@ -75,6 +77,12 @@ def generator_selector[T: GeneratorSel](func: T) -> T:
     return func
 
 
+def module_selector[T: ModuleSel](func: T) -> T:
+    """Register a generator selector (system, machine, generator)."""
+    MODULE_SELECTORS.append(func)
+    return func
+
+
 # STATIC SELECTORS
 
 
@@ -96,6 +104,14 @@ def inventory_relative_directory() -> str:
 @static_selector
 def clan_exports() -> str:
     return "clan.?exports"
+
+
+## Module selectors
+
+
+@module_selector
+def inventory_module_schema(input_name: str, module: str) -> str:
+    return f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module}"
 
 
 # MACHINE SELECTORS (system, machine)
