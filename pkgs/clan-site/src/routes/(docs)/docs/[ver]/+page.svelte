@@ -1,6 +1,9 @@
+<script module lang="ts">
+  export const title = "Sovereign Infrastructure by Design";
+</script>
+
 <script lang="ts">
   import config from "$config";
-  import { Docs } from "$lib/models/docs.ts";
   import heroImage from "$lib/assets/docs-hero.jpg";
   import IconCode from "$lib/assets/icons/code.svg?component";
   import IconFlash from "$lib/assets/icons/flash.svg?component";
@@ -8,7 +11,7 @@
 </script>
 
 <header>
-  <h1>{config.docs.indexArticleTitle}</h1>
+  <h1>{title}</h1>
   <h2>A declarative framework for reliable, self-hosted computing</h2>
 </header>
 
@@ -28,8 +31,9 @@
 <div class="actions">
   <a
     class="button primary"
-    href={resolve(`${Docs.base}/getting-started/creating-your-first-clan`)}
-    ><IconFlash width="16" />Create Clan</a
+    href={resolve(
+      `${config.docsBase}/getting-started/creating-your-first-clan`,
+    )}><IconFlash width="16" />Create Clan</a
   >
   <a class="button" href="https://git.clan.lol/clan/clan-core" rel="external"
     ><IconCode width="16" />View on Gitea</a

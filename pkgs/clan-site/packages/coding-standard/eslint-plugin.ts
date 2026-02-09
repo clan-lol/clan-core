@@ -12,7 +12,7 @@ import promisePlugin from "eslint-plugin-promise";
 import ts from "typescript-eslint";
 import unicorn from "eslint-plugin-unicorn";
 
-function base({
+export function base({
   gitignore,
 }: {
   gitignore?: URL | undefined;
@@ -145,6 +145,9 @@ function base({
         "prefer-template": "error",
         "preserve-caught-error": ["error", { requireCatchParameter: true }],
         radix: "error",
+        // Ideally, ["error", { requireFlag: "v" }] should be used, but browser
+        // support is not great right now
+        "require-unicode-regexp": "off",
         "symbol-description": "error",
         yoda: "error",
         "unicode-bom": "error",
@@ -325,7 +328,7 @@ function base({
   ];
 }
 
-const node: Linter.Config[] = [
+export const node: Linter.Config[] = [
   {
     languageOptions: {
       globals: {
@@ -336,12 +339,11 @@ const node: Linter.Config[] = [
   nodePlugin.configs["flat/recommended-module"],
   {
     rules: {
-      "require-unicode-regexp": ["error", { requireFlag: "v" }],
       // Rely on typescript to report non-exist imports
       "n/no-missing-import": "off",
       "n/prefer-node-protocol": "error",
-      "n/prefer-global/buffer": ["error", "never"],
-      "n/prefer-global/process": ["error", "never"],
+      "n/prefer-global/buffer": "error",
+      "n/prefer-global/process": "error",
       "n/prefer-global/console": "error",
       "n/prefer-global/text-decoder": "error",
       "n/prefer-global/text-encoder": "error",
@@ -351,6 +353,7 @@ const node: Linter.Config[] = [
     },
   },
 ];
+
 export const browser: Linter.Config[] = [
   {
     languageOptions: {
@@ -359,16 +362,23 @@ export const browser: Linter.Config[] = [
       },
     },
     rules: {
-      // Ideally, ["error", { requireFlag: "v" }] should be used, but browser
-      // support is not great right now
-      "require-unicode-regexp": "off",
       "import-x/no-nodejs-modules": "error",
     },
   },
 ];
 
-export default {
-  base,
-  node,
-  browser,
-};
+export const universal: Linter.Config[] = [
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    rules: {
+      "import-x/no-nodejs-modules": "error",
+    },
+  },
+];

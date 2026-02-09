@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { NavGroup, NavItem } from "$lib/models/docs.ts";
+  import type { NavGroup, NavItem } from "~/lib/models/docs.ts";
   import type {
     Pagefind,
     PagefindSearchFragment,
@@ -13,16 +13,28 @@
   import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
 
-  const { children } = $props();
-  if (!page.data.docs) {
-    throw new Error("Missing docs page data");
-  }
-  const docs = $derived(page.data.docs);
-  const activeNavGroup = $derived(
-    docs.navItems.find((navItem) => "items" in navItem && navItem.isActive) as
-      | NavGroup
-      | undefined,
-  );
+  const { data, children } = $props();
+  const navItems = $derived(data.docsNavItems);
+  const article = $derived(page.data.docsArticle);
+  const activeNavGroup = $derived.by(() => {
+    const items: { prefixLength: number; group: NavGroup }[] = [];
+    for (const navItem of navItems) {
+      if (!("items" in navItem)) {
+        continue;
+      }
+      const path = resolve(navItem.path);
+      if (!page.url.pathname.startsWith(path)) {
+        continue;
+      }
+      items.push({
+        prefixLength: path.length,
+        group: navItem,
+      });
+    }
+    items.sort((a, b) => b.prefixLength - a.prefixLength);
+    return items[0]?.group;
+  });
+
   let pagefind: Pagefind | undefined;
   let query = $state("");
   let searchResults: PagefindSearchFragment[] = $state([]);
@@ -46,7 +58,7 @@
       const search = await pagefind.debouncedSearch(query);
       searchResults = await Promise.all(
         search.results
-          .slice(0, config.docs.searchResultLimit)
+          .slice(0, config.searchResultLimit)
           .map(async (r) => await r.data()),
       );
     })();
@@ -55,7 +67,7 @@
 
 <svelte:head>
   <link href={favicon} rel="icon" />
-  <title>{docs.article.title}</title>
+  <title>{article?.title || "Clan Documentation"}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     rel="preconnect"
@@ -73,7 +85,7 @@
     <div class="logo"><ClanLogo /> Document</div>
     <nav class="nav">
       <ul>
-        {#each docs.navItems as navItem (navItem.label)}
+        {#each navItems as navItem (navItem.label)}
           {#if "path" in navItem}
             <li>
               <a href={resolve(navItem.path)}>{navItem.label}</a>
@@ -119,7 +131,7 @@
         <nav class="toc">
           <div class="nav-title">{activeNavGroup.label}</div>
           <ul>
-            {@render navItems(activeNavGroup.items)}
+            {@render navItemsSnippet(activeNavGroup.items)}
           </ul>
         </nav>
       {/if}
@@ -129,25 +141,26 @@
     </main>
   </div>
 </div>
-{#snippet navItems(items: readonly NavItem[])}
+{#snippet navItemsSnippet(items: readonly NavItem[])}
   {#each items as item (item.label)}
-    {@render navItem(item)}
+    {@render navItemSnippet(item)}
   {/each}
 {/snippet}
 
-{#snippet navItem(item: NavItem)}
+{#snippet navItemSnippet(item: NavItem)}
   {#if "items" in item}
     <li>
       <details open={!item.collapsed}>
         <summary><span>{item.label}</span></summary>
         <ul>
-          {@render navItems(item.items)}
+          {@render navItemsSnippet(item.items)}
         </ul>
       </details>
     </li>
   {:else if "path" in item}
-    <li class:active={item.isActive}>
-      <a href={resolve(item.path)}>{item.label}</a>
+    {@const pagePath = resolve(item.path)}
+    <li class:active={page.url.pathname === pagePath}>
+      <a href={pagePath}>{item.label}</a>
     </li>
   {:else}
     <li>

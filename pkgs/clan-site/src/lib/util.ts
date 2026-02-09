@@ -1,3 +1,3 @@
-export * from "$internal/util/object.ts";
-export * from "$internal/util/visit.ts";
-export * from "$internal/util/http.ts";
+export * from "./util/object.ts";
+export * from "./util/visit.ts";
+export * from "./util/http.ts";

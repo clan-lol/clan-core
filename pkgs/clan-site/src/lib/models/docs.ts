@@ -1,5 +1,5 @@
-export type { Article, Heading } from "$internal/models/docs/docs.ts";
-export { ArticleNotExistError, Docs } from "$internal/models/docs/docs.ts";
+export type { Article, Heading } from "./docs/docs.ts";
+export { ArticleNotExistError, loadArticle } from "./docs/docs.ts";
 
 export type {
   Badge,
@@ -8,4 +8,5 @@ export type {
   NavPathItem,
   NavSibling,
   NavURLItem,
-} from "$internal/models/docs/nav.ts";
+} from "./docs/nav.ts";
+export { getNavItems } from "./docs/nav.ts";

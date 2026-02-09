@@ -2,11 +2,8 @@ import type { DocsPath, Path } from "$config";
 import type { Heading, Markdown } from "@clan/vite-plugin-markdown";
 import type { NavItem, NavSibling } from "./nav.ts";
 import config from "$config";
-import {
-  findNavSiblings,
-  normalizeNavItems,
-  setActiveNavItems,
-} from "./nav.ts";
+import { findNavSiblings } from "./nav.ts";
+import { title as indexArticleTitle } from "~/routes/(docs)/docs/[ver]/+page.svelte";
 import { mapObjectKeys } from "$lib/util.ts";
 
 export type { Heading };
@@ -43,55 +40,30 @@ const markdownLoaders = mapObjectKeys(
   },
 );
 
-export class Docs {
-  public static readonly base = config.docs.base;
-  public static async load(path: Path): Promise<Docs> {
-    const navItems = await normalizeNavItems(config.docs.nav);
-    const article = await loadArticle(path, navItems);
-    const docs = new Docs(navItems, article);
-    await docs.loadArticle(path);
-    return docs;
-  }
-
-  public readonly navItems: readonly NavItem[] = [];
-  #article: Article;
-  public get article(): Article {
-    return this.#article;
-  }
-
-  private constructor(navItems: readonly NavItem[], article: Article) {
-    this.navItems = navItems;
-    this.#article = article;
-  }
-
-  public async loadArticle(path: Path): Promise<void> {
-    this.#article = await loadArticle(path, this.navItems);
-  }
-}
-
-async function loadArticle(
+export async function loadArticle(
   path: Path,
   navItems: readonly NavItem[],
 ): Promise<Article> {
   if (path === "/") {
-    setActiveNavItems(navItems, path);
     return {
-      title: config.docs.indexArticleTitle,
+      // FIXME: typescript-eslint can't infer types from a svelte type
+      // this is probably a limitation from eslint-plugin-svelte
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      title: indexArticleTitle,
       content: "",
-      path: Docs.base,
+      path: config.docsBase,
       toc: [],
       previous: undefined,
       next: undefined,
     };
   }
   const md = await loadMarkdown(path);
-  setActiveNavItems(navItems, path);
   const [previous, next] = findNavSiblings(navItems, path);
 
   return {
     title: md.frontmatter.title,
     content: md.content,
-    path: `${Docs.base}${path}`,
+    path: `${config.docsBase}${path}`,
     toc: md.toc,
     previous,
     next,
@@ -101,7 +73,7 @@ async function loadArticle(
 export async function loadMarkdown(path: Path): Promise<Markdown> {
   const load = markdownLoaders[path];
   if (!load) {
-    throw new ArticleNotExistError(`${Docs.base}${path}`);
+    throw new ArticleNotExistError(`${config.docsBase}${path}`);
   }
   return await load();
 }
