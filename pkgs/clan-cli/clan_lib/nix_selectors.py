@@ -9,26 +9,39 @@ This ensures:
 3. API surface is explicit and discoverable
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from contextvars import ContextVar
 
 # Default prefix for machine selectors
 DEFAULT_MACHINE_PREFIX = "clanInternals.machines"
 
 # Context variable for machine selector prefix
-# Set this via set_machine_prefix() when working with a specific flake
+# Set this via machine_prefix_context() when working with a specific flake
 _machine_prefix: ContextVar[str] = ContextVar(
     "machine_prefix", default=DEFAULT_MACHINE_PREFIX
 )
 
 
-def set_machine_prefix(prefix: str) -> None:
-    """Set the machine selector prefix for the current context.
+@contextmanager
+def machine_prefix_context(prefix: str) -> Generator[None]:
+    """Context manager for temporarily setting the machine selector prefix.
 
-    Call this when you have a custom flake;
-    i.e. where machines are exposed in checks.{system}.machinesCross
+    Ensures the prefix is always reset to its previous value, even if an
+    exception occurs. This is safe for use in parallel test execution.
+
+    Example:
+        with machine_prefix_context("checks.x86_64-linux.test.machinesCross"):
+            # selectors here use the custom prefix
+            ...
+        # prefix is automatically restored here
+
     """
-    _machine_prefix.set(prefix)
+    token = _machine_prefix.set(prefix)
+    try:
+        yield
+    finally:
+        _machine_prefix.reset(token)
 
 
 def get_machine_prefix() -> str:
