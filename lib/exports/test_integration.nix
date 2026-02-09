@@ -173,4 +173,143 @@
         };
       };
     };
+
+  # Regression test: per-instance exports must not shadow service-level
+  # networking values with defaults. When a service sets networking.priority at
+  # the service level but only peer data per-instance, the per-instance export
+  # must have networking = null (absent), not a default-filled attrset.
+  test_unused_interfaces_are_null =
+    let
+      eval = clanLib.clan {
+        directory = ./.;
+        self = {
+          clan = eval.config;
+          inputs = { };
+        };
+
+        machines.roci = { };
+
+        modules.my-vpn =
+          {
+            clanLib,
+            config,
+            lib,
+            ...
+          }:
+          {
+            manifest.name = "my-vpn";
+            manifest.exports.out = [
+              "networking"
+              "peer"
+            ];
+
+            # Service-level export: sets networking priority
+            exports = lib.mapAttrs' (instanceName: _: {
+              name = clanLib.buildScopeKey {
+                inherit instanceName;
+                serviceName = config.manifest.name;
+              };
+              value = {
+                networking.priority = 900;
+                networking.module = "clan_lib.network.direct";
+              };
+            }) config.instances;
+
+            # Per-instance export: only sets peer data, not networking
+            roles.default = {
+              perInstance =
+                { mkExports, ... }:
+                {
+                  exports = mkExports {
+                    peer.hosts = [
+                      { plain = "10.0.0.1"; }
+                    ];
+                  };
+                };
+            };
+          };
+
+        inventory = {
+          instances.vpn1 = {
+            module.name = "my-vpn";
+            module.input = "self";
+            roles.default.machines.roci = { };
+          };
+        };
+      };
+    in
+    {
+      inherit eval;
+      # Service-level export has networking with the configured priority
+      expr = eval.config.exports."my-vpn:vpn1::".networking;
+      expected = {
+        priority = 900;
+        module = "clan_lib.network.direct";
+      };
+    };
+
+  test_unused_interfaces_are_null_peer =
+    let
+      eval = clanLib.clan {
+        directory = ./.;
+        self = {
+          clan = eval.config;
+          inputs = { };
+        };
+
+        machines.roci = { };
+
+        modules.my-vpn =
+          {
+            clanLib,
+            config,
+            lib,
+            ...
+          }:
+          {
+            manifest.name = "my-vpn";
+            manifest.exports.out = [
+              "networking"
+              "peer"
+            ];
+
+            exports = lib.mapAttrs' (instanceName: _: {
+              name = clanLib.buildScopeKey {
+                inherit instanceName;
+                serviceName = config.manifest.name;
+              };
+              value = {
+                networking.priority = 900;
+                networking.module = "clan_lib.network.direct";
+              };
+            }) config.instances;
+
+            roles.default = {
+              perInstance =
+                { mkExports, ... }:
+                {
+                  exports = mkExports {
+                    peer.hosts = [
+                      { plain = "10.0.0.1"; }
+                    ];
+                  };
+                };
+            };
+          };
+
+        inventory = {
+          instances.vpn1 = {
+            module.name = "my-vpn";
+            module.input = "self";
+            roles.default.machines.roci = { };
+          };
+        };
+      };
+    in
+    {
+      inherit eval;
+      # Per-instance export must NOT have networking (it should be null)
+      expr = eval.config.exports."my-vpn:vpn1:default:roci".networking;
+      expected = null;
+    };
 }
