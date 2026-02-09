@@ -231,19 +231,9 @@ Update for this type is not handled yet.
                     "locally and upload them instead."
                 )
                 raise ClanError(msg)
-            try:
-                is_mobile = machine.select(
-                    "config.system.clan.deployment.nixosMobileWorkaround",
-                )
-            except ClanError:
-                is_mobile = False
-            # if the machine is mobile, we retry to deploy with the mobile workaround method
-            if is_mobile:
-                machine.info(
-                    "Mobile machine detected, applying workaround deployment method",
-                )
+
             ret = _build_host.run(
-                ["nixos-rebuild", "test", *nix_options] if is_mobile else switch_cmd,
+                switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
