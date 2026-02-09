@@ -15,7 +15,11 @@ from clan_lib.nix_models.typing import (
     InstanceRolesOutput,
     InstancesOutput,
 )
-from clan_lib.nix_selectors import inventory_module_schema
+from clan_lib.nix_selectors import (
+    inventory_input_modules,
+    inventory_module_schema,
+    inventory_static_modules,
+)
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import (
     delete_by_path_tuple,
@@ -263,14 +267,10 @@ def get_service_readmes(
 def list_service_modules(flake: Flake) -> ClanModules:
     """Show information about a module"""
     # inputName.moduleName -> ModuleInfo
-    modules: dict[str, dict[str, Any]] = flake.select(
-        "clanInternals.inventoryClass.modulesPerSource"
-    )
+    modules: dict[str, dict[str, Any]] = flake.select(inventory_input_modules())
 
     # moduleName -> ModuleInfo
-    builtin_modules: dict[str, Any] = flake.select(
-        "clanInternals.inventoryClass.staticModules"
-    )
+    builtin_modules: dict[str, Any] = flake.select(inventory_static_modules())
     inventory_store = InventoryStore(flake)
     instances = inventory_store.read().get("instances", {})
 
