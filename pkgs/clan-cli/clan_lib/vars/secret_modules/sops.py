@@ -25,6 +25,8 @@ from clan_cli.secrets.sops import load_age_plugins
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import vars_sops_default_groups, vars_sops_secret_upload_dir
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
@@ -77,10 +79,9 @@ class SecretStore(StoreBase):
             age_plugins,
             priv_key,
             self.flake.path,
-            add_groups=self.flake.select_machine(
-                machine,
-                "config.clan.core.sops.defaultGroups",
-            ),
+            add_groups=self.flake.select(
+                vars_sops_default_groups(current_system(), [machine])
+            )[machine]["sops"]["defaultGroups"],
         )
         add_machine(
             self.clan_dir,
@@ -200,10 +201,9 @@ class SecretStore(StoreBase):
             value,
             self.flake.path,
             add_machines=[machine] if var.deploy else [],
-            add_groups=self.flake.select_machine(
-                machine,
-                "config.clan.core.sops.defaultGroups",
-            ),
+            add_groups=self.flake.select(
+                vars_sops_default_groups(current_system(), [machine])
+            )[machine]["sops"]["defaultGroups"],
             git_commit=False,
         )
         return secret_folder
@@ -286,10 +286,9 @@ class SecretStore(StoreBase):
 
     @override
     def get_upload_directory(self, machine: str) -> str:
-        return self.flake.select_machine(
-            machine,
-            "config.clan.core.vars.sops.secretUploadDirectory",
-        )
+        return self.flake.select(
+            vars_sops_secret_upload_dir(current_system(), [machine])
+        )[machine]["sops"]["secretUploadDirectory"]
 
     @override
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
@@ -327,10 +326,10 @@ class SecretStore(StoreBase):
         )
 
         keys = collect_keys_for_path(path)
-        for group in self.flake.select_machine(
-            machine,
-            "config.clan.core.sops.defaultGroups",
-        ):
+        default_groups = self.flake.select(
+            vars_sops_default_groups(current_system(), [machine])
+        )[machine]["sops"]["defaultGroups"]
+        for group in default_groups:
             keys.update(
                 collect_keys_for_type(
                     self.clan_dir / "sops" / "groups" / group / "machines",
@@ -408,10 +407,10 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
-                for group in self.flake.select_machine(
-                    machine,
-                    "config.clan.core.sops.defaultGroups",
-                ):
+                default_groups = self.flake.select(
+                    vars_sops_default_groups(current_system(), [machine])
+                )[machine]["sops"]["defaultGroups"]
+                for group in default_groups:
                     allow_member(
                         groups_folder(secret_path),
                         sops_groups_folder(self.clan_dir),
