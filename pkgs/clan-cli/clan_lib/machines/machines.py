@@ -7,7 +7,9 @@ from typing import Any, Literal
 
 from clan_lib.api import API
 from clan_lib.flake import ClanSelectError, Flake
+from clan_lib.nix import current_system
 from clan_lib.nix_models.typing import MachineOutput
+from clan_lib.nix_selectors import get_machine_prefix
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars._types import StoreBase
 
@@ -123,7 +125,9 @@ class Machine:
         """Select a nix attribute of the machine
         @attr: the attribute to get
         """
-        return self.flake.select_machine(self.name, attr)
+        system = current_system()
+        prefix = get_machine_prefix()
+        return self.flake.select(f'{prefix}."{system}"."{self.name}".{attr}')
 
 
 @dataclass(frozen=True)

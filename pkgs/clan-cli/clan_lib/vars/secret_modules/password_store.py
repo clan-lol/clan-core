@@ -12,6 +12,11 @@ from typing import override
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import (
+    vars_password_store_pass_command,
+    vars_password_store_secret_location,
+)
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
@@ -58,10 +63,9 @@ class SecretStore(StoreBase):
 
     def init_pass_command(self, machine: str) -> None:
         """Initialize the password store command based on the machine's configuration."""
-        pass_cmd = self.flake.select_machine(
-            machine,
-            "config.clan.core.vars.password-store.passCommand",
-        )
+        system = current_system()
+        res = self.flake.select(vars_password_store_pass_command(system, [machine]))
+        pass_cmd = res[machine]["password-store"]["passCommand"]
 
         if not self.cmd_exists(pass_cmd):
             msg = f"Could not find {pass_cmd} in PATH. Make sure it is installed"
@@ -260,10 +264,10 @@ class SecretStore(StoreBase):
 
     @override
     def get_upload_directory(self, machine: str) -> str:
-        return self.flake.select_machine(
-            machine,
-            "config.clan.core.vars.password-store.secretLocation",
-        )
+        system = current_system()
+        return self.flake.select(
+            vars_password_store_secret_location(system, [machine])
+        )[machine]["password-store"]["secretLocation"]
 
     def upload(self, machine: str, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:

@@ -217,10 +217,6 @@ def get_machine_generators(
         list[Generator]: A list of (unsorted) generators for the machine.
 
     """
-    generators_selector = (
-        "config.clan.core.vars.generators.*.{share,dependencies,prompts,validationHash}"
-    )
-    files_selector = "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}"
     flake.precache(get_machine_selectors(machine_names))
 
     generators: list[Generator] = []
@@ -228,20 +224,20 @@ def get_machine_generators(
         str, tuple[str, dict, dict]
     ] = {}  # name -> (machine_name, gen_data, files_data)
 
+    system = current_system()
+
     for machine_name in machine_names:
         # Get all generator metadata in one select (safe fields only)
-        generators_data = flake.select_machine(
-            machine_name,
-            generators_selector,
-        )
+        generators_data = flake.select(
+            vars_generators_metadata(system, [machine_name])
+        )[machine_name]
         if not generators_data:
             continue
 
         # Get all file metadata in one select
-        files_data = flake.select_machine(
-            machine_name,
-            files_selector,
-        )
+        files_data = flake.select(vars_generators_files(system, [machine_name]))[
+            machine_name
+        ]
 
         machine = Machine(name=machine_name, flake=flake)
         pub_store = machine.public_vars_store
