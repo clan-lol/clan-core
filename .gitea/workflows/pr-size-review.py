@@ -53,11 +53,16 @@ def main() -> None:
         print("Error: unexpected API response for reviews", file=sys.stderr)
         sys.exit(1)
 
-    # Keep only the latest review per user, excluding the PR author
+    # Keep only the latest non-dismissed review per user, excluding the PR author
     latest_by_user: dict[str, str] = {}
     for review in sorted(reviews, key=lambda r: r["id"]):
         user = review["user"]["login"]
-        if user != pr_author:
+        if user == pr_author:
+            continue
+        if review.get("dismissed", False):
+            # Dismissed reviews don't count; remove any previous state for this user
+            latest_by_user.pop(user, None)
+        else:
             latest_by_user[user] = review["state"]
 
     approvals = sum(1 for state in latest_by_user.values() if state == "APPROVED")
