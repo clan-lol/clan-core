@@ -63,11 +63,21 @@
             {
               services.alloy =
                 let
-                  serverAddress = lib.head (
-                    map (
-                      m: "http" + lib.optionalString settings.useSSL "s" + "://${m}.${config.clan.core.settings.domain}"
-                    ) (lib.attrNames roles.server.machines)
-                  );
+                  serverMachineCount = lib.length (lib.attrNames roles.server.machines);
+                  protocol = "http" + lib.optionalString settings.useSSL "s";
+                  serverSettings =
+                    if serverMachineCount != 1 then
+                      throw "The monitoring service requires exactly one server machine, but ${toString serverMachineCount} were defined."
+                    else
+                      (lib.head (lib.attrValues roles.server.machines)).settings;
+                  serverHost =
+                    if serverSettings.host != null then
+                      serverSettings.host
+                    else
+                      lib.head (
+                        map (m: "${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                      );
+                  serverAddress = "${protocol}://${serverHost}";
 
                   enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
                     lib.attrNames (
@@ -214,7 +224,20 @@
       interface =
         { lib, ... }:
         {
-          options.grafana.enable = lib.mkEnableOption "grafana";
+          options = {
+            grafana.enable = lib.mkEnableOption "grafana";
+
+            host = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                Hostname or address of the monitoring server (e.g. "qube.email").
+                The protocol (http/https) is controlled by the client's useSSL option.
+                If null, derived automatically from the server machine name and meta.domain.
+              '';
+              example = "monitoring.example.com";
+            };
+          };
         };
 
       perInstance =
