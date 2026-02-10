@@ -49,7 +49,7 @@
             };
 
             extraAlloyConfig = lib.mkOption {
-              type = lib.types.lines;
+              type = lib.types.str;
               default = "";
               description = ''
                 Extra Alloy config appended to the generated client config.
