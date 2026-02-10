@@ -197,12 +197,6 @@ def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.deployment.requireExplicitUpdate"
 
 
-@machines_selector
-def deployment_nixos_mobile_workaround(system: str, machines: list[str]) -> str:
-    prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.system.clan.deployment.nixosMobileWorkaround"
-
-
 # GENERATOR SELECTORS (system, machine, generator)
 
 

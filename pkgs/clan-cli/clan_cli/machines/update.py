@@ -16,7 +16,6 @@ from clan_lib.machines.update import run_machine_update
 from clan_lib.network.network import get_best_remote
 from clan_lib.nix import nix_config
 from clan_lib.nix_selectors import (
-    deployment_nixos_mobile_workaround,
     deployment_require_explicit_update,
 )
 from clan_lib.ssh.host_key import HostKeyCheck
@@ -176,7 +175,6 @@ def update_command(args: argparse.Namespace) -> None:
             [
                 *get_machine_selectors(machine_names),
                 deployment_require_explicit_update(system, machine_names),
-                deployment_nixos_mobile_workaround(system, machine_names),
             ]
         )
 
