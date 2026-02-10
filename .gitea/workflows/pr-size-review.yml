@@ -1,0 +1,21 @@
+name: PR Size Review Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  pr-size-review-gate:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PR size and required reviews
+        env:
+          GITEA_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ gitea.event.pull_request.number }}
+          REPO: ${{ gitea.repository }}
+          SERVER_URL: ${{ gitea.server_url }}
+        run: |
+          nix run --inputs-from . nixpkgs#python3 -- .gitea/workflows/pr-size-review.py
