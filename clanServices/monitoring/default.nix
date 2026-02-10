@@ -47,6 +47,24 @@
               '';
               example = true;
             };
+
+            extraAlloyConfig = lib.mkOption {
+              type = lib.types.lines;
+              default = "";
+              description = ''
+                Extra Alloy config appended to the generated client config.
+              '';
+              example = ''
+                // Example: custom relabel rule for extra metrics
+                prometheus.relabel "custom" {
+                  rule {
+                    action = "drop"
+                    source_labels = ["__name__"]
+                    regex = "node_disk_io_time_seconds_total"
+                  }
+                }
+              '';
+            };
           };
         };
 
@@ -204,6 +222,8 @@
                         }
                       }
                     }
+
+                    ${settings.extraAlloyConfig}
                   '';
                 };
 
