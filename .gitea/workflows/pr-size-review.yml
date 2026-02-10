@@ -17,5 +17,6 @@ jobs:
           PR_NUMBER: ${{ gitea.event.pull_request.number }}
           REPO: ${{ gitea.repository }}
           SERVER_URL: ${{ gitea.server_url }}
+          HEAD_SHA: ${{ gitea.event.pull_request.head.sha }}
         run: |
           nix run --inputs-from . nixpkgs#python3 -- .gitea/workflows/pr-size-review.py
