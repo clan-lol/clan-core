@@ -1,6 +1,8 @@
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import machine_backups, machine_state
 from clan_lib.ssh.remote import Remote
 
 
@@ -11,8 +13,10 @@ def restore_service(
     provider: str,
     service: str,
 ) -> None:
-    backup_metadata = machine.select("config.clan.core.backups")
-    backup_folders = machine.select("config.clan.core.state")
+    backup_metadata = machine.flake.select(
+        machine_backups(current_system(), machine.name)
+    )
+    backup_folders = machine.flake.select(machine_state(current_system(), machine.name))
 
     if service not in backup_folders:
         msg = f"Service {service} not found in configuration. Available services are: {', '.join(backup_folders.keys())}"
@@ -64,7 +68,9 @@ def restore_backup(
     errors = []
     with machine.target_host().host_connection() as host:
         if service is None:
-            backup_folders = machine.select("config.clan.core.state")
+            backup_folders = machine.flake.select(
+                machine_state(current_system(), machine.name)
+            )
             for _service in backup_folders:
                 try:
                     restore_service(machine, host, name, provider, _service)

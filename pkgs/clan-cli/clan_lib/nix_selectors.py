@@ -148,6 +148,63 @@ def machine_toplevel(system: str, machine: str) -> str:
     return f"{prefix}.{system}.{machine}.config.system.build.toplevel"
 
 
+@machine_selector
+def machine_backups(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.backups"
+
+
+@machine_selector
+def machine_state(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.state"
+
+
+# Requires the monitoring/telegraf module to be enabled
+# @machine_selector
+def machine_telegraf_cert_path(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.vars.generators.telegraf-certs.files.crt.path"
+
+
+@machine_selector
+def machine_networking_target_host(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f'{prefix}.{system}.{machine}.config.clan.core.networking."targetHost"'
+
+
+@machine_selector
+def machine_networking_build_host(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f'{prefix}.{system}.{machine}.config.clan.core.networking."buildHost"'
+
+
+# Requires the VM module to be enabled
+# @machine_selector
+def machine_vm_create(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.system.clan.vm.create"
+
+
+# Requires the VM module to be enabled
+# @machine_selector
+def machine_vm_inspect(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.vm.inspect"
+
+
+@machine_selector
+def machine_vars_settings_secret_module(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.secretModule"
+
+
+@machine_selector
+def machine_vars_settings_public_module(system: str, machine: str) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.publicModule"
+
+
 # MULTI-MACHINE SELECTORS (system, machines[])
 
 

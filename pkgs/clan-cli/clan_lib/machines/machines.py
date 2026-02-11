@@ -9,7 +9,13 @@ from clan_lib.api import API
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.nix import current_system
 from clan_lib.nix_models.typing import MachineOutput
-from clan_lib.nix_selectors import get_machine_prefix
+from clan_lib.nix_selectors import (
+    get_machine_prefix,
+    machine_networking_build_host,
+    machine_networking_target_host,
+    machine_vars_settings_public_module,
+    machine_vars_settings_secret_module,
+)
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars._types import StoreBase
 
@@ -84,7 +90,9 @@ class Machine:
     def secret_vars_store(self) -> StoreBase:
         from clan_lib.vars.secret_modules import password_store  # noqa: PLC0415
 
-        secret_module = self.select("config.clan.core.vars.settings.secretModule")
+        secret_module = self.flake.select(
+            machine_vars_settings_secret_module(current_system(), self.name)
+        )
         module = importlib.import_module(secret_module)
         store = module.SecretStore(flake=self.flake)
         if isinstance(store, password_store.SecretStore):
@@ -93,7 +101,9 @@ class Machine:
 
     @cached_property
     def public_vars_store(self) -> StoreBase:
-        public_module = self.select("config.clan.core.vars.settings.publicModule")
+        public_module = self.flake.select(
+            machine_vars_settings_public_module(current_system(), self.name)
+        )
         module = importlib.import_module(public_module)
         return module.VarsStore(flake=self.flake)
 
@@ -154,7 +164,12 @@ def get_machine_host(
             f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/networking/networking/",
         )
 
-        host_str = machine.select(f'config.clan.core.networking."{field}"')
+        selector = (
+            machine_networking_target_host
+            if field == "targetHost"
+            else machine_networking_build_host
+        )
+        host_str = machine.flake.select(selector(current_system(), machine.name))
         source = "machine"
 
     if not host_str:

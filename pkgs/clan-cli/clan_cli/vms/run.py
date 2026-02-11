@@ -17,7 +17,8 @@ from clan_lib.cmd import CmdOut, Log, RunOpts, handle_io, run
 from clan_lib.dirs import module_root, user_cache_dir, vm_state_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_shell, nix_test_store
+from clan_lib.nix import current_system, nix_shell, nix_test_store
+from clan_lib.nix_selectors import machine_vm_create
 from clan_lib.vars.generate import run_generators
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
@@ -44,8 +45,8 @@ def build_vm(
     secrets_dir = get_secrets(machine, tmpdir)
 
     output = Path(
-        machine.select(
-            "config.system.clan.vm.create",
+        machine.flake.select(
+            machine_vm_create(current_system(), machine.name),
         ),
     )
     if tmp_store := nix_test_store():

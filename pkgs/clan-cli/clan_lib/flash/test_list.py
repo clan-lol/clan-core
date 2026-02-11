@@ -10,7 +10,8 @@ from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.flash.flash import SystemConfig, build_system_config_nix
 from clan_lib.flash.list import list_keymaps, list_languages
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_config
+from clan_lib.nix import current_system, nix_config
+from clan_lib.nix_selectors import machine_toplevel
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +67,11 @@ def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
         if in_sandbox:
             # In sandbox: expect build to fail due to network restrictions
             with pytest.raises(ClanSelectError) as select_error:
-                Path(machine.select("config.system.build.toplevel"))
+                Path(
+                    machine.flake.select(
+                        machine_toplevel(current_system(), machine.name)
+                    )
+                )
             # The error should be a select_error without a failed_attr
             cmd_error = select_error.value.__cause__
             assert cmd_error is not None
@@ -75,7 +80,11 @@ def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
         else:
             try:
                 # Outside sandbox: build should succeed
-                toplevel_path = Path(machine.select("config.system.build.toplevel"))
+                toplevel_path = Path(
+                    machine.flake.select(
+                        machine_toplevel(current_system(), machine.name)
+                    )
+                )
                 assert toplevel_path.exists()
             except ClanSelectError as e:
                 if "Error: unsupported locales detected" in str(e.__cause__):

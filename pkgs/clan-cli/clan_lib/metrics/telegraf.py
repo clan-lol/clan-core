@@ -8,6 +8,8 @@ from typing import Any, TypedDict, cast
 
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import machine_telegraf_cert_path
 from clan_lib.ssh.host import Host
 from clan_lib.vars.get import VarNotFoundError, get_machine_var
 
@@ -65,8 +67,8 @@ def get_metrics(
     encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
     headers = {"Authorization": f"Basic {encoded_credentials}"}
 
-    cert_path = machine.select(
-        "config.clan.core.vars.generators.telegraf-certs.files.crt.path"
+    cert_path = machine.flake.select(
+        machine_telegraf_cert_path(current_system(), machine.name)
     )
     context = ssl.create_default_context(cafile=cert_path)
     context.check_hostname = False
