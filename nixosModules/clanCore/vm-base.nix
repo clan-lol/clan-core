@@ -23,7 +23,7 @@ in
   clan.core.state.HOME.folders = [ "/home" ];
 
   clan.services.waypipe = {
-    inherit (config.clan.core.vm.inspect.waypipe) enable command;
+    inherit (config.clan.virtualisation.waypipe) enable command;
   };
 
   # required for issuing shell commands via qga

@@ -11,6 +11,7 @@ from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from clan_lib.cmd import CmdOut, Log, RunOpts, handle_io, run
 from clan_lib.dirs import module_root, user_cache_dir, vm_state_dir
@@ -24,7 +25,6 @@ from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 from clan_cli.vars.upload import populate_secret_vars
 
-from .inspect import VmConfig, inspect_vm
 from .qemu import qemu_command
 from .virtiofsd import start_virtiofsd
 from .waypipe import start_waypipe
@@ -37,7 +37,7 @@ def build_vm(
     machine: Machine,
     tmpdir: Path,
     nix_options: list[str] | None = None,
-) -> dict[str, str]:
+) -> dict[str, Any]:
     # TODO pass prompt here for the GTK gui
     if nix_options is None:
         nix_options = []
@@ -188,7 +188,7 @@ class QemuVm:
 
 @contextmanager
 def spawn_vm(
-    vm: VmConfig,
+    machine: Machine,
     *,
     cachedir: Path | None = None,
     socketdir: Path | None = None,
@@ -201,7 +201,6 @@ def spawn_vm(
         portmap = {}
 
     with ExitStack() as stack:
-        machine = Machine(name=vm.machine_name, flake=vm.flake_url)
         machine.debug(f"Creating VM for {machine}")
 
         # store the temporary rootfs inside XDG_CACHE_HOME on the host
@@ -219,10 +218,12 @@ def spawn_vm(
             socket_tmp = stack.enter_context(TemporaryDirectory(prefix="vm-sockets-"))
             socketdir = Path(socket_tmp)
 
-        # TODO: We should get this from the vm argument
         nixos_config = build_vm(machine, cachedir)
 
-        state_dir = vm_state_dir(vm.flake_url.identifier, machine.name)
+        if not os.environ.get("WAYLAND_DISPLAY"):
+            nixos_config["waypipe"]["enable"] = False
+
+        state_dir = vm_state_dir(machine.flake.identifier, machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
 
         # specify socket files for qmp and qga
@@ -253,7 +254,7 @@ def spawn_vm(
             )
         virtiofsd_socket = socketdir / "virtiofsd.sock"
         qemu_cmd = qemu_command(
-            vm,
+            machine.name,
             nixos_config,
             secrets_dir=Path(nixos_config["secrets_dir"]),
             rootfs_img=rootfs_img,
@@ -268,7 +269,7 @@ def spawn_vm(
         packages = ["qemu"]
 
         extra_env = {}
-        if vm.graphics and not vm.waypipe.enable:
+        if nixos_config["graphics"] and not nixos_config["waypipe"]["enable"]:
             packages.append("virt-viewer")
             remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
             extra_env["XDG_DATA_DIRS"] = (
@@ -276,7 +277,7 @@ def spawn_vm(
             )
 
         with (
-            start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "),
+            start_waypipe(qemu_cmd.vsock_cid, f"[{machine.name}] "),
             start_virtiofsd(virtiofsd_socket),
             start_vm(
                 machine,
@@ -313,7 +314,7 @@ class RuntimeConfig:
 
 
 def run_vm(
-    vm_config: VmConfig,
+    machine: Machine,
     runtime_config: RuntimeConfig,
 ) -> CmdOut:
     stdin = None
@@ -321,7 +322,7 @@ def run_vm(
         stdin = subprocess.DEVNULL
     with (
         spawn_vm(
-            vm_config,
+            machine,
             cachedir=runtime_config.cachedir,
             socketdir=runtime_config.socketdir,
             portmap=runtime_config.portmap,
@@ -334,7 +335,7 @@ def run_vm(
         future = executor.submit(
             handle_io,
             vm.process,
-            prefix=f"[{vm_config.machine_name}] ",
+            prefix=f"[{machine.name}] ",
             stdout=sys.stdout.buffer,
             stderr=sys.stderr.buffer,
             input_bytes=None,
@@ -358,7 +359,7 @@ def run_vm(
             cwd=Path.cwd(),
             command_list=args,
             returncode=vm.process.returncode,
-            msg=f"VM {vm_config.machine_name} exited with code {rc}",
+            msg=f"VM {machine.name} exited with code {rc}",
             env={},
         )
         if rc != 0:
@@ -373,11 +374,6 @@ def run_command(
 
     run_generators([machine_obj], generators=None, full_closure=False)
 
-    vm: VmConfig = inspect_vm(machine=machine_obj)
-
-    if not os.environ.get("WAYLAND_DISPLAY"):
-        vm.waypipe.enable = False
-
     portmap = dict(p.split(":") for p in args.publish)
 
     runtime_config = RuntimeConfig(
@@ -386,7 +382,7 @@ def run_command(
         no_block=args.no_block,
     )
 
-    run_vm(vm, runtime_config)
+    run_vm(machine_obj, runtime_config)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
