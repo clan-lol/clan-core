@@ -48,20 +48,18 @@
               example = true;
             };
 
-            extraAlloyConfig = lib.mkOption {
+            extraLokiRelabelJournalRules = lib.mkOption {
               type = lib.types.str;
               default = "";
               description = ''
-                Extra Alloy config appended to the generated client config.
+                Extra Loki relabel rules appended to the default journal relabel group.
               '';
               example = ''
-                // Example: custom relabel rule for extra metrics
-                prometheus.relabel "custom" {
-                  rule {
-                    action = "drop"
-                    source_labels = ["__name__"]
-                    regex = "node_disk_io_time_seconds_total"
-                  }
+                // Example: drop debug-level logs
+                rule {
+                  action = "drop"
+                  source_labels = ["level"]
+                  regex = "debug"
                 }
               '';
             };
@@ -210,6 +208,7 @@
                         source_labels = ["__journal_priority_keyword"]
                         target_label = "level"
                       }
+                      ${settings.extraLokiRelabelJournalRules}
                       forward_to = []
                     }
 
@@ -222,8 +221,6 @@
                         }
                       }
                     }
-
-                    ${settings.extraAlloyConfig}
                   '';
                 };
 

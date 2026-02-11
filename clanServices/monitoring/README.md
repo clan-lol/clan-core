@@ -19,15 +19,13 @@ inventory.instances = {
         tags = [ "all" ];
         # Decide whether or not your server is reachable via https.
         settings.useSSL = true;
-        # Optional extra Alloy configuration appended to the generated config.
-        settings.extraAlloyConfig = ''
-          // Drop a noisy metric as an example.
-          prometheus.relabel "custom" {
-            rule {
-              action = "drop"
-              source_labels = ["__name__"]
-              regex = "node_disk_io_time_seconds_total"
-            }
+        # Optional extra Loki relabel rules for the default journal group.
+        settings.extraLokiRelabelJournalRules = ''
+          // Drop debug-level logs.
+          rule {
+            action = "drop"
+            source_labels = ["level"]
+            regex = "debug"
           }
         '';
       };
