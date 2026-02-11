@@ -37,20 +37,18 @@ nixosLib.runTest (
       { ... }:
       ''
         import subprocess
-        import tempfile
         from nixos_test_lib.nix_setup import setup_nix_in_nix
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-          setup_nix_in_nix(temp_dir, "${closureInfo}")  # No closure info for this test
+        setup_nix_in_nix("${closureInfo}", bind_mount=True)  # No closure info for this test
 
-          start_all()
+        start_all()
 
-          result = subprocess.run(
-              ["${
-                clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
-              }/bin/clan", "machines", "build", "peer1", "--format", "iso", "--flake", "${config.clan.test.flakeForSandbox}"],
-              check=True
-          )
+        result = subprocess.run(
+            ["${
+              clan-core.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
+            }/bin/clan", "machines", "build", "peer1", "--format", "iso", "--flake", "${config.clan.test.flakeForSandbox}"],
+            check=True
+        )
       '';
   }
 )
