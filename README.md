@@ -24,13 +24,13 @@ If you're new to Clan and eager to dive in, start with our quickstart guide and 
 
 In the Clan ecosystem, security is paramount. Learn how to handle secrets effectively:
 
-- **Secrets Management**: Securely manage secrets by consulting [Vars](https://docs.clan.lol/guides/vars/vars-overview/).
+- **Secrets Management**: Securely manage secrets by consulting [Vars](https://docs.clan.lol/25.11/guides/vars/vars-overview/).
 
 ### Contributing to Clan
 
 The Clan project thrives on community contributions. We welcome everyone to contribute and collaborate:
 
-- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/guides/contributing/CONTRIBUTING/)<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
+- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/25.11/guides/contributing/CONTRIBUTING/)<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
 
 ## Join the revolution
 
