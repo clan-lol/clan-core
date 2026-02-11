@@ -3,8 +3,18 @@
 import ctypes
 import os
 import subprocess
+from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+
+class NixStoreStrategy(Enum):
+    """Strategy for setting up the Nix store in the test environment."""
+
+    AUTO = "auto"  # Use bind mount when uid is 0, otherwise copy
+    BIND = "bind"  # Use bind mounts (requires root)
+    COPY = "copy"  # Copy store paths
+
 
 # These paths will be substituted during package build
 CP_BIN = "@cp@"
@@ -65,13 +75,20 @@ def mount(
         raise OSError(errno, os.strerror(errno))
 
 
-def setup_nix_in_nix(closure_info: str | None, *, bind_mount: bool = False) -> Path:
+def setup_nix_in_nix(
+    closure_info: str | None,
+    *,
+    nix_store_strategy: NixStoreStrategy = NixStoreStrategy.AUTO,
+) -> Path:
     """Set up Nix store inside test environment
 
     Args:
-        temp_dir: Temporary directory
         closure_info: Path to closure info directory containing store-paths file,
             or None if no closure info
+        nix_store_strategy: Strategy for setting up the Nix store.
+            AUTO uses bind mounts when running as root (uid 0), otherwise copies.
+            BIND always uses bind mounts (requires root).
+            COPY always copies store paths.
     """
     # Remove NIX_REMOTE if present (we don't have any nix daemon running)
     if "NIX_REMOTE" in os.environ:
@@ -101,7 +118,11 @@ def setup_nix_in_nix(closure_info: str | None, *, bind_mount: bool = False) -> P
     if closure_info and Path(closure_info).exists():
         store_paths_file = Path(closure_info) / "store-paths"
         if store_paths_file.exists():
-            if bind_mount:
+            # Determine whether to use bind mounts based on strategy
+            use_bind_mount = nix_store_strategy == NixStoreStrategy.BIND or (
+                nix_store_strategy == NixStoreStrategy.AUTO and os.getuid() == 0
+            )
+            if use_bind_mount:
                 for path in store_paths_file.read_text().splitlines():
                     if not path.strip():
                         continue
@@ -155,7 +176,11 @@ def setup_nix_in_nix(closure_info: str | None, *, bind_mount: bool = False) -> P
 
 
 def prepare_test_flake(
-    temp_dir: str, clan_core_for_checks: str, closure_info: str
+    temp_dir: str,
+    clan_core_for_checks: str,
+    closure_info: str,
+    *,
+    nix_store_strategy: NixStoreStrategy = NixStoreStrategy.AUTO,
 ) -> tuple[Path, Path]:
     """Set up Nix store and copy test flake to temporary directory
 
@@ -163,12 +188,13 @@ def prepare_test_flake(
         temp_dir: Temporary directory
         clan_core_for_checks: Path to clan-core-for-checks
         closure_info: Path to closure info for Nix store setup
+        nix_store_strategy: Strategy for setting up the Nix store.
 
     Returns:
         Path to the test flake directory
     """
     # Set up Nix store
-    store_dir = setup_nix_in_nix(closure_info)
+    store_dir = setup_nix_in_nix(closure_info, nix_store_strategy=nix_store_strategy)
 
     # Copy test flake
     flake_dir = Path(temp_dir) / "test-flake"
