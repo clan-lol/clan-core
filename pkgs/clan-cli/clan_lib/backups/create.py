@@ -1,10 +1,14 @@
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import machine_backups
 
 
 def create_backup(machine: Machine, provider: str | None = None) -> None:
     machine.info(f"creating backup for {machine.name}")
-    backup_scripts = machine.select("config.clan.core.backups")
+    backup_scripts = machine.flake.select(
+        machine_backups(current_system(), machine.name)
+    )
     host = machine.target_host()
     if provider is None:
         if not backup_scripts["providers"]:

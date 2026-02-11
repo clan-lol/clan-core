@@ -13,7 +13,8 @@ from clan_lib.errors import ClanError
 from clan_lib.exports.scope import parse_export
 from clan_lib.flake import Flake
 from clan_lib.import_utils import ClassSource, import_with_source
-from clan_lib.nix_selectors import clan_exports
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import clan_exports, machine_networking_target_host
 from clan_lib.ssh.remote import Remote
 
 if TYPE_CHECKING:
@@ -285,7 +286,9 @@ class BestRemoteContext:
             )
 
         # Step 3: Try targetHost from machine nixos config
-        target_host = self.machine.select('config.clan.core.networking."targetHost"')
+        target_host = self.machine.flake.select(
+            machine_networking_target_host(current_system(), self.machine.name)
+        )
         if target_host:
             log.debug(
                 f"Using targetHost from machine config for {self.machine.name}: {target_host}",

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import machine_backups
 from clan_lib.ssh.remote import Remote
 
 
@@ -14,7 +16,9 @@ class Backup:
 
 
 def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]:
-    backup_metadata = machine.select("config.clan.core.backups")
+    backup_metadata = machine.flake.select(
+        machine_backups(current_system(), machine.name)
+    )
     list_command = backup_metadata["providers"][provider]["list"]
     proc = host.run(
         [list_command],
@@ -43,7 +47,9 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
 
 
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
-    backup_metadata = machine.select("config.clan.core.backups")
+    backup_metadata = machine.flake.select(
+        machine_backups(current_system(), machine.name)
+    )
     results = []
     with machine.target_host().host_connection() as host:
         if provider is None:
