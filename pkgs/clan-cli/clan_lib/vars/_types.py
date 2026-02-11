@@ -100,9 +100,11 @@ def string_repr(value: bytes) -> str:
 class GeneratorStore(Protocol):
     """Protocol defining the generator interface that stores need."""
 
-    machines: list[str]
     files: list["Var"]
     validation_hash: str | None
+
+    @property
+    def machines(self) -> list[str]: ...
 
     @property
     def share(self) -> bool: ...

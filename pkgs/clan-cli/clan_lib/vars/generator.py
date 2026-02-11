@@ -284,6 +284,7 @@ def get_machine_generators(
                 var = Var(
                     id=f"{gen_name}/{file_name}",
                     name=file_name,
+                    machines=[machine_name],
                     secret=file_data["secret"],
                     deploy=file_data["deploy"],
                     owner=file_data["owner"],
@@ -317,8 +318,6 @@ def get_machine_generators(
                 ),
                 validation_hash=gen_data.get("validationHash"),
                 prompts=prompts,
-                # shared generators can have multiple machines, machine-specific have one
-                machines=[machine_name],
                 _flake=flake,
                 _public_store=pub_store,
                 _secret_store=sec_store,
@@ -335,8 +334,10 @@ def get_machine_generators(
                     (g for g in generators if g.name == gen_name and g.share), None
                 )
                 if existing:
-                    # Just append the machine to the existing generator
-                    existing.machines.append(machine_name)
+                    # Append the machine to each var of the existing generator
+                    for var in existing.files:
+                        if machine_name not in var.machines:
+                            var.machines.append(machine_name)
                 else:
                     # Add the new shared generator
                     generators.append(generator)
@@ -356,11 +357,6 @@ class Generator:
 
     validation_hash: str | None = None
 
-    machines: list[str] = field(default_factory=list)
-    """
-    List of fixed length 1 for machine-specific generators, or
-    multiple machines for shared generators.
-    """
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
@@ -377,6 +373,18 @@ class Generator:
     @property
     def name(self) -> str:
         return self.key.name
+
+    @property
+    def machines(self) -> list[str]:
+        """Union of all machines across all vars, preserving insertion order."""
+        seen: set[str] = set()
+        result: list[str] = []
+        for var in self.files:
+            for m in var.machines:
+                if m not in seen:
+                    seen.add(m)
+                    result.append(m)
+        return result
 
     def __hash__(self) -> int:
         return hash(self.key)
@@ -449,14 +457,13 @@ class Generator:
         return self.validation_hash
 
     def with_toggled_share(self, machine: str) -> "Generator":
-        new_machines: list[str]
         if self.share:
             new_key = GeneratorId(name=self.name, placement=PerMachine(machine=machine))
-            new_machines = [machine]
+            new_files = [dataclasses.replace(v, machines=[machine]) for v in self.files]
         else:
             new_key = GeneratorId(name=self.name, placement=Shared())
-            new_machines = []
-        return dataclasses.replace(self, key=new_key, machines=new_machines)
+            new_files = [dataclasses.replace(v, machines=[]) for v in self.files]
+        return dataclasses.replace(self, key=new_key, files=new_files)
 
     def decrypt_dependencies(
         self,

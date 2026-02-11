@@ -9,6 +9,7 @@ from clan_lib.vars.graph import (
     all_missing_closure,
     requested_closure,
 )
+from clan_lib.vars.var import Var
 
 
 def generator_names(generator: list[GeneratorGraphNode]) -> list[str]:
@@ -63,28 +64,24 @@ def test_required_generators() -> None:
     gen_1 = Generator(
         key=_pm("gen_1", machine_name),
         dependencies=[],
-        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         key=_pm("gen_2", machine_name),
         dependencies=[gen_1.key],
-        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2a = Generator(
         key=_pm("gen_2a", machine_name),
         dependencies=[gen_2.key],
-        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2b = Generator(
         key=_pm("gen_2b", machine_name),
         dependencies=[gen_2.key],
-        machines=[machine_name],
         _public_store=public_store,
         _secret_store=secret_store,
     )
@@ -132,21 +129,21 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     shared_gen = Generator(
         key=_shared("shared_gen"),
         dependencies=[],
-        machines=[machine_1, machine_2],  # Shared across both machines
+        files=[
+            Var(id="shared_gen/dummy", name="dummy", machines=[machine_1, machine_2]),
+        ],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_1 = Generator(
         key=_pm("gen_1", machine_1),
         dependencies=[shared_gen.key],
-        machines=[machine_1],
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         key=_pm("gen_2", machine_2),
         dependencies=[shared_gen.key],
-        machines=[machine_2],
         _public_store=public_store,
         _secret_store=secret_store,
     )
