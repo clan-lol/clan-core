@@ -193,19 +193,16 @@ def test_generate_public_and_secret_vars(
         key=GeneratorId(
             name="my_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     shared_generator = Generator(
         key=GeneratorId(name="my_shared_generator", placement=Shared()),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     dependent_generator = Generator(
         key=GeneratorId(
             name="dependent_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     in_repo_store = in_repo.VarsStore(flake=flake_obj)
@@ -373,14 +370,12 @@ def test_generate_secret_var_sops_with_default_group(
         key=GeneratorId(
             name="first_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     second_generator = Generator(
         key=GeneratorId(
             name="second_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     in_repo_store = in_repo.VarsStore(flake=flake_obj)
@@ -411,14 +406,12 @@ def test_generate_secret_var_sops_with_default_group(
         key=GeneratorId(
             name="first_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     second_generator_with_share = Generator(
         key=GeneratorId(
             name="second_generator", placement=PerMachine(machine="my_machine")
         ),
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     assert sops_store.user_has_access(
@@ -637,25 +630,21 @@ def test_generate_secret_var_password_store(
     my_generator = Generator(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     my_generator_shared = Generator(
         key=GeneratorId(name="my_generator", placement=Shared()),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     my_shared_generator = Generator(
         key=GeneratorId(name="my_shared_generator", placement=Shared()),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     my_shared_generator_not_shared = Generator(
         key=GeneratorId(name="my_shared_generator", placement=PerMachine("my_machine")),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     assert store.exists(my_generator.key, "my_secret")
@@ -666,7 +655,6 @@ def test_generate_secret_var_password_store(
     generator = Generator(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     assert store.get(generator.key, "my_secret").decode() == "hello\n"
@@ -676,7 +664,6 @@ def test_generate_secret_var_password_store(
     my_generator = Generator(
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     var_name = "my_secret"
@@ -688,7 +675,6 @@ def test_generate_secret_var_password_store(
     my_generator2 = Generator(
         key=GeneratorId(name="my_generator2", placement=PerMachine("my_machine")),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     var_name = "my_secret2"
@@ -699,7 +685,6 @@ def test_generate_secret_var_password_store(
     my_shared_generator = Generator(
         key=GeneratorId(name="my_shared_generator", placement=Shared()),
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
     )
     var_name = "my_shared_secret"
@@ -748,12 +733,10 @@ def test_generate_secret_for_multiple_machines(
 
     # Create generators for each machine
     gen1 = Generator(
-        machines=["machine1"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("machine1")),
     )
     gen2 = Generator(
-        machines=["machine2"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("machine2")),
     )
@@ -838,13 +821,11 @@ def test_prompt(
     # Set up objects for testing the results
     flake_obj = Flake(str(flake.path))
     my_generator = Generator(
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
     my_generator_with_details = Generator(
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
@@ -965,7 +946,6 @@ def test_prompt_prefill_on_regeneration(
     in_repo_store = in_repo.VarsStore(flake=flake_obj)
     sops_store = sops.SecretStore(flake=flake_obj)
     generator = Generator(
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
@@ -1245,12 +1225,10 @@ def test_shared_vars_regeneration(
     in_repo_store_2 = in_repo.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     child_gen_m1 = Generator(
-        machines=["machine1"],
         _flake=machine1.flake,
         key=GeneratorId(name="child_generator", placement=PerMachine("machine1")),
     )
     child_gen_m2 = Generator(
-        machines=["machine2"],
         _flake=machine2.flake,
         key=GeneratorId(name="child_generator", placement=PerMachine("machine2")),
     )
@@ -1320,12 +1298,10 @@ def test_multi_machine_shared_vars(
     in_repo_store_2 = in_repo.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     generator_m1 = Generator(
-        machines=["machine1"],
         _flake=machine1.flake,
         key=GeneratorId(name="shared_generator", placement=Shared()),
     )
     generator_m2 = Generator(
-        machines=["machine2"],
         _flake=machine2.flake,
         key=GeneratorId(name="shared_generator", placement=Shared()),
     )
@@ -1384,7 +1360,6 @@ def test_api_set_prompts(
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     store = in_repo.VarsStore(machine.flake)
     my_generator = Generator(
-        machines=["my_machine"],
         _flake=machine.flake,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
@@ -1711,7 +1686,6 @@ def test_share_mode_switch_regenerates_secret(
     sops_store = sops.SecretStore(flake=flake_obj)
 
     generator_not_shared = Generator(
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
@@ -1732,7 +1706,6 @@ def test_share_mode_switch_regenerates_secret(
 
     # Read the new values with shared generator
     generator_shared = Generator(
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=Shared()),
     )
@@ -1869,7 +1842,6 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     store.init_pass_command(machine="my_machine")
     generator = Generator(
         files=[],
-        machines=["my_machine"],
         _flake=flake_obj,
         key=GeneratorId(name="my_generator", placement=PerMachine("my_machine")),
     )
@@ -1952,12 +1924,10 @@ def test_generate_secret_var_sops_minimal_select_calls(
 
     for machine_name in ["machine1", "machine2"]:
         gen1 = Generator(
-            machines=[machine_name],
             _flake=flake_obj,
             key=GeneratorId(name="gen1", placement=PerMachine(machine_name)),
         )
         gen2 = Generator(
-            machines=[machine_name],
             _flake=flake_obj,
             key=GeneratorId(name="gen2", placement=PerMachine(machine_name)),
         )

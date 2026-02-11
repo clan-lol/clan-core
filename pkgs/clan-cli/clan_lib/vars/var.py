@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class Var:
     id: str
     name: str
+    machines: list[str]
     secret: bool = True
     deploy: bool = False
     owner: str = "root"
