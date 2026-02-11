@@ -32,7 +32,14 @@
       # Test that yggdrasil correctly consumes exports from other
       # networking services
 
-      # TODO: Should we also test other VPNs e.g. wireguard?
+      # Wireguard provides peer.host exports (multiple IPs per peer)
+      instances."wireguard" = {
+        module.name = "wireguard";
+        roles.controller.machines.peer1.settings = {
+          endpoint = "peer1";
+        };
+        roles.peer.machines.peer2 = { };
+      };
 
       # Internet service provides static host exports
       instances."internet" = {
