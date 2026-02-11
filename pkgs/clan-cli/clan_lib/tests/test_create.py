@@ -21,8 +21,9 @@ from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.network.network import get_network_overview, networks_from_flake
-from clan_lib.nix import nix_command
+from clan_lib.nix import current_system, nix_command
 from clan_lib.nix_models.typing import InstancesInput, MachineDeployInput, MachineInput
+from clan_lib.nix_selectors import machine_toplevel
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.services.modules import list_service_modules
@@ -284,7 +285,7 @@ def test_clan_create_api(
     if in_sandbox:
         # In sandbox: expect build to fail due to network restrictions
         with pytest.raises(ClanSelectError) as select_error:
-            Path(machine.select("config.system.build.toplevel"))
+            Path(machine.flake.select(machine_toplevel(current_system(), machine.name)))
         # The error should be a select_error without a failed_attr
         cmd_error = select_error.value.__cause__
         assert cmd_error is not None
@@ -292,7 +293,9 @@ def test_clan_create_api(
         assert "nixos-system-test-clan" in str(cmd_error.cmd.stderr)
     else:
         # Outside sandbox: build should succeed
-        toplevel_path = Path(machine.select("config.system.build.toplevel"))
+        toplevel_path = Path(
+            machine.flake.select(machine_toplevel(current_system(), machine.name))
+        )
         assert toplevel_path.exists()
         # Verify it's a NixOS system by checking for expected content
         assert "nixos-system-test-clan" in str(toplevel_path)

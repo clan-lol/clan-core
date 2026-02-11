@@ -6,6 +6,8 @@ from typing import Any
 
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import get_machine_prefix
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 
@@ -55,7 +57,10 @@ class VmConfig:
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
-    data = machine.select("config.clan.core.vm.inspect")
+    prefix = get_machine_prefix()
+    data = machine.flake.select(
+        f"{prefix}.{current_system()}.{machine.name}.config.clan.core.vm.inspect"
+    )
     # HACK!
     data["flake_url"] = dataclasses.asdict(machine.flake)
     return VmConfig.from_json(data)
