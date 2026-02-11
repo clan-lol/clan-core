@@ -39,7 +39,7 @@ nixosLib.runTest (
         import subprocess
         from nixos_test_lib.nix_setup import setup_nix_in_nix
 
-        setup_nix_in_nix("${closureInfo}", bind_mount=True)  # No closure info for this test
+        setup_nix_in_nix("${closureInfo}")  # No closure info for this test
 
         start_all()
 

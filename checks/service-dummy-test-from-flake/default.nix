@@ -31,7 +31,7 @@ nixosLib.runTest (
         import subprocess
         from nixos_test_lib.nix_setup import setup_nix_in_nix
 
-        setup_nix_in_nix(None,bind_mount=True)  # No closure info for this test
+        setup_nix_in_nix(None)  # No closure info for this test
 
         start_all()
         admin1.wait_for_unit("multi-user.target")
