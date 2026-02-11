@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.helpers import cli
-from clan_cli.vms.run import inspect_vm, spawn_vm
+from clan_cli.vms.run import spawn_vm
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_eval, run
@@ -51,11 +51,9 @@ def test_vm_deployment(
     ).stdout.strip()
     assert "no-such-path" not in shared_secret_path
 
-    vm1_config = inspect_vm(
-        machine=Machine("test-vm-deployment", Flake(str(vm_test_flake))),
-    )
+    machine = Machine("test-vm-deployment", Flake(str(vm_test_flake)))
     with ExitStack() as stack:
-        vm1 = stack.enter_context(spawn_vm(vm1_config, stdin=subprocess.DEVNULL))
+        vm1 = stack.enter_context(spawn_vm(machine, stdin=subprocess.DEVNULL))
         qga_m1 = stack.enter_context(vm1.qga_connect())
         # run these always successful commands to make sure all vms have started before continuing
         qga_m1.run(["echo"])

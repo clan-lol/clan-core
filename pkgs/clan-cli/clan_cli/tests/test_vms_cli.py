@@ -2,10 +2,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
-from clan_cli.tests.stdout import CaptureOutput
-from clan_cli.vms.run import inspect_vm, spawn_vm
+from clan_cli.vms.run import spawn_vm
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 
@@ -13,17 +11,6 @@ if TYPE_CHECKING:
     from .age_keys import KeyPair
 
 no_kvm = not Path("/dev/kvm").exists()
-
-
-@pytest.mark.broken_on_darwin
-@pytest.mark.with_core
-def test_inspect(
-    test_flake_with_core: FlakeForTest,
-    capture_output: CaptureOutput,
-) -> None:
-    with capture_output as output:
-        cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
-    assert "Cores" in output.out
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
@@ -74,12 +61,9 @@ def test_run(
 def test_vm_persistence(
     vm_test_flake: Path,
 ) -> None:
-    # Use the pre-built test VM from the test flake
-    vm_config = inspect_vm(
-        machine=Machine("test-vm-persistence", Flake(str(vm_test_flake))),
-    )
+    machine = Machine("test-vm-persistence", Flake(str(vm_test_flake)))
 
-    with spawn_vm(vm_config) as vm, vm.qga_connect() as qga:
+    with spawn_vm(machine) as vm, vm.qga_connect() as qga:
         # create state via qmp command instead of systemd service
         qga.run(["/bin/sh", "-c", "echo 'dream2nix' > /var/my-state/root"])
         qga.run(["/bin/sh", "-c", "echo 'dream2nix' > /var/my-state/test"])
@@ -88,7 +72,7 @@ def test_vm_persistence(
         qga.run_nonblocking(["shutdown", "-h", "now"])
 
     ## start vm again
-    with spawn_vm(vm_config) as vm, vm.qga_connect() as qga:
+    with spawn_vm(machine) as vm, vm.qga_connect() as qga:
         # check state exists
         qga.run(["cat", "/var/my-state/test"])
         # ensure root file is owned by root

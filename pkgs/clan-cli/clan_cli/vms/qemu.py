@@ -4,13 +4,12 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_test_store
 
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
-
-from .inspect import VmConfig
 
 
 @dataclass
@@ -19,13 +18,13 @@ class GraphicOptions:
     vsock_cid: int | None = None
 
 
-def graphics_options(vm: VmConfig) -> GraphicOptions:
+def graphics_options(nixos_config: dict[str, Any]) -> GraphicOptions:
     common = [
         "-audio",
         "driver=pa,model=virtio",
     ]
 
-    if vm.waypipe.enable:
+    if nixos_config["waypipe"]["enable"]:
         # FIXME: check for collisions
         # Generate random CID in [3, 2^32-1] (0,1,2 are reserved)
         cid = secrets.randbelow(2**32 - 3) + 3
@@ -121,8 +120,8 @@ def get_machine_options() -> str:
 
 
 def qemu_command(
-    vm: VmConfig,
-    nixos_config: dict[str, str],
+    machine_name: str,
+    nixos_config: dict[str, Any],
     secrets_dir: Path,
     rootfs_img: Path,
     state_img: Path,
@@ -148,14 +147,14 @@ def qemu_command(
         f"regInfo={nixos_config['regInfo']}/registration",
         "console=hvc0",
     ]
-    if not vm.waypipe.enable:
+    if not nixos_config["waypipe"]["enable"]:
         kernel_cmdline.append("console=tty0")
     hostfwd = ",".join(f"hostfwd=tcp::{h}-:{g}" for h, g in portmap.items())
     machine_options = get_machine_options()
     # fmt: off
     command = [
         "qemu-kvm",
-        "-name", vm.machine_name,
+        "-name", machine_name,
         "-m", f'{nixos_config["memorySize"]}M',
         "-object", f"memory-backend-memfd,id=mem,size={nixos_config['memorySize']}M",
         "-machine", machine_options,
@@ -184,9 +183,13 @@ def qemu_command(
         "-device", "virtio-serial",
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
     ]
+    # fmt: on
     # USB tablet only works reliably on x86_64 Linux for now, not aarch64-linux.
     # TODO: Fix USB tablet support for ARM architectures and test macOS
-    if platform.system().lower() == "linux" and platform.machine().lower() in ("x86_64", "amd64"):
+    if platform.system().lower() == "linux" and platform.machine().lower() in (
+        "x86_64",
+        "amd64",
+    ):
         command.extend(["-usb", "-device", "usb-tablet,bus=usb-bus.0"])
 
     if interactive:
@@ -217,8 +220,8 @@ def qemu_command(
         )
 
     vsock_cid = None
-    if vm.graphics:
-        opts = graphics_options(vm)
+    if nixos_config["graphics"]:
+        opts = graphics_options(nixos_config)
         vsock_cid = opts.vsock_cid
         command.extend(opts.args)
     else:
