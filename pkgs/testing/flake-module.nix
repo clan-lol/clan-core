@@ -40,7 +40,8 @@
             substituteInPlace nixos_test_lib/nix_setup.py \
               --replace '@cp@' '${pkgs.coreutils}/bin/cp' \
               --replace '@nix-store@' '${pkgs.nix}/bin/nix-store' \
-              --replace '@xargs@' '${pkgs.findutils}/bin/xargs'
+              --replace '@xargs@' '${pkgs.findutils}/bin/xargs' \
+              --replace '@mount@' '${pkgs.util-linux}/bin/mount'
           '';
           doCheck = false;
         };

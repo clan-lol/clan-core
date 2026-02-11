@@ -198,7 +198,7 @@
                     # Set up test environment
                     with tempfile.TemporaryDirectory() as temp_dir:
                         # Prepare test flake and Nix store
-                        flake_dir = prepare_test_flake(
+                        flake_dir, store_dir = prepare_test_flake(
                             temp_dir,
                             "${clan-core-flake}",
                             "${closureInfo}"
@@ -271,7 +271,7 @@
                               "nix",
                               "copy",
                               "--from",
-                              f"{temp_dir}/store",
+                              f"{store_dir}",
                               "--to",
                               "ssh://root@192.168.1.1",
                               "--no-check-sigs",
