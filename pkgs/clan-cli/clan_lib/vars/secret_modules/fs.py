@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
 
 from clan_lib.flake import Flake
@@ -51,8 +52,14 @@ class SecretStore(StoreBase):
             cache[secret_file] = value
         return value
 
-    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        del machine, phases  # Unused but kept for API compatibility
+    def populate_dir(
+        self,
+        machine: str,
+        output_dir: Path,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
+        del machine, phases, generators  # Unused but kept for API compatibility
         if output_dir.exists():
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
@@ -75,6 +82,12 @@ class SecretStore(StoreBase):
         msg = "FS backend does not support remote installation"
         raise NotImplementedError(msg)
 
-    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
+    def upload(
+        self,
+        machine: str,
+        host: Host,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         msg = "Cannot upload secrets with FS backend"
         raise NotImplementedError(msg)

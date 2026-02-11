@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 import tarfile
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import override
@@ -20,7 +20,6 @@ from clan_lib.nix_selectors import (
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
-from clan_lib.vars.generator import get_machine_generators
 from clan_lib.vars.var import Var
 
 log = logging.getLogger(__name__)
@@ -157,7 +156,7 @@ class SecretStore(StoreBase):
             )
         return []
 
-    def generate_hash(self, machine: str) -> bytes:
+    def generate_hash(self, generators: Sequence[GeneratorStore]) -> bytes:
         result = self._run_pass(
             "git",
             "log",
@@ -171,7 +170,6 @@ class SecretStore(StoreBase):
         if not git_hash:
             return b""
 
-        generators = get_machine_generators([machine], self.flake)
         manifest = [
             f"{generator.name}/{file.name}".encode()
             for generator in generators
@@ -181,8 +179,10 @@ class SecretStore(StoreBase):
         manifest.append(git_hash)
         return b"\n".join(manifest)
 
-    def needs_upload(self, machine: str, host: Host) -> bool:
-        local_hash = self.generate_hash(machine)
+    def needs_upload(
+        self, machine: str, host: Host, generators: Sequence[GeneratorStore]
+    ) -> bool:
+        local_hash = self.generate_hash(generators)
         if not local_hash:
             return True
 
@@ -203,15 +203,20 @@ class SecretStore(StoreBase):
 
         return local_hash != remote_hash.encode()
 
-    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        vars_generators = get_machine_generators([machine], self.flake)
+    @override
+    def populate_dir(
+        self,
+        machine: str,
+        output_dir: Path,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz",
                 "w:gz",
             ) as user_tar:
-                for generator in vars_generators:
-                    dir_exists = False
+                for generator in generators:
                     for file in generator.files:
                         if not file.deploy:
                             continue
@@ -225,7 +230,7 @@ class SecretStore(StoreBase):
 
         if "services" in phases:
             with tarfile.open(output_dir / "secrets.tar.gz", "w:gz") as tar:
-                for generator in vars_generators:
+                for generator in generators:
                     dir_exists = False
                     for file in generator.files:
                         if not file.deploy:
@@ -246,7 +251,7 @@ class SecretStore(StoreBase):
                         tar_file.gname = file.group
                         tar.addfile(tarinfo=tar_file, fileobj=io.BytesIO(content))
         if "activation" in phases:
-            for generator in vars_generators:
+            for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
                         out_file = (
@@ -255,14 +260,14 @@ class SecretStore(StoreBase):
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
         if "partitioning" in phases:
-            for generator in vars_generators:
+            for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
                         out_file = output_dir / generator.name / file.name
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
 
-        hash_data = self.generate_hash(machine)
+        hash_data = self.generate_hash(generators)
         if hash_data:
             (output_dir / ".pass_info").write_bytes(hash_data)
 
@@ -273,14 +278,21 @@ class SecretStore(StoreBase):
             vars_password_store_secret_location(system, [machine])
         )[machine]["password-store"]["secretLocation"]
 
-    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
+    @override
+    def upload(
+        self,
+        machine: str,
+        host: Host,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
-        if not self.needs_upload(machine, host):
+        if not self.needs_upload(machine, host, generators):
             log.info("Secrets already uploaded")
             return
         with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
             pass_dir = Path(_tempdir).resolve()
-            self.populate_dir(machine, pass_dir, phases)
+            self.populate_dir(machine, pass_dir, phases, generators)
             upload(host, pass_dir, Path(self.get_upload_directory(machine)))

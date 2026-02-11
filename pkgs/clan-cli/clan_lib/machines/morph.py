@@ -16,6 +16,7 @@ from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command
 from clan_lib.nix_models.typing import MachineInput
 from clan_lib.vars.generate import run_generators
+from clan_lib.vars.generator import get_machine_generators
 
 log = logging.getLogger(__name__)
 
@@ -84,10 +85,12 @@ def morph_machine(
 
         run_generators([machine], generators=None, full_closure=False)
 
+        generators = get_machine_generators([machine.name], machine.flake)
         machine.secret_vars_store.populate_dir(
             machine.name,
             output_dir=Path("/run/secrets"),
             phases=["activation", "users", "services"],
+            generators=generators,
         )
 
         # run(["nixos-facter", "-o", f"{flakedir}/machines/{name}/facter.json"]).stdout

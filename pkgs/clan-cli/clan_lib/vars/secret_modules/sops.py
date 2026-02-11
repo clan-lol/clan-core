@@ -53,19 +53,14 @@ class SecretStore(StoreBase):
     def __init__(self, flake: Flake) -> None:
         super().__init__(flake)
 
-    def ensure_machine_key(self, machine: str) -> None:
-        """Ensure machine has sops keys initialized."""
-        # no need to generate keys if we don't manage secrets
-        from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
+    def ensure_machine_key(self, machine: str, has_secrets: bool = True) -> None:
+        """Ensure machine has sops keys initialized.
 
-        vars_generators = get_machine_generators([machine], self.flake)
-        if not vars_generators:
-            return
-        has_secrets = False
-        for generator in vars_generators:
-            for file in generator.files:
-                if file.secret:
-                    has_secrets = True
+        Args:
+            machine: The name of the machine.
+            has_secrets: Whether the machine has any secret vars. If False, skip key generation.
+
+        """
         if not has_secrets:
             return
 
@@ -131,7 +126,7 @@ class SecretStore(StoreBase):
     def health_check(
         self,
         machine: str,
-        generators: Sequence[GeneratorStore] | None = None,
+        generators: Sequence[GeneratorStore],
         file_name: str | None = None,
     ) -> str | None:
         """Check if SOPS secrets need to be re-encrypted due to recipient changes.
@@ -142,7 +137,7 @@ class SecretStore(StoreBase):
 
         Args:
             machine: The name of the machine to check secrets for
-            generators: List of generators to check. If None, checks all generators for the machine
+            generators: List of generators to check.
             file_name: Optional specific file to check. If provided, only checks that file
 
         Returns:
@@ -152,10 +147,6 @@ class SecretStore(StoreBase):
             ClanError: If the specified file_name is not found
 
         """
-        if generators is None:
-            from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
-
-            generators = get_machine_generators([machine], self.flake)
         file_found = False
         outdated = []
         for generator in generators:
@@ -237,10 +228,14 @@ class SecretStore(StoreBase):
         shutil.rmtree(store_folder)
         return [store_folder]
 
-    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
-        from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
-
-        vars_generators = get_machine_generators([machine], self.flake)
+    @override
+    def populate_dir(
+        self,
+        machine: str,
+        output_dir: Path,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         if "users" in phases or "services" in phases:
             key_name = f"{machine}-age.key"
             if not has_secret(sops_secrets_folder(self.clan_dir) / key_name):
@@ -254,7 +249,7 @@ class SecretStore(StoreBase):
             (output_dir / "key.txt").write_text(key)
 
         if "activation" in phases:
-            for generator in vars_generators:
+            for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
                         target_path = (
@@ -270,7 +265,7 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
         if "partitioning" in phases:
-            for generator in vars_generators:
+            for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
                         # TODO: generator with name "activation" would disable all activation secrets
@@ -291,13 +286,19 @@ class SecretStore(StoreBase):
         )[machine]["sops"]["secretUploadDirectory"]
 
     @override
-    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
+    def upload(
+        self,
+        machine: str,
+        host: Host,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
-            self.populate_dir(machine, sops_upload_dir, phases)
+            self.populate_dir(machine, sops_upload_dir, phases, generators)
             upload(host, sops_upload_dir, Path(self.get_upload_directory(machine)))
 
     def exists(self, generator: GeneratorId, name: str) -> bool:
@@ -364,7 +365,7 @@ class SecretStore(StoreBase):
     def fix(
         self,
         machine: str,
-        generators: Sequence[GeneratorStore] | None = None,
+        generators: Sequence[GeneratorStore],
         file_name: str | None = None,
     ) -> None:
         """Fix sops secrets by re-encrypting them with the current set of recipient keys.
@@ -375,7 +376,7 @@ class SecretStore(StoreBase):
 
         Args:
             machine: The name of the machine to fix secrets for
-            generators: List of generators to fix. If None, fixes all generators for the machine
+            generators: List of generators to fix.
             file_name: Optional specific file to fix. If provided, only fixes that file
 
         Raises:
@@ -387,10 +388,6 @@ class SecretStore(StoreBase):
             update_keys,
         )
 
-        if generators is None:
-            from clan_lib.vars.generator import get_machine_generators  # noqa: PLC0415
-
-            generators = get_machine_generators([machine], self.flake)
         file_found = False
         for generator in generators:
             for file in generator.files:
