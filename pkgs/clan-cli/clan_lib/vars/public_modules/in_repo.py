@@ -1,5 +1,5 @@
 import shutil
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 from clan_lib.errors import ClanError
@@ -75,7 +75,13 @@ class VarsStore(StoreBase):
         shutil.rmtree(store_folder)
         return [store_folder]
 
-    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(
+        self,
+        machine: str,
+        output_dir: Path,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         msg = "populate_dir is not implemented for public vars stores"
         raise NotImplementedError(msg)
 
@@ -84,6 +90,12 @@ class VarsStore(StoreBase):
         msg = "Public var stores do not have upload directories"
         raise NotImplementedError(msg)
 
-    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
+    def upload(
+        self,
+        machine: str,
+        host: Host,
+        phases: list[str],
+        generators: Sequence[GeneratorStore] = (),
+    ) -> None:
         msg = "upload is not implemented for public vars stores"
         raise NotImplementedError(msg)

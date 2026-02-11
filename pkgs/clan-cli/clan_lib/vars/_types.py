@@ -165,7 +165,7 @@ class StoreBase(ABC):
     def health_check(
         self,
         machine: str,
-        generators: Sequence["GeneratorStore"] | None = None,
+        generators: Sequence["GeneratorStore"],
         file_name: str | None = None,
     ) -> str | None:
         """Check the health of the store for the given machine and generators.
@@ -175,7 +175,7 @@ class StoreBase(ABC):
 
         Args:
             machine: The name of the machine to check
-            generators: List of generators to check. If None, checks all generators for the machine
+            generators: List of generators to check.
             file_name: Optional specific file to check. If provided, only checks that file
 
         Returns:
@@ -188,7 +188,7 @@ class StoreBase(ABC):
     def fix(
         self,
         machine: str,
-        generators: Sequence["GeneratorStore"] | None = None,
+        generators: Sequence["GeneratorStore"],
         file_name: str | None = None,
     ) -> None:
         """Fix any issues with the store for the given machine and generators.
@@ -198,7 +198,7 @@ class StoreBase(ABC):
 
         Args:
             machine: The name of the machine to fix vars for
-            generators: List of generators to fix. If None, fixes all generators for the machine
+            generators: List of generators to fix.
             file_name: Optional specific file to fix. If provided, only fixes that file
 
         Returns:
@@ -339,7 +339,13 @@ class StoreBase(ABC):
         return stored_hash == target_hash
 
     @abstractmethod
-    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(
+        self,
+        machine: str,
+        output_dir: Path,
+        phases: list[str],
+        generators: Sequence["GeneratorStore"] = (),
+    ) -> None:
         """Populate a local tmp_directory with the secrets for the given machine."""
 
     @abstractmethod
@@ -353,5 +359,11 @@ class StoreBase(ABC):
         """
 
     @abstractmethod
-    def upload(self, machine: str, host: Host, phases: list[str]) -> None:
+    def upload(
+        self,
+        machine: str,
+        host: Host,
+        phases: list[str],
+        generators: Sequence["GeneratorStore"] = (),
+    ) -> None:
         """Upload the secrets for the given machine to the target host."""
