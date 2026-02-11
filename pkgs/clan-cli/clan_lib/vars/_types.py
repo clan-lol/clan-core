@@ -341,10 +341,10 @@ class StoreBase(ABC):
     @abstractmethod
     def populate_dir(
         self,
+        generators: Sequence["GeneratorStore"],
         machine: str,
         output_dir: Path,
         phases: list[str],
-        generators: Sequence["GeneratorStore"] = (),
     ) -> None:
         """Populate a local tmp_directory with the secrets for the given machine."""
 
@@ -361,9 +361,9 @@ class StoreBase(ABC):
     @abstractmethod
     def upload(
         self,
+        generators: Sequence["GeneratorStore"],
         machine: str,
         host: Host,
         phases: list[str],
-        generators: Sequence["GeneratorStore"] = (),
     ) -> None:
         """Upload the secrets for the given machine to the target host."""

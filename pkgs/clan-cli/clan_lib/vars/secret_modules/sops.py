@@ -231,10 +231,10 @@ class SecretStore(StoreBase):
     @override
     def populate_dir(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         output_dir: Path,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
         if "users" in phases or "services" in phases:
             key_name = f"{machine}-age.key"
@@ -288,17 +288,17 @@ class SecretStore(StoreBase):
     @override
     def upload(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         host: Host,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
-            self.populate_dir(machine, sops_upload_dir, phases, generators)
+            self.populate_dir(generators, machine, sops_upload_dir, phases)
             upload(host, sops_upload_dir, Path(self.get_upload_directory(machine)))
 
     def exists(self, generator: GeneratorId, name: str) -> bool:

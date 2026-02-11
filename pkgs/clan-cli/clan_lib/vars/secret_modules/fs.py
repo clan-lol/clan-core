@@ -54,12 +54,12 @@ class SecretStore(StoreBase):
 
     def populate_dir(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         output_dir: Path,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
-        del machine, phases, generators  # Unused but kept for API compatibility
+        del generators, machine, phases  # Unused but kept for API compatibility
         if output_dir.exists():
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
@@ -84,10 +84,10 @@ class SecretStore(StoreBase):
 
     def upload(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         host: Host,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
         msg = "Cannot upload secrets with FS backend"
         raise NotImplementedError(msg)

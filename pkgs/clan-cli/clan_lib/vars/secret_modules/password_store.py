@@ -206,10 +206,10 @@ class SecretStore(StoreBase):
     @override
     def populate_dir(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         output_dir: Path,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
         if "users" in phases:
             with tarfile.open(
@@ -281,10 +281,10 @@ class SecretStore(StoreBase):
     @override
     def upload(
         self,
+        generators: Sequence[GeneratorStore],
         machine: str,
         host: Host,
         phases: list[str],
-        generators: Sequence[GeneratorStore] = (),
     ) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
@@ -294,5 +294,5 @@ class SecretStore(StoreBase):
             return
         with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
             pass_dir = Path(_tempdir).resolve()
-            self.populate_dir(machine, pass_dir, phases, generators)
+            self.populate_dir(generators, machine, pass_dir, phases)
             upload(host, pass_dir, Path(self.get_upload_directory(machine)))

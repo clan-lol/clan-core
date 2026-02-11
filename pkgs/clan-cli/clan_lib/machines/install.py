@@ -137,20 +137,20 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         generators = get_machine_generators([machine.name], machine.flake)
         # /tmp-234/activation_secrets/var/lib/sops-nix/{activation,key.txt}
         machine.secret_vars_store.populate_dir(
+            generators,
             machine.name,
             upload_dir,
             phases=["activation", "users", "services"],
-            generators=generators,
         )
 
         # /tmp-234/activation_secrets/var/lib/sops-nix/{gen_1/file_1,gen_2/file_2}
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
+            generators,
             machine.name,
             partitioning_secrets,
             phases=["partitioning"],
-            generators=generators,
         )
 
         cmd = [
