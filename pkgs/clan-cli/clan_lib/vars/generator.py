@@ -4,7 +4,7 @@ import logging
 import os
 import pprint
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from contextlib import ExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -466,16 +466,16 @@ class Generator:
         return dataclasses.replace(self, key=new_key, files=new_files)
 
     def decrypt_dependencies(
-        self,
-        machine_name: str,
+        self, generators: Sequence["Generator"]
     ) -> dict[str, dict[str, bytes]]:
         """Decrypt and retrieve all dependency values for this generator.
 
         Args:
-            machine_name: The machine name used to look up generators.
+            generators: The generators to decrypt
 
         Returns:
-            Dictionary mapping generator names to their variable values
+            Dictionary mapping generator names to their decrypted Vars
+            in the form { GENERATOR.name: { VAR.name: bytes } }
 
         """
         if (
@@ -486,7 +486,6 @@ class Generator:
             msg = "Flake and stores must be set to decrypt dependencies"
             raise ClanError(msg)
 
-        generators = get_machine_generators([machine_name], self._flake)
         result: dict[str, dict[str, bytes]] = {}
 
         for dep_key in set(self.dependencies):
@@ -497,7 +496,7 @@ class Generator:
                 None,
             )
             if dep_generator is None:
-                msg = f"Generator {dep_key.name} not found in machine {machine_name}"
+                msg = f"Generator {dep_key.name} not found. - {dep_key}"
                 raise ClanError(msg)
 
             # Check that shared generators don't depend on machine-specific generators
@@ -564,7 +563,9 @@ class Generator:
             prompt_values = self.ask_prompts()
 
         # build temporary file tree of dependencies
-        decrypted_dependencies = self.decrypt_dependencies(machine_name)
+        decrypted_dependencies = self.decrypt_dependencies(
+            get_machine_generators([machine_name], self._flake)
+        )
 
         def get_prompt_value(prompt_name: str) -> str:
             try:
