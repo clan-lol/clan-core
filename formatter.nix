@@ -27,6 +27,7 @@
       ];
       treefmt.programs.sizelint.enable = true;
       treefmt.programs.sizelint.failOnWarn = true;
+      treefmt.programs.sizelint.settings.max_file_size = "340kb";
       treefmt.programs.clang-format.enable = true;
       treefmt.programs.typos = {
         enable = true;
