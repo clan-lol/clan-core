@@ -1157,6 +1157,74 @@ def test_non_existing_dependency_raises_error(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+def test_generator_script_missing_output_file(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure a clear error when a generator script doesn't produce a declared output file."""
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["expected_file"]["secret"] = False
+    # Script writes to wrong filename
+    my_generator["script"] = 'echo "hello" > "$out"/wrong_file'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    with pytest.raises(
+        ClanError,
+        match="did not generate a file for 'expected_file'",
+    ):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_generator_script_fails_with_nonzero_exit(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure a clear error when a generator script exits with a non-zero status."""
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["script"] = 'echo "failing" >&2; exit 1'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    with pytest.raises(ClanError):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_circular_dependency_raises_error(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure that circular dependencies between generators are caught."""
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    gen_a = config["clan"]["core"]["vars"]["generators"]["gen_a"]
+    gen_a["files"]["value_a"]["secret"] = False
+    gen_a["script"] = 'echo "a" > "$out"/value_a'
+    gen_a["dependencies"] = ["gen_b"]
+
+    gen_b = config["clan"]["core"]["vars"]["generators"]["gen_b"]
+    gen_b["files"]["value_b"]["secret"] = False
+    gen_b["script"] = 'echo "b" > "$out"/value_b'
+    gen_b["dependencies"] = ["gen_a"]
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    with pytest.raises(Exception, match="cycle"):
+        cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
 def test_shared_vars_must_never_depend_on_machine_specific_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
