@@ -29,7 +29,6 @@
     user-root = {
       module = {
         name = "users";
-        input = "clan-core";
       };
       roles.default.tags.all = { };
       roles.default.settings = {
