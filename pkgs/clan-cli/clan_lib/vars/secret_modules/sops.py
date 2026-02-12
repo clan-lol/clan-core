@@ -203,17 +203,16 @@ class SecretStore(StoreBase):
         self,
         generator: GeneratorId,
         name: str,
-        cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         path = self.secret_path(generator, name)
-        if cache is not None and path in cache:
-            return cache[path]
+        if self._secret_cache is not None and path in self._secret_cache:
+            return self._secret_cache[path]
         value = decrypt_secret(
             path,
             age_plugins=load_age_plugins(self.flake),
         ).encode("utf-8")
-        if cache is not None:
-            cache[path] = value
+        if self._secret_cache is not None:
+            self._secret_cache[path] = value
         return value
 
     def delete(self, generator: GeneratorId, name: str) -> Iterable[Path]:

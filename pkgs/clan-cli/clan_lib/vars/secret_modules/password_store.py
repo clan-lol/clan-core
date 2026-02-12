@@ -117,16 +117,15 @@ class SecretStore(StoreBase):
         self,
         generator: GeneratorId,
         name: str,
-        cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         # Use entry_dir as cache key (it's a logical path, not filesystem path)
         cache_key = self.entry_dir(generator, name)
-        if cache is not None and cache_key in cache:
-            return cache[cache_key]
+        if self._secret_cache is not None and cache_key in self._secret_cache:
+            return self._secret_cache[cache_key]
         pass_name = str(cache_key)
         value = self._run_pass("show", pass_name).stdout
-        if cache is not None:
-            cache[cache_key] = value
+        if self._secret_cache is not None:
+            self._secret_cache[cache_key] = value
         return value
 
     def exists(self, generator: GeneratorId, name: str) -> bool:

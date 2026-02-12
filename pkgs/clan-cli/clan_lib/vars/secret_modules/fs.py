@@ -42,14 +42,13 @@ class SecretStore(StoreBase):
         self,
         generator: GeneratorId,
         name: str,
-        cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         secret_file = self.dir / generator.name / name
-        if cache is not None and secret_file in cache:
-            return cache[secret_file]
+        if self._secret_cache is not None and secret_file in self._secret_cache:
+            return self._secret_cache[secret_file]
         value = secret_file.read_bytes()
-        if cache is not None:
-            cache[secret_file] = value
+        if self._secret_cache is not None:
+            self._secret_cache[secret_file] = value
         return value
 
     def populate_dir(
