@@ -148,13 +148,16 @@ def get_generators(
     all_generators_list = get_machine_generators(
         all_machines,
         flake,
-        secret_cache=secret_cache,
     )
     requested_generators_list = get_machine_generators(
         requested_machines,
         flake,
-        secret_cache=secret_cache,
     )
+
+    # Inject shared secret cache into all secret stores
+    for gen in all_generators_list + requested_generators_list:
+        if gen._secret_store is not None:  # noqa: SLF001
+            gen._secret_store._secret_cache = secret_cache  # noqa: SLF001
 
     all_generators = {generator.key: generator for generator in all_generators_list}
     requested_generators = {

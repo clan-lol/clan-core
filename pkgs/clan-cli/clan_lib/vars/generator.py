@@ -204,14 +204,12 @@ def find_generator_differences(
 def get_machine_generators(
     machine_names: Iterable[str],
     flake: "Flake",
-    secret_cache: dict[Path, bytes] | None = None,
 ) -> list["Generator"]:
     """Get all generators for a machine from the flake.
 
     Args:
         machine_names: The names of the machines.
         flake: The flake to get the generators from.
-        secret_cache: Optional cache for decrypted secrets to avoid repeated decryption.
 
     Returns:
         list[Generator]: A list of (unsorted) generators for the machine.
@@ -321,7 +319,6 @@ def get_machine_generators(
                 _flake=flake,
                 _public_store=pub_store,
                 _secret_store=sec_store,
-                _secret_cache=secret_cache if secret_cache is not None else {},
             )
 
             # link generator to its files
@@ -361,7 +358,6 @@ class Generator:
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
 
-    _secret_cache: dict[Path, bytes] = field(default_factory=dict, repr=False)
     _previous_values: dict[str, str | None] = field(
         default_factory=dict, repr=False, compare=False
     )
@@ -430,9 +426,7 @@ class Generator:
         if self._public_store.exists(self.key, prompt.name):
             result = self._public_store.get(self.key, prompt.name).decode()
         elif self._secret_store.exists(self.key, prompt.name):
-            result = self._secret_store.get(
-                self.key, prompt.name, cache=self._secret_cache
-            ).decode()
+            result = self._secret_store.get(self.key, prompt.name).decode()
 
         if result is not None:
             # Cache the result. Don't cache "None"

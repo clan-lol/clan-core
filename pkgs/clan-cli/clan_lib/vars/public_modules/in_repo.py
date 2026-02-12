@@ -50,7 +50,6 @@ class VarsStore(StoreBase):
         self,
         generator: GeneratorId,
         name: str,
-        cache: dict[Path, bytes] | None = None,  # noqa: ARG002
     ) -> bytes:
         return (self.directory(generator, name) / "value").read_bytes()
 

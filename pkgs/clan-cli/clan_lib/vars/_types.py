@@ -126,9 +126,12 @@ class GeneratorUpdate:
 
 
 class StoreBase(ABC):
+    _secret_cache: dict[Path, bytes] | None
+
     def __init__(self, flake: Flake) -> None:
         self.flake = flake
         self.clan_dir = get_clan_dir(flake)
+        self._secret_cache = None
 
     @property
     @abstractmethod
@@ -141,7 +144,6 @@ class StoreBase(ABC):
         self,
         generator: GeneratorId,
         name: str,
-        cache: dict[Path, bytes] | None = None,
     ) -> bytes:
         pass
 
