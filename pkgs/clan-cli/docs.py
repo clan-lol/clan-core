@@ -180,7 +180,7 @@ def get_subcommands(
             flag_options.append(
                 Option(
                     name=option_strings,
-                    description=action.help if action.help else "",
+                    description=action.help or "",
                     default=action.default if action.default is not None else "",
                     metavar=f"{action.metavar}" if action.metavar else "",
                 ),
@@ -191,7 +191,7 @@ def get_subcommands(
             positional_options.append(
                 Option(
                     name=action.dest,
-                    description=action.help if action.help else "",
+                    description=action.help or "",
                     default=action.default if action.default is not None else "",
                     metavar=f"{action.metavar}" if action.metavar else "",
                 ),

@@ -66,8 +66,8 @@ class AsyncContext:
     prefix: str | None = None  # prefix for logging
     stdout: IO[bytes] | None = None  # stdout of subprocesses
     stderr: IO[bytes] | None = None  # stderr of subprocesses
-    should_cancel: Callable[[], bool] = (
-        lambda: False
+    should_cancel: Callable[[], bool] = lambda: (
+        False
     )  # Used to signal cancellation of task
     op_key: str | None = None
 
@@ -151,7 +151,7 @@ class AsyncThread[**P, R](threading.Thread):
         try:
             # Set async context for the new thread since context is not inherited across thread boundaries otherwise
             set_async_ctx(self.async_opts.async_ctx)
-            set_should_cancel(lambda: self.stop_event.is_set())
+            set_should_cancel(self.stop_event.is_set)
             # Arguments for ParamSpec "P@AsyncThread" are missing
             self.result = AsyncResult(_result=self.function(*self.args, **self.kwargs))
         except Exception as ex:  # noqa: BLE001

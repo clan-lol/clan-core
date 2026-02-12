@@ -75,7 +75,7 @@ def build_machine(
 
     try:
         build_target = get_build_target(machine, options.format)
-        nix_options = machine.flake.nix_options if machine.flake.nix_options else []
+        nix_options = machine.flake.nix_options or []
 
         build_flags = [build_target, *nix_options]
         if options.dry_run:

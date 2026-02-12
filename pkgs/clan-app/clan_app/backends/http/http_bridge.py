@@ -356,7 +356,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         stop_event = threading.Event()
         request = api_request
         op_key = request.op_key or "unknown"
-        set_should_cancel(lambda: stop_event.is_set())
+        set_should_cancel(stop_event.is_set)
         set_current_thread_opkey(op_key)
 
         curr_thread = threading.current_thread()
