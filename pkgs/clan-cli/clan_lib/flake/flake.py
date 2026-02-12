@@ -6,7 +6,7 @@ import re
 import shlex
 import traceback
 from dataclasses import asdict, dataclass, field
-from enum import Enum
+from enum import StrEnum
 from functools import cache, cached_property
 from hashlib import sha1
 from pathlib import Path
@@ -109,7 +109,7 @@ def is_pure_store_path(path: str) -> bool:
     return bool(regex.fullmatch(path))
 
 
-class SetSelectorType(str, Enum):
+class SetSelectorType(StrEnum):
     """enum for the type of selector in a set.
     For now this is either a string or a maybe selector.
     """
@@ -132,7 +132,7 @@ class SetSelector:
     value: str = ""
 
 
-class SelectorType(str, Enum):
+class SelectorType(StrEnum):
     """enum for the type of a selector
     this can be all, string, set or maybe
     """

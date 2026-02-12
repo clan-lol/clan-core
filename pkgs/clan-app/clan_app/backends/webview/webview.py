@@ -80,7 +80,7 @@ class Webview:
     window: int | None = None
     shared_threads: dict[str, WebThread] | None = None
     app_id: str | None = None
-    url_patterns: list[str] = field(default_factory=lambda: DEFAULT_URL_PATTERNS.copy())
+    url_patterns: list[str] = field(default_factory=DEFAULT_URL_PATTERNS.copy)
     url_blocked_callback: Callable[[str], None] | None = None
 
     # initialized later
@@ -299,7 +299,7 @@ class Webview:
 
         """
         handle = _webview_lib.webview_get_native_handle(self.handle, kind.value)
-        return handle if handle else None
+        return handle or None
 
     def unbind(self, name: str) -> None:
         if name in self.callbacks:

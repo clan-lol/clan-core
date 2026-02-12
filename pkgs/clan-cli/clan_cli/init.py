@@ -26,7 +26,7 @@ def init_command(args: argparse.Namespace) -> None:
     if args.domain is None:
         if sys.stdin.isatty():
             user_input = input("Enter domain for the clan [clan]: ").strip()
-            args.domain = user_input if user_input else "clan"
+            args.domain = user_input or "clan"
         else:
             args.domain = "clan"
 

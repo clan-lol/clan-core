@@ -157,7 +157,7 @@ def run_machine_update(
         # Upload the flake's source to the build host.
         path = upload_sources(machine, _build_host, upload_inputs)
 
-        nix_options = machine.flake.nix_options if machine.flake.nix_options else []
+        nix_options = machine.flake.nix_options or []
 
         nix_options = [
             "--show-trace",

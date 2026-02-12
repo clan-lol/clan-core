@@ -135,7 +135,7 @@ class ApiBridge(Protocol):
         self._validate_operation_key(op_key)
 
         def thread_task(stop_event: threading.Event) -> None:
-            set_should_cancel(lambda: stop_event.is_set())
+            set_should_cancel(stop_event.is_set)
             set_current_thread_opkey(op_key)
             try:
                 log.debug(

@@ -414,4 +414,4 @@ def register_run_parser(parser: argparse.ArgumentParser) -> None:
         nargs=argparse.REMAINDER,
         help="command to run in the vm",
     )
-    parser.set_defaults(func=lambda args: run_command(args))
+    parser.set_defaults(func=run_command)

@@ -30,7 +30,7 @@ class LogGroupConfig:
             The nickname if available, otherwise the group name.
 
         """
-        return self.nickname if self.nickname else self.name
+        return self.nickname or self.name
 
     def add_child(self, child: "LogGroupConfig") -> "LogGroupConfig":
         """Add a child group configuration and return a new LogGroupConfig instance.

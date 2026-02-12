@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import time
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 BuildOn = Literal["auto", "local", "remote"]
 
 
-class Step(str, Enum):
+class Step(StrEnum):
     GENERATORS = "generators"
     UPLOAD_SECRETS = "upload-secrets"
     NIXOS_ANYWHERE = "nixos-anywhere"

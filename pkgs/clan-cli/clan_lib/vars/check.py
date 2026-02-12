@@ -43,7 +43,7 @@ class VarStatus:
             log += "Invalid generators (outdated invalidation hash):\n"
             for gen in self.invalid_generators:
                 log += f"  - {gen}\n"
-        return log if log else "All vars are present and valid."
+        return log or "All vars are present and valid."
 
 
 def vars_status(
