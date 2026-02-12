@@ -46,6 +46,26 @@ from ._types import GeneratorId, PerMachine, Placement, Shared
 log = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class MachineFinalScript:
+    """Resolve finalScript via a machine's NixOS config."""
+
+    machine_name: str
+
+    def select(self, flake: "Flake", generator_name: str) -> str:
+        system = current_system()
+        return flake.select(
+            generator_final_script(system, self.machine_name, generator_name)
+        )
+
+    def precache_selector(self, generator_name: str) -> str:
+        system = current_system()
+        return generator_final_script(system, self.machine_name, generator_name)
+
+
+FinalScriptSource = MachineFinalScript
+
+
 def pretty_diff_objects(
     prev_value: object,
     curr_value: object,
@@ -316,6 +336,7 @@ def get_machine_generators(
                 ),
                 validation_hash=gen_data.get("validationHash"),
                 prompts=prompts,
+                _final_script_source=MachineFinalScript(machine_name=machine_name),
                 _flake=flake,
                 _public_store=pub_store,
                 _secret_store=sec_store,
@@ -354,6 +375,7 @@ class Generator:
 
     validation_hash: str | None = None
 
+    _final_script_source: FinalScriptSource | None = None
     _flake: "Flake | None" = None
     _public_store: "StoreBase | None" = None
     _secret_store: "StoreBase | None" = None
@@ -434,15 +456,15 @@ class Generator:
 
         return result
 
-    def final_script(self, machine_name: str) -> Path:
+    def final_script(self) -> Path:
         if self._flake is None:
             msg = "Flake cannot be None"
             raise ClanError(msg)
+        if self._final_script_source is None:
+            msg = "FinalScriptSource must be set to resolve final script"
+            raise ClanError(msg)
 
-        system = current_system()
-        output = Path(
-            self._flake.select(generator_final_script(system, machine_name, self.name))
-        )
+        output = Path(self._final_script_source.select(self._flake, self.name))
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
         return output
@@ -533,14 +555,12 @@ class Generator:
 
     def execute(
         self,
-        machine_name: str,
         prompt_values: dict[str, str] | None = None,
         no_sandbox: bool = False,
     ) -> None:
         """Execute this generator to produce its output files.
 
         Args:
-            machine_name: The machine name for nix evaluation and store operations.
             prompt_values: Optional dictionary of prompt values. If not provided, prompts will be asked interactively.
             no_sandbox: Whether to disable sandboxing when executing the generator
 
@@ -552,6 +572,8 @@ class Generator:
         ):
             msg = "Flake and stores must be set to execute generator"
             raise ClanError(msg)
+
+        machine_name = self.machines[0]
 
         if prompt_values is None:
             prompt_values = self.ask_prompts()
@@ -592,7 +614,7 @@ class Generator:
                     value = get_prompt_value(prompt.name)
                     prompt_file.write_text(value)
 
-            final_script = self.final_script(machine_name)
+            final_script = self.final_script()
 
             use_sandbox = not no_sandbox
             if sys.platform == "linux" and bwrap.bubblewrap_works() and use_sandbox:
