@@ -347,23 +347,31 @@ def run_generators(
             no_sandbox=no_sandbox,
         )
 
-    # ensure all selected machines have access to all selected shared generators
-    for generator in all_generators:
-        if generator.share:
-            for file in generator.files:
-                if not file.secret or not file.exists or not file.deploy:
+    # Re-encrypt workaround
+    # For shared generators:
+    # When a machine is added afterwards,
+    # When the generators are already generated from a previous run.
+    # We need to make sure, the newly added machine gets access to the shared secret
+    for generator in [g for g in all_generators if g.share]:
+        for file in generator.files:
+            # Skip files that are either:
+            # - Not encrypted
+            # - Don't exist yet
+            # - Wont get deployed
+            if not file.secret or not file.exists or not file.deploy:
+                continue
+
+            for machine in [
+                Machine(name=machine_name, flake=flake)
+                for machine_name in generator.machines
+            ]:
+                # Workaround because of a poorly designed Store interface
+                # Recipients should always have access
+                # TODO: Introduce recipient interface into the StoreBase
+                if not isinstance(machine.secret_vars_store, sops.SecretStore):
                     continue
-                for machine in [
-                    Machine(name=machine_name, flake=flake)
-                    for machine_name in generator.machines
-                ]:
-                    # Workaround because of a poorly designed Store interface
-                    # Recipients should always have access
-                    # TODO: Introduce recipient interface into the StoreBase
-                    if not isinstance(machine.secret_vars_store, sops.SecretStore):
-                        continue
-                    machine.secret_vars_store.ensure_machine_has_access(
-                        generator,
-                        file.name,
-                        machine.name,
-                    )
+                machine.secret_vars_store.ensure_machine_has_access(
+                    generator,
+                    file.name,
+                    machine.name,
+                )
