@@ -146,7 +146,10 @@ def clean_cache() -> Iterator[Path]:
         # Clear the in-process cache for _get_nix_shell_cache_dir
         _get_nix_shell_cache_dir.cache_clear()
 
-        with patch("clan_lib.dirs.clan_tmp_dir", return_value=tmp_path):
+        with (
+            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.cache_cleanup.clan_tmp_dir", return_value=tmp_path),
+        ):
             yield tmp_path
 
         # Clear again after test
@@ -240,7 +243,7 @@ def test_resolve_package_path_caching_different_packages() -> None:
         _get_nix_shell_cache_dir.cache_clear()
 
         with (
-            patch("clan_lib.dirs.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
             nix_run_context(),
         ):
             nixpkgs_path = runtime_deps_flake().resolve()
@@ -312,7 +315,7 @@ def test_cache_isolation_by_nixpkgs_path() -> None:
         tmp_path = Path(tmpdir)
         _get_nix_shell_cache_dir.cache_clear()
 
-        with patch("clan_lib.dirs.clan_tmp_dir", return_value=tmp_path):
+        with patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path):
             # Get cache dirs for different nixpkgs paths
             cache_dir1 = _get_nix_shell_cache_dir(Path("/nix/store/path1-nixpkgs"))
             cache_dir2 = _get_nix_shell_cache_dir(Path("/nix/store/path2-nixpkgs"))
