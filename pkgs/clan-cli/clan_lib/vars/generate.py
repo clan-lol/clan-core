@@ -145,23 +145,22 @@ def get_generators(
     # Cache decrypted secrets to avoid repeated decryption for shared generators
     secret_cache: dict[Path, bytes] = {}
 
-    all_generators_list = get_machine_generators(
+    all_generators = get_machine_generators(
         all_machines,
         flake,
     )
-    requested_generators_list = get_machine_generators(
+    machines_generators = get_machine_generators(
         requested_machines,
         flake,
     )
 
     # Inject shared secret cache into all secret stores
-    for gen in all_generators_list + requested_generators_list:
+    for gen in all_generators + machines_generators:
         if gen._secret_store is not None:  # noqa: SLF001
             gen._secret_store._secret_cache = secret_cache  # noqa: SLF001
 
-    all_generators = {generator.key: generator for generator in all_generators_list}
     requested_generators = {
-        generator.key: generator for generator in requested_generators_list
+        generator.key: generator for generator in machines_generators
     }
 
     # Select root generators
@@ -180,7 +179,9 @@ def get_generators(
     closure_func = (
         graph.requested_closure if full_closure else graph.all_missing_closure
     )
-    return closure_func(roots, all_generators)
+    return closure_func(
+        roots, {generator.key: generator for generator in all_generators}
+    )
 
 
 def _ensure_healthy(
