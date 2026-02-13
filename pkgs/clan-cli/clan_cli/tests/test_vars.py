@@ -1628,7 +1628,7 @@ def test_fails_when_files_are_left_from_other_backend(
     for generator in ["my_secret_generator", "my_value_generator"]:
         run_generators(
             machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
-            generators=generator,
+            generators=[generator],
         )
     # Will raise. It was secret before, but now it's not.
     my_secret_generator["files"]["my_secret"]["secret"] = (
@@ -1644,12 +1644,12 @@ def test_fails_when_files_are_left_from_other_backend(
             with pytest.raises(ClanError):
                 run_generators(
                     machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
-                    generators=generator,
+                    generators=[generator],
                 )
         else:
             run_generators(
                 machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
-                generators=generator,
+                generators=[generator],
             )
 
 

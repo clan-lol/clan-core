@@ -121,14 +121,14 @@ def get_generators_precache_selectors(machine_names: list[str]) -> list[str]:
 def get_generators(
     machines: list[Machine],
     full_closure: bool,
-    generator_name: str | None = None,
+    generator_names: list[str] | None = None,
 ) -> list[Generator]:
     """Get generators for a machine, with optional closure computation.
 
     Args:
         machines: The machines to get generators for.
         full_closure: If True, include all dependency generators. If False, only include missing ones.
-        generator_name: Name of a specific generator to get, or None for all generators.
+        generator_names: Names of specific generators to get, or None for all generators.
 
     Returns:
         List of generators based on the specified selection and closure mode.
@@ -165,14 +165,17 @@ def get_generators(
 
     # Select root generators
     roots: list[GeneratorId]
-    if generator_name is None:
+    if not generator_names:
         roots = list(requested_generators.keys())
     else:
-        roots = [key for key in requested_generators if key.name == generator_name]
+        name_set = set(generator_names)
+        roots = [key for key in requested_generators if key.name in name_set]
 
-        # Abort if the generator is not found
-        if not roots:
-            msg = f"Generator '{generator_name}' not found in machines {requested_machines}"
+        # Abort if any generator is not found
+        found_names = {key.name for key in roots}
+        missing = name_set - found_names
+        if missing:
+            msg = f"Generator(s) {', '.join(sorted(missing))!r} not found in machines {requested_machines}"
             raise ClanError(msg)
 
     # Compute closure based on mode
@@ -257,7 +260,7 @@ def _default_prompt_func(auto_accept_prompts: bool) -> PromptFunc:
 @API.register
 def run_generators(
     machines: list[Machine],
-    generators: str | list[str] | None = None,
+    generators: list[str] | None = None,
     full_closure: bool = False,
     prompt_values: dict[str, dict[str, str]] | PromptFunc | None = None,
     no_sandbox: bool = False,
@@ -269,12 +272,8 @@ def run_generators(
         machines: The machines to run generators for.
         generators: Can be:
             - None: Run all generators (with closure based on full_closure parameter)
-            - str: Single generator name to run (with closure based on full_closure parameter)
-            - list[str]: Specific generator names to run exactly as provided.
-                Dependency generators are not added automatically in this case.
-                The caller must ensure that all dependencies are included.
+            - list[str]: Specific generator names to run (with closure based on full_closure parameter).
         full_closure: Whether to include all dependencies (True) or only missing ones (False).
-            Only used when generators is None or a string.
         prompt_values: A dictionary mapping generator names to their prompt values,
             or a function that returns prompt values for a generator.
             If None, uses the default prompt function.
@@ -292,18 +291,12 @@ def run_generators(
         msg = "At least one machine must be provided"
         raise ClanError(msg)
     all_generators = get_generators(machines, full_closure=True)
-    if isinstance(generators, list):
-        # List of generator names - use them exactly as provided
-        if len(generators) == 0:
-            return
-        generators_to_run = [g for g in all_generators if g.key.name in generators]
-    else:
-        # None or single string - use get_generators with closure parameter
-        generators_to_run = get_generators(
-            machines,
-            full_closure=full_closure,
-            generator_name=generators,
-        )
+
+    generators_to_run = get_generators(
+        machines,
+        full_closure=full_closure if not generators else True,
+        generator_names=generators,
+    )
 
     # Handle prompt values - can be None, callable, or dict
     # TODO: make this more lazy and ask for every generator on execution
@@ -341,7 +334,9 @@ def run_generators(
     # execute generators
     for generator in generators_to_run:
         if not generator.machines:
-            continue
+            msg = "This should never happen"
+            raise ClanError(msg)
+
         generator.execute(
             machine_name=generator.machines[0],
             prompt_values=prompt_values.get(generator.name, {}),
