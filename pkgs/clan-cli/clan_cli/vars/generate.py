@@ -30,7 +30,7 @@ def generate_command(args: argparse.Namespace) -> None:
     auto_accept_prompts = not args.regenerate if args.regenerate is not None else True
     run_generators(
         machines,
-        generators=args.generator,
+        generators=[args.generator] if args.generator else None,
         full_closure=args.regenerate if args.regenerate is not None else False,
         no_sandbox=args.no_sandbox,
         auto_accept_prompts=auto_accept_prompts,

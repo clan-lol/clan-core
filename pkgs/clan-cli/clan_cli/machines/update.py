@@ -178,7 +178,7 @@ def update_command(args: argparse.Namespace) -> None:
             ]
         )
 
-        run_generators(all_machines, generators=None, full_closure=False)
+        run_generators(all_machines, full_closure=False)
 
         with AsyncRuntime() as runtime:
             for machine in machines_to_update:
