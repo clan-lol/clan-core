@@ -8,15 +8,15 @@
     # jon = { };
   };
 
-  # Docs: See https://docs.clan.lol/services/definition/
+  # Docs: See https://docs.clan.lol/latest/services/definition/
   inventory.instances = {
 
-    # Docs: https://docs.clan.lol/services/official/admin/
-    # Admin service for managing machines
-    # This service adds a root password and SSH access.
-    admin = {
-      roles.default.tags.all = { };
-      roles.default.settings.allowedKeys = {
+    # Docs: https://docs.clan.lol/latest/services/official/sshd/
+    # SSH service for secure remote access to machines.
+    # Generates persistent host keys and configures authorized keys.
+    sshd = {
+      roles.server.tags.all = { };
+      roles.server.settings.authorizedKeys = {
         # Insert the public key that you want to use for SSH access.
         # All keys will have ssh access to all machines ("tags.all" means 'all machines').
         # Alternatively set 'users.users.root.openssh.authorizedKeys.keys' in each machine
@@ -24,7 +24,20 @@
       };
     };
 
-    # Docs: https://docs.clan.lol/services/official/zerotier/
+    # Docs: https://docs.clan.lol/latest/services/official/users/
+    # Root password management for all machines.
+    user-root = {
+      module = {
+        name = "users";
+      };
+      roles.default.tags.all = { };
+      roles.default.settings = {
+        user = "root";
+        prompt = true;
+      };
+    };
+
+    # Docs: https://docs.clan.lol/latest/services/official/zerotier/
     # The lines below will define a zerotier network and add all machines as 'peer' to it.
     # !!! Manual steps required:
     #   - Define a controller machine for the zerotier network.
@@ -39,7 +52,7 @@
       roles.peer.tags.all = { };
     };
 
-    # Docs: https://docs.clan.lol/services/official/tor/
+    # Docs: https://docs.clan.lol/latest/services/official/tor/
     # Tor network provides secure, anonymous connections to your machines
     # All machines will be accessible via Tor as a fallback connection method
     tor = {
@@ -49,7 +62,7 @@
 
   # Additional NixOS configuration can be added here.
   # machines/jon/configuration.nix will be automatically imported.
-  # See: https://docs.clan.lol/guides/inventory/autoincludes/
+  # See: https://docs.clan.lol/latest/guides/inventory/autoincludes/
   machines = {
     # jon = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];

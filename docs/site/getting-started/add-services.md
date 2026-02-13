@@ -47,26 +47,36 @@ Or read [guides/services](../guides/services/community.md) if you want to bring 
 
 Adding SSH keys is one of the most recommended services:
 
-```{.nix title="clan.nix" hl_lines="7-14"}
+```{.nix title="clan.nix" hl_lines="7-26"}
 {
     inventory.machines = {
         jon-machine = { };
         sara-machine = { };
     };
     inventory.instances = {
-        admin = {
+        sshd = {
+            roles.server.tags.all = { };
+            roles.server.settings.authorizedKeys = {
+                "root" = "ssh-ed25519 AAAAC3N…";
+            };
+        };
+
+        user-root = {
+            module = {
+                name = "users";
+                input = "clan-core";
+            };
             roles.default.tags.all = { };
             roles.default.settings = {
-                allowedKeys = {
-                    "root" = "ssh-ed25519 AAAAC3N…";
-                };
+                user = "root";
+                prompt = true;
             };
         };
     };
 }
 ```
 
-The `admin` service will generate a **root-password** and **add your SSH key** that allows for convenient administration to all machines.
+The `sshd` service will **add your SSH key** for remote access to all machines. The `user-root` service will generate a **root password** for convenient administration.
 
 This method is equivalent to directly setting `authorizedKeys` like in [configuring a machine](../getting-started/add-machines.md#configuring-a-machine)
 
