@@ -56,6 +56,7 @@ in
         This is usually inherited from the nixos pkgs set.
       '';
       internal = true;
+      visible = false;
     };
     settings = mkOption {
       type = raw;
@@ -64,6 +65,14 @@ in
         This is usually inherited from the settings of the current context (machine).
       '';
       internal = true;
+      visible = false;
+      # Docs generation needs a file module
+      # Since we don't know what the user configured, we cannot display sub-options
+      # -> render an empty module
+      # See vars.settings for available module choices and sub-options of each module
+      default = {
+        fileModule = { };
+      };
     };
 
     name = mkOption {
@@ -76,18 +85,8 @@ in
       default = config._module.args.name;
       defaultText = "Name of the generator";
     };
-    dependencies = mkOption {
-      description = ''
-        A list of other generators that this generator depends on.
-        The output values of these generators will be available to the generator script as files.
+    # Machine injects the dependency option
 
-        For example:
-
-        **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
-      '';
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
     validation = mkOption {
       description = ''
         A set of values that invalidate the generated values.

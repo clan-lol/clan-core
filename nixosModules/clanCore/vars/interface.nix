@@ -69,6 +69,20 @@ in
               {
                 inherit (config) pkgs settings;
               }
+              {
+                options.dependencies = mkOption {
+                  description = ''
+                    A list of other generators that this generator depends on.
+                    The output values of these generators will be available to the generator script as files.
+
+                    For example:
+
+                    **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
+                  '';
+                  type = lib.types.listOf lib.types.str;
+                  default = [ ];
+                };
+              }
               ../../../modules/clan/export-modules/generator.nix
               # needed for mkRemovedOptionModule
               (config.pkgs.path + "/nixos/modules/misc/assertions.nix")

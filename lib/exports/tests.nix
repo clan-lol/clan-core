@@ -13,4 +13,5 @@ in
   selectExports = import ./test_selectExports.nix { inherit clanLib lib; };
   getExport = import ./test_getExport.nix { inherit clanLib lib; };
   integration = import ./test_integration.nix { inherit clanLib lib; };
+  generators = import ./test_generators.nix { inherit clanLib lib; };
 }

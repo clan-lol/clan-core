@@ -338,6 +338,28 @@ in
           templates = lib.mkOption { type = lib.types.raw; };
 
           machines = lib.mkOption { type = lib.types.raw; };
+
+          # attrsOf system submodules, system is injected into each submodule
+          systems = lib.mkOption {
+            type = types.attrsOf (
+              types.submoduleWith {
+                # Modules are set in perSystem
+                modules = [
+                  {
+                    options.exports = lib.mkOption {
+                      type = types.attrsOf (
+                        types.submodule {
+                          options.generators = lib.mkOption {
+                            type = types.attrsOf (types.submoduleWith { modules = [ ./export-modules/generator.nix ]; });
+                          };
+                        }
+                      );
+                    };
+                  }
+                ];
+              }
+            );
+          };
         };
       };
     };
@@ -350,5 +372,6 @@ in
     networking = import ./export-modules/networking.nix;
     dataMesher = import ./export-modules/data-mesher.nix;
     endpoints = import ./export-modules/endpoints.nix;
+    generators = import ./export-modules/generators.nix;
   };
 }

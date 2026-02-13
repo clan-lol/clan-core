@@ -40,6 +40,13 @@ let
     if pkgs != null then pkgs else nixpkgs.legacyPackages.${system}
   );
 
+  perSystem =
+    f: system:
+    f {
+      # inherit system;
+      pkgs = pkgsFor.${system};
+    };
+
   inherit (clan-core) clanLib;
 
   moduleSystemConstructor = {
@@ -236,6 +243,23 @@ in
     inherit darwinConfigurations;
 
     clanInternals = {
+
+      systems = lib.genAttrs supportedSystems (
+        perSystem (
+          { pkgs }:
+          {
+            exports = lib.mapAttrs (_exportName: v: {
+              generators = lib.mapAttrs (_genName: gen: {
+                # import the deferredModule
+                imports = [ gen ];
+                config.pkgs = pkgs;
+                config.settings = config.clanInternals.vars.settings;
+              }) v.generators;
+            }) config.exports;
+          }
+        )
+      );
+
       inventoryClass =
         let
           flakeInputs = config.self.inputs;
