@@ -1,7 +1,7 @@
 
 ## What it does
 - Generates and persists SSH host keys via `vars`.
-- Optionally issues CA-signed host certificates for servers.
+- Issues CA-signed host certificates for servers.
 - Installs the `server` CA public key into `clients` `known_hosts` for TOFU-less verification.
 
 
@@ -23,6 +23,7 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
       # Servers present certificates for <machine>.example.com
       roles.server.tags.all = { };
       roles.server.settings = {
+        # Optional: add additional search domains besides `meta.domain` from `clan.nix`
         certificate.searchDomains = [ "example.com" ];
         # Optional: also add RSA host keys
         # hostKeys.rsa.enable = true;
@@ -30,6 +31,7 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
       # Clients trust the CA for *.example.com
       roles.client.tags.all = { };
       roles.client.settings = {
+        # Optional: add additional search domains besides `meta.domain` from `clan.nix`
         certificate.searchDomains = [ "example.com" ];
       };
     };

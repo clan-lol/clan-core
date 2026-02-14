@@ -1,4 +1,16 @@
-{ ... }:
+{ lib, ... }:
+let
+  searchDomainOption = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+    example = [ "mydomain.com" ];
+    description = ''
+      List of extra domains to include in the certificate in addition to the clan's internal domain configured via `meta.domain` in `clan.nix`.
+      This option will prepend the machine name in front of each domain
+      before adding it to the certificate.
+    '';
+  };
+in
 {
   _class = "clan.service";
   manifest.name = "clan-core/sshd";
@@ -12,19 +24,10 @@
   roles.client = {
     description = "Installs the SSH CA public key into known_hosts for the configured domains, so this machine can verify servers' host certificates without TOFU prompts.";
     interface =
-      { lib, ... }:
+      { ... }:
       {
         options.certificate = {
-          searchDomains = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            example = [ "mydomain.com" ];
-            description = ''
-              List of domains to include in the certificate.
-              This option will prepend the machine name in front of each domain
-              before adding it to the certificate.
-            '';
-          };
+          searchDomains = searchDomainOption;
         };
       };
 
@@ -47,10 +50,11 @@
               )
             );
             # Merge client's searchDomains with all servers' searchDomains
-            searchDomains = uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
+            extraDomains = uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
+            searchDomains = [ config.clan.core.settings.domain ] ++ extraDomains;
           in
           {
-            clan.core.vars.generators.openssh-ca = lib.mkIf (searchDomains != [ ]) {
+            clan.core.vars.generators.openssh-ca = {
               share = true;
               files.id_ed25519.deploy = false;
               files."id_ed25519.pub" = {
@@ -65,7 +69,7 @@
               '';
             };
 
-            programs.ssh.knownHosts.ssh-ca = lib.mkIf (searchDomains != [ ]) {
+            programs.ssh.knownHosts.ssh-ca = {
               certAuthority = true;
               extraHostNames = builtins.map (domain: "*.${domain}") searchDomains;
               publicKey = config.clan.core.vars.generators.openssh-ca.files."id_ed25519.pub".value;
@@ -94,16 +98,7 @@
           hostKeys.rsa.enable = lib.mkEnableOption "generating a RSA host key";
 
           certificate = {
-            searchDomains = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              example = [ "mydomain.com" ];
-              description = ''
-                List of domains to include in the certificate. This option will
-                prepend the machine name in front of each domain before adding
-                it to the certificate.
-              '';
-            };
+            searchDomains = searchDomainOption;
           };
         };
       };
@@ -118,6 +113,9 @@
             pkgs,
             ...
           }:
+          let
+            searchDomains = [ config.clan.core.settings.domain ] ++ settings.certificate.searchDomains;
+          in
           {
             users.users.root.openssh.authorizedKeys.keys =
               builtins.attrValues settings.authorizedKeys
@@ -135,7 +133,7 @@
                   ssh-keygen -t ed25519 -N "" -C "root@${config.clan.core.settings.machine.name}" -f "$out"/id_ed25519
                 '';
               };
-              openssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
+              openssh-ca = {
                 share = true;
                 files.id_ed25519.deploy = false;
                 files."id_ed25519.pub" = {
@@ -150,7 +148,7 @@
                 '';
               };
 
-              openssh-cert = lib.mkIf (settings.certificate.searchDomains != [ ]) {
+              openssh-cert = {
                 files."ssh.id_ed25519-cert.pub".secret = false;
                 dependencies = [
                   "openssh"
@@ -158,7 +156,7 @@
                 ];
                 validation = {
                   name = config.clan.core.settings.machine.name;
-                  domains = lib.genAttrs settings.certificate.searchDomains lib.id;
+                  domains = lib.genAttrs searchDomains lib.id;
                 };
                 runtimeInputs = [
                   pkgs.openssh
@@ -167,7 +165,7 @@
                 script =
                   let
                     stringSet = list: builtins.attrNames (builtins.groupBy lib.id list);
-                    domains = stringSet settings.certificate.searchDomains;
+                    domains = stringSet searchDomains;
                   in
                   ''
                     ssh-keygen \
@@ -205,9 +203,9 @@
               };
             };
 
-            programs.ssh.knownHosts.ssh-ca = lib.mkIf (settings.certificate.searchDomains != [ ]) {
+            programs.ssh.knownHosts.ssh-ca = {
               certAuthority = true;
-              extraHostNames = builtins.map (domain: "*.${domain}") settings.certificate.searchDomains;
+              extraHostNames = builtins.map (domain: "*.${domain}") searchDomains;
               publicKey = config.clan.core.vars.generators.openssh-ca.files."id_ed25519.pub".value;
             };
 
@@ -215,11 +213,9 @@
               enable = true;
               settings.PasswordAuthentication = false;
 
-              settings.HostCertificate = lib.mkIf (
-                # this check needs to go first, as otherwise generators.openssh-cert does not exist
-                settings.certificate.searchDomains != [ ]
-                && config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".exists
-              ) config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
+              settings.HostCertificate =
+                lib.mkIf (config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".exists)
+                  config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
 
               hostKeys = [
                 {
