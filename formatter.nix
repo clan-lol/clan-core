@@ -27,6 +27,10 @@
       ];
       treefmt.programs.sizelint.enable = true;
       treefmt.programs.sizelint.failOnWarn = true;
+      treefmt.programs.sizelint.settings.max_file_size = "100kb";
+      treefmt.settings.formatter.sizelint.excludes = [
+        "pkgs/clan-app/ui/package-lock.json"
+      ];
       treefmt.programs.clang-format.enable = true;
       treefmt.programs.typos = {
         enable = true;
