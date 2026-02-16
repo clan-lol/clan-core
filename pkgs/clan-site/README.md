@@ -24,7 +24,13 @@ To create a production version of the site:
 clan-site build
 ```
 
-Add `-b` to preview the build result in a new browser tab
+Add `-s` to preview the build result
+
+```sh
+clan-site build -s
+```
+
+Similarly, passing `-b` (which assumes `-s`) opens the build result in a new browser tab.
 
 ```sh
 clan-site build -b
