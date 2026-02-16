@@ -1,8 +1,11 @@
 # shellcheck shell=bash
 set -euo pipefail
 
-case ${1-} in
-"" | dev)
+if [[ $# = 0 ]]; then
+	set -- dev
+fi
+case $1 in
+dev)
 	shift
 	arg=$(getopt -n clan-site -o 'b' -- "$@")
 	eval set -- "$arg"
@@ -72,5 +75,11 @@ build)
 		fi
 		npm run preview -- "$@"
 	fi
+	;;
+lint)
+	if [[ ! -e node_modules ]]; then
+		npm install
+	fi
+	npm run lint
 	;;
 esac

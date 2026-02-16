@@ -49,21 +49,14 @@ export function base({
       },
       extends: standard.universal,
       rules: {
-        // Types are not inferred correctly by typescript-eslint for page/layout
-        // data props for example
+        // Due to limitation of eslint-plugin-svelte, these rules create unavoidable false positives
+        // https://sveltejs.github.io/eslint-plugin-svelte/user-guide/#settings-svelte
         "@typescript-eslint/no-unsafe-assignment": "off",
-        // Type are not inferred correctly by typescript-eslint for page/layout
-        // data props for example
         "@typescript-eslint/no-unsafe-member-access": "off",
-        // Type are not inferred correctly by typescript-eslint for page/layout
-        // data props for example
         "@typescript-eslint/no-unsafe-call": "off",
-        // Type are not inferred correctly by typescript-eslint for page/layout
-        // data props for example
         "@typescript-eslint/no-unsafe-return": "off",
-        // Type are not inferred correctly by typescript-eslint for page/layout
-        // data props for example
         "@typescript-eslint/no-unsafe-argument": "off",
+
         // Template like {@render navItems(item.items)} report such an error,
         // where it shouldn't
         "@typescript-eslint/no-confusing-void-expression": "off",

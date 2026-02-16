@@ -10,10 +10,12 @@ To start the dev server
 clan-site
 ```
 
+This is same as running `clan-site dev`.
+
 Add `-b` to open the site in a new browser tab
 
 ```sh
-clan-site -b
+clan-site dev -b
 ```
 
 ## Building
@@ -34,4 +36,12 @@ Similarly, passing `-b` (which assumes `-s`) opens the build result in a new bro
 
 ```sh
 clan-site build -b
+```
+
+## Lint
+
+Clan Site uses a quite strict coding standard. To lint the code base, run
+
+```sh
+clan-site lint
 ```
