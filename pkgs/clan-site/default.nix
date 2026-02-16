@@ -3,6 +3,7 @@
   importNpmLock,
   nodejs_24,
   docs-markdowns,
+  clan-site-assets,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "clan-site";
@@ -17,13 +18,9 @@ buildNpmPackage (finalAttrs: {
   npmConfigHook = importNpmLock.npmConfigHook;
 
   preBuild = ''
-    mkdir -p src/docs
+    mkdir -p src/docs src/lib/assets
     cp -r ${docs-markdowns}/* src/docs
-    chmod -R +w src/docs
-
-    mkdir -p src/lib/assets/icons
-    cp -af ${../clan-app/ui/src/assets/icons}/* src/lib/assets/icons
-    chmod -R +w src/lib/assets/icons
+    cp -r ${clan-site-assets}/* src/lib/assets
   '';
   passthru = {
     tests = {

@@ -6,8 +6,9 @@
       ...
     }:
     {
+      packages.clan-site-assets = pkgs.callPackage ./assets.nix { };
       packages.clan-site = pkgs.callPackage ./default.nix {
-        inherit (config.packages) docs-markdowns;
+        inherit (config.packages) docs-markdowns clan-site-assets;
       };
 
       devShells.clan-site = pkgs.callPackage ./shell.nix {

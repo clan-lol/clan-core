@@ -53,5 +53,8 @@ mkShellNoCC {
       '';
     })
   ];
-  shellHook = clan-site.preBuild;
+  shellHook = ''
+    ${clan-site.preBuild}
+    chmod -R +w src/docs src/lib/assets
+  '';
 }
