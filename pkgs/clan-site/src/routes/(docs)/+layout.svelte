@@ -7,7 +7,6 @@
   import { asset, resolve } from "$app/paths";
   import ClanLogo from "$lib/assets/icons/clan-logo.svg?component";
   import config from "$config";
-  import favicon from "$lib/assets/favicon.svg";
   import MenuIcon from "$lib/assets/icons/menu.svg?component";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
@@ -67,7 +66,6 @@
 </script>
 
 <svelte:head>
-  <link href={favicon} rel="icon" />
   <title>{article?.title || "Clan Documentation"}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
