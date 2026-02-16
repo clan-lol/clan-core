@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "MODE=development vite build --mode development --configLoader native && MODE=development vite dev --configLoader native --strictPort",
     "build": "MODE=production vite build --configLoader native",
-    "preview": "serve ./build",
+    "preview": "http-server ./build --port 4173",
     "prepare": "svelte-kit sync || echo ''",
     "prelint": "svelte-kit sync",
     "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte'"
@@ -30,9 +30,9 @@
     "@types/node": "^25.1.0",
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
+    "http-server": "^14.1.1",
     "postcss-preset-env": "^11.1.1",
     "prettier": "^3.8.1",
-    "serve": "^14.2.5",
     "stylelint": "^17.1.1",
     "svelte": "^5.49.2",
     "svelte-check": "^4.3.5",
