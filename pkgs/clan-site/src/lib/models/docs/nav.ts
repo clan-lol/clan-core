@@ -12,7 +12,7 @@ export type NavItem = NavGroup | NavPathItem | NavURLItem;
 
 export interface NavGroup {
   readonly label: string;
-  readonly items: readonly NavItem[];
+  readonly children: readonly NavItem[];
   readonly path: DocsPath;
   readonly collapsed: boolean;
   readonly badge: Badge | undefined;
@@ -73,7 +73,7 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem);
     return {
       label: md.frontmatter.title,
-      path: `${config.docsBase}${navItem === "/" ? "" : navItem}` as const,
+      path: toDocsPath(navItem),
       badge: undefined,
     };
   }
@@ -89,7 +89,7 @@ export async function normalizeNavItem(
       path: pathItem.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      items,
+      children: items,
     };
   }
 
@@ -97,7 +97,7 @@ export async function normalizeNavItem(
     const md = await loadMarkdown(navItem.slug);
     return {
       label: navItem.label ?? md.frontmatter.title,
-      path: `${config.docsBase}${navItem.slug}` as const,
+      path: toDocsPath(navItem.slug),
       badge: normalizeBadge(navItem.badge),
     };
   }
@@ -148,7 +148,7 @@ export async function normalizeNavItem(
     }
     return {
       label: navItem.label,
-      items,
+      children: items,
       path: navPath.path,
       collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
@@ -157,7 +157,7 @@ export async function normalizeNavItem(
   if ("path" in navItem) {
     return {
       label: navItem.label,
-      path: `${config.docsBase}${navItem.path === "/" ? "" : navItem.path}` as const,
+      path: toDocsPath(navItem.path),
       badge: normalizeBadge(navItem.badge),
     };
   }
@@ -165,6 +165,24 @@ export async function normalizeNavItem(
     label: navItem.label,
     url: navItem.url,
   };
+}
+
+export function findParentGroups(
+  navItems: readonly NavItem[],
+  path: Path,
+): readonly number[] {
+  const groups: number[] = [];
+  visit(navItems, (navItem, i) => {
+    if ("items" in navItem || !("path" in navItem)) {
+      return;
+    }
+    if (navItem.path === toDocsPath(path)) {
+      groups.push(i);
+    }
+  });
+  // We want the direct parent to be at index 0
+  groups.reverse();
+  return groups;
 }
 
 export function findNavSiblings(
@@ -175,7 +193,7 @@ export function findNavSiblings(
   const navPaths: NavPathItem[] = [];
   let prev: NavSibling | undefined;
   let next: NavSibling | undefined;
-  visit(navItems, "items", (navItem) => {
+  visit(navItems, (navItem) => {
     if (!("path" in navItem)) {
       return;
     }
@@ -186,7 +204,7 @@ export function findNavSiblings(
       };
       return "break";
     }
-    if (navItem.path !== path) {
+    if (navItem.path !== toDocsPath(path)) {
       navPaths.push(navItem);
       return;
     }
@@ -208,8 +226,8 @@ export function findFirstNavPathItem(
   navItems: readonly NavItem[],
 ): NavPathItem | undefined {
   for (const navItem of navItems) {
-    if ("items" in navItem) {
-      const item = findFirstNavPathItem(navItem.items);
+    if ("children" in navItem) {
+      const item = findFirstNavPathItem(navItem.children);
       if (item) {
         return item;
       }
@@ -220,4 +238,8 @@ export function findFirstNavPathItem(
     }
   }
   return;
+}
+
+function toDocsPath(path: Path): DocsPath {
+  return `${config.docsBase}${path === "/" ? "" : path}`;
 }

@@ -10,10 +10,10 @@
   import { resolve } from "$app/paths";
 </script>
 
-<header>
+<hgroup>
   <h1>{title}</h1>
   <h2>A declarative framework for reliable, self-hosted computing</h2>
-</header>
+</hgroup>
 
 <img
   class="hero"
@@ -79,25 +79,26 @@
 </section>
 
 <style>
-  header {
-    margin: 80px 0 32px;
+  hgroup {
+    margin: 32px 0;
   }
 
   h1 {
     margin: 0;
+    line-height: 1.2;
   }
 
   h2 {
     margin: 0;
+    margin-top: 20px;
     color: #415e63;
     font-weight: inherit;
     font-size: inherit;
   }
 
   .hero {
-    width: 640px;
+    width: 100%;
     height: auto;
-    margin-left: -24px;
     border-radius: 24px;
   }
 
@@ -112,26 +113,27 @@
     display: flex;
     gap: 8px;
     padding: 8px 16px;
+    color: #000;
+    background: #d8e8eb;
     border: 1px solid #90b2b7;
     border-radius: 3px;
-    background: #d8e8eb;
-    color: #000;
     box-shadow: inset 2px 2px 0 0 #fff;
     font-size: 16px;
 
     &.primary {
-      border-color: #0d1416;
-      background-color: #162324;
       color: #fff;
+      background-color: #162324;
+      border-color: #0d1416;
       box-shadow: inset 2px 2px 0 0 #2c4347;
     }
   }
 
   section {
-    margin: 48px -24px;
-    padding: 24px;
-    border-radius: 16px;
+    /* margin: 48px -24px; */
+
+    /* padding: 24px; */
     background: #f7f9fa;
+    border-radius: 16px;
 
     h2 {
       color: inherit;
@@ -140,9 +142,9 @@
     }
 
     dl {
-      display: grid;
+      /* display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 14px; */
     }
 
     dt {
@@ -154,14 +156,14 @@
       height: 95px;
       margin: 0 4px 4px;
       padding: 37px 23px 0;
+      color: #fff;
       background: url($lib/assets/purple-orange-gradient.jpg);
       background-size: cover;
-      color: #fff;
       font-size: 14px;
 
       .card:first-child & {
-        background-image: url($lib/assets/blue-orange-gradient.jpg);
         color: #000;
+        background-image: url($lib/assets/blue-orange-gradient.jpg);
       }
     }
 
@@ -169,9 +171,9 @@
       display: flex;
       flex: 1 1 240px;
       flex-flow: column wrap;
+      background: #fff;
       border: 1px solid #d8e8eb;
       border-radius: 6px;
-      background: #fff;
     }
   }
 </style>

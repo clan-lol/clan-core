@@ -1,37 +1,37 @@
 export type VisitorResult = void | "break";
 
-type Nesting<T, ChildrenKey extends string> = T &
-  Partial<Record<ChildrenKey, readonly Nesting<T, ChildrenKey>[]>>;
-type Parent<T, ChildrenKey extends string> = T &
-  Record<ChildrenKey, readonly Nesting<T, ChildrenKey>[]>;
-
-export function visit<T extends object, ChildrenKey extends string>(
-  items: readonly Nesting<T, ChildrenKey>[],
-  childrenKey: ChildrenKey,
+export function visit<
+  T extends object & {
+    children?: readonly T[];
+  },
+>(
+  items: readonly T[],
   visitor: (
     item: T,
-    parents: readonly Parent<T, ChildrenKey>[],
+    index: number,
+    parents: readonly Extract<T, { children: readonly T[] }>[],
   ) => VisitorResult,
 ): void {
   function visitItems(
-    items: readonly Nesting<T, ChildrenKey>[],
-    parents: readonly Parent<T, ChildrenKey>[],
+    items: readonly T[],
+    parents: readonly Extract<T, { children: readonly T[] }>[],
   ): VisitorResult {
-    for (const item of items) {
-      if (visitor(item, parents) === "break") {
+    for (const [i, item] of items.entries()) {
+      if (visitor(item, i, parents) === "break") {
         return "break";
       }
+      if (!item.children) {
+        continue;
+      }
       if (
-        childrenKey in item &&
-        visitItems(item[childrenKey] as T[], [
+        visitItems(item.children, [
           ...parents,
-          item as Parent<T, ChildrenKey>,
+          item as Extract<T, { children: readonly T[] }>,
         ]) === "break"
       ) {
         return "break";
       }
     }
-    return;
   }
   visitItems(items, []);
 }

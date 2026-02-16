@@ -2,7 +2,7 @@ import type { DocsPath, Path } from "$config";
 import type { Heading, Markdown } from "@clan/vite-plugin-markdown";
 import type { NavItem, NavSibling } from "./nav.ts";
 import config from "$config";
-import { findNavSiblings } from "./nav.ts";
+import { findNavSiblings, findParentGroups } from "./nav.ts";
 import { title as indexArticleTitle } from "~/routes/(docs)/docs/[ver]/+page.svelte";
 import { mapObjectKeys } from "$lib/util.ts";
 
@@ -23,6 +23,7 @@ export interface Article {
   readonly content: string;
   readonly previous: NavSibling | undefined;
   readonly next: NavSibling | undefined;
+  readonly navGroups: readonly number[];
   readonly toc: readonly Heading[];
 }
 
@@ -45,6 +46,7 @@ export async function loadArticle(
   navItems: readonly NavItem[],
 ): Promise<Article> {
   if (path === "/") {
+    const navGroups = findParentGroups(navItems, path);
     return {
       // FIXME: typescript-eslint can't infer types from a svelte type
       // this is probably a limitation from eslint-plugin-svelte
@@ -52,21 +54,24 @@ export async function loadArticle(
       title: indexArticleTitle,
       content: "",
       path: config.docsBase,
-      toc: [],
       previous: undefined,
       next: undefined,
+      navGroups,
+      toc: [],
     };
   }
   const md = await loadMarkdown(path);
+  const navGroups = findParentGroups(navItems, path);
   const [previous, next] = findNavSiblings(navItems, path);
 
   return {
     title: md.frontmatter.title,
     content: md.content,
     path: `${config.docsBase}${path}`,
-    toc: md.toc,
     previous,
     next,
+    navGroups,
+    toc: md.toc,
   };
 }
 
