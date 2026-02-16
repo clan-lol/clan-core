@@ -7,11 +7,11 @@
   import { asset, resolve } from "$app/paths";
   import ClanLogo from "$lib/assets/icons/clan-logo.svg?component";
   import config from "$config";
-  import favicon from "$lib/assets/favicon.svg";
-  import IconSearch from "$lib/assets/icons/search.svg?component";
+  import MenuIcon from "$lib/assets/icons/menu.svg?component";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
+  import SearchIcon from "$lib/assets/icons/search.svg?component";
 
   const { data, children } = $props();
   const navItems = $derived(data.docsNavItems);
@@ -19,7 +19,7 @@
   const activeNavGroup = $derived.by(() => {
     const items: { prefixLength: number; group: NavGroup }[] = [];
     for (const navItem of navItems) {
-      if (!("items" in navItem)) {
+      if (!("children" in navItem)) {
         continue;
       }
       const path = resolve(navItem.path);
@@ -66,7 +66,6 @@
 </script>
 
 <svelte:head>
-  <link href={favicon} rel="icon" />
   <title>{article?.title || "Clan Documentation"}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
@@ -75,7 +74,7 @@
     crossorigin="anonymous"
   />
   <link
-    href="https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wdth,wght@0,100..112.5,200..900;1,100..112.5,200..900&display=swap"
     rel="stylesheet"
   />
 </svelte:head>
@@ -84,6 +83,14 @@
   <header>
     <div class="logo"><ClanLogo /> Document</div>
     <nav class="nav">
+      <div class="nav-actions">
+        <button>
+          <SearchIcon height="18" />
+        </button>
+        <button>
+          <MenuIcon height="24" />
+        </button>
+      </div>
       <ul>
         {#each navItems as navItem (navItem.label)}
           {#if "path" in navItem}
@@ -102,7 +109,7 @@
     <aside>
       <div class="search">
         <div class="search-bar">
-          <IconSearch height="14" /><input
+          <SearchIcon height="14" /><input
             type="search"
             placeholder="Search"
             bind:value={query}
@@ -128,10 +135,10 @@
         {/if}
       </div>
       {#if activeNavGroup}
-        <nav class="toc">
+        <nav class="subnav">
           <div class="nav-title">{activeNavGroup.label}</div>
           <ul>
-            {@render navItemsSnippet(activeNavGroup.items)}
+            {@render subnavItems(activeNavGroup.children)}
           </ul>
         </nav>
       {/if}
@@ -141,19 +148,19 @@
     </main>
   </div>
 </div>
-{#snippet navItemsSnippet(items: readonly NavItem[])}
+{#snippet subnavItems(items: readonly NavItem[])}
   {#each items as item (item.label)}
-    {@render navItemSnippet(item)}
+    {@render subnavItem(item)}
   {/each}
 {/snippet}
 
-{#snippet navItemSnippet(item: NavItem)}
-  {#if "items" in item}
+{#snippet subnavItem(item: NavItem)}
+  {#if "children" in item}
     <li>
       <details open={!item.collapsed}>
         <summary><span>{item.label}</span></summary>
         <ul>
-          {@render navItemsSnippet(item.items)}
+          {@render subnavItems(item.children)}
         </ul>
       </details>
     </li>
@@ -172,26 +179,23 @@
 
 <style>
   .container {
-    display: flex;
+    /* display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100vh; */
   }
 
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 24px;
-    border-top: 1px solid #c9d7d9;
+    padding-right: env(safe-area-inset-right);
+    padding-left: env(safe-area-inset-left);
+    background: #fff;
   }
 
   .nav {
     > ul {
-      display: flex;
-      margin: 0;
-      margin-right: -8px;
-      padding: 0;
-      list-style: none;
+      display: none;
 
       a {
         display: block;
@@ -202,12 +206,30 @@
     }
   }
 
+  .nav-actions {
+    display: flex;
+    padding: 8px 4px;
+
+    > button {
+      display: flex;
+      align-items: center;
+      height: 48px;
+      padding: 0 12px;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+  }
+
   .logo {
     display: flex;
     gap: 10px;
     align-items: center;
+    margin-left: 16px;
     font-weight: 700;
     font-size: 20px;
+    font-variation-settings: "wdth" 112.5;
 
     :global(svg) {
       height: 28px;
@@ -215,11 +237,13 @@
   }
 
   .main {
-    display: flex;
-    flex: 1;
+    /* display: flex; */
+
+    /* flex: 1; */
   }
 
   aside {
+    display: none;
     flex: none;
     width: 260px;
     padding: 0 24px;
@@ -243,9 +267,9 @@
     align-items: center;
     margin: 24px 0;
     padding: 6px 8px;
+    background: #fff;
     border: #7b9b9f;
     border-radius: 2px;
-    background: #fff;
     font-size: 14px;
 
     & > input {
@@ -282,7 +306,7 @@
     text-transform: uppercase;
   }
 
-  .toc ul {
+  .subnav ul {
     margin: 0;
     margin-top: 12px;
     padding: 0;
@@ -306,10 +330,15 @@
   }
 
   main {
-    flex: 1;
-    margin-right: 24px;
-    margin-bottom: 24px;
-    border-radius: 12px;
     background: #fff;
+    border: 1px solid var(--nav-border-color);
+    border-start-start-radius: 12px;
+    border-start-end-radius: 12px;
+  }
+
+  @media (width > 800px) {
+    header {
+      border-top: 1px solid #c9d7d9;
+    }
   }
 </style>

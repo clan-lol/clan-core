@@ -255,9 +255,9 @@
 
   button {
     padding: 0;
-    border: 0;
-    background: transparent;
     color: inherit;
+    background: transparent;
+    border: 0;
     font: inherit;
   }
 
@@ -360,8 +360,8 @@
     gap: 10px;
     align-items: center;
     padding: 20px;
-    border-radius: 8px;
     color: inherit;
+    border-radius: 8px;
     box-shadow: 0 2px 5px #00000030;
     text-decoration: none;
   }

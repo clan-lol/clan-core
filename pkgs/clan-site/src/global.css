@@ -1,0 +1,49 @@
+@import url("modern-normalize/modern-normalize.css");
+
+@custom-media --wide-viewport (width > 800px);
+
+html {
+  --fg-color: #000;
+  --bg-color: #e1ecf0;
+  --masthead-fg-color: #000;
+  --masthead-bg-color: #fff;
+  --nav-border-color: #d8e8eb;
+
+  &.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+  }
+}
+
+body {
+  font:
+    500 18px/1.37 "Mona Sans",
+    sans-serif;
+
+  &:has([data-page-id="docs"]) {
+    color: var(--masthead-color);
+    background: var(--masthead-bg-color);
+  }
+}
+
+h1 {
+  margin: 2em 0;
+  color: inherit;
+  font-weight: 700;
+  font-size: 34px;
+}
+
+h2 {
+  margin: 2em 0 0.5em;
+  color: inherit;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+h3 {
+  margin: 2em 0 1em;
+}
+
+a {
+  text-decoration: none;
+}

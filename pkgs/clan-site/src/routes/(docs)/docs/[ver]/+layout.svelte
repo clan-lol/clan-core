@@ -8,8 +8,7 @@
 
 <style>
   .container {
-    width: 640px;
-    margin: 0 auto;
-    padding: 0 24px;
+    /* width: 640px; */
+    padding: 0 16px;
   }
 </style>
