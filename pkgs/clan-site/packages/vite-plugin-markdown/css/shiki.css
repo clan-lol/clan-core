@@ -1,4 +1,7 @@
+/* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
+  background-color: var(--shiki-light-bg);
+
   &,
   & span {
     color: var(--shiki-light);
@@ -13,8 +16,7 @@
 
   .line {
     display: inline-block;
-    width: 100%;
-    padding: 0 15px;
+    inline-size: 100%;
   }
 
   /* line numbers */
@@ -26,45 +28,45 @@
   &.line-numbers .line::before {
     content: counter(step);
     display: inline-block;
-    width: 1rem;
-    margin-right: 1em;
+    inline-size: 1rem;
+    margin-inline-end: 1em;
     color: rgb(115 138 148 / 40%);
     counter-increment: step;
-    text-align: right;
+    text-align: end;
   }
 
   /* indent guides */
   .indent {
     position: relative;
-    left: var(--indent-offset);
+    inset-inline-start: var(--shiki-indent-offset);
     display: inline-block;
-  }
 
-  .indent:empty {
-    vertical-align: bottom;
-    height: 1lh;
-  }
+    &:empty {
+      vertical-align: bottom;
+      block-size: 1lh;
+    }
 
-  .indent::before {
-    content: "";
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: currentcolor;
-    opacity: 0.15;
+    &::before {
+      content: "";
+      position: absolute;
+      inline-size: 1px;
+      block-size: 100%;
+      background-color: currentcolor;
+      opacity: 0.15;
+    }
   }
 
   /* diff */
   .line.diff.remove {
-    background-color: #db0a0a41;
+    background-color: var(--shiki-diff-remove-bg-color);
   }
 
   .line.diff.add {
-    background-color: #0adb4954;
+    background-color: var(--shiki-diff-add-bg-color);
   }
 
   .line.highlighted {
-    background-color: #00000024;
+    background-color: var(--shiki-highlighted-bg-color);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -79,8 +81,4 @@
       text-decoration: var(--shiki-dark-text-decoration);
     }
   }
-
-  margin: 0 -15px;
-  padding: 15px 0;
-  background-color: var(--shiki-light-bg);
 }

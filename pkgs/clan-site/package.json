@@ -33,7 +33,7 @@
     "http-server": "^14.1.1",
     "postcss-preset-env": "^11.1.1",
     "prettier": "^3.8.1",
-    "stylelint": "^17.1.1",
+    "stylelint": "^17.3.0",
     "svelte": "^5.49.2",
     "svelte-check": "^4.3.5",
     "typescript": "^5.9.3",

@@ -241,7 +241,7 @@
 <style>
   .toc {
     position: sticky;
-    top: 0;
+    inset-block-start: 0;
     z-index: 1;
 
     h2 {
@@ -274,9 +274,8 @@
 
   .toc-menu {
     position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
+    inset-inline: 0;
+    inset-block-start: 100%;
     margin: 0;
     padding: 15px 20px;
     background: #fff;
@@ -300,7 +299,7 @@
       & :is(h1, h2, h3, h4, h5, h6) {
         display: flex;
         align-items: center;
-        margin-left: -24px;
+        margin-inline-start: -24px;
 
         &.is-scrolled-past {
           opacity: 0;
@@ -308,7 +307,7 @@
 
         &.is-ghost {
           position: fixed;
-          left: 0;
+          inset-inline-start: 0;
           z-index: 1;
           margin: 0;
 
@@ -324,12 +323,12 @@
         .icon {
           display: flex;
           align-items: center;
-        }
 
-        .icon::before {
-          content: "🔗";
-          font-size: 14px;
-          visibility: hidden;
+          &::before {
+            content: "🔗";
+            font-size: 14px;
+            visibility: hidden;
+          }
         }
 
         &:hover {
@@ -364,15 +363,15 @@
     border-radius: 8px;
     box-shadow: 0 2px 5px #00000030;
     text-decoration: none;
-  }
 
-  .pointer:empty {
-    box-shadow: none;
-  }
+    &:empty {
+      box-shadow: none;
+    }
 
-  .pointer.next {
-    justify-content: end;
-    text-align: right;
+    &.next {
+      justify-content: end;
+      text-align: end;
+    }
   }
 
   .pointer-title {

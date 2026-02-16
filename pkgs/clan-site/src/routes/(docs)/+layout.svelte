@@ -188,8 +188,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: env(safe-area-inset-right);
-    padding-left: env(safe-area-inset-left);
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
     background: #fff;
   }
 
@@ -213,7 +212,7 @@
     > button {
       display: flex;
       align-items: center;
-      height: 48px;
+      block-size: 48px;
       padding: 0 12px;
       color: inherit;
       background: none;
@@ -226,13 +225,13 @@
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-left: 16px;
+    margin-inline-start: 16px;
     font-weight: 700;
     font-size: 20px;
     font-variation-settings: "wdth" 112.5;
 
     :global(svg) {
-      height: 28px;
+      block-size: 28px;
     }
   }
 
@@ -245,18 +244,18 @@
   aside {
     display: none;
     flex: none;
-    width: 260px;
+    inline-size: 260px;
     padding: 0 24px;
   }
 
   .search {
     & > ul {
       position: fixed;
-      top: 0;
-      left: 0;
+      inset-inline-start: 0;
+      inset-block-start: 0;
       z-index: 10;
-      width: 100vw;
-      height: 100vh;
+      inline-size: 100vw;
+      block-size: 100vh;
       background: #fff;
     }
   }
@@ -288,7 +287,7 @@
 
   .search-result {
     padding: 15px;
-    border-bottom: 1px solid #a3a3a3;
+    border-block-end: 1px solid #a3a3a3;
   }
 
   .search-result-title {
@@ -308,7 +307,7 @@
 
   .subnav ul {
     margin: 0;
-    margin-top: 12px;
+    margin-block-start: 12px;
     padding: 0;
     list-style: none;
 
@@ -338,7 +337,7 @@
 
   @media (width > 800px) {
     header {
-      border-top: 1px solid #c9d7d9;
+      border-block-start: 1px solid #c9d7d9;
     }
   }
 </style>

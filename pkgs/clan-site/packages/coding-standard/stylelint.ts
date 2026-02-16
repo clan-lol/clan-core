@@ -1,9 +1,16 @@
 /* eslint-disable unicorn/no-null */
 import type { Config } from "stylelint";
+import { fileURLToPath } from "node:url";
 
 export default {
   extends: ["stylelint-config-standard"],
-  plugins: ["stylelint-order"],
+  plugins: [
+    "stylelint-use-logical",
+    "stylelint-use-nesting",
+    "stylelint-value-no-unknown-custom-properties",
+    "stylelint-media-use-custom-media",
+    "stylelint-order",
+  ],
   rules: {
     "color-no-invalid-hex": true,
     "color-named": [
@@ -15,6 +22,8 @@ export default {
     "declaration-no-important": true,
     // This rule doesn't work well for nested rules
     "no-descending-specificity": null,
+    "csstools/use-logical": true,
+    "csstools/use-nesting": true,
     "order/order": ["custom-properties", "rules", "at-rules"],
     // Adapted from
     // https://github.com/hudochenkov/stylelint-config-hudochenkov/blob/master/order.js
@@ -24,12 +33,12 @@ export default {
         "content",
         "position",
         "inset",
-        "inset-block",
         "inset-inline",
-        "top",
-        "right",
-        "bottom",
-        "left",
+        "inset-inline-start",
+        "inset-inline-end",
+        "inset-block",
+        "inset-block-start",
+        "inset-block-end",
         "z-index",
         "display",
         "vertical-align",
@@ -83,27 +92,27 @@ export default {
 
         //
         "box-sizing",
-        "width",
-        "min-width",
-        "max-width",
-        "height",
-        "min-height",
-        "max-height",
+        "inline-size",
+        "min-inline-size",
+        "max-inline-size",
+        "block-size",
+        "min-block-size",
+        "max-block-size",
         "aspect-ratio",
         "margin",
         "margin-inline",
+        "margin-inline-start",
+        "margin-inline-end",
         "margin-block",
-        "margin-top",
-        "margin-right",
-        "margin-bottom",
-        "margin-left",
+        "margin-block-start",
+        "margin-block-end",
         "padding",
         "padding-inline",
+        "padding-inline-start",
+        "padding-inline-end",
         "padding-block",
-        "padding-top",
-        "padding-right",
-        "padding-bottom",
-        "padding-left",
+        "padding-block-start",
+        "padding-block-end",
 
         "color",
         "background",
@@ -124,42 +133,33 @@ export default {
         "border-width",
         "border-style",
         "border-color",
-        "border-top",
-        "border-top-width",
-        "border-top-style",
-        "border-top-color",
-        "border-right",
-        "border-right-width",
-        "border-right-style",
-        "border-right-color",
-        "border-bottom",
-        "border-bottom-width",
-        "border-bottom-style",
-        "border-bottom-color",
-        "border-left",
-        "border-left-width",
-        "border-left-style",
-        "border-left-color",
+        "border-inline-start",
+        "border-inline-start-width",
+        "border-inline-start-style",
+        "border-inline-start-color",
+        "border-inline-end",
+        "border-inline-end-width",
+        "border-inline-end-style",
+        "border-inline-end-color",
+        "border-block-start",
+        "border-block-start-width",
+        "border-block-start-style",
+        "border-block-start-color",
+        "border-block-end",
+        "border-block-end-width",
+        "border-block-end-style",
+        "border-block-end-color",
         "border-radius",
-        "border-top-left-radius",
-        "border-top-right-radius",
-        "border-bottom-right-radius",
-        "border-bottom-left-radius",
+        "border-start-start-radius",
+        "border-start-end-radius",
+        "border-end-start-radius",
+        "border-end-end-radius",
         "border-image",
         "border-image-source",
         "border-image-slice",
         "border-image-width",
         "border-image-outset",
         "border-image-repeat",
-        "border-top-image",
-        "border-right-image",
-        "border-bottom-image",
-        "border-left-image",
-        "border-corner-image",
-        "border-top-left-image",
-        "border-top-right-image",
-        "border-bottom-right-image",
-        "border-bottom-left-image",
         "box-decoration-break",
         "box-shadow",
         "outline",
@@ -277,3 +277,32 @@ export default {
     ],
   },
 } satisfies Config;
+
+export function base({
+  customProperties = [],
+  customMedia = [],
+}: {
+  customProperties?: URL[] | URL;
+  customMedia?: URL[] | URL;
+} = {}): NonNullable<Config["rules"]> {
+  return {
+    "csstools/value-no-unknown-custom-properties": [
+      true,
+      {
+        importFrom: (Array.isArray(customProperties)
+          ? customProperties
+          : [customProperties]
+        ).map((url) => fileURLToPath(url)),
+      },
+    ],
+    "csstools/media-use-custom-media": [
+      "known",
+      {
+        importFrom: (Array.isArray(customMedia)
+          ? customMedia
+          : [customMedia]
+        ).map((url) => fileURLToPath(url)),
+      },
+    ],
+  };
+}
