@@ -8,10 +8,14 @@ html {
   --masthead-fg-color: #000;
   --masthead-bg-color: #fff;
   --nav-border-color: #d8e8eb;
+  --shiki-indent-offset: 10px;
+  --shiki-diff-remove-bg-color: : #db0a0a41;
+  --shiki-diff-add-bg-color: : #0adb4954;
+  --shiki-highlighted-bg-color: : #00000024;
 
   &.no-scroll {
     overflow: hidden;
-    height: 100vh;
+    block-size: 100vh;
   }
 }
 
@@ -21,7 +25,7 @@ body {
     sans-serif;
 
   &:has([data-page-id="docs"]) {
-    color: var(--masthead-color);
+    color: var(--masthead-fg-color);
     background: var(--masthead-bg-color);
   }
 }
@@ -46,4 +50,13 @@ h3 {
 
 a {
   text-decoration: none;
+}
+
+.shiki {
+  margin: 0 -15px;
+  padding: 15px 0;
+
+  .line {
+    padding: 0 15px;
+  }
 }

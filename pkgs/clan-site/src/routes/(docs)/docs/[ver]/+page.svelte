@@ -90,15 +90,15 @@
 
   h2 {
     margin: 0;
-    margin-top: 20px;
+    margin-block-start: 20px;
     color: #415e63;
     font-weight: inherit;
     font-size: inherit;
   }
 
   .hero {
-    width: 100%;
-    height: auto;
+    inline-size: 100%;
+    block-size: auto;
     border-radius: 24px;
   }
 
@@ -153,7 +153,7 @@
     }
 
     dd {
-      height: 95px;
+      block-size: 95px;
       margin: 0 4px 4px;
       padding: 37px 23px 0;
       color: #fff;
@@ -174,6 +174,7 @@
       background: #fff;
       border: 1px solid #d8e8eb;
       border-radius: 6px;
+      border-start-start-radius: 1px;
     }
   }
 </style>

@@ -32,8 +32,8 @@
   .md-tabs-tab {
     padding: 8px 18px;
     background: #d7dadf;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-start-start-radius: 8px;
+    border-start-end-radius: 8px;
     cursor: pointer;
 
     &.is-active {
@@ -42,9 +42,9 @@
       .md-tabs.is-singleton & {
         flex: 1;
         padding: 8px 16px;
-        border-bottom: 1px solid #d8dbe1;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
+        border-block-end: 1px solid #d8dbe1;
+        border-start-start-radius: 5px;
+        border-start-end-radius: 5px;
       }
     }
   }
