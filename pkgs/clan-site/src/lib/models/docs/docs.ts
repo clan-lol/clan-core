@@ -48,9 +48,6 @@ export async function loadArticle(
   if (path === "/") {
     const navGroups = findParentGroups(navItems, path);
     return {
-      // FIXME: typescript-eslint can't infer types from a svelte type
-      // this is probably a limitation from eslint-plugin-svelte
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       title: indexArticleTitle,
       content: "",
       path: config.docsBase,
