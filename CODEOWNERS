@@ -3,11 +3,13 @@ clanServices/.* @pinpox @kenji
 lib/test/container-test-driver/.* @DavHau @mic92
 lib/inventory/.* @hsjobeki
 lib/inventoryClass/.* @hsjobeki
+lib/jsonschema/.* @hgl
 
 modules/.* @hsjobeki
 
 pkgs/clan-app/ui/.* @hsjobeki @hgl
 pkgs/clan-app/clan_app/.* @qubasa @hsjobeki
+pkgs/clan-site/.* @hgl
 
 pkgs/clan-cli/clan_cli/.* @lassulus @mic92 @kenji
 pkgs/clan-cli/clan_cli/(secrets|vars)/.* @DavHau @lassulus
