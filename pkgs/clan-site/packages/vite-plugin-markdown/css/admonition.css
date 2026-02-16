@@ -32,8 +32,8 @@
 
 /* TODO: Adjust styling */
 .md-admonition.is-note {
-  border-left-color: #3b82f6;
   background-color: #eff6ff;
+  border-left-color: #3b82f6;
 
   .md-admonition-title {
     color: #1e40af;
@@ -46,8 +46,8 @@
 }
 
 .md-admonition.is-important {
-  border-left-color: #facc15;
   background-color: #fffbeb;
+  border-left-color: #facc15;
 
   .md-admonition-title {
     color: #b45309;
@@ -60,8 +60,8 @@
 }
 
 .md-admonition.is-danger {
-  border-left-color: #ef4444;
   background-color: #fef2f2;
+  border-left-color: #ef4444;
 
   .md-admonition-title {
     color: #b91c1c;
@@ -74,8 +74,8 @@
 }
 
 .md-admonition.is-tip {
-  border-left-color: #10b981;
   background-color: #ecfdf5;
+  border-left-color: #10b981;
 
   .md-admonition-title {
     color: #065f46;

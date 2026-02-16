@@ -72,8 +72,8 @@
     & span,
     html.dark &,
     html.dark & span {
-      background-color: var(--shiki-dark-bg);
       color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
       font-weight: var(--shiki-dark-font-weight);
       font-style: var(--shiki-dark-font-style);
       text-decoration: var(--shiki-dark-text-decoration);

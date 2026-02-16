@@ -31,9 +31,9 @@
 
   .md-tabs-tab {
     padding: 8px 18px;
+    background: #d7dadf;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    background: #d7dadf;
     cursor: pointer;
 
     &.is-active {
