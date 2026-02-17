@@ -8,6 +8,11 @@
       lib,
       ...
     }:
+    let
+      sizelintExcludes = [
+        "pkgs/clan-app/ui/package-lock.json"
+      ];
+    in
     {
       treefmt.projectRootFile = "LICENSE.md";
       treefmt.programs.shellcheck.enable = true;
@@ -27,10 +32,13 @@
       ];
       treefmt.programs.sizelint.enable = true;
       treefmt.programs.sizelint.failOnWarn = true;
-      treefmt.programs.sizelint.settings.max_file_size = "100kb";
-      treefmt.settings.formatter.sizelint.excludes = [
-        "pkgs/clan-app/ui/package-lock.json"
-      ];
+      treefmt.programs.sizelint.settings = {
+        max_file_size = "100kb";
+        excludes = sizelintExcludes;
+        rules.default.description = "File exceeds the maximum allowed size";
+        rules.default.suggestion = "Add the file to 'sizelintExcludes' in formatter.nix";
+      };
+      treefmt.settings.formatter.sizelint.excludes = sizelintExcludes;
       treefmt.programs.clang-format.enable = true;
       treefmt.programs.typos = {
         enable = true;
