@@ -1,5 +1,5 @@
 <script module lang="ts">
-  export const title = "Sovereign Infrastructure by Design";
+  export const title = "What is Clan?";
 </script>
 
 <script lang="ts">
@@ -12,7 +12,7 @@
 
 <hgroup>
   <h1>{title}</h1>
-  <h2>A declarative framework for reliable, self-hosted computing</h2>
+  <h2>Clan is a declarative framework for reliable, self-hosted computing</h2>
 </hgroup>
 
 <img
