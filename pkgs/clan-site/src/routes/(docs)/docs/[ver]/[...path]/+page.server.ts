@@ -1,6 +1,6 @@
 import type { Article } from "$lib/models/docs.ts";
 import type { PageServerLoad } from "./$types.d.ts";
-import { ArticleNotExistError, loadArticle } from "$lib/models/docs.ts";
+import { ArticleNotExistError, loadArticle } from "$lib/models/docs.server.ts";
 import { error } from "@sveltejs/kit";
 import { HTTP_NOT_FOUND } from "$lib/util.ts";
 
