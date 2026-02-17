@@ -11,6 +11,7 @@
   const navItems = $derived(data.docsNavItems);
   const article = $derived(page.data.docsArticle);
 
+  let isNavVisible = $state(false);
   onNavigate(() => {
     window.scrollTo(0, 0);
   });
@@ -35,13 +36,20 @@
     <div class="logo"><ClanLogo height="22" /> Docs</div>
     <ol>
       <li><button title="Search"><SearchIcon height="18" /></button></li>
-      <li><button title="Navigation"><MenuIcon height="18" /></button></li>
+      <li>
+        <button
+          title="Navigation"
+          onclick={() => {
+            isNavVisible = !isNavVisible;
+          }}><MenuIcon height="18" /></button
+        >
+      </li>
     </ol>
   </header>
   <main>
     <aside>
       <Search />
-      <Nav {navItems} />
+      <Nav {navItems} isVisible={isNavVisible} />
     </aside>
     {@render children?.()}
   </main>
