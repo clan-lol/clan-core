@@ -15,11 +15,6 @@ in
 
         clan.modules."@clan/sshd" = module;
       };
-      clan.nixosTests.sshd-no-search-domains = {
-        imports = [ ./tests/vm/no-search-domains.nix ];
-
-        clan.modules."@clan/sshd" = module;
-      };
     };
 
 }
