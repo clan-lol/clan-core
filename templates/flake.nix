@@ -8,9 +8,9 @@
             description = "Single disk schema with Btrfs subvolumes and automated btrbk snapshots";
             path = ./disk/btrfs-single-disk-subvolumes;
           };
-          btrfs-single-disk-subvolumes-impermanance-script = {
+          btrfs-single-disk-subvolumes-impermanance-rollback = {
             description = "Single disk schema with Btrfs subvolumes, Btrfs-based ephemeral root (rollback), and automated btrbk snapshots";
-            path = ./disk/btrfs-single-disk-subvolumes-impermanance-script;
+            path = ./disk/btrfs-single-disk-subvolumes-impermanance-rollback;
           };
           btrfs-single-disk-subvolumes-impermanance-tmpfs = {
             description = "Single disk schema with Btrfs subvolumes, ephemeral tmpfs root, and automated btrbk snapshots";
