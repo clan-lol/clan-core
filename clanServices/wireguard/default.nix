@@ -58,7 +58,6 @@
   clanLib,
   config,
   lib,
-  directory,
   ...
 }:
 let
@@ -206,26 +205,19 @@ in
         ...
       }:
       {
-        # Export the peer's IPs in all controller subnets
+        # Export the peer's hostname for SSH connectivity
+        # Uses the same domain as /etc/hosts so SSH resolves via hosts
+        # and certificate verification matches the hostname principal
         exports = mkExports {
-          peer.hosts = lib.mapAttrsToList (ctrlName: _: {
-            plain =
-              let
-                controllerPrefix = clanLib.getPublicValue {
-                  flake = directory;
-                  machine = ctrlName;
-                  generator = "wireguard-network-${instanceName}";
-                  file = "prefix";
-                };
-                peerSuffix = clanLib.getPublicValue {
-                  flake = directory;
-                  machine = machine.name;
-                  generator = "wireguard-network-${instanceName}";
-                  file = "suffix";
-                };
-              in
-              controllerPrefix + ":" + peerSuffix;
-          }) roles.controller.machines;
+          peer.hosts = [
+            {
+              plain =
+                let
+                  domain = if settings.domain == null then instanceName else settings.domain;
+                in
+                "${machine.name}.${domain}";
+            }
+          ];
         };
 
         # Peers connect to all controllers
@@ -431,18 +423,17 @@ in
         ...
       }:
       {
-        # Export the controller's IP (::1 in its subnet)
+        # Export the controller's hostname for SSH connectivity
+        # Uses the same domain as /etc/hosts so SSH resolves via hosts
+        # and certificate verification matches the hostname principal
         exports = mkExports {
           peer.hosts = [
             {
               plain =
-                (clanLib.getPublicValue {
-                  flake = directory;
-                  machine = machine.name;
-                  generator = "wireguard-network-${instanceName}";
-                  file = "prefix";
-                })
-                + "::1";
+                let
+                  domain = if settings.domain == null then instanceName else settings.domain;
+                in
+                "${machine.name}.${domain}";
             }
           ];
         };
