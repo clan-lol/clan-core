@@ -22,59 +22,68 @@
   height="360"
   alt="Documentation Hero"
 />
-<p>
-  Clan is a peer-to-peer framework for building and operating self-owned
-  computing infrastructure. It enables individuals and teams to run their
-  systems locally, collaboratively, and at scale without surrendering control to
-  centralized platforms.
-</p>
 <div class="actions">
   <a
     class="button primary"
     href={resolve(
       `${config.docsBase}/getting-started/creating-your-first-clan`,
-    )}><IconFlash width="16" />Create Clan</a
+    )}><IconFlash width="16" />Get Started</a
   >
   <a class="button" href="https://git.clan.lol/clan/clan-core" rel="external"
     ><IconCode width="16" />View on Gitea</a
   >
 </div>
+<ul class="intro">
+  <li>
+    Declarative framework for managing fleets of machines without a central
+    controller
+  </li>
+  <li>Peer-to-peer infrastructure management built on NixOS</li>
+  <li>First-class support for networking, backups, and resource management</li>
+  <li>
+    Integrates with sops-nix, nixos-anywhere, and disko for provisioning and
+    secrets
+  </li>
+  <li>
+    Extensible via community-maintained Clan Services applied across multiple
+    machines
+  </li>
+</ul>
 
 <section>
   <h2>Guides</h2>
 
   <dl>
-    <div class="card">
+    <a href={resolve(`${config.docsBase}/guides/inventory/inventory`)}>
       <dt>Inventory</dt>
-      <dd>Learn how about inventory</dd>
-    </div>
-    <div class="card">
+      <dd><span>Learn how about inventory</span></dd>
+    </a>
+    <a href={resolve(`${config.docsBase}/guides/vars/vars-overview`)}>
       <dt>Vars</dt>
-      <dd>Learn how to use vars</dd>
-    </div>
-    <div class="card">
+      <dd><span>Learn how to use vars</span></dd>
+    </a>
+    <a href={resolve(`${config.docsBase}/guides/macos`)}>
       <dt>macOS</dt>
-      <dd>Using Clan to manage your macOS machines</dd>
-    </div>
+      <dd><span>Using Clan to manage your macOS machines</span></dd>
+    </a>
   </dl>
 </section>
 
 <section>
   <h2>Reference</h2>
-
   <dl>
-    <div class="card">
+    <a href={resolve(`${config.docsBase}/reference/cli`)}>
       <dt>CLI</dt>
-      <dd>command line interface</dd>
-    </div>
-    <div class="card">
+      <dd><span>command line interface</span></dd>
+    </a>
+    <a href={resolve(`${config.docsBase}/reference/options/clan`)}>
       <dt>Clan Options</dt>
-      <dd>Search all options</dd>
-    </div>
-    <div class="card">
+      <dd><span>Search all options</span></dd>
+    </a>
+    <a href={resolve(`${config.docsBase}/services/definition`)}>
       <dt>Services</dt>
-      <dd>Discover services</dd>
-    </div>
+      <dd><span>Discover services</span></dd>
+    </a>
   </dl>
 </section>
 
@@ -96,6 +105,15 @@
     font-size: inherit;
   }
 
+  .intro {
+    color: #415e63;
+    font-size: 16px;
+
+    li {
+      margin: 10px 0;
+    }
+  }
+
   .hero {
     inline-size: 100%;
     block-size: auto;
@@ -106,7 +124,7 @@
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin: 36px 0 48px;
+    margin: 36px 0;
   }
 
   .button {
@@ -129,22 +147,32 @@
   }
 
   section {
-    /* margin: 48px -24px; */
-
-    /* padding: 24px; */
-    background: #f7f9fa;
+    display: flex;
+    flex-direction: column;
+    padding: 0 14px;
+    margin: 28px 0;
+    background: var(--content-secondary-bg-color);
     border-radius: 16px;
 
     h2 {
+      margin: 14px 0 0;
       color: inherit;
       font-weight: 700;
       font-size: 24px;
     }
 
     dl {
-      /* display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px; */
+      margin: 0;
+
+      a {
+        display: flex;
+        flex-flow: column;
+        margin: 14px 0;
+        color: inherit;
+        background: var(--content-bg-color);
+        border: 1px solid #d8e8eb;
+        border-radius: 6px;
+      }
     }
 
     dt {
@@ -153,28 +181,25 @@
     }
 
     dd {
+      display: flex;
+      align-items: center;
       block-size: 95px;
       margin: 0 4px 4px;
-      padding: 37px 23px 0;
       color: #fff;
       background: url($lib/assets/purple-orange-gradient.jpg);
       background-size: cover;
       font-size: 14px;
 
+      > span {
+        display: block;
+        inline-size: 180px;
+        margin-inline-start: 24px;
+      }
+
       .card:first-child & {
         color: #000;
         background-image: url($lib/assets/blue-orange-gradient.jpg);
       }
-    }
-
-    .card {
-      display: flex;
-      flex: 1 1 240px;
-      flex-flow: column wrap;
-      background: #fff;
-      border: 1px solid #d8e8eb;
-      border-radius: 6px;
-      border-start-start-radius: 1px;
     }
   }
 </style>

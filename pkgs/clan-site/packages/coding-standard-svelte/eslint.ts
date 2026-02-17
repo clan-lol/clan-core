@@ -60,6 +60,7 @@ export function base({
         // Template like {@render navItems(item.items)} report such an error,
         // where it shouldn't
         "@typescript-eslint/no-confusing-void-expression": "off",
+
         "svelte/block-lang": ["error", { script: ["ts"] }],
         "svelte/no-add-event-listener": "error",
         "svelte/no-target-blank": "error",
@@ -69,6 +70,18 @@ export function base({
         "svelte/prefer-style-directive": "error",
         "svelte/require-event-prefix": "error",
         "svelte/spaced-html-comment": "error",
+      },
+    },
+    {
+      files: ["**/*.svelte"],
+      rules: {
+        "unicorn/filename-case": [
+          "error",
+          {
+            case: "pascalCase",
+            ignore: [String.raw`^\+`],
+          },
+        ],
       },
     },
   ];
