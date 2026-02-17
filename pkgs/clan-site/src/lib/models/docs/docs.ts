@@ -12,7 +12,7 @@ export class ArticleNotExistError extends Error {
   public override name = "ArticleNotExistError";
   public path: DocsPath;
   public constructor(path: DocsPath) {
-    super(`Document article not found, path: ${path}`);
+    super(`Article not found: ${path}`);
     this.path = path;
   }
 }

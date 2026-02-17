@@ -13,6 +13,7 @@
     "strict": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
 
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

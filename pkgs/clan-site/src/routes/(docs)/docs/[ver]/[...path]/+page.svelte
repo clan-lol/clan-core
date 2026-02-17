@@ -245,8 +245,8 @@
     z-index: 1;
 
     h2 {
-      margin: 0;
       padding: 15px 20px;
+      margin: 0;
       background: #e5e5e5;
       font-weight: normal;
       font-size: 16px;
@@ -276,8 +276,8 @@
     position: absolute;
     inset-inline: 0;
     inset-block-start: 100%;
-    margin: 0;
     padding: 15px 20px;
+    margin: 0;
     background: #fff;
     box-shadow: 0 3px 5px #00000020;
     list-style: none;

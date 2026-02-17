@@ -43,10 +43,7 @@ export async function getNavItems(): Promise<readonly NavItem[]> {
 export function normalizeBadge(
   badge: BadgeInput | undefined,
 ): Badge | undefined {
-  // TODO: typescript-eslint complains, but nullable string and nullable object
-  // are allowed, figure out why it's false positive
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!badge) {
+  if (badge === undefined || badge === "") {
     return;
   }
   if (typeof badge === "string") {

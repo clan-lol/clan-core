@@ -1,5 +1,4 @@
 export type { Article, Heading } from "./docs/docs.ts";
-export { ArticleNotExistError, loadArticle } from "./docs/docs.ts";
 
 export type {
   Badge,
@@ -9,4 +8,3 @@ export type {
   NavSibling,
   NavURLItem,
 } from "./docs/nav.ts";
-export { getNavItems } from "./docs/nav.ts";
