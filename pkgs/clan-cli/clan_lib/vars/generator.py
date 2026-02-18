@@ -689,5 +689,5 @@ class Generator:
         commit_files(
             files_to_commit,
             self._flake.path,
-            f"Update vars via generator {self.name} for machine {machine_name}",
+            f"Update vars via generator {self.key}",
         )
