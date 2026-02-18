@@ -1398,9 +1398,10 @@ def test_add_machine_to_existing_shared_secret(
     """Test that a machine added after initial generation gets access without regeneration.
 
     This tests the scenario where:
-    1. Machine1 is configured and generates a **shared** secret
-    2. Machine2 is added to the config AFTER the secret exists
+    1. Machine1 is configured and generates a shared secret
+    2. Machine2 is added to the config AFTER the secret exists (with the shared generator)
     3. Machine2 should get access without the secret being regenerated
+    4. Machine3 is added WITHOUT the shared generator and should NOT have access
     """
     flake = flake_with_sops
 
@@ -1444,6 +1445,19 @@ def test_add_machine_to_existing_shared_secret(
     # Verify both machines now have access
     assert sops_store.machine_has_access(generator_key, "my_secret", "machine1")
     assert sops_store.machine_has_access(generator_key, "my_secret", "machine2")
+
+    # Step 5: Add machine3 WITHOUT the shared generator - should NOT get access
+    flake.machines["machine3"] = create_test_machine_config()
+    # Note: machine3 does NOT have shared_generator configured
+    flake.refresh()
+
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine3"])
+
+    # Verify machine3 does NOT have access (it doesn't use the shared generator)
+    assert not sops_store.machine_has_access(generator_key, "my_secret", "machine3")
+    # Verify the secret was NOT regenerated (same value)
+    new_secret = sops_store.get(generator_key, "my_secret")
+    assert new_secret == original_secret, "Shared secret should not be regenerated"
 
 
 @pytest.mark.broken_on_darwin
