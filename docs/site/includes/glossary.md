@@ -7,6 +7,8 @@
 *[NixOS]: Linux distribution built on the Nix package manager using a declarative configuration model.
 *[flake]: Nix packaging standard providing reproducible builds with locked dependencies.
 *[flake.lock]: Lock file pinning exact versions and hashes of all flake inputs for reproducibility.
+*[flake-parts]: Framework for modular Nix flake organization using the module system.
+*[nixpkgs]: Official Nix package collection providing packages and NixOS modules.
 *[disko]: Declarative disk partitioning tool defining disk layouts in Nix.
 *[age]: File encryption format used by sops for encrypting secrets.
 *[nixos-anywhere]: Tool for remote NixOS installation via SSH kexec-based deployment.
@@ -17,4 +19,7 @@
 *[Git]: Distributed version control system for tracking changes in source code.
 *[SSH]: Secure Shell; cryptographic protocol for remote access.
 *[PKI]: Public Key Infrastructure; system for managing cryptographic keys and certificates.
+*[DNS]: Domain Name System; translates domain names to IP addresses.
+*[VPN]: Virtual Private Network; encrypted tunnel for secure communication between machines.
+*[TLD]: Top-Level Domain; the last segment of a domain name (e.g., .com, .lol).
 *[ADR]: Architecture Decision Record; documents a major design decision for the project.
