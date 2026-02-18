@@ -6,7 +6,6 @@ export interface NavGroup {
   readonly label: string;
   readonly children: readonly NavItem[];
   readonly path: DocsPath;
-  collapsed: boolean;
   readonly badge: Badge | undefined;
 }
 

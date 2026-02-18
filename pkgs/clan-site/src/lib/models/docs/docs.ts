@@ -10,6 +10,6 @@ export interface Article {
   readonly content: string;
   readonly previous: NavSibling | undefined;
   readonly next: NavSibling | undefined;
-  readonly navGroups: readonly number[];
+  readonly navPath: readonly number[];
   readonly toc: readonly Heading[];
 }

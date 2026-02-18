@@ -48,18 +48,17 @@ export async function normalizeNavItem(
     };
   }
 
-  if ("items" in navItem) {
-    const items = await normalizeNavItems(navItem.items);
-    const pathItem = findFirstNavPathItem(items);
+  if ("children" in navItem) {
+    const children = await normalizeNavItems(navItem.children);
+    const pathItem = findFirstNavPathItem(children);
     if (!pathItem) {
       throw new Error(`Nav group ${navItem.label} contains no path item`);
     }
     return {
       label: navItem.label,
       path: pathItem.path,
-      collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
-      children: items,
+      children,
     };
   }
 
@@ -120,7 +119,6 @@ export async function normalizeNavItem(
       label: navItem.label,
       children: items,
       path: navPath.path,
-      collapsed: Boolean(navItem.collapsed),
       badge: normalizeBadge(navItem.badge),
     };
   }
@@ -137,22 +135,20 @@ export async function normalizeNavItem(
   };
 }
 
-export function findParentGroups(
+export function getNavPath(
   navItems: readonly NavItem[],
   path: Path,
 ): readonly number[] {
-  const groups: number[] = [];
-  visit(navItems, (navItem, i) => {
-    if ("items" in navItem || !("path" in navItem)) {
+  const navPath: number[] = [];
+  visit(navItems, (navItem, i, parents) => {
+    if ("children" in navItem || !("path" in navItem)) {
       return;
     }
     if (navItem.path === toDocsPath(path)) {
-      groups.push(i);
+      navPath.push(...parents.map((parent) => parent.index), i);
     }
   });
-  // We want the direct parent to be at index 0
-  groups.reverse();
-  return groups;
+  return navPath;
 }
 
 export function findNavSiblings(
