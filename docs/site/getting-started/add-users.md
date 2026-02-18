@@ -1,27 +1,19 @@
-!!! Warning "Under construction"
-    We are still working on the user creation and integration processes.
-    This guide outlines a few currently working solutions.
-
-!!! Note "This is inspiration"
-    Our community might come up with better solutions soon.
-    We are seeking contributions to improve this pattern, so please contact us if you have a nicer solution in mind!
-
 ## Summary
 
 Create user accounts that can log in to your machines. In this example every user can access every machine, but per-machine access is also possible.
 
-Several approaches exist; we recommend Clan's [users](../services/official/users.md) service and show alternatives below.
+This guide uses Clan's [users](../services/official/users.md) service.
 
 ## Requirements
 
 - Estimated time: 30min
 - A working Clan setup with at least one machine
 
-## Recommended: Adding Users via the [users](../services/official/users.md) service
+## Adding Users
 
 To add a first *user* this guide will be leveraging two things:
 
-- [services](../services/definition.md): Allows to bind arbitrary logic to something we call an `ìnstance`.
+- [services](../services/definition.md): Allows binding arbitrary logic to an `instance`.
 - [services/users](../services/official/users.md): Implements logic for adding a single user.
 
 The example shows how to add a user called `jon`:
@@ -62,76 +54,15 @@ The `users` service:
 
 For more information see [services/users](../services/official/users.md)
 
-## Alternative 1: Using a custom approach
-
-Some people like to define a `users` folder in their repository root.
-That allows to bind all user specific logic to a single place (`default.nix`)
-Which can be imported into individual machines to make the user available on that machine.
-
-```bash
-.
-├── machines
-│   └── jon
-├── users
-│   ├── jon
-│   │   └── default.nix
-```
-
-## Alternative 2: Using [home-manager](https://github.com/nix-community/home-manager)
-
-When using Clan's `users` service, it is possible to define extraModules.
-In fact this is always possible when using Clan's services.
-
-We can use this property of Clan services to bind a NixOS module to the user, which configures home-manager.
-
-```{.nix title="clan.nix" hl_lines="22"}
-{
-    inventory.machines = {
-        jon = { };
-        sara = { };
-    };
-    inventory.instances = {
-        jon-user = {
-            module.name = "users";
-
-            roles.default.tags.all = { };
-
-            roles.default.settings = {
-                user = "jon",
-                groups = [
-                    "wheel"
-                    "networkmanager"
-                    "video"
-                    "input"
-                ];
-            };
-
-            roles.default.extraModules = [ ./users/jon/home.nix ]; # (1)
-        };
-    };
-}
-```
-
-1. Type `path` or `string`: Must point to a separate file. Inlining a module is not possible
-
-```nix title="users/jon/home.nix"
-# NixOS module to import home-manager and the home-manager configuration of 'jon'
-{ self, ...}:
-{
-  imports = [ self.inputs.home-manager.nixosModules.default ];
-  home-manager.users.jon = {
-    imports = [
-      ./home-configuration.nix
-    ];
-  };
-}
-```
-
 ## Checkpoint
 
-!!! Warning "Under construction"
-    The user creation process is not yet finished, but if you want to test if everything worked up to this point, you can use `clan machines update`.
-    If the command does not return any errors and asks you to select a password, you can ctrl-c out of it at this point.
+To verify your user configuration is correct, run:
+
+```bash
+clan machines update $MACHINE_NAME --dry-run
+```
+
+If the command completes without errors and prompts you to set a password for your user, the configuration is working correctly.
 
 
 ## Up Next

@@ -34,10 +34,12 @@ After the installation completes, your device will reboot into the newly install
 
 ## Checkpoint
 
-!!! Warning "Under construction"
-    We are still working on the best way to confirm a successful deployment.
-    For now, please see if the setup finished by logging in directly on the target device(s).
-    It should ask for `$MACHINE_NAME login:` and accept an empty password for root (or, if you set a password manually during deployment, that).
+To verify the deployment succeeded:
+
+1. The target machine should reboot automatically after installation
+2. You should see a login prompt displaying `$MACHINE_NAME login:`
+3. Log in as `root` with the password you set during deployment (or empty if you skipped the prompt)
+4. Run `clan machines update $MACHINE_NAME` from your workstation — it should complete without errors
 
 
 ## Up Next
