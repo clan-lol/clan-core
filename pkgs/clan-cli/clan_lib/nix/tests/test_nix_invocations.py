@@ -20,8 +20,8 @@ from clan_lib.cmd import RunOpts
 from clan_lib.cmd import run as cmd_run
 from clan_lib.dirs import runtime_deps_flake
 from clan_lib.errors import CmdOut
-from clan_lib.nix import _get_nix_shell_cache_dir, _resolve_package_path
-from clan_lib.nix import nix_shell as nix_shell_original
+from clan_lib.nix.shell import _get_nix_shell_cache_dir, _resolve_package_path
+from clan_lib.nix.shell import nix_shell as nix_shell_original
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ def nix_run_context(
 
     if os.environ.get("IN_NIX_SANDBOX") == "1":
         mock_run = create_mock_nix_run(fake_store_path, call_counter, captured_commands)
-        with patch("clan_lib.nix.run", mock_run):
+        with patch("clan_lib.nix.shell.run", mock_run):
             yield
     else:
         # Outside sandbox: use real nix, but wrap to capture commands/count if requested
@@ -92,7 +92,7 @@ def nix_run_context(
             return cmd_run(cmd, opts)
 
         if call_counter is not None or captured_commands is not None:
-            with patch("clan_lib.nix.run", counting_run):
+            with patch("clan_lib.nix.shell.run", counting_run):
                 yield
         else:
             yield
@@ -147,7 +147,7 @@ def clean_cache() -> Iterator[Path]:
         _get_nix_shell_cache_dir.cache_clear()
 
         with (
-            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path),
             patch("clan_lib.nix.cache_cleanup.clan_tmp_dir", return_value=tmp_path),
         ):
             yield tmp_path
@@ -176,8 +176,8 @@ def test_resolve_package_path_symlink_caching(clean_cache: Path) -> None:
 
     # Simulate multiple nix_shell calls for the same package
     with (
-        patch("clan_lib.nix._resolve_package_path", counting_resolve),
-        patch("clan_lib.nix.Packages.is_provided", return_value=False),
+        patch("clan_lib.nix.shell._resolve_package_path", counting_resolve),
+        patch("clan_lib.nix.shell.Packages.is_provided", return_value=False),
         patch.dict("os.environ", {"IN_NIX_SANDBOX": ""}),
     ):
         # Call nix_shell multiple times with the same package
@@ -207,7 +207,7 @@ def test_resolve_package_path_caching() -> None:
         nix_call_count = [0]  # Use list for mutability in closure
 
         with (
-            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path),
             nix_run_context(call_counter=nix_call_count),
         ):
             nixpkgs_path = runtime_deps_flake().resolve()
@@ -243,7 +243,7 @@ def test_resolve_package_path_caching_different_packages() -> None:
         _get_nix_shell_cache_dir.cache_clear()
 
         with (
-            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path),
             nix_run_context(),
         ):
             nixpkgs_path = runtime_deps_flake().resolve()
@@ -282,7 +282,7 @@ def test_cache_invalidation_on_broken_symlink() -> None:
         _get_nix_shell_cache_dir.cache_clear()
 
         with (
-            patch("clan_lib.dirs.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path),
             nix_run_context(),
         ):
             nixpkgs_path = runtime_deps_flake().resolve()
@@ -315,7 +315,7 @@ def test_cache_isolation_by_nixpkgs_path() -> None:
         tmp_path = Path(tmpdir)
         _get_nix_shell_cache_dir.cache_clear()
 
-        with patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path):
+        with patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path):
             # Get cache dirs for different nixpkgs paths
             cache_dir1 = _get_nix_shell_cache_dir(Path("/nix/store/path1-nixpkgs"))
             cache_dir2 = _get_nix_shell_cache_dir(Path("/nix/store/path2-nixpkgs"))
@@ -343,7 +343,7 @@ def test_nix_build_uses_out_link() -> None:
         captured_commands: list[list[str]] = []
 
         with (
-            patch("clan_lib.nix.clan_tmp_dir", return_value=tmp_path),
+            patch("clan_lib.nix.shell.clan_tmp_dir", return_value=tmp_path),
             nix_run_context(captured_commands=captured_commands),
         ):
             nixpkgs_path = runtime_deps_flake().resolve()
