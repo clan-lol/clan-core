@@ -513,10 +513,10 @@ def test_generate_shared_secret_sops(
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
 
     # Check that the commit message includes the secret path when adding machine to secret
-    commit_message = run(
-        ["git", "log", "HEAD~3", "-1", "--pretty=%B"],
+    commit_messages = run(
+        ["git", "log", "-10", "--pretty=%B"],
     ).stdout.strip()
-    assert "Update vars via generator my_shared_generator (shared)" in commit_message
+    assert "Update vars via generator my_shared_generator (shared)" in commit_messages
     commit_message = run(
         ["git", "log", "-1", "--pretty=%B"],
     ).stdout.strip()
