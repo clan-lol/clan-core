@@ -1,22 +1,14 @@
 ## Summary
 
-Create user accounts that can log in to your machines. In this example every user can access every machine, but per-machine access is also possible.
+Create a user that can log in to machines.
 
 This guide uses Clan's [users](../services/official/users.md) service.
 
 ## Requirements
 
-- Estimated time: 30min
 - A working Clan setup with at least one machine
 
 ## Adding Users
-
-To add a first *user* this guide will be leveraging two things:
-
-- [services](../services/definition.md): Allows binding arbitrary logic to an `instance`.
-- [services/users](../services/official/users.md): Implements logic for adding a single user.
-
-The example shows how to add a user called `jon`:
 
 ```{.nix title="clan.nix" hl_lines="7-21"}
 {
@@ -42,9 +34,9 @@ The example shows how to add a user called `jon`:
 }
 ```
 
-1. Add `user = jon` as a user on all machines. Will create a `home` directory, and prompt for a password before deployment.
-2. Add this user to `all` machines
-3. Define the `name` of the user to be `jon`
+What happens here:
+
+- [services/users](../services/official/users.md): Implements logic for adding a single user.
 
 The `users` service:
 
