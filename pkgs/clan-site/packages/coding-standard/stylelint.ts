@@ -25,7 +25,9 @@ export default {
     // An empty line before a comment might artifically create visual groups
     "comment-empty-line-before": null,
     "csstools/use-logical": true,
-    "csstools/use-nesting": true,
+    // Re-enable this once false positives are fixed
+    // https://github.com/csstools/stylelint-use-nesting/issues
+    "csstools/use-nesting": null,
     "order/order": ["custom-properties", "rules", "at-rules"],
     // Adapted from
     // https://github.com/hudochenkov/stylelint-config-hudochenkov/blob/master/order.js

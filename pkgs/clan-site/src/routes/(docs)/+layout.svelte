@@ -11,8 +11,9 @@
   const navItems = $derived(data.docsNavItems);
   const article = $derived(page.data.docsArticle);
 
-  let isNavVisible = $state(false);
+  let headerMode: "search" | "nav" | undefined = $state();
   onNavigate(() => {
+    headerMode = undefined;
     window.scrollTo(0, 0);
   });
 </script>
@@ -40,7 +41,7 @@
         <button
           title="Navigation"
           onclick={() => {
-            isNavVisible = !isNavVisible;
+            headerMode = headerMode === "nav" ? undefined : "nav";
           }}><MenuIcon height="18" /></button
         >
       </li>
@@ -49,7 +50,11 @@
   <main>
     <aside>
       <Search />
-      <Nav {navItems} isVisible={isNavVisible} />
+      <Nav
+        {navItems}
+        isVisible={headerMode === "nav"}
+        navPath={article?.navPath ?? []}
+      />
     </aside>
     {@render children?.()}
   </main>

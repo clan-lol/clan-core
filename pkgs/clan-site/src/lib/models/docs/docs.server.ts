@@ -3,7 +3,7 @@ import type { DocsPath, Path } from "$config";
 import type { Markdown } from "@clan/vite-plugin-markdown";
 import type { NavItem } from "./nav.ts";
 import config from "$config";
-import { findNavSiblings, findParentGroups } from "./nav.server.ts";
+import { findNavSiblings, getNavPath } from "./nav.server.ts";
 import { title as indexArticleTitle } from "~/routes/(docs)/docs/[ver]/+page.svelte";
 import { mapObjectKeys } from "$lib/util.ts";
 
@@ -45,7 +45,7 @@ export async function loadArticle(
   navItems: readonly NavItem[],
 ): Promise<Article> {
   const md = await loadMarkdown(path);
-  const navGroups = findParentGroups(navItems, path);
+  const navPath = getNavPath(navItems, path);
   const [previous, next] = findNavSiblings(navItems, path);
 
   return {
@@ -54,7 +54,7 @@ export async function loadArticle(
     path: `${config.docsBase}${path}`,
     previous,
     next,
-    navGroups,
+    navPath,
     toc: md.toc,
   };
 }

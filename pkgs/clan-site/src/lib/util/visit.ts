@@ -9,12 +9,18 @@ export function visit<
   visitor: (
     item: T,
     index: number,
-    parents: readonly Extract<T, { children: readonly T[] }>[],
+    parents: readonly {
+      index: number;
+      value: Extract<T, { children: readonly T[] }>;
+    }[],
   ) => VisitorResult,
 ): void {
   function visitItems(
     items: readonly T[],
-    parents: readonly Extract<T, { children: readonly T[] }>[],
+    parents: readonly {
+      index: number;
+      value: Extract<T, { children: readonly T[] }>;
+    }[],
   ): VisitorResult {
     for (const [i, item] of items.entries()) {
       if (visitor(item, i, parents) === "break") {
@@ -26,7 +32,10 @@ export function visit<
       if (
         visitItems(item.children, [
           ...parents,
-          item as Extract<T, { children: readonly T[] }>,
+          {
+            index: i,
+            value: item as Extract<T, { children: readonly T[] }>,
+          },
         ]) === "break"
       ) {
         return "break";
