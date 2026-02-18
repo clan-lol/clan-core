@@ -10,7 +10,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.hardware import has_facter_config, has_hardware_config
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
-from clan_lib.machines.machines import Machine
+from clan_lib.machines.machines import Machine, get_machine_host
 from clan_lib.network.qr_code import read_qr_image, read_qr_json
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
@@ -171,8 +171,16 @@ def install_command(args: argparse.Namespace) -> None:
                 qr_code = read_qr_json(data, args.flake)
                 remote = stack.enter_context(qr_code.get_best_remote())
             else:
-                msg = "No --target-host, --json or --png data provided"
-                raise ClanError(msg)
+                result = get_machine_host(args.machine, flake, "targetHost")
+                if result is None:
+                    msg = (
+                        f"No target host for machine '{args.machine}'.\n"
+                        "Provide --target-host, --json, or --png, set\n"
+                        "'inventory.machines.<name>.deploy.targetHost'\n"
+                        "or 'clan.core.networking.targetHost' in your configuration."
+                    )
+                    raise ClanError(msg)
+                remote = result.data
 
             machine = Machine(name=args.machine, flake=flake)
             if args.host_key_check:
