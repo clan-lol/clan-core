@@ -86,6 +86,7 @@ nav:
       - Networking:
           - Introduction to Networking: guides/networking/networking.md
           - Zerotier VPN: guides/networking/mesh-vpn.md
+      - Users: guides/users/custom.md
       - Nixpkgs Flake Input: guides/nixpkgs-flake-input/index.md
       - Flake-parts: guides/flake-parts.md
       - NixOS Rebuild: guides/nixos-rebuild.md
