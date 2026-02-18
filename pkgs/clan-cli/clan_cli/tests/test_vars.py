@@ -1391,6 +1391,63 @@ def test_multi_machine_shared_vars(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+def test_add_machine_to_existing_shared_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that a machine added after initial generation gets access without regeneration.
+
+    This tests the scenario where:
+    1. Machine1 is configured and generates a **shared** secret
+    2. Machine2 is added to the config AFTER the secret exists
+    3. Machine2 should get access without the secret being regenerated
+    """
+    flake = flake_with_sops
+
+    # Step 1: Configure only machine1 with a shared generator
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_generator["share"] = True
+    shared_generator["files"]["my_secret"]["secret"] = True
+    shared_generator["script"] = 'echo "$RANDOM" > "$out"/my_secret'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Step 2: Generate for machine1 - creates the shared secret
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
+
+    # Read the secret value for machine1
+    machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
+    sops_store = sops.SecretStore(machine1.flake)
+    generator_key = GeneratorId(name="shared_generator", placement=Shared())
+    original_secret = sops_store.get(generator_key, "my_secret")
+
+    # Verify machine1 has access
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine1")
+
+    # Step 3: Add machine2 to config AFTER the secret exists
+    machine2_config = flake.machines["machine2"] = create_test_machine_config()
+    machine2_config["clan"]["core"]["vars"]["generators"]["shared_generator"] = (
+        shared_generator.copy()
+    )
+    flake.refresh()
+
+    # Step 4: Generate for machine2 - should add machine2 via add_secret
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
+
+    # Verify the secret was NOT regenerated (same value)
+    new_secret = sops_store.get(generator_key, "my_secret")
+    assert new_secret == original_secret, "Shared secret should not be regenerated"
+
+    # Verify both machines now have access
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine1")
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine2")
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
 def test_api_set_prompts(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
