@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import shutil
 import tempfile
 from functools import cache
 from pathlib import Path
@@ -9,7 +8,6 @@ from typing import Any
 
 from clan_lib.cmd import run
 from clan_lib.dirs import nixpkgs_source
-from clan_lib.errors import ClanError
 from clan_lib.locked_open import locked_open
 
 log = logging.getLogger(__name__)
@@ -42,14 +40,21 @@ def nix_flake_show(flake_url: str | Path) -> list[str]:
     )
 
 
-def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
+def nix_build(
+    flags: list[str],
+    gcroot: Path | None = None,
+    inputs_from: Path | None = None,
+) -> list[str]:
     return nix_command(
         [
             "build",
+            "--flake-registry",
+            "",
             "--print-out-paths",
             "--print-build-logs",
+            *(["--inputs-from", str(inputs_from)] if inputs_from is not None else []),
             *(["--show-trace"] if log.isEnabledFor(logging.DEBUG) else []),
-            *(["--out-root", str(gcroot)] if gcroot is not None else ["--no-link"]),
+            *(["--out-link", str(gcroot)] if gcroot is not None else ["--no-link"]),
             *flags,
         ],
     )
@@ -113,43 +118,6 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return json.loads(proc.stdout)
 
 
-# lazy loads list of allowed and static programs
-class Packages:
-    allowed_packages: set[str] | None = None
-    static_packages: set[str] | None = None
-
-    @classmethod
-    def ensure_allowed(cls: type["Packages"], package: str) -> None:
-        if cls.allowed_packages is None:
-            with (Path(__file__).parent / "allowed-packages.json").open() as f:
-                cls.allowed_packages = allowed_packages = set(json.load(f))
-        else:
-            allowed_packages = cls.allowed_packages
-
-        if package not in allowed_packages:
-            msg = f"Package not allowed: '{package}', allowed packages are:\n{'\n'.join(allowed_packages)}"
-            raise ClanError(msg)
-
-    @classmethod
-    def is_provided(cls: type["Packages"], program: str) -> bool:
-        """Determines if a program is shipped with the clan package."""
-        if cls.static_packages is None:
-            cls.static_packages = set(
-                os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":"),
-            )
-
-        if program in cls.static_packages:
-            if shutil.which(program) is None:
-                log.warning(
-                    "Program %s is not in the path even though it should be shipped with clan",
-                    program,
-                )
-                return False
-            return True
-        return False
-
-
-# Import after Packages and nix_command are defined to avoid circular import
-from clan_lib.nix.shell import nix_shell
-
-__all__ = ["nix_shell"]
+# Re-export for backward compatibility
+from clan_lib.nix.shell import Packages as Packages
+from clan_lib.nix.shell import nix_shell as nix_shell

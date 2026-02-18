@@ -1,16 +1,62 @@
+import json
 import logging
 import os
+import shutil
+from dataclasses import dataclass
 from functools import cache
 from hashlib import sha256
 from pathlib import Path
 
-from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.cmd import run
 from clan_lib.dirs import clan_tmp_dir, runtime_deps_flake
-from clan_lib.errors import ClanCmdError
-from clan_lib.nix import Packages, nix_command
+from clan_lib.errors import ClanError
+from clan_lib.nix import current_system, nix_build, nix_command
 from clan_lib.nix.cache_cleanup import maybe_cleanup_cache
 
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class ResolvedPackage:
+    """Information about a resolved package."""
+
+    store_path: Path
+    exe_name: str
+
+
+# lazy loads list of allowed and static programs
+class Packages:
+    allowed_packages: set[str] | None = None
+    static_packages: set[str] | None = None
+
+    @classmethod
+    def ensure_allowed(cls: type["Packages"], package: str) -> None:
+        if cls.allowed_packages is None:
+            with (Path(__file__).parent / "allowed-packages.json").open() as f:
+                cls.allowed_packages = allowed_packages = set(json.load(f))
+        else:
+            allowed_packages = cls.allowed_packages
+
+        if package not in allowed_packages:
+            msg = f"Package not allowed: '{package}', allowed packages are:\n{'\n'.join(allowed_packages)}"
+            raise ClanError(msg)
+
+    @classmethod
+    def is_provided(cls: type["Packages"], program: str) -> bool:
+        """Determines if a program is shipped with the clan package."""
+        if cls.static_packages is None:
+            cls.static_packages = set(
+                os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":"),
+            )
+
+        if program in cls.static_packages:
+            if shutil.which(program) is None:
+                log.warning(
+                    f"Program {program} is not in the path even though it should be shipped with clan"
+                )
+                return False
+            return True
+        return False
 
 
 @cache
@@ -37,12 +83,28 @@ def _get_nix_shell_cache_dir(nixpkgs_path: Path) -> Path:
     return cache_dir
 
 
-def _resolve_package_path(nixpkgs_path: Path, package: str) -> Path | None:
-    """Resolve and cache a package's store path.
+def _create_gcroot(package: str, nixpkgs_path: Path, gcroot_path: Path) -> None:
+    """Create a GC root symlink for a package.
 
-    Uses symlinks as both cache and GC roots. The symlink is created by
-    nix build --out-link, which prevents the garbage collector from removing
-    the store path as long as the symlink exists.
+    This function is separated out to allow mocking/tracking in tests.
+
+    Args:
+        package: Package name (e.g., "git")
+        nixpkgs_path: Path to nixpkgs flake (for --inputs-from)
+        gcroot_path: Path where the GC root symlink should be created
+
+    """
+    cmd = nix_build(
+        [f"nixpkgs#{package}"], inputs_from=nixpkgs_path, gcroot=gcroot_path
+    )
+    run(cmd)
+
+
+def _resolve_package(nixpkgs_path: Path, package: str) -> ResolvedPackage | None:
+    """Resolve and cache a package's store path and executable name.
+
+    Uses symlinks as both cache and GC roots. The symlink prevents the garbage
+    collector from removing the store path as long as the symlink exists.
 
     The cache is stored in clan_tmp_dir() and keyed by nixpkgs_path hash.
 
@@ -51,47 +113,78 @@ def _resolve_package_path(nixpkgs_path: Path, package: str) -> Path | None:
         package: Package name (e.g., "git")
 
     Returns:
-        Store path string, or None if resolution fails
+        ResolvedPackage with store path and executable name, or None if resolution fails
 
     """
-    cache_dir = _get_nix_shell_cache_dir(nixpkgs_path)
-    cache_link = cache_dir / package
+    # Use Flake.select to get package info
+    # Import here to avoid circular import with clan_lib.nix
+    from clan_lib.flake.flake import Flake  # noqa: PLC0415
 
-    # Check if we have a cached symlink that points to an existing store path
-    if cache_link.is_symlink():
-        store_path = cache_link.resolve()
-        if Path(store_path).exists():
-            # Touch parent dir to mark as recently used
-            cache_dir.touch(exist_ok=True)
-            return store_path
-        # Symlink is broken (store path was garbage collected), remove it
-        log.debug("Cached store path for %s no longer exists, re-resolving", package)
-        cache_link.unlink(missing_ok=True)
+    nixpkgs = Flake(str(nixpkgs_path))
+    system = current_system()
+    pkg_prefix = f"inputs.nixpkgs.legacyPackages.{system}.{package}"
 
-    # Resolve the package and create symlink as GC root
-    cmd = nix_command(
+    # Precache both selectors in one nix evaluation
+    nixpkgs.precache(
         [
-            "build",
-            "--inputs-from",
-            str(nixpkgs_path),
-            f"nixpkgs#{package}",
-            "--print-out-paths",
-            "--out-link",
-            str(cache_link),
+            f"{pkg_prefix}.outPath",
+            f"{pkg_prefix}.?meta.?mainProgram",
+            f"{pkg_prefix}.?meta.?outputsToInstall",
         ]
     )
-    try:
-        proc = run(cmd, RunOpts(log=Log.NONE, check=True))
-        store_path = Path(proc.stdout.strip())
-    except ClanCmdError:
-        log.warning("Failed to resolve package %s", package)
+
+    cache_dir = _get_nix_shell_cache_dir(nixpkgs_path)
+    cache_links = [cache_dir / package]
+    outputs_to_install_result = nixpkgs.select(f"{pkg_prefix}.?meta.?outputsToInstall")
+    # The selector returns {"meta": {"outputsToInstall": [...]}} so extract the list
+    outputs_to_install = None
+    if isinstance(outputs_to_install_result, dict):
+        outputs_to_install = outputs_to_install_result.get("meta", {}).get(
+            "outputsToInstall"
+        )
+    if outputs_to_install:
+        cache_links = [
+            cache_dir / f"{package}-{output}" for output in outputs_to_install
+        ]
+
+    # Base path for nix build --out-link (nix adds -<output> suffixes automatically)
+    cache_link_base = cache_dir / package
+
+    # Check if all cached symlinks point to existing store paths
+    all_links_valid = cache_links and all(
+        link.is_symlink() and link.resolve().exists() for link in cache_links
+    )
+
+    # Get mainProgram from meta (cached by precache), fall back to package name
+    meta_result = nixpkgs.select(f"{pkg_prefix}.?meta.?mainProgram")
+    if meta_result and "meta" in meta_result and "mainProgram" in meta_result["meta"]:
+        exe_name = meta_result["meta"]["mainProgram"]
+    else:
+        exe_name = package
+
+    if all_links_valid:
+        # Use the first link's store path (primary output)
+        store_path = cache_links[0].resolve()
+        cache_dir.touch(exist_ok=True)
+        return ResolvedPackage(store_path=store_path, exe_name=exe_name)
+
+    # Some or all symlinks are broken/missing, clean up and re-resolve
+    if any(link.exists() or link.is_symlink() for link in cache_links):
+        log.debug(f"Cached store path for {package} no longer valid, re-resolving")
+        for link in cache_links:
+            link.unlink(missing_ok=True)
+
+    out_path = nixpkgs.select(f"{pkg_prefix}.outPath")
+    if not out_path:
+        log.warning(f"Package {package} has no outPath")
         return None
 
-    if not store_path or not Path(store_path).exists():
-        log.warning("Resolved empty or non-existent store path for %s", package)
-        return None
+    store_path = Path(out_path)
 
-    return store_path
+    # Create GC root symlink
+    _create_gcroot(package, nixpkgs_path, cache_link_base)
+
+    return ResolvedPackage(store_path=store_path, exe_name=exe_name)
 
 
 def _nix_shell_fallback(
@@ -151,16 +244,16 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # Try to resolve packages via cache
     nixpkgs_path = runtime_deps_flake().resolve()
 
-    resolved_paths: list[Path] = []
+    resolved: list[ResolvedPackage] = []
     for pkg in missing_packages:
-        path = _resolve_package_path(nixpkgs_path, pkg)
-        if path is None:
+        result = _resolve_package(nixpkgs_path, pkg)
+        if result is None:
             # Fall back to nix shell for all packages
             return _nix_shell_fallback(missing_packages, cmd)
-        resolved_paths.append(path)
+        resolved.append(result)
 
     # All packages resolved - use PATH modification
-    path_additions = [str(p / "bin") for p in resolved_paths]
+    path_additions = [str(r.store_path / "bin") for r in resolved]
     current_path = os.environ.get("PATH", "")
     new_path = os.pathsep.join([*path_additions, current_path])
 
