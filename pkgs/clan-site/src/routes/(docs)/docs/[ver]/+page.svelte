@@ -137,6 +137,7 @@
     border-radius: 3px;
     box-shadow: inset 2px 2px 0 0 #fff;
     font-size: 16px;
+    text-decoration: none;
 
     &.primary {
       color: #fff;
@@ -173,12 +174,13 @@
       background: var(--content-bg-color);
       border: 1px solid #d8e8eb;
       border-radius: 6px;
+      text-decoration: none;
     }
   }
 
   dt {
     padding: 24px;
-    font-size: 36px;
+    font-size: 30px;
   }
 
   dd {
@@ -204,11 +206,19 @@
   }
 
   @media (--wide) {
+    section {
+      padding-inline: 24px;
+
+      h2 {
+        margin-block: 20px;
+      }
+    }
+
     dl {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
-      margin-block-end: 14px;
+      margin-block-end: 24px;
 
       a {
         margin: 0;

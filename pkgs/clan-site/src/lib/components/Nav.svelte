@@ -109,6 +109,7 @@
       border-radius: 6px;
       font-size: 16px;
       line-height: 1.25;
+      text-decoration: none;
 
       &:hover {
         color: var(--fg-color);
