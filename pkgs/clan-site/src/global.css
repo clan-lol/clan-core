@@ -5,6 +5,8 @@
 html {
   --fg-color: #000;
   --secondary-fg-color: #2c4347;
+  --link-color: #0051ff;
+  --link-underline-color: #4e80ec;
   --bg-color: #e1ecf0;
   --secondary-bg-color: #d2dee2;
   --input-fg-color: #4f747a;
@@ -28,7 +30,7 @@ html {
 
 body {
   font:
-    500 18px/1.37 "Mona Sans",
+    500 18px/1.45 "Mona Sans",
     sans-serif;
 
   &:has([data-page-id="docs"]) {
@@ -57,7 +59,9 @@ h3 {
 }
 
 a {
-  text-decoration: none;
+  color: var(--link-color);
+  text-decoration: 1px underline var(--link-underline-color);
+  text-underline-offset: 2px;
 }
 
 ul {
@@ -70,5 +74,15 @@ ul {
 
   .line {
     padding: 0 15px;
+  }
+}
+
+@media (--wide) {
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 23px;
   }
 }
