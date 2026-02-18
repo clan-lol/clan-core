@@ -1,15 +1,29 @@
+import cssnano from "cssnano";
 import { defineConfig } from "vite";
 import markdown from "@clan/vite-plugin-markdown";
 import pagefind from "@clan/vite-plugin-pagefind";
+import postcssGlobalData from "@csstools/postcss-global-data";
+import postcssPresetEnv from "postcss-preset-env";
 import siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 import svg from "@poppanator/sveltekit-svg";
 import valuePlugin from "vite-plugin-value";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
     fs: {
       allow: ["./packages"],
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [
+        postcssGlobalData({
+          files: [new URL("src/global.css", import.meta.url).pathname],
+        }),
+        postcssPresetEnv(),
+        ...(mode === "development" ? [] : [cssnano({ preset: "default" })]),
+      ],
     },
   },
   plugins: [
@@ -41,4 +55,4 @@ export default defineConfig({
       base: siteConfig.docsBase,
     }),
   ],
-});
+}));

@@ -36,8 +36,13 @@
   <header>
     <div class="logo"><ClanLogo height="22" /> Docs</div>
     <ol>
-      <li><button title="Search"><SearchIcon height="18" /></button></li>
-      <li>
+      <li class="search">
+        <button title="Search"><SearchIcon height="18" /></button>
+        <div class="input">
+          <SearchIcon height="16" /> Search
+        </div>
+      </li>
+      <li class="nav">
         <button
           title="Navigation"
           onclick={() => {
@@ -70,7 +75,7 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
 
-    ol {
+    > ol {
       display: flex;
       align-items: center;
       padding: 8px 0;
@@ -86,6 +91,10 @@
         border: 0;
         cursor: pointer;
       }
+
+      .search .input {
+        display: none;
+      }
     }
   }
 
@@ -93,9 +102,49 @@
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-inline-start: 16px;
+    margin-inline-start: 14px;
     font-weight: 700;
     font-size: 20px;
     font-variation-settings: "wdth" 112.5;
+  }
+
+  @media (--wide) {
+    header ol {
+      padding-block: 16px;
+
+      .search {
+        margin-inline-end: 24px;
+
+        button {
+          display: none;
+        }
+
+        .input {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+          inline-size: 200px;
+          block-size: 35px;
+          padding-inline-start: 8px;
+          color: var(--input-fg-color);
+          border: 1px solid var(--input-border-color);
+          border-radius: 4px;
+          font-size: 14px;
+          cursor: text;
+        }
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+
+    .logo {
+      margin-inline-start: 24px;
+    }
+
+    main {
+      display: flex;
+    }
   }
 </style>

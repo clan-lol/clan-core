@@ -155,50 +155,63 @@
     border-radius: 16px;
 
     h2 {
-      margin: 14px 0 0;
+      margin: 14px 0;
       color: inherit;
       font-weight: 700;
       font-size: 24px;
     }
+  }
 
+  dl {
+    margin: 0;
+
+    a {
+      display: flex;
+      flex-flow: column;
+      margin-block-end: 14px;
+      color: inherit;
+      background: var(--content-bg-color);
+      border: 1px solid #d8e8eb;
+      border-radius: 6px;
+    }
+  }
+
+  dt {
+    padding: 24px;
+    font-size: 36px;
+  }
+
+  dd {
+    display: flex;
+    align-items: center;
+    block-size: 95px;
+    margin: 0 4px 4px;
+    color: #fff;
+    background: url($lib/assets/purple-orange-gradient.jpg);
+    background-size: cover;
+    font-size: 14px;
+
+    > span {
+      display: block;
+      inline-size: 180px;
+      margin-inline-start: 24px;
+    }
+
+    dl a:first-child & {
+      color: #000;
+      background-image: url($lib/assets/blue-orange-gradient.jpg);
+    }
+  }
+
+  @media (--wide) {
     dl {
-      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-block-end: 14px;
 
       a {
-        display: flex;
-        flex-flow: column;
-        margin: 14px 0;
-        color: inherit;
-        background: var(--content-bg-color);
-        border: 1px solid #d8e8eb;
-        border-radius: 6px;
-      }
-    }
-
-    dt {
-      padding: 24px;
-      font-size: 36px;
-    }
-
-    dd {
-      display: flex;
-      align-items: center;
-      block-size: 95px;
-      margin: 0 4px 4px;
-      color: #fff;
-      background: url($lib/assets/purple-orange-gradient.jpg);
-      background-size: cover;
-      font-size: 14px;
-
-      > span {
-        display: block;
-        inline-size: 180px;
-        margin-inline-start: 24px;
-      }
-
-      .card:first-child & {
-        color: #000;
-        background-image: url($lib/assets/blue-orange-gradient.jpg);
+        margin: 0;
       }
     }
   }

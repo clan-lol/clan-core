@@ -3,7 +3,9 @@
 </script>
 
 <article>
-  {@render children()}
+  <div class="inner">
+    {@render children()}
+  </div>
 </article>
 
 <style>
@@ -16,5 +18,19 @@
     background: var(--content-bg-color);
     border: 1px solid var(--nav-border-color);
     border-radius: 14px;
+  }
+
+  @media (--wide) {
+    article {
+      flex: 1;
+      min-inline-size: 0;
+      padding-inline: 24px;
+      margin-inline-end: 24px;
+    }
+
+    .inner {
+      max-inline-size: 600px;
+      margin: 0 auto;
+    }
   }
 </style>
