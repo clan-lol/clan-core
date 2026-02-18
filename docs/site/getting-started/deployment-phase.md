@@ -1,8 +1,6 @@
 ## Summary
 
-It is time: We will finally deploy the machines now!
-
-At this point, the process is the same for VMs and physical hardware.
+Deploy machines to their target devices. The process is the same for VMs and physical hardware.
 
 
 ## Requirements
