@@ -13,6 +13,7 @@ validation:
     not_found: ignore # Ignore option-search/ added during build
 
 markdown_extensions:
+  - abbr
   - admonition
   - attr_list
   - footnotes
@@ -39,6 +40,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.snippets:
       base_path: ../.
+      auto_append:
+        - docs/site/includes/glossary.md
   - toc:
       title: On this page
 
@@ -46,6 +49,7 @@ exclude_docs: |
   .*
   !templates/
   /drafts/
+  includes/
 
 nav:
   - Getting Started:
