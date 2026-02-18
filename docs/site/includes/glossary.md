@@ -3,6 +3,7 @@
 *[role]: Function assigned to a machine within a service (e.g., client, server).
 *[tag]: Grouping mechanism to assign multiple machines to a role at once.
 *[instance]: A specific instantiation of a service in the inventory with assigned roles and machines.
+*[Nix]: Purely functional package manager providing reproducible, declarative builds.
 *[NixOS]: Linux distribution built on the Nix package manager using a declarative configuration model.
 *[flake]: Nix packaging standard providing reproducible builds with locked dependencies.
 *[flake.lock]: Lock file pinning exact versions and hashes of all flake inputs for reproducibility.
@@ -13,6 +14,7 @@
 *[initrd]: Initial ramdisk loaded during boot before the main root filesystem.
 *[buildHost]: Machine that performs Nix evaluation and builds for deployment.
 *[targetHost]: Machine where the configuration is deployed and activated.
+*[Git]: Distributed version control system for tracking changes in source code.
 *[SSH]: Secure Shell; cryptographic protocol for remote access.
 *[PKI]: Public Key Infrastructure; system for managing cryptographic keys and certificates.
 *[ADR]: Architecture Decision Record; documents a major design decision for the project.
