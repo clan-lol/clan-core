@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import tempfile
 import urllib.parse
 from enum import Enum
 from pathlib import Path
@@ -140,17 +139,8 @@ def clan_tmp_dir() -> Path:
     if sys.platform == "linux" and (runtime_dir := os.getenv("XDG_RUNTIME_DIR")):
         temp_dir = Path(runtime_dir) / "clan-cache"
     else:
-        # Fallback: use system temp with user-specific suffix
-        base_temp = Path(tempfile.gettempdir())
-
-        if sys.platform == "win32":
-            # Windows: use USERNAME environment variable
-            user_suffix = os.getenv("USERNAME", "unknown")
-        else:
-            # Unix-like systems: use numeric UID for consistency
-            user_suffix = str(os.getuid())
-
-        temp_dir = base_temp / f"clan-cache-{user_suffix}"
+        # Fallback: use user cache dir to avoid symlink attacks in world-writable /tmp
+        temp_dir = user_cache_dir() / "clan" / "tmp"
 
     temp_dir.mkdir(parents=True, exist_ok=True)
     return temp_dir
