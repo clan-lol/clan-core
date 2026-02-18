@@ -5,7 +5,7 @@
 
   inventory.machines = {
     # Define machines here.
-    # jon = { };
+    # server = { };
   };
 
   # Docs: See https://docs.clan.lol/latest/services/definition/
@@ -61,10 +61,10 @@
   };
 
   # Additional NixOS configuration can be added here.
-  # machines/jon/configuration.nix will be automatically imported.
+  # machines/server/configuration.nix will be automatically imported.
   # See: https://docs.clan.lol/latest/guides/inventory/autoincludes/
   machines = {
-    # jon = { config, ... }: {
+    # server = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];
     # };
   };

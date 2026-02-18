@@ -56,10 +56,10 @@ Re-run the command with the correct disk:
 clan templates apply disk single-disk $MACHINE_NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
-It should now be successful, in our example for jon-machine with an output like:
+It should now be successful, in our example for server with an output like:
 
 ```shellSession
-Applied disk template 'single-disk' to machine 'jon-machine'
+Applied disk template 'single-disk' to machine 'server'
 ```
 
 A disko.nix file is created in `machines/$MACHINE_NAME` at this point.

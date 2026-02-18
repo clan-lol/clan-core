@@ -10,10 +10,10 @@ Register machines in your Clan so they can be deployed to target devices.
 ## Creating a Machine
 
 ```bash
-clan machines create jon-machine
+clan machines create server
 ```
 
-A dedicated folder will be created at `machines/jon-machine`.
+A dedicated folder will be created at `machines/server`.
 You can see the complete [list](../guides/inventory/autoincludes.md) of auto-loaded files in our extended documentation.
 
 
@@ -25,19 +25,19 @@ This example demonstrates a setup with two machines and a few extra settings:
 ```{.nix .annotate title="clan.nix" hl_lines="3-7 15-19"}
 {
   inventory.machines = {
-      jon-machine = {
+      server = {
           deploy.targetHost = "root@192.168.XXX.XXX";
           # Define tags here (optional)
           tags = [ ];
       };
-      sara-machine = {
+      laptop = {
           # Define tags here (optional)
           tags = [ ];
       };
   };
-  # Additional nixosConfiguration can also go in /machines/jon/configuration.nix (autoloaded)
+  # Additional nixosConfiguration can also go in /machines/server/configuration.nix (autoloaded)
   machines = {
-      jon-machine = { config, pkgs, ... }: {
+      server = { config, pkgs, ... }: {
           users.users.root.openssh.authorizedKeys.keys = [
               "ssh-ed25519 AAAAC3NzaC…"
           ];
@@ -45,7 +45,7 @@ This example demonstrates a setup with two machines and a few extra settings:
   };
 }
 ```
-inventory.machines: Tags can be used to automatically assign services to a machine later on (don't worry, we don't need to set this now). Additional machines - like sara-machine in this example - will all be listed here if created via `clan machines create $MACHINE_NAME`
+inventory.machines: Tags can be used to automatically assign services to a machine later on (don't worry, we don't need to set this now). Additional machines - like laptop in this example - will all be listed here if created via `clan machines create $MACHINE_NAME`
 
 machines: It is advised to add the *SSH key* of your setup device's root user here - That will ensure you can always login to your new machine via `ssh root@ip` from your setup device in case something goes wrong.
 
@@ -63,7 +63,7 @@ machines: It is advised to add the *SSH key* of your setup device's root user he
 <details>
   <summary>You can create the configuration file manually if you don't want to use the CLI commands</summary>
 
-```nix title="./machines/jon/configuration.nix"
+```nix title="./machines/server/configuration.nix"
 {
     imports = [
         # enables GNOME desktop (optional)
@@ -81,10 +81,10 @@ machines: It is advised to add the *SSH key* of your setup device's root user he
 
 <details>
   <summary>If you need to delete a machine...</summary>
-...you can remove the entries both from your flake.nix and from the machines directory. For example, to remove sara-machine, use:
+...you can remove the entries both from your flake.nix and from the machines directory. For example, to remove laptop, use:
 
 ```bash
-git rm -rf ./machines/sara-machine
+git rm -rf ./machines/laptop
 ```
 
 Make sure to also remove or update any references to that machine in your Nix files and inventory.json
@@ -100,7 +100,7 @@ Verify that your machines have been created successfully by listing them:
 clan machines list
 ```
 
-This should display all the machines you've created (e.g., `jon-machine`). If you don't see your machines listed, double-check the previous steps.
+This should display all the machines you've created (e.g., `server`). If you don't see your machines listed, double-check the previous steps.
 
 
 ## Up Next

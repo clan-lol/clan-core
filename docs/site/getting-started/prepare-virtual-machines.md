@@ -16,7 +16,7 @@ Generate a hardware report for each virtual target device so Clan can deploy to 
 
         - Root user access will be required throughout the whole setup.
 
-* **Machine configuration**: In the previous steps, we defined a Clan, at least one user (e.g. jon) and at least one machine (e.g. jon-machine). These are the minimum requirements for the following VM preparations.
+* **Machine configuration**: In the previous steps, we defined a Clan, at least one user (e.g. jon) and at least one machine (e.g. server). These are the minimum requirements for the following VM preparations.
 
 * **Network Root Access**: Target and setup device need to be able to reach each other, root access is required on both, and SSH access needs to be available on the targets (configured already if you followed all optional steps up to this point).
 

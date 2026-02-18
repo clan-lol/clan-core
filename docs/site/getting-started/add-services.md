@@ -13,8 +13,8 @@ Add the configuration for a ZeroTier Network to your clan.nix file as follows:
 ```{.nix title="clan.nix" hl_lines="8-16"}
 {
   inventory.machines = {
-    jon-machine = { };
-    sara-machine = { };
+    server = { };
+    laptop = { };
   };
 
   inventory.instances = {
@@ -22,7 +22,7 @@ Add the configuration for a ZeroTier Network to your clan.nix file as follows:
       # Replace with the name (string) of your machine that you will use as zerotier-controller
       # See: https://docs.zerotier.com/controller/
       # Deploy this machine first to create the network secrets
-      roles.controller.machines."jon-machine" = { };
+      roles.controller.machines."server" = { };
       # All clan machines will be peers of the network
       roles.peer.tags.all = { };
     };
@@ -41,8 +41,8 @@ Adding SSH keys is one of the most recommended services:
 ```{.nix title="clan.nix" hl_lines="7-26"}
 {
     inventory.machines = {
-        jon-machine = { };
-        sara-machine = { };
+        server = { };
+        laptop = { };
     };
     inventory.instances = {
         sshd = {
