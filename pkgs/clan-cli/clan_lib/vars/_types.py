@@ -17,6 +17,25 @@ log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
+class PerExport:
+    """Output for flake-level generators, scoped by export key.
+
+    Returns a path fragment: `per-export/{exports_key}`
+    """
+
+    exports_key: str
+
+    def rel_prefix(self) -> Path:
+        return Path("per-export") / self.exports_key
+
+    def sortable_key(self) -> str:
+        return self.exports_key
+
+    def __str__(self) -> str:
+        return f"export: {self.exports_key}"
+
+
+@dataclass(frozen=True)
 class Shared:
     """Output shared across all machines.
 
@@ -53,7 +72,7 @@ class PerMachine:
 
 
 # determines where a generator's output lives on disk.
-Placement = Shared | PerMachine
+Placement = Shared | PerMachine | PerExport
 
 
 @dataclass(frozen=True)
@@ -153,7 +172,6 @@ class StoreBase(ABC):
         generator: "GeneratorStore",
         var: "Var",
         value: bytes,
-        machine: str,
     ) -> Path | None:
         """Override this method to implement the actual creation of the file"""
 
@@ -229,7 +247,6 @@ class StoreBase(ABC):
         generator: "GeneratorStore",
         var: "Var",
         value: bytes,
-        machine: str,
         is_migration: bool = False,
         log_info: Callable | None = None,
     ) -> list[Path]:
@@ -238,11 +255,24 @@ class StoreBase(ABC):
         if log_info is None:
             log_info = log.info
 
-        # if generator was switched from shared to per-machine or vice versa,
-        # remove the old var first
-        prev_generator = generator.with_toggled_share(machine)
-        if self.exists(prev_generator.key, var.name):
-            changed_files += self.delete(prev_generator.key, var.name)
+        # Migration: if generator was switched from shared to per-machine or vice versa,
+        # remove the old var first. Only applies to Shared <-> PerMachine transitions.
+        placement = generator.key.placement
+        match placement:
+            case PerMachine(machine=machine):
+                # Check if there's an old shared var to delete
+                prev_generator = generator.with_toggled_share(machine)
+                if self.exists(prev_generator.key, var.name):
+                    changed_files += self.delete(prev_generator.key, var.name)
+            case Shared():
+                # Check if there are old per-machine vars to delete
+                for machine in generator.machines:
+                    prev_generator = generator.with_toggled_share(machine)
+                    if self.exists(prev_generator.key, var.name):
+                        changed_files += self.delete(prev_generator.key, var.name)
+            case PerExport(_):
+                # No migration needed for PerExport
+                pass
 
         if self.exists(generator.key, var.name):
             if self.is_secret_store:
@@ -254,7 +284,7 @@ class StoreBase(ABC):
         else:
             old_val = None
             old_val_str = "<not set>"
-        new_file = self._set(generator, var, value, machine)
+        new_file = self._set(generator, var, value)
         action_str = "Migrated" if is_migration else "Updated"
 
         machines_str = f" for machines: {', '.join(generator.machines)}"

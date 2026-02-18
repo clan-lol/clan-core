@@ -91,7 +91,7 @@ commit ... (HEAD -> master)
 Author: ...
 Date:   ...
 
-    Update vars via generator root-password for machine grmpf-nix
+    Update vars via generator root-password (machine: grmpf-nix)
 ```
 
 ## Update the machine

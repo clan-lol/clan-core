@@ -28,7 +28,6 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-        machine: str,  # noqa: ARG002
     ) -> Path | None:
         secret_file = self.dir / generator.name / var.name
         secret_file.parent.mkdir(parents=True, exist_ok=True)

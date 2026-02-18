@@ -29,7 +29,7 @@ from clan_lib.nix_selectors import (
     vars_sops_default_groups,
     vars_sops_secret_upload_dir,
 )
-from clan_lib.term_log import log_machine
+from clan_lib.term_log import log_prefixed
 
 from .prompt import Prompt, ask
 from .var import Var
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 from clan_lib.machines.machines import Machine
 
-from ._types import GeneratorId, PerMachine, Placement, Shared
+from ._types import GeneratorId, PerExport, PerMachine, Placement, Shared
 
 log = logging.getLogger(__name__)
 
@@ -573,15 +573,19 @@ class Generator:
             msg = "Flake and stores must be set to execute generator"
             raise ClanError(msg)
 
-        machine_name = self.machines[0]
-
         if prompt_values is None:
             prompt_values = self.ask_prompts()
 
         # build temporary file tree of dependencies
-        decrypted_dependencies = self.decrypt_dependencies(
-            get_machine_generators([machine_name], self._flake)
-        )
+        decrypted_dependencies = {}
+        match self.key.placement:
+            case PerMachine(_) | Shared():
+                decrypted_dependencies = self.decrypt_dependencies(
+                    get_machine_generators(self.machines, self._flake)
+                )
+            case PerExport(_):
+                # For PerExport generators without machines, skip dependency decryption for now
+                pass
 
         def get_prompt_value(prompt_name: str) -> str:
             try:
@@ -657,9 +661,8 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine_name,
-                        log_info=lambda msg: log_machine(
-                            msg, machine_name=machine_name
+                        log_info=lambda msg: log_prefixed(
+                            msg, prefix=self.key.placement
                         ),
                     )
                     secret_changed = True
@@ -668,9 +671,8 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine_name,
-                        log_info=lambda msg: log_machine(
-                            msg, machine_name=machine_name
+                        log_info=lambda msg: log_prefixed(
+                            msg, prefix=self.key.placement
                         ),
                     )
                     public_changed = True
@@ -689,5 +691,5 @@ class Generator:
         commit_files(
             files_to_commit,
             self._flake.path,
-            f"Update vars via generator {self.name} for machine {machine_name}",
+            f"Update vars via generator {self.key}",
         )
