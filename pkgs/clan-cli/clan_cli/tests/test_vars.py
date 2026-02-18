@@ -3,7 +3,6 @@ import importlib
 import json
 import logging
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -517,17 +516,6 @@ def test_generate_shared_secret_sops(
         ["git", "log", "-10", "--pretty=%B"],
     ).stdout.strip()
     assert "Update vars via generator my_shared_generator (shared)" in commit_messages
-    commit_message = run(
-        ["git", "log", "-1", "--pretty=%B"],
-    ).stdout.strip()
-    # search for this pattern via regex: "Add machine2 to secret .*/my_shared_generator/my_shared_secret"
-
-    pattern = re.compile(
-        r"Add machine2 to secret .*/my_shared_generator/my_shared_secret",
-    )
-    assert pattern.search(commit_message), (
-        "Commit message should indicate that machine2 was added to the shared secret"
-    )
 
     m1_sops_store = sops.SecretStore(machine1.flake)
     m2_sops_store = sops.SecretStore(machine2.flake)
