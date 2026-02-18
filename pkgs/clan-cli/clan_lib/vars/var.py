@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
-from clan_lib.term_log import log_machine
+from clan_lib.term_log import log_prefixed
 
 if TYPE_CHECKING:
     from ._types import GeneratorStore, StoreBase
@@ -52,7 +52,7 @@ class Var:
         except UnicodeDecodeError:
             return "<binary blob>"
 
-    def set(self, value: bytes, machine: str) -> list[Path]:
+    def set(self, value: bytes, log_prefix: str) -> list[Path]:
         if self._store is None:
             msg = "Store cannot be None"
             raise ClanError(msg)
@@ -63,8 +63,7 @@ class Var:
             self._generator,
             self,
             value,
-            machine,
-            log_info=lambda msg: log_machine(msg, machine_name=machine),
+            log_info=lambda msg: log_prefixed(msg, prefix=log_prefix),
         )
 
     @property
