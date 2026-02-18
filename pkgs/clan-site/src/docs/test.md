@@ -3,8 +3,13 @@ a: 1
 b: 2
 ---
 
-# Getting Started Overview
 
+## Generic code
+```
+nix run abc
+```
+
+## Language code
 ```js
 const abc = 1 + "2";
 const abc = 1 + "2";

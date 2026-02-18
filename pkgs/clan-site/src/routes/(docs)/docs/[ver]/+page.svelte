@@ -35,18 +35,26 @@
 </div>
 <ul class="intro">
   <li>
-    Declarative framework for managing fleets of machines without a central
-    controller
+    <p>
+      Declarative framework for managing fleets of machines without a central
+      controller
+    </p>
   </li>
-  <li>Peer-to-peer infrastructure management built on NixOS</li>
-  <li>First-class support for networking, backups, and resource management</li>
+  <li><p>Peer-to-peer infrastructure management built on NixOS</p></li>
   <li>
-    Integrates with sops-nix, nixos-anywhere, and disko for provisioning and
-    secrets
+    <p>First-class support for networking, backups, and resource management</p>
   </li>
   <li>
-    Extensible via community-maintained Clan Services applied across multiple
-    machines
+    <p>
+      Integrates with sops-nix, nixos-anywhere, and disko for provisioning and
+      secrets
+    </p>
+  </li>
+  <li>
+    <p>
+      Extensible via community-maintained Clan Services applied across multiple
+      machines
+    </p>
   </li>
 </ul>
 

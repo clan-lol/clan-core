@@ -5,7 +5,6 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeToc from "./rehype-toc.ts";
-import rehypeWrapHeadings from "./rehype-wrap-headings.ts";
 import remarkAdmonition from "./remark-admonition.ts";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
@@ -90,10 +89,15 @@ export default function vitePluginClanmd({
         .use(rehypeToc, {
           maxTocExtractionDepth,
         })
-        .use(rehypeWrapHeadings)
-        .use(rehypeAutolinkHeadings)
+        .use(rehypeAutolinkHeadings, {
+          content: {
+            type: "text",
+            value: "🔗",
+          },
+        })
         .use(rehypeShiki, {
           defaultColor: false,
+          defaultLanguage: "text",
           themes: {
             light: codeLightTheme,
             dark: codeDarkTheme,

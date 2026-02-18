@@ -18,9 +18,9 @@ html {
   --content-border-color: #d8e8eb;
   --nav-indent-guide-color: #afc6ca;
   --shiki-indent-offset: 10px;
-  --shiki-diff-remove-bg-color: : #db0a0a41;
-  --shiki-diff-add-bg-color: : #0adb4954;
-  --shiki-highlighted-bg-color: : #00000024;
+  --shiki-diff-remove-bg-color: #db0a0a41;
+  --shiki-diff-add-bg-color: #0adb4954;
+  --shiki-highlighted-bg-color: #00000024;
 
   &.no-scroll {
     overflow: hidden;
@@ -30,7 +30,7 @@ html {
 
 body {
   font:
-    500 18px/1.45 "Mona Sans",
+    400 18px/1.45 "Mona Sans",
     sans-serif;
 
   &:has([data-page-id="docs"]) {
@@ -64,16 +64,47 @@ a {
   text-underline-offset: 2px;
 }
 
-ul {
+b,
+strong {
+  font-weight: 600;
+}
+
+ul,
+ol {
+  padding: 0;
   padding-inline-start: 1.5em;
+  margin: 40px 0;
+}
+
+li {
+  &::marker {
+    font-size: 16px;
+  }
+
+  p {
+    margin-block: 0.5em;
+  }
 }
 
 .shiki {
-  padding: 15px 0;
-  margin: 0 -15px;
+  padding: 14px 20px;
+  margin: 0 -14px;
+  font-size: 16px;
+  line-height: 1.25;
 
-  .line {
-    padding: 0 15px;
+  &.line-numbers {
+    padding-inline: 0 20px;
+
+    .line {
+      padding-inline-start: 0;
+
+      &::before {
+        box-sizing: content-box;
+        inline-size: 1.3em;
+        /* padding-inline: 14px; */
+        padding-inline: 14px;
+      }
+    }
   }
 }
 
@@ -84,5 +115,10 @@ ul {
 
   h2 {
     font-size: 23px;
+  }
+
+  .shiki {
+    margin-inline: 0;
+    border-radius: 7px;
   }
 }
