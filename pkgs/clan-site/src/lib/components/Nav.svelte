@@ -129,4 +129,13 @@
       }
     }
   }
+
+  @media (--wide) {
+    nav {
+      display: block;
+      flex: none;
+      inline-size: 280px;
+      padding-inline: 24px;
+    }
+  }
 </style>
