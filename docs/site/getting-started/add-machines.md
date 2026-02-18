@@ -1,21 +1,13 @@
-##Summary
+## Summary
 
-Register at least one machine in your Clan so it can be rolled out to a target device in the next steps.
+Register machines in your Clan so they can be deployed to target devices.
 
-The process is the same for all device types (cloud VMs, bare metal laptops, or anything else) and only branches into specific steps later.
+## Requirements
 
-
-##Requirements
-
-- Estimated time: 30min
-- You have created a Clan during the previous step
-- You are logged in as root on your setup device
-- direnv is running in your Clan folder (see previous step for setup)
-
+- A Clan created during the previous step
+- direnv running in your Clan folder
 
 ## Creating a Machine
-
-Navigate to your Clan folder and run the following command to create a machine for our test user Jon:
 
 ```bash
 clan machines create jon-machine

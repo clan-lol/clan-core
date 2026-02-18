@@ -1,12 +1,11 @@
 ## Summary
-Push configuration changes to your deployed machines over SSH using `clan machines update`.
 
-This guide also covers setting a persistent `targetHost` in Nix and, optionally, defining a remote builder.
+Push configuration changes to deployed machines using `clan machines update`.
 
 ## Requirements
 
-* **Expected time for this step**: 15min
-* **A Setup Device**: Any device that is part of your Clan and that you have root access to, or the setup device you used during the previous steps.
+* A device with root access via SSH
+* Machine was installed via `clan machines install`
 
 ## Setting `targetHost`
 
@@ -25,7 +24,6 @@ This eliminates the need to specify `--target-host` in CLI commands.
             deploy.targetHost = "root@192.168.XXX.XXX"; # (1)
         };
     };
-
 }
 ```
 

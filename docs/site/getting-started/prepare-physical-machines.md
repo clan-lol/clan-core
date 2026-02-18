@@ -1,9 +1,8 @@
 ## Summary
 
-To install Clan on physical devices, you need to start our custom installer image from a boot device.
-The minimal system will then be reachable by your setup device and a deployment can be triggered remotely.
+You will create a bootable USB drive.
 
-If you only plan to use virtual machines, you can skip this step.
+If you want to use a VM download the iso from below and skip this step.
 
 ??? info "Why nixos-anywhere Doesn't Work on Physical Hardware?"
     nixos-anywhere relies on [kexec](https://wiki.archlinux.org/title/Kexec) to replace the running kernel with our custom one. This method often has compatibility issues with real hardware, especially systems with dedicated graphics cards like laptops and servers, leading to crashes and black screens.
@@ -11,21 +10,17 @@ If you only plan to use virtual machines, you can skip this step.
 ??? info "Reasons for a Custom Install Image"
     Our custom install images are built to include essential tools like [nixos-facter](https://github.com/nix-community/nixos-facter) and support for [ZFS](https://wiki.archlinux.org/title/ZFS). They're also optimized to run on systems with as little as 1 GB of RAM, ensuring efficient performance even on lower-end hardware.
 
-
 ## Requirements
 
-* Estimated time for this step: 20 minutes
-* A USB drive with at least 1.5GB total space (!! all data will be lost !!)
-* A Linux/NixOS device with internet access to create the boot stick. You can use your setup device or any other device for this step.
+* A USB drive with at least 1.5GB total space (all data will be lost)
+* A Linux/NixOS device with internet access. You can use your setup device or any other device for this step.
 * One or more physical target devices (!! all data will be lost !!)
 
-    Minimum target
-system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
-
+Minimum target system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
 
 ## Identify the USB Flash Drive
 
-1. Insert your USB flash drive into the Linux computer you want to create the boot stick on.
+1. Insert your USB flash drive into the Linux computer.
 
 2. Identify your flash drive with `lsblk`:
 
@@ -157,7 +152,7 @@ sudo umount /dev/sdb1
       If you need to configure Wi-Fi first, refer to the next section.
       If Multicast-DNS (Avahi) is enabled on your own device, you can also access the installer using the `nixos-installer.local` address.
 
-## Checkpoint 1: Boot From USB Stick on Target Device
+## Checkpoint: Boot From USB Stick on Target Device
 
 To see if your new Clan USB boot stick works, plug it into a target device and boot from the USB drive with **secure boot turned off**.
 

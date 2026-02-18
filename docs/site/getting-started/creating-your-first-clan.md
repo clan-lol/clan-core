@@ -2,32 +2,15 @@
 
 ### Summary
 
-Ready to manage your fleet of machines?
+Create a declarative infrastructure using Clan, git, and Nix.
 
-In this guide, we will create a declarative infrastructure using **Clan**, **git**, and **Nix Flakes**.
-
-At the end of this getting started guide, you will have a centrally managed fleet of Clan devices at your disposal.
-
-If you want to [migrate your existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead of following this guide for a completely fresh setup, please find the corresponding links in our Guides database instead. Note that you can also always migrate your existing systems into the new Clan after following this getting started guide, too.
-
+To [migrate existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead, see the Guides.
 
 ### Requirements
 
-* **Expected knowledge levels for this guide:**
-    Linux 2/5 - NixOS 0/5 - Computer Networks 1/5
-
-* **Estimated time for this step:** 20 minutes
-
 * **One Setup Device**: A Linux device from which the setup commands will be run.
 
-    !!! Warning "Operating System Recommendations"
-        We are currently working on more refined operating system recommendations.
-
-        - Minimum system requirements: 2 CPUs, 4GB RAM, 30gb HDD space, network interface
-
-        - We currently recommend NixOS 25.11 for this guide, but other Linux systems are supported, too.
-
-        - Root user access will be required throughout the whole setup.
+    Minimum system requirements: 2 CPUs, 4GB RAM, 30GB HDD, network interface. We recommend NixOS 25.11, but other Linux systems work too. Root access required.
 
 
 * **Nix**: The Nix package manager installed on your setup device.

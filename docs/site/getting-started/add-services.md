@@ -1,19 +1,10 @@
 ## Summary
 
-Give your Clan networking and SSH access so your devices can reach each other and you can administer them remotely.
-
-Both are configured as Clan services: self-contained units of configuration that you assign to machines via roles and tags.
-
-To learn more about services in general, visit [Clan Services](../guides/services/introduction-to-services.md)
-
-!!! Important
-It is recommended to always add at least one networking service such as `zerotier` that can reach all your Clan machines from your Setup Device. We will do so in the following steps.
+Add networking and SSH access so devices can reach each other.
 
 ## Requirements
 
-- Estimated time: 15 minutes
-
-- A Clan with at least one machine and at least one user prepared as described in the previous steps
+- A Clan with at least one machine and user
 
 ## Configure a ZeroTier Network
 
