@@ -10,35 +10,31 @@
     text-decoration: var(--shiki-light-text-decoration);
   }
 
-  code {
-    display: block;
-  }
-
-  .line {
-    display: inline-block;
-    inline-size: 100%;
-  }
-
   /* line numbers */
-  &.line-numbers code {
-    counter-increment: step 0;
-    counter-reset: step;
-  }
+  &.line-numbers {
+    code {
+      counter-increment: step 0;
+      counter-reset: step;
+    }
 
-  &.line-numbers .line::before {
-    content: counter(step);
-    display: inline-block;
-    inline-size: 1rem;
-    margin-inline-end: 1em;
-    color: rgb(115 138 148 / 40%);
-    counter-increment: step;
-    text-align: end;
+    .line::before {
+      content: counter(step);
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      display: inline-block;
+      inline-size: 1em;
+      color: rgb(115 138 148 / 40%);
+      background-color: var(--shiki-light-bg);
+      counter-increment: step;
+      text-align: end;
+    }
   }
 
   /* indent guides */
   .indent {
     position: relative;
-    inset-inline-start: var(--shiki-indent-offset);
+    inset-inline-start: var(--indent-offset);
     display: inline-block;
 
     &:empty {

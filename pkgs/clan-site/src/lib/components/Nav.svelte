@@ -54,6 +54,7 @@
     display: none;
     padding: 0 14px;
     color: var(--secondary-fg-color);
+    font-weight: 500;
 
     &.is-visible {
       display: block;

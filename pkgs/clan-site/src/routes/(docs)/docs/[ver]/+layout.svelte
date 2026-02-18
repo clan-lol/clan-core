@@ -113,7 +113,7 @@
     }
 
     .inner {
-      max-inline-size: 600px;
+      max-inline-size: 670px;
       margin: 0 auto;
     }
 

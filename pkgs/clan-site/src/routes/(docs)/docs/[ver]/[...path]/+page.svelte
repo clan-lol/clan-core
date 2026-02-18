@@ -147,47 +147,9 @@
   // }
 </script>
 
-<div>
-  <!-- <div class="toc">
-    <h2 bind:this={tocEl} class="toc-title">
-      <button
-        class="toc-label"
-        onclick={() => {
-          tocOpen = !tocOpen;
-        }}
-        type="button"
-      >
-        <span>
-          {currentTocContent}
-        </span>
-        <svg
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="18"
-          xmlns="http://www.w3.org/2000/svg"
-          ><polyline points="9 18 15 12 9 6" /></svg
-        >
-      </button>
-    </h2>
-    {#if tocOpen && headings[0]}
-      {@const [heading] = headings}
-      <ul class="toc-menu">
-        <li>
-          <a href={`#${heading.id}`} onclick={scrollToTop}>{heading.content}</a>
-        </li>
-        {@render tocLinks(heading.children)}
-      </ul>
-    {/if}
-  </div> -->
-  <div class="content">
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    {@html article.content}
-  </div>
+<div class="container">
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  {@html article.content}
 </div>
 
 <!-- {#snippet tocLinks(headings: Heading[])}
@@ -266,55 +228,30 @@
     }
   }
 
-  .content {
-    padding: 0 15px;
-
+  .container {
     :global {
-      & :is(h1, h2, h3, h4, h5, h6) {
-        display: flex;
-        align-items: center;
-        margin-inline-start: -24px;
-
-        &.is-scrolled-past {
-          opacity: 0;
-        }
-
-        &.is-ghost {
-          position: fixed;
-          inset-inline-start: 0;
-          z-index: 1;
-          margin: 0;
-
-          > span {
-            transform-origin: left top;
-          }
-        }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        position: relative;
 
         a {
-          text-decoration: none;
-        }
-
-        .icon {
+          position: absolute;
+          inset-inline-end: 100%;
+          inset-block: 0;
           display: flex;
           align-items: center;
-
-          &::before {
-            content: "🔗";
-            font-size: 14px;
-            visibility: hidden;
-          }
+          padding-inline-end: 5px;
+          font-size: 14px;
+          text-decoration: none;
+          visibility: hidden;
         }
 
-        &:hover {
-          .icon::before {
-            visibility: visible;
-          }
-
-          &.is-ghost {
-            .icon::before {
-              visibility: hidden;
-            }
-          }
+        &:hover a {
+          visibility: visible;
         }
       }
     }
