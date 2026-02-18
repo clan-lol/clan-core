@@ -49,7 +49,7 @@ For more information see [services/users](../services/official/users.md)
 To verify your user configuration is correct, run:
 
 ```bash
-clan machines update $MACHINE_NAME --dry-run
+clan vars generate $MACHINE_NAME
 ```
 
 If the command completes without errors and prompts you to set a password for your user, the configuration is working correctly.
