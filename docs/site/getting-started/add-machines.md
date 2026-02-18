@@ -84,7 +84,7 @@ machines: It is advised to add the *SSH key* of your setup device's root user he
 ...you can remove the entries both from your flake.nix and from the machines directory. For example, to remove laptop, use:
 
 ```bash
-git rm -rf ./machines/laptop
+clan machines delete latop
 ```
 
 Make sure to also remove or update any references to that machine in your Nix files and inventory.json
