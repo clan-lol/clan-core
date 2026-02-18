@@ -1,7 +1,3 @@
-## Creating your first Clan
-
-### Summary
-
 Create a declarative infrastructure using Clan, git, and Nix.
 
 To [migrate existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) instead, see the Guides.
