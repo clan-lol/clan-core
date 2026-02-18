@@ -27,7 +27,6 @@ class VarsStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-        machine: str,  # noqa: ARG002
     ) -> Path | None:
         if not self.flake.is_local:
             msg = f"Storing var '{var.id}' in a flake is only supported for local flakes: {self.flake}"

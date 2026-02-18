@@ -107,7 +107,6 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-        machine: str,  # noqa: ARG002
     ) -> Path | None:
         pass_call = ["insert", "-m", str(self.entry_dir(generator.key, var.name))]
         self._run_pass(*pass_call, input=value, check=True)

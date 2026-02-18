@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 from clan_lib.machines.machines import Machine
 
-from ._types import GeneratorId, PerMachine, Placement, Shared
+from ._types import GeneratorId, PerExport, PerMachine, Placement, Shared
 
 log = logging.getLogger(__name__)
 
@@ -573,15 +573,19 @@ class Generator:
             msg = "Flake and stores must be set to execute generator"
             raise ClanError(msg)
 
-        machine_name = self.machines[0]
-
         if prompt_values is None:
             prompt_values = self.ask_prompts()
 
         # build temporary file tree of dependencies
-        decrypted_dependencies = self.decrypt_dependencies(
-            get_machine_generators([machine_name], self._flake)
-        )
+        decrypted_dependencies = {}
+        match self.key.placement:
+            case PerMachine(_) | Shared():
+                decrypted_dependencies = self.decrypt_dependencies(
+                    get_machine_generators(self.machines, self._flake)
+                )
+            case PerExport(_):
+                # For PerExport generators without machines, skip dependency decryption for now
+                pass
 
         def get_prompt_value(prompt_name: str) -> str:
             try:
@@ -657,7 +661,6 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine_name,
                         log_info=lambda msg: log_prefixed(
                             msg, prefix=self.key.placement
                         ),
@@ -668,7 +671,6 @@ class Generator:
                         self,
                         file,
                         secret_file.read_bytes(),
-                        machine_name,
                         log_info=lambda msg: log_prefixed(
                             msg, prefix=self.key.placement
                         ),

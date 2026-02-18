@@ -29,7 +29,14 @@ from clan_lib.nix import current_system
 from clan_lib.nix_selectors import vars_sops_default_groups, vars_sops_secret_upload_dir
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
-from clan_lib.vars._types import GeneratorId, GeneratorStore, StoreBase
+from clan_lib.vars._types import (
+    GeneratorId,
+    GeneratorStore,
+    PerExport,
+    PerMachine,
+    Shared,
+    StoreBase,
+)
 from clan_lib.vars.var import Var
 
 
@@ -178,23 +185,50 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-        machine: str,
     ) -> Path | None:
-        self.ensure_machine_key(machine)
+
+        add_machines: list[str] = []
+        add_groups: list[str] = []
+
+        match generator.key.placement:
+            case PerMachine(machine=machine):
+                self.ensure_machine_key(machine)
+                add_machines = [machine] if var.deploy else []
+                add_groups = self.flake.select(
+                    vars_sops_default_groups(current_system(), [machine])
+                )[machine]["sops"]["defaultGroups"]
+
+            case Shared():
+                # Shared: add all machines that need this var
+                add_machines = generator.machines if var.deploy else []
+                for m in add_machines:
+                    self.ensure_machine_key(m)
+                # Use generator.machines[0] for groups even if deploy=False
+                first_machine = generator.machines[0]
+                add_groups = self.flake.select(
+                    vars_sops_default_groups(current_system(), [first_machine])
+                )[first_machine]["sops"]["defaultGroups"]
+
+            case PerExport(_):
+                msg = "PerExport vars are not implemented yet"
+                raise ClanError(msg)
+                # TODO:
+                # PerExport: admin key (automatic) + all machines from generator
+                # add_machines = generator.machines
+                # for m in add_machines:
+                #     self.ensure_machine_key(m)
+                # add_groups = []
+
         secret_folder = self.secret_path(generator.key, var.name)
-        # create directory if it doesn't exist
         secret_folder.mkdir(parents=True, exist_ok=True)
-        # initialize the secret
         encrypt_secret(
             self.clan_dir,
             secret_folder,
             load_age_plugins(self.flake),
             value,
             self.flake.path,
-            add_machines=[machine] if var.deploy else [],
-            add_groups=self.flake.select(
-                vars_sops_default_groups(current_system(), [machine])
-            )[machine]["sops"]["defaultGroups"],
+            add_machines=add_machines,
+            add_groups=add_groups,
             git_commit=False,
         )
         return secret_folder
