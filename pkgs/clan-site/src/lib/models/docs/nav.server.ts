@@ -6,7 +6,11 @@ import type {
   Path,
 } from "$config";
 import config from "$config";
-import { loadMarkdown, recursiveLoadMarkdowns } from "./docs.server.ts";
+import {
+  loadMarkdown,
+  recursiveLoadMarkdowns,
+  toDocsPath,
+} from "./docs.server.ts";
 import { visit } from "$lib/util.ts";
 
 export async function getNavItems(): Promise<readonly NavItem[]> {
@@ -137,14 +141,14 @@ export async function normalizeNavItem(
 
 export function getNavPath(
   navItems: readonly NavItem[],
-  path: Path,
+  path: DocsPath,
 ): readonly number[] {
   const navPath: number[] = [];
   visit(navItems, (navItem, i, parents) => {
     if ("children" in navItem || !("path" in navItem)) {
       return;
     }
-    if (navItem.path === toDocsPath(path)) {
+    if (navItem.path === path) {
       navPath.push(...parents.map((parent) => parent.index), i);
     }
   });
@@ -153,14 +157,14 @@ export function getNavPath(
 
 export function findNavSiblings(
   navItems: readonly NavItem[],
-  path: Path,
+  path: DocsPath,
 ): readonly [NavSibling | undefined, NavSibling | undefined] {
   let index = -1;
-  const navPaths: NavPathItem[] = [];
+  const pathItems: NavPathItem[] = [];
   let prev: NavSibling | undefined;
   let next: NavSibling | undefined;
   visit(navItems, (navItem) => {
-    if (!("path" in navItem)) {
+    if ("children" in navItem || !("path" in navItem)) {
       return;
     }
     if (index !== -1) {
@@ -170,13 +174,13 @@ export function findNavSiblings(
       };
       return "break";
     }
-    if (navItem.path !== toDocsPath(path)) {
-      navPaths.push(navItem);
+    if (navItem.path !== path) {
+      pathItems.push(navItem);
       return;
     }
-    index = navPaths.length;
-    navPaths.push(navItem);
-    const navPath = navPaths[index - 1];
+    index = pathItems.length;
+    pathItems.push(navItem);
+    const navPath = pathItems[index - 1];
     if (navPath) {
       prev = {
         label: navPath.label,
@@ -204,8 +208,4 @@ export function findFirstNavPathItem(
     }
   }
   return;
-}
-
-function toDocsPath(path: Path): DocsPath {
-  return `${config.docsBase}${path === "/" ? "" : path}`;
 }

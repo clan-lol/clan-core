@@ -45,13 +45,14 @@ export async function loadArticle(
   navItems: readonly NavItem[],
 ): Promise<Article> {
   const md = await loadMarkdown(path);
-  const navPath = getNavPath(navItems, path);
-  const [previous, next] = findNavSiblings(navItems, path);
+  const docsPath = toDocsPath(path);
+  const navPath = getNavPath(navItems, docsPath);
+  const [previous, next] = findNavSiblings(navItems, docsPath);
 
   return {
     title: md.frontmatter.title,
     content: md.content,
-    path: `${config.docsBase}${path}`,
+    path: docsPath,
     previous,
     next,
     navPath,
@@ -74,4 +75,8 @@ export async function recursiveLoadMarkdowns(
     p.startsWith(`${pathPrefix}/`),
   );
   return await Promise.all(paths.map(async (p) => await loadMarkdown(p)));
+}
+
+export function toDocsPath(path: Path): DocsPath {
+  return `${config.docsBase}${path === "/" ? "" : path}`;
 }

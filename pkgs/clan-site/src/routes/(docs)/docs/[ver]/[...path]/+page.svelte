@@ -1,8 +1,6 @@
 <script lang="ts">
-  /* eslint-disable svelte/no-unused-class-name */
   import { on } from "svelte/events";
   import { onMount } from "svelte";
-  import { resolve } from "$app/paths";
   import "@clan/vite-plugin-markdown/main.css";
 
   const { data } = $props();
@@ -190,30 +188,6 @@
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html article.content}
   </div>
-  <footer>
-    {#if article.previous}
-      <a class="pointer previous" href={resolve(article.previous.path)}>
-        <div class="pointer-arrow">&lt;</div>
-        <div>
-          <div class="pointer-label">Previous</div>
-          <div class="pointer-title">{article.previous.label}</div>
-        </div>
-      </a>
-    {:else}
-      <div class="pointer previous"></div>
-    {/if}
-    {#if article.next}
-      <a class="pointer next" href={resolve(article.next.path)}>
-        <div>
-          <div class="pointer-label">Next</div>
-          <div class="pointer-title">{article.next.label}</div>
-        </div>
-        <div class="pointer-arrow">&gt;</div>
-      </a>
-    {:else}
-      <div class="pointer previous"></div>
-    {/if}
-  </footer>
 </div>
 
 <!-- {#snippet tocLinks(headings: Heading[])}
@@ -344,41 +318,5 @@
         }
       }
     }
-  }
-
-  footer {
-    display: flex;
-    gap: 15px;
-    justify-content: space-between;
-    margin: 20px 15px;
-  }
-
-  .pointer {
-    display: flex;
-    flex: 1;
-    gap: 10px;
-    align-items: center;
-    padding: 20px;
-    color: inherit;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px #00000030;
-    text-decoration: none;
-
-    &:empty {
-      box-shadow: none;
-    }
-
-    &.next {
-      justify-content: end;
-      text-align: end;
-    }
-  }
-
-  .pointer-title {
-    font-size: 26px;
-  }
-
-  .pointer-label {
-    font-size: 16px;
   }
 </style>

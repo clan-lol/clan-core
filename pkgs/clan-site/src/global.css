@@ -15,7 +15,7 @@ html {
   --content-bg-color: #fff;
   --content-secondary-fg-color: #415e63;
   --content-secondary-bg-color: #f7f9fa;
-  --nav-border-color: #d8e8eb;
+  --content-border-color: #d8e8eb;
   --nav-indent-guide-color: #afc6ca;
   --shiki-indent-offset: 10px;
   --shiki-diff-remove-bg-color: : #db0a0a41;
