@@ -309,7 +309,7 @@ For this demonstration we'll add three command-line packages: `bat`, `btop`, and
 This declares that the three packages will be present on the machine. To install them, type:
 
 ```bash
-clan machines update my-machine
+clan machines update test-machine
 ```
 
 Now ssh into the machine, and they should be present:
