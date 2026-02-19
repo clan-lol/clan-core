@@ -188,9 +188,9 @@ nmtui
 
 In the GUI that opens:
 
-1. Press Down-Arrow to get to `Activate a Connection`.
+1. Press Down-Arrow to get to `Activate a Connection` and press `Enter`.
 2. In the list that appears, arrow-down to the same network your setup computer is connected to.
-3. Press the Right Arrow to highlight the "<Activate>" button.
+3. Press the Right Arrow to highlight the "\<Activate\>" button.
 4. Enter the password when asked, or push the button on the router.
 5. Press Esc, then arrow-down to `Quit`.
 
@@ -224,10 +224,10 @@ Next, configure a disk for the target machine. You'll run this command in two st
 clan templates apply disk single-disk test-machine --set mainDisk ""
 ```
 
-This will generate an error; note the disk ID it prints out, and add it inside the quotes, e.g.:
+This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id), and add it inside the quotes, e.g.:
 
 ```
-clan templates apply disk single-disk test-machine --set mainDisk "/dev/xvda"
+clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
 ## 10. Install
@@ -235,10 +235,10 @@ clan templates apply disk single-disk test-machine --set mainDisk "/dev/xvda"
 Install NixOS on the target machine by typing:
 
 ```
-clan machines install test-machine --target-host <USER>@<IP-ADDRESS>
+clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-Again substituting USERNAME and IP-ADDRESS as before.
+Again substituting IP-ADDRESS as before.
 
 (You will be asked whether you want to install; type y. You will also be asked about a password; you can accept the defaults here and just press Enter for both.)
 
@@ -254,7 +254,7 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-And for WiFi, you might need to repeat that network name and password.
+And for WiFi, you might need to repeat the network name and password.
 
 You will also have to enter a new root password again here, or let Clan assign one. Then run the installer again:
 
