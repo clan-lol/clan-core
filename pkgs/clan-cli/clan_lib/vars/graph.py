@@ -20,7 +20,8 @@ class Comparable(Protocol):
 
 
 class GeneratorGraphNode[T: Comparable](Protocol):
-    dependencies: list[T]
+    @property
+    def dependencies(self) -> list[T]: ...
 
     @property
     def key(self) -> T: ...

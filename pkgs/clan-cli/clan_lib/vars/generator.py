@@ -144,7 +144,7 @@ def validate_dependencies(
     machine_name: str,
     dependencies: list[str],
     generators_data: dict[str, dict],
-) -> list[GeneratorId]:
+) -> None:
     """Validate and build dependency keys for a generator.
 
     Args:
@@ -160,18 +160,10 @@ def validate_dependencies(
         ClanError: If a dependency does not exist
 
     """
-    deps_list = []
     for dep in dependencies:
         if dep not in generators_data:
             msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
             raise ClanError(msg)
-        placement: Placement = (
-            Shared()
-            if generators_data[dep]["share"]
-            else PerMachine(machine=machine_name)
-        )
-        deps_list.append(GeneratorId(name=dep, placement=placement))
-    return deps_list
 
 
 def find_generator_differences(
@@ -325,15 +317,27 @@ def get_machine_generators(
                 Shared() if share else PerMachine(machine=machine_name)
             )
 
+            validate_dependencies(
+                gen_name,
+                machine_name,
+                gen_data["dependencies"],
+                generators_data,
+            )
+            dependency_map: dict[str, GeneratorId] = {
+                dep: GeneratorId(
+                    name=dep,
+                    placement=(
+                        Shared()
+                        if generators_data[dep]["share"]
+                        else PerMachine(machine=machine_name)
+                    ),
+                )
+                for dep in gen_data["dependencies"]
+            }
             generator = Generator(
                 key=GeneratorId(name=gen_name, placement=placement),
                 files=files,
-                dependencies=validate_dependencies(
-                    gen_name,
-                    machine_name,
-                    gen_data["dependencies"],
-                    generators_data,
-                ),
+                dependency_map=dependency_map,
                 validation_hash=gen_data.get("validationHash"),
                 prompts=prompts,
                 _final_script_source=MachineFinalScript(machine_name=machine_name),
@@ -371,7 +375,18 @@ class Generator:
     key: GeneratorId
     files: list[Var] = field(default_factory=list)
     prompts: list[Prompt] = field(default_factory=list)
-    dependencies: list[GeneratorId] = field(default_factory=list)
+    dependency_map: dict[str, GeneratorId] = field(default_factory=dict)
+    """Mapping of input names to their GeneratorId
+    For example:
+
+    { "dep1": GeneratorId(foo, Machine(jon)) }
+
+    will make the script input available
+
+    $in/dep1
+
+    Note: This field will also be used to determine execution order
+    """
 
     validation_hash: str | None = None
 
@@ -383,6 +398,10 @@ class Generator:
     _previous_values: dict[str, str | None] = field(
         default_factory=dict, repr=False, compare=False
     )
+
+    @property
+    def dependencies(self) -> list[GeneratorId]:
+        return list(self.dependency_map.values())
 
     @property
     def share(self) -> bool:

@@ -63,25 +63,25 @@ def test_required_generators() -> None:
     machine_name = "test_machine"
     gen_1 = Generator(
         key=_pm("gen_1", machine_name),
-        dependencies=[],
+        dependency_map={},
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         key=_pm("gen_2", machine_name),
-        dependencies=[gen_1.key],
+        dependency_map={gen_1.key.name: gen_1.key},
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2a = Generator(
         key=_pm("gen_2a", machine_name),
-        dependencies=[gen_2.key],
+        dependency_map={gen_2.key.name: gen_2.key},
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2b = Generator(
         key=_pm("gen_2b", machine_name),
-        dependencies=[gen_2.key],
+        dependency_map={gen_2.key.name: gen_2.key},
         _public_store=public_store,
         _secret_store=secret_store,
     )
@@ -128,7 +128,7 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     machine_2 = "machine_2"
     shared_gen = Generator(
         key=_shared("shared_gen"),
-        dependencies=[],
+        dependency_map={},
         files=[
             Var(id="shared_gen/dummy", name="dummy", machines=[machine_1, machine_2]),
         ],
@@ -137,13 +137,13 @@ def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     )
     gen_1 = Generator(
         key=_pm("gen_1", machine_1),
-        dependencies=[shared_gen.key],
+        dependency_map={shared_gen.name: shared_gen.key},
         _public_store=public_store,
         _secret_store=secret_store,
     )
     gen_2 = Generator(
         key=_pm("gen_2", machine_2),
-        dependencies=[shared_gen.key],
+        dependency_map={shared_gen.name: shared_gen.key},
         _public_store=public_store,
         _secret_store=secret_store,
     )
