@@ -333,7 +333,7 @@ and run the update again:
 clan machines update my-machine
 ```
 
-Now when you check which tldr, it should show that it's not in the path:
+Now when you check which `tldr`, it should show that it's not in the path:
 
 ```
 which tldr
