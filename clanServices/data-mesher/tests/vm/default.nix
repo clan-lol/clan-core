@@ -21,8 +21,8 @@
             { lib, ... }:
             {
               services.data-mesher.settings = {
-                # reduce these intervals to speed up the test
-                cluster.join_interval = lib.mkForce "2s";
+                log_level = lib.mkForce "debug";
+                # reduce this interval to speed up the test
                 cluster.push_pull_interval = lib.mkForce "5s";
               };
             }
@@ -30,21 +30,16 @@
         ];
 
         roles.default.settings = {
-
           files = {
             "test_file" = [
               "azwT+VhTxA+BF73Hwq0uqdXHG8XvHU2BknoVXgmEjww=" # admin
             ];
           };
+        };
 
-          interfaces = [ "eth1" ];
-
-          extraBootstrapNodes = [
-            "[2001:db8:1::1]:7946" # alpha
-            "[2001:db8:1::2]:7946" # beta
-            "[2001:db8:1::3]:7946" # gamma
-          ];
-
+        roles.bootstrap.machines = {
+          alpha = { };
+          beta = { };
         };
       };
 
@@ -83,10 +78,6 @@
     for node in [alpha, beta, gamma]:
         # Verify services starts
         node.wait_for_unit("data-mesher.service")
-
-        # Verify the config was generated with our settings
-        node.succeed("grep 'eth1' /etc/data-mesher/dm.toml")
-        node.succeed("grep 'test_file' /etc/data-mesher/dm.toml")
 
     # Upload a file
     upload_file(alpha, "test_file", "hello world")
