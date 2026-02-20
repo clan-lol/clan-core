@@ -1,0 +1,20 @@
+:root {
+  --fg-color: #000;
+  --secondary-fg-color: #2c4347;
+  --link-color: #0051ff;
+  --link-underline-color: #4e80ec;
+  --bg-color: #e1ecf0;
+  --secondary-bg-color: #d2dee2;
+  --input-fg-color: #4f747a;
+  --input-border-color: #7b9b9f;
+  --content-fg-color: #000;
+  --content-bg-color: #fff;
+  --content-secondary-fg-color: #415e63;
+  --content-secondary-bg-color: #f7f9fa;
+  --content-border-color: #d8e8eb;
+  --nav-indent-guide-color: #afc6ca;
+  --shiki-indent-offset: 10px;
+  --shiki-diff-remove-bg-color: #db0a0a41;
+  --shiki-diff-add-bg-color: #0adb4954;
+  --shiki-highlighted-bg-color: #00000024;
+}

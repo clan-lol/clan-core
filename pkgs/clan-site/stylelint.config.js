@@ -7,8 +7,11 @@ export default {
   ignoreFiles: ["build/**", "static/_pagefind/**", "src/docs/**"],
   rules: {
     ...standard.base({
-      customProperties: new URL("src/global.css", import.meta.url),
-      customMedia: new URL("src/global.css", import.meta.url),
+      customProperties: new URL(
+        "src/css/custom-properties.css",
+        import.meta.url,
+      ),
+      customMedia: new URL("src/css/custom-media.css", import.meta.url),
     }),
   },
 };

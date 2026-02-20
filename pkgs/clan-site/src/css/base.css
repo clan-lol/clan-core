@@ -1,0 +1,62 @@
+html.no-scroll {
+  overflow: hidden;
+  block-size: 100vh;
+}
+
+body {
+  font:
+    400 18px/1.45 "Mona Sans",
+    sans-serif;
+
+  &:has([data-page-id="docs"]) {
+    color: var(--fg-color);
+    background: var(--bg-color);
+  }
+}
+
+h1 {
+  margin: 2em 0;
+  color: inherit;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+h2 {
+  margin: 2em 0 0.5em;
+  color: inherit;
+  font-weight: 700;
+  font-size: 21px;
+}
+
+h3 {
+  margin: 2em 0 1em;
+  font-size: 18px;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: 1px underline var(--link-underline-color);
+  text-underline-offset: 2px;
+}
+
+b,
+strong {
+  font-weight: 600;
+}
+
+ul,
+ol {
+  padding: 0;
+  padding-inline-start: 1.5em;
+  margin: 40px 0;
+}
+
+li {
+  &::marker {
+    font-size: 16px;
+  }
+
+  p {
+    margin-block: 0.5em;
+  }
+}
