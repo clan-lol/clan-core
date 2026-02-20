@@ -18,8 +18,13 @@ export default defineConfig(({ mode }) => ({
   css: {
     postcss: {
       plugins: [
+        // This is needed to resolve things like custom media
+        // https://github.com/csstools/postcss-plugins/tree/main/plugins/postcss-global-data#postcss-global-data-
         postcssGlobalData({
-          files: [new URL("src/global.css", import.meta.url).pathname],
+          files: [
+            "./src/css/custom-media.css",
+            "./src/css/custom-properties.css",
+          ],
         }),
         postcssPresetEnv(),
         ...(mode === "development" ? [] : [cssnano({ preset: "default" })]),

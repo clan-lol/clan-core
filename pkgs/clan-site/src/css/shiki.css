@@ -1,0 +1,96 @@
+/* stylelint-disable csstools/value-no-unknown-custom-properties */
+.shiki {
+  padding: 14px 20px;
+  margin: 0 -14px;
+  background-color: var(--shiki-light-bg);
+  font-size: 16px;
+  line-height: 1.25;
+
+  &,
+  & span {
+    color: var(--shiki-light);
+    font-weight: var(--shiki-light-font-weight);
+    font-style: var(--shiki-light-font-style);
+    text-decoration: var(--shiki-light-text-decoration);
+  }
+
+  &.line-numbers {
+    padding-inline: 0 20px;
+
+    code {
+      counter-increment: step 0;
+      counter-reset: step;
+    }
+
+    .line::before {
+      content: counter(step);
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      display: inline-block;
+      inline-size: 1em;
+      color: rgb(115 138 148 / 40%);
+      background-color: var(--shiki-light-bg);
+      counter-increment: step;
+      text-align: end;
+    }
+  }
+
+  .indent {
+    position: relative;
+    inset-inline-start: var(--indent-offset);
+    display: inline-block;
+
+    &:empty {
+      vertical-align: bottom;
+      block-size: 1lh;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inline-size: 1px;
+      block-size: 100%;
+      background-color: currentcolor;
+      opacity: 0.15;
+    }
+  }
+
+  .line {
+    padding-inline-start: 0;
+
+    &::before {
+      box-sizing: content-box;
+      inline-size: 1.3em;
+      /* padding-inline: 14px; */
+      padding-inline: 14px;
+    }
+
+    &.diff {
+      &.remove {
+        background-color: var(--shiki-diff-remove-bg-color);
+      }
+
+      .add {
+        background-color: var(--shiki-diff-add-bg-color);
+      }
+    }
+
+    &.highlighted {
+      background-color: var(--shiki-highlighted-bg-color);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &,
+    & span,
+    html.dark &,
+    html.dark & span {
+      color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
+      font-weight: var(--shiki-dark-font-weight);
+      font-style: var(--shiki-dark-font-style);
+      text-decoration: var(--shiki-dark-text-decoration);
+    }
+  }
+}

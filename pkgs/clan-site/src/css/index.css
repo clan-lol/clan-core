@@ -1,0 +1,20 @@
+@import url("modern-normalize/modern-normalize.css");
+@import url("./custom-media.css");
+@import url("./custom-properties.css");
+@import url("./base.css");
+@import url("./shiki.css");
+
+@media (--wide) {
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 23px;
+  }
+
+  .shiki {
+    margin-inline: 0;
+    border-radius: 7px;
+  }
+}
