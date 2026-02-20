@@ -4,7 +4,7 @@ from typing import Any
 from clan_lib.vars._types import GeneratorId, Shared
 from clan_lib.vars.prompt import PromptType
 
-from .generator import dependencies_as_dir, filter_machine_specific_attrs
+from .generator import filter_machine_specific_attrs, materialize_virtual_fs
 
 
 def test_filter_machine_specific_attrs_removes_platform_attrs() -> None:
@@ -140,7 +140,7 @@ def test_dependencies_as_files(temp_dir: Path) -> None:
             "var_2b": b"var_2b",
         },
     }
-    dependencies_as_dir(decrypted_dependencies, temp_dir)
+    materialize_virtual_fs(decrypted_dependencies, temp_dir)
     assert temp_dir.is_dir()
     assert (temp_dir / "gen_1" / "var_1a").read_bytes() == b"var_1a"
     assert (temp_dir / "gen_1" / "var_1b").read_bytes() == b"var_1b"

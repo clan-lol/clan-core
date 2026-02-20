@@ -98,16 +98,37 @@ def filter_machine_specific_attrs(files: dict[str, dict]) -> dict[str, dict]:
     }
 
 
-def dependencies_as_dir(
-    decrypted_dependencies: dict[str, dict[str, bytes]],
+def materialize_virtual_fs(
+    virtual_fs: dict[str, dict[str, bytes]],
     tmpdir: Path,
 ) -> None:
-    """Helper function to create directory structure from decrypted dependencies."""
-    for dep_generator, files in decrypted_dependencies.items():
-        dep_generator_dir = tmpdir / dep_generator
-        dep_generator_dir.mkdir(mode=0o700, parents=False, exist_ok=False)
-        for file_name, file in files.items():
-            file_path = dep_generator_dir / file_name
+    """Materializes a two-level (2) nested dictionary as a directory structure.
+
+    Each key in the outer dict becomes a subdirectory of `tmpdir`.
+    Each key in the inner dict becomes a file within that subdirectory,
+    written with the corresponding bytes as its content.
+
+    Example::
+
+        {
+            "foo": {
+                "bar": b"hello",
+                "boo": b"world",
+            }
+        }
+
+    Produces::
+
+        tmpdir/
+        └── foo/
+            ├── bar   (contains b"hello")
+            └── boo    (contains b"world")
+    """
+    for rel_outer_dir, inner_dir in virtual_fs.items():
+        outer_dir = tmpdir / rel_outer_dir
+        outer_dir.mkdir(mode=0o700, parents=False, exist_ok=False)
+        for file_name, file in inner_dir.items():
+            file_path = outer_dir / file_name
             file_path.touch(mode=0o600, exist_ok=False)
             file_path.write_bytes(file)
 
@@ -628,7 +649,7 @@ class Generator:
             env["out"] = str(tmpdir_out)
 
             # populate dependency inputs
-            dependencies_as_dir(decrypted_dependencies, tmpdir_in)
+            materialize_virtual_fs(decrypted_dependencies, tmpdir_in)
 
             # populate prompted values
             if self.prompts:
