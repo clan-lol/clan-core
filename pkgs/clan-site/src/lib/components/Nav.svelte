@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { NavItem } from "~/lib/models/docs.ts";
+  import type { NavItem, NavItems, NavPath } from "$lib/models/docs.ts";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
   import { resolve } from "$app/paths";
 
@@ -8,9 +8,9 @@
     isVisible,
     navPath,
   }: {
-    navItems: readonly NavItem[];
+    navItems: NavItems;
     isVisible: boolean;
-    navPath: readonly number[];
+    navPath: NavPath;
   } = $props();
 </script>
 
@@ -18,15 +18,16 @@
   {@render navTree(navItems, navPath)}
 </nav>
 
-{#snippet navTree(items: readonly NavItem[], navPath: readonly number[])}
+{#snippet navTree(items: NavItems, navPath: NavPath)}
   <ol>
-    {#each items as item, i (item.label)}
+    <!-- TODO: use item.label once missing titles are added -->
+    {#each items as item, i (i)}
       {@render navBranch(item, i, navPath)}
     {/each}
   </ol>
 {/snippet}
 
-{#snippet navBranch(item: NavItem, i: number, navPath: readonly number[])}
+{#snippet navBranch(item: NavItem, i: number, navPath: NavPath)}
   {#if "children" in item}
     <li>
       <details open={i === navPath[0]}>
@@ -136,7 +137,7 @@
     nav {
       display: block;
       flex: none;
-      inline-size: 280px;
+      inline-size: 320px;
       padding-inline: 24px;
     }
   }

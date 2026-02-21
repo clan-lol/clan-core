@@ -1,28 +1,28 @@
 const version = process.env["SITE_VER"] || "unstable";
-export default {
+const config = {
   version,
   searchResultLimit: 5,
   codeMinLineNumberLines: 4,
   codeLightTheme: "catppuccin-latte",
   codeDarkTheme: "catppuccin-macchiato",
-  maxTocExtractionDepth: 3,
+  maxTocDepth: 3,
   docsDir: "src/docs",
   docsBase: `/docs/${version}` satisfies DocsPath,
   docsNav: [
     {
       label: "Getting Started",
       children: [
-        "/",
-        "/getting-started/creating-your-first-clan",
-        "/getting-started/add-machines",
-        "/getting-started/add-users",
-        "/getting-started/add-services",
-        "/getting-started/prepare-physical-machines",
-        "/getting-started/prepare-virtual-machines",
-        "/getting-started/configure-disk",
-        "/getting-started/deployment-phase",
-        "/getting-started/update-machines",
-        "/getting-started/whats-next",
+        "",
+        "getting-started/creating-your-first-clan",
+        "getting-started/add-machines",
+        "getting-started/add-users",
+        "getting-started/add-services",
+        "getting-started/prepare-physical-machines",
+        "getting-started/prepare-virtual-machines",
+        "getting-started/configure-disk",
+        "getting-started/deployment-phase",
+        "getting-started/update-machines",
+        "getting-started/whats-next",
       ],
     },
     {
@@ -31,32 +31,32 @@ export default {
         {
           label: "Inventory",
           children: [
-            "/guides/inventory/inventory",
-            "/guides/inventory/autoincludes",
+            "guides/inventory/inventory",
+            "guides/inventory/autoincludes",
           ],
         },
         {
           label: "Services",
           children: [
-            "/guides/services/introduction-to-services",
-            "/guides/services/community",
-            "/guides/services/exports",
-            "/guides/internal-ssl-services",
+            "guides/services/introduction-to-services",
+            "guides/services/community",
+            "guides/services/exports",
+            "guides/internal-ssl-services",
           ],
         },
         {
           label: "Vars",
           children: [
-            "/guides/vars/vars-overview",
-            "/guides/vars/vars-backend",
-            "/guides/vars/vars-concepts",
-            "/guides/vars/vars-advanced-examples",
-            "/guides/vars/vars-troubleshooting",
+            "guides/vars/vars-overview",
+            "guides/vars/vars-backend",
+            "guides/vars/vars-concepts",
+            "guides/vars/vars-advanced-examples",
+            "guides/vars/vars-troubleshooting",
             {
               label: "Sops Backend",
               children: [
-                "/guides/vars/sops/age-plugins",
-                "/guides/vars/sops/secrets",
+                "guides/vars/sops/age-plugins",
+                "guides/vars/sops/secrets",
               ],
             },
           ],
@@ -64,49 +64,46 @@ export default {
         {
           label: "Backups",
           children: [
-            "/guides/backups/backup-intro",
-            "/guides/backups/minimal-example",
-            "/guides/backups/digging-deeper",
-            "/guides/backups/advanced-example",
+            "guides/backups/backup-intro",
+            "guides/backups/minimal-example",
+            "guides/backups/digging-deeper",
+            "guides/backups/advanced-example",
           ],
         },
         {
           label: "Networking",
           children: [
-            "/guides/networking/networking",
-            "/guides/networking/mesh-vpn",
+            "guides/networking/networking",
+            "guides/networking/mesh-vpn",
           ],
         },
-        "/guides/nixpkgs-flake-input",
-        "/guides/flake-parts",
-        "/guides/nixos-rebuild",
-        "/guides/macos",
+        "guides/nixpkgs-flake-input",
+        "guides/flake-parts",
+        "guides/nixos-rebuild",
+        "guides/macos",
         {
           label: "Templates",
-          children: [
-            "/concepts/templates",
-            "/guides/disko-templates/community",
-          ],
+          children: ["concepts/templates", "guides/disko-templates/community"],
         },
         {
           label: "Migrations",
           children: [
-            "/guides/migrations/convert-existing-NixOS-configuration",
-            "/guides/migrations/migrate-admin-service",
-            "/guides/migrations/migrate-inventory-services",
-            "/guides/migrations/migration-facts-vars",
-            "/guides/migrations/disk-id",
+            "guides/migrations/convert-existing-NixOS-configuration",
+            "guides/migrations/migrate-admin-service",
+            "guides/migrations/migrate-inventory-services",
+            "guides/migrations/migration-facts-vars",
+            "guides/migrations/disk-id",
           ],
         },
-        "/guides/disk-encryption",
-        "/guides/secure-boot",
+        "guides/disk-encryption",
+        "guides/secure-boot",
         {
           label: "Contributing",
           children: [
-            "/guides/contributing/CONTRIBUTING",
-            "/guides/contributing/debugging",
-            "/guides/contributing/testing",
-            "/guides/contributing/styleguide",
+            "guides/contributing/CONTRIBUTING",
+            "guides/contributing/debugging",
+            "guides/contributing/testing",
+            "guides/contributing/styleguide",
           ],
         },
       ],
@@ -116,123 +113,124 @@ export default {
       children: [
         {
           label: "Overview",
-          slug: "/reference",
+          path: "reference",
         },
         {
           label: "Options",
           children: [
-            "/reference/options/clan",
-            "/reference/options/clan_inventory",
-            "/reference/options/clan_service",
+            "reference/options/clan",
+            "reference/options/clan_inventory",
+            "reference/options/clan_service",
           ],
         },
         {
           label: "clan.core (Machine Options)",
           children: [
-            "/reference/clan.core",
-            "/reference/clan.core/backups",
-            "/reference/clan.core/deployment",
-            "/reference/clan.core/networking",
-            "/reference/clan.core/postgresql",
-            "/reference/clan.core/settings",
-            "/reference/clan.core/sops",
-            "/reference/clan.core/state",
-            "/reference/clan.core/vars",
+            "reference/clan.core",
+            "reference/clan.core/backups",
+            "reference/clan.core/deployment",
+            "reference/clan.core/networking",
+            "reference/clan.core/postgresql",
+            "reference/clan.core/settings",
+            "reference/clan.core/sops",
+            "reference/clan.core/state",
+            "reference/clan.core/vars",
           ],
         },
         {
           label: "CLI",
           children: [
-            "/reference/cli",
-            "/reference/cli/backups",
-            "/reference/cli/flakes",
-            "/reference/cli/flash",
-            "/reference/cli/init",
-            "/reference/cli/machines",
-            "/reference/cli/select",
-            "/reference/cli/secrets",
-            "/reference/cli/show",
-            "/reference/cli/ssh",
-            "/reference/cli/state",
-            "/reference/cli/templates",
-            "/reference/cli/vars",
-            "/reference/cli/vms",
+            "reference/cli",
+            "reference/cli/backups",
+            "reference/cli/flakes",
+            "reference/cli/flash",
+            "reference/cli/init",
+            "reference/cli/machines",
+            "reference/cli/select",
+            "reference/cli/secrets",
+            "reference/cli/show",
+            "reference/cli/ssh",
+            "reference/cli/state",
+            "reference/cli/templates",
+            "reference/cli/vars",
+            "reference/cli/vms",
           ],
         },
-        "/reference/clanLib",
-        "/api",
+        "reference/clanLib",
+        "api",
         {
           label: "Decisions",
           children: [
-            "/decisions/Architecture-decisions",
-            "/decisions/01-Clan-Modules",
-            "/decisions/02-clan-as-library",
-            "/decisions/03-adr-numbering-process",
-            "/decisions/04-fetching-nix-from-python",
-            "/decisions/05-deployment-parameters",
-            "/decisions/template",
+            "decisions/Architecture-decisions",
+            "decisions/01-Clan-Modules",
+            "decisions/02-clan-as-library",
+            "decisions/03-adr-numbering-process",
+            "decisions/04-fetching-nix-from-python",
+            "decisions/05-deployment-parameters",
+            "decisions/template",
           ],
         },
-        "/reference/glossary",
+        "reference/glossary",
         {
           label: "Releases",
-          children: ["/releases/25-11"],
+          children: ["releases/25-11"],
         },
       ],
     },
     {
       label: "Services",
       children: [
-        "/services/definition",
+        "services/definition",
         {
           label: "Official",
           children: [
-            "/services/official/admin",
-            "/services/official/borgbackup",
-            "/services/official/certificates",
-            "/services/official/coredns",
-            "/services/official/data-mesher",
-            "/services/official/dm-dns",
-            "/services/official/dyndns",
-            "/services/official/emergency-access",
-            "/services/official/garage",
-            "/services/official/hello-world",
-            "/services/official/internet",
-            "/services/official/importer",
-            "/services/official/kde",
-            "/services/official/localbackup",
-            "/services/official/matrix-synapse",
-            "/services/official/mycelium",
-            "/services/official/monitoring",
-            "/services/official/ncps",
-            "/services/official/packages",
-            "/services/official/pki",
-            "/services/official/sshd",
-            "/services/official/syncthing",
-            "/services/official/trusted-nix-caches",
-            "/services/official/tor",
-            "/services/official/users",
-            "/services/official/wifi",
-            "/services/official/wireguard",
-            "/services/official/yggdrasil",
-            "/services/official/zerotier",
+            "services/official/admin",
+            "services/official/borgbackup",
+            "services/official/certificates",
+            "services/official/coredns",
+            "services/official/data-mesher",
+            "services/official/dm-dns",
+            "services/official/dyndns",
+            "services/official/emergency-access",
+            "services/official/garage",
+            "services/official/hello-world",
+            "services/official/internet",
+            "services/official/importer",
+            "services/official/kde",
+            "services/official/localbackup",
+            "services/official/matrix-synapse",
+            "services/official/mycelium",
+            "services/official/monitoring",
+            "services/official/ncps",
+            "services/official/packages",
+            "services/official/pki",
+            "services/official/sshd",
+            "services/official/syncthing",
+            "services/official/trusted-nix-caches",
+            "services/official/tor",
+            "services/official/users",
+            "services/official/wifi",
+            "services/official/wireguard",
+            "services/official/yggdrasil",
+            "services/official/zerotier",
           ],
         },
-        "/services/community",
+        "services/community",
       ],
     },
     {
       label: "Test",
-      path: "/test",
+      path: "test",
     },
-  ] satisfies readonly DocsNavItem[],
+  ] satisfies DocsNavItems,
 };
+export default config;
 
-export type Path = `/${string}`;
+export type Config = typeof config;
 export type DocsPath = `/docs/${string}`;
-
+export type DocsNavItems = readonly DocsNavItem[];
 export type DocsNavItem =
-  | Path
+  | string
   | {
       readonly label: string;
       readonly children: readonly DocsNavItem[];
@@ -240,17 +238,7 @@ export type DocsNavItem =
     }
   | {
       readonly label: string;
-      readonly auto: Path;
-      readonly badge?: Badge;
-    }
-  | {
-      readonly label?: string;
-      readonly slug: Path;
-      readonly badge?: Badge;
-    }
-  | {
-      readonly label: string;
-      readonly path: Path;
+      readonly path: string;
       readonly badge?: Badge;
     }
   | {

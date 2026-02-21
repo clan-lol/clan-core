@@ -1,6 +1,5 @@
 import cssnano from "cssnano";
 import { defineConfig } from "vite";
-import markdown from "@clan/vite-plugin-markdown";
 import pagefind from "@clan/vite-plugin-pagefind";
 import postcssGlobalData from "@csstools/postcss-global-data";
 import postcssPresetEnv from "postcss-preset-env";
@@ -41,15 +40,6 @@ export default defineConfig(({ mode }) => ({
     valuePlugin({
       specifier: "$config",
       value: siteConfig,
-    }),
-    markdown({
-      codeLightTheme: siteConfig.codeLightTheme,
-      codeDarkTheme: siteConfig.codeDarkTheme,
-      minLineNumberLines: siteConfig.codeMinLineNumberLines,
-      maxTocExtractionDepth: siteConfig.maxTocExtractionDepth,
-      linkResolves: {
-        [siteConfig.docsDir]: siteConfig.docsBase,
-      },
     }),
     pagefind({
       pluginInstance: "docs",

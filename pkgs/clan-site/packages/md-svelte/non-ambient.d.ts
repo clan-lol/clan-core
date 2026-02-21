@@ -1,11 +1,13 @@
 import type { Extension as FromMarkdownExtension } from "mdast-util-from-markdown";
-import type { FrontmatterInput, HeadingInput } from "./index.ts";
 import type { Extension as MicromarkExtensions } from "micromark-extension-gfm";
+import type { TocItem } from "./index.ts";
 
 declare module "vfile" {
   interface DataMap {
-    matter: FrontmatterInput;
-    toc: HeadingInput[];
+    matter: Record<string, unknown>;
+    title: string;
+    toc: readonly TocItem[];
+    svelteComponents: Set<string>;
   }
 }
 
@@ -26,8 +28,7 @@ declare module "hast" {
     code: Element;
   }
   interface Properties {
+    id?: string;
     class?: string;
   }
 }
-
-export {};

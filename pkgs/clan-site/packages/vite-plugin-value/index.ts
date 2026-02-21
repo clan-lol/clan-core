@@ -10,14 +10,14 @@ export default function vitePluginConfig({
 }): PluginOption {
   return {
     name: pkg.name,
-    resolveId(id) {
-      if (id === specifier) {
-        return id;
+    resolveId(source) {
+      if (source === specifier) {
+        return `\0${specifier}`;
       }
       return;
     },
     load(id) {
-      if (id === specifier) {
+      if (id === `\0${specifier}`) {
         return `export default ${JSON.stringify(value)}`;
       }
       return;

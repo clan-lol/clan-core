@@ -7,20 +7,21 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 22.16.0"
   },
   "engineStrict": true,
   "scripts": {
-    "dev": "MODE=development vite build --mode development --configLoader native && MODE=development vite dev --configLoader native --strictPort",
+    "predev": "npm run prepare && MODE=development vite build --mode development --configLoader native",
+    "dev": "MODE=development vite dev --configLoader native --strictPort",
     "build": "MODE=production vite build --configLoader native",
     "preview": "http-server ./build --port 4173",
-    "prepare": "svelte-kit sync || echo ''",
+    "prepare": "node docs/prerender.ts && svelte-kit sync",
     "prelint": "svelte-kit sync",
-    "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte'"
+    "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
   },
   "devDependencies": {
     "@clan/coding-standard-svelte": "^0.0.1",
-    "@clan/vite-plugin-markdown": "^0.0.1",
+    "@clan/md-svelte": "^0.0.1",
     "@clan/vite-plugin-pagefind": "^0.0.1",
     "@csstools/postcss-global-data": "^4.0.0",
     "@fontsource-variable/geist": "^5.2.8",

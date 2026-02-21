@@ -1,15 +1,11 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
+import { fileURLToPath } from "node:url";
 import siteConfig from "./clan-site.config.ts";
-import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 const DEV = process.env["MODE"] === "development";
 const svelteConfig: Config = {
-  // Consult https://svelte.dev/docs/kit/integrations
-  // for more information about preprocessors
-  preprocess: [vitePreprocess()],
   kit: {
-    // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter: adapter({
       pages: "build",
       assets: `build/_assets/${siteConfig.version}`,
@@ -18,6 +14,7 @@ const svelteConfig: Config = {
     prerender: {
       handleHttpError: "warn",
       handleMissingId: "warn",
+      handleUnseenRoutes: "ignore",
     },
     paths: {
       // SvelteKit doesn't support specifying an absolute base for assets only,
@@ -30,7 +27,7 @@ const svelteConfig: Config = {
       relative: DEV,
     },
     alias: {
-      "~": new URL("src", import.meta.url).pathname,
+      "~": fileURLToPath(new URL("src", import.meta.url)),
     },
     typescript: {
       config(config) {
@@ -38,6 +35,12 @@ const svelteConfig: Config = {
           ...(config["include"] as string[]),
           "../*.ts",
           "../packages/**/*.ts",
+          "../docs/**/*.ts",
+        ];
+
+        config["exclude"] = [
+          ...((config["exclude"] as string[] | undefined) ?? []),
+          "../src/routes/(docs)/docs/[ver]/*/*",
         ];
         const compOpts = config["compilerOptions"] as Record<string, unknown>;
         config["compilerOptions"] = {
@@ -53,7 +56,6 @@ const svelteConfig: Config = {
       name: siteConfig.version,
     },
   },
-  extensions: [".svelte"],
 };
 
 export default svelteConfig;

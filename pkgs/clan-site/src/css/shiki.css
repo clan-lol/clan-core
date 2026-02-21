@@ -1,9 +1,14 @@
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
+  overflow: auto;
   padding: 14px 20px;
   margin: 0 -14px;
   background-color: var(--shiki-light-bg);
+  font-weight: normal;
   font-size: 16px;
+  font-family:
+    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+    "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
   &,

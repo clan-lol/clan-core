@@ -1,11 +1,12 @@
 <script lang="ts">
+  import type { Article } from "$lib/models/docs.ts";
   import ArrowLeftIcon from "$lib/assets/icons/arrow-left.svg?component";
   import ArrowRightIcon from "$lib/assets/icons/arrow-right.svg?component";
   import { page } from "$app/state";
   import { resolve } from "$app/paths";
 
   const { children } = $props();
-  const article = $derived(page.data.docsArticle);
+  const article = $derived(page.data) as Article;
 </script>
 
 <div class="container">
@@ -15,17 +16,17 @@
     </div>
   </article>
   <footer>
-    {#if article?.previous}
-      <a class="pointer" href={resolve(article.previous.path)}>
+    {#if article.prev}
+      <a class="pointer" href={resolve(article.prev.path)}>
         <dl>
           <dt><ArrowLeftIcon height="12" /> Previous</dt>
-          <dd>{article.previous.label}</dd>
+          <dd>{article.prev.label}</dd>
         </dl>
       </a>
     {:else}
       <div class="pointer empty"></div>
     {/if}
-    {#if article?.next}
+    {#if article.next}
       <a class="pointer next" href={resolve(article.next.path)}>
         <dl>
           <dt>Next <ArrowRightIcon height="12" /></dt>

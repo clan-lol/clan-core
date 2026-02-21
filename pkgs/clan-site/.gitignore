@@ -22,3 +22,6 @@ vite.config.ts.timestamp-*
 # Icons and other assets
 /src/lib/assets/icons
 /src/docs
+/src/routes/(docs)/+layout.ts
+/src/routes/(docs)/docs/\[ver]/+page.ts
+/src/routes/(docs)/docs/\[ver]/*/
