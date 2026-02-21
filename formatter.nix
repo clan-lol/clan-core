@@ -11,6 +11,7 @@
     let
       sizelintExcludes = [
         "pkgs/clan-app/ui/package-lock.json"
+        "pkgs/clan-site/package-lock.json"
       ];
     in
     {
