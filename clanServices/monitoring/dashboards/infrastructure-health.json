@@ -182,7 +182,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(1 - rate(node_cpu_seconds_total{mode=\"idle\", instance=\"$hostname\"}[5m]))",
+          "expr": "100 * (1 - avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=\"$hostname\"}[1m])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "interval": "",
