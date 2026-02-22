@@ -48,12 +48,9 @@
           module.name = "data-mesher";
           roles.default.machines.server = { };
           roles.default.machines.client = { };
-          roles.default.settings = {
-            interfaces = [ "eth1" ];
-            extraBootstrapNodes = [
-              "server:7946"
-              "client:7946"
-            ];
+          roles.bootstrap.machines = {
+            client = { };
+            server = { };
           };
         };
       };

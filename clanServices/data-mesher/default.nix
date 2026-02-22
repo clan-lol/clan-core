@@ -40,23 +40,27 @@ in
             '';
           };
 
-          extraBootstrapNodes = lib.mkOption {
+          extraBootstrapPeers = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
             description = ''
-              Additional bootstrap nodes that act as an initial gateway when joining
+              Additional bootstrap peers that act as an initial gateway when joining
               the cluster. These are merged with machines from the 'bootstrap' role.
+
+              They must be libp2p multi addresses: https://libp2p.io/guides/addressing
             '';
             example = [
-              "192.168.1.1:7946"
-              "192.168.1.2:7946"
+              "/ip4/192.168.1.1/tcp/7946/p2p/12D3KooWHs5NXo2CPFvFT6cdsu8eSkfggNtfqTtKBVojHY7En86i"
+              "/ip4/192.168.1.2/tcp/7946/p2p/12D3KooWDSrQ6xLqFmS44bZKXDujBmTDNu7BQS9HmDz6FRS52CyN"
             ];
           };
 
           interfaces = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+            default = [ ];
             description = ''
               We will bind to each each interface listed, listening for connections on `cluster.port`.
+              If no interfaces are provided, we will bind to all available.
             '';
             example = [
               "eth1"
@@ -101,7 +105,6 @@ in
         settings,
         exports,
         roles,
-        machine,
         ...
       }:
       let
@@ -132,28 +135,32 @@ in
       in
       {
         nixosModule = (
-          { config, pkgs, ... }:
+          { config, ... }:
           let
             dmConfig = config.services.data-mesher;
 
             # Bootstrap nodes derived from machines in the 'bootstrap' role, excluding ourselves
-            bootstrapRoleMachines =
-              if roles ? bootstrap then
-                lib.filter (name: name != machine.name) (lib.attrNames roles.bootstrap.machines)
-              else
-                [ ];
-            bootstrapNodesFromRole = map (
-              name: "${name}.${config.clan.core.settings.domain}:${toString settings.port}"
-            ) bootstrapRoleMachines;
+            bootstrapPeersFromRole = lib.mapAttrsToList (
+              name: _:
+              let
+                peerID = clanLib.getPublicValue {
+                  flake = config.clan.core.settings.directory;
+                  machine = name;
+                  generator = "data-mesher-node-identity";
+                  file = "peer.id";
+                };
+              in
+              "/dns/${name}.${config.clan.core.settings.domain}/tcp/${toString settings.port}/p2p/${peerID}"
+            ) roles.bootstrap.machines;
 
             # Merge role-derived bootstrap nodes with manually specified extra nodes
-            allBootstrapNodes = bootstrapNodesFromRole ++ settings.extraBootstrapNodes;
+            allBootstrapPeers = bootstrapPeersFromRole ++ settings.extraBootstrapPeers;
           in
           {
             assertions = [
               {
-                assertion = allBootstrapNodes != [ ];
-                message = "data-mesher: At least one bootstrap node must be provided either via the 'bootstrap' role or 'extraBootstrapNodes'.";
+                assertion = allBootstrapPeers != [ ];
+                message = "data-mesher: At least one bootstrap peer must be provided either via the 'bootstrap' role or 'extraBootstrapPeers'.";
               }
             ];
 
@@ -189,6 +196,7 @@ in
                     "data-mesher-ca"
                   ];
                   files = {
+                    "peer.id".secret = false;
                     "identity.key" = mkSecretFile { };
                     "identity.pub".secret = false;
                     "identity.cert" = mkSecretFile { };
@@ -197,26 +205,17 @@ in
                     dmConfig.package
                   ];
                   script = ''
-                    data-mesher generate node-key \
+                    data-mesher generate identity-key \
                         --public-key-path "$out/identity.pub" \
                         --private-key-path "$out/identity.key"
 
+                    data-mesher peer id "$out/identity.pub" > "$out/peer.id"
+
                     data-mesher certificate sign \
                         --ca-key "$in/data-mesher-ca/ca.key" \
-                        --node-key "$out/identity.pub" \
+                        --identity-key "$out/identity.pub" \
                         --output "$out/identity.cert" \
                         --validity 2160h    # 90 days for now TODO: expose this in the clan module
-                  '';
-                };
-
-                data-mesher-node-keyring = {
-                  share = true;
-                  files."pre_shared_key" = mkSecretFile { };
-                  runtimeInputs = [
-                    pkgs.openssl
-                  ];
-                  script = ''
-                    openssl rand -base64 32 > "$out/pre_shared_key"
                   '';
                 };
               };
@@ -227,35 +226,29 @@ in
               enable = true;
               openFirewall = true;
 
-              settings = {
-                log_level = settings.logLevel;
-                cluster = {
-                  port = settings.port;
-                  join_interval = "30s";
-                  push_pull_interval = "30s";
-                  interfaces = settings.interfaces;
-                  bootstrap_nodes = allBootstrapNodes;
+              settings =
+                let
+                  gen = config.clan.core.vars.generators;
+                in
+                {
+                  log_level = settings.logLevel;
+                  cluster = {
+                    port = settings.port;
+                    interfaces = settings.interfaces;
+                    bootstrap_peers = allBootstrapPeers;
 
-                  encryption =
-                    let
-                      gen = config.clan.core.vars.generators;
-                    in
-                    {
-                      enable = true;
-                      keyring = [
-                        gen.data-mesher-node-keyring.files."pre_shared_key".path
-                      ];
-                      identity_key = gen.data-mesher-node-identity.files."identity.key".path;
-                      identity_cert = gen.data-mesher-node-identity.files."identity.cert".path;
-                      certificate_authorities = [ gen.data-mesher-ca.files."ca.pub".path ];
-                    };
+                    push_pull_interval = "30s";
+
+                    identity_key = gen.data-mesher-node-identity.files."identity.key".path;
+                    identity_cert = gen.data-mesher-node-identity.files."identity.cert".path;
+                    certificate_authorities = [ gen.data-mesher-ca.files."ca.pub".path ];
+                  };
+
+                  http.port = 7331;
+                  http.interfaces = [ "lo" ]; # todo expose in options
+
+                  files = mergedFiles;
                 };
-
-                http.port = 7331;
-                http.interfaces = [ "lo" ]; # todo expose in options
-
-                files = mergedFiles;
-              };
             };
           }
         );

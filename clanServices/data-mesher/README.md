@@ -27,17 +27,12 @@ inventory.instances = {
       name = "data-mesher";
       input = "clan-core";
     };   
-    roles.default.settings = {
-      interfaces = ["eth1"];
-      bootstrapNodes = [
-        "192.168.1.1:7946"
-        "192.168.1.2:7946"
-      ];      
+    roles.default.settings = {                  
       files = {
-        "config:app" = [
+        "config_app" = [
           "azwT+VhTxA+BF73Hwq0uqdXHG8XvHU2BknoVXgmEjww="
         ];
-        "shared:data" = [
+        "shared_data" = [
           "azwT+VhTxA+BF73Hwq0uqdXHG8XvHU2BknoVXgmEjww="
           "Mdtz9s2DEyEk0DL8ZzW7WqwAehoQ97PFHVbJJdskkGo="
         ];
@@ -49,9 +44,10 @@ inventory.instances = {
 
 ## Configuration Options
 
-- `interfaces`: The network interface(s) for cluster communication
-- `port`: Port for cluster communication (default: 7946)  
-- `bootstrapNodes`: List of bootstrap nodes to connect to when joining
+- `logLevel`: Log level (default: info)
+- `port`: Port for cluster communication (default: 7946)
+- `extraBootstrapPeers`: List of extra bootstrap peers to connect to when joining the cluster.
+- `interfaces`: The network interface(s) for cluster communication - defaults to all interfaces
 - `files`: Map of file names to lists of authorized ED25519 public keys
 
 ## Uploading Files
