@@ -1,3 +1,4 @@
+import { matter } from "vfile-matter";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeEscape from "./rehype-escape.ts";
 import rehypeShiki from "@shikijs/rehype";
@@ -9,7 +10,7 @@ import remarkDirective from "remark-directive";
 import remarkDisableTextDirective from "./remark-disable-text-directive.ts";
 import remarkGfm from "remark-gfm";
 import remarkLinkResolve from "./remark-link-resolve.ts";
-import remarkParse from "./remark-parse.ts";
+import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkTabs from "./remark-tabs.ts";
 import transformerLineNumbers from "./shiki-transformer-line-numbers.ts";
@@ -58,7 +59,14 @@ export async function render(source: string, opts: Options): Promise<Output> {
     toc: [],
     frontmatter: {},
   };
-  const file = await unified()
+  const file = new VFile({
+    cwd: opts.root,
+    path: opts.filename,
+    value: source,
+    data,
+  });
+  matter(file, { strip: true });
+  await unified()
     .use(remarkParse)
     .use(remarkLinkResolve, opts.linkResolves)
     .use(remarkGfm)
@@ -102,14 +110,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
     .use(rehypeStringify, {
       allowDangerousHtml: true,
     })
-    .process(
-      new VFile({
-        cwd: opts.root,
-        path: opts.filename,
-        value: source,
-        data,
-      }),
-    );
+    .process(file);
   return {
     svelteComponents: data.svelteComponents,
     title: data.title,
