@@ -14,7 +14,9 @@
   --content-border-color: #d8e8eb;
   --nav-indent-guide-color: #afc6ca;
   --shiki-indent-offset: 10px;
+  --shiki-indent-guide-color: #0000000e;
   --shiki-diff-remove-bg-color: #db0a0a41;
   --shiki-diff-add-bg-color: #20c55150;
-  --shiki-highlighted-bg-color: #00000024;
+  --shiki-highlighted-bg-color: #ffffffc6;
+  --shiki-title-border-color: #0000001a;
 }

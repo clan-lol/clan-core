@@ -1,7 +1,6 @@
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
   overflow: auto;
-  padding: 14px 20px;
   margin: 0 -14px;
   background-color: var(--shiki-light-bg);
   font-size: 16px;
@@ -10,11 +9,17 @@
     "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
+  .title {
+    padding: 10px 20px;
+    border-block-end: 1px solid var(--shiki-title-border-color);
+  }
+
   code {
     display: flex;
     flex-direction: column;
     inline-size: fit-content;
     min-inline-size: 100%;
+    padding-block: 14px;
   }
 
   span {
@@ -38,13 +43,13 @@
       position: absolute;
       inline-size: 1px;
       block-size: 100%;
-      background-color: currentcolor;
-      opacity: 0.1;
+      background-color: var(--shiki-indent-guide-color);
     }
   }
 
   .line {
     display: flex;
+    padding-inline: 20px;
 
     &.diff {
       &.remove {
@@ -66,14 +71,14 @@
   }
 
   &.line-numbers {
-    padding-inline: 0;
-
     code {
       counter-increment: step 0;
       counter-reset: step;
     }
 
     .line {
+      padding-inline-start: 0;
+
       &::before {
         content: counter(step);
         position: sticky;

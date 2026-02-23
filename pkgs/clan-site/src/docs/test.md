@@ -1,12 +1,12 @@
 # Test
 
-## Generic code
+## Code
 
 ```
 nix run abc
 ```
 
-## Language code
+## Code for a language
 
 ```js
 const abc = 1 + "2";
@@ -15,9 +15,7 @@ const abc = 1 + "2";
 const abc = 1 + "2";
 ```
 
-## `choices.<name>.foo`
-
-## Step Bar
+## Code Highlighting
 
 ```nix {1,18-21}
 inventory.instances = {
@@ -46,6 +44,16 @@ inventory.instances = {
   };
 };
 ```
+
+## Code Title
+```nix [nixos.nix] {2}
+{
+  foo = "bar";
+  bar = "foo";
+}
+```
+
+## Title with inline code `choices.<name>.foo`
 
 ## Step Foo
 

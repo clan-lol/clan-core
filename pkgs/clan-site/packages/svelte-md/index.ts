@@ -20,6 +20,7 @@ import {
   transformerNotationHighlight,
   transformerRenderIndentGuides,
 } from "@shikijs/transformers";
+import transformerMetaTitle from "./shiki-transformer-meta-title.ts";
 import { unified } from "unified";
 import { VFile } from "vfile";
 
@@ -102,6 +103,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
         transformerNotationHighlight(),
         transformerRenderIndentGuides(),
         transformerMetaHighlight(),
+        transformerMetaTitle(),
         transformerLineNumbers({
           minLines: opts.minLineNumberLines,
         }),
