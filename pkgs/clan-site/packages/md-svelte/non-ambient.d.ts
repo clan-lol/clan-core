@@ -1,5 +1,3 @@
-import type { Extension as FromMarkdownExtension } from "mdast-util-from-markdown";
-import type { Extension as MicromarkExtensions } from "micromark-extension-gfm";
 import type { TocItem } from "./index.ts";
 
 declare module "vfile" {
@@ -8,18 +6,6 @@ declare module "vfile" {
     title: string;
     toc: readonly TocItem[];
     svelteComponents: Set<string>;
-  }
-}
-
-declare module "unified" {
-  interface Data {
-    micromarkExtensions?: MicromarkExtensions[];
-    fromMarkdownExtensions?: FromMarkdownExtension[];
-  }
-}
-declare module "mdast-util-from-markdown" {
-  interface Options {
-    readonly extensions: MicromarkExtensions[];
   }
 }
 
