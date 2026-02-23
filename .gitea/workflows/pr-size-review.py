@@ -1,12 +1,23 @@
 """Check that large PRs (>500 lines added) have at least 2 approving reviews."""
 
 import json
+import math
 import os
 import sys
 import urllib.request
 
 MAX_ADDITIONS_SINGLE_REVIEW = 500
 MIN_APPROVALS_LARGE_PR = 1
+
+LOCK_FILE_PATTERNS = (
+    ".lock",
+    "-lock.json",
+)
+
+
+def is_lock_file(filename: str) -> bool:
+    basename = filename.rsplit("/", 1)[-1]
+    return any(basename.endswith(pat) for pat in LOCK_FILE_PATTERNS)
 
 
 def api_get(url: str, token: str) -> object:
@@ -30,10 +41,38 @@ def main() -> None:
     if not isinstance(pr_data, dict):
         print("Error: unexpected API response for PR data", file=sys.stderr)
         sys.exit(1)
-    additions: int = pr_data["additions"]
+    total_additions: int = pr_data["additions"]
     pr_author: str = pr_data["user"]["login"]
 
-    print(f"PR #{pr_number}: +{additions} lines added")
+    # Get per-file stats to exclude lock files
+    changed_files: int = pr_data["changed_files"]
+    page_size = 50
+    num_pages = math.ceil(changed_files / page_size)
+    lock_additions = 0
+    for page in range(1, num_pages + 1):
+        files = api_get(
+            f"{api_url}/repos/{repo}/pulls/{pr_number}/files?limit={page_size}&page={page}",
+            token,
+        )
+        if not isinstance(files, list):
+            print("Error: unexpected API response for PR files", file=sys.stderr)
+            sys.exit(1)
+        for f in files:
+            if is_lock_file(f["filename"]):
+                lock_additions += f.get("additions", 0)
+                print(
+                    f"  Ignoring lock file: {f['filename']} (+{f.get('additions', 0)})"
+                )
+
+    additions: int = total_additions - lock_additions
+
+    if lock_additions:
+        print(
+            f"PR #{pr_number}: +{total_additions} total, "
+            f"+{lock_additions} in lock files, +{additions} counted"
+        )
+    else:
+        print(f"PR #{pr_number}: +{additions} lines added")
 
     if additions <= MAX_ADDITIONS_SINGLE_REVIEW:
         print(
