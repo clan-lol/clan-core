@@ -59,6 +59,7 @@ await Promise.all([
 
 async function loadOutput(filename: string): Promise<Output> {
   let source = await readFile(filename, { encoding: "utf8" });
+  source = source.replaceAll("```shellSession", "```console");
   source = source.replaceAll("'/dev/sd<X>'", "`/dev/sd<X>`");
   source = source.replaceAll(
     /<div\sclass="grid cards"\smarkdown>(?<md>.+?)<\/div>/gs,
