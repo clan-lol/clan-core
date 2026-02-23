@@ -90,6 +90,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
     .use(rehypeShiki, {
       defaultColor: false,
       defaultLanguage: "text",
+      tabindex: false,
       themes: {
         light: opts.codeLightTheme,
         dark: opts.codeDarkTheme,
