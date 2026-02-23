@@ -21,13 +21,13 @@
   },
   "devDependencies": {
     "@clan/coding-standard-svelte": "^0.0.1",
-    "@clan/md-svelte": "^0.0.1",
+    "@clan/svelte-md": "^0.0.1",
     "@clan/vite-plugin-pagefind": "^0.0.1",
     "@csstools/postcss-global-data": "^4.0.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@poppanator/sveltekit-svg": "^6.0.1",
     "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.50.2",
+    "@sveltejs/kit": "^2.53.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^25.1.0",
     "cssnano": "^7.1.2",
@@ -43,5 +43,11 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-value": "^0.0.1"
+  },
+  "overrides": {
+    "@sveltejs/kit": {
+      "cookie": "^0.7.0"
+    },
+    "minimatch": "^10.2.1"
   }
 }

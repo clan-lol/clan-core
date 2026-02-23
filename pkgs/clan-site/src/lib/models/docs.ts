@@ -1,5 +1,5 @@
 import type { DocsPath } from "$config";
-import type { TocItem } from "@clan/md-svelte";
+import type { TocItem } from "@clan/svelte-md";
 import config from "$config";
 
 export type NavPath = readonly number[];

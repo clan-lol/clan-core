@@ -1,5 +1,5 @@
 import type { Article, NavItem } from "../src/lib/models/docs.ts";
-import type { Output } from "@clan/md-svelte";
+import type { Output } from "@clan/svelte-md";
 import {
   asyncMapObjectKeyValues,
   asyncMapObjectValues,
@@ -9,7 +9,7 @@ import config from "../clan-site.config.ts";
 import { findNavSiblings, getNavItems, getNavPath } from "./nav.ts";
 import { mkdir, opendir, readFile, writeFile } from "node:fs/promises";
 import pathutil from "node:path";
-import { render } from "@clan/md-svelte";
+import { render } from "@clan/svelte-md";
 
 const componentsSpecifierPrefix = "$lib/components";
 const srcDir = "src/docs";
