@@ -8,7 +8,7 @@ const rehypeEscapeCode: Plugin<[], Root> = function () {
       if (!parent || index === undefined) {
         return;
       }
-      if (/[{}<>]/.test(text.value)) {
+      if (/[{}]/.test(text.value)) {
         const value = text.value
           .replaceAll("<", "&lt;")
           .replaceAll(">", "&gt;")
