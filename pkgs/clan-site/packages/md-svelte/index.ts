@@ -6,6 +6,7 @@ import rehypeStringify from "rehype-stringify";
 import rehypeToc from "./rehype-toc.ts";
 import remarkAdmonition from "./remark-admonition.ts";
 import remarkDirective from "remark-directive";
+import remarkDisableTextDirective from "./remark-disable-text-directive.ts";
 import remarkGfm from "remark-gfm";
 import remarkLinkResolve from "./remark-link-resolve.ts";
 import remarkParse from "./remark-parse.ts";
@@ -62,6 +63,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
     .use(remarkLinkResolve, opts.linkResolves)
     .use(remarkGfm)
     .use(remarkDirective)
+    .use(remarkDisableTextDirective)
     .use(remarkAdmonition)
     .use(remarkTabs)
     .use(remarkRehype, {

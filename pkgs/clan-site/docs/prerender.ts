@@ -61,35 +61,9 @@ async function loadOutput(filename: string): Promise<Output> {
   let source = await readFile(filename, { encoding: "utf8" });
   source = source.replaceAll("'/dev/sd<X>'", "`/dev/sd<X>`");
   source = source.replaceAll(
-    "(e.g. github:org/repo)",
-    "(e.g. `github:org/repo`)",
-  );
-  source = source.replaceAll(
-    "(e.g. github:org/repo)",
-    "(e.g. `github:org/repo`)",
-  );
-  source = source.replaceAll(
-    /(?<prefix>(?:of|like)\s)(?<code>user@host:\d+)/g,
-    "$prefix`$code`",
-  );
-  source = source.replaceAll(
-    "i.e @alice:example.com",
-    "i.e `@alice:example.com`",
-  );
-  source = source.replaceAll(
     /<div\sclass="grid cards"\smarkdown>(?<md>.+?)<\/div>/gs,
     "$1",
   );
-
-  source = source
-    .replaceAll(
-      "format: user@host:port?SSH_OPTION=SSH_VALUE&SSH_OPTION_2=VALUE_2",
-      "format: `user@host:port?SSH_OPTION=SSH_VALUE&SSH_OPTION_2=VALUE_2`",
-    )
-    .replaceAll(
-      "format: user@host:port?SSH_OPTION=SSH_VALUE[&SSH_OPTION_2=VALUE_2]",
-      "format: `user@host:port?SSH_OPTION=SSH_VALUE[&SSH_OPTION_2=VALUE_2]`",
-    );
   source = replaceCodeLang(source);
   source = replaceButtonSyntax(source);
   const output = await render(source, {
