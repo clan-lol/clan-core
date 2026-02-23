@@ -1,5 +1,7 @@
 # Getting Started: Physical Machine Target
 
+## 🚧 Draft — Under Active Development (but ready for brief review)
+
 !!! Note Prerequisites
     Your setup machine needs the following:
 
@@ -216,7 +218,7 @@ replacing <IP-ADDRESS> with the IP address of your system
 You will be asked to enter "y" to proceed.
 
 
-## 9. Prepare a disk
+## 9. Add a disk configuration
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
@@ -315,9 +317,9 @@ clan machines update test-machine
 Now ssh into the machine, and they should be present:
 
 ```
-# which bat
-# which btop
-# which tldr
+which bat
+which btop
+which tldr
 ```
 
 Each will show a path to the binary file:
@@ -342,7 +344,7 @@ clan machines update my-machine
 Now when you check which `tldr`, it should show that it's not in the path:
 
 ```
-# which tldr
+which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
