@@ -1,5 +1,6 @@
 import contextlib
 import os
+import shlex
 import shutil
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -163,6 +164,61 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
             "--gid", "1000",
             "--",
             str(real_bash_path), "-c", generator,
+        ],
+    )
+    # fmt: on
+
+
+def bubblewrap_wrap_cmd(
+    cmd: list[str],
+    *,
+    ro_binds: list[tuple[str, str]] | None = None,
+    rw_binds: list[tuple[str, str]] | None = None,
+) -> list[str]:
+    """Wrap an arbitrary command in a bubblewrap sandbox.
+
+    Args:
+        cmd: The command to run inside the sandbox.
+        ro_binds: Additional read-only bind mounts as (src, dest) pairs.
+        rw_binds: Additional read-write bind mounts as (src, dest) pairs.
+
+    Returns:
+        The command list prefixed with bwrap arguments, provided via nix_shell.
+
+    """
+    test_store = nix_test_store()
+
+    real_bash_path = Path("bash")
+    if os.environ.get("IN_NIX_SANDBOX"):
+        bash_executable_path = Path(str(shutil.which("bash")))
+        real_bash_path = bash_executable_path.resolve()
+
+    extra_args: list[str] = []
+    for src, dest in ro_binds or []:
+        extra_args += ["--ro-bind", src, dest]
+    for src, dest in rw_binds or []:
+        extra_args += ["--bind", src, dest]
+
+    sandbox_tmp = Path("/tmp")  # noqa: S108 -- bwrap mount target, not host tmpdir
+
+    # fmt: off
+    return nix_shell(
+        ["bash", "bubblewrap"],
+        [
+            "bwrap",
+            "--unshare-all",
+            "--tmpfs",  "/",
+            "--ro-bind", "/nix/store", "/nix/store",
+            "--ro-bind", "/bin/sh", "/bin/sh",
+            *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
+            "--dev", "/dev",
+            "--bind", "/proc", "/proc",
+            "--tmpfs", str(sandbox_tmp),
+            "--uid", "1000",
+            "--gid", "1000",
+            *extra_args,
+            "--",
+            str(real_bash_path), "-c", shlex.join(cmd),
         ],
     )
     # fmt: on
