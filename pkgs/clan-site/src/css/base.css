@@ -85,3 +85,17 @@ li {
     margin-block: 0.5em;
   }
 }
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 6px 13px;
+  border: 1px solid var(--table-border-color);
+}
+
+tr:nth-child(2n) {
+  background-color: var(--table-alternative-bg-color);
+}
