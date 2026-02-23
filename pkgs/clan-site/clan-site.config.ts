@@ -157,7 +157,6 @@ const config = {
           ],
         },
         "reference/clanLib",
-        "api",
         {
           label: "Decisions",
           children: [
