@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AdmonitionType } from "@clan.lol/svelte-md";
   import type { Snippet } from "svelte";
+  import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
   import DangerIcon from "$lib/assets/icons/warning-filled.svg?component";
   import ImportantIcon from "$lib/assets/icons/attention.svg?component";
   import NoteIcon from "$lib/assets/icons/info.svg?component";
@@ -16,10 +17,12 @@
   const {
     type,
     title = defaultTitle[type],
+    collapsed,
     children,
   }: {
     type: AdmonitionType;
     title?: string;
+    collapsed?: boolean;
     children: Snippet;
   } = $props();
 
@@ -33,20 +36,33 @@
   );
 </script>
 
-<dl
-  class:is-note={type === "note"}
-  class:is-important={type === "important"}
-  class:is-danger={type === "danger"}
-  class:is-tip={type === "tip"}
->
-  <dt>
-    <Icon height="18" />{title}
-  </dt>
-  <dd>{@render children()}</dd>
-</dl>
+{#if collapsed}
+  <details
+    class:is-note={type === "note"}
+    class:is-important={type === "important"}
+    class:is-danger={type === "danger"}
+    class:is-tip={type === "tip"}
+  >
+    <summary
+      ><Icon height="18" />{title}<ChevronRightIcon height="18" /></summary
+    >
+    <div>{@render children()}</div>
+  </details>
+{:else}
+  <dl
+    class:is-note={type === "note"}
+    class:is-important={type === "important"}
+    class:is-danger={type === "danger"}
+    class:is-tip={type === "tip"}
+  >
+    <dt><Icon height="18" />{title}</dt>
+    <dd>{@render children()}</dd>
+  </dl>
+{/if}
 
 <style>
-  dl {
+  dl,
+  details {
     padding: 1rem;
     margin: 1rem 0;
     border-inline-start: 4px solid;
@@ -72,7 +88,8 @@
     }
   }
 
-  dt {
+  dt,
+  summary {
     display: flex;
     gap: 0.5rem;
     justify-content: start;
@@ -94,6 +111,20 @@
 
     .is-tip > & {
       color: #065f46;
+    }
+  }
+
+  summary {
+    position: relative;
+
+    :global(svg:last-child) {
+      position: absolute;
+      inset-inline-end: 0;
+      transition: 200ms;
+    }
+
+    details[open] & :global(svg:last-child) {
+      transform: rotate(90deg);
     }
   }
 </style>

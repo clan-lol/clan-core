@@ -60,8 +60,6 @@ inventory.instances = {
 Miscellaneous Symbols
 ☀ ☁ ☂ ☃ ☄ ★ ☆ ☇ ☈ ☉ ☊ ☋ ☌ ☍ ☎ ☏ ☐ ☑ ☒ ☓ ☚ ☛ ☜ ☝ ☞ ☟ ☠ ☡ ☢ ☣ ☤ ☥ ☦ ☧ ☨ ☩ ☪ ☫ ☬ ☭ ☮ ☯ ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷ ☸ ☹ ☺ ☻ ☼ ☽ ☾ ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆ ♇ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♔ ♕ ♖ ♗ ♘ ♙ ♚ ♛ ♜ ♝ ♞ ♟ ♠ ♡ ♢ ♣ ♤ ♥ ♦ ♧ ♨ ♩ ♪ ♫ ♬ ♭ ♮ ♯
 
-## Step Bar
-
 ↑
 Duplicate heading, should still be linked
 
@@ -71,12 +69,15 @@ This is a divider
 
 ---
 
+## Admonition
+
 :::admonition[Note about nature]
 
 Respect the nature of things
 
 :::
 
+## Nested Admonition
 ::::admonition[Its important]{type=important}
 
 Follow this and your life will be happy
@@ -99,7 +100,8 @@ erase = false;
 
 :::
 
-:::admonition[Outsmart]{type=tip}
+## Collapsible Admonition
+:::admonition[Outsmart]{type=tip collapsed}
 
 Lets be really clever
 
