@@ -12,6 +12,7 @@ MIN_APPROVALS_LARGE_PR = 1
 LOCK_FILE_PATTERNS = (
     ".lock",
     "-lock.json",
+    "-lock.yaml",
 )
 
 
