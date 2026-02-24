@@ -17,6 +17,7 @@ mkShellNoCC {
       text = builtins.readFile ./clan-site.sh;
     })
   ];
+  env = clan-site.devShellEnv;
   shellHook = ''
     ${clan-site.preBuild}
     chmod -R +w src/docs src/lib/assets

@@ -19,19 +19,6 @@
   });
 </script>
 
-<svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin="anonymous"
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wdth,wght@0,100..112.5,200..900;1,100..112.5,200..900&display=swap"
-    rel="stylesheet"
-  />
-</svelte:head>
-
 <div data-page-id="docs">
   <header>
     <div class="logo"><ClanLogo height="22" /> Docs</div>

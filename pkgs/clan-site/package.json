@@ -11,12 +11,12 @@
   },
   "engineStrict": true,
   "scripts": {
-    "predev": "npm run prepare && MODE=development vite build --mode development --configLoader native",
+    "predev": "node docs/prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
     "dev": "MODE=development vite dev --configLoader native --strictPort",
+    "prebuild": "node docs/prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
     "preview": "http-server ./build --port 4173",
-    "prepare": "node docs/prerender.ts && svelte-kit sync",
-    "prelint": "svelte-kit sync",
+    "prelint": "node docs/prerender.ts && svelte-kit sync",
     "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
   },
   "devDependencies": {
