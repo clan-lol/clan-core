@@ -1,6 +1,6 @@
 import cssnano from "cssnano";
 import { defineConfig } from "vite";
-import pagefind from "@clan/vite-plugin-pagefind";
+import pagefind from "@clan.lol/vite-plugin-pagefind";
 import postcssGlobalData from "@csstools/postcss-global-data";
 import postcssPresetEnv from "postcss-preset-env";
 import siteConfig from "./clan-site.config.ts";

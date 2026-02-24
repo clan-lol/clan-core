@@ -20,9 +20,9 @@
     "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
   },
   "devDependencies": {
-    "@clan/coding-standard-svelte": "^0.0.1",
-    "@clan/svelte-md": "^0.0.1",
-    "@clan/vite-plugin-pagefind": "^0.0.1",
+    "@clan.lol/coding-standard-svelte": "workspace:*",
+    "@clan.lol/svelte-md": "workspace:*",
+    "@clan.lol/vite-plugin-pagefind": "workspace:*",
     "@csstools/postcss-global-data": "^4.0.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@poppanator/sveltekit-svg": "^6.0.1",
@@ -42,7 +42,7 @@
     "svelte-check": "^4.3.5",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-value": "^0.0.1"
+    "vite-plugin-value": "workspace:*"
   },
   "overrides": {
     "@sveltejs/kit": {

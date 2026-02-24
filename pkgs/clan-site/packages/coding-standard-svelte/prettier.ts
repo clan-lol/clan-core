@@ -1,6 +1,7 @@
 import type { Config } from "prettier";
+import svelte from "prettier-plugin-svelte";
 
 export default {
-  plugins: ["prettier-plugin-svelte"],
+  plugins: [svelte],
   overrides: [{ files: "*.svelte", options: { parser: "svelte" } }],
 } satisfies Config;

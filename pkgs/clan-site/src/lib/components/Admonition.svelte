@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AdmonitionType } from "@clan/svelte-md";
+  import type { AdmonitionType } from "@clan.lol/svelte-md";
   import type { Snippet } from "svelte";
   import DangerIcon from "$lib/assets/icons/warning-filled.svg?component";
   import ImportantIcon from "$lib/assets/icons/attention.svg?component";

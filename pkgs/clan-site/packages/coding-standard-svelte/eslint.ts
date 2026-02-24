@@ -1,7 +1,7 @@
 import type { defineConfig } from "eslint/config";
 import type { SvelteConfig } from "@sveltejs/vite-plugin-svelte";
 import type { Config as SvelteKitConfig } from "@sveltejs/kit";
-import * as standard from "@clan/coding-standard/eslint";
+import * as standard from "@clan.lol/coding-standard/eslint";
 import svelte from "eslint-plugin-svelte";
 import ts from "typescript-eslint";
 

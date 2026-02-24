@@ -1,7 +1,9 @@
 import type { Config } from "stylelint";
 
+export * from "@clan.lol/coding-standard/stylelint";
+
 export default {
-  extends: ["@clan/coding-standard/stylelint"],
+  extends: ["@clan.lol/coding-standard/stylelint"],
   ignoreFiles: [".svelte-kit/**"],
   overrides: [
     {
