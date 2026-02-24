@@ -29,12 +29,12 @@ dev)
 	done
 
 	if [[ ! -e node_modules ]]; then
-		npm install
+		pnpm install
 	fi
 	if [[ -n $browser ]]; then
 		set -- --open
 	fi
-	npm run dev -- "$@"
+	pnpm run dev -- "$@"
 	;;
 build)
 	shift
@@ -66,20 +66,20 @@ build)
 	done
 
 	if [[ ! -e node_modules ]]; then
-		npm install
+		pnpm install
 	fi
-	npm run build
+	pnpm run build
 	if [[ -n $serve ]]; then
 		if [[ -n $browser ]]; then
 			set -- -o
 		fi
-		npm run preview -- "$@"
+		pnpm run preview -- "$@"
 	fi
 	;;
 lint)
 	if [[ ! -e node_modules ]]; then
-		npm install
+		pnpm install
 	fi
-	npm run lint
+	pnpm run lint
 	;;
 esac
