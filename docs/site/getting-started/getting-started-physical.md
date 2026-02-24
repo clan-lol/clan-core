@@ -1,6 +1,6 @@
 # Getting Started: Physical Machine Target
 
-## 🚧 Draft — Under Active Development (but ready for brief review)
+## 🚧 First Draft — Ready for Review
 
 !!! Note Prerequisites
     Your setup machine needs the following:
@@ -10,7 +10,6 @@
 * An **id_ed25519** keypair on your Setup Machine. [Click here](./id_ed25519.md) to find it or, if necessary, create it.
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
-
 
 ## Terminology
 
