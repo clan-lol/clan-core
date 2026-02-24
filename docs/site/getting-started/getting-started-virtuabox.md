@@ -1,6 +1,6 @@
 # Getting Started: VirtualBox Edition
 
-## 🚧 Draft — Under Active Development (but ready for brief review)
+## 🚧 First Draft — Ready for Review
 
 !!! Note Prerequisites
     Your setup machine needs the following:
