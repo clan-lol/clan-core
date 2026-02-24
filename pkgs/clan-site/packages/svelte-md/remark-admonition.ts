@@ -14,7 +14,6 @@ const remarkAdmonition: Plugin<[], Root> = function () {
       if (node.type !== "containerDirective" || node.name !== "admonition") {
         return;
       }
-
       let type = node.attributes?.["type"];
       if (typeof type === "string") {
         if (!type) {
@@ -43,10 +42,14 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         node.children.shift();
       }
 
+      const collapsed = node.attributes
+        ? "collapsed" in node.attributes
+        : false;
+
       node.children = [
         {
           type: "html",
-          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(type)}` : ""}>`,
+          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(type)}` : ""}${collapsed ? " collapsed" : ""}>`,
         },
         ...node.children,
         {
