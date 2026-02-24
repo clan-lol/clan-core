@@ -1,45 +1,37 @@
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
-  padding: 14px 20px;
+  overflow: auto;
   margin: 0 -14px;
   background-color: var(--shiki-light-bg);
   font-size: 16px;
+  font-family:
+    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+    "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
-  &,
-  & span {
+  .title {
+    padding: 10px 20px;
+    border-block-end: 1px solid var(--shiki-title-border-color);
+  }
+
+  code {
+    display: flex;
+    flex-direction: column;
+    inline-size: fit-content;
+    min-inline-size: 100%;
+    padding-block: 14px;
+  }
+
+  span {
     color: var(--shiki-light);
     font-weight: var(--shiki-light-font-weight);
     font-style: var(--shiki-light-font-style);
     text-decoration: var(--shiki-light-text-decoration);
   }
 
-  &.line-numbers {
-    padding-inline: 0 20px;
-
-    code {
-      counter-increment: step 0;
-      counter-reset: step;
-    }
-
-    .line::before {
-      content: counter(step);
-      position: sticky;
-      inset-inline-start: 0;
-      z-index: 1;
-      display: inline-block;
-      inline-size: 1em;
-      color: rgb(115 138 148 / 40%);
-      background-color: var(--shiki-light-bg);
-      counter-increment: step;
-      text-align: end;
-    }
-  }
-
   .indent {
     position: relative;
     inset-inline-start: var(--indent-offset);
-    display: inline-block;
 
     &:empty {
       vertical-align: bottom;
@@ -51,33 +43,56 @@
       position: absolute;
       inline-size: 1px;
       block-size: 100%;
-      background-color: currentcolor;
-      opacity: 0.15;
+      background-color: var(--shiki-indent-guide-color);
     }
   }
 
   .line {
-    padding-inline-start: 0;
-
-    &::before {
-      box-sizing: content-box;
-      inline-size: 1.3em;
-      /* padding-inline: 14px; */
-      padding-inline: 14px;
-    }
+    display: flex;
+    padding-inline: 20px;
 
     &.diff {
       &.remove {
         background-color: var(--shiki-diff-remove-bg-color);
+
+        span {
+          color: #00000050;
+        }
       }
 
-      .add {
+      &.add {
         background-color: var(--shiki-diff-add-bg-color);
       }
     }
 
     &.highlighted {
       background-color: var(--shiki-highlighted-bg-color);
+    }
+  }
+
+  &.line-numbers {
+    code {
+      counter-increment: step 0;
+      counter-reset: step;
+    }
+
+    .line {
+      padding-inline-start: 0;
+
+      &::before {
+        content: counter(step);
+        position: sticky;
+        inset-inline-start: 0;
+        z-index: 1;
+        flex: none;
+        box-sizing: content-box;
+        inline-size: 2em;
+        padding-inline-end: 10px;
+        color: rgb(115 138 148 / 40%);
+        background-color: var(--shiki-light-bg);
+        counter-increment: step;
+        text-align: end;
+      }
     }
   }
 

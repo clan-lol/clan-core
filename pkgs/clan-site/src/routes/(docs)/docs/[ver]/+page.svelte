@@ -1,33 +1,30 @@
-<script module lang="ts">
-  export const title = "What is Clan?";
-</script>
-
 <script lang="ts">
-  import config from "$config";
   import heroImage from "$lib/assets/docs-hero.jpg";
   import IconCode from "$lib/assets/icons/code.svg?component";
   import IconFlash from "$lib/assets/icons/flash.svg?component";
   import { resolve } from "$app/paths";
+  import { toDocsPath } from "$lib/models/docs.ts";
+
+  const { data } = $props();
+  // This value is extract from the content of h1 below
+  const title = $derived(data.title);
 </script>
 
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
+
 <hgroup>
-  <h1>{title}</h1>
+  <h1>Sovereign Infrastructure by Design</h1>
   <h2>Clan is a declarative framework for reliable, self-hosted computing</h2>
 </hgroup>
 
-<img
-  class="hero"
-  src={heroImage}
-  width="640"
-  height="360"
-  alt="Documentation Hero"
-/>
+<img class="hero" src={heroImage} width="640" height="360" alt="Hero" />
 <div class="actions">
   <a
     class="button primary"
-    href={resolve(
-      `${config.docsBase}/getting-started/creating-your-first-clan`,
-    )}><IconFlash width="16" />Get Started</a
+    href={resolve(toDocsPath("getting-started/creating-your-first-clan"))}
+    ><IconFlash width="16" />Get Started</a
   >
   <a class="button" href="https://git.clan.lol/clan/clan-core" rel="external"
     ><IconCode width="16" />View on Gitea</a
@@ -62,15 +59,15 @@
   <h2>Guides</h2>
 
   <dl>
-    <a href={resolve(`${config.docsBase}/guides/inventory/inventory`)}>
+    <a href={resolve(toDocsPath("guides/inventory/inventory"))}>
       <dt>Inventory</dt>
       <dd><span>Learn how about inventory</span></dd>
     </a>
-    <a href={resolve(`${config.docsBase}/guides/vars/vars-overview`)}>
+    <a href={resolve(toDocsPath("guides/vars/vars-overview"))}>
       <dt>Vars</dt>
       <dd><span>Learn how to use vars</span></dd>
     </a>
-    <a href={resolve(`${config.docsBase}/guides/macos`)}>
+    <a href={resolve(toDocsPath("guides/macos"))}>
       <dt>macOS</dt>
       <dd><span>Using Clan to manage your macOS machines</span></dd>
     </a>
@@ -80,15 +77,15 @@
 <section>
   <h2>Reference</h2>
   <dl>
-    <a href={resolve(`${config.docsBase}/reference/cli`)}>
+    <a href={resolve(toDocsPath("reference/cli"))}>
       <dt>CLI</dt>
       <dd><span>command line interface</span></dd>
     </a>
-    <a href={resolve(`${config.docsBase}/reference/options/clan`)}>
+    <a href={resolve(toDocsPath("reference/options/clan"))}>
       <dt>Clan Options</dt>
       <dd><span>Search all options</span></dd>
     </a>
-    <a href={resolve(`${config.docsBase}/services/definition`)}>
+    <a href={resolve(toDocsPath("services/definition"))}>
       <dt>Services</dt>
       <dd><span>Discover services</span></dd>
     </a>

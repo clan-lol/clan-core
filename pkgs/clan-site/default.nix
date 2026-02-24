@@ -32,6 +32,9 @@ buildNpmPackage (finalAttrs: {
           npmDeps
           npmConfigHook
           ;
+        preBuild = finalAttrs.preBuild + ''
+          npm run prepare
+        '';
         npmBuildScript = "lint";
       };
     };

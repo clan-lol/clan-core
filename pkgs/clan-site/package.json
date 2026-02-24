@@ -7,31 +7,33 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 22.16.0"
   },
   "engineStrict": true,
   "scripts": {
-    "dev": "MODE=development vite build --mode development --configLoader native && MODE=development vite dev --configLoader native --strictPort",
+    "predev": "npm run prepare && MODE=development vite build --mode development --configLoader native",
+    "dev": "MODE=development vite dev --configLoader native --strictPort",
     "build": "MODE=production vite build --configLoader native",
     "preview": "http-server ./build --port 4173",
-    "prepare": "svelte-kit sync || echo ''",
+    "prepare": "node docs/prerender.ts && svelte-kit sync",
     "prelint": "svelte-kit sync",
-    "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte'"
+    "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
   },
   "devDependencies": {
     "@clan/coding-standard-svelte": "^0.0.1",
-    "@clan/vite-plugin-markdown": "^0.0.1",
+    "@clan/svelte-md": "^0.0.1",
     "@clan/vite-plugin-pagefind": "^0.0.1",
     "@csstools/postcss-global-data": "^4.0.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@poppanator/sveltekit-svg": "^6.0.1",
     "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.50.2",
+    "@sveltejs/kit": "^2.53.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^25.1.0",
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
     "http-server": "^14.1.1",
+    "modern-normalize": "^3.0.1",
     "postcss": "^8.5.6",
     "postcss-preset-env": "^11.1.1",
     "prettier": "^3.8.1",
@@ -42,7 +44,10 @@
     "vite": "^7.3.1",
     "vite-plugin-value": "^0.0.1"
   },
-  "dependencies": {
-    "modern-normalize": "^3.0.1"
+  "overrides": {
+    "@sveltejs/kit": {
+      "cookie": "^0.7.0"
+    },
+    "minimatch": "^10.2.1"
   }
 }

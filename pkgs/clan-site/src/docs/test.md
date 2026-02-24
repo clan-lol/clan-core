@@ -1,15 +1,13 @@
----
-a: 1
-b: 2
----
+# Test
 
+## Code
 
-## Generic code
 ```
 nix run abc
 ```
 
-## Language code
+## Code for a language
+
 ```js
 const abc = 1 + "2";
 const abc = 1 + "2";
@@ -17,9 +15,7 @@ const abc = 1 + "2";
 const abc = 1 + "2";
 ```
 
-## `choices.<name>.foo`
-
-## Step Bar
+## Code Highlighting
 
 ```nix {1,18-21}
 inventory.instances = {
@@ -49,6 +45,16 @@ inventory.instances = {
 };
 ```
 
+## Code Title
+```nix [nixos.nix] {2}
+{
+  foo = "bar";
+  bar = "foo";
+}
+```
+
+## Title with inline code `choices.<name>.foo`
+
 ## Step Foo
 
 Miscellaneous Symbols
@@ -65,17 +71,17 @@ This is a divider
 
 ---
 
-:::note[Note about nature]
+:::admonition[Note about nature]
 
 Respect the nature of things
 
 :::
 
-::::important[Its important]
+::::admonition[Its important]{type=important}
 
 Follow this and your life will be happy
 
-:::note
+:::admonition{type=note}
 nested note probably a bad idea
 
 but technically valid
@@ -83,7 +89,7 @@ but technically valid
 
 ::::
 
-:::danger[Attention Footgun]
+:::admonition[Attention Footgun]{type=danger}
 
 Please don't erase your disk
 
@@ -93,7 +99,7 @@ erase = false;
 
 :::
 
-:::tip[Outsmart]
+:::admonition[Outsmart]{type=tip}
 
 Lets be really clever
 

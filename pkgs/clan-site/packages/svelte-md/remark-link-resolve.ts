@@ -29,10 +29,7 @@ const remarkLinkResolve: Plugin<[Record<string, `/${string}`>], Root> =
   function (replacements) {
     return async (tree, file) => {
       const nodes: (Definition | Link)[] = [];
-      visit(tree, ["link", "definition"], (node) => {
-        if (node.type !== "link" && node.type !== "definition") {
-          return;
-        }
+      visit(tree, ["link", "definition"] as const, (node) => {
         // Skip external or absolute links
         if (!node.url || /^\/|^(?:https?:)?\/\/|^mailto:|^#/v.test(node.url)) {
           return;
@@ -80,7 +77,7 @@ const remarkLinkResolve: Plugin<[Record<string, `/${string}`>], Root> =
         for (const [dir, replacement] of Object.entries(replacements)) {
           if (relative.startsWith(`${dir}/`)) {
             const url = relative.slice(dir.length + 1, -".md".length);
-            node.url = `${replacement}/${url}`;
+            node.url = `${replacement}/${url}`.replace(/\/index$/, "");
           }
         }
       }

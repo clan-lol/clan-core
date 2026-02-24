@@ -1,5 +1,4 @@
 import type { ShikiTransformer } from "shiki";
-import { addClassToHast } from "shiki";
 
 export default function transformerLineNumbers({
   minLines,
@@ -7,9 +6,9 @@ export default function transformerLineNumbers({
   readonly minLines: number;
 }): ShikiTransformer {
   return {
-    pre(pre): void {
+    pre(pre) {
       const [code] = pre.children;
-      if (!code || !("children" in code)) {
+      if (code?.type !== "element" || code.tagName !== "code") {
         return;
       }
       let lines = 0;
@@ -21,7 +20,7 @@ export default function transformerLineNumbers({
       if (lines < minLines) {
         return;
       }
-      addClassToHast(pre, "line-numbers");
+      this.addClassToHast(pre, "line-numbers");
     },
   };
 }

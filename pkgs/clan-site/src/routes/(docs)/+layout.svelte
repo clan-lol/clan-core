@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { NavPath } from "$lib/models/docs.ts";
   import ClanLogo from "$lib/assets/icons/clan-logo.svg?component";
   import MenuIcon from "$lib/assets/icons/menu.svg?component";
   import Nav from "~/lib/components/Nav.svelte";
@@ -8,8 +9,8 @@
   import SearchIcon from "$lib/assets/icons/search.svg?component";
 
   const { data, children } = $props();
-  const navItems = $derived(data.docsNavItems);
-  const article = $derived(page.data.docsArticle);
+  const navItems = $derived(data.navItems);
+  const navPath = $derived(page.data["navPath"]) as NavPath;
 
   let headerMode: "search" | "nav" | undefined = $state();
   onNavigate(() => {
@@ -19,7 +20,6 @@
 </script>
 
 <svelte:head>
-  <title>{article?.title || "Clan Docs"}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     rel="preconnect"
@@ -55,11 +55,7 @@
   <main>
     <aside>
       <Search />
-      <Nav
-        {navItems}
-        isVisible={headerMode === "nav"}
-        navPath={article?.navPath ?? []}
-      />
+      <Nav {navItems} isVisible={headerMode === "nav"} {navPath} />
     </aside>
     {@render children?.()}
   </main>
