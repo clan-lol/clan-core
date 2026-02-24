@@ -348,3 +348,157 @@ which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
+
+# Practice: Install Some Packages
+
+Now let's look at how you can use Clan to install and remove packages on a target machine.
+
+For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
+
+```{.nix title="clan.nix" hl_lines="2-6"}
+ inventory.instances = {
+    packages = {
+      roles.default.machines."test-machine".settings = {
+        packages = [ "bat" "btop" "tldr" ];
+      };
+    };
+    # ... existing wifi service ...
+  };
+```
+
+This declares that the three packages will be present on the machine. To install them, type:
+
+```bash
+clan machines update test-machine
+```
+
+Now ssh into the machine, and they should be present:
+
+```
+which bat
+which btop
+which tldr
+```
+
+Each will show a path to the binary file:
+
+```
+/run/current-system/sw/bin/bat
+/run/current-system/sw/bin/btop
+/run/current-system/sw/bin/tldr
+```
+
+Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
+```
+        packages = [ "bat" "btop" ];
+```
+
+and run the update again:
+
+```bash
+clan machines update my-machine
+```
+
+Now when you check which `tldr`, it should show that it's not in the path:
+
+```
+which tldr
+which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
+
+```
+
+# Practice: Add a User
+
+When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
+
+## Add a New User (no sudo access)
+
+Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
+
+```{.nix title="clan.nix" hl_lines="2-9"}
+  inventory.instances = { # Add the following under this line
+    user-alice = {
+      module.name = "users";
+      roles.default.machines."test-machine" = {};
+      roles.default.tags.all = {};
+      roles.default.settings = {
+        user = "alice";
+      };
+    };
+```
+
+Save the file. Now type the following to add a password for alice (include the no-sandbox if you needed no sandbox earlier):
+
+```bash
+clan vars generate test-machine --no-sandbox
+```
+
+You will be prompted for a password. Or you can press Enter to automatically generate one.
+
+If you automatically generated one, to retrieve it type:
+
+```
+clan vars get test-machine user-password-alice/user-password
+```
+
+Now update the machine by typing:
+
+```bash
+clan machines update test-machine
+```
+
+After complete, you can now log in as alice with the password inside the virtual machine.
+
+## Give that user sudo access
+
+After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
+
+
+```{.nix title="clan.nix" hl_lines="7"}
+    user-alice = {
+      module.name = "users";
+      roles.default.machines."test-machine" = {};
+      roles.default.tags.all = {};
+      roles.default.settings = {
+        user = "alice";
+        groups = [ "wheel" ];  # Add this to allow sudo
+      };
+    };
+```
+
+Again type:
+
+```bash
+clan machines update test-machine
+```
+
+If you were already logged in as alice before running the update, you will need to log out and back in for the change to take.
+
+Then after logged in, try using sudo:
+
+```bash
+sudo echo "hello"
+```
+
+You will be prompted for the password and should see "hello" printed.
+
+## Revoke the sudo access
+
+To revoke alice's sudo access, simply remove the line you added:
+
+```nix
+        groups = [ "wheel" ];
+
+```
+
+And once again run:
+
+```bash
+clan machines update test-machine
+```
+
+Log out, and log alice back in. Now try the same sudo command; you'll be prompted for password, but then shown:
+
+```
+alice is not in the sudoers file.
+```
