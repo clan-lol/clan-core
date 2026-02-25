@@ -15,7 +15,6 @@
     "dev": "MODE=development vite dev --configLoader native --strictPort",
     "prebuild": "node docs/prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
-    "preview": "http-server ./build --port 4173",
     "prelint": "node docs/prerender.ts && svelte-kit sync",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --flag unstable_native_nodejs_ts_config",
@@ -35,7 +34,6 @@
     "@types/node": "^25.1.0",
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
-    "http-server": "^14.1.1",
     "modern-normalize": "^3.0.1",
     "postcss": "^8.5.6",
     "postcss-preset-env": "^11.1.1",
@@ -46,11 +44,5 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-value": "workspace:*"
-  },
-  "overrides": {
-    "@sveltejs/kit": {
-      "cookie": "^0.7.0"
-    },
-    "minimatch": "^10.2.1"
   }
 }

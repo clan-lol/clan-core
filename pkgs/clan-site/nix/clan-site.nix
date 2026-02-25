@@ -1,8 +1,8 @@
 {
   lib,
-  fetchPnpmDeps,
-  pnpm_10,
   nodejs_24,
+  pnpm_10,
+  fetchPnpmDeps,
   pnpmConfigHook,
   stdenv,
   jq,
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     fetcherVersion = 3;
-    hash = "sha256-iJXa2sSqdSpNLgpSSoMjmjKGXmgBeaCWy3hRmW8H9FM=";
+    hash = "sha256-CV6ygBJgQmlbO+MhXR7O0hAUwrW/Gdn/eH1XmobeQB4=";
   };
 
   env = {
