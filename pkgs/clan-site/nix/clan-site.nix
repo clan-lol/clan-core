@@ -1,8 +1,8 @@
 {
   lib,
-  fetchPnpmDeps,
-  pnpm_10,
   nodejs_24,
+  pnpm_10,
+  fetchPnpmDeps,
   pnpmConfigHook,
   stdenv,
   jq,
