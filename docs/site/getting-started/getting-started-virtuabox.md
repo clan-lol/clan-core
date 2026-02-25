@@ -50,16 +50,6 @@ Click **Finish**.
 
 *Do not run the machine yet!* We still have another item to configure. Right click on your new **NixOS Installer** machine, and choose **Settings**. In the left side, choose **Network**. Under the **Adapter 1** tab, click the **Attached to** dropdown, and choose **Bridged Adapter**. Leave **Name** as is. Click **OK**.
 
-
-NOTE: Windows VirtualBox is different! [TODO - JEFFREY - I will update these instructions on Monday]
-
-OS Edition: Leave blank
-OS: Linux
-OS Distribution: Other Linux
-OS Version: Other Linux (64-bit)
-
-
-
 ## Run the VirtualBox Machine
 
 Make sure **NixOS Installer** is selected (it will have a blue background). 
