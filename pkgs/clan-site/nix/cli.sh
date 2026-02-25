@@ -80,6 +80,7 @@ lint)
 	if [[ ! -e node_modules ]]; then
 		pnpm install
 	fi
-	pnpm run lint
+	pnpm run prelint
+	pnpm run "/^lint:.+/"
 	;;
 esac
