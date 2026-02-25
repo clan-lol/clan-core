@@ -3,7 +3,7 @@
   util-linux,
 }:
 writeShellApplication {
-  name = "clan-site-cli";
+  name = "clan-site";
   runtimeInputs = [
     util-linux
   ];

@@ -11,6 +11,7 @@
   mona-sans,
   docs-markdowns,
   clan-site-assets,
+  clan-site-cli,
 }:
 let
   RED = "\\033[1;31m";
@@ -19,12 +20,13 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "clan-site";
   version = "0.0.1";
-  src = ./.;
+  src = ../.;
 
   nativeBuildInputs = [
     nodejs_24
     pnpm_10
     pnpmConfigHook
+    clan-site-cli
     jq
   ];
 
@@ -68,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
   buildPhase = ''
     runHook preBuild
-    pnpm run build
+    clan-site build
     runHook postBuild
   '';
   installPhase = ''
@@ -90,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
           ;
         buildPhase = ''
           runHook preBuild
-          pnpm run lint
+          clan-site lint
           runHook postBuild
         '';
         installPhase = ''
