@@ -17,7 +17,10 @@
     "build": "MODE=production vite build --configLoader native",
     "preview": "http-server ./build --port 4173",
     "prelint": "node docs/prerender.ts && svelte-kit sync",
-    "lint": "prettier --check . && eslint --flag unstable_native_nodejs_ts_config && svelte-check && stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
+    "lint:prettier": "prettier --check .",
+    "lint:eslint": "eslint --flag unstable_native_nodejs_ts_config",
+    "lint:typescript": "svelte-check",
+    "lint:stylelint": "stylelint '**/*.css' '**/*.svelte' --ignore-path .gitignore"
   },
   "devDependencies": {
     "@clan.lol/coding-standard-svelte": "workspace:*",
