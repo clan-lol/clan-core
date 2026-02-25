@@ -44,11 +44,5 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-value": "workspace:*"
-  },
-  "overrides": {
-    "@sveltejs/kit": {
-      "cookie": "^0.7.0"
-    },
-    "minimatch": "^10.2.1"
   }
 }

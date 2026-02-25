@@ -1,5 +1,8 @@
 # pnpm is chosen over npm because npm's workspace's support is not good
 # https://github.com/npm/cli/issues/5463
 engineStrict: true
+overrides:
+  "@sveltejs/kit>cookie": ^0.7.0
+  minimatch: ^10.2.1
 packages:
   - "packages/*"
