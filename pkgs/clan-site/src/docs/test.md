@@ -110,6 +110,24 @@ Lets be really clever
 
 :::
 
+## Graph
+
+```mermaid
+graph TB
+    A[Generator Declaration] --> B[clan vars generate]
+    B --> C{Prompts User}
+    C --> D[Execute Script]
+    D --> E[Output Files]
+    E --> F{Secret?}
+    F -->|Yes| G[Encrypted Storage]
+    F -->|No| H[Git Repository]
+    G --> I[Deploy to Machine]
+    H --> I
+    I --> J[Available in NixOS]
+```
+
+## Table
+
 This is a table
 
 | A/B | A   | ¬A  |

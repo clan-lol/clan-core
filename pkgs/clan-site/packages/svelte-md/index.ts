@@ -1,6 +1,7 @@
 import { matter } from "vfile-matter";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeEscape from "./rehype-escape.ts";
+import rehypeMermaid from "rehype-mermaid";
 import rehypeShiki from "@shikijs/rehype";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
@@ -87,6 +88,9 @@ export async function render(source: string, opts: Options): Promise<Output> {
         type: "text",
         value: "🔗",
       },
+    })
+    .use(rehypeMermaid, {
+      strategy: "img-svg",
     })
     .use(rehypeShiki, {
       defaultColor: false,

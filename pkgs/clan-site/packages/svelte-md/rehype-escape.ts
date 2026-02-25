@@ -11,7 +11,6 @@ const rehypeEscapeCode: Plugin<[], Root> = function () {
       if (/[{}]/.test(text.value)) {
         const value = text.value
           .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
           .replaceAll("&", "&amp;")
           .replaceAll("{", "&#123;")
           .replaceAll("}", "&#125;");
