@@ -1,21 +1,14 @@
 {
   mkShellNoCC,
   clan-site,
-  writeShellApplication,
-  util-linux,
+  clan-site-cli,
 }:
 mkShellNoCC {
   inputsFrom = [
     clan-site
   ];
   packages = [
-    (writeShellApplication {
-      name = "clan-site";
-      runtimeInputs = [
-        util-linux
-      ];
-      text = builtins.readFile ./clan-site.sh;
-    })
+    clan-site-cli
   ];
   env = clan-site.devShellEnv;
   shellHook = ''

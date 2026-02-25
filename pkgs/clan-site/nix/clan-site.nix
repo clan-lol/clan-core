@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ${docs-markdowns}/* src/docs
     cp -r ${clan-site-assets}/* src/lib/assets
 
-    playwright_ver=$(jq --raw-output .dependencies.playwright ${./packages/svelte-md/package.json})
+    playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
     if [[ $playwright_ver != '${playwright.version}' ]]; then
       echo >&2 -en '${RED}'
       echo >&2 "Error: The npm package "playwright" is of a different version ($playwright_ver) than the one used in nixpkgs (${playwright.version})"
