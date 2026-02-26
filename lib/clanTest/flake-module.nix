@@ -287,6 +287,10 @@ in
           }
         );
 
+        extraPythonPackages = _p: [
+          clan-core.legacyPackages.${hostPkgs.stdenv.hostPlatform.system}.nixosTestLib
+        ];
+
         result = {
           inherit update-vars machinesCross;
         };

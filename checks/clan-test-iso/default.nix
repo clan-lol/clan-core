@@ -29,10 +29,6 @@ nixosLib.runTest (
 
     clan.test.fromFlake = ./.;
 
-    extraPythonPackages = _p: [
-      clan-core.legacyPackages.${hostPkgs.stdenv.hostPlatform.system}.nixosTestLib
-    ];
-
     testScript =
       { ... }:
       ''
