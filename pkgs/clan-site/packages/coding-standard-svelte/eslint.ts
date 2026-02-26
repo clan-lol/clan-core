@@ -75,6 +75,9 @@ export function base({
     {
       files: ["**/*.svelte"],
       rules: {
+        // Useless default assignment is needed by $bindable()
+        "@typescript-eslint/no-useless-default-assignment": "off",
+
         "unicorn/filename-case": [
           "error",
           {
@@ -82,6 +85,12 @@ export function base({
             ignore: [String.raw`^\+`],
           },
         ],
+      },
+    },
+    {
+      files: ["**/*.svelte.ts"],
+      rules: {
+        "svelte/no-add-event-listener": "off",
       },
     },
   ];

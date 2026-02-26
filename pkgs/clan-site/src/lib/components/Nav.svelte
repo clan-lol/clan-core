@@ -53,7 +53,7 @@
 <style>
   nav {
     display: none;
-    padding: 0 14px;
+    padding-inline: 14px;
     color: var(--secondary-fg-color);
     font-weight: 500;
 
@@ -133,12 +133,17 @@
     }
   }
 
-  @media (--wide) {
+  @media (--medium) {
     nav {
       display: block;
       flex: none;
-      inline-size: 320px;
-      padding-inline: 24px;
+      inline-size: 280px;
+    }
+  }
+
+  @media (--wide) {
+    nav {
+      padding-inline: 24px 14px;
     }
   }
 </style>

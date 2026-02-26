@@ -1,3 +1,4 @@
+import type { TocItems } from "./rehype-toc.ts";
 import { matter } from "vfile-matter";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeEscape from "./rehype-escape.ts";
@@ -37,21 +38,17 @@ export interface Options {
 }
 
 export type { AdmonitionType } from "./remark-admonition.ts";
+export type { TocItem } from "./rehype-toc.ts";
+export type { TocItems };
 
 export type Frontmatter = Readonly<Record<string, unknown>>;
-
-export interface TocItem {
-  readonly id: string;
-  readonly content: string;
-  readonly children: readonly TocItem[];
-}
 
 export interface Output {
   readonly title: string;
   readonly frontmatter: Frontmatter;
   readonly svelteComponents: Set<string>;
   readonly markup: string;
-  readonly toc: readonly TocItem[];
+  readonly toc: TocItems;
 }
 
 export async function render(source: string, opts: Options): Promise<Output> {

@@ -6,7 +6,7 @@
   import { toDocsPath } from "$lib/models/docs.ts";
 
   const { data } = $props();
-  // This value is extract from the content of h1 below
+  // This value is extract from the content of h1 below during prerendering
   const title = $derived(data.title);
 </script>
 
@@ -210,7 +210,7 @@
     }
   }
 
-  @media (--wide) {
+  @media (--medium) {
     section {
       padding-inline: 24px;
 

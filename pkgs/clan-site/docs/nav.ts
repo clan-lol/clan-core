@@ -10,13 +10,13 @@ import type {
   NavPathItem,
   NavSibling,
 } from "../src/lib/models/docs.ts";
-import config from "../clan-site.config.ts";
+import { docsBase, docsNav } from "../clan-site.config.ts";
 import { visit } from "../src/lib/util.ts";
 
 export async function getNavItems(
   titles: Readonly<Record<string, string>>,
 ): Promise<NavItems> {
-  return await normalizeNavItems(config.docsNav, titles);
+  return await normalizeNavItems(docsNav, titles);
 }
 
 export async function normalizeNavItems(
@@ -133,5 +133,5 @@ export function findFirstNavPathItem(
 }
 
 function toDocsPath(path: string): DocsPath {
-  return `${config.docsBase}${path ? `/${path}` : ""}`;
+  return `${docsBase}${path ? `/${path}` : ""}`;
 }

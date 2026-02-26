@@ -5,7 +5,7 @@ import {
   asyncMapObjectValues,
   mapObjectValues,
 } from "../src/lib/util.ts";
-import config from "../clan-site.config.ts";
+import * as config from "../clan-site.config.ts";
 import { findNavSiblings, getNavItems, getNavPath } from "./nav.ts";
 import { mkdir, opendir, readFile, writeFile } from "node:fs/promises";
 import pathutil from "node:path";
@@ -93,6 +93,7 @@ async function writeArticle(path: string, output: Output): Promise<void> {
       pathutil.join(dir, "+page.ts"),
       pageContent({
         toc: output.toc,
+        frontmatter: output.frontmatter,
         navPath,
         ...(prev ? { prev } : {}),
         ...(next ? { next } : {}),
@@ -114,13 +115,19 @@ async function getIndexArticleTitle(): Promise<string> {
 }
 
 async function writeIndexArticle(): Promise<void> {
+  const [prev, next] = findNavSiblings(navItems, "");
   const navPath = getNavPath(navItems, "");
   await writeFile(
     pathutil.join(articlesDir, "+page.ts"),
     indexPageContent({
       title: indexArticleTitle,
       toc: [],
+      frontmatter: {
+        toc: false,
+      },
       navPath,
+      ...(prev ? { prev } : {}),
+      ...(next ? { next } : {}),
     }),
   );
 }

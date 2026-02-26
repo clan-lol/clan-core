@@ -1,12 +1,12 @@
 import type { PluginOption } from "vite";
 import pkg from "./package.json" with { type: "json" };
 
-export default function vitePluginConfig({
+export default function vitePluginValue({
   specifier,
   value,
 }: {
   specifier: string;
-  value: unknown;
+  value: object;
 }): PluginOption {
   return {
     name: pkg.name,
@@ -17,10 +17,12 @@ export default function vitePluginConfig({
       return;
     },
     load(id) {
-      if (id === `\0${specifier}`) {
-        return `export default ${JSON.stringify(value)}`;
+      if (id !== `\0${specifier}`) {
+        return;
       }
-      return;
+      return Object.entries(value)
+        .map(([k, v]) => `export const ${k} = ${JSON.stringify(v)}`)
+        .join(";\n");
     },
   };
 }

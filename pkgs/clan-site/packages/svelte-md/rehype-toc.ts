@@ -4,13 +4,17 @@ import { headingRank } from "hast-util-heading-rank";
 import { SKIP, visit } from "unist-util-visit";
 import { toString } from "hast-util-to-string";
 
-interface TocItem {
-  id: string;
-  content: string;
-  children: TocItem[];
+export interface TocItem {
+  readonly id: string;
+  readonly rank: number;
+  readonly label: string;
+  readonly children: TocItems;
 }
+export type TocItems = readonly TocItem[];
 
-const startingRank = 1;
+// We skip putting h1 to toc, so all other headings are considered to be nested
+// under h1, which mean the starting context rank is 1
+const startingContextRank = 1;
 
 /**
  * Add toc and title to file.data
@@ -20,7 +24,7 @@ const rehypeToc: Plugin<[{ maxTocDepth: number }], Root> = function ({
 }) {
   return (tree, file) => {
     const toc: TocItem[] = [];
-    const parentHeadings: TocItem[] = [];
+    let parentHeadings: TocItem[] = [];
 
     let title: string | undefined;
     visit(tree, "element", (node) => {
@@ -38,10 +42,9 @@ const rehypeToc: Plugin<[{ maxTocDepth: number }], Root> = function ({
 
       switch (rank) {
         case 1: {
-          if (title !== undefined) {
+          if (title) {
             console.error(`Multiple titles exist: ${file.path}`);
-          }
-          if (!title) {
+          } else {
             title = toString(node);
             if (!title) {
               console.error(`Empty title found: ${file.path}`);
@@ -50,31 +53,42 @@ const rehypeToc: Plugin<[{ maxTocDepth: number }], Root> = function ({
           break;
         }
         default: {
-          if (parentHeadings.length > maxTocDepth) {
-            return SKIP;
-          }
-
-          const heading = { id, content: toString(node), children: [] };
-          const contextRank = parentHeadings.length - 1 + startingRank;
-          if (rank > contextRank) {
-            (parentHeadings.at(-1)?.children ?? toc).push(heading);
+          const heading = { id, rank, label: toString(node), children: [] };
+          const contextRank =
+            parentHeadings.at(-1)?.rank ?? startingContextRank;
+          let siblings: TocItem[];
+          if (rank > contextRank && parentHeadings.length < maxTocDepth) {
+            siblings =
+              (parentHeadings.at(-1)?.children as TocItem[] | undefined) ?? toc;
+            siblings.push(heading);
+            parentHeadings.push(heading);
           } else if (rank === contextRank) {
-            (parentHeadings.at(-2)?.children ?? toc).push(heading);
             parentHeadings.pop();
+            siblings =
+              (parentHeadings.at(-1)?.children as TocItem[] | undefined) ?? toc;
+            siblings.push(heading);
+            parentHeadings.push(heading);
           } else {
-            const i = rank - startingRank - 1;
-            (parentHeadings[i]?.children ?? toc).push(heading);
-            while (parentHeadings.length > i + 1) {
-              parentHeadings.pop();
+            const i = parentHeadings.findIndex(
+              (parentHeading) => parentHeading.rank < rank,
+            );
+            const parentHeading = parentHeadings[i];
+            if (parentHeading) {
+              siblings = parentHeading.children as TocItem[];
+              parentHeadings = parentHeadings.slice(0, i + 1);
+            } else {
+              siblings = toc;
+              parentHeadings = [];
             }
+            siblings.push(heading);
+            parentHeadings.push(heading);
           }
-          parentHeadings.push(heading);
         }
       }
 
       return;
     });
-    file.data.toc = toc;
+    file.data.toc = toc as TocItems;
     file.data.title = title || "<Missing title>";
     // FIXME: enable this after migration
     // if (title) {

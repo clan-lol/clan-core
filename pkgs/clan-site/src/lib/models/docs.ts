@@ -1,10 +1,11 @@
 import type { DocsPath } from "$config";
-import type { TocItem } from "@clan.lol/svelte-md";
-import config from "$config";
+import type { Frontmatter, TocItem, TocItems } from "@clan.lol/svelte-md";
+import { docsBase } from "$config";
 
 export type NavPath = readonly number[];
 export type NavItem = NavGroup | NavPathItem | NavURLItem;
 export type NavItems = readonly NavItem[];
+export type { Frontmatter, TocItem, TocItems };
 
 export interface NavGroup {
   readonly label: string;
@@ -27,16 +28,14 @@ export interface NavSibling {
   readonly path: DocsPath;
 }
 
-export type Toc = readonly TocItem[];
-export type { TocItem };
-
 export interface Article {
-  readonly toc: Toc;
+  readonly toc: TocItems;
   readonly navPath: NavPath;
   readonly prev?: NavSibling;
   readonly next?: NavSibling;
+  readonly frontmatter: Frontmatter;
 }
 
 export function toDocsPath(path: string): DocsPath {
-  return `${config.docsBase}${path ? `/${path}` : ""}`;
+  return `${docsBase}${path ? `/${path}` : ""}`;
 }

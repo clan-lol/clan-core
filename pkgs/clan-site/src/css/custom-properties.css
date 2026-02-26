@@ -14,6 +14,14 @@
   --content-secondary-fg-color: #415e63;
   --content-secondary-bg-color: #f7f9fa;
   --content-border-color: #d8e8eb;
+  --toc-title-fg-color: var(--fg-color);
+  --toc-fg-color: #223538;
+  --toc-bg-color: var(--content-bg-color);
+  --toc-highlighted-fg-color: #000;
+  --toc-highlighted-bg-color: #f7f9fa;
+  --toc-indent-guide-color: #d6e4ea;
+  --toc-highlighted-indent-guide-color: #606d74;
+  --toc-border-color: #d6e4ea;
   --nav-indent-guide-color: #afc6ca;
   --shiki-indent-offset: 10px;
   --shiki-indent-guide-color: #0000000e;

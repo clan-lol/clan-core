@@ -194,9 +194,12 @@ export function base({
             varsIgnorePattern: "^_.*",
           },
         ],
+        // Putting utility functions at the button and rely on hoisting is a
+        // common pattern
+        // Two classes might call each other to create a tree structure
         "@typescript-eslint/no-use-before-define": [
           "error",
-          { functions: false },
+          { functions: false, classes: false },
         ],
         "@typescript-eslint/no-useless-empty-export": "error",
         "@typescript-eslint/parameter-properties": "error",
