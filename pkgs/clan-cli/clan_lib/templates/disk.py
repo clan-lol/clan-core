@@ -75,6 +75,30 @@ templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
             required=True,
         ),
     },
+    "btrfs-single-disk-subvolumes": {
+        # Placeholders
+        "mainDisk": lambda hw_report: Placeholder(
+            label="Main disk",
+            options=hw_main_disk_options(hw_report),
+            required=True,
+        ),
+    },
+    "btrfs-single-disk-subvolumes-impermanance-rollback": {
+        # Placeholders
+        "mainDisk": lambda hw_report: Placeholder(
+            label="Main disk",
+            options=hw_main_disk_options(hw_report),
+            required=True,
+        ),
+    },
+    "btrfs-single-disk-subvolumes-impermanance-tmpfs": {
+        # Placeholders
+        "mainDisk": lambda hw_report: Placeholder(
+            label="Main disk",
+            options=hw_main_disk_options(hw_report),
+            required=True,
+        ),
+    },
 }
 
 
