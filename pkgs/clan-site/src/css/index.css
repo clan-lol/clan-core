@@ -4,7 +4,7 @@
 @import url("./base.css");
 @import url("./shiki.css");
 
-@media (--wide) {
+@media (--medium) {
   h1 {
     font-size: 36px;
   }

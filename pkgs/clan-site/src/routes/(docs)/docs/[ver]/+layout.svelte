@@ -1,18 +1,25 @@
 <script lang="ts">
-  import type { Article } from "$lib/models/docs.ts";
   import ArrowLeftIcon from "$lib/assets/icons/arrow-left.svg?component";
   import ArrowRightIcon from "$lib/assets/icons/arrow-right.svg?component";
-  import { page } from "$app/state";
+  import { getDocsContext } from "~/lib/models/docs.ts";
   import { resolve } from "$app/paths";
+  import Toc from "$lib/components/Toc.svelte";
 
   const { children } = $props();
-  const article = $derived(page.data) as Article;
+  const docs = getDocsContext();
+  const article = $derived(docs.article);
+  const toc = $derived(article.toc);
 </script>
 
-<div class="container">
+<div class="container" class:no-toc={toc.items.length === 0}>
   <article>
-    <div class="inner">
-      {@render children()}
+    <div class="article-inner">
+      {#if toc.items.length !== 0}
+        <Toc />
+      {/if}
+      <div class="content" use:toc.setContent>
+        {@render children()}
+      </div>
     </div>
   </article>
   <footer>
@@ -100,31 +107,72 @@
     margin: 0;
   }
 
-  @media (--wide) {
+  @media (--medium) {
     .container {
       flex: 1;
       min-inline-size: 0;
+      margin-inline-end: 14px;
+    }
+
+    article {
+      padding-inline: 28px;
+      border-end-start-radius: 14px;
+      border-end-end-radius: 14px;
+
+      .no-toc & {
+        padding-inline: 0;
+      }
+    }
+
+    .no-toc .article-inner {
+      inline-size: 90%;
+      margin-inline: auto;
+    }
+
+    footer {
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .pointer {
+      padding: 20px;
+    }
+  }
+
+  @media (--wide) {
+    .container {
       margin-inline-end: 24px;
     }
 
     article {
-      padding-inline: 24px;
-      border-end-start-radius: 14px;
-      border-end-end-radius: 14px;
+      padding-inline: 0;
     }
 
-    .inner {
-      max-inline-size: 670px;
-      margin: 0 auto;
+    .article-inner {
+      display: flex;
+      max-inline-size: calc(800px + 290px);
+      margin-inline: auto;
+
+      .no-toc & {
+        display: block;
+        inline-size: 80%;
+        max-inline-size: 800px;
+      }
+    }
+
+    .content {
+      flex: 1;
+      min-inline-size: 0;
+      padding-inline: 28px;
+
+      .no-toc & {
+        padding-inline: 0;
+      }
     }
 
     footer {
       gap: 24px;
       margin: 24px 0;
-    }
-
-    .pointer {
-      padding: 20px;
     }
   }
 </style>

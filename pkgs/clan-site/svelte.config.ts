@@ -1,14 +1,14 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
 import { fileURLToPath } from "node:url";
-import siteConfig from "./clan-site.config.ts";
+import { version } from "./clan-site.config.ts";
 
 const DEV = process.env["MODE"] === "development";
 const svelteConfig: Config = {
   kit: {
     adapter: adapter({
       pages: "build",
-      assets: `build/_assets/${siteConfig.version}`,
+      assets: `build/_assets/${version}`,
       strict: true,
     }),
     prerender: {
@@ -23,7 +23,7 @@ const svelteConfig: Config = {
       //  src/hooks.server.ts
       assets: DEV
         ? ""
-        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${siteConfig.version}`,
+        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${version}`,
       relative: DEV,
     },
     alias: {
@@ -35,7 +35,6 @@ const svelteConfig: Config = {
           ...(config["include"] as string[]),
           "../*.ts",
           "../packages/**/*.ts",
-          "../docs/**/*.ts",
         ];
 
         config["exclude"] = [
@@ -53,7 +52,7 @@ const svelteConfig: Config = {
       },
     },
     version: {
-      name: siteConfig.version,
+      name: version,
     },
   },
 };

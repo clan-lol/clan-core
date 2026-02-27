@@ -6,16 +6,20 @@
   "workspaces": [
     "packages/*"
   ],
+  "imports": {
+    "#config": "./clan-site.config.ts",
+    "#lib/*.ts": "./src/lib/*.ts"
+  },
   "engines": {
     "node": ">= 22.16.0"
   },
   "engineStrict": true,
   "scripts": {
-    "predev": "node docs/prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
+    "predev": "node prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
     "dev": "MODE=development vite dev --configLoader native --strictPort",
-    "prebuild": "node docs/prerender.ts && svelte-kit sync",
+    "prebuild": "node prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
-    "prelint": "node docs/prerender.ts && svelte-kit sync",
+    "prelint": "node prerender.ts && svelte-kit sync",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --flag unstable_native_nodejs_ts_config",
     "lint:typescript": "svelte-check",
@@ -26,16 +30,15 @@
     "@clan.lol/svelte-md": "workspace:*",
     "@clan.lol/vite-plugin-pagefind": "workspace:*",
     "@csstools/postcss-global-data": "^4.0.0",
-    "@fontsource-variable/geist": "^5.2.8",
     "@poppanator/sveltekit-svg": "^6.0.1",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.53.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^25.1.0",
-    "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
     "modern-normalize": "^3.0.1",
     "postcss": "^8.5.6",
+    "postcss-load-config": "^6.0.1",
     "postcss-preset-env": "^11.1.1",
     "prettier": "^3.8.1",
     "stylelint": "^17.3.0",

@@ -9,6 +9,10 @@
     "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
+  li & {
+    margin-inline: 0;
+  }
+
   .title {
     padding: 10px 20px;
     border-block-end: 1px solid var(--shiki-title-border-color);
