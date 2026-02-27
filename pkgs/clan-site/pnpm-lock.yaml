@@ -74,7 +74,7 @@ importers:
         version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
       vite-plugin-value:
         specifier: workspace:*
-        version: link:packages/vite-plugin-values
+        version: link:packages/vite-plugin-value
 
   packages/coding-standard:
     dependencies:
@@ -261,12 +261,6 @@ importers:
         version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
 
   packages/vite-plugin-value:
-    dependencies:
-      vite:
-        specifier: '>=7.0.0'
-        version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
-
-  packages/vite-plugin-values:
     dependencies:
       vite:
         specifier: '>=7.0.0'

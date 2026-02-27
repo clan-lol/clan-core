@@ -1,5 +1,8 @@
-import postcss from "postcss";
-import postcssrc from "postcss-load-config";
+import type {
+  NavItemsConfig as DocsNavItems,
+  DocsPath,
+} from "#lib/models/docs.ts";
+import { extractCustomMedia } from "#lib/models/custom-media.server.ts";
 
 export const version = process.env["SITE_VER"] || "unstable";
 export const customMedia = await extractCustomMedia();
@@ -9,8 +12,8 @@ export const codeLightTheme = "catppuccin-latte";
 export const codeDarkTheme = "catppuccin-macchiato";
 export const maxTocDepth = 3;
 export const docsDir = "src/docs";
-export const docsBase = `/docs/${version}` satisfies DocsPath;
-export const docsNav = [
+export const docsBase: DocsPath = `/docs/${version}`;
+export const docsNav: DocsNavItems = [
   {
     label: "Getting Started",
     children: [
@@ -223,38 +226,4 @@ export const docsNav = [
     label: "Test",
     path: "test",
   },
-] satisfies DocsNavItems;
-
-export type DocsPath = `/docs/${string}`;
-export type DocsNavItems = readonly DocsNavItem[];
-export type DocsNavItem =
-  | string
-  | {
-      readonly label: string;
-      readonly children: readonly DocsNavItem[];
-    }
-  | {
-      readonly label: string;
-      readonly path: string;
-    }
-  | {
-      readonly label: string;
-      readonly url: string;
-    };
-
-export interface CustomMedia {
-  wide: string;
-}
-async function extractCustomMedia(): Promise<CustomMedia> {
-  const { plugins } = await postcssrc();
-  const out = await postcss(plugins).process("@media (--wide) {}", {
-    from: undefined,
-  });
-  const [node] = out.root.nodes;
-  if (node?.type !== "atrule" || node.name !== "media") {
-    throw new Error("Invalid custom media encountered when extracting");
-  }
-  return {
-    wide: node.params,
-  };
-}
+];

@@ -1,25 +1,23 @@
 <script lang="ts">
-  import type { Article } from "$lib/models/docs.ts";
   import ArrowLeftIcon from "$lib/assets/icons/arrow-left.svg?component";
   import ArrowRightIcon from "$lib/assets/icons/arrow-right.svg?component";
-  import { page } from "$app/state";
+  import { getDocsContext } from "~/lib/models/docs.ts";
   import { resolve } from "$app/paths";
   import Toc from "$lib/components/Toc.svelte";
-  import { Toc as TocClass } from "$lib/models/toc.svelte.ts";
 
   const { children } = $props();
-  const article = $derived(page.data) as Article;
-  const hasToc = $derived(article.frontmatter["toc"] !== false);
-  const toc = new TocClass(page);
+  const docs = getDocsContext();
+  const article = $derived(docs.article);
+  const toc = $derived(article.toc);
 </script>
 
-<div class="container" class:no-toc={!hasToc}>
+<div class="container" class:no-toc={toc.items.length === 0}>
   <article>
     <div class="article-inner">
-      {#if hasToc}
-        <Toc {toc} />
+      {#if toc.items.length !== 0}
+        <Toc />
       {/if}
-      <div class="content" use:toc.setHeadings>
+      <div class="content" use:toc.setContent>
         {@render children()}
       </div>
     </div>

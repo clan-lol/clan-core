@@ -1,45 +1,35 @@
 <script lang="ts">
-  import type { NavItem, NavItems, NavPath } from "$lib/models/docs.ts";
+  import type { NavItem, NavItems } from "$lib/models/docs.ts";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
+  import { getDocsContext, NavGroup, NavPathItem } from "$lib/models/docs.ts";
   import { resolve } from "$app/paths";
 
-  const {
-    navItems,
-    isVisible,
-    navPath,
-  }: {
-    navItems: NavItems;
-    isVisible: boolean;
-    navPath: NavPath;
-  } = $props();
+  const docs = getDocsContext();
+  const nav = $derived(docs.nav);
 </script>
 
-<nav class:is-visible={isVisible}>
-  {@render navTree(navItems, navPath)}
+<nav class:open={nav.open}>
+  {@render navTree(nav.items)}
 </nav>
 
-{#snippet navTree(items: NavItems, navPath: NavPath)}
+{#snippet navTree(items: NavItems)}
   <ol>
-    <!-- TODO: use item.label once missing titles are added -->
     {#each items as item, i (i)}
-      {@render navBranch(item, i, navPath)}
+      {@render navBranch(item)}
     {/each}
   </ol>
 {/snippet}
 
-{#snippet navBranch(item: NavItem, i: number, navPath: NavPath)}
-  {#if "children" in item}
+{#snippet navBranch(item: NavItem)}
+  {#if item instanceof NavGroup}
     <li>
-      <details open={i === navPath[0]}>
+      <details bind:open={item.open}>
         <summary><ChevronRightIcon height="17" />{item.label}</summary>
-        {@render navTree(
-          item.children,
-          i === navPath[0] ? navPath.slice(1) : [],
-        )}
+        {@render navTree(item.children)}
       </details>
     </li>
-  {:else if "path" in item}
-    <li class:active={i === navPath[0]}>
+  {:else if item instanceof NavPathItem}
+    <li class:active={item.isActive}>
       <a href={resolve(item.path)}>{item.label}</a>
     </li>
   {:else}
@@ -57,7 +47,7 @@
     color: var(--secondary-fg-color);
     font-weight: 500;
 
-    &.is-visible {
+    &.open {
       display: block;
     }
   }

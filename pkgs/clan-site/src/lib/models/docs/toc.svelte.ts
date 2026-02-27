@@ -1,44 +1,32 @@
 import type { Action } from "svelte/action";
-import type {
-  Article,
-  TocItem as TocItemInput,
-  TocItems as TocItemsInput,
-} from "$lib/models/docs.ts";
-import type { Page } from "@sveltejs/kit";
-import { beforeNavigate } from "$app/navigation";
-import { customMedia } from "$config";
-import { MediaQuery } from "svelte/reactivity";
+import type { Docs } from "./docs.svelte.ts";
+import type { TocItemInput, TocItemsInput } from "./toc.ts";
 import { visit } from "$lib/util.ts";
 
 export class Toc {
-  public readonly tocItems: TocItems;
-  public readonly isWide: boolean;
-  public readonly setHeadings: Action = this.#setHeadings.bind(this);
+  public readonly setContent: Action = this.#setContent.bind(this);
   public readonly setHeight: Action = this.#setHeight.bind(this);
   public readonly onClickTitle = this.#onClickTitle.bind(this);
-  public isExpanded = $state(false);
+  public readonly docs: Docs;
+  public open = $state(false);
+  public items: TocItems;
   #activeTocItem: TocItem | undefined = $state();
   public get activeTocItem(): TocItem | undefined {
     return this.#activeTocItem;
   }
+  #content: HTMLElement | undefined;
   #height = $state(0);
-  #headings: HTMLElement[] = $state.raw([]);
   #observer: IntersectionObserver | undefined;
 
-  public constructor(page: Page) {
-    this.tocItems = $derived(new TocItems((page.data as Article).toc, this));
-    const wide = new MediaQuery(customMedia.wide.slice(1, -1));
-    this.isWide = $derived(wide.current);
+  public constructor(tocItems: () => TocItemsInput, docs: Docs) {
+    this.items = $derived(new TocItems(tocItems(), this));
+    this.docs = docs;
 
     $effect(() => {
-      if (!this.isWide && this.#headings.length !== 0 && this.#height !== 0) {
-        this.#updateTocItemOnScrollHeading();
-      }
+      // Make sure items update trigger this function
+      this.items;
+      this.#updateTocItemOnScrollHeading();
       return () => this.reset();
-    });
-
-    beforeNavigate(() => {
-      this.isExpanded = false;
     });
   }
 
@@ -46,18 +34,18 @@ export class Toc {
     this.#observer?.disconnect();
     this.#observer = undefined;
     this.#activeTocItem = undefined;
-    this.isExpanded = false;
+    this.open = false;
   }
 
   public toggleExpanded(): boolean {
-    this.isExpanded = !this.isExpanded;
-    return this.isExpanded;
+    this.open = !this.open;
+    return this.open;
   }
 
   #onClickTitle(ev: Event): void {
     ev.preventDefault();
 
-    if (this.isWide) {
+    if (this.docs.isWide) {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -67,10 +55,8 @@ export class Toc {
     }
   }
 
-  #setHeadings(node: HTMLElement): void {
-    this.#headings = [
-      ...node.querySelectorAll("h1,h2,h3,h4,h5,h6"),
-    ] as HTMLElement[];
+  #setContent(node: HTMLElement): void {
+    this.#content = node;
   }
 
   #setHeight(node: HTMLElement): void {
@@ -78,6 +64,9 @@ export class Toc {
   }
 
   #updateTocItemOnScrollHeading(): void {
+    if (this.docs.isWide || !this.#content || this.#height === 0) {
+      return;
+    }
     this.#observer = new IntersectionObserver(
       (entries) => this.#updateTocItem(entries),
       {
@@ -85,13 +74,13 @@ export class Toc {
         rootMargin: `${(-this.#height).toFixed(0)}px 0px 0px`,
       },
     );
-    for (const heading of this.#headings) {
+    for (const heading of this.#content.querySelectorAll("h1,h2,h3,h4,h5,h6")) {
       this.#observer.observe(heading);
     }
   }
   #updateTocItem(entries: IntersectionObserverEntry[]): void {
     for (const entry of entries) {
-      visit(this.tocItems, (tocItem) => {
+      visit(this.items, (tocItem) => {
         if (tocItem.id !== entry.target.id || !entry.rootBounds) {
           return;
         }
@@ -105,7 +94,7 @@ export class Toc {
     // Find the last heading with scrolledPast > 0
     let last: TocItem | undefined;
     let active: TocItem | undefined;
-    visit(this.tocItems, (tocItem) => {
+    visit(this.items, (tocItem) => {
       if (last && last.scrolledPast > 0 && tocItem.scrolledPast === 0) {
         active = last;
         return "break";
@@ -140,8 +129,8 @@ export class TocItem {
 
   #onClick(ev: Event): void {
     ev.preventDefault();
-    if (!this.#toc.isWide) {
-      this.#toc.isExpanded = false;
+    if (!this.#toc.docs.isWide) {
+      this.#toc.open = false;
     }
     // eslint-disable-next-line unicorn/prefer-query-selector
     const heading = document.getElementById(this.id);

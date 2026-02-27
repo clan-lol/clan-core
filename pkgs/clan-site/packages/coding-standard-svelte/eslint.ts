@@ -49,6 +49,12 @@ export function base({
       },
       extends: standard.universal,
       rules: {
+        "capitalized-comments": [
+          "error",
+          "always",
+          { ignoreConsecutiveComments: true, ignorePattern: "^svelte-ignore " },
+        ],
+
         // Due to limitation of eslint-plugin-svelte, these rules create unavoidable false positives
         // https://sveltejs.github.io/eslint-plugin-svelte/user-guide/#settings-svelte
         "@typescript-eslint/no-unsafe-assignment": "off",
@@ -56,10 +62,11 @@ export function base({
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/no-unsafe-argument": "off",
-
         // Template like {@render navItems(item.items)} report such an error,
         // where it shouldn't
         "@typescript-eslint/no-confusing-void-expression": "off",
+        // Unused expressions sometimes are needed in $effect()
+        "@typescript-eslint/no-unused-expressions": "off",
 
         "svelte/block-lang": ["error", { script: ["ts"] }],
         "svelte/no-add-event-listener": "error",

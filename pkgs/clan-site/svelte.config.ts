@@ -35,7 +35,6 @@ const svelteConfig: Config = {
           ...(config["include"] as string[]),
           "../*.ts",
           "../packages/**/*.ts",
-          "../docs/**/*.ts",
         ];
 
         config["exclude"] = [

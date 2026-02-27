@@ -1,37 +1,35 @@
 import type {
   DocsPath,
-  DocsNavItem as NavItemInput,
-  DocsNavItems as NavItemsInput,
-} from "../clan-site.config.ts";
-import type {
-  NavItem,
-  NavItems,
-  NavPath,
-  NavPathItem,
+  NavItemConfig,
+  NavItemInput,
+  NavItemsConfig,
+  NavItemsInput,
+  NavPathItemInput,
+  NavPointer,
   NavSibling,
-} from "../src/lib/models/docs.ts";
-import { docsBase, docsNav } from "../clan-site.config.ts";
-import { visit } from "../src/lib/util.ts";
+} from "#lib/models/docs.ts";
+import { docsBase, docsNav } from "#config";
+import { visit } from "#lib/util.ts";
 
 export async function getNavItems(
   titles: Readonly<Record<string, string>>,
-): Promise<NavItems> {
-  return await normalizeNavItems(docsNav, titles);
+): Promise<NavItemsInput> {
+  return await toNavItems(docsNav, titles);
 }
 
-export async function normalizeNavItems(
-  navItems: NavItemsInput,
+export async function toNavItems(
+  navItems: NavItemsConfig,
   titles: Readonly<Record<string, string>>,
-): Promise<NavItems> {
+): Promise<NavItemsInput> {
   return await Promise.all(
-    navItems.map(async (navItem) => await normalizeNavItem(navItem, titles)),
+    navItems.map(async (navItem) => await toNavItem(navItem, titles)),
   );
 }
 
-export async function normalizeNavItem(
-  navItem: NavItemInput,
+export async function toNavItem(
+  navItem: NavItemConfig,
   titles: Readonly<Record<string, string>>,
-): Promise<NavItem> {
+): Promise<NavItemInput> {
   if (typeof navItem === "string") {
     return {
       label: titles[navItem] ?? "",
@@ -40,14 +38,10 @@ export async function normalizeNavItem(
   }
 
   if ("children" in navItem) {
-    const children = await normalizeNavItems(navItem.children, titles);
-    const pathItem = findFirstNavPathItem(children);
-    if (!pathItem) {
-      throw new Error(`Nav group ${navItem.label} contains no path item`);
-    }
+    const children = await toNavItems(navItem.children, titles);
     return {
       label: navItem.label,
-      path: pathItem.path,
+      open: Boolean(navItem.open),
       children,
     };
   }
@@ -65,25 +59,28 @@ export async function normalizeNavItem(
   };
 }
 
-export function getNavPath(navItems: NavItems, path: string): NavPath {
-  const navPath: number[] = [];
+export function getNavPointer(
+  navItems: NavItemsInput,
+  path: string,
+): NavPointer {
+  const pointer: number[] = [];
   visit(navItems, (navItem, i, parents) => {
     if ("children" in navItem || !("path" in navItem)) {
       return;
     }
     if (navItem.path === toDocsPath(path)) {
-      navPath.push(...parents.map((parent) => parent.index), i);
+      pointer.push(...parents.map((parent) => parent.index), i);
     }
   });
-  return navPath;
+  return pointer;
 }
 
 export function findNavSiblings(
-  navItems: NavItems,
+  navItems: NavItemsInput,
   path: string,
 ): readonly [NavSibling | undefined, NavSibling | undefined] {
   let index = -1;
-  const pathItems: NavPathItem[] = [];
+  const pathItems: NavPathItemInput[] = [];
   let prev: NavSibling | undefined;
   let next: NavSibling | undefined;
   visit(navItems, (navItem) => {
@@ -115,8 +112,8 @@ export function findNavSiblings(
 }
 
 export function findFirstNavPathItem(
-  navItems: NavItems,
-): NavPathItem | undefined {
+  navItems: NavItemsInput,
+): NavPathItemInput | undefined {
   for (const navItem of navItems) {
     if ("children" in navItem) {
       const item = findFirstNavPathItem(navItem.children);
@@ -132,6 +129,9 @@ export function findFirstNavPathItem(
   return;
 }
 
-function toDocsPath(path: string): DocsPath {
-  return `${docsBase}${path ? `/${path}` : ""}`;
+export function toDocsPath(path: string): DocsPath {
+  if (!path) {
+    return docsBase;
+  }
+  return `${docsBase}/${path}`;
 }

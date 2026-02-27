@@ -125,7 +125,6 @@ export function base({
         "no-undef-init": "error",
         "no-underscore-dangle": "error",
         "no-unneeded-ternary": "error",
-        "no-unused-expressions": "error",
         "no-useless-call": "error",
         "no-useless-computed-key": "error",
         "no-useless-constructor": "error",

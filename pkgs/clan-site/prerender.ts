@@ -1,12 +1,16 @@
-import type { Article, NavItem } from "../src/lib/models/docs.ts";
+import type { ArticleInput, NavItemsInput } from "#lib/models/docs.ts";
 import type { Output } from "@clan.lol/svelte-md";
 import {
   asyncMapObjectKeyValues,
   asyncMapObjectValues,
   mapObjectValues,
-} from "../src/lib/util.ts";
-import * as config from "../clan-site.config.ts";
-import { findNavSiblings, getNavItems, getNavPath } from "./nav.ts";
+} from "#lib/util.ts";
+import * as config from "#config";
+import {
+  findNavSiblings,
+  getNavItems,
+  getNavPointer,
+} from "#lib/models/docs.server.ts";
 import { mkdir, opendir, readFile, writeFile } from "node:fs/promises";
 import pathutil from "node:path";
 import { render } from "@clan.lol/svelte-md";
@@ -51,9 +55,7 @@ await Promise.all([
   writeIndexArticle(),
   writeFile(
     pathutil.join(layoutDir, "+layout.ts"),
-    layoutContent({
-      navItems,
-    }),
+    layoutContent({ navItems }),
   ),
 ]);
 
@@ -84,7 +86,7 @@ async function loadOutput(filename: string): Promise<Output> {
 
 async function writeArticle(path: string, output: Output): Promise<void> {
   const [prev, next] = findNavSiblings(navItems, path);
-  const navPath = getNavPath(navItems, path);
+  const navPointer = getNavPointer(navItems, path);
 
   const dir = pathutil.join(articlesDir, path);
   await mkdir(dir, { recursive: true });
@@ -92,9 +94,8 @@ async function writeArticle(path: string, output: Output): Promise<void> {
     writeFile(
       pathutil.join(dir, "+page.ts"),
       pageContent({
-        toc: output.toc,
-        frontmatter: output.frontmatter,
-        navPath,
+        toc: output.frontmatter["toc"] === false ? [] : output.toc,
+        navPointer,
         ...(prev ? { prev } : {}),
         ...(next ? { next } : {}),
       }),
@@ -116,23 +117,20 @@ async function getIndexArticleTitle(): Promise<string> {
 
 async function writeIndexArticle(): Promise<void> {
   const [prev, next] = findNavSiblings(navItems, "");
-  const navPath = getNavPath(navItems, "");
+  const navPointer = getNavPointer(navItems, "");
   await writeFile(
     pathutil.join(articlesDir, "+page.ts"),
     indexPageContent({
       title: indexArticleTitle,
       toc: [],
-      frontmatter: {
-        toc: false,
-      },
-      navPath,
+      navPointer,
       ...(prev ? { prev } : {}),
       ...(next ? { next } : {}),
     }),
   );
 }
 
-function pageContent(data: Article): string {
+function pageContent(data: ArticleInput): string {
   return `
 import type { Article } from "$lib/models/docs.ts";
 import type { PageLoad } from "./$types.ts";
@@ -163,21 +161,21 @@ ${markup}
 `;
 }
 
-function layoutContent(data: { navItems: readonly NavItem[] }): string {
+function layoutContent(data: { navItems: NavItemsInput }): string {
   return `
 import type { LayoutLoad } from "./$types.ts";
-import type { NavItems } from "$lib/models/docs.ts";
+import type { NavItemsInput } from "$lib/models/docs.ts";
 
-export const load: LayoutLoad = (): { navItems: NavItems } => (${JSON.stringify(data)});
+export const load: LayoutLoad = (): { navItems: NavItemsInput } => (${JSON.stringify(data)});
 `;
 }
 
-function indexPageContent(data: Article & { title: string }): string {
+function indexPageContent(data: ArticleInput & { title: string }): string {
   return `
-import type { Article } from "$lib/models/docs.ts";
+import type { ArticleInput } from "$lib/models/docs.ts";
 import type { PageLoad } from "./$types.ts";
 
-export const load: PageLoad = (): Article & { title: string } => (${JSON.stringify(data)});
+export const load: PageLoad = (): ArticleInput & { title: string } => (${JSON.stringify(data)});
 `;
 }
 

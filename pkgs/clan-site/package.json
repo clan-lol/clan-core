@@ -6,16 +6,20 @@
   "workspaces": [
     "packages/*"
   ],
+  "imports": {
+    "#config": "./clan-site.config.ts",
+    "#lib/*.ts": "./src/lib/*.ts"
+  },
   "engines": {
     "node": ">= 22.16.0"
   },
   "engineStrict": true,
   "scripts": {
-    "predev": "node docs/prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
+    "predev": "node prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
     "dev": "MODE=development vite dev --configLoader native --strictPort",
-    "prebuild": "node docs/prerender.ts && svelte-kit sync",
+    "prebuild": "node prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
-    "prelint": "node docs/prerender.ts && svelte-kit sync",
+    "prelint": "node prerender.ts && svelte-kit sync",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --flag unstable_native_nodejs_ts_config",
     "lint:typescript": "svelte-check",

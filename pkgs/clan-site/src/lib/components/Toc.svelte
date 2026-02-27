@@ -1,14 +1,16 @@
 <script lang="ts">
-  import type { Toc, TocItem, TocItems } from "../models/toc.svelte.ts";
+  import type { TocItem, TocItems } from "../models/docs/toc.svelte.ts";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
+  import { getDocsContext } from "#lib/models/docs.ts";
 
-  let { toc }: { toc: Toc } = $props();
+  const docs = getDocsContext();
+  const toc = $derived(docs.article.toc);
 </script>
 
-<header class:is-expended={toc.isExpanded}>
+<header class:open={toc.open}>
   <nav>
     <button use:toc.setHeight onclick={toc.onClickTitle}>
-      {#if toc.isExpanded || !toc.activeTocItem}
+      {#if toc.open || !toc.activeTocItem}
         Table of contents
       {:else}
         {toc.activeTocItem.label}
@@ -16,7 +18,7 @@
       <ChevronRightIcon height="16" />
     </button>
     <div class="menu">
-      {@render tocTree(toc.tocItems)}
+      {@render tocTree(toc.items)}
     </div>
   </nav>
 </header>
@@ -150,7 +152,7 @@
     }
   }
 
-  .is-expended .menu {
+  .open .menu {
     display: block;
   }
 
