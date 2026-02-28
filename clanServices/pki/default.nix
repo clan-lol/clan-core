@@ -112,6 +112,8 @@
                       -subj "/CN=${endpoint}.${domain}" \
                       -out endpoint.csr
 
+                    printf "subjectAltName=DNS:${endpoint}.${domain}" > san.cnf
+
                     openssl x509 -req \
                       -in endpoint.csr \
                       -CA "$in/pki-root-ca/ca.crt" \
@@ -119,7 +121,7 @@
                       -CAcreateserial \
                       -days 365 \
                       -sha256 \
-                      -extfile <(printf "subjectAltName=DNS:${endpoint}.${domain}") \
+                      -extfile san.cnf \
                       -out "$out/${endpoint}.crt"
 
                     cat "$out/${endpoint}.crt" "$in/pki-root-ca/ca.crt" \
