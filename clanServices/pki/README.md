@@ -4,7 +4,7 @@ service is purely static - it only uses generators to create certificates with
 no running services.
 
 This allows you to host services inside your clan under the domain set via
-[`meta.domain`](https://docs.clan.lol/reference/options/clan/#meta.domain) in
+[`meta.domain`](https://docs.clan.lol/main/reference/options/clan/#meta.domain) in
 your inventory and access them over HTTPS. If you use Caddy or nginx as a
 reverse proxy, pki automatically configures them with the right certificates -
 your reverse proxy handles both internal clan domains and external domains
@@ -23,13 +23,13 @@ transparently, without any manual TLS setup.
 }
 ```
 
-Services that export [`endpoints`](https://docs.clan.lol/reference/options/clan_service/#exports)
+Services that export [`endpoints`](https://docs.clan.lol/main/reference/options/clan_service/#exports)
 with hosts under your clan domain (e.g. `music.example.com`) will automatically
 get TLS certificates generated and configured for Caddy or nginx.
 
 ## How it works
 
-The service reads [`endpoints`](https://docs.clan.lol/reference/options/clan_service/#exports)
+The service reads [`endpoints`](https://docs.clan.lol/main/reference/options/clan_service/#exports)
 exports from other services on the same machine and generates a TLS certificate
 for each internal host (i.e. hosts ending in `.${domain}`).
 

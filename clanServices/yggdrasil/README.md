@@ -11,13 +11,13 @@ Clan, it will allow you to reach all of your machines.
 
 If you have other services in your inventory which export peers (e.g. the
 `internet` or the VPN services) as [service
-exports](https://docs.clan.lol/reference/options/clan_service/#exports), they
+exports](https://docs.clan.lol/main/reference/options/clan_service/#exports), they
 will be added as yggdrasil peers automatically. This allows using the stable
 yggdrasil IPv6 address to refer to other hosts and letting yggdrasil decide on
 the best routing based on available connections.
 
 The yggdrasil IPv6-address will be added to `/etc/hosts` using the
-[meta.domain](https://docs.clan.lol/reference/options/clan/#meta.domain)
+[meta.domain](https://docs.clan.lol/main/reference/options/clan/#meta.domain)
 settings, allowing you to reach each host in the Clan via
 `<hostname>.<meta.domain>`.
 
