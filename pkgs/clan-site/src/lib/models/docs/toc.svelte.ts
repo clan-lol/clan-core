@@ -26,7 +26,7 @@ export class Toc {
       // Make sure items update trigger this function
       this.items;
       this.#updateTocItemOnScrollHeading();
-      return () => this.reset();
+      return (): void => this.reset();
     });
   }
 

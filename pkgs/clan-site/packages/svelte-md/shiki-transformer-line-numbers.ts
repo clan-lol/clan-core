@@ -6,7 +6,7 @@ export default function transformerLineNumbers({
   readonly minLines: number;
 }): ShikiTransformer {
   return {
-    pre(pre) {
+    pre(pre): void {
       const [code] = pre.children;
       if (code?.type !== "element" || code.tagName !== "code") {
         return;

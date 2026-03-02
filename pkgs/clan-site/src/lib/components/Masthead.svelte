@@ -21,7 +21,7 @@
     <li class="nav">
       <button
         title="Navigation"
-        onclick={() => {
+        onclick={(): void => {
           docs.nav.toggle();
         }}><MenuIcon height="18" /></button
       >

@@ -159,11 +159,7 @@ export function base({
         ],
         "@typescript-eslint/default-param-last": "error",
         "@typescript-eslint/explicit-module-boundary-types": "error",
-        // It would be very nice to enforce this, but unfortunately this rule
-        // doesn't use type information, and can fail in cases where the return
-        // can already be inferred. For example
-        // function (): Foo { return { method() {} }; }
-        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-function-return-type": "error",
         "@typescript-eslint/explicit-member-accessibility": "error",
         // TODO: figure this rule out, currently it's too complex to spend time on,
         // but we do want an order like static, public, protected, private

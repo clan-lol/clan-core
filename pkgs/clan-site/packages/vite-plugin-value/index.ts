@@ -10,13 +10,13 @@ export default function vitePluginValue({
 }): PluginOption {
   return {
     name: pkg.name,
-    resolveId(source) {
+    resolveId(source): string | undefined {
       if (source === specifier) {
         return `\0${specifier}`;
       }
       return;
     },
-    load(id) {
+    load(id): string | undefined {
       if (id !== `\0${specifier}`) {
         return;
       }
