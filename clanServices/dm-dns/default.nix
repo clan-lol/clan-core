@@ -77,6 +77,7 @@
                   fi
 
                   data-mesher file update "$ZONE" \
+                    --network-id ${config.clan.core.vars.generators.data-mesher-network.files."network.pub".path} \
                     --url http://localhost:7331 \
                     --key "$KEY" \
                     --name "dns/cnames"
@@ -157,7 +158,7 @@
               ) config.networking.hosts
             );
 
-            dmFilesDir = "/var/lib/data-mesher/files/dns";
+            dmFilesDir = "/var/lib/data-mesher/files/default/dns";
           in
           {
             # Zone file content to be signed and pushed to data-mesher

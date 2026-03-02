@@ -68,33 +68,31 @@ in
             ];
           };
 
-          files = lib.mkOption {
-            type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-            default = { };
-            example = {
-              "dns:sol" = [ "P6AE0lukf9/qmVglYrGPNYo5ZnpFrnqLeAzlCZF0lTk=" ];
-              "config:app" = [
-                "ZasdhiAVJTa5b2qG8ynWvdHqALUxC6Eg8pdn6RVXuQE="
-                "1ru2QQ1eWV7yDlyfTTDEml3xTiacASYn0KprzknN8Pc="
-              ];
-            };
-            description = ''
-              A mapping of file names to lists of base64-encoded ED25519 public keys.
-              Only files listed here can be uploaded or imported from other nodes,
-              and they must be signed by one of the configured public keys.
-            '';
-          };
-
-          # Removed in v2
-
           network = {
             interface = mkRemovedOption "network.interface" "Use 'interfaces' instead.";
 
             port = mkRemovedOption "network.port" "Use 'port' instead.";
 
             # Removed in v2
-            tld = mkRemovedOption "network.tld" "data-mesher v2 removed network-wide TLD. Use 'files' for file-based sync.";
-            hostTTL = mkRemovedOption "network.hostTTL" "data-mesher v2 removed host TTL. Use 'files' for file-based sync.";
+            tld = mkRemovedOption "network.tld" "data-mesher v2 removed network-wide TLD. Use 'network.files' for file-based sync.";
+            hostTTL = mkRemovedOption "network.hostTTL" "data-mesher v2 removed host TTL. Use 'network.files' for file-based sync.";
+
+            files = lib.mkOption {
+              type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+              default = { };
+              example = {
+                "dns:sol" = [ "P6AE0lukf9/qmVglYrGPNYo5ZnpFrnqLeAzlCZF0lTk=" ];
+                "config:app" = [
+                  "ZasdhiAVJTa5b2qG8ynWvdHqALUxC6Eg8pdn6RVXuQE="
+                  "1ru2QQ1eWV7yDlyfTTDEml3xTiacASYn0KprzknN8Pc="
+                ];
+              };
+              description = ''
+                A mapping of file names to lists of base64-encoded ED25519 public keys.
+                Only files listed here can be uploaded or imported from other nodes,
+                and they must be signed by one of the configured public keys.
+              '';
+            };
           };
 
           extraHostNames = mkRemovedOption "extraHostNames" "data-mesher v2 removed host name claims. Use 'files' for file-based sync.";
@@ -131,7 +129,7 @@ in
         mergedFiles = lib.foldlAttrs (
           acc: fileName: keys:
           acc // { ${fileName} = (acc.${fileName} or [ ]) ++ keys; }
-        ) exportedFiles settings.files;
+        ) exportedFiles settings.network.files;
       in
       {
         nixosModule = (
@@ -177,23 +175,23 @@ in
                   };
               in
               {
-                data-mesher-ca = {
+                data-mesher-network = {
                   share = true;
                   files = {
-                    "ca.key".deploy = false;
-                    "ca.pub".secret = false;
+                    "network.key".deploy = false;
+                    "network.pub".secret = false;
                   };
                   runtimeInputs = [
                     dmConfig.package
                   ];
                   script = ''
-                    data-mesher generate ca --public-key-path "$out/ca.pub" --private-key-path "$out/ca.key"
+                    data-mesher generate ca --public-key-path "$out/network.pub" --private-key-path "$out/network.key"
                   '';
                 };
 
                 data-mesher-node-identity = {
                   dependencies = [
-                    "data-mesher-ca"
+                    "data-mesher-network"
                   ];
                   files = {
                     "peer.id".secret = false;
@@ -212,7 +210,7 @@ in
                     data-mesher peer id "$out/identity.pub" > "$out/peer.id"
 
                     data-mesher certificate sign \
-                        --ca-key "$in/data-mesher-ca/ca.key" \
+                        --ca-key "$in/data-mesher-network/network.key" \
                         --identity-key "$out/identity.pub" \
                         --output "$out/identity.cert" \
                         --validity 2160h    # 90 days for now TODO: expose this in the clan module
@@ -241,13 +239,16 @@ in
 
                     identity_key = gen.data-mesher-node-identity.files."identity.key".path;
                     identity_cert = gen.data-mesher-node-identity.files."identity.cert".path;
-                    certificate_authorities = [ gen.data-mesher-ca.files."ca.pub".path ];
+                    certificate_authorities = [ ];
+                  };
+
+                  network = {
+                    id = gen.data-mesher-network.files."network.pub".path;
+                    files = mergedFiles;
                   };
 
                   http.port = 7331;
                   http.interfaces = [ "lo" ]; # todo expose in options
-
-                  files = mergedFiles;
                 };
             };
           }
