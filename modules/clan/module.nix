@@ -213,6 +213,16 @@ in
               # - nixosModules (_class = nixos)
               # - darwinModules (_class = darwin)
               (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
+              (
+                {
+                  config,
+                  options,
+                  ...
+                }:
+                lib.mkIf options.nixpkgs.hostPlatform.isDefined {
+                  nixpkgs.pkgs = lib.mkDefault pkgsFor.${config.nixpkgs.hostPlatform.system};
+                }
+              )
             ]
             ++ lib.optionals (_class == "nixos") (v.machineImports or [ ])
             ++ lib.optionals (_class == "darwin") (v.darwinImports or [ ]);
