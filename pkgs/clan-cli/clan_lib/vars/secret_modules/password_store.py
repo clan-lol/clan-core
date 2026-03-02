@@ -188,14 +188,25 @@ class SecretStore(StoreBase):
             vars_password_store_secret_location(current_system(), [machine])
         )[machine]["password-store"]["secretLocation"]
 
-        remote_hash = host.run(
+        result = host.run(
             [
                 "cat",
                 f"{secret_location}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
-        ).stdout.strip()
+        )
 
+        ssh_connection_failure = 255
+        if result.returncode != 0:
+            # SSH exit code 255 indicates SSH connection failure (timeout, refused, etc.)
+            # as opposed to the remote command itself failing (e.g. file not found)
+            if result.returncode == ssh_connection_failure:
+                msg = f"SSH connection failed while checking if secrets need upload: {result.stderr.strip()}"
+                raise ClanError(msg)
+            # Remote command failed (e.g. file not found) — needs upload
+            return True
+
+        remote_hash = result.stdout.strip()
         if not remote_hash:
             return True
 

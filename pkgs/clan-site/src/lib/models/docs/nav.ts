@@ -1,21 +1,38 @@
-import type { Badge as BadgeInput, DocsPath } from "$config";
+import type { DocsPath } from "./docs.ts";
 
-export type NavItem = NavGroup | NavPathItem | NavURLItem;
+export type NavItemsConfig = readonly NavItemConfig[];
+export type NavItemConfig =
+  | string
+  | {
+      readonly label: string;
+      readonly open?: boolean;
+      readonly children: NavItemsConfig;
+    }
+  | {
+      readonly label: string;
+      readonly path: string;
+    }
+  | {
+      readonly label: string;
+      readonly url: string;
+    };
 
-export interface NavGroup {
+export type NavPointer = readonly number[];
+export type NavItemInput = NavGroupInput | NavPathItemInput | NavURLItemInput;
+export type NavItemsInput = readonly NavItemInput[];
+
+export interface NavGroupInput {
   readonly label: string;
-  readonly children: readonly NavItem[];
-  readonly path: DocsPath;
-  readonly badge: Badge | undefined;
+  readonly open: boolean;
+  readonly children: NavItemsInput;
 }
 
-export interface NavPathItem {
+export interface NavPathItemInput {
   readonly label: string;
   readonly path: DocsPath;
-  readonly badge: Badge | undefined;
 }
 
-export interface NavURLItem {
+export interface NavURLItemInput {
   readonly label: string;
   readonly url: string;
 }
@@ -24,5 +41,3 @@ export interface NavSibling {
   readonly label: string;
   readonly path: DocsPath;
 }
-
-export type Badge = Exclude<BadgeInput, string>;

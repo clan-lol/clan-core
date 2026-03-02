@@ -20,12 +20,19 @@
           roles.default.machines.client = { };
           roles.default.extraModules = [
             (
-              { pkgs, ... }:
+              { pkgs, lib, ... }:
               {
                 environment.systemPackages = [ pkgs.dnsutils ];
+
+                services.data-mesher.settings = {
+                  log_level = lib.mkForce "debug";
+                  # reduce this interval to speed up the test
+                  cluster.push_pull_interval = lib.mkForce "5s";
+                };
               }
             )
           ];
+
           roles.push.machines.server = { };
           roles.push.extraModules = [
             (
@@ -65,9 +72,11 @@
   testScript =
     { nodes, ... }:
     let
-      signingKeyPath =
-        nodes.server.config.clan.core.vars.generators.dm-dns-signing-key.files."signing.key".path;
-      zoneConfPath = nodes.server.config.clan.core.vars.generators.dm-dns.files."zone.conf".path;
+      inherit (nodes.server.clan.core.vars) generators;
+
+      networkID = generators.data-mesher-network.files."network.pub".path;
+      signingKeyPath = generators.dm-dns-signing-key.files."signing.key".path;
+      zoneConfPath = generators.dm-dns.files."zone.conf".path;
     in
     ''
       start_all()
@@ -81,7 +90,7 @@
       server.wait_until_succeeds("dig +short @127.0.0.1 -p 5353 server.test A | grep 10.0.0.1")
 
       # Sign and push the zone file to data-mesher
-      server.succeed("data-mesher file update ${zoneConfPath} --url http://localhost:7331 --key ${signingKeyPath} --name dns/cnames")
+      server.succeed("data-mesher file update --network-id ${networkID} ${zoneConfPath} --url http://localhost:7331 --key ${signingKeyPath} --name dns/cnames")
 
       # The path watcher (unbound-reload-zones.path) should trigger an unbound reload.
       # Wait until the CNAME record resolves.

@@ -1,26 +1,28 @@
 import type { PluginOption } from "vite";
 import pkg from "./package.json" with { type: "json" };
 
-export default function vitePluginConfig({
+export default function vitePluginValue({
   specifier,
   value,
 }: {
   specifier: string;
-  value: unknown;
+  value: object;
 }): PluginOption {
   return {
     name: pkg.name,
-    resolveId(id) {
-      if (id === specifier) {
-        return id;
+    resolveId(source): string | undefined {
+      if (source === specifier) {
+        return `\0${specifier}`;
       }
       return;
     },
-    load(id) {
-      if (id === specifier) {
-        return `export default ${JSON.stringify(value)}`;
+    load(id): string | undefined {
+      if (id !== `\0${specifier}`) {
+        return;
       }
-      return;
+      return Object.entries(value)
+        .map(([k, v]) => `export const ${k} = ${JSON.stringify(v)}`)
+        .join(";\n");
     },
   };
 }

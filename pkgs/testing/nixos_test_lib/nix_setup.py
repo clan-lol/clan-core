@@ -108,7 +108,6 @@ def setup_nix_in_nix(
                 for path in store_paths_file.read_text().splitlines():
                     if not path.strip():
                         continue
-                    print(f"Bind-mounting Nix store path: {path}")
                     target = Path(f"{temp_dir}/store/nix/store/{Path(path).name}")
                     if Path(path).is_dir():
                         target.mkdir(parents=True, exist_ok=True)

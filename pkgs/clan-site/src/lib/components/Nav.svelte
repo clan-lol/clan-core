@@ -1,44 +1,35 @@
 <script lang="ts">
-  import type { NavItem } from "~/lib/models/docs.ts";
+  import type { NavItem, NavItems } from "$lib/models/docs.ts";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
+  import { getDocsContext, NavGroup, NavPathItem } from "$lib/models/docs.ts";
   import { resolve } from "$app/paths";
 
-  const {
-    navItems,
-    isVisible,
-    navPath,
-  }: {
-    navItems: readonly NavItem[];
-    isVisible: boolean;
-    navPath: readonly number[];
-  } = $props();
+  const docs = getDocsContext();
+  const nav = $derived(docs.nav);
 </script>
 
-<nav class:is-visible={isVisible}>
-  {@render navTree(navItems, navPath)}
+<nav class:open={nav.open}>
+  {@render navTree(nav.items)}
 </nav>
 
-{#snippet navTree(items: readonly NavItem[], navPath: readonly number[])}
+{#snippet navTree(items: NavItems)}
   <ol>
-    {#each items as item, i (item.label)}
-      {@render navBranch(item, i, navPath)}
+    {#each items as item, i (i)}
+      {@render navBranch(item)}
     {/each}
   </ol>
 {/snippet}
 
-{#snippet navBranch(item: NavItem, i: number, navPath: readonly number[])}
-  {#if "children" in item}
+{#snippet navBranch(item: NavItem)}
+  {#if item instanceof NavGroup}
     <li>
-      <details open={i === navPath[0]}>
+      <details bind:open={item.open}>
         <summary><ChevronRightIcon height="17" />{item.label}</summary>
-        {@render navTree(
-          item.children,
-          i === navPath[0] ? navPath.slice(1) : [],
-        )}
+        {@render navTree(item.children)}
       </details>
     </li>
-  {:else if "path" in item}
-    <li class:active={i === navPath[0]}>
+  {:else if item instanceof NavPathItem}
+    <li class:active={item.isActive}>
       <a href={resolve(item.path)}>{item.label}</a>
     </li>
   {:else}
@@ -52,11 +43,11 @@
 <style>
   nav {
     display: none;
-    padding: 0 14px;
+    padding-inline: 14px;
     color: var(--secondary-fg-color);
     font-weight: 500;
 
-    &.is-visible {
+    &.open {
       display: block;
     }
   }
@@ -132,12 +123,17 @@
     }
   }
 
-  @media (--wide) {
+  @media (--medium) {
     nav {
       display: block;
       flex: none;
       inline-size: 280px;
-      padding-inline: 24px;
+    }
+  }
+
+  @media (--wide) {
+    nav {
+      padding-inline: 24px 14px;
     }
   }
 </style>

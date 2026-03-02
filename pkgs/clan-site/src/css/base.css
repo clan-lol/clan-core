@@ -14,6 +14,26 @@ body {
   }
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  display: flex;
+  gap: 5px;
+
+  a {
+    order: 2;
+    text-decoration: none;
+    visibility: hidden;
+  }
+
+  &:hover a {
+    visibility: visible;
+  }
+}
+
 h1 {
   margin: 2em 0;
   color: inherit;
@@ -59,4 +79,18 @@ li {
   p {
     margin-block: 0.5em;
   }
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 6px 13px;
+  border: 1px solid var(--table-border-color);
+}
+
+tr:nth-child(2n) {
+  background-color: var(--table-alternative-bg-color);
 }

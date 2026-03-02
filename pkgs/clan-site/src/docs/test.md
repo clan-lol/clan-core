@@ -1,15 +1,13 @@
----
-a: 1
-b: 2
----
+# Test
 
+## Code
 
-## Generic code
 ```
 nix run abc
 ```
 
-## Language code
+## Code for a language
+
 ```js
 const abc = 1 + "2";
 const abc = 1 + "2";
@@ -17,9 +15,7 @@ const abc = 1 + "2";
 const abc = 1 + "2";
 ```
 
-## `choices.<name>.foo`
-
-## Step Bar
+## Code Highlighting
 
 ```nix {1,18-21}
 inventory.instances = {
@@ -49,12 +45,20 @@ inventory.instances = {
 };
 ```
 
+## Code Title
+```nix [nixos.nix] {2}
+{
+  foo = "bar";
+  bar = "foo";
+}
+```
+
+## Title with inline code `choices.<name>.foo`
+
 ## Step Foo
 
 Miscellaneous Symbols
 ☀ ☁ ☂ ☃ ☄ ★ ☆ ☇ ☈ ☉ ☊ ☋ ☌ ☍ ☎ ☏ ☐ ☑ ☒ ☓ ☚ ☛ ☜ ☝ ☞ ☟ ☠ ☡ ☢ ☣ ☤ ☥ ☦ ☧ ☨ ☩ ☪ ☫ ☬ ☭ ☮ ☯ ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷ ☸ ☹ ☺ ☻ ☼ ☽ ☾ ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆ ♇ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♔ ♕ ♖ ♗ ♘ ♙ ♚ ♛ ♜ ♝ ♞ ♟ ♠ ♡ ♢ ♣ ♤ ♥ ♦ ♧ ♨ ♩ ♪ ♫ ♬ ♭ ♮ ♯
-
-## Step Bar
 
 ↑
 Duplicate heading, should still be linked
@@ -65,17 +69,20 @@ This is a divider
 
 ---
 
-:::note[Note about nature]
+## Admonition
+
+:::admonition[Note about nature]
 
 Respect the nature of things
 
 :::
 
-::::important[Its important]
+## Nested Admonition
+::::admonition[Its important]{type=important}
 
 Follow this and your life will be happy
 
-:::note
+:::admonition{type=note}
 nested note probably a bad idea
 
 but technically valid
@@ -83,7 +90,7 @@ but technically valid
 
 ::::
 
-:::danger[Attention Footgun]
+:::admonition[Attention Footgun]{type=danger}
 
 Please don't erase your disk
 
@@ -93,7 +100,8 @@ erase = false;
 
 :::
 
-:::tip[Outsmart]
+## Collapsible Admonition
+:::admonition[Outsmart]{type=tip collapsed}
 
 Lets be really clever
 
@@ -101,6 +109,24 @@ Lets be really clever
 - Inside
 
 :::
+
+## Graph
+
+```mermaid
+graph TB
+    A[Generator Declaration] --> B[clan vars generate]
+    B --> C{Prompts User}
+    C --> D[Execute Script]
+    D --> E[Output Files]
+    E --> F{Secret?}
+    F -->|Yes| G[Encrypted Storage]
+    F -->|No| H[Git Repository]
+    G --> I[Deploy to Machine]
+    H --> I
+    I --> J[Available in NixOS]
+```
+
+## Table
 
 This is a table
 

@@ -1,5 +1,5 @@
 {
-  "name": "@clan/coding-standard-svelte",
+  "name": "@clan.lol/coding-standard-svelte",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -18,7 +18,7 @@
     "node": ">= 22.0.0"
   },
   "dependencies": {
-    "@clan/coding-standard": "file:../coding-standard",
+    "@clan.lol/coding-standard": "workspace:*",
     "eslint-plugin-svelte": "^3.14.0",
     "postcss-html": "^1.8.1",
     "prettier-plugin-svelte": "^3.4.1"

@@ -35,3 +35,17 @@ export function mapObjectKeyValues<T, U>(
     Object.entries(o).map((item, i, arr) => fn(item, i, arr)),
   );
 }
+export async function asyncMapObjectKeyValues<T, U>(
+  o: Record<string, T>,
+  fn: (
+    v: [string, T],
+    i: number,
+    arr: [string, T][],
+  ) => Promise<readonly [string, U]>,
+): Promise<Record<string, U>> {
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(o).map(async (item, i, arr) => await fn(item, i, arr)),
+    ),
+  );
+}

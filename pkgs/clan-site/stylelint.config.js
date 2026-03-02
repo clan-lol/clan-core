@@ -1,9 +1,9 @@
 // TODO: change this file to .ts once stylelint stops failing randomly
 // https://github.com/stylelint/stylelint/issues/8893
-import * as standard from "@clan/coding-standard/stylelint";
+import * as standard from "@clan.lol/coding-standard-svelte/stylelint";
 
 export default {
-  extends: ["@clan/coding-standard-svelte/stylelint"],
+  extends: ["@clan.lol/coding-standard-svelte/stylelint"],
   ignoreFiles: ["build/**", "static/_pagefind/**", "src/docs/**"],
   rules: {
     ...standard.base({

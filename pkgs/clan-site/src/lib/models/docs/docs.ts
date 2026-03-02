@@ -1,15 +1,21 @@
-import type { DocsPath } from "$config";
-import type { Heading } from "@clan/vite-plugin-markdown";
-import type { NavSibling } from "./nav.ts";
+import type { NavPointer, NavSibling } from "./nav.ts";
+import type { TocItemsInput } from "./toc.ts";
+import { docsBase } from "$config";
 
-export type { Heading };
+export type DocsPath = `/docs/${string}`;
 
-export interface Article {
-  readonly title: string;
-  readonly path: DocsPath;
-  readonly content: string;
-  readonly previous: NavSibling | undefined;
-  readonly next: NavSibling | undefined;
-  readonly navPath: readonly number[];
-  readonly toc: readonly Heading[];
+export type MastheadMode = "search" | "nav" | false;
+
+export interface ArticleInput {
+  readonly toc: TocItemsInput;
+  readonly navPointer: NavPointer;
+  readonly prev?: NavSibling;
+  readonly next?: NavSibling;
+}
+
+export function toDocsPath(path: string): DocsPath {
+  if (!path) {
+    return docsBase;
+  }
+  return `${docsBase}/${path}`;
 }

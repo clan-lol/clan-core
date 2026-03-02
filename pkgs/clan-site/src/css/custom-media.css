@@ -1,1 +1,2 @@
-@custom-media --wide (width >= 900px);
+@custom-media --medium (width >=860px);
+@custom-media --wide (width >= 1200px);

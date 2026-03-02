@@ -2,7 +2,7 @@
   import type {
     Pagefind,
     PagefindSearchFragment,
-  } from "@clan/vite-plugin-pagefind";
+  } from "@clan.lol/vite-plugin-pagefind";
   import { asset } from "$app/paths";
   import { onMount } from "svelte";
   import { onNavigate } from "$app/navigation";

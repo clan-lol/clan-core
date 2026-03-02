@@ -1,23 +1,20 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
-import siteConfig from "./clan-site.config.ts";
-import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+import { fileURLToPath } from "node:url";
+import { version } from "./clan-site.config.ts";
 
 const DEV = process.env["MODE"] === "development";
 const svelteConfig: Config = {
-  // Consult https://svelte.dev/docs/kit/integrations
-  // for more information about preprocessors
-  preprocess: [vitePreprocess()],
   kit: {
-    // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter: adapter({
       pages: "build",
-      assets: `build/_assets/${siteConfig.version}`,
+      assets: `build/_assets/${version}`,
       strict: true,
     }),
     prerender: {
       handleHttpError: "warn",
       handleMissingId: "warn",
+      handleUnseenRoutes: "ignore",
     },
     paths: {
       // SvelteKit doesn't support specifying an absolute base for assets only,
@@ -26,11 +23,11 @@ const svelteConfig: Config = {
       //  src/hooks.server.ts
       assets: DEV
         ? ""
-        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${siteConfig.version}`,
+        : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${version}`,
       relative: DEV,
     },
     alias: {
-      "~": new URL("src", import.meta.url).pathname,
+      "~": fileURLToPath(new URL("src", import.meta.url)),
     },
     typescript: {
       config(config) {
@@ -38,6 +35,11 @@ const svelteConfig: Config = {
           ...(config["include"] as string[]),
           "../*.ts",
           "../packages/**/*.ts",
+        ];
+
+        config["exclude"] = [
+          ...((config["exclude"] as string[] | undefined) ?? []),
+          "../src/routes/(docs)/docs/[ver]/*/*",
         ];
         const compOpts = config["compilerOptions"] as Record<string, unknown>;
         config["compilerOptions"] = {
@@ -50,10 +52,9 @@ const svelteConfig: Config = {
       },
     },
     version: {
-      name: siteConfig.version,
+      name: version,
     },
   },
-  extensions: [".svelte"],
 };
 
 export default svelteConfig;
