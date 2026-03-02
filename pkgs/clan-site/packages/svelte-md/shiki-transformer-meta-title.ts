@@ -2,7 +2,7 @@ import type { ShikiTransformer } from "shiki";
 
 export default function transformerMetaTitle(): ShikiTransformer {
   return {
-    pre(pre) {
+    pre(pre): void {
       // eslint-disable-next-line no-underscore-dangle
       const meta = this.options.meta?.__raw;
       if (!meta) {

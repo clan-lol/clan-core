@@ -12,7 +12,7 @@
 // 3. It can't do multiple plugin instances to index different folders
 
 import type { PagefindServiceConfig } from "pagefind";
-import type { PluginOption } from "vite";
+import type { PluginOption, UserConfig } from "vite";
 import * as pagefind from "pagefind";
 import pathutil from "node:path";
 import pkg from "./package.json" with { type: "json" };
@@ -150,7 +150,7 @@ export default function vitePluginPagefind({
   return {
     name: `${pkg.name}${pluginInstance ? `-${pluginInstance}` : ""}`,
     apply: "build",
-    config(_config, { mode: m }) {
+    config(_config, { mode: m }): Omit<UserConfig, "plugins"> {
       mode = m;
       return {
         assetsInclude: ["**/pagefind.js", "**/pagefind-highlight.js"],
@@ -164,7 +164,7 @@ export default function vitePluginPagefind({
         },
       };
     },
-    async configResolved(config) {
+    async configResolved(config): Promise<void> {
       ({ root } = config);
       if (mode === "production") {
         await rm(pathutil.resolve(root, staticDir, bundleDir), {
@@ -175,7 +175,7 @@ export default function vitePluginPagefind({
     },
     closeBundle: {
       sequential: true,
-      async handler() {
+      async handler(): Promise<void> {
         const { glob, ...pfOpts } = pagefindOptions ?? {};
 
         // Create a Pagefind search index to work with
