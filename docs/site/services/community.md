@@ -11,24 +11,6 @@ Services provided by the community, with no stability guarantees!
     and allows using multiple desktop environments or compositors at once.
 
 
--  [localsend](https://git.clan.lol/clan/clan-community/src/branch/main/services/localsend) :octicons-link-external-16:
-
-    ---
-
-    Sets up [localsend](https://localsend.org), an application to share files to nearby devices.
-
-
--  [wireguard-star](https://git.clan.lol/clan/clan-community/src/branch/main/services/wireguard-star) :octicons-link-external-16:
-
-    ---
-
-    Set up [WireGuard](https://wireguard.com) in a star topology. All machines
-    with the peer role will connect to the controller. IPv4 addresses are
-    manually assigned. For an IPv6 service that also supports multiple
-    controllers in a mesh topology, see the official
-    [clan WireGuard service](https://docs.clan.lol/services/official/wireguard/)
-
-
 - [Nix Cache](https://github.com/DavHau/hyperconfig/tree/master/modules/clan/nix-cache) :octicons-link-external-16:
 
     ---
@@ -41,6 +23,7 @@ Services provided by the community, with no stability guarantees!
     ---
 
     Clan-internal DNS and service exposure with support for multiple records (e.g. A, AAAA, CNAME) and multiple IPs
+
 
 - [@schallerclan/tailscale](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/tailscale.nix) :octicons-link-external-16:
 
