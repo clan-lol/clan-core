@@ -102,7 +102,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "(node_memory_MemFree_bytes{instance=\"$hostname\"} * 100) / node_memory_MemTotal_bytes{instance=\"$hostname\"}",
+          "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"$hostname\"} / node_memory_MemTotal_bytes{instance=\"$hostname\"})) * 100",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "interval": "",
