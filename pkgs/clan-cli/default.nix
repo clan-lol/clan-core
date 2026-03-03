@@ -12,6 +12,7 @@
   stdenv,
   # custom args
   clan-core-path,
+  clan-core-url ? "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
   includedRuntimeDeps,
   nix-select,
   nixpkgs,
@@ -97,6 +98,11 @@ let
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${runtimeDepsFlake} $out/clan_lib/runtime-deps
         cp -r ${../../templates} $out/clan_lib/clan_core_templates
+        chmod -R +w $out/clan_lib/clan_core_templates
+        for f in $out/clan_lib/clan_core_templates/clan/*/flake.nix; do
+          substituteInPlace "$f" \
+            --replace-quiet 'https://git.clan.lol/clan/clan-core/archive/main.tar.gz' '${clan-core-url}'
+        done
       '';
 
   sourceWithoutTests = cliSource (
