@@ -18,9 +18,9 @@ Available 'clan' templates
     └── minimal: for clans managed via (G)UI
 Available 'disko' templates
 ├── <builtin>
-│   └── single-disk: A simple ext4 disk with a single partition
+│   └── ext4-single-disk: A simple ext4 disk with a single partition
 └── inputs.self:
-    └── single-disk: A simple ext4 disk with a single partition
+    └── ext4-single-disk: A simple ext4 disk with a single partition
 Available 'machine' templates
 ├── <builtin>
 │   ├── demo-template: Demo machine for the CLAN project

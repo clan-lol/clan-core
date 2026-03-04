@@ -22,7 +22,7 @@ Available 'clan' templates
 │   └── minimal: for clans managed via (G)UI
 Available 'disko' templates
 ├── <builtin>
-│   └── single-disk: A simple ext4 disk with a single partition
+│   └── ext4-single-disk: A simple ext4 disk with a single partition
 Available 'machine' templates
 ├── <builtin>
 │   ├── flash-installer: Initialize a new flash-installer machine
@@ -30,7 +30,7 @@ Available 'machine' templates
 ```
 
 
-For this guide we will select the `single-disk` template, that uses `A simple ext4 disk with a single partition`.
+For this guide we will select the `ext4-single-disk` template, that uses `A simple ext4 disk with a single partition`.
 
 !!! tip
     For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
@@ -40,7 +40,7 @@ For this guide we will select the `single-disk` template, that uses `A simple ex
 To setup a disk schema for a machine run
 
 ```bash
-clan templates apply disk single-disk $MACHINE_NAME --set mainDisk ""
+clan templates apply disk ext4-single-disk $MACHINE_NAME --set mainDisk ""
 ```
 
 Which should fail and give the valid options for the specific hardware:
@@ -53,13 +53,13 @@ Invalid value  for placeholder mainDisk - Valid options:
 Re-run the command with the correct disk:
 
 ```bash
-clan templates apply disk single-disk $MACHINE_NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+clan templates apply disk ext4-single-disk $MACHINE_NAME --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
 It should now be successful, in our example for server with an output like:
 
 ```shellSession
-Applied disk template 'single-disk' to machine 'server'
+Applied disk template 'ext4-single-disk' to machine 'server'
 ```
 
 A disko.nix file is created in `machines/$MACHINE_NAME` at this point.

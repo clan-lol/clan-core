@@ -357,7 +357,7 @@ const ConfigureDisk = () => {
                       getOptions={async () => {
                         const templates = await getMachineDiskTemplates();
                         return templates.all[
-                          "single-disk"
+                          "ext4-single-disk"
                         ].placeholders.mainDisk.values.map((value) => ({
                           value,
                           label: value,

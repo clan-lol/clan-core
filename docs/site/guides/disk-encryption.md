@@ -1,5 +1,5 @@
 
-# Disk Encryption
+This guide provides an example setup for a ext4-single-disk ZFS system with native encryption, accessible for decryption remotely.
 
 This guide walks you through setting up a ZFS system with native encryption and remote decryption via SSH. After completing this guide, your machine's root filesystem will be encrypted, and you will be able to unlock it remotely over the network during boot.
 

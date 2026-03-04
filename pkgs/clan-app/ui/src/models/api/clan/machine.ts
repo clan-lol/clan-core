@@ -287,7 +287,7 @@ export async function installMachine(
         },
         name: machineId,
       },
-      schema_name: "single-disk",
+      schema_name: "ext4-single-disk",
       placeholders: {
         mainDisk: opts.diskPath,
       },

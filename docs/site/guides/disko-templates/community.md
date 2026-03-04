@@ -1,4 +1,5 @@
 
+
 !!! Danger ":fontawesome-solid-road-barrier: Under Construction :fontawesome-solid-road-barrier:"
     Currently under construction use with caution
 
@@ -13,7 +14,7 @@ A disk template consists of exactly two files
 - `README.md`
 
 ```text
-└── single-disk
+└── ext4-single-disk
     ├── default.nix
     └── README.md
 ```
@@ -26,7 +27,7 @@ The user can choose any valid options from the hardware report.
 
 The file itself is then copied to `machines/{machineName}/disko.nix` and will be automatically loaded by the machine.
 
-`single-disk/default.nix`
+`ext4-single-disk/default.nix`
 ```nix
 {
   disko.devices = {
@@ -47,7 +48,7 @@ Each template must declare the options of its placeholders depending on the hard
 `api/disk.py`
 ```py
 templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
-    "single-disk": {
+    "ext4-single-disk": {
         # Placeholders
         "mainDisk": lambda hw_report: Placeholder(
             label="Main disk", options=hw_main_disk_options(hw_report), required=True

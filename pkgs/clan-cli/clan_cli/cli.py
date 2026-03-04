@@ -254,7 +254,7 @@ Disk templates
   $ clan templates apply disk [TEMPLATE] [MACHINE] --set key1 value1 --set key2 value2
 
   Real world example
-  $ clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+  $ clan templates apply disk ext4-single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 
 ---
 
