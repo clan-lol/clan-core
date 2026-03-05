@@ -60,6 +60,9 @@ clan templates apply disk single-disk test2-machine --set mainDisk "/dev/disk/by
 
 ### Install NixOS
 
+!!! Note Warning
+    This will **wipe** the hard drive on the target machine. Do not execute this is you have data on that machine that you need to keep.
+
 Finally, you can run the installer:
 
 ```bash
