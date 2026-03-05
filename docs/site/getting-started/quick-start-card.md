@@ -58,7 +58,6 @@ wifi = {
 
 ```bash
 lsblk                        # identify your USB device (e.g. sdb)
-sudo umount /dev/sdb*         # unmount all partitions
 ```
 
 ```bash
