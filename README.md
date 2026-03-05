@@ -1,4 +1,4 @@
-# Clan core repository 
+# Clan core repository
 
 Welcome to the Clan core repository, the heart of the [clan.lol](https://clan.lol/) project! This monorepo is the foundation of Clan, a revolutionary open-source project aimed at restoring fun, freedom, and functionality to computing. Here, you'll find all the essential packages, NixOS modules, CLI tools, and tests needed to contribute to and work with the Clan project. Clan leverages the Nix system to ensure reliability, security, and seamless management of digital environments, putting the power back into the hands of users.
 
@@ -34,7 +34,7 @@ The Clan project thrives on community contributions. We welcome everyone to cont
 
 ## Join the revolution
 
-Clan is more than a tool; it's a movement towards a better digital future. By contributing to the Clan project, you're part of changing technology for the better, together..
+Clan is more than a tool; it's a movement towards a better digital future. By contributing to the Clan project, you're part of changing technology for the better, together.
 
 ### Community and support
 
