@@ -10,8 +10,8 @@ export type AdmonitionType = (typeof types)[number];
 const typeSet = new Set<string>(types);
 const remarkAdmonition: Plugin<[], Root> = function () {
   return (tree, file) => {
-    visit(tree, (node) => {
-      if (node.type !== "containerDirective" || node.name !== "admonition") {
+    visit(tree, "containerDirective", (node, index, parent) => {
+      if (!parent || index === undefined || node.name !== "admonition") {
         return;
       }
       let type = node.attributes?.["type"];
@@ -46,17 +46,19 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         ? "collapsed" in node.attributes
         : false;
 
-      node.children = [
+      parent.children.splice(
+        index,
+        1,
         {
           type: "html",
           value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(type)}` : ""}${collapsed ? " collapsed" : ""}>`,
-        },
+        } as const,
         ...node.children,
         {
           type: "html",
           value: `</Admonition>`,
-        },
-      ];
+        } as const,
+      );
 
       file.data.svelteComponents ??= new Set();
       file.data.svelteComponents.add("Admonition");

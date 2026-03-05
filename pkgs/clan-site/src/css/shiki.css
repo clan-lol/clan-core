@@ -9,12 +9,14 @@
     "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
-  li & {
+  li &,
+  .tabs & {
     margin-inline: 0;
+    border-radius: 5px;
   }
 
   .title {
-    padding: 10px 20px;
+    padding: 10px 14px;
     border-block-end: 1px solid var(--shiki-title-border-color);
   }
 
@@ -23,7 +25,13 @@
     flex-direction: column;
     inline-size: fit-content;
     min-inline-size: 100%;
-    padding-block: 14px;
+    padding: 14px 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: inherit;
+    line-height: inherit;
   }
 
   span {
@@ -53,7 +61,7 @@
 
   .line {
     display: flex;
-    padding-inline: 20px;
+    padding-inline: 14px;
 
     &.diff {
       &.remove {
@@ -99,17 +107,24 @@
       }
     }
   }
+}
 
-  @media (prefers-color-scheme: dark) {
-    &,
-    & span,
-    html.dark &,
-    html.dark & span {
-      color: var(--shiki-dark);
-      background-color: var(--shiki-dark-bg);
-      font-weight: var(--shiki-dark-font-weight);
-      font-style: var(--shiki-dark-font-style);
-      text-decoration: var(--shiki-dark-text-decoration);
-    }
+@media (prefers-color-scheme: dark) {
+  .shiki,
+  .shiki span,
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+    font-weight: var(--shiki-dark-font-weight);
+    font-style: var(--shiki-dark-font-style);
+    text-decoration: var(--shiki-dark-text-decoration);
+  }
+}
+
+@media (--medium) {
+  .shiki {
+    margin-inline: 0;
+    border-radius: 5px;
   }
 }

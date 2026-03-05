@@ -1,99 +1,70 @@
-import type { ContainerDirectiveData } from "mdast-util-directive";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
-import { isParagraphDirective } from "./util.ts";
-import { visit } from "unist-util-visit";
+import { SKIP, visit } from "unist-util-visit";
 
 const remarkTabs: Plugin<[], Root> = function () {
-  return (tree) => {
-    visit(tree, (node) => {
-      if (node.type !== "containerDirective" || node.name !== "tabs") {
+  return (tree, file) => {
+    visit(tree, "containerDirective", (node, index, parent) => {
+      if (!parent || index === undefined || node.name !== "tabs") {
         return;
       }
 
-      const data: ContainerDirectiveData = {};
-      node.data ??= data;
-      data.hName = "div";
-      data.hProperties = {
-        class: "md-tabs",
-      };
-      let tabIndex = 0;
-      const tabTitles: string[] = [];
-      for (const [i, child] of node.children.entries()) {
-        if (child.type !== "containerDirective" || child.name !== "tab") {
-          continue;
+      visit(node, "containerDirective", (node, index, parent) => {
+        if (!parent || index === undefined || node.name !== "tab") {
+          return;
         }
-        let tabTitle: string;
-        const [p] = child.children;
-        if (isParagraphDirective(p) && p.children[0]?.type === "text") {
-          child.children.shift();
-          tabTitle = p.children[0].value;
-        } else {
-          tabTitle = "(empty)";
+
+        let title = "";
+        const [titleNode] = node.children;
+        if (
+          titleNode?.type === "paragraph" &&
+          titleNode.data?.directiveLabel === true
+        ) {
+          const [text] = titleNode.children;
+          if (text?.type === "text") {
+            title = text.value;
+          } else {
+            console.warn(
+              `Invalid AST generated for tab directive's title: ${file.path}`,
+            );
+          }
+          node.children.shift();
         }
-        tabTitles.push(tabTitle);
-        node.children[i] = {
-          type: "containerDirective",
-          name: "",
-          data: {
-            hName: "div",
-            hProperties: {
-              class: "md-tabs-container",
-            },
-          },
-          children: [
-            {
-              type: "paragraph",
-              data: {
-                hName: "div",
-                hProperties: {
-                  class: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
-                },
-              },
-              children: [{ type: "text", value: tabTitle }],
-            },
-            {
-              type: "containerDirective",
-              name: "",
-              data: {
-                hName: "div",
-                hProperties: {
-                  class: `md-tabs-content ${tabIndex === 0 ? "is-active" : ""}`,
-                },
-              },
-              children: child.children,
-            },
-          ],
-        };
-        tabIndex += 1;
-      }
-      if (tabTitles.length === 1) {
-        data.hProperties.class = `${data.hProperties.class ?? ""} is-singleton`;
-      }
-      // Add tab bar for when js is enabled
-      node.children = [
+        parent.children.splice(
+          index,
+          1,
+          {
+            type: "html",
+            value: `<Tab title=${JSON.stringify(title)}>`,
+          } as const,
+          ...node.children,
+          {
+            type: "html",
+            value: `</Tab>`,
+          } as const,
+        );
+        return;
+      });
+
+      parent.children.splice(
+        index,
+        1,
         {
-          type: "paragraph",
-          data: {
-            hName: "div",
-            hProperties: {
-              class: "md-tabs-bar",
-            },
-          },
-          children: tabTitles.map((tabTitle, tabIndex) => ({
-            type: "text",
-            data: {
-              hName: "div",
-              hProperties: {
-                class: `md-tabs-tab ${tabIndex === 0 ? "is-active" : ""}`,
-              },
-            },
-            value: tabTitle,
-          })),
-        },
+          type: "html",
+          value: `<Tabs>`,
+        } as const,
         ...node.children,
-      ];
+        {
+          type: "html",
+          value: `</Tabs>`,
+        } as const,
+      );
+
+      return SKIP;
     });
+    file.data.svelteComponents ??= new Set();
+    file.data.svelteComponents.add("Tabs");
+    file.data.svelteComponents.add("Tab");
   };
 };
 export default remarkTabs;

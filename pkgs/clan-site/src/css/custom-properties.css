@@ -23,6 +23,10 @@
   --toc-highlighted-indent-guide-color: #606d74;
   --toc-border-color: #d6e4ea;
   --nav-indent-guide-color: #afc6ca;
+  --code-fg-color: #171719;
+  --code-bg-color: #eff1f5;
+  --code-border-color: #c4c7cd;
+  --tabs-border-color: #d6d6d6;
   --shiki-indent-offset: 10px;
   --shiki-indent-guide-color: #0000000e;
   --shiki-diff-remove-bg-color: #db0a0a41;

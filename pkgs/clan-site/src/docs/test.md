@@ -53,7 +53,41 @@ inventory.instances = {
 }
 ```
 
+## Code in Bullet Points
+1. Item 1
+   ```nix {2}
+   {
+     foo = "bar";
+     bar = "foo";
+   }
+   ```
+
+1. Item 2
+
 ## Title with inline code `choices.<name>.foo`
+
+## Tabs
+
+::::tabs
+:::tab[Automatic (direnv, recommended)]
+If you installed direnv correctly following the required steps before, you should be presented with an error message now:
+
+`direnv: error /MY-DIRECTORY/MY-NEW-CLAN/.envrc is blocked. Run direnv allow to approve its content`
+
+To continue, simply allow direnv in your Clan directory:
+
+```bash
+direnv allow
+```
+:::
+:::tab[Manual (nix develop)]
+Run nix develop to load the environment manually:
+
+```bash
+nix develop
+```
+:::
+::::
 
 ## Step Foo
 
@@ -109,6 +143,10 @@ Lets be really clever
 - Inside
 
 :::
+
+## Keyboard Shortcut
+
+Press ++ctrl+d++ to exit `IWD`.
 
 ## Graph
 
