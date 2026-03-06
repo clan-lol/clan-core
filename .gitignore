@@ -14,6 +14,7 @@ nixos.qcow2
 *.glade~
 /docs/out
 .local.env
+/docs-new
 
 # macOS stuff
 .DS_Store

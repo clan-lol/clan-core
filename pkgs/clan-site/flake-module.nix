@@ -10,9 +10,9 @@
     let
       clan-site = pkgs.callPackage ./nix/clan-site.nix {
         inherit (config.packages)
-          docs-markdowns
           clan-site-assets
           clan-site-cli
+          docs-markdowns
           ;
       };
     in

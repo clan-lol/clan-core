@@ -9,9 +9,9 @@
   playwright,
   makeFontsConf,
   mona-sans,
-  docs-markdowns,
   clan-site-assets,
   clan-site-cli,
+  docs-markdowns,
 }:
 let
   RED = "\\033[1;31m";
@@ -20,7 +20,15 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "clan-site";
   version = "0.0.1";
-  src = ../.;
+
+  pnpmRoot = "pkgs/clan-site";
+  src = lib.fileset.toSource {
+    root = ../../../.;
+    fileset = lib.fileset.unions [
+      ../../../docs
+      ../../../${finalAttrs.pnpmRoot}
+    ];
+  };
 
   nativeBuildInputs = [
     nodejs_24
@@ -31,7 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
+    inherit (finalAttrs) pname version;
+    sourceRoot = "${finalAttrs.src}/${finalAttrs.pnpmRoot}";
     fetcherVersion = 3;
     hash = "sha256-M2hYmNRmgWOpQHKSLrh2JSBMlqdWMcSMjbGMUf7xCKg=";
   };
@@ -52,9 +61,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   preBuild = ''
-    mkdir -p src/docs src/lib/assets
-    cp -r ${docs-markdowns}/* src/docs
-    cp -r ${clan-site-assets}/* src/lib/assets
+    # This script is also sourced by the devShell, need to take care of different
+    # working directories
+    if [[ ! -e clan-site.config.ts ]]; then
+      cd pkgs/clan-site
+    fi
+    mkdir -p ../../docs-new/{markdowns,embeds}
+    cp -R ${docs-markdowns}/* ../../docs-new/markdowns
+    cp -R ../../docs/code-examples/* ../../docs-new/embeds
+
+    mkdir -p src/lib/assets
+    cp -R ${clan-site-assets}/* src/lib/assets
 
     playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
     if [[ $playwright_ver != '${playwright.version}' ]]; then
@@ -84,6 +101,7 @@ stdenv.mkDerivation (finalAttrs: {
       "${finalAttrs.pname}-lint" = stdenv.mkDerivation {
         name = "${finalAttrs.pname}-lint";
         inherit (finalAttrs)
+          pnpmRoot
           src
           nativeBuildInputs
           pnpmDeps

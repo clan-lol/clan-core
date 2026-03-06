@@ -16,7 +16,8 @@ import pathutil from "node:path";
 import { render } from "@clan.lol/svelte-md";
 
 const componentsSpecifierPrefix = "$lib/components";
-const srcDir = "src/docs";
+const srcDir = "../../docs-new/markdowns";
+const embedsDir = "../../docs-new/embeds";
 const articlesDir = "src/routes/(docs)/docs/[ver]";
 const layoutDir = "src/routes/(docs)";
 
@@ -67,7 +68,7 @@ async function loadOutput(filename: string): Promise<Output> {
     /<div\sclass="grid cards"\smarkdown>(?<md>.+?)<\/div>/gs,
     "$1",
   );
-  source = replaceCodeLang(source);
+  source = replaceCodeLang(source, filename);
   source = replaceButtonSyntax(source);
   const output = await render(source, {
     root: pathutil.dirname(import.meta.dirname),
@@ -76,10 +77,8 @@ async function loadOutput(filename: string): Promise<Output> {
     codeDarkTheme: config.codeDarkTheme,
     minLineNumberLines: config.codeMinLineNumberLines,
     maxTocDepth: config.maxTocDepth,
+    codeEmbedDir: embedsDir,
     componentsSpecifierPrefix: "$lib/components",
-    linkResolves: {
-      [config.docsDir]: config.docsBase,
-    },
   });
   return output;
 }
@@ -151,7 +150,7 @@ function pageSvelteContent({
     )
     .join(";\n");
   return `
-<script>
+<script lang="ts">
 ${imports}
 </script>
 <svelte:head>
@@ -179,14 +178,14 @@ export const load: PageLoad = (): ArticleInput & { title: string } => (${JSON.st
 `;
 }
 
-function replaceCodeLang(source: string): string {
+function replaceCodeLang(source: string, filename: string): string {
   return source.replaceAll(
     /```\{(?<content>[^}]+)\}/g,
-    (_match, content: string): string => {
+    (match, content: string): string => {
       let result = /^\s*\.(?<lang>[-a-zA-Z]+)/.exec(content);
       let lang = result?.groups?.["lang"];
       if (!lang) {
-        throw new Error(`Can't find code block lang: ${source}`);
+        throw new Error(`Can't find code block lang: ${match} ${filename}`);
       }
       switch (lang) {
         case "text":

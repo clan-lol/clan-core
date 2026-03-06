@@ -106,6 +106,7 @@
     margin: 0;
     margin-block-start: 20px;
     color: #415e63;
+    border: 0;
     font-weight: inherit;
     font-size: inherit;
   }
@@ -211,6 +212,10 @@
   }
 
   @media (--medium) {
+    hgroup {
+      margin-block: 48px;
+    }
+
     section {
       padding-inline: 24px;
 

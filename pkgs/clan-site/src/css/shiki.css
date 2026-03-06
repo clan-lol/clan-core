@@ -1,7 +1,7 @@
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
   overflow: auto;
-  margin: 0 -14px;
+  margin: 1em -14px;
   background-color: var(--shiki-light-bg);
   font-size: 16px;
   font-family:

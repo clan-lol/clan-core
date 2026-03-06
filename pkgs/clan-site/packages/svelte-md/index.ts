@@ -8,10 +8,11 @@ import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import rehypeToc from "./rehype-toc.ts";
 import remarkAdmonition from "./remark-admonition.ts";
+import remarkCodeEmbed from "./remark-code-embed.ts";
 import remarkDirective from "remark-directive";
 import remarkDisableTextDirective from "./remark-disable-text-directive.ts";
+import remarkDocsLinks from "./remark-docs-links.ts";
 import remarkGfm from "remark-gfm";
-import remarkLinkResolve from "./remark-link-resolve.ts";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkTabs from "./remark-tabs.ts";
@@ -33,8 +34,8 @@ export interface Options {
   readonly codeDarkTheme: string;
   readonly minLineNumberLines: number;
   readonly maxTocDepth: number;
+  readonly codeEmbedDir: string;
   readonly componentsSpecifierPrefix: string;
-  readonly linkResolves: Readonly<Record<string, `/${string}`>>;
 }
 
 export type { AdmonitionType } from "./remark-admonition.ts";
@@ -67,12 +68,15 @@ export async function render(source: string, opts: Options): Promise<Output> {
   matter(file, { strip: true });
   await unified()
     .use(remarkParse)
-    .use(remarkLinkResolve, opts.linkResolves)
+    .use(remarkDocsLinks)
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkDisableTextDirective)
     .use(remarkAdmonition)
     .use(remarkTabs)
+    .use(remarkCodeEmbed, {
+      dir: opts.codeEmbedDir,
+    })
     .use(remarkRehype, {
       allowDangerousHtml: true,
     })
@@ -84,6 +88,9 @@ export async function render(source: string, opts: Options): Promise<Output> {
       content: {
         type: "text",
         value: "🔗",
+      },
+      test(node) {
+        return node.tagName !== "h1";
       },
     })
     .use(rehypeMermaid, {

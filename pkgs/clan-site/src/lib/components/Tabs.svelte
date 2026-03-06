@@ -27,6 +27,7 @@
 <style>
   article {
     overflow: hidden;
+    margin-block: 1em;
     border: 1px solid var(--tabs-border-color);
     border-radius: 8px;
   }
@@ -67,6 +68,7 @@
       border: 1px solid transparent;
       border-block-end: 0;
       font-weight: 500;
+      font-size: 16px;
     }
 
     .open button {

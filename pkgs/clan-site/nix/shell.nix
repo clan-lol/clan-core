@@ -13,6 +13,6 @@ mkShellNoCC {
   env = clan-site.devShellEnv;
   shellHook = ''
     ${clan-site.preBuild}
-    chmod -R +w src/docs src/lib/assets
+    chmod -R +w ../../docs-new src/lib/assets
   '';
 }
