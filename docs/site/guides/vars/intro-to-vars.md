@@ -103,7 +103,7 @@ vars/
 ```
 1. Add a service to clan.nix
          ↓
-2. Run: clan vars generate test-machine --no-sandbox
+2. Run: clan vars generate test-machine
          ↓
 3. Answer any prompts (or let Clan auto-generate)
          ↓
@@ -260,7 +260,7 @@ Now let's give Sally her own login on the machine so she doesn't have to use roo
     };
 ```
 
-Now run the vars generate command, adding --no-sandbox if necessary, but don't enter a password; have clan generate it for you this time by pressing Enter:
+Now run the vars generate command, but don't enter a password; have clan generate it for you this time by pressing Enter:
 
 ```
 clan vars generate sally-laptop
@@ -407,7 +407,7 @@ Notice how the fourth line is prompting for the wifi password for both machines,
 Now generate for Fred:
 
 ```bash
-clan vars generate fred-laptop --no-sandbox
+clan vars generate fred-laptop
 ```
 
 (Be careful! Sometimes the order changes and it asks for Fred's password before root.)
