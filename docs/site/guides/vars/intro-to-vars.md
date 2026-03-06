@@ -1,7 +1,5 @@
 # Introduction to Clan Vars
 
-## 🚧 Early Notes Draft — Not Ready for Review, but okay to glance at for technical mistakes
-
 Vars are Clan's system for managing secrets and generated values. This includes things like passwords, SSH keys, WiFi credentials, and encryption keys. They're generated on your setup machine, stored encrypted, and automatically deployed to your target machines as needed.
 
 ## The Problem Vars Solves
