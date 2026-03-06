@@ -214,7 +214,7 @@ You don't need to know the details. Just run `clan vars generate` and answer the
 ## Sample Test-Run Walkthrough Without Installing Machines
 
 !!! Tip
-    If you want to practice with any of these, you can run the starting nix code to generate a new clan; then you can create a machine configuration without gathering the hardware configuratino or writing the machine. You can add the above details to your clan.nix file and try out the commands such as `clan vars generate test-machine` as we demonstrate below.
+    If you want to practice with any of these, you can run the starting nix code to generate a new clan; then you can create a machine configuration without gathering the hardware configuration or writing the machine. You can add the above details to your clan.nix file and try out the commands such as `clan vars generate test-machine` as we demonstrate below.
 
 Let's do a quick test-run walkthrough.
 
