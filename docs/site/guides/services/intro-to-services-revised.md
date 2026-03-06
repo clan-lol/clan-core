@@ -36,7 +36,13 @@ Then deploy:
 clan machines update test-machine
 ```
 
-SSH into your machine and verify:
+SSH into your machine:
+
+```
+clan ssh test-machine
+```
+
+and verify:
 
 ```bash
 bat --version
