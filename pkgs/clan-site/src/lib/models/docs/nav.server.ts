@@ -32,7 +32,7 @@ export async function toNavItem(
 ): Promise<NavItemInput> {
   if (typeof navItem === "string") {
     return {
-      label: titles[navItem] ?? "",
+      label: titles[navItem] ?? "<Missing Page>",
       path: toDocsPath(navItem),
     };
   }

@@ -54,7 +54,6 @@ export class NavItems extends Array<NavItem> {
 
 export class NavGroup {
   public readonly label: string;
-  public readonly isActive: boolean;
   public readonly children: NavItems;
   public open: boolean;
   public constructor(
@@ -63,9 +62,10 @@ export class NavGroup {
     pointer: () => NavPointer,
   ) {
     this.label = item.label;
-    this.open = $state(item.open);
-    this.isActive = $derived(index === pointer()[0]);
-    this.children = new NavItems(item.children, () => pointer().slice(1));
+    this.open = $derived(index === pointer()[0]);
+    this.children = new NavItems(item.children, () =>
+      index === pointer()[0] ? pointer().slice(1) : [],
+    );
   }
 }
 
