@@ -1,7 +1,5 @@
 ## Adding Additional Machines
 
-## 🚧 Early Notes Draft — Not Ready for Review, but okay to glance at for technical mistakes
-
 When you're ready to add additional machines, remember that you will add them to your existing clan.
 
 !!! Note Important
