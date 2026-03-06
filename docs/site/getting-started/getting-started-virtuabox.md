@@ -9,7 +9,7 @@
 
 * **Nix** on your Setup Machine (unless you're using NixOS)
 
-* An **id_ed25519** keypair on your Setup Machine.
+* An **id_ed25519** keypair on your Setup Machine. (Link coming soon.)
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
 
