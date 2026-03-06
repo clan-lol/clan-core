@@ -23,11 +23,13 @@
     type,
     title = defaultTitle[type],
     collapsed,
+    open,
     children,
   }: {
     type: AdmonitionType;
     title?: string;
     collapsed?: boolean;
+    open?: boolean;
     children?: Snippet;
   } = $props();
 
@@ -47,6 +49,7 @@
 
 {#if collapsed}
   <details
+    {open}
     class:is-note={type === "note"}
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}

@@ -55,12 +55,14 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         ? "collapsed" in node.attributes
         : false;
 
+      const open = node.attributes ? "open" in node.attributes : false;
+
       parent.children.splice(
         index,
         1,
         {
           type: "html",
-          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(title)}` : ""}${collapsed ? " collapsed" : ""}>`,
+          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(title)}` : ""}${collapsed ? " collapsed" : ""}${open ? " open" : ""}>`,
         } as const,
         ...node.children,
         {
