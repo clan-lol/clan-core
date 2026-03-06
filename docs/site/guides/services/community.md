@@ -293,7 +293,7 @@ Services often need to share configuration data between machines. For example, c
 
 **Exports** provide a standardized way to share structured data between service components.
 
-🔗 See the complete guide: [Service Exports](./exports.md)
+See the complete guide: [Service Exports](./exports.md)
 
 ---
 

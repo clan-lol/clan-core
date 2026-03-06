@@ -1,4 +1,4 @@
-# :material-api: Glossary
+# Glossary
 
 ## Clan
 Collection of machines interconnected in a network.

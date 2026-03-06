@@ -43,12 +43,12 @@ users.users.root.hashedPasswordFile =
 
 ## Core Benefits
 
-- **🔄 Reproducible**: Same inputs always produce the same outputs
-- **📝 Declarative**: Defined alongside your NixOS configuration
-- **🔐 Secure**: Automatic secret storage and encrypted deployment
-- **👥 Collaborative**: Built-in sharing for team environments
-- **🚀 Automated**: No manual intervention required for deployments
-- **🔗 Integrated**: Works seamlessly with Clan's deployment workflow
+- **Reproducible**: Same inputs always produce the same outputs
+- **Declarative**: Defined alongside your NixOS configuration
+- **Secure**: Automatic secret storage and encrypted deployment
+- **Collaborative**: Built-in sharing for team environments
+- **Automated**: No manual intervention required for deployments
+- **Integrated**: Works seamlessly with Clan's deployment workflow
 
 ## How It Works
 
