@@ -1,7 +1,5 @@
 # Introduction to the Inventory
 
-# 🚧 Draft — Under Active Development (but ready for brief review)
-
 The **inventory** is the central registry of your clan. It's where you declare what machines exist and what services they run.
 
 ---
