@@ -209,7 +209,7 @@ Clan includes 30+ built-in services:
 | `monitoring` | Prometheus + Grafana |
 | `matrix-synapse` | Chat server |
 
-See the full list in the [Services Reference](../services/definition.md).
+See the full list in the Services Reference (Link coming soon).
 
 ## The Workflow
 
@@ -238,8 +238,3 @@ When you run `clan machines update`:
 4. The machine is now running your services
 
 No manual steps on the target machine. No logging in to install packages or edit config files. Everything is defined in your `clan.nix` and applied with one command.
-
-## Next Steps
-
-- [Introduction to Clan Vars](../vars/intro-to-vars-revised.md) - Learn how secrets and generated values work [NOTE: I'M CURRENTLY BUILDING THIS DOCUMENT TOO, BUT HAVEN'T PUSHED IT UP]
-- [Services Reference](../../services/definition.md) - See all available services
