@@ -55,7 +55,7 @@ inventory = {
 };
 ```
 
-- **deploy.targetHost**: where Clan SSHes to deploy this mahcine
+- **deploy.targetHost**: where Clan SSHes to deploy this machine
 - **tags**: labels for grouping machines (more on this below)
 
 ---
