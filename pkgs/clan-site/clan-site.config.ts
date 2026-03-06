@@ -20,6 +20,7 @@ export const docsNav: DocsNavItems = [
     children: [
       "",
       "getting-started/creating-your-first-clan",
+      "getting-started/getting-started-physical",
       "getting-started/add-machines",
       "getting-started/add-users",
       "getting-started/add-services",
@@ -28,6 +29,8 @@ export const docsNav: DocsNavItems = [
       "getting-started/configure-disk",
       "getting-started/deployment-phase",
       "getting-started/update-machines",
+      "getting-started/id-ed25519",
+      "getting-started/quick-start-card",
       "getting-started/whats-next",
     ],
   },

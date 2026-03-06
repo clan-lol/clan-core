@@ -1,7 +1,5 @@
 # Getting Started: Physical Machine Target
 
-## 🚧 First Draft — Ready for Review
-
 !!! Note Prerequisites
     Your setup machine needs the following:
 
