@@ -391,6 +391,7 @@ def transform_admonitions(lines: list[str]) -> list[str]:
     """
     Convert:
       ??? info "Title"       →  :::admonition[Title]{type=info collapsed}
+      ???+ info "Title"      →  :::admonition[Title]{type=info collapsed open}
       !!! info "Title"       →  :::admonition[Title]{type=info}
       ??? tip                →  :::admonition[Tip]{type=tip collapsed}
     Block content (indented 4 spaces relative to marker) is de-indented.
@@ -398,14 +399,14 @@ def transform_admonitions(lines: list[str]) -> list[str]:
     """
     result: list[str] = []
     i = 0
-    admon_re = re.compile(r'^(\s*)(\?\?\?|!!!)\s*(\w+)(?:\s+"([^"]*)")?\s*$')
+    admon_re = re.compile(r'^(\s*)(\?\?\?\+|\?\?\?|!!!)\s*(\w+)(?:\s+"([^"]*)")?\s*$')
 
     while i < len(lines):
         line = lines[i]
         m = admon_re.match(line.rstrip())
         if m:
             indent = m.group(1)  # leading whitespace of the marker
-            marker = m.group(2)  # ??? or !!!
+            marker = m.group(2)  # ???, ???+, or !!!
             admon_type = m.group(3).lower()
             admon_title = m.group(4)  # None if no quoted title
 
@@ -416,7 +417,12 @@ def transform_admonitions(lines: list[str]) -> list[str]:
                 # Strip markdown bold markers from title
                 admon_title = re.sub(r"\*+", "", admon_title)
 
-            collapsed = " collapsed" if marker == "???" else ""
+            if marker == "???":
+                collapsed = " collapsed"
+            elif marker == "???+":
+                collapsed = " collapsed open"
+            else:
+                collapsed = ""
             result.append(
                 f"{indent}:::admonition[{admon_title}]"
                 f"{{type={admon_type}{collapsed}}}\n"
