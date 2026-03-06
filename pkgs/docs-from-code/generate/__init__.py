@@ -324,6 +324,7 @@ def produce_clan_service_docs() -> None:
             module_info["manifest"]["categories"],
             ModuleManifest.categories_info(),
         )
+        output += "\n\n"
 
         output += f"{module_info['manifest']['readme']}\n"
 

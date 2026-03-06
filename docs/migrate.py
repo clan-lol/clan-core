@@ -11,8 +11,8 @@ import re
 import sys
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent          # docs/
-MKDOCS_YML = SCRIPT_DIR / "mkdocs.yml"                # docs/mkdocs.yml
+SCRIPT_DIR = Path(__file__).resolve().parent  # docs/
+MKDOCS_YML = SCRIPT_DIR / "mkdocs.yml"  # docs/mkdocs.yml
 
 SKIP_FILES = {
     Path("index.md"),
@@ -29,6 +29,7 @@ LANG_ALIASES: dict[str, str] = {
 # Nav title lookup
 # ---------------------------------------------------------------------------
 
+
 def parse_nav_titles(mkdocs_yml: Path) -> dict:
     """
     Scan the nav: section of mkdocs.yml for entries of the form
@@ -36,7 +37,7 @@ def parse_nav_titles(mkdocs_yml: Path) -> dict:
     and return a dict mapping Path("path/to/file.md") → "Some Title".
     Bare path entries (no explicit title) are ignored.
     """
-    nav_re = re.compile(r'^\s*-\s+(.+?):\s+(\S+\.md)\s*$')
+    nav_re = re.compile(r"^\s*-\s+(.+?):\s+(\S+\.md)\s*$")
     titles: dict = {}
     try:
         text = mkdocs_yml.read_text(encoding="utf-8")
@@ -45,7 +46,7 @@ def parse_nav_titles(mkdocs_yml: Path) -> dict:
 
     in_nav = False
     for line in text.splitlines():
-        if re.match(r'^nav:\s*$', line):
+        if re.match(r"^nav:\s*$", line):
             in_nav = True
             continue
         if in_nav:
@@ -62,6 +63,7 @@ def parse_nav_titles(mkdocs_yml: Path) -> dict:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def title_from_filename(stem: str) -> str:
     """Generate a title from a filename stem (dashes→spaces, title-case)."""
@@ -95,7 +97,11 @@ def has_h1(lines: list[str]) -> bool:
                 open_len = len(fence_str)
             else:
                 stripped = line.strip()
-                if stripped and all(c == open_char for c in stripped) and len(stripped) >= open_len:
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
                     in_code = False
         elif not in_code:
             if re.match(r"^# ", line) or line.rstrip() == "#":
@@ -106,6 +112,7 @@ def has_h1(lines: list[str]) -> bool:
 # ---------------------------------------------------------------------------
 # Step 2: fix missing spaces in headings (e.g. `#Text` → `# Text`)
 # ---------------------------------------------------------------------------
+
 
 def fix_heading_spaces(lines: list[str]) -> list[str]:
     result = []
@@ -124,7 +131,11 @@ def fix_heading_spaces(lines: list[str]) -> list[str]:
                 open_len = len(fence_str)
             else:
                 stripped = line.strip()
-                if stripped and all(c == open_char for c in stripped) and len(stripped) >= open_len:
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
                     in_code = False
             result.append(line)
         elif not in_code:
@@ -140,6 +151,7 @@ def fix_heading_spaces(lines: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Step 3: transform code-fence syntax-highlighting attributes
 # ---------------------------------------------------------------------------
+
 
 def _transform_fence_line(line: str) -> str:
     """
@@ -162,9 +174,7 @@ def _transform_fence_line(line: str) -> str:
     has_title = "title=" in rest
     # Detect class-only brace notation: {.class1 .class2 ...}
     # (no = assignments, no quoted values → just CSS-style class names)
-    is_class_brace = (
-        rest.startswith("{") and "=" not in rest and '"' not in rest
-    )
+    is_class_brace = rest.startswith("{") and "=" not in rest and '"' not in rest
     if not has_hl and not has_title and not is_class_brace:
         return line  # nothing to transform
 
@@ -249,7 +259,11 @@ def rename_fence_langs(lines: list[str]) -> list[str]:
                     line = m.group(1) + new_lang + m.group(3) + "\n"
             else:
                 stripped = line.strip()
-                if stripped and all(c == open_char for c in stripped) and len(stripped) >= open_len:
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
                     in_code = False
         result.append(line)
     return result
@@ -307,14 +321,14 @@ def transform_embeds(lines: list[str]) -> list[str]:
                     if em:
                         path = em.group(1)
                         # Strip docs/code-examples/ prefix
-                        path = re.sub(r'^docs/code-examples/', '', path)
+                        path = re.sub(r"^docs/code-examples/", "", path)
                         # Append embed= to opening fence line
-                        opening = result[open_line_idx].rstrip('\n')
-                        if ' ' in path:
+                        opening = result[open_line_idx].rstrip("\n")
+                        if " " in path:
                             opening += f' embed="{path}"'
                         else:
-                            opening += f' embed={path}'
-                        result[open_line_idx] = opening + '\n'
+                            opening += f" embed={path}"
+                        result[open_line_idx] = opening + "\n"
                         # Closing fence only – content removed
                         result.append(line)
                         continue
@@ -372,6 +386,7 @@ def transform_code_fences(lines: list[str]) -> list[str]:
 # Step 4: transform admonition blocks (??? and !!!)
 # ---------------------------------------------------------------------------
 
+
 def transform_admonitions(lines: list[str]) -> list[str]:
     """
     Convert:
@@ -383,16 +398,14 @@ def transform_admonitions(lines: list[str]) -> list[str]:
     """
     result: list[str] = []
     i = 0
-    admon_re = re.compile(
-        r'^(\s*)(\?\?\?|!!!)\s*(\w+)(?:\s+"([^"]*)")?\s*$'
-    )
+    admon_re = re.compile(r'^(\s*)(\?\?\?|!!!)\s*(\w+)(?:\s+"([^"]*)")?\s*$')
 
     while i < len(lines):
         line = lines[i]
         m = admon_re.match(line.rstrip())
         if m:
-            indent = m.group(1)       # leading whitespace of the marker
-            marker = m.group(2)       # ??? or !!!
+            indent = m.group(1)  # leading whitespace of the marker
+            marker = m.group(2)  # ??? or !!!
             admon_type = m.group(3).lower()
             admon_title = m.group(4)  # None if no quoted title
 
@@ -435,7 +448,7 @@ def transform_admonitions(lines: list[str]) -> list[str]:
                         break
                 elif cl.startswith(content_indent):
                     # De-indent by exactly content_indent, keep marker indent
-                    result.append(indent + cl[len(content_indent):])
+                    result.append(indent + cl[len(content_indent) :])
                     i += 1
                 else:
                     break
@@ -451,6 +464,7 @@ def transform_admonitions(lines: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Step 5: transform tab blocks (=== "Name")
 # ---------------------------------------------------------------------------
+
 
 def transform_tabs(lines: list[str]) -> list[str]:
     """
@@ -508,7 +522,7 @@ def transform_tabs(lines: list[str]) -> list[str]:
                         else:
                             break
                     elif cl.startswith(content_indent):
-                        result.append(indent + cl[len(content_indent):])
+                        result.append(indent + cl[len(content_indent) :])
                         i += 1
                     else:
                         break
@@ -531,6 +545,7 @@ def transform_tabs(lines: list[str]) -> list[str]:
 # Step 5b: fix directive colon counts for nesting
 # ---------------------------------------------------------------------------
 
+
 def fix_directive_colons(lines: list[str]) -> list[str]:
     """
     Adjust colon counts so each containing directive uses exactly one more
@@ -540,8 +555,8 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
     becomes:  :::::admonition wrapping ::::tabs wrapping :::tab
     """
     fence_re = re.compile(r"^(\s*)(`{3,}|~{3,})")
-    open_re = re.compile(r'^(\s*)(:{3,})(\w)')    # :::word  – opener
-    close_re = re.compile(r'^(\s*)(:{3,})\s*$')   # :::     – closer
+    open_re = re.compile(r"^(\s*)(:{3,})(\w)")  # :::word  – opener
+    close_re = re.compile(r"^(\s*)(:{3,})\s*$")  # :::     – closer
 
     # — Phase 1: parse directive tree (skip code blocks) —
     in_code = False
@@ -560,9 +575,11 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
                 open_len = len(fence_str)
             else:
                 stripped = line.strip()
-                if (stripped
-                        and all(c == open_char for c in stripped)
-                        and len(stripped) >= open_len):
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
                     in_code = False
             continue
         if in_code:
@@ -572,24 +589,24 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
         cm = close_re.match(line.rstrip())
 
         if om and not cm:
-            stack.append({'open': i, 'close': None, 'children': []})
+            stack.append({"open": i, "close": None, "children": []})
         elif cm:
             if stack:
                 node = stack.pop()
-                node['close'] = i
+                node["close"] = i
                 if stack:
-                    stack[-1]['children'].append(node)
+                    stack[-1]["children"].append(node)
                 else:
                     roots.append(node)
 
     # — Phase 2: compute colon counts bottom-up —
     def compute(node: dict) -> int:
-        if not node['children']:
-            node['colons'] = 3
+        if not node["children"]:
+            node["colons"] = 3
         else:
-            child_max = max(compute(c) for c in node['children'])
-            node['colons'] = child_max + 1
-        return node['colons']
+            child_max = max(compute(c) for c in node["children"])
+            node["colons"] = child_max + 1
+        return node["colons"]
 
     for r in roots:
         compute(r)
@@ -598,10 +615,10 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
     adjustments: dict[int, int] = {}
 
     def collect(node: dict) -> None:
-        adjustments[node['open']] = node['colons']
-        if node['close'] is not None:
-            adjustments[node['close']] = node['colons']
-        for c in node['children']:
+        adjustments[node["open"]] = node["colons"]
+        if node["close"] is not None:
+            adjustments[node["close"]] = node["colons"]
+        for c in node["children"]:
             collect(c)
 
     for r in roots:
@@ -616,11 +633,11 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
             cm = close_re.match(line.rstrip())
             if om and not cm:
                 indent = om.group(1)
-                rest_after_colons = line.rstrip()[len(indent) + len(om.group(2)):]
-                line = indent + ':' * new_n + rest_after_colons + '\n'
+                rest_after_colons = line.rstrip()[len(indent) + len(om.group(2)) :]
+                line = indent + ":" * new_n + rest_after_colons + "\n"
             elif cm:
                 indent = cm.group(1)
-                line = indent + ':' * new_n + '\n'
+                line = indent + ":" * new_n + "\n"
         result.append(line)
 
     return result
@@ -630,16 +647,40 @@ def fix_directive_colons(lines: list[str]) -> list[str]:
 # Step 6: remove duplicate h1 headings
 # ---------------------------------------------------------------------------
 
+
 def remove_duplicate_h1(lines: list[str]) -> list[str]:
-    """Keep only the first h1 heading; remove all subsequent ones."""
+    """Keep only the first h1 heading; remove all subsequent ones.
+    Skips lines inside code fences."""
     found_first = False
+    in_code = False
+    open_char = "`"
+    open_len = 3
+    fence_re = re.compile(r"^(\s*)(`{3,}|~{3,})")
     result: list[str] = []
     for line in lines:
-        m = re.match(r"^# (.+)", line.rstrip())
-        if m:
-            if found_first:
-                continue
-            found_first = True
+        fm = fence_re.match(line)
+        if fm:
+            fence_str = fm.group(2)
+            if not in_code:
+                in_code = True
+                open_char = fence_str[0]
+                open_len = len(fence_str)
+            else:
+                stripped = line.strip()
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
+                    in_code = False
+            result.append(line)
+            continue
+        if not in_code:
+            m = re.match(r"^# (.+)", line.rstrip())
+            if m:
+                if found_first:
+                    continue
+                found_first = True
         result.append(line)
     return result
 
@@ -647,6 +688,7 @@ def remove_duplicate_h1(lines: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Step 7: transform relative .md links to absolute /docs/ paths
 # ---------------------------------------------------------------------------
+
 
 def _resolve_link(base_dir: Path, current_file: Path, rel_link: str) -> str:
     """Resolve a relative .md link to an absolute /docs/… path."""
@@ -679,8 +721,15 @@ def _resolve_link(base_dir: Path, current_file: Path, rel_link: str) -> str:
     return f"/docs/{path_str}{anchor}"
 
 
-def transform_links(content: str, base_dir: Path, current_file: Path) -> str:
-    """Replace relative .md links with absolute /docs/ paths."""
+def transform_links(lines: list[str], base_dir: Path, current_file: Path) -> list[str]:
+    """Replace relative .md links with absolute /docs/ paths.
+    Skips lines inside code fences and inline code spans."""
+    link_re = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+    fence_re = re.compile(r"^(\s*)(`{3,}|~{3,})")
+    in_code = False
+    open_char = "`"
+    open_len = 3
+    result: list[str] = []
 
     def replace(m: re.Match) -> str:
         text = m.group(1)
@@ -695,12 +744,44 @@ def transform_links(content: str, base_dir: Path, current_file: Path) -> str:
         new_link = _resolve_link(base_dir, current_file, link)
         return f"[{text}]({new_link})"
 
-    return re.sub(r"\[([^\]]*)\]\(([^)]+)\)", replace, content)
+    for line in lines:
+        fm = fence_re.match(line)
+        if fm:
+            fence_str = fm.group(2)
+            if not in_code:
+                in_code = True
+                open_char = fence_str[0]
+                open_len = len(fence_str)
+            else:
+                stripped = line.strip()
+                if (
+                    stripped
+                    and all(c == open_char for c in stripped)
+                    and len(stripped) >= open_len
+                ):
+                    in_code = False
+            result.append(line)
+        elif in_code:
+            result.append(line)
+        else:
+            # Outside code fences: transform links, but skip inline code spans
+            # Split on backtick-delimited spans to avoid rewriting links in `code`
+            parts = re.split(r"(`[^`]+`)", line)
+            transformed = []
+            for part in parts:
+                if part.startswith("`") and part.endswith("`"):
+                    transformed.append(part)
+                else:
+                    transformed.append(link_re.sub(replace, part))
+            result.append("".join(transformed))
+
+    return result
 
 
 # ---------------------------------------------------------------------------
 # Step 8: strip indentation from code fences not inside a list item
 # ---------------------------------------------------------------------------
+
 
 def strip_non_list_fence_indent(lines: list[str]) -> list[str]:
     """
@@ -722,7 +803,7 @@ def strip_non_list_fence_indent(lines: list[str]) -> list[str]:
     """
     fence_re = re.compile(r"^(\s*)(`{3,}|~{3,})")
     list_re = re.compile(r"^(\s*)([-*+]|\d+[.)]) ")
-    open_dir_re = re.compile(r"^(\s*):{3,}\w")   # :::word  – opening directive
+    open_dir_re = re.compile(r"^(\s*):{3,}\w")  # :::word  – opening directive
     close_dir_re = re.compile(r"^(\s*):{3,}\s*$")  # ::: or :::: alone – closer
 
     in_code = False
@@ -808,9 +889,7 @@ def strip_non_list_fence_indent(lines: list[str]) -> list[str]:
                 # Non-blank, non-list, non-directive line: close list items
                 # whose content_indent exceeds this line's indentation.
                 line_indent = len(line) - len(line.lstrip())
-                contexts[-1] = [
-                    ci for ci in contexts[-1] if ci <= line_indent
-                ]
+                contexts[-1] = [ci for ci in contexts[-1] if ci <= line_indent]
                 if line_indent == 0:
                     contexts[-1].clear()
 
@@ -822,6 +901,7 @@ def strip_non_list_fence_indent(lines: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Main transformation pipeline
 # ---------------------------------------------------------------------------
+
 
 def transform_file(
     base_dir: Path,
@@ -884,9 +964,10 @@ def transform_file(
     # Step 7: strip indentation from code fences not inside list items
     lines = strip_non_list_fence_indent(lines)
 
-    # Step 8: transform relative links
+    # Step 8: transform relative links (code-fence and inline-code aware)
+    lines = transform_links(lines, base_dir, rel_path)
+
     content = "".join(lines)
-    content = transform_links(content, base_dir, rel_path)
 
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     with open(dest_path, "w", encoding="utf-8") as f:
