@@ -47,19 +47,6 @@ class Subcommand:
         return md_li
 
 
-icon_table = {
-    "backups": ":material-backup-restore: ",
-    "config": ":material-shape-outline: ",
-    "flakes": ":material-snowflake: ",
-    "flash": ":material-flash: ",
-    "history": ":octicons-history-24: ",
-    "machines": ":octicons-devices-24: ",
-    "secrets": ":octicons-passkey-fill-24: ",
-    "ssh": ":material-ssh: ",
-    "vms": ":simple-virtualbox: ",
-}
-
-
 @dataclass
 class Category:
     title: str
@@ -81,8 +68,7 @@ class Category:
     def to_md_li(self, level: int = 1) -> str:
         md_li = ""
         if level == self.level:
-            icon = icon_table.get(self.title, "")
-            md_li += f"""-   **[{icon}{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
+            md_li += f"""-   **[{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
             md_li += f"""{indent_all("---", 4)}\n\n"""
             md_li += indent_all(
                 f"{self.description.strip()}\n" if self.description else "",

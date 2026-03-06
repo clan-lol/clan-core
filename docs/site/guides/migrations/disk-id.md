@@ -57,7 +57,7 @@ disk-id/diskId: fcef30a749f8451d8f60c46e1ead726f
 
 Copy this value — you'll need it in the next step.
 
-### ✍️ Step 2: Replace Dynamic Configuration with Static Values
+### Step 2: Replace Dynamic Configuration with Static Values
 
 ✅ Goal: Make your disko.nix file standalone.
 

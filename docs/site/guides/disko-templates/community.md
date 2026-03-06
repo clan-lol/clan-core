@@ -1,9 +1,9 @@
 
 
-!!! Danger ":fontawesome-solid-road-barrier: Under Construction :fontawesome-solid-road-barrier:"
+!!! Danger "Under Construction"
     Currently under construction use with caution
 
-    :fontawesome-solid-road-barrier: :fontawesome-solid-road-barrier: :fontawesome-solid-road-barrier:
+
 
 
 ## Structure

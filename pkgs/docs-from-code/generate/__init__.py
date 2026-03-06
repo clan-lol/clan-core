@@ -156,7 +156,7 @@ def render_option(
         source_path = source_path.split(",")[0]
 
         res += f"""
-:simple-git: Declared in: [{name}]({source_path})
+Declared in: [{name}]({source_path})
 """
         res += "\n\n"
 

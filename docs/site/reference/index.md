@@ -1,4 +1,4 @@
-# :material-api: Overview
+# Overview
 
 This section of the site provides an overview of available options and commands within the Clan Framework.
 
