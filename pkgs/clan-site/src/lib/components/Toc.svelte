@@ -11,7 +11,7 @@
   <nav>
     <button use:toc.setHeight onclick={toc.onClickTitle}>
       {#if toc.open || !toc.activeTocItem}
-        Table of contents
+        On This Page
       {:else}
         {toc.activeTocItem.label}
       {/if}
@@ -182,8 +182,12 @@
       flex: none;
       align-self: start;
       order: 2;
+      overflow: auto;
       inline-size: 260px;
+      max-block-size: 100vh;
+      padding-block-end: 24px;
       margin-inline: 0;
+      margin-block-start: 32px;
       border-block-end: 0;
     }
 
@@ -207,6 +211,7 @@
     }
 
     .menu {
+      position: static;
       display: block;
       padding-block: 0;
       box-shadow: none;

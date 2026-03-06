@@ -3,7 +3,16 @@ import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
 
 const defaultType = "note";
-const types = ["note", "important", "danger", "tip"] as const;
+const types = [
+  "tip",
+  "info",
+  "note",
+  "danger",
+  "important",
+  "example",
+  "warning",
+  "developer",
+] as const;
 
 export type AdmonitionType = (typeof types)[number];
 
@@ -51,7 +60,7 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         1,
         {
           type: "html",
-          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(type)}` : ""}${collapsed ? " collapsed" : ""}>`,
+          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(title)}` : ""}${collapsed ? " collapsed" : ""}>`,
         } as const,
         ...node.children,
         {

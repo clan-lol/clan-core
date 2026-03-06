@@ -93,6 +93,7 @@
         # Clan site does its own fmt checking while linting
         # because of the difficult of supporting prettier plugins
         "pkgs/clan-site/*"
+        "docs/migrate.py"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"

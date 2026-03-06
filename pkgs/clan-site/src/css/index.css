@@ -3,23 +3,3 @@
 @import url("./custom-properties.css");
 @import url("./base.css");
 @import url("./shiki.css");
-
-code {
-  padding: 2px 3px;
-  color: var(--code-fg-color);
-  background: var(--code-bg-color);
-  border: 1px solid var(--code-border-color);
-  border-radius: 3px;
-  font-size: 16px;
-  line-height: 1.8;
-}
-
-@media (--medium) {
-  h1 {
-    font-size: 36px;
-  }
-
-  h2 {
-    font-size: 23px;
-  }
-}

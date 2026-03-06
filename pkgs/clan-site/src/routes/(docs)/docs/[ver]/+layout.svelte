@@ -48,6 +48,7 @@
 
 <style>
   article {
+    padding-block-end: 32px;
     /* safearea is always absolute */
     /* stylelint-disable-next-line csstools/use-logical */
     padding-left: max(14px, env(safe-area-inset-left));
@@ -58,6 +59,12 @@
     border-radius: 14px;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
+  }
+
+  .content {
+    :global(img) {
+      max-inline-size: 100%;
+    }
   }
 
   footer {

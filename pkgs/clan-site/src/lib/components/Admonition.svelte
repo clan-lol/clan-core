@@ -2,16 +2,21 @@
   import type { AdmonitionType } from "@clan.lol/svelte-md";
   import type { Snippet } from "svelte";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
-  import DangerIcon from "$lib/assets/icons/warning-filled.svg?component";
+  import EditIcon from "$lib/assets/icons/edit.svg?component";
   import ImportantIcon from "$lib/assets/icons/attention.svg?component";
-  import NoteIcon from "$lib/assets/icons/info.svg?component";
+  import InfoIcon from "$lib/assets/icons/info.svg?component";
   import TipIcon from "$lib/assets/icons/heart.svg?component";
+  import WarningIcon from "$lib/assets/icons/warning-filled.svg?component";
 
   const defaultTitle = {
+    info: "Info",
     note: "Note",
     important: "Important",
     danger: "Danger",
     tip: "Tip",
+    example: "Example",
+    warning: "Warning",
+    developer: "Developer",
   };
 
   const {
@@ -23,15 +28,19 @@
     type: AdmonitionType;
     title?: string;
     collapsed?: boolean;
-    children: Snippet;
+    children?: Snippet;
   } = $props();
 
   const Icon = $derived(
     {
-      note: NoteIcon,
+      info: InfoIcon,
+      note: InfoIcon,
       important: ImportantIcon,
-      danger: DangerIcon,
+      danger: WarningIcon,
       tip: TipIcon,
+      example: WarningIcon,
+      warning: WarningIcon,
+      developer: EditIcon,
     }[type],
   );
 </script>
@@ -46,7 +55,7 @@
     <summary
       ><Icon height="18" />{title}<ChevronRightIcon height="18" /></summary
     >
-    <div>{@render children()}</div>
+    <div class="content">{@render children?.()}</div>
   </details>
 {:else}
   <dl
@@ -56,7 +65,7 @@
     class:is-tip={type === "tip"}
   >
     <dt><Icon height="18" />{title}</dt>
-    <dd>{@render children()}</dd>
+    <dd>{@render children?.()}</dd>
   </dl>
 {/if}
 
@@ -112,6 +121,15 @@
     .is-tip > & {
       color: #065f46;
     }
+  }
+
+  dd,
+  .content {
+    font-size: 16px;
+  }
+
+  dd {
+    margin: 0;
   }
 
   summary {

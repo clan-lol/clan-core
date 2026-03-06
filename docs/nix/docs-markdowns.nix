@@ -2,14 +2,22 @@
   module-docs,
   clan-cli-docs,
   runCommand,
+  python314,
 }:
-runCommand "docs-markdowns" { } ''
-  mkdir $out
-  cp -Lr ${../.}/site/* $out
-  chmod +w $out/services
-  cp -r ${module-docs}/services/* $out/services
-  chmod +w $out/reference
-  cp -r ${module-docs}/reference/* $out/reference
-  mkdir -p $out/reference/cli
-  cp -r ${clan-cli-docs}/* $out/reference/cli
-''
+runCommand "docs-markdowns"
+  {
+    nativeBuildInputs = [ python314 ];
+  }
+  ''
+    mkdir $out
+    cp -LR ${../.}/site/* $out
+    rm $out/{index.md,api.md}
+    chmod +w $out/services
+    cp -LR ${module-docs}/services/* $out/services
+    chmod +w $out/reference
+    cp -LR ${module-docs}/reference/* $out/reference
+    mkdir -p $out/reference/cli
+    cp -LR ${clan-cli-docs}/* $out/reference/cli
+    chmod -R +w $out
+    python3 ${../.}/migrate.py $out
+  ''
