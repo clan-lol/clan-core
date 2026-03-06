@@ -210,14 +210,11 @@ class SecretStore(StoreBase):
                 )[first_machine]["sops"]["defaultGroups"]
 
             case PerExport(_):
-                msg = "PerExport vars are not implemented yet"
-                raise ClanError(msg)
-                # TODO:
-                # PerExport: admin key (automatic) + all machines from generator
-                # add_machines = generator.machines
-                # for m in add_machines:
-                #     self.ensure_machine_key(m)
-                # add_groups = []
+                add_machines = generator.machines
+                for m in add_machines:
+                    self.ensure_machine_key(m)
+                # TODO: add the groups feature
+                # add_groups =
 
         secret_folder = self.secret_path(generator.key, var.name)
         secret_folder.mkdir(parents=True, exist_ok=True)
@@ -285,6 +282,9 @@ class SecretStore(StoreBase):
             for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
+                        # PROBLEM!
+                        # generator.name is not unique
+                        # It may collide with generator name from perExport
                         target_path = (
                             output_dir / "activation" / generator.name / file.name
                         )

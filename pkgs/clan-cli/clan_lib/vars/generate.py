@@ -1,3 +1,4 @@
+import importlib
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -6,6 +7,7 @@ from typing import TYPE_CHECKING
 from clan_lib.api import API
 from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
+from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import current_system
 from clan_lib.nix_selectors import (
@@ -14,18 +16,19 @@ from clan_lib.nix_selectors import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars import graph
+from clan_lib.vars._types import GeneratorId, PerExport
 from clan_lib.vars.generator import (
+    ExportsFinalScript,
     Generator,
     get_machine_generators,
     get_machine_selectors,
 )
 from clan_lib.vars.migrations import run_migrations
 from clan_lib.vars.prompt import ask
+from clan_lib.vars.var import Var
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from clan_lib.vars._types import GeneratorId
 
 
 log = logging.getLogger(__name__)
@@ -345,6 +348,7 @@ def run_generators(
         generator.execute(
             prompt_values=prompt_values.get(generator.name, {}),
             no_sandbox=no_sandbox,
+            closure=[],
         )
 
     # Re-encrypt shared secrets if recipients changed (e.g. machine added)
@@ -367,3 +371,84 @@ def run_generators(
                 )
 
     flake.invalidate_cache()
+
+
+def get_flake_generators(
+    flake: Flake,
+) -> dict[GeneratorId, Generator]:
+    system = current_system()
+    raw_generators = flake.select(
+        f"clanInternals.systems.{system}.exports.*.generators.*.{{share,dependencies,prompts,validationHash}}"
+    )
+    raw_files = flake.select(
+        f"clanInternals.systems.{system}.exports.*.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
+    )
+
+    secret_module = flake.select("clanInternals.vars.settings.secretModule")
+    module = importlib.import_module(secret_module)
+    secret_store = module.SecretStore(flake=flake)
+
+    public_module = flake.select("clanInternals.vars.settings.publicModule")
+    module = importlib.import_module(public_module)
+    public_store = module.VarsStore(flake=flake)
+
+    generators: dict[GeneratorId, Generator] = {
+        (key := GeneratorId(gen_name, PerExport(scope))): Generator(
+            key=key,
+            dependency_map={
+                loc: GeneratorId(
+                    name=gen_ref["generator"],
+                    placement=PerExport(exports_key=gen_ref["exportKey"]),
+                )
+                for loc, gen_ref in gen["dependencies"].items()
+            },
+            files=[
+                Var(
+                    id=f"{gen_name}/{fname}",
+                    name=fname,
+                    machines=file["deploy"],
+                    secret=file["secret"],
+                    deploy=bool(file["deploy"]),
+                    owner=file["owner"],
+                    group=file["group"],
+                    mode=(
+                        file["mode"]
+                        if isinstance(file["mode"], int)
+                        else int(file["mode"], 8)
+                    ),
+                    needed_for=file["neededFor"],
+                    _store=secret_store,
+                )
+                for fname, file in raw_files[scope][gen_name].items()
+            ],
+            _secret_store=secret_store,
+            _public_store=public_store,
+            _flake=flake,
+            _final_script_source=ExportsFinalScript(scope=scope),
+            prompts=[],
+            validation_hash="abc",
+        )
+        for scope, scope_generators in raw_generators.items()
+        for gen_name, gen in scope_generators.items()
+    }
+    return generators
+
+
+def run_flake_generators(
+    flake: Flake,
+    # generators: list[str] | None = None,
+    full_closure: bool = False,
+    # prompt_values: dict[str, dict[str, str]] | PromptFunc | None = None,
+    # no_sandbox: bool = False,
+    # auto_accept_prompts: bool = False,
+) -> None:
+    generators = get_flake_generators(flake)
+    closure_func = (
+        graph.requested_closure if full_closure else graph.all_missing_closure
+    )
+    ordered_closure = closure_func(
+        list(generators),
+        generators,
+    )
+    for g in ordered_closure:
+        g.execute(closure=list(generators.values()))

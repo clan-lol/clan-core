@@ -63,7 +63,24 @@ class MachineFinalScript:
         return generator_final_script(system, self.machine_name, generator_name)
 
 
-FinalScriptSource = MachineFinalScript
+@dataclass(frozen=True)
+class ExportsFinalScript:
+    """Resolve finalScript via a machine's NixOS config."""
+
+    scope: str
+
+    def select(self, flake: "Flake", generator_name: str) -> str:
+        system = current_system()
+        return flake.select(
+            f"clanInternals.systems.{system}.exports.{self.scope}.generators.{generator_name}.finalScript"
+        )
+
+    def precache_selector(self, generator_name: str) -> str:
+        system = current_system()
+        return f"clanInternals.systems.{system}.exports.{self.scope}.generators.{generator_name}.finalScript"
+
+
+FinalScriptSource = MachineFinalScript | ExportsFinalScript
 
 
 def pretty_diff_objects(
@@ -594,12 +611,14 @@ class Generator:
 
     def execute(
         self,
+        closure: Sequence["Generator"],
         prompt_values: dict[str, str] | None = None,
         no_sandbox: bool = False,
     ) -> None:
         """Execute this generator to produce its output files.
 
         Args:
+            closure: List of all available Generators, that can be referenced for example in dependencies
             prompt_values: Optional dictionary of prompt values. If not provided, prompts will be asked interactively.
             no_sandbox: Whether to disable sandboxing when executing the generator
 
@@ -623,8 +642,7 @@ class Generator:
                     get_machine_generators(self.machines, self._flake)
                 )
             case PerExport(_):
-                # For PerExport generators without machines, skip dependency decryption for now
-                pass
+                decrypted_dependencies = self.decrypt_dependencies(closure)
 
         def get_prompt_value(prompt_name: str) -> str:
             try:
