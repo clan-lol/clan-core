@@ -58,7 +58,7 @@ In the upper right, click **Start**.
 
 You will see the NixOS loader start; simply wait. You'll see text scroll and finally a screen will open that starts with a QR code, followed by:
 
-* Login Crednetials. Below this is the root password for logging into the installer. (Not the installed NixOS after the procedure is complete.)
+* Login Credentials. Below this is the root password for logging into the installer. (Not the installed NixOS after the procedure is complete.)
 
 * Network Information. Take note of the IP address, such as 10.0.0.18.
 
@@ -143,7 +143,7 @@ Now it's time to gather info on your hardware. Type:
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
-replacing <IP-ADDRESS> with the IP address shown beneith the QR code.
+replacing <IP-ADDRESS> with the IP address shown beneath the QR code.
 
 You will be asked to enter "y" to proceed.
 
@@ -187,7 +187,7 @@ clan vars generate test-machine --no-sandbox
 
 # 9. Unmount the ISO and Reboot
 
-Shut down the vitual machine by clicking the close ("X") button. In the popup that appears, choose "Send the shutdown signal." Then click OK.
+Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose "Send the shutdown signal." Then click OK.
 
 In the main VirtualBox GUI, right-click on the VM, and choose **Settings...**.
 
