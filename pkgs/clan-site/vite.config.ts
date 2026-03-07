@@ -24,7 +24,7 @@ export default defineConfig({
     }),
     pagefind({
       pluginInstance: "docs",
-      siteDir: `build${siteConfig.docsBase}`,
+      siteDir: "build",
       staticDir: "static",
       assetsDir: `build/_assets/${siteConfig.version}`,
       bundleDir: "_pagefind/docs",

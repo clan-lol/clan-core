@@ -109,7 +109,7 @@ export interface Pagefind {
     query: string,
     options?: PagefindSearchOptions,
     duration?: number,
-  ) => Promise<PagefindSearchResults>;
+  ) => Promise<PagefindSearchResults | null>;
   destroy: () => Promise<void>;
   filters: () => Promise<PagefindFilterCounts>;
   init: () => Promise<void>;
@@ -190,7 +190,6 @@ export default function vitePluginPagefind({
           path: pathutil.resolve(root, siteDir),
           ...(glob ? { glob } : {}),
         });
-        // Await rm(bundleInStatic, { recursive: true, force: true });
         await index.writeFiles({
           outputPath:
             mode === "development"

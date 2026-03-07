@@ -7,11 +7,14 @@
   --secondary-bg-color: #d2dee2;
   --table-border-color: #d0d0d0;
   --table-alternative-bg-color: #f6f8fa;
-  --input-fg-color: #4f747a;
-  --input-border-color: #7b9b9f;
+  --search-fg-color: #4f747a;
+  --search-border-color: #b2c8cb;
+  --search-button-fg-color: var(--fg-color);
+  --search-button-bg-color: var(--bg-color);
+  --search-result-separator-color: #e5e5e5;
   --content-fg-color: #000;
   --content-bg-color: #fff;
-  --content-secondary-fg-color: #415e63;
+  --content-secondary-fg-color: #141616;
   --content-secondary-bg-color: #f7f9fa;
   --content-border-color: #d8e8eb;
   --toc-title-fg-color: var(--fg-color);

@@ -86,6 +86,11 @@ export async function render(source: string, opts: Options): Promise<Output> {
     })
     .use(rehypeAutolinkHeadings, {
       behavior: "append",
+      properties: {
+        ariaHidden: "true",
+        tabIndex: -1,
+        "data-pagefind-ignore": "true",
+      },
       content: {
         type: "text",
         value: "🔗",

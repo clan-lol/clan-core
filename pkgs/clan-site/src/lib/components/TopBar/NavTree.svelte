@@ -126,8 +126,8 @@
   @media (--medium) {
     nav {
       display: block;
-      flex: none;
-      inline-size: 280px;
+      grid-row: 2;
+      grid-column: 1;
     }
   }
 
