@@ -33,7 +33,7 @@
 
 {#snippet tocBranch(item: TocItem)}
   <li>
-    <a href={`#${item.id}`} onclick={item.onClick}>{item.label}</a>
+    <a href={`#${item.id}`} onclick={item.onClick}><span>{item.label}</span></a>
     {#if "children" in item}
       {@render tocTree(item.children)}
     {/if}
@@ -114,6 +114,12 @@
       &:hover {
         color: var(--toc-highlighted-fg-color);
         background: var(--toc-highlighted-bg-color);
+      }
+
+      > span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
