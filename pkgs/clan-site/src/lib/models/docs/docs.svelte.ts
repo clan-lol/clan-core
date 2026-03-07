@@ -1,21 +1,24 @@
-import type { ArticleInput, MastheadMode } from "./docs.ts";
+import type { ArticleInput, TopBarMode } from "./docs.ts";
 import type { NavItemsInput, NavSibling } from "./nav.ts";
 import { createContext } from "svelte";
 import { customMedia } from "$config";
 import { MediaQuery } from "svelte/reactivity";
 import { Nav } from "./nav.svelte.ts";
+import { Search } from "./search.svelte.ts";
 import { Toc } from "./toc.svelte.ts";
 
 export class Docs {
   public readonly nav: Nav;
   public readonly article: Article;
+  public readonly search: Search;
   public readonly isWide: boolean;
-  public mastheadMode: MastheadMode = $state(false);
+  public topbarMode: TopBarMode = $state("topBar");
   public constructor(navItems: NavItemsInput, article: () => ArticleInput) {
     const wide = new MediaQuery(customMedia.wide.slice(1, -1));
     this.isWide = $derived(wide.current);
     this.nav = new Nav(navItems, () => article().navPointer, this);
     this.article = new Article(article, this);
+    this.search = new Search(this);
   }
 }
 

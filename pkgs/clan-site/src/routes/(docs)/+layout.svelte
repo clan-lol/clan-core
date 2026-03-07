@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { ArticleInput } from "#lib/models/docs.ts";
   import { Docs, setDocsContext } from "$lib/models/docs/docs.svelte.ts";
-  import Masthead from "$lib/components/Masthead.svelte";
-  import Nav from "$lib/components/Nav.svelte";
   import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
-  import Search from "$lib/components/Search.svelte";
+  import TopBar from "~/lib/components/TopBar.svelte";
 
   const { data, children } = $props();
   // The warning is ignored because navItems themselves are never dynamically
@@ -18,19 +16,29 @@
   });
 </script>
 
-<Masthead />
-<Search />
-<main data-page-id="docs">
-  <aside>
-    <Nav />
-  </aside>
-  {@render children?.()}
-</main>
+<div class="container" data-pagefind-body>
+  <TopBar />
+  <main class:hidden={docs.search.results.length !== 0} data-page-id="docs">
+    {@render children?.()}
+  </main>
+</div>
 
 <style>
+  main {
+    &.hidden {
+      display: none;
+    }
+  }
+
   @media (--medium) {
+    .container {
+      display: grid;
+      grid-template: 60px auto / 280px minmax(0, 1fr);
+    }
+
     main {
-      display: flex;
+      grid-row: 2;
+      grid-column: 2;
     }
   }
 </style>

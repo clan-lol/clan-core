@@ -12,10 +12,10 @@ export class Nav {
   public readonly docs: Docs;
   public readonly items: NavItems;
   public get open(): boolean {
-    return this.docs.mastheadMode === "nav";
+    return this.docs.topbarMode === "nav";
   }
   public set open(v: boolean) {
-    this.docs.mastheadMode = v ? "nav" : false;
+    this.docs.topbarMode = v ? "nav" : "topBar";
   }
 
   public constructor(

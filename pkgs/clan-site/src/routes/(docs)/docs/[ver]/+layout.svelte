@@ -116,8 +116,6 @@
 
   @media (--medium) {
     .container {
-      flex: 1;
-      min-inline-size: 0;
       margin-inline-end: 14px;
     }
 
