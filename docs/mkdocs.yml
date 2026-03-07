@@ -9,8 +9,6 @@ validation:
   omitted_files: warn
   absolute_links: ignore
   unrecognized_links: warn
-  nav:
-    not_found: ignore # Ignore option-search/ added during build
 
 markdown_extensions:
   - abbr
@@ -197,8 +195,6 @@ nav:
           - services/official/yggdrasil.md
           - services/official/zerotier.md
       - services/community.md
-
-  - Search Clan Options: "option-search/"
 
 docs_dir: site
 site_dir: out
