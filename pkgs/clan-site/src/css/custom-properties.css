@@ -5,7 +5,7 @@
   --link-underline-color: #4e80ec;
   --bg-color: #e1ecf0;
   --secondary-bg-color: #d2dee2;
-  --table-border-color: #a3a3a3;
+  --table-border-color: #d0d0d0;
   --table-alternative-bg-color: #f6f8fa;
   --input-fg-color: #4f747a;
   --input-border-color: #7b9b9f;
@@ -26,6 +26,9 @@
   --code-fg-color: #171719;
   --code-bg-color: #eff1f5;
   --code-border-color: #c4c7cd;
+  --link-code-fg-color: var(--link-color);
+  --link-code-bg-color: #dde4f3;
+  --link-code-border-color: #abc0ed;
   --tabs-border-color: #d6d6d6;
   --shiki-indent-offset: 10px;
   --shiki-indent-guide-color: #0000000e;

@@ -222,8 +222,4 @@ export const docsNav: DocsNavItems = [
       "services/community",
     ],
   },
-  {
-    label: "Test",
-    path: "test",
-  },
 ];

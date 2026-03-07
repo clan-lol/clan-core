@@ -51,8 +51,8 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         node.children.shift();
       }
 
-      const collapsed = node.attributes
-        ? "collapsed" in node.attributes
+      const collapsible = node.attributes
+        ? "collapsible" in node.attributes
         : false;
 
       const open = node.attributes ? "open" in node.attributes : false;
@@ -62,7 +62,7 @@ const remarkAdmonition: Plugin<[], Root> = function () {
         1,
         {
           type: "html",
-          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(title)}` : ""}${collapsed ? " collapsed" : ""}${open ? " open" : ""}>`,
+          value: `<Admonition type={${JSON.stringify(type)}}${title ? ` title=${JSON.stringify(title)}` : ""}${collapsible ? " collapsible" : ""}${open ? " open" : ""}>`,
         } as const,
         ...node.children,
         {

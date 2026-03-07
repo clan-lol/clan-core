@@ -19,16 +19,16 @@
     developer: "Developer",
   };
 
-  const {
+  let {
     type,
     title = defaultTitle[type],
-    collapsed,
-    open,
+    collapsible,
+    open = $bindable(),
     children,
   }: {
     type: AdmonitionType;
     title?: string;
-    collapsed?: boolean;
+    collapsible?: boolean;
     open?: boolean;
     children?: Snippet;
   } = $props();
@@ -47,9 +47,9 @@
   );
 </script>
 
-{#if collapsed}
+{#if collapsible}
   <details
-    {open}
+    bind:open
     class:is-note={type === "note"}
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}

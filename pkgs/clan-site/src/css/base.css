@@ -25,7 +25,9 @@ h6 {
   align-items: baseline;
 
   a {
+    vertical-align: middle;
     order: 2;
+    font-size: 0.85em;
     text-decoration: none;
     visibility: hidden;
   }
@@ -74,8 +76,21 @@ strong {
 ul,
 ol {
   padding: 0;
-  padding-inline-start: 1.5em;
+  padding-inline-start: 1.3em;
   margin: 10px 0;
+
+  &.contains-task-list {
+    padding-inline-start: 1.4em;
+    list-style: none;
+
+    > li {
+      /* margin-inline-start: -20px; */
+
+      input[type="checkbox"]:first-of-type {
+        margin: 0 0.4em 0 -1.35em;
+      }
+    }
+  }
 }
 
 li {
@@ -96,6 +111,16 @@ code {
   border-radius: 4px;
   font-size: 16px;
   line-height: 1.8;
+
+  a:has(&) {
+    text-decoration: none;
+  }
+
+  a & {
+    color: var(--link-code-fg-color);
+    background: var(--link-code-bg-color);
+    border-color: var(--link-code-border-color);
+  }
 }
 
 table {
@@ -121,6 +146,6 @@ tr:nth-child(2n) {
 
 @media (--wide) {
   h1 {
-    margin-block-start: 1.5em;
+    margin-block-start: 1em;
   }
 }
