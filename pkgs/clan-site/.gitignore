@@ -25,3 +25,4 @@ vite.config.ts.timestamp-*
 /src/routes/(docs)/+layout.ts
 /src/routes/(docs)/docs/\[ver]/+page.ts
 /src/routes/(docs)/docs/\[ver]/*/
+/src/routes/(docs)/(content)/

@@ -5,10 +5,10 @@ import type {
 import { extractCustomMedia } from "#lib/models/custom-media.server.ts";
 import { readFile } from "node:fs/promises";
 
-export const version = await readFile(
-  new URL("../../VERSION", import.meta.url),
-  { encoding: "utf8" },
-);
+const versionFile = await readFile(new URL("../../VERSION", import.meta.url), {
+  encoding: "utf8",
+});
+export const version = versionFile.trim();
 export const customMedia = await extractCustomMedia();
 export const searchResultLimit = 5;
 export const codeMinLineNumberLines = 4;

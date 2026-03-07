@@ -4,6 +4,7 @@
     {
       self',
       pkgs,
+      lib,
       ...
     }:
     {
@@ -35,6 +36,9 @@
           inherit (self'.packages) module-docs clan-cli-docs;
         };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
+      }
+      // lib.optionalAttrs (pkgs.stdenv.isLinux) {
+        deploy-docs-v2 = pkgs.callPackage ./deploy-docs-v2.nix { docs = self'.packages.clan-site; };
       };
       checks.docs-integrity =
         pkgs.runCommand "docs-integrity"
