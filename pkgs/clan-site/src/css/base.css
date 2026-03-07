@@ -20,13 +20,8 @@ h3,
 h4,
 h5,
 h6 {
-  display: flex;
-  gap: 5px;
-  align-items: baseline;
-
   a {
-    vertical-align: middle;
-    order: 2;
+    margin-inline-start: 0.3em;
     font-size: 0.85em;
     text-decoration: none;
     visibility: hidden;

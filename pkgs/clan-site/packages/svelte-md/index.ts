@@ -85,6 +85,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
       maxTocDepth: opts.maxTocDepth,
     })
     .use(rehypeAutolinkHeadings, {
+      behavior: "append",
       content: {
         type: "text",
         value: "🔗",
