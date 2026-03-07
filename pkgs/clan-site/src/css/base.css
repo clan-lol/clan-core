@@ -74,8 +74,21 @@ strong {
 ul,
 ol {
   padding: 0;
-  padding-inline-start: 1.5em;
+  padding-inline-start: 1.3em;
   margin: 10px 0;
+
+  &.contains-task-list {
+    padding-inline-start: 1.4em;
+    list-style: none;
+
+    > li {
+      /* margin-inline-start: -20px; */
+
+      input[type="checkbox"]:first-of-type {
+        margin: 0 0.4em 0 -1.35em;
+      }
+    }
+  }
 }
 
 li {
