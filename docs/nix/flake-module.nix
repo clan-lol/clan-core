@@ -25,7 +25,6 @@
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (self'.packages)
             clan-cli-docs
-            option-search
             inventory-api-docs
             clan-lib-openapi
             module-docs
