@@ -716,7 +716,8 @@ def _resolve_link(base_dir: Path, current_file: Path, rel_link: str) -> str:
     try:
         rel = resolved.relative_to(source_abs)
     except ValueError:
-        return rel_link
+        # Can't resolve to /docs/ path, but still strip .md
+        return re.sub(r"\.md(#|$)", r"\1", rel_link)
 
     without_md = rel.with_suffix("")
     # foo/index → foo
@@ -729,8 +730,10 @@ def _resolve_link(base_dir: Path, current_file: Path, rel_link: str) -> str:
 
 def transform_links(lines: list[str], base_dir: Path, current_file: Path) -> list[str]:
     """Replace relative .md links with absolute /docs/ paths.
-    Skips lines inside code fences and inline code spans."""
-    link_re = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+    Skips lines inside code fences.
+    Handles multi-line links where [text\\n...](url.md) spans lines."""
+    # Match ](url) — the URL part is always on one line, even for multi-line links
+    url_re = re.compile(r"\]\(([^)]+\.md(?:#[^)]*)?)\)")
     fence_re = re.compile(r"^(\s*)(`{3,}|~{3,})")
     in_code = False
     open_char = "`"
@@ -738,17 +741,12 @@ def transform_links(lines: list[str], base_dir: Path, current_file: Path) -> lis
     result: list[str] = []
 
     def replace(m: re.Match) -> str:
-        text = m.group(1)
-        link = m.group(2)
+        link = m.group(1)
         # Skip absolute and external links
         if link.startswith(("http://", "https://", "/", "mailto:")):
             return m.group(0)
-        # Only handle .md links (possibly with #anchor)
-        base = link.split("#")[0]
-        if not base.endswith(".md"):
-            return m.group(0)
         new_link = _resolve_link(base_dir, current_file, link)
-        return f"[{text}]({new_link})"
+        return f"]({new_link})"
 
     for line in lines:
         fm = fence_re.match(line)
@@ -770,16 +768,7 @@ def transform_links(lines: list[str], base_dir: Path, current_file: Path) -> lis
         elif in_code:
             result.append(line)
         else:
-            # Outside code fences: transform links, but skip inline code spans
-            # Split on backtick-delimited spans to avoid rewriting links in `code`
-            parts = re.split(r"(`[^`]+`)", line)
-            transformed = []
-            for part in parts:
-                if part.startswith("`") and part.endswith("`"):
-                    transformed.append(part)
-                else:
-                    transformed.append(link_re.sub(replace, part))
-            result.append("".join(transformed))
+            result.append(url_re.sub(replace, line))
 
     return result
 

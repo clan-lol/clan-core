@@ -146,6 +146,6 @@ tr:nth-child(2n) {
 
 @media (--wide) {
   h1 {
-    margin-block-start: 1.5em;
+    margin-block-start: 1em;
   }
 }
