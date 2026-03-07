@@ -28,7 +28,6 @@ stdenv.mkDerivation (
     fodAttrs = fodArgs // {
       pname = builtins.hashString "md5" (builtins.toJSON fodArgs);
     };
-
   in
   {
     pname = "clan-site";
@@ -38,6 +37,7 @@ stdenv.mkDerivation (
     src = lib.fileset.toSource {
       root = ../../../.;
       fileset = lib.fileset.unions [
+        ../../../VERSION
         ../../../docs
         ../../../${finalAttrs.pnpmRoot}
       ];
