@@ -32,6 +32,11 @@ h6 {
     visibility: hidden;
   }
 
+  code {
+    padding-block-end: 0;
+    line-height: inherit;
+  }
+
   &:hover a {
     visibility: visible;
   }
