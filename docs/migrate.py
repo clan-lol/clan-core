@@ -390,10 +390,10 @@ def transform_code_fences(lines: list[str]) -> list[str]:
 def transform_admonitions(lines: list[str]) -> list[str]:
     """
     Convert:
-      ??? info "Title"       →  :::admonition[Title]{type=info collapsed}
-      ???+ info "Title"      →  :::admonition[Title]{type=info collapsed open}
+      ??? info "Title"       →  :::admonition[Title]{type=info collapsible}
+      ???+ info "Title"      →  :::admonition[Title]{type=info collapsible open}
       !!! info "Title"       →  :::admonition[Title]{type=info}
-      ??? tip                →  :::admonition[Tip]{type=tip collapsed}
+      ??? tip                →  :::admonition[Tip]{type=tip collapsible}
     Block content (indented 4 spaces relative to marker) is de-indented.
     Block closes with :::.
     """
@@ -418,14 +418,14 @@ def transform_admonitions(lines: list[str]) -> list[str]:
                 admon_title = re.sub(r"\*+", "", admon_title)
 
             if marker == "???":
-                collapsed = " collapsed"
+                collapsible = " collapsible"
             elif marker == "???+":
-                collapsed = " collapsed open"
+                collapsible = " collapsible open"
             else:
-                collapsed = ""
+                collapsible = ""
             result.append(
                 f"{indent}:::admonition[{admon_title}]"
-                f"{{type={admon_type}{collapsed}}}\n"
+                f"{{type={admon_type}{collapsible}}}\n"
             )
             i += 1
 
