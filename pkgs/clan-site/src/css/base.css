@@ -25,7 +25,9 @@ h6 {
   align-items: baseline;
 
   a {
+    vertical-align: middle;
     order: 2;
+    font-size: 0.85em;
     text-decoration: none;
     visibility: hidden;
   }
