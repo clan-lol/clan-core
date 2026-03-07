@@ -11,11 +11,6 @@ const svelteConfig: Config = {
       assets: `build/_assets/${version}`,
       strict: true,
     }),
-    prerender: {
-      handleHttpError: "warn",
-      handleMissingId: "warn",
-      handleUnseenRoutes: "ignore",
-    },
     paths: {
       // SvelteKit doesn't support specifying an absolute base for assets only,
       //  which we need to support docs versioning via nginx. It does support a
