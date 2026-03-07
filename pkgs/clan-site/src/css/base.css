@@ -111,6 +111,16 @@ code {
   border-radius: 4px;
   font-size: 16px;
   line-height: 1.8;
+
+  a:has(&) {
+    text-decoration: none;
+  }
+
+  a & {
+    color: var(--link-code-fg-color);
+    background: var(--link-code-bg-color);
+    border-color: var(--link-code-border-color);
+  }
 }
 
 table {
