@@ -36,6 +36,7 @@
     position: absolute;
     inset-inline: 0;
     inset-block: 60px 0;
+    z-index: 1000;
     background: #00000050;
     backdrop-filter: blur(5px);
   }
@@ -44,6 +45,7 @@
     position: absolute;
     inset-inline: 0;
     inset-block: 60px 0;
+    z-index: 1000;
     overflow: auto;
     margin: 0;
     background: #fff;
