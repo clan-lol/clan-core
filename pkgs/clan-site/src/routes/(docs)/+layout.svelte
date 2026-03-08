@@ -18,14 +18,17 @@
 
 <div class="container" data-pagefind-body>
   <TopBar />
-  <main class:hidden={docs.search.results.length !== 0} data-page-id="docs">
+  <main
+    class:showing-search={docs.search.results.length !== 0}
+    data-page-id="docs"
+  >
     {@render children?.()}
   </main>
 </div>
 
 <style>
   main {
-    &.hidden {
+    &.showing-search {
       display: none;
     }
   }
@@ -39,6 +42,10 @@
     main {
       grid-row: 2;
       grid-column: 2;
+
+      &.showing-search {
+        display: block;
+      }
     }
   }
 </style>
