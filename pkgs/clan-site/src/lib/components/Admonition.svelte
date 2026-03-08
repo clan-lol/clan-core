@@ -54,6 +54,10 @@
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}
     class:is-tip={type === "tip"}
+    class:is-info={type === "info"}
+    class:is-example={type === "example"}
+    class:is-warning={type === "warning"}
+    class:is-developer={type === "developer"}
   >
     <summary
       ><Icon height="18" />{title}<ChevronRightIcon height="18" /></summary
@@ -66,6 +70,10 @@
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}
     class:is-tip={type === "tip"}
+    class:is-info={type === "info"}
+    class:is-example={type === "example"}
+    class:is-warning={type === "warning"}
+    class:is-developer={type === "developer"}
   >
     <dt><Icon height="18" />{title}</dt>
     <dd>{@render children?.()}</dd>
@@ -98,6 +106,26 @@
       background-color: var(--admonition-tip-bg);
       border-inline-start-color: var(--admonition-tip-border);
     }
+
+    &.is-info {
+      background-color: var(--admonition-info-bg);
+      border-inline-start-color: var(--admonition-info-border);
+    }
+
+    &.is-example {
+      background-color: var(--admonition-example-bg);
+      border-inline-start-color: var(--admonition-example-border);
+    }
+
+    &.is-warning {
+      background-color: var(--admonition-warning-bg);
+      border-inline-start-color: var(--admonition-warning-border);
+    }
+
+    &.is-developer {
+      background-color: var(--admonition-developer-bg);
+      border-inline-start-color: var(--admonition-developer-border);
+    }
   }
 
   dt,
@@ -123,6 +151,22 @@
 
     .is-tip > & {
       color: var(--admonition-tip-fg);
+    }
+
+    .is-info > & {
+      color: var(--admonition-info-fg);
+    }
+
+    .is-example > & {
+      color: var(--admonition-example-fg);
+    }
+
+    .is-warning > & {
+      color: var(--admonition-warning-fg);
+    }
+
+    .is-developer > & {
+      color: var(--admonition-developer-fg);
     }
   }
 
