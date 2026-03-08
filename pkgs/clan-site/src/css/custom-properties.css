@@ -66,12 +66,12 @@
   --admonition-developer-bg-color: #f3f4f6;
   --admonition-developer-border-color: #9ca3af;
   --admonition-developer-fg-color: #374151;
-  --search-input-bg: #fff;
-  --search-input-border: #7b9b9f;
-  --search-input-placeholder: #4f747a;
-  --search-backdrop-bg: #00000050;
-  --search-result-bg: #fff;
-  --search-result-shadow: #00000060;
+  --search-input-bg-color: #fff;
+  --search-input-border-color: #7b9b9f;
+  --search-input-placeholder-color: #4f747a;
+  --search-backdrop-bg-color: #00000050;
+  --search-result-bg-color: #fff;
+  --search-result-shadow-color: #00000060;
   --heading-border-color: #bbb;
   --toc-shadow-color: #00000020;
 
@@ -146,12 +146,12 @@
     --admonition-developer-bg-color: oklch(22% 0.005 230deg);
     --admonition-developer-border-color: oklch(55% 0.01 230deg);
     --admonition-developer-fg-color: oklch(72% 0.01 230deg);
-    --search-input-bg: oklch(22% 0.012 230deg);
-    --search-input-border: oklch(40% 0.02 230deg);
-    --search-input-placeholder: oklch(60% 0.02 230deg);
-    --search-backdrop-bg: oklch(10% 0.008 230deg / 60%);
-    --search-result-bg: oklch(20% 0.012 230deg);
-    --search-result-shadow: oklch(5% 0.008 230deg / 60%);
+    --search-input-bg-color: oklch(22% 0.012 230deg);
+    --search-input-border-color: oklch(40% 0.02 230deg);
+    --search-input-placeholder-color: oklch(60% 0.02 230deg);
+    --search-backdrop-bg-color: oklch(10% 0.008 230deg / 60%);
+    --search-result-bg-color: oklch(20% 0.012 230deg);
+    --search-result-shadow-color: oklch(5% 0.008 230deg / 60%);
     --heading-border-color: oklch(38% 0.012 230deg);
     --toc-shadow-color: oklch(5% 0.008 230deg / 30%);
   }

@@ -36,7 +36,7 @@
     position: absolute;
     inset-inline: 0;
     inset-block: 60px 0;
-    background: var(--search-backdrop-bg);
+    background: var(--search-backdrop-bg-color);
     backdrop-filter: blur(5px);
   }
 
@@ -47,7 +47,7 @@
     z-index: 1000;
     overflow: auto;
     margin: 0;
-    background: var(--search-result-bg);
+    background: var(--search-result-bg-color);
   }
 
   dd {
@@ -69,7 +69,7 @@
       max-block-size: calc(100vh - 60px);
       border-end-start-radius: 12px;
       border-end-end-radius: 12px;
-      box-shadow: 0 12px 30px var(--search-result-shadow);
+      box-shadow: 0 12px 30px var(--search-result-shadow-color);
     }
 
     .search-result {
