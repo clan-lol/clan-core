@@ -11,16 +11,11 @@ const svelteConfig: Config = {
       assets: `build/_assets/${version}`,
       strict: true,
     }),
-    prerender: {
-      handleHttpError: "warn",
-      handleMissingId: "warn",
-      handleUnseenRoutes: "ignore",
-    },
     paths: {
-      // SvelteKit doesn't support specifying an absolute base for assets only,
-      //  which we need to support docs versioning via nginx. It does support a
-      //  full URL as the base. We will remove the https://<uuid> part in
-      //  src/hooks.server.ts
+      // SvelteKit doesn't support specifying an absolute base for assets only.
+      // We need that to support docs versioning via nginx. It does support a
+      // full URL as the base. We will remove the https://<uuid> part in
+      // the @clan.lol/vite-plugin-replace vite plugin
       assets: DEV
         ? ""
         : `https://36f875d1-c51e-47f5-83cd-3ff35490163f/_assets/${version}`,

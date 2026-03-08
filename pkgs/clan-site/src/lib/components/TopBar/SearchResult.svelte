@@ -5,6 +5,13 @@
 </script>
 
 {#if docs.search.results.length !== 0}
+  <div
+    aria-hidden="true"
+    class="backdrop"
+    onclick={(): void => {
+      docs.topbarMode = "topBar";
+    }}
+  ></div>
   <dl>
     {#each docs.search.results as result (result)}
       <div class="search-result">
@@ -25,6 +32,14 @@
 {/if}
 
 <style>
+  .backdrop {
+    position: absolute;
+    inset-inline: 0;
+    inset-block: 60px 0;
+    background: #00000050;
+    backdrop-filter: blur(5px);
+  }
+
   dl {
     position: absolute;
     inset-inline: 0;
@@ -48,11 +63,12 @@
   @media (--medium) {
     dl {
       inset-inline-start: calc(50% - 325px);
+      inset-block-end: auto;
       inline-size: 650px;
-      max-block-size: 80vh;
+      max-block-size: calc(100vh - 60px);
       border-end-start-radius: 12px;
       border-end-end-radius: 12px;
-      box-shadow: 0 8px 24px #00000030;
+      box-shadow: 0 12px 30px #00000060;
     }
 
     .search-result {

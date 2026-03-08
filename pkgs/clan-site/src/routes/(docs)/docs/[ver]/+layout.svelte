@@ -17,7 +17,7 @@
       {#if toc.items.length !== 0}
         <Toc />
       {/if}
-      <div class="content" use:toc.setContent>
+      <div class="content" use:toc.setContent bind:this={docs.contentElement}>
         {@render children()}
       </div>
     </div>

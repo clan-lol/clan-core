@@ -11,8 +11,8 @@ runCommand "docs-markdowns"
   ''
     mkdir $out
     cp -LR ${../.}/site/* $out
-    chmod +w $out/static
-    rm -r $out/{index.md,api.md,static}
+    chmod +w $out/{static,includes}
+    rm -r $out/{index.md,api.md,static,includes}
     chmod +w $out/services
     cp -LR ${module-docs}/services/* $out/services
     chmod +w $out/reference

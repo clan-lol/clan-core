@@ -14,11 +14,6 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent  # docs/
 MKDOCS_YML = SCRIPT_DIR / "mkdocs.yml"  # docs/mkdocs.yml
 
-SKIP_FILES = {
-    Path("index.md"),
-    Path("api.md"),
-}
-
 # Language identifier renames applied to all fence opening lines.
 LANG_ALIASES: dict[str, str] = {
     "shellSession": "console",
@@ -768,7 +763,11 @@ def transform_links(lines: list[str], base_dir: Path, current_file: Path) -> lis
         elif in_code:
             result.append(line)
         else:
-            result.append(url_re.sub(replace, line))
+            new_line = url_re.sub(replace, line)
+            # clan_inventory.md: MkDocs uses #tags_1 for the duplicate "tags" heading
+            if current_file == Path("reference/options/clan_inventory.md"):
+                new_line = new_line.replace("#tags_1)", "#tags)")
+            result.append(new_line)
 
     return result
 
@@ -985,9 +984,6 @@ def main() -> None:
     written = 0
     for source_path in md_files:
         rel = source_path.relative_to(target_dir)
-        if rel in SKIP_FILES:
-            print(f"  (skip) {rel}")
-            continue
         print(f"  {rel}")
         transform_file(target_dir, source_path, source_path, nav_titles=nav_titles)
         written += 1

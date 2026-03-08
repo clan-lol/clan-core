@@ -5,8 +5,8 @@ export default function vitePluginValue({
   specifier,
   value,
 }: {
-  specifier: string;
-  value: object;
+  readonly specifier: string;
+  readonly value: object;
 }): PluginOption {
   return {
     name: pkg.name,

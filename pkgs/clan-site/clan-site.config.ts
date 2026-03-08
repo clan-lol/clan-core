@@ -2,19 +2,16 @@ import type {
   NavItemsConfig as DocsNavItems,
   DocsPath,
 } from "#lib/models/docs.ts";
-import { extractCustomMedia } from "#lib/models/custom-media.server.ts";
-import { readFile } from "node:fs/promises";
+import { extractCustomMedia, readVersion } from "#lib/util.server.ts";
 
-const versionFile = await readFile(new URL("../../VERSION", import.meta.url), {
-  encoding: "utf8",
-});
-export const version = versionFile.trim();
+export const version = await readVersion();
 export const customMedia = await extractCustomMedia();
 export const searchResultLimit = 5;
 export const codeMinLineNumberLines = 4;
 export const codeLightTheme = "catppuccin-latte";
 export const codeDarkTheme = "catppuccin-macchiato";
 export const maxTocDepth = 3;
+export const copyButtonMessageDelay = 3000;
 export const docsDir = "src/docs";
 export const docsBase: DocsPath = `/docs/${version}`;
 export const docsNav: DocsNavItems = [
@@ -86,6 +83,7 @@ export const docsNav: DocsNavItems = [
           "guides/networking/mesh-vpn",
         ],
       },
+      "guides/users/custom",
       "guides/nixpkgs-flake-input",
       "guides/flake-parts",
       "guides/nixos-rebuild",

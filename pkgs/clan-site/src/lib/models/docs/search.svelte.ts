@@ -6,6 +6,7 @@ import type {
 import { asset } from "$app/paths";
 import { browser } from "$app/environment";
 import { onNavigate } from "$app/navigation";
+import { searchResultLimit } from "$config";
 
 export class Search {
   #docs: Docs;
@@ -59,9 +60,19 @@ export class Search {
         if (!search) {
           return;
         }
+
         this.#results = await Promise.all(
-          search.results.map(async (r) => await r.data()),
+          search.results
+            .slice(0, searchResultLimit)
+            .map(async (r) => await r.data()),
         );
+        // By the time excerpts return, user might have already cleared the
+        // query, in which case we should throw away the results. Unfortunately
+        // pagefind doesn't provide a cancelling API, otherwise we should call
+        // it whenever query becomes empty
+        if (!this.query) {
+          this.#results = [];
+        }
       })();
     });
   }
