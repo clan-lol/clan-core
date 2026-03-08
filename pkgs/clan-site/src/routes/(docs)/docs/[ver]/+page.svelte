@@ -141,7 +141,7 @@
     background: var(--secondary-bg-color);
     border: 1px solid var(--content-border-color);
     border-radius: 3px;
-    box-shadow: inset 2px 2px 0 0 var(--content-bg-color);
+    box-shadow: inset 2px 2px 0 0 var(--highlight-color);
     font-size: 16px;
     text-decoration: none;
 

@@ -57,7 +57,6 @@
     padding-inline-start: 11px;
     margin-inline-start: 14px;
     background: var(--search-input-bg-color);
-    /* border: 1px solid var(--search-input-border-color); */
     border-radius: 999em;
     font-size: 16px;
 
