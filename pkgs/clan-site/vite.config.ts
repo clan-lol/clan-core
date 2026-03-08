@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import pagefind from "@clan.lol/vite-plugin-pagefind";
+import replace from "./packages/vite-plugin-replace/index.ts";
 import * as siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 import svg from "@poppanator/sveltekit-svg";
@@ -21,6 +22,17 @@ export default defineConfig({
     valuePlugin({
       specifier: "$config",
       value: siteConfig,
+    }),
+    // Refer to kit.paths.assets in svelte.config.ts on why this is needed
+    replace({
+      dir: "build",
+      test: /\.(?:js|html)$/,
+      replacements: [
+        {
+          from: "https://36f875d1-c51e-47f5-83cd-3ff35490163f",
+          to: "",
+        },
+      ],
     }),
     pagefind({
       pluginInstance: "docs",
