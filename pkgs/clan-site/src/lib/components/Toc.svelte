@@ -1,15 +1,28 @@
 <script lang="ts">
   import type { TocItem, TocItems } from "../models/docs/toc.svelte.ts";
+  import ArrowTopIcon from "$lib/assets/icons/arrow-top.svg?component";
   import ChevronRightIcon from "$lib/assets/icons/chevron-right.svg?component";
   import { getDocsContext } from "#lib/models/docs.ts";
 
   const docs = getDocsContext();
   const toc = $derived(docs.article.toc);
+
+  const topBarHeight = 60;
+  let scrollY = $state(0);
+  function scrollToTop(): void {
+    toc.open = false;
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
 </script>
+
+<svelte:window bind:scrollY />
 
 <header class:open={toc.open}>
   <nav>
-    <button use:toc.setHeight onclick={toc.onClickTitle}>
+    <button class="toc-title" use:toc.setHeight onclick={toc.onClickTitle}>
       {#if toc.open || !toc.activeTocItem}
         On This Page
       {:else}
@@ -17,6 +30,11 @@
       {/if}
       <ChevronRightIcon height="16" />
     </button>
+    <button
+      class="scroll-to-top"
+      class:hidden={scrollY < topBarHeight}
+      onclick={scrollToTop}><ArrowTopIcon height="14" /></button
+    >
     <div class="menu">
       {@render tocTree(toc.items)}
     </div>
@@ -56,17 +74,40 @@
   }
 
   nav {
-    > button {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      inline-size: 100%;
-      padding: 14px;
-      color: var(--toc-title-fg-color);
-      background: transparent;
-      border: 0;
-      font: inherit;
-      cursor: pointer;
+    position: relative;
+    display: flex;
+  }
+
+  .toc-title {
+    display: flex;
+    flex: 1;
+    gap: 5px;
+    align-items: center;
+    padding: 14px;
+    color: var(--toc-title-fg-color);
+    background: transparent;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .scroll-to-top {
+    position: relative;
+    padding: 8px 14px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block: 12px;
+      border-inline-start: 1px solid var(--toc-border-color);
+    }
+
+    &.hidden {
+      display: none;
     }
   }
 
@@ -127,6 +168,7 @@
   .menu {
     position: absolute;
     inset-inline: 0;
+    inset-block-start: 100%;
     display: none;
     padding-block: 9px;
     margin-block-start: 1px;
@@ -167,10 +209,9 @@
       margin-inline: -28px;
     }
 
-    nav {
-      > button {
-        padding-inline: 28px;
-      }
+    .toc-title,
+    .scroll-to-top {
+      padding-inline: 28px;
     }
 
     .menu > ol {
@@ -191,21 +232,27 @@
       overflow: auto;
       inline-size: 260px;
       max-block-size: 100vh;
-      padding-block-end: 24px;
+      padding-block: 12px 24px;
       margin-inline: 0;
-      margin-block-start: 32px;
+      margin-block-start: 14px;
       border-block-end: 0;
     }
 
     nav {
-      > button {
-        padding: 18px 24px;
-        font-weight: 600;
+      display: block;
+    }
 
-        :global(svg) {
-          display: none;
-        }
+    .toc-title {
+      padding: 18px 24px;
+      font-weight: 600;
+
+      :global(svg) {
+        display: none;
       }
+    }
+
+    .scroll-to-top {
+      display: none;
     }
 
     li {
