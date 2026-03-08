@@ -1,4 +1,4 @@
-import type { CustomMedia } from "./custom-media.ts";
+import type { CustomMedia } from "#lib/models/custom-media.ts";
 import postcss from "postcss";
 import postcssrc from "postcss-load-config";
 
