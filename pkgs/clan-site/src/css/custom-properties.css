@@ -1,3 +1,4 @@
+/* Light mode (default) */
 :root {
   --fg-color: #000;
   --secondary-fg-color: #2c4347;
@@ -41,4 +42,94 @@
   --shiki-diff-add-bg-color: #20c55150;
   --shiki-highlighted-bg-color: #ffffffc6;
   --shiki-title-border-color: #0000001a;
+  --admonition-note-bg: #eff6ff;
+  --admonition-note-border: #3b82f6;
+  --admonition-note-fg: #1e40af;
+  --admonition-important-bg: #fffbeb;
+  --admonition-important-border: #facc15;
+  --admonition-important-fg: #b45309;
+  --admonition-danger-bg: #fef2f2;
+  --admonition-danger-border: #ef4444;
+  --admonition-danger-fg: #b91c1c;
+  --admonition-tip-bg: #ecfdf5;
+  --admonition-tip-border: #10b981;
+  --admonition-tip-fg: #065f46;
+  --search-input-bg: #fff;
+  --search-input-border: #7b9b9f;
+  --search-input-placeholder: #4f747a;
+  --search-backdrop-bg: #00000050;
+  --search-result-bg: #fff;
+  --search-result-shadow: #00000060;
+  --heading-border-color: #bbb;
+  --toc-shadow-color: #00000020;
+
+  color-scheme: light dark;
+}
+
+/* ── Dark mode */
+@media (prefers-color-scheme: dark) {
+:root {
+
+  --fg-color: oklch(93% 0.01 200deg);
+  --secondary-fg-color: oklch(78% 0.03 200deg);
+  --link-color: oklch(72% 0.14 250deg);
+  --link-underline-color: oklch(65% 0.12 250deg);
+  --bg-color: oklch(20% 0.02 200deg);
+  --secondary-bg-color: oklch(25% 0.02 200deg);
+  --table-border-color: oklch(38% 0.02 200deg);
+  --table-alternative-bg-color: oklch(22% 0.02 200deg);
+  --search-fg-color: oklch(70% 0.04 200deg);
+  --search-border-color: oklch(40% 0.03 200deg);
+  --search-button-fg-color: var(--fg-color);
+  --search-button-bg-color: var(--bg-color);
+  --search-result-separator-color: oklch(32% 0.02 200deg);
+  --content-fg-color: oklch(90% 0.01 200deg);
+  --content-bg-color: oklch(17% 0.02 200deg);
+  --content-secondary-fg-color: oklch(85% 0.01 200deg);
+  --content-secondary-bg-color: oklch(20% 0.02 200deg);
+  --content-border-color: oklch(30% 0.03 200deg);
+  --toc-title-fg-color: var(--fg-color);
+  --toc-fg-color: oklch(75% 0.03 200deg);
+  --toc-bg-color: var(--content-bg-color);
+  --toc-highlighted-fg-color: oklch(95% 0.01 200deg);
+  --toc-highlighted-bg-color: oklch(25% 0.03 200deg);
+  --toc-indent-guide-color: oklch(32% 0.03 200deg);
+  --toc-highlighted-indent-guide-color: oklch(55% 0.03 200deg);
+  --toc-border-color: oklch(30% 0.03 200deg);
+  --nav-indent-guide-color: oklch(35% 0.03 200deg);
+  --code-fg-color: oklch(88% 0.01 200deg);
+  --code-bg-color: oklch(22% 0.02 210deg);
+  --code-border-color: oklch(35% 0.02 210deg);
+  --code-copy-button-fg-color: oklch(90% 0.01 200deg);
+  --code-copy-button-bg-color: oklch(25% 0.02 200deg);
+  --link-code-fg-color: var(--link-color);
+  --link-code-bg-color: oklch(22% 0.06 250deg);
+  --link-code-border-color: oklch(35% 0.08 250deg);
+  --tabs-border-color: oklch(35% 0.02 200deg);
+  --shiki-indent-guide-color: oklch(30% 0.01 200deg / 30%);
+  --shiki-diff-remove-bg-color: oklch(35% 0.12 25deg / 40%);
+  --shiki-diff-add-bg-color: oklch(35% 0.1 155deg / 40%);
+  --shiki-highlighted-bg-color: oklch(30% 0.02 200deg / 60%);
+  --shiki-title-border-color: oklch(40% 0.02 200deg / 40%);
+  --admonition-note-bg: oklch(22% 0.06 250deg);
+  --admonition-note-border: oklch(60% 0.16 250deg);
+  --admonition-note-fg: oklch(75% 0.12 250deg);
+  --admonition-important-bg: oklch(22% 0.06 85deg);
+  --admonition-important-border: oklch(75% 0.16 85deg);
+  --admonition-important-fg: oklch(80% 0.12 85deg);
+  --admonition-danger-bg: oklch(22% 0.08 25deg);
+  --admonition-danger-border: oklch(60% 0.18 25deg);
+  --admonition-danger-fg: oklch(72% 0.14 25deg);
+  --admonition-tip-bg: oklch(22% 0.06 155deg);
+  --admonition-tip-border: oklch(60% 0.14 155deg);
+  --admonition-tip-fg: oklch(72% 0.12 155deg);
+  --search-input-bg: oklch(22% 0.02 200deg);
+  --search-input-border: oklch(40% 0.03 200deg);
+  --search-input-placeholder: oklch(60% 0.03 200deg);
+  --search-backdrop-bg: oklch(10% 0.01 200deg / 60%);
+  --search-result-bg: oklch(20% 0.02 200deg);
+  --search-result-shadow: oklch(5% 0.01 200deg / 60%);
+  --heading-border-color: oklch(38% 0.02 200deg);
+  --toc-shadow-color: oklch(5% 0.01 200deg / 30%);
+}
 }

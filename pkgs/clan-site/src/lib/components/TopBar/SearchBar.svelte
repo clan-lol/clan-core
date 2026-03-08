@@ -34,7 +34,7 @@
     inset-inline: 0;
     display: flex;
     block-size: 60px;
-    background: color-mix(in srgb, var(--bg-color), #000 30%);
+    background: var(--search-backdrop-bg);
     transition: 400ms;
     transform: rotateX(-90deg);
     transform-origin: top center;
@@ -56,8 +56,8 @@
     align-items: center;
     padding-inline-start: 11px;
     margin-inline-start: 14px;
-    background: #fff;
-    border: #7b9b9f;
+    background: var(--search-input-bg);
+    /* border: 1px solid var(--search-input-border); */
     border-radius: 999em;
     font-size: 16px;
 
@@ -65,13 +65,15 @@
       flex: 1;
       block-size: 35px;
       margin-inline: 7px 12px;
+      color: var(--fg-color);
+      background: transparent;
       border: none;
       outline: none;
       font: inherit;
       font-size: inherit;
 
       &::placeholder {
-        color: #4f747a;
+        color: var(--search-input-placeholder);
       }
     }
   }

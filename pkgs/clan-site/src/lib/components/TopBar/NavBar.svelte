@@ -35,7 +35,7 @@
     transition: 400ms;
 
     &.rotated {
-      background-color: color-mix(in srgb, var(--bg-color), #000 15%);
+      background-color: var(--secondary-bg-color);
     }
   }
 
