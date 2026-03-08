@@ -1,6 +1,6 @@
 import type { ArticleInput, TopBarMode } from "./docs.ts";
 import type { NavItemsInput, NavSibling } from "./nav.ts";
-import { afterNavigate } from "$app/navigation";
+import { afterNavigate, beforeNavigate } from "$app/navigation";
 import CopyButton from "~/lib/components/CopyButton.svelte";
 import { createContext, mount } from "svelte";
 import { customMedia } from "$config";
@@ -23,6 +23,10 @@ export class Docs {
     this.article = new Article(article, this);
     this.search = new Search(this);
     this.#addCodeBlockCopyButtonsOnChangePage();
+
+    beforeNavigate(() => {
+      this.topbarMode = "topBar";
+    });
   }
 
   #addCodeBlockCopyButtonsOnChangePage(): void {
