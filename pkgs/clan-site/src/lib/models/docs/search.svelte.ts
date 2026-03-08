@@ -5,7 +5,6 @@ import type {
 } from "@clan.lol/vite-plugin-pagefind";
 import { asset } from "$app/paths";
 import { browser } from "$app/environment";
-import { onNavigate } from "$app/navigation";
 import { searchResultLimit } from "$config";
 
 export class Search {
@@ -20,10 +19,6 @@ export class Search {
 
   public constructor(docs: Docs) {
     this.#docs = docs;
-
-    onNavigate(() => {
-      this.query = "";
-    });
 
     $effect(() => {
       if (this.#docs.topbarMode === "search") {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ArticleInput } from "#lib/models/docs.ts";
+  import { beforeNavigate } from "$app/navigation";
   import { Docs, setDocsContext } from "$lib/models/docs/docs.svelte.ts";
-  import { onNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import TopBar from "~/lib/components/TopBar.svelte";
 
@@ -11,7 +11,7 @@
   // svelte-ignore state_referenced_locally
   const docs = new Docs(data.navItems, () => page.data as ArticleInput);
   setDocsContext(docs);
-  onNavigate(() => {
+  beforeNavigate(() => {
     window.scrollTo(0, 0);
   });
 </script>
