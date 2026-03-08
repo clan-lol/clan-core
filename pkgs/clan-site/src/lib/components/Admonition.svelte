@@ -88,43 +88,43 @@
     border-inline-start: 4px solid;
 
     &.is-note {
-      background-color: var(--admonition-note-bg);
-      border-inline-start-color: var(--admonition-note-border);
+      background-color: var(--admonition-note-bg-color);
+      border-inline-start-color: var(--admonition-note-border-color);
     }
 
     &.is-important {
-      background-color: var(--admonition-important-bg);
-      border-inline-start-color: var(--admonition-important-border);
+      background-color: var(--admonition-important-bg-color);
+      border-inline-start-color: var(--admonition-important-border-color);
     }
 
     &.is-danger {
-      background-color: var(--admonition-danger-bg);
-      border-inline-start-color: var(--admonition-danger-border);
+      background-color: var(--admonition-danger-bg-color);
+      border-inline-start-color: var(--admonition-danger-border-color);
     }
 
     &.is-tip {
-      background-color: var(--admonition-tip-bg);
-      border-inline-start-color: var(--admonition-tip-border);
+      background-color: var(--admonition-tip-bg-color);
+      border-inline-start-color: var(--admonition-tip-border-color);
     }
 
     &.is-info {
-      background-color: var(--admonition-info-bg);
-      border-inline-start-color: var(--admonition-info-border);
+      background-color: var(--admonition-info-bg-color);
+      border-inline-start-color: var(--admonition-info-border-color);
     }
 
     &.is-example {
-      background-color: var(--admonition-example-bg);
-      border-inline-start-color: var(--admonition-example-border);
+      background-color: var(--admonition-example-bg-color);
+      border-inline-start-color: var(--admonition-example-border-color);
     }
 
     &.is-warning {
-      background-color: var(--admonition-warning-bg);
-      border-inline-start-color: var(--admonition-warning-border);
+      background-color: var(--admonition-warning-bg-color);
+      border-inline-start-color: var(--admonition-warning-border-color);
     }
 
     &.is-developer {
-      background-color: var(--admonition-developer-bg);
-      border-inline-start-color: var(--admonition-developer-border);
+      background-color: var(--admonition-developer-bg-color);
+      border-inline-start-color: var(--admonition-developer-border-color);
     }
   }
 
@@ -138,35 +138,35 @@
     text-transform: capitalize;
 
     .is-note > & {
-      color: var(--admonition-note-fg);
+      color: var(--admonition-note-fg-color);
     }
 
     .is-important > & {
-      color: var(--admonition-important-fg);
+      color: var(--admonition-important-fg-color);
     }
 
     .is-danger > & {
-      color: var(--admonition-danger-fg);
+      color: var(--admonition-danger-fg-color);
     }
 
     .is-tip > & {
-      color: var(--admonition-tip-fg);
+      color: var(--admonition-tip-fg-color);
     }
 
     .is-info > & {
-      color: var(--admonition-info-fg);
+      color: var(--admonition-info-fg-color);
     }
 
     .is-example > & {
-      color: var(--admonition-example-fg);
+      color: var(--admonition-example-fg-color);
     }
 
     .is-warning > & {
-      color: var(--admonition-warning-fg);
+      color: var(--admonition-warning-fg-color);
     }
 
     .is-developer > & {
-      color: var(--admonition-developer-fg);
+      color: var(--admonition-developer-fg-color);
     }
   }
 
