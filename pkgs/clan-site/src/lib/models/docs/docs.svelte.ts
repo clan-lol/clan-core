@@ -1,6 +1,8 @@
 import type { ArticleInput, TopBarMode } from "./docs.ts";
 import type { NavItemsInput, NavSibling } from "./nav.ts";
-import { createContext } from "svelte";
+import { afterNavigate } from "$app/navigation";
+import CopyButton from "~/lib/components/CopyButton.svelte";
+import { createContext, mount } from "svelte";
 import { customMedia } from "$config";
 import { MediaQuery } from "svelte/reactivity";
 import { Nav } from "./nav.svelte.ts";
@@ -13,12 +15,30 @@ export class Docs {
   public readonly search: Search;
   public readonly isWide: boolean;
   public topbarMode: TopBarMode = $state("topBar");
+  public contentElement: HTMLElement | undefined = $state.raw();
   public constructor(navItems: NavItemsInput, article: () => ArticleInput) {
     const wide = new MediaQuery(customMedia.wide.slice(1, -1));
     this.isWide = $derived(wide.current);
     this.nav = new Nav(navItems, () => article().navPointer, this);
     this.article = new Article(article, this);
     this.search = new Search(this);
+    this.#addCodeBlockCopyButtonsOnChangePage();
+  }
+
+  #addCodeBlockCopyButtonsOnChangePage(): void {
+    const fn = (): void => this.#addCodeBlockCopyButtons();
+    $effect(fn);
+    afterNavigate(fn);
+  }
+  #addCodeBlockCopyButtons(): void {
+    if (!this.contentElement) {
+      return;
+    }
+    for (const pre of this.contentElement.querySelectorAll("pre.shiki")) {
+      mount(CopyButton, {
+        target: pre,
+      });
+    }
   }
 }
 

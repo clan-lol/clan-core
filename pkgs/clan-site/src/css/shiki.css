@@ -1,5 +1,6 @@
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
+  position: relative;
   overflow: auto;
   margin: 1em -14px;
   background-color: var(--shiki-light-bg);
@@ -16,7 +17,7 @@
   }
 
   .title {
-    padding: 10px 14px;
+    padding: 14px;
     border-block-end: 1px solid var(--shiki-title-border-color);
   }
 
