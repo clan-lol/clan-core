@@ -111,8 +111,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .shiki,
-  :root:not([data-theme="light"]) .shiki span {
+  .shiki,
+  .shiki span {
     color: var(--shiki-dark);
     background-color: var(--shiki-dark-bg);
     font-weight: var(--shiki-dark-font-weight);
@@ -120,22 +120,9 @@
     text-decoration: var(--shiki-dark-text-decoration);
   }
 
-  :root:not([data-theme="light"]) .shiki.line-numbers .line::before {
+  .shiki.line-numbers .line::before {
     background-color: var(--shiki-dark-bg);
   }
-}
-
-:root[data-theme="dark"] .shiki,
-:root[data-theme="dark"] .shiki span {
-  color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
-  font-weight: var(--shiki-dark-font-weight);
-  font-style: var(--shiki-dark-font-style);
-  text-decoration: var(--shiki-dark-text-decoration);
-}
-
-:root[data-theme="dark"] .shiki.line-numbers .line::before {
-  background-color: var(--shiki-dark-bg);
 }
 
 @media (--medium) {
