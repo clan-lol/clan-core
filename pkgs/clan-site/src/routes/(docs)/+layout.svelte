@@ -45,6 +45,8 @@
 
       &.showing-search {
         display: block;
+        overflow: hidden;
+        max-block-size: calc(100vh - 60px);
       }
     }
   }

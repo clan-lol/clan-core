@@ -35,7 +35,7 @@
   @media (--medium) {
     header {
       position: relative;
-      z-index: 1;
+      z-index: 1001;
       grid-row: 1;
       grid-column: 1 / -1;
       perspective: none;
