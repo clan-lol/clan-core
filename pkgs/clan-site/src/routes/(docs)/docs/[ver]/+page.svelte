@@ -149,7 +149,7 @@
       color: var(--content-bg-color);
       background-color: var(--fg-color);
       border-color: var(--content-border-color);
-      box-shadow: inset 2px 2px 0 0 var(--secondary-fg-color);
+      box-shadow: inset 2px 2px 0 0 var(--secondary-shadow-color);
     }
   }
 

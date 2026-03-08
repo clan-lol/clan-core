@@ -2,6 +2,7 @@
 :root {
   --fg-color: #000;
   --secondary-fg-color: #2c4347;
+  --secondary-shadow-color: #2c4347;
   --link-color: #0051ff;
   --link-underline-color: #4e80ec;
   --bg-color: #e1ecf0;
@@ -83,6 +84,7 @@
   :root {
     --fg-color: oklch(93% 0.008 230deg);
     --secondary-fg-color: oklch(78% 0.02 230deg);
+    --secondary-shadow-color: oklch(78% 0.02 230deg);
     --link-color: oklch(72% 0.14 250deg);
     --link-underline-color: oklch(65% 0.12 250deg);
     --bg-color: oklch(20% 0.012 230deg);
