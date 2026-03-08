@@ -54,6 +54,10 @@
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}
     class:is-tip={type === "tip"}
+    class:is-info={type === "info"}
+    class:is-example={type === "example"}
+    class:is-warning={type === "warning"}
+    class:is-developer={type === "developer"}
   >
     <summary
       ><Icon height="18" />{title}<ChevronRightIcon height="18" /></summary
@@ -66,6 +70,10 @@
     class:is-important={type === "important"}
     class:is-danger={type === "danger"}
     class:is-tip={type === "tip"}
+    class:is-info={type === "info"}
+    class:is-example={type === "example"}
+    class:is-warning={type === "warning"}
+    class:is-developer={type === "developer"}
   >
     <dt><Icon height="18" />{title}</dt>
     <dd>{@render children?.()}</dd>
@@ -80,23 +88,43 @@
     border-inline-start: 4px solid;
 
     &.is-note {
-      background-color: #eff6ff;
-      border-inline-start-color: #3b82f6;
+      background-color: var(--admonition-note-bg-color);
+      border-inline-start-color: var(--admonition-note-border-color);
     }
 
     &.is-important {
-      background-color: #fffbeb;
-      border-inline-start-color: #facc15;
+      background-color: var(--admonition-important-bg-color);
+      border-inline-start-color: var(--admonition-important-border-color);
     }
 
     &.is-danger {
-      background-color: #fef2f2;
-      border-inline-start-color: #ef4444;
+      background-color: var(--admonition-danger-bg-color);
+      border-inline-start-color: var(--admonition-danger-border-color);
     }
 
     &.is-tip {
-      background-color: #ecfdf5;
-      border-inline-start-color: #10b981;
+      background-color: var(--admonition-tip-bg-color);
+      border-inline-start-color: var(--admonition-tip-border-color);
+    }
+
+    &.is-info {
+      background-color: var(--admonition-info-bg-color);
+      border-inline-start-color: var(--admonition-info-border-color);
+    }
+
+    &.is-example {
+      background-color: var(--admonition-example-bg-color);
+      border-inline-start-color: var(--admonition-example-border-color);
+    }
+
+    &.is-warning {
+      background-color: var(--admonition-warning-bg-color);
+      border-inline-start-color: var(--admonition-warning-border-color);
+    }
+
+    &.is-developer {
+      background-color: var(--admonition-developer-bg-color);
+      border-inline-start-color: var(--admonition-developer-border-color);
     }
   }
 
@@ -110,19 +138,35 @@
     text-transform: capitalize;
 
     .is-note > & {
-      color: #1e40af;
+      color: var(--admonition-note-fg-color);
     }
 
     .is-important > & {
-      color: #b45309;
+      color: var(--admonition-important-fg-color);
     }
 
     .is-danger > & {
-      color: #b91c1c;
+      color: var(--admonition-danger-fg-color);
     }
 
     .is-tip > & {
-      color: #065f46;
+      color: var(--admonition-tip-fg-color);
+    }
+
+    .is-info > & {
+      color: var(--admonition-info-fg-color);
+    }
+
+    .is-example > & {
+      color: var(--admonition-example-fg-color);
+    }
+
+    .is-warning > & {
+      color: var(--admonition-warning-fg-color);
+    }
+
+    .is-developer > & {
+      color: var(--admonition-developer-fg-color);
     }
   }
 

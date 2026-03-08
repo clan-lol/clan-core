@@ -112,14 +112,16 @@
 
 @media (prefers-color-scheme: dark) {
   .shiki,
-  .shiki span,
-  html.dark .shiki,
-  html.dark .shiki span {
+  .shiki span {
     color: var(--shiki-dark);
     background-color: var(--shiki-dark-bg);
     font-weight: var(--shiki-dark-font-weight);
     font-style: var(--shiki-dark-font-style);
     text-decoration: var(--shiki-dark-text-decoration);
+  }
+
+  .shiki.line-numbers .line::before {
+    background-color: var(--shiki-dark-bg);
   }
 }
 

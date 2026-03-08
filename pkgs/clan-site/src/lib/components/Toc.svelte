@@ -133,7 +133,7 @@
     background: var(--toc-bg-color);
     border-end-start-radius: 14px;
     border-end-end-radius: 14px;
-    box-shadow: 0 3px 5px #00000020;
+    box-shadow: 0 3px 5px var(--toc-shadow-color);
 
     > ol {
       > li {

@@ -56,8 +56,7 @@
     align-items: center;
     padding-inline-start: 11px;
     margin-inline-start: 14px;
-    background: #fff;
-    border: #7b9b9f;
+    background: var(--search-input-bg-color);
     border-radius: 999em;
     font-size: 16px;
 
@@ -65,13 +64,15 @@
       flex: 1;
       block-size: 35px;
       margin-inline: 7px 12px;
+      color: var(--fg-color);
+      background: transparent;
       border: none;
       outline: none;
       font: inherit;
       font-size: inherit;
 
       &::placeholder {
-        color: #4f747a;
+        color: var(--search-input-placeholder-color);
       }
     }
   }
