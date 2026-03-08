@@ -34,7 +34,7 @@
     inset-inline: 0;
     display: flex;
     block-size: 60px;
-    background: var(--search-backdrop-bg);
+    background: color-mix(in srgb, var(--bg-color), #000 30%);
     transition: 400ms;
     transform: rotateX(-90deg);
     transform-origin: top center;
