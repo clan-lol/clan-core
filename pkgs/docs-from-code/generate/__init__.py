@@ -290,9 +290,8 @@ def render_categories(
         res += f"""
     <div style="background-color: {color}; color: white; padding: 10px; border-radius: 20px; text-align: center;">
         {cat}
-    </div>
-"""
-    res += "</div>"
+    </div>"""
+    res += "\n</div>"
     return res
 
 
