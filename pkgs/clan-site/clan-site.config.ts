@@ -45,6 +45,7 @@ export const docsNav: DocsNavItems = [
       {
         label: "Services",
         children: [
+          "guides/services/intro-to-services-revised",
           "guides/services/introduction-to-services",
           "guides/services/community",
           "guides/services/exports",
