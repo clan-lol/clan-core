@@ -137,6 +137,10 @@
     font-weight: 600;
     text-transform: capitalize;
 
+    :global(svg) {
+      flex: none;
+    }
+
     .is-note > & {
       color: var(--admonition-note-fg-color);
     }
