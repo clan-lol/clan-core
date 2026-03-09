@@ -74,6 +74,7 @@ nav:
           - Exports: guides/services/exports.md
           - Internal Services with SSL: guides/internal-ssl-services.md
       - Vars:
+          - Introductino to Vars (revised): guides/vars/intro-to-vars.md
           - Introduction to Vars: guides/vars/vars-overview.md
           - Minimal Example: guides/vars/vars-backend.md
           - Diving deeper: guides/vars/vars-concepts.md

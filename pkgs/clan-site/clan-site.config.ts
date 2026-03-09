@@ -55,6 +55,7 @@ export const docsNav: DocsNavItems = [
       {
         label: "Vars",
         children: [
+          "guides/vars/intro-to-vars",
           "guides/vars/vars-overview",
           "guides/vars/vars-backend",
           "guides/vars/vars-concepts",
