@@ -1,7 +1,10 @@
+/* Shiki custom properties are used in this file, which are not defined by us */
 /* stylelint-disable csstools/value-no-unknown-custom-properties */
 .shiki {
   position: relative;
-  overflow: auto;
+  /* This is needed because in safari the code slightly bleed out after being
+  scrolled */
+  overflow: hidden;
   margin: 1em -14px;
   background-color: var(--shiki-light-bg);
   font-size: 16px;
@@ -17,15 +20,14 @@
   }
 
   .title {
+    display: block;
     padding: 14px;
     border-block-end: 1px solid var(--shiki-title-border-color);
   }
 
   code {
-    display: flex;
-    flex-direction: column;
-    inline-size: fit-content;
-    min-inline-size: 100%;
+    display: block;
+    overflow: auto;
     padding: 14px 0;
     color: inherit;
     background: transparent;
@@ -33,6 +35,13 @@
     border-radius: 0;
     font-size: inherit;
     line-height: inherit;
+  }
+
+  .code {
+    display: flex;
+    flex-direction: column;
+    inline-size: fit-content;
+    min-inline-size: 100%;
   }
 
   span {
