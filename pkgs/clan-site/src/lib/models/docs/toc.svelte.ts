@@ -71,7 +71,7 @@ export class Toc {
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${(-this.#height).toFixed(0)}px 0px 0px`,
+        rootMargin: `${String(-this.#height)}px 0px 0px`,
       },
     );
     for (const heading of this.#content.querySelectorAll("h1,h2,h3,h4,h5,h6")) {
@@ -92,16 +92,15 @@ export class Toc {
       });
     }
     // Find the last heading with scrolledPast > 0
-    let last: TocItem | undefined;
     let active: TocItem | undefined;
     visit(this.items, (tocItem) => {
-      if (last && last.scrolledPast > 0 && tocItem.scrolledPast === 0) {
-        active = last;
+      if (tocItem.scrolledPast === 0) {
         return "break";
       }
-      last = tocItem;
+      active = tocItem;
       return;
     });
+
     this.#activeTocItem = active;
   }
 }
