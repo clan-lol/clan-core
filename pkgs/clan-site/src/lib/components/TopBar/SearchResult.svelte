@@ -36,6 +36,7 @@
     position: absolute;
     inset-inline: 0;
     inset-block: 60px 0;
+    z-index: 1000;
     background: var(--search-backdrop-bg-color);
     backdrop-filter: blur(5px);
   }
