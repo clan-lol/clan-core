@@ -123,6 +123,13 @@ code {
   }
 }
 
+blockquote {
+  padding-inline-start: 1em;
+  margin: 1em 0;
+  color: #757575;
+  border-inline-start: 3px solid #8c8c8c;
+}
+
 table {
   border-collapse: collapse;
 }
