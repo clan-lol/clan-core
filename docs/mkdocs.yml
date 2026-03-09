@@ -68,6 +68,7 @@ nav:
           - Introduction to Inventory: guides/inventory/inventory.md
           - File Autoincludes: guides/inventory/autoincludes.md
       - Services:
+          - Introduction to Services (Revised): guides/services/intro-to-services-revised.md
           - Introduction to Services: guides/services/introduction-to-services.md
           - Author Your Own Service: guides/services/community.md
           - Exports: guides/services/exports.md
