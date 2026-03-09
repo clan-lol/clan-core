@@ -1,3 +1,4 @@
+import type { Element } from "hast";
 import type { ShikiTransformer } from "shiki";
 
 export default function transformerLineNumbers({
@@ -7,8 +8,10 @@ export default function transformerLineNumbers({
 }): ShikiTransformer {
   return {
     pre(pre): void {
-      const [code] = pre.children;
-      if (code?.type !== "element" || code.tagName !== "code") {
+      const code = pre.children.find(
+        (child) => child.type === "element" && child.tagName === "code",
+      ) as Element | undefined;
+      if (!code) {
         return;
       }
       let lines = 0;
