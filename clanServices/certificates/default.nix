@@ -26,8 +26,8 @@
           type = lib.types.listOf lib.types.str;
           default = [ ];
           description = ''
-            Top level domain for this CA. Certificates will be issued and trusted for *.<tld>.
-            Defaults to [ config.clan.core.settings.tld ]
+            Top level domain for this CA. Certificates will be issued and trusted for `*.<tld>`
+            Defaults to `[ config.clan.core.settings.tld ]`
           '';
         };
 

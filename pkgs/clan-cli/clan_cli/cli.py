@@ -235,7 +235,7 @@ Usage differs based on the template type
 Clan templates
 
   $ clan init --template=default
-  Create a clan from the shipped (<builtin>) 'default' clan template
+  Create a clan from the shipped (`<builtin>`) 'default' clan template
 
   $ clan init --template=.#myTemplate
   Create a clan from the `myTemplate` template defined in the current flake
