@@ -53,6 +53,7 @@ nav:
   - Getting Started:
       - index.md
       - getting-started/creating-your-first-clan.md
+      - getting-started/getting-started-physical.md
       - getting-started/add-machines.md
       - getting-started/add-users.md
       - getting-started/add-services.md
@@ -61,6 +62,8 @@ nav:
       - getting-started/configure-disk.md
       - getting-started/deployment-phase.md
       - getting-started/update-machines.md
+      - getting-started/id-ed25519.md
+      - getting-started/quick-start-card.md
       - getting-started/whats-next.md
   - Guides:
       - Inventory:
