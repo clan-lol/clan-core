@@ -38,6 +38,10 @@ export const docsNav: DocsNavItems = [
     label: "Guides",
     children: [
       {
+        label: "Nore Getting Started",
+        children: ["getting-started/getting-started-virtualbox"],
+      },
+      {
         label: "Inventory",
         children: [
           "guides/inventory/intro-to-inventory",
