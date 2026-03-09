@@ -111,17 +111,19 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .shiki,
-  .shiki span {
-    color: var(--shiki-dark);
+  .shiki {
     background-color: var(--shiki-dark-bg);
-    font-weight: var(--shiki-dark-font-weight);
-    font-style: var(--shiki-dark-font-style);
-    text-decoration: var(--shiki-dark-text-decoration);
-  }
 
-  .shiki.line-numbers .line::before {
-    background-color: var(--shiki-dark-bg);
+    span {
+      color: var(--shiki-dark);
+      font-weight: var(--shiki-dark-font-weight);
+      font-style: var(--shiki-dark-font-style);
+      text-decoration: var(--shiki-dark-text-decoration);
+    }
+
+    &.line-numbers .line::before {
+      background-color: var(--shiki-dark-bg);
+    }
   }
 }
 
