@@ -23,11 +23,13 @@
 <header class:open={toc.open}>
   <nav>
     <button class="toc-title" use:toc.setHeight onclick={toc.onClickTitle}>
-      {#if toc.open || !toc.activeTocItem}
-        On This Page
-      {:else}
-        {toc.activeTocItem.label}
-      {/if}
+      <span>
+        {#if toc.open || !toc.activeTocItem}
+          On This Page
+        {:else}
+          {toc.activeTocItem.label}
+        {/if}
+      </span>
       <ChevronRightIcon height="16" />
     </button>
     <button
@@ -83,16 +85,24 @@
     flex: 1;
     gap: 5px;
     align-items: center;
+    min-inline-size: 0;
     padding: 14px;
     color: var(--toc-title-fg-color);
     background: transparent;
     border: 0;
     font: inherit;
     cursor: pointer;
+
+    > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .scroll-to-top {
     position: relative;
+    flex: none;
     padding: 8px 14px;
     background: transparent;
     border: 0;
