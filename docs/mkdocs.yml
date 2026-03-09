@@ -64,7 +64,7 @@ nav:
       - getting-started/whats-next.md
   - Guides:
       - More Getting Started:
-          - Getting Started with Virtual Box Targets: getting-started/getting-started-virtuabox.md
+          - Getting Started with Virtual Box Targets: getting-started/getting-started-virtualbox.md
       - Inventory:
           - Introduction to Inventory (Revised): guides/inventory/intro-to-inventory.md
           - Introduction to Inventory: guides/inventory/inventory.md
