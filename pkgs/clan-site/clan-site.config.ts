@@ -37,6 +37,7 @@ export const docsNav: DocsNavItems = [
       {
         label: "Inventory",
         children: [
+          "guides/inventory/intro-to-inventory",
           "guides/inventory/inventory",
           "guides/inventory/autoincludes",
         ],
