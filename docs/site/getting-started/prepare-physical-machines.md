@@ -210,7 +210,7 @@ Press ++ctrl+d++ to exit `IWD`.
 The installer will randomly generate a password and local addresses on boot, then run a SSH server with these preconfigured.
 The installer shows its deployment relevant information in two formats, a text form, as well as a QR code.
 This is an example of the booted installer.
-```{ .bash .annotate .no-copy .nohighlight}
+```{ .annotate .no-copy .nohighlight}
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
 │ ┌───────────────────────────┐                                                       │
 │ │███████████████████████████│ # This is the QR Code (1)                             │
