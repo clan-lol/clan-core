@@ -16,14 +16,13 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkTabs from "./remark-tabs.ts";
-import transformerLineNumbers from "./shiki-transformer-line-numbers.ts";
+import transformerCustom from "./shiki-transformer-custom.ts";
 import {
   transformerMetaHighlight,
   transformerNotationDiff,
   transformerNotationHighlight,
   transformerRenderIndentGuides,
 } from "@shikijs/transformers";
-import transformerMetaTitle from "./shiki-transformer-meta-title.ts";
 import { unified } from "unified";
 import { VFile } from "vfile";
 
@@ -117,8 +116,7 @@ export async function render(source: string, opts: Options): Promise<Output> {
         transformerNotationHighlight(),
         transformerRenderIndentGuides(),
         transformerMetaHighlight(),
-        transformerMetaTitle(),
-        transformerLineNumbers({
+        transformerCustom({
           minLines: opts.minLineNumberLines,
         }),
       ],

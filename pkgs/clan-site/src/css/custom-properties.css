@@ -3,7 +3,6 @@
   --fg-color: #000;
   --secondary-fg-color: #2c4347;
   --secondary-shadow-color: #2c4347;
-  --highlight-color: #fff;
   --link-color: #0051ff;
   --link-underline-color: #4e80ec;
   --bg-color: #e1ecf0;
@@ -20,6 +19,14 @@
   --content-secondary-fg-color: #141616;
   --content-secondary-bg-color: #f7f9fa;
   --content-border-color: #d8e8eb;
+  --button-fg-color: var(--fg-color);
+  --button-bg-color: var(--secondary-bg-color);
+  --button-highlight-color: #fff;
+  --button-border-color: var(--content-border-color);
+  --primary-button-fg-color: var(--content-bg-color);
+  --primary-button-bg-color: var(--fg-color);
+  --primary-button-highlight-color: #2c4347;
+  --primary-button-border-color: var(--content-border-color);
   --toc-title-fg-color: var(--fg-color);
   --toc-fg-color: #223538;
   --toc-bg-color: var(--content-bg-color);
@@ -85,8 +92,6 @@
   :root {
     --fg-color: oklch(93% 0.008 230deg);
     --secondary-fg-color: oklch(78% 0.02 230deg);
-    --secondary-shadow-color: oklch(78% 0.02 230deg);
-    --highlight-color: oklch(25% 0.012 230deg);
     --link-color: oklch(72% 0.14 250deg);
     --link-underline-color: oklch(65% 0.12 250deg);
     --bg-color: oklch(20% 0.012 230deg);
@@ -103,6 +108,8 @@
     --content-secondary-fg-color: oklch(85% 0.008 230deg);
     --content-secondary-bg-color: oklch(20% 0.012 230deg);
     --content-border-color: oklch(30% 0.02 230deg);
+    --button-highlight-color: oklch(25% 0.012 230deg);
+    --primary-button-highlight-color: #fff;
     --toc-title-fg-color: var(--fg-color);
     --toc-fg-color: oklch(75% 0.02 230deg);
     --toc-bg-color: var(--content-bg-color);

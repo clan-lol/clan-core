@@ -137,19 +137,19 @@
     display: flex;
     gap: 8px;
     padding: 8px 16px;
-    color: var(--fg-color);
-    background: var(--secondary-bg-color);
-    border: 1px solid var(--content-border-color);
+    color: var(--button-fg-color);
+    background: var(--button-bg-color);
+    border: 1px solid var(--button-border-color);
     border-radius: 3px;
-    box-shadow: inset 2px 2px 0 0 var(--highlight-color);
+    box-shadow: inset 2px 2px 0 0 var(--button-highlight-color);
     font-size: 16px;
     text-decoration: none;
 
     &.primary {
-      color: var(--content-bg-color);
-      background-color: var(--fg-color);
-      border-color: var(--content-border-color);
-      box-shadow: inset 2px 2px 0 0 var(--secondary-shadow-color);
+      color: var(--primary-button-fg-color);
+      background-color: var(--primary-button-bg-color);
+      border-color: var(--primary-button-border-color);
+      box-shadow: inset 2px 2px 0 0 var(--primary-button-highlight-color);
     }
   }
 
