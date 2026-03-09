@@ -29,6 +29,7 @@ export const docsNav: DocsNavItems = [
       "getting-started/configure-disk",
       "getting-started/deployment-phase",
       "getting-started/update-machines",
+      "getting-started/add-additional-machines",
       "getting-started/id-ed25519",
       "getting-started/quick-start-card",
       "getting-started/whats-next",
