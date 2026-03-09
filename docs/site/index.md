@@ -9,7 +9,7 @@ A declarative framework for reliable, self-hosted computing.
 
 ---
 
-[Get started](./getting-started/creating-your-first-clan.md){ .md-button .md-button--primary }
+[Get started](./getting-started/getting-started-physical.md){ .md-button .md-button--primary }
 [View on Gitea](https://git.clan.lol/clan/clan-core){ .md-button }
 
 ### What is Clan?

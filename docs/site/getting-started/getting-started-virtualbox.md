@@ -1,6 +1,7 @@
 # Getting Started: VirtualBox Edition
 
-## 🚧 First Draft — Ready for Review
+!!! Tip
+    Prefer to use a physical machine as a target? [Find the guide here](./getting-started-physical.md).
 
 !!! Note Prerequisites
     Your setup machine needs the following:

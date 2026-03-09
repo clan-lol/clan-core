@@ -1,5 +1,8 @@
 # Getting Started: Physical Machine Target
 
+!!! Tip
+    Prefer to use a Virtual Machine as a target? [Find the guide here](./getting-started-virtualbox.md).
+
 !!! Note Prerequisites
     Your setup machine needs the following:
 
