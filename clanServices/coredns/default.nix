@@ -119,7 +119,7 @@
           default = [ ];
           description = ''
             Service endpoints this host exposes (without TLD). Each entry will
-            be resolved to <entry>.<tld> using the configured top-level domain.
+            be resolved to `<entry>.<tld>` using the configured top-level domain.
           '';
         };
 

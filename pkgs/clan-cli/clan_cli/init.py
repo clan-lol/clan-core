@@ -77,7 +77,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--domain",
         type=str,
-        help="Domain for the clan. Used for internal service routing as <hostname>.<domain>. If not provided, will prompt (defaults to 'clan').",
+        help="Domain for the clan. Used for internal service routing as `<hostname>.<domain>`. If not provided, will prompt (defaults to 'clan').",
     )
 
     parser.add_argument(
