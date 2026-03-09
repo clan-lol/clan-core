@@ -26,7 +26,7 @@
 
             script = ''
               xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n" > $out/password
-              mkpasswd -s -m sha-512 < $out/password | tr -d "\n" > $out/password-hash
+              mkpasswd -s < $out/password | tr -d "\n" > $out/password-hash
             '';
           };
         };

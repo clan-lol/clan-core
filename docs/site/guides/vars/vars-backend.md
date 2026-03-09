@@ -40,7 +40,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
     files.password-hash.secret = false;
     # define the logic for generating the hash
     script = ''
-      cat $prompts/password-input | mkpasswd -m sha-512 > $out/password-hash
+      cat $prompts/password-input | mkpasswd > $out/password-hash
     '';
     # the tools required by the script
     runtimeInputs = [ pkgs.mkpasswd ];

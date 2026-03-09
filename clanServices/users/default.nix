@@ -170,7 +170,7 @@
                     ''
                 )
                 + ''
-                  mkpasswd -s -m sha-512 < "$out"/user-password | tr -d "\n" > "$out"/user-password-hash
+                  mkpasswd -s < "$out"/user-password | tr -d "\n" > "$out"/user-password-hash
                 '';
             };
           };
