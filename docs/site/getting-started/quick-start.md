@@ -1,8 +1,11 @@
-# Clan Quick Start: Physical Machine
+# Quick Start (Physical Machine)
+
+This page is the fastest way to install Clan on a physical machine.
+
+If you want explanations or troubleshooting, see the full
+[Getting Started (Physical Machine)](./getting-started-physical.md) guide.
 
 > **Prerequisites:** Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
->
-> See the [full guide](./getting-started-physical.md) for troubleshooting and detailed explanations.
 
 ---
 

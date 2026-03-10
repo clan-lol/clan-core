@@ -378,6 +378,6 @@ instances = {
 
 ### Further reference
 
-* [Inventory Concept](../../guides/inventory/inventory.md)
+* [Inventory Concept](../../guides/inventory/intro-to-inventory.md)
 * [Authoring a 'clan.service' module](../../guides/services/community.md)
-* [ClanServices](../../guides/services/introduction-to-services.md)
+* [ClanServices](../../guides/services/intro-to-services-revised.md)

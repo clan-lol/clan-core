@@ -23,7 +23,7 @@
 <div class="actions">
   <a
     class="button primary"
-    href={resolve(toDocsPath("getting-started/creating-your-first-clan"))}
+    href={resolve(toDocsPath("getting-started/quick-start"))}
     ><IconFlash width="16" />Get Started</a
   >
   <a class="button" href="https://git.clan.lol/clan/clan-core" rel="external"
@@ -59,11 +59,11 @@
   <h2>Guides</h2>
 
   <dl>
-    <a href={resolve(toDocsPath("guides/inventory/inventory"))}>
+    <a href={resolve(toDocsPath("guides/inventory/intro-to-inventory"))}>
       <dt>Inventory</dt>
       <dd><span>Learn how about inventory</span></dd>
     </a>
-    <a href={resolve(toDocsPath("guides/vars/vars-overview"))}>
+    <a href={resolve(toDocsPath("guides/vars/intro-to-vars"))}>
       <dt>Vars</dt>
       <dd><span>Learn how to use vars</span></dd>
     </a>

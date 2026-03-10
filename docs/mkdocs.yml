@@ -50,37 +50,23 @@ exclude_docs: |
 
 nav:
   - Getting Started:
-      - index.md
-      - getting-started/creating-your-first-clan.md
-      - getting-started/getting-started-physical.md
-      - getting-started/add-machines.md
-      - getting-started/add-users.md
-      - getting-started/add-services.md
-      - getting-started/prepare-physical-machines.md
-      - getting-started/prepare-virtual-machines.md
-      - getting-started/configure-disk.md
-      - getting-started/deployment-phase.md
-      - getting-started/update-machines.md
-      - getting-started/add-additional-machines.md
-      - getting-started/id-ed25519.md
-      - getting-started/quick-start-card.md
-      - getting-started/whats-next.md
+      - Overview: index.md
+      - Quick Start: getting-started/quick-start.md
+      - Getting Started (Physical Machine): getting-started/getting-started-physical.md
+      - Getting Started (Virtual Box): getting-started/getting-started-virtualbox.md
+      - Creating a Key Pair: getting-started/id-ed25519.md
+      - What's Next: getting-started/whats-next.md
   - Guides:
-      - More Getting Started:
-          - Getting Started with Virtual Box Targets: getting-started/getting-started-virtualbox.md
       - Inventory:
-          - Introduction to Inventory (Revised): guides/inventory/intro-to-inventory.md
-          - Introduction to Inventory: guides/inventory/inventory.md
+          - Introduction to Inventory: guides/inventory/intro-to-inventory.md
           - File Autoincludes: guides/inventory/autoincludes.md
       - Services:
-          - Introduction to Services (Revised): guides/services/intro-to-services-revised.md
-          - Introduction to Services: guides/services/introduction-to-services.md
+          - Introduction to Services: guides/services/intro-to-services-revised.md
           - Author Your Own Service: guides/services/community.md
           - Exports: guides/services/exports.md
           - Internal Services with SSL: guides/internal-ssl-services.md
       - Vars:
-          - Introductino to Vars (revised): guides/vars/intro-to-vars.md
-          - Introduction to Vars: guides/vars/vars-overview.md
+          - Introductino to Vars: guides/vars/intro-to-vars.md
           - Minimal Example: guides/vars/vars-backend.md
           - Diving deeper: guides/vars/vars-concepts.md
           - Advanced Examples: guides/vars/vars-advanced-examples.md
@@ -274,4 +260,4 @@ plugins:
   - redoc-tag
   - redirects:
       redirect_maps:
-        guides/getting-started/secrets.md: guides/vars/vars-overview.md
+        guides/getting-started/secrets.md: guides/vars/intro-to-vars.md

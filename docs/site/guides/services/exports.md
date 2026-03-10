@@ -188,5 +188,5 @@ For real-world use cases, see the [clan-services](https://git.clan.lol/clan/clan
 ### Further Reading
 
 - [Service Author Reference](../../reference/options/clan_service.md)
-- [Introduction to clanServices](./introduction-to-services.md)
+- [Introduction to clanServices](./intro-to-services-revised.md)
 - [Authoring a clanService](./community.md)

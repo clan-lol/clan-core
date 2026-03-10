@@ -2,7 +2,7 @@ Convert your existing NixOS flake into a Clan, keeping your current hosts and co
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend reading the [Getting Started](../../getting-started/creating-your-first-clan.md) guide first.
+    unexpected issues. We recommend reading the [Getting Started](../../getting-started/quick-start.md) guide first.
 
     Once you have a working setup and understand the concepts transferring your NixOS configurations over is easy.
 
