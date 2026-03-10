@@ -18,7 +18,6 @@ markdown_extensions:
   - md_in_html
   - def_list
   - meta
-  - plantuml_markdown
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
