@@ -1,7 +1,6 @@
 import type { Action } from "svelte/action";
 import type { Docs } from "./docs.svelte.ts";
 import type { TocItemInput, TocItemsInput } from "./toc.ts";
-import { viewport } from "../viewport.ts";
 import { visit } from "$lib/util.ts";
 
 export class Toc {
@@ -46,7 +45,7 @@ export class Toc {
   #onClickTitle(ev: Event): void {
     ev.preventDefault();
 
-    if (viewport.isWide) {
+    if (this.docs.isWide) {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -65,14 +64,14 @@ export class Toc {
   }
 
   #updateTocItemOnScrollHeading(): void {
-    if (viewport.isWide || !this.#content || this.#height === 0) {
+    if (this.docs.isWide || !this.#content || this.#height === 0) {
       return;
     }
     this.#observer = new IntersectionObserver(
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${-this.#height}px 0px 0px`,
+        rootMargin: `${(-this.#height).toFixed(0)}px 0px 0px`,
       },
     );
     for (const heading of this.#content.querySelectorAll("h1,h2,h3,h4,h5,h6")) {
@@ -93,15 +92,16 @@ export class Toc {
       });
     }
     // Find the last heading with scrolledPast > 0
+    let last: TocItem | undefined;
     let active: TocItem | undefined;
     visit(this.items, (tocItem) => {
-      if (tocItem.scrolledPast === 0) {
+      if (last && last.scrolledPast > 0 && tocItem.scrolledPast === 0) {
+        active = last;
         return "break";
       }
-      active = tocItem;
+      last = tocItem;
       return;
     });
-
     this.#activeTocItem = active;
   }
 }
@@ -129,7 +129,7 @@ export class TocItem {
 
   #onClick(ev: Event): void {
     ev.preventDefault();
-    if (!viewport.isWide) {
+    if (!this.#toc.docs.isWide) {
       this.#toc.open = false;
     }
     // eslint-disable-next-line unicorn/prefer-query-selector

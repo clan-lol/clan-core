@@ -172,10 +172,6 @@ export function base({
           },
         ],
         "@typescript-eslint/no-explicit-any": ["error", { fixToUnknown: true }],
-        "@typescript-eslint/no-floating-promises": [
-          "error",
-          { ignoreIIFE: true },
-        ],
         "@typescript-eslint/no-import-type-side-effects": "error",
         // This rule is currently broken, we need T | void as a return type
         // https://github.com/typescript-eslint/typescript-eslint/issues/8755
@@ -213,14 +209,12 @@ export function base({
           },
         ],
         "@typescript-eslint/require-array-sort-compare": "error",
-        "@typescript-eslint/restrict-template-expressions": [
-          "error",
-          {
-            allowNumber: true,
-          },
-        ],
         // Clearly show that a promise is being returned
         "@typescript-eslint/return-await": ["error", "always"],
+        "@typescript-eslint/no-floating-promises": [
+          "error",
+          { ignoreIIFE: true },
+        ],
         "@typescript-eslint/strict-boolean-expressions": [
           "error",
           {

@@ -16,7 +16,7 @@
   "engineStrict": true,
   "scripts": {
     "predev": "node prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
-    "dev": "MODE=development vite dev --configLoader native --host --strictPort",
+    "dev": "MODE=development vite dev --configLoader native --strictPort",
     "prebuild": "node prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
     "prelint": "node prerender.ts && svelte-kit sync",
