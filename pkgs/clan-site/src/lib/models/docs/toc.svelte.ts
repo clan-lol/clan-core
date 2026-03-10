@@ -71,7 +71,7 @@ export class Toc {
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${String(-this.#height)}px 0px 0px`,
+        rootMargin: `${-this.#height}px 0px 0px`,
       },
     );
     for (const heading of this.#content.querySelectorAll("h1,h2,h3,h4,h5,h6")) {

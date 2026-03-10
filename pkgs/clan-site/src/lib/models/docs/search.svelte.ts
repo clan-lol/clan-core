@@ -24,10 +24,10 @@ export class Search {
     $effect(() => {
       if (this.#docs.topbarMode === "search") {
         if (this.inputElement && this.fakeInputElement) {
-          this.inputElement.style.left = `${String(this.fakeInputElement.offsetLeft)}px`;
-          this.inputElement.style.top = `${String(this.fakeInputElement.offsetTop)}px`;
-          this.inputElement.style.width = `${String(this.fakeInputElement.offsetWidth)}px`;
-          this.inputElement.style.height = `${String(this.fakeInputElement.offsetHeight)}px`;
+          this.inputElement.style.left = `${this.fakeInputElement.offsetLeft}px`;
+          this.inputElement.style.top = `${this.fakeInputElement.offsetTop}px`;
+          this.inputElement.style.width = `${this.fakeInputElement.offsetWidth}px`;
+          this.inputElement.style.height = `${this.fakeInputElement.offsetHeight}px`;
           this.inputElement.focus();
         }
       } else {
