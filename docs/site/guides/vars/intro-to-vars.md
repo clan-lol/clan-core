@@ -278,7 +278,7 @@ Then it asks for Sally's password; this time, provide a password of your choice:
 
 ```
 Prompting value for user-password-sally/user-password for machines: sally-laptop
-Leave empty to generate automatically (hidden): 
+Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
 ```
 
@@ -316,11 +316,11 @@ And you'll see:
 
 ```
 Prompting value for user-password-sally/user-password for machines: sally-laptop
-Leave empty to generate automatically (hidden):                                   
+Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
 ```
 
-!!! Note Important
+!!! Note "Important"
     If you do this after deployment, you'll have to push this password to the machine using `clan machines update sally-laptop`.
 
 Finally, let's do a few things at once: Let's add another machine called `fred-laptop`, and let's add wireless configuration to both machines.
@@ -396,7 +396,7 @@ Prompting value for wifi.home/network-name for machines: fred-laptop, sally-lapt
 name of the Wi-Fi network: MYNETWORK
 Input received. Processing...
 Prompting value for wifi.home/password for machines: fred-laptop, sally-laptop
-Enter the value for wifi.home/password: (hidden): 
+Enter the value for wifi.home/password: (hidden):
 Confirm Enter the value for wifi.home/password: (hidden):
 ```
 
@@ -412,11 +412,11 @@ clan vars generate fred-laptop
 
 ```
 Prompting value for user-password-fred/user-password for machines: fred-laptop
-Leave empty to generate automatically (hidden): 
-Confirm Leave empty to generate automatically (hidden): 
+Leave empty to generate automatically (hidden):
+Confirm Leave empty to generate automatically (hidden):
 Input received and confirmed. Processing...
 Prompting value for user-password-root/user-password for machines: fred-laptop
-Leave empty to generate automatically (hidden): 
+Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
 ```
 

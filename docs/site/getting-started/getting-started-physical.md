@@ -30,10 +30,10 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note Important
+!!! Note "Important"
     The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
 
-!!! Note Important
+!!! Note "Important"
     If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
 
 Change to the new folder:
@@ -110,7 +110,7 @@ This will allow WiFi to be used on the target machine *after* installation.
 
 Obtain a USB drive with at least 1.5  GB total space.
 
-!!! Note Danger
+!!! Note "Danger"
     All data on the USB drive will be lost!
 
 Insert it into your setup computer. Determine its block name by typing:
@@ -177,7 +177,7 @@ Take note of the IP address displayed above, either for wireless or lan, dependi
 deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
 ```
 
-!!! Note Important
+!!! Note "Important"
     If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
 
 ## 7. Enabling Wireless *During* Installation

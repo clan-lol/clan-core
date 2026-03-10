@@ -75,10 +75,10 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note Important
+!!! Note "Important"
     The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
 
-!!! Note Important
+!!! Note "Important"
     If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
 
 Change to the new folder:

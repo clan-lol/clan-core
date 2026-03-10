@@ -21,11 +21,11 @@ export const docsNav: DocsNavItems = [
     children: [
       { label: "Quick Start", path: "getting-started/quick-start" },
       {
-        label: "Physical Machine",
+        label: "Install on Physical Machine",
         path: "getting-started/getting-started-physical",
       },
       {
-        label: "VirtualBox",
+        label: "Install in VirtualBox",
         path: "getting-started/getting-started-virtualbox",
       },
       { label: "Create an SSH Key", path: "getting-started/id-ed25519" },
