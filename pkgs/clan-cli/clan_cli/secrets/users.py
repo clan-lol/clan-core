@@ -428,7 +428,7 @@ def _add_key_flags(parser: argparse.ArgumentParser) -> None:
         "agekey",
         help="public or private age key for a user. "
         "Execute 'clan secrets key --help' on how to retrieve a key. "
-        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
+        "To fetch an age key from an SSH host key: `ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age`",
         type=public_or_private_age_key_type,
         nargs="?",
     )
@@ -436,7 +436,7 @@ def _add_key_flags(parser: argparse.ArgumentParser) -> None:
         "--age-key",
         help="public or private age key for a user. "
         "Execute 'clan secrets key --help' on how to retrieve a key. "
-        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
+        "To fetch an age key from an SSH host key: `ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age`",
         type=public_or_private_age_key_type,
         action="append",
     )

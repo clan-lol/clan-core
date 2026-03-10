@@ -114,7 +114,7 @@ def register_flash_write_parser(parser: argparse.ArgumentParser) -> None:
         action=AppendDiskAction,
         help="""
             The device where flash to.
-            name: The name of the 'device' in the disk configuration. Example: 'main' <- disko.devices.disk.main.
+            name: The name of the 'device' in the disk configuration. Example: 'main' from disko.devices.disk.main.
             device: The name of the physical 'device' where the utility will be flashed to. Example: '/dev/sda/'
         """,
         default=[],
