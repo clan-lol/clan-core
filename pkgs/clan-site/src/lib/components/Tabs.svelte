@@ -43,6 +43,7 @@
     }
 
     .inner {
+      background: var(--content-bg-color);
       border: 1px solid var(--tabs-border-color);
       border-radius: 8px;
       border-start-start-radius: 0;

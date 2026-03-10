@@ -76,7 +76,7 @@ ul,
 ol {
   padding: 0;
   padding-inline-start: 1.3em;
-  margin: 10px 0;
+  margin: 1em 0;
 
   &.contains-task-list {
     padding-inline-start: 1.4em;
@@ -97,7 +97,7 @@ li {
     font-size: 16px;
   }
 
-  p {
+  > p {
     margin-block: 0.5em;
   }
 }
@@ -110,7 +110,6 @@ code {
   border-radius: 4px;
   font-size: 16px;
   line-height: 1.8;
-  word-break: break-all;
 
   a:has(&) {
     text-decoration: none;

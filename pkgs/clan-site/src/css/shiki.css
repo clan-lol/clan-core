@@ -7,11 +7,15 @@
   overflow: hidden;
   margin: 1em -14px;
   background-color: var(--shiki-light-bg);
-  font-size: 16px;
-  font-family:
-    ui-monospace, "Fira Code", "Cascadia Code", "Source Code Pro", Menlo,
-    Consolas, "DejaVu Sans Mono", monospace;
-  line-height: 1.25;
+  font:
+    16px/1.25 ui-monospace,
+    "Fira Code",
+    "Cascadia Code",
+    "Source Code Pro",
+    Menlo,
+    Consolas,
+    "DejaVu Sans Mono",
+    monospace;
 
   li &,
   .tabs & {
@@ -35,9 +39,9 @@
     background: transparent;
     border: 0;
     border-radius: 0;
+    font: inherit;
     font-size: inherit;
     line-height: inherit;
-    word-break: normal;
   }
 
   .code {

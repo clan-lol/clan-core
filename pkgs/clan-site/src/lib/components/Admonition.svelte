@@ -83,9 +83,11 @@
 <style>
   dl,
   details {
-    padding: 1rem;
+    padding: 0 1rem;
     margin: 1rem 0;
     border-inline-start: 4px solid;
+    border-block-start: 1px solid transparent;
+    border-block-end: 1px solid transparent;
 
     &.is-note {
       background-color: var(--admonition-note-bg-color);
@@ -134,6 +136,7 @@
     gap: 0.5rem;
     justify-content: start;
     align-items: center;
+    margin: 1em 0;
     font-weight: 600;
     text-transform: capitalize;
 
