@@ -6,12 +6,20 @@ import type {
 import { asset } from "$app/paths";
 import { browser } from "$app/environment";
 import { searchResultLimit } from "$config";
+import { untrack } from "svelte";
+import { viewport } from "../viewport.ts";
 
 export class Search {
   #docs: Docs;
   public query = $state("");
   public inputElement: HTMLInputElement | undefined = $state.raw();
-  public fakeInputElement: HTMLInputElement | undefined = $state.raw();
+  public inputDoubleElement: HTMLInputElement | undefined = $state.raw();
+  public get inputEffectiveElement(): HTMLInputElement | undefined {
+    if (!viewport.isMedium && !viewport.isWide) {
+      return this.inputDoubleElement;
+    }
+    return this.inputElement;
+  }
   #results: readonly PagefindSearchFragment[] = $state.raw([]);
   public get results(): readonly PagefindSearchFragment[] {
     return this.#results;
@@ -22,19 +30,16 @@ export class Search {
     this.#docs = docs;
 
     $effect(() => {
+      let el: HTMLInputElement | undefined;
+      // We don't want viewport change to retrigger this effect
+      untrack(() => {
+        el = this.inputEffectiveElement;
+      });
       if (this.#docs.topbarMode === "search") {
-        if (this.inputElement && this.fakeInputElement) {
-          this.inputElement.style.left = `${this.fakeInputElement.offsetLeft}px`;
-          this.inputElement.style.top = `${this.fakeInputElement.offsetTop}px`;
-          this.inputElement.style.width = `${this.fakeInputElement.offsetWidth}px`;
-          this.inputElement.style.height = `${this.fakeInputElement.offsetHeight}px`;
-          this.inputElement.focus();
-        }
+        el?.focus();
       } else {
         this.query = "";
-        if (this.inputElement) {
-          this.inputElement.blur();
-        }
+        el?.blur();
       }
     });
 

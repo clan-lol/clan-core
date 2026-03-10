@@ -1,6 +1,7 @@
 import type { Action } from "svelte/action";
 import type { Docs } from "./docs.svelte.ts";
 import type { TocItemInput, TocItemsInput } from "./toc.ts";
+import { viewport } from "../viewport.ts";
 import { visit } from "$lib/util.ts";
 
 export class Toc {
@@ -45,7 +46,7 @@ export class Toc {
   #onClickTitle(ev: Event): void {
     ev.preventDefault();
 
-    if (this.docs.isWide) {
+    if (viewport.isWide) {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -64,7 +65,7 @@ export class Toc {
   }
 
   #updateTocItemOnScrollHeading(): void {
-    if (this.docs.isWide || !this.#content || this.#height === 0) {
+    if (viewport.isWide || !this.#content || this.#height === 0) {
       return;
     }
     this.#observer = new IntersectionObserver(
@@ -128,7 +129,7 @@ export class TocItem {
 
   #onClick(ev: Event): void {
     ev.preventDefault();
-    if (!this.#toc.docs.isWide) {
+    if (!viewport.isWide) {
       this.#toc.open = false;
     }
     // eslint-disable-next-line unicorn/prefer-query-selector

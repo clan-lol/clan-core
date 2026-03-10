@@ -32,7 +32,7 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     background: var(--bg-color);
-    transition: 400ms;
+    transition: var(--top-bar-toggle-duration);
 
     &.rotated {
       background-color: color-mix(in srgb, var(--bg-color), #000 15%);

@@ -1,6 +1,5 @@
-html.no-scroll {
-  overflow: hidden;
-  block-size: 100vh;
+html {
+  color-scheme: light dark;
 }
 
 body {

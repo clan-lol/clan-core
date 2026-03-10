@@ -85,8 +85,7 @@
   --search-result-shadow-color: #00000060;
   --heading-border-color: #bbb;
   --toc-shadow-color: #00000020;
-
-  color-scheme: light dark;
+  --top-bar-toggle-duration: 400ms;
 }
 
 /* ── Dark mode */
