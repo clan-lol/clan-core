@@ -1,21 +1,39 @@
 import contextlib
 import os
-import shlex
 import shutil
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
+from functools import cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from clan_lib.nix import nix_shell, nix_test_store
 
 
-def create_sandbox_profile() -> str:
-    """Create a sandbox profile that allows access to tmpdir and nix store, based on Nix's sandbox-defaults.sb."""
-    # Based on Nix's sandbox-defaults.sb implementation with TMPDIR parameter
-    return """(version 1)
+def create_sandbox_profile(
+    *,
+    ro_paths: list[str] | None = None,
+    rw_paths: list[str] | None = None,
+) -> str:
+    """Create a sandbox profile that allows access to nix store and specified paths.
 
-(define TMPDIR (param "_TMPDIR"))
+    Based on Nix's sandbox-defaults.sb implementation.
+
+    Args:
+        ro_paths: Paths to allow read-only access to.
+        rw_paths: Paths to allow full read-write and process-exec access to.
+
+    """
+    rw_rules = ""
+    for path in rw_paths or []:
+        rw_rules += f'\n(allow file* process-exec network-outbound network-inbound (subpath "{path}"))'
+
+    ro_rules = ""
+    for path in ro_paths or []:
+        ro_rules += f'\n(allow file-read* (subpath "{path}"))'
+
+    return f"""(version 1)
 
 (deny default)
 
@@ -46,10 +64,6 @@ def create_sandbox_profile() -> str:
 
 ; Allow read access to the Nix store
 (allow file-read* (subpath "/nix/store"))
-
-; Allow full access to our temporary directory and its real path
-(allow file* process-exec network-outbound network-inbound
- (subpath TMPDIR))
 
 ; Allow access to macOS temporary directories structure (both symlink and real paths)
 (allow file-read* file-write* file-write-create file-write-unlink (subpath "/var/folders"))
@@ -93,89 +107,72 @@ def create_sandbox_profile() -> str:
 (allow process-exec (literal "/bin/bash"))
 (allow process-exec (literal "/bin/sh"))
 (allow process-exec (literal "/usr/bin/env"))
+
+; Additional read-write paths{rw_rules}
+
+; Additional read-only paths{ro_rules}
 """
 
 
 @contextmanager
-def sandbox_exec_cmd(generator: str, tmpdir: Path) -> Iterator[list[str]]:
-    """Create a sandbox-exec command for running a generator.
+def sandbox_exec_cmd(
+    cmd: list[str],
+    *,
+    ro_paths: list[str] | None = None,
+    rw_paths: list[str] | None = None,
+) -> Iterator[list[str]]:
+    """Run a command inside a macOS sandbox-exec sandbox.
+
+    Args:
+        cmd: The command to run inside the sandbox.
+        ro_paths: Paths to allow read-only access to.
+        rw_paths: Paths to allow full read-write access to.
+            Paths are resolved to handle macOS symlinks
+            (e.g. /var/folders -> /private/var/folders).
 
     Yields:
-        list[str]: The command to execute
+        The full command list.
 
     """
-    profile_content = create_sandbox_profile()
+    # Resolve paths to handle macOS symlinks (/var/folders -> /private/var/folders)
+    resolved_rw = [str(Path(p).resolve()) for p in (rw_paths or [])]
+    resolved_ro = [str(Path(p).resolve()) for p in (ro_paths or [])]
 
-    # Create a temporary file for the sandbox profile
+    profile_content = create_sandbox_profile(ro_paths=resolved_ro, rw_paths=resolved_rw)
+
     with NamedTemporaryFile(mode="w", suffix=".sb", delete=False) as f:
         f.write(profile_content)
         profile_path = f.name
 
     try:
-        real_bash_path = Path("bash")
-        if os.environ.get("IN_NIX_SANDBOX"):
-            bash_executable_path = Path(str(shutil.which("bash")))
-            real_bash_path = bash_executable_path.resolve()
-
-        # Use the sandbox profile parameter to define TMPDIR and execute from within it
-        # Resolve the tmpdir to handle macOS symlinks (/var/folders -> /private/var/folders)
-        resolved_tmpdir = tmpdir.resolve()
-        cmd = [
+        yield [
             "/usr/bin/sandbox-exec",
             "-f",
             profile_path,
-            "-D",
-            f"_TMPDIR={resolved_tmpdir}",
-            str(real_bash_path),
-            "-c",
-            generator,
+            *cmd,
         ]
-
-        yield cmd
     finally:
-        # Clean up the profile file
         with contextlib.suppress(OSError):
             Path(profile_path).unlink()
 
 
-def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
-    """Helper function to create bubblewrap command."""
-    test_store = nix_test_store()
-    real_bash_path = Path("bash")
+@cache
+def sandbox_bash() -> str:
+    """Resolve bash for use inside a sandbox, handling nix build environments."""
     if os.environ.get("IN_NIX_SANDBOX"):
-        bash_executable_path = Path(str(shutil.which("bash")))
-        real_bash_path = bash_executable_path.resolve()
-
-    # fmt: off
-    return nix_shell(
-        ["bash", "bubblewrap"],
-        [
-            "bwrap",
-            "--unshare-all",
-            "--tmpfs",  "/",
-            "--ro-bind", "/nix/store", "/nix/store",
-            "--ro-bind", "/bin/sh", "/bin/sh",
-            *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
-            "--dev", "/dev",
-            "--bind", str(tmpdir), str(tmpdir),
-            "--chdir", "/",
-            "--bind", "/proc", "/proc",
-            "--uid", "1000",
-            "--gid", "1000",
-            "--",
-            str(real_bash_path), "-c", generator,
-        ],
-    )
-    # fmt: on
+        bash_path = shutil.which("bash")
+        if bash_path:
+            return str(Path(bash_path).resolve())
+    return "bash"
 
 
-def bubblewrap_wrap_cmd(
+def bubblewrap_cmd(
     cmd: list[str],
     *,
     ro_binds: list[tuple[str, str]] | None = None,
     rw_binds: list[tuple[str, str]] | None = None,
 ) -> list[str]:
-    """Wrap an arbitrary command in a bubblewrap sandbox.
+    """Run a command inside a bubblewrap sandbox.
 
     Args:
         cmd: The command to run inside the sandbox.
@@ -183,15 +180,10 @@ def bubblewrap_wrap_cmd(
         rw_binds: Additional read-write bind mounts as (src, dest) pairs.
 
     Returns:
-        The command list prefixed with bwrap arguments, provided via nix_shell.
+        The full command list, provided via nix_shell.
 
     """
     test_store = nix_test_store()
-
-    real_bash_path = Path("bash")
-    if os.environ.get("IN_NIX_SANDBOX"):
-        bash_executable_path = Path(str(shutil.which("bash")))
-        real_bash_path = bash_executable_path.resolve()
 
     extra_args: list[str] = []
     for src, dest in ro_binds or []:
@@ -214,11 +206,59 @@ def bubblewrap_wrap_cmd(
             "--dev", "/dev",
             "--bind", "/proc", "/proc",
             "--tmpfs", str(sandbox_tmp),
+            "--chdir", "/",
             "--uid", "1000",
             "--gid", "1000",
             *extra_args,
             "--",
-            str(real_bash_path), "-c", shlex.join(cmd),
+            *cmd,
         ],
     )
     # fmt: on
+
+
+@cache
+def sandbox_works() -> bool:
+    """Check if sandboxing is available on the current platform."""
+    if sys.platform == "linux":
+        from clan_lib.bwrap import bubblewrap_works  # noqa: PLC0415
+
+        return bubblewrap_works()
+    if sys.platform == "darwin":
+        return Path("/usr/bin/sandbox-exec").exists()
+    return False
+
+
+@contextmanager
+def sandbox_cmd(
+    cmd: list[str],
+    *,
+    ro_paths: list[str] | None = None,
+    rw_paths: list[str] | None = None,
+) -> Iterator[list[str]]:
+    """Run a command in a platform-appropriate sandbox.
+
+    On Linux, uses bubblewrap. On macOS, uses sandbox-exec.
+
+    Args:
+        cmd: The command to run inside the sandbox.
+        ro_paths: Paths to allow read-only access to.
+        rw_paths: Paths to allow read-write access to.
+
+    Yields:
+        The full command list.
+
+    Raises:
+        NotImplementedError: If the current platform has no sandbox backend.
+
+    """
+    if sys.platform == "linux":
+        ro_binds = [(p, p) for p in (ro_paths or [])]
+        rw_binds = [(p, p) for p in (rw_paths or [])]
+        yield bubblewrap_cmd(cmd, ro_binds=ro_binds, rw_binds=rw_binds)
+    elif sys.platform == "darwin":
+        with sandbox_exec_cmd(cmd, ro_paths=ro_paths, rw_paths=rw_paths) as result:
+            yield result
+    else:
+        msg = f"Sandboxing is not supported on {sys.platform}"
+        raise NotImplementedError(msg)
