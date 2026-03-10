@@ -50,4 +50,11 @@
       }
     }
   }
+
+  @media (--wide) {
+    .container {
+      max-inline-size: 1400px;
+      margin-inline: auto;
+    }
+  }
 </style>

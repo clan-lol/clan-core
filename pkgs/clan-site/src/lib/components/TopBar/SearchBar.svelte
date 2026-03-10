@@ -50,6 +50,10 @@
     inset-inline: 0;
     display: flex;
     block-size: 60px;
+    /* safearea is always absolute */
+    /* stylelint-disable-next-line csstools/use-logical */
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
 
     &.real {
       background: color-mix(in srgb, var(--bg-color), #000 30%);
@@ -85,19 +89,8 @@
     flex: 1;
     align-items: center;
     padding-inline-start: 11px;
-    margin-inline-start: 14px;
     border-radius: 999em;
     font-size: 16px;
-
-    .real & {
-      background: var(--search-input-bg-color);
-    }
-
-    .double & {
-      :global(svg) {
-        visibility: hidden;
-      }
-    }
 
     > input {
       flex: 1;
@@ -109,18 +102,26 @@
       outline: none;
       font: inherit;
       font-size: inherit;
+    }
 
-      .real & {
+    .real & {
+      background: var(--search-input-bg-color);
+
+      > input {
         color: transparent;
 
         &::placeholder {
           color: var(--search-input-placeholder-color);
         }
       }
+    }
 
-      .double & {
-        pointer-events: all;
+    .double & {
+      :global(svg) {
+        visibility: hidden;
+      }
 
+      > input {
         &::placeholder {
           color: transparent;
         }
@@ -130,10 +131,15 @@
         }
       }
     }
+
+    .double.rotated & {
+      pointer-events: all;
+    }
   }
 
   .cancel {
     padding: 0 14px;
+    margin-inline-end: -14px;
     color: inherit;
     background: transparent;
     border: 0;
@@ -174,10 +180,8 @@
       inline-size: 400px;
       margin-inline-start: 0;
 
-      > input {
-        .real & {
-          color: inherit;
-        }
+      .real & > input {
+        color: inherit;
       }
     }
 

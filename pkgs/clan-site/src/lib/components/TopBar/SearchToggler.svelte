@@ -47,19 +47,12 @@
       inline-size: 220px;
       block-size: 35px;
       padding-inline-start: 11px;
-      margin-inline-end: 14px;
       color: var(--search-fg-color);
       background: transparent;
       border: 1px solid var(--search-border-color);
       border-radius: 999em;
       font-size: 14px;
       cursor: text;
-    }
-  }
-
-  @media (--wide) {
-    .input {
-      margin-inline-end: 24px;
     }
   }
 </style>
