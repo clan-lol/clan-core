@@ -77,6 +77,18 @@ in
           }
         ) machineModules
       );
+      machinesCrossFiltered =
+        lib.genAttrs [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ]
+          (
+            system:
+            lib.mapAttrs (
+              _: module:
+              lib.nixosSystem {
+                inherit system;
+                modules = [ module ];
+              }
+            ) machineModules
+          );
 
       update-vars-script = "${
         self.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
@@ -234,6 +246,12 @@ in
                     description = "The machines built for all supported platforms";
                     readOnly = true;
                   };
+                  test.machinesCrossFiltered = mkOption {
+                    default = machinesCrossFiltered;
+                    type = types.raw;
+                    description = "The machines built for all supported platforms (with vars filtered)";
+                    readOnly = true;
+                  };
                   test.systemsFile = mkOption {
                     default = builtins.toFile "flake.systems.nix" ''
                       [ "${hostPkgs.stdenv.hostPlatform.system}" ]
@@ -292,7 +310,7 @@ in
         ];
 
         result = {
-          inherit update-vars machinesCross;
+          inherit update-vars machinesCross machinesCrossFiltered;
         };
       };
     };

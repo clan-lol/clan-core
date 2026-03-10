@@ -116,7 +116,95 @@ let
       )
     ) supportedSystems
   );
+  # TODO: Remove extendModules
+  machinesFiltered = lib.genAttrs supportedSystems (
+    system:
+    lib.mapAttrs (
+      _name: machine:
+      machine.extendModules {
+        modules = [
+          { clan.core.settings.directory = lib.mkForce filteredDirectory; }
+          (lib.modules.importApply ../../nixosModules/machineModules/overridePkgs.nix {
+            pkgs = pkgsFor.${system};
+          })
+        ];
+      }
+    ) configurations
+  );
 
+  mkMachines =
+    {
+      clan-core,
+      clanConfig,
+      directory,
+    }:
+    lib.mkMerge [
+      # Create some modules for each machine
+      # These can depend on the 'name' and
+      # everything that can be derived from the machine 'name'
+      # i.e. by looking up the corresponding information in the 'inventory' or 'clan' submodule
+      (lib.mapAttrs (
+        name: v:
+        (
+          { ... }@args:
+          let
+            _class =
+              # _class was added in https://github.com/NixOS/nixpkgs/pull/395141
+              # Clan relies on it to determine which modules to load
+              # people need to use at least that version of nixpkgs
+              args._class or (throw ''
+                Your version of nixpkgs is incompatible with the latest clan.
+                Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
+                Run:
+                  nix flake update nixpkgs
+              '');
+          in
+          {
+            imports = [
+              # Counterpart to /nixosModules/clanCore/dependencies.nix
+              # Dependencies from 'clan' scope injected into 'machine' modules
+              {
+                inherit clanConfig;
+              }
+              # TODO: deprecate these options in favor of dependencies above
+              (lib.modules.importApply ../../nixosModules/machineModules/forName.nix {
+                inherit (clanConfig.inventory) meta;
+                inherit
+                  name
+                  directory
+                  ;
+              })
+              # Import the correct 'core' module
+              # We assume either:
+              # - nixosModules (_class = nixos)
+              # - darwinModules (_class = darwin)
+              (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
+            ]
+            ++ lib.optionals (_class == "nixos") (v.machineImports or [ ])
+            ++ lib.optionals (_class == "darwin") (v.darwinImports or [ ]);
+
+            # default hostname
+            networking.hostName = lib.mkDefault name;
+          }
+        )
+      ) clanConfig.clanInternals.inventoryClass.machines)
+
+      # The user can define some machine config here
+      # i.e. 'clan.machines.jon = ...'
+      clanConfig.machines
+    ];
+
+  # Filter the source
+  # Made available as 'settings.directory'
+  # This prevents lines like:
+  # builtins.readDir "${config.clan.core.settings.directory}/vars/per-machine";
+  # Direct path access is still possible. i.e.:
+  # builtins.readDir ../../vars/per-machine
+  filteredDirectory = builtins.path {
+    name = "source-filtered-no-vars";
+    path = directory;
+    filter = path: _type: !(lib.hasPrefix "${toString directory}/vars" (toString path));
+  };
 in
 {
   imports = [
@@ -171,62 +259,10 @@ in
   config = {
     inventory.meta = config.meta;
 
-    outputs.moduleForMachine = lib.mkMerge [
-      # Create some modules for each machine
-      # These can depend on the 'name' and
-      # everything that can be derived from the machine 'name'
-      # i.e. by looking up the corresponding information in the 'inventory' or 'clan' submodule
-      (lib.mapAttrs (
-        name: v:
-        (
-          { ... }@args:
-          let
-            _class =
-              # _class was added in https://github.com/NixOS/nixpkgs/pull/395141
-              # Clan relies on it to determine which modules to load
-              # people need to use at least that version of nixpkgs
-              args._class or (throw ''
-                Your version of nixpkgs is incompatible with the latest clan.
-                Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
-                Run:
-                  nix flake update nixpkgs
-              '');
-          in
-          {
-            imports = [
-              # Counterpart to /nixosModules/clanCore/dependencies.nix
-              # Dependencies from 'clan' scope injected into 'machine' modules
-              {
-                clanConfig = config;
-              }
-
-              # TODO: deprecate these options in favor of dependencies above
-              (lib.modules.importApply ../../nixosModules/machineModules/forName.nix {
-                inherit (config.inventory) meta;
-                inherit
-                  name
-                  directory
-                  ;
-              })
-              # Import the correct 'core' module
-              # We assume either:
-              # - nixosModules (_class = nixos)
-              # - darwinModules (_class = darwin)
-              (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
-            ]
-            ++ lib.optionals (_class == "nixos") (v.machineImports or [ ])
-            ++ lib.optionals (_class == "darwin") (v.darwinImports or [ ]);
-
-            # default hostname
-            networking.hostName = lib.mkDefault name;
-          }
-        )
-      ) config.clanInternals.inventoryClass.machines)
-
-      # The user can define some machine config here
-      # i.e. 'clan.machines.jon = ...'
-      config.machines
-    ];
+    outputs.moduleForMachine = mkMachines {
+      inherit clan-core directory;
+      clanConfig = config;
+    };
 
     specialArgs = {
       self = lib.mkDefault config.self;
@@ -310,6 +346,10 @@ in
 
       # machine specifics
       machines = configsPerSystem;
+      # machines with filtered 'directory'
+      # Needed for preventing cyclic dependency of:
+      # {directory}/vars -> generators -> {directory}/vars
+      machinesFiltered = machinesFiltered;
     };
   };
 }
