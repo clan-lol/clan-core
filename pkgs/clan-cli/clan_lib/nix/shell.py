@@ -143,8 +143,12 @@ def _resolve_package(nixpkgs_path: Path, package: str) -> ResolvedPackage | None
             "outputsToInstall"
         )
     if outputs_to_install:
+        # Generate symlink names following nix's createOutLinks convention
+        # (src/libcmd/command.cc): the "out" output uses the bare package
+        # name, while other outputs get a "-{output}" suffix appended.
         cache_links = [
-            cache_dir / f"{package}-{output}" for output in outputs_to_install
+            cache_dir / (package if output == "out" else f"{package}-{output}")
+            for output in outputs_to_install
         ]
 
     # Base path for nix build --out-link (nix adds -<output> suffixes automatically)
@@ -248,6 +252,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     for pkg in missing_packages:
         result = _resolve_package(nixpkgs_path, pkg)
         if result is None:
+            log.error("Falling back nix shell, this should never happen")
             # Fall back to nix shell for all packages
             return _nix_shell_fallback(missing_packages, cmd)
         resolved.append(result)
