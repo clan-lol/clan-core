@@ -28,7 +28,7 @@ export const docsNav: DocsNavItems = [
         label: "Install in VirtualBox",
         path: "getting-started/getting-started-virtualbox",
       },
-      { label: "Create an SSH Key", path: "getting-started/id-ed25519" },
+      { label: "Create an SSH Key", path: "getting-started/create-an-ssh-key" },
       "getting-started/whats-next",
     ],
   },
