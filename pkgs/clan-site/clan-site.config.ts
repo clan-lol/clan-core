@@ -19,19 +19,10 @@ export const docsNav: DocsNavItems = [
     label: "Getting Started",
     children: [
       "",
-      "getting-started/creating-your-first-clan",
+      "getting-started/quick-start",
       "getting-started/getting-started-physical",
-      "getting-started/add-machines",
-      "getting-started/add-users",
-      "getting-started/add-services",
-      "getting-started/prepare-physical-machines",
-      "getting-started/prepare-virtual-machines",
-      "getting-started/configure-disk",
-      "getting-started/deployment-phase",
-      "getting-started/update-machines",
-      "getting-started/add-additional-machines",
+      "getting-started/getting-started-virtualbox",
       "getting-started/id-ed25519",
-      "getting-started/quick-start-card",
       "getting-started/whats-next",
     ],
   },
@@ -39,14 +30,9 @@ export const docsNav: DocsNavItems = [
     label: "Guides",
     children: [
       {
-        label: "Nore Getting Started",
-        children: ["getting-started/getting-started-virtualbox"],
-      },
-      {
         label: "Inventory",
         children: [
           "guides/inventory/intro-to-inventory",
-          "guides/inventory/inventory",
           "guides/inventory/autoincludes",
         ],
       },
@@ -54,7 +40,6 @@ export const docsNav: DocsNavItems = [
         label: "Services",
         children: [
           "guides/services/intro-to-services-revised",
-          "guides/services/introduction-to-services",
           "guides/services/community",
           "guides/services/exports",
           "guides/internal-ssl-services",
@@ -64,7 +49,6 @@ export const docsNav: DocsNavItems = [
         label: "Vars",
         children: [
           "guides/vars/intro-to-vars",
-          "guides/vars/vars-overview",
           "guides/vars/vars-backend",
           "guides/vars/vars-concepts",
           "guides/vars/vars-advanced-examples",

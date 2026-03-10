@@ -82,8 +82,6 @@ Examples:
 
   $ clan machines update machine1 machine2 --tags production
   Will update only machine1 and machine2 if they both have the "production" tag.
-
-For more detailed information, visit: https://docs.clan.lol/getting-started/update-machines
         """
         ),
         formatter_class=HelpFormatter,
@@ -195,8 +193,8 @@ Examples:
 
 Further references:
 
-- https://docs.clan.lol/getting-started/prepare-physical-machines/
-- https://docs.clan.lol/getting-started/prepare-virtual-machines/
+- https://docs.clan.lol/getting-started/getting-started-physical/
+- https://docs.clan.lol/getting-started/getting-started-virtualbox/
         """
         ),
         formatter_class=HelpFormatter,

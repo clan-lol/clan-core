@@ -16,7 +16,7 @@ A declarative framework for reliable, self-hosted computing.
 
 - Declarative framework for managing fleets of machines without a central controller
 - Peer-to-peer infrastructure management built on [NixOS](https://nixos.org/)
-- First-class support for [networking](./guides/networking/networking.md), [backups](./guides/backups/backup-intro.md), and [resource management](./guides/vars/vars-overview.md)
+- First-class support for [networking](./guides/networking/networking.md), [backups](./guides/backups/backup-intro.md), and [resource management](./guides/vars/intro-to-vars.md)
 - Integrates with [sops-nix](https://github.com/Mic92/sops-nix), [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), and [disko](https://github.com/nix-community/disko) for provisioning and secrets
 - Extensible via [community-maintained Clan Services](./services/definition.md) applied across multiple machines
 
@@ -24,13 +24,13 @@ A declarative framework for reliable, self-hosted computing.
 
 <div class="grid cards" markdown>
 
--   [Inventory](./guides/inventory/inventory.md)
+-   [Inventory](./guides/inventory/intro-to-inventory.md)
 
     ---
 
     Learn how about inventory
 
--   [Vars](./guides/vars/vars-overview.md)
+-   [Vars](./guides/vars/intro-to-vars.md)
 
     ---
 

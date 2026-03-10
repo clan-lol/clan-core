@@ -11,4 +11,4 @@ Each `clanService`:
 
     See [Migration Guide](../guides/migrations/migrate-inventory-services.md) for help on migrating.
 
-Learn how to use `clanServices` in practice in the [Using clanServices guide](../guides/services/introduction-to-services.md).
+Learn how to use `clanServices` in practice in the [Using clanServices guide](../guides/services/intro-to-services-revised.md).

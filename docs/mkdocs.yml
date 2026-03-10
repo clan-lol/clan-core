@@ -50,11 +50,11 @@ exclude_docs: |
 
 nav:
   - Getting Started:
-      - index.md
+      - Overview: index.md
+      - Quick Start: getting-started/quick-start.md
       - Getting Started (Physical Machine): getting-started/getting-started-physical.md
       - Getting Started (Virtual Box): getting-started/getting-started-virtualbox.md
       - Creating a Key Pair: getting-started/id-ed25519.md
-      - Quick Start Card: getting-started/quick-start-card.md
       - What's Next: getting-started/whats-next.md
   - Guides:
       - Inventory:
@@ -260,4 +260,4 @@ plugins:
   - redoc-tag
   - redirects:
       redirect_maps:
-        guides/getting-started/secrets.md: guides/vars/vars-overview.md
+        guides/getting-started/secrets.md: guides/vars/intro-to-vars.md

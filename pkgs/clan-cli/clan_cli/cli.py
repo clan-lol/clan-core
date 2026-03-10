@@ -158,7 +158,7 @@ Examples:
   $ clan init . --no-git
   Will create a new clan in the current directory without setting up git.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/quick-start")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -207,7 +207,7 @@ Examples:
   Will create a new clan in the specified directory and create it if it
   doesn't exist yet. The clan will be created from a default template.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/creating-your-first-clan")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/quick-start")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -281,7 +281,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/prepare-physical-machines")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/getting-started-physical")}
             """
         ),
         formatter_class=HelpFormatter,
@@ -293,7 +293,7 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
         help="Ssh to a remote machine",
         description="Ssh to a remote machine",
         epilog=(
-            f"""
+            """
 This subcommand allows seamless ssh access to the nixos-image builders or a machine of your clan.
 
 Examples:
@@ -307,8 +307,6 @@ Examples:
   Will ssh in to the machine based on the deployment information contained in
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
-
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deployment-phase")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -382,7 +380,7 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
         help="Manage machines and their configuration",
         description="Manage machines and their configuration",
         epilog=(
-            f"""
+            """
 This subcommand provides an interface to machines managed by Clan.
 
 Examples:
@@ -398,8 +396,6 @@ Examples:
   Will install the specified machine [MACHINE] to the specified [TARGET_HOST].
   If the `--target-host` flag is omitted will try to find host information by
   checking the deployment configuration inside the specified machine.
-
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/update-machines")}
         """
         ),
         formatter_class=HelpFormatter,
