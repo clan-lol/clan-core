@@ -9,8 +9,8 @@
   background-color: var(--shiki-light-bg);
   font-size: 16px;
   font-family:
-    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
-    "DejaVu Sans Mono", monospace;
+    ui-monospace, "Fira Code", "Cascadia Code", "Source Code Pro", Menlo,
+    Consolas, "DejaVu Sans Mono", monospace;
   line-height: 1.25;
 
   li &,
