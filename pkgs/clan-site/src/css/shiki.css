@@ -22,7 +22,9 @@
   .title {
     display: block;
     padding: 14px;
+    color: var(--content-fg-color);
     border-block-end: 1px solid var(--shiki-title-border-color);
+    font-weight: 500;
   }
 
   code {
