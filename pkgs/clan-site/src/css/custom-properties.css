@@ -27,8 +27,6 @@
   --primary-button-bg-color: var(--fg-color);
   --primary-button-highlight-color: #2c4347;
   --primary-button-border-color: var(--content-border-color);
-  --quote-fg-color: #757575;
-  --quote-border-color: #8c8c8c;
   --toc-title-fg-color: var(--fg-color);
   --toc-fg-color: #223538;
   --toc-bg-color: var(--content-bg-color);
@@ -85,7 +83,8 @@
   --search-result-shadow-color: #00000060;
   --heading-border-color: #bbb;
   --toc-shadow-color: #00000020;
-  --top-bar-toggle-duration: 400ms;
+
+  color-scheme: light dark;
 }
 
 /* ── Dark mode */

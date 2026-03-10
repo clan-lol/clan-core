@@ -43,10 +43,7 @@
 <style>
   nav {
     display: none;
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
+    padding-inline: 14px;
     color: var(--secondary-fg-color);
     font-weight: 500;
 
@@ -131,7 +128,6 @@
       display: block;
       grid-row: 2;
       grid-column: 1;
-      padding-inline-end: 14px;
     }
   }
 

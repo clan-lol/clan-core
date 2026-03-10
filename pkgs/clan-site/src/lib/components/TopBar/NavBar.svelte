@@ -10,38 +10,33 @@
 </script>
 
 <div class="container" class:rotated={docs.topbarMode === "search"}>
-  <div class="inner">
-    <a class="logo" href={resolve(docsBase)}><ClanLogo height="22" /> Docs</a>
-    <ol>
-      <li>
-        <SearchToggler />
-      </li>
-      <li>
-        <NavToggler />
-      </li>
-    </ol>
-  </div>
+  <a class="logo" href={resolve(docsBase)}><ClanLogo height="22" /> Docs</a>
+  <ol>
+    <li>
+      <SearchToggler />
+    </li>
+    <li>
+      <NavToggler />
+    </li>
+  </ol>
 </div>
 
 <style>
   .container {
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
-    background: var(--bg-color);
-    transition: var(--top-bar-toggle-duration);
-
-    &.rotated {
-      background-color: color-mix(in srgb, var(--bg-color), #000 15%);
-    }
-  }
-
-  .inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
     block-size: 60px;
+    /* safearea is always absolute */
+    /* stylelint-disable-next-line csstools/use-logical */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    background: var(--bg-color);
+    transition: 400ms;
+
+    &.rotated {
+      background-color: color-mix(in srgb, var(--bg-color), #000 15%);
+    }
   }
 
   ol {
@@ -60,6 +55,7 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    margin-inline-start: 14px;
     color: inherit;
     font-weight: 700;
     font-size: 20px;
@@ -78,8 +74,8 @@
   }
 
   @media (--wide) {
-    .container {
-      padding: 0 24px;
+    .logo {
+      margin-inline-start: 24px;
     }
 
     .inner {
