@@ -23,11 +23,13 @@
 <header class:open={toc.open}>
   <nav>
     <button class="toc-title" use:toc.setHeight onclick={toc.onClickTitle}>
-      {#if toc.open || !toc.activeTocItem}
-        On This Page
-      {:else}
-        {toc.activeTocItem.label}
-      {/if}
+      <span>
+        {#if toc.open || !toc.activeTocItem}
+          On This Page
+        {:else}
+          {toc.activeTocItem.label}
+        {/if}
+      </span>
       <ChevronRightIcon height="16" />
     </button>
     <button
@@ -63,7 +65,10 @@
     position: sticky;
     inset-block-start: 0;
     z-index: 100;
-    margin-inline: -14px;
+    /* safearea is always absolute */
+    /* stylelint-disable-next-line csstools/use-logical */
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
     color: var(--toc-fg-color);
     background: var(--toc-bg-color);
     border-block-end: 1px solid var(--toc-border-color);
@@ -74,7 +79,6 @@
   }
 
   nav {
-    position: relative;
     display: flex;
   }
 
@@ -83,17 +87,28 @@
     flex: 1;
     gap: 5px;
     align-items: center;
+    min-inline-size: 0;
     padding: 14px;
+    margin-inline-start: -14px;
     color: var(--toc-title-fg-color);
     background: transparent;
     border: 0;
     font: inherit;
     cursor: pointer;
+
+    > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .scroll-to-top {
     position: relative;
+    flex: none;
     padding: 8px 14px;
+    margin-inline-end: -14px;
+    color: inherit;
     background: transparent;
     border: 0;
     cursor: pointer;
@@ -170,6 +185,8 @@
     inset-inline: 0;
     inset-block-start: 100%;
     display: none;
+    overflow: auto;
+    max-block-size: 60vh;
     padding-block: 9px;
     margin-block-start: 1px;
     background: var(--toc-bg-color);
@@ -206,17 +223,25 @@
 
   @media (--medium) {
     header {
-      margin-inline: -28px;
+      padding-inline: 0;
     }
 
     .toc-title,
     .scroll-to-top {
-      padding-inline: 28px;
+      padding-inline: 24px;
+    }
+
+    .toc-title {
+      margin-inline-start: 0;
+    }
+
+    .scroll-to-top {
+      margin-inline-end: 0;
     }
 
     .menu > ol {
       position: static;
-      margin-inline: 28px;
+      margin-inline: 24px;
 
       > li {
         margin-inline: -14px;
@@ -266,6 +291,8 @@
     .menu {
       position: static;
       display: block;
+      overflow: visible;
+      max-block-size: none;
       padding-block: 0;
       box-shadow: none;
 

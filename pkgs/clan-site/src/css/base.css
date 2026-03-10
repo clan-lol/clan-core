@@ -1,6 +1,5 @@
-html.no-scroll {
-  overflow: hidden;
-  block-size: 100vh;
+html {
+  color-scheme: light dark;
 }
 
 body {
@@ -111,6 +110,7 @@ code {
   border-radius: 4px;
   font-size: 16px;
   line-height: 1.8;
+  word-break: break-all;
 
   a:has(&) {
     text-decoration: none;
@@ -121,6 +121,13 @@ code {
     background: var(--link-code-bg-color);
     border-color: var(--link-code-border-color);
   }
+}
+
+blockquote {
+  padding-inline-start: 1em;
+  margin: 1em 0;
+  color: #757575;
+  border-inline-start: 3px solid #8c8c8c;
 }
 
 table {
