@@ -7,9 +7,6 @@
   fira-code,
   ...
 }:
-let
-  uml-c4 = pkgs.python3Packages.plantuml-markdown.override { plantuml = pkgs.plantuml-c4; };
-in
 pkgs.stdenv.mkDerivation {
   name = "clan-documentation";
 
@@ -29,7 +26,6 @@ pkgs.stdenv.mkDerivation {
 
   nativeBuildInputs = [
     pkgs.python3
-    uml-c4
   ]
   ++ (with pkgs.python3Packages; [
     mkdocs

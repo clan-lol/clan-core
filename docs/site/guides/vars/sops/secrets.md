@@ -290,18 +290,15 @@ The following diagrams illustrates how a user can provide a secret (i.e. a Passw
 
 - The *User* is able to decrypt the password to make changes to it.
 
-```plantuml
-@startuml
+```mermaid
+flowchart LR
+    user(("User"))
+    secret[("Secret")]
+    machine["Machine"]
 
-actor "User" as user
-database "Secret" as secret
-rectangle "Machine" as machine
-
-user -right-> secret : Encrypt\n(Pubkeys: User, Machine)
-secret -left-> user : Decrypt\n(user privkey)
-secret -right-> machine : Decrypt\n(machine privkey)
-
-@enduml
+    user -->|"Encrypt\n(Pubkeys: User, Machine)"| secret
+    secret -->|"Decrypt\n(user privkey)"| user
+    secret -->|"Decrypt\n(machine privkey)"| machine
 ```
 
 
@@ -313,22 +310,19 @@ Common use cases:
 
 - **Shared Management**: Access among multiple users. I.e. a subset of secrets/machines that have two admins
 
-```plantuml
-@startuml
+```mermaid
+flowchart LR
+    subgraph Group
+        user1(("User A"))
+        user2(("User B"))
+    end
 
-rectangle "Group" {
-    actor "User A" as user1
-    actor "User B" as user2
-}
+    secret[("Secret")]
+    machine["Machine"]
 
-database "Secret" as secret
-rectangle "Machine" as machine
-
-user1 -right-> secret : Encrypt
-user2 -right-> secret : (Pubkeys: User A, User B, Machine)
-secret -right-> machine : Decrypt\n(machine privkey)
-
-@enduml
+    user1 -->|"Encrypt"| secret
+    user2 -->|"(Pubkeys: User A, User B, Machine)"| secret
+    secret -->|"Decrypt\n(machine privkey)"| machine
 ```
 
 <!-- TODO: See also [Groups Reference](#groups-reference) -->
@@ -343,21 +337,19 @@ Common use cases:
 
 - **Shared secrets**: Among multiple machines such as Wi-Fi passwords
 
-```plantuml
-@startuml
+```mermaid
+flowchart LR
+    user(("User"))
+    secret[("Secret")]
 
-actor "User" as user
-database "Secret" as secret
-rectangle "Group" {
-    rectangle "Machine A" as machine1
-    rectangle "Machine B" as machine2
-}
+    subgraph Group
+        machine1["Machine A"]
+        machine2["Machine B"]
+    end
 
-user -right-> secret : Encrypt\n(Pubkeys: machine A, machine B, User)
-secret -down-> machine1 : Decrypt
-secret -down-> machine2 : (Both machines can decrypt\nusing their private key)
-
-@enduml
+    user -->|"Encrypt\n(Pubkeys: Machine A, Machine B, User)"| secret
+    secret -->|"Decrypt"| machine1
+    secret -->|"Both machines can decrypt\nusing their private key"| machine2
 ```
 
 <!-- TODO: See also [Groups Reference](#groups-reference) -->
