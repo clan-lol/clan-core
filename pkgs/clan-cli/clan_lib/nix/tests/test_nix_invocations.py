@@ -331,7 +331,50 @@ def test_nix_shell_skips_in_sandbox() -> None:
 
 
 @pytest.mark.usefixtures("clear_nix_cache", "mock_nix_in_sandbox")
-def test_resolve_package_cache_hit_skips_gcroot_creation() -> None:
+def test_resolve_single_package_cache_hit_skips_gcroot_creation() -> None:
+    """Test that cached symlinks prevent _create_gcroot from being called again.
+
+    Uses sops because it has a single "out" symlink output called "sops"
+    """
+    nixpkgs_path = runtime_deps_flake().resolve()
+
+    # Track _create_gcroot calls
+    gcroot_call_count = [0]
+    original_create_gcroot = _create_gcroot
+
+    def counting_create_gcroot(
+        package: str, nixpkgs_path: Path, gcroot_path: Path
+    ) -> None:
+        gcroot_call_count[0] += 1
+        return original_create_gcroot(package, nixpkgs_path, gcroot_path)
+
+    with patch.object(shell_module, "_create_gcroot", counting_create_gcroot):
+        # First resolution - should call _create_gcroot
+        result1 = _resolve_package(nixpkgs_path, "sops")
+        assert result1 is not None
+        assert gcroot_call_count[0] == 1, "First call should trigger _create_gcroot"
+
+        # Verify symlinks were created (jq has bin and man outputs)
+        cache_dir = _get_nix_shell_cache_dir(nixpkgs_path)
+        cache_link_bin = cache_dir / "sops"
+        assert cache_link_bin.is_symlink(), (
+            "GC root symlink for out output should exist"
+        )
+
+        # Second resolution - should use cache, NOT call _create_gcroot
+        result2 = _resolve_package(nixpkgs_path, "sops")
+        assert result2 is not None
+        assert gcroot_call_count[0] == 1, (
+            "Second call should use cache, not _create_gcroot"
+        )
+
+        # Results should be equivalent
+        assert result1.store_path == result2.store_path
+        assert result1.exe_name == result2.exe_name
+
+
+@pytest.mark.usefixtures("clear_nix_cache", "mock_nix_in_sandbox")
+def test_resolve_multi_package_cache_hit_skips_gcroot_creation() -> None:
     """Test that cached symlinks prevent _create_gcroot from being called again.
 
     Uses jq because it has multiple outputs (bin, man), verifying that the
