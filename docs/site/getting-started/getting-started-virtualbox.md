@@ -3,7 +3,7 @@
 !!! Tip
     Prefer to use a physical machine as a target? [Find the guide here](./getting-started-physical.md).
 
-!!! Note Prerequisites
+!!! Note "Prerequisites"
     Your setup machine needs the following:
 
 * **VirtualBox**: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
@@ -53,7 +53,7 @@ Click **Finish**.
 
 ## Run the VirtualBox Machine
 
-Make sure **NixOS Installer** is selected (it will have a blue background). 
+Make sure **NixOS Installer** is selected (it will have a blue background).
 
 In the upper right, click **Start**.
 
@@ -75,10 +75,10 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note Important
+!!! Note "Important"
     The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
 
-!!! Note Important
+!!! Note "Important"
     If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
 
 Change to the new folder:
@@ -127,7 +127,7 @@ cat ~/.ssh/id_ed25519.pub
 Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_ed25519.pub` file:
 
 ```
-"admin-machine-1" = "PASTE_YOUR_KEY_HERE"; 
+"admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
 Test out your .nix file to make sure it's not broken:
@@ -196,7 +196,7 @@ In the Settings window, on the left, choose Storage. You should see two controll
 
 In the right pane, to the right of Optical Drive: IDE Secondary Device 0, you should see another CD-ROM image. Click that image, and choose **Remove Disk from Virtual Drive**.
 
-Click OK to exit the Settings. 
+Click OK to exit the Settings.
 
 Now click **Start** at the top of the window (or double-click the Virtual Machine) to run it again. You should be presented with:
 

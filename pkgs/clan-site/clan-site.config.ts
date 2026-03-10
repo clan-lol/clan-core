@@ -15,14 +15,20 @@ export const copyButtonMessageDelay = 3000;
 export const docsDir = "src/docs";
 export const docsBase: DocsPath = `/docs/${version}`;
 export const docsNav: DocsNavItems = [
+  { label: "Home", path: "" },
   {
     label: "Getting Started",
     children: [
-      "",
-      "getting-started/quick-start",
-      "getting-started/getting-started-physical",
-      "getting-started/getting-started-virtualbox",
-      "getting-started/id-ed25519",
+      { label: "Quick Start", path: "getting-started/quick-start" },
+      {
+        label: "Install on Physical Machine",
+        path: "getting-started/getting-started-physical",
+      },
+      {
+        label: "Install in VirtualBox",
+        path: "getting-started/getting-started-virtualbox",
+      },
+      { label: "Create an SSH Key", path: "getting-started/id-ed25519" },
       "getting-started/whats-next",
     ],
   },
