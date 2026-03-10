@@ -3,7 +3,6 @@ import difflib
 import logging
 import os
 import pprint
-import sys
 from collections.abc import Iterable, Sequence
 from contextlib import ExitStack
 from dataclasses import dataclass, field
@@ -11,7 +10,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from clan_lib import bwrap
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
@@ -640,22 +638,26 @@ class Generator:
             final_script = self.final_script()
 
             use_sandbox = not no_sandbox
-            if sys.platform == "linux" and bwrap.bubblewrap_works() and use_sandbox:
-                from clan_lib.sandbox_exec import bubblewrap_cmd  # noqa: PLC0415
+            if use_sandbox:
+                from clan_lib.sandbox_exec import (  # noqa: PLC0415
+                    sandbox_bash,
+                    sandbox_cmd,
+                    sandbox_works,
+                )
 
-                cmd = bubblewrap_cmd(str(final_script), tmpdir)
-            elif sys.platform == "darwin":
-                from clan_lib.sandbox_exec import sandbox_exec_cmd  # noqa: PLC0415
-
-                cmd = stack.enter_context(sandbox_exec_cmd(str(final_script), tmpdir))
-            else:
-                # For non-sandboxed execution
-                if use_sandbox:
+                if not sandbox_works():
                     msg = (
                         f"Cannot safely execute generator {self.name}: Sandboxing is not available on this system\n"
                         f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
                     )
                     raise ClanError(msg)
+                cmd = stack.enter_context(
+                    sandbox_cmd(
+                        [sandbox_bash(), "-c", str(final_script)],
+                        rw_paths=[str(tmpdir)],
+                    )
+                )
+            else:
                 cmd = ["bash", "-c", str(final_script)]
 
             run(cmd, RunOpts(env=env, cwd=tmpdir))

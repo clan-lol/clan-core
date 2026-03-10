@@ -16,6 +16,8 @@ nixos.qcow2
 .local.env
 /docs-new
 
+.claude/
+openspec/
 # macOS stuff
 .DS_Store
 
