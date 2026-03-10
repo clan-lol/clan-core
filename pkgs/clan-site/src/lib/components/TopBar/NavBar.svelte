@@ -81,5 +81,9 @@
     .container {
       padding: 0 24px;
     }
+
+    .inner {
+      block-size: 90px;
+    }
   }
 </style>
