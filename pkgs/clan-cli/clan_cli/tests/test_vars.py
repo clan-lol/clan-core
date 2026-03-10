@@ -2281,10 +2281,8 @@ def test_dynamic_invalidation(
     # This however is the case anyways. So i dont understand why we have validationHash here.
     custom_nix.write_text(
         """
-        { config, ... }: let
-            p = config.clan.core.vars.generators.my_generator.files.my_value.flakePath;
-        in {
-            clan.core.vars.generators.dependent_generator.validation = if builtins.pathExists p then builtins.readFile p else null;
+        {
+            clan.core.vars.generators.dependent_generator.validation = 42;
         }
     """,
     )
@@ -2301,22 +2299,32 @@ def test_dynamic_invalidation(
     generators_0 = machine.flake.select(
         vars_generators_metadata(system, [machine.name])
     )[machine.name]
-    assert generators_0["dependent_generator"]["validationHash"] is None
+    assert generators_0["dependent_generator"]["validationHash"] is not None
 
     # generate both my_generator and (the dependent) dependent_generator
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
+
+    # Change the validation value
+    custom_nix.write_text(
+        """
+        {
+            clan.core.vars.generators.dependent_generator.validation = 10;
+        }
+    """,
+    )
     clan_flake.invalidate_cache()
 
-    # after generating once, dependent generator validation should be set
-    # Generators_1: The generators after the first 'vars generate'
-
+    # Make sure we dont see cached eval values
     prefix = get_machine_prefix()
     selector = f"{prefix}.{system}.{machine.name}.config.clan.core.vars.generators.*.{{validationHash,files}}"
-    generators_1 = machine.flake.select(selector)
-    assert generators_1["dependent_generator"]["validationHash"] is not None
 
-    # Machine evaluation is highly expensive .
-    # The generator will thus run again, and produce a different result in the second run.
+    generators_1 = machine.flake.select(selector)
+    # The validationHash should change
+    assert (
+        generators_1["dependent_generator"]["validationHash"]
+        is not generators_0["dependent_generator"]["validationHash"]
+    )
+
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
     clan_flake.invalidate_cache()
     # Generators_2: The generators after the second 'vars generate'
