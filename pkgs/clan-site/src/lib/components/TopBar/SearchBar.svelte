@@ -153,6 +153,7 @@
 
   @media (--medium) {
     .container {
+      position: static;
       display: none;
       justify-content: center;
 
@@ -188,6 +189,12 @@
     .cancel {
       position: absolute;
       inset-inline-start: 100%;
+    }
+  }
+
+  @media (--wide) {
+    .container {
+      block-size: 90px;
     }
   }
 </style>
