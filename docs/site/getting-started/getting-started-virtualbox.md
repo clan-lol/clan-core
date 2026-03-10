@@ -3,7 +3,7 @@
 !!! Tip
     Prefer to use a physical machine as a target? [Find the guide here](./getting-started-physical.md).
 
-!!! Note Prerequisites
+!!! Note "Prerequisites"
     Your setup machine needs the following:
 
 * **VirtualBox**: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
@@ -53,7 +53,7 @@ Click **Finish**.
 
 ## Run the VirtualBox Machine
 
-Make sure **NixOS Installer** is selected (it will have a blue background). 
+Make sure **NixOS Installer** is selected (it will have a blue background).
 
 In the upper right, click **Start**.
 
@@ -127,7 +127,7 @@ cat ~/.ssh/id_ed25519.pub
 Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_ed25519.pub` file:
 
 ```
-"admin-machine-1" = "PASTE_YOUR_KEY_HERE"; 
+"admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
 Test out your .nix file to make sure it's not broken:
@@ -196,7 +196,7 @@ In the Settings window, on the left, choose Storage. You should see two controll
 
 In the right pane, to the right of Optical Drive: IDE Secondary Device 0, you should see another CD-ROM image. Click that image, and choose **Remove Disk from Virtual Drive**.
 
-Click OK to exit the Settings. 
+Click OK to exit the Settings.
 
 Now click **Start** at the top of the window (or double-click the Virtual Machine) to run it again. You should be presented with:
 

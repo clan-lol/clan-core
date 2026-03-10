@@ -25,7 +25,7 @@ export const docsNav: DocsNavItems = [
         path: "getting-started/getting-started-physical",
       },
       {
-        label: "Virtualbox",
+        label: "VirtualBox",
         path: "getting-started/getting-started-virtualbox",
       },
       { label: "Create an SSH Key", path: "getting-started/id-ed25519" },

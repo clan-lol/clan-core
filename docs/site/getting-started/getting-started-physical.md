@@ -3,7 +3,7 @@
 !!! Tip
     Prefer to use a Virtual Machine as a target? [Find the guide here](./getting-started-virtualbox.md).
 
-!!! Note Prerequisites
+!!! Note "Prerequisites"
     Your setup machine needs the following:
 
 * **Nix** on your Setup Machine (unless you're using NixOS)
@@ -82,7 +82,7 @@ cat ~/.ssh/id_ed25519.pub
 Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_ed25519.pub` file:
 
 ```
-"admin-machine-1" = "PASTE_YOUR_KEY_HERE"; 
+"admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
 Test out your .nix file to make sure it's not broken:
@@ -168,13 +168,13 @@ Once booted, you will see a QR code and text similar to this:
 │ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
 │ │Multicast DNS: nixos-installer.local                                             │ │
 │ └─────────────────────────────────────────────────────────────────────────────────┘ │
-│ Press 'Ctrl-C' for console access                              
+│ Press 'Ctrl-C' for console access
 ```
 
 Take note of the IP address displayed above, either for wireless or lan, depending on how you connected. Then return to the setup machine and update this line that you added to the `clan.nix` file earlier; add in the actual IP address:
 
 ```
-deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; 
+deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
 ```
 
 !!! Note Important
