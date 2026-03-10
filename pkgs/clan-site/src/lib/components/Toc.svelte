@@ -180,6 +180,8 @@
     inset-inline: 0;
     inset-block-start: 100%;
     display: none;
+    overflow: auto;
+    max-block-size: 60vh;
     padding-block: 9px;
     margin-block-start: 1px;
     background: var(--toc-bg-color);
@@ -276,6 +278,8 @@
     .menu {
       position: static;
       display: block;
+      overflow: visible;
+      max-block-size: none;
       padding-block: 0;
       box-shadow: none;
 
