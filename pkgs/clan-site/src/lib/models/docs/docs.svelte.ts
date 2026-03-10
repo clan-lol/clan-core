@@ -14,7 +14,7 @@ export class Docs {
   public readonly article: Article;
   public readonly search: Search;
   public readonly isWide: boolean;
-  public topbarMode: TopBarMode = $state("topBar");
+  public topbarMode: TopBarMode = $state("navBar");
   public contentElement: HTMLElement | undefined = $state.raw();
   public constructor(navItems: NavItemsInput, article: () => ArticleInput) {
     const wide = new MediaQuery(customMedia.wide.slice(1, -1));
@@ -24,8 +24,10 @@ export class Docs {
     this.search = new Search(this);
     this.#addCodeBlockCopyButtonsOnChangePage();
 
-    beforeNavigate(() => {
-      this.topbarMode = "topBar";
+    beforeNavigate((navigation) => {
+      if (!navigation.willUnload) {
+        this.topbarMode = "navBar";
+      }
     });
   }
 

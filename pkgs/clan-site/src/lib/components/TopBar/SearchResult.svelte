@@ -9,7 +9,7 @@
     aria-hidden="true"
     class="backdrop"
     onclick={(): void => {
-      docs.topbarMode = "topBar";
+      docs.topbarMode = "navBar";
     }}
   ></div>
   <dl>

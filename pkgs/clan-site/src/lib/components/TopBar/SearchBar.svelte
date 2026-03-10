@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDocsContext } from "$lib/models/docs.ts";
   import SearchIcon from "$lib/assets/icons/search.svg?component";
+  import SearchInput from "./SearchInput.svelte";
 
   const docs = getDocsContext();
 </script>
@@ -12,17 +13,12 @@
         ev.preventDefault();
       }}
     >
-      <SearchIcon height="14" /><input
-        bind:this={docs.search.inputElement}
-        type="search"
-        placeholder="Search"
-        bind:value={docs.search.query}
-      />
+      <SearchIcon height="14" /><SearchInput fake={true} />
     </form>
     <button
       class="cancel"
       onclick={(): void => {
-        docs.topbarMode = "topBar";
+        docs.topbarMode = "navBar";
       }}>Cancel</button
     >
   </div>
@@ -59,26 +55,11 @@
     background: var(--search-input-bg-color);
     border-radius: 999em;
     font-size: 16px;
-
-    > input {
-      flex: 1;
-      block-size: 35px;
-      margin-inline: 7px 12px;
-      color: var(--fg-color);
-      background: transparent;
-      border: none;
-      outline: none;
-      font: inherit;
-      font-size: inherit;
-
-      &::placeholder {
-        color: var(--search-input-placeholder-color);
-      }
-    }
   }
 
   .cancel {
     padding: 0 14px;
+    color: inherit;
     background: transparent;
     border: 0;
     font: inherit;

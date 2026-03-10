@@ -3,22 +3,25 @@
   import NavBar from "./TopBar/NavBar.svelte";
   import NavTree from "./TopBar/NavTree.svelte";
   import SearchBar from "./TopBar/SearchBar.svelte";
+  import SearchInput from "./TopBar/SearchInput.svelte";
   import SearchResult from "./TopBar/SearchResult.svelte";
 
   const docs = getDocsContext();
 </script>
 
-<header>
-  <div class="inner" class:rotated={docs.topbarMode === "search"}>
+<header class:rotated={docs.topbarMode === "search"}>
+  <div class="inner">
     <NavBar />
     <SearchBar />
   </div>
+  <SearchInput />
 </header>
 <NavTree />
 <SearchResult />
 
 <style>
   header {
+    position: relative;
     perspective: 800px;
   }
 
@@ -27,7 +30,7 @@
     transform-origin: center center -30px;
     transform-style: preserve-3d;
 
-    &.rotated {
+    .rotated & {
       transform: rotateX(90deg);
     }
   }
@@ -45,7 +48,7 @@
       transition: none;
       transform: none;
 
-      &.rotated {
+      .rotated & {
         transform: none;
       }
     }

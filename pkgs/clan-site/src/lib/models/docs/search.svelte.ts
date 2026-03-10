@@ -11,6 +11,7 @@ export class Search {
   #docs: Docs;
   public query = $state("");
   public inputElement: HTMLInputElement | undefined = $state.raw();
+  public fakeInputElement: HTMLInputElement | undefined = $state.raw();
   #results: readonly PagefindSearchFragment[] = $state.raw([]);
   public get results(): readonly PagefindSearchFragment[] {
     return this.#results;
@@ -22,11 +23,18 @@ export class Search {
 
     $effect(() => {
       if (this.#docs.topbarMode === "search") {
-        if (this.inputElement) {
+        if (this.inputElement && this.fakeInputElement) {
+          this.inputElement.style.left = `${String(this.fakeInputElement.offsetLeft)}px`;
+          this.inputElement.style.top = `${String(this.fakeInputElement.offsetTop)}px`;
+          this.inputElement.style.width = `${String(this.fakeInputElement.offsetWidth)}px`;
+          this.inputElement.style.height = `${String(this.fakeInputElement.offsetHeight)}px`;
           this.inputElement.focus();
         }
       } else {
         this.query = "";
+        if (this.inputElement) {
+          this.inputElement.blur();
+        }
       }
     });
 

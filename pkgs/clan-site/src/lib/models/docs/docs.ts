@@ -4,7 +4,7 @@ import { docsBase } from "$config";
 
 export type DocsPath = `/docs/${string}`;
 
-export type TopBarMode = "search" | "nav" | "topBar";
+export type TopBarMode = "navBar" | "navTree" | "search";
 
 export interface ArticleInput {
   readonly toc: TocItemsInput;
