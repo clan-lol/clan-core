@@ -73,7 +73,7 @@ clan machines list
 
 ## 3. Add your allowed keys
 
-Next you will add your key to the allowedKeys. Your best bet to finding it is:
+Next, add your public key to the allowed keys. You can find it by running:
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
@@ -85,13 +85,13 @@ Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_
 "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
-Test out your .nix file to make sure it's not broken:
+Verify that your configuration is valid:
 
 ```bash
 clan show
 ```
 
-## 4. To Enable WiFi on Target Machine (if no Lan)
+## 4. Enable WiFi on Target Machine (Optional)
 
 If you plan to manage your physical machine through WiFi, you will need to add the following to your `clan.nix` file under `inventory.instances`:
 
@@ -222,13 +222,13 @@ Press **Ctrl+D** to return to the installer app, and note the IP address, and ad
 
 ## 8. Get Hardware Configuration
 
-Now it's time to gather info on your hardware. Type:
+Now gather the hardware configuration from the target machine:
 
 ```
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
-replacing <IP-ADDRESS> with the IP address of your system
+Replace `<IP-ADDRESS>` with the IP address of your target machine.
 
 You will be asked to enter "y" to proceed.
 
@@ -255,13 +255,9 @@ Install NixOS on the target machine by typing:
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-Again substituting IP-ADDRESS as before.
+Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
-(You will be asked whether you want to install; type y. You will also be asked about a password; you can accept the defaults here and just press Enter for both.)
-
-You will also be asked for the WiFi username and password for the machine to be configured with. Make sure it's the same network your setup machine is on.
-
-You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
+You will be asked whether you want to install — type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on) and a root password (you can either create one or let Clan assign a random one).
 
 ### If you get an error about Sandboxing
 
@@ -271,15 +267,13 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-And for WiFi, you might need to repeat the network name and password.
-
-You will also have to enter a new root password again here, or let Clan assign one. Then run the installer again:
+You may need to re-enter the WiFi credentials and root password. Then run the install again:
 
 ```bash
 clan machines install test-machine --target-host <USER>@<IP-ADDRESS>
 ```
 
-After completion, for physical machines, remove the USB drive, before the machine reboots. (You may need to reboot manually.)
+After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
 ## 11. Test Connection
 
@@ -404,7 +398,7 @@ Now update the machine by typing:
 clan machines update test-machine
 ```
 
-After complete, you can now log in as alice with the password inside the virtual machine.
+Once complete, you can log in as alice with the password on the target machine.
 
 ## Give that user sudo access
 
