@@ -22,7 +22,7 @@
 Type the following to download the installer's ISO image:
 
 ```bash
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
 ```
 
 # 2. Install the ISO and run it
@@ -63,7 +63,7 @@ You will see the NixOS loader start; simply wait. You'll see text scroll and fin
 
 * Network Information. Take note of the IP address, such as 10.0.0.18.
 
-* Remote Access. The host name has been added to your DNS; instead of 10.0.0.18 you can use this name, but that name will go away after NixOS is installed. Instead use make note of IP address.
+* Remote Access. A hostname has been added to your local DNS; you can use it instead of the IP address, but it will no longer work after NixOS is installed. Make note of the IP address instead.
 
 # 3. Run the Clan setup
 
@@ -116,9 +116,9 @@ Test it out:
 clan machines list
 ```
 
-## 5. Add your allowed keys
+# 5. Add your allowed keys
 
-Next you will add your key to the allowedKeys. Your best bet to finding it is:
+Next, add your public key to the allowed keys. You can find it by running:
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
@@ -130,7 +130,7 @@ Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_
 "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
-Test out your .nix file to make sure it's not broken:
+Verify that your configuration is valid:
 
 ```bash
 clan show
@@ -138,13 +138,13 @@ clan show
 
 # 6. Gather Hardware Configuration
 
-Now it's time to gather info on your hardware. Type:
+Now gather the hardware configuration from the target machine:
 
 ```
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
-replacing <IP-ADDRESS> with the IP address shown beneath the QR code.
+Replace `<IP-ADDRESS>` with the IP address shown beneath the QR code.
 
 You will be asked to enter "y" to proceed.
 
@@ -172,9 +172,9 @@ Install NixOS on the target machine by typing:
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-Again substituting IP-ADDRESS as before.
+Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
-(You will be asked whether you want to install; type y. You will also be asked about a password; you can accept the defaults here and just press Enter for both.)
+You will be asked whether you want to install — type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
 
 You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
 
@@ -204,7 +204,7 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-# 9. Test the Connection
+# 10. Test the Connection
 
 Now you can try connecting to the remote machine:
 
@@ -236,7 +236,7 @@ Now let's look at how you can use Clan to install and remove packages on a targe
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
 ```{.nix title="clan.nix" hl_lines="2-6"}
- inventory.instances = {
+  inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
         packages = [ "bat" "btop" "tldr" ];
@@ -276,7 +276,7 @@ Next, let's remove one of the three packages. The packages portion of clan.nix d
 and run the update again:
 
 ```bash
-clan machines update my-machine
+clan machines update test-machine
 ```
 
 Now when you check which `tldr`, it should show that it's not in the path:
@@ -327,7 +327,7 @@ Now update the machine by typing:
 clan machines update test-machine
 ```
 
-After complete, you can now log in as alice with the password inside the virtual machine.
+Once complete, you can log in as alice with the password inside the virtual machine.
 
 ## Give that user sudo access
 

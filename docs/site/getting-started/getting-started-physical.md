@@ -73,7 +73,7 @@ clan machines list
 
 ## 3. Add your allowed keys
 
-Next you will add your key to the allowedKeys. Your best bet to finding it is:
+Next, add your public key to the allowed keys. You can find it by running:
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
@@ -85,13 +85,13 @@ Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_
 "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
-Test out your .nix file to make sure it's not broken:
+Verify that your configuration is valid:
 
 ```bash
 clan show
 ```
 
-## 4. To Enable WiFi on Target Machine (if no Lan)
+## 4. Enable WiFi on Target Machine (Optional)
 
 If you plan to manage your physical machine through WiFi, you will need to add the following to your `clan.nix` file under `inventory.instances`:
 
@@ -108,18 +108,32 @@ This will allow WiFi to be used on the target machine *after* installation.
 
 ## 5. Create an Installer USB Drive
 
-Obtain a USB drive with at least 1.5  GB total space.
+Obtain a USB drive with at least 1.5 GB total space.
 
 !!! Note "Danger"
     All data on the USB drive will be lost!
 
-Insert it into your setup computer. Determine its block name by typing:
+First, download the installer ISO image for your target machine's architecture:
+
+For x86_64 machines:
+
+```bash
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+```
+
+For aarch64 (ARM) machines:
+
+```bash
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-aarch64-linux.iso
+```
+
+Insert the USB drive into your setup computer. Determine its block device name by typing:
 
 ```bash
 lsblk
 ```
 
-You will see output similar to this; look under `SIZE` column to find the entry that matches the USB drive's size. (It will likely be sda or sdb):
+You will see output similar to this; look under the `SIZE` column to find the entry that matches the USB drive's size. (It will likely be sda or sdb):
 
 ```{.shellSession hl_lines="2" .no-copy}
 NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
@@ -139,15 +153,16 @@ sudo umount /dev/sdb2
 sudo umount /dev/sdb3
 ```
 
-Now type the following, replacing <USB_DEVICE> with your own identifier, without the number, e.g. `sdb`:
+Now flash the ISO to the USB drive using `dd`. Replace `<USB_DEVICE>` with your device name (e.g. `sdb`) and `<ISO_FILE>` with the downloaded filename:
 
 ```bash
-clan flash write --flake https://git.clan.lol/clan/clan-core/archive/main.tar.gz \
-  --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
-  --keymap us \
-  --language en_US.UTF-8 \
-  --disk main /dev/<USB_DEVICE> \
-  flash-installer
+sudo dd if=<ISO_FILE> of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync
+```
+
+For example:
+
+```bash
+sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress conv=fsync
 ```
 
 ## 6. Plug in and Run the Installer
@@ -207,13 +222,13 @@ Press **Ctrl+D** to return to the installer app, and note the IP address, and ad
 
 ## 8. Get Hardware Configuration
 
-Now it's time to gather info on your hardware. Type:
+Now gather the hardware configuration from the target machine:
 
 ```
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
-replacing <IP-ADDRESS> with the IP address of your system
+Replace `<IP-ADDRESS>` with the IP address of your target machine.
 
 You will be asked to enter "y" to proceed.
 
@@ -240,13 +255,9 @@ Install NixOS on the target machine by typing:
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-Again substituting IP-ADDRESS as before.
+Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
-(You will be asked whether you want to install; type y. You will also be asked about a password; you can accept the defaults here and just press Enter for both.)
-
-You will also be asked for the WiFi username and password for the machine to be configured with. Make sure it's the same network your setup machine is on.
-
-You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
+You will be asked whether you want to install — type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on) and a root password (you can either create one or let Clan assign a random one).
 
 ### If you get an error about Sandboxing
 
@@ -256,15 +267,13 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-And for WiFi, you might need to repeat the network name and password.
-
-You will also have to enter a new root password again here, or let Clan assign one. Then run the installer again:
+You may need to re-enter the WiFi credentials and root password. Then run the install again:
 
 ```bash
 clan machines install test-machine --target-host <USER>@<IP-ADDRESS>
 ```
 
-After completion, for physical machines, remove the USB drive, before the machine reboots. (You may need to reboot manually.)
+After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
 ## 11. Test Connection
 
@@ -291,64 +300,6 @@ You should connect and see the prompt:
 [root@test-machine:~]#
 ```
 
-# Practice: Install Packages
-
-Now let's look at how you can use Clan to install and remove packages on a target machine.
-
-For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
-
-```{.nix title="clan.nix" hl_lines="2-6"}
- inventory.instances = {
-    packages = {
-      roles.default.machines."test-machine".settings = {
-        packages = [ "bat" "btop" "tldr" ];
-      };
-    };
-    # ... existing wifi service ...
-  };
-```
-
-This declares that the three packages will be present on the machine. To install them, type:
-
-```bash
-clan machines update test-machine
-```
-
-Now ssh into the machine, and they should be present:
-
-```
-which bat
-which btop
-which tldr
-```
-
-Each will show a path to the binary file:
-
-```
-/run/current-system/sw/bin/bat
-/run/current-system/sw/bin/btop
-/run/current-system/sw/bin/tldr
-```
-
-Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
-```
-        packages = [ "bat" "btop" ];
-```
-
-and run the update again:
-
-```bash
-clan machines update my-machine
-```
-
-Now when you check which `tldr`, it should show that it's not in the path:
-
-```
-which tldr
-which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
-
-```
-
 # Practice: Install Some Packages
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
@@ -356,7 +307,7 @@ Now let's look at how you can use Clan to install and remove packages on a targe
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
 ```{.nix title="clan.nix" hl_lines="2-6"}
- inventory.instances = {
+  inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
         packages = [ "bat" "btop" "tldr" ];
@@ -396,7 +347,7 @@ Next, let's remove one of the three packages. The packages portion of clan.nix d
 and run the update again:
 
 ```bash
-clan machines update my-machine
+clan machines update test-machine
 ```
 
 Now when you check which `tldr`, it should show that it's not in the path:
@@ -447,7 +398,7 @@ Now update the machine by typing:
 clan machines update test-machine
 ```
 
-After complete, you can now log in as alice with the password inside the virtual machine.
+Once complete, you can log in as alice with the password on the target machine.
 
 ## Give that user sudo access
 
