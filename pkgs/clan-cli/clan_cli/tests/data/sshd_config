@@ -5,4 +5,8 @@ MaxStartups 64:30:256
 AuthorizedKeysFile $host_key.pub
 AcceptEnv REALPATH
 PasswordAuthentication no
+StrictModes no
+# Disable penalty system so the retry loop in the test fixture
+# doesn't get blocked after initial connection-refused failures
+PerSourcePenalties no
 Subsystem sftp $sftp_server

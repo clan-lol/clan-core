@@ -4,6 +4,7 @@ import string
 import subprocess
 import time
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from sys import platform
 from tempfile import TemporaryDirectory
@@ -20,27 +21,20 @@ class SshdError(Exception):
     pass
 
 
+@dataclass
 class Sshd:
-    def __init__(self, port: int, proc: subprocess.Popen[str], key: str) -> None:
-        self.port = port
-        self.proc = proc
-        self.key = key
+    port: int
+    proc: subprocess.Popen[str]
+    key: str
 
 
+@dataclass
 class SshdConfig:
-    def __init__(
-        self,
-        path: Path,
-        login_shell: Path,
-        key: str,
-        preload_lib: Path,
-        log_file: Path,
-    ) -> None:
-        self.path = path
-        self.login_shell = login_shell
-        self.key = key
-        self.preload_lib = preload_lib
-        self.log_file = log_file
+    path: Path
+    login_shell: Path
+    key: str
+    preload_lib: Path
+    log_file: Path
 
 
 @pytest.fixture(scope="session")
@@ -101,7 +95,8 @@ exec "${{@}}"
             link_lib_flag = "-dynamiclib"
 
         # This enforces a login shell by overriding the login shell of `getpwnam(3)`
-        lib_path = tmpdir / f"libgetpwnam-preload.${extension}"
+        lib_path = tmpdir / f"libgetpwnam-preload{extension}"
+
         subprocess.run(
             [
                 os.environ.get("CC", "cc"),
@@ -135,6 +130,7 @@ def sshd(
         preload_env_name: str(sshd_config.preload_lib),
         "LOGIN_SHELL": str(sshd_config.login_shell),
     }
+
     proc = command.run(
         [
             sshd,
@@ -152,36 +148,51 @@ def sshd(
 
     timeout = 5
     start_time = time.time()
+    last_ssh_stderr = ""
 
     while True:
-        print(sshd_config.path)
-        if (
-            subprocess.run(
-                [
-                    "ssh",
-                    "-o",
-                    "StrictHostKeyChecking=no",
-                    "-o",
-                    "UserKnownHostsFile=/dev/null",
-                    "-i",
-                    sshd_config.key,
-                    "localhost",
-                    "-p",
-                    str(port),
-                    "true",
-                ],
-                check=False,
-            ).returncode
-            == 0
-        ):
+        result = subprocess.run(
+            [
+                "ssh",
+                "-v",
+                "-o",
+                "StrictHostKeyChecking=no",
+                "-o",
+                "UserKnownHostsFile=/dev/null",
+                "-o",
+                "IdentitiesOnly=yes",
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=5",
+                "-i",
+                sshd_config.key,
+                "localhost",
+                "-p",
+                str(port),
+                "true",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
             yield Sshd(port, proc, sshd_config.key)
             return
-        else:
-            rc = proc.poll()
-            if rc is not None:
-                msg = f"sshd processes was terminated with {rc}"
-                raise SshdError(msg)
-            if time.time() - start_time > timeout:
-                msg = "Timeout while waiting for sshd to be ready"
-                raise SshdError(msg)
-            time.sleep(0.1)
+
+        last_ssh_stderr = result.stderr
+        rc = proc.poll()
+        if rc is not None:
+            msg = f"sshd process was terminated with {rc}"
+            raise SshdError(msg)
+        if time.time() - start_time > timeout:
+            sshd_log = ""
+            if sshd_config.log_file.exists():
+                sshd_log = sshd_config.log_file.read_text()
+            msg = (
+                f"Timeout while waiting for sshd to be ready on port {port}\n"
+                f"Last ssh client stderr:\n{last_ssh_stderr}\n"
+                f"sshd log:\n{sshd_log}"
+            )
+            raise SshdError(msg)
+        time.sleep(0.1)
