@@ -75,7 +75,7 @@
     border-start-start-radius: 14px;
     border-start-end-radius: 14px;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 14px;
   }
 
   nav {
@@ -255,7 +255,7 @@
       align-self: start;
       order: 2;
       overflow: auto;
-      inline-size: 260px;
+      inline-size: 280px;
       max-block-size: 100vh;
       padding-block: 12px 24px;
       margin-inline: 0;
@@ -268,7 +268,7 @@
     }
 
     .toc-title {
-      padding: 18px 24px;
+      padding: 18px 14px;
       font-weight: 600;
 
       :global(svg) {
@@ -303,11 +303,11 @@
           margin-inline: 0;
 
           > a {
-            padding-inline: 24px;
+            padding-inline: 14px;
           }
 
           > ol > li {
-            margin-inline-start: 24px;
+            margin-inline-start: 14px;
           }
         }
       }

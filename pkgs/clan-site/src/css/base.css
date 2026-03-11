@@ -4,7 +4,7 @@ html {
 
 body {
   font:
-    400 18px/1.45 "Mona Sans",
+    400 16px/1.45 "Mona Sans",
     sans-serif;
 
   &:has([data-page-id="docs"]) {
@@ -40,7 +40,7 @@ h1 {
   margin: 1.5em 0 1em;
   color: inherit;
   font-weight: 700;
-  font-size: 32px;
+  font-size: 32.44px;
 }
 
 h2 {
@@ -48,17 +48,27 @@ h2 {
   color: inherit;
   border-block-end: 1px solid var(--heading-border-color);
   font-weight: 700;
-  font-size: 27px;
+  font-size: 28.83px;
 }
 
 h3 {
   margin: 2em 0 1em;
-  font-size: 24px;
+  font-size: 25.63px;
 }
 
 h4 {
   margin: 2em 0 1em;
-  font-size: 19px;
+  font-size: 22.78px;
+}
+
+h5 {
+  margin: 2em 0 1em;
+  font-size: 20.25px;
+}
+
+h6 {
+  margin: 2em 0 1em;
+  font-size: 18px;
 }
 
 a {
@@ -108,7 +118,7 @@ code {
   background: var(--code-bg-color);
   border: 1px solid var(--code-border-color);
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.8;
 
   a:has(&) {
