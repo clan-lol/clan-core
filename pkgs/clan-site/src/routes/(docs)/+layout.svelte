@@ -50,4 +50,12 @@
       }
     }
   }
+
+  @media (--wide) {
+    main {
+      &.showing-search {
+        max-block-size: calc(100vh - 90px);
+      }
+    }
+  }
 </style>
