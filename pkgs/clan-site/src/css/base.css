@@ -155,13 +155,7 @@ tr:nth-child(2n) {
 
 @media (--medium) {
   h1 {
-    margin-block: 1em;
+    margin-block: 1em 2em;
     font-size: 36px;
-  }
-}
-
-@media (--wide) {
-  h1 {
-    margin-block-start: 1em;
   }
 }
