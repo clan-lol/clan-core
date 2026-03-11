@@ -236,7 +236,7 @@ Now let's look at how you can use Clan to install and remove packages on a targe
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
 ```{.nix title="clan.nix" hl_lines="2-6"}
- inventory.instances = {
+  inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
         packages = [ "bat" "btop" "tldr" ];
