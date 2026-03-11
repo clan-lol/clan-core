@@ -29,6 +29,9 @@ in
       legacyPackages.evalTests-vars-backends = import ./eval-tests/backends.nix {
         inherit lib pkgs;
       };
+      legacyPackages.evalTests-generators-to-sops = import ./secret/sops/generators-to-sops-test.nix {
+        inherit lib;
+      };
       checks.eval-module-clan-vars = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
         export HOME="$(realpath .)"
 
@@ -51,5 +54,18 @@ in
 
         touch $out
       '';
+      checks.eval-generators-to-sops =
+        pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; }
+          ''
+            export HOME="$(realpath .)"
+
+            nix-unit --eval-store "$HOME" \
+              --extra-experimental-features flakes \
+              --show-trace \
+              ${inputOverrides} \
+              --flake ${varsFileset}#legacyPackages.${system}.evalTests-generators-to-sops
+
+            touch $out
+          '';
     };
 }
