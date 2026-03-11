@@ -276,7 +276,7 @@ Next, let's remove one of the three packages. The packages portion of clan.nix d
 and run the update again:
 
 ```bash
-clan machines update my-machine
+clan machines update test-machine
 ```
 
 Now when you check which `tldr`, it should show that it's not in the path:
