@@ -165,6 +165,7 @@
 
     .article-inner {
       display: flex;
+      justify-content: center;
 
       .no-toc & {
         display: block;
@@ -176,6 +177,7 @@
     .content {
       flex: 1;
       min-inline-size: 0;
+      max-inline-size: 1000px;
       padding-inline: 32px;
 
       .no-toc & {
