@@ -1,7 +1,5 @@
 # Introduction to Clan Services
 
-## 🚧 Early Draft Attempt — Under Active Development (but ready for brief review to make sure I'm on the right track)
-
 A **service** is a reusable piece of functionality you can add to your machines. Services handle things like backups, networking, user management, and installing packages, all configured from your `clan.nix` file.
 
 Instead of manually installing software and editing config files on each machine, you declare what services you want, and Clan sets everything up for you.
