@@ -22,7 +22,7 @@
 Type the following to download the installer's ISO image:
 
 ```bash
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
 ```
 
 # 2. Install the ISO and run it
