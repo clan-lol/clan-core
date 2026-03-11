@@ -17,7 +17,7 @@ export default function transformerCustom({
 
       let lines = 0;
       for (const node of code.children) {
-        if (node.type === "element" && node.properties.class === "line") {
+        if (node.type === "element" && hasClass(node, "line")) {
           lines += 1;
         }
       }
@@ -58,4 +58,15 @@ export default function transformerCustom({
       });
     },
   };
+}
+
+function hasClass(node: Element, s: string): boolean {
+  const cls = node.properties.class as string | string[] | undefined;
+  if (cls === undefined) {
+    return false;
+  }
+  if (Array.isArray(cls)) {
+    return cls.includes(s);
+  }
+  return cls === s;
 }

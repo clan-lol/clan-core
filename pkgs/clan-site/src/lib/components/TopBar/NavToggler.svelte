@@ -15,6 +15,7 @@
 <style>
   button {
     padding: 0 14px;
+    margin-inline-end: -14px;
     color: inherit;
     background: none;
     border: 0;

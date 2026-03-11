@@ -11,48 +11,41 @@
   const toc = $derived(article.toc);
 </script>
 
-<div class="container" class:no-toc={toc.items.length === 0}>
-  <article>
-    <div class="article-inner">
-      {#if toc.items.length !== 0}
-        <Toc />
-      {/if}
-      <div class="content" use:toc.setContent bind:this={docs.contentElement}>
-        {@render children()}
-      </div>
+<article class:no-toc={toc.items.length === 0}>
+  <div class="article-inner">
+    {#if toc.items.length !== 0}
+      <Toc />
+    {/if}
+    <div class="content" use:toc.setContent bind:this={docs.contentElement}>
+      {@render children()}
+      <footer>
+        {#if article.prev}
+          <a class="pointer" href={resolve(article.prev.path)}>
+            <dl>
+              <dt><ArrowLeftIcon height="12" /> Previous</dt>
+              <dd>{article.prev.label}</dd>
+            </dl>
+          </a>
+        {:else}
+          <div class="pointer empty"></div>
+        {/if}
+        {#if article.next}
+          <a class="pointer next" href={resolve(article.next.path)}>
+            <dl>
+              <dt>Next <ArrowRightIcon height="12" /></dt>
+              <dd>{article.next.label}</dd>
+            </dl>
+          </a>
+        {:else}
+          <div class="pointer next empty"></div>
+        {/if}
+      </footer>
     </div>
-  </article>
-  <footer>
-    {#if article.prev}
-      <a class="pointer" href={resolve(article.prev.path)}>
-        <dl>
-          <dt><ArrowLeftIcon height="12" /> Previous</dt>
-          <dd>{article.prev.label}</dd>
-        </dl>
-      </a>
-    {:else}
-      <div class="pointer empty"></div>
-    {/if}
-    {#if article.next}
-      <a class="pointer next" href={resolve(article.next.path)}>
-        <dl>
-          <dt>Next <ArrowRightIcon height="12" /></dt>
-          <dd>{article.next.label}</dd>
-        </dl>
-      </a>
-    {:else}
-      <div class="pointer next empty"></div>
-    {/if}
-  </footer>
-</div>
+  </div>
+</article>
 
 <style>
   article {
-    padding-block-end: 32px;
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
     color: var(--content-fg-color);
     background: var(--content-bg-color);
     border: 1px solid var(--content-border-color);
@@ -62,6 +55,11 @@
   }
 
   .content {
+    /* safearea is always absolute */
+    /* stylelint-disable-next-line csstools/use-logical */
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+
     :global(img) {
       max-inline-size: 100%;
     }
@@ -69,19 +67,20 @@
 
   footer {
     display: flex;
+    flex-wrap: wrap;
     gap: 14px;
     justify-content: space-between;
-    margin: 14px;
+    margin-block: 64px 14px;
   }
 
   .pointer {
     flex: 1;
     gap: 10px;
     align-items: center;
+    min-inline-size: 360px;
     padding: 14px;
-    color: inherit;
-    background: var(--content-bg-color);
-    border: 1px solid var(--content-border-color);
+    color: var(--fg-color);
+    background: var(--bg-color);
     border-radius: 14px;
     text-decoration: none;
 
@@ -115,16 +114,15 @@
   }
 
   @media (--medium) {
-    .container {
-      margin-inline-end: 14px;
-    }
-
     article {
-      padding-inline: 28px;
+      margin-block-end: 14px;
+      /* safearea is always absolute */
+      /* stylelint-disable-next-line csstools/use-logical */
+      margin-right: max(14px, env(safe-area-inset-right));
       border-end-start-radius: 14px;
       border-end-end-radius: 14px;
 
-      .no-toc & {
+      &.no-toc {
         padding-inline: 0;
       }
     }
@@ -134,9 +132,14 @@
       margin-inline: auto;
     }
 
+    .content {
+      padding-inline: 24px;
+    }
+
     footer {
-      gap: 14px;
-      margin: 14px 0;
+      gap: 24px;
+      padding-inline-start: 0;
+      margin-block: 88px 24px;
     }
 
     .pointer {
@@ -145,18 +148,14 @@
   }
 
   @media (--wide) {
-    .container {
-      margin-inline-end: 24px;
-    }
-
     article {
       padding-inline: 0;
+      margin-inline: 0 24px;
     }
 
     .article-inner {
       display: flex;
-      max-inline-size: calc(800px + 290px);
-      margin-inline: auto;
+      justify-content: center;
 
       .no-toc & {
         display: block;
@@ -168,7 +167,8 @@
     .content {
       flex: 1;
       min-inline-size: 0;
-      padding-inline: 28px;
+      max-inline-size: 1000px;
+      padding-inline: 32px calc(32px - 14px);
 
       .no-toc & {
         padding-inline: 0;
@@ -176,8 +176,8 @@
     }
 
     footer {
-      gap: 24px;
-      margin: 24px 0;
+      gap: 32px;
+      margin-block: 100px 32px;
     }
   }
 </style>
