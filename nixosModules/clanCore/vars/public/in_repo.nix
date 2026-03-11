@@ -14,12 +14,12 @@ let
           flakePath = mkIf (file.config.secret == false) (
             if file.config.share then
               (
-                config.clan.core.settings.directory
+                config.clan.core.settings.varsDirectory
                 + "/vars/shared/${file.config.generatorName}/${file.config.name}/value"
               )
             else
               (
-                config.clan.core.settings.directory
+                config.clan.core.settings.varsDirectory
                 + "/vars/per-machine/${config.clan.core.settings.machine.name}/${file.config.generatorName}/${file.config.name}/value"
               )
           );

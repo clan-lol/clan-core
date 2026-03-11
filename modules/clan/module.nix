@@ -123,7 +123,13 @@ let
       _name: machine:
       machine.extendModules {
         modules = [
-          { clan.core.settings.directory = lib.mkForce filteredDirectory; }
+          {
+            clan.core.settings.directory = lib.mkForce filteredDirectory;
+            # Keep the unfiltered directory for reading committed var files.
+            # The filter on `directory` only prevents readDir cycles in generators;
+            # direct file reads of known var paths must still work.
+            clan.core.settings.varsDirectory = lib.mkForce directory;
+          }
           (lib.modules.importApply ../../nixosModules/machineModules/overridePkgs.nix {
             pkgs = pkgsFor.${system};
           })
