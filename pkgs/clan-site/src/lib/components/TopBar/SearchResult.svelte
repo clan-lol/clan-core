@@ -67,7 +67,7 @@
       inset-inline-start: calc(50% - 325px);
       inset-block-end: auto;
       inline-size: 650px;
-      max-block-size: calc(100vh - 60px);
+      max-block-size: calc(80vh - 60px);
       border-end-start-radius: 12px;
       border-end-end-radius: 12px;
       box-shadow: 0 12px 30px var(--search-result-shadow-color);
@@ -82,6 +82,10 @@
     .backdrop,
     dl {
       inset-block-start: 90px;
+    }
+
+    dl {
+      max-block-size: calc(80vh - 90px);
     }
   }
 </style>

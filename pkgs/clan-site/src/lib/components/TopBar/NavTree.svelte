@@ -149,6 +149,7 @@
 
   @media (--wide) {
     nav {
+      inline-size: 300px;
       padding-inline: 24px 14px;
     }
   }

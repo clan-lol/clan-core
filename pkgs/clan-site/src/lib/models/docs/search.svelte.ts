@@ -48,12 +48,12 @@ export class Search {
         this.#pagefind = (await import(
           /* @vite-ignore */ asset("/_pagefind/docs/pagefind.js")
         )) as Pagefind;
-        await this.#pagefind.init();
         // Override the baseUrl that pagefind derives from import.meta.url.
         // Without this, pagefind derives baseUrl from the asset path
         // (e.g. /_assets/unstable/) and prepends it to result URLs,
         // producing broken links like /_assets/unstable/docs/unstable/...
         await this.#pagefind.options({ baseUrl: "/" });
+        await this.#pagefind.init();
       })();
     }
 
