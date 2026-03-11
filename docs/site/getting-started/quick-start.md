@@ -59,17 +59,17 @@ wifi = {
 
 ### 5. Create Installer USB
 
-```bash
-lsblk                        # identify your USB device (e.g. sdb)
-```
+Download the installer ISO (use the aarch64 URL for ARM machines):
 
 ```bash
-clan flash write --flake https://git.clan.lol/clan/clan-core/archive/main.tar.gz \
-  --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
-  --keymap us \
-  --language en_US.UTF-8 \
-  --disk main /dev/<USB_DEVICE> \
-  flash-installer
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+```
+
+Identify your USB device and flash the ISO:
+
+```bash
+lsblk                        # identify your USB device (e.g. sdb)
+sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync
 ```
 
 ### 6. Boot Target from USB
