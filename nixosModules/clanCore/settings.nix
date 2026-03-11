@@ -18,6 +18,18 @@ in
               the location of the flake repo, used to calculate the location of vars and secrets
             '';
           };
+          varsDirectory = mkOption {
+            internal = true;
+            visible = false;
+            type = types.path;
+            description = ''
+              the location used to read public var files (e.g. vars/per-machine/...).
+
+              Defaults to `directory`. This exists so that `machinesFiltered` can point
+              `directory` at a vars-free copy (to prevent readDir cycles in generators)
+              while still allowing direct file reads of committed var values.
+            '';
+          };
           name = lib.mkOption {
             type = lib.types.str;
             description = ''
