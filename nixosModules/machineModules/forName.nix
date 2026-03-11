@@ -23,7 +23,6 @@
   clan.core.settings = {
     inherit (meta) name icon domain;
     inherit directory;
-    varsDirectory = directory;
     machine = {
       inherit name;
     };
