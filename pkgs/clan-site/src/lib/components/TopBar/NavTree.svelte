@@ -142,7 +142,8 @@
       inset-block-start: 0;
       overflow: auto;
       max-block-size: 100vh;
-      padding-block-end: 14px;
+      padding-block: 14px;
+      margin-block-start: -14px;
     }
   }
 
