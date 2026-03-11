@@ -1,9 +1,9 @@
-# Finding or Creating an id_ed25519 Key Pair
+# Create an SSH Key
 
 !!! Tip
     Use this short guide to determine if you have an existing key pair, and if not, to create one.
 
-First, check for an existing key by typing:                                                                                                                                                                   
+First, check for an existing key by typing:
 
 ```bash
 ls ~/.ssh/id_ed25519*

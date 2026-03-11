@@ -54,7 +54,7 @@ nav:
       - Quick Start: getting-started/quick-start.md
       - Getting Started (Physical Machine): getting-started/getting-started-physical.md
       - Getting Started (Virtual Box): getting-started/getting-started-virtualbox.md
-      - Creating a Key Pair: getting-started/id-ed25519.md
+      - Creating a Key Pair: getting-started/create-an-ssh-key.md
       - What's Next: getting-started/whats-next.md
   - Guides:
       - Inventory:
