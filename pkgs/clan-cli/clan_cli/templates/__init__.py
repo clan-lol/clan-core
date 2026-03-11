@@ -2,6 +2,7 @@
 import argparse
 
 from .apply import register_apply_parser
+from .info import register_info_parser
 from .list import register_list_parser
 
 
@@ -18,5 +19,10 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "apply",
         help="Apply a template of the specified type",
     )
+    info_parser = subparser.add_parser(
+        "info",
+        help="Show template placeholders and valid options",
+    )
     register_list_parser(list_parser)
     register_apply_parser(apply_parser)
+    register_info_parser(info_parser)
