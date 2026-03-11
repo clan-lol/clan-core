@@ -306,64 +306,6 @@ You should connect and see the prompt:
 [root@test-machine:~]#
 ```
 
-# Practice: Install Packages
-
-Now let's look at how you can use Clan to install and remove packages on a target machine.
-
-For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
-
-```{.nix title="clan.nix" hl_lines="2-6"}
- inventory.instances = {
-    packages = {
-      roles.default.machines."test-machine".settings = {
-        packages = [ "bat" "btop" "tldr" ];
-      };
-    };
-    # ... existing wifi service ...
-  };
-```
-
-This declares that the three packages will be present on the machine. To install them, type:
-
-```bash
-clan machines update test-machine
-```
-
-Now ssh into the machine, and they should be present:
-
-```
-which bat
-which btop
-which tldr
-```
-
-Each will show a path to the binary file:
-
-```
-/run/current-system/sw/bin/bat
-/run/current-system/sw/bin/btop
-/run/current-system/sw/bin/tldr
-```
-
-Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
-```
-        packages = [ "bat" "btop" ];
-```
-
-and run the update again:
-
-```bash
-clan machines update my-machine
-```
-
-Now when you check which `tldr`, it should show that it's not in the path:
-
-```
-which tldr
-which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
-
-```
-
 # Practice: Install Some Packages
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
