@@ -9,7 +9,9 @@
 </script>
 
 <nav class:open={nav.open}>
-  {@render navTree(nav.items)}
+  <div class="inner">
+    {@render navTree(nav.items)}
+  </div>
 </nav>
 
 {#snippet navTree(items: NavItems)}
@@ -49,6 +51,7 @@
     padding-right: max(14px, env(safe-area-inset-right));
     color: var(--secondary-fg-color);
     font-weight: 500;
+    font-size: 14px;
 
     &.open {
       display: block;
@@ -61,7 +64,6 @@
     align-items: center;
     padding: 7px 0;
     list-style: none;
-    font-size: 16px;
     cursor: pointer;
 
     &:hover {
@@ -99,10 +101,10 @@
 
     a {
       display: block;
-      padding: 9px 20px;
+      padding-inline: 20px 14px;
+      padding-block: 9px;
       color: inherit;
       border-radius: 6px;
-      font-size: 16px;
       line-height: 1.25;
       text-decoration: none;
 
@@ -117,7 +119,7 @@
       background-color: var(--content-bg-color);
     }
 
-    nav > ol > & {
+    .inner > ol > & {
       margin-inline-start: 0;
 
       &::before {
@@ -131,7 +133,16 @@
       display: block;
       grid-row: 2;
       grid-column: 1;
+      inline-size: 280px;
       padding-inline-end: 14px;
+    }
+
+    .inner {
+      position: sticky;
+      inset-block-start: 0;
+      overflow: auto;
+      max-block-size: 100vh;
+      padding-block-end: 14px;
     }
   }
 

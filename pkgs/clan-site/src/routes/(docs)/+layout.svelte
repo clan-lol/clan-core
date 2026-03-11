@@ -36,7 +36,7 @@
   @media (--medium) {
     .container {
       display: grid;
-      grid-template: auto auto / 280px minmax(0, 1fr);
+      grid-template: auto auto / auto minmax(0, 1fr);
     }
 
     main {
