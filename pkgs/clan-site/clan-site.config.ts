@@ -6,7 +6,7 @@ import { extractCustomMedia, readVersion } from "#lib/util.server.ts";
 
 export const version = await readVersion();
 export const customMedia = await extractCustomMedia();
-export const searchResultLimit = 5;
+export const searchResultLimit = 20;
 export const codeMinLineNumberLines = 4;
 export const codeLightTheme = "catppuccin-latte";
 export const codeDarkTheme = "catppuccin-macchiato";
