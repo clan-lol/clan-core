@@ -108,18 +108,32 @@ This will allow WiFi to be used on the target machine *after* installation.
 
 ## 5. Create an Installer USB Drive
 
-Obtain a USB drive with at least 1.5  GB total space.
+Obtain a USB drive with at least 1.5 GB total space.
 
 !!! Note "Danger"
     All data on the USB drive will be lost!
 
-Insert it into your setup computer. Determine its block name by typing:
+First, download the installer ISO image for your target machine's architecture:
+
+For x86_64 machines:
+
+```bash
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+```
+
+For aarch64 (ARM) machines:
+
+```bash
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-aarch64-linux.iso
+```
+
+Insert the USB drive into your setup computer. Determine its block device name by typing:
 
 ```bash
 lsblk
 ```
 
-You will see output similar to this; look under `SIZE` column to find the entry that matches the USB drive's size. (It will likely be sda or sdb):
+You will see output similar to this; look under the `SIZE` column to find the entry that matches the USB drive's size. (It will likely be sda or sdb):
 
 ```{.shellSession hl_lines="2" .no-copy}
 NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
@@ -139,15 +153,16 @@ sudo umount /dev/sdb2
 sudo umount /dev/sdb3
 ```
 
-Now type the following, replacing <USB_DEVICE> with your own identifier, without the number, e.g. `sdb`:
+Now flash the ISO to the USB drive using `dd`. Replace `<USB_DEVICE>` with your device name (e.g. `sdb`) and `<ISO_FILE>` with the downloaded filename:
 
 ```bash
-clan flash write --flake https://git.clan.lol/clan/clan-core/archive/main.tar.gz \
-  --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
-  --keymap us \
-  --language en_US.UTF-8 \
-  --disk main /dev/<USB_DEVICE> \
-  flash-installer
+sudo dd if=<ISO_FILE> of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync
+```
+
+For example:
+
+```bash
+sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress conv=fsync
 ```
 
 ## 6. Plug in and Run the Installer
