@@ -16,8 +16,8 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     template_action = parser.add_argument(
         "--template",
         type=str,
-        help="""Reference to the template to use for the clan. default="default". In the format '<flake_ref>#template_name' Where <flake_ref> is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
-        Omitting '<flake_ref>#' will use the builtin templates (e.g. just 'default' from clan-core ).
+        help="""Reference to the template to use for the clan. default="default". In the format `<flake_ref>#template_name` Where `<flake_ref>` is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
+        Omitting `<flake_ref>#` will use the builtin templates (e.g. just 'default' from clan-core ).
         """,
         default="default",
     )

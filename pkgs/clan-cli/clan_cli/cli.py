@@ -235,7 +235,7 @@ Usage differs based on the template type
 Clan templates
 
   $ clan init --template=default
-  Create a clan from the shipped (`<builtin>`) 'default' clan template
+  Create a clan from the shipped (builtin) 'default' clan template
 
   $ clan init --template=.#myTemplate
   Create a clan from the `myTemplate` template defined in the current flake
@@ -278,8 +278,8 @@ Machine templates
         epilog=(
             f"""
 Examples:
-  $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
-  Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
+  $ clan flash write mymachine --disk main /dev/sdX --ssh-pubkey ~/.ssh/id_rsa.pub
+  Will flash the machine 'mymachine' to the disk `/dev/sdX` with the ssh public key '~/.ssh/id_rsa.pub'.
 
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/getting-started-physical")}
             """

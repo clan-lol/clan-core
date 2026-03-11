@@ -139,7 +139,7 @@ The target must be a Linux based system reachable via SSH.
             """
 Examples:
 
-  $ clan machines init-hardware-config [MACHINE] --target-host root@<ip>
+  $ clan machines init-hardware-config [MACHINE] --target-host root@`<ip>`
   Will generate the facter.json hardware report for `[TARGET_HOST]` and place the result in facter.json for the given machine `[MACHINE]`.
 """
         ),
@@ -160,7 +160,7 @@ The target must be a Linux based system reachable via SSH.
             """
 Examples:
 
-  $ clan machines update-hardware-config [MACHINE] --target-host root@<ip>
+  $ clan machines update-hardware-config [MACHINE] --target-host root@`<ip>`
   Will generate a hardware report for `[TARGET_HOST]` and place it in
   the subdirectory for the given machine `[MACHINE]`.
         """
