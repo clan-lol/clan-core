@@ -19,8 +19,7 @@ DEFAULT_MACHINE_PREFIX = "clanInternals.machines"
 # Context variable for machine selector prefix
 # Set this via machine_prefix_context() when working with a specific flake
 _machine_prefix: ContextVar[str] = ContextVar(
-    "machine_prefix",
-    default=DEFAULT_MACHINE_PREFIX,
+    "machine_prefix", default=DEFAULT_MACHINE_PREFIX
 )
 
 
@@ -48,14 +47,6 @@ def machine_prefix_context(prefix: str) -> Generator[None]:
 def get_machine_prefix() -> str:
     """Get the current machine selector prefix."""
     return _machine_prefix.get()
-
-
-# Results in
-# - clanInternals.machinesFiltered
-# - checks.x86_64-linux.test.machinesCrossFiltered
-def get_filtered_machine_prefix() -> str:
-    """Get the current machine selector prefix."""
-    return _machine_prefix.get() + "Filtered"
 
 
 type StaticSel = Callable[[], str]
@@ -172,7 +163,7 @@ def machine_state(system: str, machine: str) -> str:
 # Requires the monitoring/telegraf module to be enabled
 # @machine_selector
 def machine_telegraf_cert_path(system: str, machine: str) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{machine}.config.clan.core.vars.generators.telegraf-certs.files.crt.path"
 
 
@@ -204,13 +195,13 @@ def machine_vm_inspect(system: str, machine: str) -> str:
 
 @machine_selector
 def machine_vars_settings_secret_module(system: str, machine: str) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.secretModule"
 
 
 @machine_selector
 def machine_vars_settings_public_module(system: str, machine: str) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.publicModule"
 
 
@@ -219,13 +210,13 @@ def machine_vars_settings_public_module(system: str, machine: str) -> str:
 
 @machines_selector
 def vars_generators_metadata(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.{{share,dependencies,prompts,validationHash}}"
 
 
 @machines_selector
 def vars_generators_files(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}"
 
 
@@ -237,31 +228,31 @@ def vars_sops_default_groups(system: str, machines: list[str]) -> str:
 
 @machines_selector
 def vars_settings_public_module(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.publicModule"
 
 
 @machines_selector
 def vars_settings_secret_module(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.secretModule"
 
 
 @machines_selector
 def vars_sops_secret_upload_dir(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?sops.?secretUploadDirectory"
 
 
 @machines_selector
 def vars_password_store_pass_command(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?passCommand"
 
 
 @machines_selector
 def vars_password_store_secret_location(system: str, machines: list[str]) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
 
 
@@ -276,5 +267,5 @@ def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
 
 @generator_selector
 def generator_final_script(system: str, machine: str, generator: str) -> str:
-    prefix = get_filtered_machine_prefix()
+    prefix = get_machine_prefix()
     return f'{prefix}.{system}.{machine}.config.clan.core.vars.generators."{generator}".finalScript'
