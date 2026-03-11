@@ -1,15 +1,25 @@
 <script lang="ts">
   import { getDocsContext } from "#lib/models/docs.ts";
+  import { mount, onMount } from "svelte";
   import NavBar from "./TopBar/NavBar.svelte";
   import NavTree from "./TopBar/NavTree.svelte";
   import SearchBar from "./TopBar/SearchBar.svelte";
   import SearchResult from "./TopBar/SearchResult.svelte";
 
   const docs = getDocsContext();
+  let containerEl: HTMLElement;
+  onMount(() => {
+    mount(SearchBar, {
+      target: containerEl,
+      props: {
+        double: true,
+      },
+    });
+  });
 </script>
 
-<header>
-  <div class="inner" class:rotated={docs.topbarMode === "search"}>
+<header class:rotated={docs.topbarMode === "search"} bind:this={containerEl}>
+  <div class="inner">
     <NavBar />
     <SearchBar />
   </div>
@@ -19,15 +29,16 @@
 
 <style>
   header {
+    position: relative;
     perspective: 800px;
   }
 
   .inner {
-    transition: 400ms;
+    transition: var(--top-bar-toggle-duration);
     transform-origin: center center -30px;
     transform-style: preserve-3d;
 
-    &.rotated {
+    .rotated & {
       transform: rotateX(90deg);
     }
   }
@@ -45,7 +56,7 @@
       transition: none;
       transform: none;
 
-      &.rotated {
+      .rotated & {
         transform: none;
       }
     }
