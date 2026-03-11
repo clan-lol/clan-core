@@ -338,7 +338,6 @@ in
           templates = lib.mkOption { type = lib.types.raw; };
 
           machines = lib.mkOption { type = lib.types.raw; };
-          machinesFiltered = lib.mkOption { type = lib.types.raw; };
 
           # attrsOf system submodules, system is injected into each submodule
           systems = lib.mkOption {

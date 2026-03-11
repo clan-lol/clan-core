@@ -42,7 +42,7 @@ in
     #
     secrets = mapGeneratorsToSopsSecrets {
       inherit machineName;
-      directory = config.clan.core.settings.varsDirectory;
+      directory = config.clan.core.settings.directory;
       class = _class;
       generators = config.clan.core.vars.generators;
     };

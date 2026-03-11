@@ -803,9 +803,7 @@ class Flake:
     _cache: FlakeCache | None = field(init=False, default=None)
     _path: Path | None = field(init=False, default=None)
     _is_local: bool | None = field(init=False, default=None)
-    _cache_miss_stack_traces: list[tuple[str, str]] = field(
-        init=False, default_factory=list
-    )
+    _cache_miss_stack_traces: list[str] = field(init=False, default_factory=list)
 
     @classmethod
     def from_json(
@@ -830,7 +828,7 @@ class Flake:
     def _record_cache_miss(self, selector_info: str) -> None:
         """Record a cache miss with its stack trace."""
         stack_trace = "".join(traceback.format_stack())
-        self._cache_miss_stack_traces.append((selector_info, stack_trace))
+        self._cache_miss_stack_traces.append(f"{selector_info}\n{stack_trace}")
 
     @property
     def _cache_misses(self) -> int:
