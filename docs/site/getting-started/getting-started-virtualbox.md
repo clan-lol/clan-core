@@ -116,7 +116,7 @@ Test it out:
 clan machines list
 ```
 
-## 5. Add your allowed keys
+# 5. Add your allowed keys
 
 Next you will add your key to the allowedKeys. Your best bet to finding it is:
 
@@ -204,7 +204,7 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-# 9. Test the Connection
+# 10. Test the Connection
 
 Now you can try connecting to the remote machine:
 
