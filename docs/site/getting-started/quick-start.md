@@ -59,10 +59,14 @@ wifi = {
 
 ### 5. Create Installer USB
 
-Download the installer ISO (use the aarch64 URL for ARM machines):
+Download the installer ISO:
 
 ```bash
+# x86_64
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+
+# aarch64 (ARM)
+# wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-aarch64-linux.iso
 ```
 
 Identify your USB device and flash the ISO:
