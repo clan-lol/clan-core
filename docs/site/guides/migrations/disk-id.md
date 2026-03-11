@@ -79,7 +79,7 @@ We are going to make three changes:
         type = "disk";
 
         # Some earlier guides had this line in a flake.nix
-        # disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
+        # disko.devices.disk.main.device = "/dev/disk/by-id/CHANGE_ME";
         #        ↓ Copy the '/dev/disk/by-id' into here instead
         device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
       };
