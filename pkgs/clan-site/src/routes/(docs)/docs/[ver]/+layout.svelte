@@ -18,35 +18,34 @@
     {/if}
     <div class="content" use:toc.setContent bind:this={docs.contentElement}>
       {@render children()}
+      <footer>
+        {#if article.prev}
+          <a class="pointer" href={resolve(article.prev.path)}>
+            <dl>
+              <dt><ArrowLeftIcon height="12" /> Previous</dt>
+              <dd>{article.prev.label}</dd>
+            </dl>
+          </a>
+        {:else}
+          <div class="pointer empty"></div>
+        {/if}
+        {#if article.next}
+          <a class="pointer next" href={resolve(article.next.path)}>
+            <dl>
+              <dt>Next <ArrowRightIcon height="12" /></dt>
+              <dd>{article.next.label}</dd>
+            </dl>
+          </a>
+        {:else}
+          <div class="pointer next empty"></div>
+        {/if}
+      </footer>
     </div>
   </div>
 </article>
-<footer>
-  {#if article.prev}
-    <a class="pointer" href={resolve(article.prev.path)}>
-      <dl>
-        <dt><ArrowLeftIcon height="12" /> Previous</dt>
-        <dd>{article.prev.label}</dd>
-      </dl>
-    </a>
-  {:else}
-    <div class="pointer empty"></div>
-  {/if}
-  {#if article.next}
-    <a class="pointer next" href={resolve(article.next.path)}>
-      <dl>
-        <dt>Next <ArrowRightIcon height="12" /></dt>
-        <dd>{article.next.label}</dd>
-      </dl>
-    </a>
-  {:else}
-    <div class="pointer next empty"></div>
-  {/if}
-</footer>
 
 <style>
   article {
-    padding-block-end: 32px;
     color: var(--content-fg-color);
     background: var(--content-bg-color);
     border: 1px solid var(--content-border-color);
@@ -68,24 +67,20 @@
 
   footer {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 14px;
     justify-content: space-between;
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
-    margin: 14px 0;
+    margin-block: 64px 14px;
   }
 
   .pointer {
     flex: 1;
     gap: 10px;
     align-items: center;
+    min-inline-size: 360px;
     padding: 14px;
-    color: inherit;
-    background: var(--content-bg-color);
-    border: 1px solid var(--content-border-color);
+    color: var(--fg-color);
+    background: var(--bg-color);
     border-radius: 14px;
     text-decoration: none;
 
@@ -118,14 +113,9 @@
     margin: 0;
   }
 
-  @media (width >= 800px) {
-    footer {
-      flex-direction: row;
-    }
-  }
-
   @media (--medium) {
     article {
+      margin-block-end: 14px;
       /* safearea is always absolute */
       /* stylelint-disable-next-line csstools/use-logical */
       margin-right: max(14px, env(safe-area-inset-right));
@@ -147,9 +137,9 @@
     }
 
     footer {
-      gap: 14px;
+      gap: 24px;
       padding-inline-start: 0;
-      margin: 14px 0;
+      margin-block: 88px 24px;
     }
 
     .pointer {
@@ -178,7 +168,7 @@
       flex: 1;
       min-inline-size: 0;
       max-inline-size: 1000px;
-      padding-inline: 32px;
+      padding-inline: 32px calc(32px - 14px);
 
       .no-toc & {
         padding-inline: 0;
@@ -186,9 +176,8 @@
     }
 
     footer {
-      gap: 24px;
-      padding-inline-end: 24px;
-      margin: 24px 0;
+      gap: 32px;
+      margin-block: 100px 32px;
     }
   }
 </style>
