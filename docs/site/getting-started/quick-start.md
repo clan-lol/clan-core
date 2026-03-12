@@ -79,7 +79,8 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=pr
 
 Boot the target machine from the USB drive. Note the IP address shown on screen, then update `clan.nix` with it.
 
-> **No IP?** Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
+!!! Tip "No IP?"
+    Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
 
 ### Get Hardware Config
 
@@ -101,7 +102,8 @@ clan templates apply disk single-disk test-machine --set mainDisk "/dev/<DISK_ID
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-> **Sandbox error?** Run `clan vars generate test-machine --no-sandbox` first, then retry.
+!!! Tip "Sandbox error?"
+    Run `clan vars generate test-machine --no-sandbox` first, then retry.
 
 Remove USB before reboot.
 
