@@ -97,6 +97,7 @@
       block-size: 35px;
       padding: 0;
       margin-inline: 7px 12px;
+      color: inherit;
       background: transparent;
       border: none;
       outline: none;
@@ -108,11 +109,18 @@
       background: var(--search-input-bg-color);
 
       > input {
-        color: transparent;
+        transition: 0ms;
 
         &::placeholder {
           color: var(--search-input-placeholder-color);
         }
+      }
+    }
+
+    .real.rotated & {
+      > input {
+        color: transparent;
+        transition: 0ms 400ms;
       }
     }
 
@@ -122,6 +130,8 @@
       }
 
       > input {
+        opacity: 0;
+
         &::placeholder {
           color: transparent;
         }
@@ -134,6 +144,10 @@
 
     .double.rotated & {
       pointer-events: all;
+
+      > input {
+        opacity: 1;
+      }
     }
   }
 
@@ -153,8 +167,6 @@
 
   @media (--medium) {
     .container {
-      position: static;
-      display: none;
       justify-content: center;
 
       &.rotated {
@@ -163,7 +175,6 @@
 
       &.real {
         transition: none;
-        transform: none;
       }
 
       &.double {
@@ -181,20 +192,15 @@
       inline-size: 400px;
       margin-inline-start: 0;
 
-      .real & > input {
+      .real.rotated & > input {
         color: inherit;
+        transition: 0ms;
       }
     }
 
     .cancel {
       position: absolute;
       inset-inline-start: 100%;
-    }
-  }
-
-  @media (--wide) {
-    .container {
-      block-size: 90px;
     }
   }
 </style>

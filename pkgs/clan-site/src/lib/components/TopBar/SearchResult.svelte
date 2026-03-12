@@ -77,15 +77,4 @@
       padding: 14px 24px;
     }
   }
-
-  @media (--wide) {
-    .backdrop,
-    dl {
-      inset-block-start: 90px;
-    }
-
-    dl {
-      max-block-size: calc(80vh - 90px);
-    }
-  }
 </style>

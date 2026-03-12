@@ -22,6 +22,9 @@ export class Search {
   }
   #results: readonly PagefindSearchFragment[] = $state.raw([]);
   public get results(): readonly PagefindSearchFragment[] {
+    if (this.#docs.topbarMode !== "search") {
+      return [];
+    }
     return this.#results;
   }
   #pagefind: Pagefind | undefined = $state.raw();
@@ -38,7 +41,6 @@ export class Search {
       if (this.#docs.topbarMode === "search") {
         el?.focus();
       } else {
-        this.query = "";
         el?.blur();
       }
     });
