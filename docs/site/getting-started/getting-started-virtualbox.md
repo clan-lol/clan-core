@@ -1,18 +1,15 @@
 # Getting Started: VirtualBox Edition
 
-!!! Tip
-    Prefer to use a physical machine as a target? [Find the guide here](./getting-started-physical.md).
-
-!!! Note "Prerequisites"
+??? Note "Prerequisites"
     Your setup machine needs the following:
 
-* **VirtualBox**: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
+    * VirtualBox: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
 
-* **Nix** on your Setup Machine (unless you're using NixOS)
+    * Nix on your Setup Machine (unless you're using NixOS)
 
-* An **id_ed25519** keypair on your Setup Machine. (Link coming soon.)
+    * An id_ed25519 keypair on your Setup Machine. (Link coming soon.)
 
-* **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+    * Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
 
 !!! Tip
     For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.

@@ -5,11 +5,10 @@ This page is the fastest way to install Clan on a physical machine.
 If you want explanations or troubleshooting, see the full
 [Getting Started (Physical Machine)](./getting-started-physical.md) guide.
 
-> **Prerequisites:** Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
+!!! Note "Prerequisites"
+    Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
 
----
-
-### 1. Create the Clan
+## Create the Clan
 
 ```bash
 nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
@@ -22,7 +21,7 @@ cd MY-CLAN-1
 direnv allow
 ```
 
-### 2. Create a Machine Configuration
+### Create a Machine Configuration
 
 ```bash
 clan machines create test-machine
@@ -37,7 +36,7 @@ test-machine = {
 };
 ```
 
-### 3. Add Your SSH Key
+### Add Your SSH Key
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
@@ -45,7 +44,7 @@ cat ~/.ssh/id_ed25519.pub
 
 Paste the output into the `"admin-machine-1"` line in `clan.nix`, replacing `PASTE_YOUR_KEY_HERE`. Verify with `clan show`.
 
-### 4. (Optional) Enable WiFi on Target
+### (Optional) Enable WiFi on Target
 
 Add under `inventory.instances` in `clan.nix`:
 
@@ -57,7 +56,7 @@ wifi = {
 };
 ```
 
-### 5. Create Installer USB
+### Create Installer USB
 
 Download the installer ISO:
 
@@ -80,19 +79,20 @@ lsblk                        # identify your USB device (e.g. sdb)
 sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync
 ```
 
-### 6. Boot Target from USB
+### Boot Target from USB
 
 Boot the target machine from the USB drive. Note the IP address shown on screen, then update `clan.nix` with it.
 
-> **No IP?** Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
+!!! Tip "No IP?"
+    Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
 
-### 7. Get Hardware Config
+### Get Hardware Config
 
 ```bash
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
-### 8. Configure Disk
+### Configure Disk
 
 ```bash
 clan templates apply disk single-disk test-machine --set mainDisk ""
@@ -100,17 +100,18 @@ clan templates apply disk single-disk test-machine --set mainDisk ""
 clan templates apply disk single-disk test-machine --set mainDisk "/dev/<DISK_ID>"
 ```
 
-### 9. Install
+### Install
 
 ```bash
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
-> **Sandbox error?** Run `clan vars generate test-machine --no-sandbox` first, then retry.
+!!! Tip "Sandbox error?"
+    Run `clan vars generate test-machine --no-sandbox` first, then retry.
 
 Remove USB before reboot.
 
-### 10. Connect
+### Connect
 
 ```bash
 clan ssh test-machine
