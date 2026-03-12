@@ -1,22 +1,18 @@
-import type { Action } from "svelte/action";
 import type { Docs } from "./docs.svelte.ts";
 import type { TocItemInput, TocItemsInput } from "./toc.ts";
 import { viewport } from "../viewport.ts";
 import { visit } from "$lib/util.ts";
 
 export class Toc {
-  public readonly setContent: Action = this.#setContent.bind(this);
-  public readonly setHeight: Action = this.#setHeight.bind(this);
   public readonly onClickTitle = this.#onClickTitle.bind(this);
   public readonly docs: Docs;
   public open = $state(false);
+  public element: HTMLElement | undefined = $state.raw();
   public items: TocItems;
   #activeTocItem: TocItem | undefined = $state();
   public get activeTocItem(): TocItem | undefined {
     return this.#activeTocItem;
   }
-  #content: HTMLElement | undefined;
-  #height = $state(0);
   #observer: IntersectionObserver | undefined;
 
   public constructor(tocItems: () => TocItemsInput, docs: Docs) {
@@ -56,26 +52,24 @@ export class Toc {
     }
   }
 
-  #setContent(node: HTMLElement): void {
-    this.#content = node;
-  }
-
-  #setHeight(node: HTMLElement): void {
-    this.#height = node.offsetHeight;
-  }
-
   #updateTocItemOnScrollHeading(): void {
-    if (viewport.isWide || !this.#content || this.#height === 0) {
+    if (viewport.isWide || !this.docs.article.element || !this.element) {
+      return;
+    }
+    const height = this.element.offsetHeight;
+    if (height === 0) {
       return;
     }
     this.#observer = new IntersectionObserver(
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${-this.#height}px 0px 0px`,
+        rootMargin: `${-height}px 0px 0px`,
       },
     );
-    for (const heading of this.#content.querySelectorAll("h1,h2,h3,h4,h5,h6")) {
+    for (const heading of this.docs.article.element.querySelectorAll(
+      "h1,h2,h3,h4,h5,h6",
+    )) {
       this.#observer.observe(heading);
     }
   }

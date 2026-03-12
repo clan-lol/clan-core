@@ -22,7 +22,11 @@
 
 <header class:open={toc.open}>
   <nav>
-    <button class="toc-title" use:toc.setHeight onclick={toc.onClickTitle}>
+    <button
+      class="toc-title"
+      bind:this={docs.article.toc.element}
+      onclick={toc.onClickTitle}
+    >
       <span>
         {#if toc.open || !toc.activeTocItem}
           On This Page
