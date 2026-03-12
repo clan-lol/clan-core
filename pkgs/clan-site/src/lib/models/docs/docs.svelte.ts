@@ -4,12 +4,27 @@ import { afterNavigate, beforeNavigate } from "$app/navigation";
 import CopyButton from "~/lib/components/CopyButton.svelte";
 import { createContext, mount } from "svelte";
 import { docsBase, version } from "$config";
+import { HTTP_OK } from "$lib/util.ts";
 import { Nav } from "./nav.svelte.ts";
+import { resolve } from "$app/paths";
 import { Search } from "./search.svelte.ts";
 import { Toc } from "./toc.svelte.ts";
 
 export class Docs {
   public static readonly versionedBase: DocsPath = `${docsBase}/${version}`;
+
+  public static async getVersions(): Promise<string[]> {
+    const res = await fetch(resolve(`${docsBase}/versions`));
+    if (res.status !== HTTP_OK) {
+      throw new Error(`Failed to fetch docs version: ${res.statusText}`);
+    }
+    const s = await res.text();
+    return s
+      .trim()
+      .split("\n")
+      .map((v) => v.trim());
+  }
+
   public readonly nav: Nav;
   public readonly article: Article;
   public readonly search: Search;
