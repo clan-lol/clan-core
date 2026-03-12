@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Docs } from "#lib/models/docs.ts";
   import { docsBase, version } from "$config";
   import { onMount } from "svelte";
   import { resolve } from "$app/paths";
@@ -7,12 +8,7 @@
   let showingVers = $state(false);
   onMount(() => {
     (async (): Promise<void> => {
-      const res = await fetch(resolve(`${docsBase}/versions`));
-      const s = await res.text();
-      vers = s
-        .trim()
-        .split("\n")
-        .map((v) => v.trim());
+      vers = await Docs.getVersions();
     })();
   });
 </script>
