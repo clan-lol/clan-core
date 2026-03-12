@@ -25,12 +25,6 @@ This enters your new project directory and activates the development environment
 
 ## Create a Machine Configuration
 
-```bash
-clan machines create test-machine
-```
-
-This registers a new machine called `test-machine` in your clan inventory.
-
 Edit `clan.nix` — add under `inventory.machines`:
 
 ```nix
@@ -118,7 +112,7 @@ clan templates info disk ext4-single-disk
 This will list available disk IDs. Find the correct one (typically starting with `/dev/disk/by-id/`), then run:
 
 ```bash
-clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
+clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
 This assigns the disk that NixOS will be installed onto.
