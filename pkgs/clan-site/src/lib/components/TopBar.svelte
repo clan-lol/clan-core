@@ -29,7 +29,8 @@
 
 <style>
   header {
-    position: relative;
+    position: sticky;
+    inset-block-start: 0;
     z-index: 1000;
     perspective: 800px;
   }
@@ -46,7 +47,8 @@
 
   @media (--medium) {
     header {
-      position: relative;
+      position: sticky;
+      inset-block-start: 0;
       z-index: 1001;
       grid-row: 1;
       grid-column: 1 / -1;

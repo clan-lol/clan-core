@@ -69,7 +69,7 @@
 <style>
   header {
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: 60px;
     z-index: 100;
     /* safearea is always absolute */
     /* stylelint-disable-next-line csstools/use-logical */
@@ -269,7 +269,7 @@
       order: 2;
       overflow: auto;
       inline-size: 280px;
-      max-block-size: 100vh;
+      max-block-size: calc(100vh - 60px);
       padding-block: 12px 24px;
       margin-inline: 0;
       margin-block-start: 14px;
