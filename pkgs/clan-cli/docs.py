@@ -68,10 +68,11 @@ class Category:
     def to_md_li(self, level: int = 1) -> str:
         md_li = ""
         if level == self.level:
-            md_li += f"""-   **[{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
-            md_li += f"""{indent_all("---", 4)}\n\n"""
+            md_li += (
+                f"""- **[{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
+            )
             md_li += indent_all(
-                f"{self.description.strip()}\n" if self.description else "",
+                f"{self.description.strip()}" if self.description else "",
                 4,
             )
 
@@ -297,9 +298,7 @@ def build_command_reference() -> None:
 
     if categories_fmt:
         markdown += """## Overview\n\n"""
-        markdown += '<div class="grid cards" markdown>\n\n'
         markdown += categories_fmt
-        markdown += "</div>"
         markdown += "\n"
 
     with (folder / "index.md").open("w") as f:
