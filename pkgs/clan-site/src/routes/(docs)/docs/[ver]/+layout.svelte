@@ -16,7 +16,7 @@
     {#if toc.items.length !== 0}
       <Toc />
     {/if}
-    <div class="content" use:toc.setContent bind:this={docs.contentElement}>
+    <div class="content" bind:this={docs.article.element}>
       {@render children()}
       <footer>
         {#if article.prev}

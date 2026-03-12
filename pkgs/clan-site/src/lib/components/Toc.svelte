@@ -22,14 +22,16 @@
 
 <header class:open={toc.open}>
   <nav>
-    <button class="toc-title" use:toc.setHeight onclick={toc.onClickTitle}>
-      <span>
-        {#if toc.open || !toc.activeTocItem}
-          On This Page
-        {:else}
-          {toc.activeTocItem.label}
-        {/if}
-      </span>
+    <button
+      class="toc-title"
+      class:showing-active={!toc.open && toc.activeTocItem}
+      bind:this={docs.article.toc.element}
+      onclick={toc.onClickTitle}
+    >
+      <span class="default">On This Page</span>
+      {#if toc.activeTocItem}
+        <span class="active">{toc.activeTocItem.label}</span>
+      {/if}
       <ChevronRightIcon height="16" />
     </button>
     <button
@@ -45,7 +47,7 @@
 
 {#snippet tocTree(items: TocItems)}
   <ol>
-    {#each items as item (item.id)}
+    {#each items as item (item)}
       {@render tocBranch(item)}
     {/each}
   </ol>
@@ -53,7 +55,11 @@
 
 {#snippet tocBranch(item: TocItem)}
   <li>
-    <a href={`#${item.id}`} onclick={item.onClick}><span>{item.label}</span></a>
+    <a
+      class:active={item === toc.activeTocItem}
+      href={`#${item.id}`}
+      onclick={item.onClick}><span>{item.label}</span></a
+    >
     {#if "children" in item}
       {@render tocTree(item.children)}
     {/if}
@@ -100,6 +106,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    &.showing-active {
+      .default {
+        display: none;
+      }
     }
   }
 
@@ -167,7 +179,8 @@
         background: var(--toc-highlighted-indent-guide-color);
       }
 
-      &:hover {
+      &:hover,
+      &.active {
         color: var(--toc-highlighted-fg-color);
         background: var(--toc-highlighted-bg-color);
       }
@@ -273,6 +286,16 @@
 
       :global(svg) {
         display: none;
+      }
+
+      &.showing-active {
+        .default {
+          display: block;
+        }
+
+        .active {
+          display: none;
+        }
       }
     }
 
