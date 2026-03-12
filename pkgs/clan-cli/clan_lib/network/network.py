@@ -232,6 +232,16 @@ class BestRemoteContext:
             networks = networks_from_flake(self.machine.flake)
             sorted_networks = sorted(networks.items(), key=lambda x: -x[1].priority)
 
+            if sorted_networks:
+                log.debug(
+                    "Available networks for %s (by priority):\n%s",
+                    self.machine.name,
+                    "\n".join(
+                        f"  {name}: priority={net.priority}, module={net.module_name}, peers={list(net.peers.keys())}"
+                        for name, net in sorted_networks
+                    ),
+                )
+
             for network_name, network in sorted_networks:
                 if self.machine.name not in network.peers:
                     continue
