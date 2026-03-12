@@ -25,6 +25,7 @@ This enters your new project directory and activates the development environment
 
 ## Create a Machine Configuration
 
+
 Edit `clan.nix` — add under `inventory.machines`:
 
 ```nix
@@ -35,6 +36,9 @@ test-machine = {
 ```
 
 This tells Clan how to reach the machine over SSH. You'll fill in the IP address after booting the installer.
+
+!!! Note
+    The machine name `test-machine` is used throughout this guide and will be referenced by other machines and services. Changing it later requires updating all references.
 
 ## Add Your SSH Key
 
