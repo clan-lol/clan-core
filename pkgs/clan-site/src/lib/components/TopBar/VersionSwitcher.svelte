@@ -34,6 +34,9 @@
         {#each vers as ver (ver)}
           {#if ver !== version}
             <li>
+              <!-- Docs actually ignores the version after /docs, for the
+              version switcher to actually load a different version of Docs, a
+              full page reload must be forced -->
               <a data-sveltekit-reload href={resolve(`${docsBase}/${ver}`)}
                 >{ver}</a
               >

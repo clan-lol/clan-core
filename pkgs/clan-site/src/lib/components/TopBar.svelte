@@ -30,6 +30,7 @@
 <style>
   header {
     position: relative;
+    z-index: 1000;
     perspective: 800px;
   }
 
