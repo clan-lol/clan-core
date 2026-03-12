@@ -1,7 +1,4 @@
-import type {
-  NavItemsConfig as DocsNavItems,
-  DocsPath,
-} from "#lib/models/docs.ts";
+import type { NavItemsConfig as DocsNavItems } from "#lib/models/docs.ts";
 import { extractCustomMedia, readVersion } from "#lib/util.server.ts";
 
 export const version = await readVersion();
@@ -12,8 +9,7 @@ export const codeLightTheme = "catppuccin-latte";
 export const codeDarkTheme = "catppuccin-macchiato";
 export const maxTocDepth = 3;
 export const copyButtonMessageDelay = 3000;
-export const docsDir = "src/docs";
-export const docsBase: DocsPath = `/docs/${version}`;
+export const docsBase = "/docs" as const;
 export const docsNav: DocsNavItems = [
   { label: "Home", path: "" },
   {

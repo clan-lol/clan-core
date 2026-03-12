@@ -1,8 +1,9 @@
+import type { docsBase } from "$config";
 import type { NavPointer, NavSibling } from "./nav.ts";
 import type { TocItemsInput } from "./toc.ts";
-import { docsBase } from "$config";
+import { Docs } from "./docs.svelte.ts";
 
-export type DocsPath = `/docs/${string}`;
+export type DocsPath = `${typeof docsBase}/${string}`;
 
 export type TopBarMode = "navBar" | "navTree" | "search";
 
@@ -15,7 +16,7 @@ export interface ArticleInput {
 
 export function toDocsPath(path: string): DocsPath {
   if (!path) {
-    return docsBase;
+    return Docs.versionedBase;
   }
-  return `${docsBase}/${path}`;
+  return `${Docs.versionedBase}/${path}`;
 }

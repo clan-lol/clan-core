@@ -24,6 +24,9 @@ importers:
       '@clan.lol/vite-plugin-replace':
         specifier: workspace:*
         version: link:packages/vite-plugin-replace
+      '@clan.lol/vite-plugin-rm':
+        specifier: workspace:*
+        version: link:packages/vite-plugin-rm
       '@csstools/postcss-global-data':
         specifier: ^4.0.0
         version: 4.0.0(postcss@8.5.6)
@@ -254,6 +257,12 @@ importers:
         specifier: ^25.3.0
         version: 25.3.0
 
+  packages/vite-plugin-filter-public:
+    dependencies:
+      vite:
+        specifier: '>=7.0.0'
+        version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
+
   packages/vite-plugin-pagefind:
     dependencies:
       pagefind:
@@ -264,6 +273,12 @@ importers:
         version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
 
   packages/vite-plugin-replace:
+    dependencies:
+      vite:
+        specifier: '>=7.0.0'
+        version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
+
+  packages/vite-plugin-rm:
     dependencies:
       vite:
         specifier: '>=7.0.0'

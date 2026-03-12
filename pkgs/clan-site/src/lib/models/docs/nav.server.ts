@@ -1,5 +1,4 @@
 import type {
-  DocsPath,
   NavItemConfig,
   NavItemInput,
   NavItemsConfig,
@@ -8,7 +7,8 @@ import type {
   NavPointer,
   NavSibling,
 } from "#lib/models/docs.ts";
-import { docsBase, docsNav } from "#config";
+import { docsNav } from "#config";
+import { toDocsPath } from "./docs.server.ts";
 import { visit } from "#lib/util.ts";
 
 export async function getNavItems(
@@ -127,11 +127,4 @@ export function findFirstNavPathItem(
     }
   }
   return;
-}
-
-export function toDocsPath(path: string): DocsPath {
-  if (!path) {
-    return docsBase;
-  }
-  return `${docsBase}/${path}`;
 }
