@@ -71,6 +71,10 @@ wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11
 
 Identify your USB device and flash the ISO:
 
+!!! Danger "This will erase ALL data on the selected device"
+
+    Double-check that the device path (e.g. `/dev/sdb`) matches your USB drive before running the `dd` command.
+
 ```bash
 lsblk                        # identify your USB device (e.g. sdb)
 sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync

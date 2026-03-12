@@ -480,7 +480,7 @@ Here's the entire clan.nix file:
         # Insert the public key that you want to use for SSH access.
         # All keys will have ssh access to all machines ("tags.all" means 'all machines').
         # Alternatively set 'users.users.root.openssh.authorizedKeys.keys' in each machine
-        "admin-machine-1" = "__YOUR_PUBLIC_KEY__";
+        "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
       };
     };
 
@@ -506,7 +506,7 @@ Here's the entire clan.nix file:
       # Replace with the name (string) of your machine that you will use as zerotier-controller
       # See: https://docs.zerotier.com/controller/
       # Deploy this machine first to create the network secrets
-      roles.controller.machines."__YOUR_CONTROLLER__" = { };
+      roles.controller.machines."YOUR_CONTROLLER" = { };
       # Peers of the network
       # tags.all means 'all machines' will joined
       roles.peer.tags.all = { };
