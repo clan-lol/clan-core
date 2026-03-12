@@ -70,20 +70,12 @@
   @media (--medium) {
     .container {
       transition: none;
-
-      &.rotated {
-        display: none;
-      }
     }
   }
 
   @media (--wide) {
     .container {
       padding: 0 24px;
-    }
-
-    .inner {
-      block-size: 90px;
     }
   }
 </style>

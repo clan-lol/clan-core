@@ -54,11 +54,6 @@
 
     .inner {
       transition: none;
-      transform: none;
-
-      .rotated & {
-        transform: none;
-      }
     }
   }
 </style>
