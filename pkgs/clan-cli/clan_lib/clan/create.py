@@ -159,6 +159,6 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
             curr_meta = inventory.get("meta", {})
             new_meta = merge_objects(curr_meta, opts.initial)
             set_value_by_path(inventory, "meta", new_meta)
-            inventory_store.write(inventory, message="Init inventory")
+            inventory_store.write(inventory, message="Initialized inventory")
 
         return get_clan_details(flake)

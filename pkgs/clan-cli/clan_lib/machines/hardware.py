@@ -168,7 +168,7 @@ def run_machine_hardware_info_init(
     commit_file(
         hw_file,
         opts.machine.flake.path,
-        f"machines/{opts.machine.name}/{hw_file.name}: update hardware configuration",
+        f"machines/{opts.machine.name}/{hw_file.name}: Updated hardware configuration",
     )
     try:
         get_machine_target_platform(opts.machine)
@@ -242,7 +242,7 @@ def run_machine_hardware_info_update(
     commit_file(
         hw_file,
         opts.machine.flake.path,
-        f"machines/{opts.machine.name}/{hw_file.name}: update hardware configuration",
+        f"machines/{opts.machine.name}/{hw_file.name}: Updated hardware configuration",
     )
     try:
         get_machine_target_platform(opts.machine)

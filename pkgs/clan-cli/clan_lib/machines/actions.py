@@ -157,7 +157,7 @@ def set_machine(machine: Machine, update: MachineInput) -> None:
     set_value_by_path(inventory, f"machines.{machine.name}", update)
     inventory_store.write(
         inventory,
-        message=f"Update information about machine {machine.name}",
+        message=f"Updated information about machine {machine.name}",
     )
 
 

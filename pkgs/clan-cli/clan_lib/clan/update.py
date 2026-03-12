@@ -30,6 +30,6 @@ def set_clan_details(options: UpdateOptions) -> InventorySnapshot:
     inventory_store = InventoryStore(options.flake)
     inventory = inventory_store.read()
     set_value_by_path(inventory, "meta", options.meta)
-    inventory_store.write(inventory, message="Update clan metadata")
+    inventory_store.write(inventory, message="Updated clan metadata")
 
     return inventory
