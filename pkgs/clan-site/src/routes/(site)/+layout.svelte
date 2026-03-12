@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { docsBase } from "$config";
+  import { Docs } from "#lib/models/docs.ts";
   import { resolve } from "$app/paths";
 
   const { children } = $props();
@@ -9,7 +9,7 @@
   <nav>
     <ol>
       <li><a href={resolve("/")}>Home</a></li>
-      <li><a href={resolve(docsBase)}>Documentation</a></li>
+      <li><a href={resolve(Docs.versionedBase)}>Documentation</a></li>
     </ol>
   </nav>
 </header>

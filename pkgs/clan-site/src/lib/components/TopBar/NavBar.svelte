@@ -1,17 +1,22 @@
 <script lang="ts">
   import ClanLogo from "$lib/assets/icons/clan-logo.svg?component";
-  import { docsBase } from "$config";
-  import { getDocsContext } from "~/lib/models/docs.ts";
+  import { Docs, getDocsContext } from "$lib/models/docs.ts";
   import NavToggler from "./NavToggler.svelte";
   import { resolve } from "$app/paths";
   import SearchToggler from "./SearchToggler.svelte";
+  import VersionSwitcher from "./VersionSwitcher.svelte";
 
   const docs = getDocsContext();
 </script>
 
 <div class="container" class:rotated={docs.topbarMode === "search"}>
   <div class="inner">
-    <a class="logo" href={resolve(docsBase)}><ClanLogo height="22" /> Docs</a>
+    <div class="main">
+      <a class="logo" href={resolve(Docs.versionedBase)}
+        ><ClanLogo height="22" /> Docs</a
+      >
+      <VersionSwitcher />
+    </div>
     <ol>
       <li>
         <SearchToggler />
@@ -42,6 +47,13 @@
     justify-content: space-between;
     align-items: center;
     block-size: 60px;
+  }
+
+  .main {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin: 0;
   }
 
   ol {

@@ -1,13 +1,15 @@
-import type { ArticleInput, TopBarMode } from "./docs.ts";
+import type { ArticleInput, DocsPath, TopBarMode } from "./docs.ts";
 import type { NavItemsInput, NavSibling } from "./nav.ts";
 import { afterNavigate, beforeNavigate } from "$app/navigation";
 import CopyButton from "~/lib/components/CopyButton.svelte";
 import { createContext, mount } from "svelte";
+import { docsBase, version } from "$config";
 import { Nav } from "./nav.svelte.ts";
 import { Search } from "./search.svelte.ts";
 import { Toc } from "./toc.svelte.ts";
 
 export class Docs {
+  public static readonly versionedBase: DocsPath = `${docsBase}/${version}`;
   public readonly nav: Nav;
   public readonly article: Article;
   public readonly search: Search;
