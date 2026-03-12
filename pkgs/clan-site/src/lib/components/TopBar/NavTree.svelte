@@ -139,9 +139,9 @@
 
     .inner {
       position: sticky;
-      inset-block-start: 0;
+      inset-block-start: 60px;
       overflow: auto;
-      max-block-size: 100vh;
+      max-block-size: calc(100vh - 60px);
       padding-block: 14px;
       margin-block-start: -14px;
     }

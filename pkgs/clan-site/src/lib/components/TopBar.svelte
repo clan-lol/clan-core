@@ -18,10 +18,16 @@
   });
 </script>
 
-<header class:rotated={docs.topbarMode === "search"} bind:this={containerEl}>
-  <div class="inner">
-    <NavBar />
-    <SearchBar />
+<header>
+  <div
+    class="perspective"
+    class:rotated={docs.topbarMode === "search"}
+    bind:this={containerEl}
+  >
+    <div class="inner">
+      <NavBar />
+      <SearchBar />
+    </div>
   </div>
 </header>
 <NavTree />
@@ -29,8 +35,12 @@
 
 <style>
   header {
-    position: relative;
+    position: sticky;
+    inset-block-start: 0;
     z-index: 1000;
+  }
+
+  .perspective {
     perspective: 800px;
   }
 
@@ -46,10 +56,14 @@
 
   @media (--medium) {
     header {
-      position: relative;
+      position: sticky;
+      inset-block-start: 0;
       z-index: 1001;
       grid-row: 1;
       grid-column: 1 / -1;
+    }
+
+    .perspective {
       perspective: none;
     }
 
