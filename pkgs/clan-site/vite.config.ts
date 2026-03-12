@@ -1,4 +1,10 @@
 import { defineConfig } from "vite";
+import docsHmr from "@clan.lol/vite-plugin-docs-hmr";
+import {
+  findNavSiblings,
+  getNavItems,
+  getNavPointer,
+} from "#lib/models/docs.server.ts";
 import pagefind from "@clan.lol/vite-plugin-pagefind";
 import replace from "./packages/vite-plugin-replace/index.ts";
 import rm from "@clan.lol/vite-plugin-rm";
@@ -15,6 +21,23 @@ export default defineConfig({
     },
   },
   plugins: [
+    docsHmr({
+      srcDir: "../../docs-new/markdowns",
+      embedsDir: "../../docs-new/embeds",
+      articlesDir: "src/routes/(docs)/docs/[ver]",
+      layoutDir: "src/routes/(docs)",
+      render: {
+        codeLightTheme: siteConfig.codeLightTheme,
+        codeDarkTheme: siteConfig.codeDarkTheme,
+        minLineNumberLines: siteConfig.codeMinLineNumberLines,
+        maxTocDepth: siteConfig.maxTocDepth,
+      },
+      nav: {
+        getItems: getNavItems,
+        findSiblings: findNavSiblings,
+        getPointer: getNavPointer,
+      },
+    }),
     sveltekit(),
     svg({
       svgoOptions: {
