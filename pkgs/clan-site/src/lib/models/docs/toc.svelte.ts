@@ -3,6 +3,7 @@ import type { TocItemInput, TocItemsInput } from "./toc.ts";
 import { viewport } from "../viewport.ts";
 import { visit } from "$lib/util.ts";
 
+const intersectionThreshold = 3;
 export class Toc {
   public readonly onClickTitle = this.#onClickTitle.bind(this);
   public readonly docs: Docs;
@@ -53,18 +54,15 @@ export class Toc {
   }
 
   #updateTocItemOnScrollHeading(): void {
-    if (viewport.isWide || !this.docs.article.element || !this.element) {
+    if (!this.docs.article.element || !this.element) {
       return;
     }
-    const height = this.element.offsetHeight;
-    if (height === 0) {
-      return;
-    }
+    const height = viewport.isWide ? 0 : this.element.offsetHeight;
     this.#observer = new IntersectionObserver(
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${-height}px 0px 0px`,
+        rootMargin: `${-(height + intersectionThreshold)}px 0px 0px`,
       },
     );
     for (const heading of this.docs.article.element.querySelectorAll(
