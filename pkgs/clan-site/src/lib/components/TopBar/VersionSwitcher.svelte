@@ -33,7 +33,11 @@
       {:else}
         {#each vers as ver (ver)}
           {#if ver !== version}
-            <li><a href={resolve(`${docsBase}/${ver}`)}>{ver}</a></li>
+            <li>
+              <a data-sveltekit-reload href={resolve(`${docsBase}/${ver}`)}
+                >{ver}</a
+              >
+            </li>
           {/if}
         {/each}
       {/if}
