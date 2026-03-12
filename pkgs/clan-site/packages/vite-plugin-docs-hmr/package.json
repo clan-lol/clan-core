@@ -1,0 +1,16 @@
+{
+  "name": "@clan.lol/vite-plugin-docs-hmr",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "exports": "./index.ts",
+  "engines": {
+    "node": ">= 22.0.0"
+  },
+  "peerDependencies": {
+    "vite": ">=7.0.0"
+  },
+  "dependencies": {
+    "@clan.lol/svelte-md": "workspace:*"
+  }
+}

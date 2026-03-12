@@ -34,7 +34,6 @@ export interface Options {
   readonly minLineNumberLines: number;
   readonly maxTocDepth: number;
   readonly codeEmbedDir: string;
-  readonly componentsSpecifierPrefix: string;
 }
 
 export type { AdmonitionType } from "./remark-admonition.ts";

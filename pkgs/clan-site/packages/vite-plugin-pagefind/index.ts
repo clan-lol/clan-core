@@ -101,7 +101,6 @@ export interface PagefindSearchAnchor {
   text?: string;
   location: number;
 }
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export interface Pagefind {
   debouncedSearch: (
