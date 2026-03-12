@@ -57,7 +57,7 @@
     padding: 6px 8px;
     color: var(--content-fg-color);
     background: var(--content-bg-color);
-    border: 0;
+    border: 1px solid var(--content-border-color);
     border-radius: 5px;
     font-weight: 500;
     font-size: 14px;
@@ -74,6 +74,7 @@
     margin-block-start: 1px;
     color: var(--content-fg-color);
     background: var(--content-bg-color);
+    border: 1px solid var(--content-border-color);
     border-radius: 5px;
     list-style: none;
   }
@@ -83,5 +84,9 @@
     padding: 6px 8px;
     color: inherit;
     text-decoration: none;
+
+    &:hover {
+      background-color: var(--content-highlight-color);
+    }
   }
 </style>
