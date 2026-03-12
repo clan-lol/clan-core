@@ -334,7 +334,7 @@ class Remote:
         if self.port:
             ssh_opts.extend(["-p", str(self.port)])
         for k, v in self.ssh_options.items():
-            ssh_opts.extend(["-o", f"{k}={shlex.quote(v)}"])
+            ssh_opts.extend(["-o", f"{k}={v}"])
         ssh_opts.extend(hostkey_to_ssh_opts(self.host_key_check))
         if self.private_key:
             ssh_opts.extend(["-i", str(self.private_key)])
