@@ -166,10 +166,12 @@ ls -la vars/per-machine/my-machine/my-generator/
 Create a test script to debug:
 ```nix
 # test-generator.nix
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 pkgs.stdenv.mkDerivation {
   name = "test-generator";
-  buildInputs = [ pkgs.openssl ];  # Your runtime inputs
+  buildInputs = [ pkgs.openssl ]; # Your runtime inputs
   buildCommand = ''
     # Your generator script here
     mkdir -p $out

@@ -109,12 +109,7 @@ A common method to override pkgs are [overlays](https://wiki.nixos.org/wiki/Over
 Rule of Thumb: Use overlays if you need to override an existing package.
 If you want to inject your own packages see the next point
 
-```{.nix, title="clan.lib.clan"}
-# flake.nix
-
-```
-
-```{.nix, title="flake-parts"}
+```nix [flake-parts]
 # flake.nix
 {
   inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";

@@ -49,17 +49,28 @@ Each export is tagged with a scope that identifies its source:
 To export data from your service, use the `mkExports` helper function available in the `perInstance` or `perMachine` context:
 
 ```nix
-{ clanLib, ... }: {
+{ clanLib, ... }:
+{
   roles.peer = {
-    perInstance = { instanceName, mkExports, roles, meta, ... }: {
-      exports = mkExports {
-        # Your exported data here
-        peer.host.plain = "192.192.192.12";
-      };
+    perInstance =
+      {
+        instanceName,
+        mkExports,
+        roles,
+        meta,
+        ...
+      }:
+      {
+        exports = mkExports {
+          # Your exported data here
+          peer.host.plain = "192.192.192.12";
+        };
 
-      nixosModule = { ... }: {
+        nixosModule =
+          { ... }:
+          {
+          };
       };
-    };
   };
 }
 ```
@@ -75,15 +86,18 @@ Within your service module, you can access exports using the `clanLib.exports` h
 Get all exports matching specific criteria
 
 ```nix
-{ exports, clanLib, ... }: {
-  perInstance = { ... }: {
-    nixosModule = { ... }: {
-      # Get all exports from the "vpn" service
-      vpnConfigs = clanLib.selectExports
-        { service = "vpn"; }
-        exports;
+{ exports, clanLib, ... }:
+{
+  perInstance =
+    { ... }:
+    {
+      nixosModule =
+        { ... }:
+        {
+          # Get all exports from the "vpn" service
+          vpnConfigs = clanLib.selectExports { service = "vpn"; } exports;
+        };
     };
-  };
 }
 ```
 

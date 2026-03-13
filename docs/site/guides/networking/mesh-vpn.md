@@ -44,17 +44,17 @@ For the purpose of this guide we have two machines:
         meta.domain = "ccc";
 
         inventory.machines = {
-          controller = {};
-          new_machine = {};
+          controller = { };
+          new_machine = { };
         };
 
         inventory.instances = {
           zerotier = {
             # Assign the controller machine to the role "controller"
-            roles.controller.machines."controller" = {};
+            roles.controller.machines."controller" = { };
 
             # All clan machines are zerotier peers
-            roles.peer.tags."all" = {};
+            roles.peer.tags."all" = { };
           };
         };
       };

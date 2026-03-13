@@ -164,7 +164,7 @@ To control whether a test uses containers or VMs, use the `clan.test.useContaine
 {
   clan = {
     directory = ./.;
-    test.useContainers = true;  # Use containers (default)
+    test.useContainers = true; # Use containers (default)
     # test.useContainers = false;  # Use VMs instead
   };
 }

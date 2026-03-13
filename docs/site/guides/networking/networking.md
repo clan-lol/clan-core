@@ -12,7 +12,8 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 
 ```{.nix title="flake.nix" hl_lines="7-10 14-16"}
 {
-  outputs = { self, clan-core, ... }:
+  outputs =
+    { self, clan-core, ... }:
     let
       clan = clan-core.lib.clan {
         inventory.instances = {
@@ -43,7 +44,8 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 
 ```{.nix title="flake.nix" hl_lines="7-10 13-16 19-21"}
 {
-  outputs = { self, clan-core, ... }:
+  outputs =
+    { self, clan-core, ... }:
     let
       clan = clan-core.lib.clan {
         inventory.instances = {
@@ -107,7 +109,8 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
 
 ```{.nix title="flake.nix" hl_lines="8"}
 {
-  outputs = { self, clan-core, ... }:
+  outputs =
+    { self, clan-core, ... }:
     let
       clan = clan-core.lib.clan {
         inventory.machines.server = {
@@ -134,14 +137,17 @@ Use machine-level `targetHost` when you need to **interpolate values from the Ni
 
 ```{.nix title="flake.nix" hl_lines="7"}
 {
-  outputs = { self, clan-core, ... }:
+  outputs =
+    { self, clan-core, ... }:
     let
       clan = clan-core.lib.clan {
-        machines.server = { config, ... }: {
-          # WARNING: This also bypasses all networking modules!
-          # REQUIRED for: Addresses that depend on NixOS config
-          clan.core.networking.targetHost = "root@${config.networking.hostName}.local";
-        };
+        machines.server =
+          { config, ... }:
+          {
+            # WARNING: This also bypasses all networking modules!
+            # REQUIRED for: Addresses that depend on NixOS config
+            clan.core.networking.targetHost = "root@${config.networking.hostName}.local";
+          };
       };
     in
     {

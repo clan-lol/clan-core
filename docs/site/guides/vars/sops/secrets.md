@@ -143,7 +143,8 @@ an in-memory, non-persistent filesystem using [sops-nix](https://github.com/Mic9
 In your NixOS configuration you can get a path to secrets like this `config.sops.secrets.<name>.path`. For example:
 
 ```nix
-{ config, ...}: {
+{ config, ... }:
+{
   sops.secrets.my-password.neededFor = "users";
 
   users.users.mic92 = {
@@ -207,7 +208,7 @@ Here's how to get started:
 
 ```nix
 {
-  clan.core.sops.defaultGroups = [ "groupname" ]
+  clan.core.sops.defaultGroups = [ "groupname" ];
 }
 ```
 

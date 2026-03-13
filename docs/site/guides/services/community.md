@@ -39,8 +39,8 @@ The imported module file must fulfill at least the following requirements:
 
 ```nix title="/service-modules/networking.nix"
 {
-    _class = "clan.service";
-    manifest.name = "zerotier-networking";
+  _class = "clan.service";
+  manifest.name = "zerotier-networking";
 }
 ```
 
@@ -60,12 +60,12 @@ Here is a short guide with some conventions:
 
 ```nix title="/service-modules/networking.nix"
 {
-    _class = "clan.service";
-    manifest.name = "zerotier-networking";
+  _class = "clan.service";
+  manifest.name = "zerotier-networking";
 
-    # Define what roles exist
-    roles.peer = {};
-    roles.controller = {};
+  # Define what roles exist
+  roles.peer = { };
+  roles.controller = { };
 }
 ```
 
@@ -196,8 +196,8 @@ Imagine your module looks like this
 { self }:
 { ... }: # This line is optional
 {
-    _class = "clan.service";
-    manifest.name = "messaging"
+  _class = "clan.service";
+  manifest.name = "messaging";
 }
 ```
 
@@ -219,9 +219,8 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 ```nix title="messaging.nix"
 { config, ... }:
 {
-    _class = "clan.service";
-    manifest.name = "messaging"
-
+  _class = "clan.service";
+  manifest.name = "messaging";
 }
 ```
 
@@ -271,7 +270,6 @@ of their type.
     # Configuration for all machines (any type)
   };
 }
-
 ```
 
 In the inventory we the assign machines to a type, e.g. by using tags

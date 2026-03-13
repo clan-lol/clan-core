@@ -12,7 +12,10 @@ Define users directly in your machine configuration when you need full control o
   users.users.alice = {
     isNormalUser = true;
     home = "/home/alice";
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+    ];
     # Password set via hashedPassword or initialPassword
     # Or use clan's vars system for secrets
   };
@@ -46,7 +49,11 @@ If the same user needs access to multiple machines, define them in a shared modu
 {
   users.users.alice = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+    ];
   };
 }
 ```
@@ -86,7 +93,10 @@ Then use `extraModules` to attach home-manager configuration to a user:
       roles.default.tags.all = { };
       roles.default.settings = {
         user = "alice";
-        groups = [ "wheel" "networkmanager" ];
+        groups = [
+          "wheel"
+          "networkmanager"
+        ];
       };
       roles.default.extraModules = [ ./users/alice/home.nix ];
     };

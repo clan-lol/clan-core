@@ -435,12 +435,12 @@ Here's the entire clan.nix file:
 
   inventory.machines = {
     sally-laptop = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ "laptop" ];
+      deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
+      tags = [ "laptop" ];
     };
     fred-laptop = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ "laptop" ];
+      deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
+      tags = [ "laptop" ];
     };
     # Define machines here.
     # server = { };
@@ -451,7 +451,7 @@ Here's the entire clan.nix file:
 
     user-sally = {
       module.name = "users";
-      roles.default.machines."sally-laptop" = {};
+      roles.default.machines."sally-laptop" = { };
       roles.default.settings = {
         user = "sally";
       };
@@ -459,17 +459,16 @@ Here's the entire clan.nix file:
 
     user-fred = {
       module.name = "users";
-      roles.default.machines."fred-laptop" = {};
+      roles.default.machines."fred-laptop" = { };
       roles.default.settings = {
         user = "fred";
       };
     };
 
     wifi = {
-      roles.default.tags.laptop = {};
-      roles.default.settings.networks.home = {};
+      roles.default.tags.laptop = { };
+      roles.default.settings.networks.home = { };
     };
-
 
     # Docs: https://docs.clan.lol/latest/services/official/sshd/
     # SSH service for secure remote access to machines.

@@ -29,7 +29,7 @@ clan-core.lib.clan {
 {
   clan = {
     inventory = {
-        machines.yourmachine.machineClass = "darwin";
+      machines.yourmachine.machineClass = "darwin";
     };
   };
 }

@@ -25,21 +25,23 @@ have have two hosts: **berlin** and **cologne**.
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, ... }: {
+  outputs =
+    { self, nixpkgs, ... }:
+    {
 
-    nixosConfigurations = {
+      nixosConfigurations = {
 
-      berlin = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/berlin/configuration.nix ];
-      };
+        berlin = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [ ./machines/berlin/configuration.nix ];
+        };
 
-      cologne = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/cologne/configuration.nix ];
+        cologne = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [ ./machines/cologne/configuration.nix ];
+        };
       };
     };
-  };
 }
 ```
 
@@ -82,30 +84,36 @@ For the provide flake example, your flake should now look like this:
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, clan-core, ... }:
-  let
-    clan = clan-core.lib.clan {
-      self = self; # this needs to point at the repository root
-      specialArgs = {};
-      meta.name = throw "Change me to something unique";
-      meta.domain = throw "Change me to something unique";
+  outputs =
+    {
+      self,
+      nixpkgs,
+      clan-core,
+      ...
+    }:
+    let
+      clan = clan-core.lib.clan {
+        self = self; # this needs to point at the repository root
+        specialArgs = { };
+        meta.name = throw "Change me to something unique";
+        meta.domain = throw "Change me to something unique";
 
-      machines = {
-        berlin = {
-          nixpkgs.hostPlatform = "x86_64-linux";
-          imports = [ ./machines/berlin/configuration.nix ];
-        };
-        cologne = {
-          nixpkgs.hostPlatform = "x86_64-linux";
-          imports = [ ./machines/cologne/configuration.nix ];
+        machines = {
+          berlin = {
+            nixpkgs.hostPlatform = "x86_64-linux";
+            imports = [ ./machines/berlin/configuration.nix ];
+          };
+          cologne = {
+            nixpkgs.hostPlatform = "x86_64-linux";
+            imports = [ ./machines/cologne/configuration.nix ];
+          };
         };
       };
-    };
-  in
-  {
+    in
+    {
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
       clan = clan.config;
-  };
+    };
 }
 ```
 
