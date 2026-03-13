@@ -14,28 +14,19 @@ Services provided by the community, with no stability guarantees!
 
     Clan-internal DNS and service exposure with support for multiple records (e.g. A, AAAA, CNAME) and multiple IPs
 
-- [@schallerclan/poweroff](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/poweroff.nix) :octicons-link-external-16:
-
-    ---
+- [@schallerclan/poweroff](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/poweroff.nix)
 
     Auto-poweroff your machines.
 
-
-- [@schallerclan/sleep](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/sleep.nix) :octicons-link-external-16:
-
-    ---
+- [@schallerclan/sleep](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/sleep.nix)
 
     Let your machines sleep while you sleep. Give them a break too :0
-
 
 - [@schallerclan/tailscale](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/tailscale.nix)
 
     Connect to a tailscale network. Very basic tailscale support.
 
-
-- [@schallerclan/wakeonlan](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/wakeonlan.nix) :octicons-link-external-16:
-
-    ---
+- [@schallerclan/wakeonlan](https://git.clan.lol/dafitt/schallerclan/src/branch/main/clanServices/wakeonlan.nix)
 
     Adds Wake-on-LAN support to your machines, to wake them each other.
 
