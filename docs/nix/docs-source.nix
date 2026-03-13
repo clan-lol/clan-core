@@ -4,7 +4,7 @@
   runCommand,
   python314,
 }:
-runCommand "docs-markdowns"
+runCommand "docs-source"
   {
     nativeBuildInputs = [ python314 ];
   }

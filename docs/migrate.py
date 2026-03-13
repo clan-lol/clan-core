@@ -4,7 +4,7 @@ Migrate markdown files in a directory in-place with syntax transformations
 (MkDocs → remark/MDX directives).
 
 Usage:
-    python docs/migrate.py path/to/markdowns
+    python docs/migrate.py path/to/source
 """
 
 import re

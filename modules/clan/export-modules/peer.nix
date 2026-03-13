@@ -55,10 +55,11 @@ in
 
             The 'var' will be read by the CLI and potentially other services
 
-            !!! Danger
-                Don't export references to private vars.
+            :::admonition[Danger]{type=danger}
+            Don't export references to private vars.
 
-                Their value cannot be accessed.
+            Their value cannot be accessed.
+            :::
           '';
           type = submodule {
             options = {

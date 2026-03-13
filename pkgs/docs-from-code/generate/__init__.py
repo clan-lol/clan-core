@@ -132,14 +132,15 @@ def render_option(
         """
     example = option.get("example", {}).get("text")
     if example:
-        example_indented = join_lines_with_indentation(example.split("\n"))
         res += f"""
 
-???+ example
+:::admonition[Example]{{type=example collapsible open}}
 
-    ```nix
-{example_indented}
-    ```
+```nix
+{example}
+```
+
+:::
 """
     if option.get("relatedPackages"):
         res += f"""
@@ -226,7 +227,7 @@ def produce_clan_core_docs() -> None:
         indexfile = f"{module_name}/index.md"
         core_outputs[indexfile] = module_header(module_name) + clan_core_descr
 
-        core_outputs[indexfile] += """!!! info "Submodules"\n"""
+        core_outputs[indexfile] += ":::admonition[Submodules]{type=info}\n"
 
         for submodule_name, split_options in split.items():
             root = options_to_tree(split_options)
@@ -235,9 +236,10 @@ def produce_clan_core_docs() -> None:
             if module_type is not None and "submodule" not in module_type:
                 continue
             core_outputs[indexfile] += (
-                f"      - [{submodule_name}](./clan.core/{submodule_name})\n"
+                f"- [{submodule_name}](./clan.core/{submodule_name})\n"
             )
 
+        core_outputs[indexfile] += ":::\n"
         core_outputs[indexfile] += options_head
 
         for submodule_name, split_options in split.items():
@@ -395,10 +397,11 @@ This document describes the structure and configurable attributes of a `clan.ser
 
 Typically needed by module authors to define roles, behavior and metadata for distributed services.
 
-!!! Note
-    This is not a user-facing documentation, but rather meant as a reference for *module authors*
+:::admonition[Note]{type=note}
+This is not a user-facing documentation, but rather meant as a reference for *module authors*
 
-    See: [clanService Authoring Guide](../../guides/services/community.md)
+See: [clanService Authoring Guide](/docs/guides/services/community)
+:::
 """
     # Inventory options are already included under the clan attribute
     # We just omitted them in the clan docs, because we want a separate output for the inventory model

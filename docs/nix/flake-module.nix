@@ -34,7 +34,7 @@
         '';
       };
       packages = {
-        docs-markdowns = pkgs.callPackage ./docs-markdowns.nix {
+        docs-source = pkgs.callPackage ./docs-source.nix {
           inherit (self'.packages) module-docs clan-cli-docs;
         };
       }

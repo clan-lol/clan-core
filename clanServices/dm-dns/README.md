@@ -1,6 +1,7 @@
-!!! Danger "Experimental"
-    This service is experimental and will change in the future.
+:::admonition[Experimental]{type=danger}
+This service is experimental and will change in the future.
 
+:::
 ---
 
 This service provides distributed DNS zone propagation for clan networks. It

@@ -12,7 +12,6 @@ mkShellNoCC {
   ];
   env = clan-site.devShellEnv;
   shellHook = ''
-    ${clan-site.preBuild}
-    chmod -R +w ../../docs src/lib/assets
+    ${clan-site.configurePhase}
   '';
 }

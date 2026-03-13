@@ -44,28 +44,30 @@ in
       description = ''
         List of additionally imported `.nix` expressions.
 
-        !!! Note
-            **The import only happens if the machine is part of the service or role.**
+        :::admonition[Note]{type=note}
+        **The import only happens if the machine is part of the service or role.**
 
+        :::
         Other types are passed through to the nixos configuration.
 
-        ???+ Example
-            To import the `special.nix` file
+        :::admonition[Example]{type=example collapsible open}
+        To import the `special.nix` file
 
-            ```
-            . Clan Directory
-            ├── flake.nix
-            ...
-            └── modules
-                ├── special.nix
-                └── ...
-            ```
+        ```
+        . Clan Directory
+        ├── flake.nix
+        ...
+        └── modules
+            ├── special.nix
+            └── ...
+        ```
 
-            ```nix
-            {
-              extraModules = [ "modules/special.nix" ];
-            }
-            ```
+        ```nix
+        {
+          extraModules = [ "modules/special.nix" ];
+        }
+        ```
+        :::
       '';
       default = [ ];
       type = types.listOf types.raw;

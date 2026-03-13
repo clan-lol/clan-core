@@ -1,6 +1,7 @@
-!!! Danger "Experimental"
-    This service is for demonstration purpose only and may change in the future.
+:::admonition[Experimental]{type=danger}
+This service is for demonstration purpose only and may change in the future.
 
+:::
 The Hello-World Clan Service is a minimal example showing how to build and register your own service.
 
 It serves as a reference implementation and is used in clan-core CI tests to ensure compatibility.
@@ -50,18 +51,20 @@ If you use flake-parts you can use the [native integration](https://flake.parts/
 
 If nix-unit succeeds, your NixOS evaluation should be mostly correct.
 
-!!! Tip
-    - Ensure most used 'settings' and variants are tested.
-    - Think about some important edge-cases your system should handle.
+:::admonition[Tip]{type=tip}
+- Ensure most used 'settings' and variants are tested.
+- Think about some important edge-cases your system should handle.
 
+:::
 ### NixOS VM / Container Test
 
-!!! Warning "Early Vars & clanTest"
-    The testing system around vars is experimental
+:::admonition[Early Vars & clanTest]{type=warning}
+The testing system around vars is experimental
 
-    `clanTest` is still experimental and enables container virtualization by default.
-    This is still early and might have some limitations.
+`clanTest` is still experimental and enables container virtualization by default.
+This is still early and might have some limitations.
 
+:::
 Some minimal boilerplate is needed to use `clanTest`
 
 ```nix

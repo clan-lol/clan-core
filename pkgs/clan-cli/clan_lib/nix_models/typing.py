@@ -12,15 +12,15 @@ type ClanMachinesInput = dict[str, AnyJson]
 """
 A mapping of machine names to their nixos configuration.
 
-???+ example
-
-    ```nix
-    machines = {
-      my-machine = {
-        # Your nixos configuration
-      };
-    };
-    ```
+:::admonition{type=example collapsible open}
+```nix
+machines = {
+  my-machine = {
+    # Your nixos configuration
+  };
+};
+```
+:::
 
 """
 
@@ -29,15 +29,15 @@ type ClanMachinesOutput = dict[str, AnyJson]
 """
 A mapping of machine names to their nixos configuration.
 
-???+ example
-
-    ```nix
-    machines = {
-      my-machine = {
-        # Your nixos configuration
-      };
-    };
-    ```
+:::admonition{type=example collapsible open}
+```nix
+machines = {
+  my-machine = {
+    # Your nixos configuration
+  };
+};
+```
+:::
 
 """
 
@@ -98,28 +98,30 @@ type InstanceRoleExtraModulesInput = list[AnyJson]
 """
 List of additionally imported `.nix` expressions.
 
-!!! Note
-    **The import only happens if the machine is part of the service or role.**
+:::admonition[Note]{type=note}
+**The import only happens if the machine is part of the service or role.**
 
+:::
 Other types are passed through to the nixos configuration.
 
-???+ Example
-    To import the `special.nix` file
+:::admonition[Example]{type=example collapsible open}
+To import the `special.nix` file
 
-    ```
-    . Clan Directory
-    ├── flake.nix
-    ...
-    └── modules
-        ├── special.nix
-        └── ...
-    ```
+```
+. Clan Directory
+├── flake.nix
+...
+└── modules
+    ├── special.nix
+    └── ...
+```
 
-    ```nix
-    {
-      extraModules = [ "modules/special.nix" ];
-    }
-    ```
+```nix
+{
+  extraModules = [ "modules/special.nix" ];
+}
+```
+:::
 
 """
 
@@ -128,28 +130,30 @@ type InstanceRoleExtraModulesOutput = list[AnyJson]
 """
 List of additionally imported `.nix` expressions.
 
-!!! Note
-    **The import only happens if the machine is part of the service or role.**
+:::admonition[Note]{type=note}
+**The import only happens if the machine is part of the service or role.**
 
+:::
 Other types are passed through to the nixos configuration.
 
-???+ Example
-    To import the `special.nix` file
+:::admonition[Example]{type=example collapsible open}
+To import the `special.nix` file
 
-    ```
-    . Clan Directory
-    ├── flake.nix
-    ...
-    └── modules
-        ├── special.nix
-        └── ...
-    ```
+```
+. Clan Directory
+├── flake.nix
+...
+└── modules
+    ├── special.nix
+    └── ...
+```
 
-    ```nix
-    {
-      extraModules = [ "modules/special.nix" ];
-    }
-    ```
+```nix
+{
+  extraModules = [ "modules/special.nix" ];
+}
+```
+:::
 
 """
 
@@ -278,30 +282,32 @@ A mapping of module names to their path.
 
 Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
 
-!!! Important
-    Each module MUST fulfill the following requirements to be usable with the inventory:
+:::admonition{type=important}
+Each module MUST fulfill the following requirements to be usable with the inventory:
 
-    - The module MUST have a `README.md` file with a `description`.
-    - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
-    - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
+- The module MUST have a `README.md` file with a `description`.
+- The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
+- The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-    For further information see: [Module Authoring Guide](../../guides/services/community).
+For further information see: [Module Authoring Guide](../../guides/services/community).
+:::
 
-???+ example
-    ```nix
-    clan-core.lib.clan {
-        # 1. Add the module to the available inventory modules
-        inventory.modules = {
-          custom-module = ./modules/my_module;
-        };
-        # 2. Use the module in the inventory
-        inventory.services = {
-          custom-module.instance_1 = {
-              roles.default.machines = [ "machineA" ];
-          };
-        };
+:::admonition{type=example collapsible open}
+```nix
+clan-core.lib.clan {
+    # 1. Add the module to the available inventory modules
+    inventory.modules = {
+      custom-module = ./modules/my_module;
     };
-    ```
+    # 2. Use the module in the inventory
+    inventory.services = {
+      custom-module.instance_1 = {
+          roles.default.machines = [ "machineA" ];
+      };
+    };
+};
+```
+:::
 
 """
 
@@ -312,56 +318,60 @@ A mapping of module names to their path.
 
 Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
 
-!!! Important
-    Each module MUST fulfill the following requirements to be usable with the inventory:
+:::admonition{type=important}
+Each module MUST fulfill the following requirements to be usable with the inventory:
 
-    - The module MUST have a `README.md` file with a `description`.
-    - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
-    - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
+- The module MUST have a `README.md` file with a `description`.
+- The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
+- The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-    For further information see: [Module Authoring Guide](../../guides/services/community).
+For further information see: [Module Authoring Guide](../../guides/services/community).
+:::
 
-???+ example
-    ```nix
-    clan-core.lib.clan {
-        # 1. Add the module to the available inventory modules
-        inventory.modules = {
-          custom-module = ./modules/my_module;
-        };
-        # 2. Use the module in the inventory
-        inventory.services = {
-          custom-module.instance_1 = {
-              roles.default.machines = [ "machineA" ];
-          };
-        };
+:::admonition{type=example collapsible open}
+```nix
+clan-core.lib.clan {
+    # 1. Add the module to the available inventory modules
+    inventory.modules = {
+      custom-module = ./modules/my_module;
     };
-    ```
+    # 2. Use the module in the inventory
+    inventory.services = {
+      custom-module.instance_1 = {
+          roles.default.machines = [ "machineA" ];
+      };
+    };
+};
+```
+:::
 
 """
 
 
 type InventoryTagMachinesInput = list[str]
 """
-!!! example "Predefined Tag"
+:::admonition[Predefined Tag]{type=example}
 
-    Will be added to all machines that set `machineClass = "nixos"`
+Will be added to all machines that set `machineClass = "nixos"`
 
-    ```nix
-    inventory.machines.machineA.tags = [ "nixos" ];
-    ```
+```nix
+inventory.machines.machineA.tags = [ "nixos" ];
+```
+:::
 
 """
 
 
 type InventoryTagMachinesOutput = list[str]
 """
-!!! example "Predefined Tag"
+:::admonition[Predefined Tag]{type=example}
 
-    Will be added to all machines that set `machineClass = "nixos"`
+Will be added to all machines that set `machineClass = "nixos"`
 
-    ```nix
-    inventory.machines.machineA.tags = [ "nixos" ];
-    ```
+```nix
+inventory.machines.machineA.tags = [ "nixos" ];
+```
+:::
 
 """
 
@@ -376,40 +386,46 @@ class InventoryTagsInput(TypedDict):
 
     #### Static Tags
 
-    ???+ example "Static Tag Example"
-        ```nix
-        inventory.tags = {
-          foo = [ "machineA" "machineB" ];
-        };
-        ```
+    :::admonition[Static Tag Example]{type=example collapsible open}
+    ```nix
+    inventory.tags = {
+      foo = [ "machineA" "machineB" ];
+    };
+    ```
 
-        The tag `foo` will always be added to `machineA` and `machineB`.
+
+    The tag `foo` will always be added to `machineA` and `machineB`.
+    :::
 
     #### Dynamic Tags
 
     It is possible to compute tags based on the machines properties or based on other tags.
 
-    !!! danger
-        This is a powerful feature and should be used with caution.
+    :::admonition{type=important}
+    This is a powerful feature and should be used with caution.
 
-        It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+    It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+    :::
 
-    ???+ example "Dynamic Tag Example"
+    :::admonition[Dynamic Tag Example]{type=example collapsible open}
 
-        allButFoo is a computed tag. It will be added to all machines except 'foo'
+    allButFoo is a computed tag. It will be added to all machines except 'foo'
 
-        `all` is a predefined tag. See the docs of [`tags.all`](#all).
+    `all` is a predefined tag. See the docs of [`tags.all`](#all).
 
-        ```nix
-        #  inventory.tags ↓       ↓ inventory.machines
-        inventory.tags = {config, machines...}: {
-          #                                                        ↓↓↓ The "all" tag
-          allButFoo = builtins.filter (name: name != "foo") config.all;
-        };
-        ```
+    ```nix
+    #  inventory.tags ↓       ↓ inventory.machines
+    inventory.tags = {config, machines...}: {
+      #                                                        ↓↓↓ The "all" tag
+      allButFoo = builtins.filter (name: name != "foo") config.all;
+    };
+    ```
+    :::
 
-    !!! warning
-        Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+
+    :::admonition{type=important}
+    Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+    :::
 
     """
 
@@ -428,40 +444,46 @@ class InventoryTagsOutput(TypedDict):
 
     #### Static Tags
 
-    ???+ example "Static Tag Example"
-        ```nix
-        inventory.tags = {
-          foo = [ "machineA" "machineB" ];
-        };
-        ```
+    :::admonition[Static Tag Example]{type=example collapsible open}
+    ```nix
+    inventory.tags = {
+      foo = [ "machineA" "machineB" ];
+    };
+    ```
 
-        The tag `foo` will always be added to `machineA` and `machineB`.
+
+    The tag `foo` will always be added to `machineA` and `machineB`.
+    :::
 
     #### Dynamic Tags
 
     It is possible to compute tags based on the machines properties or based on other tags.
 
-    !!! danger
-        This is a powerful feature and should be used with caution.
+    :::admonition{type=important}
+    This is a powerful feature and should be used with caution.
 
-        It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+    It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+    :::
 
-    ???+ example "Dynamic Tag Example"
+    :::admonition[Dynamic Tag Example]{type=example collapsible open}
 
-        allButFoo is a computed tag. It will be added to all machines except 'foo'
+    allButFoo is a computed tag. It will be added to all machines except 'foo'
 
-        `all` is a predefined tag. See the docs of [`tags.all`](#all).
+    `all` is a predefined tag. See the docs of [`tags.all`](#all).
 
-        ```nix
-        #  inventory.tags ↓       ↓ inventory.machines
-        inventory.tags = {config, machines...}: {
-          #                                                        ↓↓↓ The "all" tag
-          allButFoo = builtins.filter (name: name != "foo") config.all;
-        };
-        ```
+    ```nix
+    #  inventory.tags ↓       ↓ inventory.machines
+    inventory.tags = {config, machines...}: {
+      #                                                        ↓↓↓ The "all" tag
+      allButFoo = builtins.filter (name: name != "foo") config.all;
+    };
+    ```
+    :::
 
-    !!! warning
-        Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+
+    :::admonition{type=important}
+    Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+    :::
 
     """
 
@@ -516,19 +538,21 @@ List of tags for the machine.
 
 The machine can be referenced by its tags in `inventory.services`
 
-???+ Example
-    ```nix
-    inventory.machines.machineA.tags = [ "tag1" "tag2" ];
-    ```
+:::admonition[Example]{type=example collapsible open}
+```nix
+inventory.machines.machineA.tags = [ "tag1" "tag2" ];
+```
 
-    ```nix
-    services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
-    ```
+```nix
+services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
+```
 
-!!! Note
-    Tags can be used to determine the membership of the machine in the services.
-    Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
+:::
+:::admonition[Note]{type=note}
+Tags can be used to determine the membership of the machine in the services.
+Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
 
+:::
 
 """
 
@@ -539,19 +563,21 @@ List of tags for the machine.
 
 The machine can be referenced by its tags in `inventory.services`
 
-???+ Example
-    ```nix
-    inventory.machines.machineA.tags = [ "tag1" "tag2" ];
-    ```
+:::admonition[Example]{type=example collapsible open}
+```nix
+inventory.machines.machineA.tags = [ "tag1" "tag2" ];
+```
 
-    ```nix
-    services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
-    ```
+```nix
+services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
+```
 
-!!! Note
-    Tags can be used to determine the membership of the machine in the services.
-    Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
+:::
+:::admonition[Note]{type=note}
+Tags can be used to determine the membership of the machine in the services.
+Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
 
+:::
 
 """
 

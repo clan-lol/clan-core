@@ -11,7 +11,7 @@
   mona-sans,
   clan-site-assets,
   clan-site-cli,
-  docs-markdowns,
+  docs-source,
 }:
 let
   RED = "\\033[1;31m";
@@ -38,7 +38,6 @@ stdenv.mkDerivation (
       root = ../../../.;
       fileset = lib.fileset.unions [
         ../../../VERSION
-        ../../../docs
         ../../../${finalAttrs.pnpmRoot}
       ];
     };
@@ -73,16 +72,7 @@ stdenv.mkDerivation (
       };
     };
 
-    preBuild = ''
-      # This script is also sourced by the devShell, need to take care of different
-      # working directories
-      if [[ ! -e clan-site.config.ts ]]; then
-        cd pkgs/clan-site
-      fi
-      mkdir -p ../../docs-new/{markdowns,embeds}
-      cp -R ${docs-markdowns}/* ../../docs-new/markdowns
-      cp -R ../../docs/code-examples/* ../../docs-new/embeds
-
+    configurePhase = ''
       mkdir -p src/lib/assets
       cp -R ${clan-site-assets}/* src/lib/assets
 
@@ -97,6 +87,18 @@ stdenv.mkDerivation (
         echo >&2 -en '${NC}'
         exit 1
       fi
+    '';
+
+    preBuild = ''
+      # This script is also sourced by the devShell, need to take care of different
+      # working directories
+      if [[ ! -e clan-site.config.ts ]]; then
+        cd pkgs/clan-site
+      fi
+      mkdir -p ../../docs
+      cp -R ${docs-source}/* ../../docs
+
+      ls -la ../../docs
     '';
     buildPhase = ''
       runHook preBuild
