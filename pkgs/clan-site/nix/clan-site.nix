@@ -128,6 +128,7 @@ stdenv.mkDerivation (
             ;
           buildPhase = ''
             runHook preBuild
+            cp -r ${docs-source} ../../docs
             clan-site lint
             runHook postBuild
           '';
