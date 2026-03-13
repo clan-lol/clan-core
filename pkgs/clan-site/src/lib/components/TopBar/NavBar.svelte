@@ -79,13 +79,13 @@
     font-variation-settings: "wdth" 112.5;
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     .container {
       transition: none;
     }
   }
 
-  @media (--wide) {
+  @media (--docs-desktop) {
     .container {
       padding: 0 24px;
     }

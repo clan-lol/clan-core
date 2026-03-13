@@ -69,7 +69,7 @@
 <style>
   header {
     position: sticky;
-    inset-block-start: 60px;
+    inset-block-start: 0;
     z-index: 100;
     /* safearea is always absolute */
     /* stylelint-disable-next-line csstools/use-logical */
@@ -234,7 +234,13 @@
     display: block;
   }
 
-  @media (--medium) {
+  @media (--docs-top-bar-fixed) {
+    header {
+      inset-block-start: 60px;
+    }
+  }
+
+  @media (--docs-tablet) {
     header {
       padding-inline: 0;
     }
@@ -262,14 +268,14 @@
     }
   }
 
-  @media (--wide) {
+  @media (--docs-desktop) {
     header {
       flex: none;
       align-self: start;
       order: 2;
       overflow: auto;
       inline-size: 280px;
-      max-block-size: calc(100vh - 60px);
+      max-block-size: 100vh;
       padding-block: 12px 24px;
       margin-inline: 0;
       margin-block-start: 14px;

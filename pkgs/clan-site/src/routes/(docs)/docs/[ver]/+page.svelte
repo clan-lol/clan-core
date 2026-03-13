@@ -211,7 +211,7 @@
     }
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     hgroup {
       margin-block: 48px;
     }

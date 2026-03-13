@@ -33,7 +33,7 @@
     }
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     .container {
       display: grid;
       grid-template: auto auto / auto minmax(0, 1fr);
@@ -51,7 +51,7 @@
     }
   }
 
-  @media (--wide) {
+  @media (--docs-desktop) {
     main {
       &.showing-search {
         max-block-size: calc(100vh - 90px);

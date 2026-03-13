@@ -1,8 +1,8 @@
 import type { NavItemsConfig as DocsNavItems } from "#lib/models/docs.ts";
-import { extractCustomMedia, readVersion } from "#lib/util.server.ts";
+import { getCustomMedia, getVersion } from "#lib/util.server.ts";
 
-export const version = await readVersion();
-export const customMedia = await extractCustomMedia();
+export const version = await getVersion();
+export const customMedia = await getCustomMedia();
 export const searchResultLimit = 20;
 export const codeMinLineNumberLines = 4;
 export const codeLightTheme = "catppuccin-latte";
