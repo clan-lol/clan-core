@@ -1,5 +1,7 @@
-This article provides an overview over the underlying secrets system which is used by [Vars](../intro-to-vars.md).
-Under most circumstances you should use [Vars](../intro-to-vars.md) directly instead.
+# Secrets
+
+This article provides an overview over the underlying secrets system which is used by [Vars](/docs/guides/vars/intro-to-vars).
+Under most circumstances you should use [Vars](/docs/guides/vars/intro-to-vars) directly instead.
 
 Consider using `clan secrets` only for managing admin users and groups, as well as a debugging tool.
 
@@ -11,14 +13,15 @@ Clan enables encryption of secrets (such as passwords & keys) ensuring security 
 
 By default, Clan uses the [sops](https://github.com/getsops/sops) format
 and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
-Clan can also be configured to be used with other secret store [backends](../../../reference/clan.core/vars.md#secretstore).
+Clan can also be configured to be used with other secret store [backends](/docs/reference/clan.core/vars#secretstore).
 
 ## Create Your Admin Keypair
 
 To get started, you'll need to create **your admin keypair**.
 
-!!! info
-    Don't worry — if you've already made one before, this step won't change or overwrite it.
+:::admonition[Info]{type=info}
+Don't worry — if you've already made one before, this step won't change or overwrite it.
+:::
 
 ```bash
 clan secrets key generate
@@ -26,20 +29,21 @@ clan secrets key generate
 
 **Output**:
 
-```{.console, .no-copy}
+```console
 Public key: age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7
 
 Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user. Please back it up on a secure location or you will lose access to your secrets.
 Also add your age public key to the repository with 'clan secrets users add YOUR_USER age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7' (replace YOUR_USER with your actual username)
 ```
 
-!!! warning
-    Make sure to keep a safe backup of the private key you've just created.
-    If it's lost, you won't be able to get to your secrets anymore because they all need the admin key to be unlocked.
+:::admonition[Warning]{type=warning}
+Make sure to keep a safe backup of the private key you've just created.
+If it's lost, you won't be able to get to your secrets anymore because they all need the admin key to be unlocked.
+:::
 
 If you already have an [age] secret key and want to use that instead, you can simply edit `~/.config/sops/age/keys.txt`:
 
-```title="~/.config/sops/age/keys.txt"
+```text [~/.config/sops/age/keys.txt]
 AGE-SECRET-KEY-13GWMK0KNNKXPTJ8KQ9LPSQZU7G3KU8LZDW474NX3D956GGVFAZRQTAE3F4
 ```
 
@@ -47,8 +51,9 @@ Alternatively, you can provide your [age] secret key as an environment variable 
 using `SOPS_AGE_KEY_FILE`.
 For more information see the [SOPS] guide on [encrypting with age].
 
-!!! note
-    It's safe to add any secrets created by the Clan CLI and placed in your repository to version control systems like `git`.
+:::admonition[Note]{type=note}
+It's safe to add any secrets created by the Clan CLI and placed in your repository to version control systems like `git`.
+:::
 
 ## Add Your Public Key(s)
 
@@ -60,7 +65,7 @@ It's best to choose the same username as on your Setup/Admin Machine that you us
 
 Once run, this will create the following files:
 
-```{.console, .no-copy}
+```console
 sops/
 └── users/
     └── $YOUR_USERNAME/
@@ -68,15 +73,16 @@ sops/
 ```
 If you followed the quickstart tutorial all necessary secrets are initialized at this point.
 
-!!! note
-    You can add multiple age keys for a user by providing multiple `--age-key $YOUR_PUBLIC_KEY` flags:
+:::admonition[Note]{type=note}
+You can add multiple age keys for a user by providing multiple `--age-key $YOUR_PUBLIC_KEY` flags:
 
-    ```console
-    clan secrets users add $USER \
-        --age-key $YOUR_PUBLIC_KEY_1 \
-        --age-key $YOUR_PUBLIC_KEY_2 \
-        ...
-    ```
+```console
+clan secrets users add $USER \
+    --age-key $YOUR_PUBLIC_KEY_1 \
+    --age-key $YOUR_PUBLIC_KEY_2 \
+    ...
+```
+:::
 
 ## Manage Your Public Key(s)
 
@@ -118,7 +124,7 @@ clan secrets users remove-key $USER --age-key $YOUR_PUBLIC_KEY
 
 ## Adding a Secret
 
-```shellSession
+```console
 clan secrets set mysecret
 Paste your secret:
 ```
@@ -261,8 +267,9 @@ The secrets system conceptually knows two different entities:
 
 **A machine** Can decrypt secrets that where encrypted specifically for that machine.
 
-!!! Danger
-    **Always make sure at least one _User_ has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
+:::admonition[Danger]{type=danger}
+**Always make sure at least one _User_ has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
+:::
 
 ### Inherited implications
 
@@ -276,8 +283,9 @@ By default Clan uses [sops](https://github.com/getsops/sops) through [sops-nix](
 - **Machine key-pairs are auto-generated**: When a machine is created **no user-interaction is required** to setup public/private key-pairs.
 - **secrets are re-encrypted**: In case machines, users or groups are modified secrets get re-encrypted on demand.
 
-    !!! Important
-        After revoking access to a secret you should also change the underlying secret. i.e. change the API key, or the password.
+    :::admonition[Important]{type=important}
+    After revoking access to a secret you should also change the underlying secret. i.e. change the API key, or the password.
+    :::
 
 ---
 

@@ -1,3 +1,5 @@
+# Vars Advanced Examples
+
 ## Advanced Vars Examples
 
 This guide demonstrates complex, real-world patterns for the vars system. 

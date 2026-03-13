@@ -1,3 +1,5 @@
+# Debugging
+
 
 Here are some methods for debugging and testing the Clan CLI
 
@@ -5,8 +7,9 @@ Here are some methods for debugging and testing the Clan CLI
 
 To streamline your development process, I suggest not installing `clan-cli`. Instead, clone the `clan-core` repository and add `clan-core/pkgs/clan-cli/bin` to your PATH to use the checked-out version directly.
 
-!!! Note
-    After cloning, navigate to `clan-core/pkgs/clan-cli` and execute `direnv allow` to activate the devshell. This will set up a symlink to nixpkgs at a specific location; without it, `clan-cli` won't function correctly.
+:::admonition[Note]{type=note}
+After cloning, navigate to `clan-core/pkgs/clan-cli` and execute `direnv allow` to activate the devshell. This will set up a symlink to nixpkgs at a specific location; without it, `clan-cli` won't function correctly.
+:::
 
 With this setup, you can easily use [breakpoint()](https://docs.python.org/3/library/pdb.html) to inspect the application's internal state as needed.
 
@@ -26,7 +29,7 @@ pkgs.mkShell {
 
 ## Debugging nixos-anywhere
 
-If you encounter a bug in a complex shell script such as `nixos-anywhere`, start by replacing the `nixos-anywhere` command with a local checkout of the project, look in the [contribution](../../guides/contributing/CONTRIBUTING.md) section for an example.
+If you encounter a bug in a complex shell script such as `nixos-anywhere`, start by replacing the `nixos-anywhere` command with a local checkout of the project, look in the [contribution](/docs/guides/contributing/CONTRIBUTING) section for an example.
 
 ## The Debug Flag
 
@@ -129,7 +132,6 @@ git+file:///home/lhebendanz/Projects/clan-core
 │       ├───clan-ts-api omitted (use '--all-systems' to show)
 │       ├───clan-app omitted (use '--all-systems' to show)
 │       ├───default omitted (use '--all-systems' to show)
-│       ├───deploy-docs omitted (use '--all-systems' to show)
 │       ├───docs omitted (use '--all-systems' to show)
 │       ├───editor omitted (use '--all-systems' to show)
 └───templates

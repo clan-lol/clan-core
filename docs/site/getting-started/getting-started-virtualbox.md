@@ -1,20 +1,21 @@
 # Getting Started: VirtualBox Edition
 
-??? Note "Prerequisites"
-    Your setup machine needs the following:
+:::admonition[Prerequisites]{type=note collapsible}
+Your setup machine needs the following:
 
-    * VirtualBox: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
+* VirtualBox: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
 
-    * Nix on your Setup Machine (unless you're using NixOS)
+* Nix on your Setup Machine (unless you're using NixOS)
 
-    * An id_ed25519 keypair on your Setup Machine. (Link coming soon.)
+* An id_ed25519 keypair on your Setup Machine. (Link coming soon.)
 
-    * Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+* Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+:::
 
-!!! Tip
-    For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.
+:::admonition[Tip]{type=tip}
+For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.
+:::
 
-# 1. Download the Installer ISO Image
 
 Type the following to download the installer's ISO image:
 
@@ -22,7 +23,6 @@ Type the following to download the installer's ISO image:
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
 ```
 
-# 2. Install the ISO and run it
 
 ## Setup the VirtualBox Machine
 
@@ -62,7 +62,6 @@ You will see the NixOS loader start; simply wait. You'll see text scroll and fin
 
 * Remote Access. A hostname has been added to your local DNS; you can use it instead of the IP address, but it will no longer work after NixOS is installed. Make note of the IP address instead.
 
-# 3. Run the Clan setup
 
 Start by creating a new clan:
 
@@ -72,11 +71,13 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note "Important"
-    The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::admonition[Important]{type=note}
+The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::
 
-!!! Note "Important"
-    If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::admonition[Important]{type=note}
+If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::
 
 Change to the new folder:
 
@@ -90,7 +91,6 @@ You will see a message about `direnv` needing approval to run. Type:
 direnv allow
 ```
 
-# 4. Create a Machine Configuration
 
 Next create a machine configuration, which adds a description of a machine to your inventory. For this example, call it `test-machine`, by typing:
 
@@ -100,7 +100,7 @@ clan machines create test-machine
 
 Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it. (You will add the IP address later in this guide.)
 
-```{.nix title="clan.nix" hl_lines="2 3 4 5"}
+```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
         deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
@@ -113,7 +113,6 @@ Test it out:
 clan machines list
 ```
 
-# 5. Add your allowed keys
 
 Next, add your public key to the allowed keys. You can find it by running:
 
@@ -133,7 +132,6 @@ Verify that your configuration is valid:
 clan show
 ```
 
-# 6. Gather Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
@@ -147,7 +145,6 @@ You will be asked to enter "y" to proceed.
 
 When prompted for password, use the password displayed under the QR code.
 
-# 7. Add a Disk Configuration.
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
@@ -161,7 +158,6 @@ This will generate an error; note the disk ID it prints out (typically starting 
 clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/ata-VBOX_HARDDISK_VB..."
 ```
 
-# 8. Install NixOS
 
 Install NixOS on the target machine by typing:
 
@@ -183,7 +179,6 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-# 9. Unmount the ISO and Reboot
 
 Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose "Send the shutdown signal." Then click OK.
 
@@ -201,7 +196,6 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-# 10. Test the Connection
 
 Now you can try connecting to the remote machine:
 
@@ -226,13 +220,12 @@ You should connect and see the prompt:
 [root@test-machine:~]#
 ```
 
-# Practice: Install Some Packages
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
 
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
-```{.nix title="clan.nix" hl_lines="2-6"}
+```nix [clan.nix] {2-6}
   inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
@@ -284,7 +277,6 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 ```
 
-# Practice: Add a User
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -292,7 +284,7 @@ When you need to add a new user, you can do so right from within the clan.nix fi
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
-```{.nix title="clan.nix" hl_lines="2-9"}
+```nix [clan.nix] {2-9}
   inventory.instances = { # Add the following under this line
     user-alice = {
       module.name = "users";
@@ -331,7 +323,7 @@ Once complete, you can log in as alice with the password inside the virtual mach
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
 
-```{.nix title="clan.nix" hl_lines="7"}
+```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};

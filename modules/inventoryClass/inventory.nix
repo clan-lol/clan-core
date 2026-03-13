@@ -77,30 +77,32 @@ in
 
         Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
 
-        !!! Important
-            Each module MUST fulfill the following requirements to be usable with the inventory:
+        :::admonition{type=important}
+        Each module MUST fulfill the following requirements to be usable with the inventory:
 
-            - The module MUST have a `README.md` file with a `description`.
-            - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
-            - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
+        - The module MUST have a `README.md` file with a `description`.
+        - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
+        - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-            For further information see: [Module Authoring Guide](../../guides/services/community.md).
+        For further information see: [Module Authoring Guide](../../guides/services/community).
+        :::
 
-        ???+ example
-            ```nix
-            clan-core.lib.clan {
-                # 1. Add the module to the available inventory modules
-                inventory.modules = {
-                  custom-module = ./modules/my_module;
-                };
-                # 2. Use the module in the inventory
-                inventory.services = {
-                  custom-module.instance_1 = {
-                      roles.default.machines = [ "machineA" ];
-                  };
-                };
+        :::admonition{type=example collapsible open}
+        ```nix
+        clan-core.lib.clan {
+            # 1. Add the module to the available inventory modules
+            inventory.modules = {
+              custom-module = ./modules/my_module;
             };
-            ```
+            # 2. Use the module in the inventory
+            inventory.services = {
+              custom-module.instance_1 = {
+                  roles.default.machines = [ "machineA" ];
+              };
+            };
+        };
+        ```
+        :::
       '';
 
       apply = _: { };
@@ -124,46 +126,52 @@ in
       description = ''
         Tags of the inventory are used to group machines together.
 
-        It is recommended to use [`machine.tags`](#tags_1) to define the tags of the machines.
+        It is recommended to use [`machine.tags`](#tags) to define the tags of the machines.
 
         This can be used to define custom tags that are either statically set or dynamically computed.
 
         #### Static Tags
 
-        ???+ example "Static Tag Example"
-            ```nix
-            inventory.tags = {
-              foo = [ "machineA" "machineB" ];
-            };
-            ```
+        :::admonition[Static Tag Example]{type=example collapsible open}
+        ```nix
+        inventory.tags = {
+          foo = [ "machineA" "machineB" ];
+        };
+        ```
 
-            The tag `foo` will always be added to `machineA` and `machineB`.
+
+        The tag `foo` will always be added to `machineA` and `machineB`.
+        :::
 
         #### Dynamic Tags
 
         It is possible to compute tags based on the machines properties or based on other tags.
 
-        !!! danger
-            This is a powerful feature and should be used with caution.
+        :::admonition{type=important}
+        This is a powerful feature and should be used with caution.
 
-            It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+        It is possible to cause infinite recursion by computing tags based on the machines properties or based on other tags.
+        :::
 
-        ???+ example "Dynamic Tag Example"
+        :::admonition[Dynamic Tag Example]{type=example collapsible open}
 
-            allButFoo is a computed tag. It will be added to all machines except 'foo'
+        allButFoo is a computed tag. It will be added to all machines except 'foo'
 
-            `all` is a predefined tag. See the docs of [`tags.all`](#all).
+        `all` is a predefined tag. See the docs of [`tags.all`](#all).
 
-            ```nix
-            #  inventory.tags ↓       ↓ inventory.machines
-            inventory.tags = {config, machines...}: {
-              #                                                        ↓↓↓ The "all" tag
-              allButFoo = builtins.filter (name: name != "foo") config.all;
-            };
-            ```
+        ```nix
+        #  inventory.tags ↓       ↓ inventory.machines
+        inventory.tags = {config, machines...}: {
+          #                                                        ↓↓↓ The "all" tag
+          allButFoo = builtins.filter (name: name != "foo") config.all;
+        };
+        ```
+        :::
 
-        !!! warning
-            Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+
+        :::admonition{type=important}
+        Do NOT compute `tags` from `machine.tags` this will cause infinite recursion.
+        :::
       '';
       type = types.submoduleWith {
         specialArgs = {
@@ -181,39 +189,42 @@ in
                 type = with lib.types; listOf str;
                 defaultText = "[ <All Machines> ]";
                 description = ''
-                  !!! example "Predefined Tag"
+                  :::admonition[Predefined Tag]{type=example}
 
-                      Will be added to all machines
+                  Will be added to all machines
 
-                      ```nix
-                      inventory.machines.machineA.tags = [ "all" ];
-                      ```
+                  ```nix
+                  inventory.machines.machineA.tags = [ "all" ];
+                  ```
+                  :::
                 '';
               };
               nixos = lib.mkOption {
                 type = with lib.types; listOf str;
                 defaultText = "[ <All NixOS Machines> ]";
                 description = ''
-                  !!! example "Predefined Tag"
+                  :::admonition[Predefined Tag]{type=example}
 
-                      Will be added to all machines that set `machineClass = "nixos"`
+                  Will be added to all machines that set `machineClass = "nixos"`
 
-                      ```nix
-                      inventory.machines.machineA.tags = [ "nixos" ];
-                      ```
+                  ```nix
+                  inventory.machines.machineA.tags = [ "nixos" ];
+                  ```
+                  :::
                 '';
               };
               darwin = lib.mkOption {
                 type = with lib.types; listOf str;
                 defaultText = "[ <All Darwin Machines> ]";
                 description = ''
-                  !!! example "Predefined Tag"
+                  :::admonition[Predefined Tag]{type=example}
 
-                      Will be added to all machines that set `machineClass = "darwin"`
+                  Will be added to all machines that set `machineClass = "darwin"`
 
-                      ```nix
-                      inventory.machines.machineA.tags = [ "darwin" ];
-                      ```
+                  ```nix
+                  inventory.machines.machineA.tags = [ "darwin" ];
+                  ```
+                  :::
                 '';
               };
             };
@@ -276,19 +287,21 @@ in
 
                       The machine can be referenced by its tags in `inventory.services`
 
-                      ???+ Example
-                          ```nix
-                          inventory.machines.machineA.tags = [ "tag1" "tag2" ];
-                          ```
+                      :::admonition[Example]{type=example collapsible open}
+                      ```nix
+                      inventory.machines.machineA.tags = [ "tag1" "tag2" ];
+                      ```
 
-                          ```nix
-                          services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
-                          ```
+                      ```nix
+                      services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
+                      ```
 
-                      !!! Note
-                          Tags can be used to determine the membership of the machine in the services.
-                          Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
+                      :::
+                      :::admonition[Note]{type=note}
+                      Tags can be used to determine the membership of the machine in the services.
+                      Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
 
+                      :::
                     '';
                     default = [ ];
                     apply = lib.unique;

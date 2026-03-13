@@ -1,6 +1,7 @@
-!!! Danger "Experimental"
-    This service is experimental and will change in the future.
+:::admonition[Experimental]{type=danger}
+This service is experimental and will change in the future.
 
+:::
 This module enables hosting clan-internal services easily, which can be resolved
 inside your VPN. This allows defining a custom top-level domain (e.g. `.clan`)
 and exposing endpoints from a machine to others, which will be

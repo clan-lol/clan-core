@@ -1,6 +1,7 @@
-!!! Danger "Experimental"
-    This service is experimental and will change in the future.
+:::admonition[Experimental]{type=danger}
+This service is experimental and will change in the future.
 
+:::
 ---
 
 This service will set up data-mesher, a file synchronization daemon that uses a gossip protocol to replicate files 

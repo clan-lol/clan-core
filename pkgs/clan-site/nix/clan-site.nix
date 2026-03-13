@@ -11,7 +11,7 @@
   mona-sans,
   clan-site-assets,
   clan-site-cli,
-  docs-markdowns,
+  docs-source,
 }:
 let
   RED = "\\033[1;31m";
@@ -38,7 +38,6 @@ stdenv.mkDerivation (
       root = ../../../.;
       fileset = lib.fileset.unions [
         ../../../VERSION
-        ../../../docs
         ../../../${finalAttrs.pnpmRoot}
       ];
     };
@@ -79,12 +78,10 @@ stdenv.mkDerivation (
       if [[ ! -e clan-site.config.ts ]]; then
         cd pkgs/clan-site
       fi
-      mkdir -p ../../docs-new/{markdowns,embeds}
-      cp -R ${docs-markdowns}/* ../../docs-new/markdowns
-      cp -R ../../docs/code-examples/* ../../docs-new/embeds
 
       mkdir -p src/lib/assets
       cp -R ${clan-site-assets}/* src/lib/assets
+      chmod -R +w src/lib/assets
 
       playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
       if [[ $playwright_ver != '${playwright.version}' ]]; then
@@ -100,7 +97,15 @@ stdenv.mkDerivation (
     '';
     buildPhase = ''
       runHook preBuild
+
+      cp -r ${docs-source} ../../docs
+      echo "---------"
+      ls -la .
+      ls -la ../../docs/site
+      echo "---------"
+
       clan-site build
+
       runHook postBuild
     '';
     installPhase = ''
@@ -123,6 +128,7 @@ stdenv.mkDerivation (
             ;
           buildPhase = ''
             runHook preBuild
+            cp -r ${docs-source} ../../docs
             clan-site lint
             runHook postBuild
           '';

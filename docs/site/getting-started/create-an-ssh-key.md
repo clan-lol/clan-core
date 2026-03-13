@@ -1,7 +1,8 @@
 # Create an SSH Key
 
-!!! Tip
-    Use this short guide to determine if you have an existing key pair, and if not, to create one.
+:::admonition[Tip]{type=tip}
+Use this short guide to determine if you have an existing key pair, and if not, to create one.
+:::
 
 First, check for an existing key by typing:
 

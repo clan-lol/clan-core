@@ -36,10 +36,11 @@ in
 
         This will set the pkgs for every system used in a 'clan'
 
-        !!! Warning
-            If pkgsForSystem is set explicitly, that has higher precedence.
+        :::admonition[Warning]{type=warning}
+        If pkgsForSystem is set explicitly, that has higher precedence.
 
-            This option has no effect if pkgsForSystem is set.
+        This option has no effect if pkgsForSystem is set.
+        :::
       '';
       type = types.raw;
       default = null;

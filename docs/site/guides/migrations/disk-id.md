@@ -1,10 +1,12 @@
+# Disk Id
+
 ## Migrate disko config from `clanModules.disk-id`
 
 If you previously bootstrapped a machine's disk using `clanModules.disk-id`, you should now migrate to a standalone, self-contained disko configuration. This ensures long-term stability and avoids reliance on dynamic values from Clan.
 
 If your `disko.nix` currently looks something like this:
 
-```nix title="disko.nix"
+```nix [disko.nix]
 {
   lib,
   clan-core,
@@ -51,7 +53,7 @@ clan vars list $MACHINE_NAME
 Which should print the generated `disk-id/diskId` value in clear text
 You should see output like:
 
-```shellSession
+```console
 disk-id/diskId: fcef30a749f8451d8f60c46e1ead726f
 ```
 
@@ -67,7 +69,7 @@ We are going to make three changes:
 - Replace `suffix` with the actual disk-id
 - Move `disko.devices.disk.main.device` from `flake.nix` or `configuration.nix` into this file.
 
-```{.nix title="disko.nix" hl_lines="7-9 11-14"}
+```nix [disko.nix] {7-9,11-14}
 {
   boot.loader.grub.efiSupport = lib.mkDefault true;
   boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
@@ -90,4 +92,4 @@ We are going to make three changes:
 
 These steps are only needed for existing configurations that depend on the `diskId` module.
 
-For newer machines Clan offers simple *disk templates* via its [templates CLI](../../reference/cli/templates.md)
+For newer machines Clan offers simple *disk templates* via its [templates CLI](/docs/reference/cli/templates)

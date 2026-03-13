@@ -1,9 +1,79 @@
-## Style Guide for Documentation and Blog Posts
+# Styleguide
 
-A consistent style greatly increases the usability of all documentation and communication.  
+## Framework features
+
+### Admonitions
+
+Basic Syntax
+
+```md
+:::admonition[Title]{type=info collapsible open}
+Collapsiple Info
+:::
+```
+
+Types:
+
+:::admonition{type=info}
+Important information
+:::
+
+:::admonition{type=important}
+Important information
+:::
+
+:::admonition{type=tip}
+Important information
+:::
+
+:::admonition{type=example}
+Important information
+:::
+
+Collapsible
+
+:::admonition{type=info collapsible open}
+Collapsed info default open
+:::
+
+:::admonition{type=info collapsible}
+Collapsed info default closed
+:::
+
+Custom title
+
+:::admonition[Custom Title]{type=info}
+Important information
+:::
+
+### Code Examples
+
+```nix
+let
+  is = nix: nix;
+in
+{
+  this = is "valid";
+}
+```
+
+Highlight Code in a Snippet
+
+```nix {2,4-6}
+{
+  this line is highlighted
+  this line is NOT highlighted
+  this line is highlighted
+  this line is highlighted
+  this line is highlighted
+  this line is NOT highlighted
+}
+```
+
+## Writing Principles
+
+A consistent style greatly increases the usability of all documentation and communication.
 Please use this page as a reference and style guide for our internal and external documentation, blog posts, and all other Clan communication.
-
-### Writing Principles
 
 #### Knowledge Expectations
 
@@ -21,11 +91,9 @@ Please use this page as a reference and style guide for our internal and externa
 
 If specific knowledge is required, mention it at the start of the page.
 
----
-
 #### Show, Don't Tell
 
-The fastest path to understanding is a working example.  
+The fastest path to understanding is a working example.
 People learn by doing, not by reading about doing.
 
 **Recommended structure:**
@@ -34,8 +102,6 @@ People learn by doing, not by reading about doing.
 - Briefly explain what it does
 - Cover edge cases or variations
 - Link to further information instead of including it
-
----
 
 #### Grammar and Style
 
@@ -49,15 +115,13 @@ People learn by doing, not by reading about doing.
 
 > The following command, which utilizes nixos-facter to generate a comprehensive hardware report, will write the results back into the respective machine folder located on your setup device.
 
-What the user does is hidden in the middle.  
-`nixos-facter` is a leaked implementation detail.  
+What the user does is hidden in the middle.
+`nixos-facter` is a leaked implementation detail.
 Users care about *hardware scanning*, not *the tool that does it*.
 
 **Good:**
 
 > This command generates a hardware report and saves it to your machine folder.
-
----
 
 #### Content Organization
 
@@ -71,9 +135,9 @@ Lead with value. State what the reader will accomplish before explaining how.
 
 Create a new webserver machine in your Clan:
 
-~~~nix
+```nix
 clan machines create --name webserver
-~~~
+```
 
 Use **progressive disclosure**. Introduce concepts only when needed.
 
@@ -83,8 +147,6 @@ Use **progressive disclosure**. Introduce concepts only when needed.
 2. Show the simplest working example
 3. Explain concepts if needed
 4. Provide advanced options separately or link to the reference
-
----
 
 #### Code Examples
 
@@ -96,28 +158,27 @@ Use **progressive disclosure**. Introduce concepts only when needed.
 
 **Minimal comments**
 
-Let the code speak for itself.  
+Let the code speak for itself.
 Paste code examples directly and without further alteration.
 
 **Bad:**
 
-~~~nix
+```nix
 # This sets the target host IP address for deployment
 clan.networking.targetHost = "192.168.1.10"; # Change this to your machine's IP
 # This enables SSH access
 services.openssh.enable = true; # Required for Clan deployment
-~~~
+```
 
 **Good:**
 
-~~~nix
+```nix
 {
   clan.networking.targetHost = "192.168.XXX.XXX";
   services.openssh.enable = true;
 }
-~~~
+```
 
----
 
 #### Hide Nix Where Possible
 
@@ -135,13 +196,12 @@ Nix knowledge is a barrier, not a feature.
 
 Add a machine:
 
-~~~bash
+```bash
 clan machines create webserver
-~~~
+```
 
 This creates `machines/webserver/default.nix`, where you can configure it via NixOS.
 
----
 
 #### Teach Nix Through Examples, Not Theory
 
@@ -154,9 +214,6 @@ Users learn the NixOS module system by seeing patterns first.
 - Link deeper concepts instead of inlining them
 - Link to `nix.dev` for optional learning
 
----
-
-### Style Guidelines
 
 #### General Rules
 
@@ -165,14 +222,10 @@ Users learn the NixOS module system by seeing patterns first.
 - Variables are capitalized and start with `$`, e.g. `$YOUR-CLAN-NAME`
 - Variables should be directly usable during copy-paste
 - Do **not** describe missing code parts (`#elided`, `#omitted`)
-- Use `##` for headlines and `###` for subchapters
-
 
 - **Machines vs Devices**:
     - machine = Clan identity
     - device = hardware
-
----
 
 #### Capitalization
 
@@ -187,56 +240,3 @@ Users learn the NixOS module system by seeing patterns first.
 - git
 - direnv
 - Setup Device / Target Devices
-
----
-
-#### Code in Text
-
-Inline code is marked like ```this```.
-
----
-
-#### Code Snippets
-
-```text
-multi
-line
-code
-```
-
----
-
-#### Highlight Code in a Snippet
-
-Use ```hl_lines``` to highlight specific lines. 
-
-Example: hl_lines="2 4-6" 
-
-~~~nix {hl_lines="2 4-6"}
-{
-  this line is highlighted
-  this line is NOT highlighted
-  this line is highlighted
-  this line is highlighted
-  this line is highlighted
-  this line is NOT highlighted
-}
-~~~
-
----
-
-#### Under Construction Flags
-
-!!! warning "HeadlineText"
-    Use ```!!! warning HeadlineText```
-    
-    Text after 4 spaces
-
----
-
-#### Fold-out Info Areas
-
-??? info "HeadlineText"
-    Use ```??? info "HeadlineText"```
-    
-    Text after 4 spaces

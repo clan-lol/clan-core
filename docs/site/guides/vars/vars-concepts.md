@@ -1,3 +1,5 @@
+# Vars Concepts
+
 ## Understanding Clan Vars - Concepts & Architecture
 
 This guide explains the architecture and design principles behind the vars system.

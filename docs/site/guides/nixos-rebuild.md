@@ -1,3 +1,5 @@
+# NixOS Rebuild
+
 ## Can I still use `nixos-rebuild`?
 
 **Yes, you can still use `nixos-rebuild` with Clan!**
@@ -7,12 +9,14 @@ However, there are important considerations when using `nixos-rebuild` directly 
 
 ### Important Considerations
 
-!!! warning "Vars Must Be Uploaded First"
-    If your configuration uses Clan vars, failing to run `clan vars upload` before `nixos-rebuild` will result in missing secrets and potentially broken services.
+:::admonition[Vars Must Be Uploaded First]{type=warning}
+If your configuration uses Clan vars, failing to run `clan vars upload` before `nixos-rebuild` will result in missing secrets and potentially broken services.
+:::
 
-!!! info "Build Host Configuration"
-    Clan automatically handles build host configuration based on your machine settings.
-    When using `nixos-rebuild` manually, you need to specify `--build-host` and `--target-host` options yourself.
+:::admonition[Build Host Configuration]{type=info}
+Clan automatically handles build host configuration based on your machine settings.
+When using `nixos-rebuild` manually, you need to specify `--build-host` and `--target-host` options yourself.
+:::
 
 ### How Clan Uses nixos-rebuild
 
@@ -64,5 +68,5 @@ nixos-rebuild switch --flake .#my-machine --target-host root@target-ip --build-h
 
 ### Related Documentation
 
-- [Getting-started](../getting-started/quick-start.md)
-- [Vars](../guides/vars/intro-to-vars.md)
+- [Getting-started](/docs/getting-started/quick-start)
+- [Vars](/docs/guides/vars/intro-to-vars)

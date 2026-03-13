@@ -104,6 +104,7 @@ export const docsNav: DocsNavItems = [
       {
         label: "Contributing",
         children: [
+          // TODO: implement symlink follow
           "guides/contributing/CONTRIBUTING",
           "guides/contributing/debugging",
           "guides/contributing/testing",

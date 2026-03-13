@@ -1,7 +1,9 @@
+# Migrate Inventory Services
+
 ## Migrating from using `clanModules` to `clanServices`
 
 **Audience**: This is a guide for **people using `clanModules`**.
-If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../../guides/services/community.md)
+If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](/docs/guides/services/community)
 
 ### What's Changing?
 
@@ -157,7 +159,7 @@ instances = {
 
 #### Move `services` entries to `instances`
 
-Check if a service that you use has been migrated [In our reference](../../services/definition.md)
+Check if a service that you use has been migrated [In our reference](/docs/services/definition)
 
 In your inventory, move it from:
 
@@ -247,53 +249,54 @@ The following table shows the migration status of each deprecated clanModule:
 
 | clanModule               | Migration Status                                                  | Notes                                                            |
 |--------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
-| `admin`                  | ✅ [Migrated](../../services/official/admin.md)              |                                                                  |
+| `admin`                  | ✅ [Migrated](/docs/services/official/admin)              |                                                                  |
 | `auto-upgrade`           | ❌ Removed                                                        |                                                                  |
 | `borgbackup-static`      | ❌ Removed                                                        |                                                                  |
-| `borgbackup`             | ✅ [Migrated](../../services/official/borgbackup.md)         |                                                                  |
-| `data-mesher`            | ✅ [Migrated](../../services/official/data-mesher.md)        |                                                                  |
+| `borgbackup`             | ✅ [Migrated](/docs/services/official/borgbackup)         |                                                                  |
+| `data-mesher`            | ✅ [Migrated](/docs/services/official/data-mesher)        |                                                                  |
 | `deltachat`              | ❌ Removed                                                        |                                                                  |
 | `disk-id`                | ❌ Removed                                                        |                                                                  |
-| `dyndns`                 | ✅ [Migrated](../../services/official/dyndns.md)             |                                                                  |
+| `dyndns`                 | ✅ [Migrated](/docs/services/official/dyndns)             |                                                                  |
 | `ergochat`               | ❌ Removed                                                        |                                                                  |
-| `garage`                 | ✅ [Migrated](../../services/official/garage.md)             |                                                                  |
+| `garage`                 | ✅ [Migrated](/docs/services/official/garage)             |                                                                  |
 | `golem-provider`         | ❌ Removed                                                        |                                                                  |
 | `heisenbridge`           | ❌ Removed                                                        |                                                                  |
-| `importer`               | ✅ [Migrated](../../services/official/importer.md)           |                                                                  |
-| `iwd`                    | ❌ Removed                                                        | Use [wifi service](../../services/official/wifi.md) instead |
-| `localbackup`            | ✅ [Migrated](../../services/official/localbackup.md)        |                                                                  |
+| `importer`               | ✅ [Migrated](/docs/services/official/importer)           |                                                                  |
+| `iwd`                    | ❌ Removed                                                        | Use [wifi service](/docs/services/official/wifi) instead |
+| `localbackup`            | ✅ [Migrated](/docs/services/official/localbackup)        |                                                                  |
 | `localsend`              | ❌ Removed                                                        |                                                                  |
-| `machine-id`             | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
-| `matrix-synapse`         | ✅ [Migrated](../../services/official/matrix-synapse.md)     |                                                                  |
+| `machine-id`             | ✅ [Migrated](/docs/reference/clan.core/settings)              | Now an [option](/docs/reference/clan.core/settings)           |
+| `matrix-synapse`         | ✅ [Migrated](/docs/services/official/matrix-synapse)     |                                                                  |
 | `moonlight`              | ❌ Removed                                                        |                                                                  |
 | `mumble`                 | ❌ Removed                                                        |                                                                  |
-| `mycelium`               | ✅ [Migrated](../../services/official/mycelium.md)           |                                                                  |
+| `mycelium`               | ✅ [Migrated](/docs/services/official/mycelium)           |                                                                  |
 | `nginx`                  | ❌ Removed                                                        |                                                                  |
-| `packages`               | ✅ [Migrated](../../services/official/packages.md)           |                                                                  |
-| `postgresql`             | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
-| `root-password`          | ✅ [Migrated](../../services/official/users.md)              | See [migration guide](../../services/official/users.md#migration-from-root-password-module) |
+| `packages`               | ✅ [Migrated](/docs/services/official/packages)           |                                                                  |
+| `postgresql`             | ✅ [Migrated](/docs/reference/clan.core/settings)              | Now an [option](/docs/reference/clan.core/settings)           |
+| `root-password`          | ✅ [Migrated](/docs/services/official/users)              | See [migration guide](/docs/services/official/users#migration-from-root-password-module) |
 | `single-disk`            | ❌ Removed                                                        |                                                                  |
-| `sshd`                   | ✅ [Migrated](../../services/official/sshd.md)               |                                                                  |
-| `state-version`          | ✅ [Migrated](../../reference/clan.core/settings.md)              | Now an [option](../../reference/clan.core/settings.md)           |
+| `sshd`                   | ✅ [Migrated](/docs/services/official/sshd)               |                                                                  |
+| `state-version`          | ✅ [Migrated](/docs/reference/clan.core/settings)              | Now an [option](/docs/reference/clan.core/settings)           |
 | `static-hosts`           | ❌ Removed                                                        |                                                                  |
 | `sunshine`               | ❌ Removed                                                        |                                                                  |
 | `syncthing-static-peers` | ❌ Removed                                                        |                                                                  |
-| `syncthing`              | ✅ [Migrated](../../services/official/syncthing.md)          |                                                                  |
+| `syncthing`              | ✅ [Migrated](/docs/services/official/syncthing)          |                                                                  |
 | `thelounge`              | ❌ Removed                                                        |                                                                  |
-| `trusted-nix-caches`     | ✅ [Migrated](../../services/official/trusted-nix-caches.md) |                                                                  |
-| `user-password`          | ✅ [Migrated](../../services/official/users.md)              |                                                                  |
+| `trusted-nix-caches`     | ✅ [Migrated](/docs/services/official/trusted-nix-caches) |                                                                  |
+| `user-password`          | ✅ [Migrated](/docs/services/official/users)              |                                                                  |
 | `vaultwarden`            | ❌ Removed                                                        |                                                                  |
 | `xfce`                   | ❌ Removed                                                        |                                                                  |
 | `zerotier-static-peers`  | ❌ Removed                                                        |                                                                  |
-| `zerotier`               | ✅ [Migrated](../../services/official/zerotier.md)           |                                                                  |
+| `zerotier`               | ✅ [Migrated](/docs/services/official/zerotier)           |                                                                  |
 | `zt-tcp-relay`           | ❌ Removed                                                        |                                                                  |
 
 ---
 
-!!! Warning
-    * Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
-    * `inventory.services` is no longer recommended; use `inventory.instances` instead.
-    * Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
+:::admonition[Warning]{type=warning}
+* Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
+* `inventory.services` is no longer recommended; use `inventory.instances` instead.
+* Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
+:::
 
 ### Troubleshooting Common Migration Errors
 
@@ -301,7 +304,7 @@ The following table shows the migration status of each deprecated clanModule:
 
 This error occurs when using lists instead of attribute sets for tags or machines:
 
-```{.text .no-copy}
+```text
 error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64.roles.client.tags' is not of type `attribute set of (submodule)'.
 ```
 
@@ -311,7 +314,7 @@ error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64
 
 This error indicates the module structure is incorrect:
 
-```{.text .no-copy}
+```text
 error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 ```
 
@@ -321,7 +324,7 @@ error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 
 This suggests the instance configuration is trying to use imports incorrectly:
 
-```{.text .no-copy}
+```text
 error: attribute 'pkgs' missing
 ```
 
@@ -378,6 +381,6 @@ instances = {
 
 ### Further reference
 
-* [Inventory Concept](../../guides/inventory/intro-to-inventory.md)
-* [Authoring a 'clan.service' module](../../guides/services/community.md)
-* [ClanServices](../../guides/services/intro-to-services-revised.md)
+* [Inventory Concept](/docs/guides/inventory/intro-to-inventory)
+* [Authoring a 'clan.service' module](/docs/guides/services/community)
+* [ClanServices](/docs/guides/services/intro-to-services-revised)

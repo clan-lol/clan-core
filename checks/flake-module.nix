@@ -116,7 +116,7 @@ in
                 let
                   packagesToCheck =
                     if system == "aarch64-darwin" then
-                      lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs") packagesToBuild
+                      lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs-v2") packagesToBuild
                     else
                       packagesToBuild;
                 in

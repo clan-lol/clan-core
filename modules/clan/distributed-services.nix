@@ -95,7 +95,8 @@ in
     description = ''
       All service instances
 
-      !!! Danger "Internal API"
+      :::admonition[Internal API]{type=danger}
+      :::
         Do not rely on this API yet.
 
         - Will be renamed to just 'services' in the future.

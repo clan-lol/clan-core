@@ -1,3 +1,5 @@
+# Secure Boot
+
 At the moment, NixOS/Clan does not support [Secure Boot](https://wiki.gentoo.org/wiki/Secure_Boot). Therefore, you need to disable it in the BIOS. You can watch this [video guide](https://www.youtube.com/watch?v=BKVShiMUePc) or follow the instructions below:
 
 ## Insert the USB Stick
@@ -8,31 +10,33 @@ At the moment, NixOS/Clan does not support [Secure Boot](https://wiki.gentoo.org
 
 - Restart your computer.
 - As your computer restarts, press the appropriate key to enter the UEFI/BIOS settings.
-??? tip "The key depends on your laptop or motherboard manufacturer. Click to see a reference list:"
+::::admonition[The key depends on your laptop or motherboard manufacturer. Click to see a reference list:]{type=tip collapsible}
 
-    | Manufacturer       | UEFI/BIOS Key(s)          |
-    |--------------------|---------------------------|
-    | ASUS               | `Del`, `F2`               |
-    | MSI                | `Del`, `F2`               |
-    | Gigabyte           | `Del`, `F2`               |
-    | ASRock             | `Del`, `F2`               |
-    | Lenovo             | `F1`, `F2`, `Enter` (alternatively `Fn + F2`) |
-    | HP                 | `Esc`, `F10`              |
-    | Dell               | `F2`, `Fn + F2`, `Esc`    |
-    | Acer               | `F2`, `Del`               |
-    | Samsung            | `F2`, `F10`               |
-    | Toshiba            | `F2`, `Esc`               |
-    | Sony               | `F2`, `Assist` button     |
-    | Fujitsu            | `F2`                      |
-    | Microsoft Surface  | `Volume Up` + `Power`     |
-    | IBM/Lenovo ThinkPad| `Enter`, `F1`, `F12`      |
-    | Biostar            | `Del`                     |
-    | Zotac              | `Del`, `F2`               |
-    | EVGA               | `Del`                     |
-    | Origin PC          | `F2`, `Delete`            |
+| Manufacturer       | UEFI/BIOS Key(s)          |
+|--------------------|---------------------------|
+| ASUS               | `Del`, `F2`               |
+| MSI                | `Del`, `F2`               |
+| Gigabyte           | `Del`, `F2`               |
+| ASRock             | `Del`, `F2`               |
+| Lenovo             | `F1`, `F2`, `Enter` (alternatively `Fn + F2`) |
+| HP                 | `Esc`, `F10`              |
+| Dell               | `F2`, `Fn + F2`, `Esc`    |
+| Acer               | `F2`, `Del`               |
+| Samsung            | `F2`, `F10`               |
+| Toshiba            | `F2`, `Esc`               |
+| Sony               | `F2`, `Assist` button     |
+| Fujitsu            | `F2`                      |
+| Microsoft Surface  | `Volume Up` + `Power`     |
+| IBM/Lenovo ThinkPad| `Enter`, `F1`, `F12`      |
+| Biostar            | `Del`                     |
+| Zotac              | `Del`, `F2`               |
+| EVGA               | `Del`                     |
+| Origin PC          | `F2`, `Delete`            |
 
-    !!! Note
-        Pressing the key quickly and repeatedly is sometimes necessary to access the UEFI/BIOS menu, as the window to enter this mode is brief.
+:::admonition[Note]{type=note}
+Pressing the key quickly and repeatedly is sometimes necessary to access the UEFI/BIOS menu, as the window to enter this mode is brief.
+:::
+::::
 
 ## Access Advanced Mode (Optional)
 

@@ -1,3 +1,5 @@
+# Autoincludes
+
 ## Auto-included Files
 
 Clan automatically imports specific files from each machine directory and registers them, reducing the need for manual configuration.
@@ -6,7 +8,8 @@ Clan automatically imports specific files from each machine directory and regist
 
 Every folder under `machines/{machineName}` is automatically registered as a Clan machine.
 
-!!! info "Files loaded automatically for each machine"
+:::admonition[Files loaded automatically for each machine]{type=info}
+:::
 
 The following files are detected and imported for every Clan machine:
 

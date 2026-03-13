@@ -1,3 +1,5 @@
+# Vars Backend
+
 Declare a vars generator, generate a hashed root password, deploy it to a machine, and then share and rotate that password across multiple machines.
 
 This guide covers the full `clan vars` workflow:
@@ -10,7 +12,7 @@ This guide covers the full `clan vars` workflow:
 6. Share the root password between multiple machines.
 7. Change the root password when needed.
 
-For a detailed API reference, see the [vars module documentation](../../reference/clan.core/vars.md).
+For a detailed API reference, see the [vars module documentation](/docs/reference/clan.core/vars).
 
 
 ## Declare the generator
@@ -56,7 +58,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
 ## Inspect the status
 
 Executing `clan vars list`, you should see the following:
-```shellSession
+```console
 $ clan vars list my_machine
 root-password/password-hash: <not set>
 ```
@@ -68,13 +70,13 @@ root-password/password-hash: <not set>
 This step is not strictly necessary, as deploying the machine via `clan machines update` would trigger the generator as well.
 
 To run the generator, execute `clan vars generate` for your machine
-```shellSession
+```console
 $ clan vars generate my_machine
 Enter the value for root-password/password-input (hidden):
 ```
 
 After entering the value, the updated status is reported:
-```shellSession
+```console
 Updated var root-password/password-hash
   old: <not set>
   new: $6$RMats/YMeypFtcYX$DUi...
@@ -86,7 +88,7 @@ With the last step, a new file was created in your repository:
 `vars/per-machine/my-machine/root-password/password-hash/value`
 
 If the repository is a git repository, a commit was created automatically:
-```shellSession
+```console
 $ git log -n1
 commit ... (HEAD -> master)
 Author: ...
@@ -123,7 +125,7 @@ Changing the password can be done via this command.
 Replace `my-machine` with your machine.
 If the password is shared, just pick any machine that has the generator declared.
 
-```shellSession
+```console
 $ clan vars generate my-machine --generator root-password --regenerate
 ...
 Enter the value for root-password/password-input (hidden):

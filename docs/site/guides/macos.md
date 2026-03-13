@@ -1,3 +1,5 @@
+# Macos
+
 ## Managing macOS Machines with Clan
 
 Add a macOS device to your Clan and manage it with `clan machines update`.
@@ -7,14 +9,16 @@ Add a macOS device to your Clan and manage it with `clan machines update`.
 Currently, Clan supports the following features for macOS:
 
 - `clan machines update` for existing [nix-darwin](https://github.com/nix-darwin/nix-darwin) installations
-- Support for [vars](../guides/vars/intro-to-vars.md)
+- Support for [vars](/docs/guides/vars/intro-to-vars)
 
 ### Add Your Machine to Your Clan Flake
 
 In this example, we'll name the machine `yourmachine`. Replace this with your preferred machine name.
 
-=== "**If using clan-core.lib.clan**"
-
+::::tabs
+:::tab[If using clan-core.lib.clan]
+:::
+::::
 ```nix
 clan-core.lib.clan {
     inventory = {
@@ -23,8 +27,10 @@ clan-core.lib.clan {
 }
 ```
 
-=== "**If using flake-parts**"
-
+::::tabs
+:::tab[If using flake-parts]
+:::
+::::
 ```nix
 {
   clan = {

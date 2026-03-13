@@ -3,10 +3,11 @@
 This page is the fastest way to install Clan on a physical machine.
 
 For detailed explanations or troubleshooting, see the full
-[Getting Started (Physical Machine)](./getting-started-physical.md) guide.
+[Getting Started (Physical Machine)](/docs/getting-started/getting-started-physical) guide.
 
-!!! Note "Prerequisites"
-    Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
+:::admonition[Prerequisites]{type=note}
+Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
+:::
 
 ## Create the Clan
 
@@ -37,8 +38,9 @@ test-machine = {
 
 This tells Clan how to reach the machine over SSH. You'll fill in the IP address after booting the installer.
 
-!!! Note
-    The machine name `test-machine` is used throughout this guide and will be referenced by other machines and services. Changing it later requires updating all references.
+:::admonition[Note]{type=note}
+The machine name `test-machine` is used throughout this guide and will be referenced by other machines and services. Changing it later requires updating all references.
+:::
 
 ## Add Your SSH Key
 
@@ -80,9 +82,10 @@ lsblk
 
 This lists all block devices. Find your USB drive by matching its size (e.g. `sdb`).
 
-!!! Danger "This will erase ALL data on the selected device"
+:::admonition[This will erase ALL data on the selected device]{type=danger}
 
-    Double-check that the device path (e.g. `/dev/sdb`) matches your USB drive before running the `dd` command.
+Double-check that the device path (e.g. `/dev/sdb`) matches your USB drive before running the `dd` command.
+:::
 
 ```bash
 sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=progress conv=fsync
@@ -94,8 +97,9 @@ This writes the installer image to the USB drive. All existing data on the drive
 
 Boot the target machine from the USB drive. Note the IP address shown on screen, then update the `deploy.targetHost` line in `clan.nix` with it.
 
-!!! Tip "No IP?"
-    Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
+:::admonition[No IP?]{type=tip}
+Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
+:::
 
 ## Get Hardware Config
 
@@ -129,8 +133,9 @@ clan machines install test-machine --target-host root@<IP-ADDRESS>
 
 This builds NixOS from your configuration and installs it on the target machine. You'll be prompted for confirmation, WiFi credentials, and a root password.
 
-!!! Tip "Sandbox error?"
-    Run `clan vars generate test-machine --no-sandbox` first, then retry.
+:::admonition[Sandbox error?]{type=tip}
+Run `clan vars generate test-machine --no-sandbox` first, then retry.
+:::
 
 Remove the USB drive before the machine reboots.
 

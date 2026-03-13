@@ -1,24 +1,27 @@
+# Migration Facts Vars
+
 ## Migrate modules from `facts` to `vars`
 
 For a high level overview about `vars` see our [blog post](https://clan.lol/blog/vars/).
 
-This guide will help you migrate your modules that still use our [`facts`](../../guides/migrations/migration-facts-vars.md) backend
-to the [`vars`](../../guides/vars/intro-to-vars.md) backend.
+This guide will help you migrate your modules that still use our [`facts`](/docs/guides/migrations/migration-facts-vars) backend
+to the [`vars`](/docs/guides/vars/intro-to-vars) backend.
 
-The `vars` [module](../../reference/clan.core/vars.md) and the Clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
+The `vars` [module](/docs/reference/clan.core/vars) and the Clan [command](/docs/reference/cli/vars) work in tandem, they should ideally be kept in sync.
 
-!!! warning "Facts System Removed"
+:::admonition[Facts System Removed]{type=warning}
 
-    The `facts` system has been fully removed from clan-core. The automatic migration feature (`migrateFact`) is no longer available.
-    This guide is kept for historical reference, but you must now manually migrate your secrets and values from the old facts storage to the new vars system.
+The `facts` system has been fully removed from clan-core. The automatic migration feature (`migrateFact`) is no longer available.
+This guide is kept for historical reference, but you must now manually migrate your secrets and values from the old facts storage to the new vars system.
 
-    To manually migrate:
-    1. Locate your old facts in your facts storage backend (sops, password-store, or in-repo)
-    2. Copy the values
-    3. Use `clan vars generate` to generate the new values initially, then `clan vars set` to override with old values.
+To manually migrate:
+1. Locate your old facts in your facts storage backend (sops, password-store, or in-repo)
+2. Copy the values
+3. Use `clan vars generate` to generate the new values initially, then `clan vars set` to override with old values.
 
-    Alternative:
-    Roll back to a clan-core version before December 2025 and use the automatic migration feature.
+Alternative:
+Roll back to a clan-core version before December 2025 and use the automatic migration feature.
+:::
 
 ### Keep Existing Values (Historical)
 

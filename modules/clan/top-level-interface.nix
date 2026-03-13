@@ -155,15 +155,15 @@ in
       description = ''
         A mapping of machine names to their nixos configuration.
 
-        ???+ example
-
-            ```nix
-            machines = {
-              my-machine = {
-                # Your nixos configuration
-              };
-            };
-            ```
+        :::admonition{type=example collapsible open}
+        ```nix
+        machines = {
+          my-machine = {
+            # Your nixos configuration
+          };
+        };
+        ```
+        :::
       '';
     };
 
@@ -194,7 +194,7 @@ in
       description = ''
         The `Inventory` submodule.
 
-        For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
+        For details see the [Inventory](/reference/options/clan_inventory) documentation.
       '';
       default = { };
     };

@@ -1,12 +1,14 @@
+# Custom
+
 ## Custom User Management
 
-The [users service](../../services/official/users.md) handles most cases. This guide covers alternative approaches for when you need more control.
+The [users service](/docs/services/official/users) handles most cases. This guide covers alternative approaches for when you need more control.
 
 ### Manual NixOS Users
 
 Define users directly in your machine configuration when you need full control over user settings or want to avoid the users service abstraction.
 
-```{.nix title="machines/jon/default.nix"}
+```nix [machines/jon/default.nix]
 { config, ... }:
 {
   users.users.alice = {
@@ -44,7 +46,7 @@ If the same user needs access to multiple machines, define them in a shared modu
         └── default.nix
 ```
 
-```{.nix title="users/alice/default.nix"}
+```nix [users/alice/default.nix]
 { ... }:
 {
   users.users.alice = {
@@ -60,7 +62,7 @@ If the same user needs access to multiple machines, define them in a shared modu
 
 Then import it in each machine:
 
-```{.nix title="machines/desktop/default.nix"}
+```nix [machines/desktop/default.nix]
 { ... }:
 {
   imports = [ ../../users/alice ];
@@ -73,7 +75,7 @@ Then import it in each machine:
 
 First, add home-manager to your flake inputs:
 
-```{.nix title="flake.nix"}
+```nix [flake.nix]
 {
   inputs = {
     # ... existing inputs
@@ -85,7 +87,7 @@ First, add home-manager to your flake inputs:
 
 Then use `extraModules` to attach home-manager configuration to a user:
 
-```{.nix title="clan.nix" hl_lines="10"}
+```nix [clan.nix] {10}
 {
   inventory.instances = {
     alice-user = {
@@ -104,7 +106,7 @@ Then use `extraModules` to attach home-manager configuration to a user:
 }
 ```
 
-```{.nix title="users/alice/home.nix"}
+```nix [users/alice/home.nix]
 { self, ... }:
 {
   imports = [ self.inputs.home-manager.nixosModules.default ];

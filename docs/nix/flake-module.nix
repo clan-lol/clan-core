@@ -1,57 +1,54 @@
-{ inputs, ... }:
+{ ... }:
 {
   perSystem =
     {
       self',
       pkgs,
       lib,
+      config,
       ...
     }:
     {
-      devShells.docs = self'.packages.docs.overrideAttrs (_old: {
-        nativeBuildInputs = [
-          # Run: htmlproofer --disable-external
-          pkgs.html-proofer
-        ]
-        ++ self'.devShells.default.nativeBuildInputs
-        ++ self'.packages.docs.nativeBuildInputs;
-        shellHook = ''
-          ${self'.devShells.default.shellHook}
-          git_root=$(git rev-parse --show-toplevel)
-          cd "$git_root"
-          runPhase configurePhase
-        '';
-      });
+      devShells = lib.optionalAttrs (config.packages ? clan-site) (
+        let
+          clan-site-pkg = config.packages.clan-site;
+        in
+        {
+          docs = pkgs.mkShellNoCC {
+            inputsFrom = [
+              clan-site-pkg
+            ];
+            packages = [
+              config.packages.clan-site-cli
+            ];
+            env = clan-site-pkg.devShellEnv;
+            shellHook = ''
+              export PRJ_ROOT=$(git rev-parse --show-toplevel)
+
+              # Generate reference docs into the docs/site tree
+              mkdir -p $PRJ_ROOT/docs/site/reference/cli
+              cp -af ${self'.packages.module-docs}/services/* $PRJ_ROOT/docs/site/services/
+              cp -af ${self'.packages.module-docs}/reference/* $PRJ_ROOT/docs/site/reference/
+              cp -af ${self'.packages.clan-cli-docs}/* $PRJ_ROOT/docs/site/reference/cli/
+              chmod -R +w $PRJ_ROOT/docs/site
+
+              # Set up clan-site working directory
+              export CLAN_SITE_DIR=$PRJ_ROOT/pkgs/clan-site
+              cd $CLAN_SITE_DIR
+              ${clan-site-pkg.preBuild}
+
+              echo "Run 'clan-site' to start the live docs server"
+            '';
+          };
+        }
+      );
       packages = {
-        docs = pkgs.python3.pkgs.callPackage ./default.nix {
-          inherit (self'.packages)
-            clan-cli-docs
-            inventory-api-docs
-            clan-lib-openapi
-            module-docs
-            ;
-          inherit (inputs) nixpkgs;
-        };
-        docs-markdowns = pkgs.callPackage ./docs-markdowns.nix {
+        docs-source = pkgs.callPackage ./docs-source.nix {
           inherit (self'.packages) module-docs clan-cli-docs;
         };
-        deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
       }
       // lib.optionalAttrs (pkgs.stdenv.isLinux) {
         deploy-docs-v2 = pkgs.callPackage ./deploy-docs-v2.nix { docs = self'.packages.clan-site; };
       };
-      checks.docs-integrity =
-        pkgs.runCommand "docs-integrity"
-          {
-            nativeBuildInputs = [ pkgs.html-proofer ];
-            LANG = "C.UTF-8";
-          }
-          ''
-            # External links should be avoided in the docs, because they often break
-            # and we cannot statically control them. Thus we disable checking them
-            htmlproofer --disable-external ${self'.packages.docs}
-
-            touch $out
-          '';
     };
 }

@@ -12,7 +12,7 @@
         inherit (config.packages)
           clan-site-assets
           clan-site-cli
-          docs-markdowns
+          docs-source
           ;
       };
     in

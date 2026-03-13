@@ -1,3 +1,5 @@
+# Backup Intro
+
 
 Set up automated, encrypted backups for your Clan machines so you can restore files and databases when needed. Clan uses [BorgBackup](https://www.borgbackup.org/) under the hood for secure, deduplicated backups.
 
@@ -74,61 +76,62 @@ clan.core.state.nextcloud = {
 };
 ```
 
-??? tip "Example: Pre and Post Restore Scripts"
-    ```nix
-    clan.core.state.linkding = {
-      folders = [ "/var/backup/linkding" ];
+:::admonition[Example: Pre and Post Restore Scripts]{type=tip collapsible}
+```nix
+clan.core.state.linkding = {
+  folders = [ "/var/backup/linkding" ];
 
-      # Script to run before creating a backup
-      preBackupScript = ''
-        export PATH=${
-          lib.makeBinPath [
-            config.systemd.package
-            pkgs.coreutils
-            pkgs.rsync
-          ]
-        }
+  # Script to run before creating a backup
+  preBackupScript = ''
+    export PATH=${
+      lib.makeBinPath [
+        config.systemd.package
+        pkgs.coreutils
+        pkgs.rsync
+      ]
+    }
 
-        # Check if the service is running
-        service_status=$(systemctl is-active podman-linkding)
+    # Check if the service is running
+    service_status=$(systemctl is-active podman-linkding)
 
-        if [ "$service_status" = "active" ]; then
-          # Stop the service and sync data to the backup directory
-          systemctl stop podman-linkding
-          rsync -avH --delete --numeric-ids "/data/podman/linkding/" /var/backup/linkding/
-          systemctl start podman-linkding
-        fi
-      '';
+    if [ "$service_status" = "active" ]; then
+      # Stop the service and sync data to the backup directory
+      systemctl stop podman-linkding
+      rsync -avH --delete --numeric-ids "/data/podman/linkding/" /var/backup/linkding/
+      systemctl start podman-linkding
+    fi
+  '';
 
-      # Script to run after restoring a backup
-      postRestoreScript = ''
-        export PATH=${
-          lib.makeBinPath [
-            config.systemd.package
-            pkgs.coreutils
-            pkgs.rsync
-          ]
-        }
+  # Script to run after restoring a backup
+  postRestoreScript = ''
+    export PATH=${
+      lib.makeBinPath [
+        config.systemd.package
+        pkgs.coreutils
+        pkgs.rsync
+      ]
+    }
 
-        # Check if the service is running
-        service_status="$(systemctl is-active podman-linkding)"
+    # Check if the service is running
+    service_status="$(systemctl is-active podman-linkding)"
 
-        if [ "$service_status" = "active" ]; then
-          # Stop the service
-          systemctl stop podman-linkding
+    if [ "$service_status" = "active" ]; then
+      # Stop the service
+      systemctl stop podman-linkding
 
-          # Backup current data locally
-          cp -rp "/data/podman/linkding" "/data/podman/linkding.bak"
+      # Backup current data locally
+      cp -rp "/data/podman/linkding" "/data/podman/linkding.bak"
 
-          # Restore data from the backup directory
-          rsync -avH --delete --numeric-ids /var/backup/linkding/ "/data/podman/linkding/"
+      # Restore data from the backup directory
+      rsync -avH --delete --numeric-ids /var/backup/linkding/ "/data/podman/linkding/"
 
-          # Restart the service
-          systemctl start podman-linkding
-        fi
-      '';
-    };
-    ```
+      # Restart the service
+      systemctl start podman-linkding
+    fi
+  '';
+};
+```
+:::
 
 ---
 

@@ -1,3 +1,5 @@
+# Whats Next
+
 ## What's next?
 
 ### Summary
@@ -30,20 +32,21 @@ nix flake check
 
 This command helps ensure that your system configuration is correct and free from errors.
 
-!!! Tip
+:::admonition[Tip]{type=tip}
 
-    You can integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase.
+You can integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase.
+:::
 
 
 ### Backups
 
 We recommend to set up backups at this point on all machines.
 
-Please follow our [detailed backup guide](../guides/backups/backup-intro.md) and keep your files safe.
+Please follow our [detailed backup guide](/docs/guides/backups/backup-intro) and keep your files safe.
 
 
 ### Migrate Existing Devices
 
-You can [migrate additional existing systems](../guides/migrations/convert-existing-NixOS-configuration.md) into your Clan following our extended guides.
+You can [migrate additional existing systems](/docs/guides/migrations/convert-existing-NixOS-configuration) into your Clan following our extended guides.
 
 

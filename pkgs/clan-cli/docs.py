@@ -69,7 +69,7 @@ class Category:
         md_li = ""
         if level == self.level:
             md_li += (
-                f"""- **[{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
+                f"""- **[{self.title}](./cli/{"-".join(self.title.split(" "))})**\n\n"""
             )
             md_li += indent_all(
                 f"{self.description.strip()}" if self.description else "",
@@ -331,9 +331,9 @@ def build_command_reference() -> None:
             positionals_fmt += f"""{option.to_md_li("1.")}\n"""
 
         if len(cmd.positionals):
-            markdown += """!!! info "Positional arguments"\n"""
-            markdown += indent_all(positionals_fmt)
-            markdown += "\n"
+            markdown += """:::admonition[Positional arguments]{type=info}\n"""
+            markdown += positionals_fmt
+            markdown += ":::\n\n"
 
         options_fmt = ""
         for option in cmd.options:
@@ -341,9 +341,9 @@ def build_command_reference() -> None:
 
         # options:
         if len(cmd.options):
-            markdown += """??? info "Options"\n"""
-            markdown += indent_all(options_fmt)
-            markdown += "\n"
+            markdown += """:::admonition[Options]{type=info collapsible}\n"""
+            markdown += options_fmt
+            markdown += ":::\n\n"
 
         def asort(s: Subcommand) -> str:
             return s.name
@@ -353,9 +353,9 @@ def build_command_reference() -> None:
             commands_fmt += f"{sub_cmd.to_md_li(cmd)}\n"
 
         if commands_fmt:
-            markdown += """!!! info "Commands"\n"""
-            markdown += indent_all(commands_fmt)
-            markdown += "\n"
+            markdown += """:::admonition[Commands]{type=info}\n"""
+            markdown += commands_fmt
+            markdown += ":::\n\n"
 
         markdown += f"{epilog_to_md(cmd.epilog)}\n\n" if cmd.epilog else ""
 

@@ -1,3 +1,5 @@
+# Advanced Example
+
 Configure a [Hetzner Storage Box](https://docs.hetzner.com/storage/storage-box/general) as an off-site backup destination for your Clan machines.
 
 ### Step 1: Create a Hetzner Storage Box
@@ -12,7 +14,7 @@ Set up a sub-account for your `jon` machine. Save the SSH password for this acco
 
 Add the BorgBackup service to your `clan.nix` configuration. In this example, the `jon` machine will back up to `user-sub1@user-sub1.your-storagebox.de` in the `borgbackup` folder:
 
-```nix hl_lines="9"
+```nix {9}
 inventory.instances = {
   borgbackup = {
     module = {

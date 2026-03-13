@@ -1,3 +1,5 @@
+# Templates
+
 ## How Templates work
 
 Clan offers the ability to use templates for creating different resources.
@@ -5,7 +7,7 @@ It comes with some `<builtin>` templates and discovers all exposed templates fro
 
 For example, one can list all current templates like this:
 
-```shellSession
+```console
 $ clan templates list
 Available 'clan' templates
 ├── <builtin>
@@ -64,6 +66,7 @@ Just like with Nix you could specify a remote URL or path to the flake containin
 
 `clan init --template=github:owner/repo#foo`
 
-!!! Note "Implementation Note"
-    Not all features of Nix's attribute selection are currently matched.
-    There are minor differences in case of unexpected behavior please create an [issue](https://git.clan.lol/clan/clan-core/issues/new)
+:::admonition[Implementation Note]{type=note}
+Not all features of Nix's attribute selection are currently matched.
+There are minor differences in case of unexpected behavior please create an [issue](https://git.clan.lol/clan/clan-core/issues/new)
+:::

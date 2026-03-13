@@ -1,11 +1,13 @@
+# Community
+
 ## Authoring a 'clan.service' module
 
 ### Service Module Specification
 
 This section explains how to author a Clan service module.
-We discussed the initial architecture in [01-clan-service-modules](../../decisions/01-Clan-Modules.md) and decided to rework the format.
+We discussed the initial architecture in [01-clan-service-modules](/docs/decisions/01-Clan-Modules) and decided to rework the format.
 
-For the full specification and current state see: **[Service Author Reference](../../reference/options/clan_service.md)**
+For the full specification and current state see: **[Service Author Reference](/docs/reference/options/clan_service)**
 
 #### A Minimal module
 
@@ -17,7 +19,7 @@ If you export the module from your flake, other people will be able to import it
 
 i.e. `@hsjobeki/customNetworking`
 
-```nix title="flake.nix"
+```nix [flake.nix]
 outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } ({
     imports = [ inputs.clan-core.flakeModules.default ];
     # Sometimes this attribute set is defined in clan.nix
@@ -37,14 +39,14 @@ The imported module file must fulfill at least the following requirements:
 - Required `_class = "clan.service"
 - Required `manifest.name = "<name of the provided service>"`
 
-```nix title="/service-modules/networking.nix"
+```nix [/service-modules/networking.nix]
 {
   _class = "clan.service";
   manifest.name = "zerotier-networking";
 }
 ```
 
-For more attributes see: **[Service Author Reference](../../reference/options/clan_service.md)**
+For more attributes see: **[Service Author Reference](/docs/reference/options/clan_service)**
 
 #### Adding functionality to the module
 
@@ -58,7 +60,7 @@ Here is a short guide with some conventions:
 - [ ] Often machines don't necessarily have direct relation to each other and there is one elevated machine in the middle classically know as `client-server`. `clients` are less likely to talk directly to each other than `peers`
 - [ ] If your machines don't have any relation and/or interactions to each other you should reconsider if the desired functionality is really a multi-host service.
 
-```nix title="/service-modules/networking.nix"
+```nix [/service-modules/networking.nix]
 {
   _class = "clan.service";
   manifest.name = "zerotier-networking";
@@ -71,7 +73,7 @@ Here is a short guide with some conventions:
 
 Next we need to define the settings and the behavior of these distinct roles.
 
-```nix title="/service-modules/networking.nix"
+```nix [/service-modules/networking.nix]
 {
     _class = "clan.service";
     manifest.name = "zerotier-networking";
@@ -141,8 +143,9 @@ Next we need to define the settings and the behavior of these distinct roles.
 
 ### Using values from a NixOS machine inside the module
 
-!!! Example "Experimental Status"
-    This feature is experimental and should be used with care.
+:::admonition[Experimental Status]{type=example}
+This feature is experimental and should be used with care.
+:::
 
 Sometimes a settings value depends on something within a machines `config`.
 
@@ -150,7 +153,7 @@ Since the `interface` is defined completely machine-agnostic, this means values 
 
 The following example shows how to create a local instance of machine specific settings.
 
-```nix title="someservice.nix"
+```nix [someservice.nix]
 {
     # Maps over all instances and produces one result per instance.
     perInstance = { instanceName, extendSettings, machine, roles, ... }: {
@@ -170,10 +173,11 @@ The following example shows how to create a local instance of machine specific s
 }
 ```
 
-!!! Danger
-    `localSettings` are a local attribute that other machines cannot access, because calling `extendSettings` doesn't change the original `settings`. This means if a different machine tries to access, for example `roles.client.settings`, it will *NOT* contain changes made by `extendSettings`.
+:::admonition[Danger]{type=danger}
+`localSettings` are a local attribute that other machines cannot access, because calling `extendSettings` doesn't change the original `settings`. This means if a different machine tries to access, for example `roles.client.settings`, it will *NOT* contain changes made by `extendSettings`.
 
-    Exposing the changed settings to other machines would come with a huge performance penalty, thats why we don't want to offer it.
+Exposing the changed settings to other machines would come with a huge performance penalty, thats why we don't want to offer it.
+:::
 
 ### Passing `self` or `pkgs` to the module
 
@@ -192,7 +196,7 @@ Using [importApply](https://github.com/NixOS/nixpkgs/pull/230588) is essentially
 
 Imagine your module looks like this
 
-```nix title="messaging.nix"
+```nix [messaging.nix]
 { self }:
 { ... }: # This line is optional
 {
@@ -203,7 +207,7 @@ Imagine your module looks like this
 
 To import the module use `importApply`
 
-```nix title="flake.nix"
+```nix [flake.nix]
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
     # Sometimes this attribute set is defined in clan.nix
@@ -216,7 +220,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 
 #### Using a wrapper module
 
-```nix title="messaging.nix"
+```nix [messaging.nix]
 { config, ... }:
 {
   _class = "clan.service";
@@ -226,7 +230,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 
 Then wrap the module and forward the variable `self` from the outer context into the module
 
-```nix title="flake.nix"
+```nix [flake.nix]
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
     # Sometimes this attribute set is defined in clan.nix
@@ -258,7 +262,7 @@ For this example we have two roles: `server` and `desktop`. Additionally, we
 can use the `perMachine` section to add configuration to all machines regardless
 of their type.
 
-```nix title="machine-type.nix"
+```nix [machine-type.nix]
 {
   _class = "clan.service";
   manifest.name = "machine-type";
@@ -274,7 +278,7 @@ of their type.
 
 In the inventory we the assign machines to a type, e.g. by using tags
 
-```nix title="flake.nix"
+```nix [flake.nix]
 instances.machine-type = {
   module.input = "self";
   module.name = "@pinpox/machine-type";
@@ -291,14 +295,14 @@ Services often need to share configuration data between machines. For example, c
 
 **Exports** provide a standardized way to share structured data between service components.
 
-See the complete guide: [Service Exports](./exports.md)
+See the complete guide: [Service Exports](/docs/guides/services/exports)
 
 ---
 
 ### Further Reading
 
-- [Service Exports Guide](./exports.md) - How to share data between services
-- [Reference Documentation for Service Authors](../../reference/options/clan_service.md)
-- [Migration Guide from ClanModules to ClanServices](../../guides/migrations/migrate-inventory-services.md)
-- [Decision that lead to ClanServices](../../decisions/01-Clan-Modules.md)
-- [Testing Guide for Services with Vars](../contributing/testing.md#testing-services-with-vars)
+- [Service Exports Guide](/docs/guides/services/exports) - How to share data between services
+- [Reference Documentation for Service Authors](/docs/reference/options/clan_service)
+- [Migration Guide from ClanModules to ClanServices](/docs/guides/migrations/migrate-inventory-services)
+- [Decision that lead to ClanServices](/docs/decisions/01-Clan-Modules)
+- [Testing Guide for Services with Vars](/docs/guides/contributing/testing#testing-services-with-vars)

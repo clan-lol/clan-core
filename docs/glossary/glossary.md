@@ -1,3 +1,5 @@
+# Glossary
+
 *[vars]: System for declaratively generating and deploying secrets, credentials, and dynamic configuration files.
 *[generator]: Declaration defining how to create vars, including prompts, scripts, dependencies, and output files.
 *[role]: Function assigned to a machine within a service (e.g., client, server).

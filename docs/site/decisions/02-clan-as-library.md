@@ -1,3 +1,5 @@
+# 02 Clan As Library
+
 ## Status
 
 Accepted
@@ -22,7 +24,7 @@ All **CLI** or **UI** related parts should be moved out of the main library.
 
 Imagine roughly the following architecture:
 
-``` mermaid
+```mermaid
 graph TD
   %% Define styles
   classDef frontend fill:#f9f,stroke:#333,stroke-width:2px;
