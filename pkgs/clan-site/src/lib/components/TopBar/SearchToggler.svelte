@@ -34,7 +34,7 @@
     display: none;
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     .button {
       display: none;
     }

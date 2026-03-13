@@ -3,13 +3,15 @@ import type { NavItemsInput, NavSibling } from "./nav.ts";
 import { afterNavigate, beforeNavigate } from "$app/navigation";
 import CopyButton from "~/lib/components/CopyButton.svelte";
 import { createContext, mount } from "svelte";
-import { docsBase, version } from "$config";
+import { customMedia, docsBase, version } from "$config";
 import { HTTP_OK } from "$lib/util.ts";
+import { MediaQuery } from "svelte/reactivity";
 import { Nav } from "./nav.svelte.ts";
 import { resolve } from "$app/paths";
 import { Search } from "./search.svelte.ts";
 import { Toc } from "./toc.svelte.ts";
 
+export type DocsLayout = "mobile" | "tablet" | "desktop";
 export class Docs {
   public static readonly versionedBase: DocsPath = `${docsBase}/${version}`;
 
@@ -25,11 +27,26 @@ export class Docs {
       .map((v) => v.trim());
   }
 
+  public readonly layout: DocsLayout;
+  public readonly isTopBarFixed: boolean;
   public readonly nav: Nav;
   public readonly article: Article;
   public readonly search: Search;
   public topbarMode: TopBarMode = $state("navBar");
   public constructor(navItems: NavItemsInput, article: () => ArticleInput) {
+    const tablet = new MediaQuery(customMedia.docsTablet);
+    const desktop = new MediaQuery(customMedia.docsDesktop);
+    this.layout = $derived.by(() => {
+      if (desktop.current) {
+        return "desktop";
+      }
+      if (tablet.current) {
+        return "tablet";
+      }
+      return "mobile";
+    });
+    const fixedMq = new MediaQuery(customMedia.docsTopBarFixed);
+    this.isTopBarFixed = $derived(fixedMq.current);
     this.nav = new Nav(navItems, () => article().navPointer, this);
     this.article = new Article(article, this);
     this.search = new Search(this);

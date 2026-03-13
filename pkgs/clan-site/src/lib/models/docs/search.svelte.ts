@@ -7,7 +7,6 @@ import { asset } from "$app/paths";
 import { browser } from "$app/environment";
 import { searchResultLimit } from "$config";
 import { untrack } from "svelte";
-import { viewport } from "../viewport.ts";
 
 export class Search {
   #docs: Docs;
@@ -15,7 +14,7 @@ export class Search {
   public inputElement: HTMLInputElement | undefined = $state.raw();
   public inputDoubleElement: HTMLInputElement | undefined = $state.raw();
   public get inputEffectiveElement(): HTMLInputElement | undefined {
-    if (!viewport.isMedium && !viewport.isWide) {
+    if (this.#docs.layout === "mobile") {
       return this.inputDoubleElement;
     }
     return this.inputElement;

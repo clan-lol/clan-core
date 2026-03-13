@@ -62,7 +62,7 @@
     border-block-end: 1px solid var(--search-result-separator-color);
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     dl {
       inset-inline-start: calc(50% - 325px);
       inset-block-end: auto;

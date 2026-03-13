@@ -19,6 +19,8 @@ h3,
 h4,
 h5,
 h6 {
+  scroll-margin-top: 50px;
+
   a {
     margin-inline-start: 0.3em;
     font-size: 0.85em;
@@ -37,7 +39,7 @@ h6 {
 }
 
 h1 {
-  margin: 1.5em 0 1em;
+  margin: 1em 0 2em;
   color: inherit;
   font-weight: 700;
   font-size: 32.44px;
@@ -153,9 +155,24 @@ tr:nth-child(2n) {
   background-color: var(--table-alternative-bg-color);
 }
 
-@media (--medium) {
-  h1 {
-    margin-block: 1em 2em;
-    font-size: 36px;
+@media (--docs-top-bar-fixed) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    scroll-margin-top: calc(50px + 60px);
+  }
+}
+
+@media (--docs-desktop) and (--docs-top-bar-fixed) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    scroll-margin-top: 60px;
   }
 }

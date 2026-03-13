@@ -165,7 +165,7 @@
     }
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     .container {
       justify-content: center;
 

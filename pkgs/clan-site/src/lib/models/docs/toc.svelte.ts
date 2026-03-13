@@ -1,9 +1,8 @@
 import type { Docs } from "./docs.svelte.ts";
 import type { TocItemInput, TocItemsInput } from "./toc.ts";
-import { viewport } from "../viewport.ts";
+import { browser } from "$app/environment";
 import { visit } from "$lib/util.ts";
 
-const intersectionThreshold = 3;
 export class Toc {
   public readonly onClickTitle = this.#onClickTitle.bind(this);
   public readonly docs: Docs;
@@ -21,11 +20,19 @@ export class Toc {
     this.docs = docs;
 
     $effect(() => {
-      // Make sure items update trigger this function
+      // If items have changed, it means the page has been re-rendered, and we
+      // need to restart IntersectionObserver
       this.items;
       this.#updateTocItemOnScrollHeading();
       return (): void => this.reset();
     });
+
+    if (browser) {
+      window.addEventListener("resize", () => {
+        this.reset();
+        this.#updateTocItemOnScrollHeading();
+      });
+    }
   }
 
   public reset(): void {
@@ -43,7 +50,7 @@ export class Toc {
   #onClickTitle(ev: Event): void {
     ev.preventDefault();
 
-    if (viewport.isWide) {
+    if (this.docs.layout === "desktop") {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -57,12 +64,20 @@ export class Toc {
     if (!this.docs.article.element || !this.element) {
       return;
     }
-    const height = viewport.isWide ? 0 : this.element.offsetHeight;
+    let offset: number;
+
+    if (this.docs.layout === "desktop") {
+      const rect = this.docs.article.element.getBoundingClientRect();
+      offset = rect.top + window.scrollY;
+    } else {
+      const rect = this.element.getBoundingClientRect();
+      offset = rect.height + rect.top;
+    }
     this.#observer = new IntersectionObserver(
       (entries) => this.#updateTocItem(entries),
       {
         threshold: 1,
-        rootMargin: `${-(height + intersectionThreshold)}px 0px 0px`,
+        rootMargin: `${-offset}px 0px 0px`,
       },
     );
     for (const heading of this.docs.article.element.querySelectorAll(
@@ -121,7 +136,7 @@ export class TocItem {
 
   #onClick(ev: Event): void {
     ev.preventDefault();
-    if (!viewport.isWide) {
+    if (this.#toc.docs.layout !== "desktop") {
       this.#toc.open = false;
     }
     // eslint-disable-next-line unicorn/prefer-query-selector

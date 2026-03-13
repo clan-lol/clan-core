@@ -60,6 +60,12 @@
     padding-left: max(14px, env(safe-area-inset-left));
     padding-right: max(14px, env(safe-area-inset-right));
 
+    /* Prevent margin collapsing, this is needed to get the content's bounding rect in toc js */
+    &::before {
+      content: "";
+      display: table;
+    }
+
     :global(img) {
       max-inline-size: 100%;
     }
@@ -113,7 +119,7 @@
     margin: 0;
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     article {
       margin-block-end: 14px;
       /* safearea is always absolute */
@@ -147,7 +153,7 @@
     }
   }
 
-  @media (--wide) {
+  @media (--docs-desktop) {
     article {
       padding-inline: 0;
       margin-inline: 0 24px;

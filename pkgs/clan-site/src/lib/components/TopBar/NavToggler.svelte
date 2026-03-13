@@ -22,7 +22,7 @@
     cursor: pointer;
   }
 
-  @media (--medium) {
+  @media (--docs-tablet) {
     button {
       display: none;
     }

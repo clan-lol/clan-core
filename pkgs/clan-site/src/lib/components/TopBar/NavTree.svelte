@@ -128,29 +128,59 @@
     }
   }
 
-  @media (--medium) {
+  @media (--docs-top-bar-fixed) {
     nav {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-start: 60px;
+      z-index: 1000;
+      overflow: auto;
+      max-block-size: 80vh;
+      padding-block-end: 14px;
+      background-color: var(--bg-color);
+      border-end-start-radius: 14px;
+      border-end-end-radius: 14px;
+      box-shadow: 0 3px 10px #00000030;
+    }
+  }
+
+  @media (--docs-tablet) {
+    nav {
+      position: static;
       display: block;
       grid-row: 2;
       grid-column: 1;
+      overflow: visible;
       inline-size: 280px;
-      padding-inline-end: 14px;
+      max-block-size: none;
+      padding-inline-end: 0;
+      padding-block-end: 0;
+      box-shadow: none;
     }
 
     .inner {
       position: sticky;
-      inset-block-start: 60px;
+      inset-block-start: 0;
       overflow: auto;
-      max-block-size: calc(100vh - 60px);
+      max-block-size: 100vh;
+      padding-inline-end: 14px;
       padding-block: 14px;
       margin-block-start: -14px;
     }
   }
 
-  @media (--wide) {
+  @media (--docs-tablet) and (--docs-top-bar-fixed) {
+    .inner {
+      inset-block-start: 60px;
+      max-block-size: calc(100vh - 60px);
+      padding-block-start: 0;
+    }
+  }
+
+  @media (--docs-desktop) {
     nav {
       inline-size: 300px;
-      padding-inline: 24px 14px;
+      padding-inline-start: 24px;
     }
   }
 </style>

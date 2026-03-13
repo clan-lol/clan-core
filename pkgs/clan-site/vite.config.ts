@@ -11,7 +11,7 @@ import rm from "@clan.lol/vite-plugin-rm";
 import * as siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 import svg from "@poppanator/sveltekit-svg";
-import valuePlugin from "vite-plugin-value";
+import value from "vite-plugin-value";
 import { versionedBase } from "#lib/models/docs/docs.server.ts";
 
 export default defineConfig({
@@ -44,7 +44,7 @@ export default defineConfig({
         plugins: ["removeXMLNS"],
       },
     }),
-    valuePlugin({
+    value({
       specifier: "$config",
       value: siteConfig,
     }),
