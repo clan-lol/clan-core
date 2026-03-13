@@ -5,32 +5,37 @@
       self',
       pkgs,
       lib,
+      config,
       ...
     }:
+    let
+      clan-site-pkg = config.packages.clan-site;
+    in
     {
-      devShells.docs = pkgs.mkShell {
-        # nativeBuildInputs = [
-        #   # Run: htmlproofer --disable-external
-        #   pkgs.html-proofer
-        # ]
-        # ++ self'.devShells.default.nativeBuildInputs
-        # ++ self'.packages.docs.nativeBuildInputs;
+      devShells.docs = pkgs.mkShellNoCC {
+        inputsFrom = [
+          clan-site-pkg
+        ];
+        packages = [
+          config.packages.clan-site-cli
+        ];
+        env = clan-site-pkg.devShellEnv;
         shellHook = ''
-          ${self'.devShells.default.shellHook}
-          git_root=$(git rev-parse --show-toplevel)
-          cd "$git_root"
+          export PRJ_ROOT=$(git rev-parse --show-toplevel)
 
-          pushd docs
+          # Generate reference docs into the docs/site tree
+          mkdir -p $PRJ_ROOT/docs/site/reference/cli
+          cp -af ${self'.packages.module-docs}/services/* $PRJ_ROOT/docs/site/services/
+          cp -af ${self'.packages.module-docs}/reference/* $PRJ_ROOT/docs/site/reference/
+          cp -af ${self'.packages.clan-cli-docs}/* $PRJ_ROOT/docs/site/reference/cli/
+          chmod -R +w $PRJ_ROOT/docs/site
 
-          mkdir -p ./site/reference/cli
-          cp -af ${self'.packages.module-docs}/services/* ./site/services/
-          cp -af ${self'.packages.module-docs}/reference/* ./site/reference/
-          cp -af ${self'.packages.clan-cli-docs}/* ./site/reference/cli/
+          # Set up clan-site working directory
+          export CLAN_SITE_DIR=$PRJ_ROOT/pkgs/clan-site
+          cd $CLAN_SITE_DIR
+          ${clan-site-pkg.preBuild}
 
-          # cp -af ${self'.packages.clan-lib-openapi} ./site/openapi.json
-
-          chmod -R +w ./site
-          echo "Generated API documentation in './site/reference/' "
+          echo "Run 'clan-site' to start the live docs server"
         '';
       };
       packages = {

@@ -1,6 +1,10 @@
 # shellcheck shell=bash
 set -euo pipefail
 
+if [[ -n "${CLAN_SITE_DIR:-}" ]]; then
+	cd "$CLAN_SITE_DIR"
+fi
+
 if [[ $# = 0 ]]; then
 	set -- dev
 fi
