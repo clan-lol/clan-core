@@ -1,10 +1,13 @@
+# Convert Existing NixOS Configuration
+
 Convert your existing NixOS flake into a Clan, keeping your current hosts and configuration while gaining access to Clan's services, inventory, and CLI.
 
-!!! Warning
-    Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend reading the [Getting Started](../../getting-started/quick-start.md) guide first.
+:::admonition[Warning]{type=warning}
+Migrating instead of starting new can be trickier and might lead to bugs or
+unexpected issues. We recommend reading the [Getting Started](/docs/getting-started/quick-start) guide first.
 
-    Once you have a working setup and understand the concepts transferring your NixOS configurations over is easy.
+Once you have a working setup and understand the concepts transferring your NixOS configurations over is easy.
+:::
 
 ## Back up your existing configuration
 
@@ -159,7 +162,7 @@ it every time you interact with Clan, it is recommended to set up
 
 Verify everything works as expected by running `clan machines list`.
 
-```{.shellSession .no-copy}
+```console
 ❯ nix develop
 [user@host:~/my-nixos-config]$ clan machines list
 berlin
@@ -178,7 +181,7 @@ Clan needs to know where it can reach your hosts. For testing purpose set
 }
 ```
 
-See our guide on for properly [configuring machines networking](../../guides/networking/networking.md)
+See our guide on for properly [configuring machines networking](/docs/guides/networking/networking)
 
 ## Next Steps
 

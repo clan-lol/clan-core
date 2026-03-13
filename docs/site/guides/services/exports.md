@@ -1,7 +1,10 @@
+# Exports
+
 ## Exports
 
-!!! Danger "Experimental"
-    This feature is still experimental and will change in the future.
+:::admonition[Experimental]{type=danger}
+This feature is still experimental and will change in the future.
+:::
 
 ### Overview
 
@@ -39,10 +42,11 @@ Each export is tagged with a scope that identifies its source:
 - **Role level**: Data specific to a role
 - **Machine level**: Data specific to a single machine
 
-!!! Important
-    Exports are stored internally using scope keys, therefore you should always use the `clanLib` helper functions to work with them.
+:::admonition[Important]{type=important}
+Exports are stored internally using scope keys, therefore you should always use the `clanLib` helper functions to work with them.
 
-    The internal format is subject to change.
+The internal format is subject to change.
+:::
 
 ### Defining Exports in Your Service
 
@@ -201,6 +205,6 @@ For real-world use cases, see the [clan-services](https://git.clan.lol/clan/clan
 
 ### Further Reading
 
-- [Service Author Reference](../../reference/options/clan_service.md)
-- [Introduction to clanServices](./intro-to-services-revised.md)
-- [Authoring a clanService](./community.md)
+- [Service Author Reference](/docs/reference/options/clan_service)
+- [Introduction to clanServices](/docs/guides/services/intro-to-services-revised)
+- [Authoring a clanService](/docs/guides/services/community)

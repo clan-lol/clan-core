@@ -194,7 +194,7 @@ in
       description = ''
         The `Inventory` submodule.
 
-        For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
+        For details see the [Inventory](/reference/options/clan_inventory) documentation.
       '';
       default = { };
     };

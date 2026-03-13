@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 {
   perSystem =
     {
@@ -8,50 +8,38 @@
       ...
     }:
     {
-      devShells.docs = self'.packages.docs.overrideAttrs (_old: {
-        nativeBuildInputs = [
-          # Run: htmlproofer --disable-external
-          pkgs.html-proofer
-        ]
-        ++ self'.devShells.default.nativeBuildInputs
-        ++ self'.packages.docs.nativeBuildInputs;
+      devShells.docs = pkgs.mkShell {
+        # nativeBuildInputs = [
+        #   # Run: htmlproofer --disable-external
+        #   pkgs.html-proofer
+        # ]
+        # ++ self'.devShells.default.nativeBuildInputs
+        # ++ self'.packages.docs.nativeBuildInputs;
         shellHook = ''
           ${self'.devShells.default.shellHook}
           git_root=$(git rev-parse --show-toplevel)
           cd "$git_root"
-          runPhase configurePhase
+
+          pushd docs
+
+          mkdir -p ./site/reference/cli
+          cp -af ${self'.packages.module-docs}/services/* ./site/services/
+          cp -af ${self'.packages.module-docs}/reference/* ./site/reference/
+          cp -af ${self'.packages.clan-cli-docs}/* ./site/reference/cli/
+
+          # cp -af ${self'.packages.clan-lib-openapi} ./site/openapi.json
+
+          chmod -R +w ./site
+          echo "Generated API documentation in './site/reference/' "
         '';
-      });
+      };
       packages = {
-        docs = pkgs.python3.pkgs.callPackage ./default.nix {
-          inherit (self'.packages)
-            clan-cli-docs
-            inventory-api-docs
-            clan-lib-openapi
-            module-docs
-            ;
-          inherit (inputs) nixpkgs;
-        };
         docs-markdowns = pkgs.callPackage ./docs-markdowns.nix {
           inherit (self'.packages) module-docs clan-cli-docs;
         };
-        deploy-docs = pkgs.callPackage ./deploy-docs.nix { };
       }
       // lib.optionalAttrs (pkgs.stdenv.isLinux) {
         deploy-docs-v2 = pkgs.callPackage ./deploy-docs-v2.nix { docs = self'.packages.clan-site; };
       };
-      checks.docs-integrity =
-        pkgs.runCommand "docs-integrity"
-          {
-            nativeBuildInputs = [ pkgs.html-proofer ];
-            LANG = "C.UTF-8";
-          }
-          ''
-            # External links should be avoided in the docs, because they often break
-            # and we cannot statically control them. Thus we disable checking them
-            htmlproofer --disable-external ${self'.packages.docs}
-
-            touch $out
-          '';
     };
 }

@@ -1,3 +1,5 @@
+# Styleguide
+
 ## Style Guide for Documentation and Blog Posts
 
 A consistent style greatly increases the usability of all documentation and communication.  
@@ -212,7 +214,7 @@ Use ```hl_lines``` to highlight specific lines.
 
 Example: hl_lines="2 4-6" 
 
-~~~nix {hl_lines="2 4-6"}
+~~~nix {2,4-6}
 {
   this line is highlighted
   this line is NOT highlighted
@@ -227,16 +229,18 @@ Example: hl_lines="2 4-6"
 
 #### Under Construction Flags
 
-!!! warning "HeadlineText"
-    Use ```!!! warning HeadlineText```
-    
-    Text after 4 spaces
+:::admonition[HeadlineText]{type=warning}
+Use ```!!! warning HeadlineText```
+
+Text after 4 spaces
+:::
 
 ---
 
 #### Fold-out Info Areas
 
-??? info "HeadlineText"
-    Use ```??? info "HeadlineText"```
-    
-    Text after 4 spaces
+:::admonition[HeadlineText]{type=info collapsible}
+Use ```??? info "HeadlineText"```
+
+Text after 4 spaces
+:::

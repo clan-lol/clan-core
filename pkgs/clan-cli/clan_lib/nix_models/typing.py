@@ -285,7 +285,7 @@ Each module can be referenced by its `attributeName` in the `inventory.services`
     - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
     - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-    For further information see: [Module Authoring Guide](../../guides/services/community.md).
+    For further information see: [Module Authoring Guide](../../guides/services/community).
 
 ???+ example
     ```nix
@@ -319,7 +319,7 @@ Each module can be referenced by its `attributeName` in the `inventory.services`
     - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
     - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-    For further information see: [Module Authoring Guide](../../guides/services/community.md).
+    For further information see: [Module Authoring Guide](../../guides/services/community).
 
 ???+ example
     ```nix
@@ -370,7 +370,7 @@ class InventoryTagsInput(TypedDict):
     """
     Tags of the inventory are used to group machines together.
 
-    It is recommended to use [`machine.tags`](#tags_1) to define the tags of the machines.
+    It is recommended to use [`machine.tags`](#tags) to define the tags of the machines.
 
     This can be used to define custom tags that are either statically set or dynamically computed.
 
@@ -422,7 +422,7 @@ class InventoryTagsOutput(TypedDict):
     """
     Tags of the inventory are used to group machines together.
 
-    It is recommended to use [`machine.tags`](#tags_1) to define the tags of the machines.
+    It is recommended to use [`machine.tags`](#tags) to define the tags of the machines.
 
     This can be used to define custom tags that are either statically set or dynamically computed.
 
@@ -866,7 +866,7 @@ class InventoryInput(TypedDict):
     """
     The `Inventory` submodule.
 
-    For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
+    For details see the [Inventory](/reference/options/clan_inventory) documentation.
 
     """
 
@@ -881,7 +881,7 @@ class InventoryOutput(TypedDict):
     """
     The `Inventory` submodule.
 
-    For details see the [Inventory](/reference/options/clan_inventory.md) documentation.
+    For details see the [Inventory](/reference/options/clan_inventory) documentation.
 
     """
 

@@ -4,16 +4,17 @@ This section of the site provides an overview of available options and commands 
 
 ---
 
-- Learn how to use the [Clan CLI](../reference/cli/index.md)
-- Explore available [services](../services/definition.md)
-- [NixOS Configuration Options](../reference/clan.core/index.md) - Additional options available on a NixOS machine.
+- Learn how to use the [Clan CLI](/docs/reference/cli)
+- Explore available [services](/docs/services/definition)
+- [NixOS Configuration Options](/docs/reference/clan.core) - Additional options available on a NixOS machine.
 
 ---
 
-!!! Note
-    This documentation is always built for the main branch.
-    If you need documentation for a specific commit you can build it on your own
+:::admonition[Note]{type=note}
+This documentation is always built for the main branch.
+If you need documentation for a specific commit you can build it on your own
 
-    ```bash
-    nix build 'git+https://git.clan.lol/clan/clan-core?ref=0324f4d4b87d932163f351e53b23b0b17f2b5e15#docs'
-    ```
+```bash
+nix build 'git+https://git.clan.lol/clan/clan-core?ref=0324f4d4b87d932163f351e53b23b0b17f2b5e15#docs'
+```
+:::

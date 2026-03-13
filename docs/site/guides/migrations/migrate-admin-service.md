@@ -1,3 +1,5 @@
+# Migrate Admin Service
+
 ## Migrating from `admin` clanService to `sshd` and `users`
 
 The `admin` clanService is deprecated. Its functionality has been split into dedicated services:
@@ -145,4 +147,4 @@ The sshd service provides additional features not available in the admin service
 
 - **client role**: Configure machines to trust the SSH CA, enabling TOFU-less verification
 
-See the [sshd service documentation](../../services/official/sshd.md) for details.
+See the [sshd service documentation](/docs/services/official/sshd) for details.

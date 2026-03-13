@@ -1,10 +1,13 @@
+# Disk Encryption
+
 
 This guide provides an example setup for a ext4-single-disk ZFS system with native encryption, accessible for decryption remotely.
 
 This guide walks you through setting up a ZFS system with native encryption and remote decryption via SSH. After completing this guide, your machine's root filesystem will be encrypted, and you will be able to unlock it remotely over the network during boot.
 
-!!! Info "Secure Boot"
-    This guide is compatible with systems that have [secure boot disabled](../guides/secure-boot.md). If you encounter boot issues, check if secure boot needs to be disabled in your UEFI settings.
+:::admonition[Secure Boot]{type=info}
+This guide is compatible with systems that have [secure boot disabled](/docs/guides/secure-boot). If you encounter boot issues, check if secure boot needs to be disabled in your UEFI settings.
+:::
 
 ## Disk Layout Configuration
 
@@ -15,44 +18,40 @@ ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOIN
 ```
 
 
-=== "**Single Disk**"
-    - Copy the configuration below into `machines/<mymachine>/disko.nix`.
-    - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
+::::tabs
+:::tab[Single Disk]
+- Copy the configuration below into `machines/<mymachine>/disko.nix`.
+- Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
 
-    ```nix title="disko.nix" hl_lines="21 81 87"
-      --8<-- "docs/code-examples/disko-single-disk.nix"
-    ```
+```nix [disko.nix] {21,81,87} embed=disko-single-disk.nix
+```
 
-    1. Hardcodes this disk as a bootable disk
-    2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
-    3. Stalls the boot process until the decryption secret file appears at the expected location
-    4. Tells ZFS to read the decryption passphrase from a file
-    5. Replace with the disk ID from the `lsblk` output above
+1. Hardcodes this disk as a bootable disk
+2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
+3. Stalls the boot process until the decryption secret file appears at the expected location
+4. Tells ZFS to read the decryption passphrase from a file
+5. Replace with the disk ID from the `lsblk` output above
+:::
+:::tab[Raid 1]
+- Copy the configuration below into `machines/<mymachine>/disko.nix`.
+- Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
 
+```nix [disko.nix] {21,81,82,88,89} embed=disko-raid.nix
+```
 
-
-=== "**Raid 1**"
-    - Copy the configuration below into `machines/<mymachine>/disko.nix`.
-    - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
-
-    ```nix title="disko.nix" hl_lines="21 81 82 88 89"
-      --8<-- "docs/code-examples/disko-raid.nix"
-    ```
-
-    1. Hardcodes this disk as a bootable disk
-    2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
-    3. Stalls the boot process until the decryption secret file appears at the expected location
-    4. Tells ZFS to read the decryption passphrase from a file
-    5. Replace with the disk IDs from the `lsblk` output above
-
-
+1. Hardcodes this disk as a bootable disk
+2. Marks the generated secret as needed during the partitioning phase, so it will be uploaded during installation
+3. Stalls the boot process until the decryption secret file appears at the expected location
+4. Tells ZFS to read the decryption passphrase from a file
+5. Replace with the disk IDs from the `lsblk` output above
+:::
+::::
 ## Initrd SSH Configuration
 
 Next, copy the configuration below into `machines/<mymachine>/initrd.nix` and include it in your `configuration.nix`.
 Don't forget to `git add machines/<mymachine>/initrd.nix` so that Nix sees the file.
 
-```nix title="initrd.nix" hl_lines="41 29"
---8<-- "docs/code-examples/initrd.nix"
+```nix [initrd.nix] {41,29} embed=initrd.nix
 ```
 
 1. Replace `<My_SSH_Public_Key>` with your SSH public key.
@@ -115,7 +114,7 @@ To automate the decryption step, create the following script:
 - Make it executable with `chmod +x machines/<mymachine>/decrypt.sh`.
 - Run it whenever the machine boots to deliver the encryption key.
 
-```bash title="decrypt.sh" hl_lines="4 5"
+```bash [decrypt.sh] {4,5}
 #!/usr/bin/env bash
 set -euxo pipefail
 

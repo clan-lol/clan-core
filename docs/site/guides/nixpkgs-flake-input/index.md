@@ -1,3 +1,5 @@
+# Nixpkgs Flake Input
+
 ## How should I choose the `nixpkgs` input for my flake when using `clan-core`?
 
 **Q**: How should I choose the `nixpkgs` input for my flake when using `clan-core`?

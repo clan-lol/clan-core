@@ -211,8 +211,9 @@ You don't need to know the details. Just run `clan vars generate` and answer the
 
 ## Sample Test-Run Walkthrough Without Installing Machines
 
-!!! Tip
-    If you want to practice with any of these, you can run the starting nix code to generate a new clan; then you can create a machine configuration without gathering the hardware configuration or writing the machine. You can add the above details to your clan.nix file and try out the commands such as `clan vars generate test-machine` as we demonstrate below.
+:::admonition[Tip]{type=tip}
+If you want to practice with any of these, you can run the starting nix code to generate a new clan; then you can create a machine configuration without gathering the hardware configuration or writing the machine. You can add the above details to your clan.nix file and try out the commands such as `clan vars generate test-machine` as we demonstrate below.
+:::
 
 Let's do a quick test-run walkthrough.
 
@@ -320,8 +321,9 @@ Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
 ```
 
-!!! Note "Important"
-    If you do this after deployment, you'll have to push this password to the machine using `clan machines update sally-laptop`.
+:::admonition[Important]{type=note}
+If you do this after deployment, you'll have to push this password to the machine using `clan machines update sally-laptop`.
+:::
 
 Finally, let's do a few things at once: Let's add another machine called `fred-laptop`, and let's add wireless configuration to both machines.
 
@@ -354,7 +356,7 @@ Now add the following inside `inventory.instances` under the user-sally attribut
 
 Now we're going to create some tags. Tags are just labels we assign to machines, and then we can access all those machines from that single tag. Let's assign the tag "laptop" to both `sally-laptop` and `fred-laptop`. Uppdate the two attribute sets inside `inventory.machine = {` by adding the string "laptop" to the tags:
 
-```{.nix title="clan.nix" hl_lines="3, 7"}
+```nix [clan.nix] {3,,7}
     sally-laptop = {
         deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
         tags = [ "laptop" ];
@@ -422,8 +424,9 @@ Confirm Leave empty to generate automatically (hidden):
 
 And notice it did not ask for the WiFi name and password, since it was already set earlier.
 
-!!! Note
-    Even though the above was a test run walkthrough, you can still continue with gathering machine configurations, creating a disk, and installing if you want. Indeed, the above represent the preparation steps for a clan.
+:::admonition[Note]{type=note}
+Even though the above was a test run walkthrough, you can still continue with gathering machine configurations, creating a disk, and installing if you want. Indeed, the above represent the preparation steps for a clan.
+:::
 
 Here's the entire clan.nix file:
 

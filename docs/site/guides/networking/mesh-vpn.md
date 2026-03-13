@@ -1,3 +1,5 @@
+# Mesh Vpn
+
 Connect your Clan machines over a [ZeroTier VPN](https://zerotier.com) by
 setting up one machine as a controller and adding new machines as peers.
 
@@ -5,7 +7,7 @@ setting up one machine as a controller and adding new machines as peers.
 
 By default all machines within one Clan are connected via a chosen network technology.
 
-```{.no-copy}
+```
 Clan
     Node A
     <-> (zerotier / mycelium / ...)
@@ -28,7 +30,7 @@ For the purpose of this guide we have two machines:
 
 ## Configure the Service
 
-```nix {.nix title="flake.nix" hl_lines="19-25"}
+```nix [flake.nix] {19-25}
 {
   inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
   inputs.nixpkgs.follows = "clan-core/nixpkgs";
@@ -89,7 +91,7 @@ $ sudo zerotier-cli info
 
 The status should be "ONLINE":
 
-```{.console, .no-copy}
+```console
 200 info d2c71971db 1.12.1 ONLINE
 ```
 
@@ -114,7 +116,7 @@ In the repo:
 $ clan vars list $MACHINE_NAME
 ```
 
-```{.console, .no-copy}
+```console
 $ clan vars list controller
 zerotier/zerotier-identity-secret: ********
 zerotier/zerotier-ip: fd0a:b849:2928:1234:c99:930a:a959:2928
@@ -129,18 +131,21 @@ $ sudo zerotier-cli info
 
 #### Manually Authorize a Machine on the Controller
 
-=== "with ZeroTierIP"
+::::tabs
+:::tab[with ZeroTierIP]
 
-      ```bash
-      $ sudo zerotier-members allow --member-ip $ZEROTIER_IP
-      ```
+  ```bash
+  $ sudo zerotier-members allow --member-ip $ZEROTIER_IP
+  ```
 
-      Substitute `$ZEROTIER_IP` with the ZeroTier IP obtained previously.
+  Substitute `$ZEROTIER_IP` with the ZeroTier IP obtained previously.
+:::
+:::tab[with ZeroTierID]
 
-=== "with ZeroTierID"
+  ```bash
+  $ sudo zerotier-members allow $ZEROTIER_ID
+  ```
 
-      ```bash
-      $ sudo zerotier-members allow $ZEROTIER_ID
-      ```
-
-      Substitute `$ZEROTIER_ID` with the ZeroTier ID obtained previously.
+  Substitute `$ZEROTIER_ID` with the ZeroTier ID obtained previously.
+:::
+::::

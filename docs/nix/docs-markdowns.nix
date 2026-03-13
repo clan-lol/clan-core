@@ -10,15 +10,14 @@ runCommand "docs-markdowns"
   }
   ''
     mkdir $out
-    cp -LR ${../.}/site/* $out
-    chmod +w $out/{static,includes}
-    rm -r $out/{index.md,api.md,static,includes}
-    chmod +w $out/services
-    cp -LR ${module-docs}/services/* $out/services
-    chmod +w $out/reference
-    cp -LR ${module-docs}/reference/* $out/reference
     mkdir -p $out/reference/cli
+    mkdir -p $out/services
+
+    cp -LR ${../.}/site/* $out
+    cp -LR ${module-docs}/services/* $out/services
+    cp -LR ${module-docs}/reference/* $out/reference
     cp -LR ${clan-cli-docs}/* $out/reference/cli
+
     chmod -R +w $out
     python3 ${../.}/migrate.py $out
   ''

@@ -1,3 +1,5 @@
+# Networking
+
 ## Connecting to Your Machines
 
 Clan provides automatic networking with fallback mechanisms to reliably connect to your machines.
@@ -10,7 +12,7 @@ Clan's networking module automatically manages connections through various netwo
 
 For machines with public IPs or DNS names, use the `internet` service to configure direct SSH while keeping fallback options:
 
-```{.nix title="flake.nix" hl_lines="7-10 14-16"}
+```nix [flake.nix] {7-10,14-16}
 {
   outputs =
     { self, clan-core, ... }:
@@ -42,7 +44,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 
 #### Advanced Setup with Multiple Networks
 
-```{.nix title="flake.nix" hl_lines="7-10 13-16 19-21"}
+```nix [flake.nix] {7-10,13-16,19-21}
 {
   outputs =
     { self, clan-core, ... }:
@@ -100,14 +102,15 @@ clan network overview
 
 ### Option 2: Manual targetHost (Bypasses Fallback!)
 
-!!! warning
-    Setting `targetHost` directly **disables all automatic networking and fallback**. Only use this if you need complete control and don't want Clan's intelligent connection management.
+:::admonition[Warning]{type=warning}
+Setting `targetHost` directly **disables all automatic networking and fallback**. Only use this if you need complete control and don't want Clan's intelligent connection management.
+:::
 
 #### Using Inventory (For Static Addresses)
 
 Use inventory-level `targetHost` when the address is **static** and doesn't depend on NixOS configuration:
 
-```{.nix title="flake.nix" hl_lines="8"}
+```nix [flake.nix] {8}
 {
   outputs =
     { self, clan-core, ... }:
@@ -135,7 +138,7 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
 
 Use machine-level `targetHost` when you need to **interpolate values from the NixOS configuration**:
 
-```{.nix title="flake.nix" hl_lines="7"}
+```nix [flake.nix] {7}
 {
   outputs =
     { self, clan-core, ... }:
@@ -161,9 +164,10 @@ Use machine-level `targetHost` when you need to **interpolate values from the Ni
 - Building from multiple config values: `"${config.users.users.deploy.name}@${config.networking.hostName}"`
 - Any address that depends on evaluated NixOS configuration
 
-!!! info "Key Difference"
-    **Inventory-level** (`deploy.targetHost`) is evaluated immediately and works with static strings.
-    **Machine-level** (`clan.core.networking.targetHost`) is evaluated after NixOS configuration and can access `config.*` values.
+:::admonition[Key Difference]{type=info}
+**Inventory-level** (`deploy.targetHost`) is evaluated immediately and works with static strings.
+**Machine-level** (`clan.core.networking.targetHost`) is evaluated after NixOS configuration and can access `config.*` values.
+:::
 
 ### Quick Decision Guide
 

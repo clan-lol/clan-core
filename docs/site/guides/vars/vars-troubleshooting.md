@@ -1,3 +1,5 @@
+# Vars Troubleshooting
+
 ## Troubleshooting Vars
 
 Quick reference for diagnosing and fixing vars issues.

@@ -1,3 +1,5 @@
+# Community
+
 Services provided by the community, with no stability guarantees!
 
 - [desktop](https://git.clan.lol/clan/clan-community/src/branch/main/services/desktop)
@@ -36,8 +38,9 @@ Looking for more community-maintained services and modules? Check out the
 [clan-community](https://git.clan.lol/clan/clan-community) repository — a
 shared collection of services maintained by the clan community.
 
-!!! tip "Add your own!"
+:::admonition[Add your own!]{type=tip}
 
-    Have you built a service or a tool? Open a PR adding a link to this page, or
-    contribute directly to
-    [clan-community](https://git.clan.lol/clan/clan-community)!
+Have you built a service or a tool? Open a PR adding a link to this page, or
+contribute directly to
+[clan-community](https://git.clan.lol/clan/clan-community)!
+:::

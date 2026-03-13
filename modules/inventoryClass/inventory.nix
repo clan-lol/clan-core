@@ -84,7 +84,7 @@ in
             - The module MUST have at least `features = [ "inventory" ]` in the frontmatter section.
             - The module MUST have a subfolder `roles` with at least one `{roleName}.nix` file.
 
-            For further information see: [Module Authoring Guide](../../guides/services/community.md).
+            For further information see: [Module Authoring Guide](../../guides/services/community).
 
         ???+ example
             ```nix
@@ -124,7 +124,7 @@ in
       description = ''
         Tags of the inventory are used to group machines together.
 
-        It is recommended to use [`machine.tags`](#tags_1) to define the tags of the machines.
+        It is recommended to use [`machine.tags`](#tags) to define the tags of the machines.
 
         This can be used to define custom tags that are either statically set or dynamically computed.
 

@@ -235,7 +235,7 @@ def produce_clan_core_docs() -> None:
             if module_type is not None and "submodule" not in module_type:
                 continue
             core_outputs[indexfile] += (
-                f"      - [{submodule_name}](../../reference/clan.core/{submodule_name}.md)\n"
+                f"      - [{submodule_name}](./clan.core/{submodule_name})\n"
             )
 
         core_outputs[indexfile] += options_head
@@ -431,7 +431,7 @@ def produce_inventory_docs() -> None:
     output = """# Inventory Submodule
 This provides an overview of the available options of the `inventory` model.
 
-It can be set via the `inventory` attribute of the [`clan`](../../reference/options/clan_inventory.md) function, or via the [`clan.inventory`](../../reference/options/clan_inventory.md) attribute of flake-parts.
+It can be set via the `inventory` attribute of the [`clan`](../../reference/options/clan_inventory) function, or via the [`clan.inventory`](../../reference/options/clan_inventory) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute
@@ -473,8 +473,8 @@ def produce_clan_options_docs() -> None:
     output = """# Clan Options
 This provides an overview of the available options
 
-Those can be set via [`clan-core.lib.clan`](../../reference/options/clan.md) function,
-or via the [`clan`](../../reference/options/clan.md) attribute of flake-parts.
+Those can be set via [`clan-core.lib.clan`](../../reference/options/clan) function,
+or via the [`clan`](../../reference/options/clan) attribute of flake-parts.
 
 """
     # Inventory options are already included under the clan attribute
@@ -492,7 +492,7 @@ or via the [`clan`](../../reference/options/clan.md) attribute of flake-parts.
 
 Attribute: `inventory`
 
-See: [Inventory Submodule](../../reference/options/clan_inventory.md)
+See: [Inventory Submodule](../../reference/options/clan_inventory)
 """
                 continue
             output += options_docs_from_tree(option, init_level=2)

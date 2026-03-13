@@ -1,14 +1,16 @@
 # Getting Started: Physical Machine Target
 
-!!! Tip
-    Prefer to use a Virtual Machine as a target? [Find the guide here](./getting-started-virtualbox.md).
+:::admonition[Tip]{type=tip}
+Prefer to use a Virtual Machine as a target? [Find the guide here](/docs/getting-started/getting-started-virtualbox).
+:::
 
-!!! Note "Prerequisites"
-    Your setup machine needs the following:
+:::admonition[Prerequisites]{type=note}
+Your setup machine needs the following:
+:::
 
 * **Nix** on your Setup Machine (unless you're using NixOS)
 
-* An **SSH key** on your setup machine. See [Create an SSH key](./create-an-ssh-key.md) if you don't have one yet.
+* An **SSH key** on your setup machine. See [Create an SSH key](/docs/getting-started/create-an-ssh-key) if you don't have one yet.
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
 
@@ -30,11 +32,13 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note "Important"
-    The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::admonition[Important]{type=note}
+The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::
 
-!!! Note "Important"
-    If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::admonition[Important]{type=note}
+If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::
 
 Change to the new folder:
 
@@ -58,7 +62,7 @@ clan machines create test-machine
 
 Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it. (You will add the IP address later in this guide.)
 
-```{.nix title="clan.nix" hl_lines="2 3 4 5"}
+```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
         deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
@@ -95,7 +99,7 @@ clan show
 
 If you plan to manage your physical machine through WiFi, you will need to add the following to your `clan.nix` file under `inventory.instances`:
 
-```{.nix title="clan.nix" hl_lines="2-6"}
+```nix [clan.nix] {2-6}
   inventory.instances = {
     wifi = {
       roles.default.machines."test-machine" = {
@@ -110,8 +114,9 @@ This will allow WiFi to be used on the target machine *after* installation.
 
 Obtain a USB drive with at least 1.5 GB total space.
 
-!!! Note "Danger"
-    All data on the USB drive will be lost!
+:::admonition[Danger]{type=note}
+All data on the USB drive will be lost!
+:::
 
 First, download the installer ISO image for your target machine's architecture:
 
@@ -135,7 +140,7 @@ lsblk
 
 You will see output similar to this; look under the `SIZE` column to find the entry that matches the USB drive's size. (It will likely be sda or sdb):
 
-```{.shellSession hl_lines="2" .no-copy}
+```console {2}
 NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
 sdb                                             8:0    1 117,2G  0 disk
 └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
@@ -169,8 +174,9 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
-!!! Tip
-    You might need to disable secure boot. Follow our instructions [here](https://docs.clan.lol/25.11/guides/secure-boot/).
+:::admonition[Tip]{type=tip}
+You might need to disable secure boot. Follow our instructions [here](https://docs.clan.lol/25.11/guides/secure-boot/).
+:::
 
 Once booted, you will see a QR code and text similar to this:
 
@@ -192,8 +198,9 @@ Take note of the IP address displayed above, either for wireless or lan, dependi
 deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
 ```
 
-!!! Note "Important"
-    If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
+:::admonition[Important]{type=note}
+If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
+:::
 
 ## 7. Enabling Wireless *During* Installation
 
@@ -300,13 +307,12 @@ You should connect and see the prompt:
 [root@test-machine:~]#
 ```
 
-# Practice: Install Some Packages
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
 
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
-```{.nix title="clan.nix" hl_lines="2-6"}
+```nix [clan.nix] {2-6}
   inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
@@ -358,7 +364,6 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 ```
 
-# Practice: Add a User
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -366,7 +371,7 @@ When you need to add a new user, you can do so right from within the clan.nix fi
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
-```{.nix title="clan.nix" hl_lines="2-9"}
+```nix [clan.nix] {2-9}
   inventory.instances = { # Add the following under this line
     user-alice = {
       module.name = "users";
@@ -405,7 +410,7 @@ Once complete, you can log in as alice with the password on the target machine.
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
 
-```{.nix title="clan.nix" hl_lines="7"}
+```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};

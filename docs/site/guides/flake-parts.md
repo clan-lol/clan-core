@@ -1,3 +1,5 @@
+# Flake Parts
+
 Set up Clan inside a [flake-parts](https://flake.parts/) project so you can use Clan options alongside flake-parts modules.
 
 ## Step 1: Update Your Flake Inputs
@@ -23,7 +25,7 @@ inputs = {
 
 ## Step 2: Import the Clan flake-parts Module
 
-Next, import the Clan flake-parts module to make the [Clan options](../reference/options/clan.md) available within `mkFlake`:
+Next, import the Clan flake-parts module to make the [Clan options](/docs/reference/options/clan) available within `mkFlake`:
 
 ```nix
 {

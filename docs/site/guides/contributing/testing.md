@@ -1,3 +1,5 @@
+# Testing
+
 ## Testing your contributions
 
 Each feature added to Clan should be tested extensively via automated tests.
@@ -31,7 +33,7 @@ VM tests should be avoided wherever it is possible to implement a cheaper unit t
 #### Finding examples for VM tests
 
 Existing NixOS VM tests in clan-core can be found by using ripgrep:
-```shellSession
+```console
 rg self.clanLib.test.baseTest
 ```
 
@@ -47,7 +49,7 @@ If a test fails in CI:
 
 example: locating the vm test named `borgbackup`:
 
-```shellSession
+```console
 $ rg "borgbackup =" ./checks
 ./checks/flake-module.nix
 44-            wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
@@ -62,7 +64,7 @@ Create a NixOS test module under `/checks/{name}/default.nix` and import it in `
 
 #### Running VM tests
 
-```shellSession
+```console
 nix build .#checks.x86_64-linux.{test-attr-name}
 ```
 (replace `{test-attr-name}` with the name of the test)
@@ -82,13 +84,13 @@ The `clan.directory` option is critical for vars generation and loading in tests
 
 For services that define vars, you must first run:
 
-```shellSession
+```console
 nix run .#checks.x86_64-linux.{test-attr-name}.update-vars
 ```
 
 This generates the necessary var files in the directory specified by `clan.directory`. After running this command, you can run the test normally:
 
-```shellSession
+```console
 nix run .#checks.x86_64-linux.{test-attr-name}
 ```
 
@@ -96,7 +98,7 @@ nix run .#checks.x86_64-linux.{test-attr-name}
 
 The `service-dummy-test` is a good example of a test that uses vars. To run it:
 
-```shellSession
+```console
 # First, generate the test vars
 nix run .#checks.x86_64-linux.service-dummy-test.update-vars
 
@@ -210,7 +212,7 @@ nix.settings.system-features = [ "uid-range" ];
 
 Existing NixOS container tests in clan-core can be found by using `ripgrep`:
 
-```shellSession
+```console
 rg self.clanLib.test.containerTest
 ```
 
@@ -236,14 +238,14 @@ Due to superior efficiency,
 #### Finding examples of python tests
 
 Existing python tests in clan-core can be found by using `ripgrep`:
-```shellSession
+```console
 rg "import pytest"
 ```
 
 #### Locating definitions of failing python tests
 
 If any python test fails in the CI pipeline, an error message like this can be found at the end of the log:
-```{.text .no-copy}
+```text
 ...
 FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
 ...
@@ -263,7 +265,7 @@ All filenames must be prefixed with `test_` and test functions prefixed with `te
 
 To run all python tests which are executed in the CI pipeline locally, use this `nix build` command
 
-```shellSession
+```console
 nix build .#checks.x86_64-linux.clan-pytest-{with,without}-core
 ```
 
@@ -288,7 +290,7 @@ Modify the test and add `breakpoint()` statements to it.
 
 Execute the test using the flags `-sn0` in order to get an interactive shell at the breakpoint:
 
-```shellSession
+```console
 pytest ./path/to/test_file.py:test_function_name -sn0
 ```
 
@@ -312,7 +314,7 @@ When not to use
 
 Existing nix eval tests can be found via this `ripgrep` command:
 
-```shellSession
+```console
 rg "nix-unit --eval-store"
 ```
 
@@ -320,7 +322,7 @@ rg "nix-unit --eval-store"
 
 Failing nix eval tests look like this:
 
-```shellSession
+```console
     > ✅ test_attrsOf_attrsOf_submodule
     > ✅ test_attrsOf_submodule
     > ❌ test_default
@@ -344,7 +346,7 @@ In this case `eval-lib-values` is the attribute we are looking for.
 
 Find the attribute via ripgrep:
 
-```shellSession
+```console
 $ rg "eval-lib-values ="
 lib/values/flake-module.nix
 21:        eval-lib-values = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
@@ -367,14 +369,14 @@ For example, see `/lib/values/{test.nix,flake-module.nix}`.
 
 Since all nix eval tests are exposed via the flake outputs, they can be ran via `nix build`:
 
-```shellSession
+```console
 nix build .#checks.x86_64-linux.{test-attr-name}
 ```
 
 For quicker iteration times, instead of `nix build` use the `nix-unit` command available in the dev environment.
 Example:
 
-```shellSession
+```console
 nix-unit --flake .#legacyPackages.x86_64-linux.{test-attr-name}
 ```
 
@@ -396,7 +398,7 @@ Each test consists of an `expr` (expression) and an `expected` field. `nix-unit`
 
 Example:
 
-```shellSession
+```console
 $ nix repl
 Nix 2.25.5
 Type :? for help.

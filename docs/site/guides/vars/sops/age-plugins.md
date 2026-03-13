@@ -1,3 +1,5 @@
+# Age Plugins
+
 ## Using Age Plugins with Clan Vars
 
 This guide explains how to set up YubiKey and other plugins for `clan vars` secrets.
@@ -29,18 +31,19 @@ Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesom
 
 If you want to use `fido2 tokens` to encrypt your secret instead of the normal age secret key then you need to prefix your age secret key with the corresponding plugin name. In our case we want to use the `age-plugin-fido2-hmac` plugin so we replace `AGE-SECRET-KEY` with `AGE-PLUGIN-FIDO2-HMAC`.
 
-??? tip
-    - On Linux the age secret key is located at `~/.config/sops/age/keys.txt`
-    - On macOS it is located at `/Users/admin/Library/Application Support/sops/age/keys.txt`
+:::admonition[Tip]{type=tip collapsible}
+- On Linux the age secret key is located at `~/.config/sops/age/keys.txt`
+- On macOS it is located at `/Users/admin/Library/Application Support/sops/age/keys.txt`
+:::
 
 **Before**:
-  ```hl_lines="2"
-  # public key: age1zdy49ek6z60q9r34vf5mmzkx6u43pr9haqdh5lqdg7fh5tpwlfwqea356l
-  AGE-SECRET-KEY-1QQPQZRFR7ZZ2WCV...
-  ```
+```text {2}
+# public key: age1zdy49ek6z60q9r34vf5mmzkx6u43pr9haqdh5lqdg7fh5tpwlfwqea356l
+AGE-SECRET-KEY-1QQPQZRFR7ZZ2WCV...
+```
 
   **After**:
-```hl_lines="2"
+```text {2}
 # public key: age1zdy49ek6z60q9r34vf5mmzkx6u43pr9haqdh5lqdg7fh5tpwlfwqea356l
 AGE-PLUGIN-FIDO2-HMAC-1QQPQZRFR7ZZ2WCV...
 ```
@@ -58,7 +61,7 @@ Each plugin entry can be either:
 
 Here's an example:
 
-```nix title="flake.nix"
+```nix [flake.nix]
 {
   inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
   inputs.nixpkgs.follows = "clan-core/nixpkgs";

@@ -69,7 +69,7 @@ class Category:
         md_li = ""
         if level == self.level:
             md_li += (
-                f"""- **[{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
+                f"""- **[{self.title}](./cli/{"-".join(self.title.split(" "))})**\n\n"""
             )
             md_li += indent_all(
                 f"{self.description.strip()}" if self.description else "",

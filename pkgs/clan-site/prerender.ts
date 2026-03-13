@@ -8,8 +8,8 @@ import { prerenderDocs } from "@clan.lol/vite-plugin-docs-hmr";
 
 await prerenderDocs({
   root: import.meta.dirname,
-  srcDir: "../../docs-new/markdowns",
-  embedsDir: "../../docs-new/embeds",
+  srcDir: "../../docs/site",
+  embedsDir: "../../docs/code-examples",
   articlesDir: "src/routes/(docs)/docs/[ver]",
   layoutDir: "src/routes/(docs)",
   render: {

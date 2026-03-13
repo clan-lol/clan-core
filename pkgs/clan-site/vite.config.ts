@@ -22,8 +22,8 @@ export default defineConfig({
   },
   plugins: [
     docsHmr({
-      srcDir: "../../docs-new/markdowns",
-      embedsDir: "../../docs-new/embeds",
+      srcDir: "../../docs/site",
+      embedsDir: "../../docs/code-examples",
       articlesDir: "src/routes/(docs)/docs/[ver]",
       layoutDir: "src/routes/(docs)",
       render: {

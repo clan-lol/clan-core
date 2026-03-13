@@ -1,3 +1,5 @@
+# Minimal Example
+
 Configure a peer-to-peer backup system through the inventory so your machines back up their state to other machines in the Clan, ensuring redundancy and data safety.
 
 

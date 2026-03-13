@@ -3,8 +3,6 @@
   module-docs,
   clan-cli-docs,
   clan-lib-openapi,
-  roboto,
-  fira-code,
   ...
 }:
 pkgs.stdenv.mkDerivation {
@@ -46,13 +44,6 @@ pkgs.stdenv.mkDerivation {
 
     chmod -R +w ./site
     echo "Generated API documentation in './site/reference/' "
-
-    # Link to fonts
-    ln -snf ${roboto}/share/fonts/truetype/Roboto-Regular.ttf ./site/static/
-    ln -snf ${fira-code}/share/fonts/truetype/FiraCode-VF.ttf ./site/static/
-
-    # Copy icons into place
-    cp -af ../pkgs/clan-app/ui/src/assets/icons ./site/static/
   '';
 
   buildPhase = ''
