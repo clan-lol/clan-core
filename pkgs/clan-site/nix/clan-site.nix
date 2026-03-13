@@ -72,9 +72,16 @@ stdenv.mkDerivation (
       };
     };
 
-    configurePhase = ''
+    preBuild = ''
+      # This script is also sourced by the devShell, need to take care of different
+      # working directories
+      if [[ ! -e clan-site.config.ts ]]; then
+        cd pkgs/clan-site
+      fi
+
       mkdir -p src/lib/assets
       cp -R ${clan-site-assets}/* src/lib/assets
+      chmod -R +w src/lib/assets
 
       playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
       if [[ $playwright_ver != '${playwright.version}' ]]; then
@@ -88,21 +95,17 @@ stdenv.mkDerivation (
         exit 1
       fi
     '';
-
-    preBuild = ''
-      # This script is also sourced by the devShell, need to take care of different
-      # working directories
-      if [[ ! -e clan-site.config.ts ]]; then
-        cd pkgs/clan-site
-      fi
-      mkdir -p ../../docs
-      cp -R ${docs-source}/* ../../docs
-
-      ls -la ../../docs
-    '';
     buildPhase = ''
       runHook preBuild
+
+      cp -r ${docs-source} ../../docs
+      echo "---------"
+      ls -la .
+      ls -la ../../docs/site
+      echo "---------"
+
       clan-site build
+
       runHook postBuild
     '';
     installPhase = ''

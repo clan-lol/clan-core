@@ -12,6 +12,8 @@ mkShellNoCC {
   ];
   env = clan-site.devShellEnv;
   shellHook = ''
-    ${clan-site.configurePhase}
+    export PRJ_ROOT=$(git rev-parse --show-toplevel)
+    cd $PRJ_ROOT/pkgs/clan-site
+    ${clan-site.preBuild}
   '';
 }

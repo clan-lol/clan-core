@@ -9,15 +9,22 @@ runCommand "docs-source"
     nativeBuildInputs = [ python314 ];
   }
   ''
-    mkdir $out
-    mkdir -p $out/reference/cli
-    mkdir -p $out/services
+    mkdir docs
+    pushd docs
 
-    cp -LR ${../.}/site/* $out
-    cp -LR ${module-docs}/services/* $out/services
-    cp -LR ${module-docs}/reference/* $out/reference
-    cp -LR ${clan-cli-docs}/* $out/reference/cli
+    cp -r ${../site} ./site
+    chmod -R +w ./site
 
+    cp -r ${../code-examples} ./code-examples
+    chmod -R +w ./code-examples
+
+    cp -af ${module-docs}/services/* ./site/services/
+
+    mkdir -p ./site/reference/cli
+    cp -af ${module-docs}/reference/* ./site/reference/
+    cp -af ${clan-cli-docs}/* ./site/reference/cli/
+
+    mkdir -p $out
+    cp -r . $out
     chmod -R +w $out
-    python3 ${../.}/migrate.py $out
   ''
