@@ -229,7 +229,7 @@ def encrypt_secret(
         commit_files(
             files_to_commit,
             flake_dir,
-            f"secrets: Updated {secret_path.parent.name}",
+            f"secrets: update {secret_path.parent.name}",
         )
 
 
@@ -242,7 +242,7 @@ def remove_secret(clan_dir: Path, secret: str, flake_dir: Path) -> None:
     commit_files(
         [path],
         flake_dir,
-        f"secrets: Removed {secret}",
+        f"secrets: remove {secret}",
     )
 
 
@@ -451,7 +451,7 @@ def rename_command(args: argparse.Namespace) -> None:
     commit_files(
         [old_path, new_path],
         flake.path,
-        f"secrets: Renamed {args.secret} to {args.new_name}",
+        f"secrets: rename {args.secret} to {args.new_name}",
     )
 
 

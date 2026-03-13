@@ -254,7 +254,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             commit_file(
                 hw_file,
                 opts.machine.flake.path,
-                f"machines/{opts.machine.name}/{hw_file.name}: Updated hardware configuration",
+                f"machines/{opts.machine.name}/{hw_file.name}: update hardware configuration",
             )
 
     if opts.persist_state:
@@ -269,5 +269,5 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         )
         inventory_store.write(
             inventory,
-            f"Updated install time of {machine.name}",
+            f"update install time of {machine.name}",
         )

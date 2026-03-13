@@ -272,7 +272,7 @@ class ClanFlake:
             set_machine_settings(machine, machine_config)
         sp.run(["git", "add", "."], cwd=self.path, check=True)
         sp.run(
-            ["git", "commit", "-a", "-m", "flake: Updated by flake generator"],
+            ["git", "commit", "-a", "-m", "flake: update by flake generator"],
             cwd=self.path,
             check=True,
         )

@@ -256,7 +256,7 @@ class InventoryStore:
             commit_file(
                 self.inventory_file,
                 self._flake.path,
-                commit_message=f"{self.inventory_file.name}: Deleted keys {delete_set}",
+                commit_message=f"{self.inventory_file.name}: delete keys {delete_set}",
             )
 
     def write(

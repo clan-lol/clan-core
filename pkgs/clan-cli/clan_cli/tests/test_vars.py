@@ -172,17 +172,17 @@ def test_generate_public_and_secret_vars(
         ["git", "log", "-6", "--pretty=%B"],
     ).stdout.strip()
     # Example git log:
-    # vars: Updated via generator dependent_generator (machine: my_machine)
-    # vars: Updated via generator my_generator (machine: my_machine)
-    # secrets: Added machine my_machine
-    # secrets: Updated my_machine-age.key
-    # vars: Updated via generator my_shared_generator (shared)
-    # flake: Updated by flake generator
+    # vars: update via generator dependent_generator (machine: my_machine)
+    # vars: update via generator my_generator (machine: my_machine)
+    # secrets: add machine my_machine
+    # secrets: update my_machine-age.key
+    # vars: update via generator my_shared_generator (shared)
+    # flake: update by flake generator
     assert (
-        "vars: Updated via generator my_generator (machine: my_machine)"
+        "vars: update via generator my_generator (machine: my_machine)"
         in commit_message
     )
-    assert "vars: Updated via generator my_shared_generator (shared)" in commit_message
+    assert "vars: update via generator my_shared_generator (shared)" in commit_message
     public_value = get_machine_var(machine, "my_generator/my_value").printable_value
     assert public_value.startswith("public")
     shared_value = get_machine_var(
@@ -516,7 +516,7 @@ def test_generate_shared_secret_sops(
     commit_messages = run(
         ["git", "log", "-10", "--pretty=%B"],
     ).stdout.strip()
-    assert "vars: Updated via generator my_shared_generator (shared)" in commit_messages
+    assert "vars: update via generator my_shared_generator (shared)" in commit_messages
 
     m1_sops_store = sops.SecretStore(machine1.flake)
     m2_sops_store = sops.SecretStore(machine2.flake)

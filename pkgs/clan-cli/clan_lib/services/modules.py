@@ -461,7 +461,7 @@ def create_service_instance(
     set_value_by_path(inventory, f"instances.{instance_name}", new_instance)
     inventory_store.write(
         inventory,
-        message=f"Added service instance {instance_name} with module {module_name} from {input_name}",
+        message=f"add service instance {instance_name} with module {module_name} from {input_name}",
         commit=True,
     )
 
@@ -527,7 +527,7 @@ def delete_service_instance(
 
     # TODO: improve error message
     # "Cannot delete path 'instances.static"
-    inventory_store.write(inventory, message=f"Deleted service instance {instance_ref}")
+    inventory_store.write(inventory, message=f"delete service instance {instance_ref}")
 
 
 @API.register
@@ -577,4 +577,4 @@ def set_service_instance(
             inventory, f"instances.{instance_ref}.roles.{role_name}", role_cfg
         )
 
-    inventory_store.write(inventory, message=f"Updated service instance {instance_ref}")
+    inventory_store.write(inventory, message=f"update service instance {instance_ref}")

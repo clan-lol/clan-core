@@ -23,7 +23,7 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
         commit_files(
             paths,
             _machine.flake_dir,
-            f"vars: Updated {_var.id} for machine {_machine.name}",
+            f"vars: update {_var.id} for machine {_machine.name}",
         )
 
 

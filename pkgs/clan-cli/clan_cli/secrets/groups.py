@@ -186,7 +186,7 @@ def add_user(
     commit_files(
         updated_files,
         flake_dir,
-        f"secrets: Added user {name} to group {group}",
+        f"secrets: add user {name} to group {group}",
     )
 
 
@@ -219,7 +219,7 @@ def remove_user(
     commit_files(
         updated_files,
         flake_dir,
-        f"secrets: Removed user {name} from group {group}",
+        f"secrets: remove user {name} from group {group}",
     )
 
 
@@ -249,7 +249,7 @@ def add_machine(
     commit_files(
         updated_files,
         flake_dir,
-        f"secrets: Added machine {name} to group {group}",
+        f"secrets: add machine {name} to group {group}",
     )
 
 
@@ -282,7 +282,7 @@ def remove_machine(
     commit_files(
         updated_files,
         flake_dir,
-        f"secrets: Removed machine {name} from group {group}",
+        f"secrets: remove machine {name} from group {group}",
     )
 
 
@@ -369,7 +369,7 @@ def remove_secret(
     commit_files(
         updated_paths,
         flake_dir,
-        f"secrets: Removed group {group} from secret {name}",
+        f"secrets: remove group {group} from secret {name}",
     )
 
 
