@@ -92,7 +92,7 @@ graph TB
       module.name = "wireguard";
       module.input = "clan-core";
       roles.controller = {
-        machines.server1 = {};
+        machines.server1 = { };
         settings = {
           # Public endpoint where this controller can be reached
           endpoint = "vpn.example.com";
@@ -102,10 +102,10 @@ graph TB
       };
       roles.peer = {
         # No configuration needed if only one controller exists
-        machines.laptop1 = {};
+        machines.laptop1 = { };
       };
     };
-  }
+  };
 }
 ```
 
@@ -127,7 +127,7 @@ graph TB
         settings.controller = "server1";
       };
     };
-  }
+  };
 }
 ```
 

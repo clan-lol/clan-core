@@ -12,8 +12,8 @@ At its simplest, a state defines which folders to back up. This configuration go
 {
   clan.core.state.nextcloud = {
     folders = [
-      "/var/lib/nextcloud"  # Main application data
-      "/etc/nextcloud"      # Configuration files
+      "/var/lib/nextcloud" # Main application data
+      "/etc/nextcloud" # Configuration files
     ];
   };
 }

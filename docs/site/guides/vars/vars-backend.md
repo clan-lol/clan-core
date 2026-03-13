@@ -24,7 +24,8 @@ In this example, a `vars` `generator` is used to:
 
 Create a new Nix file `root-password.nix` with the following content and import it into your `configuration.nix`
 ```nix
-{config, pkgs, ...}: {
+{ config, pkgs, ... }:
+{
 
   clan.core.vars.generators.root-password = {
     # prompt the user for a password
@@ -106,11 +107,11 @@ If we just imported the `root-password.nix` from above into more machines, Clan 
 
 If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
 ```nix
-{config, pkgs, ...}: {
+{ config, pkgs, ... }:
+{
   clan.core.vars.generators.root-password = {
     share = true;
-
-  }
+  };
 }
 ```
 

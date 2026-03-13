@@ -19,7 +19,10 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
 {
   inventory.instances = {
     sshd-with-certs = {
-      module = { name = "sshd"; input = "clan-core"; };
+      module = {
+        name = "sshd";
+        input = "clan-core";
+      };
       # Servers present certificates for <machine>.example.com
       roles.server.tags.all = { };
       roles.server.settings = {
@@ -61,12 +64,18 @@ Admins should trust only production; CI should trust prod and staging. Servers a
 {
   inventory.instances = {
     sshd-env-scoped = {
-      module = { name = "sshd"; input = "clan-core"; };
+      module = {
+        name = "sshd";
+        input = "clan-core";
+      };
 
       # Servers present certs for both prod and staging FQDNs
       roles.server.tags.all = { };
       roles.server.settings = {
-        certificate.searchDomains = [ "prod.example.com" "staging.example.com" ];
+        certificate.searchDomains = [
+          "prod.example.com"
+          "staging.example.com"
+        ];
       };
 
       # Admin laptop: trust prod only
@@ -76,7 +85,10 @@ Admins should trust only production; CI should trust prod and staging. Servers a
 
       # CI runner: trust prod and staging
       roles.client.machines."ci-runner-1".settings = {
-        certificate.searchDomains = [ "prod.example.com" "staging.example.com" ];
+        certificate.searchDomains = [
+          "prod.example.com"
+          "staging.example.com"
+        ];
       };
     };
   };

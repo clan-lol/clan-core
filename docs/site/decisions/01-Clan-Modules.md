@@ -55,7 +55,8 @@ let
   instances = config.clan.inventory.services.networking or { };
 
   serviceConfig = config.clan.networking;
-in {
+in
+{
   ## Set some nixos options
 }
 ```
@@ -426,7 +427,8 @@ The following module demonstrates the idea in the example of *borgbackup*.
                   rsh = "ssh -i ${
                     config.clan.core.vars.generators."borgbackup-${instanceName}".files."borgbackup.ssh".path
                   } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
-                } // settings.destinations.${serverName};
+                }
+                // settings.destinations.${serverName};
               }) allServers;
             in
             (builtins.listToAttrs destList);
@@ -439,7 +441,7 @@ The following module demonstrates the idea in the example of *borgbackup*.
               lib.nameValuePair "borgbackup-job-${instanceName}-${dest.name}" {
                 # since borgbackup mounts the system read-only, we need to run in a ExecStartPre script, so we can generate additional files.
                 serviceConfig.ExecStartPre = [
-                  ''+${pkgs.writeShellScript "borgbackup-job-${dest.name}-pre-backup-commands" preBackupScript}''
+                  "+${pkgs.writeShellScript "borgbackup-job-${dest.name}-pre-backup-commands" preBackupScript}"
                 ];
               }
             ) destinations;
@@ -457,7 +459,9 @@ The following module demonstrates the idea in the example of *borgbackup*.
 
               encryption = {
                 mode = "repokey";
-                passCommand = "cat ${config.clan.core.vars.generators."borgbackup-${instanceName}".files."borgbackup.repokey".path}";
+                passCommand = "cat ${
+                  config.clan.core.vars.generators."borgbackup-${instanceName}".files."borgbackup.repokey".path
+                }";
               };
 
               prune.keep = {

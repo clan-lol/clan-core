@@ -63,33 +63,34 @@ Here's an example:
   inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
   inputs.nixpkgs.follows = "clan-core/nixpkgs";
 
-  outputs = { self, clan-core, ... }:
-  let
-    # Define Clan configuration
-    clan = clan-core.lib.clan {
-      inherit self;
+  outputs =
+    { self, clan-core, ... }:
+    let
+      # Define Clan configuration
+      clan = clan-core.lib.clan {
+        inherit self;
 
-      meta.name = "myclan";
-      meta.domain = "ccc";
+        meta.name = "myclan";
+        meta.domain = "ccc";
 
-      # Add age plugins
-      secrets.age.plugins = [
-        # Plugins available in nixpkgs can be specified by name
-        "age-plugin-yubikey"
-        "age-plugin-fido2-hmac"
-        # Plugins not in nixpkgs can be specified as flake references
-        "github:pinpox/age-plugin-picohsm#default"
-      ];
+        # Add age plugins
+        secrets.age.plugins = [
+          # Plugins available in nixpkgs can be specified by name
+          "age-plugin-yubikey"
+          "age-plugin-fido2-hmac"
+          # Plugins not in nixpkgs can be specified as flake references
+          "github:pinpox/age-plugin-picohsm#default"
+        ];
 
-      machines = {
-        # Machine configurations (omitted for brevity)
+        machines = {
+          # Machine configurations (omitted for brevity)
+        };
       };
-    };
-  in
-  {
-    inherit (clan) nixosConfigurations nixosModules clanInternals;
+    in
+    {
+      inherit (clan) nixosConfigurations nixosModules clanInternals;
 
-    # Additional configurations (omitted for brevity)
-  };
+      # Additional configurations (omitted for brevity)
+    };
 }
 ```

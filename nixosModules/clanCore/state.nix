@@ -44,7 +44,7 @@
             preBackupCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = if config.preBackupScript == null then null else "pre-backup-${name}";
-              defaultText = lib.literalExpression ''null if preBackupScript set, or else "pre-backup-${name}"'';
+              defaultText = lib.literalExpression ''if config.preBackupScript == null then null else "pre-backup-${name}"'';
               readOnly = true;
               description = ''
                 Use this command in backup providers. It contains the content of preBackupScript.
@@ -63,7 +63,7 @@
             postBackupCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = if config.postBackupScript == null then null else "post-backup-${name}";
-              defaultText = lib.literalExpression ''null if postBackupScript set, or else "post-backup-${name}"'';
+              defaultText = lib.literalExpression ''if config.postBackupScript == null then null else "post-backup-${name}"'';
               readOnly = true;
               description = ''
                 Use this command in backup providers. It contains the content of postBackupScript.
@@ -94,7 +94,7 @@
             preRestoreCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = if config.preRestoreScript == null then null else "pre-restore-${name}";
-              defaultText = lib.literalExpression ''null if preRestoreScript set, or else "pre-restore-${name}"'';
+              defaultText = lib.literalExpression ''if config.preRestoreScript == null then null else "pre-restore-${name}"'';
               readOnly = true;
               description = ''
                 This command can be called to restore the state dir from a backup.

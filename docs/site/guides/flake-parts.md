@@ -29,13 +29,11 @@ Next, import the Clan flake-parts module to make the [Clan options](../reference
 {
   outputs =
     inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } (
-      {
-        imports = [
-          inputs.clan-core.flakeModules.default
-        ];
-      }
-    );
+    flake-parts.lib.mkFlake { inherit inputs; } ({
+      imports = [
+        inputs.clan-core.flakeModules.default
+      ];
+    });
 }
 ```
 
@@ -45,43 +43,47 @@ Configure Clan-wide settings and define machines. Here's an example `flake.nix`:
 
 ```nix
 {
-  outputs = inputs@{ flake-parts, clan-core, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({self, pkgs, ...}: {
-      # See: https://flake.parts/getting-started
-      systems = [
-        "x86_64-linux"
-      ];
+  outputs =
+    inputs@{ flake-parts, clan-core, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      { self, pkgs, ... }:
+      {
+        # See: https://flake.parts/getting-started
+        systems = [
+          "x86_64-linux"
+        ];
 
-      # Import the Clan flake-parts module
-      imports = [
-        clan-core.flakeModules.default
-      ];
+        # Import the Clan flake-parts module
+        imports = [
+          clan-core.flakeModules.default
+        ];
 
-      # Define your Clan
-      clan = {
-        meta.name = ""; # Required and must be unique
-        meta.domain = ""; # Required and must be unique
+        # Define your Clan
+        clan = {
+          meta.name = ""; # Required and must be unique
+          meta.domain = ""; # Required and must be unique
 
-        machines = {
-          jon = {
-            imports = [
-              ./modules/firefox.nix
-              # Add more modules as needed
-            ];
+          machines = {
+            jon = {
+              imports = [
+                ./modules/firefox.nix
+                # Add more modules as needed
+              ];
 
-            nixpkgs.hostPlatform = "x86_64-linux";
+              nixpkgs.hostPlatform = "x86_64-linux";
 
-            # Enable remote Clan commands over SSH
-            clan.core.networking.targetHost = "root@jon";
+              # Enable remote Clan commands over SSH
+              clan.core.networking.targetHost = "root@jon";
 
-            # Disk configuration
-            disko.devices.disk.main = {
-              device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
+              # Disk configuration
+              disko.devices.disk.main = {
+                device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
+              };
             };
           };
         };
-      };
-    });
+      }
+    );
 }
 ```
 
