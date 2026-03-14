@@ -104,7 +104,12 @@
                     if monitoredServices == [ ] then
                       "^$"
                     else
-                      "^(${lib.concatStringsSep "|" (builtins.map lib.escapeRegex monitoredServices)})$";
+                      let
+                        escapedMonitoredServices = builtins.map (
+                          monitoredService: builtins.replaceStrings [ "\\" ] [ "\\\\" ] (lib.escapeRegex monitoredService)
+                        ) monitoredServices;
+                      in
+                      "^(${lib.concatStringsSep "|" escapedMonitoredServices})$";
                 in
                 {
                   enable = true;
