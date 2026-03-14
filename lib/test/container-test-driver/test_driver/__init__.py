@@ -744,7 +744,7 @@ def main() -> None:
     with Driver(
         containers=[
             ContainerInfo(toplevel, closure_info)
-            for toplevel, closure_info in args.containers
+            for toplevel, closure_info in args.containers or []
         ],
         testscript=args.test_script.read_text(),
         out_dir=args.output_directory.resolve(),

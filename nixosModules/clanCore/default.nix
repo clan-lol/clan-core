@@ -16,6 +16,7 @@
     ./vars
   ]
   ++ lib.optionals (_class == "nixos") [
+    ./image
     ./nixos-facter.nix
     ./vm.nix
     ./postgresql

@@ -67,42 +67,6 @@ def get_machines_for_build(
     return machines_to_build
 
 
-def print_build_results(results: list[BuildResult]) -> None:
-    """Print build results in a human-readable format."""
-    if not results:
-        print("No builds completed.")
-        return
-
-    successful = []
-    failed = []
-
-    for result in results:
-        if result.success:
-            successful.append(result)
-        else:
-            failed.append(result)
-
-    total = len(results)
-
-    print(f"\nBuild completed: {len(successful)}/{total} successful")
-
-    if successful:
-        print("\n✓ Successful:")
-        for result in successful:
-            if result.symlink_path:
-                print(f"  {result.machine_name} -> {result.symlink_path}")
-            else:
-                print(f"  {result.machine_name}")
-
-    if failed:
-        print("\n✗ Failed:")
-        for result in failed:
-            print(f"  {result.machine_name}")
-
-    if failed:
-        print("\nUse --debug for detailed error information")
-
-
 def build_command(args: argparse.Namespace) -> None:
     """Build machine configurations."""
     try:
@@ -126,9 +90,12 @@ def build_command(args: argparse.Namespace) -> None:
             format=args.format,
             dry_run=args.dry_run,
             no_link=args.no_link,
+            no_secrets=args.no_secrets,
+            use_sandbox=not args.no_sandbox,
         )
 
-        all_results = []
+        build_outputs: list[BuildResult] = []
+        errors: dict[str, Exception] = {}
 
         with AsyncRuntime() as runtime:
             futures = []
@@ -147,23 +114,22 @@ def build_command(args: argparse.Namespace) -> None:
             runtime.join_all()
 
             for i, future in enumerate(futures):
-                try:
-                    async_result = future.wait()
-                    all_results.append(async_result.result)
-                except ClanError as e:
-                    machine_name = machines_to_build[i].name
-                    failed_result = BuildResult(
-                        machine_name=machine_name,
-                        success=False,
-                        error_message=str(e),
-                    )
-                    all_results.append(failed_result)
+                machine_name = machines_to_build[i].name
+                aresult = future.get_result()
+                if aresult is None:
+                    msg = "Build result should never be None"
+                    raise ClanError(msg)
+                if aresult.error is not None:
+                    errors[machine_name] = aresult.error
+                    continue
+                build_outputs.append(aresult.result)
 
-        print_build_results(all_results)
+        for output in build_outputs:
+            print(output.build_path)
 
-        failed_count = sum(1 for r in all_results if not r.success)
-        if failed_count > 0:
-            sys.exit(1)
+        for machine_name, error in errors.items():
+            msg = f"Build failed for {machine_name}: {error}"
+            raise ClanError(msg) from error
 
     except KeyboardInterrupt:
         log.warning("Interrupted by user")
@@ -207,6 +173,19 @@ def register_build_parser(parser: argparse.ArgumentParser) -> None:
         "--no-link",
         action="store_true",
         help="Do not create result symlinks.",
+    )
+
+    parser.add_argument(
+        "--no-secrets",
+        action="store_true",
+        help="Do not embed secrets into the built image. By default, image formats (e.g., iso) embed the machine's secret decryption key.",
+    )
+
+    parser.add_argument(
+        "--no-sandbox",
+        action="store_true",
+        help="Disable sandboxing when executing generators and image scripts. WARNING: potentially executing untrusted code from external clan modules.",
+        default=False,
     )
 
     parser.set_defaults(func=build_command)
