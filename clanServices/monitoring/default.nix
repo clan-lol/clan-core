@@ -100,16 +100,12 @@
                     else
                       settings.monitoredSystemdServices
                   );
+                  monitoredServicesRegexFragments = builtins.map lib.escapeRegex monitoredServices;
                   monitoredServicesRegex =
                     if monitoredServices == [ ] then
                       "^$"
                     else
-                      let
-                        escapedMonitoredServices = builtins.map (
-                          monitoredService: builtins.replaceStrings [ "\\" ] [ "\\\\" ] (lib.escapeRegex monitoredService)
-                        ) monitoredServices;
-                      in
-                      "^(${lib.concatStringsSep "|" escapedMonitoredServices})$";
+                      "^(${lib.concatStringsSep "|" monitoredServicesRegexFragments})$";
                 in
                 {
                   enable = true;
@@ -148,7 +144,7 @@
                             rule {
                               action = "keep"
                               source_labels = ["__name__", "name"]
-                              regex = "node_systemd_unit_state;(${lib.strings.join "|" monitoredServices})"
+                              regex = ${builtins.toJSON "node_systemd_unit_state;(${lib.concatStringsSep "|" monitoredServicesRegexFragments})"}
                             }
                           ''
                       }
@@ -181,7 +177,7 @@
                         rule {
                           action = "keep"
                           source_labels = ["__journal__systemd_unit"]
-                          regex = "${monitoredServicesRegex}"
+                          regex = ${builtins.toJSON monitoredServicesRegex}
                         }
                       ''}
                       rule {
