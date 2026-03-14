@@ -97,6 +97,7 @@ export const docsNav: DocsNavItems = [
         label: "Migrations",
         children: [
           "guides/migrations/convert-existing-NixOS-configuration",
+          "guides/migrations/how-to-rename-a-machine",
           "guides/migrations/migrate-admin-service",
           "guides/migrations/migrate-inventory-services",
           "guides/migrations/migration-facts-vars",
