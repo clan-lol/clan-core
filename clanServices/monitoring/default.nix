@@ -60,157 +60,158 @@
               options,
               ...
             }:
-            let
-              serverMachineCount = lib.length (lib.attrNames roles.server.machines);
-              protocol = "http" + lib.optionalString settings.useSSL "s";
-              serverSettings =
-                if serverMachineCount != 1 then
-                  throw "The monitoring service requires exactly one server machine, but ${toString serverMachineCount} were defined."
-                else
-                  (lib.head (lib.attrValues roles.server.machines)).settings;
-              serverHost =
-                if serverSettings.host != null then
-                  serverSettings.host
-                else
-                  lib.head (
-                    map (m: "${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
-                  );
-              serverAddress = "${protocol}://${serverHost}";
-
-              enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
-                lib.attrNames (
-                  lib.attrsets.filterAttrs (_name: value: value == true) (
-                    lib.mapAttrs (
-                      name: value:
-                      builtins.hasAttr "enable" options.services."${name}"
-                      && builtins.hasAttr "default" options.services."${name}".enable
-                      && options.services."${name}".enable.default != value.enable
-                      && value.enable == true
-                    ) (config.services)
-                  )
-                )
-              );
-
-              monitoredServices = (
-                if settings.monitoredSystemdServices == "nixos" then
-                  enabledNixosSystemdServices
-                else
-                  settings.monitoredSystemdServices
-              );
-
-              generatedAlloyConfig = builtins.toFile "clan-monitoring.alloy" ''
-                // Collects metrics and sends them to mimir.
-                prometheus.exporter.unix "local_system" {
-                  // See the list of available collectors in the alloy docs at
-                  // https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list
-                  set_collectors = [ "cpu", "filesystem", "meminfo", "systemd" ]
-                }
-
-                prometheus.scrape "scrape_metrics" {
-                  targets = prometheus.exporter.unix.local_system.targets
-                  forward_to = [prometheus.relabel.create_nixos_services_metric.receiver, prometheus.remote_write.mimir.receiver]
-                  scrape_interval = "10s"
-                }
-
-                prometheus.relabel "create_nixos_services_metric" {
-                  forward_to = [prometheus.remote_write.mimir.receiver]
-
-                  ${
-                    if settings.monitoredSystemdServices == "all" then
-                      ''
-                        rule {
-                          action = "keep"
-                          source_labels = ["__name__"]
-                          regex = "node_systemd_unit_state"
-                        }
-                      ''
-                    else
-                      ''
-                        rule {
-                          action = "keep"
-                          source_labels = ["__name__", "name"]
-                          regex = "node_systemd_unit_state;(${lib.strings.join "|" monitoredServices})"
-                        }
-                      ''
-                  }
-
-                  rule {
-                    action = "replace"
-                    target_label = "__name__"
-                    replacement = "nixos_systemd_unit_state"
-                  }
-                }
-
-                prometheus.remote_write "mimir" {
-                  endpoint {
-                    url = "${serverAddress}/mimir/api/v1/push"
-                    basic_auth {
-                      username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
-                      password_file = sys.env("CREDENTIALS_DIRECTORY") + "/mimir-auth-password"
-                    }
-                  }
-                }
-
-                // Collects logs and sends them to loki.
-                ${
-                  if settings.monitoredSystemdServices == "all" then
-                    ''
-                      loki.source.journal "all" {
-                        relabel_rules = loki.relabel.journal.rules
-                        forward_to = [loki.write.loki.receiver]
-                      }
-                    ''
-                  else
-                    lib.concatStrings (
-                      builtins.map (monitoredService: ''
-                        loki.source.journal "${builtins.replaceStrings [ "-" "." ] [ "_" "_" ] monitoredService}" {
-                          matches = "_SYSTEMD_UNIT=${monitoredService}"
-                          relabel_rules = loki.relabel.journal.rules
-                          forward_to = [loki.write.loki.receiver]
-                        }
-                      '') monitoredServices
-                    )
-                }
-
-                loki.relabel "journal" {
-                  rule {
-                    source_labels = ["__journal__hostname"]
-                    target_label = "instance"
-                  }
-                  rule {
-                    source_labels = ["__journal__systemd_unit"]
-                    target_label = "service_name"
-                  }
-                  rule {
-                    source_labels = ["__journal_priority_keyword"]
-                    target_label = "level"
-                  }
-                  forward_to = []
-                }
-
-                loki.write "loki" {
-                  endpoint {
-                    url = "${serverAddress}/loki/loki/api/v1/push"
-                    basic_auth {
-                      username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
-                      password_file = sys.env("CREDENTIALS_DIRECTORY") + "/loki-auth-password"
-                    }
-                  }
-                }
-              '';
-            in
             {
-              environment.etc."alloy/clan-monitoring.alloy".source = generatedAlloyConfig;
+              services.alloy =
+                let
+                  serverMachineCount = lib.length (lib.attrNames roles.server.machines);
+                  protocol = "http" + lib.optionalString settings.useSSL "s";
+                  serverSettings =
+                    if serverMachineCount != 1 then
+                      throw "The monitoring service requires exactly one server machine, but ${toString serverMachineCount} were defined."
+                    else
+                      (lib.head (lib.attrValues roles.server.machines)).settings;
+                  serverHost =
+                    if serverSettings.host != null then
+                      serverSettings.host
+                    else
+                      lib.head (
+                        map (m: "${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                      );
+                  serverAddress = "${protocol}://${serverHost}";
 
-              services.alloy = {
-                enable = true;
-                extraFlags = [
-                  "--server.http.enable-pprof=false"
-                  "--disable-reporting=true"
-                ];
-              };
+                  enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
+                    lib.attrNames (
+                      lib.attrsets.filterAttrs (_name: value: value == true) (
+                        lib.mapAttrs (
+                          name: value:
+                          builtins.hasAttr "enable" options.services."${name}"
+                          && builtins.hasAttr "default" options.services."${name}".enable
+                          && options.services."${name}".enable.default != value.enable
+                          && value.enable == true
+                        ) (config.services)
+                      )
+                    )
+                  );
+
+                  monitoredServices = (
+                    if settings.monitoredSystemdServices == "nixos" then
+                      enabledNixosSystemdServices
+                    else
+                      settings.monitoredSystemdServices
+                  );
+                in
+                {
+                  enable = true;
+                  extraFlags = [
+                    "--server.http.enable-pprof=false"
+                    "--disable-reporting=true"
+                  ];
+                  configPath = builtins.toFile "config.alloy" ''
+                    // Collects metrics and sends them to mimir.
+                    prometheus.exporter.unix "local_system" {
+                      // See the list of available collectors in the alloy docs at
+                      // https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list
+                      set_collectors = [ "cpu", "filesystem", "meminfo", "systemd" ]
+                    }
+
+                    prometheus.scrape "scrape_metrics" {
+                      targets = prometheus.exporter.unix.local_system.targets
+                      forward_to = [prometheus.relabel.create_nixos_services_metric.receiver, prometheus.remote_write.mimir.receiver]
+                      scrape_interval = "10s"
+                    }
+
+                    prometheus.relabel "create_nixos_services_metric" {
+                      forward_to = [prometheus.remote_write.mimir.receiver]
+
+                      ${
+                        if settings.monitoredSystemdServices == "all" then
+                          ''
+                            rule {
+                              action = "keep"
+                              source_labels = ["__name__"]
+                              regex = "node_systemd_unit_state"
+                            }
+                          ''
+                        else
+                          ''
+                            rule {
+                              action = "keep"
+                              source_labels = ["__name__", "name"]
+                              regex = "node_systemd_unit_state;(${lib.strings.join "|" monitoredServices})"
+                            }
+                          ''
+                      }
+
+                      rule {
+                        action = "replace"
+                        target_label = "__name__"
+                        replacement = "nixos_systemd_unit_state"
+                      }
+                    }
+
+                    prometheus.remote_write "mimir" {
+                      endpoint {
+                        url = "${serverAddress}/mimir/api/v1/push"
+                        basic_auth {
+                          username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
+                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/mimir-auth-password"
+                        }
+                      }
+                    }
+
+                    // Collects logs and sends them to loki.
+                    ${
+                      if settings.monitoredSystemdServices == "all" then
+                        ''
+                          loki.source.journal "all" {
+                            relabel_rules = loki.relabel.journal.rules
+                            forward_to = [loki.write.loki.receiver]
+                          }
+                        ''
+                      else
+                        lib.concatStrings (
+                          builtins.map (monitoredService: ''
+                            loki.source.journal "${builtins.replaceStrings [ "-" "." ] [ "_" "_" ] monitoredService}" {
+                              matches = "_SYSTEMD_UNIT=${monitoredService}"
+                              relabel_rules = loki.relabel.journal.rules
+                              forward_to = [loki.write.loki.receiver]
+                            }
+                          '') monitoredServices
+                        )
+                    }
+
+                    loki.relabel "journal" {
+                      rule {
+                        source_labels = ["__journal__hostname"]
+                        target_label = "instance"
+                      }
+                      rule {
+                        source_labels = ["__journal__systemd_unit"]
+                        target_label = "service_name"
+                      }
+                      rule {
+                        source_labels = ["__journal_priority_keyword"]
+                        target_label = "level"
+                      }
+                      forward_to = []
+                    }
+
+                    loki.write "loki" {
+                      endpoint {
+                        url = "${serverAddress}/loki/loki/api/v1/push"
+                        basic_auth {
+                          username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
+                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/loki-auth-password"
+                        }
+                      }
+                    }
+                  '';
+                };
+
+              environment.etc."alloy/config.alloy".source = config.services.alloy.configPath;
 
               systemd.services.alloy.serviceConfig = {
+                ExecStart = lib.mkForce "${lib.getExe config.services.alloy.package} run /etc/alloy ${lib.escapeShellArgs config.services.alloy.extraFlags}";
                 LoadCredential = [
                   "mimir-auth-password:${config.clan.core.vars.generators.mimir-auth.files.password.path}"
                   "loki-auth-password:${config.clan.core.vars.generators.loki-auth.files.password.path}"

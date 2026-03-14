@@ -66,9 +66,8 @@ classDiagram
 
 Clients are machines that create metrics and logs. Those are sent to the central monitoring server for storage and visualization.
 
-The generated monitoring collector config is installed as
-`/etc/alloy/clan-monitoring.alloy`. Additional local collector fragments can be
-added with `environment.etc."alloy/<name>.alloy"`.
+The generated monitoring collector config is installed as `/etc/alloy/config.alloy`.
+Additional local collector fragments can be added with `environment.etc."alloy/<name>.alloy"`.
 
 ### Server
 
