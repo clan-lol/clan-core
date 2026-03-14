@@ -31,6 +31,10 @@
     machine1 = {
       networking.domain = "clan";
     };
+
+    machine2.environment.etc."alloy/local-extension.alloy".text = ''
+      // Additional machine-local Alloy config fragment.
+    '';
   };
 
   testScript =
@@ -44,6 +48,12 @@
 
       machine1.wait_for_unit("alloy")
       machine2.wait_for_unit("alloy")
+
+      machine1.succeed("test -f /etc/alloy/clan-monitoring.alloy")
+      machine2.succeed("test -f /etc/alloy/clan-monitoring.alloy")
+      machine2.succeed("test -f /etc/alloy/local-extension.alloy")
+      machine1.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
+      machine2.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
 
       machine1.wait_for_unit("loki")
       machine1.wait_for_unit("mimir")
