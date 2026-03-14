@@ -20,6 +20,22 @@
           client = {
             tags.all = { };
             settings.useSSL = false;
+            settings.loki.journal.relabelRules.beforeNormalization = [
+              ''
+                rule {
+                  source_labels = ["__journal__systemd_unit"]
+                  target_label = "raw_service_name"
+                }
+              ''
+            ];
+            settings.loki.journal.relabelRules.afterNormalization = [
+              ''
+                rule {
+                  source_labels = ["level"]
+                  target_label = "normalized_level"
+                }
+              ''
+            ];
           };
           server.machines.machine1.settings.grafana.enable = true;
         };
@@ -60,5 +76,18 @@
       machine1.wait_for_unit("grafana")
 
       machine2.succeed("test \"$(grep -c '^loki.source.journal ' /etc/alloy/config.alloy)\" = 1")
+      config = machine2.succeed("cat /etc/alloy/config.alloy")
+
+      pre_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "raw_service_name"' in line)
+      instance_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "instance"' in line)
+      level_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "level"' in line)
+      post_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "normalized_level"' in line)
+
+      assert pre_line < instance_line < level_line < post_line, (
+          pre_line,
+          instance_line,
+          level_line,
+          post_line,
+      )
     '';
 }

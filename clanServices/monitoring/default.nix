@@ -48,20 +48,46 @@
               example = true;
             };
 
-            extraLokiRelabelJournalRules = lib.mkOption {
-              type = lib.types.str;
-              default = "";
+            loki.journal.relabelRules.beforeNormalization = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
               description = ''
-                Extra Loki relabel rules appended to the default journal relabel group.
+                Additional Alloy `rule` blocks inserted into `loki.relabel "journal"`
+                before the built-in label normalization rules.
+
+                Use this for rules that need raw journal labels such as
+                `__journal__*`.
               '';
-              example = ''
-                // Example: drop debug-level logs
-                rule {
-                  action = "drop"
-                  source_labels = ["level"]
-                  regex = "debug"
-                }
+              example = [
+                ''
+                  rule {
+                    source_labels = ["__journal_com_docker_swarm_service_name"]
+                    regex = "^.*_(.*)$"
+                    target_label = "oci_platform_service_name"
+                  }
+                ''
+              ];
+            };
+
+            loki.journal.relabelRules.afterNormalization = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = ''
+                Additional Alloy `rule` blocks inserted into `loki.relabel "journal"`
+                after the built-in label normalization rules.
+
+                Use this for rules that depend on normalized labels such as
+                `instance`, `service_name`, or `level`.
               '';
+              example = [
+                ''
+                  rule {
+                    action = "drop"
+                    source_labels = ["level"]
+                    regex = "debug"
+                  }
+                ''
+              ];
             };
           };
         };
@@ -122,6 +148,8 @@
                       "^$"
                     else
                       "^(${lib.concatStringsSep "|" monitoredServicesRegexFragments})$";
+                  extraLokiJournalRelabelRulesBeforeNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.beforeNormalization;
+                  extraLokiJournalRelabelRulesAfterNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.afterNormalization;
                 in
                 {
                   enable = true;
@@ -196,6 +224,7 @@
                           regex = ${builtins.toJSON monitoredServicesRegex}
                         }
                       ''}
+                      ${extraLokiJournalRelabelRulesBeforeNormalization}
                       rule {
                         source_labels = ["__journal__hostname"]
                         target_label = "instance"
@@ -208,7 +237,7 @@
                         source_labels = ["__journal_priority_keyword"]
                         target_label = "level"
                       }
-                      ${settings.extraLokiRelabelJournalRules}
+                      ${extraLokiJournalRelabelRulesAfterNormalization}
                       forward_to = []
                     }
 
