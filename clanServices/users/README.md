@@ -28,6 +28,9 @@
       roles.default.settings = {
         user = "carol";
         share = true;
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ..."
+        ];
       };
     };
 
