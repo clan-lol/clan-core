@@ -83,7 +83,7 @@ def update_command(args: argparse.Namespace) -> None:
             load_age_plugins(flake) if should_load_age_plugins else [],
         ),
         flake.path,
-        "Updated secrets with new keys",
+        "secrets: update with new keys",
     )
 
 

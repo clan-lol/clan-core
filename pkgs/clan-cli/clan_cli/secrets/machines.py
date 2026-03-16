@@ -41,7 +41,7 @@ def add_machine(
     commit_files(
         paths,
         flake_dir,
-        f"Add machine {name} to secrets",
+        f"secrets: add machine {name}",
     )
 
 
@@ -57,7 +57,7 @@ def remove_machine(
     commit_files(
         removed_paths,
         flake_dir,
-        f"Remove machine {name}",
+        f"secrets: remove machine {name}",
     )
 
 
@@ -97,7 +97,7 @@ def add_secret(
     commit_files(
         paths,
         flake_dir,
-        f"Add {machine} to secret {secret_path.relative_to(clan_dir)}",
+        f"vars: add {machine} to secret {secret_path.relative_to(clan_dir)}",
     )
 
 
@@ -116,7 +116,7 @@ def remove_secret(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Remove {machine} from secret {secret}",
+        f"vars: remove {machine} from secret {secret}",
     )
 
 

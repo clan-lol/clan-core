@@ -53,7 +53,7 @@ def test_list_inventory_tags(clan_flake: Callable[..., Flake]) -> None:
     curr_tags: MachineTagsInput = get_value_by_path(inventory, "machines.jon.tags", [])
     new_tags = ["managed1", "managed2"]
     set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])
-    inventory_store.write(inventory, message="Test add tags via API")
+    inventory_store.write(inventory, message="test adding tags via API")
 
     # Check that the tags were updated
     persisted = inventory_store._get_persisted()
