@@ -296,12 +296,12 @@
                     openssl rand -hex 32 > $out/password
                   '';
                 };
-                vars.generators.grafana_secret_key = {
-                  files."secret_key" = { };
+                vars.generators.grafana-secret = {
+                  files.key = { };
                   runtimeInputs = [
                     pkgs.openssl
                   ];
-                  script = "openssl rand -hex 32 > $out/secret_key";
+                  script = "openssl rand -hex 32 > $out/key";
                 };
               };
 
@@ -498,7 +498,7 @@
                 LoadCredential = [
                   "grafana-admin-username:${config.clan.core.vars.generators.grafana-admin.files.username.path}"
                   "grafana-admin-password:${config.clan.core.vars.generators.grafana-admin.files.password.path}"
-                  "grafana-secret-key:${config.clan.core.vars.generators.grafana_secret_key.files.secret_key.path}"
+                  "grafana-secret-key:${config.clan.core.vars.generators.grafana-secret.files.key.path}"
                 ];
               };
             };
