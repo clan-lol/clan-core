@@ -437,6 +437,17 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
+                # Ensure machine has direct access to the secret
+                if not self.machine_has_access(generator.key, file.name, machine):
+                    self.ensure_machine_key(machine)
+                    add_secret(
+                        self.clan_dir,
+                        machine,
+                        secret_path,
+                        age_plugins=age_plugins,
+                        flake_dir=self.flake.path,
+                    )
+
                 default_groups = self.flake.select(
                     vars_sops_default_groups(current_system(), [machine])
                 )[machine]["sops"]["defaultGroups"]

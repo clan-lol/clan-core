@@ -31,6 +31,7 @@ in
     ../nixosModules/clanCore/postgresql/tests/flake-module.nix
     ../nixosModules/clanCore/state-version/tests/flake-module.nix
     ../nixosModules/clanCore/vars/tests/flake-module.nix
+    ../nixosModules/clanCore/vars/tests/age-test-flake-module.nix
   ];
   flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
     system:

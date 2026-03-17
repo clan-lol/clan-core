@@ -65,6 +65,12 @@ def delete_machine(machine: Machine) -> None:
         changed_paths.append(secret_path)
         shutil.rmtree(secret_path)
 
+    # Shared secrets are intentionally left as-is when a machine is removed.
+    # They remain encrypted to whoever they were encrypted to (including the
+    # deleted machine's key).  Remaining machines can still decrypt with their
+    # own keys.  A future `clan vars prune` command will handle explicit
+    # cleanup of orphaned shared secrets.
+
     changed_paths.extend(machine.public_vars_store.delete_store(machine.name))
     changed_paths.extend(machine.secret_vars_store.delete_store(machine.name))
     # Remove the machine's key, and update secrets & vars that referenced it:

@@ -19,7 +19,6 @@ from clan_lib.vars.generator import (
     get_machine_selectors,
 )
 from clan_lib.vars.prompt import ask
-from clan_lib.vars.secret_modules import sops
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -358,13 +357,8 @@ def run_generators(
                 Machine(name=machine_name, flake=flake)
                 for machine_name in generator.machines
             ]:
-                # Workaround because of a poorly designed Store interface
-                # Recipients should always have access
-                # TODO: Introduce recipient interface into the StoreBase
-                if not isinstance(machine.secret_vars_store, sops.SecretStore):
-                    continue
-                machine.secret_vars_store.ensure_machine_has_access(
-                    generator,
-                    file.name,
+                machine.secret_vars_store.fix(
                     machine.name,
+                    [generator],
+                    file_name=file.name,
                 )

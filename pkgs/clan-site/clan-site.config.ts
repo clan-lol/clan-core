@@ -62,6 +62,10 @@ export const docsNav: DocsNavItems = [
               "guides/vars/sops/secrets",
             ],
           },
+          {
+            label: "Age Backend",
+            children: ["guides/vars/age/age-backend"],
+          },
         ],
       },
       {

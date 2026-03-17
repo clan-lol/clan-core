@@ -43,6 +43,7 @@ from clan_lib.vars.set import set_var
 # Ensure the imports from clan_cli keep working
 def test_import_from_cli() -> None:
     # Secret Stores
+    importlib.import_module("clan_cli.vars.secret_modules.age")
     importlib.import_module("clan_cli.vars.secret_modules.fs")
     importlib.import_module("clan_cli.vars.secret_modules.password_store")
     importlib.import_module("clan_cli.vars.secret_modules.sops")

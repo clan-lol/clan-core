@@ -45,6 +45,12 @@ in
         }
       ];
     }
+  ]
+  ++ lib.optionals (_class == "nixos") [
+    ./secret/password-store.nix
+  ]
+  ++ [
+    ./secret/age.nix
   ];
 
   options.clan.core.vars = lib.mkOption {
