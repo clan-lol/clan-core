@@ -159,6 +159,9 @@ nixosLib.runTest (
           )
 
           print("All ISO tests passed!")
+
+          qemu_proc.terminate()
+          qemu_proc.wait()
     '';
   }
 )
