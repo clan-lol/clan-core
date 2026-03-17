@@ -296,6 +296,13 @@
                     openssl rand -hex 32 > $out/password
                   '';
                 };
+                vars.generators.grafana_secret_key = {
+                  files."secret_key" = { };
+                  runtimeInputs = [
+                    pkgs.openssl
+                  ];
+                  script = "openssl rand -hex 32 > $out/secret_key";
+                };
               };
 
               services.nginx = {
@@ -443,6 +450,7 @@
                   security = {
                     admin_user = "$__file{/run/credentials/grafana.service/grafana-admin-username}";
                     admin_password = "$__file{/run/credentials/grafana.service/grafana-admin-password}";
+                    secret_key = "$__file{/run/credentials/grafana.service/grafana-secret-key}";
                     cookie_secure = useSSL;
                     csrf_trusted_origins = config.networking.fqdn;
                   };
@@ -490,6 +498,7 @@
                 LoadCredential = [
                   "grafana-admin-username:${config.clan.core.vars.generators.grafana-admin.files.username.path}"
                   "grafana-admin-password:${config.clan.core.vars.generators.grafana-admin.files.password.path}"
+                  "grafana-secret-key:${config.clan.core.vars.generators.grafana_secret_key.files.secret_key.path}"
                 ];
               };
             };
