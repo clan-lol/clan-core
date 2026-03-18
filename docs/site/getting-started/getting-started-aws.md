@@ -1,4 +1,5 @@
-# Getting Started: Hetzner Edition
+
+# Getting Started: AWS Edition
 
 !!! Note "Prerequisites"
     Your setup machine needs the following:
@@ -9,45 +10,78 @@
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 
-## 1. Create a Server on Hetzner
+
+## 1. Create a Server on AWS
 
 !!! Danger
     The steps in this document will erase all data on your Hetzner server's hard drive.
 
-If you already have a server on Hetzner running, you can skip this step.
+From inside the AWS Console, head to the EC2 service, and click on **Instances** on the left. Then click **Launch Instances**.
 
-From the main Hetzner dashboard, in the left pane, click **Servers**.
+Provide a name, such as `Clan Test Machine`.
 
-In the upper right, click **Add Server**.
+Under **Application and OS Images**, choose **Quick Start**, and under that click on **Ubuntu**.
 
-Choose the type; we recommend either **Regular Performance** or **General Purpose**, because these are newer.
-
-Next, choose the row that best suits your needs; for NixOS you only need the top row, with 2 VCPUs and 2GB or 4GB RAM.
+Under **Instance type** you have some flexibility, but we recommend choosing at least **t3-small**; however **t3-large** works best.
 
 !!! Note
-    If you change the location, you might see a different set of VCPU and RAM configurations.
+    Do not use t2 instances. In general, use Nitro instance types: t3, m5, c5, r5, m6i, c6i, etc. Avoid Xen instance types: t2, m4, c4, r4, etc. as the newer kexec tool (used internally by Clan) doesn't work well with infrastructure changes Amazon recently put in place with the Xen technology.
 
-For **Image**, choose **Ubuntu**. (This will only be used during installation, after which NixOS will be installed.)
+Under **Key pair**, select one of your existing key pairs, or create a new one. (If you create a new one, choose **ED25519** for the type. It will download automatically. Be sure to move it in your `~/.ssh` directory.)
 
-For **Networking**, select at least **Public IPv4**.
+Under **Network Settings** you can either create a security group or use an existing one; in either case it needs to allow SSH traffic from at least your own IP address.
 
-Under SSH keys, click **Add SSH key**. Leave this screen open. Open up a command shell on your local machine and type:
+Under **Configure Storage** enter 16 for the **GB**.
+
+Click **Launch instance**.
+
+After the server is running, make sure you can log into it:
 
 ```bash
-cat ~/.ssh/id_ed25519.pub
+ssh -i <KEY-PAIR-FILE> ubuntu@<IP-ADDRESS>
 ```
 
-(If you see "No such file or directory" please visit [this link](./create-an-ssh-key.md) to learn how to create a key pair.)
+substituting:
 
-Paste the contents of the `id_ed25519.pub` file into the **SSH key** box. (We recommend also checking **Set as default key**.) Click **Add SSH key**.
+* **\<KEY-PAIR-FILE\>** for the path and name of your key pair file
+* **\<IP-ADDRESS\>** for your new server's public IP address. You can find this by clicking on the instance ID in the console; it will be in the middle near the top.
 
-Scroll to the very bottom and under **Name** enter a name of your choice for **Server name** such as `My-Clan-1`.
+!!! Tip
+    The main username for Ubuntu on EC2 is `ubuntu`.
 
-In the right-hand pane, click **Create && Buy now**.
+Then exit:
 
-After a moment the server will be created.
+```bash
+exit
+```
 
-Leave this screen open so you an copy the IP address later by clicking on the IP address.
+## Add your id_ed25519 key pair
+
+Next we need to configure your server by adding your key pair.
+
+Add the key pair from your local server:
+
+```bash
+ssh -i ~/.ssh/<KEY-PAIR-FILE>.pem ubuntu@<IP-ADDRESS> \
+"cat >> /home/ubuntu/.ssh/authorized_keys" < ~/.ssh/id_ed25519.pub
+```
+
+replacing `<KEY-PAIR-FILE>` with the name of the file you used when you provisioned the server.
+
+Now you should be able to connect without specifying a key:
+
+```text
+ssh ubuntu@<IP-ADDRESS>
+```
+
+Then exit:
+
+```bash
+exit
+```
+
+!!! Important
+    This step is not optional; Clan uses an existing id_ed25519 key to connect.
 
 ## 2. Run the Clan setup
 
@@ -95,6 +129,9 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     };
 ```
 
+!!! Note
+    Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS, it will be using `root`, hence the `root@` in this code snippet.
+
 Test it out:
 
 ```bash
@@ -123,13 +160,16 @@ clan show
 
 ## 5. Gather Hardware Configuration
 
-Now gather the hardware configuration from the target machine:
+Now gather the hardware configuration from the target machine; note that for this step we specify the `ubuntu` username:
 
 ```bash
-clan machines init-hardware-config test-machine
+clan machines init-hardware-config test-machine --target-host ubuntu@<IP-ADDRESS>
 ```
 
 You will be asked to enter "y" to proceed.
+
+!!! Note
+    At some point, you will likely see "Connection timed out" occur multiple times. Please be patient, as the server is rebooting during this time, and it will eventually connect.
 
 ## 6. Add a Disk Configuration.
 

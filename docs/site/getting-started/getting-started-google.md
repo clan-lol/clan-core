@@ -1,4 +1,4 @@
-# Getting Started: Hetzner Edition
+# Getting Started: Google Cloud Edition
 
 !!! Note "Prerequisites"
     Your setup machine needs the following:
@@ -9,45 +9,77 @@
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 
-## 1. Create a Server on Hetzner
+## 1. Create a Server on Google Cloud
 
 !!! Danger
-    The steps in this document will erase all data on your Hetzner server's hard drive.
+    The steps in this document will erase all data on your Google Cloud server's hard drive.
 
-If you already have a server on Hetzner running, you can skip this step.
+If you already have a server on Google Cloud running, you can skip this step.
 
-From the main Hetzner dashboard, in the left pane, click **Servers**.
+We recommend using gcloud command-line tool.
 
-In the upper right, click **Add Server**.
+Launch a server:
 
-Choose the type; we recommend either **Regular Performance** or **General Purpose**, because these are newer.
-
-Next, choose the row that best suits your needs; for NixOS you only need the top row, with 2 VCPUs and 2GB or 4GB RAM.
-
-!!! Note
-    If you change the location, you might see a different set of VCPU and RAM configurations.
-
-For **Image**, choose **Ubuntu**. (This will only be used during installation, after which NixOS will be installed.)
-
-For **Networking**, select at least **Public IPv4**.
-
-Under SSH keys, click **Add SSH key**. Leave this screen open. Open up a command shell on your local machine and type:
-
-```bash
-cat ~/.ssh/id_ed25519.pub
+```text
+gcloud compute instances create linux-server-01 \
+    --machine-type=e2-medium \
+    --image-family=ubuntu-2204-lts \
+    --image-project=ubuntu-os-cloud \
+    --boot-disk-size=20GB \
+    --metadata="ssh-keys=$(whoami):$(cat ~/.ssh/id_ed25519.pub)" \
+    --no-shielded-secure-boot \
+    --no-shielded-vtpm \
+    --no-shielded-integrity-monitoring
 ```
 
-(If you see "No such file or directory" please visit [this link](./create-an-ssh-key.md) to learn how to create a key pair.)
+(Notice the `whoami`: We're creating a user on the remote machine with the same name as your local username.)
 
-Paste the contents of the `id_ed25519.pub` file into the **SSH key** box. (We recommend also checking **Set as default key**.) Click **Add SSH key**.
+After this command runs, you can find the IP address from the command's output, under `EXTERNAL_IP`:
 
-Scroll to the very bottom and under **Name** enter a name of your choice for **Server name** such as `My-Clan-1`.
+```text
+NAME             ZONE           MACHINE_TYPE  PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP  STATUS
+linux-server-01  us-central1-a  e2-medium                  10.128.0.4   34.170.5.83  RUNNING
+```
 
-In the right-hand pane, click **Create && Buy now**.
+Verify that you can log in:
 
-After a moment the server will be created.
+```bash
+ssh <USERNAME>@<IP-ADDRESS>
+```
 
-Leave this screen open so you an copy the IP address later by clicking on the IP address.
+replacing `<USERNAME>` with your local username and `<IP-ADDRESS>` with the IP address displayed after the server was provisioned. (Note, the server sometimes takes a moment to boot up, so you might need to try this command a couple of times before it lets you in.)
+
+Next, enable `root` access. First, copy the `authorized_keys` file:
+
+```bash
+gcloud compute ssh linux-server-01 --command="sudo mkdir -p /root/.ssh && sudo cp ~/.ssh/authorized_keys /root/.ssh/authorized_keys"
+```
+
+Second, enable root login:
+
+```bash
+gcloud compute ssh linux-server-01 --command="sudo sed -i 's/PermitRootLogin no/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config"
+```
+
+Third, restart the ssh daemon:
+
+```bash
+gcloud compute ssh linux-server-01 --command="sudo systemctl restart ssh"
+```
+
+Now test out root access:
+
+```bash
+ssh root@<IP-ADDRESS>
+```
+
+replacing `<IP-ADDRESS>` with the ip address provided earlier.
+
+Then exit:
+
+```bash
+exit
+```
 
 ## 2. Run the Clan setup
 
@@ -73,7 +105,7 @@ cd MY-CLAN-1
 
 You will see a message about `direnv` needing approval to run. Type:
 
-```bash
+```text
 direnv allow
 ```
 
@@ -139,10 +171,101 @@ Next, configure a disk for the target machine. You'll run this command in two st
 clan templates apply disk ext4-single-disk test-machine --set mainDisk ""
 ```
 
-This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_), and add it inside the quotes, e.g.:
+This will generate an error; note the disk ID it prints out (typically `/dev/disk/by-id/scsi-0Google_PersistentDisk_persistent-disk-0`), and add it inside the quotes, e.g.:
 
 ```bash
-clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_113572628"
+clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/scsi-0Google_PersistentDisk_persistent-disk-0"
+```
+
+Next we need to deal with a situation specific to Google Cloud. Google Cloud does not expose the partition tables to the guest operating systsem. As such, we need to make some adjustments to the default `configuration.nix` and `disko.nix` files.
+
+Switch to the directory holding these files:
+
+```bash
+cd machines/test-machine
+```
+
+Open `configuration.nix` and replace its contents with:
+
+```nix
+{ lib, modulesPath, ... }:
+{
+  imports = [
+    (modulesPath + "/virtualisation/google-compute-image.nix")
+  ];
+  networking.hostName = lib.mkForce "test-machine";
+  security.googleOsLogin.enable = lib.mkForce false;
+}
+```
+
+The GCP module (google-compute-image.nix) provides essential drivers and services for running NixOS on Google Cloud, but it also enables Google OS Login by default, which is a GCP-specific SSH key management system that conflicts with clan's sshd service. We disable it with `security.googleOsLogin.enable = lib.mkForce false` so that clan's `authorized_keys` configuration works properly. The lib.mkForce is needed
+  because we're overriding values that the GCP module already sets.
+
+Next, open 'disko.nix" and add the highlighted lines:
+
+```{.nix title="clan.nix" hl_lines="8 14 15 39 48"}
+# ---
+# schema = "ext4-single-disk"
+# [placeholders]
+# mainDisk = "/dev/disk/by-id/scsi-0Google_PersistentDisk_persistent-disk-0" 
+# ---
+# This file was automatically generated!
+# CHANGING this configuration requires wiping and reinstalling the machine
+{ lib, ... }: # ADD THIS LINE
+{
+  boot.loader.grub = {
+    efiInstallAsRemovable = true;
+    efiSupport = true;
+  };
+  boot.loader.timeout = lib.mkForce 0; # ADD THIS LINE
+  fileSystems."/".device = lib.mkForce "/dev/disk/by-label/nixos"; # ADD THIS LINE
+
+  disko.devices = {
+    disk = {
+      main = {
+        name = "main-49086db16eb74c23bed59fc2045fd513";
+        device = "/dev/disk/by-id/scsi-0Google_PersistentDisk_persistent-disk-0";
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            "boot" = {
+              size = "1M";
+              type = "EF02"; # for grub MBR
+              priority = 1;
+            };
+            ESP = {
+              type = "EF00";
+              size = "500M";
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot";
+                mountOptions = [ "umask=0077" ];
+                extraArgs = [ "-n" "ESP" ]; # ADD THIS LINE
+              };
+            };
+            root = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/";
+                extraArgs = [ "-L" "nixos" ]; # ADD THIS LINE
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+}
+```
+
+Then return to the root of the clan:
+
+```bash
+cd ../..
 ```
 
 ## 7. Install NixOS
