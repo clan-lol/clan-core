@@ -160,7 +160,7 @@ clan machines install test-machine --target-host root@<IP-ADDRESS>
 
 Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
-You will be asked whether you want to install — type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
+You will be asked whether you want to install; type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
 
 You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
 
@@ -212,7 +212,7 @@ You should connect and see the prompt:
 [root@test-machine:~]#
 ```
 
-Now let's look at how you can use Clan to install and remove packages on a target machine.
+Next, you can use Clan to install and remove packages on a target machine.
 
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 

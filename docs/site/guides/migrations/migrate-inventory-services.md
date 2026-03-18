@@ -7,7 +7,7 @@ If you are a **module author** and need to migrate your modules please consult o
 
 ### What's Changing?
 
-Clan is transitioning from the legacy `clanModules` system to the `clanServices` system. This guide will help you migrate your service definitions from the old format (`inventory.services`) to the new format (`inventory.instances`).
+Clan is transitioning from the legacy `clanModules` system to the `clanServices` system. The sections below show how to migrate your service definitions from the old format (`inventory.services`) to the new format (`inventory.instances`).
 
 | Feature          | `clanModules` (Old)        | `clanServices` (New)    |
 | ---------------- | -------------------------- | ----------------------- |
@@ -245,7 +245,7 @@ roles.moon.machines.eve = { };
 
 ### Migration Status of clanModules
 
-The following table shows the migration status of each deprecated clanModule:
+Below is the migration status of each deprecated clanModule:
 
 | clanModule               | Migration Status                                                  | Notes                                                            |
 |--------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
@@ -303,7 +303,7 @@ The following table shows the migration status of each deprecated clanModule:
 
 #### Error: "not of type `attribute set of (submodule)`"
 
-This error occurs when using lists instead of attribute sets for tags or machines:
+Appears when using lists instead of attribute sets for tags or machines:
 
 ```text
 error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64.roles.client.tags' is not of type `attribute set of (submodule)'.
@@ -313,7 +313,7 @@ error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64
 
 #### Error: "unsupported attribute `module`"
 
-This error indicates the module structure is incorrect:
+Indicates the module structure is incorrect:
 
 ```text
 error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
@@ -323,7 +323,7 @@ error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 
 #### Error: "attribute 'pkgs' missing"
 
-This suggests the instance configuration is trying to use imports incorrectly:
+Suggests the instance configuration is trying to use imports incorrectly:
 
 ```text
 error: attribute 'pkgs' missing
@@ -365,7 +365,7 @@ roles.client.extraModules = [
 ];
 ```
 
-The `extraModules` now expects actual **NixOS modules** rather than string paths. This provides better type checking and more flexibility in how modules are specified.
+The `extraModules` option now expects actual **NixOS modules** rather than string paths, giving you better type checking and more flexibility in how modules are specified.
 
 **Alternative: Using @clan/importer**
 

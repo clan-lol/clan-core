@@ -1,12 +1,8 @@
 # Vars Concepts
 
-## Understanding Clan Vars - Concepts & Architecture
+## Clan Vars Architecture
 
-This guide explains the architecture and design principles behind the vars system.
-
-### Architecture Overview
-
-The vars system provides a declarative, reproducible way to manage generated files (especially secrets) in NixOS configurations.
+The vars system provides a declarative, reproducible way to manage generated files (especially secrets) in NixOS configurations. This page covers how the pieces fit together.
 
 ### Data Flow
 
@@ -21,22 +17,13 @@ graph LR
     F --> G
 ```
 
-### Key Design Principles
+### Design Principles
 
-#### 1. Declarative Generation
+**Declarative generation.** Unlike imperative secret management, vars are declared in your NixOS configuration and generated deterministically, making deployments reproducible.
 
-Unlike imperative secret management, vars are declared in your NixOS configuration and generated deterministically. This ensures reproducibility across deployments.
+**Separation of concerns.** Generation logic lives in generator scripts. Storage is handled by pluggable backends (sops, password-store, etc.). Deployment runs through NixOS activation scripts. Access control is enforced through file permissions and ownership.
 
-#### 2. Separation of Concerns
-
-- **Generation logic**: Defined in generator scripts
-- **Storage**: Handled by pluggable backends (sops, age, password-store)
-- **Deployment**: Managed by NixOS activation scripts
-- **Access control**: Enforced through file permissions and ownership
-
-#### 3. Composability Through Dependencies
-
-Generators can depend on outputs from other generators, enabling complex workflows:
+**Composability through dependencies.** Generators can depend on outputs from other generators, enabling complex workflows:
 
 ```text
 # Dependencies create a directed acyclic graph (DAG)
@@ -45,38 +32,26 @@ A → B → C
     D
 ```
 
-This allows building sophisticated systems like certificate authorities where intermediate certificates depend on root certificates.
+You can build systems like certificate authorities where intermediate certificates depend on root certificates.
 
-#### 4. Type Safety
-
-The vars system distinguishes between:
-
-- **Secret files**: Only accessible via `.path`, deployed to `/run/secrets/`
-- **Public files**: Accessible via `.value`, stored in nix store
-
-This prevents accidental exposure of secrets in the nix store.
+**Type safety.** Secret files are only accessible via `.path` and deployed to `/run/secrets/`. Public files are accessible via `.value` and stored in the nix store. This separation prevents accidental exposure of secrets.
 
 ### Storage Backend Architecture
 
-The vars system uses pluggable storage backends:
+Pluggable storage backends handle encryption/decryption:
 
-- **[sops](sops/secrets)** (default): Integrates with sops-nix for on-machine decryption
-- **[age](age/age-backend)**: Direct age encryption with admin-side decryption
-- **password-store**: For users already using pass/passage
-
-Each backend handles encryption/decryption transparently, allowing the same generator definitions to work across different security models.
+- `sops` (default): integrates with Clan's existing sops encryption
+- `password-store`: for users already using pass
 
 ### Timing and Lifecycle
 
-#### Generation Phases
+Vars are generated in three phases:
 
-1. **Pre-deployment**: `clan vars generate` creates vars before deployment
-2. **During deployment**: Missing vars are generated automatically
-3. **Regeneration**: Explicit regeneration with `--regenerate` flag
+1. Before deployment: `clan vars generate` creates vars explicitly
+2. During deployment: missing vars are generated automatically
+3. On demand: explicit regeneration with `--regenerate` flag
 
-#### The `neededFor` Option
-
-Control when vars are available during system activation:
+Use `neededFor` to control when vars are available during system activation:
 
 ```nix
 files."early-secret" = {
@@ -85,11 +60,9 @@ files."early-secret" = {
 };
 ```
 
-### Advanced Patterns
+### Multi-Machine Coordination
 
-#### Multi-Machine Coordination
-
-The `share` option enables cross-machine secret sharing:
+Setting `share = true` on a generator enables cross-machine secret sharing:
 
 ```mermaid
 graph LR
@@ -98,13 +71,9 @@ graph LR
     A --> D[Machine 3]
 ```
 
-This is useful for:
+Use cases include shared certificate authorities, mesh VPN pre-shared keys, and cluster join tokens.
 
-- Shared certificate authorities
-- Mesh VPN pre-shared keys
-- Cluster join tokens
-
-#### Generator Composition
+### Generator Composition
 
 Complex systems can be built by composing simple generators:
 
@@ -114,7 +83,7 @@ root-ca → intermediate-ca → service-cert
      ocsp-responder
 ```
 
-Each generator focuses on one task, making the system modular and testable.
+Each generator focuses on one task, keeping the system modular and testable.
 
 ### Key Advantages
 

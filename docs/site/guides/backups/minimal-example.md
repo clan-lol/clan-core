@@ -1,19 +1,13 @@
 # Minimal Example
 
-Configure a peer-to-peer backup system through the inventory so your machines back up their state to other machines in the Clan, ensuring redundancy and data safety.
+Configure a peer-to-peer backup system through the inventory so your machines back up their state to other machines in the Clan.
 
 ## What is BorgBackup?
 
-BorgBackup is a powerful and efficient backup solution designed for secure and space-efficient backups. It offers features such as:
+BorgBackup is a deduplicating backup program with support for encryption and compression.
+It runs on Linux, macOS, and BSD, and can mount backup archives via FUSE.
 
-- **Deduplication**: Saves storage space by avoiding duplicate data.
-- **Encryption**: Ensures backups are secure and authenticated.
-- **Compression**: Supports multiple compression algorithms like lz4, zstd, zlib, and more.
-- **FUSE Mounting**: Allows backups to be mounted as a file system.
-- **Cross-Platform**: Works on Linux, macOS, BSD, and more.
-- **Open Source**: Licensed under BSD and supported by an active community.
-
-While this guide uses BorgBackup, you can also use other backup services supported by Clan, depending on your requirements.
+While this guide uses BorgBackup, Clan supports other backup services too.
 
 ### Example Setup
 
@@ -43,19 +37,18 @@ inventory.instances = {
 
 ## Roles
 
-In a Clan Service, roles define how machines participate in the backup system. Each role applies specific Nix configurations to the machine, enabling flexibility and scalability in your backup setup.
+In a Clan Service, roles define how machines participate in the backup system. Each role applies specific Nix configurations to the machine.
 
-- **Client**: These machines create backups and send them to designated destinations. Clients can be configured to back up to multiple destinations, ensuring redundancy and reliability.
+- Client machines create backups and send them to designated destinations. Clients can back up to multiple destinations for redundancy.
 
-- **Server**: These machines act as repositories, receiving and securely storing backups from client machines. Servers can be dedicated backup nodes within your Clan network, providing centralized storage for all backups.
+- Server machines act as repositories, receiving and storing backups from clients. Servers can be dedicated backup nodes within your Clan network.
 
 ## Backup destinations
 
-This service allows you to perform backups to multiple `destinations`.
-Destinations can be:
+This service supports backups to multiple destinations:
 
-- **Local**: Local disk storage
-- **Server**: Your own borgbackup server (using the `server` role)
-- **Third-party services**: Such as Hetzner's Storage Box
+- Local disk storage
+- Your own borgbackup server (using the `server` role)
+- Third-party services such as Hetzner's Storage Box
 
-However, if BorgBackup does not meet your needs, you can implement your own backup Clan service.
+If BorgBackup does not meet your needs, you can implement your own backup Clan service.
