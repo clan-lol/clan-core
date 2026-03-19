@@ -8,6 +8,10 @@
       imports = [ (self.nixosModules.clanCore) ];
       environment.etc."secret".source = config.sops.secrets.secret.path;
       environment.etc."group-secret".source = config.sops.secrets.group-secret.path;
+      environment.etc."secret-sops-file".text = toString config.sops.secrets.secret.sopsFile;
+      environment.etc."secret-sops-file-legacy".text = toString (
+        config.clan.core.settings.directory + "/sops/secrets/secret/secret"
+      );
       sops.age.keyFile = "/etc/privkey.age";
 
       clan.core.settings.directory = "${./.}";
@@ -17,5 +21,6 @@
   testScript = ''
     machine.succeed("cat /etc/secret >&2")
     machine.succeed("cat /etc/group-secret >&2")
+    machine.succeed('[ "$(cat /etc/secret-sops-file)" != "$(cat /etc/secret-sops-file-legacy)" ]')
   '';
 }
