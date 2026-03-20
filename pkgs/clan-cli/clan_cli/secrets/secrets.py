@@ -348,11 +348,15 @@ def disallow_member(
     if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
-    return update_keys(
-        target.parent.parent,
-        collect_keys_for_path(group_folder.parent),
-        age_plugins=age_plugins,
+    changed = [target]
+    changed.extend(
+        update_keys(
+            target.parent.parent,
+            collect_keys_for_path(group_folder.parent),
+            age_plugins=age_plugins,
+        )
     )
+    return changed
 
 
 def has_secret(secret_path: Path) -> bool:

@@ -317,12 +317,18 @@ def add_secret(
     group: str,
     name: str,
     age_plugins: list[str],
+    flake_dir: Path,
 ) -> None:
-    secrets.allow_member(
+    updated_files = secrets.allow_member(
         secrets.groups_folder(sops_secrets_folder(clan_dir) / name),
         sops_groups_folder(clan_dir),
         group,
         age_plugins=age_plugins,
+    )
+    commit_files(
+        updated_files,
+        flake_dir,
+        f"secrets: add group {group} to secret {name}",
     )
 
 
@@ -351,6 +357,7 @@ def add_secret_command(args: argparse.Namespace) -> None:
         args.group,
         args.secret,
         age_plugins=load_age_plugins(flake),
+        flake_dir=flake.path,
     )
 
 
