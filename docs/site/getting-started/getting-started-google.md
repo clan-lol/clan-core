@@ -1,18 +1,20 @@
 # Getting Started: Google Cloud Edition
 
-!!! Note "Prerequisites"
-    Your setup machine needs the following:
+:::admonition[Prerequisites]{type=note}
+Your setup machine needs the following:
 
 * **Nix** on your Setup Machine (unless you're using NixOS)
 
 * An **id_ed25519** keypair on your Setup Machine. (Link coming soon.)
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
+:::
 
 ## 1. Create a Server on Google Cloud
 
-!!! Danger
-    The steps in this document will erase all data on your Google Cloud server's hard drive.
+:::admonition[Danger]{type=danger}
+The steps in this document will erase all data on your Google Cloud server's hard drive.
+:::
 
 If you already have a server on Google Cloud running, you can skip this step.
 
@@ -91,11 +93,13 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note "Important"
-    The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::admonition[Important]{type=note}
+The first time you run this, Clan will automatically create an age key at `~/.config/sops/age/keys.txt`. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::
 
-!!! Note "Important"
-    If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::admonition[Important]{type=note}
+If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::
 
 Change to the new folder:
 
@@ -407,8 +411,9 @@ If you automatically generated one, to retrieve it type:
 clan vars get test-machine user-password-alice/user-password
 ```
 
-!!! Note
-    On cloud machines, this password will be used for sudo access if you grant it. Typically password login is disabled on a cloud machine.
+:::admonition[Note]{type=note}
+On cloud machines, this password will be used for sudo access if you grant it. Typically password login is disabled on a cloud machine.
+:::
 
 Next, let's add a key file so Alice can log in remotely. For this we'll use your own key file as before. Type:
 

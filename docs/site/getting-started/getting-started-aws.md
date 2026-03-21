@@ -1,20 +1,21 @@
 
 # Getting Started: AWS Edition
 
-!!! Note "Prerequisites"
-    Your setup machine needs the following:
+:::admonition[Prerequisites]{type=note}
+Your setup machine needs the following:
 
 * **Nix** on your Setup Machine (unless you're using NixOS)
 
 * An **id_ed25519** keypair on your Setup Machine. (Link coming soon.)
 
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
-
+:::
 
 ## 1. Create a Server on AWS
 
-!!! Danger
-    The steps in this document will erase all data on your Hetzner server's hard drive.
+:::admonition[Danger]{type=danger}
+The steps in this document will erase all data on your Hetzner server's hard drive.
+:::
 
 From inside the AWS Console, head to the EC2 service, and click on **Instances** on the left. Then click **Launch Instances**.
 
@@ -24,8 +25,9 @@ Under **Application and OS Images**, choose **Quick Start**, and under that clic
 
 Under **Instance type** you have some flexibility, but we recommend choosing at least **t3-small**; however **t3-large** works best.
 
-!!! Note
-    Do not use t2 instances. In general, use Nitro instance types: t3, m5, c5, r5, m6i, c6i, etc. Avoid Xen instance types: t2, m4, c4, r4, etc. as the newer kexec tool (used internally by Clan) doesn't work well with infrastructure changes Amazon recently put in place with the Xen technology.
+:::admonition[Note]{type=note}
+Do not use t2 instances. In general, use Nitro instance types: t3, m5, c5, r5, m6i, c6i, etc. Avoid Xen instance types: t2, m4, c4, r4, etc. as the newer kexec tool (used internally by Clan) doesn't work well with infrastructure changes Amazon recently put in place with the Xen technology.
+:::
 
 Under **Key pair**, select one of your existing key pairs, or create a new one. (If you create a new one, choose **ED25519** for the type. It will download automatically. Be sure to move it in your `~/.ssh` directory.)
 
@@ -46,8 +48,9 @@ substituting:
 * **\<KEY-PAIR-FILE\>** for the path and name of your key pair file
 * **\<IP-ADDRESS\>** for your new server's public IP address. You can find this by clicking on the instance ID in the console; it will be in the middle near the top.
 
-!!! Tip
-    The main username for Ubuntu on EC2 is `ubuntu`.
+:::admonition[Tip]{type=tip}
+The main username for Ubuntu on EC2 is `ubuntu`.
+:::
 
 Then exit:
 
@@ -80,8 +83,9 @@ Then exit:
 exit
 ```
 
-!!! Important
-    This step is not optional; Clan uses an existing id_ed25519 key to connect.
+:::admonition[Important]{type=warning}
+This step is not optional; Clan uses an existing id_ed25519 key to connect.
+:::
 
 ## 2. Run the Clan setup
 
@@ -93,11 +97,13 @@ nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --ref
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
 
-!!! Note "Important"
-    The first time you run this, Clan will automatically create an age key at ~/.config/sops/age/keys.txt. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::admonition[Important]{type=note}
+The first time you run this, Clan will automatically create an age key at `~/.config/sops/age/keys.txt`. This key encrypts your secrets - back it up somewhere safe, and then type "y".
+:::
 
-!!! Note "Important"
-    If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::admonition[Important]{type=note}
+If you've run this before, you'll also be asked to select admin keys; you'll most likely want to type "1" and press enter.
+:::
 
 Change to the new folder:
 
@@ -129,8 +135,9 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     };
 ```
 
-!!! Note
-    Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS, it will be using `root`, hence the `root@` in this code snippet.
+:::admonition[Note]{type=note}
+Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS, it will be using `root`, hence the `root@` in this code snippet.
+:::
 
 Test it out:
 
@@ -168,8 +175,9 @@ clan machines init-hardware-config test-machine --target-host ubuntu@<IP-ADDRESS
 
 You will be asked to enter "y" to proceed.
 
-!!! Note
-    At some point, you will likely see "Connection timed out" occur multiple times. Please be patient, as the server is rebooting during this time, and it will eventually connect.
+:::admonition[Note]{type=note}
+At some point, you will likely see "Connection timed out" occur multiple times. Please be patient, as the server is rebooting during this time, and it will eventually connect.
+:::
 
 ## 6. Add a Disk Configuration.
 
@@ -324,8 +332,9 @@ If you automatically generated one, to retrieve it type:
 clan vars get test-machine user-password-alice/user-password
 ```
 
-!!! Note
-    On cloud machines, this password will be used for sudo access if you grant it. Typically password login is disabled on a cloud machine.
+:::admonition[Note]{type=note}
+On cloud machines, this password will be used for sudo access if you grant it. Typically password login is disabled on a cloud machine.
+:::
 
 Next, let's add a key file so Alice can log in remotely. For this we'll use your own key file as before. Type:
 
