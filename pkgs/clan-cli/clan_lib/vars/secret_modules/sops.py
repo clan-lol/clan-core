@@ -467,11 +467,17 @@ class SecretStore(StoreBase):
                     if machine_link.exists():
                         disallow_member(secret_path / "machines", machine, age_plugins)
 
-                update_keys(
-                    secret_path,
-                    collect_keys_for_path(secret_path),
-                    age_plugins=age_plugins,
-                )
+                # Only re-encrypt if the actual recipients in the file
+                # differ from the wanted recipients (e.g. after git merges
+                # that added new machine keys or group members).
+                wanted_recipients = collect_keys_for_path(secret_path)
+                current_recipients = sops.get_recipients(secret_path)
+                if current_recipients != wanted_recipients:
+                    update_keys(
+                        secret_path,
+                        wanted_recipients,
+                        age_plugins=age_plugins,
+                    )
         if file_name and not file_found:
             msg = f"file {file_name} was not found"
             raise ClanError(msg)
