@@ -163,7 +163,7 @@ This can be defined in `perMachine` and `perInstance`
 Q: Why is this not a top-level attribute?
 A: Because nested service definitions may also depend on a `role` which must be resolved depending on `machine` and `instance`. The top-level module doesn't know anything about machines. Keeping the service layer machine agnostic allows us to build the UI for a module without adding any machines. (One of the problems with the current system)
 
-```
+```text
 zerotier/default.nix
 ```
 

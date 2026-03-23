@@ -38,9 +38,7 @@ It should contain two files:
 - `test.nix`
 - Everything else may be adopted as needed.
 
-```
-Example filetree
-```
+Example filetree:
 
 ```sh
 .

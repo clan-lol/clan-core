@@ -35,7 +35,7 @@ clan machines update test-machine
 
 SSH into your machine:
 
-```
+```bash
 clan ssh test-machine
 ```
 

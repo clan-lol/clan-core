@@ -180,7 +180,7 @@ ip -6 route show dev <instance-name>
 
 If you see this error in your logs:
 
-```
+```console
 wireguard: Could not bring up interface, ignoring: Address already in use
 ```
 

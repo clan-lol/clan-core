@@ -4,7 +4,7 @@ This module provisions a single-instance S3 bucket. To customize its behavior, s
 
 Example configuration:
 
-```
+```nix
 instances = {
     garage = {
         roles.default.machines."server" = {};

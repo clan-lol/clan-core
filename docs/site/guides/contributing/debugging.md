@@ -107,7 +107,7 @@ nix flake show
 
 Under `checks` you will find all tests that are executed in our CI. Under `packages` you find all our projects.
 
-```
+```console
 git+file:///home/lhebendanz/Projects/clan-core
 ├───apps
 │   └───x86_64-linux

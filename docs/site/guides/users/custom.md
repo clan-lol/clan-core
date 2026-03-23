@@ -34,7 +34,7 @@ This approach works well when:
 
 If the same user needs access to multiple machines, define them in a shared module:
 
-```
+```console
 .
 ├── machines/
 │   ├── desktop/

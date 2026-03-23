@@ -38,7 +38,7 @@ Unlike imperative secret management, vars are declared in your NixOS configurati
 
 Generators can depend on outputs from other generators, enabling complex workflows:
 
-```
+```text
 # Dependencies create a directed acyclic graph (DAG)
 A → B → C
     ↓

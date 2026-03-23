@@ -84,7 +84,7 @@ flake.select("nixosConfigurations.*.config.networking.hostName)
 
 returns:
 
-```
+```json
 {
   "ignavia": "ignavia",
   "mors": "mors",

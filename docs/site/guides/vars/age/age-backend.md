@@ -153,7 +153,7 @@ clan.core.vars.age.secretLocation = "/etc/my-secrets";
 
 ## Repository Layout
 
-```
+```text
 your-clan/
 ├── clan.nix
 ├── secrets/

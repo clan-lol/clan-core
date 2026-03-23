@@ -26,7 +26,7 @@ We highly advocate following the [Practical Testing Pyramid](https://martinfowle
 
 NixOS is **untyped** and frequently changes; tests are the safest way to ensure long-term stability of services.
 
-```
+```text
                / \
               /   \
              / E2E \
