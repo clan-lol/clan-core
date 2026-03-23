@@ -335,8 +335,8 @@ error: attribute 'pkgs' missing
 
 The following features from the old `services` format are no longer supported in `instances`:
 
-- Top-level `config` attribute (use `roles.<role>.settings` instead)
-- Direct module imports (use the `module` declaration instead)
+* Top-level `config` attribute (use `roles.<role>.settings` instead)
+* Direct module imports (use the `module` declaration instead)
 
 #### extraModules Support
 

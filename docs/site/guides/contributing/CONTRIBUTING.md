@@ -54,7 +54,7 @@ Let's get your development environment up and running:
       git remote add upstream gitea@git.clan.lol:clan/clan-core.git
       ```
 
-7. **Allow .envrc**
+6. **Allow .envrc**
 
     - When you enter the directory, you'll receive an error message like this:
 
@@ -64,7 +64,7 @@ Let's get your development environment up and running:
 
     - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-8. **(Optional) Install git Hooks**
+7. **(Optional) Install git Hooks**
 
     - To syntax check your code you can run:
 

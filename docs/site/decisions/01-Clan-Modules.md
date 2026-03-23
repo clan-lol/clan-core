@@ -68,7 +68,9 @@ in
 Problems with the current way of writing clanModules:
 
 1. No way to retrieve the config of a single service instance, together with its name.
+
 2. Directly exporting a single, anonymous nixosModule without any intermediary attribute layers doesn't leave room for exporting other inventory resources such as potentially `vars` or `homeManagerConfig`.
+
 3. Can't access multiple config instances individually.
     Example:
 

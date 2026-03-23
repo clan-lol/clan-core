@@ -21,8 +21,8 @@ This service demonstrates two levels of testing to ensure quality and stability 
 
 We highly advocate following the [Practical Testing Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html):
 
-* Write **unit tests** for core logic and invariants.
-* Add **one or two end-to-end (E2E)** tests to confirm your service starts and behaves correctly in a real NixOS environment.
+- Write **unit tests** for core logic and invariants.
+- Add **one or two end-to-end (E2E)** tests to confirm your service starts and behaves correctly in a real NixOS environment.
 
 NixOS is **untyped** and frequently changes; tests are the safest way to ensure long-term stability of services.
 

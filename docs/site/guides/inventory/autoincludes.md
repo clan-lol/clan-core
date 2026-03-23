@@ -27,10 +27,10 @@ The following files are detected and imported for every Clan machine:
 
 ### Other Auto-included Files
 
-* **`inventory.json`**
+- **`inventory.json`**
   Managed by Clan's API.
   Merges with `clan.inventory` to extend the inventory.
 
-* **`.clan-flake`**
+- **`.clan-flake`**
   Sentinel file to be used to locate the root of a Clan repository.
   Falls back to `.git`, `.hg`, `.svn`, or `flake.nix` if not found.
