@@ -12,25 +12,25 @@ This schema defines a standard GPT-based disk layout utilizing [btrfs-subvolume]
 ### Partitions
 
 1. **BIOS Boot Partition**
-   - Provides compatibility for MBR booting on GPT disks.
-   - Size: `1M`
-   - Type: `EF02`
+    - Provides compatibility for MBR booting on GPT disks.
+    - Size: `1M`
+    - Type: `EF02`
 
 2. **EFI System Partition (ESP)**
-   - Size: `500M`
-   - Type: `EF00`
-   - Filesystem: `vfat`
-   - Mount Point: `/boot`
-   - Options: `umask=0077` (restrictive permissions for security).
+    - Size: `500M`
+    - Type: `EF00`
+    - Filesystem: `vfat`
+    - Mount Point: `/boot`
+    - Options: `umask=0077` (restrictive permissions for security).
 
 3. **Btrfs Partition (Storage)**
-   - Size: Remaining disk space (`100%`).
-   - Filesystem: `btrfs`.
-   - Label: `root`.
-   - Subvolumes:
-     - `@root`: Mounted at `/`. The standard persistent root directory.
-     - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to improve performance and reduce SSD wear.
-     - `@home`: Mounted at `/home`. Optimized with `compress=zstd` for user data.
+    - Size: Remaining disk space (`100%`).
+    - Filesystem: `btrfs`.
+    - Label: `root`.
+    - Subvolumes:
+      - `@root`: Mounted at `/`. The standard persistent root directory.
+      - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to improve performance and reduce SSD wear.
+      - `@home`: Mounted at `/home`. Optimized with `compress=zstd` for user data.
 
 ### Snapshot Management (btrbk)
 
