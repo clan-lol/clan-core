@@ -40,6 +40,7 @@
         rules.default.suggestion = "Add the file to 'sizelintExcludes' in formatter.nix";
       };
       treefmt.settings.formatter.sizelint.excludes = sizelintExcludes;
+      treefmt.programs.rumdl-check.enable = true;
       treefmt.programs.clang-format.enable = true;
       treefmt.programs.typos = {
         enable = true;

@@ -1,0 +1,26 @@
+# rumdl configuration file
+
+[global]
+disable = [
+    "MD003",  # Heading style — false positives on mkdocs ::: admonition closers
+    "MD013",  # Line length — too noisy for prose
+    "MD014",  # Dollar signs in commands — common convention
+    "MD026",  # Trailing punctuation in heading — false positives on mkdocs ::: admonition closers
+    "MD033",  # Inline HTML — sometimes needed
+    "MD036",  # Emphasis as heading — can be intentional
+    "MD041",  # First line must be heading — not always applicable
+]
+
+exclude = [
+    ".git",
+    "node_modules",
+    "pkgs/clan-cli/clan_lib/runtime-deps/nixpkgs",
+    "pkgs/clan-site",
+    "CHANGELOG.md",
+    "LICENSE.md",
+]
+
+respect-gitignore = true
+
+# Use mkdocs flavor since the docs use mkdocs-style admonitions
+flavor = "mkdocs"
