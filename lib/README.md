@@ -23,11 +23,11 @@ A single feature-set/module may be organized like this:
 
 ```nix
 #     ↓ The final clanLib
-{lib, clanLib, ...}:
+{ lib, clanLib, ... }:
 # ↓ portion to add to clanLib
 {
-    inventory.resolveTags = tags: inventory.machines; # implementation
-    inventory.buildMachines = x: clanLib.inventory.resolveTags x; # implementation
+  inventory.resolveTags = tags: inventory.machines; # implementation
+  inventory.buildMachines = x: clanLib.inventory.resolveTags x; # implementation
 }
 ```
 

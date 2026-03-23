@@ -275,8 +275,8 @@ nix build .#checks.x86_64-linux.clan-pytest-{with,without}-core
 To run a specific python test outside the Nix sandbox
 
 1. Enter the development environment of the python package, by either:
-    - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
-    - Or using the command `select-shell {package}` in the top-level dev shell of clan-core, (eg. `switch-shell clan-cli`)
+   - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
+   - Or using the command `select-shell {package}` in the top-level dev shell of clan-core, (eg. `switch-shell clan-cli`)
 2. Execute the test via pytest using issuing
 
     `pytest ./path/to/test_file.py:test_function_name -s -n0`

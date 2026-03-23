@@ -33,7 +33,7 @@ The module is automatically enabled once imported. It will immediately start res
 ```nix
 {
   networking.user-firewall = {
-    exemptUsers = [ "alice" ];  # Users who can access the internet
+    exemptUsers = [ "alice" ]; # Users who can access the internet
   };
 }
 ```
@@ -52,10 +52,10 @@ The module is automatically enabled once imported. It will immediately start res
     # Network interfaces that all users can use
     # Default includes common VPN interfaces
     allowedInterfaces = [
-      "lo"          # localhost (required for local services)
-      "tun*"        # OpenVPN, OpenConnect
-      "wg*"         # WireGuard (wg0, wg-home, etc.)
-      "tailscale*"  # Tailscale
+      "lo" # localhost (required for local services)
+      "tun*" # OpenVPN, OpenConnect
+      "wg*" # WireGuard (wg0, wg-home, etc.)
+      "tailscale*" # Tailscale
       # Add custom interfaces as needed
     ];
   };
@@ -67,12 +67,12 @@ The module is automatically enabled once imported. It will immediately start res
 1. **User Classification**: The module automatically identifies all normal users (non-system users) and applies restrictions to those not in the `exemptUsers` list.
 
 2. **Firewall Rules**:
-    - For iptables: Creates a custom chain `user-firewall-output` in the OUTPUT table
-    - For nftables: Creates a table `inet user-firewall` with an output chain
-    - Rules check outgoing packets and reject those from restricted users
+   - For iptables: Creates a custom chain `user-firewall-output` in the OUTPUT table
+   - For nftables: Creates a table `inet user-firewall` with an output chain
+   - Rules check outgoing packets and reject those from restricted users
 
 3. **Interface Patterns**: Supports wildcards in interface names:
-    - `*` matches any characters (e.g., `wg*` matches `wg0`, `wg-home`)
+   - `*` matches any characters (e.g., `wg*` matches `wg0`, `wg-home`)
 
 ## Default Allowed Interfaces
 
@@ -102,8 +102,8 @@ Restrict users to only access local services:
 ```nix
 {
   networking.user-firewall = {
-    allowedInterfaces = [ "lo" ];  # Only localhost
-    exemptUsers = [ ];  # No exempt users
+    allowedInterfaces = [ "lo" ]; # Only localhost
+    exemptUsers = [ ]; # No exempt users
   };
 }
 ```
@@ -115,7 +115,10 @@ Force all traffic through corporate VPN:
 ```nix
 {
   networking.user-firewall = {
-    allowedInterfaces = [ "lo" "wg-corp" ];
+    allowedInterfaces = [
+      "lo"
+      "wg-corp"
+    ];
     exemptUsers = [ "sysadmin" ];
   };
 }

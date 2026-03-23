@@ -22,9 +22,9 @@ In this example, we'll name the machine `yourmachine`. Replace this with your pr
 
 ```nix
 clan-core.lib.clan {
-    inventory = {
-        machines.yourmachine.machineClass = "darwin";
-    };
+  inventory = {
+    machines.yourmachine.machineClass = "darwin";
+  };
 }
 ```
 

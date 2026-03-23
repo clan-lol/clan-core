@@ -136,7 +136,7 @@ Lead with value. State what the reader will accomplish before explaining how.
 Create a new webserver machine in your Clan:
 
 ```nix
-clan machines create --name webserver
+clan machines create - -name webserver
 ```
 
 Use **progressive disclosure**. Introduce concepts only when needed.

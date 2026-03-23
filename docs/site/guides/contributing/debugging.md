@@ -16,13 +16,13 @@ This approach is feasible because `clan-cli` only requires a Python interpreter 
 
 ```nix
 pkgs.mkShell {
-    packages = [
-        pkgs.python3
-    ];
-    shellHook = ''
-            export GIT_ROOT="$(git rev-parse --show-toplevel)"
-            export PATH=$PATH:~/Projects/clan-core/pkgs/clan-cli/bin
-    '';
+  packages = [
+    pkgs.python3
+  ];
+  shellHook = ''
+    export GIT_ROOT="$(git rev-parse --show-toplevel)"
+    export PATH=$PATH:~/Projects/clan-core/pkgs/clan-cli/bin
+  '';
 }
 ```
 

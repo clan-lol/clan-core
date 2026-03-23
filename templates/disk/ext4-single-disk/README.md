@@ -12,18 +12,18 @@ This schema defines a traditional and highly compatible disk layout, supporting 
 ### Partitions
 
 1. **BIOS Boot Partition**
-    - Provides compatibility for MBR booting on GPT disks.
-    - Size: `1M`
-    - Type: `EF02`
+   - Provides compatibility for MBR booting on GPT disks.
+   - Size: `1M`
+   - Type: `EF02`
 
 2. **EFI System Partition (ESP)**
-    - Size: `500M`
-    - Type: `EF00`
-    - Filesystem: `vfat`
-    - Mount Point: `/boot`
-    - Options: `umask=0077` (restrictive permissions for security).
+   - Size: `500M`
+   - Type: `EF00`
+   - Filesystem: `vfat`
+   - Mount Point: `/boot`
+   - Options: `umask=0077` (restrictive permissions for security).
 
 3. **Root Partition**
-    - Size: Remaining disk space (`100%`).
-    - Filesystem: `ext4`.
-    - Mount Point: `/`.
+   - Size: Remaining disk space (`100%`).
+   - Filesystem: `ext4`.
+   - Mount Point: `/`.

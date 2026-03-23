@@ -176,7 +176,8 @@ zerotier/default.nix
 
   # Analog to flake-parts 'perSystem' only that it takes instance
   # The exact arguments will be specified and documented along with the actual implementation.
-  roles.client.perInstance = {
+  roles.client.perInstance =
+    {
       # attrs : settings of that instance
       settings,
       # string : name of the instance
@@ -205,23 +206,24 @@ zerotier/default.nix
   # Same type as currently in `clan.inventory.services.<ServiceName>.<InstanceName>.roles`
   #
   # The exact arguments will be specified and documented along with the actual implementation.
-  perMachine = {machine, instances, ... }: {
-    nixosModule =
-      { lib, ... }:
-      {
-        # Some shared code should be put into a shared file
-        # Which is then imported into all/some roles
-        imports = [
-          ../shared.nix
-        ] ++
-        (lib.optional (builtins.elem "client" machine.roles)
+  perMachine =
+    { machine, instances, ... }:
+    {
+      nixosModule =
+        { lib, ... }:
         {
-          options.debug = lib.mkOption {
-            type = lib.types.attrsOf lib.types.raw;
-          };
-        });
-      };
-  };
+          # Some shared code should be put into a shared file
+          # Which is then imported into all/some roles
+          imports = [
+            ../shared.nix
+          ]
+          ++ (lib.optional (builtins.elem "client" machine.roles) {
+            options.debug = lib.mkOption {
+              type = lib.types.attrsOf lib.types.raw;
+            };
+          });
+        };
+    };
 }
 ```
 

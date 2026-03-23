@@ -185,9 +185,9 @@ Multiple recipients can all decrypt a machine's private key. This is useful for 
 ```nix
 {
   vars.settings.recipients.hosts.production = [
-    "age1admin1..."   # Primary admin
-    "age1admin2..."   # Backup admin
-    "age1cikey..."    # CI/CD system
+    "age1admin1..." # Primary admin
+    "age1admin2..." # Backup admin
+    "age1cikey..." # CI/CD system
   ];
 }
 ```

@@ -41,6 +41,17 @@
       };
       treefmt.settings.formatter.sizelint.excludes = sizelintExcludes;
       treefmt.programs.rumdl-check.enable = true;
+      treefmt.settings.formatter.fmt-nix-codeblocks =
+        let
+          wrapper = pkgs.writeShellScriptBin "fmt-nix-codeblocks" ''
+            export PATH="${lib.makeBinPath [ pkgs.nixfmt ]}:$PATH"
+            exec ${lib.getExe pkgs.python3} ${./scripts/fmt-nix-codeblocks.py} "$@"
+          '';
+        in
+        {
+          command = lib.getExe wrapper;
+          includes = [ "*.md" ];
+        };
       treefmt.programs.clang-format.enable = true;
       treefmt.programs.typos = {
         enable = true;
