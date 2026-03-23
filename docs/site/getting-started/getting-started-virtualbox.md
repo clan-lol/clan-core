@@ -9,7 +9,7 @@ Your setup machine needs the following:
 
 * An id_ed25519 keypair on your Setup Machine. (Link coming soon.)
 
-* Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+* Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 :::
 
 :::admonition[Tip]{type=tip}

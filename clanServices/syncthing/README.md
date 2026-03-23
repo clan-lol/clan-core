@@ -22,4 +22,4 @@ Notes:
 
 ## Documentation
 
-See the official Syncthing docs: https://docs.syncthing.net/
+See the official Syncthing docs: <https://docs.syncthing.net/>

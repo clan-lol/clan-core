@@ -120,7 +120,6 @@ clan secrets users remove-key $USER --age-key $YOUR_PUBLIC_KEY
 ```
 
 [age]: https://github.com/FiloSottile/age
-[age plugin]: https://github.com/FiloSottile/awesome-age?tab=readme-ov-file#plugins
 [sops]: https://github.com/getsops/sops
 [encrypting with age]: https://github.com/getsops/sops?tab=readme-ov-file#encrypting-using-age
 
@@ -268,7 +267,7 @@ The secrets system conceptually knows two different entities:
 **A machine** Can decrypt secrets that where encrypted specifically for that machine.
 
 :::admonition[Danger]{type=danger}
-**Always make sure at least one _User_ has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
+**Always make sure at least one *User* has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
 :::
 
 ### Inherited implications

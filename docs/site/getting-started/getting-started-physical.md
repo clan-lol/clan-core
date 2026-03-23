@@ -12,7 +12,7 @@ Your setup machine needs the following:
 
 * An **SSH key** on your setup machine. See [Create an SSH key](/docs/getting-started/create-an-ssh-key) if you don't have one yet.
 
-* **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+* **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 
 ## Terminology
 
@@ -176,7 +176,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
 :::admonition[Tip]{type=tip}
-You might need to disable secure boot. Follow our instructions [here](https://docs.clan.lol/25.11/guides/secure-boot/).
+You might need to disable secure boot. Follow our [secure boot instructions](https://docs.clan.lol/25.11/guides/secure-boot/).
 :::
 
 Once booted, you will see a QR code and text similar to this:
