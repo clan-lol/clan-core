@@ -12,25 +12,25 @@ This schema defines a GPT-based disk layout optimized for a "stateless" NixOS co
 ### Partitions
 
 1. **BIOS Boot Partition**
-   - Provides compatibility for MBR booting on GPT disks.
-   - Size: `1M`
-   - Type: `EF02`
+    - Provides compatibility for MBR booting on GPT disks.
+    - Size: `1M`
+    - Type: `EF02`
 
 2. **EFI System Partition (ESP)**
-   - Size: `500M`
-   - Type: `EF00`
-   - Filesystem: `vfat`
-   - Mount Point: `/boot`
-   - Options: `umask=0077` (restrictive permissions for security).
+    - Size: `500M`
+    - Type: `EF00`
+    - Filesystem: `vfat`
+    - Mount Point: `/boot`
+    - Options: `umask=0077` (restrictive permissions for security).
 
 3. **Btrfs Partition (Storage)**
-   - Size: Remaining disk space (`100%`).
-   - Filesystem: `btrfs`.
-   - Subvolumes:
-     - `@root`: Mounted at `/`. This subvolume is ephemeral (see Rollback Logic).
-     - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime`.
-     - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
-     - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. Marked as `neededForBoot = true` to store persistent system state (machine-id, SSH keys, etc.).
+    - Size: Remaining disk space (`100%`).
+    - Filesystem: `btrfs`.
+    - Subvolumes:
+      - `@root`: Mounted at `/`. This subvolume is ephemeral (see Rollback Logic).
+      - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime`.
+      - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
+      - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. Marked as `neededForBoot = true` to store persistent system state (machine-id, SSH keys, etc.).
 
 ### Ephemeral Root Logic (Btrfs Rollback)
 

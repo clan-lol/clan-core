@@ -188,21 +188,21 @@ This means the configured port (default: 51820) is already in use by another ser
 
 1. **Check for conflicting WireGuard instances:**
 
-   ```bash
+    ```bash
    sudo wg show
    sudo ss -ulnp | grep 51820
-   ```
+    ```
 
 2. **Use a different port:**
 
-   ```nix
+    ```nix
    services.wireguard.myinstance = {
      roles.controller = {
        endpoint = "vpn.example.com";
        port = 51821;  # Use a different port
      };
    };
-   ```
+    ```
 
 3. **Ensure unique ports across multiple instances:**
    If you have multiple WireGuard instances on the same machine, each must use a different port.

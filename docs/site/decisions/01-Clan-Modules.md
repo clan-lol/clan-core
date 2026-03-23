@@ -89,8 +89,8 @@ Problems with the current way of writing clanModules:
     };
     ```
 
-   This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
-   Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
+    This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
+    Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
 
 4. Writing modules for multiple instances is cumbersome. Currently the clanModule author has to write one or multiple `fold` operations for potentially every NixOS option to define how multiple service instances merge into every single one option. The new idea behind this adr is to pull the common fold function into the outer context provide it as a common helper. (See the example below. `perInstance` analog to the well known `perSystem` of flake-parts)
 

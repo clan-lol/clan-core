@@ -13,7 +13,7 @@ By default the `clan vars` subcommand uses the `age` encryption tool, which supp
 Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesome-age?tab=readme-ov-file#plugins) you can use with Clan. (Last updated: **September 12, 2025**)
 
 - ⭐️ [**age-plugin-yubikey**](https://github.com/str4d/age-plugin-yubikey): YubiKey (and other PIV tokens) plugin.
--  [**age-plugin-se**](https://github.com/remko/age-plugin-se): Apple Secure Enclave plugin.
+- [**age-plugin-se**](https://github.com/remko/age-plugin-se): Apple Secure Enclave plugin.
 - 🧪 [**age-plugin-tpm**](https://github.com/Foxboron/age-plugin-tpm): TPM 2.0 plugin.
 - 🧪 [**age-plugin-tkey**](https://github.com/quite/age-plugin-tkey): Tillitis TKey plugin.
    [**age-plugin-trezor**](https://github.com/romanz/trezor-agent/blob/master/doc/README-age.md): Hardware wallet plugin (TREZOR, Ledger, etc.).

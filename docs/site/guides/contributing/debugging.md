@@ -147,12 +147,12 @@ To test the CLI locally in a development environment and set breakpoints for deb
 
 1. Run the following command to execute your tests and allow for debugging with breakpoints:
 
-   ```bash
+    ```bash
    cd ./pkgs/clan-cli
    pytest -n0 -s --maxfail=1 ./tests/test_nameofthetest.py
-   ```
+    ```
 
-   You can place `breakpoint()` in your Python code where you want to trigger a breakpoint for debugging.
+    You can place `breakpoint()` in your Python code where you want to trigger a breakpoint for debugging.
 
 ## Test Locally in a Nix Sandbox
 
@@ -172,16 +172,16 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
 
 1. Insert an endless sleep into your test code where you want to pause the execution. For example:
 
-   ```python
+    ```python
    import time
    time.sleep(3600)  # Sleep for one hour
-   ```
+    ```
 
 2. Use `cntr` and `psgrep` to attach to the Nix sandbox. This allows you to interactively debug your code while it's paused. For example:
 
-   ```bash
+    ```bash
    psgrep $PROCESS_NAME
    cntr attach $CONTAINER_ID
-   ```
+    ```
 
 Or you can also use the [Nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)

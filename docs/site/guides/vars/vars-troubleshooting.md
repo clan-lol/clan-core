@@ -14,7 +14,7 @@ Quick reference for diagnosing and fixing vars issues.
 
 1. **Missing runtime inputs**
 
-   ```nix
+    ```nix
    # Wrong - missing required tool
    runtimeInputs = [ ];
    script = ''
@@ -23,11 +23,11 @@ Quick reference for diagnosing and fixing vars issues.
 
    # Correct
    runtimeInputs = [ pkgs.openssl ];
-   ```
+    ```
 
 2. **Wrong output path**
 
-   ```nix
+    ```nix
    # Wrong - must use $out
    script = ''
      echo "secret" > ./myfile
@@ -37,11 +37,11 @@ Quick reference for diagnosing and fixing vars issues.
    script = ''
      echo "secret" > $out/myfile
    '';
-   ```
+    ```
 
 3. **Missing declared files**
 
-   ```nix
+    ```nix
    files."config" = { };
    files."key" = { };
    script = ''
@@ -54,7 +54,7 @@ Quick reference for diagnosing and fixing vars issues.
      echo "data" > $out/config
      echo "key" > $out/key
    '';
-   ```
+    ```
 
 #### Cannot Access Generated Files
 
@@ -64,7 +64,7 @@ Quick reference for diagnosing and fixing vars issues.
 
 1. **Secret files don't have `.value`**
 
-   ```nix
+    ```nix
    # Wrong - secret files can't use .value
    files."secret" = { secret = true; };
 
@@ -74,17 +74,17 @@ Quick reference for diagnosing and fixing vars issues.
    # Correct - use .path for secrets
    environment.etc."app.conf".source =
      config.clan.core.vars.generators.app.files."secret".path;
-   ```
+    ```
 
 2. **Public files should use `.value`**
 
-   ```nix
+    ```nix
    # Better for non-secrets
    files."cert.pem" = { secret = false; };
 
    sslCertificate =
      config.clan.core.vars.generators.ca.files."cert.pem".value;
-   ```
+    ```
 
 #### Dependencies Not Available
 
@@ -289,8 +289,8 @@ If these solutions don't resolve your issue:
 2. Ask in the Clan community channels
 3. Provide:
 
-     - The generator configuration
+    - The generator configuration
 
-     - The exact error message
+    - The exact error message
 
-     - Output of `clan --debug vars generate`
+    - Output of `clan --debug vars generate`

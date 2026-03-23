@@ -49,11 +49,11 @@ The `settings.host` option in the internet service now only accepts a hostname o
 - **Before:** `settings.host = "root@example.com:2222";`
 - **After:**
 
-  ```nix
+    ```nix
   settings.host = "example.com";
   settings.port = 2222;
   settings.user = "root";
-  ```
+    ```
 
 The `settings.port` defaults to `22` and `settings.user` defaults to `null` (which uses `root`).
 

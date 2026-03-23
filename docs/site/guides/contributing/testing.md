@@ -43,10 +43,10 @@ rg self.clanLib.test.baseTest
 All NixOS VM tests in Clan are exported as individual flake outputs under `checks.x86_64-linux.{test-attr-name}`.
 If a test fails in CI:
 
-  - look for the job name of the test near the top if the CI Job page, like, for example `gitea:clan/clan-core#checks.x86_64-linux.borgbackup/1242`
-  - in this case `checks.x86_64-linux.borgbackup` is the attribute path
-  - note the last element of that attribute path, in this case `borgbackup`
-  - search for the attribute name inside the `/checks` directory via ripgrep
+- look for the job name of the test near the top if the CI Job page, like, for example `gitea:clan/clan-core#checks.x86_64-linux.borgbackup/1242`
+- in this case `checks.x86_64-linux.borgbackup` is the attribute path
+- note the last element of that attribute path, in this case `borgbackup`
+- search for the attribute name inside the `/checks` directory via ripgrep
 
 example: locating the vm test named `borgbackup`:
 
@@ -137,10 +137,10 @@ Locate the definition (see above) and add print statements, like, for example `p
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
 - Then run the commands in the machines manually, like for example:
 
-  ```python
+    ```python
     start_all()
     machine1.succeed("echo hello")
-  ```
+    ```
 
 ##### Breakpoints
 
@@ -275,11 +275,11 @@ nix build .#checks.x86_64-linux.clan-pytest-{with,without}-core
 To run a specific python test outside the Nix sandbox
 
 1. Enter the development environment of the python package, by either:
-  - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
-  - Or using the command `select-shell {package}` in the top-level dev shell of clan-core, (eg. `switch-shell clan-cli`)
+    - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
+    - Or using the command `select-shell {package}` in the top-level dev shell of clan-core, (eg. `switch-shell clan-cli`)
 2. Execute the test via pytest using issuing
 
-  `pytest ./path/to/test_file.py:test_function_name -s -n0`
+    `pytest ./path/to/test_file.py:test_function_name -s -n0`
 
 The flags `-sn0` are useful to forwards all stdout/stderr output to the terminal and be able to debug interactively via `breakpoint()`.
 

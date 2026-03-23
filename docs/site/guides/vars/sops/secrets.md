@@ -194,23 +194,23 @@ Here's how to get started:
 
 1. **Creating Groups**:
 
-   Assign users to a new group, e.g., `admins`:
+    Assign users to a new group, e.g., `admins`:
 
-   ```bash
+    ```bash
    clan secrets groups add-user admins $USERNAME
-   ```
+    ```
 
 2. **Listing Groups**:
 
-   ```bash
+    ```bash
    clan secrets groups list
-   ```
+    ```
 
 3. **Assigning Secrets to Groups**:
 
-   ```bash
+    ```bash
    clan secrets groups add-secret $GROUP_NAME $SECRET_NAME
-   ```
+    ```
 
 **TIP** To encrypt all secrets of a machine for a specific group, use the following NixOS configuration:
 

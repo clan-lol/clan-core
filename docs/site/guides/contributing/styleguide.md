@@ -221,8 +221,8 @@ Users learn the NixOS module system by seeing patterns first.
 - Do **not** describe missing code parts (`#elided`, `#omitted`)
 
 - **Machines vs Devices**:
-    - machine = Clan identity
-    - device = hardware
+  - machine = Clan identity
+  - device = hardware
 
 #### Capitalization
 
