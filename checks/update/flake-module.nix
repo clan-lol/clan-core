@@ -28,7 +28,7 @@
                       config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel.drvPath
                       config.nodes.test-update-machine.system.build.toplevel.drvPath
                       pkgs.stdenv.drvPath
-                      pkgs.buildPackages.xorg.lndir
+                      pkgs.buildPackages.lndir
                       pkgs.bubblewrap
                       pkgs.makeShellWrapper
                       pkgs.openssh.dev
