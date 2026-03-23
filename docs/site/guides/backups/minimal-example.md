@@ -2,7 +2,7 @@
 
 Configure a peer-to-peer backup system through the inventory so your machines back up their state to other machines in the Clan, ensuring redundancy and data safety.
 
-### What is BorgBackup?
+## What is BorgBackup?
 
 BorgBackup is a powerful and efficient backup solution designed for secure and space-efficient backups. It offers features such as:
 

@@ -47,7 +47,7 @@ Registrar-specific or very new keys can be passed through an open attribute set 
 
 ---
 
-# 2. Full Porkbun example
+## 2. Full Porkbun example
 
 Manage three records – `@`, `home` and `test` – of the domain
 `jon.blog` and refresh them every 15 minutes:

@@ -2,7 +2,7 @@
 
 List, create, and restore backups using the `clan backups` CLI commands.
 
-### Listing states
+## Listing states
 
 To see which files (`states`) will be backed up on a specific machine, use:
 

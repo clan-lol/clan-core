@@ -75,7 +75,7 @@ Highlight Code in a Snippet
 A consistent style greatly increases the usability of all documentation and communication.
 Please use this page as a reference and style guide for our internal and external documentation, blog posts, and all other Clan communication.
 
-#### Knowledge Expectations
+### Knowledge Expectations
 
 **What readers know:**
 
