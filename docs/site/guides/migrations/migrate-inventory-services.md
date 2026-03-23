@@ -293,6 +293,7 @@ The following table shows the migration status of each deprecated clanModule:
 ---
 
 :::admonition[Warning]{type=warning}
+
 * Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
 * `inventory.services` is no longer recommended; use `inventory.instances` instead.
 * Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
@@ -334,19 +335,21 @@ error: attribute 'pkgs' missing
 
 The following features from the old `services` format are no longer supported in `instances`:
 
-- Top-level `config` attribute (use `roles.<role>.settings` instead)
-- Direct module imports (use the `module` declaration instead)
+* Top-level `config` attribute (use `roles.<role>.settings` instead)
+* Direct module imports (use the `module` declaration instead)
 
 #### extraModules Support
 
 The `extraModules` attribute is still supported in the new instances format! The key change is how modules are specified:
 
 **Old format (string paths relative to Clan root):**
+
 ```nix
 roles.client.extraModules = [ "nixosModules/borgbackup.nix" ];
 ```
 
 **New format (NixOS modules):**
+
 ```nix
 # Direct module reference
 roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];

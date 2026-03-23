@@ -25,16 +25,16 @@ direnv: export +AR +AS +CC +CLAN_CORE_PATH +CONFIG_SHELL +CXX +DETERMINISTIC_BUI
 
 Once that has loaded, you can run the local dev environment by running:
 
-```
-$ clan-dev
+```bash
+clan-dev
 ```
 
 This runs the UI as a standalone app, which is a webview app.
 
 You can also run
 
-```
-$ clan-dev -b
+```bash
+clan-dev -b
 ```
 
 Which runs the UI in your default browser.

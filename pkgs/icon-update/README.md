@@ -2,9 +2,7 @@
 
 This script updates the clan icons.
 
-To update the icons
-
-https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens
+To update the icons go to this [figma link](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens)
 
 - `export FIGMA_TOKEN=YOUR_TOKEN`
 - `nix run .#icon-update`

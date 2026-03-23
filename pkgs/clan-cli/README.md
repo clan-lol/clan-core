@@ -7,13 +7,13 @@ The Clan CLI contains the command line interface.
 We recommend setting up [direnv](https://direnv.net/) to load the development with Nix.
 If you do not have it set up you can also use `nix develop` directly like this:
 
-```
+```bash
 use flake .#clan-cli --builders ''
 ```
 
 After you can use the local bin wrapper to test things in the CLI:
 
-```
+```bash
 ./bin/clan
 ```
 

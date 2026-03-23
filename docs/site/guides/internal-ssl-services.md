@@ -35,6 +35,7 @@ respective machines.
 ### Configure the CoreDNS Service
 
 The CoreDNS service has two roles:
+
 - `server`: Runs the DNS server for your custom TLD
 - `default`: Makes machines use the DNS server for TLD resolution and allows exposing services
 
@@ -73,6 +74,7 @@ inventory = {
 ### Configure the Certificates Service
 
 The certificates service also has two roles:
+
 - `ca`: Sets up the certificate authority on a server
 - `default`: Makes machines trust the CA and allows them to request certificates
 
@@ -166,12 +168,14 @@ You should also now be able to visit `https://ca.c` to access the certificate au
 ### DNS Resolution Issues
 
 1. **Check if DNS server is running**:
+
 ```bash
 # On the DNS server machine
 systemctl status coredns
 ```
 
 2. **Verify DNS configuration**:
+
 ```bash
 # Check if the right nameservers are configured
 cat /etc/resolv.conf
@@ -179,6 +183,7 @@ systemctl status systemd-resolved
 ```
 
 3. **Test DNS directly**:
+
 ```bash
 # Query the DNS server directly
 dig @192.168.XXX.XXX ca.c
@@ -187,6 +192,7 @@ dig @192.168.XXX.XXX ca.c
 ### Certificate Issues
 
 1. **Check CA status**:
+
 ```bash
 # On the CA machine
 systemctl status step-ca
@@ -194,6 +200,7 @@ systemctl status nginx
 ```
 
 2. **Verify certificate trust**:
+
 ```bash
 # Test certificate trust
 curl -v https://ca.c
@@ -201,6 +208,7 @@ openssl s_client -connect ca.c:443 -verify_return_error
 ```
 
 3. **Check ACME configuration**:
+
 ```bash
 # View ACME certificates
 ls /var/lib/acme/

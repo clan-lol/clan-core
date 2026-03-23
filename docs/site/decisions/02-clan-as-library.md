@@ -110,5 +110,4 @@ Some ideas what might be needed to change:
 - Code for serializing dataclasses and typed dictionaries is needed for the persistence layer. (i.e. for read-write of inventory.json)
 - The inventory JSON is a backend resource, that is internal. Its logic includes merging, unmerging and partial updates with considering nix values and their priorities. Nobody should try to read or write to it directly.
   Instead there will be library methods i.e. to add a `service` or to update/read/delete some information from it.
-- Library functions should be carefully designed with suitable conventions for writing good APIs in mind. (i.e: https://swagger.io/resources/articles/best-practices-in-api-design/)
-
+- Library functions should be carefully designed with suitable conventions for writing good APIs in mind. (i.e: [best practices](https://swagger.io/resources/articles/best-practices-in-api-design/)

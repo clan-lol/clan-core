@@ -13,7 +13,7 @@ By default the `clan vars` subcommand uses the `age` encryption tool, which supp
 Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesome-age?tab=readme-ov-file#plugins) you can use with Clan. (Last updated: **September 12, 2025**)
 
 - ⭐️ [**age-plugin-yubikey**](https://github.com/str4d/age-plugin-yubikey): YubiKey (and other PIV tokens) plugin.
--  [**age-plugin-se**](https://github.com/remko/age-plugin-se): Apple Secure Enclave plugin.
+- [**age-plugin-se**](https://github.com/remko/age-plugin-se): Apple Secure Enclave plugin.
 - 🧪 [**age-plugin-tpm**](https://github.com/Foxboron/age-plugin-tpm): TPM 2.0 plugin.
 - 🧪 [**age-plugin-tkey**](https://github.com/quite/age-plugin-tkey): Tillitis TKey plugin.
    [**age-plugin-trezor**](https://github.com/romanz/trezor-agent/blob/master/doc/README-age.md): Hardware wallet plugin (TREZOR, Ledger, etc.).
@@ -32,23 +32,24 @@ Below is a [list of popular `age` plugins](https://github.com/FiloSottile/awesom
 If you want to use `fido2 tokens` to encrypt your secret instead of the normal age secret key then you need to prefix your age secret key with the corresponding plugin name. In our case we want to use the `age-plugin-fido2-hmac` plugin so we replace `AGE-SECRET-KEY` with `AGE-PLUGIN-FIDO2-HMAC`.
 
 :::admonition[Tip]{type=tip collapsible}
+
 - On Linux the age secret key is located at `~/.config/sops/age/keys.txt`
 - On macOS it is located at `/Users/admin/Library/Application Support/sops/age/keys.txt`
 :::
 
 **Before**:
+
 ```text {2}
 # public key: age1zdy49ek6z60q9r34vf5mmzkx6u43pr9haqdh5lqdg7fh5tpwlfwqea356l
 AGE-SECRET-KEY-1QQPQZRFR7ZZ2WCV...
 ```
 
   **After**:
+
 ```text {2}
 # public key: age1zdy49ek6z60q9r34vf5mmzkx6u43pr9haqdh5lqdg7fh5tpwlfwqea356l
 AGE-PLUGIN-FIDO2-HMAC-1QQPQZRFR7ZZ2WCV...
 ```
-
-
 
 ### Configuring Plugins in `flake.nix`
 

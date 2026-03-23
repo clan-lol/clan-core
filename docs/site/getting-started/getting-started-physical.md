@@ -12,7 +12,7 @@ Your setup machine needs the following:
 
 * An **SSH key** on your setup machine. See [Create an SSH key](/docs/getting-started/create-an-ssh-key) if you don't have one yet.
 
-* **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+* **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 
 ## Terminology
 
@@ -26,7 +26,7 @@ Your setup machine needs the following:
 
 Start by creating a new clan:
 
-```
+```console
 nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
 ```
 
@@ -48,7 +48,7 @@ cd MY-CLAN-1
 
 You will see a message about `direnv` needing approval to run. Type:
 
-```
+```bash
 direnv allow
 ```
 
@@ -56,7 +56,7 @@ direnv allow
 
 Next create a machine configuration, which adds a description of a machine to your inventory. For this example, call it `test-machine`, by typing:
 
-```
+```bash
 clan machines create test-machine
 ```
 
@@ -71,7 +71,8 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
 ```
 
 Test it out:
-```
+
+```bash
 clan machines list
 ```
 
@@ -85,7 +86,7 @@ cat ~/.ssh/id_ed25519.pub
 
 Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_ed25519.pub` file:
 
-```
+```nix
 "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
@@ -175,12 +176,12 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
 :::admonition[Tip]{type=tip}
-You might need to disable secure boot. Follow our instructions [here](https://docs.clan.lol/25.11/guides/secure-boot/).
+You might need to disable secure boot. Follow our [secure boot instructions](https://docs.clan.lol/25.11/guides/secure-boot/).
 :::
 
 Once booted, you will see a QR code and text similar to this:
 
-```
+```console
 │ ┌─────────────────────────────────────────────────────────────────────────────────┐ │
 │ │Local network addresses:                                                         │ │
 │ │enp1s0           UP    192.168.000.001/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
@@ -194,7 +195,7 @@ Once booted, you will see a QR code and text similar to this:
 
 Take note of the IP address displayed above, either for wireless or lan, depending on how you connected. Then return to the setup machine and update this line that you added to the `clan.nix` file earlier; add in the actual IP address:
 
-```
+```nix
 deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
 ```
 
@@ -226,12 +227,11 @@ ping www.clan.lol
 
 Press **Ctrl+D** to return to the installer app, and note the IP address, and add it to the `clan.nix` file as described earlier.
 
-
 ## 8. Get Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
-```
+```bash
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
@@ -239,18 +239,17 @@ Replace `<IP-ADDRESS>` with the IP address of your target machine.
 
 You will be asked to enter "y" to proceed.
 
-
 ## 9. Add a disk configuration
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
-```
+```bash
 clan templates apply disk single-disk test-machine --set mainDisk ""
 ```
 
 This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id), and add it inside the quotes, e.g.:
 
-```
+```bash
 clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
@@ -258,7 +257,7 @@ clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-
 
 Install NixOS on the target machine by typing:
 
-```
+```bash
 clan machines install test-machine --target-host root@<IP-ADDRESS>
 ```
 
@@ -291,8 +290,9 @@ clan ssh test-machine
 ```
 
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
-```
-  ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+
+```bash
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
 ```
 
 Then try again:
@@ -303,10 +303,9 @@ clan ssh test-machine
 
 You should connect and see the prompt:
 
-```
+```console
 [root@test-machine:~]#
 ```
-
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
 
@@ -331,7 +330,7 @@ clan machines update test-machine
 
 Now ssh into the machine, and they should be present:
 
-```
+```bash
 which bat
 which btop
 which tldr
@@ -339,15 +338,16 @@ which tldr
 
 Each will show a path to the binary file:
 
-```
+```console
 /run/current-system/sw/bin/bat
 /run/current-system/sw/bin/btop
 /run/current-system/sw/bin/tldr
 ```
 
 Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
-```
-        packages = [ "bat" "btop" ];
+
+```nix
+packages = [ "bat" "btop" ];
 ```
 
 and run the update again:
@@ -358,12 +358,11 @@ clan machines update test-machine
 
 Now when you check which `tldr`, it should show that it's not in the path:
 
-```
+```console
 which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
-
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -393,7 +392,7 @@ You will be prompted for a password. Or you can press Enter to automatically gen
 
 If you automatically generated one, to retrieve it type:
 
-```
+```bash
 clan vars get test-machine user-password-alice/user-password
 ```
 
@@ -408,7 +407,6 @@ Once complete, you can log in as alice with the password on the target machine.
 ## Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
-
 
 ```nix [clan.nix] {7}
     user-alice = {
@@ -455,6 +453,6 @@ clan machines update test-machine
 
 Log out, and log alice back in. Now try the same sudo command; you'll be prompted for password, but then shown:
 
-```
+```console
 alice is not in the sudoers file.
 ```

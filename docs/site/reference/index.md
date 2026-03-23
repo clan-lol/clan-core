@@ -17,4 +17,5 @@ If you need documentation for a specific commit you can build it on your own
 ```bash
 nix build 'git+https://git.clan.lol/clan/clan-core?ref=0324f4d4b87d932163f351e53b23b0b17f2b5e15#docs'
 ```
+
 :::

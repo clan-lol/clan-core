@@ -2,7 +2,7 @@ This service is meant to be consumed by the UI / API, and exposes a JSON seriali
 
 The example below demonstrates installing the "cbonsai" application to a machine named "server.
 
-```
+```nix
 instances.packages = {
     roles.default.machines."server".settings = {
         packages = [ "cbonsai" ];

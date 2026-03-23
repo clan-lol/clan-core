@@ -90,7 +90,7 @@ inventory = {
       roles.server.tags = [ "all" ];
 
       roles.server.settings = {
-        
+
         secretHostname = false;
 
         # yggdrasil ports need to be mapped

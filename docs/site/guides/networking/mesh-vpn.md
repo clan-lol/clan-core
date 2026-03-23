@@ -7,7 +7,7 @@ setting up one machine as a controller and adding new machines as peers.
 
 By default all machines within one Clan are connected via a chosen network technology.
 
-```
+```text
 Clan
     Node A
     <-> (zerotier / mycelium / ...)

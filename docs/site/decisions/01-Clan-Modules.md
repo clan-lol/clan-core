@@ -68,9 +68,12 @@ in
 Problems with the current way of writing clanModules:
 
 1. No way to retrieve the config of a single service instance, together with its name.
+
 2. Directly exporting a single, anonymous nixosModule without any intermediary attribute layers doesn't leave room for exporting other inventory resources such as potentially `vars` or `homeManagerConfig`.
+
 3. Can't access multiple config instances individually.
     Example:
+
     ```nix
     inventory = {
       services = {
@@ -87,8 +90,9 @@ Problems with the current way of writing clanModules:
       };
     };
     ```
-   This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
-   Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
+
+    This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
+    Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
 
 4. Writing modules for multiple instances is cumbersome. Currently the clanModule author has to write one or multiple `fold` operations for potentially every NixOS option to define how multiple service instances merge into every single one option. The new idea behind this adr is to pull the common fold function into the outer context provide it as a common helper. (See the example below. `perInstance` analog to the well known `perSystem` of flake-parts)
 
@@ -161,9 +165,10 @@ This can be defined in `perMachine` and `perInstance`
 Q: Why is this not a top-level attribute?
 A: Because nested service definitions may also depend on a `role` which must be resolved depending on `machine` and `instance`. The top-level module doesn't know anything about machines. Keeping the service layer machine agnostic allows us to build the UI for a module without adding any machines. (One of the problems with the current system)
 
-```
+```text
 zerotier/default.nix
 ```
+
 ```nix
 # Some example module
 {
@@ -171,7 +176,8 @@ zerotier/default.nix
 
   # Analog to flake-parts 'perSystem' only that it takes instance
   # The exact arguments will be specified and documented along with the actual implementation.
-  roles.client.perInstance = {
+  roles.client.perInstance =
+    {
       # attrs : settings of that instance
       settings,
       # string : name of the instance
@@ -200,23 +206,24 @@ zerotier/default.nix
   # Same type as currently in `clan.inventory.services.<ServiceName>.<InstanceName>.roles`
   #
   # The exact arguments will be specified and documented along with the actual implementation.
-  perMachine = {machine, instances, ... }: {
-    nixosModule =
-      { lib, ... }:
-      {
-        # Some shared code should be put into a shared file
-        # Which is then imported into all/some roles
-        imports = [
-          ../shared.nix
-        ] ++
-        (lib.optional (builtins.elem "client" machine.roles)
+  perMachine =
+    { machine, instances, ... }:
+    {
+      nixosModule =
+        { lib, ... }:
         {
-          options.debug = lib.mkOption {
-            type = lib.types.attrsOf lib.types.raw;
-          };
-        });
-      };
-  };
+          # Some shared code should be put into a shared file
+          # Which is then imported into all/some roles
+          imports = [
+            ../shared.nix
+          ]
+          ++ (lib.optional (builtins.elem "client" machine.roles) {
+            options.debug = lib.mkOption {
+              type = lib.types.attrsOf lib.types.raw;
+            };
+          });
+        };
+    };
 }
 ```
 
@@ -549,5 +556,5 @@ The following module demonstrates the idea in the example of *borgbackup*.
 
 ## Prior-art
 
-- https://github.com/NixOS/nixops
-- https://github.com/infinisil/nixus
+- [nixpkgs](https://github.com/NixOS/nixops)
+- [nixus](https://github.com/infinisil/nixus)

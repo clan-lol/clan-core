@@ -1,6 +1,6 @@
 ## Usage
 
-```
+```nix
 inventory.instances = {
   zerotier = {
     module = {

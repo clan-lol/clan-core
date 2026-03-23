@@ -3,7 +3,8 @@
 This module provisions a single-instance S3 bucket. To customize its behavior, set `services.garage.settings` in your Nix configuration.
 
 Example configuration:
-```
+
+```nix
 instances = {
     garage = {
         roles.default.machines."server" = {};

@@ -127,7 +127,7 @@ should still work as normal. To check that you didn't make any errors, run `nix
 flake show` and verify both hosts are still recognized as if nothing had
 changed. You should also see the new `clan` output.
 
-```
+```console
 ❯ nix flake show
 git+file:///my-nixos-config
 ├───clan: unknown
