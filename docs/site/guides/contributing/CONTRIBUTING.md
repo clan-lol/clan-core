@@ -45,7 +45,7 @@ Let's get your development environment up and running:
 
 5. **Create a Gitea Account**
 
-    - Register an account on <https://git.clan.lol>
+    - Register an account on [git.clan.lol](https://git.clan.lol)
     - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
     - Clone the repository and navigate to it
     - Add a new remote called upstream

@@ -554,5 +554,5 @@ The following module demonstrates the idea in the example of *borgbackup*.
 
 ## Prior-art
 
-- <https://github.com/NixOS/nixops>
-- <https://github.com/infinisil/nixus>
+- [nixpkgs](https://github.com/NixOS/nixops)
+- [nixus](https://github.com/infinisil/nixus)
