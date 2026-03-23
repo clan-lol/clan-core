@@ -253,6 +253,14 @@ pythonRuntime.pkgs.buildPythonApplication {
 
                 # REMOVEME: once we drop support for 25.11
                 (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
+
+                pkgs.cmakeMinimal
+                pkgs.docbook_xml_dtd_42
+                pkgs.docbook_xml_dtd_43
+                pkgs.docbook_xml_dtd_45
+                pkgs.docbook-xsl-nons
+                pkgs.kmod
+                pkgs.kmod.dev
               ])
               ++ [
                 templateDerivation
@@ -290,13 +298,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.unzip
                 pkgs.libxslt
                 pkgs.getconf
-                pkgs.cmakeMinimal
-                pkgs.docbook_xml_dtd_42
-                pkgs.docbook_xml_dtd_43
-                pkgs.docbook_xml_dtd_45
-                pkgs.docbook-xsl-nons
-                pkgs.kmod
-                pkgs.kmod.dev
               ];
           };
         }
