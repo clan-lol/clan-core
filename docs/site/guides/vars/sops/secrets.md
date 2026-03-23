@@ -71,6 +71,7 @@ sops/
     └── $YOUR_USERNAME/
         └── key.json
 ```
+
 If you followed the quickstart tutorial all necessary secrets are initialized at this point.
 
 :::admonition[Note]{type=note}
@@ -82,6 +83,7 @@ clan secrets users add $USER \
     --age-key $YOUR_PUBLIC_KEY_2 \
     ...
 ```
+
 :::
 
 ## Manage Your Public Key(s)
@@ -254,9 +256,7 @@ Each member of the group `admins` in this case will be able to decrypt the secre
 Since our Clan secret module will auto-import secrets that are encrypted for a particular NixOS machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
 
-
 ## Indepth Explanation
-
 
 The secrets system conceptually knows two different entities:
 
@@ -310,7 +310,6 @@ flowchart LR
     secret -->|"Decrypt\n(machine privkey)"| machine
 ```
 
-
 #### User groups
 
 Here we illustrate how machine groups work.
@@ -363,10 +362,5 @@ flowchart LR
 
 <!-- TODO: See also [Groups Reference](#groups-reference) -->
 
-
-
 See the [readme](https://github.com/Mic92/sops-nix) of sops-nix for more
 examples.
-
-
-

@@ -179,7 +179,6 @@ services.openssh.enable = true; # Required for Clan deployment
 }
 ```
 
-
 #### Hide Nix Where Possible
 
 Nix knowledge is a barrier, not a feature.
@@ -202,7 +201,6 @@ clan machines create webserver
 
 This creates `machines/webserver/default.nix`, where you can configure it via NixOS.
 
-
 #### Teach Nix Through Examples, Not Theory
 
 *(After respecting the prior point)*
@@ -213,7 +211,6 @@ Users learn the NixOS module system by seeing patterns first.
 - Explanation follows the code
 - Link deeper concepts instead of inlining them
 - Link to `nix.dev` for optional learning
-
 
 #### General Rules
 

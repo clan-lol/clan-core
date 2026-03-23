@@ -198,7 +198,6 @@ Then deploy:
 clan machines update test-machine
 ```
 
-
 ## How Vars Connect to Services
 
 Services defne what vars they need. For example, the `users` service defines:

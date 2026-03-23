@@ -19,6 +19,7 @@ In this example, we'll name the machine `yourmachine`. Replace this with your pr
 :::tab[If using clan-core.lib.clan]
 :::
 ::::
+
 ```nix
 clan-core.lib.clan {
     inventory = {
@@ -31,6 +32,7 @@ clan-core.lib.clan {
 :::tab[If using flake-parts]
 :::
 ::::
+
 ```nix
 {
   clan = {
@@ -67,7 +69,6 @@ Replace `yourmachine` with your chosen machine name.
 ### Install Nix
 
 Install Nix on your macOS device using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
-
 
 ### Install nix-darwin
 

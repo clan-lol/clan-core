@@ -68,6 +68,3 @@ Then, inspect the service logs to ensure everything is functioning correctly:
 ```bash
 journalctl -u borgbackup-job-storagebox.service
 ```
-
-
-

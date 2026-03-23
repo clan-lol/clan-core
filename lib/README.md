@@ -41,6 +41,7 @@ It should contain two files:
 ```
 Example filetree
 ```
+
 ```sh
 .
 ├── default.nix

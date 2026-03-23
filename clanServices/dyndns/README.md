@@ -83,4 +83,3 @@ inventory.instances = {
 1. `secret_field_name` tells the *vars-generator* to store the entered secret under the specified JSON field name in the configuration.
 2. ddns-updater allows multiple hosts by separating them with a comma.
 3. The `api_key` above is *public*; the corresponding **private key** is retrieved through `secret_field_name`.
-

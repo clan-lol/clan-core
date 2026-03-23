@@ -33,6 +33,7 @@ VM tests should be avoided wherever it is possible to implement a cheaper unit t
 #### Finding examples for VM tests
 
 Existing NixOS VM tests in clan-core can be found by using ripgrep:
+
 ```console
 rg self.clanLib.test.baseTest
 ```
@@ -61,12 +62,12 @@ $ rg "borgbackup =" ./checks
 
 Create a NixOS test module under `/checks/{name}/default.nix` and import it in `/checks/flake-module.nix`.
 
-
 #### Running VM tests
 
 ```console
 nix build .#checks.x86_64-linux.{test-attr-name}
 ```
+
 (replace `{test-attr-name}` with the name of the test)
 
 #### Testing services with vars
@@ -135,6 +136,7 @@ Locate the definition (see above) and add print statements, like, for example `p
 - Execute the vm test outside the Nix sandbox via the following command:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
 - Then run the commands in the machines manually, like for example:
+
   ```python
     start_all()
     machine1.succeed("echo hello")
@@ -144,7 +146,6 @@ Locate the definition (see above) and add print statements, like, for example `p
 
 To get an interactive shell at a specific line in the VM test script, add a `breakpoint()` call before the line to debug, then run the test outside of the sandbox via:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver`
-
 
 ### NixOS Container Tests
 
@@ -216,7 +217,6 @@ Existing NixOS container tests in clan-core can be found by using `ripgrep`:
 rg self.clanLib.test.containerTest
 ```
 
-
 ### Python tests via pytest
 
 Since the Clan CLI is written in python, the `pytest` framework is used to define unit tests and integration tests via python
@@ -229,7 +229,6 @@ Due to superior efficiency,
 - all integrations tests that do not require building or running a NixOS machine
 - impure integrations tests that require internet access (very rare, try to avoid)
 
-
 #### When not to use python tests
 
 - integrations tests that require building or running a NixOS machine (use NixOS VM or container tests instead)
@@ -238,6 +237,7 @@ Due to superior efficiency,
 #### Finding examples of python tests
 
 Existing python tests in clan-core can be found by using `ripgrep`:
+
 ```console
 rg "import pytest"
 ```
@@ -245,6 +245,7 @@ rg "import pytest"
 #### Locating definitions of failing python tests
 
 If any python test fails in the CI pipeline, an error message like this can be found at the end of the log:
+
 ```text
 ...
 FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
@@ -277,10 +278,10 @@ To run a specific python test outside the Nix sandbox
   - Having direnv enabled and entering the directory of the package (eg. `/pkgs/clan-cli`)
   - Or using the command `select-shell {package}` in the top-level dev shell of clan-core, (eg. `switch-shell clan-cli`)
 2. Execute the test via pytest using issuing
+
   `pytest ./path/to/test_file.py:test_function_name -s -n0`
 
 The flags `-sn0` are useful to forwards all stdout/stderr output to the terminal and be able to debug interactively via `breakpoint()`.
-
 
 #### Debugging python tests
 

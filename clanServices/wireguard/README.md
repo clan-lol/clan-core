@@ -5,6 +5,7 @@ This service provides a WireGuard-based VPN mesh network with automatic IPv6 add
 ## Overview
 
 The WireGuard service creates a secure mesh network between Clan machines using two roles:
+
 - **Controllers**: Machines with public endpoints that act as connection points and routers
 - **Peers**: Machines that connect through controllers to access the network
 
@@ -24,11 +25,13 @@ The WireGuard service creates a secure mesh network between Clan machines using 
 ## Network Architecture
 
 ### IPv6 Address Allocation
+
 - Base network: `/40` ULA prefix (deterministically generated from instance name)
 - Controllers: Each gets a `/56` subnet from the base `/40`
 - Peers: Each gets a unique 64-bit host suffix that is used in ALL controller subnets
 
 ### Addressing Design
+
 - Each peer generates a unique host suffix (e.g., `:8750:a09b:0:1`)
 - This suffix is appended to each controller's `/56` prefix to create unique addresses
 - Example: peer1 with suffix `:8750:a09b:0:1` gets:
@@ -37,6 +40,7 @@ The WireGuard service creates a secure mesh network between Clan machines using 
 - Controllers allow each peer's `/96` subnet for routing flexibility
 
 ### Connectivity
+
 - Peers use a single WireGuard interface with multiple IPs (one per controller subnet)
 - Controllers connect to ALL other controllers and ALL peers on a single interface
 - Controllers have IPv6 forwarding enabled to route traffic between peers
@@ -133,12 +137,12 @@ graph TB
 
 ### Advanced Options
 
-
 ### Automatic Hostname Resolution
 
 The WireGuard service automatically adds entries to `/etc/hosts` for all machines in the network. Each machine is accessible via its hostname in the format `<machine-name>.<instance-name>`.
 
 For example, with an instance named `vpn`:
+
 - `server1.vpn` - resolves to server1's IPv6 address
 - `laptop1.vpn` - resolves to laptop1's IPv6 address
 
@@ -155,16 +159,19 @@ ssh user@laptop1.vpn
 ## Troubleshooting
 
 ### Check WireGuard Status
+
 ```bash
 sudo wg show
 ```
 
 ### Verify IP Addresses
+
 ```bash
 ip addr show dev <instance-name>
 ```
 
 ### Check Routing
+
 ```bash
 ip -6 route show dev <instance-name>
 ```
@@ -172,6 +179,7 @@ ip -6 route show dev <instance-name>
 ### Interface Fails to Start: "Address already in use"
 
 If you see this error in your logs:
+
 ```
 wireguard: Could not bring up interface, ignoring: Address already in use
 ```
@@ -179,12 +187,14 @@ wireguard: Could not bring up interface, ignoring: Address already in use
 This means the configured port (default: 51820) is already in use by another service or WireGuard instance. Solutions:
 
 1. **Check for conflicting WireGuard instances:**
+
    ```bash
    sudo wg show
    sudo ss -ulnp | grep 51820
    ```
 
 2. **Use a different port:**
+
    ```nix
    services.wireguard.myinstance = {
      roles.controller = {
@@ -216,4 +226,3 @@ clan machines update <machine-name>
 - Public keys are distributed through the Clan vars system
 - Controllers must have publicly accessible endpoints
 - Firewall rules are automatically configured for the WireGuard ports
-

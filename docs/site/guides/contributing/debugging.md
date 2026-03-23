@@ -1,6 +1,5 @@
 # Debugging
 
-
 Here are some methods for debugging and testing the Clan CLI
 
 ## Using a Development Branch
@@ -58,19 +57,20 @@ wintux
 
 If you're using VS Code, it has a handy feature that makes paths to source code files clickable in the integrated terminal. Combined with the previously mentioned techniques, this allows you to open a Clan in VS Code, execute a command like `clan machines list --debug`, and receive a printed path to the code that initiates the subprocess. With the `Ctrl` key (or `Cmd` on macOS) and a mouse click, you can jump directly to the corresponding line in the code file and add a `breakpoint()` function to it, to inspect the internal state.
 
-
-
 ## Finding Print Messages
 
 To trace the origin of print messages in `clan-cli`, you can enable special debugging features using environment variables:
 
 - Set `TRACE_PRINT=1` to include the source location with each print message:
+
     ```bash
     export TRACE_PRINT=1
     ```
+
     When running commands with `--debug`, every print will show where it was triggered in the code.
 
 - To see a deeper stack trace for each print, set `TRACE_DEPTH` to the desired number of stack frames (e.g., 3):
+
     ```bash
     export TRACE_DEPTH=3
     ```
@@ -84,6 +84,7 @@ You can enable more detailed logging for specific components by setting these en
 - `CLAN_DEBUG_COMMANDS=1` — print the diffed environment of executed commands
 
 Example:
+
 ```bash
 export CLAN_DEBUG_NIX_SELECTORS=1
 export CLAN_DEBUG_NIX_PREFETCH=1
@@ -91,7 +92,6 @@ export CLAN_DEBUG_COMMANDS=1
 ```
 
 These options help you pinpoint the source and context of print messages and debug logs during development.
-
 
 ## Analyzing Performance
 
@@ -146,10 +146,12 @@ You can execute every test separately by following the tree path `nix run .#chec
 To test the CLI locally in a development environment and set breakpoints for debugging, follow these steps:
 
 1. Run the following command to execute your tests and allow for debugging with breakpoints:
+
    ```bash
    cd ./pkgs/clan-cli
    pytest -n0 -s --maxfail=1 ./tests/test_nameofthetest.py
    ```
+
    You can place `breakpoint()` in your Python code where you want to trigger a breakpoint for debugging.
 
 ## Test Locally in a Nix Sandbox
@@ -183,4 +185,3 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    ```
 
 Or you can also use the [Nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)
-

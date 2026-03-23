@@ -23,6 +23,7 @@ inventory = {
 ```
 
 We have two sections:
+
 - **machines**: "what machines exists"
 - **instances**: "what the machines run"
 
@@ -301,6 +302,7 @@ instances = {
 ```
 
 In this setup:
+
 - Laptops back up to the NAS
 - The NAS backs up to an offsite server
 - The NAS plays `server` in one instance and `client` in another

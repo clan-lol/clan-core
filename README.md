@@ -42,4 +42,3 @@ Connect with us and the Clan community for support and discussion:
 
 - [Matrix channel](https://matrix.to/#/#clan:clan.lol) for live discussions.
 - IRC bridge on [hackint#clan](https://chat.hackint.org/#/connect?join=clan) for real-time chat support.
-

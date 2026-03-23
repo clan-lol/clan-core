@@ -13,6 +13,7 @@ Quick reference for diagnosing and fixing vars issues.
 **Possible causes and solutions**:
 
 1. **Missing runtime inputs**
+
    ```nix
    # Wrong - missing required tool
    runtimeInputs = [ ];
@@ -25,6 +26,7 @@ Quick reference for diagnosing and fixing vars issues.
    ```
 
 2. **Wrong output path**
+
    ```nix
    # Wrong - must use $out
    script = ''
@@ -38,6 +40,7 @@ Quick reference for diagnosing and fixing vars issues.
    ```
 
 3. **Missing declared files**
+
    ```nix
    files."config" = { };
    files."key" = { };
@@ -60,6 +63,7 @@ Quick reference for diagnosing and fixing vars issues.
 **Solutions**:
 
 1. **Secret files don't have `.value`**
+
    ```nix
    # Wrong - secret files can't use .value
    files."secret" = { secret = true; };
@@ -73,6 +77,7 @@ Quick reference for diagnosing and fixing vars issues.
    ```
 
 2. **Public files should use `.value`**
+
    ```nix
    # Better for non-secrets
    files."cert.pem" = { secret = false; };
@@ -86,6 +91,7 @@ Quick reference for diagnosing and fixing vars issues.
 **Symptom**: "No such file or directory" when accessing `$in/...`
 
 **Solution**: Declare dependencies correctly
+
 ```nix
 clan.core.vars.generators.child = {
   # Wrong - missing dependency
@@ -106,6 +112,7 @@ clan.core.vars.generators.child = {
 **Symptom**: Service cannot read generated secret file
 
 **Solution**: Set correct ownership and permissions
+
 ```nix
 files."service.key" = {
   secret = true;
@@ -120,6 +127,7 @@ files."service.key" = {
 **Symptom**: Changes to generator script don't trigger regeneration
 
 **Solution**: Use `--regenerate` flag
+
 ```bash
 clan vars generate my-machine --generator my-generator --regenerate
 ```
@@ -129,6 +137,7 @@ clan vars generate my-machine --generator my-generator --regenerate
 **Symptom**: Script fails with "No such file or directory" for prompts
 
 **Solution**: Access prompts correctly
+
 ```nix
 # Wrong
 script = ''
@@ -147,6 +156,7 @@ script = ''
 #### 1. Check Generator Status
 
 See what vars are set:
+
 ```bash
 clan vars list my-machine
 ```
@@ -154,11 +164,13 @@ clan vars list my-machine
 #### 2. Inspect Generated Files
 
 For shared vars:
+
 ```bash
 ls -la vars/shared/my-generator/
 ```
 
 For per-machine vars:
+
 ```bash
 ls -la vars/per-machine/my-machine/my-generator/
 ```
@@ -166,6 +178,7 @@ ls -la vars/per-machine/my-machine/my-generator/
 #### 3. Test Generators Locally
 
 Create a test script to debug:
+
 ```nix
 # test-generator.nix
 {
@@ -184,6 +197,7 @@ pkgs.stdenv.mkDerivation {
 ```
 
 Run with:
+
 ```bash
 nix-build test-generator.nix
 ```
@@ -191,6 +205,7 @@ nix-build test-generator.nix
 #### 4. Enable Debug Logging
 
 Set debug mode:
+
 ```bash
 clan --debug vars generate my-machine
 ```
@@ -198,6 +213,7 @@ clan --debug vars generate my-machine
 #### 5. Check File Permissions
 
 Verify generated secret permissions:
+
 ```bash
 # On the target device
 ls -la /run/secrets/
@@ -208,6 +224,7 @@ ls -la /run/secrets/
 #### Regenerate All Vars
 
 If vars are corrupted or need refresh:
+
 ```bash
 # Regenerate all for a machine
 clan vars generate my-machine --regenerate
@@ -219,6 +236,7 @@ clan vars generate my-machine --generator my-generator --regenerate
 #### Manual Secret Injection
 
 For recovery or testing:
+
 ```bash
 # Set a var manually (bypass generator)
 echo "temporary-secret" | clan vars set my-machine my-generator/my-file
@@ -227,6 +245,7 @@ echo "temporary-secret" | clan vars set my-machine my-generator/my-file
 #### Restore from Backup
 
 Vars are stored in the repository:
+
 ```bash
 # Restore previous version
 git checkout HEAD~1 -- vars/
@@ -256,6 +275,7 @@ Check that:
 **Symptom**: "pass: store not initialized"
 
 **Solution**: Initialize password store:
+
 ```bash
 export PASSWORD_STORE_DIR=/path/to/clan/vars
 pass init your-gpg-key

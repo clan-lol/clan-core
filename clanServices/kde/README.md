@@ -11,6 +11,7 @@ sway), we encourage you to to build your own
 look at the [Community Services](https://docs.clan.lol/services/community/).
 
 :::
+
 ## Example Usage
 
 ```nix

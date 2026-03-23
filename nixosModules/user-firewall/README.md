@@ -5,6 +5,7 @@ This NixOS module provides network access restrictions for non-privileged users,
 ## Overview
 
 The `user-firewall` module implements firewall rules that:
+
 - Block all outbound network traffic for normal (non-system) users by default
 - Allow specific users to bypass restrictions (exemptUsers)
 - Permit traffic on specific interfaces (like VPNs and localhost)
@@ -95,7 +96,9 @@ The module comes with sensible defaults for common VPN and overlay network inter
 ## Use Cases
 
 ### 1. Public Kiosk Systems
+
 Restrict users to only access local services:
+
 ```nix
 {
   networking.user-firewall = {
@@ -106,7 +109,9 @@ Restrict users to only access local services:
 ```
 
 ### 2. Corporate Workstations
+
 Force all traffic through corporate VPN:
+
 ```nix
 {
   networking.user-firewall = {
@@ -135,12 +140,14 @@ nix build .#checks.x86_64-linux.user-firewall-nftables
 The output includes package counters for each firewall rule, that can help to debug connectivity issues.
 
 For iptables:
+
 ```bash
 sudo iptables -L user-firewall-output -n -v
 sudo ip6tables -L user-firewall-output -n -v
 ```
 
 For nftables:
+
 ```bash
 sudo nft list table inet user-firewall
 
@@ -149,10 +156,12 @@ sudo watch -n1 'nft list table inet user-firewall'
 ```
 
 Check which rule your VPN traffic is hitting. If packets are being rejected, verify:
+
 1. Your VPN interface name matches the patterns in `allowedInterfaces`
 2. Your user is listed in `exemptUsers` if needed
 
 To see your current network interfaces:
+
 ```bash
 ip link show | grep -E '^[0-9]+:'
 ```

@@ -52,10 +52,12 @@ If you use flake-parts you can use the [native integration](https://flake.parts/
 If nix-unit succeeds, your NixOS evaluation should be mostly correct.
 
 :::admonition[Tip]{type=tip}
+
 - Ensure most used 'settings' and variants are tested.
 - Think about some important edge-cases your system should handle.
 
 :::
+
 ### NixOS VM / Container Test
 
 :::admonition[Early Vars & clanTest]{type=warning}

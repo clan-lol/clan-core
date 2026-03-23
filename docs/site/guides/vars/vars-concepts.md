@@ -50,6 +50,7 @@ This allows building sophisticated systems like certificate authorities where in
 #### 4. Type Safety
 
 The vars system distinguishes between:
+
 - **Secret files**: Only accessible via `.path`, deployed to `/run/secrets/`
 - **Public files**: Accessible via `.value`, stored in nix store
 
@@ -98,6 +99,7 @@ graph LR
 ```
 
 This is useful for:
+
 - Shared certificate authorities
 - Mesh VPN pre-shared keys
 - Cluster join tokens
@@ -123,4 +125,3 @@ Compared to manual secret management, vars provides:
 - **Type safety**: Separate handling of secret and public files
 - **User prompts**: Gather input when needed
 - **Easy regeneration**: Update secrets with a single command
-

@@ -4,7 +4,6 @@
 
 This guide demonstrates complex, real-world patterns for the vars system. 
 
-
 ### Certificate Authority with Intermediate Certificates
 
 This example shows how to create a complete certificate authority with root and intermediate certificates using dependencies.

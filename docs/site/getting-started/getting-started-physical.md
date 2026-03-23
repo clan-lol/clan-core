@@ -71,6 +71,7 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
 ```
 
 Test it out:
+
 ```
 clan machines list
 ```
@@ -226,7 +227,6 @@ ping www.clan.lol
 
 Press **Ctrl+D** to return to the installer app, and note the IP address, and add it to the `clan.nix` file as described earlier.
 
-
 ## 8. Get Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
@@ -238,7 +238,6 @@ clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 Replace `<IP-ADDRESS>` with the IP address of your target machine.
 
 You will be asked to enter "y" to proceed.
-
 
 ## 9. Add a disk configuration
 
@@ -291,6 +290,7 @@ clan ssh test-machine
 ```
 
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
+
 ```
   ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
 ```
@@ -306,7 +306,6 @@ You should connect and see the prompt:
 ```
 [root@test-machine:~]#
 ```
-
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
 
@@ -346,6 +345,7 @@ Each will show a path to the binary file:
 ```
 
 Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
+
 ```
         packages = [ "bat" "btop" ];
 ```
@@ -363,7 +363,6 @@ which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
-
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -408,7 +407,6 @@ Once complete, you can log in as alice with the password on the target machine.
 ## Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
-
 
 ```nix [clan.nix] {7}
     user-alice = {

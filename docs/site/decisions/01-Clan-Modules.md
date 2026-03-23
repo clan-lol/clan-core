@@ -71,6 +71,7 @@ Problems with the current way of writing clanModules:
 2. Directly exporting a single, anonymous nixosModule without any intermediary attribute layers doesn't leave room for exporting other inventory resources such as potentially `vars` or `homeManagerConfig`.
 3. Can't access multiple config instances individually.
     Example:
+
     ```nix
     inventory = {
       services = {
@@ -87,6 +88,7 @@ Problems with the current way of writing clanModules:
       };
     };
     ```
+
    This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
    Resolving this problem means that new inventory modules cannot be plain NixOS modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
 
@@ -164,6 +166,7 @@ A: Because nested service definitions may also depend on a `role` which must be 
 ```
 zerotier/default.nix
 ```
+
 ```nix
 # Some example module
 {

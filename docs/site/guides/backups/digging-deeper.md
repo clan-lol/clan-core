@@ -1,6 +1,5 @@
 # Digging Deeper
 
-
 List, create, and restore backups using the `clan backups` CLI commands.
 
 ### Listing states
@@ -72,5 +71,3 @@ To restore only a specific service (e.g., `linkding`):
 ```bash
 clan backups restore --service linkding jon borgbackup storagebox::u444061@u444061.your-storagebox.de:/./borgbackup::jon-storagebox-2025-07-24T06:02:35
 ```
-
-

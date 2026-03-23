@@ -14,7 +14,6 @@ This guide covers the full `clan vars` workflow:
 
 For a detailed API reference, see the [vars module documentation](/docs/reference/clan.core/vars).
 
-
 ## Declare the generator
 
 In this example, a `vars` `generator` is used to:
@@ -25,6 +24,7 @@ In this example, a `vars` `generator` is used to:
 - expose the file path to the NixOS configuration
 
 Create a new Nix file `root-password.nix` with the following content and import it into your `configuration.nix`
+
 ```nix
 { config, pkgs, ... }:
 {
@@ -58,6 +58,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
 ## Inspect the status
 
 Executing `clan vars list`, you should see the following:
+
 ```console
 $ clan vars list my_machine
 root-password/password-hash: <not set>
@@ -70,12 +71,14 @@ root-password/password-hash: <not set>
 This step is not strictly necessary, as deploying the machine via `clan machines update` would trigger the generator as well.
 
 To run the generator, execute `clan vars generate` for your machine
+
 ```console
 $ clan vars generate my_machine
 Enter the value for root-password/password-input (hidden):
 ```
 
 After entering the value, the updated status is reported:
+
 ```console
 Updated var root-password/password-hash
   old: <not set>
@@ -88,6 +91,7 @@ With the last step, a new file was created in your repository:
 `vars/per-machine/my-machine/root-password/password-hash/value`
 
 If the repository is a git repository, a commit was created automatically:
+
 ```console
 $ git log -n1
 commit ... (HEAD -> master)
@@ -108,6 +112,7 @@ clan machines update my_machine
 If we just imported the `root-password.nix` from above into more machines, Clan would ask for a new password for each additional machine.
 
 If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
+
 ```nix
 { config, pkgs, ... }:
 {

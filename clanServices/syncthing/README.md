@@ -16,9 +16,10 @@ Example configuration:
 ```
 
 Notes:
+
 - Each key under `folders` is a folder ID (an arbitrary identifier for Syncthing).
 - Prefer absolute paths (example shown). `~` may work in some environments but can be ambiguous in service contexts.
 
-
 ## Documentation
+
 See the official Syncthing docs: https://docs.syncthing.net/

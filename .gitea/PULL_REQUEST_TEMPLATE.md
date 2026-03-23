@@ -11,6 +11,7 @@
   - !!! Review from another person is required *BEFORE* merge !!!
 
 ## New major features
+
 - [ ] Added major features
   - [ ] All features are mentioned in docs/release-notes.md
   - [ ] All features are tested sufficiently via:

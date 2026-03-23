@@ -26,7 +26,6 @@ This enters your new project directory and activates the development environment
 
 ## Create a Machine Configuration
 
-
 Edit `clan.nix` — add under `inventory.machines`:
 
 ```nix

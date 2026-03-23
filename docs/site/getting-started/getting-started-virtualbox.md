@@ -16,13 +16,11 @@ Your setup machine needs the following:
 For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.
 :::
 
-
 Type the following to download the installer's ISO image:
 
 ```bash
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
 ```
-
 
 ## Setup the VirtualBox Machine
 
@@ -62,7 +60,6 @@ You will see the NixOS loader start; simply wait. You'll see text scroll and fin
 
 * Remote Access. A hostname has been added to your local DNS; you can use it instead of the IP address, but it will no longer work after NixOS is installed. Make note of the IP address instead.
 
-
 Start by creating a new clan:
 
 ```
@@ -91,7 +88,6 @@ You will see a message about `direnv` needing approval to run. Type:
 direnv allow
 ```
 
-
 Next create a machine configuration, which adds a description of a machine to your inventory. For this example, call it `test-machine`, by typing:
 
 ```
@@ -109,10 +105,10 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
 ```
 
 Test it out:
+
 ```
 clan machines list
 ```
-
 
 Next, add your public key to the allowed keys. You can find it by running:
 
@@ -132,7 +128,6 @@ Verify that your configuration is valid:
 clan show
 ```
 
-
 Now gather the hardware configuration from the target machine:
 
 ```
@@ -145,7 +140,6 @@ You will be asked to enter "y" to proceed.
 
 When prompted for password, use the password displayed under the QR code.
 
-
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
 ```
@@ -157,7 +151,6 @@ This will generate an error; note the disk ID it prints out (typically starting 
 ```
 clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/ata-VBOX_HARDDISK_VB..."
 ```
-
 
 Install NixOS on the target machine by typing:
 
@@ -179,7 +172,6 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-
 Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose "Send the shutdown signal." Then click OK.
 
 In the main VirtualBox GUI, right-click on the VM, and choose **Settings...**.
@@ -196,7 +188,6 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-
 Now you can try connecting to the remote machine:
 
 ```bash
@@ -204,6 +195,7 @@ clan ssh test-machine
 ```
 
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
+
 ```
   ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
 ```
@@ -219,7 +211,6 @@ You should connect and see the prompt:
 ```
 [root@test-machine:~]#
 ```
-
 
 Now let's look at how you can use Clan to install and remove packages on a target machine.
 
@@ -259,6 +250,7 @@ Each will show a path to the binary file:
 ```
 
 Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
+
 ```
         packages = [ "bat" "btop" ];
 ```
@@ -276,7 +268,6 @@ which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
-
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -321,7 +312,6 @@ Once complete, you can log in as alice with the password inside the virtual mach
 ## Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
-
 
 ```nix [clan.nix] {7}
     user-alice = {

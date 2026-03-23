@@ -4,7 +4,6 @@ A **service** is a reusable piece of functionality you can add to your machines.
 
 Instead of manually installing software and editing config files on each machine, you declare what services you want, and Clan sets everything up for you.
 
-
 ## The Basic Pattern
 
 Every service follows the same pattern:
@@ -105,6 +104,7 @@ inventory.machines = {
   };
 };
 ```
+
 Then you can use the above tags:
 
 ```nix
