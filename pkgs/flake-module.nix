@@ -26,13 +26,13 @@
         merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
         minifakeroot = pkgs.callPackage ./minifakeroot { };
         pending-reviews = pkgs.callPackage ./pending-reviews { };
-        editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         zerotierone = pkgs.callPackage ./zerotierone { };
         datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
           pkgs.python3Packages.callPackage ./datamodel-code-generator { }
         );
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+        editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         disko = inputs.disko.packages.${pkgs.stdenv.hostPlatform.system}.disko;
       };
     };
