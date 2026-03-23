@@ -439,15 +439,26 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
-                # Ensure machine has direct access to the secret
-                if not self.machine_has_access(generator.key, file.name, machine):
+                # Shared secrets not marked for deployment don't need
+                # machine access — remove stale symlinks if present.
+                if generator.share and not file.deploy:
+                    machine_link = secret_path / "machines" / machine
+                    if machine_link.exists():
+                        files_to_commit.extend(
+                            disallow_member(
+                                secret_path / "machines", machine, age_plugins
+                            )
+                        )
+                elif not self.machine_has_access(generator.key, file.name, machine):
                     self.ensure_machine_key(machine)
-                    add_secret(
-                        self.clan_dir,
-                        machine,
-                        secret_path,
-                        age_plugins=age_plugins,
-                        flake_dir=self.flake.path,
+                    files_to_commit.extend(
+                        allow_member(
+                            secret_path / "machines",
+                            sops_machines_folder(self.clan_dir),
+                            machine,
+                            age_plugins=age_plugins,
+                            do_update_keys=False,
+                        )
                     )
 
                 default_groups = self.flake.select(
@@ -464,16 +475,6 @@ class SecretStore(StoreBase):
                             age_plugins=age_plugins,
                         )
                     )
-
-                # Cleanup: if this is a shared var not marked for deployment
-                if generator.share and not file.deploy:
-                    machine_link = secret_path / "machines" / machine
-                    if machine_link.exists():
-                        files_to_commit.extend(
-                            disallow_member(
-                                secret_path / "machines", machine, age_plugins
-                            )
-                        )
 
                 # Only re-encrypt if the actual recipients in the file
                 # differ from the wanted recipients (e.g. after git merges
