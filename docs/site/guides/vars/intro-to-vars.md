@@ -149,7 +149,7 @@ inventory.instances = {
 
 When you run `clan vars generate`:
 
-Clan again scans your clan.nix file and sees there's a need for another key. It will  prompt you for the value for wifi.home/network-name for machines: test-machine
+Clan again scans your clan.nix file and sees there's a need for another key. It will prompt you for the value for wifi.home/network-name for machines: test-machine
 Network SSID: MyHomeNetwork
 
 ```console

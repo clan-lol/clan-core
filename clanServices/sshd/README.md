@@ -46,7 +46,7 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
 ```
 
 Basic: only add persistent host keys (ed25519), no certificates
-Useful if you want to get an ssh "trust this server" prompt once and then never again. 
+Useful if you want to get an ssh "trust this server" prompt once and then never again.
 
 ```nix
 {

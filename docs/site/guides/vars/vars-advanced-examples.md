@@ -2,7 +2,7 @@
 
 ## Advanced Vars Examples
 
-This guide demonstrates complex, real-world patterns for the vars system. 
+This guide demonstrates complex, real-world patterns for the vars system.
 
 ### Certificate Authority with Intermediate Certificates
 
@@ -91,7 +91,7 @@ Generate secrets that multiple services can use:
     script = ''
       # Generate password
       tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 > $out/password
-      
+
       # Create connection string
       echo "postgresql://app:$(cat $out/password)@localhost/$prompts/dbname" \
         > $out/connection-string
@@ -148,7 +148,7 @@ Generate SSH host keys and sign them with a CA:
     script = ''
       # Generate host key
       ssh-keygen -t ed25519 -N "" -f $out/ssh_host_ed25519_key
-      
+
       # Sign with CA
       ssh-keygen -s $in/ssh-ca/ca \
         -I "host:${config.networking.hostName}" \
@@ -188,7 +188,7 @@ Create a WireGuard configuration with pre-shared keys:
       # Generate key pair
       wg genkey > $out/privatekey
       wg pubkey < $out/privatekey > $out/publickey
-      
+
       # Generate pre-shared key
       wg genpsk > $out/preshared
     '';
@@ -197,7 +197,7 @@ Create a WireGuard configuration with pre-shared keys:
   # Configure WireGuard
   networking.wireguard.interfaces.wg0 = {
     privateKeyFile = config.clan.core.vars.generators.wireguard.files."privatekey".path;
-    
+
     peers = [{
       publicKey = "peer-public-key-here";
       presharedKeyFile = config.clan.core.vars.generators.wireguard.files."preshared".path;
@@ -266,7 +266,7 @@ Generate and manage backup encryption keys:
     script = ''
       # Generate age key pair
       age-keygen -o $out/encryption.key 2>/dev/null
-      
+
       # Extract public key
       grep "public key:" $out/encryption.key | cut -d: -f2 | tr -d ' ' \
         > $out/encryption.pub

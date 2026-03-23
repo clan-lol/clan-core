@@ -55,16 +55,16 @@ graph TB
         C1[controller1<br/>endpoint: vpn1.example.com<br/>fd51:19c1:3b:f700::/56]
         C2[controller2<br/>endpoint: vpn2.example.com<br/>fd51:19c1:c1:aa00::/56]
     end
-    
+
     subgraph Peers
         P1[peer1<br/>designated: controller1]
         P2[peer2<br/>designated: controller2]
         P3[peer3<br/>designated: controller1]
     end
-    
+
     %% Controllers connect to each other
     C1 <--> C2
-    
+
     %% All peers connect to all controllers
     P1 <--> C1
     P1 <--> C2
@@ -72,12 +72,12 @@ graph TB
     P2 <--> C2
     P3 <--> C1
     P3 <--> C2
-    
+
     %% Peer-to-peer traffic flows through controllers
     P1 -.->|via controllers| P3
     P1 -.->|via controllers| P2
     P2 -.->|via controllers| P3
-    
+
     classDef controller fill:#f9f,stroke:#333,stroke-width:4px
     classDef peer fill:#bbf,stroke:#333,stroke-width:2px
     class C1,C2 controller
