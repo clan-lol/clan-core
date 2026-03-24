@@ -1,4 +1,7 @@
-name: sizelint
+# We also run sizelint in treefmt but that only runs it on the overall diff
+# whereas we need the Git history so we can check each commit to prevent
+# a commit adding a large file and another commit removing it in the same PR.
+name: sizelint on each commit
 on:
   pull_request:
     branches: [main]
