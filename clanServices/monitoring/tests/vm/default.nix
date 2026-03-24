@@ -48,5 +48,10 @@
       machine1.wait_for_unit("loki")
       machine1.wait_for_unit("mimir")
       machine1.wait_for_unit("grafana")
+
+      config_path = machine2.succeed(
+          "systemctl cat alloy | grep -o '/nix/store/[^ ]*-config.alloy'"
+      ).strip()
+      machine2.succeed(f"test \"$(grep -c '^loki.source.journal ' {config_path})\" = 1")
     '';
 }
