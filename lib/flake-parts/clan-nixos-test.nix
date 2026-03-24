@@ -3,6 +3,7 @@
   flake-parts-lib,
   self,
   inputs,
+  config,
   ...
 }:
 let
@@ -14,6 +15,11 @@ let
     mkPerSystemOption
     ;
   nixosLib = import (inputs.nixpkgs + "/nixos/lib") { };
+
+  crossCompat = import ./clan-cross-compat.nix {
+    inherit lib self nixosLib;
+    crossPkgs = config.flake.clanTestCrossPkgs;
+  };
 in
 {
   options = {
@@ -21,6 +27,30 @@ in
       { config, pkgs, ... }:
       let
         cfg = config.clan.nixosTests;
+
+        # Evaluated tests, shared between checks output and cross-compat check
+        tests = lib.mapAttrs (
+          _name: testModule:
+          nixosLib.runTest (
+            { ... }:
+            {
+              imports = [
+                self.modules.nixosTest.clanTest
+                testModule
+              ];
+
+              hostPkgs = pkgs;
+
+              defaults = {
+                imports = [
+                  {
+                    _module.args.clan-core = self;
+                  }
+                ];
+              };
+            }
+          )
+        ) cfg;
       in
       {
         options.clan.nixosTests = mkOption {
@@ -29,31 +59,11 @@ in
           default = { };
         };
 
-        config.checks = lib.optionalAttrs (pkgs.stdenv.isLinux) (
-          # Add the VM tests as checks (vars-check is part of the test closure)
-          lib.mapAttrs (
-            _name: testModule:
-            nixosLib.runTest (
-              { ... }:
-              {
-                imports = [
-                  self.modules.nixosTest.clanTest
-                  testModule
-                ];
-
-                hostPkgs = pkgs;
-
-                defaults = {
-                  imports = [
-                    {
-                      _module.args.clan-core = self;
-                    }
-                  ];
-                };
-              }
-            )
-          ) cfg
-        );
+        config.checks =
+          lib.optionalAttrs (pkgs.stdenv.isLinux) tests
+          // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "x86_64-linux") {
+            clan-cross-compat = crossCompat.mkAllChecks pkgs tests cfg;
+          };
       }
     );
   };

@@ -8,6 +8,7 @@
   clan = {
     directory = ./.;
     test.useContainers = true;
+    test.skipCrossCheck = true; # makeWrapper cross-compilation issue
     inventory = {
 
       machines.clientone = { };
