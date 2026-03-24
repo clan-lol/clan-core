@@ -70,7 +70,7 @@ services = {
 
 ---
 
-### ✅ After: New `instances` Definition with `clanServices`
+### After: New `instances` Definition with `clanServices`
 
 ```nix
 instances = {
@@ -219,11 +219,11 @@ roles.default.machines."test-inventory-machine".settings = {
 The new `instances` format uses **attribute sets** instead of **lists** for tags and machines:
 
 ```nix
-# ❌ Old format (lists)
+# Old format (lists)
 roles.client.tags = [ "backup" ];
 roles.server.machines = [ "blob64" ];
 
-# ✅ New format (attribute sets)
+# New format (attribute sets)
 roles.client.tags.backup = { };
 roles.server.machines.blob64 = { };
 ```
@@ -233,10 +233,10 @@ roles.server.machines.blob64 = { };
 When you need to assign multiple machines or tags to a role:
 
 ```nix
-# ❌ Old format
+# Old format
 roles.moon.machines = [ "eva" "eve" ];
 
-# ✅ New format - each machine gets its own attribute
+# New format - each machine gets its own attribute
 roles.moon.machines.eva = { };
 roles.moon.machines.eve = { };
 ```

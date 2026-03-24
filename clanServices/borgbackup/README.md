@@ -23,8 +23,7 @@ client machine with a destination pointing to a Hetzner Storage Box.
 
 ## Overview
 
-This guide explains how to set up and manage
-[BorgBackup](https://borgbackup.readthedocs.io/) for secure, efficient backups
+[BorgBackup](https://borgbackup.readthedocs.io/) provides secure, efficient backups
 in a Clan network. BorgBackup provides:
 
 - Space efficient storage of backups with deduplication
