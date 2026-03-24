@@ -1079,4 +1079,121 @@ in
       };
     };
   };
+  testAttrTag = {
+    expr = fromType { } (
+      types.attrTag {
+        foo = lib.mkOption {
+          type = types.bool;
+        };
+        bar = lib.mkOption {
+          type = types.str;
+        };
+      }
+    );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        oneOf = [
+          {
+            type = "object";
+            properties = {
+              bar = {
+                type = "string";
+              };
+            };
+            required = [ "bar" ];
+            additionalProperties = false;
+          }
+          {
+            type = "object";
+            properties = {
+              foo = {
+                type = "boolean";
+              };
+            };
+            required = [ "foo" ];
+            additionalProperties = false;
+          }
+        ];
+      };
+    };
+  };
+  testAttrTagSubmodule = {
+    expr = fromType { } (
+      types.attrTag {
+        simple = lib.mkOption {
+          type = types.str;
+        };
+        complex = lib.mkOption {
+          type = types.submodule {
+            options.host = lib.mkOption {
+              type = types.str;
+            };
+            options.port = lib.mkOption {
+              type = types.port;
+              default = 8080;
+            };
+          };
+        };
+      }
+    );
+    expected = {
+      MainInput = {
+        type = "object";
+        properties = {
+          opt = {
+            "$ref" = "#/$defs/MainOptInput";
+          };
+        };
+        additionalProperties = false;
+        required = [ "opt" ];
+      };
+      MainOptInput = {
+        oneOf = [
+          {
+            type = "object";
+            properties = {
+              complex = {
+                "$ref" = "#/$defs/MainOptComplexInput";
+              };
+            };
+            required = [ "complex" ];
+            additionalProperties = false;
+          }
+          {
+            type = "object";
+            properties = {
+              simple = {
+                type = "string";
+              };
+            };
+            required = [ "simple" ];
+            additionalProperties = false;
+          }
+        ];
+      };
+      MainOptComplexInput = {
+        type = "object";
+        properties = {
+          host = {
+            type = "string";
+          };
+          port = {
+            type = "integer";
+          };
+        };
+        additionalProperties = false;
+        required = [ "host" ];
+      };
+    };
+  };
 }
