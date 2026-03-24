@@ -117,7 +117,7 @@ instances = {
         roles.server.settings = {
             directory = "/var/backup/borg";
         };
-        roles.client.tags.backup = { };
+        roles.client.tags = [ "backup" ];
         roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];
     };
 
@@ -133,7 +133,7 @@ instances = {
         roles.moon.machines."moon-2".settings = {
             stableEndpoints = [ "10.0.0.2" "2001:db8::2" ];
         };
-        roles.peer.tags.nixos = { };
+        roles.peer.tags = [ "nixos" ];
     };
 
     sshd-internal = {
@@ -141,8 +141,8 @@ instances = {
             name = "sshd";
             input = "clan-core";
         };
-        roles.server.tags.nixos = { };
-        roles.client.tags.nixos = { };
+        roles.server.tags = [ "nixos" ];
+        roles.client.tags = [ "nixos" ];
         roles.client.settings = {
             certificate.searchDomains = [
                 "internal.example.com"
@@ -219,13 +219,15 @@ roles.default.machines."test-inventory-machine".settings = {
 The new `instances` format uses **attribute sets** instead of **lists** for tags and machines:
 
 ```nix
-# Old format (lists)
 roles.client.tags = [ "backup" ];
+# Old format (lists)
 roles.server.machines = [ "blob64" ];
 
 # New format (attribute sets)
-roles.client.tags.backup = { };
 roles.server.machines.blob64 = { };
+
+# Tags stay lists
+roles.client.tags = [ "backup" ];
 ```
 
 #### Handling Multiple Machines/Tags
@@ -376,7 +378,7 @@ instances = {
   my-importer = {
     module.name = "@clan/importer";
     module.input = "clan-core";
-    roles.default.tags.my-tag = { };
+    roles.default.tags = [ "my-tag" ];
     roles.default.extraModules = [ self.nixosModules.myModule ];
   };
 };

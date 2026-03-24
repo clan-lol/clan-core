@@ -25,7 +25,7 @@ The `admin` clanService is deprecated. Its functionality has been split into ded
 ```nix
 instances = {
   admin = {
-    roles.default.tags.all = { };
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       allowedKeys = {
         "my-key" = "ssh-ed25519 AAAA...";
@@ -42,7 +42,7 @@ instances = {
 ```nix
 instances = {
   sshd = {
-    roles.server.tags.all = { };
+    roles.server.tags = [ "all" ];
     roles.server.settings = {
       authorizedKeys = {
         "my-key" = "ssh-ed25519 AAAA...";
@@ -51,7 +51,7 @@ instances = {
       hostKeys.rsa.enable = true;
     };
     # Optional: add client role if you want machines to trust the CA
-    roles.client.tags.all = { };
+    roles.client.tags = [ "all" ];
   };
 };
 ```
@@ -67,7 +67,7 @@ instances = {
       name = "users";
       input = "clan-core";
     };
-    roles.default.tags.all = { };
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       user = "root";
       prompt = true;  # Set to false to auto-generate password

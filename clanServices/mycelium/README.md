@@ -17,6 +17,6 @@ Example configuration below connects all your machines to the Mycelium network:
 
 ```nix
 mycelium = {
-    roles.peer.tags.all = {};
+    roles.peer.tags = [ "all" ];
 };
 ```

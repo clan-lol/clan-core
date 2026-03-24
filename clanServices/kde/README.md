@@ -20,7 +20,7 @@ inventory = {
     kde = {
 
       # Deploy on all machines
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
 
       # Or individual hosts
       roles.default.machines.laptop = { };

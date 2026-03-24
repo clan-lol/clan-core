@@ -92,7 +92,7 @@ Then use `extraModules` to attach home-manager configuration to a user:
   inventory.instances = {
     alice-user = {
       module.name = "users";
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [

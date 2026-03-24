@@ -39,7 +39,7 @@ inventory = {
   instances = {
     # Deploy yggdrasil on all machines
     yggdrasil = {
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
     };
   };
 };
@@ -70,7 +70,7 @@ inventory = {
 
     # Deploy yggrdasil on all machines
     yggdrasil = {
-      roles.default.tags.all = [ "all" ];
+      roles.default.tags = [ "all" ];
     };
 
     internet = {
@@ -81,7 +81,7 @@ inventory = {
     };
 
     mycelium = {
-      roles.peer.tags.all = { };
+      roles.peer.tags = [ "all" ];
     };
 
     tor = {

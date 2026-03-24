@@ -17,7 +17,7 @@ transparently, without any manual TLS setup.
   inventory.instances = {
     pki = {
       module.name = "pki";
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
     };
   };
 }

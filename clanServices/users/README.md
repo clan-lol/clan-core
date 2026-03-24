@@ -10,7 +10,7 @@
         name = "users";
         input = "clan-core";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         prompt = false;
@@ -24,7 +24,7 @@
         name = "users";
         input = "clan-core";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "carol";
         share = true;
@@ -66,7 +66,7 @@ instances = {
   users-root = {
     module.name = "users";
     module.input = "clan-core";
-    roles.default.tags.nixos = { };
+    roles.default.tags = [ "nixos" ];
     roles.default.settings = {
       user = "root";
       prompt = false;  # Set to true if you want to be prompted

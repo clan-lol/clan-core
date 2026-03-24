@@ -70,7 +70,7 @@ inventory = {
   instances = {
 
     wifi = {
-      roles.default.tags.laptop = {};
+      roles.default.tags = [ "laptop" ];
       roles.default.settings.networks.home = {};
     };
 
@@ -116,7 +116,7 @@ A **role** defines what part a machine plays within a service.
 
 ```nix
 wifi = {
-  roles.default.tags.laptop = {};
+  roles.default.tags = [ "laptop" ];
 };
 ```
 
@@ -136,8 +136,8 @@ The service itself defines what roles exist; you then assign machines to them. I
 
 ```nix
 roles.a.machines."my-machine" = {};
-roles.b.tags.laptop = {};
-roles.c.tags.all = {};
+roles.b.tags = [ "laptop" ];
+roles.c.tags = [ "all" ];
 ```
 
 ---
@@ -153,7 +153,7 @@ Think of it like labeling boxes when you move. You might labl some "kitchen," so
 Every machine automatically has the `all` tag:
 
 ```nix
-roles.default.tags.all = {};   # Applies to every machine
+roles.default.tags = [ "all" ];   # Applies to every machine
 ```
 
 ### Custom Tags
@@ -173,13 +173,12 @@ Then reference them in services:
 ```nix
 instances = {
   wifi = {
-    roles.default.tags.laptop = {};   # Only laptops get WiFi
+    roles.default.tags = [ "laptop" ];   # Only laptops get WiFi
   };
 
   packages = {
-    roles.default.tags.server.settings = {
-      packages = [ "nginx" "postgresql" ];   # Only servers get these
-    };
+    roles.default.tags = [ "server" ];
+    roles.default.settings.packages = [ "nginx" "postgresql" ];   # Only servers get these
   };
 };
 ```
@@ -196,7 +195,7 @@ Most services have configurable settings. Settings can be applied:
 
 ```nix
 borgbackup = {
-  roles.client.tags.all = {};
+  roles.client.tags = [ "all" ];
   roles.client.settings = {
     startAt = "*-*-* 02:00:00";   # All clients backup at 2 AM
   };
@@ -245,12 +244,12 @@ inventory.machines = {
 inventory.instances = {
   # SSH on all machines
   sshd = {
-    roles.server.tags.all = {};
+    roles.server.tags = [ "all" ];
   };
 
   # WiFi on laptops only
   wifi = {
-    roles.default.tags.laptop = {};
+    roles.default.tags = [ "laptop" ];
     roles.default.settings.networks.home = {};
   };
 
@@ -269,7 +268,7 @@ inventory.instances = {
 
   # Backups
   borgbackup = {
-    roles.client.tags.laptop = {};
+    roles.client.tags = [ "laptop" ];
     roles.server.machines."backup-server" = {};
   };
 };
@@ -287,7 +286,7 @@ instances = {
   # First backup instance: laptops back up to the NAS
   backup-to-nas = {
     module.name = "borgbackup";
-    roles.client.tags.laptop = {};
+    roles.client.tags = [ "laptop" ];
     roles.server.machines."nas" = {};
   };
 
