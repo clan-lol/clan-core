@@ -375,7 +375,7 @@ Let's add a user called Alice. Open clan.nix, and under inventory.instances, add
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
       };
@@ -412,7 +412,7 @@ After you trust Alice, you can grant her sudo access. To do so, update the clan.
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [ "wheel" ];  # Add this to allow sudo

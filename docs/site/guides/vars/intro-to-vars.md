@@ -24,7 +24,7 @@ When you create a clan with the default template, it includes a root password se
 inventory.instances = {
   user-root = {
     module.name = "users";
-    roles.default.tags.all = {};
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       user = "root";
       prompt = true;
@@ -168,7 +168,7 @@ The `sshd` service automatically generates SSH host keys:
 ```nix
 inventory.instances = {
   sshd = {
-    roles.server.tags.all = {};
+    roles.server.tags = [ "all" ];
   };
 };
 ```
@@ -374,9 +374,8 @@ And then inside `inventory.instances` (probably under the user-fred attribute se
 
 ```nix
 wifi = {
-  roles.default.tags.laptop = {
-    settings.networks.home = { };
-  };
+  roles.default.tags = [ "laptop" ];
+  roles.default.settings.networks.home = { };
 };
 ```
 
@@ -468,7 +467,7 @@ Here's the entire clan.nix file:
     };
 
     wifi = {
-      roles.default.tags.laptop = { };
+      roles.default.tags = [ "laptop" ];
       roles.default.settings.networks.home = { };
     };
 
@@ -476,7 +475,7 @@ Here's the entire clan.nix file:
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
-      roles.server.tags.all = { };
+      roles.server.tags = [ "all" ];
       roles.server.settings.authorizedKeys = {
         # Insert the public key that you want to use for SSH access.
         # All keys will have ssh access to all machines ("tags.all" means 'all machines').
@@ -491,7 +490,7 @@ Here's the entire clan.nix file:
       module = {
         name = "users";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "root";
         prompt = true;
@@ -510,14 +509,14 @@ Here's the entire clan.nix file:
       roles.controller.machines."YOUR_CONTROLLER" = { };
       # Peers of the network
       # tags.all means 'all machines' will joined
-      roles.peer.tags.all = { };
+      roles.peer.tags = [ "all" ];
     };
 
     # Docs: https://docs.clan.lol/latest/services/official/tor/
     # Tor network provides secure, anonymous connections to your machines
     # All machines will be accessible via Tor as a fallback connection method
     tor = {
-      roles.server.tags.nixos = { };
+      roles.server.tags = [ "nixos" ];
     };
   };
 

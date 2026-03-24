@@ -47,7 +47,7 @@ inventory = {
       module.input = "self";
 
       # Add the default role to all machines, including `client`
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
 
       # DNS server queries to http://<name>.foo are resolved here
       roles.server.machines."dnsserver".settings = {

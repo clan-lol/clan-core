@@ -27,7 +27,7 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
         input = "clan-core";
       };
       # Servers present certificates for <machine>.example.com
-      roles.server.tags.all = { };
+      roles.server.tags = [ "all" ];
       roles.server.settings = {
         # Optional: add additional search domains besides `meta.domain` from `clan.nix`
         certificate.searchDomains = [ "example.com" ];
@@ -35,7 +35,7 @@ Useful if you never want to get a prompt about trusting the ssh fingerprint.
         # hostKeys.rsa.enable = true;
       };
       # Clients trust the CA for *.example.com
-      roles.client.tags.all = { };
+      roles.client.tags = [ "all" ];
       roles.client.settings = {
         # Optional: add additional search domains besides `meta.domain` from `clan.nix`
         certificate.searchDomains = [ "example.com" ];
@@ -56,7 +56,7 @@ Useful if you want to get an ssh "trust this server" prompt once and then never 
         name = "sshd";
         input = "clan-core";
       };
-      roles.server.tags.all = { };
+      roles.server.tags = [ "all" ];
     };
   };
 }
@@ -75,7 +75,7 @@ Admins should trust only production; CI should trust prod and staging. Servers a
       };
 
       # Servers present certs for both prod and staging FQDNs
-      roles.server.tags.all = { };
+      roles.server.tags = [ "all" ];
       roles.server.settings = {
         certificate.searchDomains = [
           "prod.example.com"

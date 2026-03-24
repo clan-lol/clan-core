@@ -31,7 +31,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 
           # Fallback: Secure connections via Tor
           tor = {
-            roles.server.tags.nixos = { };
+            roles.server.tags = [ "nixos" ];
           };
         };
       };
@@ -61,12 +61,12 @@ For machines with public IPs or DNS names, use the `internet` service to configu
           # Priority 2: VPN for internal machines
           zerotier = {
             roles.controller.machines."controller" = { };
-            roles.peer.tags.nixos = { };
+            roles.peer.tags = [ "nixos" ];
           };
 
           # Priority 3: Tor as universal fallback
           tor = {
-            roles.server.tags.nixos = { };
+            roles.server.tags = [ "nixos" ];
           };
         };
       };

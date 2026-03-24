@@ -5,7 +5,7 @@ Example configuration:
 ```nix
 {
   instances.syncthing = {
-    roles.peer.tags.all = { };
+    roles.peer.tags = [ "all" ];
     roles.peer.settings.folders = {
       documents = {
         path = "/home/youruser/syncthing/documents";
