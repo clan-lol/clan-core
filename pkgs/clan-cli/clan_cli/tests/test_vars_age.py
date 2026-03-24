@@ -8,7 +8,7 @@ import pytest
 from clan_cli.tests.age_keys import KeyPair
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
-from clan_cli.tests.test_vars import invalidate_flake_cache
+from clan_cli.tests.helpers.flake_cache import invalidate_flake_cache
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import generate_command
 from clan_lib.errors import ClanError
