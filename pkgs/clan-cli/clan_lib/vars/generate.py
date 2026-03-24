@@ -339,11 +339,7 @@ def run_generators(
             no_sandbox=no_sandbox,
         )
 
-    # Re-encrypt workaround
-    # For shared generators:
-    # When a machine is added afterwards,
-    # When the generators are already generated from a previous run.
-    # We need to make sure, the newly added machine gets access to the shared secret
+    # Re-encrypt shared secrets if recipients changed (e.g. machine added)
     for generator in [g for g in all_generators if g.share]:
         for file in generator.files:
             # Skip files that are either:

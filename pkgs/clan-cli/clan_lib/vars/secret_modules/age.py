@@ -202,10 +202,15 @@ class SecretStore(StoreBase):
             recipients,
             encrypted_key_file,
         )
+        self._write_recipients(encrypted_key_file, recipients)
 
         # Commit machine key files
         commit_files(
-            [pubkey_file, encrypted_key_file],
+            [
+                pubkey_file,
+                encrypted_key_file,
+                self._recipients_file(encrypted_key_file),
+            ],
             self.flake.path,
             f"Add age machine key for '{machine}'",
         )
@@ -252,11 +257,32 @@ class SecretStore(StoreBase):
         recipients = self.get_recipients(machine)
         encrypted_key_file = self.machine_encrypted_key_file(machine)
         self._run_age_encrypt(private_key, recipients, encrypted_key_file)
+        self._write_recipients(encrypted_key_file, recipients)
 
         log.info(f"Re-encrypted machine key for '{machine}'")
         return encrypted_key_file
 
     # ── Age encrypt/decrypt primitives ────────────────────────────────────
+
+    @staticmethod
+    def _recipients_file(age_file: Path) -> Path:
+        """Return the path to the sidecar recipients file for an age file."""
+        return age_file.with_suffix(".age.recipients")
+
+    @staticmethod
+    def _read_recipients(age_file: Path) -> list[str]:
+        """Read the sorted recipient list from a sidecar file, or empty if missing."""
+        recipients_file = SecretStore._recipients_file(age_file)
+        if not recipients_file.exists():
+            return []
+        return sorted(recipients_file.read_text().strip().splitlines())
+
+    @staticmethod
+    def _write_recipients(age_file: Path, recipients: list[str]) -> Path:
+        """Write sorted recipients to sidecar file. Returns the sidecar path."""
+        recipients_file = SecretStore._recipients_file(age_file)
+        recipients_file.write_text("\n".join(sorted(recipients)) + "\n")
+        return recipients_file
 
     def _run_age_encrypt(
         self,
@@ -327,7 +353,7 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
         """Encrypt and store a secret to the appropriate machine key(s)."""
         recipients: list[str] = []
 
@@ -352,7 +378,11 @@ class SecretStore(StoreBase):
 
         self._run_age_encrypt(value, recipients, secret_file)
 
-        return secret_file
+        # Write sidecar for shared secrets (not per-machine vars)
+        if isinstance(generator.key.placement, Shared):
+            return [secret_file, self._write_recipients(secret_file, recipients)]
+
+        return [secret_file]
 
     def get(
         self,
@@ -590,11 +620,20 @@ class SecretStore(StoreBase):
         - Re-encrypts shared secrets to all current machines' pubkeys
         - Per-machine secrets are never re-encrypted (machine key doesn't change)
         """
-        # Always re-key the machine key to current user recipients
+        # Re-key the machine key if user recipients changed
         if self.machine_pubkey_file(machine).exists():
-            self.rekey_machine_key(machine)
+            encrypted_key_file = self.machine_encrypted_key_file(machine)
+            wanted = sorted(self.get_recipients(machine))
+            current = self._read_recipients(encrypted_key_file)
+            if current != wanted:
+                self.rekey_machine_key(machine)
+                commit_files(
+                    [encrypted_key_file, self._recipients_file(encrypted_key_file)],
+                    self.flake.path,
+                    f"Re-encrypt machine key for '{machine}'",
+                )
 
-        # Re-encrypt shared secrets to all current machines
+        # Re-encrypt shared secrets if machine recipients changed
         for generator in generators:
             if not isinstance(generator.key.placement, Shared):
                 continue
@@ -609,15 +648,20 @@ class SecretStore(StoreBase):
                 secret_file = self.secret_path(generator.key, file.name)
                 recipients = [self.get_machine_pubkey(m) for m in generator.machines]
 
+                current = self._read_recipients(secret_file)
+                if current == sorted(recipients):
+                    continue
+
                 # Decrypt with any available machine key, re-encrypt to all
                 value = self.get(generator.key, file.name)
                 self._run_age_encrypt(value, recipients, secret_file)
+                self._write_recipients(secret_file, recipients)
                 log.info(
                     f"Re-encrypted shared secret {generator.name}/{file.name} "
                     f"for {len(recipients)} machines"
                 )
                 commit_files(
-                    [secret_file],
+                    [secret_file, self._recipients_file(secret_file)],
                     self.flake.path,
                     f"Re-encrypt shared secret {generator.name}/{file.name} for {len(recipients)} machines",
                 )

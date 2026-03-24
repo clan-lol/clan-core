@@ -185,7 +185,7 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
 
         add_machines: list[str] = []
         add_groups: list[str] = []
@@ -231,7 +231,7 @@ class SecretStore(StoreBase):
             add_groups=add_groups,
             git_commit=False,
         )
-        return secret_folder
+        return [secret_folder]
 
     def get(
         self,

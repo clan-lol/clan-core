@@ -27,7 +27,7 @@ class VarsStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
         if not self.flake.is_local:
             msg = f"Storing var '{var.id}' in a flake is only supported for local flakes: {self.flake}"
             raise ClanError(msg)
@@ -42,7 +42,7 @@ class VarsStore(StoreBase):
         folder.mkdir(parents=True, exist_ok=True)
         file_path.touch()
         file_path.write_bytes(value)
-        return file_path
+        return [file_path]
 
     # get a single fact
     def get(

@@ -28,11 +28,11 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
         secret_file = self.dir / generator.name / var.name
         secret_file.parent.mkdir(parents=True, exist_ok=True)
         secret_file.write_bytes(value)
-        return None  # we manage the files outside of the git repo
+        return []  # we manage the files outside of the git repo
 
     def exists(self, generator: GeneratorId, name: str) -> bool:
         return (self.dir / generator.name / name).exists()
