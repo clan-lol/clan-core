@@ -4,8 +4,8 @@
 
 The `admin` clanService is deprecated. Its functionality has been split into dedicated services:
 
-- **sshd** (server role): SSH authorized keys, host certificates, RSA host key generation
-- **users**: Root password management
+- `sshd` (server role): SSH authorized keys, host certificates, RSA host key generation
+- `users`: root password management
 
 ### Option Mappings
 
@@ -145,6 +145,6 @@ Here's a full migration example:
 
 The sshd service provides additional features not available in the admin service:
 
-- **client role**: Configure machines to trust the SSH CA, enabling TOFU-less verification
+- `client` role: configure machines to trust the SSH CA for TOFU-less verification
 
 See the [sshd service documentation](/docs/services/official/sshd) for details.

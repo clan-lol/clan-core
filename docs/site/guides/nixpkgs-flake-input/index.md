@@ -8,10 +8,10 @@
 
 ### Option 1: Follow `clan-core`
 
-- **Pros**:
+- Pros:
   - Recommended for most users.
   - Verified by our CI and widely used by others.
-- **Cons**:
+- Cons:
   - Coupled to version bumps in `clan-core`.
   - Upstream features and packages may take longer to land.
 
@@ -27,11 +27,11 @@ inputs = {
 
 ### Option 2: Use Your Own `nixpkgs` Version
 
-- **Pros**:
+- Pros:
   - Faster access to new upstream features and packages.
-- **Cons**:
+- Cons:
   - Recommended for advanced users.
-  - Not covered by our CI — you’re on the frontier.
+  - Not covered by our CI; you're on the frontier.
 
 Example:
 
@@ -100,7 +100,7 @@ Fix this by adding the following line to your `flake.nix` inputs:
 home-manager.inputs.nixpkgs.follows = "nixpkgs";
 ```
 
-Repeat this process until all duplicate `nixpkgs` entries are resolved. This ensures all inputs use the same `nixpkgs` source, preventing cross-version conflicts.
+Repeat this process until all duplicate `nixpkgs` entries are resolved, so that all inputs use the same `nixpkgs` source and cross-version conflicts are avoided.
 
 ## How to customize pkgs?
 

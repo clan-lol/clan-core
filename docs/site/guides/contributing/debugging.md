@@ -55,7 +55,7 @@ wintux
 
 ## VS Code
 
-If you're using VS Code, it has a handy feature that makes paths to source code files clickable in the integrated terminal. Combined with the previously mentioned techniques, this allows you to open a Clan in VS Code, execute a command like `clan machines list --debug`, and receive a printed path to the code that initiates the subprocess. With the `Ctrl` key (or `Cmd` on macOS) and a mouse click, you can jump directly to the corresponding line in the code file and add a `breakpoint()` function to it, to inspect the internal state.
+VS Code makes paths to source code files clickable in the integrated terminal. Combined with the previously mentioned techniques, you can open a Clan in VS Code, execute a command like `clan machines list --debug`, and receive a printed path to the code that initiates the subprocess. With the `Ctrl` key (or `Cmd` on macOS) and a mouse click, you can jump directly to the corresponding line in the code file and add a `breakpoint()` function to it, to inspect the internal state.
 
 ## Finding Print Messages
 
@@ -79,9 +79,9 @@ To trace the origin of print messages in `clan-cli`, you can enable special debu
 
 You can enable more detailed logging for specific components by setting these environment variables:
 
-- `CLAN_DEBUG_NIX_SELECTORS=1` — verbose logs for flake.select operations
-- `CLAN_DEBUG_NIX_PREFETCH=1` — verbose logs for flake.prefetch operations
-- `CLAN_DEBUG_COMMANDS=1` — print the diffed environment of executed commands
+- `CLAN_DEBUG_NIX_SELECTORS=1`: verbose logs for flake.select operations
+- `CLAN_DEBUG_NIX_PREFETCH=1`: verbose logs for flake.prefetch operations
+- `CLAN_DEBUG_COMMANDS=1`: print the diffed environment of executed commands
 
 Example:
 
@@ -177,7 +177,7 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    time.sleep(3600)  # Sleep for one hour
     ```
 
-2. Use `cntr` and `psgrep` to attach to the Nix sandbox. This allows you to interactively debug your code while it's paused. For example:
+2. Use `cntr` and `psgrep` to attach to the Nix sandbox, so you can interactively debug your code while it's paused. For example:
 
     ```bash
    psgrep $PROCESS_NAME
