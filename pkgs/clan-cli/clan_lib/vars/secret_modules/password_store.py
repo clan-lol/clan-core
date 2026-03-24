@@ -107,10 +107,10 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
         pass_call = ["insert", "-m", str(self.entry_dir(generator.key, var.name))]
         self._run_pass(*pass_call, input=value, check=True)
-        return None  # we manage the files outside of the git repo
+        return []  # we manage the files outside of the git repo
 
     def get(
         self,

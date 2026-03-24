@@ -172,7 +172,7 @@ class StoreBase(ABC):
         generator: "GeneratorStore",
         var: "Var",
         value: bytes,
-    ) -> Path | None:
+    ) -> list[Path]:
         """Override this method to implement the actual creation of the file"""
 
     @abstractmethod
@@ -301,7 +301,7 @@ class StoreBase(ABC):
             log_info(
                 f"Var {generator.name}/{var.name}{machines_str} remains unchanged: {old_val_str}",
             )
-        changed_files += [new_file] if new_file else []
+        changed_files += new_file
         return changed_files
 
     @abstractmethod
