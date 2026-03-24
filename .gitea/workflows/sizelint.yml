@@ -18,4 +18,4 @@ jobs:
           FORMATTER=$(nix build .#formatter.x86_64-linux --print-out-paths)
           TREEFMT_CONF=$(grep -oP '(?<=--config-file=)\S+' "$FORMATTER/bin/treefmt")
           SIZELINT_CONF=$(grep -oP '/nix/store/\S*sizelint\.toml' "$TREEFMT_CONF")
-          nix run github:a-kenji/sizelint -- check --config "$SIZELINT_CONF" --git "${{ gitea.event.pull_request.base.sha }}..${{ gitea.sha }}"
+          nix run nixpkgs#sizelint --inputs-from . -- check --config "$SIZELINT_CONF" --git "${{ gitea.event.pull_request.base.sha }}..${{ gitea.sha }}"
