@@ -103,7 +103,23 @@ in
         clan-core = self;
       };
 
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-relativeDir
+      legacyPackages.evalTests-relativeDir = import ./clanTest/relativeDir-test.nix {
+        inherit lib;
+      };
+
       checks = {
+        eval-lib-relativeDir = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+          export HOME="$(realpath .)"
+          nix-unit --eval-store "$HOME" \
+            --extra-experimental-features flakes \
+            --show-trace \
+            ${inputOverrides} \
+            --flake ${inventoryTestsSrc}#legacyPackages.${system}.evalTests-relativeDir
+
+          touch $out
+        '';
+
         eval-lib-resolve-module = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"
           nix-unit --eval-store "$HOME" \

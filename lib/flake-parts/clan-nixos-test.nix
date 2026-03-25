@@ -3,7 +3,6 @@
   flake-parts-lib,
   self,
   inputs,
-  config,
   ...
 }:
 let
@@ -18,7 +17,7 @@ let
 
   crossCompat = import ./clan-cross-compat.nix {
     inherit lib self nixosLib;
-    crossPkgs = config.flake.clanTestCrossPkgs;
+    crossPkgs = self.clanTestCrossPkgs;
   };
 in
 {
