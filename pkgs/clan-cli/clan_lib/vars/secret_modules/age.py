@@ -9,11 +9,16 @@ from typing import ClassVar, override
 
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.cmd import run as cmd_run
+from clan_lib.dirs import runtime_deps_flake
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_files
-from clan_lib.nix import current_system
-from clan_lib.nix_selectors import vars_age_secret_location, vars_settings_recipients
+from clan_lib.nix import current_system, nix_command, nix_shell
+from clan_lib.nix_selectors import (
+    secrets_age_plugins,
+    vars_age_secret_location,
+    vars_settings_recipients,
+)
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import (
@@ -45,10 +50,43 @@ class SecretStore(StoreBase):
 
     def __init__(self, flake: Flake) -> None:
         super().__init__(flake)
+        self._age_plugins: list[str] | None = None
 
     @property
     def store_name(self) -> str:
         return "age"
+
+    def _load_age_plugins(self) -> list[str]:
+        """Load age plugins from flake config, cached for the store lifetime."""
+        if self._age_plugins is None:
+            result = self.flake.select(secrets_age_plugins())
+            plugins = result["secrets"]["age"]["plugins"]
+            if plugins == {}:
+                plugins = []
+            if not isinstance(plugins, list):
+                msg = (
+                    f"Expected a list of age plugins but {type(plugins)!r} was provided"
+                )
+                raise ClanError(msg)
+            self._age_plugins = plugins
+        return self._age_plugins
+
+    def _age_cmd(self, age_args: list[str]) -> list[str]:
+        """Build an age command wrapped with nix-shell for plugins."""
+        plugins = self._load_age_plugins()
+        nixpkgs_plugins = [p for p in plugins if "#" not in p]
+        flake_refs = [p for p in plugins if "#" in p]
+
+        cmd = nix_shell(["age", *nixpkgs_plugins], ["age", *age_args])
+
+        if flake_refs and not os.environ.get("IN_NIX_SANDBOX"):
+            cmd = [
+                *nix_command(["shell", "--inputs-from", str(runtime_deps_flake())]),
+                *flake_refs,
+                "-c",
+                *cmd,
+            ]
+        return cmd
 
     # ── Path helpers ──────────────────────────────────────────────────────
 
@@ -297,14 +335,14 @@ class SecretStore(StoreBase):
         output_file: Path,
     ) -> None:
         """Encrypt data with age to the specified recipients."""
-        age_cmd = ["age", "--armor"]
+        age_args = ["--armor"]
         for recipient in recipients:
-            age_cmd.extend(["-r", recipient])
-        age_cmd.extend(["-o", str(output_file)])
+            age_args.extend(["-r", recipient])
+        age_args.extend(["-o", str(output_file)])
 
         try:
             cmd_run(
-                age_cmd,
+                self._age_cmd(age_args),
                 RunOpts(input=value, log=Log.NONE, sensitive_input=True),
             )
         except ClanCmdError as e:
@@ -317,17 +355,17 @@ class SecretStore(StoreBase):
 
         try:
             if key_content:
-                age_cmd = ["age", "--decrypt", "-i", "-", str(encrypted_file)]
                 result = cmd_run(
-                    age_cmd,
+                    self._age_cmd(["--decrypt", "-i", "-", str(encrypted_file)]),
                     RunOpts(
                         input=key_content.encode(), log=Log.NONE, sensitive_input=True
                     ),
                 )
             else:
-                age_cmd = ["age", "--decrypt", "-i", str(key_file), str(encrypted_file)]
                 result = cmd_run(
-                    age_cmd,
+                    self._age_cmd(
+                        ["--decrypt", "-i", str(key_file), str(encrypted_file)]
+                    ),
                     RunOpts(log=Log.NONE),
                 )
         except ClanCmdError as e:
@@ -341,10 +379,9 @@ class SecretStore(StoreBase):
         with NamedTemporaryFile(prefix="age-key-", suffix=".txt", delete=True) as tmp:
             tmp.write(key_data)
             tmp.flush()
-            age_cmd = ["age", "--decrypt", "-i", tmp.name, str(encrypted_file)]
             try:
                 result = cmd_run(
-                    age_cmd,
+                    self._age_cmd(["--decrypt", "-i", tmp.name, str(encrypted_file)]),
                     RunOpts(log=Log.NONE),
                 )
             except ClanCmdError as e:
