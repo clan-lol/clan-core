@@ -8,6 +8,8 @@
 
   flakeModules = import ./flakeModules.nix { inherit clanLib lib; };
 
+  mkEvalCheck = import ./mkEvalCheck.nix;
+
   minifyModule = ./minify.nix;
   sopsModule = ./sops.nix;
 }

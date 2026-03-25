@@ -30,29 +30,21 @@ in
 
           touch $out
         '';
+      };
 
-        # check if the `clan config` nix jsonschema converter unit tests succeed
-        lib-jsonschema-unit-tests =
-          pkgs.runCommand "lib-jsonschema-unit-tests" { nativeBuildInputs = [ pkgs.nix-unit ]; }
-            ''
-              HOME=$(realpath .)
-
-              nix-unit --eval-store "$HOME" \
-                --extra-experimental-features flakes \
-                --show-trace \
-                ${inputOverrides} \
-                --flake ${
-                  self.filter {
-                    include = [
-                      "flake.nix"
-                      "lib"
-                      "flakeModules"
-                    ];
-                  }
-                }#legacyPackages.${system}.evalTests-lib-jsonschema-unit-tests
-
-              touch $out
-            '';
+      # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-lib-jsonschema-unit-tests
+      legacyPackages.evalCheck-lib-jsonschema-unit-tests = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "lib-jsonschema-unit-tests";
+        flakeAttr = "${
+          self.filter {
+            include = [
+              "flake.nix"
+              "lib"
+              "flakeModules"
+            ];
+          }
+        }#legacyPackages.${system}.evalTests-lib-jsonschema-unit-tests";
       };
     };
 }

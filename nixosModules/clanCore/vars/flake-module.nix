@@ -32,40 +32,21 @@ in
       legacyPackages.evalTests-generators-to-sops = import ./secret/sops/generators-to-sops-test.nix {
         inherit lib;
       };
-      checks.eval-module-clan-vars = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-        export HOME="$(realpath .)"
-
-        nix-unit --eval-store "$HOME" \
-          --extra-experimental-features flakes \
-          --show-trace \
-          ${inputOverrides} \
-          --flake ${varsFileset}#legacyPackages.${system}.evalTests-module-clan-vars
-
-        touch $out
-      '';
-      checks.eval-vars-backends = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-        export HOME="$(realpath .)"
-
-        nix-unit --eval-store "$HOME" \
-          --extra-experimental-features flakes \
-          --show-trace \
-          ${inputOverrides} \
-          --flake ${varsFileset}#legacyPackages.${system}.evalTests-vars-backends
-
-        touch $out
-      '';
-      checks.eval-generators-to-sops =
-        pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; }
-          ''
-            export HOME="$(realpath .)"
-
-            nix-unit --eval-store "$HOME" \
-              --extra-experimental-features flakes \
-              --show-trace \
-              ${inputOverrides} \
-              --flake ${varsFileset}#legacyPackages.${system}.evalTests-generators-to-sops
-
-            touch $out
-          '';
+      # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-module-clan-vars
+      legacyPackages.evalCheck-eval-module-clan-vars = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-module-clan-vars";
+        flakeAttr = "${varsFileset}#legacyPackages.${system}.evalTests-module-clan-vars";
+      };
+      legacyPackages.evalCheck-eval-vars-backends = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-vars-backends";
+        flakeAttr = "${varsFileset}#legacyPackages.${system}.evalTests-vars-backends";
+      };
+      legacyPackages.evalCheck-eval-generators-to-sops = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-generators-to-sops";
+        flakeAttr = "${varsFileset}#legacyPackages.${system}.evalTests-generators-to-sops";
+      };
     };
 }
