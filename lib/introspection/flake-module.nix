@@ -15,26 +15,21 @@ in
     in
     {
       legacyPackages.evalTests-values = tests;
-      checks = {
-        eval-lib-values = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${
-              self.filter {
-                name = "lib";
-                include = [
-                  "flake.nix"
-                  "flakeModules"
-                  "lib"
-                ];
-              }
-            }#legacyPackages.${system}.evalTests-values
 
-          touch $out
-        '';
+      # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-lib-values
+      legacyPackages.evalCheck-eval-lib-values = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-values";
+        flakeAttr = "${
+          self.filter {
+            name = "lib";
+            include = [
+              "flake.nix"
+              "flakeModules"
+              "lib"
+            ];
+          }
+        }#legacyPackages.${system}.evalTests-values";
       };
     };
 }

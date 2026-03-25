@@ -11,8 +11,12 @@
 
     Which in turn adds to the flake:
 
-    - legacyPackages.<system>.eval-tests-<testName>: The attribute set passed to nix-unit. (Exposed for debugging i.e. via nix repl).
-    - checks.<system>.eval-tests-<testName>: A derivation that can be built and fails if nix-unit fails
+    - legacyPackages.<system>.evalTests-<testName>: The attribute set passed to nix-unit. (Exposed for debugging i.e. via nix repl).
+    - legacyPackages.<system>.evalCheck-eval-tests-<testName>: The nix-unit derivation for this test.
+
+    All eval checks are collected into a single `checks.<system>.eval-tests` derivation
+    (see checks/flake-module.nix). To run a single test manually:
+      nix build .#legacyPackages.<system>.evalCheck-eval-tests-<testName>
   */
   makeEvalChecks =
     {
@@ -25,6 +29,7 @@
     }:
     let
       inputOverrides = clanLib.flake-inputs.getOverrides inputs;
+      evalTestsAttr = "evalTests-${testName}";
       attrName = "eval-tests-${testName}";
     in
     {
@@ -33,13 +38,13 @@
       ...
     }:
     {
-      legacyPackages.${attrName} = import tests (
+      legacyPackages.${evalTestsAttr} = import tests (
         {
           inherit clanLib lib module;
         }
         // testArgs
       );
-      checks.${attrName} =
+      legacyPackages.${"evalCheck-${attrName}"} =
         let
           # The root is two directories up from where this file is located
           root = ../..;
@@ -70,16 +75,11 @@
             ];
           };
         in
-        pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
-
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${src}#legacyPackages.${system}.${attrName}
-          touch $out
-        '';
+        clanLib.test.mkEvalCheck {
+          inherit pkgs system inputOverrides;
+          name = attrName;
+          flakeAttr = "${src}#legacyPackages.${system}.${evalTestsAttr}";
+        };
 
     };
 }

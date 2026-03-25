@@ -341,37 +341,37 @@ Failing nix eval tests look like this:
     > error: Tests failed
 ```
 
-To locate the definition, find the flake attribute name of the failing test near the top of the CI Job page, like for example `gitea:clan/clan-core#checks.x86_64-linux.eval-lib-values/1242`.
-
-In this case `eval-lib-values` is the attribute we are looking for.
-
-Find the attribute via ripgrep:
+To find where a specific eval check is defined, search for its name:
 
 ```console
-$ rg "eval-lib-values ="
-lib/values/flake-module.nix
-21:        eval-lib-values = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-grmpf@grmpf-nix ~/p/c/clan-core (test-docs)>
+$ rg "evalCheck-eval-lib-values"
+lib/introspection/flake-module.nix
+20:      legacyPackages.evalCheck-eval-lib-values = self.clanLib.test.mkEvalCheck {
 ```
-
-In this case the test is defined in the file `lib/values/flake-module.nix` line 21
 
 #### Adding nix eval tests
 
 In Clan core, the following pattern is usually followed:
 
 - tests are put in a `test.nix` file
-- a CI Job is exposed via a `flake-module.nix`
+- the nix-unit derivation is exposed as `legacyPackages.<system>.evalCheck-<name>` via a `flake-module.nix`
 - that `flake-module.nix` is imported via the `flake.nix` at the root of the project
+- all `evalCheck-*` attrs are automatically collected into `checks.<system>.eval-tests` (see `checks/flake-module.nix`)
 
-For example, see `/lib/values/{test.nix,flake-module.nix}`.
+For example, see `/lib/introspection/{test.nix,flake-module.nix}`.
 
 #### Running nix eval tests
 
-Since all nix eval tests are exposed via the flake outputs, they can be ran via `nix build`:
+All eval tests can be run at once via `nix build`:
 
 ```console
-nix build .#checks.x86_64-linux.{test-attr-name}
+nix build .#checks.x86_64-linux.eval-tests
+```
+
+To run a single eval test:
+
+```console
+nix build .#legacyPackages.x86_64-linux.evalCheck-{test-attr-name}
 ```
 
 For quicker iteration times, instead of `nix build` use the `nix-unit` command available in the dev environment.

@@ -10,8 +10,9 @@
     let
       # Module that contains the tests
       # This module adds:
-      # - legacyPackages.<system>.eval-tests-hello-world
-      # - checks.<system>.eval-tests-hello-world
+      # - legacyPackages.<system>.evalTests-types: The test attrset for nix-unit.
+      # - legacyPackages.<system>.evalCheck-eval-tests-types: The nix-unit derivation.
+      # All eval checks are unified into checks.<system>.eval-tests (see checks/flake-module.nix).
       test-types-module = (
         self.clanLib.test.flakeModules.makeEvalChecks {
           module = throw "";
