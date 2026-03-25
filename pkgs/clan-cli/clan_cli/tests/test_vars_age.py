@@ -1075,3 +1075,155 @@ def test_age_fix_reencrypts_when_recipients_changed(
     for m in ["machine_a", "machine_b"]:
         key = store.decrypt_machine_key(m)
         assert store._run_age_decrypt_with_key(secret_file, key) == b"shared-value"
+
+
+# ── Fix: add/remove user key tests ──────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_rekeys_machine_key_when_user_key_added(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt the machine key when a new user recipient is added."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    store.ensure_machine_key("my_machine")
+
+    encrypted_key_file = store.machine_encrypted_key_file("my_machine")
+    ciphertext_before = encrypted_key_file.read_bytes()
+    sidecar_before = store._read_recipients(encrypted_key_file)
+    assert sidecar_before == sorted([age_keys[0].pubkey])
+
+    # Add a second user recipient by rewriting clan.nix
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}" "{age_keys[1].pubkey}"];\n'
+        "}\n"
+    )
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "add second user key"],
+        cwd=flake.path,
+        check=True,
+    )
+    invalidate_flake_cache(flake.path)
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+
+    var = make_var("dummy", machines=["my_machine"])
+    gen = make_generator("dummy_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store.fix("my_machine", [gen])
+
+    # Machine key must have been re-encrypted
+    assert encrypted_key_file.read_bytes() != ciphertext_before
+
+    # Sidecar must now list both user keys
+    expected = sorted([age_keys[0].pubkey, age_keys[1].pubkey])
+    assert store._read_recipients(encrypted_key_file) == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_rekeys_machine_key_when_user_key_removed(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt the machine key when a user recipient is removed."""
+    # Start with two user recipients
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}" "{age_keys[1].pubkey}"];\n'
+        "}\n"
+    )
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    config["clan"]["core"]["vars"]["settings"]["secretStore"] = "age"
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_keys[0].privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_file))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup with two keys"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    flake_obj = Flake(str(flake.path))
+    store = age.SecretStore(flake=flake_obj)
+    store.ensure_machine_key("my_machine")
+
+    encrypted_key_file = store.machine_encrypted_key_file("my_machine")
+    sidecar_before = store._read_recipients(encrypted_key_file)
+    assert sidecar_before == sorted([age_keys[0].pubkey, age_keys[1].pubkey])
+    ciphertext_before = encrypted_key_file.read_bytes()
+
+    # Remove second user key
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}"];\n'
+        "}\n"
+    )
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "remove second user key"],
+        cwd=flake.path,
+        check=True,
+    )
+    invalidate_flake_cache(flake.path)
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+
+    var = make_var("dummy", machines=["my_machine"])
+    gen = make_generator("dummy_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store.fix("my_machine", [gen])
+
+    # Machine key must have been re-encrypted
+    assert encrypted_key_file.read_bytes() != ciphertext_before
+
+    # Sidecar must now list only the remaining key
+    assert store._read_recipients(encrypted_key_file) == sorted([age_keys[0].pubkey])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_noop_when_nothing_changed(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must be a complete no-op when recipients match for both machine key and shared secrets."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    # Create a shared secret
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"])
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+    secret_ciphertext_before = secret_file.read_bytes()
+    secret_mtime_before = secret_file.stat().st_mtime
+
+    # Also record machine key state
+    encrypted_key_a = store.machine_encrypted_key_file("machine_a")
+    key_ciphertext_before = encrypted_key_a.read_bytes()
+    key_mtime_before = encrypted_key_a.stat().st_mtime
+
+    # fix() should be a no-op
+    store.fix("machine_a", [gen])
+
+    # Nothing should have changed
+    assert secret_file.read_bytes() == secret_ciphertext_before
+    assert secret_file.stat().st_mtime == secret_mtime_before
+    assert encrypted_key_a.read_bytes() == key_ciphertext_before
+    assert encrypted_key_a.stat().st_mtime == key_mtime_before
