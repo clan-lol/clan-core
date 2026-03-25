@@ -794,3 +794,87 @@ def test_create_sops_age_secrets(
     cli.run(["vars", "keygen", "--flake", str(flake.path), "--user", "user"])
     # check public key exists
     assert (flake.path / "sops" / "users" / "user").is_dir()
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_sops_fix_commits_all_changes(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+    sops_setup: SopsSetup,
+) -> None:
+    """Test that 'clan vars fix' commits all changes (group symlinks, re-encrypted secrets).
+
+    Generate secrets WITHOUT a default group, then add the group to defaultGroups.
+    This forces fix() to create new group symlinks and re-encrypt, exercising the
+    code paths where return values from allow_member/update_keys must be committed.
+    """
+    flake = flake_with_sops
+
+    # Step 1: Create machine with secret but NO defaultGroups
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_secret"]["secret"] = True
+    my_generator["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Step 2: Create group with admin user (exists in sops/ but not linked to any secret)
+    cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
+
+    # Step 3: Generate secrets (no defaultGroups, so group is NOT linked to the secret)
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Step 4: Now add the group to defaultGroups and refresh config
+    config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
+    flake.refresh()
+
+    # Step 5: Fix should create group symlink on the secret and re-encrypt
+    cli.run(["vars", "fix", "--flake", str(flake.path), "my_machine"])
+
+    # Step 6: Assert all changes are committed (group symlinks + re-encrypted secrets are under vars/)
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_groups_add_secret_commits_changes(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+    sops_setup: SopsSetup,
+) -> None:
+    """Test that 'clan secrets groups add-secret' commits the group-to-secret symlink."""
+    flake = flake_with_sops
+    monkeypatch.chdir(flake.path)
+
+    # Create a secret
+    monkeypatch.setenv("SOPS_NIX_SECRET", "some_secret_value")
+    cli.run(
+        [
+            "secrets",
+            "set",
+            "--flake",
+            str(flake.path),
+            "my_secret",
+        ],
+    )
+
+    # Create a group with a user
+    cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
+
+    # Add the secret to the group
+    cli.run(["secrets", "groups", "add-secret", "my_group", "my_secret"])
+
+    # Assert: all sops/ changes are committed
+    git_status = run(
+        ["git", "status", "--porcelain", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted sops/ changes after 'clan secrets groups add-secret', got:\n{git_status}"
+    )

@@ -5,6 +5,7 @@ from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import sops
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import run
 from clan_lib.vars._types import GeneratorId, PerMachine, Shared
 from clan_lib.vars.generator import (
     Generator,
@@ -359,3 +360,142 @@ def test_shared_generator_allows_machine_specific_differences(
 
     assert sops_store.exists(shared_generator.key, "file")
     assert sops_store.get(shared_generator.key, "file").decode() == "secret"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_sops_fix_removes_machine_from_no_deploy_shared_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that 'clan vars fix' removes and commits machine symlink deletion
+    for shared secrets where deploy changed from True to False.
+
+    This exercises the disallow_member() code path in fix(), verifying that
+    the deleted symlink is included in the commit (not left as a dirty
+    working tree entry).
+    """
+    flake = flake_with_sops
+
+    # Step 1: Two machines sharing a generator with deploy=True (default for secret=True)
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen = m1_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"]
+    shared_gen["share"] = True
+    shared_gen["files"]["my_secret"]["secret"] = True
+    shared_gen["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
+    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"] = shared_gen.copy()
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Step 2: Generate secrets — both machines get access (deploy=True)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    machine1_link = (
+        flake.path
+        / "vars"
+        / "shared"
+        / "my_shared_gen"
+        / "my_secret"
+        / "machines"
+        / "machine1"
+    )
+    assert machine1_link.is_symlink(), (
+        "machine1 should have access after generation with deploy=True"
+    )
+
+    # Step 3: Change deploy to False and refresh config
+    # (shallow copy shares the nested "files" dict, so this affects both machines)
+    shared_gen["files"]["my_secret"]["deploy"] = False
+    flake.refresh()
+
+    # Step 4: fix() should remove the machine symlink and commit the deletion
+    cli.run(["vars", "fix", "--flake", str(flake.path), "machine1"])
+
+    assert not machine1_link.exists(), (
+        "machine1 symlink should be removed after fix with deploy=False"
+    )
+
+    # Step 5: All changes must be committed — no dirty working tree
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_sops_fix_skips_add_for_no_deploy_shared_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that fix() doesn't wastefully add then remove machine access
+    for shared secrets with deploy=False.
+
+    Without the optimization, fix() calls add_secret() (creating an individual
+    commit like 'vars: add machine1 to secret ...') then immediately removes
+    the symlink via disallow_member(). This is a no-op with extra commits.
+    """
+    flake = flake_with_sops
+
+    # Shared generator with deploy=False from the start
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen = m1_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"]
+    shared_gen["share"] = True
+    shared_gen["files"]["my_secret"]["secret"] = True
+    shared_gen["files"]["my_secret"]["deploy"] = False
+    shared_gen["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
+    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"] = shared_gen.copy()
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate secrets (no machine symlink since deploy=False)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    machine1_link = (
+        flake.path
+        / "vars"
+        / "shared"
+        / "my_shared_gen"
+        / "my_secret"
+        / "machines"
+        / "machine1"
+    )
+    assert not machine1_link.exists(), (
+        "machine1 should NOT have access after generation with deploy=False"
+    )
+
+    # Record HEAD before fix
+    head_before = run(["git", "rev-parse", "HEAD"]).stdout.strip()
+
+    # Run fix
+    cli.run(["vars", "fix", "--flake", str(flake.path), "machine1"])
+
+    # fix() should NOT create intermediate "vars: add" commits
+    fix_commits = run(
+        ["git", "log", f"{head_before}..HEAD", "--pretty=%s"],
+    ).stdout.strip()
+    assert "vars: add" not in fix_commits, (
+        f"fix() should not wastefully add machine access for shared non-deploy secrets.\n"
+        f"Commits created by fix:\n{fix_commits}"
+    )
+
+    # Machine should still not have access
+    assert not machine1_link.exists(), (
+        "machine1 should still not have access after fix with deploy=False"
+    )
+
+    # Working tree should be clean
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
+    )
