@@ -89,7 +89,8 @@ in
         self.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
       }/bin/clan-generate-test-vars";
 
-      relativeDir = removePrefix "${self}/" (toString config.clan.directory);
+      computeRelativeDir = import ./relativeDir.nix { inherit lib; };
+      relativeDir = computeRelativeDir (toString self) (toString config.clan.directory);
 
       update-vars = hostPkgs.writeShellScriptBin "update-vars" ''
         set -x
