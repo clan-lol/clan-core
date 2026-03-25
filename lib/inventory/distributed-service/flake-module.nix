@@ -29,23 +29,17 @@ in
       };
     in
     {
-      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.<attrName>
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-distributedServices
       legacyPackages.evalTests-distributedServices = import ./tests {
         inherit lib;
         clanLib = self.clanLib;
       };
 
-      checks = {
-        eval-lib-distributedServices = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${inventoryTestsSrc}#legacyPackages.${system}.evalTests-distributedServices
-
-          touch $out
-        '';
+      # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-lib-distributedServices
+      legacyPackages.evalCheck-eval-lib-distributedServices = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-distributedServices";
+        flakeAttr = "${inventoryTestsSrc}#legacyPackages.${system}.evalTests-distributedServices";
       };
     };
 }

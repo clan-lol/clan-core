@@ -8,7 +8,7 @@ import pytest
 from clan_cli.tests.age_keys import KeyPair
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
-from clan_cli.tests.test_vars import invalidate_flake_cache
+from clan_cli.tests.helpers.flake_cache import invalidate_flake_cache
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import generate_command
 from clan_lib.errors import ClanError
@@ -530,9 +530,9 @@ def test_age_set_and_get_per_machine(
     )
 
     # Set a secret
-    result_path = store._set(gen, var, b"secret-value")
-    assert result_path is not None
-    assert result_path.exists()
+    result_paths = store._set(gen, var, b"secret-value")
+    assert len(result_paths) > 0
+    assert all(p.exists() for p in result_paths)
 
     # Get it back
     value = store.get(gen.key, "my_secret")
@@ -929,3 +929,301 @@ def test_age_delete_store_leaves_shared_secrets_untouched(
     # machine_a can still decrypt the shared secret
     key_a = store.decrypt_machine_key("machine_a")
     assert store._run_age_decrypt_with_key(secret_file, key_a) == b"shared-value"
+
+
+# ── Sidecar recipients tests ─────────────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_sidecar_created_for_shared_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """_set() on a shared secret must create a .age.recipients sidecar."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"])
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+    recipients_file = store._recipients_file(secret_file)
+    assert recipients_file.exists()
+
+    # Sidecar should contain the sorted machine pubkeys
+    expected = sorted(
+        [store.get_machine_pubkey("machine_a"), store.get_machine_pubkey("machine_b")]
+    )
+    actual = store._read_recipients(secret_file)
+    assert actual == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_no_sidecar_for_per_machine_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """_set() on a per-machine secret must NOT create a sidecar."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("my_secret", machines=["my_machine"])
+    gen = make_generator("my_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store._set(gen, var, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+    recipients_file = store._recipients_file(secret_file)
+    assert not recipients_file.exists()
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_sidecar_created_for_machine_key(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """ensure_machine_key() must create a sidecar next to key.age."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    store.ensure_machine_key("my_machine")
+
+    encrypted_key_file = store.machine_encrypted_key_file("my_machine")
+    recipients_file = store._recipients_file(encrypted_key_file)
+    assert recipients_file.exists()
+
+    expected = sorted(store.get_recipients("my_machine"))
+    actual = store._read_recipients(encrypted_key_file)
+    assert actual == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_skips_when_recipients_unchanged(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must not re-encrypt when recipients haven't changed."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"])
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+    ciphertext_before = secret_file.read_bytes()
+    mtime_before = secret_file.stat().st_mtime
+
+    # fix() with the same machines should be a no-op
+    store.fix("machine_a", [gen])
+
+    assert secret_file.read_bytes() == ciphertext_before
+    assert secret_file.stat().st_mtime == mtime_before
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_reencrypts_when_recipients_changed(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt when a new machine is added."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    # Create shared secret encrypted only to machine_a
+    var_a = make_var("shared_secret", machines=["machine_a"])
+    gen_a = make_generator("shared_gen", Shared(), flake_obj, files=[var_a])
+    store._set(gen_a, var_a, b"shared-value")
+
+    # Ensure machine_b's key exists before fix() tries to encrypt to it
+    store.ensure_machine_key("machine_b")
+
+    secret_file = store.secret_path(gen_a.key, "shared_secret")
+    ciphertext_before = secret_file.read_bytes()
+
+    # fix() with both machines should re-encrypt
+    var_both = make_var("shared_secret", machines=["machine_a", "machine_b"])
+    gen_both = make_generator("shared_gen", Shared(), flake_obj, files=[var_both])
+    store.fix("machine_b", [gen_both])
+
+    # Ciphertext must have changed
+    assert secret_file.read_bytes() != ciphertext_before
+
+    # Sidecar should now list both machines
+    expected = sorted(
+        [store.get_machine_pubkey("machine_a"), store.get_machine_pubkey("machine_b")]
+    )
+    assert store._read_recipients(secret_file) == expected
+
+    # Both machines can decrypt
+    for m in ["machine_a", "machine_b"]:
+        key = store.decrypt_machine_key(m)
+        assert store._run_age_decrypt_with_key(secret_file, key) == b"shared-value"
+
+
+# ── Fix: add/remove user key tests ──────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_rekeys_machine_key_when_user_key_added(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt the machine key when a new user recipient is added."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    store.ensure_machine_key("my_machine")
+
+    encrypted_key_file = store.machine_encrypted_key_file("my_machine")
+    ciphertext_before = encrypted_key_file.read_bytes()
+    sidecar_before = store._read_recipients(encrypted_key_file)
+    assert sidecar_before == sorted([age_keys[0].pubkey])
+
+    # Add a second user recipient by rewriting clan.nix
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}" "{age_keys[1].pubkey}"];\n'
+        "}\n"
+    )
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "add second user key"],
+        cwd=flake.path,
+        check=True,
+    )
+    invalidate_flake_cache(flake.path)
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+
+    var = make_var("dummy", machines=["my_machine"])
+    gen = make_generator("dummy_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store.fix("my_machine", [gen])
+
+    # Machine key must have been re-encrypted
+    assert encrypted_key_file.read_bytes() != ciphertext_before
+
+    # Sidecar must now list both user keys
+    expected = sorted([age_keys[0].pubkey, age_keys[1].pubkey])
+    assert store._read_recipients(encrypted_key_file) == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_rekeys_machine_key_when_user_key_removed(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt the machine key when a user recipient is removed."""
+    # Start with two user recipients
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}" "{age_keys[1].pubkey}"];\n'
+        "}\n"
+    )
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    config["clan"]["core"]["vars"]["settings"]["secretStore"] = "age"
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_keys[0].privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_file))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup with two keys"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    flake_obj = Flake(str(flake.path))
+    store = age.SecretStore(flake=flake_obj)
+    store.ensure_machine_key("my_machine")
+
+    encrypted_key_file = store.machine_encrypted_key_file("my_machine")
+    sidecar_before = store._read_recipients(encrypted_key_file)
+    assert sidecar_before == sorted([age_keys[0].pubkey, age_keys[1].pubkey])
+    ciphertext_before = encrypted_key_file.read_bytes()
+
+    # Remove second user key
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}"];\n'
+        "}\n"
+    )
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "remove second user key"],
+        cwd=flake.path,
+        check=True,
+    )
+    invalidate_flake_cache(flake.path)
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+
+    var = make_var("dummy", machines=["my_machine"])
+    gen = make_generator("dummy_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store.fix("my_machine", [gen])
+
+    # Machine key must have been re-encrypted
+    assert encrypted_key_file.read_bytes() != ciphertext_before
+
+    # Sidecar must now list only the remaining key
+    assert store._read_recipients(encrypted_key_file) == sorted([age_keys[0].pubkey])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_noop_when_nothing_changed(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must be a complete no-op when recipients match for both machine key and shared secrets."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    # Create a shared secret
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"])
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+    secret_ciphertext_before = secret_file.read_bytes()
+    secret_mtime_before = secret_file.stat().st_mtime
+
+    # Also record machine key state
+    encrypted_key_a = store.machine_encrypted_key_file("machine_a")
+    key_ciphertext_before = encrypted_key_a.read_bytes()
+    key_mtime_before = encrypted_key_a.stat().st_mtime
+
+    # fix() should be a no-op
+    store.fix("machine_a", [gen])
+
+    # Nothing should have changed
+    assert secret_file.read_bytes() == secret_ciphertext_before
+    assert secret_file.stat().st_mtime == secret_mtime_before
+    assert encrypted_key_a.read_bytes() == key_ciphertext_before
+    assert encrypted_key_a.stat().st_mtime == key_mtime_before

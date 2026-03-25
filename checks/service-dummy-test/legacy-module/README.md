@@ -7,4 +7,3 @@ features = [ "inventory" ]
 roles.admin.min = 1
 roles.admin.max = 1
 ---
-

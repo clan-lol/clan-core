@@ -9,20 +9,18 @@ Your setup machine needs the following:
 
 * An id_ed25519 keypair on your Setup Machine. (Link coming soon.)
 
-* Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. You can find installation instructions [here](https://git-scm.com/install/linux).
+* Git (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 :::
 
 :::admonition[Tip]{type=tip}
 For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.
 :::
 
-
 Type the following to download the installer's ISO image:
 
 ```bash
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
 ```
-
 
 ## Setup the VirtualBox Machine
 
@@ -62,10 +60,9 @@ You will see the NixOS loader start; simply wait. You'll see text scroll and fin
 
 * Remote Access. A hostname has been added to your local DNS; you can use it instead of the IP address, but it will no longer work after NixOS is installed. Make note of the IP address instead.
 
-
 Start by creating a new clan:
 
-```
+```bash
 nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
 ```
 
@@ -87,14 +84,13 @@ cd MY-CLAN-1
 
 You will see a message about `direnv` needing approval to run. Type:
 
-```
+```bash
 direnv allow
 ```
 
-
 Next create a machine configuration, which adds a description of a machine to your inventory. For this example, call it `test-machine`, by typing:
 
-```
+```bash
 clan machines create test-machine
 ```
 
@@ -109,10 +105,10 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
 ```
 
 Test it out:
-```
+
+```bash
 clan machines list
 ```
-
 
 Next, add your public key to the allowed keys. You can find it by running:
 
@@ -122,7 +118,7 @@ cat ~/.ssh/id_ed25519.pub
 
 Open `clan.nix`, and replace `PASTE_YOUR_KEY_HERE` with the contents of the `id_ed25519.pub` file:
 
-```
+```nix
 "admin-machine-1" = "PASTE_YOUR_KEY_HERE";
 ```
 
@@ -132,10 +128,9 @@ Verify that your configuration is valid:
 clan show
 ```
 
-
 Now gather the hardware configuration from the target machine:
 
-```
+```bash
 clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
 ```
 
@@ -145,19 +140,17 @@ You will be asked to enter "y" to proceed.
 
 When prompted for password, use the password displayed under the QR code.
 
-
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
-```
+```bash
 clan templates apply disk single-disk test-machine --set mainDisk ""
 ```
 
 This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id/ata-VBOX_HARDDISK_VB), and add it inside the quotes, e.g.:
 
-```
+```bash
 clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/ata-VBOX_HARDDISK_VB..."
 ```
-
 
 Install NixOS on the target machine by typing:
 
@@ -167,7 +160,7 @@ clan machines install test-machine --target-host root@<IP-ADDRESS>
 
 Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
-You will be asked whether you want to install — type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
+You will be asked whether you want to install; type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
 
 You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
 
@@ -178,7 +171,6 @@ If you get an error regarding sandboxing not being available, type the following
 ```bash
 clan vars generate test-machine --no-sandbox
 ```
-
 
 Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose "Send the shutdown signal." Then click OK.
 
@@ -192,10 +184,9 @@ Click OK to exit the Settings.
 
 Now click **Start** at the top of the window (or double-click the Virtual Machine) to run it again. You should be presented with:
 
-```
+```console
 test-machine login:
 ```
-
 
 Now you can try connecting to the remote machine:
 
@@ -204,8 +195,9 @@ clan ssh test-machine
 ```
 
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
-```
-  ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+
+```bash
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
 ```
 
 Then try again:
@@ -216,12 +208,11 @@ clan ssh test-machine
 
 You should connect and see the prompt:
 
-```
+```console
 [root@test-machine:~]#
 ```
 
-
-Now let's look at how you can use Clan to install and remove packages on a target machine.
+Next, you can use Clan to install and remove packages on a target machine.
 
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
@@ -244,7 +235,7 @@ clan machines update test-machine
 
 Now ssh into the machine, and they should be present:
 
-```
+```bash
 which bat
 which btop
 which tldr
@@ -252,15 +243,16 @@ which tldr
 
 Each will show a path to the binary file:
 
-```
+```console
 /run/current-system/sw/bin/bat
 /run/current-system/sw/bin/btop
 /run/current-system/sw/bin/tldr
 ```
 
 Next, let's remove one of the three packages. The packages portion of clan.nix declares what additional packages should exist; by removing one, Nix will remove that package. Remove the `"tldr"` from the list:
-```
-        packages = [ "bat" "btop" ];
+
+```nix
+packages = [ "bat" "btop" ];
 ```
 
 and run the update again:
@@ -271,12 +263,11 @@ clan machines update test-machine
 
 Now when you check which `tldr`, it should show that it's not in the path:
 
-```
+```console
 which tldr
 which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/root/.local/state/nix/profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin)
 
 ```
-
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
@@ -289,7 +280,7 @@ Let's add a user called Alice. Open clan.nix, and under inventory.instances, add
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
       };
@@ -306,7 +297,7 @@ You will be prompted for a password. Or you can press Enter to automatically gen
 
 If you automatically generated one, to retrieve it type:
 
-```
+```bash
 clan vars get test-machine user-password-alice/user-password
 ```
 
@@ -322,12 +313,11 @@ Once complete, you can log in as alice with the password inside the virtual mach
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
-
 ```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [ "wheel" ];  # Add this to allow sudo
@@ -368,6 +358,6 @@ clan machines update test-machine
 
 Log out, and log alice back in. Now try the same sudo command; you'll be prompted for password, but then shown:
 
-```
+```console
 alice is not in the sudoers file.
 ```

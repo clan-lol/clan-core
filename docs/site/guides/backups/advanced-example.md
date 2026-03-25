@@ -2,7 +2,7 @@
 
 Configure a [Hetzner Storage Box](https://docs.hetzner.com/storage/storage-box/general) as an off-site backup destination for your Clan machines.
 
-### Step 1: Create a Hetzner Storage Box
+## Step 1: Create a Hetzner Storage Box
 
 Begin by [creating a Hetzner Storage Box account](https://docs.hetzner.com/storage/storage-box/getting-started/creating-a-storage-box).
 
@@ -68,6 +68,3 @@ Then, inspect the service logs to ensure everything is functioning correctly:
 ```bash
 journalctl -u borgbackup-job-storagebox.service
 ```
-
-
-

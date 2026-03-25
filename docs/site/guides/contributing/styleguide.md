@@ -75,7 +75,7 @@ Highlight Code in a Snippet
 A consistent style greatly increases the usability of all documentation and communication.
 Please use this page as a reference and style guide for our internal and external documentation, blog posts, and all other Clan communication.
 
-#### Knowledge Expectations
+### Knowledge Expectations
 
 **What readers know:**
 
@@ -136,7 +136,7 @@ Lead with value. State what the reader will accomplish before explaining how.
 Create a new webserver machine in your Clan:
 
 ```nix
-clan machines create --name webserver
+clan machines create - -name webserver
 ```
 
 Use **progressive disclosure**. Introduce concepts only when needed.
@@ -179,7 +179,6 @@ services.openssh.enable = true; # Required for Clan deployment
 }
 ```
 
-
 #### Hide Nix Where Possible
 
 Nix knowledge is a barrier, not a feature.
@@ -202,7 +201,6 @@ clan machines create webserver
 
 This creates `machines/webserver/default.nix`, where you can configure it via NixOS.
 
-
 #### Teach Nix Through Examples, Not Theory
 
 *(After respecting the prior point)*
@@ -214,7 +212,6 @@ Users learn the NixOS module system by seeing patterns first.
 - Link deeper concepts instead of inlining them
 - Link to `nix.dev` for optional learning
 
-
 #### General Rules
 
 - Abbreviate keys like `ssh-ed25519 AAAAC3NzaC…`
@@ -222,10 +219,9 @@ Users learn the NixOS module system by seeing patterns first.
 - Variables are capitalized and start with `$`, e.g. `$YOUR-CLAN-NAME`
 - Variables should be directly usable during copy-paste
 - Do **not** describe missing code parts (`#elided`, `#omitted`)
-
 - **Machines vs Devices**:
-    - machine = Clan identity
-    - device = hardware
+  - machine = Clan identity
+  - device = hardware
 
 #### Capitalization
 

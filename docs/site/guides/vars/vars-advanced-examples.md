@@ -2,8 +2,7 @@
 
 ## Advanced Vars Examples
 
-This guide demonstrates complex, real-world patterns for the vars system. 
-
+This guide demonstrates complex, real-world patterns for the vars system.
 
 ### Certificate Authority with Intermediate Certificates
 
@@ -15,7 +14,7 @@ This example shows how to create a complete certificate authority with root and 
   clan.core.vars.generators.root-ca = {
     files."ca.key" = {
       secret = true;
-      deploy = false;  # Keep root key offline
+      deploy = false; # Keep root key offline
     };
     files."ca.crt".secret = false;
     runtimeInputs = [ pkgs.step-cli ];
@@ -82,7 +81,7 @@ Generate secrets that multiple services can use:
 {
   # Generate database credentials
   clan.core.vars.generators.database = {
-    share = true;  # Share across machines
+    share = true; # Share across machines
     files."password" = { };
     files."connection-string" = { };
     prompts.dbname = {
@@ -92,7 +91,7 @@ Generate secrets that multiple services can use:
     script = ''
       # Generate password
       tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 > $out/password
-      
+
       # Create connection string
       echo "postgresql://app:$(cat $out/password)@localhost/$prompts/dbname" \
         > $out/connection-string
@@ -111,7 +110,7 @@ Generate secrets that multiple services can use:
 
   # Application uses the connection string
   systemd.services.myapp = {
-    serviceConfig.EnvironmentFile = 
+    serviceConfig.EnvironmentFile =
       config.clan.core.vars.generators.database.files."connection-string".path;
   };
 }
@@ -126,8 +125,13 @@ Generate SSH host keys and sign them with a CA:
   # SSH Certificate Authority (shared)
   clan.core.vars.generators.ssh-ca = {
     share = true;
-    files."ca" = { secret = true; deploy = false; };
-    files."ca.pub" = { secret = false; };
+    files."ca" = {
+      secret = true;
+      deploy = false;
+    };
+    files."ca.pub" = {
+      secret = false;
+    };
     runtimeInputs = [ pkgs.openssh ];
     script = ''
       ssh-keygen -t ed25519 -N "" -f $out/ca
@@ -142,14 +146,18 @@ Generate SSH host keys and sign them with a CA:
       group = "root";
       mode = "0600";
     };
-    files."ssh_host_ed25519_key.pub" = { secret = false; };
-    files."ssh_host_ed25519_key-cert.pub" = { secret = false; };
+    files."ssh_host_ed25519_key.pub" = {
+      secret = false;
+    };
+    files."ssh_host_ed25519_key-cert.pub" = {
+      secret = false;
+    };
     dependencies = [ "ssh-ca" ];
     runtimeInputs = [ pkgs.openssh ];
     script = ''
       # Generate host key
       ssh-keygen -t ed25519 -N "" -f $out/ssh_host_ed25519_key
-      
+
       # Sign with CA
       ssh-keygen -s $in/ssh-ca/ca \
         -I "host:${config.networking.hostName}" \
@@ -161,10 +169,12 @@ Generate SSH host keys and sign them with a CA:
 
   # Configure SSH to use the generated keys
   services.openssh = {
-    hostKeys = [{
-      path = config.clan.core.vars.generators.ssh-host.files."ssh_host_ed25519_key".path;
-      type = "ed25519";
-    }];
+    hostKeys = [
+      {
+        path = config.clan.core.vars.generators.ssh-host.files."ssh_host_ed25519_key".path;
+        type = "ed25519";
+      }
+    ];
   };
 }
 ```
@@ -182,14 +192,18 @@ Create a WireGuard configuration with pre-shared keys:
       owner = "systemd-network";
       mode = "0400";
     };
-    files."publickey" = { secret = false; };
-    files."preshared" = { secret = true; };
+    files."publickey" = {
+      secret = false;
+    };
+    files."preshared" = {
+      secret = true;
+    };
     runtimeInputs = [ pkgs.wireguard-tools ];
     script = ''
       # Generate key pair
       wg genkey > $out/privatekey
       wg pubkey < $out/privatekey > $out/publickey
-      
+
       # Generate pre-shared key
       wg genpsk > $out/preshared
     '';
@@ -198,12 +212,14 @@ Create a WireGuard configuration with pre-shared keys:
   # Configure WireGuard
   networking.wireguard.interfaces.wg0 = {
     privateKeyFile = config.clan.core.vars.generators.wireguard.files."privatekey".path;
-    
-    peers = [{
-      publicKey = "peer-public-key-here";
-      presharedKeyFile = config.clan.core.vars.generators.wireguard.files."preshared".path;
-      allowedIPs = [ "10.0.0.2/32" ];
-    }];
+
+    peers = [
+      {
+        publicKey = "peer-public-key-here";
+        presharedKeyFile = config.clan.core.vars.generators.wireguard.files."preshared".path;
+        allowedIPs = [ "10.0.0.2/32" ];
+      }
+    ];
   };
 }
 ```
@@ -257,17 +273,19 @@ Generate and manage backup encryption keys:
 ```nix
 {
   clan.core.vars.generators.backup = {
-    share = true;  # Same key for all backup sources
+    share = true; # Same key for all backup sources
     files."encryption.key" = {
       secret = true;
       deploy = true;
     };
-    files."encryption.pub" = { secret = false; };
+    files."encryption.pub" = {
+      secret = false;
+    };
     runtimeInputs = [ pkgs.age ];
     script = ''
       # Generate age key pair
       age-keygen -o $out/encryption.key 2>/dev/null
-      
+
       # Extract public key
       grep "public key:" $out/encryption.key | cut -d: -f2 | tr -d ' ' \
         > $out/encryption.pub

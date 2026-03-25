@@ -137,8 +137,28 @@ in
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
               self'.legacyPackages.homeConfigurations or { }
             );
+          # Unified eval-tests check: builds all nix-unit eval checks in one derivation.
+          # Individual eval checks are defined across the codebase as legacyPackages.evalCheck-<name>
+          # and collected here into a single check. To run a single failing test manually:
+          #   nix build .#legacyPackages.<system>.evalCheck-<testName>
+          evalChecks =
+            let
+              allEvalChecks = lib.filterAttrs (n: _: lib.hasPrefix "evalCheck-" n) self'.legacyPackages;
+            in
+            {
+              eval-tests = pkgs.runCommand "eval-tests-${system}" { } ''
+                echo "Executed the following eval checks for ${system}:"
+                ${lib.concatMapStringsSep "\n" (n: "echo '  - ${n}'") (lib.attrNames allEvalChecks)}
+                echo ${toString (lib.attrValues allEvalChecks)} >/dev/null
+                echo ""
+                echo "All eval checks succeeded."
+                echo "To re-run a specific test:"
+                echo "  nix build .#legacyPackages.${system}.evalCheck-<testName>"
+                touch $out
+              '';
+            };
         in
-        nixosTests // flakeOutputs;
+        nixosTests // flakeOutputs // evalChecks;
       packages = lib.optionalAttrs (pkgs.stdenv.isLinux) {
         run-vm-test-offline = pkgs.callPackage ../pkgs/run-vm-test-offline { };
       };

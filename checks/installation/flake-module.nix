@@ -120,7 +120,7 @@
           self.nixosConfigurations."test-install-machine-age-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
           pkgs.stdenv.drvPath
           pkgs.bash.drvPath
-          pkgs.buildPackages.xorg.lndir
+          pkgs.buildPackages.lndir
           pkgs.makeShellWrapper
           # Needed for password-store
           pkgs.shellcheck-minimal

@@ -29,11 +29,9 @@ Benefits:
 * Utilize `nix build` for caching the file.
 * Caching mechanism is very simple.
 
-
 ### Method 2: Direct access
 
 Directly calling the evaluator / build sandbox via `nix build` and `nix eval`within the Python code
-
 
 Downsides:
 
@@ -61,14 +59,14 @@ This system could be enhanced with custom nix expressions, which could be used i
 Move all code that extracts nix values into a common class:
 
 Downsides:
+
 * added complexity for maintaining our own DSL
 
 Benefits:
+
 * we can implement an API (select DSL) to get those values from nix without writing complex nix expressions.
 * we can implement caching of those values beyond the runtime of the CLI
 * we can use precaching at different endpoints to eliminate most of multiple nix evaluations (except in cases where we have to break the cache or we don't know if we need the value in the value later and getting it is expensive).
-
-
 
 ## Decision
 
@@ -77,13 +75,16 @@ Use Method 3 (nix select) for extracting values out of nix.
 This adds the Flake class in flake.py with a select method, which takes a selector string and returns a python dict.
 
 Example:
+
 ```python
 from clan_lib.flake import Flake
 flake = Flake("github:lassulus/superconfig")
 flake.select("nixosConfigurations.*.config.networking.hostName)
 ```
+
 returns:
-```
+
+```json
 {
   "ignavia": "ignavia",
   "mors": "mors",

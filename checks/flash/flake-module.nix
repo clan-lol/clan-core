@@ -101,7 +101,7 @@ in
       };
       dependencies = [
         pkgs.disko
-        pkgs.buildPackages.xorg.lndir
+        pkgs.buildPackages.lndir
         pkgs.glibcLocales
         pkgs.kbd.out
         nixosConfig.pkgs.perlPackages.ConfigIniFiles

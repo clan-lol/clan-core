@@ -31,7 +31,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 
           # Fallback: Secure connections via Tor
           tor = {
-            roles.server.tags.nixos = { };
+            roles.server.tags = [ "nixos" ];
           };
         };
       };
@@ -61,12 +61,12 @@ For machines with public IPs or DNS names, use the `internet` service to configu
           # Priority 2: VPN for internal machines
           zerotier = {
             roles.controller.machines."controller" = { };
-            roles.peer.tags.nixos = { };
+            roles.peer.tags = [ "nixos" ];
           };
 
           # Priority 3: Tor as universal fallback
           tor = {
-            roles.server.tags.nixos = { };
+            roles.server.tags = [ "nixos" ];
           };
         };
       };
@@ -80,6 +80,7 @@ For machines with public IPs or DNS names, use the `internet` service to configu
 #### How It Works
 
 Clan automatically tries networks in order of priority:
+
 1. Direct internet connections (if configured)
 2. VPN networks (ZeroTier, Tailscale, etc.)
 3. Tor hidden services
@@ -130,6 +131,7 @@ Use inventory-level `targetHost` when the address is **static** and doesn't depe
 ```
 
 **When to use inventory-level:**
+
 - Static IP addresses: `"root@192.168.XXX.XXX"`
 - DNS names: `"user@server.example.com"`
 - Any address that doesn't change based on machine configuration
@@ -160,6 +162,7 @@ Use machine-level `targetHost` when you need to **interpolate values from the Ni
 ```
 
 **When to use machine-level (NixOS config):**
+
 - Using hostName from config: `"root@${config.networking.hostName}.local"`
 - Building from multiple config values: `"${config.users.users.deploy.name}@${config.networking.hostName}"`
 - Any address that depends on evaluated NixOS configuration

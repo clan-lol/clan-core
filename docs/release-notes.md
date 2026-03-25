@@ -5,6 +5,7 @@
 ## New features
 
 ### New Monitoring Service
+
 Clan now provides a monitoring service based on the grafana stack.
 The service consists of a server and a client role.
 Servers store metrics and logs.
@@ -17,9 +18,11 @@ Those are sent to the central monitoring server for storage and visualization.
 - Added the ncps nix proxy binary cache service.
 
 ### Exports
+
 - Standardized exports system with centrally-defined options in clan-core
 
 Darwin Support
+
 - Services now support nix-darwin alongside NixOS
 - Service authors can provide `darwinModule` in addition to `nixosModule` in their service definitions
 - WireGuard service now fully supports darwin machines using wg-quick interfaces
@@ -28,8 +31,10 @@ Darwin Support
 ## Breaking Changes
 
 ### Monitoring Service
+
 The old monitoring service including telegraf has been marked deprecated for a while.
 The following things related to the old monitoring stack have been removed:
+
 - the telegraf role in `inventory.instances.monitoring.roles.telegraf`
 - options related to the telegraf role:
   - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
@@ -43,15 +48,17 @@ The `settings.host` option in the internet service now only accepts a hostname o
 
 - **Before:** `settings.host = "root@example.com:2222";`
 - **After:**
-  ```nix
+
+    ```nix
   settings.host = "example.com";
   settings.port = 2222;
   settings.user = "root";
-  ```
+    ```
 
 The `settings.port` defaults to `22` and `settings.user` defaults to `null` (which uses `root`).
 
 ### Exports
+
 - **Experimental** exports system has been redesigned.
   - Previous export definitions are no longer compatible
   - **Migration required**: Update your modules to use the standardized export options
@@ -73,8 +80,8 @@ be installed by the user (e.g., via `environment.systemPackages`).
 The backend now defaults to passage/age, providing improved security through age
 encryption. If you were explicitly setting `passPackage`, you should update your
 configuration to use `passComma
-## Misc
 
+## Misc
 
 ### Facts got removed
 

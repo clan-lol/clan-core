@@ -8,12 +8,13 @@ Quick reference for diagnosing and fixing vars issues.
 
 #### Generator Script Fails
 
-**Symptom**: Error during `clan vars generate` or deployment
+Symptom: Error during `clan vars generate` or deployment
 
-**Possible causes and solutions**:
+Possible causes and solutions:
 
 1. **Missing runtime inputs**
-   ```nix
+
+    ```nix
    # Wrong - missing required tool
    runtimeInputs = [ ];
    script = ''
@@ -22,10 +23,11 @@ Quick reference for diagnosing and fixing vars issues.
 
    # Correct
    runtimeInputs = [ pkgs.openssl ];
-   ```
+    ```
 
 2. **Wrong output path**
-   ```nix
+
+    ```nix
    # Wrong - must use $out
    script = ''
      echo "secret" > ./myfile
@@ -35,10 +37,11 @@ Quick reference for diagnosing and fixing vars issues.
    script = ''
      echo "secret" > $out/myfile
    '';
-   ```
+    ```
 
 3. **Missing declared files**
-   ```nix
+
+    ```nix
    files."config" = { };
    files."key" = { };
    script = ''
@@ -51,16 +54,17 @@ Quick reference for diagnosing and fixing vars issues.
      echo "data" > $out/config
      echo "key" > $out/key
    '';
-   ```
+    ```
 
 #### Cannot Access Generated Files
 
-**Symptom**: "attribute 'value' missing" or file not found
+Symptom: "attribute 'value' missing" or file not found
 
 **Solutions**:
 
 1. **Secret files don't have `.value`**
-   ```nix
+
+    ```nix
    # Wrong - secret files can't use .value
    files."secret" = { secret = true; };
 
@@ -70,22 +74,24 @@ Quick reference for diagnosing and fixing vars issues.
    # Correct - use .path for secrets
    environment.etc."app.conf".source =
      config.clan.core.vars.generators.app.files."secret".path;
-   ```
+    ```
 
 2. **Public files should use `.value`**
-   ```nix
+
+    ```nix
    # Better for non-secrets
    files."cert.pem" = { secret = false; };
 
    sslCertificate =
      config.clan.core.vars.generators.ca.files."cert.pem".value;
-   ```
+    ```
 
 #### Dependencies Not Available
 
-**Symptom**: "No such file or directory" when accessing `$in/...`
+Symptom: "No such file or directory" when accessing `$in/...`
 
-**Solution**: Declare dependencies correctly
+Solution: Declare dependencies correctly
+
 ```nix
 clan.core.vars.generators.child = {
   # Wrong - missing dependency
@@ -103,9 +109,10 @@ clan.core.vars.generators.child = {
 
 #### Permission Denied
 
-**Symptom**: Service cannot read generated secret file
+Symptom: Service cannot read generated secret file
 
-**Solution**: Set correct ownership and permissions
+Solution: Set correct ownership and permissions
+
 ```nix
 files."service.key" = {
   secret = true;
@@ -117,18 +124,20 @@ files."service.key" = {
 
 #### Vars Not Regenerating
 
-**Symptom**: Changes to generator script don't trigger regeneration
+Symptom: Changes to generator script don't trigger regeneration
 
-**Solution**: Use `--regenerate` flag
+Solution: Use `--regenerate` flag
+
 ```bash
 clan vars generate my-machine --generator my-generator --regenerate
 ```
 
 #### Prompts Not Working
 
-**Symptom**: Script fails with "No such file or directory" for prompts
+Symptom: Script fails with "No such file or directory" for prompts
 
-**Solution**: Access prompts correctly
+Solution: Access prompts correctly
+
 ```nix
 # Wrong
 script = ''
@@ -144,30 +153,25 @@ script = ''
 
 ### Debugging Techniques
 
-#### 1. Check Generator Status
+Check what vars are set:
 
-See what vars are set:
 ```bash
 clan vars list my-machine
 ```
 
-#### 2. Inspect Generated Files
+Inspect generated files on disk:
 
-For shared vars:
-```bash
+```bash [shared vars]
 ls -la vars/shared/my-generator/
 ```
 
-For per-machine vars:
-```bash
+```bash [per-machine vars]
 ls -la vars/per-machine/my-machine/my-generator/
 ```
 
-#### 3. Test Generators Locally
+Test generators locally by creating a test derivation:
 
-Create a test script to debug:
-```nix
-# test-generator.nix
+```nix [test-generator.nix]
 {
   pkgs ? import <nixpkgs> { },
 }:
@@ -184,22 +188,20 @@ pkgs.stdenv.mkDerivation {
 ```
 
 Run with:
+
 ```bash
 nix-build test-generator.nix
 ```
 
-#### 4. Enable Debug Logging
+Enable debug logging:
 
-Set debug mode:
 ```bash
 clan --debug vars generate my-machine
 ```
 
-#### 5. Check File Permissions
+Check file permissions on the target device:
 
-Verify generated secret permissions:
 ```bash
-# On the target device
 ls -la /run/secrets/
 ```
 
@@ -208,30 +210,32 @@ ls -la /run/secrets/
 #### Regenerate All Vars
 
 If vars are corrupted or need refresh:
-```bash
-# Regenerate all for a machine
-clan vars generate my-machine --regenerate
 
-# Regenerate specific generator
+```bash [Regenerate all for a machine]
+clan vars generate my-machine --regenerate
+```
+
+``` bash [Regenerate specific generator]
 clan vars generate my-machine --generator my-generator --regenerate
 ```
 
 #### Manual Secret Injection
 
 For recovery or testing:
-```bash
-# Set a var manually (bypass generator)
+
+```bash [Set a var manually (bypass generator)]
 echo "temporary-secret" | clan vars set my-machine my-generator/my-file
 ```
 
 #### Restore from Backup
 
 Vars are stored in the repository:
-```bash
-# Restore previous version
-git checkout HEAD~1 -- vars/
 
-# Check and regenerate if needed
+```bash [Restore previous version]
+git checkout HEAD~1 -- vars/
+```
+
+```bash [Check and regenerate if needed]
 clan vars list my-machine
 ```
 
@@ -239,9 +243,9 @@ clan vars list my-machine
 
 #### SOPS Decryption Fails
 
-**Symptom**: "Failed to decrypt" or permission errors
+Symptom: "Failed to decrypt" or permission errors
 
-**Solution**: Ensure your user/machine has the correct age keys configured. Clan manages encryption keys automatically based on the configured users and machines in your flake.
+Solution: Ensure your user/machine has the correct age keys configured. Clan manages encryption keys automatically based on the configured users and machines in your flake.
 
 Check that:
 
@@ -253,9 +257,10 @@ Check that:
 
 #### Password Store Issues
 
-**Symptom**: "pass: store not initialized"
+Symptom: "pass: store not initialized"
 
-**Solution**: Initialize password store:
+Solution: Initialize password store:
+
 ```bash
 export PASSWORD_STORE_DIR=/path/to/clan/vars
 pass init your-gpg-key
@@ -269,8 +274,8 @@ If these solutions don't resolve your issue:
 2. Ask in the Clan community channels
 3. Provide:
 
-     - The generator configuration
+   - The generator configuration
 
-     - The exact error message
+   - The exact error message
 
-     - Output of `clan --debug vars generate`
+   - Output of `clan --debug vars generate`

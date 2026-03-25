@@ -11,6 +11,7 @@ sway), we encourage you to to build your own
 look at the [Community Services](https://docs.clan.lol/services/community/).
 
 :::
+
 ## Example Usage
 
 ```nix
@@ -19,7 +20,7 @@ inventory = {
     kde = {
 
       # Deploy on all machines
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
 
       # Or individual hosts
       roles.default.machines.laptop = { };

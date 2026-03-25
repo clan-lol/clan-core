@@ -7,7 +7,7 @@ If you are a **module author** and need to migrate your modules please consult o
 
 ### What's Changing?
 
-Clan is transitioning from the legacy `clanModules` system to the `clanServices` system. This guide will help you migrate your service definitions from the old format (`inventory.services`) to the new format (`inventory.instances`).
+Clan is transitioning from the legacy `clanModules` system to the `clanServices` system. The sections below show how to migrate your service definitions from the old format (`inventory.services`) to the new format (`inventory.instances`).
 
 | Feature          | `clanModules` (Old)        | `clanServices` (New)    |
 | ---------------- | -------------------------- | ----------------------- |
@@ -70,7 +70,7 @@ services = {
 
 ---
 
-### ✅ After: New `instances` Definition with `clanServices`
+### After: New `instances` Definition with `clanServices`
 
 ```nix
 instances = {
@@ -117,7 +117,7 @@ instances = {
         roles.server.settings = {
             directory = "/var/backup/borg";
         };
-        roles.client.tags.backup = { };
+        roles.client.tags = [ "backup" ];
         roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];
     };
 
@@ -133,7 +133,7 @@ instances = {
         roles.moon.machines."moon-2".settings = {
             stableEndpoints = [ "10.0.0.2" "2001:db8::2" ];
         };
-        roles.peer.tags.nixos = { };
+        roles.peer.tags = [ "nixos" ];
     };
 
     sshd-internal = {
@@ -141,8 +141,8 @@ instances = {
             name = "sshd";
             input = "clan-core";
         };
-        roles.server.tags.nixos = { };
-        roles.client.tags.nixos = { };
+        roles.server.tags = [ "nixos" ];
+        roles.client.tags = [ "nixos" ];
         roles.client.settings = {
             certificate.searchDomains = [
                 "internal.example.com"
@@ -219,13 +219,15 @@ roles.default.machines."test-inventory-machine".settings = {
 The new `instances` format uses **attribute sets** instead of **lists** for tags and machines:
 
 ```nix
-# ❌ Old format (lists)
 roles.client.tags = [ "backup" ];
+# Old format (lists)
 roles.server.machines = [ "blob64" ];
 
-# ✅ New format (attribute sets)
-roles.client.tags.backup = { };
+# New format (attribute sets)
 roles.server.machines.blob64 = { };
+
+# Tags stay lists
+roles.client.tags = [ "backup" ];
 ```
 
 #### Handling Multiple Machines/Tags
@@ -233,10 +235,10 @@ roles.server.machines.blob64 = { };
 When you need to assign multiple machines or tags to a role:
 
 ```nix
-# ❌ Old format
+# Old format
 roles.moon.machines = [ "eva" "eve" ];
 
-# ✅ New format - each machine gets its own attribute
+# New format - each machine gets its own attribute
 roles.moon.machines.eva = { };
 roles.moon.machines.eve = { };
 ```
@@ -245,7 +247,7 @@ roles.moon.machines.eve = { };
 
 ### Migration Status of clanModules
 
-The following table shows the migration status of each deprecated clanModule:
+Below is the migration status of each deprecated clanModule:
 
 | clanModule               | Migration Status                                                  | Notes                                                            |
 |--------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
@@ -293,6 +295,7 @@ The following table shows the migration status of each deprecated clanModule:
 ---
 
 :::admonition[Warning]{type=warning}
+
 * Old `clanModules` (`class = "nixos"`) are deprecated and will be removed in the near future.
 * `inventory.services` is no longer recommended; use `inventory.instances` instead.
 * Module authors should begin exporting service modules under the `clan.modules` attribute of their flake.
@@ -302,7 +305,7 @@ The following table shows the migration status of each deprecated clanModule:
 
 #### Error: "not of type `attribute set of (submodule)`"
 
-This error occurs when using lists instead of attribute sets for tags or machines:
+Appears when using lists instead of attribute sets for tags or machines:
 
 ```text
 error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64.roles.client.tags' is not of type `attribute set of (submodule)'.
@@ -312,7 +315,7 @@ error: A definition for option `flake.clan.inventory.instances.borgbackup-blob64
 
 #### Error: "unsupported attribute `module`"
 
-This error indicates the module structure is incorrect:
+Indicates the module structure is incorrect:
 
 ```text
 error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
@@ -322,7 +325,7 @@ error: Module ':anon-4:anon-1' has an unsupported attribute `module'.
 
 #### Error: "attribute 'pkgs' missing"
 
-This suggests the instance configuration is trying to use imports incorrectly:
+Suggests the instance configuration is trying to use imports incorrectly:
 
 ```text
 error: attribute 'pkgs' missing
@@ -334,19 +337,21 @@ error: attribute 'pkgs' missing
 
 The following features from the old `services` format are no longer supported in `instances`:
 
-- Top-level `config` attribute (use `roles.<role>.settings` instead)
-- Direct module imports (use the `module` declaration instead)
+* Top-level `config` attribute (use `roles.<role>.settings` instead)
+* Direct module imports (use the `module` declaration instead)
 
 #### extraModules Support
 
 The `extraModules` attribute is still supported in the new instances format! The key change is how modules are specified:
 
 **Old format (string paths relative to Clan root):**
+
 ```nix
 roles.client.extraModules = [ "nixosModules/borgbackup.nix" ];
 ```
 
 **New format (NixOS modules):**
+
 ```nix
 # Direct module reference
 roles.client.extraModules = [ ../nixosModules/borgbackup.nix ];
@@ -362,7 +367,7 @@ roles.client.extraModules = [
 ];
 ```
 
-The `extraModules` now expects actual **NixOS modules** rather than string paths. This provides better type checking and more flexibility in how modules are specified.
+The `extraModules` option now expects actual **NixOS modules** rather than string paths, giving you better type checking and more flexibility in how modules are specified.
 
 **Alternative: Using @clan/importer**
 
@@ -373,7 +378,7 @@ instances = {
   my-importer = {
     module.name = "@clan/importer";
     module.input = "clan-core";
-    roles.default.tags.my-tag = { };
+    roles.default.tags = [ "my-tag" ];
     roles.default.extraModules = [ self.nixosModules.myModule ];
   };
 };

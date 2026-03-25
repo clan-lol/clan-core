@@ -2,6 +2,7 @@
 [Mycelium](https://github.com/threefoldtech/mycelium) is an end-to-end encrypted IPv6 overlay network that spans the globe.
 
 ## Features
+
 - Locality-aware routing: finds the shortest path between nodes.
 - All traffic is end-to-end encrypted.
 - Can route traffic via friend nodes and is location-aware.
@@ -13,8 +14,9 @@
 - Can run without a TUN device and be used solely as a reliable message bus.
 
 Example configuration below connects all your machines to the Mycelium network:
+
 ```nix
 mycelium = {
-    roles.peer.tags.all = {};
+    roles.peer.tags = [ "all" ];
 };
 ```

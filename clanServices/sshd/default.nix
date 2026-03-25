@@ -79,7 +79,7 @@ in
   };
 
   roles.server = {
-    description = "Runs sshd with persistent host keys and (if certificate.searchDomains is set) a CA‑signed host certificate for <machine>.<domain>, enabling TOFU‑less verification by clients that trust the CA.";
+    description = "Runs sshd with persistent host keys and (if certificate.searchDomains is set) a CA-signed host certificate for <machine>.<domain>, enabling TOFU‑less verification by clients that trust the CA.";
     interface =
       { lib, ... }:
       {

@@ -93,12 +93,19 @@
                     )
                   );
 
+                  monitorAllSystemdServices = settings.monitoredSystemdServices == "all";
                   monitoredServices = (
                     if settings.monitoredSystemdServices == "nixos" then
                       enabledNixosSystemdServices
                     else
                       settings.monitoredSystemdServices
                   );
+                  monitoredServicesRegexFragments = builtins.map lib.escapeRegex monitoredServices;
+                  monitoredServicesRegex =
+                    if monitoredServices == [ ] then
+                      "^$"
+                    else
+                      "^(${lib.concatStringsSep "|" monitoredServicesRegexFragments})$";
                 in
                 {
                   enable = true;
@@ -124,7 +131,7 @@
                       forward_to = [prometheus.remote_write.mimir.receiver]
 
                       ${
-                        if settings.monitoredSystemdServices == "all" then
+                        if monitorAllSystemdServices then
                           ''
                             rule {
                               action = "keep"
@@ -137,7 +144,7 @@
                             rule {
                               action = "keep"
                               source_labels = ["__name__", "name"]
-                              regex = "node_systemd_unit_state;(${lib.strings.join "|" monitoredServices})"
+                              regex = ${builtins.toJSON "node_systemd_unit_state;(${lib.concatStringsSep "|" monitoredServicesRegexFragments})"}
                             }
                           ''
                       }
@@ -160,27 +167,19 @@
                     }
 
                     // Collects logs and sends them to loki.
-                    ${
-                      if settings.monitoredSystemdServices == "all" then
-                        ''
-                          loki.source.journal "all" {
-                            relabel_rules = loki.relabel.journal.rules
-                            forward_to = [loki.write.loki.receiver]
-                          }
-                        ''
-                      else
-                        lib.concatStrings (
-                          builtins.map (monitoredService: ''
-                            loki.source.journal "${builtins.replaceStrings [ "-" "." ] [ "_" "_" ] monitoredService}" {
-                              matches = "_SYSTEMD_UNIT=${monitoredService}"
-                              relabel_rules = loki.relabel.journal.rules
-                              forward_to = [loki.write.loki.receiver]
-                            }
-                          '') monitoredServices
-                        )
+                    loki.source.journal "all" {
+                      relabel_rules = loki.relabel.journal.rules
+                      forward_to = [loki.write.loki.receiver]
                     }
 
                     loki.relabel "journal" {
+                      ${lib.optionalString (!monitorAllSystemdServices) ''
+                        rule {
+                          action = "keep"
+                          source_labels = ["__journal__systemd_unit"]
+                          regex = ${builtins.toJSON monitoredServicesRegex}
+                        }
+                      ''}
                       rule {
                         source_labels = ["__journal__hostname"]
                         target_label = "instance"

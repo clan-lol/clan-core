@@ -26,8 +26,7 @@ This enters your new project directory and activates the development environment
 
 ## Create a Machine Configuration
 
-
-Edit `clan.nix` — add under `inventory.machines`:
+Edit `clan.nix`, add under `inventory.machines`:
 
 ```nix
 test-machine = {
@@ -62,7 +61,7 @@ wifi = {
 };
 ```
 
-This enables WiFi support on the target machine after installation.
+The WiFi configuration adds wireless support on the target machine after installation.
 
 ## Create Installer USB
 

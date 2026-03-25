@@ -15,6 +15,7 @@ The `facts` system has been fully removed from clan-core. The automatic migratio
 This guide is kept for historical reference, but you must now manually migrate your secrets and values from the old facts storage to the new vars system.
 
 To manually migrate:
+
 1. Locate your old facts in your facts storage backend (sops, password-store, or in-repo)
 2. Copy the values
 3. Use `clan vars generate` to generate the new values initially, then `clan vars set` to override with old values.

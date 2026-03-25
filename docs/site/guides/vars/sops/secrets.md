@@ -71,6 +71,7 @@ sops/
     └── $YOUR_USERNAME/
         └── key.json
 ```
+
 If you followed the quickstart tutorial all necessary secrets are initialized at this point.
 
 :::admonition[Note]{type=note}
@@ -82,6 +83,7 @@ clan secrets users add $USER \
     --age-key $YOUR_PUBLIC_KEY_2 \
     ...
 ```
+
 :::
 
 ## Manage Your Public Key(s)
@@ -118,7 +120,6 @@ clan secrets users remove-key $USER --age-key $YOUR_PUBLIC_KEY
 ```
 
 [age]: https://github.com/FiloSottile/age
-[age plugin]: https://github.com/FiloSottile/awesome-age?tab=readme-ov-file#plugins
 [sops]: https://github.com/getsops/sops
 [encrypting with age]: https://github.com/getsops/sops?tab=readme-ov-file#encrypting-using-age
 
@@ -192,23 +193,23 @@ Here's how to get started:
 
 1. **Creating Groups**:
 
-   Assign users to a new group, e.g., `admins`:
+    Assign users to a new group, e.g., `admins`:
 
-   ```bash
+    ```bash
    clan secrets groups add-user admins $USERNAME
-   ```
+    ```
 
 2. **Listing Groups**:
 
-   ```bash
+    ```bash
    clan secrets groups list
-   ```
+    ```
 
 3. **Assigning Secrets to Groups**:
 
-   ```bash
+    ```bash
    clan secrets groups add-secret $GROUP_NAME $SECRET_NAME
-   ```
+    ```
 
 **TIP** To encrypt all secrets of a machine for a specific group, use the following NixOS configuration:
 
@@ -254,9 +255,7 @@ Each member of the group `admins` in this case will be able to decrypt the secre
 Since our Clan secret module will auto-import secrets that are encrypted for a particular NixOS machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
 
-
 ## Indepth Explanation
-
 
 The secrets system conceptually knows two different entities:
 
@@ -268,7 +267,7 @@ The secrets system conceptually knows two different entities:
 **A machine** Can decrypt secrets that where encrypted specifically for that machine.
 
 :::admonition[Danger]{type=danger}
-**Always make sure at least one _User_ has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
+**Always make sure at least one *User* has access to a secret**. Otherwise you could lock yourself out from accessing the secret.
 :::
 
 ### Inherited implications
@@ -309,7 +308,6 @@ flowchart LR
     secret -->|"Decrypt\n(user privkey)"| user
     secret -->|"Decrypt\n(machine privkey)"| machine
 ```
-
 
 #### User groups
 
@@ -363,10 +361,5 @@ flowchart LR
 
 <!-- TODO: See also [Groups Reference](#groups-reference) -->
 
-
-
 See the [readme](https://github.com/Mic92/sops-nix) of sops-nix for more
 examples.
-
-
-

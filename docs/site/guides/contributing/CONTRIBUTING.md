@@ -17,7 +17,7 @@ Let's get your development environment up and running:
 
 1. **Install Nix Package Manager**:
 
-      - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/NixOS/nix-installer/releases) or running this command:
+    - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/NixOS/nix-installer/releases) or running this command:
 
       ```bash
       curl --proto '=https' --tlsv1.2 -sSf -L https://artifacts.nixos.org/nix-installer | sh -s -- install
@@ -25,7 +25,7 @@ Let's get your development environment up and running:
 
 2. **Install [direnv](https://direnv.net/)**:
 
-      - To automatically setup a devshell on entering the directory
+    - To automatically setup a devshell on entering the directory
 
       ```bash
       nix profile add nixpkgs#nix-direnv nixpkgs#direnv
@@ -33,7 +33,7 @@ Let's get your development environment up and running:
 
 3. **Add direnv to your shell**:
 
-      - direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
+    - direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
         You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
 
       ```bash
@@ -41,38 +41,38 @@ Let's get your development environment up and running:
       ```
 
 4. **Allow the devshell**
-      - Go to `clan-core/pkgs/clan-cli` and do a `direnv allow` to setup the necessary development environment to execute the `clan` command
+    - Go to `clan-core/pkgs/clan-cli` and do a `direnv allow` to setup the necessary development environment to execute the `clan` command
 
 5. **Create a Gitea Account**
 
-      - Register an account on https://git.clan.lol
-      - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
-      - Clone the repository and navigate to it
-      - Add a new remote called upstream
+    - Register an account on [git.clan.lol](https://git.clan.lol)
+    - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
+    - Clone the repository and navigate to it
+    - Add a new remote called upstream
 
       ```bash
       git remote add upstream gitea@git.clan.lol:clan/clan-core.git
       ```
 
-7. **Allow .envrc**
+6. **Allow .envrc**
 
-      - When you enter the directory, you'll receive an error message like this:
+    - When you enter the directory, you'll receive an error message like this:
 
       ```bash
       direnv: error .envrc is blocked. Run `direnv allow` to approve its content
       ```
 
-      - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
+    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-8. **(Optional) Install git Hooks**
+7. **(Optional) Install git Hooks**
 
-      - To syntax check your code you can run:
+    - To syntax check your code you can run:
 
       ```bash
       nix fmt
       ```
 
-      - To make this automatic install the git hooks
+    - To make this automatic install the git hooks
 
       ```bash
       ./scripts/pre-commit

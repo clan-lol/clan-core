@@ -34,7 +34,7 @@ This approach works well when:
 
 If the same user needs access to multiple machines, define them in a shared module:
 
-```
+```console
 .
 ├── machines/
 │   ├── desktop/
@@ -92,7 +92,7 @@ Then use `extraModules` to attach home-manager configuration to a user:
   inventory.instances = {
     alice-user = {
       module.name = "users";
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [

@@ -1,13 +1,13 @@
 ## Usage
 
-```
+```nix
 inventory.instances = {
   zerotier = {
     module = {
       name = "zerotier";
       input = "clan-core";
     };
-    roles.peer.tags.all = { };
+    roles.peer.tags = [ "all" ];
     roles.controller.machines.jon = { };
     roles.moon.machines.sara.settings.stableEndpoints = [ "77.52.165.46" ];
   };

@@ -14,7 +14,7 @@ The example below configures all your NixOS machines to be reachable over the To
   inventory.instances = {
         # Fallback: Secure connections via Tor
         tor = {
-            roles.server.tags.nixos = { };
+            roles.server.tags = [ "nixos" ];
         };
 };
 ```

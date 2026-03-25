@@ -15,6 +15,13 @@ let
   clanLib = config.flake.clanLib;
 in
 {
+  # Shared nixpkgs instance for cross-platform compatibility checks.
+  # Evaluated once so all clanTests can reuse it.
+  flake.clanTestCrossPkgs = import self.inputs.nixpkgs {
+    system = "x86_64-linux";
+    crossSystem = "aarch64-linux";
+  };
+
   # A function that returns an extension to runTest
   # TODO: remove this from clanLib, add to legacyPackages, simplify signature
   flake.modules.nixosTest.clanTest =
@@ -82,7 +89,8 @@ in
         self.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
       }/bin/clan-generate-test-vars";
 
-      relativeDir = removePrefix "${self}/" (toString config.clan.directory);
+      computeRelativeDir = import ./relativeDir.nix { inherit lib; };
+      relativeDir = computeRelativeDir (toString self) (toString config.clan.directory);
 
       update-vars = hostPkgs.writeShellScriptBin "update-vars" ''
         set -x
@@ -199,6 +207,11 @@ in
                     default = true;
                     type = types.bool;
                     description = "Whether to use containers for the test.";
+                  };
+                  test.skipCrossCheck = mkOption {
+                    default = false;
+                    type = types.bool;
+                    description = "Whether to skip the cross-platform compatibility check for this test.";
                   };
                   test.fromFlake = mkOption {
                     default = null;

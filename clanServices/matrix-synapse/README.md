@@ -1,4 +1,4 @@
-This NixOS module installs and configures Synapse — a federated Matrix homeserver with end-to-end encryption — and optionally provides the Element web client.
+This NixOS module installs and configures Synapse (a federated Matrix homeserver with end-to-end encryption) and optionally provides the Element web client.
 
 The example below demonstrates a minimal setup that includes:
 

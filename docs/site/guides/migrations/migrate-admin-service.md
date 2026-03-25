@@ -4,8 +4,8 @@
 
 The `admin` clanService is deprecated. Its functionality has been split into dedicated services:
 
-- **sshd** (server role): SSH authorized keys, host certificates, RSA host key generation
-- **users**: Root password management
+- `sshd` (server role): SSH authorized keys, host certificates, RSA host key generation
+- `users`: root password management
 
 ### Option Mappings
 
@@ -25,7 +25,7 @@ The `admin` clanService is deprecated. Its functionality has been split into ded
 ```nix
 instances = {
   admin = {
-    roles.default.tags.all = { };
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       allowedKeys = {
         "my-key" = "ssh-ed25519 AAAA...";
@@ -42,7 +42,7 @@ instances = {
 ```nix
 instances = {
   sshd = {
-    roles.server.tags.all = { };
+    roles.server.tags = [ "all" ];
     roles.server.settings = {
       authorizedKeys = {
         "my-key" = "ssh-ed25519 AAAA...";
@@ -51,7 +51,7 @@ instances = {
       hostKeys.rsa.enable = true;
     };
     # Optional: add client role if you want machines to trust the CA
-    roles.client.tags.all = { };
+    roles.client.tags = [ "all" ];
   };
 };
 ```
@@ -67,7 +67,7 @@ instances = {
       name = "users";
       input = "clan-core";
     };
-    roles.default.tags.all = { };
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       user = "root";
       prompt = true;  # Set to false to auto-generate password
@@ -145,6 +145,6 @@ Here's a full migration example:
 
 The sshd service provides additional features not available in the admin service:
 
-- **client role**: Configure machines to trust the SSH CA, enabling TOFU-less verification
+- `client` role: configure machines to trust the SSH CA for TOFU-less verification
 
 See the [sshd service documentation](/docs/services/official/sshd) for details.
