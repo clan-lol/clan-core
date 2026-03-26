@@ -251,11 +251,12 @@ in
           config.services.zerotierone.package
           pkgs.python3
         ];
+        dependencies = [ "zerotier-controller" ];
         script = ''
           python3 ${./generate.py} --mode identity \
             --ip "$out/zerotier-ip" \
             --identity-secret "$out/zerotier-identity-secret" \
-            --network-id ${networkId}
+            --network-id $in/zerotier-controller/zerotier-network-id
         '';
       };
 
