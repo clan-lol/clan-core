@@ -43,7 +43,6 @@ def run_update_with_network(
     upload_inputs: bool,
     host_key_check: HostKeyCheck,
     target_host_override: str | None = None,
-    debug: bool = False,
 ) -> None:
     """Run machine update with proper network context handling.
 
@@ -61,7 +60,6 @@ def run_update_with_network(
             target_host=target_host,
             build_host=build_host,
             upload_inputs=upload_inputs,
-            debug=debug,
         )
     else:
         # Use network context
@@ -72,7 +70,6 @@ def run_update_with_network(
                 target_host=target_host,
                 build_host=build_host,
                 upload_inputs=upload_inputs,
-                debug=debug,
             )
 
 
@@ -210,7 +207,6 @@ def update_command(args: argparse.Namespace) -> None:
                     upload_inputs=args.upload_inputs,
                     host_key_check=args.host_key_check,
                     target_host_override=args.target_host,
-                    debug=args.debug,
                 )
             runtime.join_all()
             runtime.check_all()

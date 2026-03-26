@@ -13,7 +13,17 @@ from clan_lib.locked_open import locked_open
 log = logging.getLogger(__name__)
 
 
-def nix_command(flags: list[str]) -> list[str]:
+def nix_command(flags: list[str], *, local: bool = True) -> list[str]:
+    """Build a ``nix`` CLI invocation.
+
+    Args:
+        flags: Sub-command and its flags (e.g. ``["build", "--no-link", ...]``).
+        local: Whether this command will run on the **local** machine.
+            When *False*, host-specific options like ``--store`` (set via
+            ``CLAN_TEST_STORE`` for the test suite) are omitted because
+            they refer to local paths that don't exist on the remote.
+
+    """
     args = [
         "nix",
         "--extra-experimental-features",
@@ -23,7 +33,9 @@ def nix_command(flags: list[str]) -> list[str]:
         "false",
         *flags,
     ]
-    if store := nix_test_store():
+    # The test-store override is a local directory; only add it when the
+    # command is executed on this machine.
+    if local and (store := nix_test_store()):
         args += ["--store", str(store)]
     return args
 
@@ -44,7 +56,19 @@ def nix_build(
     flags: list[str],
     gcroot: Path | None = None,
     inputs_from: Path | None = None,
+    *,
+    local: bool = True,
 ) -> list[str]:
+    """Build a ``nix build`` CLI invocation.
+
+    Args:
+        flags: Sub-command flags to append (e.g. the flake attribute).
+        gcroot: If set, create a GC root symlink at this path.
+        inputs_from: If set, use inputs from this flake path.
+        local: Passed through to :func:`nix_command`; set to *False* when
+            the build will run on a remote host.
+
+    """
     return nix_command(
         [
             "build",
@@ -57,6 +81,7 @@ def nix_build(
             *(["--out-link", str(gcroot)] if gcroot is not None else ["--no-link"]),
             *flags,
         ],
+        local=local,
     )
 
 
