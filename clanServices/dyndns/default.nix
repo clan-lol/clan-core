@@ -149,13 +149,9 @@
             };
           in
           {
-            imports = lib.optional cfg.server.enable (
-              lib.modules.importApply ./nginx.nix {
-                inherit config;
-                inherit settings;
-                inherit lib;
-              }
-            );
+            imports = lib.optional cfg.server.enable ./nginx.nix;
+
+            security.acme.defaults.email = lib.mkIf cfg.server.enable settings.server.acmeEmail;
 
             clan.core.vars.generators = lib.mkIf (cfg.settings != { }) (
               lib.mapAttrs' secret_generator cfg.settings

@@ -1,12 +1,10 @@
 {
   config,
   lib,
-  settings,
   ...
 }:
 {
   security.acme.acceptTerms = true;
-  security.acme.defaults.email = settings.server.acmeEmail;
 
   networking.firewall.allowedTCPPorts = [
     443
