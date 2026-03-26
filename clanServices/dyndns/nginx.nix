@@ -1,12 +1,11 @@
 {
+  options,
   config,
   lib,
-  settings,
   ...
 }:
 {
   security.acme.acceptTerms = true;
-  security.acme.defaults.email = settings.server.acmeEmail;
 
   networking.firewall.allowedTCPPorts = [
     443
@@ -40,11 +39,19 @@
       in
       map escapeIPv6 resolvers;
 
-    sslDhparam = config.security.dhparams.params.nginx.path;
+    # REMOVEME: once we drop support for 25.11
+    sslDhparam =
+      if options.services.nginx.sslDhparam.default == null then
+        config.security.dhparams.params.nginx.path
+      else
+        true;
   };
 
   security.dhparams = {
     enable = true;
+  }
+  # REMOVEME: once we drop support for 25.11
+  // (lib.optionalAttrs (options.services.nginx.sslDhparam.default == null) {
     params.nginx = { };
-  };
+  });
 }
