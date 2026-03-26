@@ -23,7 +23,7 @@ in
   options.clan.core.networking.zerotier = {
     _roles = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
+      default = [ ];
       description = ''
         zerotier roles, internal.
         Empty by default, unless zerotier gets enabled via inventory
@@ -113,96 +113,101 @@ in
         }
       );
     }
-    (lib.mkIf (isZerotierEnabled) ( let generator = config.clan.core.vars.generators.zerotier or config.clan.core.vars.generators.zerotier-controller; in {
-      environment.etc."zerotier/ip".text =
-        generator.files.zerotier-ip.value;
+    (lib.mkIf isZerotierEnabled (
+      let
+        generator =
+          config.clan.core.vars.generators.zerotier or config.clan.core.vars.generators.zerotier-controller;
+      in
+      {
+        environment.etc."zerotier/ip".text = generator.files.zerotier-ip.value;
 
-      systemd.network.networks."09-zerotier" = {
-        matchConfig.Name = "zt*";
-        networkConfig = {
-          LLDP = true;
-          MulticastDNS = true;
-          KeepConfiguration = "static";
+        systemd.network.networks."09-zerotier" = {
+          matchConfig.Name = "zt*";
+          networkConfig = {
+            LLDP = true;
+            MulticastDNS = true;
+            KeepConfiguration = "static";
+          };
         };
-      };
 
-      systemd.services.zerotierone.serviceConfig.ExecStartPre = [
-        "+${pkgs.writeShellScript "init-zerotier" ''
-          # compare hashes of the current identity secret and the one in the config
-          hash1=$(sha256sum /var/lib/zerotier-one/identity.secret | cut -d ' ' -f 1)
-          hash2=$(sha256sum ${generator.files.zerotier-identity-secret.path} | cut -d ' ' -f 1)
-          if [[ "$hash1" != "$hash2" ]]; then
-            echo "Identity secret has changed, backing up old identity to /var/lib/zerotier-one/identity.secret.bac"
-            cp /var/lib/zerotier-one/identity.secret /var/lib/zerotier-one/identity.secret.bac
-            cp /var/lib/zerotier-one/identity.public /var/lib/zerotier-one/identity.public.bac
-            cp ${generator.files.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
-            zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
-          fi
-
-          ${lib.optionalString (isController) ''
-            mkdir -p /var/lib/zerotier-one/controller.d/network
-            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${networkId}.json
-          ''}
-          ${lib.optionalString (cfg.moon.stableEndpoints != [ ]) ''
-            if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
-              zerotier-idtool initmoon /var/lib/zerotier-one/identity.public > /var/lib/zerotier-one/moon.json
+        systemd.services.zerotierone.serviceConfig.ExecStartPre = [
+          "+${pkgs.writeShellScript "init-zerotier" ''
+            # compare hashes of the current identity secret and the one in the config
+            hash1=$(sha256sum /var/lib/zerotier-one/identity.secret | cut -d ' ' -f 1)
+            hash2=$(sha256sum ${generator.files.zerotier-identity-secret.path} | cut -d ' ' -f 1)
+            if [[ "$hash1" != "$hash2" ]]; then
+              echo "Identity secret has changed, backing up old identity to /var/lib/zerotier-one/identity.secret.bac"
+              cp /var/lib/zerotier-one/identity.secret /var/lib/zerotier-one/identity.secret.bac
+              cp /var/lib/zerotier-one/identity.public /var/lib/zerotier-one/identity.public.bac
+              cp ${generator.files.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+              zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
             fi
-            ${
-              pkgs.runCommand "genmoon" { nativeBuildInputs = [ pkgs.python3 ]; } ''
-                install -Dm755 ${./genmoon.py} $out/bin/genmoon
-                patchShebangs $out/bin/genmoon
-              ''
-            }/bin/genmoon /var/lib/zerotier-one/moon.json ${builtins.toFile "moon.json" (builtins.toJSON cfg.moon.stableEndpoints)} /var/lib/zerotier-one/moons.d
-          ''}
 
-          # cleanup old networks
-          if [[ -d /var/lib/zerotier-one/networks.d ]]; then
-            find /var/lib/zerotier-one/networks.d \
-              -type f \
-              -name "*.conf" \
-              -not \( ${
-                lib.concatMapStringsSep " -o " (
-                  netId: ''-name "${netId}.conf"''
-                ) config.services.zerotierone.joinNetworks
-              } \) \
-              -delete
-          fi
-        ''}"
-      ];
-      systemd.services.zerotierone.serviceConfig.ExecStartPost = [
-        "+${pkgs.writeShellScript "configure-interface" ''
-          while ! ${pkgs.netcat}/bin/nc -z localhost 9993; do
-            sleep 0.1
-          done
-          zerotier-cli listnetworks -j | ${pkgs.jq}/bin/jq -r '.[] | [.portDeviceName, .name] | @tsv' \
-            | while IFS=$'\t' read -r portDeviceName name; do
-              if [[ -z "$name" ]] || [[ -z "$portDeviceName" ]]; then
-                continue
+            ${lib.optionalString (isController) ''
+              mkdir -p /var/lib/zerotier-one/controller.d/network
+              ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${networkId}.json
+            ''}
+            ${lib.optionalString (cfg.moon.stableEndpoints != [ ]) ''
+              if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
+                zerotier-idtool initmoon /var/lib/zerotier-one/identity.public > /var/lib/zerotier-one/moon.json
               fi
-              # Execute the command for each element
-              ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
-          done
+              ${
+                pkgs.runCommand "genmoon" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+                  install -Dm755 ${./genmoon.py} $out/bin/genmoon
+                  patchShebangs $out/bin/genmoon
+                ''
+              }/bin/genmoon /var/lib/zerotier-one/moon.json ${builtins.toFile "moon.json" (builtins.toJSON cfg.moon.stableEndpoints)} /var/lib/zerotier-one/moons.d
+            ''}
 
-          ${lib.concatMapStringsSep "\n" (moon: ''
-            zerotier-cli orbit ${moon} ${moon}
-          '') cfg.moon.orbitMoons}
-        ''}"
-      ];
+            # cleanup old networks
+            if [[ -d /var/lib/zerotier-one/networks.d ]]; then
+              find /var/lib/zerotier-one/networks.d \
+                -type f \
+                -name "*.conf" \
+                -not \( ${
+                  lib.concatMapStringsSep " -o " (
+                    netId: ''-name "${netId}.conf"''
+                  ) config.services.zerotierone.joinNetworks
+                } \) \
+                -delete
+            fi
+          ''}"
+        ];
+        systemd.services.zerotierone.serviceConfig.ExecStartPost = [
+          "+${pkgs.writeShellScript "configure-interface" ''
+            while ! ${pkgs.netcat}/bin/nc -z localhost 9993; do
+              sleep 0.1
+            done
+            zerotier-cli listnetworks -j | ${pkgs.jq}/bin/jq -r '.[] | [.portDeviceName, .name] | @tsv' \
+              | while IFS=$'\t' read -r portDeviceName name; do
+                if [[ -z "$name" ]] || [[ -z "$portDeviceName" ]]; then
+                  continue
+                fi
+                # Execute the command for each element
+                ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
+            done
 
-      networking.firewall.allowedTCPPorts = [ 9993 ]; # zerotier
-      networking.firewall.allowedUDPPorts = [ 9993 ]; # zerotier
+            ${lib.concatMapStringsSep "\n" (moon: ''
+              zerotier-cli orbit ${moon} ${moon}
+            '') cfg.moon.orbitMoons}
+          ''}"
+        ];
 
-      networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
+        networking.firewall.allowedTCPPorts = [ 9993 ]; # zerotier
+        networking.firewall.allowedUDPPorts = [ 9993 ]; # zerotier
 
-      services.zerotierone = {
-        enable = true;
-        joinNetworks = [ networkId ];
-      };
+        networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
 
-      # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
-      # So we host our own relay in https://git.clan.lol/clan/clan-infra
-      services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
-    }))
+        services.zerotierone = {
+          enable = true;
+          joinNetworks = [ networkId ];
+        };
+
+        # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
+        # So we host our own relay in https://git.clan.lol/clan/clan-infra
+        services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
+      }
+    ))
     # END
 
     (lib.mkIf (isController) {
@@ -210,7 +215,7 @@ in
 
     })
     {
-            # only the controller needs to have the key in the repo, the other clients can be dynamic
+      # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clan.core.vars.generators.zerotier-controller = {
         share = true;
