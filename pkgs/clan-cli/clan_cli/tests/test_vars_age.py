@@ -849,7 +849,9 @@ def test_age_error_get_no_machine_key(
     shutil.rmtree(store.machine_key_dir("machine_a"))
 
     gen_shared = GeneratorId(name="my_gen", placement=Shared())
-    with pytest.raises(ClanError, match="no accessible machine key"):
+    with pytest.raises(
+        ClanError, match="neither machine key nor user identity could decrypt"
+    ):
         store.get(gen_shared, "my_secret")
 
 
@@ -981,6 +983,509 @@ def test_age_no_sidecar_for_per_machine_secret(
     secret_file = store.secret_path(gen.key, "my_secret")
     recipients_file = store._recipients_file(secret_file)
     assert not recipients_file.exists()
+
+
+# ── deploy=false tests ─────────────────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_deploy_false_per_machine_encrypted_to_user_keys(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """A per-machine deploy=false secret must be encrypted to user recipients, not the machine key."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_key)
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("my_secret", machines=["my_machine"], deploy=False)
+    gen = make_generator("my_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store._set(gen, var, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+
+    # User identity can decrypt directly
+    plaintext = store._run_age_decrypt(secret_file)
+    assert plaintext == b"secret-value"
+
+    # Machine key must NOT be able to decrypt
+    store.ensure_machine_key("my_machine")
+    machine_key = store.decrypt_machine_key("my_machine")
+    with pytest.raises(ClanError, match="Failed to decrypt"):
+        store._run_age_decrypt_with_key(secret_file, machine_key)
+
+    # Sidecar must contain user recipients, not machine pubkey
+    recipients_file = store._recipients_file(secret_file)
+    assert recipients_file.exists()
+    actual = store._read_recipients(secret_file)
+    expected = sorted(store.get_recipients("my_machine"))
+    assert actual == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_deploy_false_shared_encrypted_to_user_keys(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """A shared deploy=false secret must be encrypted to user recipients, not machine keys."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_key, machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"], deploy=False)
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+
+    # User identity can decrypt directly
+    plaintext = store._run_age_decrypt(secret_file)
+    assert plaintext == b"shared-value"
+
+    # Neither machine key can decrypt
+    for m in ["machine_a", "machine_b"]:
+        store.ensure_machine_key(m)
+        machine_key = store.decrypt_machine_key(m)
+        with pytest.raises(ClanError, match="Failed to decrypt"):
+            store._run_age_decrypt_with_key(secret_file, machine_key)
+
+    # Sidecar must contain user recipients
+    actual = store._read_recipients(secret_file)
+    expected = sorted(store.get_recipients("machine_a"))
+    assert actual == expected
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_deploy_true_per_machine_encrypted_to_machine_key(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """A per-machine deploy=true secret must be encrypted to the machine key."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("my_secret", machines=["my_machine"], deploy=True)
+    gen = make_generator("my_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store._set(gen, var, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+
+    # Machine key can decrypt
+    machine_key = store.decrypt_machine_key("my_machine")
+    plaintext = store._run_age_decrypt_with_key(secret_file, machine_key)
+    assert plaintext == b"secret-value"
+
+    # No sidecar for deployed per-machine secrets
+    recipients_file = store._recipients_file(secret_file)
+    assert not recipients_file.exists()
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_deploy_true_shared_encrypted_to_machine_keys(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """A shared deploy=true secret must be encrypted to all machines' keys."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"], deploy=True)
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+
+    # Both machine keys can decrypt
+    for m in ["machine_a", "machine_b"]:
+        machine_key = store.decrypt_machine_key(m)
+        plaintext = store._run_age_decrypt_with_key(secret_file, machine_key)
+        assert plaintext == b"shared-value"
+
+    # Sidecar contains machine pubkeys
+    actual = store._read_recipients(secret_file)
+    expected = sorted(
+        [store.get_machine_pubkey("machine_a"), store.get_machine_pubkey("machine_b")]
+    )
+    assert actual == expected
+
+
+# ── fix() tests for deploy flag ────────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_deploy_false_per_machine_rekeys_on_user_change(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt a per-machine deploy=false secret when user recipients change."""
+    age_key = age_keys[0]
+    second_key = age_keys[1]
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_key)
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("my_secret", machines=["my_machine"], deploy=False)
+    gen = make_generator("my_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store._set(gen, var, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+    ciphertext_before = secret_file.read_bytes()
+
+    # Add a second user recipient
+    (Path(flake_obj.path) / "clan.nix").write_text(
+        f'{{\n  vars.settings.recipients.hosts.my_machine = ["{age_key.pubkey}" "{second_key.pubkey}"];\n}}\n'
+    )
+    subprocess.run(["git", "add", "."], cwd=flake_obj.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "add second recipient"],
+        cwd=flake_obj.path,
+        check=True,
+    )
+    invalidate_flake_cache(Path(flake_obj.path))
+    store2 = age.SecretStore(flake=Flake(str(flake_obj.path)))
+
+    store2.fix("my_machine", [gen])
+
+    # Ciphertext must have changed (re-encrypted to new recipients)
+    assert secret_file.read_bytes() != ciphertext_before
+
+    # Sidecar must reflect both recipients
+    actual = store2._read_recipients(secret_file)
+    assert sorted([age_key.pubkey, second_key.pubkey]) == actual
+
+    # Still decryptable via get()
+    value = store2.get(gen.key, "my_secret")
+    assert value == b"secret-value"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_fix_deploy_false_shared_rekeys_on_user_change(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """fix() must re-encrypt a shared deploy=false secret when user recipients change."""
+    age_key = age_keys[0]
+    second_key = age_keys[1]
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_key, machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"], deploy=False)
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+    ciphertext_before = secret_file.read_bytes()
+
+    # Add a second user recipient for machine_a
+    (Path(flake_obj.path) / "clan.nix").write_text(
+        f"{{\n"
+        f'  vars.settings.recipients.hosts.machine_a = ["{age_key.pubkey}" "{second_key.pubkey}"];\n'
+        f'  vars.settings.recipients.hosts.machine_b = ["{age_key.pubkey}"];\n'
+        f"}}\n"
+    )
+    subprocess.run(["git", "add", "."], cwd=flake_obj.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "add second recipient"],
+        cwd=flake_obj.path,
+        check=True,
+    )
+    invalidate_flake_cache(Path(flake_obj.path))
+    store2 = age.SecretStore(flake=Flake(str(flake_obj.path)))
+
+    store2.fix("machine_a", [gen])
+
+    # Ciphertext must have changed
+    assert secret_file.read_bytes() != ciphertext_before
+
+    # Still decryptable
+    value = store2.get(gen.key, "shared_secret")
+    assert value == b"shared-value"
+
+
+# ── deploy flag transition tests ───────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_transition_deploy_true_to_false_per_machine(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Changing deploy from true to false must re-encrypt to user keys, revoking machine access."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_key)
+    store = age.SecretStore(flake=flake_obj)
+
+    # Start with deploy=true
+    var_deployed = make_var("my_secret", machines=["my_machine"], deploy=True)
+    gen = make_generator(
+        "my_gen", PerMachine("my_machine"), flake_obj, files=[var_deployed]
+    )
+    store._set(gen, var_deployed, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+
+    # Machine can decrypt
+    machine_key = store.decrypt_machine_key("my_machine")
+    assert store._run_age_decrypt_with_key(secret_file, machine_key) == b"secret-value"
+
+    # Now re-set with deploy=false (simulates re-generation after config change)
+    var_undeployed = make_var("my_secret", machines=["my_machine"], deploy=False)
+    gen2 = make_generator(
+        "my_gen", PerMachine("my_machine"), flake_obj, files=[var_undeployed]
+    )
+    store._set(gen2, var_undeployed, b"secret-value")
+
+    # Machine can no longer decrypt
+    with pytest.raises(ClanError, match="Failed to decrypt"):
+        store._run_age_decrypt_with_key(secret_file, machine_key)
+
+    # User identity can decrypt
+    plaintext = store._run_age_decrypt(secret_file)
+    assert plaintext == b"secret-value"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_transition_deploy_false_to_true_per_machine(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Changing deploy from false to true must re-encrypt to the machine key."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_key)
+    store = age.SecretStore(flake=flake_obj)
+
+    # Start with deploy=false
+    var_undeployed = make_var("my_secret", machines=["my_machine"], deploy=False)
+    gen = make_generator(
+        "my_gen", PerMachine("my_machine"), flake_obj, files=[var_undeployed]
+    )
+    store._set(gen, var_undeployed, b"secret-value")
+
+    secret_file = store.secret_path(gen.key, "my_secret")
+    store.ensure_machine_key("my_machine")
+
+    # Machine cannot decrypt yet
+    machine_key = store.decrypt_machine_key("my_machine")
+    with pytest.raises(ClanError, match="Failed to decrypt"):
+        store._run_age_decrypt_with_key(secret_file, machine_key)
+
+    # Now re-set with deploy=true
+    var_deployed = make_var("my_secret", machines=["my_machine"], deploy=True)
+    gen2 = make_generator(
+        "my_gen", PerMachine("my_machine"), flake_obj, files=[var_deployed]
+    )
+    store._set(gen2, var_deployed, b"secret-value")
+
+    # Machine can now decrypt
+    plaintext = store._run_age_decrypt_with_key(secret_file, machine_key)
+    assert plaintext == b"secret-value"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_transition_deploy_true_to_false_shared(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Changing deploy from true to false on a shared secret must revoke all machine access."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_key, machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    # Start with deploy=true
+    var_deployed = make_var(
+        "shared_secret", machines=["machine_a", "machine_b"], deploy=True
+    )
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var_deployed])
+    store._set(gen, var_deployed, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+
+    # Both machines can decrypt
+    for m in ["machine_a", "machine_b"]:
+        mk = store.decrypt_machine_key(m)
+        assert store._run_age_decrypt_with_key(secret_file, mk) == b"shared-value"
+
+    # Re-set with deploy=false
+    var_undeployed = make_var(
+        "shared_secret", machines=["machine_a", "machine_b"], deploy=False
+    )
+    gen2 = make_generator("shared_gen", Shared(), flake_obj, files=[var_undeployed])
+    store._set(gen2, var_undeployed, b"shared-value")
+
+    # No machine can decrypt
+    for m in ["machine_a", "machine_b"]:
+        mk = store.decrypt_machine_key(m)
+        with pytest.raises(ClanError, match="Failed to decrypt"):
+            store._run_age_decrypt_with_key(secret_file, mk)
+
+    # User identity can decrypt
+    plaintext = store._run_age_decrypt(secret_file)
+    assert plaintext == b"shared-value"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_transition_deploy_false_to_true_shared(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Changing deploy from false to true on a shared secret must grant all machines access."""
+    age_key = age_keys[0]
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_key, machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    # Start with deploy=false
+    var_undeployed = make_var(
+        "shared_secret", machines=["machine_a", "machine_b"], deploy=False
+    )
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var_undeployed])
+    store._set(gen, var_undeployed, b"shared-value")
+
+    secret_file = store.secret_path(gen.key, "shared_secret")
+
+    # No machine can decrypt
+    for m in ["machine_a", "machine_b"]:
+        store.ensure_machine_key(m)
+        mk = store.decrypt_machine_key(m)
+        with pytest.raises(ClanError, match="Failed to decrypt"):
+            store._run_age_decrypt_with_key(secret_file, mk)
+
+    # Re-set with deploy=true
+    var_deployed = make_var(
+        "shared_secret", machines=["machine_a", "machine_b"], deploy=True
+    )
+    gen2 = make_generator("shared_gen", Shared(), flake_obj, files=[var_deployed])
+    store._set(gen2, var_deployed, b"shared-value")
+
+    # Both machines can now decrypt
+    for m in ["machine_a", "machine_b"]:
+        mk = store.decrypt_machine_key(m)
+        plaintext = store._run_age_decrypt_with_key(secret_file, mk)
+        assert plaintext == b"shared-value"
+
+
+# ── get() works for both deploy modes ──────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_get_works_for_deploy_false_per_machine(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """get() must be able to decrypt deploy=false per-machine secrets via user identity fallback."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("my_secret", machines=["my_machine"], deploy=False)
+    gen = make_generator("my_gen", PerMachine("my_machine"), flake_obj, files=[var])
+    store._set(gen, var, b"secret-value")
+
+    # get() should work via the user identity fallback
+    value = store.get(gen.key, "my_secret")
+    assert value == b"secret-value"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_get_works_for_deploy_false_shared(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """get() must be able to decrypt deploy=false shared secrets via user identity fallback."""
+    flake_obj, _ = setup_age_flake(
+        flake, monkeypatch, age_keys[0], machines=["machine_a", "machine_b"]
+    )
+    store = age.SecretStore(flake=flake_obj)
+
+    var = make_var("shared_secret", machines=["machine_a", "machine_b"], deploy=False)
+    gen = make_generator("shared_gen", Shared(), flake_obj, files=[var])
+    store._set(gen, var, b"shared-value")
+
+    # get() should work via the user identity fallback
+    value = store.get(gen.key, "shared_secret")
+    assert value == b"shared-value"
+
+
+# ── populate_dir skips deploy=false ────────────────────────────────
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_populate_dir_skips_deploy_false(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """populate_dir must not attempt to decrypt deploy=false activation secrets."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    # One deployed activation secret, one not
+    deployed_var = make_var(
+        "deployed_act", machines=["my_machine"], deploy=True, needed_for="activation"
+    )
+    undeployed_var = make_var(
+        "undeployed_act", machines=["my_machine"], deploy=False, needed_for="activation"
+    )
+
+    gen_deployed = make_generator(
+        "gen_dep", PerMachine("my_machine"), flake_obj, files=[deployed_var]
+    )
+    gen_undeployed = make_generator(
+        "gen_undep", PerMachine("my_machine"), flake_obj, files=[undeployed_var]
+    )
+
+    store._set(gen_deployed, deployed_var, b"deployed-secret")
+    store._set(gen_undeployed, undeployed_var, b"undeployed-secret")
+
+    with TemporaryDirectory() as tmpdir:
+        output_dir = Path(tmpdir)
+        store.populate_dir(
+            [gen_deployed, gen_undeployed],
+            "my_machine",
+            output_dir,
+            phases=["activation"],
+        )
+
+        # Deployed secret is present
+        deployed_file = output_dir / "activation" / "gen_dep" / "deployed_act"
+        assert deployed_file.exists()
+        assert deployed_file.read_bytes() == b"deployed-secret"
+
+        # Undeployed secret is NOT present
+        undeployed_file = output_dir / "activation" / "gen_undep" / "undeployed_act"
+        assert not undeployed_file.exists()
 
 
 @pytest.mark.broken_on_darwin

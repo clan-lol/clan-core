@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import shutil
@@ -364,15 +365,26 @@ class SecretStore(StoreBase):
 
         match generator.key.placement:
             case PerMachine(machine=machine):
-                self.ensure_machine_key(machine)
-                recipients = [self.get_machine_pubkey(machine)]
+                if var.deploy:
+                    self.ensure_machine_key(machine)
+                    recipients = [self.get_machine_pubkey(machine)]
+                else:
+                    # Not deployed: encrypt only to user/admin recipients
+                    # so the machine cannot decrypt it from the nix store.
+                    recipients = self.get_recipients(machine)
 
             case Shared():
-                # Shared: encrypt to all machines that need this var
-                machines = generator.machines
-                for m in machines:
-                    self.ensure_machine_key(m)
-                recipients = [self.get_machine_pubkey(m) for m in machines]
+                if var.deploy:
+                    # Shared: encrypt to all machines that need this var
+                    for m in generator.machines:
+                        self.ensure_machine_key(m)
+                    recipients = [
+                        self.get_machine_pubkey(m) for m in generator.machines
+                    ]
+                else:
+                    # Not deployed: encrypt only to user/admin recipients
+                    # so no machine can decrypt it from the nix store.
+                    recipients = self.get_recipients(generator.machines[0])
 
             case PerExport(_):
                 msg = "PerExport vars are not implemented yet"
@@ -383,8 +395,10 @@ class SecretStore(StoreBase):
 
         self._run_age_encrypt(value, recipients, secret_file)
 
-        # Write sidecar for shared secrets (not per-machine vars)
-        if isinstance(generator.key.placement, Shared):
+        # Write sidecar recipients file for secrets whose recipients can change:
+        # - Shared secrets (machine list can change)
+        # - Non-deployed secrets (encrypted to user/admin recipients that can change)
+        if isinstance(generator.key.placement, Shared) or not var.deploy:
             return [secret_file, self._write_recipients(secret_file, recipients)]
 
         return [secret_file]
@@ -396,7 +410,10 @@ class SecretStore(StoreBase):
     ) -> bytes:
         """Decrypt and return a secret.
 
-        Uses two-step decryption: user identity → machine key → secret.
+        For secrets encrypted to machine keys (deploy=true):
+            Two-step decryption: user identity → machine key → secret.
+        For secrets encrypted to user/admin recipients (deploy=false):
+            Direct decryption with user identity.
         """
         secret_file = self.secret_path(generator, name)
 
@@ -407,11 +424,13 @@ class SecretStore(StoreBase):
             msg = f"Secret file not found: {secret_file}"
             raise ClanError(msg)
 
-        # Determine which machine key to use
+        # Try machine-key-based decryption first (deploy=true secrets),
+        # then fall back to direct user identity decryption (deploy=false secrets).
         machine_key: bytes | None = None
         match generator.placement:
             case PerMachine(machine=machine):
-                machine_key = self.decrypt_machine_key(machine)
+                with contextlib.suppress(ClanError):
+                    machine_key = self.decrypt_machine_key(machine)
             case Shared():
                 # For shared secrets, try each machine's key until one can
                 # decrypt the secret. The secret may not be encrypted to all
@@ -437,11 +456,23 @@ class SecretStore(StoreBase):
                 msg = "PerExport vars are not implemented yet"
                 raise ClanError(msg)
 
-        if machine_key is None:
-            msg = f"Cannot decrypt secret {generator.name}/{name}: no accessible machine key found"
-            raise ClanError(msg)
+        if machine_key is not None:
+            try:
+                value = self._run_age_decrypt_with_key(secret_file, machine_key)
+            except ClanError:
+                pass
+            else:
+                if self._secret_cache is not None:
+                    self._secret_cache[secret_file] = value
+                return value
 
-        value = self._run_age_decrypt_with_key(secret_file, machine_key)
+        # Fallback: try direct decryption with user identity.
+        # This handles deploy=false secrets encrypted to user/admin recipients.
+        try:
+            value = self._run_age_decrypt(secret_file)
+        except ClanError as e:
+            msg = f"Cannot decrypt secret {generator.name}/{name}: neither machine key nor user identity could decrypt it"
+            raise ClanError(msg) from e
 
         if self._secret_cache is not None:
             self._secret_cache[secret_file] = value
@@ -534,7 +565,7 @@ class SecretStore(StoreBase):
         for phase in plaintext_phases:
             for generator in generators:
                 for file in generator.files:
-                    if file.needed_for == phase and file.secret:
+                    if file.needed_for == phase and file.secret and file.deploy:
                         secret_file = self.secret_path(generator.key, file.name)
                         if not secret_file.exists():
                             continue
@@ -618,11 +649,14 @@ class SecretStore(StoreBase):
         generators: Sequence[GeneratorStore],
         file_name: str | None = None,
     ) -> None:
-        """Fix secrets by re-encrypting machine keys and shared secrets as needed.
+        """Fix secrets by re-encrypting as needed.
 
         - Re-encrypts machine private key to current user recipients
         - Re-encrypts shared secrets to all current machines' pubkeys
-        - Per-machine secrets are never re-encrypted (machine key doesn't change)
+        - Re-encrypts non-deployed secrets (per-machine or shared) to current
+          user/admin recipients
+        - Deployed per-machine secrets are never re-encrypted (machine key
+          doesn't change)
         """
         # Re-key the machine key if user recipients changed
         if self.machine_pubkey_file(machine).exists():
@@ -637,10 +671,8 @@ class SecretStore(StoreBase):
                     f"Re-encrypt machine key for '{machine}'",
                 )
 
-        # Re-encrypt shared secrets if machine recipients changed
         for generator in generators:
-            if not isinstance(generator.key.placement, Shared):
-                continue
+            is_shared = isinstance(generator.key.placement, Shared)
             for file in generator.files:
                 if file_name and file.name != file_name:
                     continue
@@ -649,23 +681,41 @@ class SecretStore(StoreBase):
                 if not self.exists(generator.key, file.name):
                     continue
 
+                # Deployed per-machine secrets don't need re-encryption:
+                # they're encrypted to the machine pubkey which is stable.
+                if not is_shared and file.deploy:
+                    continue
+
                 secret_file = self.secret_path(generator.key, file.name)
-                recipients = [self.get_machine_pubkey(m) for m in generator.machines]
+                if file.deploy:
+                    # Shared + deployed: encrypt to all machines' pubkeys
+                    recipients = [
+                        self.get_machine_pubkey(m) for m in generator.machines
+                    ]
+                else:
+                    # Not deployed (shared or per-machine): encrypt to
+                    # user/admin recipients only.
+                    if is_shared:
+                        machine_for_recipients = generator.machines[0]
+                    elif isinstance(generator.key.placement, PerMachine):
+                        machine_for_recipients = generator.key.placement.machine
+                    else:
+                        continue
+                    recipients = self.get_recipients(machine_for_recipients)
 
                 current = self._read_recipients(secret_file)
                 if current == sorted(recipients):
                     continue
 
-                # Decrypt with any available machine key, re-encrypt to all
                 value = self.get(generator.key, file.name)
                 self._run_age_encrypt(value, recipients, secret_file)
                 self._write_recipients(secret_file, recipients)
                 log.info(
-                    f"Re-encrypted shared secret {generator.name}/{file.name} "
-                    f"for {len(recipients)} machines"
+                    f"Re-encrypted secret {generator.name}/{file.name} "
+                    f"for {len(recipients)} recipients"
                 )
                 commit_files(
                     [secret_file, self._recipients_file(secret_file)],
                     self.flake.path,
-                    f"Re-encrypt shared secret {generator.name}/{file.name} for {len(recipients)} machines",
+                    f"Re-encrypt secret {generator.name}/{file.name} for {len(recipients)} recipients",
                 )
