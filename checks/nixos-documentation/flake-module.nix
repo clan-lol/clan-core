@@ -1,27 +1,37 @@
-{ self, ... }:
+{
+  self,
+  lib,
+  ...
+}:
 let
-  documentationModule = {
-    # This is how some downstream users currently generate documentation
-    # If this breaks notify them via matrix since we spent ~5 hrs for bughunting last time.
-    documentation.nixos.enable = true;
-    documentation.nixos.extraModules = [
-      self.nixosModules.clanCore
-      # This is the only option that is not part of the
-      # module because it is usually set by flake-parts
-      { clan.core.settings.directory = ./.; }
-    ];
-  };
+  importFlake =
+    flakeDir:
+    let
+      flakeExpr = import (flakeDir + "/flake.nix");
+      inputs = lib.intersectAttrs flakeExpr.inputs self.inputs;
+      flake = flakeExpr.outputs (
+        inputs
+        // {
+          self = flake // {
+            outPath = flakeDir;
+          };
+          clan-core = self;
+          systems = builtins.toFile "flake.systems.nix" ''[ "x86_64-linux" ]'';
+        }
+      );
+    in
+    lib.throwIf (lib.pathExists (
+      flakeDir + "/flake.lock"
+    )) "nixos-documentation test should not have a flake.lock file" flake;
+
+  testFlake = importFlake ./.;
 in
 {
-  clan = {
-    machines.test-documentation = {
-      # Dummy file system
-      fileSystems."/".device = "/dev/null";
-      boot.loader.grub.device = "/dev/null";
-      nixpkgs.hostPlatform = "x86_64-linux";
-      imports = [
-        documentationModule
-      ];
+  perSystem =
+    { pkgs, ... }:
+    {
+      checks = lib.optionalAttrs pkgs.stdenv.isLinux {
+        nixos-documentation = testFlake.nixosConfigurations.test-documentation.config.system.build.toplevel;
+      };
     };
-  };
 }
