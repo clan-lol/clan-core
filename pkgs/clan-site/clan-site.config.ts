@@ -24,6 +24,18 @@ export const docsNav: DocsNavItems = [
         label: "Install in VirtualBox",
         path: "getting-started/getting-started-virtualbox",
       },
+      {
+        label: "Install on AWS",
+        path: "getting-started/getting-started-aws",
+      },
+      {
+        label: "Install on Google Cloud",
+        path: "getting-started/getting-started-google",
+      },
+      {
+        label: "Install on Hetzner",
+        path: "getting-started/getting-started-hetzner",
+      },
       { label: "Create an SSH Key", path: "getting-started/create-an-ssh-key" },
       "getting-started/whats-next",
     ],
