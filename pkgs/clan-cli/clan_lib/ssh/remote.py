@@ -321,8 +321,15 @@ class Remote:
     ) -> dict[str, str]:
         if env is None:
             env = {}
+
+        # Nix tools (nix-copy-closure, nix copy, nix flake archive) parse
+        # NIX_SSHOPTS with ``shellSplitString`` which honours single quotes,
+        # double quotes, and backslash escaping — just like a POSIX shell.
+        # We shell-quote each option so that values containing spaces (e.g.
+        # ``ProxyCommand dumbpipe connect <ticket>``) survive the split.
         env["NIX_SSHOPTS"] = " ".join(
-            self._ssh_cmd_opts(control_master=control_master),  # Renamed
+            shlex.quote(opt)
+            for opt in self._ssh_cmd_opts(control_master=control_master)
         )
         return env
 
@@ -338,6 +345,14 @@ class Remote:
         ssh_opts.extend(hostkey_to_ssh_opts(self.host_key_check))
         if self.private_key:
             ssh_opts.extend(["-i", str(self.private_key)])
+
+        if self.socks_port:
+            ssh_opts.extend(
+                [
+                    "-o",
+                    f"ProxyCommand=nc -x localhost:{self.socks_port} -X 5 %h %p",
+                ],
+            )
 
         if control_master:
             if self._control_path_dir is None:
@@ -356,9 +371,14 @@ class Remote:
             )
         return ssh_opts
 
-    def ssh_url(self) -> str:
-        """Generates a standard SSH URL (ssh://[user@]host[:port])."""
-        url = "ssh://"
+    def ssh_url(self, scheme: str = "ssh") -> str:
+        """Generates an SSH URL ([scheme]://[user@]host[:port]).
+
+        Args:
+            scheme: URL scheme to use, e.g. 'ssh' or 'ssh-ng'.
+
+        """
+        url = f"{scheme}://"
         if self.user:
             url += f"{self.user}@"
         url += self.address
@@ -386,12 +406,6 @@ class Remote:
 
         if self.socks_port:
             packages.append("netcat")
-            current_ssh_opts.extend(
-                [
-                    "-o",
-                    f"ProxyCommand=nc -x localhost:{self.socks_port} -X 5 %h %p",
-                ],
-            )
 
         cmd = [
             *password_args,

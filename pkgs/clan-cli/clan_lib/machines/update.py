@@ -4,7 +4,7 @@ import os
 import re
 import shlex
 from contextlib import ExitStack
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from clan_cli.vars.upload import upload_secret_vars
 
@@ -15,9 +15,11 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_metadata
-from clan_lib.ssh.host import Host
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
+
+if TYPE_CHECKING:
+    from clan_lib.ssh.host import Host
 
 log = logging.getLogger(__name__)
 
@@ -37,8 +39,15 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
-    env = ssh.nix_ssh_env(os.environ.copy())
+def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str:
+    """Upload the flake sources to a remote build host.
+
+    This uses ``nix copy`` or ``nix flake archive`` to transfer the flake
+    (and optionally its inputs) to the remote machine where the build will
+    happen.  It must not be called when building locally — the sources are
+    already present in that case.
+    """
+    env = remote.nix_ssh_env(os.environ.copy())
 
     flake_url = (
         str(machine.flake.path) if machine.flake.is_local else machine.flake.identifier
@@ -48,17 +57,23 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
         is_local_input(node) for node in flake_data["locks"]["nodes"].values()
     )
 
-    # Construct the remote URL with proper parameters for Darwin
-    remote_url_base = ssh.target
-    remote_program_params = ""
-    # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
+    def _remote_url(scheme: str) -> str:
+        remote_program_params = ""
+        if machine._class_ == "darwin":
+            if scheme == "ssh-ng":
+                remote_program_params = (
+                    "?remote-program=bash -lc 'exec nix-daemon --stdio'"
+                )
+            else:
+                remote_program_params = (
+                    "?remote-program=bash -lc 'exec nix-store --serve --write'"
+                )
+        return f"{remote.ssh_url(scheme=scheme)}{remote_program_params}"
 
     if not has_path_inputs and not upload_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
-        if machine._class_ == "darwin":
-            remote_program_params = "?remote-program=bash -lc 'exec nix-daemon --stdio'"
-        remote_url = f"ssh-ng://{remote_url_base}{remote_program_params}"
+        remote_url = _remote_url("ssh-ng")
         cmd = nix_command(
             [
                 "copy",
@@ -83,11 +98,7 @@ def upload_sources(machine: Machine, ssh: Host, upload_inputs: bool) -> str:
     # Don't use ssh-ng here. It makes `flake archive` fail, despite root@..., with:
     #   cannot add path '/nix/store/...' because it lacks a signature by a trusted key
     # The issue is the missing `--no-check-sigs` option in `nix flake archive`.
-    if machine._class_ == "darwin":
-        remote_program_params = (
-            "?remote-program=bash -lc 'exec nix-store --serve --write'"
-        )
-    remote_url = f"ssh://{remote_url_base}{remote_program_params}"
+    remote_url = _remote_url("ssh")
     cmd = nix_command(
         [
             "flake",
@@ -154,8 +165,18 @@ def run_machine_update(
         # Upload secrets to the target host using root
         upload_secret_vars(machine, target_host_root)
 
-        # Upload the flake's source to the build host.
-        path = upload_sources(machine, _build_host, upload_inputs)
+        # Upload the flake's source to the build host.  When building
+        # locally the sources are already present, so we only need the
+        # flake store path for the --flake argument.
+        if isinstance(_build_host, Remote):
+            path = upload_sources(machine, _build_host, upload_inputs)
+        else:
+            flake_url = (
+                str(machine.flake.path)
+                if machine.flake.is_local
+                else machine.flake.identifier
+            )
+            path = nix_metadata(flake_url)["path"]
 
         nix_options = machine.flake.nix_options or []
 
@@ -206,7 +227,16 @@ Update for this type is not handled yet.
         if _build_host == _target_host:
             _build_host = target_host_root
 
-        remote_env = _build_host.nix_ssh_env(control_master=False)
+        # NIX_SSHOPTS must carry the SSH options needed for the connection that
+        # nixos-rebuild (and nix-copy-closure) will open.  When the build host
+        # differs from the target, nixos-rebuild SSHes into the *target* to copy
+        # the closure and activate the configuration, so we need the target's
+        # SSH options (e.g. ProxyCommand for iroh/tor).  When they are the same
+        # host, the build host's own options are sufficient.
+        if _build_host != _target_host:
+            remote_env = _target_host.nix_ssh_env(control_master=False)
+        else:
+            remote_env = _build_host.nix_ssh_env(control_master=False)
         ret = _build_host.run(
             switch_cmd,
             RunOpts(
