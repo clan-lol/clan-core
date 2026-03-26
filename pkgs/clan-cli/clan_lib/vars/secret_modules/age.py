@@ -11,6 +11,8 @@ from clan_lib.cmd import run as cmd_run
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_files
+from clan_lib.nix import current_system
+from clan_lib.nix_selectors import vars_age_secret_location, vars_settings_recipients
 from clan_lib.ssh.host import Host
 from clan_lib.ssh.upload import upload
 from clan_lib.vars._types import (
@@ -75,9 +77,12 @@ class SecretStore(StoreBase):
 
         These are the user keys that encrypt/decrypt machine private keys.
         """
-        recipients_config = self.flake.select(
-            "clanInternals.vars.settings.recipients",
+        recipients_result = self.flake.select(
+            vars_settings_recipients(),
         )
+
+        # The ?recipients MAYBE selector wraps the result: {"recipients": {...}}
+        recipients_config = recipients_result.get("recipients", {})
 
         recipients: list[str] = []
 
@@ -550,10 +555,9 @@ class SecretStore(StoreBase):
     @override
     def get_upload_directory(self, machine: str) -> str:
         """Get the target directory for machine key upload."""
-        return self.flake.select_machine(
-            machine,
-            "config.clan.core.vars.age.secretLocation",
-        )
+        return self.flake.select(vars_age_secret_location(current_system(), [machine]))[
+            machine
+        ]["age"]["secretLocation"]
 
     @override
     def upload(
