@@ -8,14 +8,14 @@
   ...
 }:
 let
-  controllerMachine = builtins.head (lib.attrNames roles.controller.machines or { });
-  networkId = clanLib.getPublicValue {
-    flake = config.clan.core.settings.directory;
-    machine = controllerMachine;
-    generator = "zerotier";
-    file = "zerotier-network-id";
-    default = null;
-  };
+  # controllerMachine = builtins.head (lib.attrNames roles.controller.machines or { });
+  # networkId = clanLib.getPublicValue {
+  #   flake = config.clan.core.settings.directory;
+  #   machine = controllerMachine;
+  #   generator = "zerotier-controller";
+  #   file = "zerotier-network-id";
+  #   default = null;
+  # };
   moons = lib.attrNames (roles.moon.machines or { });
   moonIps = builtins.foldl' (
     ips: name:
@@ -33,7 +33,7 @@ let
 in
 {
   config = {
-    clan.core.networking.zerotier.networkId = networkId;
+    clan.core.networking.zerotier._roles = [ "peer" ];
     clan.core.networking.zerotier.name = instanceName;
 
     systemd.services.zerotierone.serviceConfig.ExecStartPost = lib.mkIf (moonIps != [ ]) (

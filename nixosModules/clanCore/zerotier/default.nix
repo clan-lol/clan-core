@@ -6,16 +6,36 @@
 }:
 let
   cfg = config.clan.core.networking.zerotier;
+
+  # Previously: cfg.networkId != null;
+  isZerotierEnabled = cfg._roles != [ ];
+  # Previously: controller.enable = true;
+  isController = builtins.elem "controller" cfg._roles;
+  # Previously: !controller.enable = true && cfg.networkId != null;
+  isPeer = builtins.elem "peer" cfg._roles;
+
+  # Is only peer, excluding the controller.
+  isPeerExclusive = isPeer && !isController;
+
+  networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
 in
 {
   options.clan.core.networking.zerotier = {
-    networkId = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+    _roles = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
       description = ''
-        zerotier networking id
+        zerotier roles, internal.
+        Empty by default, unless zerotier gets enabled via inventory
       '';
     };
+    # networkId = lib.mkOption {
+    #   type = lib.types.nullOr lib.types.str;
+    #   default = null;
+    #   description = ''
+    #     zerotier networking id
+    #   '';
+    # };
     name = lib.mkOption {
       type = lib.types.str;
       default = config.clan.core.settings.name;
@@ -50,18 +70,18 @@ in
       type = lib.types.nullOr lib.types.str;
       readOnly = true;
       default =
-        if cfg.networkId == null then
+        if networkId == null then
           null
         else
           let
-            part0 = builtins.substring 0 2 cfg.networkId;
-            part1 = builtins.substring 2 2 cfg.networkId;
-            part2 = builtins.substring 4 2 cfg.networkId;
-            part3 = builtins.substring 6 2 cfg.networkId;
-            part4 = builtins.substring 8 2 cfg.networkId;
-            part5 = builtins.substring 10 2 cfg.networkId;
-            part6 = builtins.substring 12 2 cfg.networkId;
-            part7 = builtins.substring 14 2 cfg.networkId;
+            part0 = builtins.substring 0 2 networkId;
+            part1 = builtins.substring 2 2 networkId;
+            part2 = builtins.substring 4 2 networkId;
+            part3 = builtins.substring 6 2 networkId;
+            part4 = builtins.substring 8 2 networkId;
+            part5 = builtins.substring 10 2 networkId;
+            part6 = builtins.substring 12 2 networkId;
+            part7 = builtins.substring 14 2 networkId;
           in
           "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:9300::/88";
       description = ''
@@ -89,13 +109,13 @@ in
       # having to re-import nixpkgs.
       services.zerotierone.package = lib.mkDefault (
         pkgs.callPackage ../../../pkgs/zerotierone {
-          includeController = cfg.controller.enable;
+          includeController = isController;
         }
       );
     }
-    (lib.mkIf (cfg.networkId != null) {
+    (lib.mkIf (isZerotierEnabled) ( let generator = config.clan.core.vars.generators.zerotier or config.clan.core.vars.generators.zerotier-controller; in {
       environment.etc."zerotier/ip".text =
-        config.clan.core.vars.generators.zerotier.files.zerotier-ip.value;
+        generator.files.zerotier-ip.value;
 
       systemd.network.networks."09-zerotier" = {
         matchConfig.Name = "zt*";
@@ -110,18 +130,18 @@ in
         "+${pkgs.writeShellScript "init-zerotier" ''
           # compare hashes of the current identity secret and the one in the config
           hash1=$(sha256sum /var/lib/zerotier-one/identity.secret | cut -d ' ' -f 1)
-          hash2=$(sha256sum ${config.clan.core.vars.generators.zerotier.files.zerotier-identity-secret.path} | cut -d ' ' -f 1)
+          hash2=$(sha256sum ${generator.files.zerotier-identity-secret.path} | cut -d ' ' -f 1)
           if [[ "$hash1" != "$hash2" ]]; then
             echo "Identity secret has changed, backing up old identity to /var/lib/zerotier-one/identity.secret.bac"
             cp /var/lib/zerotier-one/identity.secret /var/lib/zerotier-one/identity.secret.bac
             cp /var/lib/zerotier-one/identity.public /var/lib/zerotier-one/identity.public.bac
-            cp ${config.clan.core.vars.generators.zerotier.files.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+            cp ${generator.files.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
             zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
           fi
 
-          ${lib.optionalString (cfg.controller.enable) ''
+          ${lib.optionalString (isController) ''
             mkdir -p /var/lib/zerotier-one/controller.d/network
-            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${networkId}.json
           ''}
           ${lib.optionalString (cfg.moon.stableEndpoints != [ ]) ''
             if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
@@ -176,20 +196,24 @@ in
 
       services.zerotierone = {
         enable = true;
-        joinNetworks = [ cfg.networkId ];
+        joinNetworks = [ networkId ];
       };
 
       # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
       # So we host our own relay in https://git.clan.lol/clan/clan-infra
       services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
-    })
-    (lib.mkIf cfg.controller.enable {
-      environment.etc."zerotier/ip".text =
-        config.clan.core.vars.generators.zerotier.files.zerotier-ip.value;
+    }))
+    # END
 
-      # only the controller needs to have the key in the repo, the other clients can be dynamic
+    (lib.mkIf (isController) {
+      clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
+
+    })
+    {
+            # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
-      clan.core.vars.generators.zerotier = {
+      clan.core.vars.generators.zerotier-controller = {
+        share = true;
         files.zerotier-ip.secret = false;
         files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
         files.zerotier-network-id.secret = false;
@@ -209,11 +233,9 @@ in
             --network-id "$out/zerotier-network-id"
         '';
       };
-      clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
-
-      environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
-    })
-    (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
+    }
+    (lib.mkIf (isPeerExclusive) {
+      # This generator only exists on pure peers
       clan.core.vars.generators.zerotier = {
         files.zerotier-ip.secret = false;
         files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
@@ -228,19 +250,13 @@ in
           python3 ${./generate.py} --mode identity \
             --ip "$out/zerotier-ip" \
             --identity-secret "$out/zerotier-identity-secret" \
-            --network-id ${cfg.networkId}
+            --network-id ${networkId}
         '';
       };
+
+      clan.core.networking.targetHost = lib.mkDefault "root@[${config.clan.core.vars.generators.zerotier.files.zerotier-ip.value}]";
     })
-    (lib.mkIf
-      (!cfg.controller.enable && cfg.networkId != null && config.clan.core.vars.generators ? zerotier)
-      {
-        clan.core.networking.targetHost = lib.mkDefault "root@[${config.clan.core.vars.generators.zerotier.files.zerotier-ip.value}]";
-      }
-    )
-    (lib.mkIf (cfg.controller.enable && config.clan.core.vars.generators ? zerotier) {
-      clan.core.networking.zerotier.networkId =
-        config.clan.core.vars.generators.zerotier.files.zerotier-network-id.value;
+    (lib.mkIf (isController) {
       clan.core.networking.zerotier.settings = {
         authTokens = [ null ];
         authorizationEndpoint = "";
@@ -248,12 +264,12 @@ in
         clientId = "";
         dns = { };
         enableBroadcast = true;
-        id = cfg.networkId;
+        id = networkId;
         ipAssignmentPools = [ ];
         mtu = 2800;
         multicastLimit = 32;
         name = cfg.name;
-        uwid = cfg.networkId;
+        uwid = networkId;
         objtype = "network";
         private = !cfg.controller.public;
         remoteTraceLevel = 0;
@@ -279,12 +295,14 @@ in
           zt = false;
         };
       };
+
       environment.etc."zerotier/network-id".text =
-        config.clan.core.vars.generators.zerotier.files.zerotier-network-id.value;
+        config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
+      environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
           ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
-            builtins.substring 0 10 cfg.networkId
+            builtins.substring 0 10 networkId
           }
         ''}"
       ];

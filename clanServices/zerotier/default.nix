@@ -214,4 +214,11 @@
           };
       };
   };
+  perMachine =
+    { machine, ... }:
+    {
+      nixosModule = lib.mkIf (builtins.elem "controller" machine.roles) {
+        clan.core.networking.zerotier._roles = [ "controller" ];
+      };
+    };
 }
