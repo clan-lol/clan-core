@@ -141,6 +141,14 @@ def test_networks_from_flake(mock_get_machine_var: MagicMock) -> None:
                     # user not specified - should default to None, ssh_user to "root"
                 },
             },
+            # Unrelated custom exports should be ignored
+            "custom/custom-service:public:server:machine": {
+                "customService": {
+                    "customAttrs": [
+                        {"extra": "data"},
+                    ],
+                },
+            },
         }
     }
 

@@ -150,7 +150,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
         return {}
 
     for export_name, network in defined_exports["exports"].items():
-        if defined_exports["exports"][export_name]["networking"] is None:
+        if network.get("networking") is None:
             continue
 
         scope = parse_export(export_name)
@@ -161,7 +161,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
         peers: dict[str, Peer] = {}
 
         for scope_name in defined_exports["exports"]:
-            if defined_exports["exports"][scope_name]["peer"] is None:
+            if defined_exports["exports"][scope_name].get("peer") is None:
                 continue
 
             peer_scope = parse_export(scope_name)
@@ -175,7 +175,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
             ):
                 continue
 
-            peer_data = defined_exports["exports"][scope_name]["peer"]
+            peer_data = defined_exports["exports"][scope_name].get("peer")
 
             peers[peer_scope.machine] = Peer(
                 name=peer_scope.machine,
