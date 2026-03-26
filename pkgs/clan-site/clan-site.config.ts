@@ -223,6 +223,7 @@ export const docsNav: DocsNavItems = [
           "services/official/mycelium",
           "services/official/monitoring",
           "services/official/ncps",
+          "services/official/p2p-ssh-iroh",
           "services/official/packages",
           "services/official/pki",
           "services/official/sshd",
