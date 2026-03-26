@@ -42,8 +42,8 @@
                   patches = (old.patches or [ ]) ++ [
                     (prev.fetchpatch {
                       url = "file://${./switch-to-configuration-initrd-mount-fix.patch}";
-                      hash = "sha256-iKmgZDUd4DkHa7MPuaZX6h85+0Nc4lY+w1YRBIwwQt0=";
-                      relative = "pkgs/by-name/sw/switch-to-configuration-ng/src";
+                      hash = "sha256-Zd3dtu07W3OQFqQ218SUxM11ME4jdG4B59UAIoqsVGc=";
+                      relative = "pkgs/by-name/sw/switch-to-configuration-ng";
                     })
                   ];
                 });

@@ -1,17 +1,22 @@
-From fec57dc805d79ce3b670999995da32916c65f63d Mon Sep 17 00:00:00 2001
+From d5fd6e29e253241628d7adcc11075d0b6cacb4ec Mon Sep 17 00:00:00 2001
 From: Michael Hoang <enzime@users.noreply.github.com>
 Date: Tue, 11 Nov 2025 16:11:55 +0700
 Subject: [PATCH] switch-to-configuration-ng: support container tests
 
+Maintained at https://github.com/Enzime/nixpkgs/tree/switch-to-configuration-ng-container-tests
+
+   $ git fetch https://github.com/Enzime/nixpkgs switch-to-configuration-ng-container-tests:switch-to-configuration-ng-container-tests
+   $ git checkout switch-to-configuration-ng-container-tests
+   $ git format-patch @~1
 ---
- pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs | 5 +++++
+ pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs b/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
-index a33b391a524a..908f33167e5d 100644
---- a/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
-+++ b/pkgs/by-name/sw/switch-to-configuration-ng/src/src/main.rs
-@@ -1340,6 +1340,11 @@ won't take effect until you reboot the system.
+diff --git a/pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs b/pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs
+index ff7b8874a4c2..0724986414b4 100644
+--- a/pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs
++++ b/pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs
+@@ -1321,6 +1321,11 @@ won't take effect until you reboot the system.
          .unwrap_or_default();
  
      for (mountpoint, current_filesystem) in current_filesystems {
@@ -20,9 +25,9 @@ index a33b391a524a..908f33167e5d 100644
 +            continue;
 +        }
 +
-         let is_automount = current_filesystem.options.contains("x-systemd.automount");
- 
-         // Use current version of systemctl binary before daemon is reexeced.
+         let current_is_automount = current_filesystem.options.contains("x-systemd.automount");
+         let mount_unit = format!("{}.mount", libsystemd::unit::escape_path(&mountpoint));
+         let automount_unit = format!("{}.automount", libsystemd::unit::escape_path(&mountpoint));
 -- 
-2.51.0
+2.52.0
 
