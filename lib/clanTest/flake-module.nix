@@ -85,25 +85,35 @@ in
         ) machineModules
       );
 
-      update-vars-script = "${
-        self.packages.${hostPkgs.stdenv.hostPlatform.system}.clan-cli
-      }/bin/clan-generate-test-vars";
-
-      computeRelativeDir = import ./relativeDir.nix { inherit lib; };
-      relativeDir = computeRelativeDir (toString self) (toString config.clan.directory);
-
-      update-vars = hostPkgs.writeShellScriptBin "update-vars" ''
-        set -x
-        export PRJ_ROOT=$(git rev-parse --show-toplevel)
-        ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
-      '';
-
-      # Import the new Nix-based vars execution system
+      # Import the Nix-based vars execution system
       varsExecutor = import ./vars-executor.nix { inherit lib; };
 
       vars-check = hostPkgs.runCommand "vars-check-${testName}" { } (
         varsExecutor.generateExecutionScript hostPkgs config.nodes
       );
+
+      # Age test key for encrypting generated secrets
+      testAgePublicKey = "age1cxmh3ej2lyj3d5yd50t6fx8gyddyrpp9kuhv470wg7avaqau858s7hpe3n";
+
+      # Use clanInternals.machines to get generators WITHOUT the test defaults block.
+      # This avoids infinite recursion: config.nodes includes defaults which sets
+      # settings.directory → mergedTestDir → config.nodes → cycle.
+      # clanInternals.machines are evaluated independently from the clan module,
+      # not from config.nodes, so there's no cycle.
+      clanNodes = lib.mapAttrs (_name: system: system.config)
+        clanFlakeResult.clanInternals.machines.${hostPkgs.stdenv.hostPlatform.system};
+
+      # Run generators and produce age-encrypted secrets + plaintext vars
+      generatedVarsDir = varsExecutor.generateVarsDerivation hostPkgs clanNodes testAgePublicKey;
+
+      # Merge the test's base directory with generated vars/secrets
+      mergedTestDir = hostPkgs.runCommand "merged-test-dir-${testName}" { } ''
+        cp -r ${config.clan.directory} $out
+        chmod -R +w $out
+        rm -rf $out/sops $out/vars $out/secrets
+        cp -r ${generatedVarsDir}/vars $out/vars
+        cp -r ${generatedVarsDir}/secrets $out/secrets
+      '';
 
       # the test's flake.nix with locked clan-core input
       flakeForSandbox =
@@ -282,10 +292,15 @@ in
               # Speed up evaluation
               clanLib.test.minifyModule
 
-              # Setup for sops during tests
-              # configures a static age-key to skip the age-key generation
-              clanLib.test.sopsModule
+              # Setup for age secret backend during tests
+              # Provisions a static age machine key and sets secretStore = "age"
+              clanLib.test.ageModule
             ];
+
+            # Point settings.directory at the merged dir with generated vars/secrets.
+            # This is an IFD: the generatedVarsDir derivation is built during eval
+            # so that age.nix and in_repo.nix can find .age and value files.
+            clan.core.settings.directory = lib.mkForce mergedTestDir;
 
             # Disable garbage collection during the test
             # https://nix.dev/manual/nix/2.28/command-ref/conf-file.html?highlight=min-free#available-settings
@@ -305,7 +320,7 @@ in
         ];
 
         result = {
-          inherit update-vars machinesCross;
+          inherit machinesCross;
         };
       };
     };
