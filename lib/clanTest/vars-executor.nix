@@ -337,7 +337,9 @@ rec {
           lib.mapAttrsToList (
             machineName: machine:
             let
-              perMachineGens = lib.filterAttrs (_name: gen: !(gen.share or false)) machine.clan.core.vars.generators;
+              perMachineGens = lib.filterAttrs (
+                _name: gen: !(gen.share or false)
+              ) machine.clan.core.vars.generators;
             in
             collectMachineOutputs machineName perMachineGens agePublicKey
           ) nodes

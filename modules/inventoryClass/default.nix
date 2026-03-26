@@ -77,6 +77,11 @@ in
     directory = mkOption {
       type = types.path;
     };
+    varsDirectory = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = "Override directory for reading public vars (used in tests with on-the-fly generation)";
+    };
     relativeDirectory = mkOption {
       type = types.str;
       internal = true;

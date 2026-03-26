@@ -23,7 +23,7 @@
               clan.core.vars.settings.secretStore = "age";
               clan.core.vars.enableConsistencyCheck = false;
               clan.core.vars.age.secretLocation = lib.mkForce "/etc/secret-vars";
-              clan.core.settings.directory = ./.;
+              clan.core.settings.directory = lib.mkForce ./.;
 
               # ── Generator declarations ──────────────────────────
               # These tell age.nix what activation scripts to create
@@ -117,39 +117,39 @@
 
           # ── Test 2: Service secrets decrypted at boot ───────────────
           result = machine.succeed("cat /run/secrets/test-generator/service-secret").strip()
-          assert result == "per-machine-service-secret", f"Got '{result}'"
+          assert result == "per-machine-service-secret", f"service-secret: expected 'per-machine-service-secret', got '{result}'"
           print("✓ Service secret decrypted on boot")
 
           result = machine.succeed("cat /run/secrets/shared-generator/shared-secret").strip()
-          assert result == "shared-secret-content", f"Got '{result}'"
+          assert result == "shared-secret-content", f"shared-secret: expected 'shared-secret-content', got '{result}'"
           print("✓ Shared service secret decrypted on boot")
 
           # ── Test 3: User secrets decrypted before user creation ─────
           result = machine.succeed("cat /run/user-secrets/test-generator/user-secret").strip()
-          assert result == "per-machine-user-secret", f"Got '{result}'"
+          assert result == "per-machine-user-secret", f"user-secret: expected 'per-machine-user-secret', got '{result}'"
           print("✓ User secret decrypted on boot")
 
           # ── Test 4: Activation secrets available (uploaded as plaintext) ─
           result = machine.succeed("cat /etc/secret-vars/activation/test-generator/activation-secret").strip()
-          assert result == "activation-secret-content", f"Got '{result}'"
+          assert result == "activation-secret-content", f"activation-secret: expected 'activation-secret-content', got '{result}'"
           print("✓ Activation secret available (uploaded plaintext)")
 
           # ── Test 5: Permissions applied ─────────────────────────────
           stat_result = machine.succeed("stat -c '%U:%G' /run/secrets/perm-generator/perm-secret").strip()
-          assert stat_result == "nobody:nogroup", f"Got '{stat_result}'"
+          assert stat_result == "nobody:nogroup", f"perm-secret owner: expected 'nobody:nogroup', got '{stat_result}'"
           print("✓ Custom owner/group applied")
 
           mode_result = machine.succeed("stat -c '%a' /run/secrets/perm-generator/perm-secret").strip()
-          assert mode_result == "440", f"Got '{mode_result}'"
+          assert mode_result == "440", f"perm-secret mode: expected '440', got '{mode_result}'"
           print("✓ Custom mode 0440 applied")
 
           default_mode = machine.succeed("stat -c '%a' /run/secrets/test-generator/service-secret").strip()
-          assert default_mode == "400", f"Got '{default_mode}'"
+          assert default_mode == "400", f"service-secret mode: expected '400', got '{default_mode}'"
           print("✓ Default mode 0400 applied")
 
           # ── Test 6: Machine key exists but is protected ─────────────
           mode = machine.succeed("stat -c '%a' /etc/secret-vars/key.txt").strip()
-          assert mode == "600", f"Expected 600, got '{mode}'"
+          assert mode == "600", f"key.txt mode: expected '600', got '{mode}'"
           print("✓ Machine key has mode 0600")
 
           print("")

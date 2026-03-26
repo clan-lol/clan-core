@@ -100,14 +100,22 @@ in
       # settings.directory → mergedTestDir → config.nodes → cycle.
       # clanInternals.machines are evaluated independently from the clan module,
       # not from config.nodes, so there's no cycle.
-      clanNodes = lib.mapAttrs (_name: system: system.config)
-        clanFlakeResult.clanInternals.machines.${hostPkgs.stdenv.hostPlatform.system};
+      # Always use x86_64-linux machines: generators produce platform-independent
+      # output (keys, configs) and the IFD must build on the evaluating system.
+      clanNodes = lib.mapAttrs (
+        _name: system: system.config
+      ) clanFlakeResult.clanInternals.machines.x86_64-linux;
+
+      # Pkgs for IFD derivations — always x86_64-linux so the derivation can
+      # build on the evaluating system without requiring a remote builder.
+      # Generator output is platform-independent text (keys, configs).
+      ifdPkgs = clan-core.inputs.nixpkgs.legacyPackages.x86_64-linux;
 
       # Run generators and produce age-encrypted secrets + plaintext vars
-      generatedVarsDir = varsExecutor.generateVarsDerivation hostPkgs clanNodes testAgePublicKey;
+      generatedVarsDir = varsExecutor.generateVarsDerivation ifdPkgs clanNodes testAgePublicKey;
 
       # Merge the test's base directory with generated vars/secrets
-      mergedTestDir = hostPkgs.runCommand "merged-test-dir-${testName}" { } ''
+      mergedTestDir = ifdPkgs.runCommand "merged-test-dir-${testName}" { } ''
         cp -r ${config.clan.directory} $out
         chmod -R +w $out
         rm -rf $out/sops $out/vars $out/secrets
@@ -274,6 +282,10 @@ in
       config = {
         clan.directory = mkIf (config.clan.test.fromFlake != null) (mkForce config.clan.test.fromFlake);
 
+        # Point getPublicValue at the merged dir with generated vars.
+        # Service modules pass this to getPublicValue which checks it before `directory`.
+        clan.varsDirectory = mergedTestDir;
+
         # Inherit all nodes from the clan
         # i.e. nodes.jon <- clan.machines.jon
         # clanInternals.nixosModules contains nixosModules per node
@@ -300,7 +312,9 @@ in
             # Point settings.directory at the merged dir with generated vars/secrets.
             # This is an IFD: the generatedVarsDir derivation is built during eval
             # so that age.nix and in_repo.nix can find .age and value files.
-            clan.core.settings.directory = lib.mkForce mergedTestDir;
+            # Priority 75 overrides forName.nix (100) but yields to mkForce (50)
+            # so tests with their own fixtures can override with mkForce.
+            clan.core.settings.directory = lib.mkOverride 75 mergedTestDir;
 
             # Disable garbage collection during the test
             # https://nix.dev/manual/nix/2.28/command-ref/conf-file.html?highlight=min-free#available-settings

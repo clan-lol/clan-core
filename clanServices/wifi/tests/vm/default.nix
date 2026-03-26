@@ -33,6 +33,6 @@
     start_all()
     test.wait_for_unit("NetworkManager.service")
     psk = test.succeed("cat /run/NetworkManager/system-connections/one.nmconnection")
-    assert "password-eins" in psk, "Password is incorrect"
+    assert "mock-prompt-value-password" in psk, f"Expected mock password in connection file:\n{psk}"
   '';
 }

@@ -7,13 +7,16 @@ let
     builtins.readFile ../../nixosModules/clanCore/vars/tests/age-fixtures/key.txt
   );
 
-  hasSecrets = phase: lib.any (
-    gen: lib.any (file: file.secret && file.deploy && file.neededFor == phase) (lib.attrValues gen.files)
-  ) (lib.attrValues config.clan.core.vars.generators);
+  hasSecrets =
+    phase:
+    lib.any (
+      gen:
+      lib.any (file: file.secret && file.deploy && file.neededFor == phase) (lib.attrValues gen.files)
+    ) (lib.attrValues config.clan.core.vars.generators);
 in
 {
-  clan.core.vars.settings.secretStore = "age";
-  clan.core.vars.enableConsistencyCheck = false;
+  clan.core.vars.settings.secretStore = lib.mkDefault "age";
+  clan.core.vars.enableConsistencyCheck = lib.mkDefault false;
 
   system.activationScripts.testAgeKeySetup = {
     text = ''
