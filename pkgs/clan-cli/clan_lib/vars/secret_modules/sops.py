@@ -187,7 +187,6 @@ class SecretStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> list[Path]:
-
         add_machines: list[str] = []
         add_groups: list[str] = []
 
@@ -439,9 +438,9 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
-                # Shared secrets not marked for deployment don't need
+                # Secrets not marked for deployment don't need
                 # machine access — remove stale symlinks if present.
-                if generator.share and not file.deploy:
+                if not file.deploy:
                     machine_link = secret_path / "machines" / machine
                     if machine_link.exists():
                         files_to_commit.extend(
