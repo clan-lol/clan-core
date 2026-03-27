@@ -56,8 +56,9 @@ class Remote:
         return self.target
 
     def is_ipv6(self) -> bool:
+        addr = self.address.strip("[]")
         try:
-            return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
+            return isinstance(ipaddress.ip_address(addr), ipaddress.IPv6Address)
         except ValueError:
             return False
 
@@ -381,7 +382,11 @@ class Remote:
         url = f"{scheme}://"
         if self.user:
             url += f"{self.user}@"
-        url += self.address
+        # IPv6 addresses must be wrapped in brackets in URIs (RFC 3986).
+        if self.is_ipv6() and not self.address.startswith("["):
+            url += f"[{self.address}]"
+        else:
+            url += self.address
         if self.port:
             url += f":{self.port}"
         return url

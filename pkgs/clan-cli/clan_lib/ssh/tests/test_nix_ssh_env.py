@@ -118,3 +118,32 @@ def test_ssh_url_scheme() -> None:
     remote = Remote(address="myhost", user="deploy", port=2222)
     assert remote.ssh_url() == "ssh://deploy@myhost:2222"
     assert remote.ssh_url(scheme="ssh-ng") == "ssh-ng://deploy@myhost:2222"
+
+
+def test_ssh_url_ipv6() -> None:
+    """ssh_url() must bracket IPv6 addresses."""
+    remote = Remote(
+        address="201:d87f:1b31:306f:6a82:66c6:2391:93fe", user="root", port=22
+    )
+    assert remote.ssh_url() == "ssh://root@[201:d87f:1b31:306f:6a82:66c6:2391:93fe]:22"
+    assert (
+        remote.ssh_url(scheme="ssh-ng")
+        == "ssh-ng://root@[201:d87f:1b31:306f:6a82:66c6:2391:93fe]:22"
+    )
+
+    # Without port
+    remote_no_port = Remote(
+        address="201:d87f:1b31:306f:6a82:66c6:2391:93fe", user="root"
+    )
+    assert (
+        remote_no_port.ssh_url()
+        == "ssh://root@[201:d87f:1b31:306f:6a82:66c6:2391:93fe]"
+    )
+
+
+def test_ssh_url_ipv6_already_bracketed() -> None:
+    """ssh_url() must not double-bracket an already-bracketed IPv6 address."""
+    remote = Remote(
+        address="[201:d87f:1b31:306f:6a82:66c6:2391:93fe]", user="root", port=22
+    )
+    assert remote.ssh_url() == "ssh://root@[201:d87f:1b31:306f:6a82:66c6:2391:93fe]:22"
