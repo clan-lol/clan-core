@@ -82,7 +82,8 @@ def nix_test_store() -> Path | None:
     lock_nix = os.environ.get("LOCK_NIX", "")
 
     if not lock_nix:
-        lock_nix = tempfile.NamedTemporaryFile().name  # NOQA: SIM115
+        fd, lock_nix = tempfile.mkstemp()
+        os.close(fd)
     if not os.environ.get("IN_NIX_SANDBOX"):
         return None
     if store:
