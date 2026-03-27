@@ -364,6 +364,70 @@ def test_shared_generator_allows_machine_specific_differences(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+def test_generate_removes_stale_machine_symlink_when_deploy_becomes_false(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that 'vars generate' cleans up stale machine symlinks when a shared
+    secret's deploy setting changes from True to False.
+
+    Regression test: the re-encryption loop in run_generators() used to skip
+    files with deploy=False entirely, so fix() was never called and stale
+    machine symlinks from the deploy=True era were left behind.
+    """
+    flake = flake_with_sops
+
+    # Two machines sharing a generator with deploy=True (default) + secret=True
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen = m1_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"]
+    shared_gen["share"] = True
+    shared_gen["files"]["my_secret"]["secret"] = True
+    shared_gen["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
+    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"] = shared_gen.copy()
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate — both machines get access (deploy=True)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    machine1_link = (
+        flake.path
+        / "vars"
+        / "shared"
+        / "my_shared_gen"
+        / "my_secret"
+        / "machines"
+        / "machine1"
+    )
+    assert machine1_link.is_symlink(), (
+        "machine1 should have access after generation with deploy=True"
+    )
+
+    # Change deploy to False
+    shared_gen["files"]["my_secret"]["deploy"] = False
+    flake.refresh()
+
+    # Running 'vars generate' should call fix() which removes stale symlinks
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    assert not machine1_link.exists(), (
+        "machine1 symlink should be removed by 'vars generate' after deploy changed to False"
+    )
+
+    # Working tree should be clean
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'vars generate', got:\n{git_status}"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
 def test_sops_fix_removes_machine_from_no_deploy_shared_secret(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
