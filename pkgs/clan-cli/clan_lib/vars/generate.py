@@ -365,3 +365,5 @@ def run_generators(
                     [generator],
                     file_name=file.name,
                 )
+
+    flake.invalidate_cache()
