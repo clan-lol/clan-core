@@ -71,7 +71,7 @@ def complete_machines(
         except subprocess.CalledProcessError:
             pass
 
-    thread = threading.Thread(target=run_cmd)
+    thread = threading.Thread(target=run_cmd, daemon=True)
     thread.start()
     thread.join(timeout=COMPLETION_TIMEOUT)
 
@@ -115,7 +115,7 @@ def complete_services_for_machine(
         except subprocess.CalledProcessError:
             pass
 
-    thread = threading.Thread(target=run_cmd)
+    thread = threading.Thread(target=run_cmd, daemon=True)
     thread.start()
     thread.join(timeout=COMPLETION_TIMEOUT)
 
@@ -158,7 +158,7 @@ def complete_backup_providers_for_machine(
         except subprocess.CalledProcessError:
             pass
 
-    thread = threading.Thread(target=run_cmd)
+    thread = threading.Thread(target=run_cmd, daemon=True)
     thread.start()
     thread.join(timeout=COMPLETION_TIMEOUT)
 
@@ -201,7 +201,7 @@ def complete_state_services_for_machine(
         except subprocess.CalledProcessError:
             pass
 
-    thread = threading.Thread(target=run_cmd)
+    thread = threading.Thread(target=run_cmd, daemon=True)
     thread.start()
     thread.join(timeout=COMPLETION_TIMEOUT)
 
@@ -406,7 +406,7 @@ def complete_target_host(
         except subprocess.CalledProcessError:
             pass
 
-    thread = threading.Thread(target=run_cmd)
+    thread = threading.Thread(target=run_cmd, daemon=True)
     thread.start()
     thread.join(timeout=COMPLETION_TIMEOUT)
 
@@ -465,7 +465,7 @@ def complete_tags(
             pass
 
     def start_thread(target_function: Callable) -> threading.Thread:
-        thread = threading.Thread(target=target_function)
+        thread = threading.Thread(target=target_function, daemon=True)
         thread.start()
         return thread
 
