@@ -90,8 +90,8 @@ class SecretStore(StoreBase):
             self.clan_dir,
             machine,
             pub_key,
-            False,
-            age_plugins,
+            force=False,
+            age_plugins=age_plugins,
             flake_dir=self.flake.path,
         )
 
