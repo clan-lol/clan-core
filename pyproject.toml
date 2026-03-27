@@ -35,10 +35,9 @@ lint.ignore = [
   "FBT001",  # boolean-type-hint-positional-argument
   "FBT002",  # boolean-default-value-positional-argument
   "FIX",     # flake8-fixme (FIXME comments)
-  "G001",    # logging-string-format
   "G004",    # logging-f-string
   "PLR0911", # too-many-return-statements
-  "PT023",   # pytest-incorrect-mark-parentheses-style
+  "FBT003",  # boolean-positional-value-in-call
   "S603",    # subprocess-without-shell-equals-true
   "S607",    # start-process-with-partial-path
   "T201",    # print
