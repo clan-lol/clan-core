@@ -345,8 +345,7 @@ def run_generators(
             # Skip files that are either:
             # - Not encrypted
             # - Don't exist yet
-            # - Wont get deployed
-            if not file.secret or not file.exists or not file.deploy:
+            if not file.secret or not file.exists:
                 continue
 
             for machine in [
