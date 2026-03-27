@@ -20,6 +20,23 @@ let
   networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [
+      "clan"
+      "core"
+      "networking"
+      "zerotier"
+      "networkId"
+    ] "Use the inventory instead")
+    (lib.mkRemovedOptionModule [
+      "clan"
+      "core"
+      "networking"
+      "zerotier"
+      "controller"
+      "enable"
+    ] "Use the inventory instead")
+  ];
   options.clan.core.networking.zerotier = {
     _roles = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -89,7 +106,6 @@ in
       '';
     };
     controller = {
-      enable = lib.mkEnableOption "turn this machine into the networkcontroller";
       public = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -117,6 +133,8 @@ in
       let
         generator =
           config.clan.core.vars.generators.zerotier or config.clan.core.vars.generators.zerotier-controller;
+
+        zerotier-identity-secret = config.clan.core.vars.generators.zerotier.files.zerotier-identity-secret;
       in
       {
         environment.etc."zerotier/ip".text = generator.files.zerotier-ip.value;
@@ -134,12 +152,12 @@ in
           "+${pkgs.writeShellScript "init-zerotier" ''
             # compare hashes of the current identity secret and the one in the config
             hash1=$(sha256sum /var/lib/zerotier-one/identity.secret | cut -d ' ' -f 1)
-            hash2=$(sha256sum ${generator.files.zerotier-identity-secret.path} | cut -d ' ' -f 1)
+            hash2=$(sha256sum ${zerotier-identity-secret.path} | cut -d ' ' -f 1)
             if [[ "$hash1" != "$hash2" ]]; then
               echo "Identity secret has changed, backing up old identity to /var/lib/zerotier-one/identity.secret.bac"
               cp /var/lib/zerotier-one/identity.secret /var/lib/zerotier-one/identity.secret.bac
               cp /var/lib/zerotier-one/identity.public /var/lib/zerotier-one/identity.public.bac
-              cp ${generator.files.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+              cp ${zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
               zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
             fi
 
@@ -219,13 +237,17 @@ in
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clan.core.vars.generators.zerotier-controller = {
         share = true;
+
         files.zerotier-ip.secret = false;
         files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
+
         files.zerotier-network-id.secret = false;
         files.zerotier-network-id.restartUnits = [ "zerotierone.service" ];
-        files.zerotier-identity-secret = {
-          restartUnits = [ "zerotierone.service" ];
-        };
+
+        # No machine has access to this
+        # This gets copied only to the private generator later via dependencies
+        files.zerotier-identity-secret.deploy = false;
+
         runtimeInputs = [
           config.services.zerotierone.package
           pkgs.python3
@@ -239,6 +261,28 @@ in
         '';
       };
     }
+    (lib.mkIf isController {
+      # Copies the outputs of "zerotier-controller" into a per-machine generator
+      # This allows "deploy=true" which is required only for the controller
+      clan.core.vars.generators.zerotier = {
+        files.zerotier-ip.secret = false;
+        files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
+
+        files.zerotier-network-id.secret = false;
+        files.zerotier-network-id.restartUnits = [ "zerotierone.service" ];
+
+        # No machine has access to this
+        # This gets copied only to the private generator later via dependencies
+        files.zerotier-identity-secret.restartUnits = [ "zerotierone.service" ];
+
+        dependencies = [ "zerotier-controller" ];
+        script = ''
+          cp $in/zerotier-controller/zerotier-ip $out/zerotier-ip
+          cp $in/zerotier-controller/zerotier-network-id $out/zerotier-network-id
+          cp $in/zerotier-controller/zerotier-identity-secret $out/zerotier-identity-secret
+        '';
+      };
+    })
     (lib.mkIf (isPeerExclusive) {
       # This generator only exists on pure peers
       clan.core.vars.generators.zerotier = {
