@@ -7,11 +7,8 @@
 let
   cfg = config.clan.core.networking.zerotier;
 
-  # Previously: cfg.networkId != null;
   isZerotierEnabled = cfg._roles != [ ];
-  # Previously: controller.enable = true;
   isController = builtins.elem "controller" cfg._roles;
-  # Previously: !controller.enable = true && cfg.networkId != null;
   isPeer = builtins.elem "peer" cfg._roles;
 
   # Is only peer, excluding the controller.
@@ -45,14 +42,9 @@ in
         zerotier roles, internal.
         Empty by default, unless zerotier gets enabled via inventory
       '';
+      visible = false;
+      internal = true;
     };
-    # networkId = lib.mkOption {
-    #   type = lib.types.nullOr lib.types.str;
-    #   default = null;
-    #   description = ''
-    #     zerotier networking id
-    #   '';
-    # };
     name = lib.mkOption {
       type = lib.types.str;
       default = config.clan.core.settings.name;
@@ -86,6 +78,7 @@ in
     subnet = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       readOnly = true;
+      defaultText = "Dynamically derived from 'zerotier-network-id' ";
       default =
         if networkId == null then
           null
@@ -161,7 +154,7 @@ in
               zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
             fi
 
-            ${lib.optionalString (isController) ''
+            ${lib.optionalString isController ''
               mkdir -p /var/lib/zerotier-one/controller.d/network
               ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${networkId}.json
             ''}
@@ -226,13 +219,12 @@ in
         services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
       }
     ))
-    # END
 
-    (lib.mkIf (isController) {
+    (lib.mkIf isController {
       clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
 
     })
-    {
+    (lib.mkIf isZerotierEnabled {
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clan.core.vars.generators.zerotier-controller = {
@@ -260,7 +252,7 @@ in
             --network-id "$out/zerotier-network-id"
         '';
       };
-    }
+    })
     (lib.mkIf isController {
       # Copies the outputs of "zerotier-controller" into a per-machine generator
       # This allows "deploy=true" which is required only for the controller
@@ -283,7 +275,7 @@ in
         '';
       };
     })
-    (lib.mkIf (isPeerExclusive) {
+    (lib.mkIf isPeerExclusive {
       # This generator only exists on pure peers
       clan.core.vars.generators.zerotier = {
         files.zerotier-ip.secret = false;
@@ -306,7 +298,7 @@ in
 
       clan.core.networking.targetHost = lib.mkDefault "root@[${config.clan.core.vars.generators.zerotier.files.zerotier-ip.value}]";
     })
-    (lib.mkIf (isController) {
+    (lib.mkIf isController {
       clan.core.networking.zerotier.settings = {
         authTokens = [ null ];
         authorizationEndpoint = "";

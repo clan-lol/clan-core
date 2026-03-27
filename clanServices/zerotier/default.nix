@@ -207,8 +207,6 @@
                     '') allHostIPs}
                   '';
                 };
-
-              clan.core.networking.zerotier.controller.enable = lib.mkDefault true;
             };
 
           };
@@ -217,8 +215,8 @@
   perMachine =
     { machine, ... }:
     {
-      nixosModule = lib.mkIf (builtins.elem "controller" machine.roles) {
-        clan.core.networking.zerotier._roles = [ "controller" ];
+      nixosModule = {
+        clan.core.networking.zerotier._roles = machine.roles;
       };
     };
 }

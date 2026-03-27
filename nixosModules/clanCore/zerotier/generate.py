@@ -141,9 +141,28 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                         )
                         raise ClanError(msg)
                     time.sleep(0.1)
+
+                zt_controller = ZerotierController(controller_port, home)
+
+                # Wait for the controller API to be fully ready,
+                # not just the port being open
+                for _ in range(50):
+                    try:
+                        zt_controller.status()
+                        break
+                    except Exception:
+                        status = p.poll()
+                        if status is not None:
+                            msg = f"zerotier-one has been terminated unexpected with {status}"
+                            raise ClanError(msg)
+                        time.sleep(0.1)
+                else:
+                    msg = "zerotier controller API did not become ready in time"
+                    raise ClanError(msg)
+
                 print()
 
-                yield ZerotierController(controller_port, home)
+                yield zt_controller
             finally:
                 os.killpg(process_group, signal.SIGKILL)
 
@@ -162,8 +181,8 @@ def create_network_controller() -> NetworkController:
             with zerotier_controller() as controller:
                 network = controller.create_network()
                 return NetworkController(network["nwid"], controller.identity)
-        except ClanError:  # probably failed to allocate port, so retry
-            print("failed to create network, retrying..., probabl", file=sys.stderr)
+        except (ClanError, urllib.error.HTTPError, urllib.error.URLError) as err:
+            print(f"failed to create network ({err}), retrying...", file=sys.stderr)
     raise e
 
 

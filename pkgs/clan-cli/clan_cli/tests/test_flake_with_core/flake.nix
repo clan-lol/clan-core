@@ -36,7 +36,7 @@
               clan.core.sops.defaultGroups = [ "admins" ];
               clan.virtualisation.graphics = false;
 
-              clan.core.networking.zerotier.controller.enable = true;
+              clan.core.networking.zerotier._roles = [ "controller" ];
               networking.useDHCP = false;
             };
           vm2 =
@@ -47,7 +47,7 @@
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clan.core.networking.zerotier.networkId = "82b44b162ec6c013";
+              clan.core.networking.zerotier._roles = [ "peer" ];
             };
         };
       };
