@@ -8,6 +8,11 @@ extend-exclude = [
 	"pkgs/clan-cli/clan_lib/machines/test_suggestions.py",
 ]
 
+[default]
+extend-ignore-re = [
+	"age1[a-z0-9]+",  # age public keys (bech32)
+]
+
 [default.extend-words]
 facter = "facter"
 metalness = "metalness"   # would be corrected to metallicity, not sure which one's preferred

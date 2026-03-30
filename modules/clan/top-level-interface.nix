@@ -92,6 +92,16 @@ in
           s;
     };
 
+    varsDirectory = lib.mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = ''
+        Override directory for reading public vars via getPublicValue.
+        When set, getPublicValue checks this directory first before falling back to `directory`.
+        Used by the test framework to point at a directory with on-the-fly generated vars.
+      '';
+    };
+
     directory = lib.mkOption {
       type = types.coercedTo lib.types.raw (
         v:

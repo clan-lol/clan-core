@@ -275,6 +275,7 @@ in
               # This shouldn't happen in normal usage, but can occur when
               # the flake is copied (e.g., in tests). Fall back to empty string.
               "";
+
         in
         {
           _module.args = {
@@ -289,6 +290,7 @@ in
                 flakeInputs
                 relativeDirectory
                 ;
+              varsDirectory = config.varsDirectory;
               exportInterfaces = config.exportInterfaces;
             }
             (

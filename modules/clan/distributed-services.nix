@@ -117,7 +117,12 @@ in
       };
       modules = [
         (import ../../lib/inventory/distributed-service/all-services-wrapper.nix {
-          inherit (clanConfig) directory exports exportInterfaces;
+          inherit (clanConfig)
+            directory
+            varsDirectory
+            exports
+            exportInterfaces
+            ;
           inherit (inventory) meta;
         })
         # Dependencies
