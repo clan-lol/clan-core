@@ -69,11 +69,7 @@ in
     };
     expected = {
       hasNetworkIds = [ "0e28cb903344475e" ];
-      roles = [
-        "controller"
-        "moon"
-        "peer"
-      ];
+      roles = [ "peer" ];
       networkName = "zerotier";
     };
   };
@@ -86,7 +82,6 @@ in
     expected = {
       hasNetworkIds = [ "0e28cb903344475e" ];
       roles = [
-        "controller"
         "moon"
         "peer"
       ];
@@ -103,7 +98,6 @@ in
       hasNetworkIds = [ "0e28cb903344475e" ];
       roles = [
         "controller"
-        "moon"
         "peer"
       ];
       networkName = "zerotier";
@@ -117,10 +111,7 @@ in
     };
     expected = {
       hasNetworkIds = [ "0e28cb903344475e" ];
-      roles = [
-        "controller"
-        "peer"
-      ];
+      roles = [ "peer" ];
       networkName = "zerotier";
     };
   };

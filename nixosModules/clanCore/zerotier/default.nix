@@ -16,6 +16,12 @@ let
 
   networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
 
+  # The zerotier-controller generator needs controller support to create a network,
+  # even on peer-only machines (since it's a shared generator).
+  zerotieroneWithController = pkgs.callPackage ../../../pkgs/zerotierone {
+    includeController = true;
+  };
+
   zerotierMigrationMessage = ''
     Direct ZeroTier option configuration has been removed.
     ZeroTier is now configured through the clan inventory system.
@@ -254,7 +260,7 @@ in
         files.zerotier-identity-secret.deploy = false;
 
         runtimeInputs = [
-          config.services.zerotierone.package
+          zerotieroneWithController
           pkgs.python3
         ];
         script = ''
