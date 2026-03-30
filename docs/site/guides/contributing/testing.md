@@ -186,13 +186,14 @@ This feature allows Nix to allocate a range of UIDs for containers to use, enabl
 
 **Configuration:**
 
-The `uid-range` feature requires the `auto-allocate-uids` setting to be enabled in your Nix configuration.
+The `uid-range` feature requires the `auto-allocate-uids` and `cgroups` settings to be enabled in your Nix configuration.
 
 To verify or enable it, add to your `/etc/nix/nix.conf` or NixOS configuration:
 
 ```nix
-settings.experimental-features = [
+nix.settings.experimental-features = [
     "auto-allocate-uids"
+    "cgroups"
 ];
 
 nix.settings.auto-allocate-uids = true;
