@@ -43,6 +43,10 @@ in
           }:
           let
             uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
+            # Check if any server in this instance has certificate.enable = true
+            anyCertificateEnabled = lib.any (machineConfig: machineConfig.settings.certificate.enable or true) (
+              builtins.attrValues (roles.server.machines or { })
+            );
             # Collect searchDomains from all servers in this instance
             allServerSearchDomains = lib.flatten (
               lib.mapAttrsToList (_name: machineConfig: machineConfig.settings.certificate.searchDomains or [ ]) (
@@ -54,7 +58,7 @@ in
             searchDomains = [ config.clan.core.settings.domain ] ++ extraDomains;
           in
           {
-            clan.core.vars.generators.openssh-ca = {
+            clan.core.vars.generators.openssh-ca = lib.mkIf anyCertificateEnabled {
               share = true;
               files.id_ed25519.deploy = false;
               files."id_ed25519.pub" = {
@@ -69,7 +73,7 @@ in
               '';
             };
 
-            programs.ssh.knownHosts.ssh-ca = {
+            programs.ssh.knownHosts.ssh-ca = lib.mkIf anyCertificateEnabled {
               certAuthority = true;
               extraHostNames = builtins.map (domain: "*.${domain}") searchDomains;
               publicKey = config.clan.core.vars.generators.openssh-ca.files."id_ed25519.pub".value;
@@ -79,7 +83,7 @@ in
   };
 
   roles.server = {
-    description = "Runs sshd with persistent host keys and (if certificate.searchDomains is set) a CA-signed host certificate for <machine>.<domain>, enabling TOFU‑less verification by clients that trust the CA.";
+    description = "Runs sshd with persistent host keys and (if certificate.enable is not disabled) a CA-signed host certificate for <machine>.<domain>, enabling TOFU‑less verification by clients that trust the CA.";
     interface =
       { lib, ... }:
       {
@@ -98,6 +102,13 @@ in
           hostKeys.rsa.enable = lib.mkEnableOption "generating a RSA host key";
 
           certificate = {
+            enable = lib.mkOption {
+              default = true;
+              type = lib.types.bool;
+              description = "Create and enable CA-signed host certificates.";
+              example = false;
+            };
+
             searchDomains = searchDomainOption;
           };
         };
@@ -133,7 +144,8 @@ in
                   ssh-keygen -t ed25519 -N "" -C "root@${config.clan.core.settings.machine.name}" -f "$out"/id_ed25519
                 '';
               };
-              openssh-ca = {
+
+              openssh-ca = lib.mkIf settings.certificate.enable {
                 share = true;
                 files.id_ed25519.deploy = false;
                 files."id_ed25519.pub" = {
@@ -148,7 +160,7 @@ in
                 '';
               };
 
-              openssh-cert = {
+              openssh-cert = lib.mkIf settings.certificate.enable {
                 files."ssh.id_ed25519-cert.pub".secret = false;
                 dependencies = [
                   "openssh"
@@ -203,7 +215,7 @@ in
               };
             };
 
-            programs.ssh.knownHosts.ssh-ca = {
+            programs.ssh.knownHosts.ssh-ca = lib.mkIf settings.certificate.enable {
               certAuthority = true;
               extraHostNames = builtins.map (domain: "*.${domain}") searchDomains;
               publicKey = config.clan.core.vars.generators.openssh-ca.files."id_ed25519.pub".value;
@@ -213,9 +225,11 @@ in
               enable = true;
               settings.PasswordAuthentication = false;
 
-              settings.HostCertificate =
-                lib.mkIf (config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".exists)
-                  config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
+              settings.HostCertificate = lib.mkIf (
+                # this check needs to go first, as otherwise generators.openssh-cert does not exist
+                settings.certificate.enable
+                && config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".exists
+              ) config.clan.core.vars.generators.openssh-cert.files."ssh.id_ed25519-cert.pub".path;
 
               hostKeys = [
                 {
