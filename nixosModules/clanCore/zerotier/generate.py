@@ -150,11 +150,11 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                     try:
                         zt_controller.status()
                         break
-                    except Exception:
+                    except OSError as err:
                         status = p.poll()
                         if status is not None:
                             msg = f"zerotier-one has been terminated unexpected with {status}"
-                            raise ClanError(msg)
+                            raise ClanError(msg) from err
                         time.sleep(0.1)
                 else:
                     msg = "zerotier controller API did not become ready in time"

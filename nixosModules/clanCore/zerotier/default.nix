@@ -15,25 +15,38 @@ let
   isPeerExclusive = isPeer && !isController;
 
   networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
+
+  zerotierMigrationMessage = ''
+    Direct ZeroTier option configuration has been removed.
+    ZeroTier is now configured through the clan inventory system.
+
+    To set up ZeroTier networking, define it as a service in your inventory
+    and assign the "controller" and "peer" roles to your machines.
+
+    See the inventory documentation: https://docs.clan.lol/reference/inventory/
+    See the networking guide: https://docs.clan.lol/guides/networking/
+  '';
 in
 {
-  imports = [
-    (lib.mkRemovedOptionModule [
-      "clan"
-      "core"
-      "networking"
-      "zerotier"
-      "networkId"
-    ] "Use the inventory instead")
-    (lib.mkRemovedOptionModule [
-      "clan"
-      "core"
-      "networking"
-      "zerotier"
-      "controller"
-      "enable"
-    ] "Use the inventory instead")
-  ];
+  imports =
+
+    [
+      (lib.mkRemovedOptionModule [
+        "clan"
+        "core"
+        "networking"
+        "zerotier"
+        "networkId"
+      ] zerotierMigrationMessage)
+      (lib.mkRemovedOptionModule [
+        "clan"
+        "core"
+        "networking"
+        "zerotier"
+        "controller"
+        "enable"
+      ] zerotierMigrationMessage)
+    ];
   options.clan.core.networking.zerotier = {
     _roles = lib.mkOption {
       type = lib.types.listOf lib.types.str;
