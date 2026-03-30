@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from clan_lib.api import API
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import current_system
@@ -18,6 +19,7 @@ from clan_lib.vars.generator import (
     get_machine_generators,
     get_machine_selectors,
 )
+from clan_lib.vars.migrations import run_migrations
 from clan_lib.vars.prompt import ask
 
 if TYPE_CHECKING:
@@ -288,6 +290,12 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
+
+    # Run pre-evaluation migrations (e.g. zerotier controller rename)
+    flake = machines[0].flake
+    clan_dir = get_clan_dir(flake)
+    run_migrations(clan_dir)
+
     all_generators = get_generators(machines, full_closure=True)
 
     generators_to_run = get_generators(
@@ -357,3 +365,5 @@ def run_generators(
                     [generator],
                     file_name=file.name,
                 )
+
+    flake.invalidate_cache()

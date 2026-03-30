@@ -800,8 +800,8 @@ in
                       r: _instanceName: instance:
                       r
                       ++ lib.foldlAttrs (
-                        r2: roleName: _role:
-                        r2 ++ [ roleName ]
+                        r2: roleName: role:
+                        if role.machines ? ${machineName} then r2 ++ [ roleName ] else r2
                       ) [ ] instance.roles
                     ) [ ] instances;
                 in
