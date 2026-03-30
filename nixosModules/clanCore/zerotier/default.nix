@@ -292,7 +292,7 @@ in
           python3 ${./generate.py} --mode identity \
             --ip "$out/zerotier-ip" \
             --identity-secret "$out/zerotier-identity-secret" \
-            --network-id $in/zerotier-controller/zerotier-network-id
+            --network-id-file $in/zerotier-controller/zerotier-network-id
         '';
       };
 

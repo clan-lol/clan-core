@@ -235,20 +235,24 @@ def main() -> None:
     parser.add_argument("--ip", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
     parser.add_argument("--network-id", type=str, required=False)
+    parser.add_argument("--network-id-file", type=Path, required=False)
     args = parser.parse_args()
 
     match args.mode:
         case "network":
             if args.network_id is None:
-                msg = "network_id parameter is required"
+                msg = "--network-id parameter is required in network mode"
                 raise ClanError(msg)
             controller = create_network_controller()
             identity = controller.identity
             network_id = controller.networkid
             Path(args.network_id).write_text(network_id)
         case "identity":
+            if args.network_id_file is None:
+                msg = "--network-id-file parameter is required in identity mode"
+                raise ClanError(msg)
             identity = create_identity()
-            network_id = args.network_id
+            network_id = args.network_id_file.read_text().strip()
         case _:
             msg = f"unknown mode {args.mode}"
             raise ClanError(msg)
