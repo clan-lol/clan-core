@@ -132,6 +132,7 @@ def run_machine_update(
     target_host: Remote | LocalHost,
     build_host: Remote | LocalHost | None = None,
     upload_inputs: bool = False,
+    debug: bool = False,
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.
 
@@ -140,6 +141,7 @@ def run_machine_update(
         target_host: Remote object representing the target host for deployment.
         build_host: Optional Remote object representing the build host.
         upload_inputs: Whether to upload flake inputs from the local.
+        debug: Whether to pass --debug to nixos-rebuild.
 
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
@@ -220,6 +222,10 @@ def run_machine_update(
 Update for this type is not handled yet.
 """
             raise ClanError(msg)
+
+        # --debug is only supported by nixos-rebuild, not darwin-rebuild
+        if debug and machine._class_ == "nixos":
+            switch_cmd.append("--debug")
 
         # If we build on the target host, we need to become root for building.
         # We are not using --use-remote-sudo here, so that our sudo ask proxy work: https://git.clan.lol/clan/clan-core/pulls/3642
