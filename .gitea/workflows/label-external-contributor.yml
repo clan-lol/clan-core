@@ -28,12 +28,17 @@ jobs:
               ;;
             404)
               echo "User $PR_AUTHOR is not an org member, adding label"
-              nix run --inputs-from . nixpkgs#curl -- -X POST \
+              response=$(nix run --inputs-from . nixpkgs#curl -- -s -o /dev/stderr -w "%{http_code}" -X POST \
                 -H "Authorization: token $GITEA_TOKEN" \
                 -H "Content-Type: application/json" \
                 -d '{"labels": ["Type/Community Contribution"]}' \
-                "https://git.clan.lol/api/v1/repos/clan/clan-core/issues/$PR_NUMBER/labels"
-              echo "Label added successfully"
+                "https://git.clan.lol/api/v1/repos/clan/clan-core/issues/$PR_NUMBER/labels")
+              if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
+                echo "Label added successfully"
+              else
+                echo "Failed to add label (HTTP $response)"
+                exit 1
+              fi
               ;;
             *)
               echo "Unexpected status $status when checking membership for $PR_AUTHOR"
