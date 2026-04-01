@@ -3,7 +3,7 @@
   ...
 }:
 {
-  name = "p2p-ssh-iroh";
+  name = "clan-test-p2p-ssh-iroh";
 
   clan = {
     directory = ./.;

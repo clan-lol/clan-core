@@ -15,6 +15,7 @@
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"
+    "peer"
   ];
 
   exports = lib.mapAttrs' (instanceName: _: {
@@ -34,9 +35,18 @@
     perInstance =
       {
         instanceName,
+        mkExports,
         ...
       }:
       {
+        # Export peer with empty hosts — the p2p-ssh-iroh Python module reads
+        # the dumbpipe ticket directly from vars (not from peer.hosts), since
+        # tickets are not routable addresses and must not be consumed by other
+        # services (e.g. yggdrasil peering).
+        exports = mkExports {
+          peer.hosts = [ ];
+        };
+
         nixosModule =
           { config, pkgs, ... }:
           let
