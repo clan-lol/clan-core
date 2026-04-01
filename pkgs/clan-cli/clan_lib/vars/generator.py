@@ -523,57 +523,54 @@ class Generator:
             new_files = [dataclasses.replace(v, machines=[]) for v in self.files]
         return dataclasses.replace(self, key=new_key, files=new_files)
 
+    def _resolve_dep_generator(
+        self, dep_key: GeneratorId, generators: Sequence["Generator"]
+    ) -> "Generator":
+        dep_generator = next((g for g in generators if g.name == dep_key.name), None)
+        if dep_generator is None:
+            msg = f"Generator {dep_key.name} not found. - {dep_key}"
+            raise ClanError(msg)
+        if self.share and not dep_generator.share:
+            msg = (
+                f"Shared generators must not depend on machine specific generators. "
+                f"Generator '{self.name}' (shared) depends on '{dep_generator.name}' (machine-specific)"
+            )
+            raise ClanError(msg)
+        return dep_generator
+
+    def get_file_bytes(self, generator_id: GeneratorId, file: Var) -> bytes:
+        if file.secret:
+            if self._secret_store is None:
+                msg = "Secret store must be set to access secret vars"
+                raise ClanError(msg)
+            return self._secret_store.get(generator_id, file.name)
+
+        if self._public_store is None:
+            msg = "Public store must be set to access public vars"
+            raise ClanError(msg)
+        return self._public_store.get(generator_id, file.name)
+
     def decrypt_dependencies(
         self, generators: Sequence["Generator"]
     ) -> dict[str, dict[str, bytes]]:
         """Decrypt and retrieve all dependency values for this generator.
 
         Args:
-            generators: The generators to decrypt
+            generators: All generators available to decrypt
+            only the generators in 'dependency_map'
 
         Returns:
             Dictionary mapping generator names to their decrypted Vars
-            in the form { GENERATOR.name: { VAR.name: bytes } }
+            in the form { loc: { VAR.name: bytes } }
 
         """
-        if (
-            self._flake is None
-            or self._public_store is None
-            or self._secret_store is None
-        ):
-            msg = "Flake and stores must be set to decrypt dependencies"
-            raise ClanError(msg)
-
-        result: dict[str, dict[str, bytes]] = {}
-
-        for dep_key in set(self.dependencies):
-            result[dep_key.name] = {}
-
-            dep_generator = next(
-                (g for g in generators if g.name == dep_key.name),
-                None,
-            )
-            if dep_generator is None:
-                msg = f"Generator {dep_key.name} not found. - {dep_key}"
-                raise ClanError(msg)
-
-            # Check that shared generators don't depend on machine-specific generators
-            if self.share and not dep_generator.share:
-                msg = f"Shared generators must not depend on machine specific generators. Generator '{self.name}' (shared) depends on '{dep_generator.name}' (machine-specific)"
-                raise ClanError(msg)
-
-            dep_files = dep_generator.files
-            for file in dep_files:
-                if file.secret:
-                    result[dep_key.name][file.name] = self._secret_store.get(
-                        dep_generator.key,
-                        file.name,
-                    )
-                else:
-                    result[dep_key.name][file.name] = self._public_store.get(
-                        dep_generator.key,
-                        file.name,
-                    )
+        result = {}
+        for unpack_location, dep_key in self.dependency_map.items():
+            dep_generator = self._resolve_dep_generator(dep_key, generators)
+            result[unpack_location] = {
+                file.name: self.get_file_bytes(dep_generator.key, file)
+                for file in dep_generator.files
+            }
         return result
 
     def ask_prompts(self) -> dict[str, str]:
