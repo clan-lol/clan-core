@@ -123,7 +123,15 @@ def collect_keys_for_type(folder: Path) -> set[sops.SopsKey]:
                 f"Expected {p} to point to {folder} but points to {target.parent}",
             )
             continue
-        keys.update(read_keys(target))
+        for key in read_keys(target):
+            keys.add(
+                sops.SopsKey(
+                    pubkey=key.pubkey,
+                    username=p.name,
+                    key_type=key.key_type,
+                    source=f"{folder.name}/{p.name}",
+                )
+            )
     return keys
 
 
