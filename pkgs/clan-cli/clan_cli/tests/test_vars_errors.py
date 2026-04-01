@@ -1,9 +1,11 @@
 import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
+from clan_lib.cmd import RunOpts
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import nix_eval, run
 from clan_lib.vars.generate import (
     run_generators,
 )
@@ -219,3 +221,41 @@ def test_shared_generator_conflicting_definition_raises_error(
         match=r".*differ.*",
     ):
         cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_accessing_path_before_generate_shows_helpful_error(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Ensure that accessing .path of a var file that hasn't been generated yet
+    produces an explicit error message telling the user to run 'clan machines update'.
+    """
+    flake = flake_with_sops
+
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["script"] = 'echo hello > "$out"/my_value'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    eval_args = nix_eval(
+        [
+            f"{flake.path}#nixosConfigurations.my_machine.config.clan.core.vars.generators.my_generator.files.my_value.path",
+        ],
+    )
+
+    # Var should not exist before any generation
+    result = run(eval_args, RunOpts(check=False))
+    assert result.returncode != 0, (
+        "nix eval should fail when .path is accessed before generation"
+    )
+    assert "does not exist" in result.stderr
+    assert "clan vars generate" in result.stderr
+
+    # Var should exist after 'vars generate'
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    result = run(eval_args)  # run same command again
+    assert result.returncode == 0, "nix eval should succeed after generation"

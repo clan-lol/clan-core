@@ -357,8 +357,7 @@ in
         };
       };
 
-      environment.etc."zerotier/network-id".text =
-        config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
+      environment.etc."zerotier/network-id".text = networkId;
       environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
