@@ -65,8 +65,8 @@ export const docsNav: DocsNavItems = [
           "guides/vars/intro-to-vars",
           {
             label: "Backend",
-            path: "guides/vars/vars-backend",
             children: [
+              "guides/vars/vars-backend",
               {
                 label: "Sops Backend",
                 children: [
@@ -81,8 +81,14 @@ export const docsNav: DocsNavItems = [
             ],
           },
           { label: "Concepts", path: "guides/vars/vars-concepts" },
-          { label: "Advanced Examples", path: "guides/vars/vars-advanced-examples" },
-          { label: "Troubleshooting", path: "guides/vars/vars-troubleshooting" },
+          {
+            label: "Advanced Examples",
+            path: "guides/vars/vars-advanced-examples",
+          },
+          {
+            label: "Troubleshooting",
+            path: "guides/vars/vars-troubleshooting",
+          },
         ],
       },
       {
