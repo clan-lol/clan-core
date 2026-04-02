@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import pytest
 from clan_cli.tests.age_keys import KeyPair
@@ -7,12 +8,16 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.public_modules import in_repo as in_repo_mod
 from clan_cli.vars.secret_modules import sops
 from clan_lib.flake import Flake
+from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import run
 from clan_lib.vars._types import GeneratorId, PerMachine, Shared
+from clan_lib.vars.export_vars import export_vars
 from clan_lib.vars.generator import (
     Generator,
 )
+from clan_lib.vars.import_vars import import_vars
+from clan_lib.vars.list import get_machine_vars
 from clan_lib.vars.secret_modules import age, password_store
 from clan_lib.vars.set import set_var
 
@@ -862,3 +867,165 @@ def test_cross_machine_shared_dependency(
     assert network_value_after == identity_value, (
         "network value should still match identity after peer-only regeneration"
     )
+
+
+def _setup_machines_with_backend(
+    flake: ClanFlake,
+    secret_store: str,
+) -> None:
+    """Configure two machines with shared + per-machine vars on the given backend."""
+    for m in ["machine1", "machine2"]:
+        config = flake.machines[m] = create_test_machine_config()
+        clan_vars = config["clan"]["core"]["vars"]
+        clan_vars["settings"]["secretStore"] = secret_store
+
+        shared_gen = clan_vars["generators"]["shared_generator"]
+        shared_gen["share"] = True
+        shared_gen["files"]["shared_secret"]["secret"] = True
+        shared_gen["files"]["shared_public"]["secret"] = False
+        shared_gen["script"] = (
+            'echo -n "shared_secret_val" > "$out"/shared_secret; '
+            'echo -n "shared_public_val" > "$out"/shared_public'
+        )
+
+        per_machine_gen = clan_vars["generators"]["per_machine_generator"]
+        per_machine_gen["files"]["machine_secret"]["secret"] = True
+        per_machine_gen["files"]["machine_public"]["secret"] = False
+        per_machine_gen["script"] = (
+            'echo -n "machine_secret_val" > "$out"/machine_secret; '
+            'echo -n "machine_public_val" > "$out"/machine_public'
+        )
+
+
+def _collect_var_values(flake_path: Path) -> dict[str, bytes]:
+    """Read all var values for all machines, keyed by '<machine>/<var_id>'."""
+    flake_obj = Flake(str(flake_path))
+    result = {}
+    for machine_name in list_machines(flake_obj):
+        machine = Machine(name=machine_name, flake=flake_obj)
+        for var in get_machine_vars(machine):
+            if var.exists:
+                result[f"{machine_name}/{var.id}"] = var.value
+    return result
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_export_sops_import_age(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+    age_keys: list[KeyPair],
+    tmp_path: Path,
+) -> None:
+    """Export from sops backend, import into age backend, verify values match."""
+    flake = flake_with_sops
+    age_key = age_keys[0]
+
+    # Phase 1: generate with sops
+    _setup_machines_with_backend(flake, "sops")
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    # Collect values before export
+    original_values = _collect_var_values(flake.path)
+    assert len(original_values) > 0, "Expected some vars to be generated"
+
+    # Export
+    dump_dir = tmp_path / "dump"
+    export_vars(Flake(str(flake.path)), dump_dir)
+
+    # Phase 2: switch to age backend
+    _setup_machines_with_backend(flake, "age")
+    flake.clan_nix_raw = (
+        f"{{\n"
+        f'  vars.settings.recipients.hosts.machine1 = ["{age_key.pubkey}"];\n'
+        f'  vars.settings.recipients.hosts.machine2 = ["{age_key.pubkey}"];\n'
+        f"}}\n"
+    )
+    flake.refresh()
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir(exist_ok=True)
+    (age_key_dir / "key.txt").write_text(age_key.privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_dir / "key.txt"))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "switch to age backend"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    # Import
+    import_vars(Flake(str(flake.path)), dump_dir)
+
+    # Verify values match
+    imported_values = _collect_var_values(flake.path)
+    for key, expected in original_values.items():
+        assert key in imported_values, f"Missing var after import: {key}"
+        assert imported_values[key] == expected, (
+            f"Value mismatch for {key}: expected {expected!r}, got {imported_values[key]!r}"
+        )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_export_age_import_sops(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+    age_keys: list[KeyPair],
+    tmp_path: Path,
+) -> None:
+    """Export from age backend, import into sops backend, verify values match."""
+    flake = flake_with_sops
+    age_key = age_keys[0]
+
+    # Phase 1: generate with age
+    _setup_machines_with_backend(flake, "age")
+    flake.clan_nix_raw = (
+        f"{{\n"
+        f'  vars.settings.recipients.hosts.machine1 = ["{age_key.pubkey}"];\n'
+        f'  vars.settings.recipients.hosts.machine2 = ["{age_key.pubkey}"];\n'
+        f"}}\n"
+    )
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir(exist_ok=True)
+    (age_key_dir / "key.txt").write_text(age_key.privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_dir / "key.txt"))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup age backend"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    # Collect values before export
+    original_values = _collect_var_values(flake.path)
+    assert len(original_values) > 0, "Expected some vars to be generated"
+
+    # Export
+    dump_dir = tmp_path / "dump"
+    export_vars(Flake(str(flake.path)), dump_dir)
+
+    # Phase 2: switch to sops backend
+    _setup_machines_with_backend(flake, "sops")
+    flake.clan_nix_raw = None
+    flake.refresh()
+
+    # Import
+    import_vars(Flake(str(flake.path)), dump_dir)
+
+    # Verify values match
+    imported_values = _collect_var_values(flake.path)
+    for key, expected in original_values.items():
+        assert key in imported_values, f"Missing var after import: {key}"
+        assert imported_values[key] == expected, (
+            f"Value mismatch for {key}: expected {expected!r}, got {imported_values[key]!r}"
+        )
