@@ -378,9 +378,15 @@ class SecretStore(StoreBase):
                     # Shared: encrypt to all machines that need this var
                     for m in generator.machines:
                         self.ensure_machine_key(m)
-                    recipients = [
+                    new_recipients = [
                         self.get_machine_pubkey(m) for m in generator.machines
                     ]
+                    # Merge with existing recipients so that per-machine set
+                    # calls accumulate.
+                    existing = self._read_recipients(
+                        self.secret_path(generator.key, var.name)
+                    )
+                    recipients = sorted(set(existing + new_recipients))
                 else:
                     # Not deployed: encrypt only to user/admin recipients
                     # so no machine can decrypt it from the nix store.
