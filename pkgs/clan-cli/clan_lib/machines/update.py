@@ -524,6 +524,26 @@ def _update_nixos(
     _nixos_activate(config_path, target_host_root, machine.name)
 
 
+def _build_darwin_rebuild_cmd(
+    machine_name: str,
+    flake_store_path: str,
+    nix_options: list[str],
+) -> list[str]:
+    """Build the darwin-rebuild switch command.
+
+    The flake reference must use plain ``#name`` syntax without extra quotes,
+    because ``darwin-rebuild`` passes the value directly to Nix which does not
+    expect shell-level quoting inside the fragment.
+    """
+    return [
+        "/run/current-system/sw/bin/darwin-rebuild",
+        "switch",
+        *nix_options,
+        "--flake",
+        f"{flake_store_path}#{machine_name}",
+    ]
+
+
 def _update_darwin(
     machine: Machine,
     flake_store_path: str,
@@ -541,13 +561,7 @@ def _update_darwin(
     if isinstance(build_host, Remote):
         extra_env = build_host.nix_ssh_env(control_master=False)
 
-    switch_cmd = [
-        "/run/current-system/sw/bin/darwin-rebuild",
-        "switch",
-        *nix_options,
-        "--flake",
-        f'{flake_store_path}#"{machine.name}"',
-    ]
+    switch_cmd = _build_darwin_rebuild_cmd(machine.name, flake_store_path, nix_options)
 
     build_host.run(
         switch_cmd,
