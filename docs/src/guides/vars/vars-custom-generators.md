@@ -122,3 +122,62 @@ Updated var root-password/password-hash
 
   new: $6$OyoQtDVzeemgh8EQ$zRK...
 ```
+
+## Export and import vars
+
+The `clan vars export` and `clan vars import` commands allow creating a full unencrypted dump of all variables (public and secret) and restoring them. This is useful for:
+
+- **Migrating between secret backends** (e.g. from sops to age)
+- **Creating backups** of all variables
+
+### Export
+
+Export all vars for all machines to a folder:
+
+```console
+$ clan vars export /tmp/vars-dump
+```
+
+The output folder must not already exist. The folder structure will contain one file per variable, organized by machine and generator:
+
+```text
+/tmp/vars-dump/
+  machine1/
+    root-password/password-hash
+    ssh-keys/pubkey
+    ssh-keys/privkey
+  machine2/
+    root-password/password-hash
+    ...
+```
+
+!!! warning
+    The exported files contain **unencrypted secrets**. Handle the export folder with care and delete it after use.
+
+### Import
+
+Import vars from a previously exported folder:
+
+```console
+$ clan vars import /tmp/vars-dump
+```
+
+Each variable is set through the currently configured secret backend. This means if you changed the backend configuration between export and import, the vars will be re-encrypted with the new backend.
+
+### Migrating between secret backends
+
+To migrate all vars from one secret backend to another:
+
+```console
+# 1. Export all vars (decrypted)
+$ clan vars export /tmp/vars-dump
+
+# 2. Change the secret backend in your NixOS configuration
+#    e.g. set clan.core.vars.settings.secretStore = "age"
+
+# 3. Import vars into the new backend
+$ clan vars import /tmp/vars-dump
+
+# 4. Clean up the unencrypted dump
+$ rm -rf /tmp/vars-dump
+```
