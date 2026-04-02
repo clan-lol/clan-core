@@ -96,7 +96,6 @@ export const docsNav: DocsNavItems = [
           "guides/networking/mesh-vpn",
         ],
       },
-      "guides/users/custom",
       "guides/nixpkgs-flake-input",
       "guides/flake-parts",
       "guides/nixos-rebuild",
