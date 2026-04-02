@@ -6,9 +6,11 @@ from clan_cli.hyperlink import help_hyperlink
 from clan_lib.docs import guides_url
 
 from .check import register_check_parser
+from .export_cmd import register_export_parser
 from .fix import register_fix_parser
 from .generate import register_generate_parser
 from .get import register_get_parser
+from .import_cmd import register_import_parser
 from .keygen import register_keygen_parser
 from .list import register_list_parser
 from .set import register_set_parser
@@ -208,3 +210,41 @@ For more detailed information, visit: {help_hyperlink("secrets", guides_url("gui
         formatter_class=HelpFormatter,
     )
     register_upload_parser(parser_upload)
+
+    export_parser = subparser.add_parser(
+        "export",
+        help="export all vars to a folder",
+        epilog=(
+            """
+This subcommand exports all vars (public and secret) for all machines
+to a folder as unencrypted files. This can be used to migrate between
+secret backends.
+
+Examples:
+
+  $ clan vars export /tmp/vars-dump
+  Will export all vars to /tmp/vars-dump.
+        """
+        ),
+        formatter_class=HelpFormatter,
+    )
+    register_export_parser(export_parser)
+
+    import_parser = subparser.add_parser(
+        "import",
+        help="import vars from a folder",
+        epilog=(
+            """
+This subcommand imports vars from a folder previously created by
+'clan vars export'. It sets each var through the currently configured
+secret backend, enabling migration between backends.
+
+Examples:
+
+  $ clan vars import /tmp/vars-dump
+  Will import all vars from /tmp/vars-dump.
+        """
+        ),
+        formatter_class=HelpFormatter,
+    )
+    register_import_parser(import_parser)
