@@ -1,3 +1,4 @@
+{ fileContextModule }:
 { lib, config, ... }:
 let
   inherit (builtins)
@@ -136,10 +137,12 @@ in
       type = attrsOf (
         submodule (_file: {
           imports = [
+            # TODO: Combine both
+            fileContextModule
+            config.settings.fileModule
             {
               generatorName = config._module.args.name;
             }
-            config.settings.fileModule
             # Machine specific file options
             (_file: {
               options = {
@@ -186,27 +189,6 @@ in
                     "services"
                   ];
                   default = "services";
-                };
-                share = mkOption {
-                  type = bool;
-                  description = ''
-                    Whether the generated vars should be shared between machines.
-                    Shared vars are only generated once, when the first machine using it is deployed.
-                    Subsequent machines will re-use the already generated values.
-                  '';
-                  readOnly = true;
-                  internal = true;
-                  default = config.share;
-                  defaultText = "Mirror of the share flag of the generator";
-                };
-                deploy = mkOption {
-                  description = ''
-                    Whether the file should be deployed to the target machine.
-
-                    Disable this if the generated file is only used as an input to other generators.
-                  '';
-                  type = bool;
-                  default = true;
                 };
                 restartUnits = mkOption {
                   description = ''
