@@ -10,15 +10,9 @@
     {
       self,
       clan-core,
-      nixpkgs,
       ...
     }:
     let
-      clan_attrs_json =
-        if nixpkgs.lib.pathExists ./clan_attrs.json then
-          builtins.fromJSON (builtins.readFile ./clan_attrs.json)
-        else
-          { };
       clan = clan-core.lib.clan {
         inherit self;
         meta.name = "test_flake_with_core";
@@ -53,7 +47,7 @@
       };
     in
     {
-      clan = clan_attrs_json;
+      clan = { };
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
     };
 }
