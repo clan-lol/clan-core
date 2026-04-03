@@ -97,11 +97,20 @@ in
             clan-test-iso = import ./clan-test-iso nixosTestArgs;
           };
 
-          packagesToBuild = lib.removeAttrs self'.packages [
-            # exclude the check that checks that nothing depends on the repo root
-            # We might want to include this later once everything is fixed
-            "dont-depend-on-repo-root"
-          ];
+          packagesToBuild = lib.removeAttrs self'.packages (
+            [
+              # exclude the check that checks that nothing depends on the repo root
+              # We might want to include this later once everything is fixed
+              "dont-depend-on-repo-root"
+            ]
+            ++ lib.optionals (pkgs.stdenv.isDarwin) [
+              "docs"
+              "deploy-docs-v2"
+              # Our darwin CI is unable to run a headless browser, which is
+              # needed for rendering clan site's mermaid
+              "clan-site"
+            ]
+          );
 
           # Temporary workaround: Filter out docs package and devshell for aarch64-darwin due to CI builder hangs
           # TODO: Remove this filter once macOS CI builder is updated
@@ -113,20 +122,12 @@ in
               name: config: lib.nameValuePair "darwin-${name}" config.config.system.build.toplevel
             ) (self.darwinConfigurations or { })
             // {
-              all-packages =
-                let
-                  packagesToCheck =
-                    if system == "aarch64-darwin" then
-                      lib.filterAttrs (n: _: n != "docs" && n != "deploy-docs-v2") packagesToBuild
-                    else
-                      packagesToBuild;
-                in
-                pkgs.runCommand "all-packages" { passthru.packages = packagesToCheck; } ''
-                  echo "Built all packages for ${system}:"
-                  ${lib.concatMapStringsSep "\n" (n: "echo '  - ${n}'") (lib.attrNames packagesToCheck)}
-                  echo ${toString (lib.attrValues packagesToCheck)} >/dev/null
-                  touch $out
-                '';
+              all-packages = pkgs.runCommand "all-packages" { passthru.packages = packagesToBuild; } ''
+                echo "Built all packages for ${system}:"
+                ${lib.concatMapStringsSep "\n" (n: "echo '  - ${n}'") (lib.attrNames packagesToBuild)}
+                echo ${toString (lib.attrValues packagesToBuild)} >/dev/null
+                touch $out
+              '';
             }
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") (
               if system == "aarch64-darwin" then
