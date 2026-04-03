@@ -360,7 +360,12 @@ in
                       type = types.attrsOf (
                         types.submodule {
                           options.generators = lib.mkOption {
-                            type = types.attrsOf (types.submoduleWith { modules = [ ./export-modules/generator.nix ]; });
+                            type = types.attrsOf (
+                              types.submoduleWith {
+                                # This list merges with the staticModules from the deferredModule
+                                modules = [ ];
+                              }
+                            );
                           };
                         }
                       );
