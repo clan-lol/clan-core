@@ -16,7 +16,6 @@ from . import (
     select,
     state,
     templates,
-    vms,
 )
 from . import init as init_cli
 from .arg_actions import AppendOptionAction
@@ -401,13 +400,6 @@ Examples:
         formatter_class=HelpFormatter,
     )
     machines.register_parser(parser_machine)
-
-    parser_vms = subparsers.add_parser(
-        "vms",
-        help="Manage virtual machines",
-        description="Manage virtual machines",
-    )
-    vms.register_parser(parser_vms)
 
     parser_select = subparsers.add_parser(
         "select",

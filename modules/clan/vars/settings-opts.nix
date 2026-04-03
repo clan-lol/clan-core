@@ -106,8 +106,6 @@ in
         "sops"
         "password-store"
         "age"
-        "vm"
-        "fs"
         "custom"
       ];
       default = "sops";

@@ -109,10 +109,6 @@ Under `checks` you will find all tests that are executed in our CI. Under `packa
 
 ```console
 git+file:///home/lhebendanz/Projects/clan-core
-├───apps
-│   └───x86_64-linux
-│       ├───install-vm: app
-│       └───install-vm-nogui: app
 ├───checks
 │   └───x86_64-linux
 │       ├───borgbackup omitted (use '--all-systems' to show)

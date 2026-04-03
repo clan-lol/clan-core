@@ -2,7 +2,6 @@
 {
   clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
   system.stateVersion = config.system.nixos.release;
-  clan.virtualisation.graphics = false;
 
   networking.useDHCP = false;
 

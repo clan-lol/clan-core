@@ -175,7 +175,6 @@ export const docsNav: DocsNavItems = [
           "reference/cli/state",
           "reference/cli/templates",
           "reference/cli/vars",
-          "reference/cli/vms",
         ],
       },
       "reference/clanLib",
