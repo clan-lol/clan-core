@@ -153,7 +153,7 @@ in
                   '';
                   defaultText = "Throws: 'The service must define members via roles' when not defined";
                   default = throw ''
-                    Instance '${name}' of service '${config.manifest.name}' mut define members via 'roles'.
+                    Instance '${name}' of service '${config.manifest.name}' must define members via 'roles'.
 
                     To include a machine:
                     'instances.${name}.roles.<role-name>.machines.<machine-name>' must be set.
