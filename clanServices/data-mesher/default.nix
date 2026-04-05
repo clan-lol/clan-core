@@ -93,6 +93,21 @@ in
                 and they must be signed by one of the configured public keys.
               '';
             };
+
+            namespaces = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              example = [
+                "dns"
+                "web"
+              ];
+              description = ''
+                List of namespace names for certificate-based file authorization.
+                When configured, files named {namespace}/{signer_public_key_url_encoded}
+                are permitted from any peer with a valid certificate signed by this network.
+                These are merged with namespaces exported by other clan services.
+              '';
+            };
           };
 
           extraHostNames = mkRemovedOption "extraHostNames" "data-mesher v2 removed host name claims. Use 'files' for file-based sync.";
@@ -131,6 +146,18 @@ in
           acc: fileName: keys:
           acc // { ${fileName} = (acc.${fileName} or [ ]) ++ keys; }
         ) exportedFiles settings.network.files;
+
+        # Extract and merge dataMesher.namespaces from all exports
+        exportedNamespaces = lib.concatMap (
+          exportValue:
+          if exportValue ? dataMesher && exportValue.dataMesher != null then
+            exportValue.dataMesher.namespaces or [ ]
+          else
+            [ ]
+        ) allExports;
+
+        # Merge with manually configured namespaces
+        mergedNamespaces = lib.unique (exportedNamespaces ++ settings.network.namespaces);
       in
       {
         nixosModule = (
@@ -247,6 +274,7 @@ in
                   network = {
                     id = gen.data-mesher-network.files."network.pub".path;
                     files = mergedFiles;
+                    namespaces = mergedNamespaces;
                   };
 
                   http.port = 7331;

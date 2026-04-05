@@ -9,4 +9,14 @@
       by one of the configured public keys.
     '';
   };
+
+  options.namespaces = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+    description = ''
+      List of namespace names for certificate-based file authorization.
+      When configured, files named {namespace}/{signer_public_key_url_encoded}
+      are permitted from any peer with a valid certificate signed by this network.
+    '';
+  };
 }
