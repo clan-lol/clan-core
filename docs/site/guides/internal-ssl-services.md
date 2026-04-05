@@ -1,216 +1,128 @@
-# Internal Ssl Services
+# Internal SSL Services
 
-Set up clan-internal web services with HTTPS on a custom top-level domain (e.g. `https://dashboard.c`), accessible only within your Clan network and secured with SSL certificates that all machines trust automatically.
+Host clan-internal web services with HTTPS, accessible from any machine in your
+clan via hostnames like `https://music.example.com`.
 
 ## Overview
 
-By combining the `coredns` and `certificates` Clan services, you can:
+Three services work together to make this possible:
 
-- Create a custom TLD for your Clan (e.g. `.c`)
-- Host internal web services accessible via HTTPS (e.g. `https://api.c`, `https://dashboard.c`)
-- Automatically provision and trust SSL certificates across all Clan machines
-- Keep internal services secure and isolated from the public internet
+- **[pki](/docs/services/official/pki)**: Generates TLS certificates for all
+  internal endpoints using a static Root CA. No daemon required.
+- **[dm-dns](/docs/services/official/dm-dns)**: Collects endpoint exports from
+  all services and distributes DNS records via data-mesher, so every machine can
+  resolve internal hostnames.
+- **[data-mesher](/docs/services/official/data-mesher)**: The underlying
+  transport that distributes DNS zone files (and other data) across your clan.
 
-The setup uses two Clan services working together:
+Machines must be able to reach each other via `<hostname>.<meta.domain>`. How
+you achieve this is up to you - for example via
+[yggdrasil](/docs/services/official/yggdrasil), a VPN, or any other networking
+setup.
 
-- **coredns service**: Provides DNS resolution for your custom TLD within the Clan
-- **certificates service**: Creates a certificate authority (CA) and issues SSL certificates for your TLD
+## How It Works
 
-### DNS Resolution Flow
+1. A service (e.g. navidrome) **exports an endpoint** like `music.example.com`
+2. **dm-dns** collects all endpoint exports and generates DNS CNAME records,
+   distributed via data-mesher
+3. **pki** also collects all endpoint exports and generates TLS certificates
+   signed by a clan-wide Root CA
+4. All machines **trust the Root CA**, so HTTPS connections to internal services
+   just work
 
-1. A Clan machine tries to access `https://service.c`
-2. The machine queries its local DNS resolver (unbound)
-3. For `.c` domains, the query is forwarded to your Clan's CoreDNS server. All
-   other domains will be resolved as usual.
-4. CoreDNS returns the IP address of the machine hosting the service
-5. The machine connects directly to the service over HTTPS
-6. The SSL certificate is trusted because all machines trust your Clan's CA
+The PKI architecture ensures that adding a new service or endpoint on one
+machine does **not** require redeploying other machines:
 
-## Step-by-Step Setup
+- A **clan-wide Root CA** is created (shared generator, private key never leaves
+  the operator machine)
+- Each machine gets a **Host CA** signed by the Root CA
+- Each endpoint gets a **certificate** signed by its Host CA
+- All machines trust the Root CA, forming a complete chain of trust
 
-The following setup assumes you have a VPN (e.g. ZeroTier) already running. The
-IPs configured in the options below will probably the ZeroTier IPs of the
-respective machines.
+If you use Caddy or nginx as a reverse proxy, pki automatically configures them
+with the right certificates.
 
-### Configure the CoreDNS Service
+## Setup
 
-The CoreDNS service has two roles:
+### 1. Configure Data-Mesher
 
-- `server`: Runs the DNS server for your custom TLD
-- `default`: Makes machines use the DNS server for TLD resolution and allows exposing services
-
-Add this to your inventory:
+Data-mesher is required for distributing DNS records across your clan:
 
 ```nix
-inventory = {
-  machines = {
-    dns-server = { }; # Machine that will run the DNS server
-    web-server = { }; # Machine that will host web services
-    client = { };     # Any other machines in your clan
+inventory.instances = {
+  data-mesher = {
+    roles.bootstrap.tags = [ "server" ];
+    roles.default.tags = [ "all" ];
+  };
+};
+```
+
+### 2. Enable PKI and dm-dns
+
+Add both services to your inventory, targeting all machines:
+
+```nix
+inventory.instances = {
+  # Generates TLS certificates for all internal endpoints
+  pki = {
+    module.name = "pki";
+    roles.default.tags = [ "all" ];
   };
 
-  instances = {
-    coredns = {
+  # Collects endpoint exports and distributes DNS records via data-mesher
+  dm-dns = {
+    module.name = "dm-dns";
+    roles.push.machines.my-server = { };
+    roles.default.tags = [ "all" ];
+  };
+};
+```
 
-      # Add the default role to all machines
-      roles.default.tags = [ "all" ];
+### 3. Add a Service That Exports an Endpoint
 
-      # DNS server for the .c TLD
-      roles.server.machines.dns-server.settings = {
-        ip = "192.168.XXX.XXX";
-        tld = "c";
-      };
+Any service that exports an `endpoints.hosts` value will automatically get DNS
+records and TLS certificates. For example, a navidrome music server:
 
-      # Machine hosting services (e.g. ca.c and admin.c)
-      roles.default.machines.web-server.settings = {
-        ip = "192.168.XXX.XXX";
-        services = [ "ca" "admin" ];
-      };
+```nix
+inventory.instances = {
+  navidrome = {
+    module.name = "@pinpox/navidrome";
+    roles.default.machines.my-server = {
+      settings.host = "music.example.com";
     };
   };
 };
 ```
 
-### Configure the Certificates Service
+After deploying, `https://music.example.com` will be reachable from any machine
+in your clan with a valid, trusted TLS certificate.
 
-The certificates service also has two roles:
+## Writing a Service That Exports Endpoints
 
-- `ca`: Sets up the certificate authority on a server
-- `default`: Makes machines trust the CA and allows them to request certificates
-
-Add this to your inventory:
-
-```nix
-inventory = {
-  instances = {
-    # coredns configuration from above
-
-    certificates = {
-
-      # Set up CA for .c domain
-      roles.ca.machines.dns-server.settings = {
-        tlds = [ "c" ];
-        acmeEmail = "admin@example.com";
-      };
-
-      # Add default role to all machines to trust the CA
-      roles.default.tags = [ "all" ];
-    };
-  };
-};
-```
-
-### Complete Example Configuration
-
-Here's a complete working example:
+If you're authoring a service and want it to participate in this system, export
+`endpoints` in your service manifest:
 
 ```nix
-inventory = {
-  machines = {
-    caserver = { };  # DNS server + CA + web services
-    webserver = { }; # Additional web services
-    client = { };    # Client machine
+{ ... }:
+{
+  manifest.exports.out = [ "endpoints" ];
+
+  roles.default = {
+    perInstance =
+      { mkExports, settings, ... }:
+      {
+        exports = mkExports {
+          endpoints.hosts = [ settings.host ];
+        };
+        nixosModule =
+          { ... }:
+          {
+            # Your service configuration here
+          };
+      };
   };
-
-  instances = {
-    coredns = {
-
-      # Add the default role to all machines
-      roles.default.tags = [ "all" ];
-
-      # DNS server for the .c TLD
-      roles.server.machines.caserver.settings = {
-        ip = "192.168.XXX.XXX";
-        tld = "c";
-      };
-
-      # Machine hosting https://ca.c (CA for SSL)
-      roles.default.machines.caserver.settings = {
-        ip = "192.168.XXX.XXX";
-        services = [ "ca" ];
-      };
-
-      # Machine hosting https://blub.c (internal web service)
-      roles.default.machines.webserver.settings = {
-        ip = "192.168.XXX.XXX";
-        services = [ "blub" ];
-      };
-    };
-
-    # Provide https for the .c top-level domain
-    certificates = {
-
-      roles.ca.machines.caserver.settings = {
-        tlds = [ "c" ];
-        acmeEmail = "admin@example.com";
-      };
-
-      roles.default.tags = [ "all" ];
-    };
-  };
-};
+}
 ```
 
-## Testing Your Configuration
-
-DNS resolution can be tested with:
-
-```bash
-# On any clan machine, test DNS resolution
-nslookup ca.c
-nslookup blub.c
-```
-
-You should also now be able to visit `https://ca.c` to access the certificate authority or visit `https://blub.c` to access your web service.
-
-## Troubleshooting
-
-### DNS Resolution Issues
-
-1. **Check if DNS server is running**:
-
-```bash
-# On the DNS server machine
-systemctl status coredns
-```
-
-2. **Verify DNS configuration**:
-
-```bash
-# Check if the right nameservers are configured
-cat /etc/resolv.conf
-systemctl status systemd-resolved
-```
-
-3. **Test DNS directly**:
-
-```bash
-# Query the DNS server directly
-dig @192.168.XXX.XXX ca.c
-```
-
-### Certificate Issues
-
-1. **Check CA status**:
-
-```bash
-# On the CA machine
-systemctl status step-ca
-systemctl status nginx
-```
-
-2. **Verify certificate trust**:
-
-```bash
-# Test certificate trust
-curl -v https://ca.c
-openssl s_client -connect ca.c:443 -verify_return_error
-```
-
-3. **Check ACME configuration**:
-
-```bash
-# View ACME certificates
-ls /var/lib/acme/
-journalctl -u acme-ca.c.service
-```
+See the [exports guide](/docs/guides/services/exports) for details on the export
+system.
