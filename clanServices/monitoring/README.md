@@ -67,6 +67,9 @@ classDiagram
 
 Clients are machines that create metrics and logs. Those are sent to the central monitoring server for storage and visualization.
 
+The generated monitoring collector config is installed as `/etc/alloy/config.alloy`.
+Additional local collector fragments can be added with `environment.etc."alloy/<name>.alloy"`.
+
 ### Server
 
 Servers store metrics and logs. They also provide optional dashboards for visualization and an alerting system.

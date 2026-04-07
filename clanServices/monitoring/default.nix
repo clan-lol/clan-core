@@ -207,7 +207,10 @@
                   '';
                 };
 
+              environment.etc."alloy/config.alloy".source = config.services.alloy.configPath;
+
               systemd.services.alloy.serviceConfig = {
+                ExecStart = lib.mkForce "${lib.getExe config.services.alloy.package} run /etc/alloy ${lib.escapeShellArgs config.services.alloy.extraFlags}";
                 LoadCredential = [
                   "mimir-auth-password:${config.clan.core.vars.generators.mimir-auth.files.password.path}"
                   "loki-auth-password:${config.clan.core.vars.generators.loki-auth.files.password.path}"
