@@ -8,6 +8,7 @@ export type DocsPath = `${typeof docsBase}/${string}`;
 export type TopBarMode = "navBar" | "navTree" | "search";
 
 export interface ArticleInput {
+  readonly title: string;
   readonly toc: TocItemsInput;
   readonly navPointer: NavPointer;
   readonly prev?: NavSibling;

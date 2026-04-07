@@ -50,7 +50,7 @@ export interface Output {
   readonly toc: TocItems;
 }
 
-export async function render(source: string, opts: Options): Promise<Output> {
+export async function compile(source: string, opts: Options): Promise<Output> {
   const data = {
     svelteComponents: new Set<string>(),
     title: "",

@@ -5,14 +5,6 @@ if [[ -n "${CLAN_SITE_DIR:-}" ]]; then
 	cd "$CLAN_SITE_DIR"
 fi
 
-# Remove generated files
-# So we don't need to clean by hand when a markdown file is renamed or deleted
-clean_routes() {
-	if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-		git clean -fdx -- src/routes/
-	fi
-}
-
 if [[ $# = 0 ]]; then
 	set -- dev
 fi
@@ -43,7 +35,6 @@ dev)
 	if [[ ! -e node_modules ]]; then
 		pnpm install
 	fi
-	clean_routes
 	if [[ -n $browser ]]; then
 		set -- --open
 	fi
@@ -55,7 +46,6 @@ build)
 	if [[ ! -e node_modules ]]; then
 		pnpm install
 	fi
-	clean_routes
 	pnpm run build
 	;;
 lint)
@@ -83,7 +73,6 @@ lint)
 	if [[ ! -e node_modules ]]; then
 		pnpm install
 	fi
-	clean_routes
 	pnpm run prelint
 	if [[ -z $fix ]]; then
 		pnpm run "/^lint:.+/"

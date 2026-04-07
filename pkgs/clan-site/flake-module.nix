@@ -15,7 +15,7 @@
           inherit (config.packages)
             clan-site-assets
             clan-site-cli
-            docs-source
+            generated-docs
             ;
         };
       };
