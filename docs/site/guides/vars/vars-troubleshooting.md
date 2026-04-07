@@ -274,8 +274,8 @@ If these solutions don't resolve your issue:
 2. Ask in the Clan community channels
 3. Provide:
 
-   - The generator configuration
+    - The generator configuration
 
-   - The exact error message
+    - The exact error message
 
-   - Output of `clan --debug vars generate`
+    - Output of `clan --debug vars generate`

@@ -44,7 +44,7 @@
     };
     clare = {
       networking.firewall.allowedTCPPorts = [ 5000 ];
-      services.harmonia = {
+      services.harmonia.cache = {
         enable = true;
         signKeyPaths = [ ./auxiliary-harmonia-secrets/sign-key ];
       };

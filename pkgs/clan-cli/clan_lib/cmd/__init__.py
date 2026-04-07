@@ -79,7 +79,7 @@ def handle_io(
     start = time.time()
 
     # Function to handle file descriptors
-    def handle_fd(fd: IO[Any] | None, readlist: list[IO[Any]]) -> bytes:
+    def handle_fd(fd: IO[Any] | None, readlist: list[IO[Any] | None]) -> bytes:
         if fd and fd in readlist:
             read = os.read(fd.fileno(), 4096)
             if len(read) != 0:
