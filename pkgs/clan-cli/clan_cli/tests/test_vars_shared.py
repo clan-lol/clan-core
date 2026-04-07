@@ -407,8 +407,20 @@ def test_generate_removes_stale_machine_symlink_when_deploy_becomes_false(
         / "machines"
         / "machine1"
     )
+    machine2_link = (
+        flake.path
+        / "vars"
+        / "shared"
+        / "my_shared_gen"
+        / "my_secret"
+        / "machines"
+        / "machine2"
+    )
     assert machine1_link.is_symlink(), (
         "machine1 should have access after generation with deploy=True"
+    )
+    assert machine2_link.is_symlink(), (
+        "machine2 should have access after generation with deploy=True"
     )
 
     # Change deploy to False
@@ -420,6 +432,9 @@ def test_generate_removes_stale_machine_symlink_when_deploy_becomes_false(
 
     assert not machine1_link.exists(), (
         "machine1 symlink should be removed by 'vars generate' after deploy changed to False"
+    )
+    assert not machine2_link.exists(), (
+        "machine2 symlink should be removed by 'vars generate' after deploy changed to False"
     )
 
     # Working tree should be clean
