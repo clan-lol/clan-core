@@ -207,11 +207,16 @@
                     '') allHostIPs}
                   '';
                 };
-
-              clan.core.networking.zerotier.controller.enable = lib.mkDefault true;
             };
 
           };
       };
   };
+  perMachine =
+    { machine, ... }:
+    {
+      nixosModule = {
+        clan.core.networking.zerotier._roles = machine.roles;
+      };
+    };
 }

@@ -159,19 +159,20 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 3 cache misses:
+    # We expect exactly 4 cache misses:
     # 1. Inventory selectors (from list_full_machines)
-    # 2. Generator metadata selectors (from generate_command precache)
-    # 3. finalScript and sops selectors (from run_generators precache)
+    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 3. Generator metadata selectors (from generate_command precache)
+    # 4. finalScript and sops selectors (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 3:
+    if flake_obj._cache_misses > 4:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for password_store backend"
         )
 
-    assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for password_store backend, "
+    assert flake_obj._cache_misses == 4, (
+        f"Expected exactly 4 cache misses for password_store backend, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -240,19 +241,20 @@ def test_generate_secret_var_sops_minimal_select_calls(
         )
     )
     # The optimization should result in minimal cache misses.
-    # We expect exactly 3 cache misses:
+    # We expect exactly 4 cache misses:
     # 1. Inventory selectors (retrieving list of all machines)
-    # 2. Generator metadata selectors (definitions of all generators + vars settings)
-    # 3. finalScript and sops settings (from run_generators precache)
+    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 3. Generator metadata selectors (definitions of all generators + vars settings)
+    # 4. finalScript and sops settings (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 3:
+    if flake_obj._cache_misses > 4:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for sops backend"
         )
 
-    assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for sops backend with 3 machines and 2 generators, "
+    assert flake_obj._cache_misses == 4, (
+        f"Expected exactly 4 cache misses for sops backend with 3 machines and 2 generators, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -318,14 +320,15 @@ def test_cache_misses_for_vars_operations(
     flake_obj = Flake(str(flake.path))
     machine1 = Machine(name="my_machine", flake=flake_obj)
 
-    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 3 cache misses
+    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 4 cache misses
     # Even though we have:
     # - 2 machines (my_machine and other_machine)
     # - 2 generators per machine (gen1 and gen2)
-    # We get 3 cache misses when generating for both machines:
+    # We get 4 cache misses when generating for both machines:
     # 1. Inventory selectors (from list_full_machines)
-    # 2. Generator metadata selectors (from generate_command precache)
-    # 3. finalScript selectors (from run_generators precache)
+    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 3. Generator metadata selectors (from generate_command precache)
+    # 4. finalScript selectors (from run_generators precache)
 
     generate_command(
         argparse.Namespace(
@@ -337,20 +340,20 @@ def test_cache_misses_for_vars_operations(
         )
     )
 
-    # Print stack traces if we have more than 3 cache misses
-    if flake_obj._cache_misses != 3:
+    # Print stack traces if we have more than 4 cache misses
+    if flake_obj._cache_misses != 4:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for vars generate"
         )
 
-    assert flake_obj._cache_misses == 3, (
-        f"Expected exactly 3 cache misses for vars generate, got {flake_obj._cache_misses}"
+    assert flake_obj._cache_misses == 4, (
+        f"Expected exactly 4 cache misses for vars generate, got {flake_obj._cache_misses}"
     )
 
     # Test 2: List all vars should result in exactly 1 cache miss
     # Force cache invalidation (this also resets cache miss tracking)
     invalidate_flake_cache(flake.path)
-    flake_obj.invalidate_cache()
+    flake_obj.invalidate_cache(reset_tracking=True)
 
     stringify_all_vars(machine1)
     assert flake_obj._cache_misses == 1, (
@@ -360,7 +363,7 @@ def test_cache_misses_for_vars_operations(
     # Test 3: Getting a specific var with a fresh cache should result in exactly 1 cache miss
     # Force cache invalidation (this also resets cache miss tracking)
     invalidate_flake_cache(flake.path)
-    flake_obj.invalidate_cache()
+    flake_obj.invalidate_cache(reset_tracking=True)
 
     # Only test gen1 for the get operation
     var_value = get_machine_var(machine1, "gen1/value1")
@@ -412,7 +415,7 @@ def test_dynamic_invalidation(
     )
 
     flake.refresh()
-    clan_flake.invalidate_cache()
+    clan_flake.invalidate_cache(reset_tracking=True)
     monkeypatch.chdir(flake.path)
 
     # before generating, dependent generator validation should be empty; see bogus hardware-configuration.nix above
@@ -427,7 +430,7 @@ def test_dynamic_invalidation(
 
     # generate both my_generator and (the dependent) dependent_generator
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
-    clan_flake.invalidate_cache()
+    clan_flake.invalidate_cache(reset_tracking=True)
 
     # after generating once, dependent generator validation should be set
     # Generators_1: The generators after the first 'vars generate'
@@ -440,7 +443,7 @@ def test_dynamic_invalidation(
     # Machine evaluation is highly expensive .
     # The generator will thus run again, and produce a different result in the second run.
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
-    clan_flake.invalidate_cache()
+    clan_flake.invalidate_cache(reset_tracking=True)
     # Generators_2: The generators after the second 'vars generate'
     generators_2 = machine.flake.select(selector)
     assert (

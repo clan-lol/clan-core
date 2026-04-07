@@ -153,7 +153,7 @@ in
                   '';
                   defaultText = "Throws: 'The service must define members via roles' when not defined";
                   default = throw ''
-                    Instance '${name}' of service '${config.manifest.name}' mut define members via 'roles'.
+                    Instance '${name}' of service '${config.manifest.name}' must define members via 'roles'.
 
                     To include a machine:
                     'instances.${name}.roles.<role-name>.machines.<machine-name>' must be set.
@@ -800,8 +800,8 @@ in
                       r: _instanceName: instance:
                       r
                       ++ lib.foldlAttrs (
-                        r2: roleName: _role:
-                        r2 ++ [ roleName ]
+                        r2: roleName: role:
+                        if role.machines ? ${machineName} then r2 ++ [ roleName ] else r2
                       ) [ ] instance.roles
                     ) [ ] instances;
                 in

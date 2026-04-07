@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.update import _build_darwin_rebuild_cmd
 
 from clan_cli.machines.update import get_machines_for_update
 from clan_cli.tests.fixtures_flakes import FlakeForTest
@@ -173,6 +174,40 @@ def test_update_command_no_flake(
 
     with pytest.raises(ClanError):
         cli.run(["machines", "update", "machine1"])
+
+
+def test_darwin_rebuild_cmd_no_literal_quotes() -> None:
+    """Regression: flake fragment must not contain literal quotes.
+
+    Literal quotes around the machine name (e.g. ``#"emily"``) cause
+    darwin-rebuild to fail because Nix cannot resolve the quoted attribute path.
+    """
+    cmd = _build_darwin_rebuild_cmd(
+        machine_name="emily",
+        flake_store_path="/nix/store/abc123-source",
+        nix_options=["--show-trace"],
+    )
+
+    flake_arg = cmd[cmd.index("--flake") + 1]
+
+    assert flake_arg == "/nix/store/abc123-source#emily"
+    assert '"' not in flake_arg
+    assert "'" not in flake_arg
+
+
+def test_darwin_rebuild_cmd_structure() -> None:
+    """The returned command has the expected shape."""
+    cmd = _build_darwin_rebuild_cmd(
+        machine_name="my-mac",
+        flake_store_path="/nix/store/xyz-source",
+        nix_options=["-L", "--option", "keep-going", "true"],
+    )
+
+    assert cmd[0] == "/run/current-system/sw/bin/darwin-rebuild"
+    assert cmd[1] == "switch"
+    assert "-L" in cmd
+    assert cmd[-2] == "--flake"
+    assert cmd[-1] == "/nix/store/xyz-source#my-mac"
 
 
 # TODO: Add more tests for requireExplicitUpdate

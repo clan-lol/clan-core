@@ -418,3 +418,101 @@ def test_vars_generate_with_directory_setting(
     assert secret_path.exists(), (
         f"Secret var should be in clan/vars/, not found at {secret_path}"
     )
+
+
+CLAN_NIX_WITH_DIRECTORY_AND_AGE_MACHINE = """
+{
+  directory = ./clan;
+  meta.name = "test-directory-settings-age";
+
+  vars.settings.secretStore = "age";
+
+  inventory.machines.my_machine = {};
+
+  machines.my_machine = { ... }: {
+    nixpkgs.hostPlatform = "x86_64-linux";
+    clan.core.settings.state-version.enable = false;
+    clan.core.vars.generators.my_generator = {
+      files.my_secret.secret = true;
+      files.my_public.secret = false;
+      script = "echo secret_value > $out/my_secret; echo public_value > $out/my_public";
+    };
+  };
+}
+"""
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_vars_generate_age_with_directory_setting(
+    clan_flake: Callable[..., Flake],
+    age_keys: list[KeyPair],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that vars generate with the age backend creates files in the custom directory."""
+    # Set up clan.nix with age recipients
+    raw = CLAN_NIX_WITH_DIRECTORY_AND_AGE_MACHINE.rstrip().rstrip("}")
+    raw += f'\n  vars.settings.recipients.hosts.my_machine = ["{age_keys[0].pubkey}"];\n}}\n'
+
+    flake = clan_flake(raw=raw)
+    clan_dir = flake.path / "clan"
+    clan_dir.mkdir(exist_ok=True)
+    # The clan/ directory must contain at least one tracked file so git
+    # includes it and Nix can see it in the store.
+    (clan_dir / ".gitkeep").touch()
+
+    # Set up age identity for decryption
+    monkeypatch.setenv("AGE_KEY", age_keys[0].privkey)
+
+    init_git(flake.path)
+
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    # Public var should be in clan/vars/
+    public_var_path = (
+        clan_dir
+        / "vars"
+        / "per-machine"
+        / "my_machine"
+        / "my_generator"
+        / "my_public"
+        / "value"
+    )
+    assert public_var_path.exists(), (
+        f"Public var should be in clan/vars/, not found at {public_var_path}"
+    )
+    assert public_var_path.read_text().strip() == "public_value", (
+        "Public var should contain 'public_value'"
+    )
+    assert not (flake.path / "vars" / "per-machine" / "my_machine").exists(), (
+        "Public vars should NOT be in vars/ (flake root)"
+    )
+
+    # Age encrypted secrets should be in clan/secrets/clan-vars/
+    age_secret_path = (
+        clan_dir
+        / "secrets"
+        / "clan-vars"
+        / "per-machine"
+        / "my_machine"
+        / "my_generator"
+        / "my_secret"
+        / "my_secret.age"
+    )
+    assert age_secret_path.exists(), (
+        f"Age secret should be in clan/secrets/clan-vars/, not found at {age_secret_path}"
+    )
+    assert not (
+        flake.path / "secrets" / "clan-vars" / "per-machine" / "my_machine"
+    ).exists(), "Age secrets should NOT be in secrets/clan-vars/ (flake root)"
+
+    # Machine key should be in clan/secrets/age-keys/
+    machine_key_path = (
+        clan_dir / "secrets" / "age-keys" / "machines" / "my_machine" / "pub"
+    )
+    assert machine_key_path.exists(), (
+        f"Machine key should be in clan/secrets/age-keys/, not found at {machine_key_path}"
+    )
+    assert not (
+        flake.path / "secrets" / "age-keys" / "machines" / "my_machine"
+    ).exists(), "Machine key should NOT be in secrets/age-keys/ (flake root)"

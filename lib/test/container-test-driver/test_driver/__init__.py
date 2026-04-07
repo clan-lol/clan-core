@@ -181,12 +181,14 @@ def retry(fn: Callable, timeout: int = 900) -> None:
     """Call the given function repeatedly, with 1 second intervals,
     until it returns True or a timeout is reached.
     """
+    last_call = False
     for _ in range(timeout):
-        if fn(False):
+        if fn(last_call):
             return
         time.sleep(1)
 
-    if not fn(True):
+    last_call = True
+    if not fn(last_call):
         msg = f"action timed out after {timeout} seconds"
         raise Error(msg)
 

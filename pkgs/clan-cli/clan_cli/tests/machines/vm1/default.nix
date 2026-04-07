@@ -5,7 +5,7 @@
   sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
   clan.virtualisation.graphics = false;
 
-  clan.core.networking.zerotier.controller.enable = true;
+  clan.core.networking.zerotier._roles = [ "controller" ];
   networking.useDHCP = false;
 
   systemd.services.shutdown-after-boot = {

@@ -878,3 +878,89 @@ def test_groups_add_secret_commits_changes(
     assert git_status == "", (
         f"Expected no uncommitted sops/ changes after 'clan secrets groups add-secret', got:\n{git_status}"
     )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_sops_fix_skips_add_for_no_deploy_per_machine_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that fix() does not add machine access for per-machine secrets
+    with deploy=False.
+
+    Regression test: the fix() method previously only checked
+    ``generator.share and not file.deploy``, so per-machine generators with
+    deploy=False would incorrectly have the machine key added as a SOPS
+    recipient by the elif branch.
+    """
+    flake = flake_with_sops
+
+    # Per-machine generator with deploy=False from the start
+    config = flake.machines["machine1"] = create_test_machine_config()
+    gen = config["clan"]["core"]["vars"]["generators"]["my_gen"]
+    gen["share"] = False
+    gen["files"]["my_secret"]["secret"] = True
+    gen["files"]["my_secret"]["deploy"] = False
+    gen["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate secrets (no machine symlink since deploy=False)
+    cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
+
+    machine1_link = (
+        flake.path
+        / "vars"
+        / "per-machine"
+        / "machine1"
+        / "my_gen"
+        / "my_secret"
+        / "machines"
+        / "machine1"
+    )
+    assert not machine1_link.exists(), (
+        "machine1 should NOT have access after generation with deploy=False"
+    )
+
+    # Also verify via the store API
+    flake_obj = Flake(str(flake.path))
+    sops_store = sops.SecretStore(flake=flake_obj)
+    generator_key = GeneratorId(name="my_gen", placement=PerMachine("machine1"))
+    assert not sops_store.machine_has_access(generator_key, "my_secret", "machine1"), (
+        "machine_has_access should return False after generate with deploy=False"
+    )
+
+    # Record HEAD before fix
+    head_before = run(["git", "rev-parse", "HEAD"]).stdout.strip()
+
+    # Run fix — this is where the bug manifested: the old code would
+    # fall through to the elif and add machine access for per-machine
+    # generators even when deploy=False.
+    cli.run(["vars", "fix", "--flake", str(flake.path), "machine1"])
+
+    # fix() should NOT create intermediate "vars: add" commits
+    fix_commits = run(
+        ["git", "log", f"{head_before}..HEAD", "--pretty=%s"],
+    ).stdout.strip()
+    assert "vars: add" not in fix_commits, (
+        f"fix() should not add machine access for per-machine non-deploy secrets.\n"
+        f"Commits created by fix:\n{fix_commits}"
+    )
+
+    # Machine should still not have access
+    assert not machine1_link.exists(), (
+        "machine1 should still not have access after fix with deploy=False"
+    )
+    assert not sops_store.machine_has_access(generator_key, "my_secret", "machine1"), (
+        "machine_has_access should still return False after fix with deploy=False"
+    )
+
+    # Working tree should be clean
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
+    )

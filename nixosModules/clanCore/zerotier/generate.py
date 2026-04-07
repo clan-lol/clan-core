@@ -141,9 +141,28 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                         )
                         raise ClanError(msg)
                     time.sleep(0.1)
+
+                zt_controller = ZerotierController(controller_port, home)
+
+                # Wait for the controller API to be fully ready,
+                # not just the port being open
+                for _ in range(50):
+                    try:
+                        zt_controller.status()
+                        break
+                    except OSError as err:
+                        status = p.poll()
+                        if status is not None:
+                            msg = f"zerotier-one has been terminated unexpected with {status}"
+                            raise ClanError(msg) from err
+                        time.sleep(0.1)
+                else:
+                    msg = "zerotier controller API did not become ready in time"
+                    raise ClanError(msg)
+
                 print()
 
-                yield ZerotierController(controller_port, home)
+                yield zt_controller
             finally:
                 os.killpg(process_group, signal.SIGKILL)
 
@@ -162,8 +181,8 @@ def create_network_controller() -> NetworkController:
             with zerotier_controller() as controller:
                 network = controller.create_network()
                 return NetworkController(network["nwid"], controller.identity)
-        except ClanError:  # probably failed to allocate port, so retry
-            print("failed to create network, retrying..., probabl", file=sys.stderr)
+        except (ClanError, urllib.error.HTTPError, urllib.error.URLError) as err:
+            print(f"failed to create network ({err}), retrying...", file=sys.stderr)
     raise e
 
 
@@ -216,20 +235,24 @@ def main() -> None:
     parser.add_argument("--ip", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
     parser.add_argument("--network-id", type=str, required=False)
+    parser.add_argument("--network-id-file", type=Path, required=False)
     args = parser.parse_args()
 
     match args.mode:
         case "network":
             if args.network_id is None:
-                msg = "network_id parameter is required"
+                msg = "--network-id parameter is required in network mode"
                 raise ClanError(msg)
             controller = create_network_controller()
             identity = controller.identity
             network_id = controller.networkid
             Path(args.network_id).write_text(network_id)
         case "identity":
+            if args.network_id_file is None:
+                msg = "--network-id-file parameter is required in identity mode"
+                raise ClanError(msg)
             identity = create_identity()
-            network_id = args.network_id
+            network_id = args.network_id_file.read_text().strip()
         case _:
             msg = f"unknown mode {args.mode}"
             raise ClanError(msg)

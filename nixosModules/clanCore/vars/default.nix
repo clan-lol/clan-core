@@ -1,8 +1,8 @@
 {
   _class,
   lib,
-  options,
   config,
+  options,
   pkgs,
   ...
 }:
@@ -17,33 +17,31 @@ in
     ./secret/vm.nix
     ./secret/password-store.nix
     {
-      assertions = lib.mkIf config.clan.core.vars.enableConsistencyCheck [
-        {
-          assertion =
-            !(
-              options.clanConfig.isDefined
-              &&
+      assertions =
+        lib.mkIf (config.clan.core.vars.enableConsistencyCheck && options.clanConfig.isDefined)
+          [
+            {
+              assertion =
                 config.clanConfig.clanInternals.vars.settings.secretStore
-                != config.clan.core.vars.settings.secretStore
-            );
-          message = ''
-            [DEPRECATED] Machine-level vars backend configuration is deprecated and will be removed in a future release.
+                == config.clan.core.vars.settings.secretStore;
+              message = ''
+                [DEPRECATED] Machine-level vars backend configuration is deprecated and will be removed in a future release.
 
-            Machine: '${config.clan.core.settings.machine.name}' uses (${config.clan.core.vars.settings.secretStore}),
-            while your clan uses (${config.clanConfig.clanInternals.vars.settings.secretStore})
+                Machine: '${config.clan.core.settings.machine.name}' uses (${config.clan.core.vars.settings.secretStore}),
+                while your clan uses (${config.clanConfig.clanInternals.vars.settings.secretStore})
 
-            Please move your vars backend selection to the 'clan' level:
+                Please move your vars backend selection to the 'clan' level:
 
-            ```
-            # clan.nix / flake.nix
+                ```
+                # clan.nix / flake.nix
 
-            clan.vars.settings.secretStore = "${config.clan.core.vars.settings.secretStore}";
-            ```
+                clan.vars.settings.secretStore = "${config.clan.core.vars.settings.secretStore}";
+                ```
 
-            Remove the machine-level configuration.
-          '';
-        }
-      ];
+                Remove the machine-level configuration.
+              '';
+            }
+          ];
     }
   ]
   ++ lib.optionals (_class == "nixos") [
@@ -77,7 +75,7 @@ in
             visible = false;
             description = ''
               Disable consistency assertions between this machine and its hosting clan.
-              Tempoprary workaround because the nixos test-framework uses clan-core as clan.
+              Temporary workaround because the nixos test-framework uses clan-core as clan.
             '';
           };
         }

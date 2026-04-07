@@ -214,4 +214,139 @@ rec {
       echo "✓ All vars checks completed successfully"
       touch $out
     '';
+
+  # Generate a shell snippet that collects generator outputs into the proper directory structure.
+  # Secret files are age-encrypted; public files are copied as plaintext.
+  collectSharedOutputs =
+    sharedGenerators: agePublicKey:
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        genName: gen:
+        lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            fileName: file:
+            if file.secret then
+              ''
+                mkdir -p "$out/secrets/clan-vars/shared/${genName}/${fileName}"
+                age -r "${agePublicKey}" -o "$out/secrets/clan-vars/shared/${genName}/${fileName}/${fileName}.age" \
+                  "./shared/outputs/${genName}/${fileName}"
+                echo "  encrypted shared secret: ${genName}/${fileName}"
+              ''
+            else
+              ''
+                mkdir -p "$out/vars/shared/${genName}/${fileName}"
+                cp "./shared/outputs/${genName}/${fileName}" "$out/vars/shared/${genName}/${fileName}/value"
+                echo "  copied shared var: ${genName}/${fileName}"
+              ''
+          ) gen.files
+        )
+      ) sharedGenerators
+    );
+
+  collectMachineOutputs =
+    machineName: generators: agePublicKey:
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        genName: gen:
+        lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            fileName: file:
+            if file.secret then
+              ''
+                mkdir -p "$out/secrets/clan-vars/per-machine/${machineName}/${genName}/${fileName}"
+                age -r "${agePublicKey}" -o "$out/secrets/clan-vars/per-machine/${machineName}/${genName}/${fileName}/${fileName}.age" \
+                  "./work/${machineName}/outputs/${genName}/${fileName}"
+                echo "  encrypted per-machine secret: ${machineName}/${genName}/${fileName}"
+              ''
+            else
+              ''
+                mkdir -p "$out/vars/per-machine/${machineName}/${genName}/${fileName}"
+                cp "./work/${machineName}/outputs/${genName}/${fileName}" "$out/vars/per-machine/${machineName}/${genName}/${fileName}/value"
+                echo "  copied per-machine var: ${machineName}/${genName}/${fileName}"
+              ''
+          ) gen.files
+        )
+      ) generators
+    );
+
+  # Build a derivation that runs all generators and produces:
+  #   $out/vars/          - plaintext public vars (for in_repo.nix)
+  #   $out/secrets/       - age-encrypted secrets (for age.nix)
+  generateVarsDerivation =
+    pkgs: nodes: agePublicKey:
+    let
+      allGenerators = collectAllGenerators nodes;
+      sharedGenerators = lib.filterAttrs (_name: gen: gen.share or false) allGenerators;
+
+      sharedExecutionPlan =
+        if sharedGenerators != { } then
+          createExecutionPlan { clan.core.vars.generators = sharedGenerators; } allGenerators
+        else
+          [ ];
+
+      machineExecutions = lib.mapAttrs (_machineName: createMachineExecInfo allGenerators) nodes;
+    in
+    pkgs.runCommand "test-vars-generated"
+      {
+        nativeBuildInputs = [
+          pkgs.age
+          pkgs.bubblewrap
+        ];
+      }
+      ''
+        echo "=== Generating test vars and secrets ==="
+
+        # Execute shared generators first
+        ${lib.optionalString (sharedGenerators != { }) ''
+          echo "Executing shared generators..."
+          mkdir -p ./shared
+          cd ./shared
+
+          ${lib.concatStringsSep "\n" (
+            map (genInfo: generateGeneratorScript pkgs genInfo true) sharedExecutionPlan
+          )}
+
+          cd ..
+          echo "✓ Shared generators completed"
+        ''}
+
+        # Execute generators for each machine
+        ${lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (machineName: execInfo: ''
+            echo "Processing machine: ${machineName}"
+            mkdir -p ./work/${machineName}
+            cd ./work/${machineName}
+
+            ${lib.concatStringsSep "\n" (
+              map (genInfo: generateGeneratorScript pkgs genInfo false) execInfo.executionPlan
+            )}
+
+            cd ../..
+            echo "✓ Machine ${machineName} completed"
+          '') machineExecutions
+        )}
+
+        echo "=== Collecting outputs into directory structure ==="
+        mkdir -p "$out/vars" "$out/secrets"
+
+        # Collect shared generator outputs
+        ${lib.optionalString (sharedGenerators != { }) (collectSharedOutputs sharedGenerators agePublicKey)}
+
+        # Collect per-machine generator outputs
+        ${lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            machineName: machine:
+            let
+              perMachineGens = lib.filterAttrs (
+                _name: gen: !(gen.share or false)
+              ) machine.clan.core.vars.generators;
+            in
+            collectMachineOutputs machineName perMachineGens agePublicKey
+          ) nodes
+        )}
+
+        echo "=== Generated directory structure ==="
+        find "$out" -type f | sort
+        echo "✓ All test vars generated successfully"
+      '';
 }

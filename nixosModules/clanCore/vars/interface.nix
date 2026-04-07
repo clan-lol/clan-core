@@ -63,36 +63,59 @@ in
       default = { };
       type = attrsOf (submoduleWith {
         modules = [
-          {
-            imports = [
-              # Inject dependencies from the 'nixos' module
-              {
-                inherit (config) pkgs settings;
-              }
-              {
-                options.dependencies = mkOption {
+          (
+            generator:
+            (lib.modules.importApply ../../../modules/clan/export-modules/generic-generator.nix {
+              fileContextModule = {
+                options.deploy = mkOption {
                   description = ''
-                    A list of other generators that this generator depends on.
-                    The output values of these generators will be available to the generator script as files.
+                    Whether the file should be deployed to the target machine.
 
-                    For example:
-
-                    **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
+                    Disable this if the generated file is only used as an input to other generators.
                   '';
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
+                  type = lib.types.bool;
+                  default = true;
                 };
-              }
-              ../../../modules/clan/export-modules/generator.nix
-              # needed for mkRemovedOptionModule
-              (config.pkgs.path + "/nixos/modules/misc/assertions.nix")
-              (lib.mkRemovedOptionModule [ "migrateFact" ] ''
-                The `migrateFact` option has been removed.
-                The facts system has been fully removed from clan-core.
-                See https://docs.clan.lol/guides/migrations/migration-facts-vars/ for manual migration instructions.
-              '')
-            ];
+                options.share = mkOption {
+                  type = lib.types.bool;
+                  description = ''
+                    Whether the generated vars should be shared between machines.
+                    Shared vars are only generated once, when the first machine using it is deployed.
+                    Subsequent machines will re-use the already generated values.
+                  '';
+                  readOnly = true;
+                  internal = true;
+                  default = generator.config.share;
+                  defaultText = "Mirror of the share flag of the generator";
+                };
+              };
+            })
+          )
+
+          {
+            options.dependencies = mkOption {
+              description = ''
+                A list of other generators that this generator depends on.
+                The output values of these generators will be available to the generator script as files.
+
+                For example:
+
+                **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
+              '';
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
           }
+          {
+            inherit (config) pkgs settings;
+          }
+          # needed for mkRemovedOptionModule
+          (config.pkgs.path + "/nixos/modules/misc/assertions.nix")
+          (lib.mkRemovedOptionModule [ "migrateFact" ] ''
+            The `migrateFact` option has been removed.
+            The facts system has been fully removed from clan-core.
+            See https://docs.clan.lol/guides/migrations/migration-facts-vars/ for manual migration instructions.
+          '')
         ];
       });
     };

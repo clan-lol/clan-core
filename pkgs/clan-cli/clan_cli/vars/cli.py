@@ -46,6 +46,9 @@ This subcommand allows checking if all vars are up to date.
 
 Examples:
 
+  $ clan vars check
+  Will check vars for all machines.
+
   $ clan vars check [MACHINE]
   Will check vars for the specified machine.
         """

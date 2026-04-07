@@ -1,4 +1,7 @@
+import subprocess
+
 import pytest
+from clan_cli.tests.age_keys import KeyPair
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.public_modules import in_repo
@@ -10,6 +13,8 @@ from clan_lib.vars._types import GeneratorId, PerMachine, Shared
 from clan_lib.vars.generator import (
     Generator,
 )
+from clan_lib.vars.secret_modules import age, password_store
+from clan_lib.vars.set import set_var
 
 
 @pytest.mark.broken_on_darwin
@@ -364,6 +369,70 @@ def test_shared_generator_allows_machine_specific_differences(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+def test_generate_removes_stale_machine_symlink_when_deploy_becomes_false(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that 'vars generate' cleans up stale machine symlinks when a shared
+    secret's deploy setting changes from True to False.
+
+    Regression test: the re-encryption loop in run_generators() used to skip
+    files with deploy=False entirely, so fix() was never called and stale
+    machine symlinks from the deploy=True era were left behind.
+    """
+    flake = flake_with_sops
+
+    # Two machines sharing a generator with deploy=True (default) + secret=True
+    m1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_gen = m1_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"]
+    shared_gen["share"] = True
+    shared_gen["files"]["my_secret"]["secret"] = True
+    shared_gen["script"] = 'echo -n secret_value > "$out"/my_secret'
+
+    m2_config = flake.machines["machine2"] = create_test_machine_config()
+    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_gen"] = shared_gen.copy()
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate — both machines get access (deploy=True)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    machine1_link = (
+        flake.path
+        / "vars"
+        / "shared"
+        / "my_shared_gen"
+        / "my_secret"
+        / "machines"
+        / "machine1"
+    )
+    assert machine1_link.is_symlink(), (
+        "machine1 should have access after generation with deploy=True"
+    )
+
+    # Change deploy to False
+    shared_gen["files"]["my_secret"]["deploy"] = False
+    flake.refresh()
+
+    # Running 'vars generate' should call fix() which removes stale symlinks
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    assert not machine1_link.exists(), (
+        "machine1 symlink should be removed by 'vars generate' after deploy changed to False"
+    )
+
+    # Working tree should be clean
+    git_status = run(
+        ["git", "status", "--porcelain", "vars/", "sops/"],
+    ).stdout.strip()
+    assert git_status == "", (
+        f"Expected no uncommitted changes after 'vars generate', got:\n{git_status}"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
 def test_sops_fix_removes_machine_from_no_deploy_shared_secret(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,
@@ -499,3 +568,214 @@ def test_sops_fix_skips_add_for_no_deploy_shared_secret(
     assert git_status == "", (
         f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
     )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_sops_set_shared_var_for_multiple_machines(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Test that set_var on a shared secret (sops backend) appends recipients
+    rather than overwriting them, and last written value wins.
+    """
+    flake = flake_with_sops
+
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+    shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
+        "shared_generator"
+    ]
+    shared_generator["share"] = True
+    shared_generator["files"]["my_secret"]["secret"] = True
+    shared_generator["script"] = 'echo -n "initial" > "$out"/my_secret'
+    flake.machines["machine2"] = machine1_config
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    generator_key = GeneratorId(name="shared_generator", placement=Shared())
+
+    # Generate vars for both machines (creates machine keys and initial value)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    sops_store = sops.SecretStore(flake=Flake(str(flake.path)))
+    assert sops_store.get(generator_key, "my_secret") == b"initial"
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine1")
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine2")
+
+    # set_var for machine1 — value changes, both machines keep access
+    flake_obj = Flake(str(flake.path))
+    set_var("machine1", "shared_generator/my_secret", b"value_from_m1", flake_obj)
+
+    sops_store = sops.SecretStore(flake=Flake(str(flake.path)))
+    assert sops_store.get(generator_key, "my_secret") == b"value_from_m1"
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine1")
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine2")
+
+    # set_var for machine2 — last write wins, both machines keep access
+    set_var("machine2", "shared_generator/my_secret", b"value_from_m2", flake_obj)
+
+    sops_store = sops.SecretStore(flake=Flake(str(flake.path)))
+    assert sops_store.get(generator_key, "my_secret") == b"value_from_m2", (
+        "Last written value should win"
+    )
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine1"), (
+        "machine1 recipients must be preserved after setting via machine2"
+    )
+    assert sops_store.machine_has_access(generator_key, "my_secret", "machine2"), (
+        "machine2 recipients must be preserved after setting via machine2"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_set_shared_var_for_multiple_machines(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Test that set_var on a shared secret (age backend) appends recipients
+    rather than overwriting them, and last written value wins.
+    """
+    age_key = age_keys[0]
+
+    for m in ["machine1", "machine2"]:
+        config = flake.machines[m] = create_test_machine_config()
+        clan_vars = config["clan"]["core"]["vars"]
+        clan_vars["settings"]["secretStore"] = "age"
+        shared_gen = clan_vars["generators"]["shared_generator"]
+        shared_gen["share"] = True
+        shared_gen["files"]["my_secret"]["secret"] = True
+        shared_gen["script"] = 'echo -n "initial" > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    (flake.path / "clan.nix").write_text(
+        f"{{\n"
+        f'  vars.settings.recipients.hosts.machine1 = ["{age_key.pubkey}"];\n'
+        f'  vars.settings.recipients.hosts.machine2 = ["{age_key.pubkey}"];\n'
+        f"}}\n"
+    )
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_key.privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_file))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup age shared var test"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    gen_id = GeneratorId(name="shared_generator", placement=Shared())
+
+    def assert_both_machines_decrypt(expected: bytes) -> None:
+        store = age.SecretStore(flake=Flake(str(flake.path)))
+        for m in ["machine1", "machine2"]:
+            key = store.decrypt_machine_key(m)
+            secret_file = store.secret_path(gen_id, "my_secret")
+            actual = store._run_age_decrypt_with_key(secret_file, key)
+            assert actual == expected, (
+                f"{m} decrypted {actual!r}, expected {expected!r}"
+            )
+
+    # Generate vars for both machines (creates machine keys and initial value)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+    assert_both_machines_decrypt(b"initial")
+
+    # set_var for machine1 — value changes, both machines keep access
+    flake_obj = Flake(str(flake.path))
+    set_var("machine1", "shared_generator/my_secret", b"value_from_m1", flake_obj)
+    assert_both_machines_decrypt(b"value_from_m1")
+
+    # set_var for machine2 — last write wins, both machines keep access
+    set_var("machine2", "shared_generator/my_secret", b"value_from_m2", flake_obj)
+    assert_both_machines_decrypt(b"value_from_m2")
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_password_store_set_shared_var_for_multiple_machines(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """Test that set_var on a shared secret (passage backend) updates the same
+    shared entry regardless of which machine name is passed, and last written
+    value wins.
+
+    Note: password-store has no per-machine recipient management — the secret
+    is stored once in the passage store, accessible to anyone with the age
+    identity.  We verify the value is correct after each set.
+    """
+    age_key = age_keys[0]
+
+    for m in ["machine1", "machine2"]:
+        config = flake.machines[m] = create_test_machine_config()
+        clan_vars = config["clan"]["core"]["vars"]
+        clan_vars["settings"]["secretStore"] = "password-store"
+        config["clan"]["core"]["vars"]["password-store"]["passCommand"] = "passage"
+        shared_gen = clan_vars["generators"]["shared_generator"]
+        shared_gen["share"] = True
+        shared_gen["files"]["my_secret"]["secret"] = True
+        shared_gen["script"] = 'echo -n "initial" > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_key.privkey)
+
+    password_store_dir = flake.path / "pass"
+    password_store_dir.mkdir(parents=True)
+    (password_store_dir / ".age-recipients").write_text(f"{age_key.pubkey}\n")
+
+    monkeypatch.setenv("PASSAGE_DIR", str(password_store_dir))
+    monkeypatch.setenv("PASSAGE_IDENTITIES_FILE", str(age_key_file))
+
+    subprocess.run(["git", "init"], cwd=password_store_dir, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "add", ".age-recipients"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Initialize password store"],
+        cwd=password_store_dir,
+        check=True,
+    )
+
+    generator_key = GeneratorId(name="shared_generator", placement=Shared())
+
+    def assert_secret_value(expected: bytes) -> None:
+        store = password_store.SecretStore(flake=Flake(str(flake.path)))
+        store.init_pass_command(machine="machine1")
+        assert store.get(generator_key, "my_secret") == expected
+
+    # Generate vars for both machines (creates initial value)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+    assert_secret_value(b"initial")
+
+    # set_var for machine1
+    flake_obj = Flake(str(flake.path))
+    set_var("machine1", "shared_generator/my_secret", b"value_from_m1", flake_obj)
+    assert_secret_value(b"value_from_m1")
+
+    # set_var for machine2 — last write wins
+    set_var("machine2", "shared_generator/my_secret", b"value_from_m2", flake_obj)
+    assert_secret_value(b"value_from_m2")

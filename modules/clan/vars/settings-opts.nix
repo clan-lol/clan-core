@@ -62,6 +62,8 @@ let
         default =
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
+          else if !builtins.pathExists file.config.flakePath then
+            throw "File '${file.config.name}' of generator '${file.config.generatorName}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
               name = "${file.config.generatorName}_${file.config.name}";

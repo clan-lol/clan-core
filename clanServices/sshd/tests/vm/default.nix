@@ -66,7 +66,7 @@ in
     server.succeed("grep 'root@server' /etc/ssh/authorized_keys.d/root")
 
     # Copy the generated private key from server to client and test SSH with it
-    client.succeed("scp -i /tmp/test-key root@server:/var/run/secrets/vars/sshd-root-key/id_ed25519 /tmp/generated-key")
+    client.succeed("scp -i /tmp/test-key root@server:${config.nodes.server.clan.core.vars.generators.sshd-root-key.files.id_ed25519.path} /tmp/generated-key")
     client.succeed("chmod 600 /tmp/generated-key")
     client.succeed("ssh -i /tmp/generated-key root@server 'echo GENERATED_KEY_SUCCESS'")
   '';

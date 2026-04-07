@@ -263,12 +263,14 @@ def vars_settings_recipients() -> str:
 
 @machines_selector
 def vars_settings_age_key_file(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.?age.?keyFile"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.?age.?keyFile"
 
 
 @machines_selector
 def vars_age_secret_location(system: str, machines: list[str]) -> str:
-    return f"clanInternals.machines.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?age.?secretLocation"
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?age.?secretLocation"
 
 
 @machines_selector

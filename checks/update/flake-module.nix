@@ -24,7 +24,6 @@
                   closureInfo = pkgs.closureInfo {
                     rootPaths = [
                       self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full
-                      self.packages.${pkgs.stdenv.hostPlatform.system}.nix
                       config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel.drvPath
                       config.nodes.test-update-machine.system.build.toplevel.drvPath
                       pkgs.stdenv.drvPath
@@ -32,6 +31,7 @@
                       pkgs.bubblewrap
                       pkgs.makeShellWrapper
                       pkgs.openssh.dev
+                      pkgs.nix
                     ]
                     ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
                     ++ builtins.map (import ../installation/facter-report.nix) (

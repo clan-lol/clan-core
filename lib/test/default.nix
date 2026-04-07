@@ -12,4 +12,5 @@
 
   minifyModule = ./minify.nix;
   sopsModule = ./sops.nix;
+  ageModule = ./age.nix;
 }

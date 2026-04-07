@@ -3,6 +3,7 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
+from typing import override
 
 from clan_lib.errors import ClanError
 from clan_lib.network import Network, NetworkTechnologyBase, Peer
@@ -36,7 +37,8 @@ class NetworkTechnology(NetworkTechnologyBase):
         # TODO: Implement userspace ZeroTier service start/stop
         yield network
 
-    def remote(self, peer: Peer) -> list["Remote"]:
+    @override
+    def remote(self, peer: Peer, network: Network) -> list["Remote"]:
         return [
             Remote(
                 address=host,

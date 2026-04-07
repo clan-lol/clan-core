@@ -940,17 +940,20 @@ class Flake:
         self.hash = flake_metadata["hash"]
         self.flake_metadata = flake_metadata
 
-    def invalidate_cache(self) -> None:
+    def invalidate_cache(self, reset_tracking: bool = False) -> None:
         """Invalidate the cache and reload it.
 
         This method is used to refresh the cache by reloading it from the flake.
-        Also resets cache miss tracking.
+
+        Args:
+            reset_tracking: If True, also reset cache miss tracking.
+
         """
         self.prefetch()
 
         self._cache = FlakeCache()
-        # Reset cache miss tracking when invalidating cache
-        self._cache_miss_stack_traces.clear()
+        if reset_tracking:
+            self._cache_miss_stack_traces.clear()
         if self.hash is None:
             msg = "Hash cannot be None"
             raise ClanError(msg)

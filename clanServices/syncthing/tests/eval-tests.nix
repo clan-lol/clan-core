@@ -39,24 +39,35 @@ let
     }).config;
 in
 {
-  test_machine1_peers = {
+  # Test structural configuration without requiring generated vars.
+  # Device IDs require pre-generated vars (getPublicValue reads from disk),
+  # so we only test properties that don't depend on generated values.
+  test_syncthing_enabled = {
     expr = {
-      devices = lib.attrNames testFlake.nixosConfigurations.machine1.config.services.syncthing.settings.devices;
-      machine4_ID =
-        testFlake.nixosConfigurations.machine1.config.services.syncthing.settings.devices.machine1.id;
-      externalPhoneId =
-        testFlake.nixosConfigurations.machine1.config.services.syncthing.settings.devices.phone.id;
+      enabled = testFlake.nixosConfigurations.machine1.config.services.syncthing.enable;
+      configDir = testFlake.nixosConfigurations.machine1.config.services.syncthing.configDir;
+      group = testFlake.nixosConfigurations.machine1.config.services.syncthing.group;
     };
     expected = {
-      devices = [
-        "machine1"
-        "machine2"
-        "machine3"
-        "machine4"
-        "phone"
+      enabled = true;
+      configDir = "/var/lib/syncthing";
+      group = "syncthing";
+    };
+  };
+
+  test_generator_defined = {
+    expr = {
+      hasGenerator = testFlake.nixosConfigurations.machine1.config.clan.core.vars.generators ? syncthing;
+      files = lib.attrNames testFlake.nixosConfigurations.machine1.config.clan.core.vars.generators.syncthing.files;
+    };
+    expected = {
+      hasGenerator = true;
+      files = [
+        "api"
+        "cert"
+        "id"
+        "key"
       ];
-      machine4_ID = "LJOGYGS-RQPWIHV-HD4B3GK-JZPVPK6-VI3IAY5-CWQWIXK-NJSQMFH-KXHOHA4";
-      externalPhoneId = "P56IOI7-MZJNU2Y-IQGDREY-DM2MGTI-MGL3BXN-PQ6W5BM-TBBZ4TJ-XZWICQ2";
     };
   };
 }

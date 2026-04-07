@@ -90,8 +90,8 @@ class SecretStore(StoreBase):
             self.clan_dir,
             machine,
             pub_key,
-            False,
-            age_plugins,
+            force=False,
+            age_plugins=age_plugins,
             flake_dir=self.flake.path,
         )
 
@@ -187,7 +187,6 @@ class SecretStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> list[Path]:
-
         add_machines: list[str] = []
         add_groups: list[str] = []
 
@@ -387,10 +386,25 @@ class SecretStore(StoreBase):
         needs_update = current_recipients != wanted_recipients
         recipients_to_add = wanted_recipients - current_recipients
         var_id = f"{generator.name}/{name}"
+        key_details = []
+        for r in recipients_to_add:
+            if r.source and "/" in r.source:
+                # source is e.g. "machines/amy" or "users/bob"
+                kind, name = r.source.split("/", 1)
+                # e.g. "machine 'amy'" or "user 'bob'"
+                label = f"{kind.rstrip('s')} '{name}'"
+            elif r.source:
+                label = f"'{r.source}'"
+            elif r.username:
+                label = f"'{r.username}'"
+            else:
+                label = "unknown origin"
+            key_details.append(f"  - {r.key_type.name}:{r.pubkey} (key of {label})")
+        keys_str = "\n".join(key_details)
         msg = (
             f"One or more recipient keys were added to secret{' shared' if generator.share else ''} var '{var_id}', but it was never re-encrypted.\n"
             f"This could have been a malicious actor trying to add their keys, please investigate.\n"
-            f"Added keys: {', '.join(f'{r.key_type.name}:{r.pubkey}' for r in recipients_to_add)}\n"
+            f"Added keys:\n{keys_str}\n"
             f"If this is intended, run 'clan vars fix {machine}' to re-encrypt the secret."
         )
         return needs_update, msg
@@ -439,9 +453,9 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
-                # Shared secrets not marked for deployment don't need
+                # Secrets not marked for deployment don't need
                 # machine access — remove stale symlinks if present.
-                if generator.share and not file.deploy:
+                if not file.deploy:
                     machine_link = secret_path / "machines" / machine
                     if machine_link.exists():
                         files_to_commit.extend(

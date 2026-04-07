@@ -24,6 +24,18 @@ export const docsNav: DocsNavItems = [
         label: "Install in VirtualBox",
         path: "getting-started/getting-started-virtualbox",
       },
+      {
+        label: "Install on AWS",
+        path: "getting-started/getting-started-aws",
+      },
+      {
+        label: "Install on Google Cloud",
+        path: "getting-started/getting-started-google",
+      },
+      {
+        label: "Install on Hetzner",
+        path: "getting-started/getting-started-hetzner",
+      },
       { label: "Create an SSH Key", path: "getting-started/create-an-ssh-key" },
       "getting-started/whats-next",
     ],
@@ -51,20 +63,31 @@ export const docsNav: DocsNavItems = [
         label: "Vars",
         children: [
           "guides/vars/intro-to-vars",
-          "guides/vars/vars-backend",
-          "guides/vars/vars-concepts",
-          "guides/vars/vars-advanced-examples",
-          "guides/vars/vars-troubleshooting",
           {
-            label: "Sops Backend",
+            label: "Backend",
             children: [
-              "guides/vars/sops/age-plugins",
-              "guides/vars/sops/secrets",
+              "guides/vars/vars-backend",
+              {
+                label: "Sops Backend",
+                children: [
+                  "guides/vars/sops/age-plugins",
+                  "guides/vars/sops/secrets",
+                ],
+              },
+              {
+                label: "Age Backend",
+                children: ["guides/vars/age/age-backend"],
+              },
             ],
           },
+          { label: "Concepts", path: "guides/vars/vars-concepts" },
           {
-            label: "Age Backend",
-            children: ["guides/vars/age/age-backend"],
+            label: "Advanced Examples",
+            path: "guides/vars/vars-advanced-examples",
+          },
+          {
+            label: "Troubleshooting",
+            path: "guides/vars/vars-troubleshooting",
           },
         ],
       },
@@ -84,7 +107,6 @@ export const docsNav: DocsNavItems = [
           "guides/networking/mesh-vpn",
         ],
       },
-      "guides/users/custom",
       "guides/nixpkgs-flake-input",
       "guides/flake-parts",
       "guides/nixos-rebuild",
@@ -211,6 +233,7 @@ export const docsNav: DocsNavItems = [
           "services/official/mycelium",
           "services/official/monitoring",
           "services/official/ncps",
+          "services/official/p2p-ssh-iroh",
           "services/official/packages",
           "services/official/pki",
           "services/official/sshd",
