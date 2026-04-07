@@ -4,8 +4,8 @@ import { readFile } from "node:fs/promises";
 export * from "./util/custom-media.server.ts";
 
 export async function getVersion(): Promise<string> {
-  const url = new URL("../../../../VERSION", import.meta.url);
-  const content = await readFile(url, "utf8");
+  const path = pathutil.resolve(import.meta.dirname, "../../../../VERSION");
+  const content = await readFile(path, "utf8");
   return content.trim();
 }
 
