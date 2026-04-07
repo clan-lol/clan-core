@@ -11,7 +11,6 @@ from clan_lib.flake import Flake
 
 from . import (
     backups,
-    clan,
     secrets,
     select,
     state,
@@ -191,28 +190,6 @@ For more detailed information visit: {help_hyperlink("backups", "https://docs.cl
         formatter_class=HelpFormatter,
     )
     backups.register_parser(parser_backups)
-
-    parser_flake = subparsers.add_parser(
-        "flakes",
-        aliases=["f"],
-        help="Create a clan flake inside the current directory",
-        description="Create a clan flake inside the current directory",
-        epilog=(
-            f"""
-DEPRECATED: Use 'clan init' instead.
-
-Examples:
-  $ clan init [DIR]
-  Will create a new clan in the specified directory and create it if it
-  doesn't exist yet. The clan will be created from a default template.
-
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/quick-start")}
-        """
-        ),
-        formatter_class=HelpFormatter,
-    )
-
-    clan.register_parser(parser_flake)
 
     parser_templates = subparsers.add_parser(
         "templates",
