@@ -725,7 +725,10 @@ Holds the different machine templates.
 
 
 class TemplatesOutput(TypedDict):
-    """Define Clan templates."""
+    """
+    Define Clan templates.
+
+    """
 
     clan: ReadOnly[TemplatesClanOutput]
     disko: ReadOnly[TemplatesDiskoOutput]
@@ -835,19 +838,28 @@ class SecretsAgeOutput(TypedDict):
 
 
 class SecretsInput(TypedDict):
-    """Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI."""
+    """
+    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
+
+    """
 
     age: NotRequired[SecretsAgeInput]
 
 
 class SecretsOutput(TypedDict):
-    """Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI."""
+    """
+    Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
+
+    """
 
     age: ReadOnly[SecretsAgeOutput]
 
 
 class TemplatesInput(TypedDict):
-    """Define Clan templates."""
+    """
+    Define Clan templates.
+
+    """
 
     clan: NotRequired[TemplatesClanInput]
     disko: NotRequired[TemplatesDiskoInput]

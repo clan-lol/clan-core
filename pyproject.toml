@@ -64,3 +64,6 @@ lint.ignore = [
 "**/fixtures/*.py" = [
   "S101"     # assert
 ]
+"**/nix_models/typing.py" = [
+  "D200"     # unnecessary-multiline-docstring (generated file)
+]
