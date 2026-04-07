@@ -343,15 +343,15 @@ def test_age_get_identity_env_vars(
     store = age.SecretStore(flake=flake_obj)
 
     # AGE_KEYFILE is already set by setup_age_flake
-    content, path = store.get_identity()
+    content, paths = store.get_identity()
     assert content is None
-    assert path == age_key_file
+    assert paths == [age_key_file]
 
     # Test AGE_KEY takes priority
     monkeypatch.setenv("AGE_KEY", age_keys[0].privkey)
-    content, path = store.get_identity()
+    content, paths = store.get_identity()
     assert content == age_keys[0].privkey
-    assert path is None
+    assert paths == []
 
     # Test AGE_KEYFILE with non-existent path
     monkeypatch.delenv("AGE_KEY")
@@ -387,9 +387,9 @@ def test_age_get_identity_fallback_paths(
         [fake_identity],
     )
 
-    content, path = store.get_identity()
+    content, paths = store.get_identity()
     assert content is None
-    assert path == fake_identity
+    assert paths == [fake_identity]
 
 
 @pytest.mark.broken_on_darwin

@@ -138,17 +138,23 @@ Export all vars for all machines to a folder:
 $ clan vars export /tmp/vars-dump
 ```
 
-The output folder must not already exist. The folder structure will contain one file per variable, organized by machine and generator:
+The output folder must not already exist. The folder structure groups variables by their placement (per-machine, shared across machines, or — for upcoming flake-level generators — per export key). Within each placement bucket there is one directory per generator and one file per variable:
 
 ```text
 /tmp/vars-dump/
-  machine1/
-    root-password/password-hash
-    ssh-keys/pubkey
-    ssh-keys/privkey
-  machine2/
-    root-password/password-hash
-    ...
+  per-machine/
+    machine1/
+      root-password/password-hash
+      ssh-keys/pubkey
+      ssh-keys/privkey
+    machine2/
+      root-password/password-hash
+      ...
+  shared/
+    wifi/psk
+  per-export/
+    <exports-key>/
+      <generator>/<file>
 ```
 
 !!! warning

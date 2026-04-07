@@ -158,44 +158,48 @@ class SecretStore(StoreBase):
         Path("~/.age/key.txt"),
     ]
 
-    def get_identity(self) -> tuple[str | None, Path | None]:
-        """Get the age identity for decrypting machine keys.
+    def get_identity(self) -> tuple[str | None, list[Path]]:
+        """Get age identities for decrypting machine keys.
 
         Resolution order:
         1. AGE_KEY env var (inline private key)
         2. AGE_KEYFILE env var (path to identity file)
-        3. Well-known file locations (~/.config/age/identities, etc.)
+        3. All existing well-known file locations (~/.config/age/identities, etc.)
 
-        Returns a tuple of (key_content, key_file_path).
-        Either key_content is set (AGE_KEY) or key_file_path is set (AGE_KEYFILE).
+        Returns a tuple of (key_content, key_file_paths).
+        Either key_content is set (AGE_KEY) or key_file_paths is non-empty.
         """
         age_key = os.environ.get("AGE_KEY")
         age_keyfile = os.environ.get("AGE_KEYFILE")
 
         if age_key:
-            return (age_key, None)
+            return (age_key, [])
         if age_keyfile:
             key_path = Path(age_keyfile)
             if not key_path.exists():
                 msg = f"AGE_KEYFILE points to non-existent file: {age_keyfile}"
                 raise ClanError(msg)
-            return (None, key_path)
+            return (None, [key_path])
 
-        # Try well-known locations
+        # Collect all existing well-known identity files
+        found: list[Path] = []
         for candidate in self._IDENTITY_SEARCH_PATHS:
             expanded = candidate.expanduser()
             if expanded.exists():
-                log.debug("Using age identity from %s", expanded)
-                return (None, expanded)
+                log.debug("Found age identity at %s", expanded)
+                found.append(expanded)
 
-        search_paths = ", ".join(str(p) for p in self._IDENTITY_SEARCH_PATHS)
-        msg = (
-            "No age identity found. Set one of:\n"
-            "  - AGE_KEY env var (inline private key)\n"
-            "  - AGE_KEYFILE env var (path to identity file)\n"
-            f"  - Or place an identity file at: {search_paths}"
-        )
-        raise ClanError(msg)
+        if not found:
+            search_paths = ", ".join(str(p) for p in self._IDENTITY_SEARCH_PATHS)
+            msg = (
+                "No age identity found. Set one of:\n"
+                "  - AGE_KEY env var (inline private key)\n"
+                "  - AGE_KEYFILE env var (path to identity file)\n"
+                f"  - Or place an identity file at: {search_paths}"
+            )
+            raise ClanError(msg)
+
+        return (None, found)
 
     # ── Machine key management ────────────────────────────────────────────
 
@@ -351,7 +355,7 @@ class SecretStore(StoreBase):
 
     def _run_age_decrypt(self, encrypted_file: Path) -> bytes:
         """Decrypt an age-encrypted file using identity from environment."""
-        key_content, key_file = self.get_identity()
+        key_content, key_files = self.get_identity()
 
         try:
             if key_content:
@@ -362,10 +366,12 @@ class SecretStore(StoreBase):
                     ),
                 )
             else:
+                age_args = ["--decrypt"]
+                for key_file in key_files:
+                    age_args += ["-i", str(key_file)]
+                age_args.append(str(encrypted_file))
                 result = cmd_run(
-                    self._age_cmd(
-                        ["--decrypt", "-i", str(key_file), str(encrypted_file)]
-                    ),
+                    self._age_cmd(age_args),
                     RunOpts(log=Log.NONE),
                 )
         except ClanCmdError as e:
