@@ -24,7 +24,6 @@ lint.ignore = [
   "D104",    # undocumented-public-package
   "D105",    # undocumented-magic-method
   "D107",    # undocumented-public-init
-  "D200",    # unnecessary-multiline-docstring
   "D203",    # incorrect-blank-line-before-class
   "D213",    # multi-line-summary-second-line
   "D401",    # non-imperative-mood
@@ -62,4 +61,7 @@ lint.ignore = [
 ]
 "**/fixtures/*.py" = [
   "S101"     # assert
+]
+"**/nix_models/typing.py" = [
+  "D200"     # unnecessary-multiline-docstring (generated file)
 ]
