@@ -19,6 +19,26 @@ inventory.instances = {
         tags = [ "all" ];
         # Decide whether or not your server is reachable via https.
         settings.useSSL = true;
+        settings.loki.journal.relabelRules.beforeNormalization = [
+          ''
+            // Create labels from raw journal fields.
+            rule {
+              source_labels = ["__journal_com_docker_swarm_service_name"]
+              regex = "^.*_(.*)$"
+              target_label = "oci_platform_service_name"
+            }
+          ''
+        ];
+        settings.loki.journal.relabelRules.afterNormalization = [
+          ''
+            // Drop debug-level logs after `level` is created.
+            rule {
+              action = "drop"
+              source_labels = ["level"]
+              regex = "debug"
+            }
+          ''
+        ];
       };
 
       # Select one machine as the central monitoring server.
@@ -66,6 +86,11 @@ classDiagram
 ### Client
 
 Clients are machines that create metrics and logs. Those are sent to the central monitoring server for storage and visualization.
+
+Journal relabeling can be customized in two phases:
+
+- `settings.loki.journal.relabelRules.beforeNormalization` for raw journal labels such as `__journal__*`
+- `settings.loki.journal.relabelRules.afterNormalization` for normalized labels such as `instance`, `service_name`, and `level`
 
 The generated monitoring collector config is installed as `/etc/alloy/config.alloy`.
 Additional local collector fragments can be added with `environment.etc."alloy/<name>.alloy"`.
