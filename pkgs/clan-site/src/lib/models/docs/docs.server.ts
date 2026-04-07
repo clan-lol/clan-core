@@ -39,8 +39,8 @@ export class ServerDocs {
     return docs;
   }
 
-  public paths: Record<string, string | undefined> = {};
-  public titles: Record<string, string | undefined> = {};
+  public filenamePathMap: Record<string, string | undefined> = {};
+  public pathTitleMap: Record<string, string | undefined> = {};
   public nav!: ServerNav;
   #dirs: readonly string[];
 
@@ -49,7 +49,7 @@ export class ServerDocs {
   }
 
   public async renderFile(filename: string): Promise<void> {
-    const path = this.paths[filename];
+    const path = this.filenamePathMap[filename];
     if (path === undefined) {
       return;
     }
@@ -58,12 +58,12 @@ export class ServerDocs {
   }
 
   public async removeFile(filename: string): Promise<void> {
-    const path = this.paths[filename];
+    const path = this.filenamePathMap[filename];
     if (!path) {
       return;
     }
-    this.paths[filename] = undefined;
-    this.titles[filename] = undefined;
+    this.filenamePathMap[filename] = undefined;
+    this.pathTitleMap[filename] = undefined;
     const dir = pathutil.join(articlesDir, path);
     await Promise.all([
       rm(pathutil.join(dir, "+page.ts")),
@@ -72,7 +72,7 @@ export class ServerDocs {
   }
 
   async #renderAllFiles(): Promise<void> {
-    const paths: Record<string, string> = {};
+    const filenamePathMap: Record<string, string> = {};
     for (const dir of this.#dirs) {
       // eslint-disable-next-line no-await-in-loop
       for await (const dirent of await opendir(dir, { recursive: true })) {
@@ -91,21 +91,21 @@ export class ServerDocs {
           name = "";
         }
         const filename = pathutil.join(dirent.parentPath, dirent.name);
-        if (filename in this.paths) {
+        if (filename in this.filenamePathMap) {
           continue;
         }
         const base = pathutil.relative(dir, dirent.parentPath);
         const path = !base && !name ? "" : pathutil.join(base, name);
-        paths[filename] = path;
+        filenamePathMap[filename] = path;
       }
     }
 
     const outputs = await asyncMapObjectKeyValues(
-      paths,
+      filenamePathMap,
       async ([filename, path]) => [path, await compileFile(filename)],
     );
-    this.paths = paths;
-    this.titles = mapObjectValues(outputs, ([, output]) => output.title);
+    this.filenamePathMap = filenamePathMap;
+    this.pathTitleMap = mapObjectValues(outputs, ([, output]) => output.title);
     this.nav = await ServerNav.init(this);
 
     await Promise.all([

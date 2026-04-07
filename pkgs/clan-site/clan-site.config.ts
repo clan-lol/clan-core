@@ -1,10 +1,10 @@
 import type { NavItemsConfig as DocsNavItems } from "#lib/models/docs.ts";
-import { fileURLToPath } from "node:url";
 import {
   getCustomMedia,
   getGeneratedDocsDir,
   getVersion,
 } from "#lib/util.server.ts";
+import pathutil from "node:path";
 
 export const version = await getVersion();
 export const customMedia = await getCustomMedia();
@@ -15,11 +15,12 @@ export const codeDarkTheme = "catppuccin-macchiato";
 export const maxTocDepth = 3;
 export const copyButtonMessageDelay = 3000;
 export const docsSrcDirs = [
-  fileURLToPath(new URL("../../docs/site", import.meta.url)),
+  pathutil.resolve(import.meta.dirname, "../../docs/site"),
   getGeneratedDocsDir(),
 ] as const;
-export const docsCodeEmbedsDir = fileURLToPath(
-  new URL("../../docs/code-examples", import.meta.url),
+export const docsCodeEmbedsDir = pathutil.resolve(
+  import.meta.dirname,
+  "../../docs/code-examples",
 );
 export const docsBase = "/docs" as const;
 export const docsNav: DocsNavItems = [
@@ -161,43 +162,15 @@ export const docsNav: DocsNavItems = [
       },
       {
         label: "Options",
-        children: [
-          "reference/options/clan",
-          "reference/options/clan_inventory",
-          "reference/options/clan_service",
-        ],
+        pathPrefix: "reference/options",
       },
       {
         label: "clan.core (Machine Options)",
-        children: [
-          "reference/clan.core",
-          "reference/clan.core/backups",
-          "reference/clan.core/deployment",
-          "reference/clan.core/networking",
-          "reference/clan.core/postgresql",
-          "reference/clan.core/settings",
-          "reference/clan.core/sops",
-          "reference/clan.core/state",
-          "reference/clan.core/vars",
-        ],
+        pathPrefix: "reference/clan.core",
       },
       {
         label: "CLI",
-        children: [
-          "reference/cli",
-          "reference/cli/backups",
-          "reference/cli/flakes",
-          "reference/cli/flash",
-          "reference/cli/init",
-          "reference/cli/machines",
-          "reference/cli/select",
-          "reference/cli/secrets",
-          "reference/cli/show",
-          "reference/cli/ssh",
-          "reference/cli/state",
-          "reference/cli/templates",
-          "reference/cli/vars",
-        ],
+        pathPrefix: "reference/cli",
       },
       "reference/clanLib",
       {
@@ -225,38 +198,7 @@ export const docsNav: DocsNavItems = [
       "services/definition",
       {
         label: "Official",
-        children: [
-          "services/official/admin",
-          "services/official/borgbackup",
-          "services/official/certificates",
-          "services/official/coredns",
-          "services/official/data-mesher",
-          "services/official/dm-dns",
-          "services/official/dyndns",
-          "services/official/emergency-access",
-          "services/official/garage",
-          "services/official/hello-world",
-          "services/official/internet",
-          "services/official/importer",
-          "services/official/kde",
-          "services/official/localbackup",
-          "services/official/matrix-synapse",
-          "services/official/mycelium",
-          "services/official/monitoring",
-          "services/official/ncps",
-          "services/official/p2p-ssh-iroh",
-          "services/official/packages",
-          "services/official/pki",
-          "services/official/sshd",
-          "services/official/syncthing",
-          "services/official/trusted-nix-caches",
-          "services/official/tor",
-          "services/official/users",
-          "services/official/wifi",
-          "services/official/wireguard",
-          "services/official/yggdrasil",
-          "services/official/zerotier",
-        ],
+        pathPrefix: "services/official",
       },
       "services/community",
     ],

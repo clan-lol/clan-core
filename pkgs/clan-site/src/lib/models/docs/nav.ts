@@ -15,6 +15,10 @@ export type NavItemConfig =
   | {
       readonly label: string;
       readonly url: string;
+    }
+  | {
+      readonly label: string;
+      readonly pathPrefix: string;
     };
 
 export type NavPointer = readonly number[];

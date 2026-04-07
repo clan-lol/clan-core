@@ -85,7 +85,7 @@ export class ServerNav {
   async #toNavItem(navItem: NavItemConfig): Promise<NavItemInput> {
     if (typeof navItem === "string") {
       return {
-        label: this.#docs.titles[navItem] || "<Missing Page>",
+        label: this.#docs.pathTitleMap[navItem] || "<Missing Page>",
         path: toDocsPath(navItem),
       };
     }
@@ -106,10 +106,32 @@ export class ServerNav {
       };
     }
 
+    if ("pathPrefix" in navItem) {
+      return {
+        label: navItem.label,
+        open: false,
+        children: this.#import(navItem.pathPrefix),
+      };
+    }
+
     return {
       label: navItem.label,
       url: navItem.url,
     };
+  }
+
+  #import(pathPrefix: string): NavItemsInput {
+    const paths = Object.values(this.#docs.filenamePathMap).filter(
+      (path) =>
+        path !== undefined &&
+        (path === pathPrefix || path.startsWith(`${pathPrefix}/`)),
+    ) as string[];
+    return paths
+      .toSorted((a, b) => a.localeCompare(b))
+      .map((path) => ({
+        label: this.#docs.pathTitleMap[path] || "<Missing Page>",
+        path: toDocsPath(path),
+      }));
   }
 }
 
