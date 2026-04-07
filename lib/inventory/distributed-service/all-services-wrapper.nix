@@ -1,6 +1,7 @@
 # Wraps all services in one fixed point module
 {
   directory,
+  varsDirectory ? null,
   exports,
   exportInterfaces,
   meta,
@@ -27,9 +28,11 @@ in
           class = "clan.service";
           specialArgs = {
             clanLib = specialArgs.clanLib;
+            # When varsDirectory is set (test framework), use it instead of directory
+            # so that getPublicValue reads from the generated vars directory.
+            directory = if varsDirectory != null then varsDirectory else directory;
             inherit
               exports
-              directory
               meta
               ;
           };

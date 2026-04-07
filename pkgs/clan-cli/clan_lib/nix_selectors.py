@@ -256,6 +256,23 @@ def vars_password_store_secret_location(system: str, machines: list[str]) -> str
     return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?password-store.?secretLocation"
 
 
+@static_selector
+def vars_settings_recipients() -> str:
+    return "clanInternals.vars.settings.?recipients"
+
+
+@machines_selector
+def vars_settings_age_key_file(system: str, machines: list[str]) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.settings.?age.?keyFile"
+
+
+@machines_selector
+def vars_age_secret_location(system: str, machines: list[str]) -> str:
+    prefix = get_machine_prefix()
+    return f"{prefix}.{system}.{{{','.join(machines)}}}.config.clan.core.vars.?age.?secretLocation"
+
+
 @machines_selector
 def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
     prefix = get_machine_prefix()

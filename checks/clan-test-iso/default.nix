@@ -119,6 +119,8 @@ nixosLib.runTest (
           qemu_proc = subprocess.Popen(
             qemu_cmd,
             shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
           )
 
           ssh_cmd = [
@@ -134,6 +136,8 @@ nixosLib.runTest (
           # Wait for SSH to become available by trying to connect
           print(f"Waiting for SSH on host port {host_port}...")
           for i in range(300):
+              if qemu_proc.poll() is not None:
+                  raise Exception(f"QEMU exited prematurely with code {qemu_proc.returncode}")
               ret = subprocess.run(ssh_cmd + ["true"], capture_output=True)
               if ret.returncode == 0:
                   print(f"SSH available after {i + 1} attempts")
@@ -159,6 +163,9 @@ nixosLib.runTest (
           )
 
           print("All ISO tests passed!")
+
+          qemu_proc.terminate()
+          qemu_proc.wait()
     '';
   }
 )

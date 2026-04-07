@@ -1,6 +1,5 @@
 # Disk Encryption
 
-
 This guide provides an example setup for a ext4-single-disk ZFS system with native encryption, accessible for decryption remotely.
 
 This guide walks you through setting up a ZFS system with native encryption and remote decryption via SSH. After completing this guide, your machine's root filesystem will be encrypted, and you will be able to unlock it remotely over the network during boot.
@@ -13,13 +12,14 @@ This guide is compatible with systems that have [secure boot disabled](/docs/gui
 
 Replace the highlighted lines below with your own disk ID.
 You can find out your disk ID by running:
+
 ```bash
 ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 ```
 
-
 ::::tabs
 :::tab[Single Disk]
+
 - Copy the configuration below into `machines/<mymachine>/disko.nix`.
 - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
 
@@ -31,8 +31,10 @@ ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOIN
 3. Stalls the boot process until the decryption secret file appears at the expected location
 4. Tells ZFS to read the decryption passphrase from a file
 5. Replace with the disk ID from the `lsblk` output above
+
 :::
 :::tab[Raid 1]
+
 - Copy the configuration below into `machines/<mymachine>/disko.nix`.
 - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
 
@@ -46,6 +48,7 @@ ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOIN
 5. Replace with the disk IDs from the `lsblk` output above
 :::
 ::::
+
 ## Initrd SSH Configuration
 
 Next, copy the configuration below into `machines/<mymachine>/initrd.nix` and include it in your `configuration.nix`.

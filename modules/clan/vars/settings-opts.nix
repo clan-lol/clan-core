@@ -9,6 +9,7 @@ let
     deferredModuleWith
     submoduleWith
     attrsOf
+    listOf
     ;
 
   fileModuleInterface = file: {
@@ -61,6 +62,8 @@ let
         default =
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
+          else if !builtins.pathExists file.config.flakePath then
+            throw "File '${file.config.name}' of generator '${file.config.generatorName}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
               name = "${file.config.generatorName}_${file.config.name}";
@@ -102,6 +105,7 @@ in
       type = lib.types.enum [
         "sops"
         "password-store"
+        "age"
         "vm"
         "fs"
         "custom"
@@ -189,6 +193,35 @@ in
         modules = [ storeModule ];
       });
     };
+
+    recipients = mkOption {
+      type = lib.types.submodule {
+        options = {
+          hosts = mkOption {
+            type = attrsOf (listOf str);
+            default = { };
+            description = ''
+              Age public keys per host for secret encryption.
+              Example:
+                recipients.hosts.myhost = [ "age1..." ];
+            '';
+          };
+          default = mkOption {
+            type = listOf str;
+            default = [ ];
+            description = ''
+              Fallback age recipients used when no host-specific recipients are configured.
+              Only applies to machines without entries in `recipients.hosts`.
+            '';
+          };
+        };
+      };
+      default = { };
+      description = ''
+        Age recipients configuration for the age secret store.
+      '';
+    };
+
   };
 
   config.stores = {
@@ -200,6 +233,9 @@ in
     };
     "password-store" = {
       pythonModule = "clan_lib.vars.secret_modules.password_store";
+    };
+    age = {
+      pythonModule = "clan_lib.vars.secret_modules.age";
     };
   };
   config.publicStores = {

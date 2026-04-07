@@ -18,6 +18,7 @@ service](https://docs.clan.lol/main/services/official/pki), to
 have your internal services be secured with SSL.
 
 This service requires the following dependencies to work:
+
 - [**data-mesher**](https://docs.clan.lol/main/services/official/data-mesher): Must be configured and running on all machines
 - **endpoints exports**: Other services must export [`endpoints.hosts`](https://docs.clan.lol/main/reference/options/clan_service/#exports) for DNS
   entries to be generated
@@ -43,7 +44,6 @@ inventory.instances = {
   domain to it
 - A systemd path unit watches for zone file changes and reloads unbound
   automatically
-
 
 ## Signing and Pushing Zone Files
 

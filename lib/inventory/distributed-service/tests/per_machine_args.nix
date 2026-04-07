@@ -78,6 +78,18 @@ in
 
 {
 
+  # machine.roles should only contain roles the machine is actually assigned to
+  test_per_machine_roles_only_assigned = {
+    inherit res;
+    expr = {
+      # jon is only a peer, not a server, so machine.roles should only contain "peer"
+      jonRoles = res.config._services.allServices.self-A.result.allMachines.jon.passthru.machine.roles;
+    };
+    expected = {
+      jonRoles = [ "peer" ];
+    };
+  };
+
   # settings should evaluate
   test_per_machine_receives_instance_settings = {
     inherit res;

@@ -1,13 +1,8 @@
 # Community
 
-
-
 :::admonition[Under Construction]{type=danger}
 Currently under construction use with caution
 :::
-
-
-
 
 ## Structure
 
@@ -31,6 +26,7 @@ The user can choose any valid options from the hardware report.
 The file itself is then copied to `machines/{machineName}/disko.nix` and will be automatically loaded by the machine.
 
 `ext4-single-disk/default.nix`
+
 ```nix
 {
   disko.devices = {
@@ -49,6 +45,7 @@ The file itself is then copied to `machines/{machineName}/disko.nix` and will be
 Each template must declare the options of its placeholders depending on the hardware-report.
 
 `api/disk.py`
+
 ```py
 templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
     "ext4-single-disk": {
@@ -67,6 +64,7 @@ Introducing new local or global placeholders requires contributing to clan-core 
 Some placeholders provide predefined functionality
 
 - `uuid`: In most cases we recommend adding a unique id to all disks. This prevents the system to false boot from i.e. hot-plugged devices.
+
     ```nix
     disko.devices = {
       disk = {
@@ -77,7 +75,6 @@ Some placeholders provide predefined functionality
       }
     }
     ```
-
 
 ## Readme
 
@@ -93,6 +90,5 @@ description = "Simple disk schema for single disk setups"
 Use this schema for simple setups where ....
 
 ```
-
 
 The format and fields of this file is not clear yet. We might change that once fully implemented.

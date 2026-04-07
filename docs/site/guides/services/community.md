@@ -282,8 +282,8 @@ In the inventory we the assign machines to a type, e.g. by using tags
 instances.machine-type = {
   module.input = "self";
   module.name = "@pinpox/machine-type";
-  roles.desktop.tags.desktop = { };
-  roles.server.tags.server = { };
+  roles.desktop.tags = [ "desktop" ];
+  roles.server.tags = [ "server" ];
 };
 ```
 

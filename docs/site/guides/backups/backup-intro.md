@@ -1,8 +1,6 @@
 # Backup Intro
 
-
 Set up automated, encrypted backups for your Clan machines so you can restore files and databases when needed. Clan uses [BorgBackup](https://www.borgbackup.org/) under the hood for secure, deduplicated backups.
-
 
 ## Basic File and Directory Backups
 
@@ -22,11 +20,10 @@ At its simplest, a state defines which folders to back up. This configuration go
 ```
 
 **Key points:**
+
 - Specify absolute paths to directories you want to protect
 - Multiple folders can be listed per state
 - The backup system will automatically include all files and subdirectories
-
-
 
 ## Hooks
 
@@ -40,7 +37,6 @@ Hooks allow you to execute custom scripts during the backup lifecycle. Use them 
 | `postBackupScript` | After backup completes | Restart services, cleanup temp files |
 | `preRestoreScript` | Before restoration starts | Prepare system, stop conflicting services |
 | `postRestoreScript` | After restoration completes | Restart services, verify integrity |
-
 
 ### Example: Pre and Post Backup Scripts
 
@@ -77,6 +73,7 @@ clan.core.state.nextcloud = {
 ```
 
 :::admonition[Example: Pre and Post Restore Scripts]{type=tip collapsible}
+
 ```nix
 clan.core.state.linkding = {
   folders = [ "/var/backup/linkding" ];
@@ -131,6 +128,7 @@ clan.core.state.linkding = {
   '';
 };
 ```
+
 :::
 
 ---
@@ -174,9 +172,3 @@ Enable PostgreSQL backups and define databases to protect:
 - Stores dumps securely in the backup repository
 - Manages service dependencies during restore
 - Recreates the database with correct settings on new deployments
-
-
-
-
-
-

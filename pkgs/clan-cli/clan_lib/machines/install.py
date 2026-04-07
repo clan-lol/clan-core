@@ -269,5 +269,5 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         )
         inventory_store.write(
             inventory,
-            f"Installed {machine.name}",
+            f"update install time of {machine.name}",
         )

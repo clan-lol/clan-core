@@ -2,6 +2,7 @@
 let
   secretsDir = config.clan.core.settings.directory + "/sops/secrets";
   groupsDir = config.clan.core.settings.directory + "/sops/groups";
+  secretPath = name: "${secretsDir}/${name}/secret";
 
   # My symlink is in the nixos module detected as a directory also it works in the repl. Is this because of pure evaluation?
   containsSymlink =
@@ -39,7 +40,10 @@ in
   };
   config = {
     sops.secrets = builtins.mapAttrs (name: _: {
-      sopsFile = config.clan.core.settings.directory + "/sops/secrets/${name}/secret";
+      sopsFile = builtins.path {
+        inherit name;
+        path = secretPath name;
+      };
       format = "binary";
     }) secrets;
   };

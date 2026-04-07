@@ -10,15 +10,9 @@
     {
       self,
       clan-core,
-      nixpkgs,
       ...
     }:
     let
-      clan_attrs_json =
-        if nixpkgs.lib.pathExists ./clan_attrs.json then
-          builtins.fromJSON (builtins.readFile ./clan_attrs.json)
-        else
-          { };
       clan = clan-core.lib.clan {
         inherit self;
         meta.name = "test_flake_with_core";
@@ -36,7 +30,7 @@
               clan.core.sops.defaultGroups = [ "admins" ];
               clan.virtualisation.graphics = false;
 
-              clan.core.networking.zerotier.controller.enable = true;
+              clan.core.networking.zerotier._roles = [ "controller" ];
               networking.useDHCP = false;
             };
           vm2 =
@@ -47,13 +41,13 @@
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clan.core.networking.zerotier.networkId = "82b44b162ec6c013";
+              clan.core.networking.zerotier._roles = [ "peer" ];
             };
         };
       };
     in
     {
-      clan = clan_attrs_json;
+      clan = { };
       inherit (clan.config) nixosConfigurations nixosModules clanInternals;
     };
 }

@@ -24,7 +24,7 @@ When you create a clan with the default template, it includes a root password se
 inventory.instances = {
   user-root = {
     module.name = "users";
-    roles.default.tags.all = {};
+    roles.default.tags = [ "all" ];
     roles.default.settings = {
       user = "root";
       prompt = true;
@@ -53,7 +53,7 @@ clan vars list test-machine
 
 Output looks similar to:
 
-```
+```console
 user-password-root/user-password-hash ********
 user-password-root/user-password ********
 openssh/ssh.id_ed25519.pub ssh-ed25519 AAAA...
@@ -75,7 +75,7 @@ This decrpts and displays the root password. This is useful when you need to log
 
 Vars are stored in your clan's `vars/` directory:
 
-```
+```text
 vars/
 ├── per-machine/
 │   └── test-machine/
@@ -98,7 +98,7 @@ vars/
 
 ## The Vars Workflow
 
-```
+```text
 1. Add a service to clan.nix
          ↓
 2. Run: clan vars generate test-machine
@@ -125,7 +125,7 @@ vars/
 
 Vars are encrypted with an age key stored at:
 
-```
+```console
 ~/.config/sops/age/keys.txt
 ```
 
@@ -149,10 +149,10 @@ inventory.instances = {
 
 When you run `clan vars generate`:
 
-Clan again scans your clan.nix file and sees there's a need for another key. It will  prompt you for the value for wifi.home/network-name for machines: test-machine
+Clan again scans your clan.nix file and sees there's a need for another key. It will prompt you for the value for wifi.home/network-name for machines: test-machine
 Network SSID: MyHomeNetwork
 
-```
+```console
 Prompting value for wifi.home/network-name for machines: test-machine
 name of the Wi-Fi network: MyNetwork
 Enter the value for wifi.home/password: (hidden): ****
@@ -168,7 +168,7 @@ The `sshd` service automatically generates SSH host keys:
 ```nix
 inventory.instances = {
   sshd = {
-    roles.server.tags.all = {};
+    roles.server.tags = [ "all" ];
   };
 };
 ```
@@ -197,7 +197,6 @@ Then deploy:
 ```bash
 clan machines update test-machine
 ```
-
 
 ## How Vars Connect to Services
 
@@ -234,7 +233,7 @@ direnv allow
 
 Now let's create a laptop configuration for Sally:
 
-```
+```bash
 clan machines create sally-laptop
 ```
 
@@ -261,13 +260,13 @@ Now let's give Sally her own login on the machine so she doesn't have to use roo
 
 Now run the vars generate command, but don't enter a password; have clan generate it for you this time by pressing Enter:
 
-```
+```bash
 clan vars generate sally-laptop
 ```
 
 You will see:
 
-```
+```console
 Prompting value for user-password-root/user-password for machines: sally-laptop
 Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
@@ -277,7 +276,7 @@ Confirm Leave empty to generate automatically (hidden):
 
 Then it asks for Sally's password; this time, provide a password of your choice:
 
-```
+```console
 Prompting value for user-password-sally/user-password for machines: sally-laptop
 Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
@@ -285,37 +284,37 @@ Confirm Leave empty to generate automatically (hidden):
 
 After it finishes, you can retrieve the passwords like so. First, the root password:
 
-```
+```console
 clan vars get sally-laptop user-password-root/user-password
 ```
 
 Which displays the random password it generated, such as:
 
-```
+```text
 dynasty-animate-chemicals-baggie
 ```
 
 And then Sally's password:
 
-```
+```bash
 clan vars get sally-laptop user-password-sally/user-password
 ```
 
 And this time you'll see the password you provided, such as:
 
-```
+```text
 abc123
 ```
 
 Now let's reset Sally's password for her.
 
-```
+```bash
 clan vars generate sally-laptop --generator user-password-sally --regenerate
 ```
 
 And you'll see:
 
-```
+```console
 Prompting value for user-password-sally/user-password for machines: sally-laptop
 Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
@@ -344,14 +343,14 @@ Then, add the following under `inventory.machines`:
 
 Now add the following inside `inventory.instances` under the user-sally attribute set:
 
-```
-    user-fred = {
-      module.name = "users";
-      roles.default.machines."fred-laptop" = {};
-      roles.default.settings = {
-        user = "fred";
-      };
-    };
+```nix
+user-fred = {
+  module.name = "users";
+  roles.default.machines."fred-laptop" = {};
+  roles.default.settings = {
+    user = "fred";
+  };
+};
 ```
 
 Now we're going to create some tags. Tags are just labels we assign to machines, and then we can access all those machines from that single tag. Let's assign the tag "laptop" to both `sally-laptop` and `fred-laptop`. Uppdate the two attribute sets inside `inventory.machine = {` by adding the string "laptop" to the tags:
@@ -374,11 +373,10 @@ Now we're going to create some tags. Tags are just labels we assign to machines,
 And then inside `inventory.instances` (probably under the user-fred attribute set), add the following:
 
 ```nix
-    wifi = {
-      roles.default.tags.laptop = {
-        settings.networks.home = { };
-      };
-    };
+wifi = {
+  roles.default.tags = [ "laptop" ];
+  roles.default.settings.networks.home = { };
+};
 ```
 
 (We've pasted the entire clan.nix at the end of this section for your reference.)
@@ -393,7 +391,7 @@ clan vars generate sally-laptop
 
 You'll see the following:
 
-```
+```console
 Prompting value for wifi.home/network-name for machines: fred-laptop, sally-laptop
 name of the Wi-Fi network: MYNETWORK
 Input received. Processing...
@@ -412,7 +410,7 @@ clan vars generate fred-laptop
 
 (Be careful! Sometimes the order changes and it asks for Fred's password before root.)
 
-```
+```console
 Prompting value for user-password-fred/user-password for machines: fred-laptop
 Leave empty to generate automatically (hidden):
 Confirm Leave empty to generate automatically (hidden):
@@ -469,7 +467,7 @@ Here's the entire clan.nix file:
     };
 
     wifi = {
-      roles.default.tags.laptop = { };
+      roles.default.tags = [ "laptop" ];
       roles.default.settings.networks.home = { };
     };
 
@@ -477,7 +475,7 @@ Here's the entire clan.nix file:
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
-      roles.server.tags.all = { };
+      roles.server.tags = [ "all" ];
       roles.server.settings.authorizedKeys = {
         # Insert the public key that you want to use for SSH access.
         # All keys will have ssh access to all machines ("tags.all" means 'all machines').
@@ -492,7 +490,7 @@ Here's the entire clan.nix file:
       module = {
         name = "users";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "root";
         prompt = true;
@@ -511,14 +509,14 @@ Here's the entire clan.nix file:
       roles.controller.machines."YOUR_CONTROLLER" = { };
       # Peers of the network
       # tags.all means 'all machines' will joined
-      roles.peer.tags.all = { };
+      roles.peer.tags = [ "all" ];
     };
 
     # Docs: https://docs.clan.lol/latest/services/official/tor/
     # Tor network provides secure, anonymous connections to your machines
     # All machines will be accessible via Tor as a fallback connection method
     tor = {
-      roles.server.tags.nixos = { };
+      roles.server.tags = [ "nixos" ];
     };
   };
 

@@ -97,73 +97,66 @@ in
         inherit lib;
         clan-core = self;
       };
-      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.eval-exports
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-exports
       legacyPackages.evalTests-exports = import ./exports/tests.nix {
         inherit lib;
         clan-core = self;
       };
 
-      checks = {
-        eval-lib-resolve-module = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${inventoryTestsSrc}#legacyPackages.${system}.eval-tests-resolve-module
+      # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-relativeDir
+      legacyPackages.evalTests-relativeDir = import ./clanTest/relativeDir-test.nix {
+        inherit lib;
+      };
 
-          touch $out
-        '';
+      # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-lib-relativeDir
+      legacyPackages.evalCheck-eval-lib-relativeDir = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-relativeDir";
+        flakeAttr = "${inventoryTestsSrc}#legacyPackages.${system}.evalTests-relativeDir";
+      };
 
-        eval-lib-build-clan = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
+      legacyPackages.evalCheck-eval-lib-resolve-module = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-resolve-module";
+        flakeAttr = "${inventoryTestsSrc}#legacyPackages.${system}.eval-tests-resolve-module";
+      };
 
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${
-              self.filter {
-                include = [
-                  "flake.nix"
-                  "clanServices"
-                  "flakeModules"
-                  "inventory.json"
-                  "lib"
-                  "machines"
-                  "nixosModules"
-                  "darwinModules"
-                  "modules"
-                ];
-              }
-            }#legacyPackages.${system}.evalTests-build-clan
+      legacyPackages.evalCheck-eval-lib-build-clan = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-build-clan";
+        flakeAttr = "${
+          self.filter {
+            include = [
+              "flake.nix"
+              "clanServices"
+              "flakeModules"
+              "inventory.json"
+              "lib"
+              "machines"
+              "nixosModules"
+              "darwinModules"
+              "modules"
+            ];
+          }
+        }#legacyPackages.${system}.evalTests-build-clan";
+      };
 
-          touch $out
-        '';
-
-        eval-lib-exports = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-          export HOME="$(realpath .)"
-
-          nix-unit --eval-store "$HOME" \
-            --extra-experimental-features flakes \
-            --show-trace \
-            ${inputOverrides} \
-            --flake ${
-              self.filter {
-                include = [
-                  "flake.nix"
-                  "flakeModules"
-                  "inventory.json"
-                  "lib"
-                  "machines"
-                  "nixosModules"
-                  "modules"
-                ];
-              }
-            }#legacyPackages.${system}.evalTests-exports
-
-          touch $out
-        '';
+      legacyPackages.evalCheck-eval-lib-exports = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-lib-exports";
+        flakeAttr = "${
+          self.filter {
+            include = [
+              "flake.nix"
+              "flakeModules"
+              "inventory.json"
+              "lib"
+              "machines"
+              "nixosModules"
+              "modules"
+            ];
+          }
+        }#legacyPackages.${system}.evalTests-exports";
       };
     };
 

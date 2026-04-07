@@ -10,7 +10,7 @@
         name = "users";
         input = "clan-core";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         prompt = false;
@@ -24,10 +24,13 @@
         name = "users";
         input = "clan-core";
       };
-      roles.default.tags.all = { };
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "carol";
         share = true;
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ..."
+        ];
       };
     };
 
@@ -43,6 +46,65 @@
   };
 }
 ```
+
+## Integrating home-manager
+
+[home-manager](https://github.com/nix-community/home-manager) manages user-specific dotfiles and packages. You can integrate it with the users service via `extraModules`.
+
+First, add home-manager to your flake inputs:
+
+```nix
+{
+  inputs = {
+    # ... existing inputs
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+  };
+}
+```
+
+Then use `extraModules` to attach home-manager configuration to a user:
+
+```nix
+{
+  inventory.instances = {
+    alice-user = {
+      module.name = "users";
+      roles.default.tags = [ "all" ];
+      roles.default.settings = {
+        user = "alice";
+        groups = [
+          "wheel"
+          "networkmanager"
+        ];
+      };
+      roles.default.extraModules = [ ./users/alice/home.nix ];
+    };
+  };
+}
+```
+
+```nix
+# users/alice/home.nix
+{ self, ... }:
+{
+  imports = [ self.inputs.home-manager.nixosModules.default ];
+
+  home-manager.users.alice = {
+    home.stateVersion = "24.05";
+
+    programs.git = {
+      enable = true;
+      userName = "Alice";
+      userEmail = "alice@example.com";
+    };
+
+    # Add more home-manager configuration here
+  };
+}
+```
+
+The `extraModules` option accepts paths to NixOS modules. These modules are added to every machine that has this user.
 
 ## Migration from `root-password` module
 
@@ -63,7 +125,7 @@ instances = {
   users-root = {
     module.name = "users";
     module.input = "clan-core";
-    roles.default.tags.nixos = { };
+    roles.default.tags = [ "nixos" ];
     roles.default.settings = {
       user = "root";
       prompt = false;  # Set to true if you want to be prompted

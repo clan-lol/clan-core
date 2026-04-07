@@ -10,7 +10,7 @@ inventory.instances = {
       input = "clan-core";
     };
 
-    roles.default.tags.nixos = { };
+    roles.default.tags = [ "nixos" ];
   };
 }
 ```

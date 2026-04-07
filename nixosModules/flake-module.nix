@@ -20,7 +20,10 @@ let
         ../darwinModules/hosts.nix
       ];
       config = {
-        clan.core.clanPkgs = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system};
+        clan.core.clanPkgs = lib.mkDefault {
+          zerotier-members = pkgs.callPackage (self + "/pkgs/zerotier-members") { };
+          zerotierone = pkgs.callPackage (self + "/pkgs/zerotierone") { };
+        };
       };
     };
 in

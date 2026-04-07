@@ -13,6 +13,12 @@
   # you can get a new one by adding
   # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
   # to the installation test.
+  # Age recipients for the age installation test.
+  # Uses the same key pair as pkgs/clan-cli/clan_cli/tests/age_keys.py
+  clan.vars.settings.recipients.hosts.test-install-machine-without-system-with-age = [
+    "age1dhwqzkah943xzc34tc3dlmfayyevcmdmxzjezdgdy33euxwf59vsp3vk3c"
+  ];
+
   clan.machines = {
     test-install-machine-without-system-with-password-store =
       { lib, ... }:
@@ -36,6 +42,27 @@
         ];
       };
     test-install-machine-without-system = ./installation-machine.nix;
+    test-install-machine-without-system-with-age =
+      { lib, ... }:
+      {
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        # Disable the consistency check between clan-core and this machine.
+        # Since clan-core is a clan which uses sops, we need to disable assertions.
+        clan.core.vars.enableConsistencyCheck = false;
+
+        # Override from test-install-machine-without-system:
+        # age activation secrets live at /etc/secret-vars/activation/
+        system.activationScripts.test-vars-activation.text = lib.mkForce ''
+          test -e /etc/secret-vars/activation/test-activation/test || {
+            echo "\nTEST ERROR: Activation secret not found!\n" >&2
+            exit 1
+          }
+        '';
+
+        imports = [
+          ./installation-machine.nix
+        ];
+      };
   }
   // (lib.listToAttrs (
     lib.map (
@@ -45,6 +72,19 @@
         # This is one of ~10 shallow abstractions over
         # flake.nixosModules.test-install-machine-without-system
         hardware.facter.reportPath = import ./facter-report.nix system;
+        imports = [ ./installation-machine.nix ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ))
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-age-${system}" {
+        # Variant with age backend, used only for closureInfo to ensure
+        # age-specific packages (decrypt-age-secrets, etc.) are in the store.
+        hardware.facter.reportPath = import ./facter-report.nix system;
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        clan.core.vars.enableConsistencyCheck = false;
         imports = [ ./installation-machine.nix ];
       }
     ) (lib.filter (lib.hasSuffix "linux") config.systems)
@@ -76,9 +116,11 @@
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
           self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
+          # Age backend variant — ensures age-specific packages are in the store
+          self.nixosConfigurations."test-install-machine-age-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
           pkgs.stdenv.drvPath
           pkgs.bash.drvPath
-          pkgs.buildPackages.xorg.lndir
+          pkgs.buildPackages.lndir
           pkgs.makeShellWrapper
           # Needed for password-store
           pkgs.shellcheck-minimal
@@ -256,6 +298,130 @@
                       "--flake", str(flake_dir),
                       "--yes",
                       "test-install-machine-without-system",
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE'],
+                      "--update-hardware-config", "nixos-facter",
+                      "--no-persist-state",
+                  ]
+                  subprocess.run(clan_cmd, check=True)
+
+              # Shutdown the installer machine gracefully
+              try:
+                  target.shutdown()
+              except BrokenPipeError:
+                  # qemu has already exited
+                  target.connected = False
+
+              # Create a new machine instance that boots from the installed system
+              installed_machine = create_test_machine(target, "${pkgs.qemu_test}", name="after_install")
+              installed_machine.start()
+              installed_machine.wait_for_unit("multi-user.target")
+              installed_machine.succeed("test -f /etc/install-successful")
+            '';
+          } { inherit pkgs self; };
+
+          # With age backend
+          nixos-test-installation-age = self.clanLib.test.baseTest {
+            name = "installation";
+
+            nodes.target = {
+              imports = [ (import ./test-helpers.nix { inherit lib pkgs; }).target ];
+            };
+
+            extraPythonPackages = _p: [
+              self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nixosTestLib
+            ];
+
+            testScript = ''
+              import tempfile
+              import os
+              import subprocess
+              from pathlib import Path
+              from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
+              from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
+
+              # Same key pair as in pkgs/clan-cli/clan_cli/tests/age_keys.py
+              age_privkey = "AGE-SECRET-KEY-1KF8E3SR3TTGL6M476SKF7EEMR4H9NF7ZWYSLJUAK8JX276JC7KUSSURKFK"
+
+              def create_test_machine(oldmachine, qemu_test_bin: str, **kwargs):
+                  """Create a new test machine from an installed disk image"""
+                  start_command = [
+                      f"{qemu_test_bin}/bin/qemu-kvm",
+                      "-cpu",
+                      "max",
+                      "-m",
+                      "3048",
+                      "-virtfs",
+                      "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+                      "-drive",
+                      f"file={oldmachine.state_dir}/target.qcow2,id=drive1,if=none,index=1,werror=report",
+                      "-device",
+                      "virtio-blk-pci,drive=drive1",
+                      "-netdev",
+                      "user,id=net0",
+                      "-device",
+                      "virtio-net-pci,netdev=net0",
+                  ]
+                  machine = create_machine(start_command=" ".join(start_command), **kwargs)
+                  driver.machines.append(machine)
+                  return machine
+
+              target.start()
+
+              # Set up test environment
+              with tempfile.TemporaryDirectory() as temp_dir:
+
+                  # Set up age key file
+                  age_key_dir = Path(temp_dir) / ".age"
+                  age_key_dir.mkdir()
+                  age_key_file = age_key_dir / "key.txt"
+                  age_key_file.write_text(age_privkey)
+                  os.environ["AGE_KEYFILE"] = str(age_key_file)
+
+                  # Prepare test flake and Nix store
+                  flake_dir, _ = prepare_test_flake(
+                      temp_dir,
+                      "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
+                      "${closureInfo}"
+                  )
+
+                  # Set up SSH connection
+                  ssh_conn = setup_ssh_connection(
+                      target,
+                      temp_dir,
+                      "${../assets/ssh/privkey}"
+                  )
+
+                  # Run clan init-hardware-config from host using port forwarding
+                  clan_cmd = [
+                      "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
+                      "machines",
+                      "init-hardware-config",
+                      "--debug",
+                      "--flake", str(flake_dir),
+                      "--yes", "test-install-machine-without-system-with-age",
+                      "--host-key-check", "none",
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE']
+                  ]
+                  subprocess.run(clan_cmd, check=True)
+
+                  # No keygen needed for age backend — machine keys are auto-generated
+                  # during 'clan vars generate' / 'clan machines install'
+
+                  # Run clan install from host using port forwarding
+                  print("Starting 'clan machines install'...")
+                  clan_cmd = [
+                      "${installTestClanCli}/bin/clan",
+                      "machines",
+                      "install",
+                      "--phases", "disko,install",
+                      "--debug",
+                      "--flake", str(flake_dir),
+                      "--yes",
+                      "test-install-machine-without-system-with-age",
                       "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
                       "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],

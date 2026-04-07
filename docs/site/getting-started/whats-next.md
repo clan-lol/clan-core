@@ -10,7 +10,6 @@ You configured machines, users, and services and are able to manage your Clan th
 
 Here are a few ideas to pursue next:
 
-
 ### Generate Vars
 
 Typically, this step is handled automatically when a machine is deployed. However, to enable the use of `nix flake check` with your configuration, it must be completed manually beforehand.
@@ -20,7 +19,6 @@ To generate all necessary variables and secrets, execute the following command:
 ```bash
 clan vars generate
 ```
-
 
 ### Check Configuration
 
@@ -37,16 +35,12 @@ This command helps ensure that your system configuration is correct and free fro
 You can integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase.
 :::
 
-
 ### Backups
 
 We recommend to set up backups at this point on all machines.
 
 Please follow our [detailed backup guide](/docs/guides/backups/backup-intro) and keep your files safe.
 
-
 ### Migrate Existing Devices
 
 You can [migrate additional existing systems](/docs/guides/migrations/convert-existing-NixOS-configuration) into your Clan following our extended guides.
-
-

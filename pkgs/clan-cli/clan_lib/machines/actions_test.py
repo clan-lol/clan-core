@@ -289,7 +289,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     )
     new_tags = ["managed1", "managed2"]
     set_value_by_path(inventory, "machines.jon.tags", [*curr_tags, *new_tags])
-    inventory_store.write(inventory, message="Test writeability")
+    inventory_store.write(inventory, message="test writeability")
 
     # Check that the tags were updated
     persisted = inventory_store._get_persisted()

@@ -78,6 +78,7 @@ class Peer:
 class Network:
     peers: dict[str, Peer]
     module_name: str
+    instance_name: str | None = None
     priority: int = 1000
 
     @cached_property
@@ -110,7 +111,7 @@ class Network:
 
     def remote(self, peer: str) -> list["Remote"]:
         # TODO raise exception if peer is not in peers
-        return self.module.remote(self.peers[peer])
+        return self.module.remote(self.peers[peer], self)
 
 
 @dataclass(frozen=True)
@@ -122,7 +123,7 @@ class NetworkTechnologyBase(ABC):
         pass
 
     @abstractmethod
-    def remote(self, peer: Peer) -> list["Remote"]:
+    def remote(self, peer: Peer, network: "Network") -> list["Remote"]:
         pass
 
     @abstractmethod
@@ -188,6 +189,7 @@ def networks_from_flake(flake: Flake) -> dict[str, Network]:
         networks[network_name] = Network(
             peers=peers,
             module_name=network["networking"]["module"],
+            instance_name=network_name,
             priority=network["networking"]["priority"],
         )
     return networks

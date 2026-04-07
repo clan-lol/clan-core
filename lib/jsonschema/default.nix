@@ -86,6 +86,7 @@ let
       listOf = "listOf";
       attrsOf = "attrsOf";
       lazyAttrsOf = "attrsOf";
+      attrTag = "attrTag";
 
       anything = "any";
       unspecified = "any";
@@ -206,6 +207,7 @@ let
         submodule = mkSubmoduleNode subctx option;
         listOf = mkListOfNode subctx option;
         attrsOf = mkAttrsOfNode subctx option;
+        attrTag = mkAttrTagNode subctx option;
         any = {
           jsonschema = AnyJson // description;
           inherit isRequired;
@@ -593,6 +595,78 @@ let
       // description;
     in
     if node == null then
+      null
+    else
+      {
+        jsonschema = ref typeName jsonschema;
+        inherit isRequired;
+      };
+
+  mkAttrTagNode =
+    ctx@{
+      mode,
+      typePrefix,
+      isRequired,
+      description,
+      getRenamedType,
+      ...
+    }:
+    option:
+    let
+      /*
+        Each attribute in an attrTag is essential an option with a type
+
+        declaration ::
+        {
+          variant1 = mkOption {}
+          variant2 = mkOption {}
+        }
+
+        definition ::
+        {
+          variant1 = value;
+        }
+      */
+      tagNodes = lib.mapAttrs (
+        tagName: tagOption:
+        let
+          subctx = ctx // {
+            typePrefix = getRenamedType (typePrefix + clanLib.toUpperFirst tagName);
+            shouldInlineBranchTypes = false;
+          };
+        in
+        optionToNode subctx {
+          type = tagOption.type;
+          _type = "option";
+          loc = option.loc ++ [ tagName ];
+        }
+      ) option.type.nestedTypes;
+
+      # Build oneOf: each variant is an object with a single required property (the tag)
+      variants = lib.concatLists (
+        lib.mapAttrsToList (
+          tagName: node:
+          if node == null then
+            [ ]
+          else
+            [
+              {
+                type = "object";
+                properties = {
+                  ${tagName} = node.jsonschema;
+                };
+                required = [ tagName ];
+                additionalProperties = false;
+              }
+            ]
+        ) tagNodes
+      );
+
+      typeName = getRenamedType typePrefix + lib.toSentenceCase mode;
+      jsonschema =
+        (if lib.length variants == 1 then lib.head variants else { oneOf = variants; }) // description;
+    in
+    if variants == [ ] then
       null
     else
       {

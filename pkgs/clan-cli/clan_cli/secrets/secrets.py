@@ -123,7 +123,15 @@ def collect_keys_for_type(folder: Path) -> set[sops.SopsKey]:
                 f"Expected {p} to point to {folder} but points to {target.parent}",
             )
             continue
-        keys.update(read_keys(target))
+        for key in read_keys(target):
+            keys.add(
+                sops.SopsKey(
+                    pubkey=key.pubkey,
+                    username=p.name,
+                    key_type=key.key_type,
+                    source=f"{folder.name}/{p.name}",
+                )
+            )
     return keys
 
 
@@ -229,7 +237,7 @@ def encrypt_secret(
         commit_files(
             files_to_commit,
             flake_dir,
-            f"Update secret {secret_path.parent.name}",
+            f"secrets: update {secret_path.parent.name}",
         )
 
 
@@ -242,7 +250,7 @@ def remove_secret(clan_dir: Path, secret: str, flake_dir: Path) -> None:
     commit_files(
         [path],
         flake_dir,
-        f"Remove secret {secret}",
+        f"secrets: remove {secret}",
     )
 
 
@@ -348,11 +356,15 @@ def disallow_member(
     if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
-    return update_keys(
-        target.parent.parent,
-        collect_keys_for_path(group_folder.parent),
-        age_plugins=age_plugins,
+    changed = [target]
+    changed.extend(
+        update_keys(
+            target.parent.parent,
+            collect_keys_for_path(group_folder.parent),
+            age_plugins=age_plugins,
+        )
     )
+    return changed
 
 
 def has_secret(secret_path: Path) -> bool:
@@ -451,7 +463,7 @@ def rename_command(args: argparse.Namespace) -> None:
     commit_files(
         [old_path, new_path],
         flake.path,
-        f"Rename secret {args.secret} to {args.new_name}",
+        f"secrets: rename {args.secret} to {args.new_name}",
     )
 
 

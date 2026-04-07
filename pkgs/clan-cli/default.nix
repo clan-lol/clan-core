@@ -285,7 +285,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 # Pre-built VMs for impure tests
                 pkgs.stdenv.drvPath
                 pkgs.bash.drvPath
-                pkgs.buildPackages.xorg.lndir
+                pkgs.buildPackages.lndir
                 (pkgs.perl.withPackages (
                   p: with p; [
                     ConfigIniFiles

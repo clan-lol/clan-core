@@ -1,9 +1,10 @@
+from pathlib import Path
 from typing import Any
 
 from clan_lib.vars._types import GeneratorId, Shared
 from clan_lib.vars.prompt import PromptType
 
-from .generator import filter_machine_specific_attrs
+from .generator import filter_machine_specific_attrs, materialize_virtual_fs
 
 
 def test_filter_machine_specific_attrs_removes_platform_attrs() -> None:
@@ -126,3 +127,27 @@ def test_generator_get_previous_value() -> None:
     result2 = gen.get_previous_value(prompt)
     assert result2 == prompt_value
     assert gen._previous_values["test_prompt"] == prompt_value
+
+
+def test_dependencies_as_files(temp_dir: Path) -> None:
+    decrypted_dependencies = {
+        "gen_1": {
+            "var_1a": b"var_1a",
+            "var_1b": b"var_1b",
+        },
+        "gen_2": {
+            "var_2a": b"var_2a",
+            "var_2b": b"var_2b",
+        },
+    }
+    materialize_virtual_fs(decrypted_dependencies, temp_dir)
+    assert temp_dir.is_dir()
+    assert (temp_dir / "gen_1" / "var_1a").read_bytes() == b"var_1a"
+    assert (temp_dir / "gen_1" / "var_1b").read_bytes() == b"var_1b"
+    assert (temp_dir / "gen_2" / "var_2a").read_bytes() == b"var_2a"
+    assert (temp_dir / "gen_2" / "var_2b").read_bytes() == b"var_2b"
+    # ensure the files are not world readable
+    assert (temp_dir / "gen_1" / "var_1a").stat().st_mode & 0o777 == 0o600
+    assert (temp_dir / "gen_1" / "var_1b").stat().st_mode & 0o777 == 0o600
+    assert (temp_dir / "gen_2" / "var_2a").stat().st_mode & 0o777 == 0o600
+    assert (temp_dir / "gen_2" / "var_2b").stat().st_mode & 0o777 == 0o600

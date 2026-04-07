@@ -59,11 +59,36 @@ build)
 	pnpm run build
 	;;
 lint)
+	shift
+	arg=$(getopt -n clan-site -o '' -l 'fix' -- "$@")
+	eval set -- "$arg"
+	unset arg
+	fix=''
+	while true; do
+		case $1 in
+		--fix)
+			fix=1
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+		*)
+			echo >&2 "Unknown flag $1"
+			exit 1
+			;;
+		esac
+	done
 	if [[ ! -e node_modules ]]; then
 		pnpm install
 	fi
 	clean_routes
 	pnpm run prelint
-	pnpm run "/^lint:.+/"
+	if [[ -z $fix ]]; then
+		pnpm run "/^lint:.+/"
+	else
+		pnpm run lint-fix
+	fi
 	;;
 esac

@@ -4,7 +4,6 @@ A **service** is a reusable piece of functionality you can add to your machines.
 
 Instead of manually installing software and editing config files on each machine, you declare what services you want, and Clan sets everything up for you.
 
-
 ## The Basic Pattern
 
 Every service follows the same pattern:
@@ -36,7 +35,7 @@ clan machines update test-machine
 
 SSH into your machine:
 
-```
+```bash
 clan ssh test-machine
 ```
 
@@ -80,9 +79,8 @@ Using tags, you can apply services to multiple machines at once. Every machine a
 inventory.instances = {
   packages = {
     # Install these packages on ALL machines
-    roles.default.tags.all.settings = {
-      packages = [ "vim" "git" "curl" ];
-    };
+    roles.default.tags = [ "all" ];
+    roles.default.settings.packages = [ "vim" "git" "curl" ];
   };
 };
 ```
@@ -105,19 +103,15 @@ inventory.machines = {
   };
 };
 ```
+
 Then you can use the above tags:
 
 ```nix
 inventory.instances = {
   packages = {
     # Only workstations get these packages
-    roles.default.tags.workstation.settings = {
-      packages = [ "firefox" "vlc" ];
-    };
-    # Only servers get these packages
-    roles.default.tags.server.settings = {
-      packages = [ "nginx" "postgresql" ];
-    };
+    roles.default.tags = [ "workstation" ];
+    roles.default.settings.packages = [ "firefox" "vlc" ];
   };
 };
 ```
@@ -160,7 +154,7 @@ You can add as many services as you need:
 inventory.instances = {
   # SSH access
   sshd = {
-    roles.server.tags.all = {};
+    roles.server.tags = [ "all" ];
     roles.server.settings.authorizedKeys = {
       "admin" = "ssh-ed25519 AAAA... admin@example.com";
     };
@@ -168,9 +162,8 @@ inventory.instances = {
 
   # Install packages
   packages = {
-    roles.default.tags.all.settings = {
-      packages = [ "vim" "htop" ];
-    };
+    roles.default.tags = [ "all" ];
+    roles.default.settings.packages = [ "vim" "htop" ];
   };
 
   # WiFi (for laptops)
@@ -182,7 +175,7 @@ inventory.instances = {
 
   # Backups
   borgbackup = {
-    roles.client.tags.all = {};
+    roles.client.tags = [ "all" ];
     roles.server.machines."backup-server" = {};
   };
 };

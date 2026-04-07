@@ -283,5 +283,5 @@ def set_machine_disk_schema(
         commit_file(
             disko_file_path,
             machine.flake.path,
-            commit_message=f"Set disk schema of machine: {machine.name} to {schema_name}",
+            commit_message=f"machines/{machine.name}: set disk schema to {schema_name}",
         )

@@ -35,7 +35,7 @@ Services provided by the community, with no stability guarantees!
 ## clan-community repository
 
 Looking for more community-maintained services and modules? Check out the
-[clan-community](https://git.clan.lol/clan/clan-community) repository — a
+[clan-community](https://git.clan.lol/clan/clan-community) repository, a
 shared collection of services maintained by the clan community.
 
 :::admonition[Add your own!]{type=tip}

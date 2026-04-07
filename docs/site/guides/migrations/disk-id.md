@@ -2,7 +2,7 @@
 
 ## Migrate disko config from `clanModules.disk-id`
 
-If you previously bootstrapped a machine's disk using `clanModules.disk-id`, you should now migrate to a standalone, self-contained disko configuration. This ensures long-term stability and avoids reliance on dynamic values from Clan.
+If you previously bootstrapped a machine's disk using `clanModules.disk-id`, you should now migrate to a standalone, self-contained disko configuration for long-term stability and to avoid reliance on dynamic values from Clan.
 
 If your `disko.nix` currently looks something like this:
 
@@ -57,7 +57,7 @@ You should see output like:
 disk-id/diskId: fcef30a749f8451d8f60c46e1ead726f
 ```
 
-Copy this value — you'll need it in the next step.
+Copy this value. You'll need it in the next step.
 
 ### Step 2: Replace Dynamic Configuration with Static Values
 

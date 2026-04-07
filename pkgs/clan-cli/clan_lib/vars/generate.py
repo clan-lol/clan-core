@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from clan_lib.api import API
+from clan_lib.api.directory import get_clan_dir
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import current_system
@@ -18,8 +19,8 @@ from clan_lib.vars.generator import (
     get_machine_generators,
     get_machine_selectors,
 )
+from clan_lib.vars.migrations import run_migrations
 from clan_lib.vars.prompt import ask
-from clan_lib.vars.secret_modules import sops
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -289,6 +290,12 @@ def run_generators(
     if not machines:
         msg = "At least one machine must be provided"
         raise ClanError(msg)
+
+    # Run pre-evaluation migrations (e.g. zerotier controller rename)
+    flake = machines[0].flake
+    clan_dir = get_clan_dir(flake)
+    run_migrations(clan_dir)
+
     all_generators = get_generators(machines, full_closure=True)
 
     generators_to_run = get_generators(
@@ -340,31 +347,23 @@ def run_generators(
             no_sandbox=no_sandbox,
         )
 
-    # Re-encrypt workaround
-    # For shared generators:
-    # When a machine is added afterwards,
-    # When the generators are already generated from a previous run.
-    # We need to make sure, the newly added machine gets access to the shared secret
+    # Re-encrypt shared secrets if recipients changed (e.g. machine added)
     for generator in [g for g in all_generators if g.share]:
         for file in generator.files:
             # Skip files that are either:
             # - Not encrypted
             # - Don't exist yet
-            # - Wont get deployed
-            if not file.secret or not file.exists or not file.deploy:
+            if not file.secret or not file.exists:
                 continue
 
             for machine in [
                 Machine(name=machine_name, flake=flake)
                 for machine_name in generator.machines
             ]:
-                # Workaround because of a poorly designed Store interface
-                # Recipients should always have access
-                # TODO: Introduce recipient interface into the StoreBase
-                if not isinstance(machine.secret_vars_store, sops.SecretStore):
-                    continue
-                machine.secret_vars_store.ensure_machine_has_access(
-                    generator,
-                    file.name,
+                machine.secret_vars_store.fix(
                     machine.name,
+                    [generator],
+                    file_name=file.name,
                 )
+
+    flake.invalidate_cache()

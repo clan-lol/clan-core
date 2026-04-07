@@ -79,7 +79,7 @@ def create_machine(
             commit_file(
                 machine_dir,
                 flake_dir=clan_dir,
-                commit_message=f"Add machine {machine_name}",
+                commit_message=f"machines: add {machine_name}",
             )
         opts.clan_dir.invalidate_cache()
         inventory = inventory_store.read()
@@ -92,7 +92,7 @@ def create_machine(
             f"machines.{machine_name}",
             new_machine,
         )
-        inventory_store.write(inventory, message=f"machine '{machine_name}'")
+        inventory_store.write(inventory, message=f"add machine {machine_name}")
 
     # Invalidate the cache since this modified the flake
     opts.clan_dir.invalidate_cache()

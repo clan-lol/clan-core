@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 def upload_secret_vars(machine: Machine, host: Host) -> None:
     generators = get_machine_generators([machine.name], machine.flake)
+    machine.secret_vars_store.fix(machine.name, generators=generators)
     machine.secret_vars_store.upload(
         generators,
         machine.name,

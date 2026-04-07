@@ -151,9 +151,10 @@ clanLib.parseScope "myservice:prod:server:backend01"
 Retrieve a single export by scope:
 
 ```nix
-clanLib.getExport
-  { serviceName = "myservice"; machineName = "backend01"; }
-  exports
+clanLib.getExport {
+  serviceName = "myservice";
+  machineName = "backend01";
+} exports
 # => <some data>
 ```
 
@@ -163,15 +164,13 @@ Filter exports matching specific criteria:
 
 ```nix
 # Get all exports for a specific service
-clanLib.selectExports
-  { serviceName = "myservice"; }
-  exports
-# =>  {
-#   <scopes> :: <some data>
-# }
+clanLib.selectExports { serviceName = "myservice"; } exports
+  # =>  {
+  #   <scopes> :: <some data>
+  # }
 
-# Get all exports for a specific machine
-clanLib.selectExports
+  # Get all exports for a specific machine
+  clanLib.selectExports
   { machineName = "backend01"; }
   exports
 # =>  {
@@ -186,8 +185,8 @@ When defining exports, certain restrictions apply based on context:
 1. **`perInstance`**: Can only export to the matching scope.
 2. **`perMachine`**: Can only export to the machine scope.
 3. **Services can only write to**:
-    - Their own service scope (e.g., `service = "myservice"`)
-    - **Not** other services' scopes
+   - Their own service scope (e.g., `service = "myservice"`)
+   - **Not** other services' scopes
 
 These restrictions prevent accidental conflicts and maintain clear data ownership.
 
@@ -196,8 +195,8 @@ These restrictions prevent accidental conflicts and maintain clear data ownershi
 1. **Use the helper functions**: Always use `clanLib.*` functions instead of accessing the internal format directly
 
 2. **Use appropriate scopes**: Export at the most specific scope that makes sense
-    - Machine-level data (IPs, hostnames) - export in `perInstance`
-    - Instance-level configuration - export
+   - Machine-level data (IPs, hostnames) - export in `perInstance`
+   - Instance-level configuration - export
 
 ### Examples
 

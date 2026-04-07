@@ -25,6 +25,7 @@ from clan_cli.secrets.sops import load_age_plugins
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.git import commit_files
 from clan_lib.nix import current_system
 from clan_lib.nix_selectors import vars_sops_default_groups, vars_sops_secret_upload_dir
 from clan_lib.ssh.host import Host
@@ -89,8 +90,8 @@ class SecretStore(StoreBase):
             self.clan_dir,
             machine,
             pub_key,
-            False,
-            age_plugins,
+            force=False,
+            age_plugins=age_plugins,
             flake_dir=self.flake.path,
         )
 
@@ -185,8 +186,7 @@ class SecretStore(StoreBase):
         generator: GeneratorStore,
         var: Var,
         value: bytes,
-    ) -> Path | None:
-
+    ) -> list[Path]:
         add_machines: list[str] = []
         add_groups: list[str] = []
 
@@ -231,7 +231,7 @@ class SecretStore(StoreBase):
             add_groups=add_groups,
             git_commit=False,
         )
-        return secret_folder
+        return [secret_folder]
 
     def get(
         self,
@@ -386,10 +386,25 @@ class SecretStore(StoreBase):
         needs_update = current_recipients != wanted_recipients
         recipients_to_add = wanted_recipients - current_recipients
         var_id = f"{generator.name}/{name}"
+        key_details = []
+        for r in recipients_to_add:
+            if r.source and "/" in r.source:
+                # source is e.g. "machines/amy" or "users/bob"
+                kind, name = r.source.split("/", 1)
+                # e.g. "machine 'amy'" or "user 'bob'"
+                label = f"{kind.rstrip('s')} '{name}'"
+            elif r.source:
+                label = f"'{r.source}'"
+            elif r.username:
+                label = f"'{r.username}'"
+            else:
+                label = "unknown origin"
+            key_details.append(f"  - {r.key_type.name}:{r.pubkey} (key of {label})")
+        keys_str = "\n".join(key_details)
         msg = (
             f"One or more recipient keys were added to secret{' shared' if generator.share else ''} var '{var_id}', but it was never re-encrypted.\n"
             f"This could have been a malicious actor trying to add their keys, please investigate.\n"
-            f"Added keys: {', '.join(f'{r.key_type.name}:{r.pubkey}' for r in recipients_to_add)}\n"
+            f"Added keys:\n{keys_str}\n"
             f"If this is intended, run 'clan vars fix {machine}' to re-encrypt the secret."
         )
         return needs_update, msg
@@ -422,6 +437,7 @@ class SecretStore(StoreBase):
         )
 
         file_found = False
+        files_to_commit: list[Path] = []
         for generator in generators:
             for file in generator.files:
                 # if we check only a single file, continue on all the other ones
@@ -437,30 +453,61 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
+                # Secrets not marked for deployment don't need
+                # machine access — remove stale symlinks if present.
+                if not file.deploy:
+                    machine_link = secret_path / "machines" / machine
+                    if machine_link.exists():
+                        files_to_commit.extend(
+                            disallow_member(
+                                secret_path / "machines", machine, age_plugins
+                            )
+                        )
+                elif not self.machine_has_access(generator.key, file.name, machine):
+                    self.ensure_machine_key(machine)
+                    files_to_commit.extend(
+                        allow_member(
+                            secret_path / "machines",
+                            sops_machines_folder(self.clan_dir),
+                            machine,
+                            age_plugins=age_plugins,
+                            do_update_keys=False,
+                        )
+                    )
+
                 default_groups = self.flake.select(
                     vars_sops_default_groups(current_system(), [machine])
                 )[machine]["sops"]["defaultGroups"]
                 for group in default_groups:
-                    allow_member(
-                        groups_folder(secret_path),
-                        sops_groups_folder(self.clan_dir),
-                        group,
-                        # we just want to create missing symlinks, we call update_keys below:
-                        do_update_keys=False,
-                        age_plugins=age_plugins,
+                    files_to_commit.extend(
+                        allow_member(
+                            groups_folder(secret_path),
+                            sops_groups_folder(self.clan_dir),
+                            group,
+                            # we just want to create missing symlinks, we call update_keys below:
+                            do_update_keys=False,
+                            age_plugins=age_plugins,
+                        )
                     )
 
-                # Cleanup: if this is a shared var not marked for deployment
-                if generator.share and not file.deploy:
-                    machine_link = secret_path / "machines" / machine
-                    if machine_link.exists():
-                        disallow_member(secret_path / "machines", machine, age_plugins)
-
-                update_keys(
-                    secret_path,
-                    collect_keys_for_path(secret_path),
-                    age_plugins=age_plugins,
-                )
+                # Only re-encrypt if the actual recipients in the file
+                # differ from the wanted recipients (e.g. after git merges
+                # that added new machine keys or group members).
+                wanted_recipients = collect_keys_for_path(secret_path)
+                current_recipients = sops.get_recipients(secret_path)
+                if current_recipients != wanted_recipients:
+                    files_to_commit.extend(
+                        update_keys(
+                            secret_path,
+                            wanted_recipients,
+                            age_plugins=age_plugins,
+                        )
+                    )
         if file_name and not file_found:
             msg = f"file {file_name} was not found"
             raise ClanError(msg)
+        commit_files(
+            files_to_commit,
+            self.flake.path,
+            f"secrets: fix vars for {machine}",
+        )

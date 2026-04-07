@@ -1,6 +1,7 @@
 {
   module,
   clanLib,
+  lib,
   ...
 }:
 let
@@ -61,69 +62,85 @@ let
     }).config;
 in
 {
-  test_peers = {
+  # Test structural configuration without requiring generated vars.
+  # joinNetworks depends on pre-generated vars (zerotier-network-id file),
+  # so we only test properties that don't depend on generated values.
+  test_peer_roles = {
     expr = {
-      hasNetworkIds = testFlake.nixosConfigurations.jon.config.services.zerotierone.joinNetworks;
-      isController =
-        testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier.controller.enable;
+      roles = testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier.name;
+      enabled = testFlake.nixosConfigurations.jon.config.services.zerotierone.enable;
     };
     expected = {
-      hasNetworkIds = [ "0e28cb903344475e" ];
-      isController = false;
+      roles = [ "peer" ];
       networkName = "zerotier";
+      enabled = true;
     };
   };
-  test_moon = {
+  test_moon_roles = {
     expr = {
-      hasNetworkIds = testFlake.nixosConfigurations.sara.config.services.zerotierone.joinNetworks;
-      isController =
-        testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.controller.enable;
+      roles = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.name;
+      enabled = testFlake.nixosConfigurations.sara.config.services.zerotierone.enable;
     };
     expected = {
-      hasNetworkIds = [ "0e28cb903344475e" ];
-      isController = false;
+      roles = [
+        "moon"
+        "peer"
+      ];
       networkName = "zerotier";
+      enabled = true;
     };
   };
-  test_controller = {
+  test_controller_roles = {
     expr = {
-      hasNetworkIds = testFlake.nixosConfigurations.bam.config.services.zerotierone.joinNetworks;
-      isController =
-        testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier.controller.enable;
+      roles = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier.name;
+      enabled = testFlake.nixosConfigurations.bam.config.services.zerotierone.enable;
     };
     expected = {
-      hasNetworkIds = [ "0e28cb903344475e" ];
-      isController = true;
+      roles = [
+        "controller"
+        "peer"
+      ];
       networkName = "zerotier";
+      enabled = true;
     };
   };
-  test_peers_no_moon = {
+  test_generator_defined = {
     expr = {
-      hasNetworkIds = testFlakeNoMoon.nixosConfigurations.jon.config.services.zerotierone.joinNetworks;
-      isController =
-        testFlakeNoMoon.nixosConfigurations.jon.config.clan.core.networking.zerotier.controller.enable;
-      networkName = testFlakeNoMoon.nixosConfigurations.jon.config.clan.core.networking.zerotier.name;
+      hasSharedGenerator =
+        testFlake.nixosConfigurations.bam.config.clan.core.vars.generators ? zerotier-controller;
+      sharedFiles = lib.attrNames testFlake.nixosConfigurations.bam.config.clan.core.vars.generators.zerotier-controller.files;
+      hasControllerGenerator =
+        testFlake.nixosConfigurations.bam.config.clan.core.vars.generators ? zerotier;
+      hasPeerGenerator = testFlake.nixosConfigurations.jon.config.clan.core.vars.generators ? zerotier;
     };
     expected = {
-      hasNetworkIds = [ "0e28cb903344475e" ];
-      isController = false;
-      networkName = "zerotier";
+      hasSharedGenerator = true;
+      sharedFiles = [
+        "zerotier-identity-secret"
+        "zerotier-ip"
+        "zerotier-network-id"
+      ];
+      hasControllerGenerator = true;
+      hasPeerGenerator = true;
     };
   };
-  test_controller_no_moon = {
+  test_no_moon_roles = {
     expr = {
-      hasNetworkIds = testFlakeNoMoon.nixosConfigurations.bam.config.services.zerotierone.joinNetworks;
-      isController =
-        testFlakeNoMoon.nixosConfigurations.bam.config.clan.core.networking.zerotier.controller.enable;
-      networkName = testFlakeNoMoon.nixosConfigurations.bam.config.clan.core.networking.zerotier.name;
+      peerRoles = testFlakeNoMoon.nixosConfigurations.jon.config.clan.core.networking.zerotier._roles;
+      controllerRoles =
+        testFlakeNoMoon.nixosConfigurations.bam.config.clan.core.networking.zerotier._roles;
+      saraRoles = testFlakeNoMoon.nixosConfigurations.sara.config.clan.core.networking.zerotier._roles;
     };
     expected = {
-      hasNetworkIds = [ "0e28cb903344475e" ];
-      isController = true;
-      networkName = "zerotier";
+      peerRoles = [ "peer" ];
+      controllerRoles = [
+        "controller"
+        "peer"
+      ];
+      saraRoles = [ "peer" ];
     };
   };
 }

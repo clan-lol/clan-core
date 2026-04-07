@@ -18,7 +18,7 @@ Our mission is simple: to democratize computing by providing tools that empower 
 
 If you're new to Clan and eager to dive in, start with our quickstart guide and explore the core functionalities that Clan offers:
 
-- **Quickstart Guide**: Check out [getting started](https://docs.clan.lol/#starting-with-a-new-clan-project)<!-- [docs/site/index.md](docs/site/index.md) --> to get up and running with Clan in no time.
+- **Quickstart Guide**: Check out [getting started](https://docs.clan.lol/#starting-with-a-new-clan-project) to get up and running with Clan in no time.
 
 ### Managing secrets
 
@@ -30,7 +30,7 @@ In the Clan ecosystem, security is paramount. Learn how to handle secrets effect
 
 The Clan project thrives on community contributions. We welcome everyone to contribute and collaborate:
 
-- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/latest/guides/contributing/CONTRIBUTING/)<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
+- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing](https://docs.clan.lol/latest/guides/contributing/CONTRIBUTING/).
 
 ## Join the revolution
 
@@ -42,4 +42,3 @@ Connect with us and the Clan community for support and discussion:
 
 - [Matrix channel](https://matrix.to/#/#clan:clan.lol) for live discussions.
 - IRC bridge on [hackint#clan](https://chat.hackint.org/#/connect?join=clan) for real-time chat support.
-

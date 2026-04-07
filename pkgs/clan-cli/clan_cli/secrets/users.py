@@ -48,7 +48,7 @@ def add_user(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Add user {name} to secrets",
+        f"secrets: add user {name}",
     )
 
 
@@ -80,7 +80,7 @@ def remove_user(
     # Remove the user from any secret where it was used:
     filter_user_secrets = get_secrets_filter_for_user(clan_dir, name)
     updated_paths.extend(update_secrets(clan_dir, age_plugins, filter_user_secrets))
-    commit_files(updated_paths, flake_dir, f"Remove user {name}")
+    commit_files(updated_paths, flake_dir, f"secrets: remove user {name}")
 
 
 def get_user(clan_dir: Path, name: str) -> set[sops.SopsKey]:
@@ -118,7 +118,7 @@ def add_secret(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Add {user} to secret {secret}",
+        f"secrets: add user {user} to {secret}",
     )
 
 
@@ -137,7 +137,7 @@ def remove_secret(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Remove {user} from secret",
+        f"secrets: remove user {user} from {secret}",
     )
 
 
@@ -166,7 +166,7 @@ def add_user_key(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Add key(s) for user {name} to secrets",
+        f"secrets: add key(s) for user {name}",
     )
 
 
@@ -187,7 +187,7 @@ def remove_user_key(
     commit_files(
         updated_paths,
         flake_dir,
-        f"Remove key(s) for user {name} from secrets",
+        f"secrets: remove key(s) for user {name}",
     )
 
 
