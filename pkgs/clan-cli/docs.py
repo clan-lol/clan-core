@@ -319,7 +319,7 @@ def build_command_reference() -> None:
 
         markdown += f"{cmd.description}\n\n" if cmd.description else ""
 
-        # usage: clan vms run [-h] machine
+        # usage: clan machines update [-h] machine
         markdown += f"""Usage: `clan {cmd.title}`\n\n"""
 
         # options:

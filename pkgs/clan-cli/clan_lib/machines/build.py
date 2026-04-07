@@ -41,7 +41,6 @@ def get_build_target(machine: Machine, build_format: str) -> str:
 
     Special cases:
     - toplevel: config.system.build.toplevel
-    - vm: config.system.build.vm
     - other formats: config.system.build.images.{format}
     """
     flake_ref = (
@@ -53,8 +52,6 @@ def get_build_target(machine: Machine, build_format: str) -> str:
 
     if build_format == "toplevel":
         return f'{flake_ref}#clanInternals.machines."{system}"."{machine.name}".config.system.build.toplevel'
-    if build_format == "vm":
-        return f'{flake_ref}#clanInternals.machines."{system}"."{machine.name}".config.system.build.vm'
 
     # For all other formats, use config.system.build.images.{format}
     return f'{flake_ref}#clanInternals.machines."{system}"."{machine.name}".config.system.build.images.{build_format}'
@@ -62,7 +59,7 @@ def get_build_target(machine: Machine, build_format: str) -> str:
 
 def _is_image_format(build_format: str) -> bool:
     """Check if the build format is an image format that supports secret injection."""
-    return build_format not in ("toplevel", "vm")
+    return build_format not in ("toplevel")
 
 
 def _find_image_file(build_dir: Path, build_format: str) -> Path:

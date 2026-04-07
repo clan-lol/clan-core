@@ -21,7 +21,6 @@
   templateDerivation,
   zerotierone,
   minifakeroot,
-  nixosConfigurations,
   diskoInput,
   ...
 }@args:
@@ -254,13 +253,6 @@ pythonRuntime.pkgs.buildPythonApplication {
 
                 # REMOVEME: once we drop support for 25.11
                 (if pkgs ? chroot-realpath then pkgs.chroot-realpath else pkgs.nixos-init)
-
-                # Tests from linux
-                nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.build.toplevel
-                nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.build.toplevel
-
-                nixosConfigurations."test-vm-persistence-${stdenv.hostPlatform.system}".config.system.clan.vm.create
-                nixosConfigurations."test-vm-deployment-${stdenv.hostPlatform.system}".config.system.clan.vm.create
               ])
               ++ [
                 templateDerivation

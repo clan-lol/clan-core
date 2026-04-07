@@ -18,7 +18,6 @@
   ++ lib.optionals (_class == "nixos") [
     ./image
     ./nixos-facter.nix
-    ./vm.nix
     ./postgresql
     ./machine-id
     ./state-version

@@ -160,7 +160,7 @@ def register_build_parser(parser: argparse.ArgumentParser) -> None:
         "--format",
         type=str,
         default="toplevel",
-        help="Build format: 'toplevel' or 'vm' for special builds, or any format name for config.system.build.images.{format} (e.g., 'iso', 'sd-card'). Default: %(default)s.",
+        help="Build format: 'toplevel' for special builds, or any format name for config.system.build.images.{format} (e.g., 'iso', 'sd-card'). Default: %(default)s.",
     )
 
     parser.add_argument(

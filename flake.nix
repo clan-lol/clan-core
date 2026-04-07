@@ -105,7 +105,6 @@
               ./modules/flake-module.nix
               ./nixosModules/clanCore/vars/flake-module.nix
               ./nixosModules/flake-module.nix
-              ./pkgs/clan-cli/clan_cli/tests/flake-module.nix
               ./pkgs/flake-module.nix
               ./templates/flake-module.nix
             ]

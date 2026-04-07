@@ -74,14 +74,6 @@ let
     };
 in
 {
-  clan.templates.machine.demo-template = {
-    description = "Demo machine for the CLAN project";
-    # path = pkgs.runCommand "demo-template" {} ''
-    #   mkdir -p $out
-    #   echo '{ self, ... }: { imports = [ self.nixosModules.demoModule ]; }' > $out/configuration.nix
-    # '';
-    path = ./demo_template;
-  };
   flake.nixosModules = { inherit morphModule demoModule; };
   perSystem =
     { system, lib, ... }:

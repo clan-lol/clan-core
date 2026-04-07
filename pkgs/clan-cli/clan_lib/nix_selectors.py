@@ -179,20 +179,6 @@ def machine_networking_build_host(system: str, machine: str) -> str:
     return f'{prefix}.{system}.{machine}.config.clan.core.networking."buildHost"'
 
 
-# Requires the VM module to be enabled
-# @machine_selector
-def machine_vm_create(system: str, machine: str) -> str:
-    prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.system.clan.vm.create"
-
-
-# Requires the VM module to be enabled
-# @machine_selector
-def machine_vm_inspect(system: str, machine: str) -> str:
-    prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.vm.inspect"
-
-
 @machine_selector
 def machine_vars_settings_secret_module(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
