@@ -1,10 +1,5 @@
 import { defineConfig } from "vite";
-import docsHmr from "@clan.lol/vite-plugin-docs-hmr";
-import {
-  findNavSiblings,
-  getNavItems,
-  getNavPointer,
-} from "#lib/models/docs.server.ts";
+import docs2routes from "./support/vite-plugin-docs2routes.ts";
 import pagefind from "@clan.lol/vite-plugin-pagefind";
 import replace from "./packages/vite-plugin-replace/index.ts";
 import rm from "@clan.lol/vite-plugin-rm";
@@ -21,23 +16,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    docsHmr({
-      srcDir: "../../docs/site",
-      embedsDir: "../../docs/code-examples",
-      articlesDir: "src/routes/(docs)/docs/[ver]",
-      layoutDir: "src/routes/(docs)",
-      render: {
-        codeLightTheme: siteConfig.codeLightTheme,
-        codeDarkTheme: siteConfig.codeDarkTheme,
-        minLineNumberLines: siteConfig.codeMinLineNumberLines,
-        maxTocDepth: siteConfig.maxTocDepth,
-      },
-      nav: {
-        getItems: getNavItems,
-        findSiblings: findNavSiblings,
-        getPointer: getNavPointer,
-      },
-    }),
+    docs2routes(),
     sveltekit(),
     svg({
       svgoOptions: {
@@ -48,6 +27,11 @@ export default defineConfig({
       specifier: "$config",
       value: siteConfig,
     }),
+    // Remove the version file from the build result. We only use this file
+    // during development for the version switcher. The source exists in the
+    // static folder, and is enough for the dev server to serve this file.
+    // SvelteKit will copy this file to the build result but we don't really
+    // need it in the build result.
     rm({
       paths: [`build/_assets/${siteConfig.version}/docs`],
     }),

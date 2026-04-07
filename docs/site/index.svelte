@@ -4,15 +4,7 @@
   import IconFlash from "$lib/assets/icons/flash.svg?component";
   import { resolve } from "$app/paths";
   import { toDocsPath } from "$lib/models/docs.ts";
-
-  const { data } = $props();
-  // This value is extract from the content of h1 below during prerendering
-  const title = $derived(data.title);
 </script>
-
-<svelte:head>
-  <title>{title}</title>
-</svelte:head>
 
 <hgroup>
   <h1>Sovereign Infrastructure by Design</h1>

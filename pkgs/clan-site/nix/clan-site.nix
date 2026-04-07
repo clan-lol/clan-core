@@ -6,12 +6,13 @@
   pnpmConfigHook,
   stdenv,
   jq,
+  git,
   playwright,
   makeFontsConf,
   mona-sans,
   clan-site-assets,
   clan-site-cli,
-  docs-source,
+  generated-docs,
 }:
 let
   RED = "\\033[1;31m";
@@ -38,6 +39,7 @@ stdenv.mkDerivation (
       root = ../../../.;
       fileset = lib.fileset.unions [
         ../../../VERSION
+        ../../../docs
         ../../../${finalAttrs.pnpmRoot}
       ];
     };
@@ -48,6 +50,7 @@ stdenv.mkDerivation (
       pnpmConfigHook
       clan-site-cli
       jq
+      git
     ];
 
     pnpmDeps = fetchPnpmDeps (
@@ -58,6 +61,7 @@ stdenv.mkDerivation (
     );
 
     env = {
+      GENERATED_DOCS = generated-docs;
       PLAYWRIGHT_BROWSERS_PATH = playwright.browsers.override {
         withFfmpeg = false;
         withFirefox = false;
@@ -72,40 +76,11 @@ stdenv.mkDerivation (
       };
     };
 
-    preBuild = ''
-      # This script is also sourced by the devShell, need to take care of different
-      # working directories
-      if [[ ! -e clan-site.config.ts ]]; then
-        cd pkgs/clan-site
-      fi
-
-      mkdir -p src/lib/assets
-      cp -R ${clan-site-assets}/* src/lib/assets
-      chmod -R +w src/lib/assets
-
-      playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
-      if [[ $playwright_ver != '${playwright.version}' ]]; then
-        echo >&2 -en '${RED}'
-        echo >&2 "Error: The npm package "playwright" is of a different version ($playwright_ver) than the one used in nixpkgs (${playwright.version})"
-        echo >&2 "Run this command to update the former"
-        echo >&2
-        echo >&2 "  pnpm add -E --filter @clan.lol/svelte-md playwright@${playwright.version}"
-        echo >&2
-        echo >&2 -en '${NC}'
-        exit 1
-      fi
-    '';
     buildPhase = ''
       runHook preBuild
-
-      cp -r ${docs-source} ../../docs
-      echo "---------"
-      ls -la .
-      ls -la ../../docs/site
-      echo "---------"
-
+      cd ${finalAttrs.pnpmRoot}
+      ${finalAttrs.passthru.devShellHook}
       clan-site build
-
       runHook postBuild
     '';
     installPhase = ''
@@ -115,6 +90,23 @@ stdenv.mkDerivation (
     '';
     passthru = {
       devShellEnv = lib.removeAttrs finalAttrs.env [ "FONTCONFIG_FILE" ];
+      devShellHook = ''
+        mkdir -p src/lib/assets
+        cp -R ${clan-site-assets}/* src/lib/assets
+        chmod -R +w src/lib/assets
+
+        playwright_ver=$(jq --raw-output .dependencies.playwright ${../packages/svelte-md/package.json})
+        if [[ $playwright_ver != '${playwright.version}' ]]; then
+          echo >&2 -en '${RED}'
+          echo >&2 "Error: The npm package "playwright" is of a different version ($playwright_ver) than the one used in nixpkgs (${playwright.version})"
+          echo >&2 "Run this command to update the former"
+          echo >&2
+          echo >&2 "  pnpm add -E --filter @clan.lol/svelte-md playwright@${playwright.version}"
+          echo >&2
+          echo >&2 -en '${NC}'
+          exit 1
+        fi
+      '';
       tests = {
         "${finalAttrs.pname}-lint" = stdenv.mkDerivation {
           name = "${finalAttrs.pname}-lint";
@@ -124,11 +116,11 @@ stdenv.mkDerivation (
             nativeBuildInputs
             pnpmDeps
             env
-            preBuild
             ;
           buildPhase = ''
             runHook preBuild
-            cp -r ${docs-source} ../../docs
+            cd ${finalAttrs.pnpmRoot}
+            ${finalAttrs.passthru.devShellHook}
             clan-site lint
             runHook postBuild
           '';

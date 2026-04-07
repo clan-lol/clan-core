@@ -15,11 +15,10 @@
   },
   "engineStrict": true,
   "scripts": {
-    "predev": "node prerender.ts && MODE=development vite build --mode development --configLoader native && svelte-kit sync",
+    "predev": "MODE=development vite build --mode development --configLoader native",
     "dev": "MODE=development vite dev --configLoader native --host --strictPort",
-    "prebuild": "node prerender.ts && svelte-kit sync",
     "build": "MODE=production vite build --configLoader native",
-    "prelint": "node prerender.ts && svelte-kit sync",
+    "prelint": "MODE=production vite build --configLoader native",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint --flag unstable_native_nodejs_ts_config --concurrency auto",
     "lint:typescript": "svelte-check",

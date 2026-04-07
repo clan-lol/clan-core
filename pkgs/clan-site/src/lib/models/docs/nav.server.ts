@@ -7,108 +7,110 @@ import type {
   NavPointer,
   NavSibling,
 } from "#lib/models/docs.ts";
+import type { ServerDocs } from "./docs.server.ts";
 import { docsNav } from "#config";
 import { toDocsPath } from "./docs.server.ts";
 import { visit } from "#lib/util.ts";
 
-export async function getNavItems(
-  titles: Readonly<Record<string, string>>,
-): Promise<NavItemsInput> {
-  return await toNavItems(docsNav, titles);
-}
-
-export async function toNavItems(
-  navItems: NavItemsConfig,
-  titles: Readonly<Record<string, string>>,
-): Promise<NavItemsInput> {
-  return await Promise.all(
-    navItems.map(async (navItem) => await toNavItem(navItem, titles)),
-  );
-}
-
-export async function toNavItem(
-  navItem: NavItemConfig,
-  titles: Readonly<Record<string, string>>,
-): Promise<NavItemInput> {
-  if (typeof navItem === "string") {
-    return {
-      label: titles[navItem] ?? "<Missing Page>",
-      path: toDocsPath(navItem),
-    };
+export class ServerNav {
+  public static async init(docs: ServerDocs): Promise<ServerNav> {
+    const nav = new ServerNav(docs);
+    nav.#items = await nav.#toNavItems(docsNav);
+    return nav;
   }
 
-  if ("children" in navItem) {
-    const children = await toNavItems(navItem.children, titles);
-    return {
-      label: navItem.label,
-      open: Boolean(navItem.open),
-      children,
-    };
+  #docs: ServerDocs;
+  #items!: NavItemsInput;
+  public get items(): NavItemsInput {
+    return this.#items;
+  }
+  private constructor(docs: ServerDocs) {
+    this.#docs = docs;
   }
 
-  if ("path" in navItem) {
-    return {
-      label: navItem.label,
-      path: toDocsPath(navItem.path),
-    };
+  public getPointer(path: string): NavPointer {
+    const pointer: number[] = [];
+    visit(this.#items, (navItem, i, parents) => {
+      if ("children" in navItem || !("path" in navItem)) {
+        return;
+      }
+      if (navItem.path === toDocsPath(path)) {
+        pointer.push(...parents.map((parent) => parent.index), i);
+      }
+    });
+    return pointer;
   }
 
-  return {
-    label: navItem.label,
-    url: navItem.url,
-  };
-}
-
-export function getNavPointer(
-  navItems: NavItemsInput,
-  path: string,
-): NavPointer {
-  const pointer: number[] = [];
-  visit(navItems, (navItem, i, parents) => {
-    if ("children" in navItem || !("path" in navItem)) {
+  public getSiblings(
+    path: string,
+  ): readonly [NavSibling | undefined, NavSibling | undefined] {
+    let index = -1;
+    const pathItems: NavPathItemInput[] = [];
+    let prev: NavSibling | undefined;
+    let next: NavSibling | undefined;
+    visit(this.#items, (navItem) => {
+      if ("children" in navItem || !("path" in navItem)) {
+        return;
+      }
+      if (index !== -1) {
+        next = {
+          label: navItem.label,
+          path: navItem.path,
+        };
+        return "break";
+      }
+      pathItems.push(navItem);
+      if (navItem.path !== toDocsPath(path)) {
+        return;
+      }
+      index = pathItems.length - 1;
+      const navPath = pathItems[index - 1];
+      if (navPath) {
+        prev = {
+          label: navPath.label,
+          path: navPath.path,
+        };
+      }
       return;
-    }
-    if (navItem.path === toDocsPath(path)) {
-      pointer.push(...parents.map((parent) => parent.index), i);
-    }
-  });
-  return pointer;
-}
+    });
+    return [prev, next];
+  }
 
-export function findNavSiblings(
-  navItems: NavItemsInput,
-  path: string,
-): readonly [NavSibling | undefined, NavSibling | undefined] {
-  let index = -1;
-  const pathItems: NavPathItemInput[] = [];
-  let prev: NavSibling | undefined;
-  let next: NavSibling | undefined;
-  visit(navItems, (navItem) => {
-    if ("children" in navItem || !("path" in navItem)) {
-      return;
+  async #toNavItems(navItems: NavItemsConfig): Promise<NavItemsInput> {
+    return await Promise.all(
+      navItems.map(async (navItem) => await this.#toNavItem(navItem)),
+    );
+  }
+
+  async #toNavItem(navItem: NavItemConfig): Promise<NavItemInput> {
+    if (typeof navItem === "string") {
+      return {
+        label: this.#docs.titles[navItem] || "<Missing Page>",
+        path: toDocsPath(navItem),
+      };
     }
-    if (index !== -1) {
-      next = {
+
+    if ("children" in navItem) {
+      const children = await this.#toNavItems(navItem.children);
+      return {
         label: navItem.label,
-        path: navItem.path,
-      };
-      return "break";
-    }
-    pathItems.push(navItem);
-    if (navItem.path !== toDocsPath(path)) {
-      return;
-    }
-    index = pathItems.length - 1;
-    const navPath = pathItems[index - 1];
-    if (navPath) {
-      prev = {
-        label: navPath.label,
-        path: navPath.path,
+        open: Boolean(navItem.open),
+        children,
       };
     }
-    return;
-  });
-  return [prev, next];
+
+    if ("path" in navItem) {
+      return {
+        label: navItem.label,
+        path: toDocsPath(navItem.path),
+      };
+    }
+
+    return {
+      label: navItem.label,
+      url: navItem.url,
+    };
+  }
 }
 
 export function findFirstNavPathItem(

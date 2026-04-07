@@ -2,15 +2,20 @@
   import ArrowLeftIcon from "$lib/assets/icons/arrow-left.svg?component";
   import ArrowRightIcon from "$lib/assets/icons/arrow-right.svg?component";
   import { getDocsContext } from "~/lib/models/docs.ts";
+  import { page } from "$app/state";
   import { resolve } from "$app/paths";
   import Toc from "$lib/components/Toc.svelte";
 
   const { children } = $props();
+  const title: string = $derived(page.data["title"]);
   const docs = getDocsContext();
   const article = $derived(docs.article);
   const toc = $derived(article.toc);
 </script>
 
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
 <article class:no-toc={toc.items.length === 0}>
   <div class="article-inner">
     {#if toc.items.length !== 0}
