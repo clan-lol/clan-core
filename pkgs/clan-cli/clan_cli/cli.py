@@ -496,7 +496,7 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     register_common_flags(parser)
 
     if argcomplete:
-        argcomplete.autocomplete(parser, exclude=["morph"])
+        argcomplete.autocomplete(parser)
 
     return parser
 

@@ -39,7 +39,6 @@ def create_machine(
 
     :param opts: Options for creating the machine, including clan directory, machine details, and template name.
     :param commit: Whether to commit the changes to the git repository.
-    :param _persist: Temporary workaround for 'morph'. Whether to persist the changes to the inventory store.
     """
     if not opts.clan_dir.is_local:
         msg = f"Clan {opts.clan_dir} is not a local clan."
@@ -64,7 +63,6 @@ def create_machine(
         template_ident=opts.template,
         dst_machine_name=machine_name,
     ) as machine_dir:
-        # Write to the inventory if persist is true
         inventory_store = InventoryStore(opts.clan_dir)
         inventory = inventory_store.read()
         if machine_name in inventory.get("machines", {}):
