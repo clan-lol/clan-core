@@ -62,8 +62,8 @@
       def wait_for_file(node, filename, expected_content, timeout=60):
           """Wait until a file exists with the expected content"""
           node.wait_until_succeeds(
-              f"test -f /var/lib/data-mesher/files/default/{filename} && "
-              f"grep -q '{expected_content}' /var/lib/data-mesher/files/default/{filename}",
+              f"test -f /var/lib/data-mesher/files/home/{filename} && "
+              f"grep -q '{expected_content}' /var/lib/data-mesher/files/home/{filename}",
               timeout
           )
 
@@ -74,7 +74,7 @@
       def wait_for_file_deleted(node, filename, timeout=60):
           """Wait until a file no longer exists"""
           node.wait_until_succeeds(
-              f"test ! -f /var/lib/data-mesher/files/default/{filename}",
+              f"test ! -f /var/lib/data-mesher/files/home/{filename}",
               timeout
           )
 

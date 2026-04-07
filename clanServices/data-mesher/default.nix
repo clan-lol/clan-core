@@ -103,6 +103,7 @@ in
         settings,
         exports,
         roles,
+        instanceName,
         ...
       }:
       let
@@ -185,7 +186,7 @@ in
                     dmConfig.package
                   ];
                   script = ''
-                    data-mesher generate ca --public-key-path "$out/network.pub" --private-key-path "$out/network.key"
+                    data-mesher generate network --public-key-path "$out/network.pub" --private-key-path "$out/network.key"
                   '';
                 };
 
@@ -210,7 +211,8 @@ in
                     data-mesher peer id "$out/identity.pub" > "$out/peer.id"
 
                     data-mesher certificate sign \
-                        --ca-key "$in/data-mesher-network/network.key" \
+                        --name ${instanceName} \
+                        --network-key "$in/data-mesher-network/network.key" \
                         --identity-key "$out/identity.pub" \
                         --output "$out/identity.cert" \
                         --validity 2160h    # 90 days for now TODO: expose this in the clan module

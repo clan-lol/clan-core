@@ -158,7 +158,7 @@
               ) config.networking.hosts
             );
 
-            dmFilesDir = "/var/lib/data-mesher/files/default/dns";
+            dmFilesDir = "/var/lib/data-mesher/files/home/dns";
           in
           {
             # Zone file content to be signed and pushed to data-mesher
@@ -176,7 +176,7 @@
             };
 
             # Create dns subdirectory in data-mesher's file storage early in boot
-            services.data-mesher.fileDirectories = [ "dns" ];
+            services.data-mesher.pluginDirectories = [ "dns" ];
 
             # Add unbound to data-mesher group so it can read distributed zone files
             users.users.unbound.extraGroups = [ config.services.data-mesher.group ];
@@ -212,6 +212,7 @@
             };
 
             # Allow unbound's sandbox to access data-mesher's dns file directory
+            systemd.services.unbound.after = [ "data-mesher.service" ];
             systemd.services.unbound.serviceConfig.BindReadOnlyPaths = [ dmFilesDir ];
 
             # Watch for zone file changes from data-mesher and reload unbound
