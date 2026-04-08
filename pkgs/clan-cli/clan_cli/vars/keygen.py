@@ -109,9 +109,16 @@ def create_secrets_user_auto(
     flake_dir: Path,
     user: str | None = None,
     force: bool = False,
+    interactive: bool | None = None,
 ) -> None:
-    """Detect if the user is in interactive mode or not and choose the appropriate routine."""
-    if sys.stdin.isatty():
+    """Detect if the user is in interactive mode or not and choose the appropriate routine.
+
+    If interactive is explicitly set, it overrides the automatic TTY detection.
+    """
+    if interactive is None:
+        interactive = sys.stdin.isatty()
+
+    if interactive:
         create_secrets_user_interactive(
             clan_dir=clan_dir,
             flake_dir=flake_dir,

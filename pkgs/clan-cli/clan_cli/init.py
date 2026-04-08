@@ -8,7 +8,6 @@ from clan_lib.errors import ClanError
 
 from clan_cli.completions import add_dynamic_completer, complete_templates_clan
 from clan_cli.vars.keygen import (
-    _create_secrets_user_non_interactive,
     create_secrets_user_auto,
 )
 
@@ -49,20 +48,13 @@ def init_command(args: argparse.Namespace) -> None:
         ),
     )
     flake_dir = Path(args.name).resolve()
-    if interactive:
-        create_secrets_user_auto(
-            clan_dir=flake_dir,
-            flake_dir=flake_dir,
-            user=args.user,
-            force=True,
-        )
-    else:
-        _create_secrets_user_non_interactive(
-            clan_dir=flake_dir,
-            flake_dir=flake_dir,
-            user=args.user,
-            force=True,
-        )
+    create_secrets_user_auto(
+        clan_dir=flake_dir,
+        flake_dir=flake_dir,
+        user=args.user,
+        force=True,
+        interactive=interactive,
+    )
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
