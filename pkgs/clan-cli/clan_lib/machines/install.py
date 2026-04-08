@@ -35,7 +35,7 @@ from clan_lib.nix_selectors import (
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.ssh.remote import Remote
-from clan_lib.vars.generate import run_generators
+from clan_lib.vars.generate import get_flake_generators, run_generators
 from clan_lib.vars.generator import get_machine_generators
 
 log = logging.getLogger(__name__)
@@ -134,10 +134,13 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         upload_dir = activation_secrets / secrets_target_dir.lstrip("/")
 
         upload_dir.mkdir(parents=True)
-        generators = get_machine_generators([machine.name], machine.flake)
+        machine_generators = get_machine_generators([machine.name], machine.flake)
+        flake_generators = get_flake_generators(machine.flake)
+        all_generators = machine_generators + list(flake_generators.values())
+
         # /tmp-234/activation_secrets/var/lib/sops-nix/{activation,key.txt}
         machine.secret_vars_store.populate_dir(
-            generators,
+            all_generators,
             machine.name,
             upload_dir,
             phases=["activation", "users", "services"],
@@ -147,7 +150,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
-            generators,
+            all_generators,
             machine.name,
             partitioning_secrets,
             phases=["partitioning"],

@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -17,8 +18,9 @@ from clan_cli.vars.secret_modules import password_store, sops
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, run
-from clan_lib.vars._types import GeneratorId, PerMachine, Shared
+from clan_lib.vars._types import GeneratorId, PerExport, PerMachine, Shared
 from clan_lib.vars.generate import (
+    run_flake_generators,
     run_generators,
 )
 from clan_lib.vars.generator import (
@@ -962,4 +964,96 @@ def test_sops_fix_skips_add_for_no_deploy_per_machine_secret(
     ).stdout.strip()
     assert git_status == "", (
         f"Expected no uncommitted changes after 'clan vars fix', got:\n{git_status}"
+    )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_flake_level_generators(
+    monkeypatch: pytest.MonkeyPatch, flake_with_sops: ClanFlake
+) -> None:
+    """Execute vars generators that are not bound to any machine"""
+    flake = flake_with_sops
+    flake.clan_nix_raw = textwrap.dedent(r"""
+        { self, ... }:
+        let
+            clan-core = self.inputs.clan-core;
+        in
+        {
+            machines.jon = {};
+            machines.sara = {};
+            exports."A" = {
+              imports = [ (clan-core + "/modules/clan/export-modules/generators.nix") ];
+              generators.one = {
+                files.foo = { };
+                script = ''
+                  echo hello > $out/foo
+                '';
+              };
+            };
+            exports."B" = {
+              imports = [ (clan-core + "/modules/clan/export-modules/generators.nix") ];
+              generators.one = {
+                dependencies.A = { exportKey = "A"; generator = "one"; };
+                files.foo = { secret = false; };
+                script = ''
+                  cat $in/A/foo > $out/foo
+                  echo "world!" >> $out/foo
+                '';
+              };
+              generators.two = {
+                dependencies.one = { exportKey = "B"; generator = "one"; };
+                files.foo = { deploy = [ "jon" ]; };
+                script = ''
+                  cat $in/one/foo > $out/foo
+                  echo "world!" >> $out/foo
+                '';
+              };
+            };
+        }
+    """)
+    flake.refresh()
+
+    monkeypatch.chdir(flake.path)
+
+    flake_obj = Flake(str(flake.path))
+    run_flake_generators(flake_obj, True)
+
+    sops_store = sops.SecretStore(flake=flake_obj)
+    public_store = in_repo.VarsStore(flake=flake_obj)
+
+    # --- Export "A", generator "one" ---
+    # files.foo is secret (default), no deploy targets
+    gen_a_one = GeneratorId(name="one", placement=PerExport("A"))
+    assert sops_store.exists(gen_a_one, "foo"), "A/one/foo should exist as a secret"
+    # No deploy targets means no machine should have access
+    assert not sops_store.machine_has_access(gen_a_one, "foo", "jon"), (
+        "jon should NOT have access to A/one/foo (no deploy targets)"
+    )
+    assert not sops_store.machine_has_access(gen_a_one, "foo", "sara"), (
+        "sara should NOT have access to A/one/foo (no deploy targets)"
+    )
+
+    # --- Export "B", generator "one" ---
+    # files.foo is public (secret = false), no deploy targets
+    gen_b_one = GeneratorId(name="one", placement=PerExport("B"))
+    assert public_store.exists(gen_b_one, "foo"), (
+        "B/one/foo should exist as a public var"
+    )
+    value_b_one = public_store.get(gen_b_one, "foo")
+    assert value_b_one == b"hello\nworld!\n", (
+        f"B/one/foo should contain concatenated output, got: {value_b_one!r}"
+    )
+
+    # --- Export "B", generator "two" ---
+    # files.foo is secret (default), deploy = [ "jon" ]
+    gen_b_two = GeneratorId(name="two", placement=PerExport("B"))
+    assert sops_store.exists(gen_b_two, "foo"), "B/two/foo should exist as a secret"
+    # jon is in the deploy list, so jon should have access
+    assert sops_store.machine_has_access(gen_b_two, "foo", "jon"), (
+        "jon SHOULD have access to B/two/foo (listed in deploy)"
+    )
+    # sara is NOT in the deploy list, so sara should not have access
+    assert not sops_store.machine_has_access(gen_b_two, "foo", "sara"), (
+        "sara should NOT have access to B/two/foo (not listed in deploy)"
     )

@@ -250,6 +250,7 @@ class StoreBase(ABC):
         is_migration: bool = False,
         log_info: Callable | None = None,
     ) -> list[Path]:
+        """Function shall not be overridden. You must override '_set' instead."""
         changed_files: list[Path] = []
 
         if log_info is None:
@@ -284,9 +285,12 @@ class StoreBase(ABC):
         else:
             old_val = None
             old_val_str = "<not set>"
-        new_file = self._set(generator, var, value)
-        action_str = "Migrated" if is_migration else "Updated"
 
+        # Call _set this must be overridden
+        new_file = self._set(generator, var, value)
+
+        # Build a logging string
+        action_str = "Migrated" if is_migration else "Updated"
         machines_str = f" for machines: {', '.join(generator.machines)}"
         if self.is_secret_store:
             log_info(

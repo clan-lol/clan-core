@@ -16,7 +16,8 @@ let
         Disable this if the generated file is only used as an input to other generators.
       '';
       type = listOf str;
-      default = true;
+      # Deploy nowhere by default
+      default = [ ];
     };
   };
 in
