@@ -27,7 +27,15 @@ def test_init(
 
     monkeypatch.setenv("LOGNAME", "testuser")
 
-    cli.run(["init", str(flake_dir), "--template=default", "--no-update"])
+    cli.run(
+        [
+            "init",
+            str(flake_dir),
+            "--template=default",
+            "--no-update",
+            "--no-interactive",
+        ]
+    )
 
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
@@ -67,7 +75,15 @@ def test_init_existing_git(
     run(["git", "init", str(temporary_home)])
 
     monkeypatch.setenv("LOGNAME", "testuser")
-    cli.run(["init", str(flake_dir), "--template=default", "--no-update"])
+    cli.run(
+        [
+            "init",
+            str(flake_dir),
+            "--template=default",
+            "--no-update",
+            "--no-interactive",
+        ]
+    )
 
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
@@ -104,7 +120,15 @@ def test_init_minimal_template(
     flake_dir = temporary_home / "test-flake"
 
     monkeypatch.setenv("LOGNAME", "testuser")
-    cli.run(["init", str(flake_dir), "--template=minimal", "--no-update"])
+    cli.run(
+        [
+            "init",
+            str(flake_dir),
+            "--template=minimal",
+            "--no-update",
+            "--no-interactive",
+        ]
+    )
 
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
@@ -143,7 +167,13 @@ def test_init_fallback_from_non_clan_directory(
     monkeypatch.setenv("LOGNAME", "testuser")
 
     cli.run(
-        ["init", str(new_clan_dir), "--template=default", "--no-update"],
+        [
+            "init",
+            str(new_clan_dir),
+            "--template=default",
+            "--no-update",
+            "--no-interactive",
+        ],
     )
 
     assert (new_clan_dir / "flake.nix").exists()
@@ -163,7 +193,13 @@ def test_init_with_local_template_reference(
 
     # TODO: should error with: localFlake does not export myLocalTemplate clan template
     cli.run(
-        ["init", str(new_clan_dir), "--template=.#default", "--no-update"],
+        [
+            "init",
+            str(new_clan_dir),
+            "--template=.#default",
+            "--no-update",
+            "--no-interactive",
+        ],
     )
 
     assert (new_clan_dir / "flake.nix").exists()
@@ -181,7 +217,14 @@ def test_init_substitutes_placeholders(
 
     monkeypatch.setenv("LOGNAME", "testuser")
     cli.run(
-        ["init", str(flake_dir), "--template=default", "--domain=clan", "--no-update"]
+        [
+            "init",
+            str(flake_dir),
+            "--template=default",
+            "--domain=clan",
+            "--no-update",
+            "--no-interactive",
+        ]
     )
 
     assert flake_dir.exists()
