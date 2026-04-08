@@ -254,7 +254,7 @@ in
                 imports = [ gen ];
                 config.pkgs = pkgs;
                 config.settings = config.clanInternals.vars.settings;
-              }) v.generators;
+              }) v.generators or { };
             }) config.exports;
           }
         )
