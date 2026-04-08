@@ -7,14 +7,22 @@ from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.errors import ClanError
 
 from clan_cli.completions import add_dynamic_completer, complete_templates_clan
-from clan_cli.vars.keygen import create_secrets_user_auto
+from clan_cli.vars.keygen import (
+    _create_secrets_user_non_interactive,
+    create_secrets_user_auto,
+)
 
 log = logging.getLogger(__name__)
 
 
 def init_command(args: argparse.Namespace) -> None:
+    interactive = not args.no_interactive and sys.stdin.isatty()
+
     # Ask for a name interactively if none provided
     if args.name is None:
+        if not interactive:
+            msg = "Error: name is required (pass a name or remove --no-interactive)."
+            raise ClanError(msg)
         user_input = input("Enter a name for the new clan: ").strip()
         if not user_input:
             msg = "Error: name is required."
@@ -24,7 +32,7 @@ def init_command(args: argparse.Namespace) -> None:
 
     # Ask for a domain interactively if none provided
     if args.domain is None:
-        if sys.stdin.isatty():
+        if interactive:
             user_input = input("Enter domain for the clan [clan]: ").strip()
             args.domain = user_input or "clan"
         else:
@@ -41,12 +49,20 @@ def init_command(args: argparse.Namespace) -> None:
         ),
     )
     flake_dir = Path(args.name).resolve()
-    create_secrets_user_auto(
-        clan_dir=flake_dir,
-        flake_dir=flake_dir,
-        user=args.user,
-        force=True,
-    )
+    if interactive:
+        create_secrets_user_auto(
+            clan_dir=flake_dir,
+            flake_dir=flake_dir,
+            user=args.user,
+            force=True,
+        )
+    else:
+        _create_secrets_user_non_interactive(
+            clan_dir=flake_dir,
+            flake_dir=flake_dir,
+            user=args.user,
+            force=True,
+        )
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
@@ -83,6 +99,13 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--no-update",
         help="Do not update the clan flake",
+        action="store_true",
+        default=False,
+    )
+
+    parser.add_argument(
+        "--no-interactive",
+        help="Run in non-interactive mode, using defaults for all prompts",
         action="store_true",
         default=False,
     )
