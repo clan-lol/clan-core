@@ -2,12 +2,12 @@ import { defineConfig } from "vite";
 import docs2routes from "./support/vite-plugin-docs2routes.ts";
 import pagefind from "@clan.lol/vite-plugin-pagefind";
 import replace from "./packages/vite-plugin-replace/index.ts";
-import rm from "@clan.lol/vite-plugin-rm";
 import * as siteConfig from "./clan-site.config.ts";
 import { sveltekit } from "@sveltejs/kit/vite";
 import svg from "@poppanator/sveltekit-svg";
 import value from "vite-plugin-value";
 import { versionedBase } from "#lib/models/docs/docs.server.ts";
+import versions from "./support/vite-plugin-versions.ts";
 
 export default defineConfig({
   server: {
@@ -27,14 +27,6 @@ export default defineConfig({
       specifier: "$config",
       value: siteConfig,
     }),
-    // Remove the version file from the build result. We only use this file
-    // during development for the version switcher. The source exists in the
-    // static folder, and is enough for the dev server to serve this file.
-    // SvelteKit will copy this file to the build result but we don't really
-    // need it in the build result.
-    rm({
-      paths: [`build/_assets/${siteConfig.version}/docs`],
-    }),
     // Refer to kit.paths.assets in svelte.config.ts on why this is needed
     replace({
       dir: "build",
@@ -46,6 +38,7 @@ export default defineConfig({
         },
       ],
     }),
+    versions(),
     pagefind({
       pluginInstance: "docs",
       siteDir: "build",

@@ -1,8 +1,6 @@
-/**
- * This file exists inside the clan-site package instead of as a standalone
- * package because it's for clan-site specifically and use clan-site specific
- * import specifier like #lib, which won't work in an independent package
- */
+// This file exists inside the clan-site package instead of as a standalone
+// package because it's for clan-site specifically and use clan-site specific
+// import specifier like #lib, which won't work in an independent package
 import type { PluginOption } from "vite";
 import * as config from "#config";
 import path from "node:path";
