@@ -269,12 +269,6 @@ importers:
         specifier: '>=7.0.0'
         version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
 
-  packages/vite-plugin-rm:
-    dependencies:
-      vite:
-        specifier: '>=7.0.0'
-        version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
-
   packages/vite-plugin-value:
     dependencies:
       vite:
