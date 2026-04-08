@@ -18,9 +18,6 @@ importers:
       '@clan.lol/svelte-md':
         specifier: workspace:*
         version: link:packages/svelte-md
-      '@clan.lol/vite-plugin-docs-hmr':
-        specifier: workspace:*
-        version: link:packages/vite-plugin-docs-hmr
       '@clan.lol/vite-plugin-pagefind':
         specifier: workspace:*
         version: link:packages/vite-plugin-pagefind
@@ -259,15 +256,6 @@ importers:
       '@types/node':
         specifier: ^25.3.0
         version: 25.3.0
-
-  packages/vite-plugin-docs-hmr:
-    dependencies:
-      '@clan.lol/svelte-md':
-        specifier: workspace:*
-        version: link:../svelte-md
-      vite:
-        specifier: '>=7.0.0'
-        version: 7.3.1(@types/node@25.3.0)(yaml@2.8.2)
 
   packages/vite-plugin-pagefind:
     dependencies:

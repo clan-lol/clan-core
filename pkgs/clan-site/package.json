@@ -30,7 +30,6 @@
     "@clan.lol/svelte-md": "workspace:*",
     "@clan.lol/vite-plugin-pagefind": "workspace:*",
     "@clan.lol/vite-plugin-replace": "workspace:*",
-    "@clan.lol/vite-plugin-docs-hmr": "workspace:*",
     "@clan.lol/vite-plugin-rm": "workspace:*",
     "@csstools/postcss-global-data": "^4.0.0",
     "@poppanator/sveltekit-svg": "^6.0.1",
