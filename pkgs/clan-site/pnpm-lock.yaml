@@ -24,9 +24,6 @@ importers:
       '@clan.lol/vite-plugin-replace':
         specifier: workspace:*
         version: link:packages/vite-plugin-replace
-      '@clan.lol/vite-plugin-rm':
-        specifier: workspace:*
-        version: link:packages/vite-plugin-rm
       '@csstools/postcss-global-data':
         specifier: ^4.0.0
         version: 4.0.0(postcss@8.5.6)
