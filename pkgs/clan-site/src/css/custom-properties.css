@@ -50,6 +50,7 @@
   --tabs-border-color: #d6d6d6;
   --shiki-indent-offset: 10px;
   --shiki-indent-guide-color: #0000000e;
+  --shiki-diff-remove-fg-color: #00000050;
   --shiki-diff-remove-bg-color: #db0a0a41;
   --shiki-diff-add-bg-color: #20c55150;
   --shiki-highlighted-bg-color: #ffffffc6;
@@ -131,10 +132,11 @@
     --link-code-bg-color: oklch(22% 0.06 250deg);
     --link-code-border-color: oklch(35% 0.08 250deg);
     --tabs-border-color: oklch(35% 0.012 230deg);
-    --shiki-indent-guide-color: oklch(30% 0.008 230deg / 30%);
+    --shiki-indent-guide-color: #2f334d;
+    --shiki-diff-remove-fg-color: #d4d4d450;
     --shiki-diff-remove-bg-color: oklch(35% 0.12 25deg / 40%);
     --shiki-diff-add-bg-color: oklch(35% 0.1 155deg / 40%);
-    --shiki-highlighted-bg-color: oklch(30% 0.012 230deg / 60%);
+    --shiki-highlighted-bg-color: #393d53;
     --shiki-title-border-color: oklch(40% 0.012 230deg / 40%);
     --admonition-note-bg-color: oklch(22% 0.06 250deg);
     --admonition-note-border-color: oklch(60% 0.16 250deg);

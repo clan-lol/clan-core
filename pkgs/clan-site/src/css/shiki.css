@@ -84,7 +84,7 @@
         background-color: var(--shiki-diff-remove-bg-color);
 
         span {
-          color: #00000050;
+          color: var(--shiki-diff-remove-fg-color);
         }
       }
 
