@@ -20,6 +20,7 @@ from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, run
 from clan_lib.vars._types import GeneratorId, PerExport, PerMachine, Shared
 from clan_lib.vars.generate import (
+    get_flake_generators,
     run_flake_generators,
     run_generators,
 )
@@ -1057,3 +1058,38 @@ def test_flake_level_generators(
     assert not sops_store.machine_has_access(gen_b_two, "foo", "sara"), (
         "sara should NOT have access to B/two/foo (not listed in deploy)"
     )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_exports_without_generators_evaluates(
+    monkeypatch: pytest.MonkeyPatch, flake_with_sops: ClanFlake
+) -> None:
+    """Execute vars generators that are not bound to any machine"""
+    flake = flake_with_sops
+    flake.clan_nix_raw = textwrap.dedent(r"""
+        { self, ... }:
+        let
+            clan-core = self.inputs.clan-core;
+        in
+        {
+            machines.jon = {};
+            machines.sara = {};
+            # Eval must be lazy,
+            # perExport vars should not evaluate other attributes.
+            exports."A" = { lib, ...}: {
+                options.error = lib.mkOption {
+                    default = throw "stuff";
+                };
+            };
+            exports."B" = { };
+        }
+    """)
+    flake.refresh()
+
+    monkeypatch.chdir(flake.path)
+
+    flake_obj = Flake(str(flake.path))
+    generators = get_flake_generators(flake_obj)
+
+    assert generators == {}
