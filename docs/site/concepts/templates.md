@@ -27,13 +27,11 @@ Available 'machine' templates
 ├── <builtin>
 │   ├── demo-template: Demo machine for the CLAN project
 │   ├── flash-installer: Initialize a new flash-installer machine
-│   ├── new-machine: Initialize a new machine
-│   └── test-morph-template: Morph a machine
+│   └── new-machine: Initialize a new machine
 └── inputs.self:
     ├── demo-template: Demo machine for the CLAN project
     ├── flash-installer: Initialize a new flash-installer machine
-    ├── new-machine: Initialize a new machine
-    └── test-morph-template: Morph a machine
+    └── new-machine: Initialize a new machine
 ```
 
 ### Using `<builtin>` Templates
