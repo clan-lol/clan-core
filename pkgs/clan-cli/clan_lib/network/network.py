@@ -23,6 +23,10 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+class NoRemoteError(ClanError):
+    """Raised when no connection method is available for a machine."""
+
+
 @dataclass(frozen=True)
 class Peer:
     name: str
@@ -313,7 +317,7 @@ class BestRemoteContext:
 
         # No connection method found
         msg = f"Could not find any way to connect to machine '{self.machine.name}'. No targetHost configured and machine not reachable via any network."
-        raise ClanError(msg)
+        raise NoRemoteError(msg)
 
     def __exit__(
         self,
