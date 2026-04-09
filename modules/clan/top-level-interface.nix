@@ -388,5 +388,6 @@ in
     dataMesher = import ./export-modules/data-mesher.nix;
     endpoints = import ./export-modules/endpoints.nix;
     generators = import ./export-modules/generators.nix;
+    auth = import ./export-modules/auth.nix;
   };
 }
