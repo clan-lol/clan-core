@@ -43,8 +43,8 @@ The following things related to the old monitoring stack have been removed:
 
 - the telegraf role in `inventory.instances.monitoring.roles.telegraf`
 - options related to the telegraf role:
-  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
-  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.interfaces`
+    - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
+    - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.interfaces`
 
 ### Internet Service
 
@@ -66,8 +66,8 @@ The `settings.port` defaults to `22` and `settings.user` defaults to `null` (whi
 ### Exports
 
 - **Experimental** exports system has been redesigned.
-  - Previous export definitions are no longer compatible
-  - **Migration required**: Update your modules to use the standardized export options
+    - Previous export definitions are no longer compatible
+    - **Migration required**: Update your modules to use the standardized export options
 
 ### Clan Password Store Backend
 

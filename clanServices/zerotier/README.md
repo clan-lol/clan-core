@@ -30,8 +30,8 @@ The [Controller](https://docs.zerotier.com/controller/) manages network membersh
 When a new node is added to the Clan, the controller must be updated to ensure it has the latest member list.
 
 - **Key Points:**
-  - Must be online to admit new machines to the VPN.
-  - Existing nodes can continue to communicate even when the controller is offline.
+    - Must be online to admit new machines to the VPN.
+    - Existing nodes can continue to communicate even when the controller is offline.
 
 ### 2. Moons
 
@@ -40,8 +40,8 @@ providing direct connectivity to peers via their public IP addresses.
 They enable devices that are not publicly reachable to join the VPN by routing through these nodes.
 
 - **Configuration Notes:**
-  - Each moon must define its public IP address.
-  - Ensures connectivity for devices behind NAT or restrictive firewalls.
+    - Each moon must define its public IP address.
+    - Ensures connectivity for devices behind NAT or restrictive firewalls.
 
 ### 3. Peers
 
@@ -49,5 +49,5 @@ Peers are standard nodes in the VPN.
 They connect to other peers, moons, and the controller as needed.
 
 - **Purpose:**
-  - General role for all machines that are neither controllers nor moons.
-  - Ideal for most Clan members devices.
+    - General role for all machines that are neither controllers nor moons.
+    - Ideal for most Clan members devices.

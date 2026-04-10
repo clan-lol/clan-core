@@ -27,10 +27,10 @@ This schema defines a GPT-based disk layout optimized for a "stateless" NixOS co
     - Size: Remaining disk space (`100%`).
     - Filesystem: `btrfs`.
     - Subvolumes:
-      - `@root`: Mounted at `/`. This subvolume is ephemeral (see Rollback Logic).
-      - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime`.
-      - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
-      - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. Marked as `neededForBoot = true` to store persistent system state (machine-id, SSH keys, etc.).
+        - `@root`: Mounted at `/`. This subvolume is ephemeral (see Rollback Logic).
+        - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime`.
+        - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
+        - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. Marked as `neededForBoot = true` to store persistent system state (machine-id, SSH keys, etc.).
 
 ### Ephemeral Root Logic (Btrfs Rollback)
 
@@ -42,8 +42,8 @@ The configuration includes automated local snapshots via [`btrbk`](https://digin
 
 - Frequency: Every 2 hours (`*/2:00`).
 - Retention:
-  - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
-  - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
+    - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
+    - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
 - Minimum Guarantee: At least 3 days of snapshots are always preserved.
 
 ### Technical Implementation Notes

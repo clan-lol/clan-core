@@ -28,9 +28,9 @@ This schema defines a standard GPT-based disk layout utilizing [btrfs-subvolume]
     - Filesystem: `btrfs`.
     - Label: `root`.
     - Subvolumes:
-      - `@root`: Mounted at `/`. The standard persistent root directory.
-      - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to improve performance and reduce SSD wear.
-      - `@home`: Mounted at `/home`. Optimized with `compress=zstd` for user data.
+        - `@root`: Mounted at `/`. The standard persistent root directory.
+        - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to improve performance and reduce SSD wear.
+        - `@home`: Mounted at `/home`. Optimized with `compress=zstd` for user data.
 
 ### Snapshot Management (btrbk)
 
@@ -38,6 +38,6 @@ The configuration includes automated local snapshots via [`btrbk`](https://digin
 
 - Frequency: Every 2 hours (`*/2:00`).
 - Retention:
-  - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
-  - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
+    - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
+    - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
 - Minimum Guarantee: At least 3 days of snapshots are always preserved.

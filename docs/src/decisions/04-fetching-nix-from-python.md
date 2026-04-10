@@ -18,11 +18,11 @@ Downsides:
 
 * no access to flake level values
 * all or nothing:
-  * values are either cached via deployment.json or not. So we can only put cheap values into there,
-  * in the past var generation script were added here, which added a huge build time overhead for every time we wanted to do any action
+    * values are either cached via deployment.json or not. So we can only put cheap values into there,
+    * in the past var generation script were added here, which added a huge build time overhead for every time we wanted to do any action
 * duplicated nix code
-  * values need duplicated nix code, once to define them at the correct place in the module system (clan.core.vars.generators) and code to accumulate them again for the deployment.json (system.clan.deployment.data)
-  * This duality adds unnecessary dependencies to the NixOS module system.
+    * values need duplicated nix code, once to define them at the correct place in the module system (clan.core.vars.generators) and code to accumulate them again for the deployment.json (system.clan.deployment.data)
+    * This duality adds unnecessary dependencies to the NixOS module system.
 
 Benefits:
 
@@ -36,8 +36,8 @@ Directly calling the evaluator / build sandbox via `nix build` and `nix eval`wit
 Downsides:
 
 * Access is not cached: Static overhead (see below: \~1.5s) is present every time, if we invoke `nix commands`
-  * The static overhead depends obviously which value we need to retrieve, since the `evalModules` overhead depends, whether we evaluate some attribute inside a machine or a flake attribute
-  * Accessing more and more attributes with this method increases the static overhead, which leads to a linear decrease in performance.
+    * The static overhead depends obviously which value we need to retrieve, since the `evalModules` overhead depends, whether we evaluate some attribute inside a machine or a flake attribute
+    * Accessing more and more attributes with this method increases the static overhead, which leads to a linear decrease in performance.
 * Boilerplate for interacting with the CLI and Error handling code is repeated every time.
 
 Benefits:
@@ -48,11 +48,11 @@ Benefits:
 This system could be enhanced with custom nix expressions, which could be used in places where we don't want to put values into deployment.json or want to fetch flake level values. This also has some downsides:
 
 * technical debt
-  * we have to maintain custom nix expressions inside python code, embedding code is error prone and the language linters won't help you here, so errors are common and harder to debug.
-  * we need custom error reporting code in case something goes wrong, either the value doesn't exist or there is an reported build error
+    * we have to maintain custom nix expressions inside python code, embedding code is error prone and the language linters won't help you here, so errors are common and harder to debug.
+    * we need custom error reporting code in case something goes wrong, either the value doesn't exist or there is an reported build error
 * no caching/custom caching logic
-  * currently there is no infrastructure to cache those extra values, so we would need to store them somewhere, we could either enhance one of the many classes we have or don't cache them at all
-  * even if we implement caching for extra nix expressions, there can be no sharing between extra nix expressions. for example we have 2 nix expressions, one fetches paths and values for all generators and the second one fetches only the values, we still need to execute both of them in both contexts although the second one could be skipped if the first one is already cached
+    * currently there is no infrastructure to cache those extra values, so we would need to store them somewhere, we could either enhance one of the many classes we have or don't cache them at all
+    * even if we implement caching for extra nix expressions, there can be no sharing between extra nix expressions. for example we have 2 nix expressions, one fetches paths and values for all generators and the second one fetches only the values, we still need to execute both of them in both contexts although the second one could be skipped if the first one is already cached
 
 ### Method 3: nix select
 

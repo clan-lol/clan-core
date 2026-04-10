@@ -143,7 +143,7 @@
           { lib, ... }:
           {
 
-            networking.nameservers = map (m: "127.0.0.1:5353#${roles.server.machines.${m}.settings.tld}") (
+            services.resolved.settings.Resolve.DNS = map (m: "127.0.0.1:5353#${roles.server.machines.${m}.settings.tld}") (
               lib.attrNames roles.server.machines
             );
 
