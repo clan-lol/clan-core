@@ -22,9 +22,9 @@ from clan_lib.persist.write_rules import (
 def test_update_simple() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "bar": {"__prio": 1000},  # <- writeable: mkDefault "foo.bar"
-            "nix": {"__prio": 100},  # <- non writeable: "foo.bar" (defined in nix)
+            "__prio": 100,  # <- writable: "foo"
+            "bar": {"__prio": 1000},  # <- writable: mkDefault "foo.bar"
+            "nix": {"__prio": 100},  # <- non writable: "foo.bar" (defined in nix)
         },
     }
 
@@ -60,8 +60,8 @@ def test_update_simple() -> None:
 def test_update_add_empty_dict() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
-            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
+            "__prio": 100,  # <- writable: "foo"
+            "nix": {"__prio": 100},  # <- non writable: "foo.nix" (defined in nix)
         },
     }
 
@@ -89,13 +89,13 @@ def test_update_add_empty_dict() -> None:
 def test_update_many() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
             "bar": {"__prio": 100},  # <-
-            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
+            "nix": {"__prio": 100},  # <- non writable: "foo.nix" (defined in nix)
             "nested": {
                 "__prio": 100,
-                "x": {"__prio": 100},  # <- writeable: "foo.nested.x"
-                "y": {"__prio": 100},  # <- non-writeable: "foo.nested.y"
+                "x": {"__prio": 100},  # <- writable: "foo.nested.x"
+                "y": {"__prio": 100},  # <- non-writable: "foo.nested.y"
             },
         },
     }
@@ -149,11 +149,11 @@ def test_update_many() -> None:
     assert delete_set == set()
 
 
-def test_update_parent_non_writeable() -> None:
+def test_update_parent_non_writable() -> None:
     prios = {
         "foo": {
-            "__prio": 50,  # <- non-writeable: "foo"
-            "bar": {"__prio": 1000},  # <- writeable: mkDefault "foo.bar"
+            "__prio": 50,  # <- non-writable: "foo"
+            "bar": {"__prio": 1000},  # <- writable: mkDefault "foo.bar"
         },
     }
 
@@ -232,7 +232,7 @@ def test_calculate_static_data_no_static_sets() -> None:
 def test_calculate_static_data_no_static_sets_legacy() -> None:
     prios = {
         "instance": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
             "hello": {
                 "__prio": 100,
                 "static": {"__prio": 100},
@@ -267,7 +267,7 @@ def test_calculate_static_data_no_static_sets_legacy() -> None:
 def test_update_list() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
         },
     }
 
@@ -314,7 +314,7 @@ def test_update_list() -> None:
 def test_list_delete_static() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
         },
     }
 
@@ -345,7 +345,7 @@ def test_list_delete_static() -> None:
 def test_update_list_duplicates() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
         },
     }
 
@@ -488,7 +488,7 @@ def test_machine_delete() -> None:
 def test_update_mismatching_update_type() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
         },
     }
 
@@ -519,7 +519,7 @@ def test_update_mismatching_update_type() -> None:
 def test_delete_key() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
         },
     }
 
@@ -613,7 +613,7 @@ def test_delete_key_intermediate() -> None:
     assert delete_set == {("foo", "bar")}
 
 
-def test_delete_key_non_writeable() -> None:
+def test_delete_key_non_writable() -> None:
     prios = {
         "foo": {
             "__prio": 50,

@@ -51,10 +51,9 @@ class Packages:
 
         if program in cls.static_packages:
             if shutil.which(program) is None:
-                log.warning(
-                    f"Program {program} is not in the path even though it should be shipped with clan"
+                log.debug(
+                    f"Program {program} is not in PATH by package name (binary may have a different name)"
                 )
-                return False
             return True
         return False
 

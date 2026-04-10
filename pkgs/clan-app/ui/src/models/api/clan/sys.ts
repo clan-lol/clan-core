@@ -44,7 +44,7 @@ export async function getFlashableDevices(): Promise<BlockDevice[]> {
     if (device.ro) {
       return [];
     }
-    // we only want writeable block devices which are USB or MMC (SD cards)
+    // we only want writable block devices which are USB or MMC (SD cards)
     const result = /^(?:usb|mmc)-([^-]+)/.exec(device.id_link);
     if (!result) {
       return [];

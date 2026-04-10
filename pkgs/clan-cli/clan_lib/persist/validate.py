@@ -21,7 +21,7 @@ def validate_no_static_deletion(
 
 
 def validate_not_readonly(path: PathTuple, writeables: AttributeMap) -> None:
-    """Validate that a path is writeable."""
+    """Validate that a path is writable."""
     if is_readonly_path(path, writeables):
         msg = f"Path '{path_to_string(path)}' is readonly. - It seems its value is statically defined in nix."
         raise ClanError(msg)

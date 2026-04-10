@@ -4,7 +4,7 @@ from typing import Any
 from clan_lib.errors import ClanError
 from clan_lib.persist.path_utils import PathTuple, path_to_string
 
-WRITABLE_PRIORITY_THRESHOLD = 100  # Values below this are not writeable
+WRITABLE_PRIORITY_THRESHOLD = 100  # Values below this are not writable
 
 
 class PersistenceAttribute(Enum):
@@ -20,7 +20,7 @@ def is_readonly_path(
     key: PathTuple,
     attributes: AttributeMap,
 ) -> bool:
-    """Recursively check if a key is writeable.
+    """Recursively check if a key is writable.
 
     If key "machines.machine1.deploy.targetHost" is specified but writeability is only
     defined for "machines", we pop the last key and check if the parent key is writeable/non-writeable.
@@ -44,11 +44,11 @@ def is_readonly_key(
     key: str,
     attributes: AttributeMap,
 ) -> bool:
-    """Recursively check if a key is writeable.
+    """Recursively check if a key is writable.
 
     Key is a dot-separated string, e.g. "machines.machine1.deploy.targetHost".
 
-    In case of ambiguity use is_writeable_path with tuple keys.
+    In case of ambiguity use is_writable_path with tuple keys.
     """
     items = key.split(".")
     return is_readonly_path(tuple(items), attributes)
@@ -68,28 +68,28 @@ def is_mergeable_type(value: Any) -> bool:
     return isinstance(value, (dict, list))
 
 
-def should_inherit_non_writeable(
-    priority: int | None, parent_non_writeable: bool
+def should_inherit_non_writable(
+    priority: int | None, parent_non_writable: bool
 ) -> bool:
-    """Determine if this node should be marked as non-writeable due to inheritance."""
-    if parent_non_writeable:
+    """Determine if this node should be marked as non-writable due to inheritance."""
+    if parent_non_writable:
         return True
 
     return priority is not None and priority < WRITABLE_PRIORITY_THRESHOLD
 
 
-def is_key_writeable(
+def is_key_writable(
     priority: int | None, exists_in_persisted: bool, value_in_all: Any
 ) -> bool:
-    """Determine if a key is writeable based on priority and mergeability rules.
+    """Determine if a key is writable based on priority and mergeability rules.
 
     Rules:
-    - Priority > 100: Always writeable
-    - Priority < 100: Never writeable
-    - Priority == 100: Writeable if mergeable (dict/list) OR exists in persisted
+    - Priority > 100: Always writable
+    - Priority < 100: Never writable
+    - Priority == 100: Writable if mergeable (dict/list) OR exists in persisted
     """
     if priority is None:
-        return False  # No priority means not writeable
+        return False  # No priority means not writable
 
     if priority > WRITABLE_PRIORITY_THRESHOLD:
         return True
@@ -171,20 +171,20 @@ def _determine_props_recursive(
             key_priority if key_priority is not None else inherited_priority
         )
 
-        # Check if this should be non-writeable due to inheritance
-        force_non_writeable = should_inherit_non_writeable(
+        # Check if this should be non-writable due to inheritance
+        force_non_writable = should_inherit_non_writable(
             effective_priority, parent_readonly
         )
 
-        if force_non_writeable:
+        if force_non_writable:
             results.setdefault(path, set()).clear()
             results.setdefault(path, set()).add(PersistenceAttribute.READONLY)
-            # All children are also non-writeable, we are done here.
+            # All children are also non-writable, we are done here.
             if isinstance(value, dict):
                 _determine_props_recursive(
                     value,
                     all_values.get(key, {}),
-                    {},  # Doesn't matter since all children will be non-writeable
+                    {},  # Doesn't matter since all children will be non-writable
                     path,
                     effective_priority,
                     parent_readonly=True,
@@ -201,7 +201,7 @@ def _determine_props_recursive(
             exists_in_persisted = key in persisted
             value_in_all = all_values.get(key)
 
-            if is_key_writeable(effective_priority, exists_in_persisted, value_in_all):
+            if is_key_writable(effective_priority, exists_in_persisted, value_in_all):
                 # TODO: Distinguish between different write types?
                 results.setdefault(path, set()).add(PersistenceAttribute.WRITE)
             else:
@@ -236,9 +236,9 @@ def compute_attribute_persistence(
 ) -> AttributeMap:
     """Determine writeability for all paths based on priorities and current data.
 
-    - Priority-based writeability: Values with priority < 100 are not writeable
+    - Priority-based writeability: Values with priority < 100 are not writable
     - Inheritance: Children inherit parent priorities if not specified
-    - Special case at priority 100: Can be writeable if it's mergeable (dict/list) or exists in persisted data
+    - Special case at priority 100: Can be writable if it's mergeable (dict/list) or exists in persisted data
 
     Args:
         priorities: The priority structure defining writeability rules. See: 'clanInternals.inventoryClass.introspection'
@@ -247,7 +247,7 @@ def compute_attribute_persistence(
         inventory_file_name: The name of the inventory file, defaults to "inventory.json"
 
     Returns:
-        Dict with sets of writeable and non-writeable paths using tuple keys
+        Dict with sets of writable and non-writable paths using tuple keys
 
     """
     persistence_unsupported = set(all_values.keys()) - set(priorities.keys())

@@ -56,6 +56,7 @@ def test_flash_config(flake: ClanFlake, test_root: Path) -> None:
         )
         config["boot"]["loader"]["grub"]["devices"] = ["/dev/vda"]
         config["fileSystems"]["/"]["device"] = "/dev/vda"
+        config["fileSystems"]["/"]["fsType"] = "ext4"
         config.update(result)
         flake.refresh()
 

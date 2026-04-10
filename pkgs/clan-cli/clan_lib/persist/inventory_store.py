@@ -207,9 +207,9 @@ class InventoryStore:
         return self._flake.select("clanInternals.inventoryClass.introspection")
 
     def _get_persistence_info(self) -> PersistenceInfo:
-        """Get the paths of the writeable keys in the inventory
+        """Get the paths of the writable keys in the inventory
 
-        Load the inventory and determine the writeable keys
+        Load the inventory and determine the writable keys
         Performs 2 nix evaluations to get the current priority and the inventory
         """
         current_priority = self._get_introspection()
