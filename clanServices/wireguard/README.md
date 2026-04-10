@@ -35,8 +35,8 @@ The WireGuard service creates a secure mesh network between Clan machines using 
 - Each peer generates a unique host suffix (e.g., `:8750:a09b:0:1`)
 - This suffix is appended to each controller's `/56` prefix to create unique addresses
 - Example: peer1 with suffix `:8750:a09b:0:1` gets:
-  - `fd51:19c1:3b:f700:8750:a09b:0:1` in controller1's subnet
-  - `fd51:19c1:c1:aa00:8750:a09b:0:1` in controller2's subnet
+    - `fd51:19c1:3b:f700:8750:a09b:0:1` in controller1's subnet
+    - `fd51:19c1:c1:aa00:8750:a09b:0:1` in controller2's subnet
 - Controllers allow each peer's `/96` subnet for routing flexibility
 
 ### Connectivity
