@@ -31,6 +31,7 @@ let
             group
             mode
             restartUnits
+            rel_dir
             ;
         }) (relevantFiles generator.files)
       ) generators
@@ -46,16 +47,11 @@ let
     assert lib.assertMsg (class == "nixos" || class == "darwin")
       "Error trying to map 'var.generators' to 'sops.secrets': class must be 'nixos' or 'darwin', got: ${class}";
     let
-      getSecretPath =
-        secret:
-        let
-          scope = if secret.share then "shared" else "per-machine/${machineName}";
-        in
-        "${directory}/vars/${scope}/${secret.generator}/${secret.name}/secret";
+      getSecretPath = secret: "${directory}/vars/${secret.rel_dir}/${secret.name}/secret";
     in
     lib.listToAttrs (
       map (secret: {
-        name = "vars/${secret.generator}/${secret.name}";
+        name = "vars/${secret.rel_dir}/${secret.name}";
         value = {
           inherit (secret)
             owner

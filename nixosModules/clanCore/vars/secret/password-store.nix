@@ -92,13 +92,13 @@ in
           lib.mkIf file.config.secret {
             path =
               if file.config.neededFor == "users" then
-                "/run/user-secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/user-secrets/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "services" then
-                "/run/secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/secrets/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "activation" then
-                "${config.clan.core.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
+                "${config.clan.core.vars.password-store.secretLocation}/activation/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "partitioning" then
-                "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/partitioning-secrets/${file.config.rel_dir}/${file.config.name}"
               else
                 throw "unknown neededFor ${file.config.neededFor}";
 

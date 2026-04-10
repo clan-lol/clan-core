@@ -231,7 +231,9 @@ class SecretStore(StoreBase):
                             continue
                         if not file.secret:
                             continue
-                        tar_file = tarfile.TarInfo(name=f"{generator.name}/{file.name}")
+                        tar_file = tarfile.TarInfo(
+                            name=f"{generator.key.rel_dir()}/{file.name}"
+                        )
                         content = self.get(generator.key, file.name)
                         tar_file.size = len(content)
                         tar_file.mode = file.mode
@@ -247,12 +249,14 @@ class SecretStore(StoreBase):
                         if not file.secret:
                             continue
                         if not dir_exists:
-                            tar_dir = tarfile.TarInfo(name=generator.name)
+                            tar_dir = tarfile.TarInfo(name=str(generator.key.rel_dir()))
                             tar_dir.type = tarfile.DIRTYPE
                             tar_dir.mode = 0o511
                             tar.addfile(tarinfo=tar_dir)
                             dir_exists = True
-                        tar_file = tarfile.TarInfo(name=f"{generator.name}/{file.name}")
+                        tar_file = tarfile.TarInfo(
+                            name=f"{generator.key.rel_dir()}/{file.name}"
+                        )
                         content = self.get(generator.key, file.name)
                         tar_file.size = len(content)
                         tar_file.mode = file.mode
@@ -264,7 +268,10 @@ class SecretStore(StoreBase):
                 for file in generator.files:
                     if file.needed_for == "activation":
                         out_file = (
-                            output_dir / "activation" / generator.name / file.name
+                            output_dir
+                            / "activation"
+                            / generator.key.rel_dir()
+                            / file.name
                         )
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
@@ -272,7 +279,7 @@ class SecretStore(StoreBase):
             for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
-                        out_file = output_dir / generator.name / file.name
+                        out_file = output_dir / generator.key.rel_dir() / file.name
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(file.value)
 

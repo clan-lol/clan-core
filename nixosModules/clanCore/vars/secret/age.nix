@@ -9,7 +9,6 @@
 let
   secretLocation = config.clan.core.vars.age.secretLocation;
   clanDir = config.clan.core.settings.directory;
-  machineName = config.clan.core.settings.machine.name;
   isNixOS = _class == "nixos";
   isDarwin = _class == "darwin";
 
@@ -17,14 +16,9 @@ let
   # Per-machine secrets: secrets/clan-vars/per-machine/{machine}/{generator}/{name}/{name}.age
   # Shared secrets:      secrets/clan-vars/shared/{generator}/{name}/{name}.age
   encryptedSecretSource =
-    genName: fileName: isShared:
+    rel_dir: fileName:
     let
-      relPath =
-        if isShared then
-          "shared/${genName}/${fileName}"
-        else
-          "per-machine/${machineName}/${genName}/${fileName}";
-      storePath = clanDir + "/secrets/clan-vars/${relPath}/${fileName}.age";
+      storePath = clanDir + "/secrets/clan-vars/${rel_dir}/${fileName}.age";
     in
     # Only include if the file exists in the flake; otherwise skip.
     if builtins.pathExists storePath then storePath else null;
@@ -37,11 +31,12 @@ let
         lib.mapAttrsToList (
           fileName: file:
           let
-            src = encryptedSecretSource genName fileName file.share;
+            src = encryptedSecretSource file.rel_dir fileName;
           in
           lib.optional (file.secret && file.deploy && src != null) {
             inherit genName fileName src;
             inherit (file)
+              rel_dir
               owner
               group
               mode
@@ -63,8 +58,8 @@ let
     lib.concatMapStringsSep "\n" (
       f:
       let
-        destFile = "${targetDir}/${f.genName}/${f.fileName}";
-        destDir = "${targetDir}/${f.genName}";
+        destFile = "${targetDir}/${f.rel_dir}/${f.fileName}";
+        destDir = "${targetDir}/${f.rel_dir}";
       in
       ''
         mkdir -p "${destDir}"
@@ -222,13 +217,13 @@ in
           lib.mkIf file.config.secret {
             path =
               if file.config.neededFor == "users" then
-                "/run/user-secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/user-secrets/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "services" then
-                "/run/secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/secrets/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "activation" then
-                "${secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
+                "${secretLocation}/activation/${file.config.rel_dir}/${file.config.name}"
               else if file.config.neededFor == "partitioning" then
-                "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
+                "/run/partitioning-secrets/${file.config.rel_dir}/${file.config.name}"
               else
                 throw "unknown neededFor ${file.config.neededFor}";
           }

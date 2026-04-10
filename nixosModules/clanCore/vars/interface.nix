@@ -19,6 +19,11 @@ in
     # ===
     # Injected dependencies
     # ===
+    machineName = mkOption {
+      type = lib.types.str;
+      internal = true;
+      visible = false;
+    };
     globalSettings = mkOption {
       description = ''
         The global vars settings for the whole clan.
@@ -67,6 +72,16 @@ in
             generator:
             (lib.modules.importApply ../../../modules/clan/export-modules/generic-generator.nix {
               fileContextModule = {
+                config.rel_dir =
+                  if generator.config.share then
+                    # Note: We could transform the path BUT decide against it:
+                    # Theoretically strip the path down to per-machine/generatorName
+                    # because 'machineName' is constant
+                    # But we expliciticly avoid this, to keep the logic simple.
+                    # Python and nix must use the same logic, which adds the risk of getting out of sync.
+                    "shared/${generator.config.name}"
+                  else
+                    "per-machine/${config.machineName}/${generator.config.name}";
                 options.deploy = mkOption {
                   description = ''
                     Whether the file should be deployed to the target machine.
