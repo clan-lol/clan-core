@@ -318,6 +318,7 @@
               installed_machine.start()
               installed_machine.wait_for_unit("multi-user.target")
               installed_machine.succeed("test -f /etc/install-successful")
+              installed_machine.shutdown()
             '';
           } { inherit pkgs self; };
 
@@ -442,6 +443,7 @@
               installed_machine.start()
               installed_machine.wait_for_unit("multi-user.target")
               installed_machine.succeed("test -f /etc/install-successful")
+              installed_machine.shutdown()
             '';
           } { inherit pkgs self; };
 
@@ -598,6 +600,7 @@
               installed_machine.start()
               installed_machine.wait_for_unit("multi-user.target")
               installed_machine.succeed("test -f /etc/install-successful")
+              installed_machine.shutdown()
             '';
           } { inherit pkgs self; };
 
