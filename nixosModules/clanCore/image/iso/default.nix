@@ -74,9 +74,9 @@ in
         are available.
 
         Accepts the following arguments:
-        - --source <path>: Path to the original built image (read-only)
-        - --output <path>: Path for the modified output image
-        - --extra-path <local-source> <target-path>: Repeatable, maps a local
+        - --source `<path>`: Path to the original built image (read-only)
+        - --output `<path>`: Path for the modified output image
+        - --extra-path `<local-source>` `<target-path>`: Repeatable, maps a local
           file or directory to a target filesystem path inside the image
       '';
     };
