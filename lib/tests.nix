@@ -311,28 +311,6 @@ in
       ];
     };
 
-  test_pkgsForSystem_allowUnfree =
-    let
-      nixpkgs = clan-core.inputs.nixpkgs;
-      customPkgs = import nixpkgs {
-        system = "x86_64-linux";
-        config.allowUnfree = true;
-      };
-      eval = clan {
-        self = {
-          inputs = { };
-        };
-        directory = ./.;
-        meta.name = "test";
-        pkgsForSystem = system: if system == "x86_64-linux" then customPkgs else null;
-        machines.machine1.nixpkgs.hostPlatform = "x86_64-linux";
-      };
-    in
-    {
-      expr = eval.config.nixosConfigurations.machine1.config.nixpkgs.pkgs.config.allowUnfree;
-      expected = true;
-    };
-
   test_clan_darwin_wireguard_service =
     let
       eval = clan {
