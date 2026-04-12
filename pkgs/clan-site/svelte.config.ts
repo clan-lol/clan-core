@@ -28,6 +28,18 @@ const svelteConfig: Config = {
     alias: {
       "~": fileURLToPath(new URL("src", import.meta.url)),
     },
+    prerender: {
+      handleUnseenRoutes(details): void {
+        // We have a dev only hidden page /test
+        if (
+          details.routes.length === 1 &&
+          details.routes[0] === "/(docs)/docs/[ver]/[test=test]"
+        ) {
+          return;
+        }
+        throw new Error(details.message);
+      },
+    },
     typescript: {
       config(config) {
         config["include"] = [
