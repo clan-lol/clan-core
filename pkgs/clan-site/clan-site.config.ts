@@ -15,12 +15,12 @@ export const codeDarkTheme = "catppuccin-macchiato";
 export const maxTocDepth = 3;
 export const copyButtonMessageDelay = 3000;
 export const docsSrcDirs = [
-  pathutil.resolve(import.meta.dirname, "../../docs/site"),
+  pathutil.resolve(import.meta.dirname, "../../docs/src"),
   getGeneratedDocsDir(),
 ] as const;
 export const docsCodeEmbedsDir = pathutil.resolve(
   import.meta.dirname,
-  "../../docs/code-examples",
+  "../../docs/embeds",
 );
 export const docsBase = "/docs" as const;
 export const docsNav: DocsNavItems = [

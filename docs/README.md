@@ -20,7 +20,7 @@ Then start the dev server with hot module reloading:
 clan-site
 ```
 
-This watches `docs/site/` for markdown changes and automatically reloads the browser.
+This watches `docs/src/` for markdown changes and automatically reloads the browser.
 
 Add `-b` to open the site in a new browser tab:
 

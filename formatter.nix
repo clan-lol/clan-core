@@ -75,7 +75,7 @@
         "*.list"
         "*.desktop"
         # ignore symlink
-        "docs/site/guides/contributing/CONTRIBUTING.md"
+        "docs/src/guides/contributing/CONTRIBUTING.md"
         "*_test_cert"
         "*_test_key"
         "*/gnupg-home/*"
