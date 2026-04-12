@@ -54,6 +54,13 @@ inventory.instances = {
 }
 ```
 
+## Code embed file
+
+Path after `embed=` is relative to docs/embeds
+
+```nix [disko.nix] {21,81,82,88,89} embed=test.nix
+```
+
 ## Code in Bullet Points
 
 1. Item 1
