@@ -9,9 +9,10 @@ export default defineConfig(
   }),
   {
     files: [
-      "./packages/vite-plugin-*/**/*.ts",
       "./packages/coding-standard/**/*.ts",
       "./packages/coding-standard-*/**/*.ts",
+      "./packages/vite-plugin-*/**/*.ts",
+      "./packages/svelte-md/**/*.ts",
     ],
     extends: standard.node,
   },
