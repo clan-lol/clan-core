@@ -1,0 +1,224 @@
+# Test
+
+## Code
+
+```text
+nix run abc
+```
+
+## Code for a language
+
+```js
+const abc = 1 + "2";
+const abc = 1 + "2";
+const abc = 1 + "2";
+const abc = 1 + "2";
+```
+
+## Code Highlighting
+
+```nix {1,18-21}
+inventory.instances = {
+  dyndns = {
+    roles.default.machines."jon" = { }; # [!code --]
+    roles.default.settings = { # [!code ++]
+      period   = 15;                # minutes
+      settings = {
+        "all-jon-blog" = {
+          provider         = "porkbun";
+          domain           = "jon.blog";
+
+          # (1) tell the secret-manager which key we are going to store
+          secret_field_name = "secret_api_key";
+
+          # everything below is copied verbatim into config.json
+          extraSettings = {
+            host         = "@,home,test";   # (2) comma-separated list of sub-domains [!code highlight]
+            ip_version   = "ipv4";
+            ipv6_suffix  = "";
+            api_key      = "pk1_4bb2b231275a02fdc23b7e6f3552s01S213S"; # (3) public – safe to commit
+          };
+        };
+      };
+    };
+  };
+};
+```
+
+## Code Title
+
+```nix [nixos.nix] {2}
+{
+  foo = "bar";
+  bar = "foo";
+}
+```
+
+## Code in Bullet Points
+
+1. Item 1
+
+    ```nix {2}
+   {
+     foo = "bar";
+     bar = "foo";
+   }
+    ```
+
+1. Item 2
+
+## Title with inline code `choices.<name>.foo`
+
+## Tabs
+
+::::tabs
+:::tab[Automatic (direnv, recommended)]
+If you installed direnv correctly following the required steps before, you should be presented with an error message now:
+
+`direnv: error /MY-DIRECTORY/MY-NEW-CLAN/.envrc is blocked. Run direnv allow to approve its content`
+
+To continue, simply allow direnv in your Clan directory:
+
+```bash
+direnv allow
+```
+
+:::
+:::tab[Manual (nix develop)]
+Run nix develop to load the environment manually:
+
+```bash
+nix develop
+```
+
+:::
+::::
+
+## Step Foo
+
+Miscellaneous Symbols
+☀ ☁ ☂ ☃ ☄ ★ ☆ ☇ ☈ ☉ ☊ ☋ ☌ ☍ ☎ ☏ ☐ ☑ ☒ ☓ ☚ ☛ ☜ ☝ ☞ ☟ ☠ ☡ ☢ ☣ ☤ ☥ ☦ ☧ ☨ ☩ ☪ ☫ ☬ ☭ ☮ ☯ ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷ ☸ ☹ ☺ ☻ ☼ ☽ ☾ ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆ ♇ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♔ ♕ ♖ ♗ ♘ ♙ ♚ ♛ ♜ ♝ ♞ ♟ ♠ ♡ ♢ ♣ ♤ ♥ ♦ ♧ ♨ ♩ ♪ ♫ ♬ ♭ ♮ ♯
+
+↑
+Duplicate heading, should still be linked
+
+This is a divider
+
+---
+
+---
+
+## Admonition
+
+:::admonition[Note about nature]
+
+Respect the nature of things
+
+:::
+
+## Nested Admonition
+
+::::admonition[Its important]{type=important}
+
+Follow this and your life will be happy
+
+:::admonition{type=note}
+nested note probably a bad idea
+
+but technically valid
+:::
+
+::::
+
+:::admonition[Attention Footgun]{type=danger}
+
+Please don't erase your disk
+
+```nix
+erase = false;
+```
+
+:::
+
+## Collapsible Admonition
+
+:::admonition[Outsmart]{type=tip collapsible}
+
+Lets be really clever
+
+- List
+- Inside
+
+:::
+
+## Collapsible Admonition (default open)
+
+:::admonition[Outsmart]{type=tip collapsible open}
+
+Lets be really clever
+
+- List
+- Inside
+
+:::
+
+## Keyboard Shortcut
+
+Press ++ctrl+d++ to exit `IWD`.
+
+## Graph
+
+```mermaid
+graph TB
+    A[Generator Declaration] --> B[clan vars generate]
+    B --> C{Prompts User}
+    C --> D[Execute Script]
+    D --> E[Output Files]
+    E --> F{Secret?}
+    F -->|Yes| G[Encrypted Storage]
+    F -->|No| H[Git Repository]
+    G --> I[Deploy to Machine]
+    H --> I
+    I --> J[Available in NixOS]
+```
+
+## Table
+
+This is a table
+
+| A/B | A   | ¬A  |
+| --- | --- | --- |
+| B   | AB  | B   |
+| ¬B  | A   | 0   |
+
+## GFM
+
+### Autolink literals
+
+<https://www.example.com>, <https://example.com>, and <contact@example.com>.
+
+### Footnote
+
+A note[^1]
+
+[^1]: Big note.
+
+### Strikethrough
+
+~one~ or ~~two~~ tildes.
+
+### Table
+
+| a   | b   |   c |  d  |
+| --- | :-- | --: | :-: |
+| 1   | 2   |   3 |  4  |
+
+### List
+
+- item
+- normal
+
+### Tasklist
+
+- [ ] to do
+- [x] done

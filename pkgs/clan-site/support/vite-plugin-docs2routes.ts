@@ -13,16 +13,7 @@ export default function vitePluginDocs2routes(): PluginOption {
     name: "vite-plugin-docs2routes",
     config: {
       order: "pre",
-      async handler(config, env): Promise<void> {
-        // FIXME: SvelteKit runs vite build twice during build, but we only want
-        // to generate routes once before the first build. There is no way to
-        // differentiate the two builds currently (setting a top level variable
-        // won't work because vite loads this file again for the second build).
-        // Need to figure this out.
-        // https://github.com/sveltejs/kit/blob/c5f40c2e0aa3da2979a7cda60f1b573752d60075/packages/kit/src/exports/vite/index.js#L1131
-        if (!config.build || Object.keys(config.build).length !== 0) {
-          return;
-        }
+      async handler(_config, env): Promise<void> {
         // We guarantee that vite dev is always after vite build
         // So we only do clean up and type generation at vite build
         if (env.command === "build") {

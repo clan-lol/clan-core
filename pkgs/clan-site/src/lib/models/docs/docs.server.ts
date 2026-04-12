@@ -120,7 +120,11 @@ export class ServerDocs {
   }
 
   async #writeFile(path: string, output: sveltemd.Output): Promise<void> {
-    const dir = pathutil.join(articlesDir, path);
+    const dir =
+      path === "test"
+        ? pathutil.join(articlesDir, "[test=test]")
+        : pathutil.join(articlesDir, path);
+
     await mkdir(dir, { recursive: true });
     await Promise.all([
       writeFile(
