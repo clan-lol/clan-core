@@ -1,9 +1,13 @@
 import type { Config } from "@sveltejs/kit";
 import adapter from "@sveltejs/adapter-static";
 import { fileURLToPath } from "node:url";
-import { version } from "./clan-site.config.ts";
+// Don't import version directly from ./clan-site.config.ts because that file
+// requires some env vars to be set. This file will be imported by
+// eslint.config.ts, which shouldn't require any env var to be set
+import { getVersion } from "#lib/util.server.ts";
 
 const DEV = process.env["MODE"] === "development";
+const version = await getVersion();
 const svelteConfig: Config = {
   kit: {
     adapter: adapter({
