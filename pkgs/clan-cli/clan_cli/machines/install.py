@@ -6,6 +6,7 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import get_args
 
+from clan_lib.colors import AnsiColor, color
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.hardware import has_facter_config, has_hardware_config
@@ -23,6 +24,10 @@ from clan_cli.completions import (
 from clan_cli.machines.hardware import HardwareConfig
 
 log = logging.getLogger(__name__)
+INSTALL_WARNING = (
+    "WARNING: Installing is a destructive operation. "
+    "The target disks will be wiped and repartitioned."
+)
 
 
 def should_prompt_for_hardware_config(
@@ -192,6 +197,8 @@ def install_command(args: argparse.Namespace) -> None:
 
             # Get hardware config (prompting user if needed)
             hardware_config = get_hardware_config(machine, args)
+
+            print(color(INSTALL_WARNING, fg=AnsiColor.RED))
 
             if not args.yes:
                 while True:
