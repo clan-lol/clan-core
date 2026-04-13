@@ -309,6 +309,7 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
         "tags",
         "deploy.targetHost",
         "deploy.buildHost",
+        "deploy.forwardAgent",
         "description",
         "icon",
         "installedAt",

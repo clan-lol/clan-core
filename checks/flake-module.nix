@@ -23,6 +23,7 @@ in
     ./flash/flake-module.nix
     ./installation/flake-module.nix
     ./update/flake-module.nix
+    ./ssh-agent-forwarding/flake-module.nix
     ./nixos-documentation/flake-module.nix
     ./dont-depend-on-repo-root.nix
     # clan core submodule tests

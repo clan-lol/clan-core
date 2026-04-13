@@ -42,7 +42,7 @@ class Remote:
     port: int | None = None
     private_key: Path | None = None
     password: str | None = None
-    forward_agent: bool = True
+    forward_agent: bool = False
     host_key_check: HostKeyCheck = "ask"
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
@@ -70,6 +70,7 @@ class Remote:
         host_key_check: HostKeyCheck | None = None,
         private_key: Path | None = None,
         password: str | None = None,
+        forward_agent: bool | None = None,
         socks_port: int | None = None,
         socks_wrapper: SocksWrapper | None = None,
         command_prefix: str | None = None,
@@ -84,7 +85,9 @@ class Remote:
             port=port or self.port,
             private_key=private_key if private_key is not None else self.private_key,
             password=password if password is not None else self.password,
-            forward_agent=self.forward_agent,
+            forward_agent=(
+                forward_agent if forward_agent is not None else self.forward_agent
+            ),
             host_key_check=(
                 host_key_check if host_key_check is not None else self.host_key_check
             ),

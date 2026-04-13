@@ -17,16 +17,22 @@ Those are sent to the central monitoring server for storage and visualization.
 
 - Added the ncps nix proxy binary cache service.
 
-### Exports
-
 - Standardized exports system with centrally-defined options in clan-core
 
-Darwin Support
+**Darwin Support**
 
 - Services now support nix-darwin alongside NixOS
 - Service authors can provide `darwinModule` in addition to `nixosModule` in their service definitions
 - WireGuard service now fully supports darwin machines using wg-quick interfaces
 - Added `clan.core.networking.extraHosts` for managing /etc/hosts on darwin via launchd
+
+**SSH Agent Forwarding**
+
+- Added configurable SSH agent forwarding for deployments
+  - Disabled by default for security
+  - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
+  - Configure globally: `clan.core.networking.forwardAgent = true;`
+  - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Breaking Changes
 
@@ -72,7 +78,7 @@ default backend for clan password store is now `passage` (age-based encryption).
 
 - **Before:** `clan.core.vars.password-store.passPackage = pkgs.passage;`
 - **After:** `clan.core.vars.password-store.passCommand = "passage";`
-
+j
 The new `passCommand` option specifies the command name to execute for password
 store operations. The command must be available in the system PATH and needs to
 be installed by the user (e.g., via `environment.systemPackages`).
@@ -80,6 +86,12 @@ be installed by the user (e.g., via `environment.systemPackages`).
 The backend now defaults to passage/age, providing improved security through age
 encryption. If you were explicitly setting `passPackage`, you should update your
 configuration to use `passComma
+
+**SSH Agent Forwarding**
+
+- Disabled by default (was previously enabled)
+  - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
+  - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Misc
 

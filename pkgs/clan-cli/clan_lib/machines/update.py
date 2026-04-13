@@ -5,15 +5,16 @@ import re
 import shlex
 import uuid
 from contextlib import ExitStack
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Literal, cast
 
+from clan_cli.hyperlink import hyperlink_same_text_and_url
 from clan_cli.vars.upload import upload_secret_vars
 
 from clan_lib.api import API
 from clan_lib.async_run import is_async_cancelled
 from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
-from clan_lib.errors import ClanError
+from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command, nix_metadata
 from clan_lib.ssh.localhost import LocalHost
@@ -53,6 +54,126 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     if local:
         print(f"[WARN] flake input has local node: {json.dumps(node)}")
     return local
+
+
+SshAuthContext = Literal["upload_sources", "copy_closure"]
+
+_GUIDE_URL = "https://docs.clan.lol/guides/ssh-agent-forwarding"
+
+
+def _check_ssh_auth_error(
+    error: ClanError,
+    machine: Machine,
+    context: SshAuthContext,
+    *,
+    build_host: "Host | None" = None,
+    target_host: "Host | None" = None,
+) -> None:
+    """Detect SSH authentication failures and print guidance.
+
+    Only stderr is inspected, to avoid false positives from build output.
+
+    ``context`` indicates which SSH hop failed and selects the guidance
+    message:
+
+    - ``"upload_sources"`` — workstation -> build host (during
+      ``nix copy`` / ``nix flake archive`` of the flake sources).
+    - ``"copy_closure"`` — build host -> target host (during the
+      closure copy that runs after ``nix build``).
+
+    ``build_host`` and ``target_host`` are the resolved SSH endpoints.
+    When provided, their ``target`` strings (``user@address``) are shown
+    in the guidance so users know exactly which hop failed.
+    """
+    if not isinstance(error, ClanCmdError):
+        return
+
+    stderr = error.cmd.stderr
+    build_label = build_host.target if build_host is not None else "<build host>"
+    target_label = target_host.target if target_host is not None else "<target host>"
+    guide_link = hyperlink_same_text_and_url(_GUIDE_URL)
+    host_key_link = hyperlink_same_text_and_url(f"{_GUIDE_URL}#host-key-verification")
+
+    # 1) Host key verification failed — the remote's key is not in the
+    #    relevant known_hosts file yet. Suggest --host-key-check
+    #    accept-new, which propagates into NIX_SSHOPTS and lets the
+    #    nested SSH trust the key on first use.
+    if "Host key verification failed" in stderr:
+        match context:
+            case "copy_closure":
+                machine.warn(
+                    f"\nHost key verification failed while build host "
+                    f"`{build_label}` tried to SSH into target host "
+                    f"`{target_label}` to copy the system closure. The "
+                    "target's host key is not in the build host's "
+                    "`~/.ssh/known_hosts`, which is separate from your "
+                    "workstation's.\n"
+                    "\n"
+                    "Re-run with `--host-key-check accept-new` to trust the "
+                    "key on first use. Clan propagates the flag into the "
+                    "nested SSH the build host opens to the target, so "
+                    "first deploy succeeds and the key is recorded on the "
+                    "build host for subsequent runs.\n"
+                    "\n"
+                    f"See {host_key_link} for details."
+                )
+            case "upload_sources":
+                machine.warn(
+                    f"\nHost key verification failed while connecting to build "
+                    f"host `{build_label}` to upload flake sources. The "
+                    "build host's key is not in your workstation's "
+                    "`~/.ssh/known_hosts`.\n"
+                    "\n"
+                    "Re-run with `--host-key-check accept-new` to trust the "
+                    "key on first use.\n"
+                    "\n"
+                    f"See {host_key_link} for details."
+                )
+        return
+
+    # 2) SSH authentication failed (key not accepted on the remote).
+    ssh_auth_indicators = [
+        "Permission denied (publickey",
+        "fatal: Could not read from remote repository",
+    ]
+    if not any(indicator in stderr for indicator in ssh_auth_indicators):
+        return
+
+    match context:
+        case "copy_closure":
+            machine.warn(
+                f"\nSSH authentication from build host `{build_label}` to "
+                f"target host `{target_label}` failed while copying the system "
+                "closure.\n"
+                "\n"
+                "When `deploy.buildHost` is set, the build host opens its own SSH "
+                "connection to the target host. That connection needs credentials "
+                "the target host accepts.\n"
+                "\n"
+                "You have two options:\n"
+                "\n"
+                f"1. Install a dedicated SSH key on `{build_label}` and authorize "
+                f"it on `{target_label}` (recommended).\n"
+                "2. Enable SSH agent forwarding so the build host reuses your "
+                "workstation's keys:\n"
+                f"   - Per-machine: `inventory.machines.{machine.name}.deploy.forwardAgent = true;`\n"
+                "   - Globally:    `clan.core.networking.forwardAgent = true;`\n"
+                "\n"
+                f"See {guide_link} for the full walkthrough."
+            )
+        case "upload_sources":
+            machine.warn(
+                f"\nSSH authentication to build host `{build_label}` failed while "
+                "uploading flake sources.\n"
+                "\n"
+                "Verify that your local user can open a plain SSH session to the "
+                "build host before retrying:\n"
+                "\n"
+                f"    ssh {build_label}\n"
+                "\n"
+                "If you deploy with a separate `deploy.buildHost`, see "
+                f"{guide_link} for the recommended key setup."
+            )
 
 
 def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str:
@@ -99,15 +220,21 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
                 path,
             ],
         )
-        run(
-            cmd,
-            RunOpts(
-                env=env,
-                needs_user_terminal=True,
-                error_msg="failed to upload sources",
-                prefix=machine.name,
-            ),
-        )
+        try:
+            run(
+                cmd,
+                RunOpts(
+                    env=env,
+                    needs_user_terminal=True,
+                    error_msg="failed to upload sources",
+                    prefix=machine.name,
+                ),
+            )
+        except ClanError as e:
+            _check_ssh_auth_error(
+                e, machine, context="upload_sources", build_host=remote
+            )
+            raise
         return path
 
     # Slow path: we need to upload all sources to the remote machine
@@ -125,15 +252,19 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
             flake_url,
         ],
     )
-    proc = run(
-        cmd,
-        RunOpts(
-            env=env,
-            needs_user_terminal=True,
-            error_msg="failed to upload sources",
-            prefix=machine.name,
-        ),
-    )
+    try:
+        proc = run(
+            cmd,
+            RunOpts(
+                env=env,
+                needs_user_terminal=True,
+                error_msg="failed to upload sources",
+                prefix=machine.name,
+            ),
+        )
+    except ClanError as e:
+        _check_ssh_auth_error(e, machine, context="upload_sources", build_host=remote)
+        raise
 
     try:
         return json.loads(proc.stdout)["path"]
@@ -509,13 +640,23 @@ def _update_nixos(
             if isinstance(target_host, Remote)
             else None
         )
-        _copy_closure(
-            config_path=config_path,
-            build_host=build_host,
-            target_host=target_host_root,
-            machine_name=machine.name,
-            extra_env=copy_env,
-        )
+        try:
+            _copy_closure(
+                config_path=config_path,
+                build_host=build_host,
+                target_host=target_host_root,
+                machine_name=machine.name,
+                extra_env=copy_env,
+            )
+        except ClanError as e:
+            _check_ssh_auth_error(
+                e,
+                machine,
+                context="copy_closure",
+                build_host=build_host,
+                target_host=target_host_root,
+            )
+            raise
 
     if is_async_cancelled():
         return

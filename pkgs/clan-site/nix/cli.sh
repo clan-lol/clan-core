@@ -75,7 +75,10 @@ lint)
 	fi
 	pnpm run prelint
 	if [[ -z $fix ]]; then
-		pnpm run "/^lint:.+/"
+		# append-only reporter: pnpm's default tui reporter rewrites lines
+		# in place, so in non-TTY build logs (e.g. the nix sandbox) concurrent
+		# task output gets shredded and failures become invisible.
+		pnpm --reporter=append-only run "/^lint:.+/"
 	else
 		pnpm run lint-fix
 	fi

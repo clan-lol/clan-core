@@ -139,6 +139,25 @@ class Machine:
         prefix = get_machine_prefix()
         return self.flake.select(f'{prefix}."{system}"."{self.name}".{attr}')
 
+    def get_forward_agent(self) -> bool:
+        """Resolve forwardAgent configuration with priority:
+        1. Per-machine inventory setting (if explicitly set)
+        2. Global config from clan.core.networking.forwardAgent
+        3. Default to False (security default)
+        """
+        inv_machine = self.get_inv_machine()
+        forward_agent_val = inv_machine.get("deploy", {}).get("forwardAgent")
+
+        if forward_agent_val is not None:
+            return bool(forward_agent_val)
+
+        try:
+            return bool(self.select("config.clan.core.networking.forwardAgent"))
+        except ClanSelectError:
+            # backwards compatibility before we had config.clan.core.networking.forwardAgent:
+            # if the config is missing, default to False
+            return False
+
 
 @dataclass(frozen=True)
 class RemoteSource:
@@ -175,7 +194,12 @@ def get_machine_host(
     if not host_str:
         return None
 
+    forward_agent = machine.get_forward_agent()
+
+    remote = Remote.from_ssh_uri(machine_name=machine.name, address=host_str)
+    remote = remote.override(forward_agent=forward_agent)
+
     return RemoteSource(
-        data=Remote.from_ssh_uri(machine_name=machine.name, address=host_str),
+        data=remote,
         source=source,
     )
