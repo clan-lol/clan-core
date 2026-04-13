@@ -1,13 +1,16 @@
-{ ... }:
+{ lib, ... }:
 {
   _class = "clan.service";
   manifest.name = "clan-core/user";
   manifest.description = ''
     An instance of this module will create a user account on the added machines,
     along with a generated password that is constant across machines and user settings.
+    Optionally exports identity metadata (email, groups) via the `auth` export type
+    for consumption by IdP clan services (Authelia, Kanidm, etc.).
   '';
   manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
+  manifest.exports.out = [ "auth" ];
 
   roles.default = {
     description = "Placeholder role to apply the user service";
@@ -19,7 +22,19 @@
             type = lib.types.str;
             defaultText = "$'{instanceName}";
             example = "alice";
-            description = "The user the password should be generated for.";
+            description = "The username for this account.";
+          };
+          systemUser = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether to create a Unix system account for this user.
+
+              Set to `false` for identity-only users who should exist in the
+              IdP (Authelia, Kanidm, etc.) but have no shell access on any
+              machine. The `auth.user` identity export still flows when
+              `identity.email` is set, regardless of this flag.
+            '';
           };
           prompt = lib.mkOption {
             type = lib.types.bool;
@@ -73,6 +88,55 @@
             '';
           };
 
+          identity = lib.mkOption {
+            type = lib.types.attrsOf (
+              lib.types.submodule {
+                options = {
+                  email = lib.mkOption {
+                    type = lib.types.str;
+                    default = "";
+                    example = "alice@example.com";
+                    description = ''
+                      Email for this IdP account. Defaults to <user>@mail.<meta.domain>.
+                    '';
+                  };
+                  groups = lib.mkOption {
+                    type = lib.types.listOf lib.types.str;
+                    default = [ ];
+                    example = [
+                      "admins"
+                      "users"
+                    ];
+                    description = ''
+                      IdP-level groups. Control OIDC client access policies
+                      (e.g. "miniflux-users" gates miniflux access).
+                    '';
+                  };
+                  displayname = lib.mkOption {
+                    type = lib.types.nullOr lib.types.str;
+                    default = null;
+                    description = "Display name. Defaults to the username.";
+                  };
+                };
+              }
+            );
+            default = { };
+            description = ''
+              IdP identities keyed by IdP instance name. Each entry creates
+              a user account in the corresponding IdP clan service. Example:
+              identity.main = { groups = [ "users" ]; } creates an account
+              in the IdP instance named "main" in inventory.
+            '';
+            example = lib.literalExpression ''
+              {
+                main = {
+                  email = "alice@example.com";
+                  groups = [ "admins" "users" ];
+                };
+              }
+            '';
+          };
+
           openssh.authorizedKeys = {
             keys = lib.mkOption {
               type = lib.types.listOf lib.types.singleLineStr;
@@ -104,8 +168,27 @@
       };
 
     perInstance =
-      { extendSettings, instanceName, ... }:
       {
+        settings,
+        extendSettings,
+        instanceName,
+        mkExports,
+        meta,
+        ...
+      }:
+      {
+        exports = mkExports (
+          lib.optionalAttrs (settings.identity != { }) {
+            # Keyed by IdP instance name — each entry becomes a user in that IdP
+            auth.users = lib.mapAttrs (_idpName: id: {
+              username = settings.user;
+              email = if id.email != "" then id.email else "${settings.user}@mail.${meta.domain}";
+              groups = id.groups;
+              displayname = if id.displayname != null then id.displayname else settings.user;
+            }) settings.identity;
+          }
+        );
+
         nixosModule =
           {
             config,
@@ -116,7 +199,7 @@
           let
             settings = extendSettings { user = lib.mkOptionDefault instanceName; };
           in
-          {
+          lib.mkIf settings.systemUser {
             users.users.${settings.user} = {
               isNormalUser = if settings.user == "root" then false else true;
               extraGroups = settings.groups;
