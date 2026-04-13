@@ -57,6 +57,13 @@ Useful if you want to get an ssh "trust this server" prompt once and then never 
         input = "clan-core";
       };
       roles.server.tags = [ "all" ];
+      roles.server.settings = {
+        authorizedKeys = {
+          "admin-key" = "ssh-ed25519 AAAA...";
+        };
+
+        certificate.enable = false;
+      };
     };
   };
 }

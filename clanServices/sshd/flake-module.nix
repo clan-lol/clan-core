@@ -15,6 +15,11 @@ in
 
         clan.modules."@clan/sshd" = module;
       };
+      clan.nixosTests.sshd-no-ca = {
+        imports = [ ./tests/vm/no-ca.nix ];
+
+        clan.modules."@clan/sshd" = module;
+      };
     };
 
 }
