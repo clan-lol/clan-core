@@ -29,10 +29,10 @@ Those are sent to the central monitoring server for storage and visualization.
 **SSH Agent Forwarding**
 
 - Added configurable SSH agent forwarding for deployments
-  - Disabled by default for security
-  - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
-  - Configure globally: `clan.core.networking.forwardAgent = true;`
-  - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - Disabled by default for security
+    - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
+    - Configure globally: `clan.core.networking.forwardAgent = true;`
+    - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Breaking Changes
 
@@ -90,8 +90,8 @@ configuration to use `passComma
 **SSH Agent Forwarding**
 
 - Disabled by default (was previously enabled)
-  - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
-  - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
+    - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Misc
 
