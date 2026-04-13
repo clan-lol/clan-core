@@ -3,7 +3,7 @@
 When you deploy through a separate `buildHost`, Clan opens a second SSH connection from the build host to the target host to activate the new configuration. This guide walks through the recommended way to authenticate that hop: install a dedicated SSH key on the build host. It also covers the shortcut (forwarding your local agent) and why you probably shouldn't use it.
 
 :::admonition[Do I need this?]{type=note}
-Only if you set `deploy.buildHost` to something other than `deploy.targetHost`. If they're the same, or `buildHost` is unset, you can skip this guide.
+Only if you set `deploy.buildHost` to something other than `deploy.targetHost`. If they're the same, or `buildHost` is unset, you can skip this guide. If you're new to `buildHost` itself, start with the [Build Host](/docs/guides/build-host) guide and come back here when it points you to this page.
 :::
 
 ## Background
@@ -87,11 +87,19 @@ The public key file must exist on disk before the target host is evaluated. Run 
 
 ## 4. Deploy
 
+On the first deploy, the build host has no record of the target's host key yet. Pass `--host-key-check accept-new` so the build host accepts and records the key on first use:
+
+```bash
+clan machines update <machine> --host-key-check accept-new
+```
+
+Subsequent deploys can drop the flag:
+
 ```bash
 clan machines update <machine>
 ```
 
-The build host now authenticates to the target on its own. No agent forwarding required.
+The build host now authenticates to the target on its own. No agent forwarding required. If the deploy still fails at this step, see [Host Key Verification](#host-key-verification) for the full mechanism and [Troubleshooting](#troubleshooting) for common errors.
 
 ---
 
@@ -123,44 +131,19 @@ Clan resolves `forwardAgent` in this order, highest priority first:
 
 ## Host Key Verification
 
-When `deploy.buildHost` is set, `nix copy` runs on the build host and opens its own SSH connection to the target. That connection is verified against the build host's `~/.ssh/known_hosts`, which is a separate file from your workstation's. On the first deploy, the target's host key is not yet there, so the nested SSH fails with:
+Step 4 passes `--host-key-check accept-new` for a reason. When `deploy.buildHost` is set, `nix copy` runs on the build host and opens its own SSH connection to the target. That connection is verified against the build host's `~/.ssh/known_hosts`, which is a separate file from your workstation's. Without the flag, the nested SSH fails on the first deploy with:
 
 ```text
 Host key verification failed.
 error: failed to start SSH connection to '<target-host>'
 ```
 
-### Fix: Re-run with `--host-key-check accept-new`
+### Why `--host-key-check` Reaches the Second Hop
 
-```bash
-clan machines update <machine> --host-key-check accept-new
-```
+Clan forwards the `--host-key-check` setting to the build host and applies it to the SSH connection that the builder opens to the target. A flag you set on your workstation ends up governing a connection two hops away, which is why the fix works without you ever logging in to the build host.
 
-This is the recommended fix. Clan passes the flag through to the nested SSH that the build host opens to the target, so the target's key is recorded on first use and the deploy succeeds. Subsequent runs can drop the flag. The key is now in the build host's `~/.ssh/known_hosts` and strict checking takes over.
-
-### Why This Works
-
-`clan machines update` builds a `Remote` object for the target host with the `host_key_check` mode you pass via `--host-key-check`. Before `nix copy` runs on the build host, Clan serialises that mode into the `NIX_SSHOPTS` environment variable:
-
-- `accept-new` (or its alias `tofu`) becomes `-o StrictHostKeyChecking=accept-new`.
-- `strict` becomes `-o StrictHostKeyChecking=yes`.
-- `ask` (the default) passes nothing, and OpenSSH applies its own strict default.
-
-`NIX_SSHOPTS` is then handed to `nix copy` running on the build host, and every nested SSH it opens inherits those options. That is why `--host-key-check accept-new` on your workstation resolves a failure that happens two hops away.
-
-### Manual Alternative
-
-If you can't or don't want to use `--host-key-check accept-new`, seed the build host's `known_hosts` from your workstation before deploying:
-
-```bash
-ssh-keyscan -p <port> <target-host> \
-  | ssh <build-host> 'tee -a ~/.ssh/known_hosts'
-```
-
-Replace `<port>` with the target's SSH port (usually `22`), `<target-host>` with the target address, and `<build-host>` with the build host target (for example `root@builder.example.com`). Alternatively, log in to the build host interactively and open a plain SSH session to the target. OpenSSH will prompt you to accept the key and record it.
-
-:::admonition[No Centralised Distribution]{type=note}
-Clan does not currently distribute host keys across build hosts. Seed each build host once. If your strict host-key policy requires pinned keys, manage them through your existing configuration-management flow.
+:::admonition[Multiple Build Hosts]{type=note}
+If you have more than one build host, each one needs its own `known_hosts` entry for the target. Clan does not sync them. Run the first deploy through each build host with `--host-key-check accept-new`, once per builder. From then on, strict checking takes over on that builder.
 :::
 
 ## Troubleshooting
@@ -178,6 +161,11 @@ ssh root@<target-host>
 :::admonition[Automatic Detection]{type=tip}
 Clan detects SSH authentication and host-key failures during deployment and prints guidance that points to this page.
 :::
+
+## Related
+
+- [Build Host](/docs/guides/build-host) — when and how to set `deploy.buildHost` in the first place.
+- [NixOS Rebuild](/docs/guides/nixos-rebuild) — using `nixos-rebuild` directly instead of `clan machines update`.
 
 ## References
 
