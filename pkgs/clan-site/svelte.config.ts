@@ -31,13 +31,18 @@ const svelteConfig: Config = {
     prerender: {
       handleUnseenRoutes(details): void {
         // We have a dev only hidden page /test
-        if (
-          details.routes.length === 1 &&
-          details.routes[0] === "/(docs)/docs/[ver]/[test=test]"
-        ) {
+        const ignoredRoutes = new Set(["/(docs)/docs/[ver]/[test=test]"]);
+        const unexpected = details.routes.filter((r) => !ignoredRoutes.has(r));
+        if (unexpected.length === 0) {
           return;
         }
-        throw new Error(details.message);
+        throw new Error(
+          `The following routes were not found while crawling the app:\n${unexpected
+            .map((r) => `  - ${r}`)
+            .join(
+              "\n",
+            )}\n\nDoc pages must be listed in the 'docsNav' config in clan-site.config.ts so that the sidebar links to them and the prerenderer can discover them.`,
+        );
       },
     },
     typescript: {

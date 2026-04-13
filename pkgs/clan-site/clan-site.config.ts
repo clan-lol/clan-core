@@ -139,6 +139,7 @@ export const docsNav: DocsNavItems = [
           "guides/migrations/disk-id",
         ],
       },
+      "guides/ssh-agent-forwarding",
       "guides/disk-encryption",
       "guides/secure-boot",
       {
