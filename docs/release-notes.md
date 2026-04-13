@@ -29,10 +29,10 @@ Those are sent to the central monitoring server for storage and visualization.
 **SSH Agent Forwarding**
 
 - Added configurable SSH agent forwarding for deployments
-  - Disabled by default for security
-  - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
-  - Configure globally: `clan.core.networking.forwardAgent = true;`
-  - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - Disabled by default for security
+    - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
+    - Configure globally: `clan.core.networking.forwardAgent = true;`
+    - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Breaking Changes
 
@@ -43,8 +43,8 @@ The following things related to the old monitoring stack have been removed:
 
 - the telegraf role in `inventory.instances.monitoring.roles.telegraf`
 - options related to the telegraf role:
-  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
-  - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.interfaces`
+    - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.allowAllInterfaces`
+    - `inventory.instances.monitoring.roles.telegraf.tags.all.settings.interfaces`
 
 ### Internet Service
 
@@ -66,8 +66,8 @@ The `settings.port` defaults to `22` and `settings.user` defaults to `null` (whi
 ### Exports
 
 - **Experimental** exports system has been redesigned.
-  - Previous export definitions are no longer compatible
-  - **Migration required**: Update your modules to use the standardized export options
+    - Previous export definitions are no longer compatible
+    - **Migration required**: Update your modules to use the standardized export options
 
 ### Clan Password Store Backend
 
@@ -90,8 +90,8 @@ configuration to use `passComma
 **SSH Agent Forwarding**
 
 - Disabled by default (was previously enabled)
-  - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
-  - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
+    - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
 
 ## Misc
 

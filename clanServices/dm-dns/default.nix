@@ -181,8 +181,8 @@
             # Add unbound to data-mesher group so it can read distributed zone files
             users.users.unbound.extraGroups = [ config.services.data-mesher.group ];
 
-            # Route clan domain queries to unbound
-            networking.nameservers = [ "127.0.0.1:5353#${domain}" ];
+            # Route clan domain queries to unbound via systemd-resolved
+            services.resolved.settings.Resolve.DNS = [ "127.0.0.1:5353#${domain}" ];
             services.resolved.settings.Resolve.Domains = [ "~${domain}" ];
 
             services.unbound = {

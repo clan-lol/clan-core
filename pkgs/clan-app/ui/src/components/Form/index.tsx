@@ -9,7 +9,7 @@ export const tooltipText = (
   const entry = schema[name];
 
   // return the static value if there is no field schema entry, or the entry
-  // indicates the field is writeable
+  // indicates the field is writable
   if (!entry?.readonly) {
     return staticValue;
   }

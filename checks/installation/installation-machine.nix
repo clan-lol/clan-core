@@ -15,6 +15,7 @@ in
 
   # Default fs and bootloader
   fileSystems."/".device = lib.mkDefault "/dev/vda";
+  fileSystems."/".fsType = lib.mkDefault "ext4";
   boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
   networking.hostName = "test-install-machine";

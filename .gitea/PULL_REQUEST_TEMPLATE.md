@@ -7,14 +7,14 @@
 - [ ] Ensured documentation is up to date
 - [ ] Added tests for all bug fixes and features
 - [ ] Doesn't affect backwards compatibility - or check the next points
-  - [ ] Added the breaking change and migration details to docs/release-notes.md
-  - !!! Review from another person is required *BEFORE* merge !!!
+    - [ ] Added the breaking change and migration details to docs/release-notes.md
+    - !!! Review from another person is required *BEFORE* merge !!!
 
 ## New major features
 
 - [ ] Added major features
-  - [ ] All features are mentioned in docs/release-notes.md
-  - [ ] All features are tested sufficiently via:
-    - [ ] eval tests (for NixOS modules and nix functions)
-    - [ ] python tests for python API and CLI code
-    - [ ] VM or container tests for new clan services
+    - [ ] All features are mentioned in docs/release-notes.md
+    - [ ] All features are tested sufficiently via:
+        - [ ] eval tests (for NixOS modules and nix functions)
+        - [ ] python tests for python API and CLI code
+        - [ ] VM or container tests for new clan services

@@ -23,6 +23,7 @@
 
             # Dummy file system
             fileSystems."/".device = "/dev/null";
+            fileSystems."/".fsType = "ext4";
             boot.loader.grub.device = "/dev/null";
 
             # This is how some downstream users currently generate documentation

@@ -40,9 +40,9 @@ def test_write_simple() -> None:
     prios = {
         "foo": {
             "__this": {
-                "prio": 100,  # <- writeable: "foo"
+                "prio": 100,  # <- writable: "foo"
             },
-            "bar": {"__this": {"prio": 1000}},  # <- writeable: mkDefault "foo.bar"
+            "bar": {"__this": {"prio": 1000}},  # <- writable: mkDefault "foo.bar"
         },
         "foo.bar": {"__this": {"prio": 1000}},
     }
@@ -66,10 +66,10 @@ def test_write_simple() -> None:
 def test_write_inherited() -> None:
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
             "bar": {
-                # Inherits prio from parent <- writeable: "foo.bar"
-                "baz": {"__prio": 1000},  # <- writeable: "foo.bar.baz"
+                # Inherits prio from parent <- writable: "foo.bar"
+                "baz": {"__prio": 1000},  # <- writable: "foo.bar.baz"
             },
         },
     }
@@ -90,10 +90,10 @@ def test_write_inherited() -> None:
 def test_non_write_inherited() -> None:
     prios = {
         "foo": {
-            "__prio": 50,  # <- non writeable: mkForce "foo" = {...}
+            "__prio": 50,  # <- non writable: mkForce "foo" = {...}
             "bar": {
-                # Inherits prio from parent <- non writeable
-                "baz": {"__prio": 1000},  # <- non writeable: mkDefault "foo.bar.baz"
+                # Inherits prio from parent <- non writable
+                "baz": {"__prio": 1000},  # <- non writable: mkDefault "foo.bar.baz"
             },
         },
     }
@@ -120,7 +120,7 @@ def test_write_list() -> None:
         "foo": [
             "a",
             "b",
-        ],  # <- writeable: because lists are merged. Filtering out nix-values comes later
+        ],  # <- writable: because lists are merged. Filtering out nix-values comes later
     }
     res = compute_attribute_persistence(prios, default, data)
 
@@ -135,18 +135,18 @@ def test_write_because_written() -> None:
     # But this might be acceptable, since its rare minority edge-case.
     prios = {
         "foo": {
-            "__prio": 100,  # <- writeable: "foo"
+            "__prio": 100,  # <- writable: "foo"
             "bar": {
-                # Inherits prio from parent <- writeable
-                "baz": {"__prio": 100},  # <- non writeable usually
-                "foobar": {"__prio": 100},  # <- non writeable
+                # Inherits prio from parent <- writable
+                "baz": {"__prio": 100},  # <- non writable usually
+                "foobar": {"__prio": 100},  # <- non writable
             },
         },
     }
 
     data_eval: dict = {"foo": {"bar": {"baz": 1, "foobar": 1}}}
     # Given the following data. {}
-    # Check that the non-writeable paths are correct.
+    # Check that the non-writable paths are correct.
     res = compute_attribute_persistence(prios, data_eval, {})
 
     assert res == {

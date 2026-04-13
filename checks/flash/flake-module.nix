@@ -126,6 +126,10 @@ in
         nixosConfig.pkgs.softhsm
         nixosConfig.pkgs.softhsm.src
         nixosConfig.pkgs.libredirect
+        nixosConfig.pkgs.gnupg
+        nixosConfig.pkgs.gnupg.src
+        nixosConfig.pkgs.libselinux
+        nixosConfig.pkgs.libselinux.src
       ]
       ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
       ++ builtins.map (import ../installation/facter-report.nix) (

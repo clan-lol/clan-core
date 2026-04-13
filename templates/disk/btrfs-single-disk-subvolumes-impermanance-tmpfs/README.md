@@ -31,9 +31,9 @@ This schema defines a sophisticated GPT-based disk layout designed for a "statel
     - Size: Remaining disk space (`100%`).
     - Filesystem: `btrfs`.
     - Subvolumes:
-      - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to reduce wear and improve performance.
-      - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
-      - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. This subvolume is marked as `neededForBoot = true` to ensure persistent configuration/secrets are available early in the boot process.
+        - `@nix`: Mounted at `/nix`. Optimized with `compress=zstd` and `noatime` to reduce wear and improve performance.
+        - `@home`: Mounted at `/home`. Optimized with `compress=zstd`.
+        - `@persist`: Mounted at `/persist`. Optimized with `compress=zstd`. This subvolume is marked as `neededForBoot = true` to ensure persistent configuration/secrets are available early in the boot process.
 
 ### Ephemeral Root (tmpfs)
 
@@ -49,6 +49,6 @@ The configuration includes automated local snapshots via [`btrbk`](https://digin
 
 - Frequency: Every 2 hours (`*/2:00`).
 - Retention:
-  - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
-  - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
+    - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
+    - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
 - Minimum Guarantee: At least 3 days of snapshots are always preserved.

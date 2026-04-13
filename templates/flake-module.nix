@@ -43,6 +43,7 @@
             users.users.root.initialPassword = "fnord23";
             boot.loader.grub.devices = lib.mkForce [ "/dev/sda" ];
             fileSystems."/".device = lib.mkDefault "/dev/sda";
+            fileSystems."/".fsType = lib.mkDefault "ext4";
           }
           EOF
         '';

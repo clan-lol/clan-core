@@ -116,7 +116,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     # Test the data is actually persisted
     assert store._get_persisted() == {"foo": "foo"}
 
-    # clan_lib.errors.ClanError: Key 'protected' is not writeable.
+    # clan_lib.errors.ClanError: Key 'protected' is not writable.
     invalid_data = {"protected": "foo"}
     with pytest.raises(ClanError) as e:
         store.write(invalid_data, "test", commit=False)  # type: ignore[arg-type]
@@ -213,7 +213,7 @@ def test_simple_deferred(setup_test_files: Path) -> None:
 #         store.write(data, "test", commit=False)
 #     assert (
 #         str(e.value)
-#         == "Key 'foo.a' is not writeable. It seems its value is statically defined in nix."
+#         == "Key 'foo.a' is not writable. It seems its value is statically defined in nix."
 #     )
 
 #     # Giving an empty value to a deferred module does not throw an error

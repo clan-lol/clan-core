@@ -271,10 +271,10 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
             "inventory": {
                 "machines": {
                     "jon": {
-                        "machineClass": "nixos",  # Static string is not writeable
-                        "deploy": {},  # Empty dict is writeable
+                        "machineClass": "nixos",  # Static string is not writable
+                        "deploy": {},  # Empty dict is writable
                         # TODO: Return writability for existing items
-                        "tags": ["nix1"],  # Static list is not partially writeable
+                        "tags": ["nix1"],  # Static list is not partially writable
                     },
                 },
             },
@@ -298,14 +298,14 @@ def test_get_machine_writeability(clan_flake: Callable[..., Flake]) -> None:
     attribute_props = get_machine_fields_schema(Machine("jon", flake))
 
     # {'tags': {'writable': True, 'reason': None}, 'machineClass': {'writable': False, 'reason': None}, 'name': {'writable': False, 'reason': None}, 'description': {'writable': True, 'reason': None}, 'deploy.buildHost': {'writable': True, 'reason': None}, 'icon': {'writable': True, 'reason': None}, 'deploy.targetHost': {'writable': True, 'reason': None}}
-    writeable_fields = {
+    writable_fields = {
         field for field, info in attribute_props.items() if not info["readonly"]
     }
     read_only_fields = {
         field for field, info in attribute_props.items() if info["readonly"]
     }
 
-    assert writeable_fields == {
+    assert writable_fields == {
         "tags",
         "deploy.targetHost",
         "deploy.buildHost",

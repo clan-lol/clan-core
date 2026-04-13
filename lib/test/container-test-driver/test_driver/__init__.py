@@ -703,9 +703,9 @@ class Driver:
             machine.release()
 
 
-def writeable_dir(arg: str) -> Path:
-    """Raises an ArgumentTypeError if the given argument isn't a writeable directory
-    Note: We want to fail as early as possible if a directory isn't writeable,
+def writable_dir(arg: str) -> Path:
+    """Raises an ArgumentTypeError if the given argument isn't a writable directory
+    Note: We want to fail as early as possible if a directory isn't writable,
     since an executed nixos-test could fail (very late) because of the test-driver
     writing in a directory without proper permissions.
     """
@@ -714,7 +714,7 @@ def writeable_dir(arg: str) -> Path:
         msg = f"{path} is not a directory"
         raise argparse.ArgumentTypeError(msg)
     if not os.access(path, os.W_OK):
-        msg = f"{path} is not a writeable directory"
+        msg = f"{path} is not a writable directory"
         raise argparse.ArgumentTypeError(msg)
     return path
 
@@ -739,7 +739,7 @@ def main() -> None:
         "--output-directory",
         default=Path.cwd(),
         help="the directory to bind to /run/test-results",
-        type=writeable_dir,
+        type=writable_dir,
     )
     args = arg_parser.parse_args()
     logger = CompositeLogger([TerminalLogger()])
