@@ -117,6 +117,29 @@ run(
 The `<path_to_local_src>` doesn't need to be a local path, it can be any valid [flakeref](https://nix.dev/manual/nix/2.26/command-ref/new-cli/nix3-flake.html#flake-references).
 And thus can point to test already opened PRs for example.
 
+### Backporting Fixes to Release Branches
+
+Bug and security fixes that are relevant for an existing release should also be
+backported to the corresponding release branch (e.g. `25.11`). Use
+`scripts/backport-pr` to do the cherry-pick and open the Gitea PR in one step:
+
+```shellSession
+$ scripts/backport-pr 25.11 <commit> [<commit>...]
+```
+
+The script will:
+
+- skip commits that are already on the target branch, or that only modify
+  files which do not exist there (i.e. the feature never shipped on that
+  release),
+- cherry-pick the remaining commits onto a `backport/<target>/<sha>` branch,
+- push it and open a `[<target>] …` PR via `tea`,
+- and clean up the throwaway branch if nothing applied.
+
+On a cherry-pick conflict it leaves you on the backport branch and prints the
+remaining `git` / `tea` commands to finish manually. Pass `-n` / `--dry-run`
+(or set `DRY_RUN=1`) to preview without touching any branches.
+
 ### Standards
 
 - Every new module name should be in kebab-case.
