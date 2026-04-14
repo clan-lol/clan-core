@@ -141,6 +141,7 @@ export const docsNav: DocsNavItems = [
       },
       "guides/build-host",
       "guides/ssh-agent-forwarding",
+      "guides/private-inputs",
       "guides/disk-encryption",
       "guides/secure-boot",
       {

@@ -16,7 +16,7 @@ Setting `deploy.buildHost` tells Clan to run `nixos-rebuild` on that host and th
 Option 1 is the recommended path and the rest of this guide walks through it. Option 2 is covered further down as an alternative.
 
 :::admonition[Private Flake Inputs]{type=tip}
-Private Git flake inputs no longer require agent forwarding. Clan evaluates your flake on your workstation before deployment, so private inputs are resolved locally and never reach the build or target host.
+Private Git flake inputs do not require agent forwarding. Clan evaluates your flake on your workstation, so private inputs are fetched locally with your own SSH key and never need to reach the build or target host. See [Private Flake Inputs](/docs/guides/private-inputs) for the full setup.
 :::
 
 ## Security Considerations
@@ -165,6 +165,7 @@ Clan detects SSH authentication and host-key failures during deployment and prin
 ## Related
 
 - [Build Host](/docs/guides/build-host) — when and how to set `deploy.buildHost` in the first place.
+- [Private Flake Inputs](/docs/guides/private-inputs) — using private Git repositories as flake inputs without agent forwarding.
 - [NixOS Rebuild](/docs/guides/nixos-rebuild) — using `nixos-rebuild` directly instead of `clan machines update`.
 
 ## References
