@@ -15,14 +15,11 @@ Common reasons to split them:
 - The target is resource-constrained (a Raspberry Pi, a small VPS).
 - The build host has a fast link to a substituter or private cache the target cannot reach.
 - You want to keep build load off a production machine.
-- The build host has network access to inputs that the target does not.
+
+Private flake inputs are _not_ a reason to set `buildHost`. Clan evaluates your flake on your workstation, so private repositories are fetched locally and never need to be reachable from the build host. See [Private Flake Inputs](/docs/guides/private-inputs) for the full setup.
 
 :::admonition[Architectures Must Match]{type=warning}
 `nix build` on the build host compiles natively for its own system. If the target is `aarch64-linux` and the build host is `x86_64-linux`, the build produces the wrong closure. Pick a build host that matches the target's architecture, or arrange cross-compilation yourself.
-:::
-
-:::admonition[Private Flake Inputs]{type=tip}
-If your flake pulls from a private Git repository, you might expect the build host to need its own credentials to fetch that input, or that you'd have to forward your SSH agent to the builder. Neither is required. Clan evaluates your flake on your workstation before deployment and ships the resolved sources to the build host, so the private repo never has to be reachable from there.
 :::
 
 ## 1. Set It in the Inventory
@@ -156,4 +153,5 @@ If the build aborts with a message along the lines of `a 'x86_64-linux' ... is r
 ## Related
 
 - [SSH Agent Forwarding](/docs/guides/ssh-agent-forwarding) — authenticating the second SSH hop.
+- [Private Flake Inputs](/docs/guides/private-inputs) — using private Git repositories as flake inputs without shipping credentials to the builder.
 - [NixOS Rebuild](/docs/guides/nixos-rebuild) — using `nixos-rebuild` directly instead of `clan machines update`.
