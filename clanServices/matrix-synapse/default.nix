@@ -166,14 +166,15 @@
                 + lib.concatMapStringsSep "\n" (user: ''
                   # only create user if it doesn't exist
                   /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --exists-ok --password-file ${
-                    config.clan.core.vars.generators."matrix-password-${user.name}".files."matrix-password-${user.name}".path
-                  } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
+                    lib.escapeShellArg
+                      config.clan.core.vars.generators."matrix-password-${user.name}".files."matrix-password-${user.name}".path
+                  } --user ${lib.escapeShellArg user.name} ${if user.admin then "--admin" else "--no-admin"}
                 '') (lib.attrValues settings.users);
               in
               {
                 path = [ pkgs.curl ];
                 serviceConfig.ExecStartPre = lib.mkBefore [
-                  "+${pkgs.coreutils}/bin/install -o matrix-synapse -g matrix-synapse ${
+                  "+${pkgs.coreutils}/bin/install -m 0400 -o matrix-synapse -g matrix-synapse ${
                     lib.escapeShellArg
                       config.clan.core.vars.generators.matrix-synapse.files."synapse-registration_shared_secret".path
                   } /run/synapse-registration-shared-secret"
