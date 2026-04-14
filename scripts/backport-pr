@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+"""Backport commits to a release branch and open a Gitea PR.
+
+Usage:
+    scripts/backport-pr <target-branch> <commit> [<commit>...]
+
+Example:
+    scripts/backport-pr 25.11 7215fab07
+
+Env:
+    REMOTE   git remote to push to (default: origin)
+    REPO     gitea repo slug for tea (default: clan/clan-core)
+    DRY_RUN  if set, only print what would happen
+
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+from dataclasses import dataclass
+
+
+def die(msg: str) -> None:
+    print(f"error: {msg}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def info(msg: str) -> None:
+    print(msg, file=sys.stderr)
+
+
+def run(
+    args: list[str],
+    *,
+    check: bool = True,
+    capture: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        args,
+        check=check,
+        text=True,
+        capture_output=capture,
+    )
+
+
+def git(*args: str, capture: bool = False) -> str:
+    return run(["git", *args], capture=capture).stdout or ""
+
+
+def git_ok(*args: str) -> bool:
+    """Run git and return True on exit 0, suppressing all output."""
+    return (
+        subprocess.run(
+            ["git", *args],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        ).returncode
+        == 0
+    )
+
+
+def is_commit(rev: str) -> bool:
+    return git_ok("rev-parse", "--quiet", "--verify", f"{rev}^{{commit}}")
+
+
+def short(rev: str) -> str:
+    return git("rev-parse", "--short", rev, capture=True).strip()
+
+
+def working_tree_clean() -> bool:
+    return git_ok("diff", "--quiet") and git_ok("diff", "--cached", "--quiet")
+
+
+def cherry_pick_in_progress() -> bool:
+    return git_ok("rev-parse", "--quiet", "--verify", "CHERRY_PICK_HEAD")
+
+
+def is_merge_commit(rev: str) -> bool:
+    # %P prints parent hashes; a merge has more than one.
+    parents = git("log", "-1", "--format=%P", rev, capture=True).split()
+    return len(parents) > 1
+
+
+@dataclass(frozen=True)
+class Config:
+    target: str
+    commits: list[str]
+    remote: str
+    repo: str
+    dry_run: bool
+
+
+def parse_args() -> Config:
+    p = argparse.ArgumentParser(
+        description="Backport commits to a release branch and open a Gitea PR.",
+    )
+    p.add_argument("target", help="target release branch (e.g. 25.11)")
+    p.add_argument("commits", nargs="+", help="commit-ish(es) to cherry-pick")
+    p.add_argument(
+        "--remote",
+        default=os.environ.get("REMOTE", "origin"),
+        help="git remote to push to (default: origin)",
+    )
+    p.add_argument(
+        "--repo",
+        default=os.environ.get("REPO", "clan/clan-core"),
+        help="gitea repo slug for tea (default: clan/clan-core)",
+    )
+    p.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        default=bool(os.environ.get("DRY_RUN")),
+        help="only print what would happen",
+    )
+    a = p.parse_args()
+
+    # Convenience: allow `<commit> <target>` order if the user got it backwards.
+    if not is_commit(a.commits[0]) and is_commit(a.target):
+        a.target, a.commits[0] = a.commits[0], a.target
+
+    return Config(
+        target=a.target,
+        commits=a.commits,
+        remote=a.remote,
+        repo=a.repo,
+        dry_run=a.dry_run,
+    )
+
+
+def filter_commits(cfg: Config, target_ref: str) -> list[str]:
+    """Drop commits that are pointless to backport.
+
+    - already reachable from the target branch
+    - touch only paths that don't exist on the target branch
+      (feature never shipped there → cherry-pick would be a
+      modify/delete conflict at best)
+    """
+    todo: list[str] = []
+    for c in cfg.commits:
+        if not is_commit(c):
+            die(f"unknown commit '{c}'")
+        if is_merge_commit(c):
+            die(
+                f"'{c}' is a merge commit; pass the individual commits "
+                "to backport instead",
+            )
+        if git_ok("merge-base", "--is-ancestor", c, target_ref):
+            info(f"skip {c}: already contained in {target_ref}")
+            continue
+        # Only consider paths the commit modifies/deletes; pure additions are
+        # fine to cherry-pick onto a branch that doesn't have the file yet.
+        touched = git(
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            "--diff-filter=a",  # exclude Added
+            c,
+            capture=True,
+        ).splitlines()
+        if touched and not any(
+            git_ok("cat-file", "-e", f"{target_ref}:{p}") for p in touched
+        ):
+            info(
+                f"skip {c}: none of the files it modifies exist on {target_ref}",
+            )
+            continue
+        todo.append(c)
+    return todo
+
+
+def open_pr(cfg: Config, branch: str, picked: list[str]) -> None:
+    subject = git("log", "-1", "--format=%s", picked[0], capture=True).strip()
+    body = git("log", "-1", "--format=%b", picked[0], capture=True).strip()
+    shorts = " ".join(short(c) for c in picked)
+    title = f"[{cfg.target}] {subject}"
+    desc = f"Backport of {shorts} to `{cfg.target}`.\n\n{body}"
+    run(
+        [
+            "tea",
+            "pr",
+            "create",
+            "--repo",
+            cfg.repo,
+            "--base",
+            cfg.target,
+            "--head",
+            branch,
+            "--title",
+            title,
+            "--description",
+            desc,
+        ],
+    )
+
+
+def main() -> None:
+    cfg = parse_args()
+
+    if not git_ok("rev-parse", "--git-dir"):
+        die("not in a git repo")
+    if not working_tree_clean():
+        die("working tree is dirty; commit or stash first")
+
+    if not git_ok("fetch", cfg.remote, cfg.target):
+        die(f"target branch '{cfg.target}' not found on {cfg.remote}")
+    target_ref = f"{cfg.remote}/{cfg.target}"
+
+    todo = filter_commits(cfg, target_ref)
+    if not todo:
+        info(f"nothing to backport to {cfg.target}")
+        return
+
+    orig = git("rev-parse", "--abbrev-ref", "HEAD", capture=True).strip()
+    slug = cfg.target.replace("/", "-")
+    branch = f"backport/{slug}/{short(todo[0])}"
+
+    if cfg.dry_run:
+        print(f"would create branch {branch} from {target_ref}")
+        print(f"would cherry-pick: {' '.join(todo)}")
+        print(
+            f"would push to {cfg.remote} and open PR against {cfg.target} on {cfg.repo}"
+        )
+        return
+
+    git("checkout", "-B", branch, target_ref)
+    picked: list[str] = []
+    try:
+        for c in todo:
+            r = run(["git", "cherry-pick", "-x", c], check=False)
+            if r.returncode != 0:
+                if not cherry_pick_in_progress():
+                    # cherry-pick refused outright (e.g. bad object); nothing
+                    # to --skip/--abort, just unwind.
+                    git("checkout", orig)
+                    git_ok("branch", "-D", branch)
+                    die(f"cherry-pick of {c} refused")
+                if working_tree_clean():
+                    info(f"skip {c}: cherry-pick is empty (already applied)")
+                    git("cherry-pick", "--skip")
+                    continue
+                # Real conflict: leave the user on the backport branch.
+                die(
+                    f"cherry-pick of {c} failed; resolve conflicts, then:\n"
+                    f"  git cherry-pick --continue\n"
+                    f"  git push -u {cfg.remote} {branch}\n"
+                    f"  tea pr create --repo {cfg.repo} "
+                    f"--base {cfg.target} --head {branch}",
+                )
+            picked.append(c)
+    except KeyboardInterrupt:
+        if cherry_pick_in_progress():
+            git_ok("cherry-pick", "--abort")
+        git("checkout", orig)
+        git_ok("branch", "-D", branch)
+        raise
+
+    if not picked:
+        info(f"nothing to backport to {cfg.target}; cleaning up")
+        git("checkout", orig)
+        git_ok("branch", "-D", branch)
+        return
+
+    git("push", "-u", cfg.remote, branch)
+    open_pr(cfg, branch, picked)
+    git("checkout", orig)
+
+
+if __name__ == "__main__":
+    main()
