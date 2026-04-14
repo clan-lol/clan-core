@@ -19,9 +19,9 @@ def get_command(machine_name: str, var_id: str, flake: Flake) -> None:
         msg = f"Var {var.id} has not been generated yet"
         raise ClanError(msg)
     if sys.stdout.isatty():
-        sys.stdout.buffer.write(var.value)
-    else:
         print(var.printable_value)
+    else:
+        sys.stdout.buffer.write(var.value)
 
 
 def _get_command(
