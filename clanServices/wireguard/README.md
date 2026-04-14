@@ -1,5 +1,3 @@
-# WireGuard VPN Service
-
 This service provides a WireGuard-based VPN mesh network with automatic IPv6 address allocation and routing between Clan machines.
 
 ## Overview

@@ -2,9 +2,6 @@
 This service is experimental and will change in the future.
 
 :::
----
-
-# p2p-ssh-iroh
 
 SSH over [dumbpipe](https://github.com/n0-computer/dumbpipe) (iroh) — NAT-traversing SSH access via encrypted QUIC streams.
 

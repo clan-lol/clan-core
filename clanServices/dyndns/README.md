@@ -1,15 +1,15 @@
 
-A Dynamic-DNS (DDNS) service continuously keeps one or more DNS records in sync with the current public IP address of your machine.  
+A Dynamic-DNS (DDNS) service continuously keeps one or more DNS records in sync with the current public IP address of your machine.
 In *clan* this service is backed by [qdm12/ddns-updater](https://github.com/qdm12/ddns-updater).
 
-> Info  
+> Info
 > ddns-updater itself is **heavily opinionated and version-specific**. Whenever you need the exhaustive list of flags or
 > provider-specific fields refer to its *versioned* documentation – **not** the GitHub README
 ---
 
-# 1. Configuration model
+## 1. Configuration model
 
-Internally ddns-updater consumes a single file named `config.json`.  
+Internally ddns-updater consumes a single file named `config.json`.
 A minimal configuration for the registrar *Namecheap* looks like:
 
 ```json
@@ -42,7 +42,7 @@ Another example for *Porkbun*:
 ```
 
 When you write a `clan.nix` the **common** fields (`provider`, `domain`, `period`, …) are already exposed as typed
-*Nix options*.  
+*Nix options*.
 Registrar-specific or very new keys can be passed through an open attribute set called **extraSettings**.
 
 ---
