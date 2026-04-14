@@ -64,6 +64,22 @@ in
         default = 8501;
         description = "The port on which to host the ncps server";
       };
+
+      allowPutVerb = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Allow unauthenticated `PUT /upload/*` on the ncps server so that
+          `nix copy --to http://<server>:<port>` can push paths.
+
+          WARNING: ncps has no authentication on this endpoint and will
+          re-sign uploaded narinfos with the clan-trusted signing key.
+          Enabling this while the port is reachable from untrusted networks
+          allows remote supply-chain compromise of every client. Only enable
+          this if the port is restricted to trusted hosts (e.g. behind a
+          reverse proxy with auth, or firewalled to a trusted interface).
+        '';
+      };
     };
 
     perInstance =
@@ -95,7 +111,7 @@ in
             services.ncps.server.addr = ":${builtins.toString settings.port}";
             services.ncps.cache = {
               storage.local = settings.dataPath;
-              allowPutVerb = true;
+              inherit (settings) allowPutVerb;
               secretKeyPath = config.clan.core.vars.generators."${ncps-var}-private".files.sign-key.path;
               hostName = config.networking.hostName;
               upstream = {
