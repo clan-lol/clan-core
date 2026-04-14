@@ -1,13 +1,16 @@
 {
   writeShellApplication,
   util-linux,
-  # Do not add node and pnpm, because this cli used in both site-shell.nix and
-  # shell.nix, they should provide these dependencies
+  pnpm_10,
 }:
 writeShellApplication {
   name = "clan-site";
   runtimeInputs = [
     util-linux
+    pnpm_10
   ];
   text = builtins.readFile ./cli.sh;
+  passthru = {
+    pnpm = pnpm_10;
+  };
 }

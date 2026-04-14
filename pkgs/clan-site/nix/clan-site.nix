@@ -1,7 +1,6 @@
 {
   lib,
   nodejs_24,
-  pnpm_10,
   fetchPnpmDeps,
   pnpmConfigHook,
   stdenv,
@@ -46,9 +45,9 @@ stdenv.mkDerivation (
 
     nativeBuildInputs = [
       nodejs_24
-      pnpm_10
       pnpmConfigHook
       clan-site-cli
+      clan-site-cli.pnpm
       jq
       git
     ];

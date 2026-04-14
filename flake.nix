@@ -95,7 +95,7 @@
               ./clanModules/flake-module.nix
               ./clanServices/flake-module.nix
               ./devShell.nix
-              ./docs/nix/flake-module.nix
+              ./docs/flake-module.nix
               ./site/flake-module.nix
               ./flakeModules/demo_iso.nix
               ./flakeModules/flake-module.nix
