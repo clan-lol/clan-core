@@ -150,7 +150,7 @@
                 files."matrix-password-${user.name}" = { };
                 runtimeInputs = with pkgs; [ xkcdpass ];
                 script = ''
-                  xkcdpass -n 4 -d - > "$out"/${lib.escapeShellArg "matrix-password-${user.name}"}
+                  xkcdpass -n 6 -d - > "$out"/${lib.escapeShellArg "matrix-password-${user.name}"}
                 '';
               }
             ) settings.users;

@@ -533,7 +533,7 @@ The following module demonstrates the idea in the example of *borgbackup*.
               ];
               script = ''
                 ssh-keygen -t ed25519 -N "" -f $out/borgbackup.ssh
-                xkcdpass -n 4 -d - > $out/borgbackup.repokey
+                xkcdpass -n 6 -d - > $out/borgbackup.repokey
               '';
             };
           };

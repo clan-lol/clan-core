@@ -244,12 +244,12 @@
                       if [[ -n "''${prompt_value-}" ]]; then
                         echo "$prompt_value" | tr -d "\n" > "$out"/user-password
                       else
-                        xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
+                        xkcdpass --numwords 6 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
                       fi
                     ''
                   else
                     ''
-                      xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
+                      xkcdpass --numwords 6 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
                     ''
                 )
                 + ''
