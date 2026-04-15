@@ -6,7 +6,7 @@ For detailed explanations or troubleshooting, see the full
 [Getting Started (Physical Machine)](/docs/getting-started/getting-started-physical) guide.
 
 :::admonition[Prerequisites]{type=note}
-Nix installed, `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
+[Nix installed](/docs/getting-started/install-nix), `~/.ssh/id_ed25519` keypair exists, USB drive (≥1.5 GB)
 :::
 
 ## Create the Clan

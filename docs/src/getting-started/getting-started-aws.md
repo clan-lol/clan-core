@@ -4,7 +4,7 @@
 :::admonition[Prerequisites]{type=note}
 Your setup machine needs the following:
 
-* **Nix** on your Setup Machine (unless you're using NixOS)
+* **Nix** on your Setup Machine (unless you're using NixOS). See [Install Nix and direnv](/docs/getting-started/install-nix).
 
 * An **id_ed25519** keypair on your Setup Machine. (Link coming soon.)
 

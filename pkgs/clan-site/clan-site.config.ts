@@ -28,6 +28,7 @@ export const docsNav: DocsNavItems = [
   {
     label: "Getting Started",
     children: [
+      { label: "Install Nix and direnv", path: "getting-started/install-nix" },
       { label: "Quick Start", path: "getting-started/quick-start" },
       {
         label: "Install on Physical Machine",
@@ -149,6 +150,7 @@ export const docsNav: DocsNavItems = [
         children: [
           // TODO: implement symlink follow
           "guides/contributing/CONTRIBUTING",
+          "guides/contributing/writing-documentation",
           "guides/contributing/debugging",
           "guides/contributing/testing",
           "guides/contributing/styleguide",
