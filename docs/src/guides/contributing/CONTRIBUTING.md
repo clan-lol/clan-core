@@ -1,95 +1,70 @@
 # Contributing
 
-## Contributing to Clan
+This guide walks you through setting up a Clan development environment from scratch. By the end you will have a working checkout, a devshell that provides the `clan` CLI, and pre-commit hooks that keep your changes formatted.
 
-**Continuous Integration (CI)**: Each pull request gets automatically tested by gitea. If any errors are detected, it will block pull requests until they're resolved.
+Clan supports development on Linux and macOS.
 
-**Dependency Management**: We use the [Nix package manager](https://nixos.org/) to manage dependencies and ensure reproducibility, making your development process more robust.
+:::admonition[How changes get tested]{type=note}
+Every pull request runs through Gitea CI. If a check fails, the PR is blocked until the failure is resolved. Running `nix fmt` and the pre-commit hook locally will catch most of what CI cares about before you push.
+:::
 
-### Supported Operating Systems
+## 1. Install Nix and direnv
 
-- Linux
-- macOS
+If you do not have them yet, follow [Install Nix and direnv](/docs/getting-started/install-nix) and come back here once `nix --version` works and direnv is hooked into your shell.
 
-### Getting Started with the Development Environment
+## 2. Fork and clone clan-core
 
-Let's get your development environment up and running:
+Register an account at [git.clan.lol](https://git.clan.lol) and fork [clan-core](https://git.clan.lol/clan/clan-core). Clone your fork, then add the upstream remote so you can pull in changes from `main`:
 
-1. **Install Nix Package Manager**:
+```bash
+git remote add upstream gitea@git.clan.lol:clan/clan-core.git
+```
 
-    - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/NixOS/nix-installer/releases) or running this command:
+## 3. Activate the devshell
 
-      ```bash
-      curl --proto '=https' --tlsv1.2 -sSf -L https://artifacts.nixos.org/nix-installer | sh -s -- install
-      ```
+`cd` into the directory that corresponds to the area you are working on and allow its `.envrc`. For most CLI work, that is `pkgs/clan-cli`:
 
-2. **Install [direnv](https://direnv.net/)**:
+```bash
+cd clan-core/pkgs/clan-cli
+direnv allow
+```
 
-    - To automatically setup a devshell on entering the directory
+On the first `direnv allow` you will usually see a message like this:
 
-      ```bash
-      nix profile add nixpkgs#nix-direnv nixpkgs#direnv
-      ```
+```bash
+direnv: error .envrc is blocked. Run `direnv allow` to approve its content
+```
 
-3. **Add direnv to your shell**:
+`direnv allow` approves the `.envrc` so that direnv can execute it on every entry. The devshell brings in every tool you need (`clan`, Python, formatters, test runners) and sets up the symlinks that let `clan-cli` run from the checkout. From now on, entering the directory re-enters the devshell automatically.
 
-    - direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
-        You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
+## 4. (Optional) Install the pre-commit hook
 
-      ```bash
-      echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
-      ```
+To format and lint your changes before each commit:
 
-4. **Allow the devshell**
-    - Go to `clan-core/pkgs/clan-cli` and do a `direnv allow` to setup the necessary development environment to execute the `clan` command
+```bash
+./scripts/pre-commit
+```
 
-5. **Create a Gitea Account**
+This installs a git hook that runs `nix fmt` and the lint checks on staged files. You can always run the formatter manually:
 
-    - Register an account on [git.clan.lol](https://git.clan.lol)
-    - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
-    - Clone the repository and navigate to it
-    - Add a new remote called upstream
+```bash
+nix fmt
+```
 
-      ```bash
-      git remote add upstream gitea@git.clan.lol:clan/clan-core.git
-      ```
+## Working on documentation
 
-6. **Allow .envrc**
+Documentation changes have their own workflow. The source lives in `docs/src/` and the dev server lives in `pkgs/clan-site`. See [Writing Documentation](/docs/guides/contributing/writing-documentation) for how to preview your changes with hot reload, register new pages in the navigation, and follow the [style guide](/docs/guides/contributing/styleguide).
 
-    - When you enter the directory, you'll receive an error message like this:
+## Overriding related projects for local development
 
-      ```bash
-      direnv: error .envrc is blocked. Run `direnv allow` to approve its content
-      ```
+Clan depends on several sibling projects that you may want to patch alongside your changes:
 
-    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
+- [data-mesher](https://git.clan.lol/clan/data-mesher)
+- [nixos-facter](https://github.com/nix-community/nixos-facter)
+- [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
+- [disko](https://github.com/nix-community/disko)
 
-7. **(Optional) Install git Hooks**
-
-    - To syntax check your code you can run:
-
-      ```bash
-      nix fmt
-      ```
-
-    - To make this automatic install the git hooks
-
-      ```bash
-      ./scripts/pre-commit
-      ```
-
-### Related Projects
-
-- **Data Mesher**: [data-mesher](https://git.clan.lol/clan/data-mesher)
-- **NixOS Facter**: [nixos-facter](https://github.com/nix-community/nixos-facter)
-- **NixOS Anywhere**: [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
-- **Disko**: [disko](https://github.com/nix-community/disko)
-
-#### Override related projects for local development
-
-If you have a bug fix or feature that involves a related project, clone the relevant repository and replace its invocation in your local setup.
-
-For instance, if you need to update `nixos-anywhere` in clan-cli, find its usage:
+If your fix touches one of these, clone it locally and point Clan at your checkout instead of the pinned version. For example, `clan-cli` invokes `nixos-anywhere` like this:
 
 ```python
 run(
@@ -101,7 +76,7 @@ run(
 )
 ```
 
-You can replace `"nixpkgs#nixos-anywhere"` with your local path:
+Replace the package reference with a local path:
 
 ```python
 run(
@@ -111,41 +86,35 @@ run(
     ),
     RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
 )
-
 ```
 
-The `<path_to_local_src>` doesn't need to be a local path, it can be any valid [flakeref](https://nix.dev/manual/nix/2.26/command-ref/new-cli/nix3-flake.html#flake-references).
-And thus can point to test already opened PRs for example.
+`<path_to_local_src>` is any valid [flake reference](https://nix.dev/manual/nix/2.26/command-ref/new-cli/nix3-flake.html#flake-references), so it does not have to be a local directory. You can point it at a branch on a fork or even an open PR to test a patch end-to-end before merging.
 
-### Backporting Fixes to Release Branches
+## Backporting fixes to release branches
 
-Bug and security fixes that are relevant for an existing release should also be
-backported to the corresponding release branch (e.g. `25.11`). Use
-`scripts/backport-pr` to do the cherry-pick and open the Gitea PR in one step:
+Bug and security fixes that are still relevant for an existing release should be backported to the matching release branch (for example `25.11`). Use `scripts/backport-pr` to cherry-pick and open a Gitea PR in one step:
 
-```shellSession
-$ scripts/backport-pr 25.11 <commit> [<commit>...]
+```bash
+scripts/backport-pr 25.11 <commit> [<commit>...]
 ```
 
-The script will:
+The script does the bookkeeping for you:
 
-- skip commits that are already on the target branch, or that only modify
-  files which do not exist there (i.e. the feature never shipped on that
-  release),
-- cherry-pick the remaining commits onto a `backport/<target>/<sha>` branch,
-- push it and open a `[<target>] …` PR via `tea`,
-- and clean up the throwaway branch if nothing applied.
+- It skips commits that are already on the target branch or that only touch files that never shipped on that release.
+- It cherry-picks the remaining commits onto a `backport/<target>/<sha>` branch.
+- It pushes the branch and opens a `[<target>] …` PR through `tea`.
+- It deletes the throwaway branch if nothing applied cleanly.
 
-On a cherry-pick conflict it leaves you on the backport branch and prints the
-remaining `git` / `tea` commands to finish manually. Pass `-n` / `--dry-run`
-(or set `DRY_RUN=1`) to preview without touching any branches.
+If a cherry-pick conflicts, the script leaves you on the backport branch and prints the remaining `git` and `tea` commands so you can finish by hand. Pass `-n` / `--dry-run` (or set `DRY_RUN=1`) to preview what it would do without touching any branches.
 
-### Standards
+## Coding standards
 
-- Every new module name should be in kebab-case.
-- Every vars definition, where possible should be in kebab-case.
-- Command line help descriptions should start capitalized and should not end in a period.
+A few conventions that CI and reviewers will flag if you miss them:
 
-### Documentation Style Guidelines
+- New module names are kebab-case.
+- `vars` definitions are kebab-case wherever the surrounding code allows it.
+- CLI help strings start with a capital letter and do not end in a period.
 
-Please refer to our [Style Guide for Documentation and Blog Posts](https://docs.clan.lol/main/guides/contributing/styleguide/) when writing documentation.
+## Documentation style
+
+When you write or edit docs, follow the [style guide](/docs/guides/contributing/styleguide). It covers admonition syntax, code block highlighting, capitalisation, and the writing principles Clan's docs are built around.

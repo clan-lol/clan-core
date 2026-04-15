@@ -8,7 +8,7 @@ Prefer to use a Virtual Machine as a target? [Find the guide here](/docs/getting
 Your setup machine needs the following:
 :::
 
-* **Nix** on your Setup Machine (unless you're using NixOS)
+* **Nix** on your Setup Machine (unless you're using NixOS). See [Install Nix and direnv](/docs/getting-started/install-nix).
 
 * An **SSH key** on your setup machine. See [Create an SSH key](/docs/getting-started/create-an-ssh-key) if you don't have one yet.
 

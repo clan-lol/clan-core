@@ -5,7 +5,7 @@ Your setup machine needs the following:
 
 * VirtualBox: The virtualization software. Download it from the [official site](https://www.virtualbox.org/wiki/Downloads).
 
-* **Nix** or **NixOS** on your Setup Machine
+* **Nix** or **NixOS** on your Setup Machine. See [Install Nix and direnv](/docs/getting-started/install-nix).
 
 * An **id_ed25519** [keypair file](/docs/getting-started/create-an-ssh-key) on your Setup Machine.
 
