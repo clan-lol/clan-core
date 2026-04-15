@@ -25,7 +25,7 @@
             files.password-hash.secret = false;
 
             script = ''
-              xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n" > $out/password
+              xkcdpass --numwords 6 --delimiter - --count 1 | tr -d "\n" > $out/password
               mkpasswd -s < $out/password | tr -d "\n" > $out/password-hash
             '';
           };

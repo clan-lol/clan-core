@@ -45,7 +45,7 @@
               if [[ -n "''${prompt_value-}" ]]; then
                 echo "$prompt_value" | tr -d "\n" > "$out"/password
               else
-                xkcdpass --numwords 5 --delimiter - --count 1 | tr -d "\n" > "$out"/password
+                xkcdpass --numwords 6 --delimiter - --count 1 | tr -d "\n" > "$out"/password
               fi
               mkpasswd -s < "$out"/password | tr -d "\n" > "$out"/password-hash
             '';
