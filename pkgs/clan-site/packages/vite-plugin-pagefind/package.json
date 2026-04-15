@@ -11,6 +11,6 @@
     "vite": ">=7.0.0"
   },
   "dependencies": {
-    "pagefind": "^1.4.0"
+    "pagefind": "^1.5.2"
   }
 }

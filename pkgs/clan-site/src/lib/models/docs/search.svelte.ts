@@ -53,7 +53,12 @@ export class Search {
         // Without this, pagefind derives baseUrl from the asset path
         // (e.g. /_assets/unstable/) and prepends it to result URLs,
         // producing broken links like /_assets/unstable/docs/unstable/...
-        await this.#pagefind.options({ baseUrl: "/" });
+        await this.#pagefind.options({
+          baseUrl: "/",
+          ranking: {
+            termFrequency: 0.8,
+          },
+        });
         await this.#pagefind.init();
       })();
     }
