@@ -379,6 +379,7 @@ def _nixos_activate(
     target_host_root: "Host",
     machine_name: str,
     install_bootloader: bool = False,
+    specialisation: str | None = None,
 ) -> None:
     """Set the system profile and run switch-to-configuration on the target.
 
@@ -449,7 +450,7 @@ def _nixos_activate(
             "-E",
             f"NIXOS_INSTALL_BOOTLOADER={'1' if install_bootloader else '0'}",
             "--",
-            f"{config_path}/bin/switch-to-configuration",
+            f"{f'{config_path}/specialisation/{specialisation}' if specialisation else config_path}/bin/switch-to-configuration",
             "switch",
         ]
 
@@ -533,6 +534,7 @@ def run_machine_update(
     target_host: Remote | LocalHost,
     build_host: Remote | LocalHost | None = None,
     upload_inputs: bool = False,
+    specialisation: str | None = None,
 ) -> None:
     """Update an existing machine.
 
@@ -545,6 +547,7 @@ def run_machine_update(
         target_host: Remote object representing the target host for deployment.
         build_host: Optional Remote object representing the build host.
         upload_inputs: Whether to upload flake inputs from the local.
+        specialisation: Activates given specialisation
 
     Raises:
         ClanError: If the machine is not found in the inventory or if there are issues with
@@ -590,6 +593,7 @@ def run_machine_update(
                 build_host=_build_host,
                 target_host=_target_host,
                 target_host_root=target_host_root,
+                specialisation=specialisation,
             )
         elif machine._class_ == "darwin":
             _update_darwin(
@@ -610,6 +614,7 @@ def _update_nixos(
     build_host: "Host",
     target_host: "Host",
     target_host_root: "Host",
+    specialisation: str | None,
 ) -> None:
     """Build → copy → profile → activate pipeline for NixOS machines."""
     nix_options = _nix_options_from_machine(machine)
@@ -662,7 +667,9 @@ def _update_nixos(
         return
 
     # 3 + 4. Set profile and activate
-    _nixos_activate(config_path, target_host_root, machine.name)
+    _nixos_activate(
+        config_path, target_host_root, machine.name, specialisation=specialisation
+    )
 
 
 def _build_darwin_rebuild_cmd(
