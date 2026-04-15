@@ -190,8 +190,7 @@
     position: relative;
 
     :global(svg:last-child) {
-      position: absolute;
-      inset-inline-end: 0;
+      margin-inline-start: auto;
       transition: 200ms;
     }
 
