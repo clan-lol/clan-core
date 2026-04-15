@@ -45,3 +45,25 @@ Clan Site uses a quite strict coding standard. To lint the code base, run
 ```sh
 clan-site lint
 ```
+
+## Lint
+
+Clan Site uses a quite strict coding standard. To lint the code base, run
+
+```sh
+clan-site lint
+```
+
+To auto-fix the lint errors: run
+
+```sh
+clan-site lint --fix
+```
+
+## Pagefind Playground
+
+Pagefind offers a playground page that allows experimenting with different parameters that affect the order of search results. This page is only available in dev mode (started by `clan-site` or `clan-site dev`), and is available at:
+
+```
+/_pagefind/docs/playground/index.html
+```

@@ -35,9 +35,3 @@ To create a production version of the site:
 ```bash
 clan-site build
 ```
-
-## Lint
-
-```bash
-clan-site lint
-```

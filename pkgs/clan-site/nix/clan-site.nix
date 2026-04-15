@@ -55,7 +55,7 @@ stdenv.mkDerivation (
     pnpmDeps = fetchPnpmDeps (
       fodAttrs
       // {
-        hash = "sha256-Ih7fWCSycmcPMHJsl7V34VAXioUlTA9F0BbdL4SvJTA=";
+        hash = "sha256-PIJ8i5rBM0cHZ34H5R4IflSN4ER6aKwr7gI9elI8QNU=";
       }
     );
 
