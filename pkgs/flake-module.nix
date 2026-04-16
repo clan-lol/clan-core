@@ -9,6 +9,7 @@
     ./clan-core-flake/flake-module.nix
     ./icon-update/flake-module.nix
     ./installer/flake-module.nix
+    ./network-status/flake-module.nix
     ./docs-from-code/flake-module.nix
     ./testing/flake-module.nix
   ];
