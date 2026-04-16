@@ -36,7 +36,7 @@ This schema defines a standard GPT-based disk layout utilizing [btrfs-subvolume]
 
 The configuration includes automated local snapshots via [`btrbk`](https://digint.ch/btrbk/doc/readme.html) to ensure recovery options.
 
-- Frequency: Every 2 hours (`*/2:00`).
+- Frequency: Every 2 hours (`0/2:00`).
 - Retention:
     - `/nix`: 16 hourly, 7 daily, and 2 weekly snapshots.
     - `/home`: 16 hourly, 7 daily, 3 weekly, and 2 monthly snapshots.
