@@ -15,7 +15,6 @@
   },
   "engineStrict": true,
   "scripts": {
-    "predev": "MODE=development vite build --mode development --configLoader native",
     "dev": "MODE=development vite dev --configLoader native --host --strictPort",
     "build": "MODE=production vite build --configLoader native",
     "prelint": "MODE=production vite build --configLoader native",
