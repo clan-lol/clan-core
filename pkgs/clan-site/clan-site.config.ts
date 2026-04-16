@@ -122,6 +122,7 @@ export const docsNav: DocsNavItems = [
       "guides/nixpkgs-flake-input",
       "guides/flake-parts",
       "guides/nixos-rebuild",
+      "guides/specialisations",
       { label: "MacOS", path: "guides/macos" },
       {
         label: "Templates",

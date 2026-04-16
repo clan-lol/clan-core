@@ -30,6 +30,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
+from clan_cli.hyperlink import help_hyperlink
 
 if TYPE_CHECKING:
     from clan_lib.ssh.host import Host
@@ -43,12 +44,17 @@ def run_update_with_network(
     upload_inputs: bool,
     host_key_check: HostKeyCheck,
     target_host_override: str | None = None,
+    specialisation: str | None = None,
 ) -> None:
     """Run machine update with proper network context handling.
 
     If target_host_override is provided, use it directly.
     Otherwise, use get_best_remote to establish network connection.
     """
+    if machine._class_ == "darwin" and specialisation:
+        msg = f"--specialisation is not supported for darwin machine {machine.name}"
+        raise ClanError(msg)
+
     if target_host_override:
         # Direct connection without network context
         target_host = Remote.from_ssh_uri(
@@ -60,6 +66,7 @@ def run_update_with_network(
             target_host=target_host,
             build_host=build_host,
             upload_inputs=upload_inputs,
+            specialisation=specialisation,
         )
     else:
         # Use network context
@@ -70,6 +77,7 @@ def run_update_with_network(
                 target_host=target_host,
                 build_host=build_host,
                 upload_inputs=upload_inputs,
+                specialisation=specialisation,
             )
 
 
@@ -195,6 +203,10 @@ def update_command(args: argparse.Namespace) -> None:
                 else:
                     build_host = machine.build_host()
 
+                if machine._class_ == "darwin" and args.specialisation:
+                    msg = f"--specialisation is not supported for darwin machine {machine.name}"
+                    raise ClanError(msg)
+
                 # Schedule the update with network handling
                 runtime.async_run(
                     AsyncOpts(
@@ -207,6 +219,7 @@ def update_command(args: argparse.Namespace) -> None:
                     upload_inputs=args.upload_inputs,
                     host_key_check=args.host_key_check,
                     target_host_override=args.target_host,
+                    specialisation=args.specialisation,
                 )
             runtime.join_all()
             runtime.check_all()
@@ -263,5 +276,17 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
             "This is useful if downloading the inputs requires authentication "
             "which is only available to the local machine"
         ),
+    )
+    specialisation_guide = help_hyperlink(
+        "specialisations guide",
+        "https://docs.clan.lol/guides/specialisations",
+    )
+    parser.add_argument(
+        "--specialisation",
+        type=str,
+        help="Activate a NixOS specialisation on the target machine. "
+        "Specialisations are named, pre-built alternative system configurations "
+        "that can be switched to without rebuilding. "
+        f"See {specialisation_guide}",
     )
     parser.set_defaults(func=update_command)
