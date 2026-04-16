@@ -30,6 +30,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
+from clan_cli.hyperlink import help_hyperlink
 
 if TYPE_CHECKING:
     from clan_lib.ssh.host import Host
@@ -276,9 +277,16 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
             "which is only available to the local machine"
         ),
     )
+    specialisation_guide = help_hyperlink(
+        "specialisations guide",
+        "https://docs.clan.lol/guides/specialisations",
+    )
     parser.add_argument(
         "--specialisation",
         type=str,
-        help="Activates given specialisation.",
+        help="Activate a NixOS specialisation on the target machine. "
+        "Specialisations are named, pre-built alternative system configurations "
+        "that can be switched to without rebuilding. "
+        f"See {specialisation_guide}",
     )
     parser.set_defaults(func=update_command)
