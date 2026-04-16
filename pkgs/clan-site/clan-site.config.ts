@@ -108,10 +108,8 @@ export const docsNav: DocsNavItems = [
       {
         label: "Backups",
         children: [
-          "guides/backups/backup-intro",
-          "guides/backups/minimal-example",
-          "guides/backups/digging-deeper",
-          "guides/backups/advanced-example",
+          "guides/backups/intro-to-backups",
+          "guides/backups/backup-advanced",
         ],
       },
       {
