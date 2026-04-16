@@ -4,6 +4,7 @@
   imports = [
     ./clan-app/flake-module.nix
     ./clan-site/flake-module.nix
+    ./network-status/flake-module.nix
     ./clan-cli/flake-module.nix
     ./clan-core-flake/flake-module.nix
     ./icon-update/flake-module.nix
