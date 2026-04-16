@@ -3,7 +3,15 @@
 
 # The test for this module in ./tests/vm/default.nix shows an example of how
 # the service is used.
-{ ... }:
+{
+  clanPackages,
+  ...
+}:
+{
+  lib,
+  clanLib,
+  ...
+}:
 {
   _class = "clan.service";
   manifest.name = "clan-core/installer";
@@ -13,8 +21,37 @@
   roles.iso = {
     description = "Makes a machine an ISO installer machine";
 
-    perInstance = _: {
-      nixosModule = ./nixos-image/image-installer/module.nix;
-    };
+    perInstance =
+      {
+        exports,
+        machine,
+        ...
+      }:
+      let
+        # Select tor server exports for this machine only
+        torExports = clanLib.selectExports (
+          scope:
+          scope.serviceName == "clan-core/tor"
+          && scope.roleName == "server"
+          && scope.machineName == machine.name
+        ) exports;
+
+        # Extract tor instance names from scope keys
+        torInstanceNames = lib.mapAttrsToList (
+          scopeKey: _: (clanLib.parseScope scopeKey).instanceName
+        ) torExports;
+      in
+      {
+        nixosModule =
+          { lib, pkgs, ... }:
+          {
+            imports = [
+              (lib.modules.importApply ./nixos-image/image-installer/module.nix {
+                network-status = clanPackages.${pkgs.stdenv.hostPlatform.system}.network-status;
+                inherit torInstanceNames;
+              })
+            ];
+          };
+      };
   };
 }

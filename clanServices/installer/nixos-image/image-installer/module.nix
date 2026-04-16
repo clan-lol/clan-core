@@ -1,8 +1,24 @@
 {
+  network-status,
+  torInstanceNames ? [ ],
+}:
+{
   lib,
   pkgs,
+  config,
   ...
 }:
+let
+  # Build --tor-address flags for each tor instance
+  torAddressArgs = map (
+    instanceName:
+    "--tor-address ${config.clan.core.vars.generators."tor_${instanceName}".files.hostname.path}"
+  ) torInstanceNames;
+
+  networkStatusCmd = lib.concatStringsSep " " (
+    [ "${network-status}/bin/network-status" ] ++ torAddressArgs
+  );
+in
 {
   imports = [
     ../installer.nix
@@ -31,6 +47,8 @@
   # Autologin is handled by agetty; kmscon follows getty's setting
   services.getty.autologinUser = lib.mkForce "root";
 
+  environment.systemPackages = [ network-status ];
+
   # Less ipv6 addresses to reduce the noise
   networking.tempAddresses = "disabled";
 
@@ -54,4 +72,14 @@
     "34E2E2"
     "EEEEEC"
   ];
+
+  # Run network-status on login shells (local sessions only, not SSH)
+  # kmscon uses pseudo-terminals internally, so we can't check TTY type
+  # Instead, check for SSH environment variables to exclude remote sessions
+  programs.bash.loginShellInit = lib.mkAfter ''
+    # Only show network-status on local sessions, not SSH connections
+    if [[ -z "''${SSH_CLIENT:-}" && -z "''${SSH_TTY:-}" && -z "''${SSH_CONNECTION:-}" ]]; then
+      ${networkStatusCmd} || true
+    fi
+  '';
 }
