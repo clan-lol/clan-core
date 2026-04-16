@@ -73,7 +73,7 @@
   #$ systemctl start btrbk-<instance>
   services.btrbk = {
     instances."nix" = {
-      onCalendar = "*/2:00";
+      onCalendar = "0/2:00";
       settings = {
         subvolume = "/nix";
         snapshot_create = "onchange";
@@ -83,7 +83,7 @@
       };
     };
     instances."home" = {
-      onCalendar = "*/2:00";
+      onCalendar = "0/2:00";
       settings = {
         subvolume = "/home";
         snapshot_dir = "/home";

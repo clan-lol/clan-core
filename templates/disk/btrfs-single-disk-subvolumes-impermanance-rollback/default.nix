@@ -132,7 +132,7 @@ in
   #$ systemctl start btrbk-<instance>
   services.btrbk = {
     instances."nix" = {
-      onCalendar = "*/2:00";
+      onCalendar = "0/2:00";
       settings = {
         subvolume = "/nix";
         snapshot_create = "onchange";
@@ -142,7 +142,7 @@ in
       };
     };
     instances."home" = {
-      onCalendar = "*/2:00";
+      onCalendar = "0/2:00";
       settings = {
         subvolume = "/home";
         snapshot_create = "onchange";
@@ -152,7 +152,7 @@ in
       };
     };
     instances."persist" = {
-      onCalendar = "*/2:00";
+      onCalendar = "0/2:00";
       settings = {
         subvolume = "/persist";
         snapshot_dir = "/persist";
