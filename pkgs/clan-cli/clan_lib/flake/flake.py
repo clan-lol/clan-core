@@ -196,11 +196,14 @@ class ClanSelectError(ClanError):
     ) -> None:
         attribute = None
         if cmd_error and description is None:
-            # Match for "error: <rest of error>" including multiline messages
-            # Use re.DOTALL to make . match newlines as well
-            error_match = re.search(r"error: (.+)", str(cmd_error), re.DOTALL)
-            if error_match:
-                description = error_match.group(1).strip()
+            # Nix prints the trace with many "error:" lines; the last one is the
+            # actual message from throw/abort. Parse the stderr directly so we
+            # don't pick up "Return Code: N" from ClanCmdError's formatting, and
+            # allow a newline after the colon (Nix wraps long messages).
+            stderr = cmd_error.cmd.stderr
+            _, sep, after = stderr.rpartition("error:")
+            if sep:
+                description = after.strip() or None
         if selectors == []:
             msg = "failed to select []\n"
         elif len(selectors) == 1:
