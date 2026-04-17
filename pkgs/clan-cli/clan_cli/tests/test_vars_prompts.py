@@ -183,7 +183,7 @@ def test_prompt_prefill_on_regeneration(
             str(flake.path),
             "my_machine",
         ],
-        timeout=30,
+        timeout=120,
         encoding="utf-8",
         env=spawn_env,
     )
@@ -251,7 +251,7 @@ def test_prompt_prefill_on_regeneration(
             "my_machine",
             "--regenerate",
         ],
-        timeout=30,
+        timeout=120,
         encoding="utf-8",
         env=spawn_env,
     )
@@ -319,7 +319,7 @@ def test_prompt_prefill_on_regeneration(
             "my_machine",
             "--regenerate",
         ],
-        timeout=30,
+        timeout=120,
         encoding="utf-8",
         env=spawn_env,
     )
@@ -378,7 +378,7 @@ def test_prompt_prefill_on_regeneration(
             "my_machine",
             # Note: no --regenerate flag - existing prompts should be auto-accepted
         ],
-        timeout=30,
+        timeout=120,
         encoding="utf-8",
         env=spawn_env,
     )

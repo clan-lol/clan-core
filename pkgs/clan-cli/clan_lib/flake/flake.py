@@ -933,7 +933,7 @@ class Flake:
                 )
         except ClanCmdError as e:
             if (
-                f"error: getting status of '{self.identifier}': No such file or directory"
+                f'error: getting status of "{self.identifier}": No such file or directory'
                 in str(e)
             ):
                 raise FlakeDoesNotExistError(self.identifier) from e
