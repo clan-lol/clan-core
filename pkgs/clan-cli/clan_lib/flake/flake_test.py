@@ -351,3 +351,46 @@ def test_clan_select_error_no_error_pattern_in_stderr() -> None:
     )
     # No description should be extracted if pattern doesn't match
     assert error.description is None
+
+
+def test_clan_select_error_newline_after_colon() -> None:
+    """Nix wraps long messages to the line after 'error:' — with nothing but
+    whitespace on the 'error:' line itself. The parser must still extract them.
+    """
+    stderr = """error:
+       The `coredns` clan service has been moved out of clan-core and now lives in
+       the `clan-community` flake.
+"""
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["clanInternals.machines"],
+        cmd_error=cmd_error,
+    )
+    assert error.description is not None
+    assert "coredns" in error.description
+    assert "clan-community" in error.description
+
+
+def test_clan_select_error_takes_last_error_marker() -> None:
+    """When --show-trace produces many 'error:' markers, the last one is the
+    user-facing throw message. Picking the first captures the whole trace.
+    """
+    stderr = """error:
+       … while calling the 'derivationStrict' builtin
+       … while evaluating attribute 'result'
+       … while evaluating the file 'foo.nix':
+       … while calling the 'throw' builtin
+
+       error:
+       The actual user-facing message lives here.
+"""
+    cmd_error = _create_mock_cmd_error(stderr)
+    error = ClanSelectError(
+        flake_identifier="/tmp/test-flake",  # noqa: S108
+        selectors=["clanInternals.foo"],
+        cmd_error=cmd_error,
+    )
+    assert error.description is not None
+    assert "The actual user-facing message lives here." in error.description
+    assert "derivationStrict" not in error.description
