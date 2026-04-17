@@ -35,8 +35,8 @@ in
                   type = lib.types.str;
                   default = "wpa-psk";
                   description = ''
-                    Key management used for the connection. 
-                    One of "none" (WEP or no password protection), "ieee8021x" (Dynamic WEP), "owe" (Opportunistic Wireless Encryption), "wpa-psk" (WPA2 + WPA3 personal), 
+                    Key management used for the connection.
+                    One of "none" (WEP or no password protection), "ieee8021x" (Dynamic WEP), "owe" (Opportunistic Wireless Encryption), "wpa-psk" (WPA2 + WPA3 personal),
                     "sae" (WPA3 personal only), "wpa-eap" (WPA2 + WPA3 enterprise) or "wpa-eap-suite-b-192" (WPA3 enterprise only).
                   '';
                 };
@@ -72,14 +72,18 @@ in
             ssid_path =
               network_name: config.clan.core.vars.generators."wifi.${network_name}".files.network-name.path;
 
-            secret_generator = name: _value: {
+            secret_generator = name: networkCfg: {
               name = "wifi.${name}";
               value = {
-                prompts.network-name.type = "line";
-                prompts.network-name.persist = true;
-                prompts.network-name.description = "name of the Wi-Fi network";
-                prompts.password.type = "hidden";
-                prompts.password.persist = true;
+                prompts = {
+                  network-name.type = "line";
+                  network-name.persist = true;
+                  network-name.description = "name of the Wi-Fi network";
+                }
+                // lib.optionalAttrs (networkCfg.keyMgmt != "none") {
+                  password.type = "hidden";
+                  password.persist = true;
+                };
                 share = true;
               };
             };
@@ -95,12 +99,15 @@ in
             ];
 
             networking.networkmanager.ensureProfiles.profiles = flip mapAttrs settings.networks (
-              name: networkCfg: {
+              name: networkCfg:
+              {
                 connection.id = "$ssid_${name}";
                 connection.type = "wifi";
                 connection.autoconnect = networkCfg.autoConnect;
                 wifi.mode = "infrastructure";
                 wifi.ssid = "$ssid_${name}";
+              }
+              // lib.optionalAttrs (networkCfg.keyMgmt != "none") {
                 wifi-security.psk = "$pw_${name}";
                 wifi-security.key-mgmt = networkCfg.keyMgmt;
               }
@@ -125,8 +132,11 @@ in
                   # Generate the secrets file
                   echo "Generating wifi secrets file: $env_file"
                   ${flip (concatMapAttrsStringSep "\n") settings.networks (
-                    name: _networkCfg: ''
+                    name: networkCfg:
+                    ''
                       echo "ssid_${name}=\"$(cat "${ssid_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
+                    ''
+                    + lib.optionalString (networkCfg.keyMgmt != "none") ''
                       echo "pw_${name}=\"$(cat "${password_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
                     ''
                   )}
