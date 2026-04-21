@@ -10,24 +10,36 @@
   ...
 }:
 let
-  types = lib.types;
+  inherit (lib)
+    types
+    mkOption
+    mkRemovedOptionModule
+    filterAttrs
+    unique
+    ;
+
+  inherit (types)
+    lazyAttrsOf
+    listOf
+    str
+    ;
 
   metaOptionsWith = name: {
-    name = lib.mkOption {
+    name = mkOption {
       type = types.str;
       default = name;
       description = ''
         Name of the machine or service
       '';
     };
-    description = lib.mkOption {
+    description = mkOption {
       default = null;
       type = types.nullOr types.str;
       description = ''
         Optional freeform description
       '';
     };
-    icon = lib.mkOption {
+    icon = mkOption {
       default = null;
       type = types.nullOr types.str;
       description = ''
@@ -38,27 +50,27 @@ let
 in
 {
   imports = [
-    (lib.mkRemovedOptionModule [ "services" ] ''
+    (mkRemovedOptionModule [ "services" ] ''
       The `inventory.services` option has been removed. Use `inventory.instances` instead.
       See: https://clan.lol/docs/guides/migrations/migrate-inventory-services
     '')
   ];
   options = {
     # Internal things
-    _inventoryFile = lib.mkOption {
+    _inventoryFile = mkOption {
       type = types.path;
       readOnly = true;
       internal = true;
       visible = false;
     };
-    noInstanceOptions = lib.mkOption {
+    noInstanceOptions = mkOption {
       type = types.bool;
       internal = true;
       visible = false;
       default = false;
     };
 
-    options = lib.mkOption {
+    options = mkOption {
       internal = true;
       visible = false;
       type = types.raw;
@@ -66,7 +78,7 @@ in
     };
     # ---------------------------
 
-    modules = lib.mkOption {
+    modules = mkOption {
       # Don't define the type yet
       # We manually transform the value with types.deferredModule.merge later to keep them serializable
       type = types.attrsOf types.raw;
@@ -109,20 +121,20 @@ in
       apply = _: { };
     };
 
-    assertions = lib.mkOption {
+    assertions = mkOption {
       type = types.listOf types.unspecified;
       internal = true;
       visible = false;
       default = [ ];
     };
-    meta = lib.mkOption {
-      type = lib.types.submoduleWith {
+    meta = mkOption {
+      type = types.submoduleWith {
         modules = [
           ./meta.nix
         ];
       };
     };
-    tags = lib.mkOption {
+    tags = mkOption {
       default = { };
       description = ''
         Tags of the inventory are used to group machines together.
@@ -181,13 +193,13 @@ in
         };
         modules = [
           {
-            freeformType = lib.types.lazyAttrsOf (lib.types.listOf lib.types.str);
+            freeformType = lazyAttrsOf (listOf str);
             # Reserved tags
             # Defined as options here to show them in advance
             options = {
               # 'All machines' tag
-              all = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
+              all = mkOption {
+                type = listOf str;
                 defaultText = "[ <All Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
@@ -200,8 +212,8 @@ in
                   :::
                 '';
               };
-              nixos = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
+              nixos = mkOption {
+                type = listOf str;
                 defaultText = "[ <All NixOS Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
@@ -214,8 +226,8 @@ in
                   :::
                 '';
               };
-              darwin = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
+              darwin = mkOption {
+                type = listOf str;
                 defaultText = "[ <All Darwin Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
@@ -234,7 +246,7 @@ in
       };
     };
 
-    machines = lib.mkOption {
+    machines = mkOption {
       description = ''
         Machines in the inventory.
 
@@ -249,7 +261,7 @@ in
               {
                 tags = builtins.attrNames (
                   # config.tags
-                  lib.filterAttrs (_t: tagMembers: builtins.elem name tagMembers) config.tags
+                  filterAttrs (_t: tagMembers: builtins.elem name tagMembers) config.tags
                 );
               }
             )
@@ -259,7 +271,7 @@ in
                 options = {
                   inherit (metaOptionsWith name) name description icon;
 
-                  machineClass = lib.mkOption {
+                  machineClass = mkOption {
                     default = "nixos";
                     type = types.enum [
                       "nixos"
@@ -272,7 +284,7 @@ in
                     '';
                   };
 
-                  installedAt = lib.mkOption {
+                  installedAt = mkOption {
                     type = types.nullOr types.int;
                     default = null;
                     description = ''
@@ -282,7 +294,7 @@ in
                     '';
                   };
 
-                  tags = lib.mkOption {
+                  tags = mkOption {
                     description = ''
                       List of tags for the machine.
 
@@ -305,20 +317,20 @@ in
                       :::
                     '';
                     default = [ ];
-                    apply = lib.unique;
+                    apply = unique;
                     type = types.listOf types.str;
                   };
-                  deploy.targetHost = lib.mkOption {
+                  deploy.targetHost = mkOption {
                     description = "SSH address of the host to deploy the machine to";
                     default = null;
                     type = types.nullOr types.str;
                   };
-                  deploy.buildHost = lib.mkOption {
+                  deploy.buildHost = mkOption {
                     description = "SSH address of the host to build the machine on";
                     default = null;
                     type = types.nullOr types.str;
                   };
-                  deploy.forwardAgent = lib.mkOption {
+                  deploy.forwardAgent = mkOption {
                     description = ''
                       Enable SSH agent forwarding for deployments to this specific machine.
 
@@ -342,7 +354,7 @@ in
       if config.noInstanceOptions then
         { }
       else
-        lib.mkOption {
+        mkOption {
           description = "Multi host service module instances";
           type = types.attrsOf (
             types.submoduleWith {
@@ -352,10 +364,10 @@ in
                   {
                     options = {
                       # ModuleSpec
-                      module = lib.mkOption {
+                      module = mkOption {
                         default = { };
                         type = types.submodule {
-                          options.input = lib.mkOption {
+                          options.input = mkOption {
                             type = types.nullOr types.str;
                             default = null;
                             defaultText = "Name of the input. Default to 'null' which means the module is local";
@@ -363,7 +375,7 @@ in
                               Name of the input. Default to 'null' which means the module is local
                             '';
                           };
-                          options.name = lib.mkOption {
+                          options.name = mkOption {
                             type = types.str;
                             default = name;
                             defaultText = "<Name of the Instance>";
@@ -375,7 +387,7 @@ in
                           };
                         };
                       };
-                      roles = lib.mkOption {
+                      roles = mkOption {
                         default = { };
                         type = types.attrsOf (
                           types.submodule {
