@@ -152,6 +152,14 @@ let
           Defaults to the instance name.
         '';
       };
+
+      options.mtu = lib.mkOption {
+        type = lib.types.nullOr lib.types.int;
+        default = null;
+        description = ''
+          MTU (maximum transmission unit) for the wireguard interface.
+        '';
+      };
     };
 in
 {
@@ -305,6 +313,8 @@ in
 
                 persistentKeepalive = 25;
               }) roles.controller.machines;
+
+              mtu = lib.mkIf (settings.mtu != null) settings.mtu;
             };
           };
 
@@ -392,6 +402,8 @@ in
 
                 persistentKeepalive = 25;
               }) roles.controller.machines;
+
+              mtu = lib.mkIf (settings.mtu != null) settings.mtu;
             };
           };
       };
@@ -553,6 +565,8 @@ in
                     persistentKeepalive = 25;
                   }
               ) (allPeers // allOtherControllers);
+
+              mtu = lib.mkIf (settings.mtu != null) settings.mtu;
             };
           };
 
@@ -689,6 +703,8 @@ in
                     persistentKeepalive = 25;
                   }
               ) (allPeers // allOtherControllers);
+
+              mtu = lib.mkIf (settings.mtu != null) settings.mtu;
             };
           };
       };
