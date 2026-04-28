@@ -106,7 +106,7 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
           machineName = "machine1";
@@ -115,8 +115,9 @@ in
           inherit generators;
         };
       in
-      result."vars/<placeholder>/secret1".sopsFile.name;
-    expected = "gen1_secret1";
+      result."vars/shared/gen1/secret1".sopsFile.name;
+    # `/` is illegal in store names; sanitizeDerivationName collapses it to `-`.
+    expected = "shared-gen1_secret1";
   };
 
   # Secret Filtering Tests (relevantFiles)
@@ -387,7 +388,7 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
       in
       mapFn {
@@ -397,19 +398,18 @@ in
         inherit generators;
       };
     expected = {
-      "vars/<placeholder>/secret1" = {
+      "vars/shared/gen1/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
         neededForUsers = false;
         restartUnits = [ ];
         sopsFile = {
-          name = "gen1_secret1";
-          path = "/test/vars/<placeholder>/secret1/secret";
+          name = "shared-gen1_secret1";
+          path = "/test/vars/shared/gen1/secret1/secret";
         };
         format = "binary";
       };
-
     };
   };
 
@@ -420,7 +420,7 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
       in
       mapFn {
@@ -430,14 +430,14 @@ in
         inherit generators;
       };
     expected = {
-      "vars/<placeholder>/secret1" = {
+      "vars/shared/gen1/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
         neededForUsers = false;
         sopsFile = {
-          name = "gen1_secret1";
-          path = "/test/vars/<placeholder>/secret1/secret";
+          name = "shared-gen1_secret1";
+          path = "/test/vars/shared/gen1/secret1/secret";
         };
         format = "binary";
       };
