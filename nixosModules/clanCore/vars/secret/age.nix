@@ -18,7 +18,7 @@ let
   encryptedSecretSource =
     rel_dir: fileName:
     let
-      storePath = clanDir + "/secrets/clan-vars/${rel_dir}/${fileName}.age";
+      storePath = clanDir + "/secrets/clan-vars/${rel_dir}/${fileName}/${fileName}.age";
     in
     # Only include if the file exists in the flake; otherwise skip.
     if builtins.pathExists storePath then storePath else null;
