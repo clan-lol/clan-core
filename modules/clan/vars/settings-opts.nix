@@ -87,7 +87,7 @@ let
             throw "File '${file.config.name}' of generator '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
-              # We need to sanitize the name
+              # We need to sanitzize the name
               # Every name should be unique (concat ID + name)
               # ID contains "/" and potentially other invalid store identifiers.
               # Use 'sanitizeDerivationName' to sanitize invalid characters.

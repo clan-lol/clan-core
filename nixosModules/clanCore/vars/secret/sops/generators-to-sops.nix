@@ -62,7 +62,7 @@ let
           # builtins.path: aliased to overide during unit-testing
           # Neded because it requires the file to exist at eval time
           sopsFile = path {
-            name = "${secret.generator}_${secret.name}";
+            name = lib.strings.sanitizeDerivationName "${secret.rel_dir}_${secret.name}";
             path = getSecretPath secret;
           };
           format = "binary";
