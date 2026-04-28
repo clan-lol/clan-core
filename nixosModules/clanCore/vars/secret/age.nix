@@ -12,13 +12,13 @@ let
   isNixOS = _class == "nixos";
   isDarwin = _class == "darwin";
 
-  # Compute the nix store path for an encrypted .age file in the flake repo.
-  # Per-machine secrets: secrets/clan-vars/per-machine/{machine}/{generator}/{name}/{name}.age
-  # Shared secrets:      secrets/clan-vars/shared/{generator}/{name}/{name}.age
+  # See ./age-source-path.nix for the path layout (kept in lockstep with
+  # clan_lib/vars/secret_modules/age.py:secret_path).
+  encryptedSourcePath = import ./age-source-path.nix;
   encryptedSecretSource =
     rel_dir: fileName:
     let
-      storePath = clanDir + "/secrets/clan-vars/${rel_dir}/${fileName}/${fileName}.age";
+      storePath = encryptedSourcePath clanDir rel_dir fileName;
     in
     # Only include if the file exists in the flake; otherwise skip.
     if builtins.pathExists storePath then storePath else null;
