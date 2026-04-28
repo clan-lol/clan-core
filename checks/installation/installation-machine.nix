@@ -1,13 +1,11 @@
 # test-install-machine-without-system
+{ clan-core }:
 { lib, modulesPath, ... }:
-let
-  minifyModule = ../../lib/test/minify.nix;
-in
 {
   imports = [
     (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
     (modulesPath + "/profiles/qemu-guest.nix")
-    minifyModule
+    clan-core.clanLib.test.minifyModule
   ];
 
   # Disable system.checks to avoid rebuild mismatches in tests
@@ -22,17 +20,19 @@ in
 
   environment.etc."install-successful".text = "ok";
 
-  # Enable SSH and add authorized key for testing
+  # The key file lives inside the child flake source so that
+  # checks/installation/flake.nix can reach it; checks/assets/ssh/pubkey is
+  # outside the child flake's reachable tree.
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
   users.users.nonrootuser = {
     isNormalUser = true;
-    openssh.authorizedKeys.keys = [ (builtins.readFile ../assets/ssh/pubkey) ];
+    openssh.authorizedKeys.keys = [ (builtins.readFile ./assets/ssh/pubkey) ];
     extraGroups = [ "wheel" ];
     home = "/home/nonrootuser";
     createHome = true;
   };
-  users.users.root.openssh.authorizedKeys.keys = [ (builtins.readFile ../assets/ssh/pubkey) ];
+  users.users.root.openssh.authorizedKeys.keys = [ (builtins.readFile ./assets/ssh/pubkey) ];
   # Allow users to manage their own SSH keys
   services.openssh.authorizedKeysFiles = [
     "/root/.ssh/authorized_keys"

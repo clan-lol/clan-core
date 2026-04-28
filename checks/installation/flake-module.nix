@@ -1,102 +1,41 @@
 {
-  config,
   self,
   lib,
   ...
-}:
+}@flakeModule:
+let
+  importFlake =
+    flakeDir:
+    let
+      flakeExpr = import (flakeDir + "/flake.nix");
+      inputs = lib.intersectAttrs flakeExpr.inputs self.inputs;
+      flake = flakeExpr.outputs (
+        inputs
+        // {
+          self = flake // {
+            outPath = flakeDir;
+          };
+          clan-core = self;
+          systems = builtins.toFile "flake.systems.nix" ''
+            [ "x86_64-linux" "aarch64-linux" ]
+          '';
+        }
+      );
+    in
+    lib.throwIf (lib.pathExists (
+      flakeDir + "/flake.lock"
+    )) "checks/installation/ must not have a flake.lock file" flake;
+
+  testFlake = importFlake ./.;
+in
 {
-
-  # The purpose of this test is to ensure `clan machines install` works
-  # for machines that don't have a hardware config yet.
-
-  # If this test starts failing it could be due to the `facter.json` being out of date
-  # you can get a new one by adding
-  # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
-  # to the installation test.
-  # Age recipients for the age installation test.
-  # Uses the same key pair as pkgs/clan-cli/clan_cli/tests/age_keys.py
-  clan.vars.settings.recipients.hosts.test-install-machine-without-system-with-age = [
-    "age1dhwqzkah943xzc34tc3dlmfayyevcmdmxzjezdgdy33euxwf59vsp3vk3c"
-  ];
-
-  clan.machines = {
-    test-install-machine-without-system-with-password-store =
-      { lib, ... }:
-      {
-        clan.core.vars.settings.secretStore = lib.mkForce "password-store";
-        # Temporary Hack!!
-        # Disable the consistency check between clan-core and this machine.
-        # Since clan-core is a clan which uses sops, we need to disable assertions.
-        clan.core.vars.enableConsistencyCheck = false;
-
-        # Override from test-install-machine-without-system
-        system.activationScripts.test-vars-activation.text = lib.mkForce ''
-          test -e /etc/secret-vars/activation/test-activation/test || {
-            echo "\nTEST ERROR: Activation secret not found!\n" >&2
-            exit 1
-          }
-        '';
-
-        imports = [
-          ./installation-machine.nix
-        ];
-      };
-    test-install-machine-without-system = ./installation-machine.nix;
-    test-install-machine-without-system-with-age =
-      { lib, ... }:
-      {
-        clan.core.vars.settings.secretStore = lib.mkForce "age";
-        # Disable the consistency check between clan-core and this machine.
-        # Since clan-core is a clan which uses sops, we need to disable assertions.
-        clan.core.vars.enableConsistencyCheck = false;
-
-        # Override from test-install-machine-without-system:
-        # age activation secrets live at /etc/secret-vars/activation/
-        system.activationScripts.test-vars-activation.text = lib.mkForce ''
-          test -e /etc/secret-vars/activation/test-activation/test || {
-            echo "\nTEST ERROR: Activation secret not found!\n" >&2
-            exit 1
-          }
-        '';
-
-        imports = [
-          ./installation-machine.nix
-        ];
-      };
-  }
-  // (lib.listToAttrs (
-    lib.map (
-      system:
-      lib.nameValuePair "test-install-machine-${system}" {
-        # !!! Important do not add any configuration here
-        # This is one of ~10 shallow abstractions over
-        # flake.nixosModules.test-install-machine-without-system
-        hardware.facter.reportPath = import ./facter-report.nix system;
-        imports = [ ./installation-machine.nix ];
-      }
-    ) (lib.filter (lib.hasSuffix "linux") config.systems)
-  ))
-  // (lib.listToAttrs (
-    lib.map (
-      system:
-      lib.nameValuePair "test-install-machine-age-${system}" {
-        # Variant with age backend, used only for closureInfo to ensure
-        # age-specific packages (decrypt-age-secrets, etc.) are in the store.
-        hardware.facter.reportPath = import ./facter-report.nix system;
-        clan.core.vars.settings.secretStore = lib.mkForce "age";
-        clan.core.vars.enableConsistencyCheck = false;
-        imports = [ ./installation-machine.nix ];
-      }
-    ) (lib.filter (lib.hasSuffix "linux") config.systems)
-  ));
-
   perSystem =
     {
       pkgs,
       ...
     }:
     let
-      clan-core-flake = self.filter {
+      clan-core-flake-filtered = self.filter {
         name = "clan-core-flake-filtered";
         include = [
           "flake.nix"
@@ -110,14 +49,46 @@
           "nixosModules"
         ];
       };
+
+      systemsFile = builtins.toFile "flake.systems.nix" ''[ "${pkgs.stdenv.hostPlatform.system}" ]'';
+
+      installationFlake =
+        pkgs.runCommand "installation-test-flake-${pkgs.stdenv.hostPlatform.system}"
+          {
+            nativeBuildInputs = [ pkgs.nix ];
+          }
+          ''
+            cp -r ${./.} $out
+            chmod +w -R $out
+            export HOME=$(mktemp -d)
+            nix flake lock $out \
+              --extra-experimental-features 'nix-command flakes' \
+              --override-input clan-core ${clan-core-flake-filtered} \
+              --override-input nixpkgs ${self.inputs.nixpkgs} \
+              --override-input systems 'path://${systemsFile}' \
+              --override-input clan-core/nixpkgs ${self.inputs.nixpkgs} \
+              --override-input clan-core/flake-parts ${self.inputs.flake-parts} \
+              --override-input clan-core/treefmt-nix ${self.inputs.treefmt-nix} \
+              --override-input clan-core/nix-select ${self.inputs.nix-select} \
+              --override-input clan-core/data-mesher ${self.inputs.data-mesher} \
+              --override-input clan-core/sops-nix ${self.inputs.sops-nix} \
+              --override-input clan-core/disko ${self.inputs.disko} \
+              --override-input clan-core/systems ${self.inputs.systems}
+          '';
+
+      machineFor = name: testFlake.nixosConfigurations.${name};
+
+      hostMachine = machineFor "test-install-machine-${pkgs.stdenv.hostPlatform.system}";
+      hostAgeMachine = machineFor "test-install-machine-age-${pkgs.stdenv.hostPlatform.system}";
+
       closureInfo = pkgs.closureInfo {
         rootPaths = [
-          clan-core-flake
-          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
-          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.initialRamdisk
-          self.nixosConfigurations."test-install-machine-${pkgs.stdenv.hostPlatform.system}".config.system.build.diskoScript
+          installationFlake
+          hostMachine.config.system.build.toplevel
+          hostMachine.config.system.build.initialRamdisk
+          hostMachine.config.system.build.diskoScript
           # Age backend variant — ensures age-specific packages are in the store
-          self.nixosConfigurations."test-install-machine-age-${pkgs.stdenv.hostPlatform.system}".config.system.build.toplevel
+          hostAgeMachine.config.system.build.toplevel
           pkgs.stdenv.drvPath
           pkgs.bash.drvPath
           pkgs.buildPackages.lndir
@@ -127,7 +98,9 @@
           pkgs.move-mount-beneath
         ]
         ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
-        ++ builtins.map (import ./facter-report.nix) (lib.filter (lib.hasSuffix "linux") config.systems);
+        ++ builtins.map (import ./facter-report.nix) (
+          lib.filter (lib.hasSuffix "linux") flakeModule.config.systems
+        );
       };
     in
     {
@@ -250,7 +223,7 @@
                   # Prepare test flake and Nix store
                   flake_dir, _ = prepare_test_flake(
                       temp_dir,
-                      "${clan-core-flake}",
+                      "${installationFlake}",
                       "${closureInfo}"
                   )
 
@@ -383,7 +356,7 @@
                   # Prepare test flake and Nix store
                   flake_dir, _ = prepare_test_flake(
                       temp_dir,
-                      "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
+                      "${installationFlake}",
                       "${closureInfo}"
                   )
 
@@ -543,7 +516,7 @@
                   # Prepare test flake and Nix store
                   flake_dir, _ = prepare_test_flake(
                       temp_dir,
-                      "${self.packages.${pkgs.stdenv.buildPlatform.system}.clan-core-flake}",
+                      "${installationFlake}",
                       "${closureInfo}"
                   )
 
@@ -625,7 +598,7 @@
                   # Prepare test flake and Nix store
                   flake_dir, _ = prepare_test_flake(
                       temp_dir,
-                      "${clan-core-flake}",
+                      "${installationFlake}",
                       "${closureInfo}"
                   )
 
