@@ -39,7 +39,6 @@ let
 
   mapGeneratorsToSopsSecrets =
     {
-      machineName,
       directory,
       class,
       generators,

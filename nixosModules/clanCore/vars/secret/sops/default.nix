@@ -40,7 +40,6 @@ in
   config.sops = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
     #
     secrets = mapGeneratorsToSopsSecrets {
-      inherit machineName;
       directory = config.clan.core.settings.directory;
       class = _class;
       generators = config.clan.core.vars.generators;

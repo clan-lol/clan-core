@@ -69,7 +69,6 @@ in
           files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -89,7 +88,6 @@ in
           files.secret1 = mkFile { rel_dir = "per-machine/machine1/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -109,7 +107,6 @@ in
           files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -134,7 +131,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -157,7 +153,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -180,7 +175,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -203,7 +197,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -244,7 +237,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -270,7 +262,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -297,7 +288,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -320,7 +310,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -349,7 +338,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -371,7 +359,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "darwin";
           inherit generators;
@@ -392,7 +379,6 @@ in
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "nixos";
         inherit generators;
@@ -424,7 +410,6 @@ in
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "darwin";
         inherit generators;
@@ -455,7 +440,6 @@ in
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "invalid"; # nixos | darwin
         inherit generators;
@@ -474,7 +458,6 @@ in
           files.secret1 = mkFile { owner = "nginx"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -494,7 +477,6 @@ in
           files.secret1 = mkFile { group = "nginx"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -514,7 +496,6 @@ in
           files.secret1 = mkFile { mode = "0440"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -539,7 +520,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -563,7 +543,6 @@ in
           files.mySecret = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -583,7 +562,6 @@ in
           files.secret1 = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -603,7 +581,6 @@ in
           files.secret1 = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -631,7 +608,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -655,7 +631,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -682,7 +657,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -700,7 +674,6 @@ in
       let
         mapFn = mkMapGeneratorsToSopsSecrets (_: true);
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           generators = { };
@@ -715,7 +688,6 @@ in
       let
         mapFn = mkMapGeneratorsToSopsSecrets (_: true);
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           generators = {
@@ -744,7 +716,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -764,7 +735,6 @@ in
           files.secret1 = mkFile { restartUnits = [ ]; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -845,7 +815,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "server1";
           directory = "/clan";
           class = "nixos";
           inherit generators;
