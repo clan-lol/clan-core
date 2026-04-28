@@ -107,6 +107,14 @@ in
       enabled = true;
     };
   };
+  test_controller_network_nwid = {
+    expr =
+      let
+        cfg = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier;
+      in
+      cfg.settings.nwid == cfg.settings.id;
+    expected = true;
+  };
   test_generator_defined = {
     expr = {
       hasSharedGenerator =
