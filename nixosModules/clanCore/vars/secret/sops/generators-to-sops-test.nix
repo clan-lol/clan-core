@@ -37,6 +37,12 @@ let
       group ? "root",
       mode ? "0400",
       restartUnits ? [ ],
+      # In production, rel_dir is derived from the generator placement
+      # (shared/<g>, per-machine/<m>/<g>, per-export/<e>/<g>) by
+      # interface.nix and export-modules/generators.nix. Tests that don't
+      # care about the placement to ppath mapping pass the default placeholder.
+      # tests that do pass a real value.
+      rel_dir ? "<placeholder>",
     }:
     {
       inherit
@@ -47,11 +53,8 @@ let
         group
         mode
         restartUnits
+        rel_dir
         ;
-      # Mocked for testing
-      # In reality this would depend on the generator name
-      # and the exports scope (for flake level)
-      rel_dir = "rel_dir";
     };
 
 in
@@ -63,7 +66,7 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
           machineName = "machine1";
@@ -72,8 +75,8 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".sopsFile.path;
-    expected = "/test/vars/rel_dir/secret1/secret";
+      result."vars/shared/gen1/secret1".sopsFile.path;
+    expected = "/test/vars/shared/gen1/secret1/secret";
   };
 
   testPerMachineSecretPath = {
@@ -83,7 +86,7 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = false;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "per-machine/machine1/gen1"; };
         };
         result = mapFn {
           machineName = "machine1";
@@ -92,8 +95,8 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".sopsFile.path;
-    expected = "/test/vars/rel_dir/secret1/secret";
+      result."vars/per-machine/machine1/gen1/secret1".sopsFile.path;
+    expected = "/test/vars/per-machine/machine1/gen1/secret1/secret";
   };
 
   testSopsFileNameConstruction = {
@@ -112,7 +115,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".sopsFile.name;
+      result."vars/<placeholder>/secret1".sopsFile.name;
     expected = "gen1_secret1";
   };
 
@@ -137,7 +140,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/included" ];
+    expected = [ "vars/<placeholder>/included" ];
   };
 
   testFiltersDeployTrue = {
@@ -160,7 +163,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/included" ];
+    expected = [ "vars/<placeholder>/included" ];
   };
 
   testFiltersNeededForUsers = {
@@ -183,7 +186,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/users" ];
+    expected = [ "vars/<placeholder>/users" ];
   };
 
   testFiltersNeededForServices = {
@@ -206,7 +209,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/services" ];
+    expected = [ "vars/<placeholder>/services" ];
   };
 
   testFiltersCombinedConditions = {
@@ -247,7 +250,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/valid" ];
+    expected = [ "vars/<placeholder>/valid" ];
   };
 
   # Secret Definition Extraction Tests
@@ -274,8 +277,8 @@ in
       in
       builtins.sort builtins.lessThan (builtins.attrNames result);
     expected = [
-      "vars/rel_dir/secret1"
-      "vars/rel_dir/secret2"
+      "vars/<placeholder>/secret1"
+      "vars/<placeholder>/secret2"
     ];
   };
 
@@ -323,8 +326,8 @@ in
         };
       in
       {
-        userSecret = result."vars/rel_dir/userSecret".neededForUsers;
-        serviceSecret = result."vars/rel_dir/serviceSecret".neededForUsers;
+        userSecret = result."vars/<placeholder>/userSecret".neededForUsers;
+        serviceSecret = result."vars/<placeholder>/serviceSecret".neededForUsers;
       };
     expected = {
       userSecret = true;
@@ -351,7 +354,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".restartUnits or null;
+      result."vars/<placeholder>/secret1".restartUnits or null;
     expected = [ "nginx.service" ];
   };
 
@@ -373,7 +376,7 @@ in
           inherit generators;
         };
       in
-      builtins.hasAttr "restartUnits" result."vars/rel_dir/secret1";
+      builtins.hasAttr "restartUnits" result."vars/<placeholder>/secret1";
     expected = false;
   };
 
@@ -394,7 +397,7 @@ in
         inherit generators;
       };
     expected = {
-      "vars/rel_dir/secret1" = {
+      "vars/<placeholder>/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
@@ -402,7 +405,7 @@ in
         restartUnits = [ ];
         sopsFile = {
           name = "gen1_secret1";
-          path = "/test/vars/rel_dir/secret1/secret";
+          path = "/test/vars/<placeholder>/secret1/secret";
         };
         format = "binary";
       };
@@ -427,14 +430,14 @@ in
         inherit generators;
       };
     expected = {
-      "vars/rel_dir/secret1" = {
+      "vars/<placeholder>/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
         neededForUsers = false;
         sopsFile = {
           name = "gen1_secret1";
-          path = "/test/vars/rel_dir/secret1/secret";
+          path = "/test/vars/<placeholder>/secret1/secret";
         };
         format = "binary";
       };
@@ -477,7 +480,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".owner;
+      result."vars/<placeholder>/secret1".owner;
     expected = "nginx";
   };
 
@@ -497,7 +500,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".group;
+      result."vars/<placeholder>/secret1".group;
     expected = "nginx";
   };
 
@@ -517,7 +520,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".mode;
+      result."vars/<placeholder>/secret1".mode;
     expected = "0440";
   };
 
@@ -542,7 +545,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".restartUnits;
+      result."vars/<placeholder>/secret1".restartUnits;
     expected = [
       "nginx.service"
       "php-fpm.service"
@@ -567,7 +570,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/mySecret" ];
+    expected = [ "vars/<placeholder>/mySecret" ];
   };
 
   testOutputFormatIsBinary = {
@@ -586,7 +589,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".format;
+      result."vars/<placeholder>/secret1".format;
     expected = "binary";
   };
 
@@ -605,7 +608,7 @@ in
           class = "nixos";
           inherit generators;
         };
-        sopsFile = result."vars/rel_dir/secret1".sopsFile;
+        sopsFile = result."vars/<placeholder>/secret1".sopsFile;
       in
       builtins.isAttrs sopsFile && builtins.hasAttr "name" sopsFile && builtins.hasAttr "path" sopsFile;
     expected = true;
@@ -616,7 +619,7 @@ in
     expr =
       let
         # Mock pathExists to only return true for specific paths
-        pathExists = path: path == "/test/vars/rel_dir/exists/secret";
+        pathExists = path: path == "/test/vars/<placeholder>/exists/secret";
 
         mapFn = mkMapGeneratorsToSopsSecrets pathExists;
         generators = mkGenerator {
@@ -635,7 +638,7 @@ in
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/rel_dir/exists" ];
+    expected = [ "vars/<placeholder>/exists" ];
   };
 
   testAllSecretsFilteredWhenNoneExist = {
@@ -767,7 +770,7 @@ in
           inherit generators;
         };
       in
-      result."vars/rel_dir/secret1".restartUnits;
+      result."vars/<placeholder>/secret1".restartUnits;
     expected = [ ];
   };
 
@@ -786,12 +789,11 @@ in
       };
     in
     {
-      inherit result;
       expr = {
-        hasSecret = builtins.hasAttr "vars/rel_dir/secret_with_underscore" result;
+        hasSecret = builtins.hasAttr "vars/<placeholder>/secret_with_underscore" result;
         pathCorrect =
-          result."vars/rel_dir/secret_with_underscore".sopsFile.path
-          == "/test/vars/rel_dir/secret_with_underscore/secret";
+          result."vars/<placeholder>/secret_with_underscore".sopsFile.path
+          == "/test/vars/<placeholder>/secret_with_underscore/secret";
       };
       expected = {
         hasSecret = true;
@@ -806,8 +808,8 @@ in
         pathExists =
           path:
           builtins.elem path [
-            "/clan/vars/rel_dir/root/secret"
-            "/clan/vars/rel_dir/ssl/secret"
+            "/clan/vars/<placeholder>/root/secret"
+            "/clan/vars/<placeholder>/ssl/secret"
           ];
 
         mapFn = mkMapGeneratorsToSopsSecrets pathExists;
@@ -851,12 +853,12 @@ in
       in
       {
         secretCount = builtins.length (builtins.attrNames result);
-        hasRootPassword = builtins.hasAttr "vars/rel_dir/root" result;
-        hasSSLCert = builtins.hasAttr "vars/rel_dir/ssl" result;
+        hasRootPassword = builtins.hasAttr "vars/<placeholder>/root" result;
+        hasSSLCert = builtins.hasAttr "vars/<placeholder>/ssl" result;
         noPostgresPassword = !builtins.hasAttr "vars/passwords/postgres" result;
-        rootIsForUsers = result."vars/rel_dir/root".neededForUsers;
-        sslOwner = result."vars/rel_dir/ssl".owner;
-        sslRestarts = result."vars/rel_dir/ssl".restartUnits;
+        rootIsForUsers = result."vars/<placeholder>/root".neededForUsers;
+        sslOwner = result."vars/<placeholder>/ssl".owner;
+        sslRestarts = result."vars/<placeholder>/ssl".restartUnits;
       };
     expected = {
       secretCount = 2;

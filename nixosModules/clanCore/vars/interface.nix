@@ -72,13 +72,12 @@ in
             generator:
             (lib.modules.importApply ../../../modules/clan/export-modules/generic-generator.nix {
               fileContextModule = {
+                # rel_dir is the canonical subpath under vars/ for this
+                # file. Python computes the same string from the generator's
+                # placement (see clan_lib/vars/_types.py); both sides must
+                # stay in lockstep.
                 config.rel_dir =
                   if generator.config.share then
-                    # Note: We could transform the path BUT decide against it:
-                    # Theoretically strip the path down to per-machine/generatorName
-                    # because 'machineName' is constant
-                    # But we expliciticly avoid this, to keep the logic simple.
-                    # Python and nix must use the same logic, which adds the risk of getting out of sync.
                     "shared/${generator.config.name}"
                   else
                     "per-machine/${config.machineName}/${generator.config.name}";

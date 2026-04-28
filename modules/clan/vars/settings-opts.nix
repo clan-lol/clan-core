@@ -84,10 +84,14 @@ let
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
           else if !builtins.pathExists file.config.flakePath then
-            throw "File '${file.config.name}' of generator '${file.config.generatorName}' does not exist. Try running 'clan vars generate' first."
+            throw "File '${file.config.name}' of generator '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
-              name = "${file.config.generatorName}_${file.config.name}";
+              # We need to sanitize the name
+              # Every name should be unique (concat ID + name)
+              # ID contains "/" and potentially other invalid store identifiers.
+              # Use 'sanitizeDerivationName' to sanitize invalid characters.
+              name = lib.strings.sanitizeDerivationName "${file.config.rel_dir}_${file.config.name}";
               path = file.config.flakePath;
             };
       };

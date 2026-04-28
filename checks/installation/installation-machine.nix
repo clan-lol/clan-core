@@ -62,7 +62,7 @@
   };
   # an activation script that requires the activation secret to be present
   system.activationScripts.test-vars-activation.text = ''
-    test -e /var/lib/sops-nix/activation/test-activation/test || {
+    test -e /var/lib/sops-nix/activation/per-machine/test-install-machine/test-activation/test || {
       echo "\nTEST ERROR: Activation secret not found!\n" >&2
       exit 1
     }
@@ -74,7 +74,7 @@
         device = "/dev/vda";
 
         preCreateHook = ''
-          test -e /run/partitioning-secrets/test-partitioning/test
+          test -e /run/partitioning-secrets/per-machine/test-install-machine/test-partitioning/test
         '';
 
         content = {
