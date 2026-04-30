@@ -1,5 +1,6 @@
+# Taken from:
+# https://github.com/nix-community/srvos/blob/main/nixos/mixins/nginx.nix
 {
-  options,
   config,
   lib,
   ...
@@ -38,20 +39,5 @@
           if config.networking.nameservers == [ ] then cloudflare else config.networking.nameservers;
       in
       map escapeIPv6 resolvers;
-
-    # REMOVEME: once we drop support for 25.11
-    sslDhparam =
-      if options.services.nginx.sslDhparam.default == null then
-        config.security.dhparams.params.nginx.path
-      else
-        true;
   };
-
-  security.dhparams = {
-    enable = true;
-  }
-  # REMOVEME: once we drop support for 25.11
-  // (lib.optionalAttrs (options.services.nginx.sslDhparam.default == null) {
-    params.nginx = { };
-  });
 }
