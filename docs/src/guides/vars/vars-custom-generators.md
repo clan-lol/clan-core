@@ -1,4 +1,4 @@
-# Using Vars
+# Writing Custom Vars Generators
 
 Declare a vars generator, generate a hashed root password, deploy it to a machine, and then share and rotate that password across multiple machines.
 
@@ -60,7 +60,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
 Executing `clan vars list`, you should see the following:
 
 ```console
-$ clan vars list my_machine
+$ clan vars list my-machine
 root-password/password-hash: <not set>
 ```
 
@@ -73,7 +73,7 @@ This step is not strictly necessary, as deploying the machine via `clan machines
 To run the generator, execute `clan vars generate` for your machine
 
 ```console
-$ clan vars generate my_machine
+$ clan vars generate my-machine
 Enter the value for root-password/password-input (hidden):
 ```
 
@@ -94,35 +94,58 @@ If the repository is a git repository, a commit was created automatically:
 
 ```console
 $ git log -n1
-commit ... (HEAD -> master)
+commit ... (HEAD -> main)
 Author: ...
 Date:   ...
 
-    vars: update via generator root-password (machine: grmpf-nix)
+    vars: update via generator root-password (machine: my-machine)
 ```
 
 ## Update the machine
 
 ```shell
-clan machines update my_machine
+clan machines update my-machine
 ```
 
 ## Share root password between machines
 
 If we just imported the `root-password.nix` from above into more machines, Clan would ask for a new password for each additional machine.
 
-If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
+If the root password instead should only be entered once and shared across all machines, add `share = true` to the generator defined above:
 
 ```nix
 { config, pkgs, ... }:
 {
+
   clan.core.vars.generators.root-password = {
+    # share this generator across all machines that import it
     share = true;
+    # prompt the user for a password
+    # (`password-input` being an arbitrary name)
+    prompts.password-input.description = "the root user's password";
+    prompts.password-input.type = "hidden";
+    # don't store the prompted password itself
+    prompts.password-input.persist = false;
+    # define an output file for storing the hash
+    files.password-hash.secret = false;
+    # define the logic for generating the hash
+    script = ''
+      cat $prompts/password-input | mkpasswd > $out/password-hash
+    '';
+    # the tools required by the script
+    runtimeInputs = [ pkgs.mkpasswd ];
   };
+
+  # ensure users are immutable (otherwise the following config might be ignored)
+  users.mutableUsers = false;
+  # set the root password to the file containing the hash
+  users.users.root.hashedPasswordFile =
+    # clan will make sure, this path exists
+    config.clan.core.vars.generators.root-password.files.password-hash.path;
 }
 ```
 
-Importing that shared generator into each machine, will ensure that the password is only asked once the first machine gets updated and then re-used for all subsequent machines.
+Importing that shared generator into each machine will ensure that the password is only asked once when the first machine gets updated, and then re-used for all subsequent machines.
 
 ## Change the root password
 
