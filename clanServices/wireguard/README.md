@@ -205,6 +205,20 @@ This means the configured port (default: 51820) is already in use by another ser
 3. **Ensure unique ports across multiple instances:**
    If you have multiple WireGuard instances on the same machine, each must use a different port.
 
+### Pinging the host works but other connections don't properly work.
+
+Set a lower maximum transmission unit via the mtu setting. If it works with a lower mtu, try to find
+the maximum value that still works.
+
+```nix
+services.wireguard.myinstance = {
+  roles.controller = {
+   endpoint = "vpn.example.com";
+   mtu = 1350;
+  };
+};
+```
+
 ### Key Management
 
 Keys are automatically generated and stored in the Clan vars system. To regenerate keys:
