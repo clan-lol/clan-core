@@ -145,50 +145,50 @@ def inventory_module_schema(input_name: str, module: str) -> str:
 # @machine_selector
 def machine_toplevel(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.system.build.toplevel"
+    return f'{prefix}.{system}."{machine}".config.system.build.toplevel'
 
 
 @machine_selector
 def machine_backups(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.backups"
+    return f'{prefix}.{system}."{machine}".config.clan.core.backups'
 
 
 @machine_selector
 def machine_state(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.state"
+    return f'{prefix}.{system}."{machine}".config.clan.core.state'
 
 
 # Requires the monitoring/telegraf module to be enabled
 # @machine_selector
 def machine_telegraf_cert_path(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.vars.generators.telegraf-certs.files.crt.path"
+    return f'{prefix}.{system}."{machine}".config.clan.core.vars.generators.telegraf-certs.files.crt.path'
 
 
 @machine_selector
 def machine_networking_target_host(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f'{prefix}.{system}.{machine}.config.clan.core.networking."targetHost"'
+    return f'{prefix}.{system}."{machine}".config.clan.core.networking.targetHost'
 
 
 @machine_selector
 def machine_networking_build_host(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f'{prefix}.{system}.{machine}.config.clan.core.networking."buildHost"'
+    return f'{prefix}.{system}."{machine}".config.clan.core.networking.buildHost'
 
 
 @machine_selector
 def machine_vars_settings_secret_module(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.secretModule"
+    return f'{prefix}.{system}."{machine}".config.clan.core.vars.settings.secretModule'
 
 
 @machine_selector
 def machine_vars_settings_public_module(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
-    return f"{prefix}.{system}.{machine}.config.clan.core.vars.settings.publicModule"
+    return f'{prefix}.{system}."{machine}".config.clan.core.vars.settings.publicModule'
 
 
 # MULTI-MACHINE SELECTORS (system, machines[])
@@ -271,4 +271,4 @@ def deployment_require_explicit_update(system: str, machines: list[str]) -> str:
 @generator_selector
 def generator_final_script(system: str, machine: str, generator: str) -> str:
     prefix = get_machine_prefix()
-    return f'{prefix}.{system}.{machine}.config.clan.core.vars.generators."{generator}".finalScript'
+    return f'{prefix}.{system}."{machine}".config.clan.core.vars.generators."{generator}".finalScript'
