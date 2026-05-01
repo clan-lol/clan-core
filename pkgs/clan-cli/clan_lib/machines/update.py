@@ -307,7 +307,7 @@ def _nixos_build(
         if "… while fetching the input" in ret.stderr:
             msg = (
                 "Detected potential issue when fetching flake inputs on remote."
-                "\nTry running the update with --update-inputs to prefetch inputs "
+                "\nTry running the update with --upload-inputs to prefetch inputs "
                 "locally and upload them instead."
             )
             raise ClanError(msg)
