@@ -143,4 +143,19 @@ in
       saraRoles = [ "peer" ];
     };
   };
+  # ZeroTier must blacklist overlay interface prefixes to prevent recursive
+  # encapsulation (e.g. ZT traffic routed through Yggdrasil which peers over ZT).
+  test_interface_prefix_blacklist = {
+    expr =
+      testFlake.nixosConfigurations.bam.config.services.zerotierone.localConf.settings.interfacePrefixBlacklist;
+    expected = [
+      "ygg"
+      "hyprspace"
+      "tinc"
+      "tailscale"
+      "mycelium"
+      "wg"
+      "zt"
+    ];
+  };
 }

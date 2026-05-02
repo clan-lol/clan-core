@@ -147,6 +147,11 @@ in
           config.clan.core.vars.generators.zerotier or config.clan.core.vars.generators.zerotier-controller;
 
         zerotier-identity-secret = config.clan.core.vars.generators.zerotier.files.zerotier-identity-secret;
+
+        # Collect all WireGuard interface names so ZeroTier won't route through them
+        wireguardInterfaceNames =
+          builtins.attrNames (config.networking.wireguard.interfaces or { })
+          ++ builtins.attrNames (config.networking.wg-quick.interfaces or { });
       in
       {
         environment.etc."zerotier/ip".text = generator.files.zerotier-ip.value;
@@ -236,6 +241,21 @@ in
         # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
         # So we host our own relay in https://git.clan.lol/clan/clan-infra
         services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
+
+        # Prevent ZeroTier from discovering/using overlay network addresses as peer
+        # paths. Without this, ZT can route traffic through e.g. Yggdrasil (200::/7),
+        # which itself peers over ZT, causing recursive encapsulation and intermittent
+        # connectivity loss for both overlays.
+        services.zerotierone.localConf.settings.interfacePrefixBlacklist = [
+          "ygg" # Yggdrasil
+          "hyprspace" # Hyprspace
+          "tinc" # Tinc
+          "tailscale" # Tailscale
+          "mycelium" # Mycelium
+          "wg" # WireGuard (prefix catch-all)
+          "zt" # ZeroTier's own interfaces
+        ]
+        ++ wireguardInterfaceNames;
       }
     ))
 
