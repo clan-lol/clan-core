@@ -74,6 +74,17 @@
         type = lib.types.bool;
         default = false;
       };
+      internalListenAddresses = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = ''
+          Addresses that clan-internal services should bind to.
+          VPN modules that provide the clan's internal transport should append
+          their addresses here. dm-dns uses this list to restrict internal
+          virtualHosts from being reachable on public interfaces.
+          If empty, no restriction is applied (backward-compatible).
+        '';
+      };
     };
 
     deployment = {

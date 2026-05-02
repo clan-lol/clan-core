@@ -249,6 +249,18 @@
           in
           {
 
+            # Advertise this machine's yggdrasil address so clan-internal
+            # services (via dm-dns) bind only to VPN interfaces.
+            clan.core.networking.internalListenAddresses = [
+              (clanLib.getPublicValue {
+                flake = config.clan.core.settings.directory;
+                machine = machine.name;
+                generator = "yggdrasil";
+                file = "address";
+                default = "";
+              })
+            ];
+
             # Set <yggdrasil ip> <hostname>.<domain> for all hosts.
             # Networking modules will then add themselves as peers, so we can
             # always use this to resolve a host via the best possible route,
