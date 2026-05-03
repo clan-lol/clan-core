@@ -24,6 +24,11 @@
   >
     {@render children?.()}
   </main>
+  <footer>
+    Need help? Reach out to <a href="https://clan.lol/community"
+      >our community</a
+    >.
+  </footer>
 </div>
 
 <style>
@@ -31,6 +36,11 @@
     &.showing-search {
       display: none;
     }
+  }
+
+  footer {
+    padding-block: 3em;
+    text-align: center;
   }
 
   @media (--docs-tablet) {
@@ -48,6 +58,11 @@
         overflow: hidden;
         max-block-size: calc(100vh - 60px);
       }
+    }
+
+    footer {
+      grid-row: 3;
+      grid-column: 2;
     }
   }
 
