@@ -123,6 +123,15 @@
             # Helper to extract endpoint name from host: "music.pin" -> "music"
             extractEndpoint = host: lib.removeSuffix ".${domain}" host;
 
+            # All internal hostnames from endpoint exports (deduplicated)
+            allInternalHosts = lib.unique (
+              lib.concatLists (
+                lib.mapAttrsToList (
+                  _scopeKey: exportValue: lib.filter isInternalHost (exportValue.endpoints.hosts or [ ])
+                ) allExports
+              )
+            );
+
             # Extract endpoints.hosts from exports, generate CNAME entries for the zone file
             cnameEntries = lib.concatLists (
               lib.mapAttrsToList (
@@ -143,6 +152,8 @@
               ) allExports
             );
 
+            internalListenAddresses = config.clan.core.networking.internalListenAddresses;
+
             # Zone file content distributed via data-mesher
             zoneContent = lib.concatStringsSep "\n" (
               [ ''local-zone: "${domain}." transparent'' ] ++ cnameEntries
@@ -160,81 +171,103 @@
 
             dmFilesDir = "/var/lib/data-mesher/files/home/dns";
           in
-          {
-            # Zone file content to be signed and pushed to data-mesher
-            clan.core.vars.generators.dm-dns = {
-              share = true;
-              files."zone.conf".secret = false;
-              # Regenerate when exports change
-              validation.zoneContent = zoneContent;
-              runtimeInputs = [ pkgs.coreutils ];
-              script = ''
-                cat > "$out/zone.conf" << 'ZONE'
-                ${zoneContent}
-                ZONE
-              '';
-            };
+          lib.mkMerge [
+            {
+              # Zone file content to be signed and pushed to data-mesher
+              clan.core.vars.generators.dm-dns = {
+                share = true;
+                files."zone.conf".secret = false;
+                # Regenerate when exports change
+                validation.zoneContent = zoneContent;
+                runtimeInputs = [ pkgs.coreutils ];
+                script = ''
+                  cat > "$out/zone.conf" << 'ZONE'
+                  ${zoneContent}
+                  ZONE
+                '';
+              };
 
-            # Create dns subdirectory in data-mesher's file storage early in boot
-            services.data-mesher.pluginDirectories = [ "dns" ];
+              # Create dns subdirectory in data-mesher's file storage early in boot
+              services.data-mesher.pluginDirectories = [ "dns" ];
 
-            # Add unbound to data-mesher group so it can read distributed zone files
-            users.users.unbound.extraGroups = [ config.services.data-mesher.group ];
+              # Add unbound to data-mesher group so it can read distributed zone files
+              users.users.unbound.extraGroups = [ config.services.data-mesher.group ];
 
-            # Route clan domain queries to unbound via systemd-resolved
-            services.resolved.settings.Resolve.DNS = [ "127.0.0.1:5353#${domain}" ];
-            services.resolved.settings.Resolve.Domains = [ "~${domain}" ];
+              # Route clan domain queries to unbound via systemd-resolved
+              services.resolved.settings.Resolve.DNS = [ "127.0.0.1:5353#${domain}" ];
+              services.resolved.settings.Resolve.Domains = [ "~${domain}" ];
 
-            services.unbound = {
-              enable = true;
-              localControlSocketPath = "/run/unbound/unbound.ctl";
-              settings = {
-                server = {
-                  port = 5353;
-                  interface = [ "127.0.0.1" ];
-                  access-control = [ "127.0.0.0/8 allow" ];
-                  do-not-query-localhost = "no";
-                  domain-insecure = [ "${domain}." ];
+              services.unbound = {
+                enable = true;
+                localControlSocketPath = "/run/unbound/unbound.ctl";
+                settings = {
+                  server = {
+                    port = 5353;
+                    interface = [ "127.0.0.1" ];
+                    access-control = [ "127.0.0.0/8 allow" ];
+                    do-not-query-localhost = "no";
+                    domain-insecure = [ "${domain}." ];
 
-                  # A/AAAA records from networking.hosts
-                  local-data = localDataFromHosts;
+                    # A/AAAA records from networking.hosts
+                    local-data = localDataFromHosts;
 
-                  # Zone data (CNAME entries etc.) distributed via data-mesher
-                  include = ''"${dmFilesDir}/*"'';
+                    # Zone data (CNAME entries etc.) distributed via data-mesher
+                    include = ''"${dmFilesDir}/*"'';
+                  };
+                  forward-zone = [
+                    {
+                      name = ".";
+                      forward-addr = "127.0.0.53@53";
+                    }
+                  ];
                 };
-                forward-zone = [
-                  {
-                    name = ".";
-                    forward-addr = "127.0.0.53@53";
-                  }
+              };
+
+              # Allow unbound's sandbox to access data-mesher's dns file directory
+              systemd.services.unbound.after = [ "data-mesher.service" ];
+              systemd.services.unbound.serviceConfig.BindReadOnlyPaths = [ dmFilesDir ];
+
+              # Watch for zone file changes from data-mesher and reload unbound
+              systemd.paths.unbound-reload-zones = {
+                description = "Watch for zone file changes";
+                wantedBy = [ "multi-user.target" ];
+                pathConfig = {
+                  PathChanged = dmFilesDir;
+                  Unit = "unbound-reload-zones.service";
+                };
+              };
+
+              systemd.services.unbound-reload-zones = {
+                description = "Reload unbound zone configuration";
+                after = [ "unbound.service" ];
+                requires = [ "unbound.service" ];
+                serviceConfig = {
+                  Type = "oneshot";
+                  ExecStart = "${config.services.unbound.package}/bin/unbound-control -s /run/unbound/unbound.ctl reload";
+                };
+              };
+            }
+
+            # Restrict internal virtualHosts to VPN addresses only
+            (lib.mkIf (internalListenAddresses != [ ]) (
+              let
+                addrs = internalListenAddresses ++ [
+                  "127.0.0.1"
+                  "::1"
                 ];
-              };
-            };
-
-            # Allow unbound's sandbox to access data-mesher's dns file directory
-            systemd.services.unbound.after = [ "data-mesher.service" ];
-            systemd.services.unbound.serviceConfig.BindReadOnlyPaths = [ dmFilesDir ];
-
-            # Watch for zone file changes from data-mesher and reload unbound
-            systemd.paths.unbound-reload-zones = {
-              description = "Watch for zone file changes";
-              wantedBy = [ "multi-user.target" ];
-              pathConfig = {
-                PathChanged = dmFilesDir;
-                Unit = "unbound-reload-zones.service";
-              };
-            };
-
-            systemd.services.unbound-reload-zones = {
-              description = "Reload unbound zone configuration";
-              after = [ "unbound.service" ];
-              requires = [ "unbound.service" ];
-              serviceConfig = {
-                Type = "oneshot";
-                ExecStart = "${config.services.unbound.package}/bin/unbound-control -s /run/unbound/unbound.ctl reload";
-              };
-            };
-          };
+                hostOverrides = lib.listToAttrs (
+                  map (host: {
+                    name = host;
+                    value.listenAddresses = lib.mkDefault addrs;
+                  }) allInternalHosts
+                );
+              in
+              {
+                services.nginx.virtualHosts = hostOverrides;
+                services.caddy.virtualHosts = hostOverrides;
+              }
+            ))
+          ];
       };
   };
 
