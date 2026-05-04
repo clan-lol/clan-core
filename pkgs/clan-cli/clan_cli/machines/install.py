@@ -11,7 +11,8 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.hardware import has_facter_config, has_hardware_config
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
-from clan_lib.machines.machines import Machine, get_machine_host
+from clan_lib.machines.machines import Machine
+from clan_lib.network.network import NoRemoteError, get_best_remote
 from clan_lib.network.qr_code import read_qr_image, read_qr_json
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
@@ -25,8 +26,9 @@ from clan_cli.machines.hardware import HardwareConfig
 
 log = logging.getLogger(__name__)
 INSTALL_WARNING = (
-    "WARNING: Installing is a destructive operation. "
-    "The target disks will be wiped and repartitioned."
+    "WARNING: This will PERMANENTLY ERASE ALL DATA on the target host. "
+    "All disks will be wiped, repartitioned, and reformatted. "
+    "If you want to update an existing installation, use 'clan machines update' instead."
 )
 
 
@@ -176,16 +178,18 @@ def install_command(args: argparse.Namespace) -> None:
                 qr_code = read_qr_json(data, args.flake)
                 remote = stack.enter_context(qr_code.get_best_remote())
             else:
-                result = get_machine_host(args.machine, flake, "targetHost")
-                if result is None:
+                machine = Machine(name=args.machine, flake=flake)
+                try:
+                    remote = stack.enter_context(get_best_remote(machine))
+                except NoRemoteError as e:
                     msg = (
                         f"No target host for machine '{args.machine}'.\n"
                         "Provide --target-host, --json, or --png, set\n"
-                        "'inventory.machines.<name>.deploy.targetHost'\n"
-                        "or 'clan.core.networking.targetHost' in your configuration."
+                        "'inventory.machines.<name>.deploy.targetHost',\n"
+                        "set 'clan.core.networking.targetHost' in your configuration,\n"
+                        "or configure the internet service for this machine."
                     )
-                    raise ClanError(msg)
-                remote = result.data
+                    raise ClanError(msg) from e
 
             machine = Machine(name=args.machine, flake=flake)
             if args.host_key_check:
