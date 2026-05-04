@@ -264,6 +264,7 @@ pythonRuntime.pkgs.buildPythonApplication {
               ])
               ++ [
                 templateDerivation
+                runtimeDepsFlake
                 pkgs.bash
                 pkgs.coreutils
                 pkgs.jq.dev

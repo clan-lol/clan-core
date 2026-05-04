@@ -240,7 +240,7 @@
                       "virtio-net-pci,netdev=net0",
                   ]
                   machine = create_machine(start_command=" ".join(start_command), **kwargs)
-                  driver.machines.append(machine)
+                  driver.machines_qemu.append(machine)
                   return machine
 
               target.start()
@@ -365,7 +365,7 @@
                       "virtio-net-pci,netdev=net0",
                   ]
                   machine = create_machine(start_command=" ".join(start_command), **kwargs)
-                  driver.machines.append(machine)
+                  driver.machines_qemu.append(machine)
                   return machine
 
               target.start()
@@ -490,7 +490,7 @@
                       "virtio-net-pci,netdev=net0",
                   ]
                   machine = create_machine(start_command=" ".join(start_command), **kwargs)
-                  driver.machines.append(machine)
+                  driver.machines_qemu.append(machine)
                   return machine
 
               target.start()
