@@ -94,6 +94,7 @@ in
           baz = {
             type = "boolean";
             readOnly = true;
+            default = false;
           };
         };
         type = "object";
@@ -120,6 +121,7 @@ in
           baz = {
             type = "boolean";
             readOnly = true;
+            default = false;
           };
         };
         type = "object";
@@ -158,10 +160,12 @@ in
           bar = {
             type = "string";
             readOnly = true;
+            default = "bar";
           };
           baz = {
             type = "integer";
             readOnly = true;
+            default = 22;
           };
         };
         additionalProperties = false;
@@ -189,6 +193,7 @@ in
             type = "boolean";
             description = "Whether to enable enable this.";
             readOnly = true;
+            default = false;
           };
         };
         additionalProperties = {
@@ -255,6 +260,27 @@ in
       MainInput = {
         type = "object";
         # opt is not required, because it has a defaultText
+        properties = {
+          opt = {
+            type = "boolean";
+          };
+        };
+        additionalProperties = false;
+      };
+    };
+  };
+  # When both `default` and `defaultText` are set, `defaultText` wins:
+  # the literal `default` is assumed unserializable (the reason
+  # `defaultText` exists), so it is omitted from the schema.
+  testDefaultAndDefaultText = {
+    expr = fromOption { } {
+      type = types.bool;
+      default = throw "should not be evaluated";
+      defaultText = "Not required";
+    };
+    expected = {
+      MainInput = {
+        type = "object";
         properties = {
           opt = {
             type = "boolean";
@@ -541,9 +567,11 @@ in
         properties = {
           bar = {
             type = "integer";
+            default = 0;
           };
           baz = {
             type = "number";
+            default = 1.1;
           };
         };
         additionalProperties = false;
@@ -588,9 +616,11 @@ in
         properties = {
           bar = {
             type = "string";
+            default = "bar";
           };
           baz = {
             type = "integer";
+            default = 22;
           };
         };
         additionalProperties = false;
@@ -649,10 +679,12 @@ in
           bar = {
             type = "integer";
             readOnly = true;
+            default = 0;
           };
           baz = {
             type = "number";
             readOnly = true;
+            default = 1.1;
           };
         };
         additionalProperties = false;
@@ -1189,6 +1221,7 @@ in
           };
           port = {
             type = "integer";
+            default = 8080;
           };
         };
         additionalProperties = false;

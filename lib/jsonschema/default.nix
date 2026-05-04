@@ -154,6 +154,10 @@ let
       description = lib.optionalAttrs (option ? description) {
         description = option.description.text or option.description;
       };
+      # Only use literal `default`s, skipping the (typically unserializable) `defaultText`.
+      defaultValue = lib.optionalAttrs (option ? default && !(option ? defaultText)) {
+        default = option.default;
+      };
       getRenamedType = name: renamedTypes.${name} or name;
       /**
         When a branch option like either eventually flattens to a single branch,
@@ -187,7 +191,8 @@ let
         jsonschema = {
           type = broaderOptionType;
         }
-        // description;
+        // description
+        // defaultValue;
         inherit isRequired;
       };
     in
