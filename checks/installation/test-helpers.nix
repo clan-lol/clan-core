@@ -27,6 +27,7 @@ let
       virtualisation.emptyDiskImages = [ 512 ];
       virtualisation.diskSize = 8 * 1024;
       virtualisation.rootDevice = "/dev/vdb";
+      virtualisation.fileSystems."/".autoFormat = true;
       # both installer and target need to use the same diskImage
       virtualisation.diskImage = "./target.qcow2";
       virtualisation.memorySize = 3048;
