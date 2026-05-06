@@ -20,10 +20,6 @@
   environment.etc."install-successful".text = "ok";
 
   # Enable SSH and add authorized key for testing.
-  # The key inlined below is checks/assets/ssh/pubkey (lass@ignavia); it is
-  # inlined because the child flake cannot reach sibling asset directories.
-  # The flash machine module in ./flake.nix adds `root@target` on top of
-  # this for the root user.
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
   users.users.nonrootuser = {
