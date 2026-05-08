@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Update flake inputs
-        uses: Mic92/update-flake-inputs-gitea@main
+        uses: Mic92/update-flake-inputs-gitea@pull/116/merge
         with:
           # Exclude private flakes and update-clan-core checks flake
           exclude-patterns: "checks/impure/flake.nix"
