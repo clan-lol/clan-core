@@ -180,7 +180,7 @@ def get_machine_host(
 
     if host_str is None:
         machine.debug(
-            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/networking/networking/",
+            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://clan.lol/docs/unstable/guides/networking/networking",
         )
 
         selector = (

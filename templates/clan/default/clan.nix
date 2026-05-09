@@ -11,7 +11,7 @@
     };
   };
 
-  # Docs: See https://docs.clan.lol/unstable/services/definition/
+  # Docs: See https://clan.lol/docs/unstable/services/definition
   inventory.instances = {
 
     # Docs: https://clan.lol/docs/unstable/services/official/installer
@@ -29,7 +29,7 @@
       roles.server.tags = [ "nixos" ];
     };
 
-    # Docs: https://docs.clan.lol/unstable/services/official/sshd/
+    # Docs: https://clan.lol/docs/unstable/services/official/sshd
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
@@ -42,7 +42,7 @@
       };
     };
 
-    # Docs: https://docs.clan.lol/unstable/services/official/users/
+    # Docs: https://clan.lol/docs/unstable/services/official/users
     # Root password management for all machines.
     user-root = {
       module = {
@@ -59,7 +59,7 @@
 
   # Additional NixOS configuration can be added here.
   # machines/server/configuration.nix will be automatically imported.
-  # See: https://docs.clan.lol/unstable/guides/inventory/autoincludes/
+  # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
   machines = {
     # server = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];

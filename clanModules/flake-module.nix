@@ -3,15 +3,15 @@
 let
   error = builtins.throw ''
 
-    ###############################################################################
-    #                                                                             #
-    # Clan modules (clanModules) have been deprecated and removed in favor of     #
-    # Clan services!                                                              #
-    #                                                                             #
-    # Refer to https://docs.clan.lol/guides/migrations/migrate-inventory-services #
-    # for migration instructions.                                                 #
-    #                                                                             #
-    ###############################################################################
+    ########################################################################################
+    #                                                                                      #
+    # Clan modules (clanModules) have been deprecated and removed in favor of              #
+    # Clan services!                                                                       #
+    #                                                                                      #
+    # Refer to https://clan.lol/docs/unstable/guides/migrations/migrate-inventory-services #
+    # for migration instructions.                                                          #
+    #                                                                                      #
+    ########################################################################################
 
   '';
 

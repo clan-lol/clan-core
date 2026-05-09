@@ -58,7 +58,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
 
 SshAuthContext = Literal["upload_sources", "copy_closure"]
 
-_GUIDE_URL = "https://docs.clan.lol/guides/ssh-agent-forwarding"
+_GUIDE_URL = "https://clan.lol/docs/unstable/guides/ssh-agent-forwarding"
 
 
 def _check_ssh_auth_error(

@@ -14,7 +14,7 @@
           { lib, ... }:
           {
             warnings = lib.mkIf settings.deprecationWarning [
-              "The clanServices/admin module is deprecated. See the migration guide: https://docs.clan.lol/main/guides/migrations/migrate-admin-service/"
+              "The clanServices/admin module is deprecated. See the migration guide: https://clan.lol/docs/unstable/guides/migrations/migrate-admin-service"
             ];
           };
       };

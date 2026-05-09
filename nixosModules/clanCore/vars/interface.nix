@@ -114,7 +114,7 @@ in
           (lib.mkRemovedOptionModule [ "migrateFact" ] ''
             The `migrateFact` option has been removed.
             The facts system has been fully removed from clan-core.
-            See https://docs.clan.lol/guides/migrations/migration-facts-vars/ for manual migration instructions.
+            See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars for manual migration instructions.
           '')
         ];
       });

@@ -187,8 +187,8 @@ Examples:
 
 Further references:
 
-- https://docs.clan.lol/getting-started/getting-started-physical/
-- https://docs.clan.lol/getting-started/getting-started-virtualbox/
+- https://clan.lol/docs/unstable/getting-started/getting-started-physical
+- https://clan.lol/docs/unstable/getting-started/getting-started-virtualbox
         """
         ),
         formatter_class=HelpFormatter,
