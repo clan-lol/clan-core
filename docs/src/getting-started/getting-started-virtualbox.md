@@ -69,7 +69,7 @@ You will see the NixOS loader start; simply wait. You will see text scroll and f
 Start by creating a new clan:
 
 ```bash
-nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
+nix run https://clan.lol/install/unstable --refresh -- init
 ```
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)

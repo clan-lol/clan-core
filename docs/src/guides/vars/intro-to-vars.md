@@ -219,7 +219,7 @@ Let's do a quick test-run walkthrough.
 Start with the usual `nix` command:
 
 ```bash
-nix run "https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-cli" --refresh -- init
+nix run https://clan.lol/install/unstable --refresh -- init
 ```
 
 Name it something like `MY-TESTRUN-1` with domain `mytestrun1.lol`.
