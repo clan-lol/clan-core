@@ -19,7 +19,7 @@
         inputs.clan-core.flakeModules.default
       ];
 
-      # https://docs.clan.lol/guides/flake-parts
+      # https://clan.lol/docs/unstable/guides/flake-parts
       clan = {
         imports = [ ./clan.nix ];
       };

@@ -31,7 +31,7 @@ Those are sent to the central monitoring server for storage and visualization.
     - Disabled by default for security
     - Configure per-machine: `inventory.machines.<name>.deploy.forwardAgent = true;`
     - Configure globally: `clan.core.networking.forwardAgent = true;`
-    - See [SSH Agent Forwarding Guide](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - See [SSH Agent Forwarding Guide](https://clan.lol/docs/unstable/guides/ssh-agent-forwarding)
 
 ## Breaking Changes
 
@@ -90,7 +90,7 @@ configuration to use `passComma
 
 - Disabled by default (was previously enabled)
     - If your deployments rely on SSH agent forwarding to access private Git repositories, you must now explicitly enable it
-    - See migration guide in [SSH Agent Forwarding documentation](https://docs.clan.lol/guides/ssh-agent-forwarding)
+    - See migration guide in [SSH Agent Forwarding documentation](https://clan.lol/docs/guides/ssh-agent-forwarding)
 
 ## Misc
 
@@ -98,4 +98,4 @@ configuration to use `passComma
 
 The `facts` system has been fully removed from clan-core. The automatic migration feature (`migrateFact`) is no longer available.
 Since the deprecation of facts happened already a while ago, all your facts should be migrated to vars automatically by now.
-If not, have a look at the [migration guide](https://docs.clan.lol/guides/migrations/migration-facts-vars/)
+If not, have a look at the [migration guide](https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars)

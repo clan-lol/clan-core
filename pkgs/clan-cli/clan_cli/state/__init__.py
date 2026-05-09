@@ -31,7 +31,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
   List state of the machine [MACHINE] managed by Clan.
 
 
-  For more detailed information, visit: https://docs.clan.lol/guides/backups/backup-intro
+  For more detailed information, visit: https://clan.lol/docs/unstable/guides/backups/intro-to-backups
         """
         ),
         formatter_class=HelpFormatter,

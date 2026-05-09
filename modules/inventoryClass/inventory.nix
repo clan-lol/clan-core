@@ -40,7 +40,7 @@ in
   imports = [
     (lib.mkRemovedOptionModule [ "services" ] ''
       The `inventory.services` option has been removed. Use `inventory.instances` instead.
-      See: https://docs.clan.lol/main/guides/inventory/inventory/#services
+      See: https://clan.lol/docs/unstable/reference/options/clan_inventory#instances
     '')
   ];
   options = {

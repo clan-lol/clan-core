@@ -14,7 +14,7 @@ clan-generate-test-vars = "clan_cli.generate_test_vars.cli:main"
 
 [project.urls]
 Homepage = "https://clan.lol/"
-Documentation = "https://docs.clan.lol/"
+Documentation = "https://clan.lol/docs"
 Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]

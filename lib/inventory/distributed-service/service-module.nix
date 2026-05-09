@@ -1112,7 +1112,7 @@ in
                   };
                 };
 
-              Refer to https://docs.clan.lol for more information on exports.
+              Refer to https://clan.lol/docs for more information on exports.
             '';
           } machine.exports
         ) config.result.allMachines
@@ -1154,7 +1154,7 @@ in
                           };
                         };
 
-                      Refer to https://docs.clan.lol for more information on exports.
+                      Refer to https://clan.lol/docs for more information on exports.
                     '';
                   } v.exports
                 ) instance.allMachines

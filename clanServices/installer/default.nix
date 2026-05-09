@@ -1,4 +1,4 @@
-# Example clan service. See https://docs.clan.lol/guides/services/community/
+# Example clan service. See https://clan.lol/docs/unstable/services/community
 # for more details
 
 # The test for this module in ./tests/vm/default.nix shows an example of how

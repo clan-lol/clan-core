@@ -29,7 +29,7 @@ in
         "facts"
         "secretStore"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -38,7 +38,7 @@ in
         "facts"
         "secretModule"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -47,7 +47,7 @@ in
         "facts"
         "secretPathFunction"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -56,7 +56,7 @@ in
         "facts"
         "publicStore"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -65,7 +65,7 @@ in
         "facts"
         "publicModule"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -74,7 +74,7 @@ in
         "facts"
         "publicDirectory"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
     (mkRemovedOptionModule
       [
@@ -83,7 +83,7 @@ in
         "facts"
         "services"
       ]
-      "clan.core.facts has been removed. Use clan.core.vars.generators instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.facts has been removed. Use clan.core.vars.generators instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
 
     # Legacy options from the old compat module
@@ -116,7 +116,7 @@ in
         "core"
         "secrets"
       ]
-      "clan.core.secrets has been removed. Use clan.core.vars.generators instead. See https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+      "clan.core.secrets has been removed. Use clan.core.vars.generators instead. See https://clan.lol/docs/unstable/guides/migrations/migration-facts-vars"
     )
   ];
 }

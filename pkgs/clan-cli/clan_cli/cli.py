@@ -110,8 +110,8 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         description="The clan cli tool",
         epilog=(
             f"""
-Online reference for the clan cli tool: {help_hyperlink("cli reference", "https://docs.clan.lol/reference/cli")}
-For more detailed information, visit: {help_hyperlink("docs", "https://docs.clan.lol")}
+Online reference for the clan cli tool: {help_hyperlink("cli reference", "https://clan.lol/docs/unstable/reference/cli")}
+For more detailed information, visit: {help_hyperlink("docs", "https://clan.lol/docs")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -156,7 +156,7 @@ Examples:
   $ clan init . --no-git
   Will create a new clan in the current directory without setting up git.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/quick-start")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://clan.lol/docs/unstable/getting-started/quick-start")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -184,7 +184,7 @@ Examples:
   The backup to restore for the machine [MACHINE] with the configured [PROVIDER]
   with the name [NAME].
 
-For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/guides/backups/backup-intro")}.
+For more detailed information visit: {help_hyperlink("backups", "https://clan.lol/docs/unstable/guides/backups/intro-to-backups")}.
         """
         ),
         formatter_class=HelpFormatter,
@@ -257,7 +257,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sdX --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk `/dev/sdX` with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/getting-started-physical")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://clan.lol/docs/unstable/getting-started/getting-started-physical")}
             """
         ),
         formatter_class=HelpFormatter,
@@ -306,7 +306,7 @@ Examples:
   $ clan secrets get [SECRET]
   Will display the content of the specified secret.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/vars/sops/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://clan.lol/docs/unstable/guides/vars/sops/secrets")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -343,7 +343,7 @@ Examples:
     This is especially useful for resetting certain passwords while leaving the rest
     of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/vars/sops/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://clan.lol/docs/unstable/guides/vars/sops/secrets")}
         """
         ),
         formatter_class=HelpFormatter,
@@ -443,7 +443,7 @@ Examples:
         help="Query state information about machines",
         description="Query state information about machines",
         epilog=(
-            f"""
+            """
 This subcommand provides an interface to the state managed by Clan.
 
 State can be folders and databases that modules depend on managed by Clan.
@@ -462,8 +462,6 @@ Examples:
 
   $ clan state list [MACHINE]
   List state of the machines managed by Clan.
-
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/backups/backup-intro")}
         """
         ),
         formatter_class=HelpFormatter,

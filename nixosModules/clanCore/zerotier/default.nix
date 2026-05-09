@@ -29,8 +29,8 @@ let
     To set up ZeroTier networking, define it as a service in your inventory
     and assign the "controller" and "peer" roles to your machines.
 
-    See the inventory documentation: https://docs.clan.lol/reference/inventory/
-    See the networking guide: https://docs.clan.lol/guides/networking/
+    See the inventory guide: https://clan.lol/docs/unstable/guides/inventory/intro-to-inventory
+    See the networking guide: https://clan.lol/docs/unstable/guides/networking/networking
   '';
 in
 {

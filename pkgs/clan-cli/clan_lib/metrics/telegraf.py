@@ -57,7 +57,7 @@ def get_metrics(
         msg = (
             f"Missing required var.\n"
             f"Ensure the 'monitoring' clanService is enabled and run `clan machines update {machine.name}`."
-            "For more information, see: https://docs.clan.lol/reference/clanServices/monitoring/"
+            "For more information, see: https://clan.lol/docs/unstable/services/official/monitoring"
         )
         raise ClanError(msg)
 

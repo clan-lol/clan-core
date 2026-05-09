@@ -190,7 +190,7 @@ in
             specialArgs = {
               self = throw ''
                 'self' is banned in the use of clan.services
-                Use 'exports' instead: https://docs.clan.lol/reference/options/clan_service/#exports
+                Use 'exports' instead: https://clan.lol/docs/unstable/reference/options/clan_service#exports
                 ---
                 If you really need to used 'self' here, that makes the module less portable
               '';

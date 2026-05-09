@@ -282,7 +282,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
     )
     specialisation_guide = help_hyperlink(
         "specialisations guide",
-        "https://docs.clan.lol/guides/specialisations",
+        "https://clan.lol/docs/unstable/guides/specialisations",
     )
     parser.add_argument(
         "--specialisation",

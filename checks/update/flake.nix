@@ -14,7 +14,7 @@
     }:
     let
 
-      # Usage see: https://docs.clan.lol
+      # Usage see: https://clan.lol/docs
       clan = clan-core.lib.clan {
         inherit self;
 

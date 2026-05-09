@@ -176,7 +176,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
 :::admonition[Tip]{type=tip}
-You might need to disable secure boot. Follow our [secure boot instructions](https://docs.clan.lol/25.11/guides/secure-boot/).
+You might need to disable secure boot. Follow our [secure boot instructions](https://clan.lol/docs/unstable/guides/secure-boot).
 :::
 
 Once booted, you will see a QR code and text similar to this:
