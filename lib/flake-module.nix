@@ -45,7 +45,10 @@ let
               '' (final.clan module).config;
             clan = import ./clan {
               inherit lib;
-              clan-core = self;
+              clanLib = final;
+              defaultNixpkgs = self.inputs.nixpkgs;
+              defaultDarwin = self.inputs.nix-darwin;
+              clanModule = self.modules.clan.default;
             };
           }) clanLib.__unfix__
         );

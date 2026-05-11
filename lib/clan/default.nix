@@ -2,7 +2,10 @@
 ## This is only a wrapper such that 'clan' can be called as a function.
 {
   lib,
-  clan-core,
+  clanLib,
+  defaultNixpkgs,
+  defaultDarwin,
+  clanModule,
 }:
 /**
   Function that takes clan options as function arguments.
@@ -31,8 +34,8 @@
   ...
 }@m:
 let
-  nixpkgs = self.inputs.nixpkgs or clan-core.inputs.nixpkgs;
-  nix-darwin = self.inputs.nix-darwin or clan-core.inputs.nix-darwin;
+  nixpkgs = self.inputs.nixpkgs or defaultNixpkgs;
+  nix-darwin = self.inputs.nix-darwin or defaultDarwin;
   configuration = (
     lib.evalModules {
       class = "clan";
@@ -46,10 +49,10 @@ let
           ;
       };
       modules = [
-        clan-core.modules.clan.default
+        clanModule
         m
       ];
     }
   );
 in
-clan-core.clanLib.checkConfig configuration.config.checks configuration
+clanLib.checkConfig configuration.config.checks configuration
