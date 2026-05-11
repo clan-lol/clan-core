@@ -84,7 +84,7 @@ let
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
           else if !builtins.pathExists file.config.flakePath then
-            throw "File '${file.config.name}' of generator '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
+            throw "File '${file.config.name}' at '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
               # We need to sanitzize the name
