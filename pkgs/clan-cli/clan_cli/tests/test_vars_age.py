@@ -695,7 +695,14 @@ def test_age_populate_dir(
         assert not (output_dir / "manifest.json").exists()
 
         # Activation secrets are decrypted and uploaded as plaintext
-        act_file = output_dir / "activation" / "gen_act" / "act_secret"
+        act_file = (
+            output_dir
+            / "activation"
+            / "per-machine"
+            / "my_machine"
+            / "gen_act"
+            / "act_secret"
+        )
         assert act_file.exists()
         assert act_file.read_bytes() == b"activation-secret"
 
@@ -1530,12 +1537,26 @@ def test_age_populate_dir_skips_deploy_false(
         )
 
         # Deployed secret is present
-        deployed_file = output_dir / "activation" / "gen_dep" / "deployed_act"
+        deployed_file = (
+            output_dir
+            / "activation"
+            / "per-machine"
+            / "my_machine"
+            / "gen_dep"
+            / "deployed_act"
+        )
         assert deployed_file.exists()
         assert deployed_file.read_bytes() == b"deployed-secret"
 
         # Undeployed secret is NOT present
-        undeployed_file = output_dir / "activation" / "gen_undep" / "undeployed_act"
+        undeployed_file = (
+            output_dir
+            / "activation"
+            / "per-machine"
+            / "my_machine"
+            / "gen_undep"
+            / "undeployed_act"
+        )
         assert not undeployed_file.exists()
 
 
