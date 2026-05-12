@@ -1020,7 +1020,7 @@ in
               (
                 let
                   failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
-                  formatModule =
+                  canonicalModuleName =
                     if config.module.input != null then
                       "${config.module.input}/${config.module.name}"
                     else
@@ -1028,12 +1028,12 @@ in
                   warningsWithNull = lib.mapAttrsToList (
                     roleName: roleConfig:
                     if (roleConfig.description == null) then
-                      "Missing description for role '${roleName}' of clanService '${formatModule}'"
+                      "Missing description for role '${roleName}' of clanService '${canonicalModuleName}'"
                     else
                       null
                   ) config.roles;
                   manifestWarnings = lib.optionals (config.manifest.readme == null || config.manifest.readme == "") [
-                    "Missing manifest.readme for clanService '${formatModule}'"
+                    "Missing manifest.readme for clanService '${canonicalModuleName}'"
                   ];
                 in
                 {
