@@ -201,7 +201,7 @@ def bubblewrap_cmd(
             "--unshare-all",
             "--tmpfs",  "/",
             "--ro-bind", "/nix/store", "/nix/store",
-            "--ro-bind", "/bin/sh", "/bin/sh",
+            "--ro-bind-try", "/bin/sh", "/bin/sh",
             *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
             "--dev", "/dev",
             "--bind", "/proc", "/proc",
