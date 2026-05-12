@@ -356,6 +356,42 @@ in
                 default = [ ];
                 description = "List of export interface this service consumes.";
               };
+
+              constraints.maxInstances = mkOption {
+                type = types.nullOr types.ints.positive;
+                default = null;
+                description = ''
+                  Maximum number of instances allowed for this service.
+                  `null` means unlimited.
+                '';
+              };
+              constraints.roles = mkOption {
+                type = types.attrsOf (
+                  types.submodule {
+                    options.minMachines = mkOption {
+                      type = types.nullOr types.ints.unsigned;
+                      default = null;
+                      description = ''
+                        Minimum number of machines required for this role per instance.
+                        `null` means no minimum.
+                      '';
+                    };
+                    options.maxMachines = mkOption {
+                      type = types.nullOr types.ints.positive;
+                      default = null;
+                      description = ''
+                        Maximum number of machines allowed for this role per instance.
+                        `null` means unlimited.
+                      '';
+                    };
+                  }
+                );
+                default = { };
+                description = ''
+                  Per-role machine count constraints.
+                  Keys must match role names defined in `roles`.
+                '';
+              };
             };
           }
         ];
@@ -912,6 +948,54 @@ in
       default = { };
       visible = false;
       type = types.attrsOf types.raw;
+    };
+
+    result.cliChecks = mkOption {
+      visible = false;
+      type = types.listOf types.raw;
+      default =
+        let
+          serviceName = config.manifest.name;
+          constraints = config.manifest.constraints;
+          instanceNames = lib.attrNames config.instances;
+          instanceCount = lib.length instanceNames;
+
+          # Check: maxInstances
+          maxInstanceChecks =
+            lib.optional (constraints.maxInstances != null && instanceCount > constraints.maxInstances)
+              {
+                id = "${serviceName}-maxInstances";
+                message = "Service '${serviceName}' allows at most ${toString constraints.maxInstances} instance(s) but ${toString instanceCount} are defined.";
+                severity = "error";
+              };
+
+          # Check: per-role machine count bounds
+          roleChecks = lib.concatLists (
+            lib.mapAttrsToList (
+              roleName: roleConstraints:
+              lib.concatMap (
+                instanceName:
+                let
+                  machines = config.instances.${instanceName}.roles.${roleName}.machines or { };
+                  machineCount = lib.length (lib.attrNames machines);
+                in
+                lib.optional (roleConstraints.minMachines != null && machineCount < roleConstraints.minMachines) {
+                  id = "${serviceName}-${instanceName}-${roleName}-minMachines";
+                  message = "Role '${roleName}' of service '${serviceName}' instance '${instanceName}' requires at least ${toString roleConstraints.minMachines} machine(s) but ${toString machineCount} are assigned.";
+                  severity = "error";
+                }
+                ++
+                  lib.optional (roleConstraints.maxMachines != null && machineCount > roleConstraints.maxMachines)
+                    {
+                      id = "${serviceName}-${instanceName}-${roleName}-maxMachines";
+                      message = "Role '${roleName}' of service '${serviceName}' instance '${instanceName}' allows at most ${toString roleConstraints.maxMachines} machine(s) but ${toString machineCount} are assigned.";
+                      severity = "error";
+                    }
+              ) instanceNames
+            ) constraints.roles
+          );
+        in
+        maxInstanceChecks ++ roleChecks;
     };
 
     # The result collected from 'perMachine'

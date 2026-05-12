@@ -295,4 +295,5 @@ in
     inherit lib;
     callInventoryAdapter = createTestClan;
   };
+  cli_checks = import ./cli_checks.nix { inherit createTestClan; };
 }
