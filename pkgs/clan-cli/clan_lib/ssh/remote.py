@@ -199,27 +199,40 @@ class Remote:
             yield self
             return
 
-        if (
-            os.environ.get("DISPLAY")
-            or os.environ.get("WAYLAND_DISPLAY")
-            or sys.platform == "darwin"
-        ):
-            command = ["zenity", "--password", "--title", "%title%"]
-            dependencies = ["zenity"]
-        else:
-            command = [
-                "dialog",
-                "--stdout",
-                "--insecure",
-                "--title",
-                "%title%",
-                "--passwordbox",
-                "",
-                "10",
-                "50",
+        if sys.platform == "darwin":
+            # Native dialog; avoids pulling GTK4 (zenity) on macOS.
+            prompt_command = [
+                "osascript",
+                "-e",
+                'tell application "System Events"\n'
+                "  activate\n"
+                '  set r to text returned of (display dialog "%title%" '
+                'default answer "" with hidden answer '
+                'with title "clan" with icon caution)\n'
+                "end tell\n"
+                "return r",
             ]
-            dependencies = ["dialog"]
-        proxy = SudoAskpassProxy(self, nix_shell(dependencies, command))
+        elif os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
+            prompt_command = nix_shell(
+                ["zenity"],
+                ["zenity", "--password", "--title", "%title%"],
+            )
+        else:
+            prompt_command = nix_shell(
+                ["dialog"],
+                [
+                    "dialog",
+                    "--stdout",
+                    "--insecure",
+                    "--title",
+                    "%title%",
+                    "--passwordbox",
+                    "",
+                    "10",
+                    "50",
+                ],
+            )
+        proxy = SudoAskpassProxy(self, prompt_command)
         try:
             askpass_path = proxy.run()
             yield Remote(
