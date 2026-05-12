@@ -356,31 +356,6 @@ in
                 default = [ ];
                 description = "List of export interface this service consumes.";
               };
-
-              features = mkOption {
-                description = ''
-                  Enable built-in features for the module
-
-                  See the documentation for each feature:
-                  - API
-                '';
-                type = types.submoduleWith {
-                  modules = [
-                    {
-                      options.API = mkOption {
-                        type = types.bool;
-                        # This is read only, because we don't support turning it off yet
-                        readOnly = true;
-                        default = true;
-                        description = ''
-                          Enables automatic API schema conversion for the interface of this module.
-                        '';
-                      };
-                    }
-                  ];
-                };
-                default = { };
-              };
             };
           }
         ];

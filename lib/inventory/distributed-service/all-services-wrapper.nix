@@ -45,7 +45,7 @@ in
             )
             ./service-module.nix
             #  feature modules
-            (lib.modules.importApply ./api-feature.nix {
+            (lib.modules.importApply ./api.nix {
               inherit (specialArgs) clanLib;
               prefix = _ctx;
             })
