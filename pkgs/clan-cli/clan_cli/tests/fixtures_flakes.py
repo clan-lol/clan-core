@@ -72,7 +72,6 @@ def substitute(
     flake: Path = Path(__file__).parent,
     inventory_expr: str = r"{}",
 ) -> None:
-    sops_key = str(flake.joinpath("sops.key"))
     buf = ""
 
     clan_core_replacement = None
@@ -103,7 +102,6 @@ def substitute(
                     str(inventory_expr),
                 )
 
-            processed_line = processed_line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
             buf += processed_line
 
     print(f"file: {file}")
@@ -349,7 +347,6 @@ def create_flake(
     # in the flake.nix file replace the string __CLAN_URL__ with the the clan flake
     # provided by get_test_flake_toplevel
     flake_nix = flake / "flake.nix"
-    # this is where we would install the sops key to, when updating
     substitute(flake_nix, clan_core_flake, flake, inventory_expr=inventory_expr)
     nix_options = []
     if tmp_store := nix_test_store():
