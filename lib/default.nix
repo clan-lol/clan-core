@@ -7,7 +7,6 @@ lib.fix (
       clanLib:
       {
         __unfix__ = f;
-        clan = throw "lib.clan is not yet initialized. Use lib.clan exported by the clan-core flake.";
 
         # TODO: Hide from public interface
         # TODO: Flatten our lib functions like this:
