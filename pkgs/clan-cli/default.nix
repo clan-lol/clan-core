@@ -218,7 +218,8 @@ pythonRuntime.pkgs.buildPythonApplication {
           # required to prevent concurrent 'nix flake lock' operations
           export CLAN_TEST_STORE=$TMPDIR/store
           export LOCK_NIX=$TMPDIR/nix_lock
-          mkdir -p "$CLAN_TEST_STORE/nix/store"
+          export CLAN_TEST_FLAKE_CACHE=$TMPDIR/clan-flake-cache
+          mkdir -p "$CLAN_TEST_STORE/nix/store" "$CLAN_TEST_FLAKE_CACHE"
 
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
