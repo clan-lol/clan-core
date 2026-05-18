@@ -272,35 +272,36 @@
                   }
                 ) allDestinations;
 
-                services.borgbackup.jobs = lib.mapAttrs (_: dest: {
-                  paths = lib.unique (
-                    lib.flatten (map (state: state.folders) (lib.attrValues config.clan.core.state))
-                  );
-                  exclude = settings.exclude;
-                  repo = dest.repo;
-                  environment = {
-                    BORG_RSH = dest.rsh;
-                    BORG_RELOCATED_REPO_ACCESS_IS_OK = "yes";
-                  };
-                  compression = "auto,zstd";
-                  startAt = settings.startAt;
-                  persistentTimer = true;
+                services.borgbackup.jobs = lib.mkIf (config.clan.core.state != { }) (
+                  lib.mapAttrs (_: dest: {
+                    paths = lib.unique (
+                      lib.flatten (map (state: state.folders) (lib.attrValues config.clan.core.state))
+                    );
+                    exclude = settings.exclude;
+                    repo = dest.repo;
+                    environment = {
+                      BORG_RSH = dest.rsh;
+                      BORG_RELOCATED_REPO_ACCESS_IS_OK = "yes";
+                    };
+                    compression = "auto,zstd";
+                    startAt = settings.startAt;
+                    persistentTimer = true;
 
-                  encryption = {
-                    mode = "repokey";
-                    passCommand = "cat ${config.clan.core.vars.generators.borgbackup.files."borgbackup.repokey".path}";
-                  };
+                    encryption = {
+                      mode = "repokey";
+                      passCommand = "cat ${config.clan.core.vars.generators.borgbackup.files."borgbackup.repokey".path}";
+                    };
 
-                  prune.keep = {
-                    within = "1d"; # Keep all archives from the last day
-                    daily = 7;
-                    weekly = 4;
-                    monthly = 0;
-                  };
-                }) allDestinations;
+                    prune.keep = {
+                      within = "1d"; # Keep all archives from the last day
+                      daily = 7;
+                      weekly = 4;
+                      monthly = 0;
+                    };
+                  }) allDestinations
+                );
 
                 clan.core.vars.generators.borgbackup = {
-
                   files."borgbackup.ssh.pub".secret = false;
                   files."borgbackup.ssh" = { };
                   files."borgbackup.repokey" = { };
@@ -316,13 +317,13 @@
                   '';
                 };
 
-                clan.core.backups.providers.borgbackup = {
+                clan.core.backups.providers.borgbackup = lib.mkIf (config.clan.core.state != { }) {
                   list = "borgbackup-list";
                   create = "borgbackup-create";
                   restore = "borgbackup-restore";
                 };
 
-                environment.systemPackages = [
+                environment.systemPackages = lib.mkIf (config.clan.core.state != { }) [
                   (pkgs.writeShellApplication {
                     name = "borgbackup-create";
                     runtimeInputs = [ config.systemd.package ];
