@@ -255,10 +255,15 @@
             # Restrict internal virtualHosts to VPN addresses only
             (lib.mkIf (internalListenAddresses != [ ]) (
               let
-                addrs = internalListenAddresses ++ [
-                  "127.0.0.1"
-                  "::1"
-                ];
+                isIPv6 = addr: builtins.match ".*:.*:.*" addr != null;
+                escapeIPv6 = addr: if isIPv6 addr then "[${addr}]" else addr;
+                addrs = map escapeIPv6 (
+                  internalListenAddresses
+                  ++ [
+                    "127.0.0.1"
+                    "::1"
+                  ]
+                );
                 hostOverrides = lib.listToAttrs (
                   map (host: {
                     name = host;
