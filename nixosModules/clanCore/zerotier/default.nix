@@ -350,6 +350,7 @@ in
         mtu = 2800;
         multicastLimit = 32;
         name = cfg.name;
+        nwid = networkId;
         uwid = networkId;
         objtype = "network";
         private = !cfg.controller.public;
