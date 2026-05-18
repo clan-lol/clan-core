@@ -12,7 +12,8 @@
           export CLAN_TEST_STORE=$TMPDIR/store
           # required to prevent concurrent 'nix flake lock' operations
           export LOCK_NIX=$TMPDIR/nix_lock
-          mkdir -p "$CLAN_TEST_STORE/nix/store"
+          export CLAN_TEST_FLAKE_CACHE=$TMPDIR/clan-flake-cache
+          mkdir -p "$CLAN_TEST_STORE/nix/store" "$CLAN_TEST_FLAKE_CACHE"
           mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
           if [[ -n "''${closureInfo-}" ]]; then
             ${pkgs.findutils}/bin/xargs -r -P"$(nproc)" ${pkgs.coreutils}/bin/cp --recursive --no-dereference --reflink=auto --target-directory "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"

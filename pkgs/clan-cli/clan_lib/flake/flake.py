@@ -964,7 +964,8 @@ class Flake:
             msg = "Hash cannot be None"
             raise ClanError(msg)
         hashed_hash = sha1(self.hash.encode()).hexdigest()  # noqa: S324 - SHA1 used only for cache directory naming, not security
-        self.flake_cache_path = Path(clan_tmp_dir()) / "flakes-v2" / hashed_hash
+        cache_root = os.environ.get("CLAN_TEST_FLAKE_CACHE") or clan_tmp_dir()
+        self.flake_cache_path = Path(cache_root) / "flakes-v2" / hashed_hash
         self.load_cache()
 
         if "original" not in self.flake_metadata:
