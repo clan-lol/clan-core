@@ -108,7 +108,7 @@ in
             networking.firewall.allowedTCPPorts = [ settings.port ];
 
             services.ncps.enable = true;
-            services.ncps.server.addr = ":${builtins.toString settings.port}";
+            services.ncps.server.addr = ":${toString settings.port}";
             services.ncps.cache = {
               storage.local = settings.dataPath;
               inherit (settings) allowPutVerb;
@@ -148,7 +148,7 @@ in
               flip map (attrNames roles.server.machines) (
                 machineName:
                 "http://${machineName}${dotDomain}:${
-                  builtins.toString roles.server.machines.${machineName}.settings.port
+                  toString roles.server.machines.${machineName}.settings.port
                 }?priority=10"
               );
             nix.settings.trusted-public-keys = [

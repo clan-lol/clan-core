@@ -177,7 +177,7 @@
                     throw "Unknown host type in export";
 
                 # Get list of IP addresses and strip whitespace (newlines, etc.)
-                hosts = map (ip: lib.strings.trim (extractHostValue ip)) hostList;
+                hosts = map (ip: lib.trim (extractHostValue ip)) hostList;
 
                 # Filter out empty IPs
                 filteredHosts = lib.filter (ip: ip != "") hosts;
@@ -216,7 +216,7 @@
             allowedPublicKeys = lib.filter (key: key != "") (
               map (
                 name:
-                lib.strings.trim (
+                lib.trim (
                   clanLib.getPublicValue {
                     flake = config.clan.core.settings.directory;
                     machine = name;
@@ -233,7 +233,7 @@
               lib.filter (ip: ip != "") (
                 map (
                   name:
-                  lib.strings.trim (
+                  lib.trim (
                     clanLib.getPublicValue {
                       flake = config.clan.core.settings.directory;
                       machine = name;
@@ -265,7 +265,7 @@
             # Networking modules will then add themselves as peers, so we can
             # always use this to resolve a host via the best possible route,
             # doing fail-over if needed.
-            networking.extraHosts = lib.strings.concatStringsSep "\n" (
+            networking.extraHosts = lib.concatStringsSep "\n" (
               lib.filter (n: n != "") (
                 map (
                   name:
