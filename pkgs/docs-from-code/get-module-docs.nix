@@ -50,10 +50,7 @@ in
                 # Apply store path stripping first
                 transformed = transformOptions opt;
               in
-              if lib.strings.hasPrefix "_" transformed.name then
-                transformed // { visible = false; }
-              else
-                transformed;
+              if lib.hasPrefix "_" transformed.name then transformed // { visible = false; } else transformed;
             options = (lib.evalModules { modules = [ role.interface ]; }).options;
             warningsAreErrors = true;
           }).optionsJSON
