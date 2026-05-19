@@ -292,15 +292,12 @@ in
               varsDirectory = config.varsDirectory;
               exportInterfaces = config.exportInterfaces;
             }
-            (
-              { ... }:
-              let
-                deprecated = clan-core.clan.deprecatedModules or [ ];
-              in
-              {
-                staticModules = lib.filterAttrs (name: _: !(lib.elem name deprecated)) clan-core.clan.modules;
-              }
-            )
+
+            {
+              staticModules = lib.filterAttrs (
+                name: _: !(lib.elem name clan-core.clan.deprecatedModules)
+              ) clan-core.clan.modules;
+            }
           ];
         };
 
