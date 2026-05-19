@@ -25,10 +25,10 @@ buildGoModule {
   # take very long
   doCheck = false;
 
-  meta = with lib; {
+  meta = {
     description = "Go implementation of ssb (work in progress)";
     homepage = "https://github.com/ssbc/go-ssb";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 }

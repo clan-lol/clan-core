@@ -29,9 +29,9 @@ in
   roles.server = {
     description = "The ncps proxy binary cache server";
 
-    interface.options = with lib; {
-      caches = mkOption {
-        type = types.listOf types.str;
+    interface.options = {
+      caches = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
         description = ''
           Binary caches to add as upstream to ncps.
         '';
@@ -40,7 +40,7 @@ in
           "https://nix-community.cachix.org"
         ];
       };
-      publicKeys = mkOption {
+      publicKeys = lib.mkOption {
 
         type = lib.types.listOf lib.types.str;
         description = ''

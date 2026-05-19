@@ -11,8 +11,8 @@ stdenv.mkDerivation {
   installPhase = ''
     install -Dm755 ${./zerotier-members.py} $out/bin/zerotier-members
   '';
-  meta = with lib; {
+  meta = {
     description = "A tool to list/allow members of a ZeroTier network";
-    license = licenses.mit;
+    license = lib.licenses.mit;
   };
 }

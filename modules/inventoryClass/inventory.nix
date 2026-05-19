@@ -180,13 +180,13 @@ in
         };
         modules = [
           {
-            freeformType = with lib.types; lazyAttrsOf (listOf str);
+            freeformType = lib.types.lazyAttrsOf (lib.types.listOf lib.types.str);
             # Reserved tags
             # Defined as options here to show them in advance
             options = {
               # 'All machines' tag
               all = lib.mkOption {
-                type = with lib.types; listOf str;
+                type = lib.types.listOf lib.types.str;
                 defaultText = "[ <All Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
@@ -200,7 +200,7 @@ in
                 '';
               };
               nixos = lib.mkOption {
-                type = with lib.types; listOf str;
+                type = lib.types.listOf lib.types.str;
                 defaultText = "[ <All NixOS Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
@@ -214,7 +214,7 @@ in
                 '';
               };
               darwin = lib.mkOption {
-                type = with lib.types; listOf str;
+                type = lib.types.listOf lib.types.str;
                 defaultText = "[ <All Darwin Machines> ]";
                 description = ''
                   :::admonition[Predefined Tag]{type=example}
