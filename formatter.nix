@@ -40,6 +40,28 @@
         rules.default.suggestion = "Add the file to 'sizelintExcludes' in formatter.nix";
       };
       treefmt.settings.formatter.sizelint.excludes = sizelintExcludes;
+      treefmt.settings.formatter.lint-cross-compat =
+        let
+          wrapper = pkgs.writeShellApplication {
+            name = "lint-cross-compat";
+            runtimeInputs = [
+              pkgs.gawk
+              pkgs.git
+            ];
+            text = builtins.readFile ./scripts/lint-cross-compat.sh;
+          };
+        in
+        {
+          command = lib.getExe wrapper;
+          includes = [
+            "clanServices/**/*.nix"
+            "clanModules/**/*.nix"
+            "nixosModules/**/*.nix"
+          ];
+          excludes = [
+            "**/tests/**"
+          ];
+        };
       treefmt.programs.rumdl-check.enable = true;
       treefmt.settings.formatter.fmt-nix-codeblocks =
         let
