@@ -101,9 +101,9 @@ let
       deferredModule = "any";
     }
     .${option.type.name} or (
-      if lib.strings.hasPrefix "strMatching " option.type.name then
+      if lib.hasPrefix "strMatching " option.type.name then
         "string"
-      else if lib.strings.hasPrefix "passwdEntry " option.type.name then
+      else if lib.hasPrefix "passwdEntry " option.type.name then
         "string"
       else
         lib.trace option throw ''
