@@ -65,44 +65,32 @@ in
   # Test structural configuration without requiring generated vars.
   # joinNetworks depends on pre-generated vars (zerotier-network-id file),
   # so we only test properties that don't depend on generated values.
-  test_peer_roles = {
+  test_peer_config = {
     expr = {
-      roles = testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier.name;
       enabled = testFlake.nixosConfigurations.jon.config.services.zerotierone.enable;
     };
     expected = {
-      roles = [ "peer" ];
       networkName = "zerotier";
       enabled = true;
     };
   };
-  test_moon_roles = {
+  test_moon_config = {
     expr = {
-      roles = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.name;
       enabled = testFlake.nixosConfigurations.sara.config.services.zerotierone.enable;
     };
     expected = {
-      roles = [
-        "moon"
-        "peer"
-      ];
       networkName = "zerotier";
       enabled = true;
     };
   };
-  test_controller_roles = {
+  test_controller_config = {
     expr = {
-      roles = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier._roles;
       networkName = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier.name;
       enabled = testFlake.nixosConfigurations.bam.config.services.zerotierone.enable;
     };
     expected = {
-      roles = [
-        "controller"
-        "peer"
-      ];
       networkName = "zerotier";
       enabled = true;
     };
@@ -127,21 +115,23 @@ in
       hasPeerGenerator = true;
     };
   };
-  test_no_moon_roles = {
+  # When no moon role is assigned, sara is a plain peer — verify she gets
+  # zerotier enabled and empty stableEndpoints (the default).
+  test_no_moon_config = {
     expr = {
-      peerRoles = testFlakeNoMoon.nixosConfigurations.jon.config.clan.core.networking.zerotier._roles;
-      controllerRoles =
-        testFlakeNoMoon.nixosConfigurations.bam.config.clan.core.networking.zerotier._roles;
-      saraRoles = testFlakeNoMoon.nixosConfigurations.sara.config.clan.core.networking.zerotier._roles;
+      saraEnabled = testFlakeNoMoon.nixosConfigurations.sara.config.services.zerotierone.enable;
+      saraStableEndpoints =
+        testFlakeNoMoon.nixosConfigurations.sara.config.clan.core.networking.zerotier.moon.stableEndpoints;
     };
     expected = {
-      peerRoles = [ "peer" ];
-      controllerRoles = [
-        "controller"
-        "peer"
-      ];
-      saraRoles = [ "peer" ];
+      saraEnabled = true;
+      saraStableEndpoints = [ ];
     };
+  };
+  # Moon role propagates stableEndpoints from inventory settings into NixOS config.
+  test_moon_stable_endpoints = {
+    expr = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.moon.stableEndpoints;
+    expected = [ "10.0.0.3/9993" ];
   };
   # ZeroTier must blacklist overlay interface prefixes to prevent recursive
   # encapsulation (e.g. ZT traffic routed through Yggdrasil which peers over ZT).
