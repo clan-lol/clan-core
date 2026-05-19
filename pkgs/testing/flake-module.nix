@@ -8,6 +8,10 @@
           export HOME=$TMPDIR
           export NIX_STATE_DIR=$TMPDIR/nix
           export NIX_CONF_DIR=$TMPDIR/etc
+          mkdir -p "$NIX_CONF_DIR"
+          # The test store is throwaway; skip SQLite fsync to avoid serializing
+          # parallel nix builds on the host's ext4 journal.
+          echo "fsync-metadata = false" > "$NIX_CONF_DIR/nix.conf"
           export IN_NIX_SANDBOX=1
           export CLAN_TEST_STORE=$TMPDIR/store
           # required to prevent concurrent 'nix flake lock' operations
