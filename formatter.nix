@@ -110,8 +110,6 @@
         "checks/lib/ssh/privkey"
         "checks/lib/ssh/pubkey"
         "checks/matrix-synapse/synapse-registration_shared_secret"
-        "checks/mumble/machines/peer1/facts/mumble-cert"
-        "checks/mumble/machines/peer2/facts/mumble-cert"
         "checks/secrets/clan-secrets"
         "checks/secrets/sops/groups/group/machines/machine"
         "checks/syncthing/introducer/introducer_device_id"
