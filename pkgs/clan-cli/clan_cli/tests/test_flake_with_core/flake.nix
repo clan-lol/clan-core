@@ -28,7 +28,6 @@
               system.stateVersion = config.system.nixos.release;
               clan.core.sops.defaultGroups = [ "admins" ];
 
-              clan.core.networking.zerotier._roles = [ "controller" ];
               networking.useDHCP = false;
             };
           vm2 =
@@ -38,7 +37,6 @@
               imports = [ ];
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
-              clan.core.networking.zerotier._roles = [ "peer" ];
             };
         };
       };

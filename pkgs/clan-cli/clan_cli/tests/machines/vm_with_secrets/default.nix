@@ -3,7 +3,6 @@
   clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
   system.stateVersion = config.system.nixos.release;
 
-  clan.core.networking.zerotier._roles = [ "controller" ];
   networking.useDHCP = false;
 
   systemd.services.shutdown-after-boot = {
