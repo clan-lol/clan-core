@@ -11,9 +11,7 @@
           ...
         }:
         let
-          stringSet = list: builtins.attrNames (builtins.groupBy lib.id list);
-
-          domains = stringSet settings.certificateSearchDomains;
+          domains = lib.uniqueStrings settings.certificateSearchDomains;
 
         in
         {

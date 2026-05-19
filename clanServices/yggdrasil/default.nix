@@ -331,7 +331,7 @@
                 # Point to the credential-mounted path (works with both old and new modules)
                 PrivateKeyPath = "/private-key";
                 IfName = "ygg";
-                Peers = lib.lists.uniqueStrings (exportedPeers ++ settings.extraPeers);
+                Peers = lib.uniqueStrings (exportedPeers ++ settings.extraPeers);
                 AllowedEncryptionPublicKeys = allowedPublicKeys;
                 NodeInfoPrivacy = true;
                 MulticastInterfaces = settings.multicastInterfaces;
