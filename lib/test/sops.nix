@@ -1,7 +1,7 @@
 # nixosModule
 { config, lib, ... }:
 let
-  testAgeKey = lib.strings.trim (builtins.readFile ../../checks/assets/test-age-key.txt);
+  testAgeKey = lib.trim (builtins.readFile ../../checks/assets/test-age-key.txt);
 in
 {
   # configures a static age-key to skip the age-key generation
