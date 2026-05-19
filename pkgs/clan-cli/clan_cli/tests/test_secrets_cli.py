@@ -189,6 +189,7 @@ def test_users(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+@pytest.mark.usefixtures("sticky_flake_select")
 def test_multiple_user_keys(
     test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
@@ -630,6 +631,7 @@ def use_gpg_key(key: GpgKey, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+@pytest.mark.usefixtures("sticky_flake_select")
 def test_secrets(
     test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,

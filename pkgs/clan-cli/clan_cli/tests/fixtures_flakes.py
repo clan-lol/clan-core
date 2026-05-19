@@ -499,3 +499,27 @@ def writable_clan_core(
     shutil.rmtree(temp_flake / "sops", ignore_errors=True)
 
     return temp_flake
+
+
+@pytest.fixture
+def sticky_flake_select(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Memoize config-only ``Flake.select`` results across CLI calls.
+
+    Tests that commit between ``cli.run`` calls bust the nar-hash-keyed
+    cache, forcing a full module eval per call for values that never change.
+    """
+    stable = {
+        "clanInternals.inventoryClass.relativeDirectory",
+        "clanInternals.?secrets.?age.?plugins",
+    }
+    memo: dict[str, object] = {}
+    orig = Flake.select
+
+    def select(self: Flake, selector: str) -> object:
+        if selector not in stable:
+            return orig(self, selector)
+        if selector not in memo:
+            memo[selector] = orig(self, selector)
+        return memo[selector]
+
+    monkeypatch.setattr(Flake, "select", select)
