@@ -932,8 +932,11 @@ class Flake:
                     f"prefetching done for {self.identifier} output: {flake_prefetch.stdout}"
                 )
         except ClanCmdError as e:
+            # Quote style around the path differs between nix versions.
             if (
                 f'error: getting status of "{self.identifier}": No such file or directory'
+                in str(e)
+                or f"error: getting status of '{self.identifier}': No such file or directory"
                 in str(e)
             ):
                 raise FlakeDoesNotExistError(self.identifier) from e
