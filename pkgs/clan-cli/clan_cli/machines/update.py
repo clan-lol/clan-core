@@ -6,6 +6,7 @@ from functools import partial
 from typing import TYPE_CHECKING, get_args
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
+from clan_lib.docs import guides_url
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.flake.flake import Flake
@@ -282,7 +283,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
     )
     specialisation_guide = help_hyperlink(
         "specialisations guide",
-        "https://clan.lol/docs/unstable/guides/specialisations",
+        guides_url("guides/specialisations"),
     )
     parser.add_argument(
         "--specialisation",

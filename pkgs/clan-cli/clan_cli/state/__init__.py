@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_lib.docs import guides_url
+
 from clan_cli.help import HelpFormatter
 
 from .list import register_state_parser
@@ -19,7 +21,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="list state folders and the services that configure them",
         description="list state folders and the services that configure them",
         epilog=(
-            """
+            f"""
   List state of the machines managed by Clan.
 
   The backup commands are commands that will exist on the deployed machine.
@@ -31,7 +33,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
   List state of the machine [MACHINE] managed by Clan.
 
 
-  For more detailed information, visit: https://clan.lol/docs/unstable/guides/backups/intro-to-backups
+  For more detailed information, visit: {guides_url("guides/backups/intro-to-backups")}
         """
         ),
         formatter_class=HelpFormatter,

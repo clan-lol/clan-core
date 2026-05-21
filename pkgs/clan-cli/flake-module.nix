@@ -25,6 +25,8 @@
             "flake.lock"
             "templates"
             "clanServices"
+            # needed by clan_lib/docs_test.py to validate CLI documentation links
+            "docs/src"
             "pkgs/zerotierone"
             "pkgs/minifakeroot"
             # needed for test_generate_test_vars.py

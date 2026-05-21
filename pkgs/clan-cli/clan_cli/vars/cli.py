@@ -3,6 +3,7 @@ import argparse
 
 from clan_cli.help import HelpFormatter
 from clan_cli.hyperlink import help_hyperlink
+from clan_lib.docs import guides_url
 
 from .check import register_check_parser
 from .fix import register_fix_parser
@@ -99,7 +100,7 @@ Examples:
   This will print secret as well as public vars directly.
 
 
-For more detailed information, visit: {help_hyperlink("vars", "https://clan.lol/docs/unstable/guides/vars/intro-to-vars")}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/intro-to-vars"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -118,7 +119,7 @@ Examples:
     $ clan vars get my-server zerotier/vpn-ip
     Will get the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://clan.lol/docs/guides/vars/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -137,7 +138,7 @@ Examples:
     $ clan vars set my-server zerotier/vpn-ip
     Will set the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://clan.lol/docs/guides/vars/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -177,7 +178,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://clan.lol/docs/guides/vars/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -201,7 +202,7 @@ Examples:
   $ clan vars upload [MACHINE]
   Will upload secrets to a specific machine.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://clan.lol/docs/unstable/guides/vars/sops/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", guides_url("guides/vars/sops/secrets"))}
         """
         ),
         formatter_class=HelpFormatter,
