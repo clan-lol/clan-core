@@ -121,6 +121,7 @@ def test_prompt(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+@pytest.mark.usefixtures("sticky_flake_select")
 def test_prompt_prefill_on_regeneration(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,

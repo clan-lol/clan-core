@@ -43,6 +43,7 @@ def test_import_from_cli() -> None:
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+@pytest.mark.usefixtures("sticky_flake_select")
 def test_generate_public_and_secret_vars(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: ClanFlake,

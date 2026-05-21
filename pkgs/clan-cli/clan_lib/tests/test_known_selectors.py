@@ -1,3 +1,4 @@
+import contextlib
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
@@ -71,70 +72,44 @@ def test_known_selectors_exist(clan_flake: Callable[..., Flake]) -> None:
     machines = list_machines(flake)
     assert list(machines.keys()) == ["jon", "sara"]
 
-    # Test static selectors
-    for static_selector_fn in nix_selectors.STATIC_SELECTORS:
-        selector_str = static_selector_fn()
-        try:
-            flake.select(selector_str)
-        except ClanError as e:
-            pytest.fail(
-                f"Static selector '{static_selector_fn.__name__}' failed\n"
-                f"  Selector: {selector_str}\n"
-                f"  Error: {e}"
-            )
-
-    # TODO: Test all modules
-    for module_selector_fn in nix_selectors.MODULE_SELECTORS:
-        selector_str = module_selector_fn(
-            # clan-core
-            "Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU",
-            "*",
-        )
-        try:
-            flake.select(selector_str)
-        except ClanError as e:
-            pytest.fail(
-                f"Machines selector '{module_selector_fn.__name__}' failed\n"
-                f"  Selector: {selector_str}\n"
-                f"  Error: {e}"
-            )
-
     config = nix_config()
     system = config["system"]
+    generator_name = "testgen"
+
+    # Build the full list of selectors first so we can resolve them in a
+    # single nix invocation. Selecting one at a time spawns a fresh nix
+    # build per selector (~10s each on a busy CI builder).
+    selectors: list[tuple[str, str]] = [
+        (fn.__name__, fn()) for fn in nix_selectors.STATIC_SELECTORS
+    ]
+    selectors += [
+        (fn.__name__, fn("Y2xhbi1jaW9yZS1uZXZlci1kZXBlbmQtb24tbWU", "*"))
+        for fn in nix_selectors.MODULE_SELECTORS
+    ]
     for machine_name in machines:
-        # Test
-        for machine_selector_fn in nix_selectors.MACHINE_SELECTORS:
-            selector_str = machine_selector_fn(system, machine_name)
-            try:
-                flake.select(selector_str)
-            except ClanError as e:
-                pytest.fail(
-                    f"Machine selector '{machine_selector_fn.__name__}' failed\n"
-                    f"  Selector: {selector_str}\n"
-                    f"  Error: {e}"
-                )
+        selectors += [
+            (fn.__name__, fn(system, machine_name))
+            for fn in nix_selectors.MACHINE_SELECTORS
+        ]
+        selectors += [
+            (fn.__name__, fn(system, machine_name, generator_name))
+            for fn in nix_selectors.GENERATOR_SELECTORS
+        ]
+    selectors += [
+        (fn.__name__, fn(system, list(machines)))
+        for fn in nix_selectors.MACHINES_SELECTORS
+    ]
 
-        generator_name = "testgen"
+    # Try to resolve everything in one nix build. If that succeeds, the
+    # per-selector loop below is just cache lookups. If it fails, fall back
+    # to one-by-one so the failure points at the offending selector.
+    with contextlib.suppress(ClanError):
+        flake.precache([sel for _, sel in selectors])
 
-        for generator_selector_fn in nix_selectors.GENERATOR_SELECTORS:
-            selector_str = generator_selector_fn(system, machine_name, generator_name)
-            try:
-                flake.select(selector_str)
-            except ClanError as e:
-                pytest.fail(
-                    f"Generator selector '{generator_selector_fn.__name__}' failed\n"
-                    f"  Selector: {selector_str}\n"
-                    f"  Error: {e}"
-                )
-
-    # Select multiple machines
-    for machines_selector_fn in nix_selectors.MACHINES_SELECTORS:
-        selector_str = machines_selector_fn(system, list(machines))
+    for name, selector_str in selectors:
         try:
             flake.select(selector_str)
         except ClanError as e:
             pytest.fail(
-                f"Machines selector '{machines_selector_fn.__name__}' failed\n"
-                f"  Selector: {selector_str}\n"
-                f"  Error: {e}"
+                f"Selector '{name}' failed\n  Selector: {selector_str}\n  Error: {e}"
             )

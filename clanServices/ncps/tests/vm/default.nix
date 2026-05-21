@@ -71,6 +71,7 @@
       bob.wait_for_unit("ncps")
       bob.succeed("systemctl status ncps")
       # Check harmonia is running
+      clare.wait_for_unit("harmonia")
       clare.succeed("systemctl status harmonia")
 
       # Check that ncps is listening on its default port

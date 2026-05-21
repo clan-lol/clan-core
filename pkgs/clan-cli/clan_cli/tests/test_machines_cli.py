@@ -230,6 +230,7 @@ def test_machines_update_typo_in_machine_name(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+@pytest.mark.usefixtures("sticky_flake_select")
 def test_machine_delete(
     monkeypatch: pytest.MonkeyPatch,
     flake_with_sops: fixtures_flakes.ClanFlake,

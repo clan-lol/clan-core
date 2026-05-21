@@ -52,10 +52,12 @@ let
   #   implementation in nix.py
   allDependencies = lib.importJSON ./clan_lib/nix/allowed-packages.json;
   # Use function args first to respect overlays and explicit overrides (e.g., nix -> lix)
+  # zenity: Linux-only askpass dialog; macOS uses osascript (see remote.py).
+  darwinExcludedDeps = lib.optionals stdenv.hostPlatform.isDarwin [ "zenity" ];
   generateRuntimeDependenciesMap =
     deps:
     lib.filterAttrs (_: pkg: !(pkg.meta.unsupported or false)) (
-      lib.genAttrs deps (name: args.${name} or pkgs.${name})
+      lib.genAttrs (lib.subtractLists darwinExcludedDeps deps) (name: args.${name} or pkgs.${name})
     );
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
   # Filter out packages that are not needed for tests and pull in many dependencies
