@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import argparse
 import http.client
 import ipaddress
@@ -128,7 +127,8 @@ def main() -> None:
         action="store_true",
     )
     parser_allow.add_argument(
-        "member_id_or_ip", help="Member ID or IPv6 address (when --member-ip is used)"
+        "member_id_or_ip",
+        help="Member ID or IPv6 address (when --member-ip is used)",
     )
     parser_allow.set_defaults(func=allow_member)
 

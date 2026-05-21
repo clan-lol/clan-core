@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerotier-tools"
+version = "0.1.0"
+description = "ZeroTier identity, network, and IP tools for clan"
+license = "MIT"
+requires-python = ">=3.13"
+
+[project.scripts]
+zerotier-members = "zerotier_tools.members:main"
