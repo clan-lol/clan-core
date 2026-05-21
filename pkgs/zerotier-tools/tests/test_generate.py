@@ -1,4 +1,3 @@
-
 import os
 import shutil
 import subprocess
@@ -7,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from zerotier_tools import Identity, ZToolError, compute_zerotier_ip
 
 # Package root so subprocess invocations can find zerotier_tools.
@@ -81,9 +79,7 @@ class TestComputeZerotierIp:
             == "fd22:2222:2222:2222:2299:93a1:b2c3:d4e5"
         )
 
-    def test_different_networks_yield_different_ips(
-        self, identity: Identity
-    ) -> None:
+    def test_different_networks_yield_different_ips(self, identity: Identity) -> None:
         """Same identity on two networks produces different IPs."""
         ip_a = compute_zerotier_ip(NETWORK_A, identity.node_id())
         ip_b = compute_zerotier_ip(NETWORK_B, identity.node_id())
@@ -126,10 +122,14 @@ class TestCliIdentityMode:
         secret_output = tmp_path / "zerotier-identity-secret"
 
         result = run_generate(
-            "--mode", "identity",
-            "--identity-secret", str(secret_output),
-            "--network-id-file", str(network_id_file),
-            "--ip", str(ip_output),
+            "--mode",
+            "identity",
+            "--identity-secret",
+            str(secret_output),
+            "--network-id-file",
+            str(network_id_file),
+            "--ip",
+            str(ip_output),
         )
         assert result.returncode == 0, f"stderr: {result.stderr}"
         assert secret_output.exists()
@@ -141,8 +141,70 @@ class TestCliIdentityMode:
 
     def test_fails_without_network_id_file(self, tmp_path: Path) -> None:
         result = run_generate(
-            "--mode", "identity",
-            "--identity-secret", str(tmp_path / "secret"),
-            "--ip", str(tmp_path / "ip"),
+            "--mode",
+            "identity",
+            "--identity-secret",
+            str(tmp_path / "secret"),
+            "--ip",
+            str(tmp_path / "ip"),
+        )
+        assert result.returncode != 0
+
+
+class TestCliComputeIpMode:
+    def test_writes_correct_output(self, tmp_path: Path, identity: Identity) -> None:
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        network_id_file = tmp_path / "network-id"
+        network_id_file.write_text(NETWORK_A)
+
+        ip_output = tmp_path / "zerotier-ip"
+
+        result = run_generate(
+            "--mode",
+            "compute-ip",
+            "--identity-secret",
+            str(secret_file),
+            "--network-id-file",
+            str(network_id_file),
+            "--ip",
+            str(ip_output),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+
+        expected_ip = compute_zerotier_ip(NETWORK_A, identity.node_id())
+        assert ip_output.read_text() == expected_ip.compressed
+
+    def test_does_not_overwrite_identity(self, tmp_path: Path) -> None:
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        network_id_file = tmp_path / "network-id"
+        network_id_file.write_text(NETWORK_A)
+
+        run_generate(
+            "--mode",
+            "compute-ip",
+            "--identity-secret",
+            str(secret_file),
+            "--network-id-file",
+            str(network_id_file),
+            "--ip",
+            str(tmp_path / "zerotier-ip"),
+        )
+        assert secret_file.read_text() == SAMPLE_SECRET
+
+    def test_fails_without_network_id_file(self, tmp_path: Path) -> None:
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        result = run_generate(
+            "--mode",
+            "compute-ip",
+            "--identity-secret",
+            str(secret_file),
+            "--ip",
+            str(tmp_path / "zerotier-ip"),
         )
         assert result.returncode != 0

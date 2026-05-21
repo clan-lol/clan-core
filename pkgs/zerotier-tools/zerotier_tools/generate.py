@@ -1,8 +1,9 @@
 """Generate ZeroTier identities, networks, and compute IPs.
 
 Modes:
-  network   -- spin up a temporary controller, create a network, output identity + network-id + IP
-  identity  -- generate a new identity, derive IP from an existing network-id
+  network    -- spin up a temporary controller, create a network, output identity + network-id + IP
+  identity   -- generate a new identity, derive IP from an existing network-id
+  compute-ip -- pure computation: derive IP from existing identity + network-id
 """
 
 import argparse
@@ -173,7 +174,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["network", "identity"],
+        choices=["network", "identity", "compute-ip"],
         required=True,
         type=str,
     )
@@ -203,6 +204,14 @@ def main() -> None:
             network_id = args.network_id_file.read_text().strip()
             ip = compute_zerotier_ip(network_id, identity.node_id())
             args.identity_secret.write_text(identity.private)
+            args.ip.write_text(ip.compressed)
+        case "compute-ip":
+            if args.network_id_file is None:
+                msg = "--network-id-file parameter is required in compute-ip mode"
+                raise ZToolError(msg)
+            identity = Identity.from_secret_file(args.identity_secret)
+            network_id = args.network_id_file.read_text().strip()
+            ip = compute_zerotier_ip(network_id, identity.node_id())
             args.ip.write_text(ip.compressed)
         case _:
             msg = f"unknown mode {args.mode}"
