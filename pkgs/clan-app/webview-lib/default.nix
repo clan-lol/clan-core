@@ -57,10 +57,10 @@ llvmPackages.stdenv.mkDerivation {
     gtk4
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Tiny cross-platform webview library for C/C++. Uses WebKit (GTK/Cocoa) and Edge WebView2 (Windows)";
     homepage = "https://github.com/webview/webview";
-    license = licenses.mit;
-    platforms = platforms.linux ++ platforms.darwin;
+    license = lib.licenses.mit;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

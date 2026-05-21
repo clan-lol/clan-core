@@ -271,7 +271,7 @@ in
   #     evaluated = (
   #       eval [
   #         {
-  #           freeformType = with lib.types; attrsOf (int);
+  #           freeformType = attrsOf (int);
   #           options = {
   #             foo = lib.mkOption {
   #               type = lib.types.int;
