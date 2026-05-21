@@ -3,7 +3,7 @@
 # so that age.nix activation scripts can decrypt secrets at boot.
 { config, lib, ... }:
 let
-  testAgeKey = lib.strings.trim (
+  testAgeKey = lib.trim (
     builtins.readFile ../../nixosModules/clanCore/vars/tests/age-fixtures/key.txt
   );
 

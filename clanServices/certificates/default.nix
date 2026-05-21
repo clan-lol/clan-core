@@ -130,9 +130,7 @@
                         },
                         "nameConstraints": {
                           "critical": true,
-                          "permittedDNSDomains": [${
-                            (lib.strings.concatStringsSep "," (map (tld: ''"${tld}"'') settings.tlds))
-                          }]
+                          "permittedDNSDomains": [${(lib.concatStringsSep "," (map (tld: ''"${tld}"'') settings.tlds))}]
                         }
                       }
                     ''} ${lib.optionalString (settings.expire != null) "--not-after ${settings.expire}"} \

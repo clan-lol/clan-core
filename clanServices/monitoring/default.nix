@@ -121,15 +121,15 @@
                       );
                   serverAddress = "${protocol}://${serverHost}";
 
-                  enabledNixosSystemdServices = builtins.map (v: "${v}.service") (
+                  enabledNixosSystemdServices = map (v: "${v}.service") (
                     lib.attrNames (
-                      lib.attrsets.filterAttrs (_name: value: value == true) (
+                      lib.filterAttrs (_name: value: value) (
                         lib.mapAttrs (
                           name: value:
                           builtins.hasAttr "enable" options.services."${name}"
                           && builtins.hasAttr "default" options.services."${name}".enable
                           && options.services."${name}".enable.default != value.enable
-                          && value.enable == true
+                          && value.enable
                         ) (config.services)
                       )
                     )
@@ -142,7 +142,7 @@
                     else
                       settings.monitoredSystemdServices
                   );
-                  monitoredServicesRegexFragments = builtins.map lib.escapeRegex monitoredServices;
+                  monitoredServicesRegexFragments = map lib.escapeRegex monitoredServices;
                   monitoredServicesRegex =
                     if monitoredServices == [ ] then
                       "^$"
@@ -304,7 +304,7 @@
               useSSL = defaultVirtualHost.addSSL || defaultVirtualHost.forceSSL || defaultVirtualHost.onlySSL;
             in
             {
-              networking.firewall.allowedTCPPorts = [ 80 ] ++ lib.lists.optional useSSL 443;
+              networking.firewall.allowedTCPPorts = [ 80 ] ++ lib.optional useSSL 443;
 
               clan.core = {
                 postgresql = {
@@ -363,17 +363,17 @@
                 virtualHosts."${config.networking.fqdn}".locations = {
                   "/mimir/" = {
                     basicAuthFile = "/run/nginx/credentials/mimir-auth-htpasswd";
-                    proxyPass = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
+                    proxyPass = "http://127.0.0.1:${toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}/";
                   };
 
                   "/loki/" = {
                     basicAuthFile = "/run/nginx/credentials/loki-auth-htpasswd";
-                    proxyPass = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
+                    proxyPass = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}/";
                   };
                 }
                 // lib.optionalAttrs settings.grafana.enable {
                   "/grafana/" = {
-                    proxyPass = "http://127.0.0.1:${builtins.toString config.services.grafana.settings.server.http_port}/";
+                    proxyPass = "http://127.0.0.1:${toString config.services.grafana.settings.server.http_port}/";
                     proxyWebsockets = true;
                   };
                 };
@@ -527,14 +527,14 @@
                   datasources.settings.datasources = [
                     {
                       name = "mimir";
-                      url = "http://127.0.0.1:${builtins.toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}${config.services.mimir.configuration.api.prometheus_http_prefix}";
+                      url = "http://127.0.0.1:${toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}${config.services.mimir.configuration.api.prometheus_http_prefix}";
                       type = "prometheus";
                       isDefault = true;
                       jsonData.manageAlerts = false;
                     }
                     {
                       name = "loki";
-                      url = "http://127.0.0.1:${builtins.toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}";
+                      url = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}";
                       type = "loki";
                       jsonData.manageAlerts = false;
                     }
