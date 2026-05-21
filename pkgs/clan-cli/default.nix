@@ -286,7 +286,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
                 minifakeroot
                 nix-select
-                ../../nixosModules/clanCore/zerotier/generate.py
+                (pkgs.callPackage ../../pkgs/zerotier-tools { })
 
                 # Pre-built VMs for impure tests
                 pkgs.stdenv.drvPath

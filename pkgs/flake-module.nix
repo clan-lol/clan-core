@@ -12,6 +12,7 @@
     ./network-status/flake-module.nix
     ./docs-from-code/flake-module.nix
     ./testing/flake-module.nix
+    ./zerotier-tools/flake-module.nix
   ];
 
   perSystem =
@@ -24,7 +25,7 @@
     {
       packages = {
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
-        zerotier-members = pkgs.callPackage ./zerotier-members { };
+        zerotier-tools = pkgs.callPackage ./zerotier-tools { };
         merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
         minifakeroot = pkgs.callPackage ./minifakeroot { };
         pending-reviews = pkgs.callPackage ./pending-reviews { };

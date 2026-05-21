@@ -22,8 +22,9 @@ in
             # Required modules
             ../../nixosModules/clanCore
             ../../nixosModules/machineModules
-            # Dependencies like clan-cli
+            # Dependencies
             ../../pkgs/clan-cli
+            ../../pkgs/zerotier-tools
           ];
           testName = "zerotier";
           tests = ./tests/eval-tests.nix;
