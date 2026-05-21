@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   python3,
   runCommand,
   zerotierone,
@@ -22,11 +23,11 @@ python3.pkgs.buildPythonApplication {
       runCommand "zerotier-tools-pytest"
         {
           nativeBuildInputs = [
-            zerotierone
             (python3.withPackages (ps: [
               ps.pytest
             ]))
-          ];
+          ]
+          ++ lib.optionals stdenv.hostPlatform.isLinux [ zerotierone ];
         }
         ''
           cp -r ${src} ./src

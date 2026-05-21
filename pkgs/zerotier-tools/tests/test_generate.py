@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from zerotier_tools import Identity, ZToolError, compute_zerotier_ip
+from zerotier_tools.generate import create_network_id
 
 # Package root so subprocess invocations can find zerotier_tools.
 PACKAGE_ROOT = str(Path(__file__).parent.parent)
@@ -110,6 +111,55 @@ class TestComputeZerotierIp:
     def test_rejects_long_network_id(self, identity: Identity) -> None:
         with pytest.raises(ZToolError, match="must be 16 characters"):
             compute_zerotier_ip("79fadafbe98c5dd8ff", identity.node_id())
+
+
+class TestCreateNetworkId:
+    def test_format(self) -> None:
+        """Network ID is node_id (10 hex) + 6 random hex = 16 chars."""
+        nid = create_network_id("a1b2c3d4e5")
+        assert len(nid) == 16
+        assert nid.startswith("a1b2c3d4e5")
+
+    def test_unique(self) -> None:
+        ids = {create_network_id("a1b2c3d4e5") for _ in range(50)}
+        assert len(ids) > 1
+
+    def test_rejects_zero_suffix(self) -> None:
+        """Suffix 000000 is reserved by ZeroTier."""
+        for _ in range(1000):
+            nid = create_network_id("a1b2c3d4e5")
+            assert not nid.endswith("000000")
+
+
+@pytest.mark.skipif(not has_zerotier_idtool, reason="zerotier-idtool not in PATH")
+class TestCliNetworkMode:
+    def test_generates_identity_network_and_ip(self, tmp_path: Path) -> None:
+        ip_output = tmp_path / "zerotier-ip"
+        secret_output = tmp_path / "zerotier-identity-secret"
+        network_id_output = tmp_path / "zerotier-network-id"
+
+        result = run_generate(
+            "--mode",
+            "network",
+            "--identity-secret",
+            str(secret_output),
+            "--network-id",
+            str(network_id_output),
+            "--ip",
+            str(ip_output),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+        assert secret_output.exists()
+        assert network_id_output.exists()
+        assert ip_output.exists()
+
+        identity = Identity.from_secret_file(secret_output)
+        network_id = network_id_output.read_text()
+        assert len(network_id) == 16
+        assert network_id.startswith(identity.node_id())
+
+        expected_ip = compute_zerotier_ip(network_id, identity.node_id())
+        assert ip_output.read_text() == expected_ip.compressed
 
 
 @pytest.mark.skipif(not has_zerotier_idtool, reason="zerotier-idtool not in PATH")
