@@ -12,6 +12,7 @@
     ./network-status/flake-module.nix
     ./docs-from-code/flake-module.nix
     ./testing/flake-module.nix
+    ./zerotier-tools/flake-module.nix
   ];
 
   perSystem =

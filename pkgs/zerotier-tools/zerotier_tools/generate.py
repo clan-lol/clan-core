@@ -1,6 +1,12 @@
+"""Generate ZeroTier identities, networks, and compute IPs.
+
+Modes:
+  network   -- spin up a temporary controller, create a network, output identity + network-id + IP
+  identity  -- generate a new identity, derive IP from an existing network-id
+"""
+
 import argparse
 import contextlib
-import ipaddress
 import json
 import os
 import signal
@@ -16,53 +22,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
-# Constants
-NODE_ID_LENGTH = 10
-NETWORK_ID_LENGTH = 16
-
-
-class ClanError(Exception):
-    pass
-
-
-def try_bind_port(port: int) -> bool:
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    with tcp, udp:
-        try:
-            tcp.bind(("127.0.0.1", port))
-            udp.bind(("127.0.0.1", port))
-        except OSError:
-            return False
-        else:
-            return True
-
-
-def try_connect_port(port: int) -> bool:
-    sock = socket.socket(socket.AF_INET)
-    result = sock.connect_ex(("127.0.0.1", port))
-    sock.close()
-    return result == 0
-
-
-def find_free_port() -> int | None:
-    """Find an unused localhost port from 1024-65535 and return it."""
-    with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return sock.getsockname()[1]
-
-
-class Identity:
-    def __init__(self, path: Path) -> None:
-        self.public = (path / "identity.public").read_text()
-        self.private = (path / "identity.secret").read_text()
-
-    def node_id(self) -> str:
-        nid = self.public.split(":")[0]
-        if len(nid) != NODE_ID_LENGTH:
-            msg = f"node_id must be {NODE_ID_LENGTH} characters long, got {len(nid)}: {nid}"
-            raise ClanError(msg)
-        return nid
+from zerotier_tools import Identity, ZToolError, compute_zerotier_ip
 
 
 class ZerotierController:
@@ -70,7 +30,7 @@ class ZerotierController:
         self.port = port
         self.home = home
         self.authtoken = (home / "authtoken.secret").read_text()
-        self.identity = Identity(home)
+        self.identity = Identity.from_directory(home)
 
     def _http_request(
         self,
@@ -109,13 +69,26 @@ class ZerotierController:
         return self._http_request(f"/controller/network/{network_id}")
 
 
+def _try_connect_port(port: int) -> bool:
+    sock = socket.socket(socket.AF_INET)
+    result = sock.connect_ex(("127.0.0.1", port))
+    sock.close()
+    return result == 0
+
+
+def _find_free_port() -> int | None:
+    with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
 @contextmanager
 def zerotier_controller() -> Iterator[ZerotierController]:
     # This check could be racy but it's unlikely in practice
-    controller_port = find_free_port()
+    controller_port = _find_free_port()
     if controller_port is None:
         msg = "cannot find a free port for zerotier controller"
-        raise ClanError(msg)
+        raise ZToolError(msg)
 
     with TemporaryDirectory() as d:
         tempdir = Path(d)
@@ -133,13 +106,13 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                 print(
                     f"wait for controller to be started on 127.0.0.1:{controller_port}...",
                 )
-                while not try_connect_port(controller_port):
+                while not _try_connect_port(controller_port):
                     status = p.poll()
                     if status is not None:
                         msg = (
                             f"zerotier-one has been terminated unexpected with {status}"
                         )
-                        raise ClanError(msg)
+                        raise ZToolError(msg)
                     time.sleep(0.1)
 
                 zt_controller = ZerotierController(controller_port, home)
@@ -154,11 +127,11 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                         status = p.poll()
                         if status is not None:
                             msg = f"zerotier-one has been terminated unexpected with {status}"
-                            raise ClanError(msg) from err
+                            raise ZToolError(msg) from err
                         time.sleep(0.1)
                 else:
                     msg = "zerotier controller API did not become ready in time"
-                    raise ClanError(msg)
+                    raise ZToolError(msg)
 
                 print()
 
@@ -173,17 +146,18 @@ class NetworkController:
     identity: Identity
 
 
-# TODO: allow merging more network configuration here
 def create_network_controller() -> NetworkController:
-    e = ClanError("Bug, should never happen")
+    last_err: Exception | None = None
     for _ in range(10):
         try:
             with zerotier_controller() as controller:
                 network = controller.create_network()
                 return NetworkController(network["nwid"], controller.identity)
-        except (ClanError, urllib.error.HTTPError, urllib.error.URLError) as err:
+        except (ZToolError, urllib.error.HTTPError, urllib.error.URLError) as err:
             print(f"failed to create network ({err}), retrying...", file=sys.stderr)
-    raise e
+            last_err = err
+    msg = "failed to create ZeroTier network after 10 attempts"
+    raise ZToolError(msg) from last_err
 
 
 def create_identity() -> Identity:
@@ -192,36 +166,7 @@ def create_identity() -> Identity:
         private = tmpdir / "identity.secret"
         public = tmpdir / "identity.public"
         subprocess.run(["zerotier-idtool", "generate", private, public], check=True)
-        return Identity(tmpdir)
-
-
-def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Address:
-    if len(network_id) != NETWORK_ID_LENGTH:
-        msg = f"network_id must be {NETWORK_ID_LENGTH} characters long, got '{network_id}'"
-        raise ClanError(msg)
-    nwid = int(network_id, 16)
-    node_id = int(identity.node_id(), 16)
-    addr_parts = bytearray(
-        [
-            0xFD,
-            (nwid >> 56) & 0xFF,
-            (nwid >> 48) & 0xFF,
-            (nwid >> 40) & 0xFF,
-            (nwid >> 32) & 0xFF,
-            (nwid >> 24) & 0xFF,
-            (nwid >> 16) & 0xFF,
-            (nwid >> 8) & 0xFF,
-            (nwid) & 0xFF,
-            0x99,
-            0x93,
-            (node_id >> 32) & 0xFF,
-            (node_id >> 24) & 0xFF,
-            (node_id >> 16) & 0xFF,
-            (node_id >> 8) & 0xFF,
-            (node_id) & 0xFF,
-        ],
-    )
-    return ipaddress.IPv6Address(bytes(addr_parts))
+        return Identity.from_directory(tmpdir)
 
 
 def main() -> None:
@@ -242,24 +187,26 @@ def main() -> None:
         case "network":
             if args.network_id is None:
                 msg = "--network-id parameter is required in network mode"
-                raise ClanError(msg)
+                raise ZToolError(msg)
             controller = create_network_controller()
             identity = controller.identity
             network_id = controller.networkid
             Path(args.network_id).write_text(network_id)
+            ip = compute_zerotier_ip(network_id, identity.node_id())
+            args.identity_secret.write_text(identity.private)
+            args.ip.write_text(ip.compressed)
         case "identity":
             if args.network_id_file is None:
                 msg = "--network-id-file parameter is required in identity mode"
-                raise ClanError(msg)
+                raise ZToolError(msg)
             identity = create_identity()
             network_id = args.network_id_file.read_text().strip()
+            ip = compute_zerotier_ip(network_id, identity.node_id())
+            args.identity_secret.write_text(identity.private)
+            args.ip.write_text(ip.compressed)
         case _:
             msg = f"unknown mode {args.mode}"
-            raise ClanError(msg)
-    ip = compute_zerotier_ip(network_id, identity)
-
-    args.identity_secret.write_text(identity.private)
-    args.ip.write_text(ip.compressed)
+            raise ZToolError(msg)
 
 
 if __name__ == "__main__":

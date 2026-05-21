@@ -241,6 +241,8 @@
           zerotieroneWithController = pkgs.callPackage ../../pkgs/zerotierone {
             includeController = true;
           };
+
+          zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
         in
         {
           options.clan.core.networking.zerotier = {
@@ -462,11 +464,11 @@
 
                 runtimeInputs = [
                   zerotieroneWithController
-                  pkgs.python3
+                  zerotier-tools
                 ];
                 script = ''
                   source ${(pkgs.callPackage ../../pkgs/minifakeroot { })}/share/minifakeroot/rc
-                  python3 ${../../nixosModules/clanCore/zerotier/generate.py} --mode network \
+                  zerotier-generate --mode network \
                     --ip "$out/zerotier-ip" \
                     --identity-secret "$out/zerotier-identity-secret" \
                     --network-id "$out/zerotier-network-id"
@@ -506,11 +508,11 @@
                 };
                 runtimeInputs = [
                   config.services.zerotierone.package
-                  pkgs.python3
+                  zerotier-tools
                 ];
                 dependencies = [ "zerotier-controller" ];
                 script = ''
-                  python3 ${../../nixosModules/clanCore/zerotier/generate.py} --mode identity \
+                  zerotier-generate --mode identity \
                     --ip "$out/zerotier-ip" \
                     --identity-secret "$out/zerotier-identity-secret" \
                     --network-id-file $in/zerotier-controller/zerotier-network-id

@@ -11,3 +11,7 @@ requires-python = ">=3.13"
 
 [project.scripts]
 zerotier-members = "zerotier_tools.members:main"
+zerotier-generate = "zerotier_tools.generate:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
