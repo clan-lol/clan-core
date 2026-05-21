@@ -42,7 +42,6 @@ in
             ...
           }:
           let
-            uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
             # Check if any server in this instance has certificate.enable = true
             anyCertificateEnabled = lib.any (machineConfig: machineConfig.settings.certificate.enable or true) (
               builtins.attrValues (roles.server.machines or { })
@@ -54,7 +53,7 @@ in
               )
             );
             # Merge client's searchDomains with all servers' searchDomains
-            extraDomains = uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
+            extraDomains = lib.uniqueStrings (settings.certificate.searchDomains ++ allServerSearchDomains);
             searchDomains = [ config.clan.core.settings.domain ] ++ extraDomains;
           in
           {
@@ -176,8 +175,7 @@ in
                 ];
                 script =
                   let
-                    stringSet = list: builtins.attrNames (builtins.groupBy lib.id list);
-                    domains = stringSet searchDomains;
+                    domains = lib.uniqueStrings searchDomains;
                   in
                   ''
                     ssh-keygen \
