@@ -43,6 +43,6 @@ python3.pkgs.buildPythonApplication {
   meta = {
     description = "ZeroTier identity, network, and member management tools for clan";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }
