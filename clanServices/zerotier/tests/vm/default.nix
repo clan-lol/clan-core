@@ -54,6 +54,7 @@
           b64 = machine.succeed(f"base64 -w0 /var/lib/zerotier-one/moons.d/{name}").strip()
           return name, node_id, b64
 
+      # World file distribution is out-of-band; the module doesn't handle it.
       def install_world_file(targets, name, node_id, b64):
           """Install a world file on targets and trigger orbit so the daemon
           picks up the stableEndpoints."""

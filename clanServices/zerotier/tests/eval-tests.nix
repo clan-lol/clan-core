@@ -33,6 +33,7 @@ let
         };
       };
     }).config;
+
   testFlakeNoMoon =
     (clanLib.clan {
       self = { };
@@ -60,84 +61,130 @@ let
         };
       };
     }).config;
+
+  cfg = machine: testFlake.nixosConfigurations.${machine}.config;
+  cfgNoMoon = machine: testFlakeNoMoon.nixosConfigurations.${machine}.config;
 in
+# Assert the service sets some critical downstream NixOS options
 {
-  # Test structural configuration without requiring generated vars.
-  # joinNetworks depends on pre-generated vars (zerotier-network-id file),
-  # so we only test properties that don't depend on generated values.
-  test_peer_config = {
+  test_peer_nixos_config = {
     expr = {
-      networkName = testFlake.nixosConfigurations.jon.config.clan.core.networking.zerotier.name;
-      enabled = testFlake.nixosConfigurations.jon.config.services.zerotierone.enable;
+      enabled = (cfg "jon").services.zerotierone.enable;
+      firewallTcp = builtins.elem 9993 (cfg "jon").networking.firewall.allowedTCPPorts;
+      firewallUdp = builtins.elem 9993 (cfg "jon").networking.firewall.allowedUDPPorts;
+      nmUnmanaged = builtins.elem "interface-name:zt*" (cfg "jon").networking.networkmanager.unmanaged;
+      tcpFallback = (cfg "jon").services.zerotierone.localConf.settings.tcpFallbackRelay;
     };
     expected = {
-      networkName = "zerotier";
       enabled = true;
+      firewallTcp = true;
+      firewallUdp = true;
+      nmUnmanaged = true;
+      tcpFallback = "65.21.12.51/4443";
     };
   };
-  test_moon_config = {
+
+  test_controller_nixos_config = {
     expr = {
-      networkName = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.name;
-      enabled = testFlake.nixosConfigurations.sara.config.services.zerotierone.enable;
+      enabled = (cfg "bam").services.zerotierone.enable;
+      stateFolders = (cfg "bam").clan.core.state.zerotier.folders;
+      autoAcceptWantedBy = (cfg "bam").systemd.services.zerotier-inventory-autoaccept.wantedBy;
+      autoAcceptAfterZt = builtins.elem "zerotierone.service" (cfg "bam")
+      .systemd.services.zerotier-inventory-autoaccept.after;
+      hasEtcNetworkId = (cfg "bam").environment.etc ? "zerotier/network-id";
+      hasEtcIp = (cfg "bam").environment.etc ? "zerotier/ip";
     };
     expected = {
-      networkName = "zerotier";
       enabled = true;
+      stateFolders = [ "/var/lib/zerotier-one" ];
+      autoAcceptWantedBy = [ "multi-user.target" ];
+      autoAcceptAfterZt = true;
+      hasEtcNetworkId = true;
+      hasEtcIp = true;
     };
   };
-  test_controller_config = {
+
+  test_moon_nixos_config = {
     expr = {
-      networkName = testFlake.nixosConfigurations.bam.config.clan.core.networking.zerotier.name;
-      enabled = testFlake.nixosConfigurations.bam.config.services.zerotierone.enable;
+      enabled = (cfg "sara").services.zerotierone.enable;
+      stableEndpoints = (cfg "sara").clan.core.networking.zerotier.moon.stableEndpoints;
     };
     expected = {
-      networkName = "zerotier";
       enabled = true;
+      stableEndpoints = [ "10.0.0.3/9993" ];
     };
   };
-  test_generator_defined = {
+
+  test_controller_generator_structure = {
     expr = {
-      hasSharedGenerator =
-        testFlake.nixosConfigurations.bam.config.clan.core.vars.generators ? zerotier-controller;
-      sharedFiles = lib.attrNames testFlake.nixosConfigurations.bam.config.clan.core.vars.generators.zerotier-controller.files;
-      hasControllerGenerator =
-        testFlake.nixosConfigurations.bam.config.clan.core.vars.generators ? zerotier;
-      hasPeerGenerator = testFlake.nixosConfigurations.jon.config.clan.core.vars.generators ? zerotier;
+      sharedShare = (cfg "bam").clan.core.vars.generators.zerotier-controller.share;
+      sharedFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-controller.files;
+      perMachineDeps = (cfg "bam").clan.core.vars.generators.zerotier.dependencies;
+      perMachineFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier.files;
     };
     expected = {
-      hasSharedGenerator = true;
+      sharedShare = true;
       sharedFiles = [
         "zerotier-identity-secret"
         "zerotier-ip"
         "zerotier-network-id"
       ];
-      hasControllerGenerator = true;
-      hasPeerGenerator = true;
+      perMachineDeps = [ "zerotier-controller" ];
+      perMachineFiles = [
+        "zerotier-identity-secret"
+        "zerotier-ip"
+        "zerotier-network-id"
+      ];
     };
   };
-  # When no moon role is assigned, sara is a plain peer — verify she gets
-  # zerotier enabled and empty stableEndpoints (the default).
-  test_no_moon_config = {
+
+  test_peer_generator_structure = {
     expr = {
-      saraEnabled = testFlakeNoMoon.nixosConfigurations.sara.config.services.zerotierone.enable;
-      saraStableEndpoints =
-        testFlakeNoMoon.nixosConfigurations.sara.config.clan.core.networking.zerotier.moon.stableEndpoints;
+      dependencies = (cfg "jon").clan.core.vars.generators.zerotier.dependencies;
+      files = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier.files;
     };
     expected = {
-      saraEnabled = true;
-      saraStableEndpoints = [ ];
+      dependencies = [ "zerotier-controller" ];
+      files = [
+        "zerotier-identity-secret"
+        "zerotier-ip"
+      ];
     };
   };
-  # Moon role propagates stableEndpoints from inventory settings into NixOS config.
-  test_moon_stable_endpoints = {
-    expr = testFlake.nixosConfigurations.sara.config.clan.core.networking.zerotier.moon.stableEndpoints;
-    expected = [ "10.0.0.3/9993" ];
+
+  test_etc_zerotier_ip = {
+    expr = {
+      peer = (cfg "jon").environment.etc ? "zerotier/ip";
+      moon = (cfg "sara").environment.etc ? "zerotier/ip";
+      controller = (cfg "bam").environment.etc ? "zerotier/ip";
+    };
+    expected = {
+      peer = true;
+      moon = true;
+      controller = true;
+    };
   };
-  # ZeroTier must blacklist overlay interface prefixes to prevent recursive
-  # encapsulation (e.g. ZT traffic routed through Yggdrasil which peers over ZT).
+
+  test_networkd_config = {
+    expr = (cfg "jon").systemd.network.networks."09-zerotier".matchConfig.Name;
+    expected = "zt*";
+  };
+
+  test_no_moon_config = {
+    expr = {
+      enabled = (cfgNoMoon "sara").services.zerotierone.enable;
+      stableEndpoints = (cfgNoMoon "sara").clan.core.networking.zerotier.moon.stableEndpoints;
+    };
+    expected = {
+      enabled = true;
+      stableEndpoints = [ ];
+    };
+  };
+
+  # Without this, ZT can route through overlay networks (e.g. Yggdrasil) that
+  # themselves peer over ZT, causing recursive encapsulation.
   test_interface_prefix_blacklist = {
-    expr =
-      testFlake.nixosConfigurations.bam.config.services.zerotierone.localConf.settings.interfacePrefixBlacklist;
+    expr = (cfg "bam").services.zerotierone.localConf.settings.interfacePrefixBlacklist;
     expected = [
       "ygg"
       "hyprspace"
