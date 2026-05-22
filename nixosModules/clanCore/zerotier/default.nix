@@ -91,6 +91,22 @@ in
           "core"
           "networking"
           "zerotier"
+          "moon"
+          "orbitMoons"
+        ]
+        ''
+          External moon orbiting is now configured through the peer role settings in the inventory.
+
+          ${zerotierMigrationMessage}
+        ''
+      )
+
+      (lib.mkRemovedOptionModule
+        [
+          "clan"
+          "core"
+          "networking"
+          "zerotier"
           "settings"
         ]
         ''

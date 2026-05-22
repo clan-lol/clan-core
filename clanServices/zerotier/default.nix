@@ -28,11 +28,28 @@
 
   roles.peer = {
     description = "A peer that connects to your private ZeroTier network.";
+    interface =
+      { lib, ... }:
+      {
+        options.orbitMoons = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = ''
+            External moon IDs to orbit.
+            Use this to join moons that are not declared in the clan inventory.
+            Moons declared via the "moon" role are orbited automatically.
+          '';
+          example = ''
+            [ "deadbeef00" ]
+          '';
+        };
+      };
     perInstance =
       {
         roles,
         mkExports,
         machine,
+        settings,
         ...
       }:
       {
@@ -92,8 +109,21 @@
                   pkgs
                   ;
               })
-
             ];
+
+            # Orbit external moons not declared in the inventory
+            systemd.services.zerotierone.serviceConfig.ExecStartPost = lib.mkIf (settings.orbitMoons != [ ]) (
+              lib.mkAfter [
+                "+${pkgs.writeShellScript "orbit-external-moons" ''
+                  while ! ${pkgs.netcat}/bin/nc -z localhost 9993; do
+                    sleep 0.1
+                  done
+                  ${lib.concatMapStringsSep "\n" (moon: ''
+                    zerotier-cli orbit ${moon} ${moon}
+                  '') settings.orbitMoons}
+                ''}"
+              ]
+            );
           };
       };
   };
