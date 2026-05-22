@@ -33,6 +33,7 @@ clan_lib = [
     "**/allowed-packages.json",
     "ssh/*.sh",
     "flash/*.sh",
+    "VERSION",
 ]
 
 [tool.pytest.ini_options]

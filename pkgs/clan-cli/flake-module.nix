@@ -91,6 +91,8 @@
           ];
 
           installPhase = ''
+            # docs.py reads the docs version from this file (see clan_lib/docs.py)
+            cp ${../../VERSION} clan_lib/VERSION
             python docs.py reference
             mkdir -p $out
             cp -r out/* $out
@@ -108,6 +110,8 @@
           ];
 
           installPhase = ''
+            # docs.py reads the docs version from this file (see clan_lib/docs.py)
+            cp ${../../VERSION} clan_lib/VERSION
             mkdir -p $out
             # Retrieve python API Typescript types
             python api.py > $out/API.json
