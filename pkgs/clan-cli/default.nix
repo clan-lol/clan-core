@@ -40,7 +40,6 @@ let
       ps.pytest-subprocess
       ps.pytest-xdist
       ps.pytest-timeout
-      ps.pytest-cov
       ps.pexpect
     ]
     ++ (pyDeps ps);
@@ -227,10 +226,7 @@ pythonRuntime.pkgs.buildPythonApplication {
 
           python -m pytest -m "not service_runner and not impure and not with_core" -n "$jobs" \
             ./clan_cli  \
-            ./clan_lib  \
-            --cov ./clan_cli \
-            --cov ./clan_lib \
-            --cov-report=html --cov-report=term
+            ./clan_lib
 
           mkdir -p $out
           cp -r . $out
@@ -329,10 +325,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             # Run all tests with core marker
             python -m pytest -m "not service_runner and not impure and with_core ${marker}" -n "$jobs" \
               ./clan_cli  \
-              ./clan_lib  \
-              --cov ./clan_cli \
-              --cov ./clan_lib \
-              --cov-report=html --cov-report=term
+              ./clan_lib
 
             mkdir -p $out
             cp -r . $out
