@@ -7,6 +7,7 @@ from clan_cli.completions import (
     complete_services_for_machine,
 )
 from clan_lib.flake import require_flake
+from clan_lib.inventory_checks import run_inventory_checks
 from clan_lib.machines.list import list_full_machines
 from clan_lib.vars.generate import run_generators
 
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 
 def generate_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
+    run_inventory_checks(flake)
     machines: list[Machine] = list(list_full_machines(flake).values())
 
     if len(args.machines) > 0:
