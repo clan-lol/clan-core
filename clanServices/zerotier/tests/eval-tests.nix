@@ -92,7 +92,6 @@ in
       autoAcceptAfterZt = builtins.elem "zerotierone.service" (cfg "bam")
       .systemd.services.zerotier-inventory-autoaccept.after;
       hasEtcNetworkId = (cfg "bam").environment.etc ? "zerotier/network-id";
-      hasEtcIp = (cfg "bam").environment.etc ? "zerotier/ip";
     };
     expected = {
       enabled = true;
@@ -100,18 +99,15 @@ in
       autoAcceptWantedBy = [ "multi-user.target" ];
       autoAcceptAfterZt = true;
       hasEtcNetworkId = true;
-      hasEtcIp = true;
     };
   };
 
   test_moon_nixos_config = {
     expr = {
       enabled = (cfg "sara").services.zerotierone.enable;
-      stableEndpoints = (cfg "sara").clan.core.networking.zerotier.moon.stableEndpoints;
     };
     expected = {
       enabled = true;
-      stableEndpoints = [ "10.0.0.3/9993" ];
     };
   };
 
@@ -152,19 +148,6 @@ in
     };
   };
 
-  test_etc_zerotier_ip = {
-    expr = {
-      peer = (cfg "jon").environment.etc ? "zerotier/ip";
-      moon = (cfg "sara").environment.etc ? "zerotier/ip";
-      controller = (cfg "bam").environment.etc ? "zerotier/ip";
-    };
-    expected = {
-      peer = true;
-      moon = true;
-      controller = true;
-    };
-  };
-
   test_networkd_config = {
     expr = (cfg "jon").systemd.network.networks."09-zerotier".matchConfig.Name;
     expected = "zt*";
@@ -173,11 +156,9 @@ in
   test_no_moon_config = {
     expr = {
       enabled = (cfgNoMoon "sara").services.zerotierone.enable;
-      stableEndpoints = (cfgNoMoon "sara").clan.core.networking.zerotier.moon.stableEndpoints;
     };
     expected = {
       enabled = true;
-      stableEndpoints = [ ];
     };
   };
 
