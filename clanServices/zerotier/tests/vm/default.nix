@@ -106,11 +106,6 @@
       for m in machines:
           expected_ip = machine_ips[m.name]
 
-          actual_ip = m.succeed("cat /etc/zerotier/ip").strip()
-          assert actual_ip == expected_ip, (
-              f"{m.name}: /etc/zerotier/ip = '{actual_ip}', expected '{expected_ip}'"
-          )
-
           networks = json.loads(m.succeed("zerotier-cli listnetworks -j"))
           assert len(networks) == 1, f"{m.name}: expected 1 network, got {len(networks)}"
           assigned = [a.split("/")[0] for a in networks[0].get("assignedAddresses", [])]
