@@ -4,7 +4,6 @@
   config,
   pkgs,
   roles,
-  instanceName,
   ...
 }:
 let
@@ -25,8 +24,6 @@ let
 in
 {
   config = {
-    clan.core.networking.zerotier.name = instanceName;
-
     systemd.services.zerotierone.serviceConfig.ExecStartPost = lib.mkIf (moonIps != [ ]) (
       lib.mkAfter [
         "+${pkgs.writeScript "orbit-moons-by-ip" ''
