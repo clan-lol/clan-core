@@ -159,20 +159,21 @@ def test_generate_secret_var_password_store_minimal_select_calls(
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 4 cache misses:
-    # 1. Inventory selectors (from list_full_machines)
-    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
-    # 3. Generator metadata selectors (from generate_command precache)
-    # 4. finalScript and sops selectors (from run_generators precache)
+    # We expect exactly 5 cache misses:
+    # 1. cliChecks selectors (from run_inventory_checks)
+    # 2. Inventory selectors (from list_full_machines)
+    # 3. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 4. Generator metadata selectors (from generate_command precache)
+    # 5. finalScript and sops selectors (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 4:
+    if flake_obj._cache_misses > 5:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for password_store backend"
         )
 
-    assert flake_obj._cache_misses == 4, (
-        f"Expected exactly 4 cache misses for password_store backend, "
+    assert flake_obj._cache_misses == 5, (
+        f"Expected exactly 5 cache misses for password_store backend, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -241,20 +242,21 @@ def test_generate_secret_var_sops_minimal_select_calls(
         )
     )
     # The optimization should result in minimal cache misses.
-    # We expect exactly 4 cache misses:
-    # 1. Inventory selectors (retrieving list of all machines)
-    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
-    # 3. Generator metadata selectors (definitions of all generators + vars settings)
-    # 4. finalScript and sops settings (from run_generators precache)
+    # We expect exactly 5 cache misses:
+    # 1. cliChecks selectors (from run_inventory_checks)
+    # 2. Inventory selectors (retrieving list of all machines)
+    # 3. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 4. Generator metadata selectors (definitions of all generators + vars settings)
+    # 5. finalScript and sops settings (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 4:
+    if flake_obj._cache_misses > 5:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for sops backend"
         )
 
-    assert flake_obj._cache_misses == 4, (
-        f"Expected exactly 4 cache misses for sops backend with 3 machines and 2 generators, "
+    assert flake_obj._cache_misses == 5, (
+        f"Expected exactly 5 cache misses for sops backend with 3 machines and 2 generators, "
         f"got {flake_obj._cache_misses}."
     )
 
@@ -320,15 +322,16 @@ def test_cache_misses_for_vars_operations(
     flake_obj = Flake(str(flake.path))
     machine1 = Machine(name="my_machine", flake=flake_obj)
 
-    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 4 cache misses
+    # Test 1: Running vars generate for BOTH machines simultaneously should result in exactly 5 cache misses
     # Even though we have:
     # - 2 machines (my_machine and other_machine)
     # - 2 generators per machine (gen1 and gen2)
-    # We get 4 cache misses when generating for both machines:
-    # 1. Inventory selectors (from list_full_machines)
-    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
-    # 3. Generator metadata selectors (from generate_command precache)
-    # 4. finalScript selectors (from run_generators precache)
+    # We get 5 cache misses when generating for both machines:
+    # 1. cliChecks selectors (from run_inventory_checks)
+    # 2. Inventory selectors (from list_full_machines)
+    # 3. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 4. Generator metadata selectors (from generate_command precache)
+    # 5. finalScript selectors (from run_generators precache)
 
     generate_command(
         argparse.Namespace(
@@ -340,14 +343,14 @@ def test_cache_misses_for_vars_operations(
         )
     )
 
-    # Print stack traces if we have more than 4 cache misses
-    if flake_obj._cache_misses != 4:
+    # Print stack traces if we have more than 5 cache misses
+    if flake_obj._cache_misses != 5:
         flake_obj.print_cache_miss_analysis(
             title="Cache miss analysis for vars generate"
         )
 
-    assert flake_obj._cache_misses == 4, (
-        f"Expected exactly 4 cache misses for vars generate, got {flake_obj._cache_misses}"
+    assert flake_obj._cache_misses == 5, (
+        f"Expected exactly 5 cache misses for vars generate, got {flake_obj._cache_misses}"
     )
 
     # Test 2: List all vars should result in exactly 1 cache miss
