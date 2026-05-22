@@ -11,10 +11,12 @@ HTTP_OK = 200
 
 
 # This is managed by the nixos module
-def get_network_id() -> str:
+def get_network_id(args: argparse.Namespace) -> str:
+    if args.network_id:
+        return args.network_id
     p = Path("/etc/zerotier/network-id")
     if not p.exists():
-        msg = f"{p} file not found. Have you enabled the zerotier controller on this host?"
+        msg = f"{p} not found. Pass --network-id or ensure the file exists."
         raise ZToolError(msg)
     return p.read_text().strip()
 
@@ -27,7 +29,7 @@ def allow_member(args: argparse.Namespace) -> None:
             msg = "Either --member-ip or member_id_or_ip must be provided"
             raise ZToolError(msg)
         member_id = args.member_id_or_ip
-    network_id = get_network_id()
+    network_id = get_network_id(args)
     token = ZEROTIER_STATE_DIR.joinpath("authtoken.secret").read_text()
     conn = http.client.HTTPConnection("localhost", 9993)
     conn.request(
@@ -44,7 +46,7 @@ def allow_member(args: argparse.Namespace) -> None:
 
 
 def list_members(args: argparse.Namespace) -> None:
-    network_id = get_network_id()
+    network_id = get_network_id(args)
     networks = ZEROTIER_STATE_DIR / "controller.d" / "network" / network_id / "member"
     if not networks.exists():
         return
@@ -65,6 +67,12 @@ def list_members(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage zerotier members")
+    parser.add_argument(
+        "--network-id",
+        type=str,
+        required=False,
+        help="ZeroTier network ID (falls back to /etc/zerotier/network-id)",
+    )
     subparser = parser.add_subparsers(dest="command", required=True)
     parser_allow = subparser.add_parser("allow", help="Allow a member to join")
     parser_allow.add_argument(
