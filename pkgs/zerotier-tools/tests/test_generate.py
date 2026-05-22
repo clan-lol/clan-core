@@ -258,3 +258,96 @@ class TestCliComputeIpMode:
             str(tmp_path / "zerotier-ip"),
         )
         assert result.returncode != 0
+
+
+@pytest.mark.skipif(not has_zerotier_idtool, reason="zerotier-idtool not in PATH")
+class TestCliIdentityOnlyMode:
+    def test_generates_identity_without_ip(self, tmp_path: Path) -> None:
+        secret_output = tmp_path / "zerotier-identity-secret"
+
+        result = run_generate(
+            "--mode",
+            "identity-only",
+            "--identity-secret",
+            str(secret_output),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+        assert secret_output.exists()
+
+        identity = Identity.from_secret_file(secret_output)
+        assert len(identity.node_id()) == 10
+
+    def test_does_not_require_ip(self, tmp_path: Path) -> None:
+        """identity-only should succeed without --ip."""
+        secret_output = tmp_path / "zerotier-identity-secret"
+
+        result = run_generate(
+            "--mode",
+            "identity-only",
+            "--identity-secret",
+            str(secret_output),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+
+    def test_fails_without_identity_secret(self) -> None:
+        result = run_generate("--mode", "identity-only")
+        assert result.returncode != 0
+
+
+class TestCliNetworkIdMode:
+    def test_derives_network_id_from_identity(self, tmp_path: Path) -> None:
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        network_id_output = tmp_path / "zerotier-network-id"
+
+        result = run_generate(
+            "--mode",
+            "network-id",
+            "--identity-secret-file",
+            str(secret_file),
+            "--network-id",
+            str(network_id_output),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+        assert network_id_output.exists()
+
+        network_id = network_id_output.read_text()
+        assert len(network_id) == 16
+        assert network_id.startswith(SAMPLE_NODE_ID)
+
+    def test_does_not_require_ip(self, tmp_path: Path) -> None:
+        """network-id mode should succeed without --ip."""
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        result = run_generate(
+            "--mode",
+            "network-id",
+            "--identity-secret-file",
+            str(secret_file),
+            "--network-id",
+            str(tmp_path / "nid"),
+        )
+        assert result.returncode == 0, f"stderr: {result.stderr}"
+
+    def test_fails_without_identity_secret_file(self, tmp_path: Path) -> None:
+        result = run_generate(
+            "--mode",
+            "network-id",
+            "--network-id",
+            str(tmp_path / "nid"),
+        )
+        assert result.returncode != 0
+
+    def test_fails_without_network_id(self, tmp_path: Path) -> None:
+        secret_file = tmp_path / "identity.secret"
+        secret_file.write_text(SAMPLE_SECRET)
+
+        result = run_generate(
+            "--mode",
+            "network-id",
+            "--identity-secret-file",
+            str(secret_file),
+        )
+        assert result.returncode != 0
