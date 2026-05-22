@@ -232,13 +232,6 @@
           # TODO: move networkId to perInstance
           networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
 
-          # The zerotier-controller generator needs controller support to create a network,
-          # even on peer-only machines (since it's a shared generator).
-
-          zerotieroneWithController = pkgs.callPackage ../../pkgs/zerotierone {
-            includeController = true;
-          };
-
           zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
         in
         {
@@ -460,11 +453,10 @@
                 files.zerotier-identity-secret.deploy = false;
 
                 runtimeInputs = [
-                  zerotieroneWithController
+                  config.clan.core.clanPkgs.zerotierone
                   zerotier-tools
                 ];
                 script = ''
-                  source ${(pkgs.callPackage ../../pkgs/minifakeroot { })}/share/minifakeroot/rc
                   zerotier-generate --mode network \
                     --ip "$out/zerotier-ip" \
                     --identity-secret "$out/zerotier-identity-secret" \

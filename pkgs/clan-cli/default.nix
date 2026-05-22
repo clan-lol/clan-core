@@ -20,7 +20,6 @@
   setupNixInNix,
   templateDerivation,
   zerotierone,
-  minifakeroot,
   diskoInput,
   ...
 }@args:
@@ -284,7 +283,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 zerotierone
                 # needed by vars generate tests
                 (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
-                minifakeroot
                 nix-select
                 (pkgs.callPackage ../../pkgs/zerotier-tools { })
 

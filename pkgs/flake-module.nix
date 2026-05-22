@@ -27,7 +27,6 @@
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
         zerotier-tools = pkgs.callPackage ./zerotier-tools { };
         merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
-        minifakeroot = pkgs.callPackage ./minifakeroot { };
         pending-reviews = pkgs.callPackage ./pending-reviews { };
         zerotierone = pkgs.callPackage ./zerotierone { };
         datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
