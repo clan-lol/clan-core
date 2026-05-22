@@ -16,6 +16,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/installer";
   manifest.description = "A service that turns target machines into an installer image.";
+  manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.iso = {

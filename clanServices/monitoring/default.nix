@@ -3,6 +3,7 @@
   manifest = {
     name = "monitoring";
     description = "Monitoring stack gathering metrics and logs with a small resource footprint.";
+    categories = [ "System" ];
     readme = builtins.readFile ./README.md;
   };
 

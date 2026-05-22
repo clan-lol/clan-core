@@ -3,9 +3,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/packages";
   manifest.description = "Define package sets from nixpkgs and install them on one or more machines";
-  manifest.categories = [
-    "System"
-  ];
+  manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {

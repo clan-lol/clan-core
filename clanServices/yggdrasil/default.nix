@@ -9,6 +9,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/yggdrasil";
   manifest.description = "Yggdrasil encrypted IPv6 routing overlay network";
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"

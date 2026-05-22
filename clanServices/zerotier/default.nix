@@ -9,7 +9,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/zerotier";
   manifest.description = "ZeroTier Mesh VPN Service for secure P2P networking between machines";
-  manifest.categories = [ "Utility" ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"

@@ -166,10 +166,7 @@ in
   _class = "clan.service";
   manifest.name = "clan-core/wireguard";
   manifest.description = "WireGuard-based VPN mesh network with automatic IPv6 address allocation";
-  manifest.categories = [
-    "System"
-    "Network"
-  ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"
