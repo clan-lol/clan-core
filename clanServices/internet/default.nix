@@ -8,10 +8,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/internet";
   manifest.description = "Part of the clan networking abstraction to define how to reach machines from outside the clan network over the internet, if defined has the highest priority";
-  manifest.categories = [
-    "System"
-    "Network"
-  ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"

@@ -10,7 +10,7 @@ in
   _class = "clan.service";
   manifest.name = "data-mesher";
   manifest.description = "Set up data-mesher";
-  manifest.categories = [ "System" ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {

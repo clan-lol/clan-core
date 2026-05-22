@@ -9,10 +9,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/mycelium";
   manifest.description = "End-2-end encrypted P2P IPv6 overlay network";
-  manifest.categories = [
-    "System"
-    "Network"
-  ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"

@@ -23,7 +23,7 @@ in
   _class = "clan.service";
   manifest.name = "ncps";
   manifest.description = "Use the ncps proxy cache to serve the nix store between machines in your network";
-  manifest.categories = [ "Utility" ];
+  manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.server = {

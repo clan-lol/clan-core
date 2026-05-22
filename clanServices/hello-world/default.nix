@@ -7,8 +7,9 @@
 { ... }:
 {
   _class = "clan.service";
-  manifest.name = "clan-core/hello-word";
+  manifest.name = "clan-core/hello-world";
   manifest.description = "Minimal example clan service that greets the world";
+  manifest.categories = [ "Development" ];
   manifest.readme = builtins.readFile ./README.md;
 
   # This service provides two roles: "morning" and "evening". Roles can be

@@ -8,10 +8,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/p2p-ssh-iroh";
   manifest.description = "SSH over dumbpipe (iroh) — NAT-traversing SSH access via encrypted QUIC streams";
-  manifest.categories = [
-    "System"
-    "Network"
-  ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
   manifest.exports.out = [
     "networking"

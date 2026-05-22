@@ -10,6 +10,7 @@ in
   _class = "clan.service";
   manifest.name = "wifi";
   manifest.description = "Pre-configure Wi-Fi networks to connect to";
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {

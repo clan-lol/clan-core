@@ -1,9 +1,9 @@
 { ... }:
 {
   _class = "clan.service";
-  manifest.name = "clan-core/matrix-synapese";
+  manifest.name = "clan-core/matrix-synapse";
   manifest.description = "A federated messaging server with end-to-end encryption.";
-  manifest.categories = [ "Social" ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {

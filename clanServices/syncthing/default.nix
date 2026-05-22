@@ -3,11 +3,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/syncthing";
   manifest.description = "Syncthing is a continuous file synchronization program with automatic peer discovery";
-  manifest.categories = [
-    "Utility"
-    "System"
-    "Network"
-  ];
+  manifest.categories = [ "Network" ];
   manifest.readme = builtins.readFile ./README.md;
 
   roles.peer = {
