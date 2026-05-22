@@ -26,7 +26,6 @@
             "templates"
             "clanServices"
             "pkgs/zerotierone"
-            "pkgs/minifakeroot"
             # needed for test_generate_test_vars.py
             "checks/service-dummy-test"
             "checks/flake-module.nix"
@@ -60,7 +59,7 @@
           inherit (inputs) nixpkgs nix-select;
           diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;
-          inherit (self'.packages) zerotierone minifakeroot;
+          inherit (self'.packages) zerotierone;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -75,7 +74,7 @@
           inherit (inputs) nixpkgs nix-select;
           diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;
-          inherit (self'.packages) zerotierone minifakeroot;
+          inherit (self'.packages) zerotierone;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
