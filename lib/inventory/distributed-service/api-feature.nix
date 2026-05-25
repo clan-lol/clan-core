@@ -6,6 +6,7 @@
   lib,
   config,
   name,
+  meta,
   ...
 }:
 {
@@ -33,6 +34,7 @@
             typePrefix = "";
             input = true;
             output = false;
+            specialArgs = { inherit meta; };
           } r.interface
         ) config.roles;
       };

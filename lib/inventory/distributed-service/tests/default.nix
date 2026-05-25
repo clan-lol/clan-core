@@ -44,6 +44,7 @@ in
   # exports = import ./exports.nix { inherit lib clanLib; };
   settings = import ./settings.nix { inherit lib createTestClan; };
   specialArgs = import ./specialArgs.nix { inherit lib createTestClan; };
+  api_feature_meta = import ./api_feature_meta.nix { inherit lib createTestClan; };
   resolve_module_spec = import ./import_module_spec.nix {
     inherit lib createTestClan;
   };
