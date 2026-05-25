@@ -31,7 +31,7 @@
   testScript =
     { nodes, ... }:
     let
-      ztIp = machine: nodes.${machine}.clan.core.vars.generators.zerotier.files.zerotier-ip.value;
+      ztIp = machine: nodes.${machine}.clan.core.vars.generators.zerotier-ip-zerotier.files.ip.value;
     in
     ''
       import json

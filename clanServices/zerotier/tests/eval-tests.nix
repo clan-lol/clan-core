@@ -88,17 +88,15 @@ in
     expr = {
       enabled = (cfg "bam").services.zerotierone.enable;
       stateFolders = (cfg "bam").clan.core.state.zerotier.folders;
-      autoAcceptWantedBy = (cfg "bam").systemd.services.zerotier-inventory-autoaccept.wantedBy;
+      autoAcceptWantedBy = (cfg "bam").systemd.services.zerotier-autoaccept-zerotier.wantedBy;
       autoAcceptAfterZt = builtins.elem "zerotierone.service" (cfg "bam")
-      .systemd.services.zerotier-inventory-autoaccept.after;
-      hasEtcNetworkId = (cfg "bam").environment.etc ? "zerotier/network-id";
+      .systemd.services.zerotier-autoaccept-zerotier.after;
     };
     expected = {
       enabled = true;
       stateFolders = [ "/var/lib/zerotier-one" ];
       autoAcceptWantedBy = [ "multi-user.target" ];
       autoAcceptAfterZt = true;
-      hasEtcNetworkId = true;
     };
   };
 
@@ -111,39 +109,61 @@ in
     };
   };
 
-  test_controller_generator_structure = {
+  # Shared generators: controller identity + network-id
+  test_controller_shared_generators = {
     expr = {
-      sharedShare = (cfg "bam").clan.core.vars.generators.zerotier-controller.share;
-      sharedFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-controller.files;
-      perMachineDeps = (cfg "bam").clan.core.vars.generators.zerotier.dependencies;
-      perMachineFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier.files;
+      identityShare = (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.share;
+      identityFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.files;
+      identityDeploy =
+        (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.files.identity-secret.deploy;
+      networkShare = (cfg "bam").clan.core.vars.generators.zerotier-network-zerotier.share;
+      networkFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-network-zerotier.files;
+      networkDeps = (cfg "bam").clan.core.vars.generators.zerotier-network-zerotier.dependencies;
     };
     expected = {
-      sharedShare = true;
-      sharedFiles = [
-        "zerotier-identity-secret"
-        "zerotier-ip"
-        "zerotier-network-id"
-      ];
-      perMachineDeps = [ "zerotier-controller" ];
-      perMachineFiles = [
-        "zerotier-identity-secret"
-        "zerotier-ip"
-        "zerotier-network-id"
-      ];
+      identityShare = true;
+      identityFiles = [ "identity-secret" ];
+      identityDeploy = false;
+      networkShare = true;
+      networkFiles = [ "network-id" ];
+      networkDeps = [ "zerotier-identity-bam" ];
     };
   };
 
-  test_peer_generator_structure = {
+  # Per-machine identity generator
+  test_identity_generator = {
     expr = {
-      dependencies = (cfg "jon").clan.core.vars.generators.zerotier.dependencies;
-      files = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier.files;
+      # Controller copies from shared
+      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-identity.dependencies;
+      controllerFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-identity.files;
+      # Peer generates fresh (no deps on shared identity)
+      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-identity.dependencies;
+      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-identity.files;
     };
     expected = {
-      dependencies = [ "zerotier-controller" ];
-      files = [
-        "zerotier-identity-secret"
-        "zerotier-ip"
+      controllerDeps = [ "zerotier-identity-bam" ];
+      controllerFiles = [ "identity-secret" ];
+      peerDeps = [ ];
+      peerFiles = [ "identity-secret" ];
+    };
+  };
+
+  # Per-instance IP generator
+  test_instance_ip_generator = {
+    expr = {
+      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-ip-zerotier.dependencies;
+      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-ip-zerotier.files;
+      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-ip-zerotier.dependencies;
+    };
+    expected = {
+      peerDeps = [
+        "zerotier-identity"
+        "zerotier-network-zerotier"
+      ];
+      peerFiles = [ "ip" ];
+      controllerDeps = [
+        "zerotier-identity"
+        "zerotier-network-zerotier"
       ];
     };
   };
