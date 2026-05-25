@@ -29,7 +29,7 @@ def test_non_existing_dependency_raises_error(
     monkeypatch.chdir(flake.path)
     with pytest.raises(
         ClanError,
-        match="Generator 'my_generator' on machine 'my_machine' depends on generator 'non_existing_generator', but 'non_existing_generator' does not exist",
+        match="Generator 'my_generator' depends on 'non_existing_generator', but 'non_existing_generator' was not found",
     ):
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
 
