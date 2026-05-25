@@ -4,7 +4,7 @@ import pytest
 from clan_cli.tests.age_keys import KeyPair
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
-from clan_cli.vars.public_modules import in_repo
+from clan_cli.vars.public_modules import in_repo as in_repo_mod
 from clan_cli.vars.secret_modules import sops
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
@@ -52,8 +52,8 @@ def test_shared_vars_regeneration(
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
-    in_repo_store_1 = in_repo.VarsStore(machine1.flake)
-    in_repo_store_2 = in_repo.VarsStore(machine2.flake)
+    in_repo_store_1 = in_repo_mod.VarsStore(machine1.flake)
+    in_repo_store_2 = in_repo_mod.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     child_gen_m1 = Generator(
         _flake=machine1.flake,
@@ -125,8 +125,8 @@ def test_multi_machine_shared_vars(
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     sops_store_1 = sops.SecretStore(machine1.flake)
     sops_store_2 = sops.SecretStore(machine2.flake)
-    in_repo_store_1 = in_repo.VarsStore(machine1.flake)
-    in_repo_store_2 = in_repo.VarsStore(machine2.flake)
+    in_repo_store_1 = in_repo_mod.VarsStore(machine1.flake)
+    in_repo_store_2 = in_repo_mod.VarsStore(machine2.flake)
     # Create generators with machine context for testing
     generator_m1 = Generator(
         _flake=machine1.flake,
@@ -265,7 +265,7 @@ def test_share_mode_switch_regenerates_secret(
 
     # Read the initial values
     flake_obj = Flake(str(flake.path))
-    in_repo_store = in_repo.VarsStore(flake=flake_obj)
+    in_repo_store = in_repo_mod.VarsStore(flake=flake_obj)
     sops_store = sops.SecretStore(flake=flake_obj)
 
     generator_not_shared = Generator(
@@ -794,3 +794,71 @@ def test_password_store_set_shared_var_for_multiple_machines(
     # set_var for machine2 — last write wins
     set_var("machine2", "shared_generator/my_secret", b"value_from_m2", flake_obj)
     assert_secret_value(b"value_from_m2")
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_cross_machine_shared_dependency(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Shared generator on machine B depends on shared generator defined ONLY on machine A.
+
+    This mirrors the zerotier pattern:
+      - controller defines shared 'identity' generator
+      - every machine defines shared 'network-id' generator that depends on controller-'identity'
+      - peer does NOT define controller-'identity' itself
+
+    The dependency must be resolved via the all-machines closure, not per-machine lookup.
+    """
+    flake = flake_with_sops
+
+    # controller: defines the shared identity generator
+    controller_config = flake.machines["controller"] = create_test_machine_config()
+    identity_gen = controller_config["clan"]["core"]["vars"]["generators"]["identity"]
+    identity_gen["share"] = True
+    identity_gen["files"]["secret"]["secret"] = False
+    identity_gen["script"] = 'echo -n "id-$RANDOM" > "$out"/secret'
+
+    # controller also gets the shared network generator (same as peer)
+    ctrl_network_gen = controller_config["clan"]["core"]["vars"]["generators"][
+        "network"
+    ]
+    ctrl_network_gen["share"] = True
+    ctrl_network_gen["files"]["network_id"]["secret"] = False
+    ctrl_network_gen["dependencies"] = ["identity"]
+    ctrl_network_gen["script"] = 'cat "$in"/identity/secret > "$out"/network_id'
+
+    # peer: has the shared network generator (depends on identity) but NOT identity
+    peer_config = flake.machines["peer"] = create_test_machine_config()
+    peer_network_gen = peer_config["clan"]["core"]["vars"]["generators"]["network"]
+    peer_network_gen["share"] = True
+    peer_network_gen["files"]["network_id"]["secret"] = False
+    peer_network_gen["dependencies"] = ["identity"]
+    peer_network_gen["script"] = 'cat "$in"/identity/secret > "$out"/network_id'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    # Generate for all machines; this must not fail despite peer lacking 'identity'
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    # Verify the shared generators produced consistent output
+    flake_obj = Flake(str(flake.path))
+    in_repo = in_repo_mod.VarsStore(flake_obj)
+    identity_key = GeneratorId(name="identity", placement=Shared())
+    network_key = GeneratorId(name="network", placement=Shared())
+
+    identity_value = in_repo.get(identity_key, "secret")
+    network_value = in_repo.get(network_key, "network_id")
+    assert identity_value == network_value, (
+        "network generator should have copied the identity value"
+    )
+
+    # Also verify generating for just the peer works
+    cli.run(["vars", "generate", "--flake", str(flake.path), "peer", "--regenerate"])
+    # network_id should still match identity (shared, not regenerated independently)
+    network_value_after = in_repo.get(network_key, "network_id")
+    assert network_value_after == identity_value, (
+        "network value should still match identity after peer-only regeneration"
+    )

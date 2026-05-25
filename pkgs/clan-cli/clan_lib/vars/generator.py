@@ -179,33 +179,6 @@ def get_machine_selectors(machine_names: Iterable[str]) -> list[str]:
     ]
 
 
-def validate_dependencies(
-    generator_name: str,
-    machine_name: str,
-    dependencies: list[str],
-    generators_data: dict[str, dict],
-) -> None:
-    """Validate and build dependency keys for a generator.
-
-    Args:
-        generator_name: Name of the generator that has dependencies
-        machine_name: Name of the machine the generator belongs to
-        dependencies: List of dependency generator names
-        generators_data: Dictionary of all available generators for this machine
-
-    Returns:
-        List of GeneratorId objects
-
-    Raises:
-        ClanError: If a dependency does not exist
-
-    """
-    for dep in dependencies:
-        if dep not in generators_data:
-            msg = f"Generator '{generator_name}' on machine '{machine_name}' depends on generator '{dep}', but '{dep}' does not exist. Please check your configuration."
-            raise ClanError(msg)
-
-
 def find_generator_differences(
     gen_name: str,
     ref_machine: str,
@@ -357,23 +330,22 @@ def get_machine_generators(
                 Shared() if share else PerMachine(machine=machine_name)
             )
 
-            validate_dependencies(
-                gen_name,
-                machine_name,
-                gen_data["dependencies"],
-                generators_data,
-            )
-            dependency_map: dict[str, GeneratorId] = {
-                dep: GeneratorId(
+            dependency_map: dict[str, GeneratorId] = {}
+            for dep in gen_data["dependencies"]:
+                if dep in generators_data:
+                    dep_shared = generators_data[dep]["share"]
+                else:
+                    # Dep not on this machine; It must be a shared generator
+                    # from another machine.  We cannot validate here because
+                    # generators_data only has this machine's generators.
+                    # Truly missing deps will fail during closure resolution.
+                    dep_shared = True
+                dependency_map[dep] = GeneratorId(
                     name=dep,
                     placement=(
-                        Shared()
-                        if generators_data[dep]["share"]
-                        else PerMachine(machine=machine_name)
+                        Shared() if dep_shared else PerMachine(machine=machine_name)
                     ),
                 )
-                for dep in gen_data["dependencies"]
-            }
             generator = Generator(
                 key=GeneratorId(name=gen_name, placement=placement),
                 files=files,
@@ -545,7 +517,14 @@ class Generator:
     ) -> "Generator":
         dep_generator = next((g for g in generators if g.name == dep_key.name), None)
         if dep_generator is None:
-            msg = f"Generator {dep_key.name} not found. - {dep_key}"
+            machines_str = ", ".join(self.machines) or "<unknown>"
+            msg = (
+                f"Generator '{self.name}' depends on '{dep_key.name}', "
+                f"but '{dep_key.name}' was not found.\n"
+                f"Either define it as:\n"
+                f"  - shared generator '{dep_key.name}' on any machine, or\n"
+                f"  - per-machine generator '{dep_key.name}' on: {machines_str}"
+            )
             raise ClanError(msg)
         if self.share and not dep_generator.share:
             msg = (
