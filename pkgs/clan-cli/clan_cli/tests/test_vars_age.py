@@ -305,18 +305,19 @@ def test_generate_secret_var_age_minimal_select_calls(
     )
 
     # The optimization should result in minimal cache misses.
-    # We expect exactly 4 cache misses:
-    # 1. Inventory selectors (from list_full_machines)
-    # 2. relativeDirectory selector (from get_clan_dir in run_generators)
-    # 3. Generator metadata selectors (from generate_command precache)
-    # 4. finalScript and store selectors (from run_generators precache)
+    # We expect exactly 5 cache misses:
+    # 1. cliChecks selectors (from run_inventory_checks)
+    # 2. Inventory selectors (from list_full_machines)
+    # 3. relativeDirectory selector (from get_clan_dir in run_generators)
+    # 4. Generator metadata selectors (from generate_command precache)
+    # 5. finalScript and store selectors (from run_generators precache)
 
     # Print stack traces if we have more cache misses than expected
-    if flake_obj._cache_misses > 4:
+    if flake_obj._cache_misses > 5:
         flake_obj.print_cache_miss_analysis(title="Cache miss analysis for age backend")
 
-    assert flake_obj._cache_misses == 4, (
-        f"Expected exactly 4 cache misses for age backend, "
+    assert flake_obj._cache_misses == 5, (
+        f"Expected exactly 5 cache misses for age backend, "
         f"got {flake_obj._cache_misses}."
     )
 

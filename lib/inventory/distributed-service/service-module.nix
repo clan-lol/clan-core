@@ -357,29 +357,40 @@ in
                 description = "List of export interface this service consumes.";
               };
 
-              features = mkOption {
+              constraints.maxInstances = mkOption {
+                type = types.nullOr types.ints.positive;
+                default = null;
                 description = ''
-                  Enable built-in features for the module
-
-                  See the documentation for each feature:
-                  - API
+                  Maximum number of instances allowed for this service.
+                  `null` means unlimited.
                 '';
-                type = types.submoduleWith {
-                  modules = [
-                    {
-                      options.API = mkOption {
-                        type = types.bool;
-                        # This is read only, because we don't support turning it off yet
-                        readOnly = true;
-                        default = true;
-                        description = ''
-                          Enables automatic API schema conversion for the interface of this module.
-                        '';
-                      };
-                    }
-                  ];
-                };
+              };
+              constraints.roles = mkOption {
+                type = types.attrsOf (
+                  types.submodule {
+                    options.minMachines = mkOption {
+                      type = types.nullOr types.ints.unsigned;
+                      default = null;
+                      description = ''
+                        Minimum number of machines required for this role per instance.
+                        `null` means no minimum.
+                      '';
+                    };
+                    options.maxMachines = mkOption {
+                      type = types.nullOr types.ints.positive;
+                      default = null;
+                      description = ''
+                        Maximum number of machines allowed for this role per instance.
+                        `null` means unlimited.
+                      '';
+                    };
+                  }
+                );
                 default = { };
+                description = ''
+                  Per-role machine count constraints.
+                  Keys must match role names defined in `roles`.
+                '';
               };
             };
           }
@@ -939,6 +950,54 @@ in
       type = types.attrsOf types.raw;
     };
 
+    result.cliChecks = mkOption {
+      visible = false;
+      type = types.listOf types.raw;
+      default =
+        let
+          serviceName = config.manifest.name;
+          constraints = config.manifest.constraints;
+          instanceNames = lib.attrNames config.instances;
+          instanceCount = lib.length instanceNames;
+
+          # Check: maxInstances
+          maxInstanceChecks =
+            lib.optional (constraints.maxInstances != null && instanceCount > constraints.maxInstances)
+              {
+                id = "${serviceName}-maxInstances";
+                message = "Service '${serviceName}' allows at most ${toString constraints.maxInstances} instance(s) but ${toString instanceCount} are defined.";
+                severity = "error";
+              };
+
+          # Check: per-role machine count bounds
+          roleChecks = lib.concatLists (
+            lib.mapAttrsToList (
+              roleName: roleConstraints:
+              lib.concatMap (
+                instanceName:
+                let
+                  machines = config.instances.${instanceName}.roles.${roleName}.machines or { };
+                  machineCount = lib.length (lib.attrNames machines);
+                in
+                lib.optional (roleConstraints.minMachines != null && machineCount < roleConstraints.minMachines) {
+                  id = "${serviceName}-${instanceName}-${roleName}-minMachines";
+                  message = "Role '${roleName}' of service '${serviceName}' instance '${instanceName}' requires at least ${toString roleConstraints.minMachines} machine(s) but ${toString machineCount} are assigned.";
+                  severity = "error";
+                }
+                ++
+                  lib.optional (roleConstraints.maxMachines != null && machineCount > roleConstraints.maxMachines)
+                    {
+                      id = "${serviceName}-${instanceName}-${roleName}-maxMachines";
+                      message = "Role '${roleName}' of service '${serviceName}' instance '${instanceName}' allows at most ${toString roleConstraints.maxMachines} machine(s) but ${toString machineCount} are assigned.";
+                      severity = "error";
+                    }
+              ) instanceNames
+            ) constraints.roles
+          );
+        in
+        maxInstanceChecks ++ roleChecks;
+    };
+
     # The result collected from 'perMachine'
     result.allMachines = mkOption {
       visible = false;
@@ -1045,7 +1104,7 @@ in
               (
                 let
                   failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
-                  formatModule =
+                  canonicalModuleName =
                     if config.module.input != null then
                       "${config.module.input}/${config.module.name}"
                     else
@@ -1053,12 +1112,12 @@ in
                   warningsWithNull = lib.mapAttrsToList (
                     roleName: roleConfig:
                     if (roleConfig.description == null) then
-                      "Missing description for role '${roleName}' of clanService '${formatModule}'"
+                      "Missing description for role '${roleName}' of clanService '${canonicalModuleName}'"
                     else
                       null
                   ) config.roles;
                   manifestWarnings = lib.optionals (config.manifest.readme == null || config.manifest.readme == "") [
-                    "Missing manifest.readme for clanService '${formatModule}'"
+                    "Missing manifest.readme for clanService '${canonicalModuleName}'"
                   ];
                 in
                 {

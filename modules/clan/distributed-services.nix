@@ -170,6 +170,10 @@ in
     clanInternals.inventoryClass.machines = config._allMachines;
     # clanInternals.inventoryClass.distributedServices = config._services;
 
+    clanInternals.cliChecks = lib.concatMap (svc: svc.result.cliChecks) (
+      lib.attrValues config._services.allServices
+    );
+
     # Exports from distributed services
     exports = config._services.exports;
   };

@@ -20,7 +20,7 @@ lib.evalModules {
     # Base module
     ./inventory/distributed-service/service-module.nix
     # Feature modules
-    (lib.modules.importApply ./inventory/distributed-service/api-feature.nix {
+    (lib.modules.importApply ./inventory/distributed-service/api.nix {
       inherit clanLib prefix;
     })
   ]
