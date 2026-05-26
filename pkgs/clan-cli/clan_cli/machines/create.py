@@ -1,6 +1,5 @@
 import argparse
 import logging
-import re
 from dataclasses import dataclass
 
 from clan_lib.api import API
@@ -9,6 +8,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_file
 from clan_lib.machines.actions import MachineResponse, get_machine
+from clan_lib.machines.machine_name import is_valid_machine_name
 from clan_lib.nix_models.typing import MachineDeployInput, MachineInput
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.patch_engine import merge_objects
@@ -52,9 +52,7 @@ def create_machine(
         msg = "Machine name is required"
         raise ClanError(msg, location="Create Machine")
 
-    # TODO: Move this into nix code
-    hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
-    if not re.match(hostname_regex, machine_name):
+    if not is_valid_machine_name(machine_name):
         msg = "Machine name must be a valid hostname"
         raise ClanError(msg, location="Create Machine")
 

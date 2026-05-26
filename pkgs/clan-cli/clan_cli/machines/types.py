@@ -1,23 +1,22 @@
 import argparse
-import re
 
-VALID_HOSTNAME = re.compile(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", re.IGNORECASE)
-
-# Maximum hostname/machine name length as per RFC specifications
-MAX_HOSTNAME_LENGTH = 63
+from clan_lib.machines.machine_name import (
+    MAX_MACHINE_NAME_LENGTH,
+    is_valid_machine_name,
+)
 
 
 def validate_hostname(hostname: str) -> bool:
-    if len(hostname) > MAX_HOSTNAME_LENGTH:
-        return False
-    return VALID_HOSTNAME.match(hostname) is not None
+    return is_valid_machine_name(hostname)
 
 
 def machine_name_type(arg_value: str) -> str:
-    if len(arg_value) > MAX_HOSTNAME_LENGTH:
-        msg = "Machine name must be less than 63 characters long"
+    if len(arg_value) > MAX_MACHINE_NAME_LENGTH:
+        msg = (
+            f"Machine name must be less than {MAX_MACHINE_NAME_LENGTH} characters long"
+        )
         raise argparse.ArgumentTypeError(msg)
-    if not VALID_HOSTNAME.match(arg_value):
-        msg = "Invalid character in machine name. Allowed characters are a-z, 0-9, ., and -. Must not start with a number"
+    if not is_valid_machine_name(arg_value):
+        msg = "Invalid character in machine name. Allowed characters are a-z, 0-9, and -. Must not start or end with a dash"
         raise argparse.ArgumentTypeError(msg)
     return arg_value
