@@ -155,9 +155,41 @@ let
         description = option.description.text or option.description;
       };
       # Only use literal `default`s, skipping the (typically unserializable) `defaultText`.
-      defaultValue = lib.optionalAttrs (option ? default && !(option ? defaultText)) {
-        default = option.default;
-      };
+      # Wrap evaluation in `tryEval`: a `default` that throws (e.g. references an
+      # unprovided specialArg) or that is not a JSON value (functions,
+      # derivations, paths) would otherwise crash the generator or break
+      # downstream consumers like `builtins.toJSON` / `lib.deepSeq`. Silently
+      # omit `default` in those cases.
+      isJsonValue =
+        v:
+        let
+          t = builtins.typeOf v;
+        in
+        if
+          builtins.elem t [
+            "null"
+            "bool"
+            "int"
+            "float"
+            "string"
+          ]
+        then
+          true
+        else if t == "list" then
+          builtins.all isJsonValue v
+        else if t == "set" then
+          !(v ? __toString || v ? outPath) && builtins.all isJsonValue (builtins.attrValues v)
+        else
+          false;
+      defaultEval = builtins.tryEval (option.default or null);
+      defaultValue =
+        lib.optionalAttrs
+          (
+            option ? default && !(option ? defaultText) && defaultEval.success && isJsonValue defaultEval.value
+          )
+          {
+            default = defaultEval.value;
+          };
       getRenamedType = name: renamedTypes.${name} or name;
       /**
         When a branch option like either eventually flattens to a single branch,
@@ -807,10 +839,13 @@ rec {
   fromModule =
     opts: module:
     let
+      specialArgs = opts.specialArgs or { };
+      fromOptionsOpts = builtins.removeAttrs opts [ "specialArgs" ];
       evaled = lib.evalModules {
         modules = lib.toList module;
+        inherit specialArgs;
       };
-      jsonschema = fromOptions opts evaled.options;
+      jsonschema = fromOptions fromOptionsOpts evaled.options;
     in
     jsonschema;
 }
