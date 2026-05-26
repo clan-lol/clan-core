@@ -6,24 +6,33 @@ inventory (e.g. vars generate).  Warnings are logged; errors raise ClanError.
 
 import logging
 from dataclasses import dataclass
+from typing import TypedDict
 
+from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
 log = logging.getLogger(__name__)
 
 
+class InventoryCheck(TypedDict):
+    id: str
+    severity: str
+    message: str
+
+
 @dataclass
 class CheckResult:
-    checks: list[dict]
-    errors: list[dict]
-    warnings: list[dict]
+    checks: list[InventoryCheck]
+    errors: list[InventoryCheck]
+    warnings: list[InventoryCheck]
 
 
-def collect_inventory_checks(flake: Flake) -> CheckResult:
+@API.register
+def get_service_checks(flake: Flake) -> CheckResult:
     """Fetch cliChecks and log warnings/errors.  Always returns."""
     raw = flake.select("clanInternals.cliChecks")
-    checks: list[dict] = raw if isinstance(raw, list) else []
+    checks: list[InventoryCheck] = raw if isinstance(raw, list) else []
 
     errors = [c for c in checks if c.get("severity") == "error"]
     warnings = [c for c in checks if c.get("severity") == "warning"]
@@ -39,7 +48,7 @@ def collect_inventory_checks(flake: Flake) -> CheckResult:
 
 def run_inventory_checks(flake: Flake) -> CheckResult:
     """Fetch cliChecks, log warnings/errors, raise ClanError on errors."""
-    result = collect_inventory_checks(flake)
+    result = get_service_checks(flake)
     if result.errors:
         ids = ", ".join(e.get("id", "?") for e in result.errors)
         msg = f"Inventory checks failed: {ids}"

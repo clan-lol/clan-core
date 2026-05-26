@@ -19,7 +19,7 @@ from . import (
 )
 from . import init as init_cli
 from .arg_actions import AppendOptionAction
-from .clan import check, show
+from .clan import show
 from .flash import cli as flash_cli
 from .help import HelpFormatter
 from .hyperlink import help_hyperlink
@@ -139,36 +139,6 @@ Examples:
         formatter_class=HelpFormatter,
     )
     show_parser.set_defaults(func=show.show_command)
-
-    check_parser = subparsers.add_parser(
-        "check",
-        help="Run sanity checks on the clan configuration",
-        description="Run sanity checks on the clan configuration",
-        epilog=(
-            """
-Evaluates declarative constraints defined in service manifests.
-
-Examples:
-
-  $ clan check
-  Checks the clan in the current directory.
-
-  $ clan check --flake /path/to/clan
-  Checks a specific clan.
-
-  $ clan check --json
-  Outputs check results as JSON.
-"""
-        ),
-        formatter_class=HelpFormatter,
-    )
-    check_parser.add_argument(
-        "--json",
-        help="Output results as JSON",
-        action="store_true",
-        default=False,
-    )
-    check_parser.set_defaults(func=check.check_command)
 
     parser_init = subparsers.add_parser(
         "init",
