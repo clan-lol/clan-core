@@ -155,11 +155,9 @@ let
         description = option.description.text or option.description;
       };
       # Only use literal `default`s, skipping the (typically unserializable) `defaultText`.
-      # Wrap evaluation in `tryEval`: a `default` that throws (e.g. references an
-      # unprovided specialArg) or that is not a JSON value (functions,
-      # derivations, paths) would otherwise crash the generator or break
-      # downstream consumers like `builtins.toJSON` / `lib.deepSeq`. Silently
-      # omit `default` in those cases.
+      # Gate emission on `isJsonValue`: a `default` that is not a JSON value
+      # (functions, derivations, paths) would otherwise leak into the schema
+      # and break downstream consumers like `builtins.toJSON`.
       isJsonValue =
         v:
         let
@@ -181,14 +179,10 @@ let
           !(v ? __toString || v ? outPath) && builtins.all isJsonValue (builtins.attrValues v)
         else
           false;
-      defaultEval = builtins.tryEval (option.default or null);
       defaultValue =
-        lib.optionalAttrs
-          (
-            option ? default && !(option ? defaultText) && defaultEval.success && isJsonValue defaultEval.value
-          )
+        lib.optionalAttrs (option ? default && !(option ? defaultText) && isJsonValue option.default)
           {
-            default = defaultEval.value;
+            default = option.default;
           };
       getRenamedType = name: renamedTypes.${name} or name;
       /**
