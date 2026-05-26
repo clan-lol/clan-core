@@ -6,6 +6,7 @@ from base64 import b64encode
 from collections.abc import Iterator
 from typing import Any, TypedDict, cast
 
+from clan_lib.docs import service_url
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import current_system
@@ -57,7 +58,7 @@ def get_metrics(
         msg = (
             f"Missing required var.\n"
             f"Ensure the 'monitoring' clanService is enabled and run `clan machines update {machine.name}`."
-            "For more information, see: https://clan.lol/docs/unstable/services/official/monitoring"
+            f"For more information, see: {service_url('monitoring')}"
         )
         raise ClanError(msg)
 

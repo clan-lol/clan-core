@@ -15,6 +15,7 @@ from typing import IO, Any
 
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import runtime_deps_flake, user_config_dir
+from clan_lib.docs import guides_url
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_shell
@@ -466,7 +467,7 @@ def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
             f"- {'\n- '.join(f'{key.key_type.name.lower()}: {key.pubkey}' for key in keys)}\n\n"
             f"Please ensure you have created a Clan secrets user and added one of your SOPS keys\n"
             f"to that user.\n"
-            f"For more information, see: https://clan.lol/docs/unstable/guides/vars/sops/secrets#add-your-public-keys"
+            f"For more information, see: {guides_url('guides/vars/sops/secrets#add-your-public-keys')}"
         )
         raise ClanError(msg)
 

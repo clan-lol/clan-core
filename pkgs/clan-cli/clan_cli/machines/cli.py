@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+from clan_lib.docs import guides_url
+
 from clan_cli.help import HelpFormatter
 
 from .build import register_build_parser
@@ -171,7 +173,7 @@ The target must be a Linux based system reachable via SSH.
 Installing a machine means overwriting the target's disk.
         """,
         epilog=(
-            """
+            f"""
 This subcommand provides an interface to install machines managed by Clan.
 
 Examples:
@@ -187,8 +189,8 @@ Examples:
 
 Further references:
 
-- https://clan.lol/docs/unstable/getting-started/getting-started-physical
-- https://clan.lol/docs/unstable/getting-started/getting-started-virtualbox
+- {guides_url("getting-started/getting-started-physical")}
+- {guides_url("getting-started/getting-started-virtualbox")}
         """
         ),
         formatter_class=HelpFormatter,

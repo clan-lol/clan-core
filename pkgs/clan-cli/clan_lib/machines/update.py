@@ -14,6 +14,7 @@ from clan_lib.api import API
 from clan_lib.async_run import is_async_cancelled
 from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
+from clan_lib.docs import guides_url
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command, nix_metadata
@@ -58,7 +59,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
 
 SshAuthContext = Literal["upload_sources", "copy_closure"]
 
-_GUIDE_URL = "https://clan.lol/docs/unstable/guides/ssh-agent-forwarding"
+_GUIDE_URL = guides_url("guides/ssh-agent-forwarding")
 
 
 def _check_ssh_auth_error(

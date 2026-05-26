@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from clan_lib.api import API
+from clan_lib.docs import guides_url
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.nix import current_system
 from clan_lib.nix_models.typing import MachineOutput
@@ -180,7 +181,7 @@ def get_machine_host(
 
     if host_str is None:
         machine.debug(
-            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://clan.lol/docs/unstable/guides/networking/networking",
+            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: {guides_url('guides/networking/networking')}",
         )
 
         selector = (
