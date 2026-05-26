@@ -126,9 +126,10 @@ def migrate_zerotier(clan_dir: Path) -> None:
         machine_name = machine_path.name
 
         if machine_name not in network_map:
-            log.warning(
-                f"Skipping: Could not migrate 'zerotier' vars for machine '{machine_name}'. It seems it is not part of any 'zerotier' in your inventory"
+            log.info(
+                f"Removing stale zerotier vars for machine '{machine_name}' (not part of any zerotier instance in inventory)"
             )
+            delete_var_file(machine_path / "zerotier", changed)
             continue
 
         instance, dominant_role = network_map[machine_name]

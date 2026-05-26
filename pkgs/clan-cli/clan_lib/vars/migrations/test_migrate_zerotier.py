@@ -191,7 +191,7 @@ def _assert_final_state(vars_dir: Path) -> None:
 @pytest.mark.with_core
 class TestMigrateZerotier:
     def test_legacy(self, clan_flake: Callable[..., Flake]) -> None:
-        """LEGACY state is migrated to FINAL; stray machine is preserved."""
+        """LEGACY state is migrated to FINAL; stray machine zerotier dir is removed."""
         flake = clan_flake(TWO_NETWORK_INVENTORY)
         clan_dir = flake.path
         vars_dir = clan_dir / "vars"
@@ -199,7 +199,7 @@ class TestMigrateZerotier:
         paths = _seed_legacy_files(vars_dir)
 
         # Seed a stray machine: has legacy zerotier/ dir but is not in any
-        # zerotier instance.  Migration should skip it and preserve the data.
+        # zerotier instance. Migration should remove the stale directory.
         stray_zt = vars_dir / "per-machine/stray/zerotier"
         stray_id = stray_zt / "zerotier-identity-secret"
         p = stray_id / "secret"
@@ -221,9 +221,7 @@ class TestMigrateZerotier:
         migrate_zerotier(clan_dir)
         _assert_final_state(vars_dir)
 
-        assert stray_zt.exists()
-        assert (stray_id / "secret").read_text() == "key-data"
-        assert (stray_id / "users" / "admin").is_symlink()
+        assert not stray_zt.exists(), "Stale zerotier dir should have been removed"
 
     def test_canonical(self, clan_flake: Callable[..., Flake]) -> None:
         """CANONICAL state (shared/zerotier-controller + per-machine) is migrated to FINAL."""
