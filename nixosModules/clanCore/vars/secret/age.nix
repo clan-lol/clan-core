@@ -125,7 +125,7 @@ let
       mountSecretFs
     ]
     ++ lib.optionals isNixOS [
-      pkgs.move-mount-beneath
+      pkgs.util-linux
     ];
     text = ''
       set -efu -o pipefail
@@ -138,7 +138,7 @@ let
     + (
       if isNixOS then
         ''
-          # NixOS: atomic mount replacement using move-mount-beneath
+          # NixOS: atomic mount replacement via `mount --bind --beneath`
           mkdir -p "$target".tmp "$target"
           if mountpoint -q "$target"; then
             mount-secret-fs "$target".tmp
@@ -174,11 +174,14 @@ let
 
     ''
     + lib.optionalString isNixOS ''
-      # If we used .tmp, atomically move beneath the old mount
+      # If we used .tmp, atomically bind it beneath the old mount, then
+      # unmount the old top. `mount --bind --beneath` requires util-linux
+      # >= 2.40 and avoids the stacked-mount accumulation that a plain
+      # `--move` would produce on shared subtrees.
       if mountpoint -q "$target".tmp && [ "$(stat -c %d "$target".tmp)" != "$(stat -c %d "$target")" ]; then
-        move-mount --detached --beneath "$target".tmp "$target"
+        mount --bind --beneath "$target".tmp "$target"
         umount --lazy "$target"
-        umount -R "$target".tmp
+        umount "$target".tmp
         rmdir "$target".tmp 2>/dev/null || true
       fi
     '';

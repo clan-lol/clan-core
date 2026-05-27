@@ -95,7 +95,6 @@ in
           pkgs.makeShellWrapper
           # Needed for password-store
           pkgs.shellcheck-minimal
-          pkgs.move-mount-beneath
         ]
         ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
         ++ builtins.map (import ./facter-report.nix) (
