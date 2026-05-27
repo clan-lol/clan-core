@@ -205,6 +205,18 @@
             [ "fd5d:bbe3:cbc5:fe6b:f699:935d:bbe3:cbc5" ]
           '';
         };
+        options.allowedIds = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = ''
+            Extra machines by their zerotier node ID (10-char hex) that the
+            controller should accept. Use this for external devices not in
+            the clan inventory — the node ID is shown by `zerotier-cli info`.
+          '';
+          example = ''
+            [ "deadbeef00" "abc1234567" ]
+          '';
+        };
         options.public = lib.mkOption {
           type = lib.types.bool;
           default = false;
@@ -332,6 +344,9 @@
                   ${lib.concatMapStringsSep "\n" (host: ''
                     ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow --member-ip ${host}
                   '') allHostIPs}
+                  ${lib.concatMapStringsSep "\n" (id: ''
+                    ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${id}
+                  '') settings.allowedIds}
                 '';
               };
             };
