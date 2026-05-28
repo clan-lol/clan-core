@@ -12,7 +12,7 @@ let
     runtimeInputs = [
       pkgs.gnutar
       pkgs.gzip
-      pkgs.move-mount-beneath
+      pkgs.util-linux
     ];
     text = ''
       set -efu -o pipefail
@@ -25,15 +25,20 @@ let
 
       mkdir -p "$target".tmp "$target"
       if mountpoint -q "$target"; then
-        # Prepare new mount with secrets
+        # Prepare new mount with secrets in a staging location.
         mount -t tmpfs -o noswap tmpfs "$target".tmp
         chmod 511 "$target".tmp
         tar -xf "$src" -C "$target".tmp
 
-        # Atomically move new mount beneath the old one, then unmount the old and .tmp
-        move-mount --detached --beneath "$target".tmp "$target"
+        # Attach a fresh bind of the staged mount BENEATH the live target,
+        # then unmount the old top atomically. `mount --bind --beneath`
+        # avoids the stacked-mount accumulation that a plain `--move` would
+        # produce on shared subtrees, and matches the clone+move semantics
+        # the previous `move-mount --detached --beneath` helper provided.
+        # Requires util-linux >= 2.40.
+        mount --bind --beneath "$target".tmp "$target"
         umount --lazy "$target"
-        umount -R "$target".tmp
+        umount "$target".tmp
         rmdir "$target".tmp
       else
         mount -t tmpfs -o noswap tmpfs "$target"
