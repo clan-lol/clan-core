@@ -3,6 +3,7 @@
   nodejs_24,
   fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   stdenv,
   jq,
   git,
@@ -22,6 +23,7 @@ stdenv.mkDerivation (
   let
     fodArgs = {
       inherit (finalAttrs) src version;
+      pnpm = pnpm_10;
       sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pnpmRoot}";
       fetcherVersion = 3;
     };
