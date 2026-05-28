@@ -5,8 +5,7 @@ import Icon from "@/components/Icon";
 import type { JSX } from "solid-js";
 import { Tooltip } from "../Tooltip/Tooltip";
 
-interface ToolbarButtonProps
-  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ToolbarButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: string;
   description: JSX.Element;
   selected?: boolean;

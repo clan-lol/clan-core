@@ -12,8 +12,7 @@ type Size = "default" | "s" | "xs";
 type Hierarchy = "primary" | "secondary";
 type Elasticity = "default" | "fit";
 
-export interface ButtonProps
-  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   hierarchy?: Hierarchy;
   size?: Size;
   ghost?: boolean;

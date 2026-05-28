@@ -357,7 +357,7 @@ You will be prompted for the password and should see "hello" printed.
 
 To revoke alice's sudo access, simply remove the line you added:
 
-```{.nix title="clan.nix" hl_lines="7"}
+```text {.nix title="clan.nix" hl_lines="7"}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
