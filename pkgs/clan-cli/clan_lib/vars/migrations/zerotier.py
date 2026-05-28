@@ -5,7 +5,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.git import commit_files
 from clan_lib.machines.actions import list_machines
-from clan_lib.services.modules import list_service_instances
+from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.vars.migrations.migrate_var import (
     copy_var_file,
     delete_var_file,
@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 # After this migration run we are in "FINAL"
 #
 # - M=Machine,I=Instance,C=Controller
-# - Given M: we can find I, C: via list_machines, list_service_instances
+# - Given M: we can find I, C: via the inventory
 #
 # LEGACY:
 #
@@ -83,7 +83,10 @@ def migrate_zerotier(clan_dir: Path) -> None:
 
     flake = Flake(str(clan_dir))
     all_machines = list_machines(flake)
-    all_instances = list_service_instances(flake)
+
+    inventory_store = InventoryStore(flake)
+    inventory = inventory_store.read()
+    all_instances = inventory.get("instances", {})
 
     network_map = {}
     for machine_name, machine in all_machines.items():
@@ -91,13 +94,17 @@ def migrate_zerotier(clan_dir: Path) -> None:
             (
                 instance_name,
                 "controller"
-                if machine_name in instance.roles["controller"]["machines"]
+                if "controller" in instance["roles"]
+                and machine_name in instance["roles"]["controller"]["machines"]
                 else "peer",
             )
             for instance_name, instance in all_instances.items()
             if (
                 instance_name in machine.instance_refs
-                and instance.module["name"] == "zerotier"
+                # Note: Every instance MUST have a module.name; (derivable from module system behavior)
+                # This could conflict with downstream modules named "zerotier"
+                # FIXME: list_service_instances was removed here, because it's not lazy enough, and migrations should be cheap.
+                and instance["module"]["name"] == "zerotier"
             )
         ]
         if not joined:
