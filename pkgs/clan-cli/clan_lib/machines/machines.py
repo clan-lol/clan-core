@@ -17,6 +17,7 @@ from clan_lib.nix_selectors import (
     machine_vars_settings_public_module,
     machine_vars_settings_secret_module,
 )
+from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
 from clan_lib.vars._types import StoreBase
 
@@ -118,13 +119,17 @@ class Machine:
         with get_best_remote(self) as remote:
             return remote
 
-    def build_host(self) -> Remote | None:
+    def build_host(self) -> Remote | LocalHost | None:
         """The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
         remote = get_machine_host(self.name, self.flake, field="buildHost")
 
         if remote:
+            # If the build host is localhost, return LocalHost() for consistency
+            # with CLI argument handling
+            if remote.data.address == "localhost":
+                return LocalHost()
             return remote.data
 
         return None
