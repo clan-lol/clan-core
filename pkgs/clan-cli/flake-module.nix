@@ -90,8 +90,8 @@
           buildInputs = [
             # TODO: see postFixup clan-cli/default.nix:L188
             pkgs.python3
-            self'.packages.clan-cli.propagatedBuildInputs
-          ];
+          ]
+          ++ self'.packages.clan-cli.propagatedBuildInputs;
 
           installPhase = ''
             # docs.py reads the docs version from this file (see clan_lib/docs.py)
