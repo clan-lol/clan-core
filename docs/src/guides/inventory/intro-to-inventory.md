@@ -29,15 +29,12 @@ Each machine gets a name and some metadata:
 ```nix
 inventory.machines = {
   sally-laptop = {
-    deploy.targetHost = "root@192.168.1.10";
     tags = [ "laptop" ];
   };
   fred-laptop = {
-    deploy.targetHost = "root@192.168.1.11";
     tags = [ "laptop" ];
   };
   backup-server = {
-    deploy.targetHost = "root@192.168.1.100";
     tags = [ "server" ];
   };
 };
@@ -47,6 +44,18 @@ inventory.machines = {
 - **`tags`**: labels you use to group machines (more on this shortly)
 - **`machineClass`**: defaults to `"nixos"`. Set it to `"darwin"` for Macs
 
+If you're using the internet networking module, then:
+
+```nix
+inventory.instances = {
+  internet = {
+    roles.default.machines."sally-laptop".settings.host  = "192.168.1.10";
+    roles.default.machines."fred-laptop".settings.host   = "192.168.1.11";
+    roles.default.machines."backup-server".settings.host = "192.168.1.100";
+  };
+};
+```
+
 Clan builds configurations statically from the inventory, without connecting to machines first. It needs to know the operating system upfront because NixOS and nix-darwin use fundamentally different module systems. Generating the wrong one for a machine would produce a configuration that doesn't work. There is no auto-detection.
 
 For example, suppose Julia has a MacBook:
@@ -54,11 +63,16 @@ For example, suppose Julia has a MacBook:
 ```nix
 inventory.machines = {
   julia-macbook = {
-    deploy.targetHost = "root@192.168.1.18";
     machineClass = "darwin";
     tags = [ "laptop" ];
   };
 };
+```
+
+```nix
+inventory.instances = {
+  internet = {
+    roles.default.machines."julia-macbook".settings.host  = "192.168.1.18";
 ```
 
 ## Tags
@@ -67,7 +81,7 @@ Tags are labels you apply to machines so you can refer to groups of them by tag 
 
 When you add a new laptop later, just tag it `laptop` and it automatically picks up all the services that target that tag.
 
-Clan defines three tags by default:
+Clan defines at least three tags by default:
 
 | Tag | Matches |
 |-----|---------|
@@ -187,7 +201,7 @@ Sally ends up with `home` and `office`. Fred ends up with `home`, `office`, and 
 
 ---
 
-## Multiple Instances {#multiple-instances}
+## Multiple Instances
 
 Sometimes you need the same service configured differently for different machines. The `users` service is a good example: each person needs their own account, with their own username, on their own machine. You can't declare two things both named `users`, but you can create two separately named instances that both use the `users` service module.
 

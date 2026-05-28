@@ -87,7 +87,7 @@ Use cases include shared certificate authorities, mesh VPN pre-shared keys, and 
 
 Complex systems can be built by composing simple generators:
 
-```
+```text
 root-ca → intermediate-ca → service-cert
          ↓
      ocsp-responder

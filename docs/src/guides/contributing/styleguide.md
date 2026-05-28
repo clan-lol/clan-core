@@ -274,7 +274,7 @@ Use present tense for descriptions. Future tense makes documentation feel tentat
 
 #### Avoid Nominalizations
 
-A nominalization is a verb turned into a noun, often by adding *-tion*, *-ment*, or *-ance* (e.g. "explanation", "selection"). The fix: find the hidden verb and use it directly.
+A nominalization is a verb turned into a noun, often by adding *-tion*, *-meant*, or *-ance* (e.g. "explanation", "selection"). The fix: find the hidden verb and use it directly.
 
 **Don't:**
 
@@ -337,7 +337,7 @@ Don't bury the negative. Key limitations should be prominent, not a footnote aft
 
 #### Consistent Terminology
 
-Pick a term and stick to it. Don't swap synonyms to avoid repetition. In technical documetnation, repetition is clarity.
+Pick a term and stick to it. Don't swap synonyms to avoid repetition. In technical documentation, repetition is clarity.
 
 **Don't:**
 
@@ -353,13 +353,13 @@ Use descriptive link text. Never use "click here" or "this link."
 
 **Don't:**
 
-> For more information, see [this page](url).
-> Click [here](url) to read the reference.
+> For more information, see `[this page](url)`.
+> Click `[here](url)` to read the reference.
 
 **Do:**
 
-> See [inventory reference](url) for details.
-> Read the [NixOS module system guide](url).
+> See `[inventory reference](url)` for details.
+> Read the `[NixOS module system guide](url)`.
 
 Only link when the destination is directly relevant, not for generic background context (sometimes known as "Wikipedia-style links"). Readers feel obligated to click links, fearing they'll miss something important. Don't send them to a generic article about a technology when they're looking for how *your* system uses it.
 
@@ -372,7 +372,7 @@ Only link when the destination is directly relevant, not for generic background 
 
 **Do:**
 
-> See [database schema](url) for the full table structure.
+> See `[database schema](url)` for the full table structure.
 
 #### UI Language
 
@@ -429,4 +429,3 @@ Always copy commands and code from a terminal where you just ran them successful
 Replace sensitive values with placeholders: `<YOUR-KEY>`, `<YOUR-HOST>`, `<YOUR-TOKEN>`.
 
 Typed-from-memory commands introduce subtle errors. Even the most experienced software developers have occasional typos.
-

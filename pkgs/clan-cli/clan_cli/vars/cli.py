@@ -119,7 +119,7 @@ Examples:
     $ clan vars get my-server zerotier/vpn-ip
     Will get the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/vars-custom-generators"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -138,7 +138,7 @@ Examples:
     $ clan vars set my-server zerotier/vpn-ip
     Will set the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/vars-custom-generators"))}
         """
         ),
         formatter_class=HelpFormatter,
@@ -178,7 +178,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/using-vars"))}
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/vars-custom-generators"))}
         """
         ),
         formatter_class=HelpFormatter,

@@ -1,6 +1,6 @@
 # Writing Custom Vars Generators
 
-Declare a vars generator, generate a hashed root password, deploy it to a machine, and then share and rotate that password across multiple machines.
+Declare a vars generator, generate a hashed root password, deploy it to a machine, change as needed.
 
 This guide covers the full `clan vars` workflow:
 
@@ -9,8 +9,7 @@ This guide covers the full `clan vars` workflow:
 3. Generate variables interactively.
 4. Observe the changes made to your repository.
 5. Update the machine configuration.
-6. Share the root password between multiple machines.
-7. Change the root password when needed.
+6. Change the root password when needed.
 
 For a detailed API reference, see the [vars module documentation](/docs/reference/clan.core/vars).
 
@@ -107,51 +106,10 @@ Date:   ...
 clan machines update my-machine
 ```
 
-## Share root password between machines
-
-If we just imported the `root-password.nix` from above into more machines, Clan would ask for a new password for each additional machine.
-
-If the root password instead should only be entered once and shared across all machines, add `share = true` to the generator defined above:
-
-```nix
-{ config, pkgs, ... }:
-{
-
-  clan.core.vars.generators.root-password = {
-    # share this generator across all machines that import it
-    share = true;
-    # prompt the user for a password
-    # (`password-input` being an arbitrary name)
-    prompts.password-input.description = "the root user's password";
-    prompts.password-input.type = "hidden";
-    # don't store the prompted password itself
-    prompts.password-input.persist = false;
-    # define an output file for storing the hash
-    files.password-hash.secret = false;
-    # define the logic for generating the hash
-    script = ''
-      cat $prompts/password-input | mkpasswd > $out/password-hash
-    '';
-    # the tools required by the script
-    runtimeInputs = [ pkgs.mkpasswd ];
-  };
-
-  # ensure users are immutable (otherwise the following config might be ignored)
-  users.mutableUsers = false;
-  # set the root password to the file containing the hash
-  users.users.root.hashedPasswordFile =
-    # clan will make sure, this path exists
-    config.clan.core.vars.generators.root-password.files.password-hash.path;
-}
-```
-
-Importing that shared generator into each machine will ensure that the password is only asked once when the first machine gets updated, and then re-used for all subsequent machines.
-
 ## Change the root password
 
 Changing the password can be done via this command.
 Replace `my-machine` with your machine.
-If the password is shared, just pick any machine that has the generator declared.
 
 ```console
 $ clan vars generate my-machine --generator root-password --regenerate

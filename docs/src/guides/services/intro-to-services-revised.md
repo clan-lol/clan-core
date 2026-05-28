@@ -36,13 +36,19 @@ inventory.instances = {
 };
 ```
 
-Once you've saved `clan.nix`, deploy the change:
+Once you've saved `clan.nix`, deploy the change. If this is the first time for this machine, use `install`:
 
 ```bash
 clan machines install sally-laptop
 ```
 
-That's the deploy steps: create a `clan.nix`, run `install`, and you're all set. Clan builds a NixOS configuration that includes your services, uploads it to the machine, and runs `nixos-rebuild switch`. No manual steps on the target.
+Or if this isn't the first time, use update:
+
+```bash
+clan machines update sally-laptop
+```
+
+That's the deploy steps: create a `clan.nix`, run `install` or `update`, and you're all set. Clan builds a NixOS configuration that includes your services, uploads it to the machine, and runs `nixos-rebuild switch`. No manual steps on the target.
 
 Some services need secrets before they can run: passwords, encryption keys, network credentials. For those, generate the secrets first, then deploy:
 
@@ -93,15 +99,12 @@ You apply tags in the `machines` section of `clan.nix`:
 ```nix
 inventory.machines = {
   sally-laptop = {
-    deploy.targetHost = "root@192.168.1.10";
     tags = [ "laptop" ];
   };
   fred-laptop = {
-    deploy.targetHost = "root@192.168.1.11";
     tags = [ "laptop" ];
   };
   backup-server = {
-    deploy.targetHost = "root@192.168.1.100";
     tags = [ "server" ];
   };
 };
@@ -120,7 +123,7 @@ inventory.instances = {
 
 Clan resolves the tag to all machines that carry it. When Barb joins the team with a new laptop, you tag it `laptop` and she automatically gets backed up. You don't touch the service declaration at all.
 
-Clan defines three tags automatically:
+Clan defines at least three tags automatically:
 
 | Tag | Matches |
 |-----|---------|
@@ -223,7 +226,7 @@ Clan includes 50+ built-in services. Here is a small sampling:
 | `monitoring` | Prometheus + Grafana |
 | `matrix-synapse` | Chat server |
 
-See the full list in the [Services Reference](#).
+See the full list in the [Services Reference](/docs/services/definition).
 
 ## Putting It All Together
 
@@ -232,20 +235,24 @@ Here is the scenario from the opener, fully wired up:
 ```nix
 inventory.machines = {
   sally-laptop = {
-    deploy.targetHost = "root@192.168.1.10";
     tags = [ "laptop" ];
   };
   fred-laptop = {
-    deploy.targetHost = "root@192.168.1.11";
     tags = [ "laptop" ];
   };
   backup-server = {
-    deploy.targetHost = "root@192.168.1.100";
     tags = [ "server" ];
   };
 };
 
 inventory.instances = {
+  # Networking: direct SSH to each machine
+  internet = {
+    roles.default.machines."sally-laptop".settings.host  = "192.168.1.10";
+    roles.default.machines."fred-laptop".settings.host   = "192.168.1.11";
+    roles.default.machines."backup-server".settings.host = "192.168.1.100";
+  };
+
   # SSH on everything
   sshd = {
     roles.server.tags = [ "all" ];
