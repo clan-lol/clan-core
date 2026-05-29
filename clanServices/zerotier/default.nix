@@ -15,6 +15,12 @@
     "networking"
     "peer"
   ];
+  # Require exactly one controller per network
+  manifest.constraints.roles.controller.maxMachines = 1;
+  manifest.constraints.roles.controller.minMachines = 1;
+  # Max 4 roots per moon definition (zerotier-idtool 1.x limit).
+  # See https://github.com/zerotier/ZeroTierOne/issues/893
+  manifest.constraints.roles.moon.maxMachines = 4;
 
   exports = lib.mapAttrs' (instanceName: _: {
     name = clanLib.buildScopeKey {
