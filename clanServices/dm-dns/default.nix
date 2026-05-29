@@ -98,6 +98,7 @@
     perInstance =
       {
         exports,
+        machine,
         mkExports,
         ...
       }:
@@ -117,18 +118,21 @@
             # Collect all exports from the entire clan (for CNAME entries)
             allExports = clanLib.selectExports (_scope: true) exports;
 
+            # Exports from this machine
+            machineExports = clanLib.selectExports (scope: scope.machineName == machine.name) exports;
+
             # Helper to check if a host is internal (matches *.${domain})
             isInternalHost = host: lib.hasSuffix ".${domain}" host;
 
             # Helper to extract endpoint name from host: "music.pin" -> "music"
             extractEndpoint = host: lib.removeSuffix ".${domain}" host;
 
-            # All internal hostnames from endpoint exports (deduplicated)
-            allInternalHosts = lib.unique (
+            # Internal hostnames of this machine from endpoint exports
+            machineInternalHosts = lib.unique (
               lib.concatLists (
                 lib.mapAttrsToList (
                   _scopeKey: exportValue: lib.filter isInternalHost (exportValue.endpoints.hosts or [ ])
-                ) allExports
+                ) machineExports
               )
             );
 
@@ -251,15 +255,20 @@
             # Restrict internal virtualHosts to VPN addresses only
             (lib.mkIf (internalListenAddresses != [ ]) (
               let
-                addrs = internalListenAddresses ++ [
-                  "127.0.0.1"
-                  "::1"
-                ];
+                isIPv6 = addr: builtins.match ".*:.*:.*" addr != null;
+                escapeIPv6 = addr: if isIPv6 addr then "[${addr}]" else addr;
+                addrs = map escapeIPv6 (
+                  internalListenAddresses
+                  ++ [
+                    "127.0.0.1"
+                    "::1"
+                  ]
+                );
                 hostOverrides = lib.listToAttrs (
                   map (host: {
                     name = host;
                     value.listenAddresses = lib.mkDefault addrs;
-                  }) allInternalHosts
+                  }) machineInternalHosts
                 );
               in
               {
