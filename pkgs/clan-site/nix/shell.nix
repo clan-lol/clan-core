@@ -11,5 +11,8 @@ mkShellNoCC {
     clan-site-cli
   ];
   env = clan-site.devShellEnv;
-  shellHook = clan-site.devShellHook;
+  shellHook = ''
+    ${clan-site.devShellHook}
+    pnpm install --frozen-lockfile
+  '';
 }
