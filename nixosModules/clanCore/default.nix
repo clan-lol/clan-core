@@ -4,7 +4,7 @@
     ./backups.nix
     ./defaults.nix
     ./dependencies.nix
-    ./facts-deprecation.nix
+    ./deprecations.nix
     ./deprecated.nix
     ./settings.nix
     ./clanPkgs.nix
