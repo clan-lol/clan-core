@@ -55,7 +55,6 @@
           command = lib.getExe wrapper;
           includes = [
             "clanServices/**/*.nix"
-            "clanModules/**/*.nix"
             "nixosModules/**/*.nix"
           ];
           excludes = [

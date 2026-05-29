@@ -71,7 +71,7 @@ in
       # We manually transform the value with types.deferredModule.merge later to keep them serializable
       type = types.attrsOf types.raw;
       default = { };
-      defaultText = "clanModules of clan-core";
+      defaultText = "Clan compatible modules";
       description = ''
         A mapping of module names to their path.
 

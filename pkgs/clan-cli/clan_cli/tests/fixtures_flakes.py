@@ -247,23 +247,20 @@ class ClanFlake:
         if self.clan_nix_raw is not None:
             clan_nix_path = self.path / "clan.nix"
             clan_nix_path.write_text(self.clan_nix_raw)
-        imports = "\n".join(
-            [f"clan-core.clanModules.{module}" for module in self.clan_modules],
-        )
+
         for machine_name, machine_config in self.machines.items():
             configuration_nix = (
                 self.path / "machines" / machine_name / "configuration.nix"
             )
             configuration_nix.parent.mkdir(parents=True, exist_ok=True)
             configuration_nix.write_text(
-                f"""
-                {{clan-core, ...}}:
-                {{
+                """
+                {clan-core, ...}:
+                {
                     imports = [
                         (builtins.fromJSON (builtins.readFile ./configuration.json))
-                        {imports}
                     ];
-                }}
+                }
             """,
             )
             machine = Machine(name=machine_name, flake=Flake(str(self.path)))
