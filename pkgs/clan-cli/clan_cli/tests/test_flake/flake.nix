@@ -6,11 +6,8 @@
     inputs':
     let
       # fake clan-core input
-      fake-clan-core = {
-        clanModules.fake-module = ./fake-module.nix;
-      };
       inputs = inputs' // {
-        clan-core = fake-clan-core;
+        clan-core = { };
       };
     in
     {

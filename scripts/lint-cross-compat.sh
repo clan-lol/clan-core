@@ -75,7 +75,6 @@ else
   mapfile -t files < <(
     git ls-files \
       'clanServices/**/*.nix' \
-      'clanModules/**/*.nix' \
       'nixosModules/**/*.nix' \
     | grep -v '/tests/' \
     | sort

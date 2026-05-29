@@ -17,7 +17,6 @@
         clanCore = self.filter {
           include = [
             "flake.nix"
-            "clanModules"
             "flakeModules"
             "lib"
             "modules"

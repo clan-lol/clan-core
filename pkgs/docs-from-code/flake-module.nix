@@ -4,9 +4,7 @@
     { pkgs, self', ... }:
     let
       # Simply evaluated options (JSON)
-      # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = pkgs.callPackage ./get-module-docs.nix {
-        inherit (self) clanModules;
         clan-core = self;
         inherit pkgs;
       };
@@ -47,7 +45,7 @@
             export CLAN_CORE_PATH=${
               inputs.nixpkgs.lib.fileset.toSource {
                 root = ../..;
-                fileset = ../../clanModules;
+                fileset = ../..;
               }
             }
             export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json

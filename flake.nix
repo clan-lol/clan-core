@@ -92,7 +92,6 @@
             # by removing files
             filter pathExists [
               ./checks/flake-module.nix
-              ./clanModules/flake-module.nix
               ./clanServices/flake-module.nix
               ./devShell.nix
               ./apps.nix

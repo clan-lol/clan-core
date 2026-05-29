@@ -37,12 +37,6 @@ let
   };
 in
 {
-  imports = [
-    (lib.mkRemovedOptionModule [ "services" ] ''
-      The `inventory.services` option has been removed. Use `inventory.instances` instead.
-      See: https://clan.lol/docs/unstable/reference/options/clan_inventory#instances
-    '')
-  ];
   options = {
     # Internal things
     _inventoryFile = lib.mkOption {
@@ -71,11 +65,11 @@ in
       # We manually transform the value with types.deferredModule.merge later to keep them serializable
       type = types.attrsOf types.raw;
       default = { };
-      defaultText = "clanModules of clan-core";
+      defaultText = "Clan compatible modules";
       description = ''
         A mapping of module names to their path.
 
-        Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
+        Each module can be referenced by its `attributeName` in the `inventory.instances` attribute set.
 
         :::admonition{type=important}
         Each module MUST fulfill the following requirements to be usable with the inventory:
@@ -90,14 +84,15 @@ in
         :::admonition{type=example collapsible open}
         ```nix
         clan-core.lib.clan {
-            # 1. Add the module to the available inventory modules
-            inventory.modules = {
-              custom-module = ./modules/my_module;
+            # 1. Add the module to the available modules
+            modules = {
+              foo = ./modules/my_module;
             };
             # 2. Use the module in the inventory
-            inventory.services = {
-              custom-module.instance_1 = {
-                  roles.default.machines = [ "machineA" ];
+            inventory.instances = {
+              foo = {
+                module.input = "self";
+                roles.default.machines = [ "machineA" ];
               };
             };
         };
@@ -285,7 +280,7 @@ in
                     description = ''
                       List of tags for the machine.
 
-                      The machine can be referenced by its tags in `inventory.services`
+                      The machine can be referenced by its tags in `inventory`
 
                       :::admonition[Example]{type=example collapsible open}
                       ```nix

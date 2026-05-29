@@ -41,7 +41,7 @@ If your Clan configuration uses **variables (vars)** - generated secrets, keys, 
 
 #### Systems that use vars include:
 
-- Any `clanModules` with generated secrets (zerotier, borgbackup, etc.)
+- Any `clanServices` with generated secrets (zerotier, borgbackup, etc.)
 - Custom generators that create passwords or keys
 - Services that need shared configuration values
 
