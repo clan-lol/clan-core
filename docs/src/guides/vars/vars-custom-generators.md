@@ -1,6 +1,6 @@
-# Using Vars
+# Writing Custom Vars Generators
 
-Declare a vars generator, generate a hashed root password, deploy it to a machine, and then share and rotate that password across multiple machines.
+Declare a vars generator, generate a hashed root password, deploy it to a machine, change as needed.
 
 This guide covers the full `clan vars` workflow:
 
@@ -9,8 +9,7 @@ This guide covers the full `clan vars` workflow:
 3. Generate variables interactively.
 4. Observe the changes made to your repository.
 5. Update the machine configuration.
-6. Share the root password between multiple machines.
-7. Change the root password when needed.
+6. Change the root password when needed.
 
 For a detailed API reference, see the [vars module documentation](/docs/reference/clan.core/vars).
 
@@ -60,7 +59,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
 Executing `clan vars list`, you should see the following:
 
 ```console
-$ clan vars list my_machine
+$ clan vars list my-machine
 root-password/password-hash: <not set>
 ```
 
@@ -73,7 +72,7 @@ This step is not strictly necessary, as deploying the machine via `clan machines
 To run the generator, execute `clan vars generate` for your machine
 
 ```console
-$ clan vars generate my_machine
+$ clan vars generate my-machine
 Enter the value for root-password/password-input (hidden):
 ```
 
@@ -94,41 +93,23 @@ If the repository is a git repository, a commit was created automatically:
 
 ```console
 $ git log -n1
-commit ... (HEAD -> master)
+commit ... (HEAD -> main)
 Author: ...
 Date:   ...
 
-    vars: update via generator root-password (machine: grmpf-nix)
+    vars: update via generator root-password (machine: my-machine)
 ```
 
 ## Update the machine
 
 ```shell
-clan machines update my_machine
+clan machines update my-machine
 ```
-
-## Share root password between machines
-
-If we just imported the `root-password.nix` from above into more machines, Clan would ask for a new password for each additional machine.
-
-If the root password instead should only be entered once and shared across all machines, the generator defined above needs to be declared as `shared`, by adding `share = true` to it:
-
-```nix
-{ config, pkgs, ... }:
-{
-  clan.core.vars.generators.root-password = {
-    share = true;
-  };
-}
-```
-
-Importing that shared generator into each machine, will ensure that the password is only asked once the first machine gets updated and then re-used for all subsequent machines.
 
 ## Change the root password
 
 Changing the password can be done via this command.
 Replace `my-machine` with your machine.
-If the password is shared, just pick any machine that has the generator declared.
 
 ```console
 $ clan vars generate my-machine --generator root-password --regenerate

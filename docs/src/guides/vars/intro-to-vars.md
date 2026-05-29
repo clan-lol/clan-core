@@ -39,9 +39,9 @@ When you run:
 clan vars generate test-machine
 ```
 
-clan will scan your current vars, see that there's a need for a root password, and then prompt you for a root password (or generates one automatically if you leave it blank).
+where test-machine is the name of the machine, clan will scan your current vars, see that there's a need for a root password, and then prompt you for a root password (or generate one automatically if you leave it blank).
 
-If you run the same command a second time, clan will see there's already a password created, and simply exit with no output.
+If you run the same command a second time, clan will see there's already a password created, and exit with no output.
 
 ## Viewing Your Vars
 
@@ -69,7 +69,7 @@ To see the actual value of a secret:
 clan vars get test-machine user-password-root/user-password
 ```
 
-This decrpts and displays the root password. This is useful when you need to log in to a machine's console.
+This decrpts and displays the root password. This is useful when you need to log in to a machine's console. Replace `root` with the name of the user.
 
 ## How Vars Are Stored
 
@@ -149,7 +149,7 @@ inventory.instances = {
 
 When you run `clan vars generate`:
 
-Clan again scans your clan.nix file and sees there's a need for another key. It will prompt you for the value for wifi.home/network-name for machines: test-machine
+Clan again scans your `clan.nix` file and sees there's a need for another key. It will prompt you for the value for wifi.home/network-name for machines: test-machine
 Network SSID: MyHomeNetwork
 
 ```console

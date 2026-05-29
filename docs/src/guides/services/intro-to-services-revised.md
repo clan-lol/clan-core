@@ -1,191 +1,217 @@
 # Introduction to Clan Services
 
-A **service** is a reusable piece of functionality you can add to your machines. Services handle things like backups, networking, user management, and installing packages, all configured from your `clan.nix` file.
+Imagine you're managing machines for a small team: Sally and Fred each have a laptop, and there's a shared backup server. You want WiFi configured on the laptops, nightly backups to the server, a user account for each person on their own machine, and SSH access across the board.
 
-Instead of manually installing software and editing config files on each machine, you declare what services you want, and Clan sets everything up for you.
+Without Clan, you'd handle each machine by hand: SSH in, install packages, edit config files, restart services, and repeat for every machine. Add a new laptop and you start again. Forget one step and the machine is inconsistent with the rest.
 
-## The Basic Pattern
+**Services** are how Clan handles this. A service is a pre-built, configurable module that handles one specific job. You declare which services run on which machines in `clan.nix`, Clan builds the configuration, and deploying is a single command.
 
-Every service follows the same pattern:
+## What Is a Service?
 
-1. Add the service to `clan.nix`
-2. Run `clan machines update <machine-name>`
-3. The service is now running
+Clan comes with a library of services covering common infrastructure tasks: SSH, WiFi, user accounts, backups, networking, package installation, and more. Each service knows how to configure a machine for its specific job. You don't write the configuration yourself; you declare that you want the service, supply any settings it needs, and Clan takes care of the rest.
 
-## Your First Service: Installing Packages
-
-The simplest service is `packages`, which installs software on your machines:
+Services live in the `instances` section of your `clan.nix` file:
 
 ```nix
-# clan.nix
+inventory.instances = {
+  sshd = {
+    roles.server.tags = [ "all" ];
+  };
+};
+```
+
+This says: run the `sshd` service, and give every machine the `server` role. Clan figures out what configuration that requires and applies it when you deploy.
+
+## Your First Service
+
+The simplest service is `packages`, which installs software on your machines. Here's how to add it:
+
+```nix
 inventory.instances = {
   packages = {
-    roles.default.machines."test-machine".settings = {
-      packages = [ "bat" "htop" "ripgrep" ];
+    roles.default.machines."sally-laptop" = {
+      settings.packages = [ "bat" "htop" "ripgrep" ];
     };
   };
 };
 ```
 
-Then deploy:
+Once you've saved `clan.nix`, deploy the change. If this is the first time for this machine, use `install`:
 
 ```bash
-clan machines update test-machine
+clan machines install sally-laptop
 ```
 
-SSH into your machine:
+Or if this isn't the first time, use update:
 
 ```bash
-clan ssh test-machine
+clan machines update sally-laptop
 ```
 
-and verify:
+That's the deploy steps: create a `clan.nix`, run `install` or `update`, and you're all set. Clan builds a NixOS configuration that includes your services, uploads it to the machine, and runs `nixos-rebuild switch`. No manual steps on the target.
+
+Some services need secrets before they can run: passwords, encryption keys, network credentials. For those, generate the secrets first, then deploy:
 
 ```bash
+clan vars generate sally-laptop
+clan machines install sally-laptop
+```
+
+`clan vars generate` prompts you for any secrets the service needs and stores them securely. You only need to run it when you add a new service or when secrets change. Simple services like `packages` don't need it.
+
+To verify the packages landed, SSH in and check:
+
+```bash
+clan ssh sally-laptop
 bat --version
-htop --version
 ```
 
-To remove a package, delete it from the list and run `update` again. That's declarative configuration, where your machine matches what's in your config file.
+To remove a package, delete it from the list and run `clan machines update`. The machine will match whatever is in the config file. That's declarative configuration.
 
-## Understanding Roles
+## Roles
 
-Services have **roles** that define different behaviors. For example, a backup service has:
+When a service runs across multiple machines, each machine may play a different part. A **role** defines what that part is.
 
-- **client** - machines that get backed up
-- **server** - the machine that stores backups
+The `borgbackup` service is a good example. It needs two kinds of machines: ones that get backed up, and one that stores the backups. It uses roles to tell them apart:
 
 ```nix
 inventory.instances = {
   borgbackup = {
-    roles.client.machines."my-laptop" = {};
-    roles.client.machines."my-desktop" = {};
+    roles.client.machines."sally-laptop" = {};
+    roles.client.machines."fred-laptop" = {};
     roles.server.machines."backup-server" = {};
   };
 };
 ```
 
-This says: "Back up my laptop and desktop to my backup server."
+The `client` role configures a machine to send backups. The `server` role configures a machine to receive and store them. Clan applies the right configuration to each machine based on the role you've assigned.
 
-Different services have different roles. The `packages` service only has a `default` role. The `wireguard` VPN service has `controller` and `peer` roles. Check each service's documentation for its available roles.
+Simple services, where every machine does the same job, use a single role called `default`. The `packages` service works this way: every machine in the `default` role gets the same treatment. More involved services define multiple named roles.
 
-## Using Tags
+Each service's documentation describes what roles are available and what each one does.
 
-A tag is a label you attach to machines so you can reference them as a group. Think of it like labeling boxes when you move; you might label some "kitchen," some "bedroom," and some "office." Then when you want to do something to all kitchen boxes, you just look for that label.
+## Tags
 
-Using tags, you can apply services to multiple machines at once. Every machine automatically has the `all` tag.
+Naming machines one by one works fine for small setups, but it gets unwieldy as your fleet grows. **Tags** let you refer to groups of machines by label instead.
 
-```nix
-inventory.instances = {
-  packages = {
-    # Install these packages on ALL machines
-    roles.default.tags = [ "all" ];
-    roles.default.settings.packages = [ "vim" "git" "curl" ];
-  };
-};
-```
-
-You can also define custom tags in your machine definitions:
+You apply tags in the `machines` section of `clan.nix`:
 
 ```nix
 inventory.machines = {
-  laptop = {
-    deploy.targetHost = "root@192.168.0.10";
-    tags = [ "workstation" ];
+  sally-laptop = {
+    tags = [ "laptop" ];
   };
-  desktop = {
-    deploy.targetHost = "root@192.168.0.11";
-    tags = [ "workstation" ];
+  fred-laptop = {
+    tags = [ "laptop" ];
   };
-  server = {
-    deploy.targetHost = "root@192.168.0.12";
+  backup-server = {
     tags = [ "server" ];
   };
 };
 ```
 
-Then you can use the above tags:
+Then, instead of listing machines by name in your service, you reference the tag:
 
 ```nix
 inventory.instances = {
-  packages = {
-    # Only workstations get these packages
-    roles.default.tags = [ "workstation" ];
-    roles.default.settings.packages = [ "firefox" "vlc" ];
+  borgbackup = {
+    roles.client.tags = [ "laptop" ];
+    roles.server.machines."backup-server" = {};
   };
 };
 ```
 
-## Adding Settings
+Clan resolves the tag to all machines that carry it. When Barb joins the team with a new laptop, you tag it `laptop` and she automatically gets backed up. You don't touch the service declaration at all.
 
-Most services have configurable settings. Here's the WiFi service with settings:
+Clan defines at least three tags automatically:
+
+| Tag | Matches |
+|-----|---------|
+| `all` | Every machine in your inventory |
+| `nixos` | Every machine with `machineClass = "nixos"` |
+| `darwin` | Every machine with `machineClass = "darwin"` |
+
+You define the rest by putting them in the `tags` list on each machine.
+
+You can also mix tags and machine names within the same role. If most of your backup clients are laptops but you also want to include one specific desktop:
+
+```nix
+inventory.instances = {
+  borgbackup = {
+    roles.client.tags = [ "laptop" ];
+    roles.client.machines."office-desktop" = {};
+    roles.server.machines."backup-server" = {};
+  };
+};
+```
+
+Clan combines both into one group.
+
+## Settings
+
+Services are configurable through the `settings` attribute. Settings can apply to all machines in a role, or be overridden per machine.
+
+**Role-wide settings** apply to every machine in a role:
+
+```nix
+inventory.instances = {
+  borgbackup = {
+    roles.client.tags = [ "laptop" ];
+    roles.client.settings.startAt = "*-*-* 02:00:00";
+    roles.server.machines."backup-server" = {};
+  };
+};
+```
+
+**Per-machine settings** apply only to one machine, layered on top of the role-wide settings:
 
 ```nix
 inventory.instances = {
   wifi = {
-    roles.default.machines."my-laptop" = {
-      settings.networks.home = {};
+    roles.default.tags = [ "laptop" ];
+    roles.default.settings.networks.home = {};
+    roles.default.machines."sally-laptop" = {
       settings.networks.office = {};
     };
+    roles.default.machines."fred-laptop" = {};
   };
 };
 ```
 
-When you run `clan vars generate`, it will prompt you for the SSID and password for each network.
+Per-machine settings merge on top of role-wide settings, so you only need to specify what's different. The role provides the `home` network to every laptop. Sally's entry adds `office` on top of that; she ends up with both. Fred's entry is empty, so he gets only what the role provides.
 
-Here's borgbackup with settings:
+A note on `= {}`: throughout these examples you will see attributes assigned to an empty set. In Nix, this is how you say "include this, but I have nothing extra to specify." When you write `roles.default.machines."fred-laptop" = {}`, you are adding Fred's laptop to the role with no per-machine customization. When you write `settings.networks.home = {}`, you are enabling that network with its default settings. The key being present is the declaration; the empty braces mean there is nothing to add.
+
+## Multiple Instances
+
+Sometimes you need the same service configured differently for different machines. The `users` service is a good example: each person needs their own account, with their own username, on their own machine.
+
+By default, the instance name in `clan.nix` is also the service module name. You can run the same service multiple times by giving each instance its own name and setting `module.name` to the name of the service:
 
 ```nix
 inventory.instances = {
-  borgbackup = {
-    roles.client.machines."my-laptop" = {
-      settings.startAt = "*-*-* 02:00:00";  # Backup at 2 AM daily
-    };
-    roles.server.machines."backup-server" = {};
+  user-sally = {
+    module.name = "users";
+    roles.default.machines."sally-laptop" = {};
+    roles.default.settings.user = "sally";
+  };
+  user-fred = {
+    module.name = "users";
+    roles.default.machines."fred-laptop" = {};
+    roles.default.settings.user = "fred";
   };
 };
 ```
 
-## Combining Multiple Services
+The `module.name` field tells Clan which service module to use. The instance names (`user-sally`, `user-fred`) can be anything; they just can't share a name.
 
-You can add as many services as you need:
+> **Note:** Not every service supports multiple instances. Check the service documentation before setting up more than one.
 
-```nix
-inventory.instances = {
-  # SSH access
-  sshd = {
-    roles.server.tags = [ "all" ];
-    roles.server.settings.authorizedKeys = {
-      "admin" = "ssh-ed25519 AAAA... admin@example.com";
-    };
-  };
-
-  # Install packages
-  packages = {
-    roles.default.tags = [ "all" ];
-    roles.default.settings.packages = [ "vim" "htop" ];
-  };
-
-  # WiFi (for laptops)
-  wifi = {
-    roles.default.machines."laptop" = {
-      settings.networks.home = {};
-    };
-  };
-
-  # Backups
-  borgbackup = {
-    roles.client.tags = [ "all" ];
-    roles.server.machines."backup-server" = {};
-  };
-};
-```
-
-One `clan machines update` command applies all of these services.
+---
 
 ## Available Services
 
-Clan includes 30+ built-in services:
+Clan includes 50+ built-in services. Here is a small sampling:
 
 | Service | What It Does |
 |---------|--------------|
@@ -200,32 +226,63 @@ Clan includes 30+ built-in services:
 | `monitoring` | Prometheus + Grafana |
 | `matrix-synapse` | Chat server |
 
-See the full list in the Services Reference (Link coming soon).
+See the full list in the [Services Reference](/docs/services/definition).
 
-## The Workflow
+## Putting It All Together
 
-Here's the typical workflow when adding services:
+Here is the scenario from the opener, fully wired up:
 
-```bash
-# 1. Edit clan.nix to add/modify services
+```nix
+inventory.machines = {
+  sally-laptop = {
+    tags = [ "laptop" ];
+  };
+  fred-laptop = {
+    tags = [ "laptop" ];
+  };
+  backup-server = {
+    tags = [ "server" ];
+  };
+};
 
-# 2. Generate any secrets (passwords, keys, etc.)
-clan vars generate test-machine --no-sandbox  # --no-sandbox for Ubuntu
+inventory.instances = {
+  # Networking: direct SSH to each machine
+  internet = {
+    roles.default.machines."sally-laptop".settings.host  = "192.168.1.10";
+    roles.default.machines."fred-laptop".settings.host   = "192.168.1.11";
+    roles.default.machines."backup-server".settings.host = "192.168.1.100";
+  };
 
-# 3. Deploy to the machine
-clan machines update test-machine
+  # SSH on everything
+  sshd = {
+    roles.server.tags = [ "all" ];
+  };
 
-# 4. Verify on the machine
-ssh root@<ip>
+  # WiFi on laptops
+  wifi = {
+    roles.default.tags = [ "laptop" ];
+    roles.default.settings.networks.home = {};
+  };
+
+  # One user account per person, on their own machine
+  user-sally = {
+    module.name = "users";
+    roles.default.machines."sally-laptop" = {};
+    roles.default.settings.user = "sally";
+  };
+  user-fred = {
+    module.name = "users";
+    roles.default.machines."fred-laptop" = {};
+    roles.default.settings.user = "fred";
+  };
+
+  # Backups: laptops to backup-server, every night at 2 AM
+  borgbackup = {
+    roles.client.tags = [ "laptop" ];
+    roles.client.settings.startAt = "*-*-* 02:00:00";
+    roles.server.machines."backup-server" = {};
+  };
+};
 ```
 
-## What's Happening Under the Hood
-
-When you run `clan machines update`:
-
-1. Clan builds a NixOS configuration that includes your services
-2. The configuration is uploaded to the target machine
-3. `nixos-rebuild switch` runs on the target
-4. The machine is now running your services
-
-No manual steps on the target machine. No logging in to install packages or edit config files. Everything is defined in your `clan.nix` and applied with one command.
+When Barb joins the team, add `barb-laptop` with `tags = [ "laptop" ]` and she automatically gets SSH, WiFi, and a backup slot. The inventory scales with you.

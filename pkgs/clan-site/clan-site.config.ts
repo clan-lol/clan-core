@@ -77,7 +77,7 @@ export const docsNav: DocsNavItems = [
         label: "Vars",
         children: [
           "guides/vars/intro-to-vars",
-          "guides/vars/using-vars",
+          "guides/vars/vars-custom-generators",
           {
             label: "Backends",
             children: [

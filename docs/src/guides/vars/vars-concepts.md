@@ -34,7 +34,7 @@ A → B → C
 
 You can build systems like certificate authorities where intermediate certificates depend on root certificates.
 
-**Type safety.** Secret files are only accessible via `.path` and deployed to `/run/secrets/`. Public files are accessible via `.value` and stored in the nix store. This separation prevents accidental exposure of secrets.
+**Type safety.** Secret files are accessed via `.path` only (their plaintext content is never readable at evaluation time) and are deployed to `/run/secrets/` on the target machine (or `/run/secrets-for-users/` when `neededFor = "users"`). Public files are accessed via either `.path` or `.value` and are stored in the nix store. This separation prevents accidental exposure of secrets.
 
 ### Storage Backend Architecture
 
@@ -42,21 +42,31 @@ Pluggable storage backends handle encryption/decryption:
 
 - `sops` (default): integrates with Clan's existing sops encryption
 - `password-store`: for users already using pass
+- `age`: stores secrets encrypted with age recipients
+- `custom`: define your own secret store
 
-### Timing and Lifecycle
+### When Generation Runs
 
-Vars are generated in three phases:
+There are three ways to trigger generation:
 
-1. Before deployment: `clan vars generate` creates vars explicitly
-2. During deployment: missing vars are generated automatically
-3. On demand: explicit regeneration with `--regenerate` flag
+1. **Explicitly, before deployment:** running `clan vars generate` creates any missing vars.
+2. **Automatically, during deployment:** any missing vars are generated as part of `clan machines update`.
+3. **On demand, to replace existing values:** passing the `--regenerate` flag forces regeneration of vars that already exist.
 
-Use `neededFor` to control when vars are available during system activation:
+### Deployment Timing with `neededFor`
+
+The `neededFor` option on a file controls *when on the target machine* a secret becomes available during system activation. Valid values are:
+
+- `partitioning`: deployed before disko runs (e.g. for filesystem encryption keys)
+- `activation`: deployed before `nixos-rebuild` / `nixos-install`
+- `users`: deployed before users and groups are created (required for user passwords); stored in `/run/secrets-for-users/`
+- `services`: the default; available to normal services at runtime
+
+Example: a user password hash that must exist before the user account is created:
 
 ```nix
-files."early-secret" = {
-  secret = true;
-  neededFor = "users";  # Available early in activation
+files."user-password-hash" = {
+  neededFor = "users";
 };
 ```
 
