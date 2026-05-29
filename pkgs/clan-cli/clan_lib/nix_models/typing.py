@@ -280,7 +280,7 @@ type InventoryModulesInput = dict[str, AnyJson]
 """
 A mapping of module names to their path.
 
-Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
+Each module can be referenced by its `attributeName` in the `inventory.instances` attribute set.
 
 :::admonition{type=important}
 Each module MUST fulfill the following requirements to be usable with the inventory:
@@ -295,14 +295,15 @@ For further information see: [Module Authoring Guide](../../guides/services/comm
 :::admonition{type=example collapsible open}
 ```nix
 clan-core.lib.clan {
-    # 1. Add the module to the available inventory modules
-    inventory.modules = {
-      custom-module = ./modules/my_module;
+    # 1. Add the module to the available modules
+    modules = {
+      foo = ./modules/my_module;
     };
     # 2. Use the module in the inventory
-    inventory.services = {
-      custom-module.instance_1 = {
-          roles.default.machines = [ "machineA" ];
+    inventory.instances = {
+      foo = {
+        module.input = "self";
+        roles.default.machines = [ "machineA" ];
       };
     };
 };
@@ -316,7 +317,7 @@ type InventoryModulesOutput = dict[str, AnyJson]
 """
 A mapping of module names to their path.
 
-Each module can be referenced by its `attributeName` in the `inventory.services` attribute set.
+Each module can be referenced by its `attributeName` in the `inventory.instances` attribute set.
 
 :::admonition{type=important}
 Each module MUST fulfill the following requirements to be usable with the inventory:
@@ -331,14 +332,15 @@ For further information see: [Module Authoring Guide](../../guides/services/comm
 :::admonition{type=example collapsible open}
 ```nix
 clan-core.lib.clan {
-    # 1. Add the module to the available inventory modules
-    inventory.modules = {
-      custom-module = ./modules/my_module;
+    # 1. Add the module to the available modules
+    modules = {
+      foo = ./modules/my_module;
     };
     # 2. Use the module in the inventory
-    inventory.services = {
-      custom-module.instance_1 = {
-          roles.default.machines = [ "machineA" ];
+    inventory.instances = {
+      foo = {
+        module.input = "self";
+        roles.default.machines = [ "machineA" ];
       };
     };
 };
@@ -556,7 +558,7 @@ type MachineTagsInput = list[str]
 """
 List of tags for the machine.
 
-The machine can be referenced by its tags in `inventory.services`
+The machine can be referenced by its tags in `inventory`
 
 :::admonition[Example]{type=example collapsible open}
 ```nix
@@ -581,7 +583,7 @@ type MachineTagsOutput = list[str]
 """
 List of tags for the machine.
 
-The machine can be referenced by its tags in `inventory.services`
+The machine can be referenced by its tags in `inventory`
 
 :::admonition[Example]{type=example collapsible open}
 ```nix
