@@ -30,27 +30,23 @@ class CheckResult:
 
 @API.register
 def get_service_checks(flake: Flake) -> CheckResult:
-    """Fetch cliChecks and log warnings/errors.  Always returns."""
+    """Fetch cliChecks and partition by severity.  Always returns."""
     raw = flake.select("clanInternals.cliChecks")
     checks: list[InventoryCheck] = raw if isinstance(raw, list) else []
 
     errors = [c for c in checks if c.get("severity") == "error"]
     warnings = [c for c in checks if c.get("severity") == "warning"]
 
-    for w in warnings:
-        log.warning("[%s] %s", w.get("id", "?"), w.get("message", ""))
-
-    for e in errors:
-        log.error("[%s] %s", e.get("id", "?"), e.get("message", ""))
-
     return CheckResult(checks=checks, errors=errors, warnings=warnings)
 
 
 def run_inventory_checks(flake: Flake) -> CheckResult:
-    """Fetch cliChecks, log warnings/errors, raise ClanError on errors."""
+    """Fetch cliChecks, log warnings, raise ClanError on errors."""
     result = get_service_checks(flake)
+    for w in result.warnings:
+        log.warning("[%s] %s", w["id"], w["message"])
     if result.errors:
-        ids = ", ".join(e.get("id", "?") for e in result.errors)
-        msg = f"Inventory checks failed: {ids}"
+        lines = "\n".join(f"  [{e['id']}] {e['message']}" for e in result.errors)
+        msg = f"Inventory checks failed:\n{lines}"
         raise ClanError(msg)
     return result

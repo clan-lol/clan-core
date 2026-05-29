@@ -120,3 +120,126 @@ def test_collect_inventory_checks_role_max_machines(
     assert err["severity"] == "error"
     assert "at most 4" in err["message"]
     assert "5 are assigned" in err["message"]
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_role_max_machines_passes_across_instances(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    """maxMachines=1 on controller role passes when split across two instances."""
+    flake = clan_flake(
+        raw=r"""
+        {
+          modules."mynet" = {
+            _class = "clan.service";
+            manifest.name = "mynet";
+            manifest.constraints.roles.controller.maxMachines = 1;
+            roles.controller = {};
+            roles.peer = {};
+          };
+          inventory.machines.m1 = {};
+          inventory.machines.m2 = {};
+          inventory.instances."net-a" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.controller.machines.m1 = {};
+            roles.peer.machines.m2 = {};
+          };
+          inventory.instances."net-b" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.controller.machines.m2 = {};
+            roles.peer.machines.m1 = {};
+          };
+        }
+        """
+    )
+
+    result = get_service_checks(flake)
+
+    assert result.errors == []
+    assert result.warnings == []
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_role_min_machines_passes_across_instances(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    """minMachines=1 on controller passes when both instances satisfy it."""
+    flake = clan_flake(
+        raw=r"""
+        {
+          modules."mynet" = {
+            _class = "clan.service";
+            manifest.name = "mynet";
+            manifest.constraints.roles.controller.minMachines = 1;
+            roles.controller = {};
+            roles.peer = {};
+          };
+          inventory.machines.m1 = {};
+          inventory.machines.m2 = {};
+          inventory.instances."net-a" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.controller.machines.m1 = {};
+            roles.peer.machines.m2 = {};
+          };
+          inventory.instances."net-b" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.controller.machines.m2 = {};
+            roles.peer.machines.m1 = {};
+          };
+        }
+        """
+    )
+
+    result = get_service_checks(flake)
+
+    assert result.errors == []
+    assert result.warnings == []
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_role_min_machines_fails_in_one_of_two_instances(
+    clan_flake: Callable[..., Flake],
+) -> None:
+    """minMachines=1 on controller errors for the instance that has none."""
+    flake = clan_flake(
+        raw=r"""
+        {
+          modules."mynet" = {
+            _class = "clan.service";
+            manifest.name = "mynet";
+            manifest.constraints.roles.controller.minMachines = 1;
+            roles.controller = {};
+            roles.peer = {};
+          };
+          inventory.machines.m1 = {};
+          inventory.machines.m2 = {};
+          inventory.instances."net-a" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.controller.machines.m1 = {};
+            roles.peer.machines.m2 = {};
+          };
+          inventory.instances."net-b" = {
+            module.name = "mynet";
+            module.input = "self";
+            roles.peer.machines.m1 = {};
+          };
+        }
+        """
+    )
+
+    result = get_service_checks(flake)
+
+    assert len(result.errors) == 1
+    err = result.errors[0]
+    assert err["id"] == "mynet-net-b-controller-minMachines"
+    assert err["severity"] == "error"
+    assert "at least 1" in err["message"]
+    assert "0 are assigned" in err["message"]
