@@ -29,7 +29,7 @@ Forwarding your SSH agent places your private keys within reach of anyone with r
 
 Open the configuration for your build host and add a `clan vars` generator for an ed25519 key pair. The private half is encrypted at rest and never touches your workstation.
 
-```{.nix title="machines/<build-host>/configuration.nix"}
+```text {.nix title="machines/<build-host>/configuration.nix"}
 { config, ... }:
 {
   clan.core.vars.generators.build-host-key = {
@@ -64,7 +64,7 @@ This runs the generator you just declared and stores the encrypted private key u
 
 Instead of copying the public key by hand, read it directly from the build host's generator output. Clan stores public values at a predictable path under the clan directory, so the target host can pull them in at evaluation time.
 
-```{.nix title="machines/<target-host>/configuration.nix"}
+```text {.nix title="machines/<target-host>/configuration.nix"}
 { config, ... }:
 let
   buildHostKey = builtins.readFile (
@@ -107,13 +107,13 @@ The build host now authenticates to the target on its own. No agent forwarding r
 
 If you'd rather forward your local agent than manage a build-host key, enable it globally:
 
-```{.nix title="clan.nix"}
+```text {.nix title="clan.nix"}
 clan.core.networking.forwardAgent = true;
 ```
 
 Or per machine in the inventory:
 
-```{.nix title="clan.nix"}
+```text {.nix title="clan.nix"}
 inventory.machines.my-machine = {
   deploy.targetHost = "root@target.example.com";
   deploy.buildHost  = "root@builder.example.com";

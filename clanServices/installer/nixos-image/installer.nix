@@ -1,7 +1,5 @@
 {
-  options,
   config,
-  lib,
   modulesPath,
   pkgs,
   ...
@@ -14,12 +12,6 @@
 
   # We are stateless, so just default to latest.
   system.stateVersion = config.system.nixos.release;
-
-  # Mirror upstream's default explicitly to silence the 26.05 eval warning.
-  boot.zfs.forceImportRoot =
-    assert lib.assertMsg (lib.versionOlder config.system.stateVersion "26.11")
-      "boot.zfs.forceImportRoot override is no longer needed: upstream default is `false` for stateVersion >= 26.11. Remove this line.";
-    options.boot.zfs.forceImportRoot.default;
 
   # use latest kernel we can support to get more hardware support
   boot.zfs.package = pkgs.zfs_unstable;

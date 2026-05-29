@@ -171,6 +171,8 @@ class Error(Exception):
 def prepare_machine_root(root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
     root.joinpath("etc").mkdir(parents=True, exist_ok=True)
+    # systemd-nspawn requires /usr/ to recognize the directory as an OS tree
+    root.joinpath("usr").mkdir(parents=True, exist_ok=True)
 
 
 def pythonize_name(name: str) -> str:

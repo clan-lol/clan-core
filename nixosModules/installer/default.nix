@@ -1,7 +1,5 @@
 {
-  config,
   lib,
-  options,
   pkgs,
   modulesPath,
   ...
@@ -51,12 +49,6 @@ in
     (modulesPath + "/profiles/base.nix")
     ./zfs-latest.nix
   ];
-
-  # Mirror upstream's default explicitly to silence the 26.05 eval warning.
-  boot.zfs.forceImportRoot =
-    assert lib.assertMsg (lib.versionOlder config.system.stateVersion "26.11")
-      "boot.zfs.forceImportRoot override is no longer needed: upstream default is `false` for stateVersion >= 26.11. Remove this line.";
-    options.boot.zfs.forceImportRoot.default;
 
   environment.systemPackages = [
     pkgs.nixos-facter

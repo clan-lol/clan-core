@@ -20,17 +20,7 @@ let
       services.openssh.settings.UseDns = false;
       system.nixos.variant_id = "installer";
       environment.systemPackages = [
-        # nixos-facter v0.4.3 aborts on ID_BUS values added by systemd
-        # 260 (e.g. "acpi"); upstream fix is nix-community/nixos-facter#578.
-        (pkgs.nixos-facter.overrideAttrs (old: {
-          patches = (old.patches or [ ]) ++ [
-            (pkgs.fetchpatch {
-              name = "udev-drop-bus-field-dispatch-on-id_bus-string.patch";
-              url = "https://github.com/nix-community/nixos-facter/pull/578/commits/e43c4459184a39ed6f3aa746a49170ae79d93bcd.patch";
-              hash = "sha256-bm8CmUhRAlq8mLPgAwMS1akb/oN3qbW8JkypQ9Zed5M=";
-            })
-          ];
-        }))
+        pkgs.nixos-facter
       ];
       # Disable cache.nixos.org to speed up tests
       nix.settings.substituters = lib.mkForce [ ];

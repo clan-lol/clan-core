@@ -34,7 +34,7 @@ A response from the Git host confirms the key is registered. A direct `git clone
 
 In your `flake.nix`, add the input using the `ssh://` URL for the repository:
 
-```{.nix title="flake.nix"}
+```text {.nix title="flake.nix"}
 {
   inputs = {
     clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
@@ -75,7 +75,7 @@ nix flake update my-private-pkgs
 
 Consume the input like any other flake input:
 
-```{.nix title="machines/my-machine/configuration.nix"}
+```text {.nix title="machines/my-machine/configuration.nix"}
 { pkgs, inputs, ... }:
 {
   environment.systemPackages = [

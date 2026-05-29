@@ -26,7 +26,7 @@ Private flake inputs are _not_ a reason to set `buildHost`. Clan evaluates your 
 
 Add `deploy.buildHost` alongside `deploy.targetHost` in `clan.nix`:
 
-```{.nix title="clan.nix"}
+```text {.nix title="clan.nix"}
 inventory.machines.my-machine = {
   deploy.targetHost = "root@target.example.com";
   deploy.buildHost  = "root@builder.example.com";
@@ -49,7 +49,7 @@ A few examples:
 
 You can set `buildHost` inside the NixOS configuration of the machine instead. This is useful when the deployment topology belongs with the machine, not the clan-level inventory:
 
-```{.nix title="machines/my-machine/configuration.nix"}
+```text {.nix title="machines/my-machine/configuration.nix"}
 clan.core.networking.buildHost = "root@builder.example.com";
 ```
 
