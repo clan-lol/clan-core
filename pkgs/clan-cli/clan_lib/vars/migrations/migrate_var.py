@@ -86,5 +86,8 @@ def move_var_file(src: Path, dst: Path, changed: list[Path]) -> None:
 
     changed.extend(_collect_files(src))
     dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        changed.extend(_collect_files(dst))
+        shutil.rmtree(dst)
     _movetree_preserving_symlinks(src, dst)
     changed.extend(_collect_files(dst))

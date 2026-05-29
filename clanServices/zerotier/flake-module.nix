@@ -42,5 +42,11 @@ in
 
         clan.modules.zerotier = module;
       };
+
+      clan.nixosTests.zerotier-multi-instance = {
+        imports = [ ./tests/vm-multi-instance/default.nix ];
+
+        clan.modules.zerotier = module;
+      };
     };
 }

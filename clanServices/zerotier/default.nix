@@ -46,6 +46,7 @@
       };
     perInstance =
       {
+        instanceName,
         roles,
         mkExports,
         machine,
@@ -58,8 +59,8 @@
             {
               plain = clanLib.getPublicValue {
                 machine = machine.name;
-                generator = "zerotier";
-                file = "zerotier-ip";
+                generator = "zerotier-ip-${instanceName}";
+                file = "ip";
                 flake = directory;
               };
             }
@@ -73,35 +74,28 @@
             ...
           }:
           let
-            isController = builtins.elem "controller" machine.roles;
             zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
           in
           {
-            # This generator only exists on pure peers
-            # !!! Attention: The controller defines a generator with the same name
-            # If the machine is a controller; we disable this generator
-            clan.core.vars.generators.zerotier = lib.mkIf (!isController) {
-              files.zerotier-ip.secret = false;
-              files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
-              files.zerotier-identity-secret = {
-                restartUnits = [ "zerotierone.service" ];
-              };
-              runtimeInputs = [
-                config.services.zerotierone.package
-                zerotier-tools
+            clan.core.vars.generators."zerotier-ip-${instanceName}" = {
+              files.ip.secret = false;
+              runtimeInputs = [ zerotier-tools ];
+              dependencies = [
+                "zerotier-identity"
+                "zerotier-network-${instanceName}"
               ];
-              dependencies = [ "zerotier-controller" ];
               script = ''
-                zerotier-generate --mode identity \
-                  --ip "$out/zerotier-ip" \
-                  --identity-secret "$out/zerotier-identity-secret" \
-                  --network-id-file $in/zerotier-controller/zerotier-network-id
+                zerotier-generate --mode compute-ip \
+                  --identity-secret "$in/zerotier-identity/identity-secret" \
+                  --network-id-file "$in/zerotier-network-${instanceName}/network-id" \
+                  --ip "$out/ip"
               '';
             };
 
             imports = [
               (import ./shared.nix {
                 inherit
+                  instanceName
                   clanLib
                   roles
                   config
@@ -148,6 +142,7 @@
       };
     perInstance =
       {
+        instanceName,
         settings,
         roles,
         ...
@@ -181,6 +176,7 @@
             imports = [
               (import ./shared.nix {
                 inherit
+                  instanceName
                   clanLib
                   roles
                   config
@@ -209,6 +205,18 @@
             [ "fd5d:bbe3:cbc5:fe6b:f699:935d:bbe3:cbc5" ]
           '';
         };
+        options.allowedIds = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = ''
+            Extra machines by their zerotier node ID (10-char hex) that the
+            controller should accept. Use this for external devices not in
+            the clan inventory — the node ID is shown by `zerotier-cli info`.
+          '';
+          example = ''
+            [ "deadbeef00" "abc1234567" ]
+          '';
+        };
         options.public = lib.mkOption {
           type = lib.types.bool;
           default = false;
@@ -234,13 +242,35 @@
             ...
           }:
           let
-            # FIXME: This would return the same ID for all networks currently
-            networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
+            networkId =
+              config.clan.core.vars.generators."zerotier-network-${instanceName}".files.network-id.value;
+
+            machines = lib.uniqueStrings (
+              (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
+              ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
+              ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
+            );
+            networkIps = builtins.foldl' (
+              ips: name:
+              let
+                ztIp = clanLib.getPublicValue {
+                  flake = config.clan.core.settings.directory;
+                  machine = name;
+                  generator = "zerotier-ip-${instanceName}";
+                  file = "ip";
+                  default = null;
+                };
+              in
+              if ztIp != null then ips ++ [ ztIp ] else ips
+            ) [ ] machines;
+            allHostIPs = settings.allowedIps ++ networkIps;
+
           in
           {
             imports = [
               (import ./shared.nix {
                 inherit
+                  instanceName
                   clanLib
                   roles
                   config
@@ -250,32 +280,8 @@
               })
             ];
             config = {
-              # Copies the outputs of "zerotier-controller" into a per-machine generator
-              # This allows "deploy=true" which is required only for the controller
-              # !!! Attention: uses the same generator name as every peer.
-              # Peers need to check to avoid defining the same generator
-              clan.core.vars.generators.zerotier = {
-                files.zerotier-ip.secret = false;
-                files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
-
-                files.zerotier-network-id.secret = false;
-                files.zerotier-network-id.restartUnits = [ "zerotierone.servqice" ];
-
-                # No machine has access to this
-                # This gets copied only to the private generator later via dependencies
-                files.zerotier-identity-secret.restartUnits = [ "zerotierone.service" ];
-
-                dependencies = [ "zerotier-controller" ];
-                script = ''
-                  cp $in/zerotier-controller/zerotier-ip $out/zerotier-ip
-                  cp $in/zerotier-controller/zerotier-network-id $out/zerotier-network-id
-                  cp $in/zerotier-controller/zerotier-identity-secret $out/zerotier-identity-secret
-                '';
-              };
-              environment.etc."zerotier/network-id".text = networkId;
-
               systemd.services.zerotierone.serviceConfig.ExecStartPre = [
-                "+${pkgs.writeShellScript "init-zerotier-01-controller" ''
+                "+${pkgs.writeShellScript "init-zerotier-controller-${instanceName}" ''
                   mkdir -p /var/lib/zerotier-one/controller.d/network
                   ln -sfT ${
                     pkgs.writeText "net.json" (
@@ -323,52 +329,33 @@
               ];
 
               systemd.services.zerotierone.serviceConfig.ExecStartPost = [
-                "+${pkgs.writeShellScript "whitelist-controller" ''
-                  ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
+                "+${pkgs.writeShellScript "whitelist-controller-${instanceName}" ''
+                  ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${
                     builtins.substring 0 10 networkId
                   }
                 ''}"
               ];
 
-              systemd.services.zerotier-inventory-autoaccept =
-                let
-                  machines = lib.uniqueStrings (
-                    (lib.optionals (roles ? moon) (lib.attrNames roles.moon.machines))
-                    ++ (lib.optionals (roles ? controller) (lib.attrNames roles.controller.machines))
-                    ++ (lib.optionals (roles ? peer) (lib.attrNames roles.peer.machines))
-                  );
-                  networkIps = builtins.foldl' (
-                    ips: name:
-                    let
-                      ztIp = clanLib.getPublicValue {
-                        flake = config.clan.core.settings.directory;
-                        machine = name;
-                        generator = "zerotier";
-                        file = "zerotier-ip";
-                        default = null;
-                      };
-                    in
-                    if ztIp != null then ips ++ [ ztIp ] else ips
-                  ) [ ] machines;
-                  allHostIPs = settings.allowedIps ++ networkIps;
-                in
-                {
-                  wantedBy = [ "multi-user.target" ];
-                  after = [ "zerotierone.service" ];
-                  path = [ config.clan.core.clanPkgs.zerotierone ];
-                  serviceConfig.ExecStart = pkgs.writeShellScript "zerotier-inventory-autoaccept" ''
-                    ${lib.concatMapStringsSep "\n" (host: ''
-                      ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
-                    '') allHostIPs}
-                  '';
-                };
+              systemd.services."zerotier-autoaccept-${instanceName}" = {
+                wantedBy = [ "multi-user.target" ];
+                after = [ "zerotierone.service" ];
+                path = [ config.clan.core.clanPkgs.zerotierone ];
+                serviceConfig.ExecStart = pkgs.writeShellScript "zerotier-autoaccept-${instanceName}" ''
+                  ${lib.concatMapStringsSep "\n" (host: ''
+                    ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow --member-ip ${host}
+                  '') allHostIPs}
+                  ${lib.concatMapStringsSep "\n" (id: ''
+                    ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${id}
+                  '') settings.allowedIds}
+                '';
+              };
             };
 
           };
       };
   };
   perMachine =
-    { machine, ... }:
+    { instances, machine, ... }:
     {
       nixosModule =
         {
@@ -380,26 +367,78 @@
         let
           isController = builtins.elem "controller" machine.roles;
           isPeer = builtins.elem "peer" machine.roles;
-
-          # Is only peer, excluding the controller.
           isPeerExclusive = isPeer && !isController;
-
-          # This is slightly off, because it assumes a single instance
-          # TODO: move networkId to perInstance
-          networkId = config.clan.core.vars.generators.zerotier-controller.files.zerotier-network-id.value;
 
           zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
 
-          zerotier-identity-secret = config.clan.core.vars.generators.zerotier.files.zerotier-identity-secret;
+          identity-secret = config.clan.core.vars.generators.zerotier-identity.files.identity-secret;
 
           # Collect all WireGuard interface names so ZeroTier won't route through them
           wireguardInterfaceNames =
             builtins.attrNames (config.networking.wireguard.interfaces or { })
             ++ builtins.attrNames (config.networking.wg-quick.interfaces or { });
+
+          allNetworkIds = lib.mapAttrsToList (
+            instanceName: _:
+            config.clan.core.vars.generators."zerotier-network-${instanceName}".files.network-id.value
+          ) instances;
         in
         {
-          # once perMachine
           config = {
+            clan.core.vars.generators =
+              # Every machine needs to define the network-id (shared) generator
+              (lib.mapAttrs' (
+                instanceName: instanceInfo:
+                let
+                  controllerName = builtins.head (builtins.attrNames instanceInfo.roles.controller.machines);
+                in
+                lib.nameValuePair "zerotier-network-${instanceName}" {
+                  share = true;
+                  files.network-id.secret = false;
+                  files.network-id.deploy = false;
+                  runtimeInputs = [ zerotier-tools ];
+                  dependencies = [ "zerotier-identity-${controllerName}" ];
+                  script = ''
+                    zerotier-generate --mode network-id \
+                      --identity-secret-file "$in/zerotier-identity-${controllerName}/identity-secret" \
+                      --network-id "$out/network-id"
+                  '';
+                }
+              ) instances)
+              // {
+                # If this machine is a controller
+                "zerotier-identity-${machine.name}" = lib.mkIf isController {
+                  share = true;
+                  files.identity-secret.deploy = false;
+                  runtimeInputs = [
+                    config.services.zerotierone.package
+                    zerotier-tools
+                  ];
+                  script = ''
+                    zerotier-generate --mode identity-only --identity-secret "$out/identity-secret"
+                  '';
+                };
+
+                # Every machine has one static identity for all instances
+                zerotier-identity = {
+                  files.identity-secret.restartUnits = [ "zerotierone.service" ];
+                  runtimeInputs = [
+                    config.services.zerotierone.package
+                    zerotier-tools
+                  ];
+                  dependencies = lib.optionals isController [ "zerotier-identity-${machine.name}" ];
+                  script =
+                    if isController then
+                      ''
+                        cp "$in/zerotier-identity-${machine.name}/identity-secret" "$out/identity-secret"
+                      ''
+                    else
+                      ''
+                        zerotier-generate --mode identity-only --identity-secret "$out/identity-secret"
+                      '';
+                };
+              };
+
             # Override license so that we can build zerotierone without
             # having to re-import nixpkgs.
             services.zerotierone.package = lib.mkDefault (
@@ -408,8 +447,9 @@
               }
             );
 
-            # Script to accept new members on the fly
-            environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
+            environment.systemPackages = lib.mkIf isController [
+              config.clan.core.clanPkgs.zerotier-members
+            ];
 
             systemd.network.networks."09-zerotier" = {
               matchConfig.Name = "zt*";
@@ -419,14 +459,13 @@
                 KeepConfiguration = "static";
               };
             };
-            networking.firewall.allowedTCPPorts = [ 9993 ]; # zerotier
-            networking.firewall.allowedUDPPorts = [ 9993 ]; # zerotier
+            networking.firewall.allowedTCPPorts = [ 9993 ];
+            networking.firewall.allowedUDPPorts = [ 9993 ];
 
             networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
             services.zerotierone = {
               enable = true;
-              # TODO: Collect from all instances once vars migration happens
-              joinNetworks = [ networkId ];
+              joinNetworks = allNetworkIds;
             };
 
             # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
@@ -458,51 +497,25 @@
                     if [[ -z "$name" ]] || [[ -z "$portDeviceName" ]]; then
                       continue
                     fi
-                    # Execute the command for each element
                     ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
                 done
               ''}"
             ];
-            # only the controller needs to have the key in the repo, the other clients can be dynamic
-            # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
-            clan.core.vars.generators.zerotier-controller = {
-              share = true;
 
-              files.zerotier-ip.secret = false;
-              files.zerotier-ip.restartUnits = [ "zerotierone.service" ];
-
-              files.zerotier-network-id.secret = false;
-              files.zerotier-network-id.restartUnits = [ "zerotierone.service" ];
-
-              # No machine has access to this
-              # This gets copied only to the private generator later via dependencies
-              files.zerotier-identity-secret.deploy = false;
-
-              runtimeInputs = [
-                config.clan.core.clanPkgs.zerotierone
-                zerotier-tools
-              ];
-              script = ''
-                zerotier-generate --mode network \
-                  --ip "$out/zerotier-ip" \
-                  --identity-secret "$out/zerotier-identity-secret" \
-                  --network-id "$out/zerotier-network-id"
-              '';
-            };
             systemd.services.zerotierone.serviceConfig.ExecStartPre = [
               "+${pkgs.writeShellScript "init-zerotier-identity" ''
                 mkdir -p /var/lib/zerotier-one
                 if [[ ! -f /var/lib/zerotier-one/identity.secret ]]; then
-                  cp ${zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+                  cp ${identity-secret.path} /var/lib/zerotier-one/identity.secret
                   zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
                 else
                   hash1=$(sha256sum /var/lib/zerotier-one/identity.secret | cut -d ' ' -f 1)
-                  hash2=$(sha256sum ${zerotier-identity-secret.path} | cut -d ' ' -f 1)
+                  hash2=$(sha256sum ${identity-secret.path} | cut -d ' ' -f 1)
                   if [[ "$hash1" != "$hash2" ]]; then
                     echo "Identity secret has changed, backing up old identity"
                     cp /var/lib/zerotier-one/identity.secret /var/lib/zerotier-one/identity.secret.bac
                     cp /var/lib/zerotier-one/identity.public /var/lib/zerotier-one/identity.public.bac
-                    cp ${zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+                    cp ${identity-secret.path} /var/lib/zerotier-one/identity.secret
                     zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
                   fi
                 fi
@@ -528,7 +541,13 @@
               clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
             })
             (lib.mkIf isPeerExclusive {
-              clan.core.networking.targetHost = lib.mkDefault "root@[${config.clan.core.vars.generators.zerotier.files.zerotier-ip.value}]";
+              # TODO: remove in favor of exports
+              clan.core.networking.targetHost = lib.mkDefault "root@[${
+                let
+                  firstInstance = builtins.head (builtins.attrNames instances);
+                in
+                config.clan.core.vars.generators."zerotier-ip-${firstInstance}".files.ip.value
+              }]";
             })
           ];
         };
