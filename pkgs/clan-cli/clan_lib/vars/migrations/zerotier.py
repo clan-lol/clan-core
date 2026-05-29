@@ -191,5 +191,5 @@ def migrate_zerotier(clan_dir: Path) -> None:
     commit_files(
         file_paths=changed,
         flake_dir=clan_dir,
-        commit_message="automatic(zerotier-migration): upgrade vars to support multiple zerotier instances",
+        commit_message="migrate: move zerotier vars to per-instance layout",
     )

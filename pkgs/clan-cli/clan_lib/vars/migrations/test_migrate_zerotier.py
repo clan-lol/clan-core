@@ -317,7 +317,7 @@ class TestMigrateZerotier:
             commit_message="seed vars for multi-network test",
         )
 
-        with pytest.raises(ClanError, match="manually migrated"):
+        with pytest.raises(ClanError, match="Automatic zerotier vars migration failed"):
             migrate_zerotier(clan_dir)
 
     def test_mixed_state(self, clan_flake: Callable[..., Flake]) -> None:
