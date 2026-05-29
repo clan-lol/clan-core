@@ -89,6 +89,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
     all_instances = inventory.get("instances", {})
 
     network_map = {}
+    conflicts: dict[str, list[tuple[str, str]]] = {}
     for machine_name, machine in all_machines.items():
         joined = [
             (
@@ -111,10 +112,28 @@ def migrate_zerotier(clan_dir: Path) -> None:
             continue
 
         if len(joined) > 1:
-            msg = "Zerotier needs to be manually migrated.\nAutomated migration does not work if a machine is part of multiple zerotier networks"
-            raise ClanError(msg)
+            conflicts[machine_name] = joined
+            continue
 
         network_map[machine_name] = joined.pop()
+
+    if conflicts:
+        lines = [
+            "Automatic zerotier vars migration failed: some machines belong to multiple zerotier instances.",
+            "The migration cannot determine which instance's vars directory should receive each machine's data.",
+            "",
+            "Affected machines:",
+        ]
+        for machine_name, instances in sorted(conflicts.items()):
+            instance_list = ", ".join(f"{name} ({role})" for name, role in instances)
+            lines.append(f"  {machine_name}: joined in {instance_list}")
+        lines += [
+            "",
+            "To fix this, ensure each machine listed above is part of at most one zerotier",
+            "instance in the inventory, then re-run the migration.",
+            "After the migration completes, machines can join multiple instances.",
+        ]
+        raise ClanError("\n".join(lines))
 
     # Track changed files for git
     changed: list[Path] = []
