@@ -85,6 +85,20 @@ writeShellScriptBin "deploy-docs-v2" ''
     set +x
   }
 
+  # The version switcher fetches /docs/versions, which nginx serves from this
+  # file. It is the single source of truth for the list of published versions.
+  deploy_versions_list() {
+    echo "Deploying versions list"
+    set -x
+    rsync \
+      --checksum \
+      -e "ssh -o StrictHostKeyChecking=no $sshExtraArgs" \
+      --mkpath \
+      "$REPO_ROOT/pkgs/clan-site/versions" \
+      "www@clan.lol:/var/www/versioned-docs/versions"
+    set +x
+  }
+
   # Parse arguments
   deploy_current=false
   branches=()
@@ -147,6 +161,8 @@ writeShellScriptBin "deploy-docs-v2" ''
       rm -rf "$clone_dir"
     done
   fi
+
+  deploy_versions_list
 
   echo "Done."
 ''
