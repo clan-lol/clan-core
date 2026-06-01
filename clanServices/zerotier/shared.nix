@@ -14,8 +14,7 @@ let
     let
       moonIp = clanLib.getPublicValue {
         flake = config.clan.core.settings.directory;
-        machine = name;
-        generator = "zerotier-ip-${instanceName}";
+        generator = "zerotier-ip-${name}-${instanceName}";
         file = "ip";
         default = null;
       };
