@@ -9,10 +9,8 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
+from typing import Any
 
 
 class ChangeKind(Enum):
@@ -95,6 +93,46 @@ def load_services(path: Path) -> ServicesDict:
         name: set(entry.get("roles", {}).keys()) if isinstance(entry, dict) else set()
         for name, entry in data.items()
     }
+
+
+def load_service_settings(path: Path) -> OptionsDict:
+    """Load per-role settings options from a services info.json.
+
+    Returns a flat options dict keyed by ``service/role/setting``, ready for
+    :func:`diff_options`. Each role entry in info.json points to a
+    nixosOptionsDoc output directory holding ``share/doc/nixos/options.json``,
+    which describes that role's ``settings.*`` interface.
+    """
+    with path.open() as f:
+        data: Any = json.load(f)
+    if not isinstance(data, dict):
+        msg = f"Expected top-level JSON object, got {type(data).__name__}"
+        raise TypeError(msg)
+
+    settings: OptionsDict = {}
+    for service, entry in data.items():
+        if not isinstance(entry, dict):
+            continue
+        roles = entry.get("roles", {})
+        if not isinstance(roles, dict):
+            continue
+        for role, role_path in roles.items():
+            if not isinstance(role_path, str):
+                continue
+            for setting, option in _load_role_options(Path(role_path)).items():
+                settings[f"{service}/{role}/{setting}"] = option
+    return settings
+
+
+def _load_role_options(role_dir: Path) -> OptionsDict:
+    """Load one role's settings schema from its nixosOptionsDoc output dir."""
+    options_json = role_dir / "share/doc/nixos/options.json"
+    with options_json.open() as f:
+        data: Any = json.load(f)
+    if not isinstance(data, dict):
+        msg = f"Expected top-level JSON object in {options_json}, got {type(data).__name__}"
+        raise TypeError(msg)
+    return data
 
 
 def diff_options(
@@ -257,6 +295,28 @@ class MultiLayerDiff:
     clan: DiffResult | None = None
     nixos: DiffResult | None = None
     services: ServiceDiff | None = None
+    service_settings: DiffResult | None = None
+
+
+def _service_role(key: str) -> str:
+    """Return the ``service/role`` prefix of a ``service/role/setting`` key."""
+    service, role, _setting = key.split("/", 2)
+    return f"{service}/{role}"
+
+
+def _shared_role_settings(
+    old: OptionsDict, new: OptionsDict
+) -> tuple[OptionsDict, OptionsDict]:
+    """Restrict two settings dicts to service/role pairs present in both.
+
+    Settings of a service or role that exists on only one side are dropped:
+    the services layer already reports those as added/removed services or
+    roles, so re-listing their settings would be redundant noise.
+    """
+    shared = {_service_role(k) for k in old} & {_service_role(k) for k in new}
+    old_kept = {k: v for k, v in old.items() if _service_role(k) in shared}
+    new_kept = {k: v for k, v in new.items() if _service_role(k) in shared}
+    return old_kept, new_kept
 
 
 def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
@@ -282,10 +342,21 @@ def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
         )
 
     services_diff = None
+    settings_diff = None
     if old.services_json and new.services_json:
         services_diff = diff_services(
             load_services(old.services_json),
             load_services(new.services_json),
+            old_label=old.label,
+            new_label=new.label,
+        )
+        old_settings, new_settings = _shared_role_settings(
+            load_service_settings(old.services_json),
+            load_service_settings(new.services_json),
+        )
+        settings_diff = diff_options(
+            old_settings,
+            new_settings,
             old_label=old.label,
             new_label=new.label,
         )
@@ -294,6 +365,7 @@ def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
         clan=clan_diff,
         nixos=nixos_diff,
         services=services_diff,
+        service_settings=settings_diff,
     )
 
 
@@ -328,6 +400,11 @@ def format_multi_layer_diff(diff: MultiLayerDiff) -> str:
         parts.append("## Services")
         parts.append("")
         parts.append(format_service_diff(diff.services))
+
+    if diff.service_settings is not None:
+        parts.append("## Service settings")
+        parts.append("")
+        parts.append(format_diff(diff.service_settings, noun="Service settings"))
 
     if not parts:
         return "No option layers provided.\n"
