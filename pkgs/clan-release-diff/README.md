@@ -16,6 +16,7 @@ The tool builds option/service metadata from both versions automatically via `ni
 
 - **Clan (flake) options** (`clan.*`) — added, removed, and type-changed options
 - **NixOS options** (`clan.core.*`) — added, removed, and type-changed options
+- **Services** (`clanServices`) — added/removed services and role set changes
 
 ## Exit codes
 
@@ -28,6 +29,7 @@ The tool builds option/service metadata from both versions automatically via `ni
 ## What it compares
 
 For each **option layer**: added, removed, and type-changed options.
+For **services**: added/removed services and added/removed roles per service.
 
 ## Development
 

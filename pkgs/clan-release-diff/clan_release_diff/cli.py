@@ -60,6 +60,12 @@ def _build_parser() -> argparse.ArgumentParser:
     layers.add_argument(
         "--new-nixos", type=Path, help="Path to new NixOS (clan.core) options.json"
     )
+    layers.add_argument(
+        "--old-services", type=Path, help="Path to old clanModulesViaService info.json"
+    )
+    layers.add_argument(
+        "--new-services", type=Path, help="Path to new clanModulesViaService info.json"
+    )
 
     return parser
 
@@ -91,16 +97,20 @@ def _run_layers(args: argparse.Namespace) -> None:
         label=args.old_label,
         clan_options=args.old_clan,
         nixos_options=args.old_nixos,
+        services_json=args.old_services,
     )
     new = LayerPaths(
         label=args.new_label,
         clan_options=args.new_clan,
         nixos_options=args.new_nixos,
+        services_json=args.new_services,
     )
     result = diff_layers(old, new)
     sys.stdout.write(format_multi_layer_diff(result))
 
-    has_changes = (result.clan is not None and result.clan.has_changes) or (
-        result.nixos is not None and result.nixos.has_changes
+    has_changes = (
+        (result.clan is not None and result.clan.has_changes)
+        or (result.nixos is not None and result.nixos.has_changes)
+        or (result.services is not None and result.services.has_changes)
     )
     sys.exit(_EXIT_NO_CHANGES if not has_changes else _EXIT_CHANGES)

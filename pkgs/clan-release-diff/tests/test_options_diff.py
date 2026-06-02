@@ -15,11 +15,16 @@ from clan_release_diff.options_diff import (
     LayerPaths,
     MultiLayerDiff,
     OptionDiff,
+    RoleChange,
+    ServiceDiff,
     diff_layers,
     diff_options,
+    diff_services,
     format_diff,
     format_multi_layer_diff,
+    format_service_diff,
     load_options,
+    load_services,
 )
 
 OPTION_A: dict[str, Any] = {
@@ -34,6 +39,20 @@ OPTION_B: dict[str, Any] = {
     "default": {"_type": "literalExpression", "text": "42"},
     "description": "The answer",
     "declarations": ["/nix/store/yyy/modules/bar.nix"],
+}
+
+SERVICE_BORGBACKUP: dict[str, Any] = {
+    "manifest": {"name": "borgbackup", "description": "Backup service"},
+    "roles": {"client": {}, "server": {}},
+}
+
+SERVICE_WIREGUARD: dict[str, Any] = {
+    "manifest": {"name": "wireguard", "description": "VPN"},
+    "roles": {"peer": {}},
+}
+
+SERVICE_NO_ROLES: dict[str, Any] = {
+    "manifest": {"name": "simple", "description": "No roles"},
 }
 
 
@@ -216,6 +235,136 @@ class TestFormatDiff:
         assert "No service settings changes" in text
 
 
+class TestLoadServices:
+    def test_loads_valid_json(self, tmp_path: Path) -> None:
+        p = _write_json(
+            tmp_path / "services.json",
+            {"borgbackup": SERVICE_BORGBACKUP, "wireguard": SERVICE_WIREGUARD},
+        )
+        result = load_services(p)
+        assert result == {
+            "borgbackup": {"client", "server"},
+            "wireguard": {"peer"},
+        }
+
+    def test_no_roles_key(self, tmp_path: Path) -> None:
+        """Services without a 'roles' key get an empty role set."""
+        p = _write_json(tmp_path / "services.json", {"simple": SERVICE_NO_ROLES})
+        result = load_services(p)
+        assert result == {"simple": set()}
+
+    def test_empty(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "services.json", {})
+        result = load_services(p)
+        assert result == {}
+
+    def test_rejects_non_object(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "bad.json", [1, 2])  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="Expected top-level JSON object"):
+            load_services(p)
+
+
+class TestDiffServices:
+    def test_identical(self) -> None:
+        services = {"a": {"default"}, "b": {"client", "server"}}
+        result = diff_services(services, services)
+        assert not result.has_changes
+
+    def test_added(self) -> None:
+        old: dict[str, set[str]] = {}
+        new = {"wireguard": {"peer"}, "borgbackup": {"client"}}
+        result = diff_services(old, new, old_label="25.11", new_label="main")
+        assert result.added == ("borgbackup", "wireguard")
+        assert result.removed == ()
+        assert result.role_changes == ()
+        assert result.old_label == "25.11"
+        assert result.new_label == "main"
+
+    def test_removed(self) -> None:
+        old = {"coredns": {"default"}, "wireguard": {"peer"}}
+        new = {"wireguard": {"peer"}}
+        result = diff_services(old, new)
+        assert result.removed == ("coredns",)
+        assert result.added == ()
+
+    def test_role_changes(self) -> None:
+        old = {"monitoring": {"telegraf"}, "data-mesher": set()}
+        new = {
+            "monitoring": {"client", "server"},
+            "data-mesher": {"bootstrap", "default"},
+        }
+        result = diff_services(old, new)
+        assert result.added == ()
+        assert result.removed == ()
+        assert len(result.role_changes) == 2
+        # Sorted by service name
+        dm = result.role_changes[0]
+        assert dm.service == "data-mesher"
+        assert dm.added_roles == ("bootstrap", "default")
+        assert dm.removed_roles == ()
+        mon = result.role_changes[1]
+        assert mon.service == "monitoring"
+        assert mon.added_roles == ("client", "server")
+        assert mon.removed_roles == ("telegraf",)
+
+    def test_mixed(self) -> None:
+        """Added, removed, and role-changed services in one diff."""
+        old = {"coredns": {"default"}, "borgbackup": {"client"}}
+        new = {"pki": {"default"}, "borgbackup": {"client", "server"}}
+        result = diff_services(old, new)
+        assert result.added == ("pki",)
+        assert result.removed == ("coredns",)
+        assert len(result.role_changes) == 1
+        assert result.role_changes[0].service == "borgbackup"
+        assert result.role_changes[0].added_roles == ("server",)
+
+    def test_no_role_change_when_identical(self) -> None:
+        """Services present in both with same roles produce no RoleChange."""
+        old = {"a": {"x", "y"}, "b": {"z"}}
+        new = {"a": {"y", "x"}, "b": {"z"}}
+        result = diff_services(old, new)
+        assert not result.has_changes
+
+
+class TestFormatServiceDiff:
+    def test_no_changes(self) -> None:
+        result = ServiceDiff(old_label="25.11", new_label="main")
+        text = format_service_diff(result)
+        assert "No service changes" in text
+        assert "25.11" in text
+        assert "main" in text
+
+    def test_all_sections(self) -> None:
+        result = ServiceDiff(
+            old_label="25.11",
+            new_label="main",
+            added=("installer", "pki"),
+            removed=("coredns",),
+            role_changes=(
+                RoleChange(
+                    service="monitoring",
+                    added_roles=("client",),
+                    removed_roles=("telegraf",),
+                ),
+            ),
+        )
+        text = format_service_diff(result)
+
+        assert "Services diff: 25.11 -> main" in text
+        assert "Summary: +2 -1 roles~1" in text
+        # Items appear under their correct section, in order
+        assert _section_items(text, "Added") == ["installer", "pki"]
+        assert _section_items(text, "Removed") == ["coredns"]
+        assert _section_items(text, "Role changes") == [
+            "monitoring: +client, -telegraf"
+        ]
+
+    def test_summary_before_sections(self) -> None:
+        result = ServiceDiff(old_label="a", new_label="b", added=("x",))
+        text = format_service_diff(result)
+        assert text.index("Summary:") < text.index("Added")
+
+
 class TestDiffLayers:
     def test_both_option_layers(self, tmp_path: Path) -> None:
         old_clan = _write_json(tmp_path / "old_clan.json", {"clan.a": OPTION_A})
@@ -246,6 +395,25 @@ class TestDiffLayers:
         assert not result.clan.has_changes
         assert result.nixos is None
 
+    def test_with_services(self, tmp_path: Path) -> None:
+        old_svc = _write_json(
+            tmp_path / "old_svc.json",
+            {"borgbackup": SERVICE_BORGBACKUP, "coredns": {"roles": {"default": {}}}},
+        )
+        new_svc = _write_json(
+            tmp_path / "new_svc.json",
+            {"borgbackup": SERVICE_BORGBACKUP, "pki": {"roles": {"default": {}}}},
+        )
+        result = diff_layers(
+            LayerPaths(label="old", services_json=old_svc),
+            LayerPaths(label="new", services_json=new_svc),
+        )
+        assert result.services is not None
+        assert result.services.added == ("pki",)
+        assert result.services.removed == ("coredns",)
+        assert result.clan is None
+        assert result.nixos is None
+
     def test_rejects_asymmetric_clan(self, tmp_path: Path) -> None:
         old_clan = _write_json(tmp_path / "old.json", {})
         with pytest.raises(ValueError, match=r"clan.*old.*provided.*new.*missing"):
@@ -260,6 +428,14 @@ class TestDiffLayers:
             diff_layers(
                 LayerPaths(label="old"),
                 LayerPaths(label="new", nixos_options=new_nixos),
+            )
+
+    def test_rejects_asymmetric_services(self, tmp_path: Path) -> None:
+        old_svc = _write_json(tmp_path / "old.json", {})
+        with pytest.raises(ValueError, match=r"services.*old.*provided.*new.*missing"):
+            diff_layers(
+                LayerPaths(label="old", services_json=old_svc),
+                LayerPaths(label="new"),
             )
 
 
@@ -277,3 +453,32 @@ class TestFormatMultiLayerDiff:
         text = format_multi_layer_diff(MultiLayerDiff(clan=clan_result))
         assert "## Clan (flake) options" in text
         assert "clan.new" in text
+
+    def test_with_services(self) -> None:
+        svc_result = ServiceDiff(
+            old_label="25.11",
+            new_label="main",
+            added=("pki",),
+        )
+        text = format_multi_layer_diff(MultiLayerDiff(services=svc_result))
+        assert "## Services" in text
+        assert "pki" in text
+
+    def test_all_layers_ordered(self) -> None:
+        clan_result = DiffResult(
+            old_label="25.11",
+            new_label="main",
+            added=(OptionDiff(name="clan.new", kind=ChangeKind.ADDED),),
+        )
+        svc_result = ServiceDiff(
+            old_label="25.11",
+            new_label="main",
+            removed=("coredns",),
+        )
+        text = format_multi_layer_diff(
+            MultiLayerDiff(clan=clan_result, services=svc_result)
+        )
+        assert "## Clan (flake) options" in text
+        assert "## Services" in text
+        # Services section comes after clan section
+        assert text.index("## Clan") < text.index("## Services")
