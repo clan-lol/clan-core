@@ -129,3 +129,80 @@ def format_diff(result: DiffResult, *, noun: str = "Options") -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+@dataclass(frozen=True, slots=True)
+class LayerPaths:
+    """Paths to the options JSON files for one version."""
+
+    label: str
+    clan_options: Path | None = None
+    nixos_options: Path | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class MultiLayerDiff:
+    """Diffs for all option layers between two versions."""
+
+    clan: DiffResult | None = None
+    nixos: DiffResult | None = None
+
+
+def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
+    """Diff all available option layers between two versions."""
+    _validate_layer_pairs(old, new)
+
+    clan_diff = None
+    if old.clan_options and new.clan_options:
+        clan_diff = diff_options(
+            load_options(old.clan_options),
+            load_options(new.clan_options),
+            old_label=old.label,
+            new_label=new.label,
+        )
+
+    nixos_diff = None
+    if old.nixos_options and new.nixos_options:
+        nixos_diff = diff_options(
+            load_options(old.nixos_options),
+            load_options(new.nixos_options),
+            old_label=old.label,
+            new_label=new.label,
+        )
+
+    return MultiLayerDiff(
+        clan=clan_diff,
+        nixos=nixos_diff,
+    )
+
+
+def _validate_layer_pairs(old: LayerPaths, new: LayerPaths) -> None:
+    for name, old_path, new_path in (
+        ("clan", old.clan_options, new.clan_options),
+        ("nixos", old.nixos_options, new.nixos_options),
+    ):
+        if bool(old_path) != bool(new_path):
+            provided = "old" if old_path else "new"
+            missing = "new" if old_path else "old"
+            msg = f"Layer '{name}': {provided} path provided but {missing} path missing"
+            raise ValueError(msg)
+
+
+def format_multi_layer_diff(diff: MultiLayerDiff) -> str:
+    """Render all layers into a single report."""
+    parts: list[str] = []
+
+    for layer_name, result in (
+        ("Clan (flake) options", diff.clan),
+        ("NixOS (clan.core.*) options", diff.nixos),
+    ):
+        if result is None:
+            continue
+        parts.append(f"## {layer_name}")
+        parts.append("")
+        parts.append(format_diff(result))
+
+    if not parts:
+        return "No option layers provided.\n"
+
+    return "\n".join(parts)
