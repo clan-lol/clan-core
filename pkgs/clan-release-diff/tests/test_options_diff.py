@@ -12,9 +12,13 @@ import pytest
 from clan_release_diff.options_diff import (
     ChangeKind,
     DiffResult,
+    LayerPaths,
+    MultiLayerDiff,
     OptionDiff,
+    diff_layers,
     diff_options,
     format_diff,
+    format_multi_layer_diff,
     load_options,
 )
 
@@ -210,3 +214,66 @@ class TestFormatDiff:
             DiffResult(old_label="a", new_label="b"), noun="Service settings"
         )
         assert "No service settings changes" in text
+
+
+class TestDiffLayers:
+    def test_both_option_layers(self, tmp_path: Path) -> None:
+        old_clan = _write_json(tmp_path / "old_clan.json", {"clan.a": OPTION_A})
+        new_clan = _write_json(tmp_path / "new_clan.json", {})
+        old_nixos = _write_json(tmp_path / "old_nixos.json", {})
+        new_nixos = _write_json(tmp_path / "new_nixos.json", {"clan.core.b": OPTION_B})
+
+        result = diff_layers(
+            LayerPaths(label="25.11", clan_options=old_clan, nixos_options=old_nixos),
+            LayerPaths(label="main", clan_options=new_clan, nixos_options=new_nixos),
+        )
+
+        assert result.clan is not None
+        assert len(result.clan.removed) == 1
+        assert result.nixos is not None
+        assert len(result.nixos.added) == 1
+
+    def test_partial_layers(self, tmp_path: Path) -> None:
+        """Only clan layer provided; nixos is None."""
+        old_clan = _write_json(tmp_path / "old.json", {"a": OPTION_A})
+        new_clan = _write_json(tmp_path / "new.json", {"a": OPTION_A})
+
+        result = diff_layers(
+            LayerPaths(label="old", clan_options=old_clan),
+            LayerPaths(label="new", clan_options=new_clan),
+        )
+        assert result.clan is not None
+        assert not result.clan.has_changes
+        assert result.nixos is None
+
+    def test_rejects_asymmetric_clan(self, tmp_path: Path) -> None:
+        old_clan = _write_json(tmp_path / "old.json", {})
+        with pytest.raises(ValueError, match=r"clan.*old.*provided.*new.*missing"):
+            diff_layers(
+                LayerPaths(label="old", clan_options=old_clan),
+                LayerPaths(label="new"),
+            )
+
+    def test_rejects_asymmetric_nixos(self, tmp_path: Path) -> None:
+        new_nixos = _write_json(tmp_path / "new.json", {})
+        with pytest.raises(ValueError, match=r"nixos.*new.*provided.*old.*missing"):
+            diff_layers(
+                LayerPaths(label="old"),
+                LayerPaths(label="new", nixos_options=new_nixos),
+            )
+
+
+class TestFormatMultiLayerDiff:
+    def test_empty(self) -> None:
+        text = format_multi_layer_diff(MultiLayerDiff())
+        assert "No option layers provided" in text
+
+    def test_with_clan_data(self) -> None:
+        clan_result = DiffResult(
+            old_label="25.11",
+            new_label="main",
+            added=(OptionDiff(name="clan.new", kind=ChangeKind.ADDED),),
+        )
+        text = format_multi_layer_diff(MultiLayerDiff(clan=clan_result))
+        assert "## Clan (flake) options" in text
+        assert "clan.new" in text
