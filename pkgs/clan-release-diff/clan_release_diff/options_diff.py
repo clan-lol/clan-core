@@ -68,8 +68,31 @@ class ServiceDiff:
         return bool(self.added or self.removed or self.role_changes)
 
 
+@dataclass(frozen=True, slots=True)
+class ExportChange:
+    """A service whose projected export interfaces differ between versions."""
+
+    service: str
+    added: tuple[str, ...]
+    removed: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ExportDiff:
+    """Diff of per-service ``manifest.exports.out`` between two versions."""
+
+    old_label: str
+    new_label: str
+    changes: tuple[ExportChange, ...] = ()
+
+    @property
+    def has_changes(self) -> bool:
+        return bool(self.changes)
+
+
 OptionsDict = dict[str, dict[str, Any]]
 ServicesDict = dict[str, set[str]]
+ExportsDict = dict[str, set[str]]
 
 
 def load_options(path: Path) -> OptionsDict:
@@ -93,6 +116,40 @@ def load_services(path: Path) -> ServicesDict:
         name: set(entry.get("roles", {}).keys()) if isinstance(entry, dict) else set()
         for name, entry in data.items()
     }
+
+
+def load_service_exports(path: Path) -> ExportsDict:
+    """Load each service's projected export interfaces from a services info.json.
+
+    Reads ``manifest.exports.out`` per service -- the list of export interfaces a
+    service projects into the global ``exports.<name>.*`` namespace. The
+    ``exports`` key is absent on releases predating the feature (e.g. 25.11), where
+    the manifest only carried ``name``/``description``/``categories``/``features``;
+    such services map to an empty set. Treating absence as empty means the whole
+    current export surface reads as *added* against an old ref rather than raising,
+    and a later removal reads as *removed* -- which is exactly the breaking signal.
+    """
+    with path.open() as f:
+        data: Any = json.load(f)
+    if not isinstance(data, dict):
+        msg = f"Expected top-level JSON object, got {type(data).__name__}"
+        raise TypeError(msg)
+
+    exports: ExportsDict = {}
+    for service, entry in data.items():
+        if not isinstance(entry, dict):
+            continue
+        manifest = entry.get("manifest", {})
+        manifest_exports = (
+            manifest.get("exports", {}) if isinstance(manifest, dict) else {}
+        )
+        out = (
+            manifest_exports.get("out", [])
+            if isinstance(manifest_exports, dict)
+            else []
+        )
+        exports[service] = set(out) if isinstance(out, list) else set()
+    return exports
 
 
 def load_service_settings(path: Path) -> OptionsDict:
@@ -212,6 +269,40 @@ def diff_services(
     )
 
 
+def diff_exports(
+    old: ExportsDict,
+    new: ExportsDict,
+    *,
+    old_label: str = "old",
+    new_label: str = "new",
+) -> ExportDiff:
+    """Diff per-service export interfaces, restricted to shared services.
+
+    Added/removed services are already reported by the Services layer, so only
+    services present in both versions are inspected here. This attributes an
+    export gain/loss to the owning service -- the missing attribution noted for
+    the exports surface, where removals previously only surfaced as anonymous
+    ``exports.<name>.*`` option churn in the clan layer.
+    """
+    changes: list[ExportChange] = []
+    for service in sorted(set(old) & set(new)):
+        old_exports = old[service]
+        new_exports = new[service]
+        if old_exports != new_exports:
+            changes.append(
+                ExportChange(
+                    service=service,
+                    added=tuple(sorted(new_exports - old_exports)),
+                    removed=tuple(sorted(old_exports - new_exports)),
+                )
+            )
+    return ExportDiff(
+        old_label=old_label,
+        new_label=new_label,
+        changes=tuple(changes),
+    )
+
+
 def format_diff(result: DiffResult, *, noun: str = "Options") -> str:
     """Render a DiffResult as a human-readable report."""
     if not result.has_changes:
@@ -278,6 +369,27 @@ def format_service_diff(result: ServiceDiff) -> str:
     return "\n".join(lines)
 
 
+def format_export_diff(result: ExportDiff) -> str:
+    """Render an ExportDiff as a human-readable report."""
+    if not result.has_changes:
+        return f"No export changes between {result.old_label} and {result.new_label}.\n"
+
+    lines: list[str] = [
+        f"Exports diff: {result.old_label} -> {result.new_label}",
+        f"Summary: {len(result.changes)} service(s) changed",
+        "",
+        f"Export changes ({len(result.changes)})",
+    ]
+    for ch in result.changes:
+        parts: list[str] = []
+        parts.extend(f"+{e}" for e in ch.added)
+        parts.extend(f"-{e}" for e in ch.removed)
+        lines.append(f"  {ch.service}: {', '.join(parts)}")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
 @dataclass(frozen=True, slots=True)
 class LayerPaths:
     """Paths to the options JSON files for one version."""
@@ -296,6 +408,7 @@ class MultiLayerDiff:
     nixos: DiffResult | None = None
     services: ServiceDiff | None = None
     service_settings: DiffResult | None = None
+    exports: ExportDiff | None = None
 
 
 def _service_role(key: str) -> str:
@@ -343,6 +456,7 @@ def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
 
     services_diff = None
     settings_diff = None
+    exports_diff = None
     if old.services_json and new.services_json:
         services_diff = diff_services(
             load_services(old.services_json),
@@ -360,12 +474,19 @@ def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
             old_label=old.label,
             new_label=new.label,
         )
+        exports_diff = diff_exports(
+            load_service_exports(old.services_json),
+            load_service_exports(new.services_json),
+            old_label=old.label,
+            new_label=new.label,
+        )
 
     return MultiLayerDiff(
         clan=clan_diff,
         nixos=nixos_diff,
         services=services_diff,
         service_settings=settings_diff,
+        exports=exports_diff,
     )
 
 
@@ -400,6 +521,11 @@ def format_multi_layer_diff(diff: MultiLayerDiff) -> str:
         parts.append("## Services")
         parts.append("")
         parts.append(format_service_diff(diff.services))
+
+    if diff.exports is not None:
+        parts.append("## Service exports")
+        parts.append("")
+        parts.append(format_export_diff(diff.exports))
 
     if diff.service_settings is not None:
         parts.append("## Service settings")

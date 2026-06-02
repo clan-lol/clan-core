@@ -12,18 +12,23 @@ import pytest
 from clan_release_diff.options_diff import (
     ChangeKind,
     DiffResult,
+    ExportChange,
+    ExportDiff,
     LayerPaths,
     MultiLayerDiff,
     OptionDiff,
     RoleChange,
     ServiceDiff,
+    diff_exports,
     diff_layers,
     diff_options,
     diff_services,
     format_diff,
+    format_export_diff,
     format_multi_layer_diff,
     format_service_diff,
     load_options,
+    load_service_exports,
     load_service_settings,
     load_services,
 )
@@ -650,3 +655,180 @@ class TestFormatMultiLayerDiff:
             MultiLayerDiff(services=svc, service_settings=ss)
         )
         assert text.index("## Services") < text.index("## Service settings")
+
+
+def _svc_entry(
+    *,
+    exports_out: list[str] | None = None,
+    has_manifest: bool = True,
+) -> dict[str, Any]:
+    """Build an info.json service entry, optionally with manifest exports."""
+    entry: dict[str, Any] = {"roles": {"default": {}}}
+    if has_manifest:
+        manifest: dict[str, Any] = {"name": "svc"}
+        if exports_out is not None:
+            manifest["exports"] = {"out": exports_out, "inputs": []}
+        entry["manifest"] = manifest
+    return entry
+
+
+class TestLoadServiceExports:
+    def test_reads_exports_out(self, tmp_path: Path) -> None:
+        info = _write_json(
+            tmp_path / "info.json",
+            {"zerotier": _svc_entry(exports_out=["networking", "peer"])},
+        )
+        assert load_service_exports(info) == {"zerotier": {"networking", "peer"}}
+
+    def test_missing_exports_key_is_empty(self, tmp_path: Path) -> None:
+        """A manifest predating the exports feature (e.g. 25.11) yields empty set."""
+        info = _write_json(
+            tmp_path / "info.json",
+            {"borgbackup": _svc_entry()},
+        )
+        assert load_service_exports(info) == {"borgbackup": set()}
+
+    def test_missing_manifest_is_empty(self, tmp_path: Path) -> None:
+        info = _write_json(
+            tmp_path / "info.json",
+            {"svc": _svc_entry(has_manifest=False)},
+        )
+        assert load_service_exports(info) == {"svc": set()}
+
+    def test_skips_non_dict_entry(self, tmp_path: Path) -> None:
+        info = _write_json(tmp_path / "info.json", {"weird": "not-a-dict"})
+        assert load_service_exports(info) == {}
+
+    def test_non_list_out_is_empty(self, tmp_path: Path) -> None:
+        info = _write_json(
+            tmp_path / "info.json",
+            {"svc": {"manifest": {"exports": {"out": "oops"}}}},
+        )
+        assert load_service_exports(info) == {"svc": set()}
+
+    def test_rejects_non_object(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "bad.json", [1, 2])  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="Expected top-level JSON object"):
+            load_service_exports(p)
+
+
+class TestDiffExports:
+    def test_identical(self) -> None:
+        exports = {"zerotier": {"networking", "peer"}}
+        result = diff_exports(exports, exports)
+        assert not result.has_changes
+
+    def test_added_export(self) -> None:
+        old = {"zerotier": {"networking"}}
+        new = {"zerotier": {"networking", "peer"}}
+        result = diff_exports(old, new, old_label="25.11", new_label="main")
+        assert len(result.changes) == 1
+        ch = result.changes[0]
+        assert ch.service == "zerotier"
+        assert ch.added == ("peer",)
+        assert ch.removed == ()
+
+    def test_removed_export(self) -> None:
+        old = {"zerotier": {"networking", "peer"}}
+        new = {"zerotier": {"networking"}}
+        result = diff_exports(old, new)
+        ch = result.changes[0]
+        assert ch.removed == ("peer",)
+        assert ch.added == ()
+
+    def test_whole_surface_added_against_old_ref(self) -> None:
+        """25.11 has no exports; current ones all read as added, not as errors."""
+        old: dict[str, set[str]] = {"zerotier": set(), "borgbackup": set()}
+        new = {"zerotier": {"networking", "peer"}, "borgbackup": set()}
+        result = diff_exports(old, new)
+        assert len(result.changes) == 1
+        assert result.changes[0].service == "zerotier"
+        assert result.changes[0].added == ("networking", "peer")
+
+    def test_restricted_to_shared_services(self) -> None:
+        """Exports of added/removed services are left to the Services layer."""
+        old = {"gone": {"x"}}
+        new = {"fresh": {"y"}}
+        result = diff_exports(old, new)
+        assert not result.has_changes
+
+    def test_changes_sorted_by_service(self) -> None:
+        old = {"b": {"x"}, "a": {"y"}}
+        new: dict[str, set[str]] = {"b": set(), "a": set()}
+        result = diff_exports(old, new)
+        assert [c.service for c in result.changes] == ["a", "b"]
+
+
+class TestFormatExportDiff:
+    def test_no_changes(self) -> None:
+        text = format_export_diff(ExportDiff(old_label="25.11", new_label="main"))
+        assert "No export changes" in text
+        assert "25.11" in text
+
+    def test_with_changes(self) -> None:
+        result = ExportDiff(
+            old_label="25.11",
+            new_label="main",
+            changes=(
+                ExportChange(
+                    service="zerotier",
+                    added=("peer",),
+                    removed=("networking",),
+                ),
+            ),
+        )
+        text = format_export_diff(result)
+        assert "Exports diff: 25.11 -> main" in text
+        assert "Summary: 1 service(s) changed" in text
+        assert _section_items(text, "Export changes") == [
+            "zerotier: +peer, -networking"
+        ]
+
+
+class TestDiffLayersExports:
+    def test_exports_attributed_to_service(self, tmp_path: Path) -> None:
+        old = _write_json(
+            tmp_path / "old.json",
+            {"zerotier": _svc_entry(exports_out=["networking", "peer"])},
+        )
+        new = _write_json(
+            tmp_path / "new.json",
+            {"zerotier": _svc_entry(exports_out=["networking"])},
+        )
+        result = diff_layers(
+            LayerPaths(label="a", services_json=old),
+            LayerPaths(label="b", services_json=new),
+        )
+        assert result.exports is not None
+        assert len(result.exports.changes) == 1
+        assert result.exports.changes[0].service == "zerotier"
+        assert result.exports.changes[0].removed == ("peer",)
+
+    def test_exports_none_without_services(self, tmp_path: Path) -> None:
+        old_clan = _write_json(tmp_path / "old.json", {"a": OPTION_A})
+        new_clan = _write_json(tmp_path / "new.json", {"a": OPTION_A})
+        result = diff_layers(
+            LayerPaths(label="a", clan_options=old_clan),
+            LayerPaths(label="b", clan_options=new_clan),
+        )
+        assert result.exports is None
+
+    def test_exports_section_rendered(self) -> None:
+        ex = ExportDiff(
+            old_label="25.11",
+            new_label="main",
+            changes=(ExportChange(service="zerotier", added=(), removed=("peer",)),),
+        )
+        text = format_multi_layer_diff(MultiLayerDiff(exports=ex))
+        assert "## Service exports" in text
+        assert "zerotier: -peer" in text
+
+    def test_exports_section_after_services(self) -> None:
+        svc = ServiceDiff(old_label="a", new_label="b", added=("pki",))
+        ex = ExportDiff(
+            old_label="a",
+            new_label="b",
+            changes=(ExportChange(service="zerotier", added=("x",), removed=()),),
+        )
+        text = format_multi_layer_diff(MultiLayerDiff(services=svc, exports=ex))
+        assert text.index("## Services") < text.index("## Service exports")
