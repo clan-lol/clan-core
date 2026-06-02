@@ -112,5 +112,6 @@ def _run_layers(args: argparse.Namespace) -> None:
         (result.clan is not None and result.clan.has_changes)
         or (result.nixos is not None and result.nixos.has_changes)
         or (result.services is not None and result.services.has_changes)
+        or (result.service_settings is not None and result.service_settings.has_changes)
     )
     sys.exit(_EXIT_NO_CHANGES if not has_changes else _EXIT_CHANGES)

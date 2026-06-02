@@ -24,6 +24,7 @@ from clan_release_diff.options_diff import (
     format_multi_layer_diff,
     format_service_diff,
     load_options,
+    load_service_settings,
     load_services,
 )
 
@@ -82,6 +83,36 @@ def _section_items(text: str, header: str) -> list[str]:
         else:
             break
     return items
+
+
+def _write_role_options(base: Path, settings: dict[str, Any]) -> Path:
+    """Create a nixosOptionsDoc-style dir with share/doc/nixos/options.json."""
+    options_dir = base / "share" / "doc" / "nixos"
+    options_dir.mkdir(parents=True, exist_ok=True)
+    (options_dir / "options.json").write_text(json.dumps(settings))
+    return base
+
+
+def _write_services(
+    base: Path,
+    prefix: str,
+    services: dict[str, dict[str, dict[str, Any]]],
+) -> Path:
+    """Write an info.json plus per-role options dirs.
+
+    ``services`` maps service -> role -> {setting: option-entry}. Returns the
+    path to info.json, with each role pointing at its generated options dir.
+    """
+    info: dict[str, Any] = {}
+    for service, roles in services.items():
+        role_map: dict[str, str] = {}
+        for role, settings in roles.items():
+            role_dir = _write_role_options(
+                base / f"{prefix}-{service}-{role}", settings
+            )
+            role_map[role] = str(role_dir)
+        info[service] = {"manifest": {"name": service}, "roles": role_map}
+    return _write_json(base / f"{prefix}-info.json", info)
 
 
 class TestLoadOptions:
@@ -264,6 +295,39 @@ class TestLoadServices:
             load_services(p)
 
 
+class TestLoadServiceSettings:
+    def test_flat_keys_with_types(self, tmp_path: Path) -> None:
+        info = _write_services(
+            tmp_path,
+            "v",
+            {
+                "zerotier": {
+                    "controller": {"allowedIds": {"type": "list of string"}},
+                    "peer": {"port": {"type": "port number"}},
+                },
+            },
+        )
+        result = load_service_settings(info)
+        assert result["zerotier/controller/allowedIds"]["type"] == "list of string"
+        assert result["zerotier/peer/port"]["type"] == "port number"
+
+    def test_skips_non_dict_service_entry(self, tmp_path: Path) -> None:
+        info = _write_json(tmp_path / "info.json", {"weird": "not-a-dict"})
+        assert load_service_settings(info) == {}
+
+    def test_skips_non_str_role_value(self, tmp_path: Path) -> None:
+        info = _write_json(
+            tmp_path / "info.json",
+            {"svc": {"roles": {"default": 123}}},
+        )
+        assert load_service_settings(info) == {}
+
+    def test_rejects_non_object(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "bad.json", [1, 2])  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="Expected top-level JSON object"):
+            load_service_settings(p)
+
+
 class TestDiffServices:
     def test_identical(self) -> None:
         services = {"a": {"default"}, "b": {"client", "server"}}
@@ -414,6 +478,82 @@ class TestDiffLayers:
         assert result.clan is None
         assert result.nixos is None
 
+    def test_service_settings_intersection(self, tmp_path: Path) -> None:
+        """Only services and roles present in both refs are diffed."""
+        old = _write_services(
+            tmp_path,
+            "old",
+            {
+                "borgbackup": {
+                    "server": {
+                        "compression": {"type": "string"},
+                        "keep": {"type": "integer"},
+                    }
+                },
+                "coredns": {"default": {"port": {"type": "integer"}}},
+            },
+        )
+        new = _write_services(
+            tmp_path,
+            "new",
+            {
+                "borgbackup": {"server": {"keep": {"type": "string"}}},
+                "pki": {"default": {"ca": {"type": "string"}}},
+            },
+        )
+        result = diff_layers(
+            LayerPaths(label="a", services_json=old),
+            LayerPaths(label="b", services_json=new),
+        )
+        ss = result.service_settings
+        assert ss is not None
+        # borgbackup/server shared; coredns (removed) and pki (added) excluded
+        assert [d.name for d in ss.removed] == ["borgbackup/server/compression"]
+        assert [d.name for d in ss.type_changed] == ["borgbackup/server/keep"]
+        assert ss.added == ()
+        joined = " ".join(d.name for d in (*ss.added, *ss.removed, *ss.type_changed))
+        assert "coredns" not in joined
+        assert "pki" not in joined
+
+    def test_service_settings_added_setting(self, tmp_path: Path) -> None:
+        old = _write_services(
+            tmp_path, "old", {"svc": {"server": {"a": {"type": "integer"}}}}
+        )
+        new = _write_services(
+            tmp_path,
+            "new",
+            {"svc": {"server": {"a": {"type": "integer"}, "b": {"type": "integer"}}}},
+        )
+        result = diff_layers(
+            LayerPaths(label="a", services_json=old),
+            LayerPaths(label="b", services_json=new),
+        )
+        assert result.service_settings is not None
+        assert [d.name for d in result.service_settings.added] == ["svc/server/b"]
+
+    def test_service_settings_excludes_added_role(self, tmp_path: Path) -> None:
+        """A role added to a shared service is not double-reported here."""
+        old = _write_services(
+            tmp_path, "old", {"svc": {"server": {"a": {"type": "integer"}}}}
+        )
+        new = _write_services(
+            tmp_path,
+            "new",
+            {
+                "svc": {
+                    "server": {"a": {"type": "integer"}},
+                    "client": {"b": {"type": "integer"}},
+                }
+            },
+        )
+        result = diff_layers(
+            LayerPaths(label="a", services_json=old),
+            LayerPaths(label="b", services_json=new),
+        )
+        assert result.service_settings is not None
+        # server/a unchanged; client/b is an added role -> excluded
+        assert not result.service_settings.has_changes
+
     def test_rejects_asymmetric_clan(self, tmp_path: Path) -> None:
         old_clan = _write_json(tmp_path / "old.json", {})
         with pytest.raises(ValueError, match=r"clan.*old.*provided.*new.*missing"):
@@ -482,3 +622,31 @@ class TestFormatMultiLayerDiff:
         assert "## Services" in text
         # Services section comes after clan section
         assert text.index("## Clan") < text.index("## Services")
+
+    def test_with_service_settings(self) -> None:
+        ss = DiffResult(
+            old_label="25.11",
+            new_label="main",
+            removed=(
+                OptionDiff(
+                    name="zerotier/controller/allowedIds",
+                    kind=ChangeKind.REMOVED,
+                ),
+            ),
+        )
+        text = format_multi_layer_diff(MultiLayerDiff(service_settings=ss))
+        assert "## Service settings" in text
+        assert "Service settings diff: 25.11 -> main" in text
+        assert _section_items(text, "Removed") == ["zerotier/controller/allowedIds"]
+
+    def test_services_before_service_settings(self) -> None:
+        svc = ServiceDiff(old_label="a", new_label="b", added=("pki",))
+        ss = DiffResult(
+            old_label="a",
+            new_label="b",
+            removed=(OptionDiff(name="pki/default/foo", kind=ChangeKind.REMOVED),),
+        )
+        text = format_multi_layer_diff(
+            MultiLayerDiff(services=svc, service_settings=ss)
+        )
+        assert text.index("## Services") < text.index("## Service settings")
