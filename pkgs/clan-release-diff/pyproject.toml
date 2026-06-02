@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clan-release-diff"
+version = "0.1.0"
+description = "Release tooling for clan-core: options diffing between branches"
+license = "MIT"
+requires-python = ">=3.13"
+
+[project.scripts]
+clan-release-diff = "clan_release_diff.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_redundant_casts = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict = true
