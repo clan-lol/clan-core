@@ -44,7 +44,7 @@
     let
       ipOf =
         machine: instance:
-        nodes.${machine}.clan.core.vars.generators."zerotier-ip-${instance}".files.ip.value;
+        nodes.${machine}.clan.core.vars.generators."zerotier-ip-${machine}-${instance}".files.ip.value;
     in
     ''
       import json

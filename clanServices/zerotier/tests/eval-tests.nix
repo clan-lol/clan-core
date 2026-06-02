@@ -123,48 +123,68 @@ in
     expected = {
       identityShare = true;
       identityFiles = [ "identity-secret" ];
-      identityDeploy = false;
+      identityDeploy = true;
       networkShare = true;
       networkFiles = [ "network-id" ];
       networkDeps = [ "zerotier-identity-bam" ];
     };
   };
 
-  # Per-machine identity generator
+  # Shared identity generators (one per machine)
   test_identity_generator = {
     expr = {
-      # Controller copies from shared
-      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-identity.dependencies;
-      controllerFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-identity.files;
-      # Peer generates fresh (no deps on shared identity)
-      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-identity.dependencies;
-      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-identity.files;
+      controllerShare = (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.share;
+      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.dependencies;
+      controllerFiles = lib.attrNames (cfg "bam").clan.core.vars.generators.zerotier-identity-bam.files;
+      peerShare = (cfg "jon").clan.core.vars.generators.zerotier-identity-jon.share;
+      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-identity-jon.dependencies;
+      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-identity-jon.files;
     };
     expected = {
-      controllerDeps = [ "zerotier-identity-bam" ];
+      controllerShare = true;
+      controllerDeps = [ ];
       controllerFiles = [ "identity-secret" ];
+      peerShare = true;
       peerDeps = [ ];
       peerFiles = [ "identity-secret" ];
     };
   };
 
-  # Per-instance IP generator
+  # Each machine only defines its own identity generator, not other machines'
+  test_identity_scoped_to_own_machine = {
+    expr = {
+      saraHasOwnIdentity = (cfg "sara").clan.core.vars.generators ? zerotier-identity-sara;
+      saraLacksJonIdentity = !((cfg "sara").clan.core.vars.generators ? zerotier-identity-jon);
+      jonLacksBamIdentity = !((cfg "jon").clan.core.vars.generators ? zerotier-identity-bam);
+    };
+    expected = {
+      saraHasOwnIdentity = true;
+      saraLacksJonIdentity = true;
+      jonLacksBamIdentity = true;
+    };
+  };
+
+  # Shared IP generators (one per machine per instance)
   test_instance_ip_generator = {
     expr = {
-      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-ip-zerotier.dependencies;
-      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-ip-zerotier.files;
-      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-ip-zerotier.dependencies;
+      peerDeps = (cfg "jon").clan.core.vars.generators.zerotier-ip-jon-zerotier.dependencies;
+      peerFiles = lib.attrNames (cfg "jon").clan.core.vars.generators.zerotier-ip-jon-zerotier.files;
+      peerShare = (cfg "jon").clan.core.vars.generators.zerotier-ip-jon-zerotier.share;
+      controllerDeps = (cfg "bam").clan.core.vars.generators.zerotier-ip-bam-zerotier.dependencies;
+      controllerShare = (cfg "bam").clan.core.vars.generators.zerotier-ip-bam-zerotier.share;
     };
     expected = {
       peerDeps = [
-        "zerotier-identity"
+        "zerotier-identity-jon"
         "zerotier-network-zerotier"
       ];
       peerFiles = [ "ip" ];
+      peerShare = true;
       controllerDeps = [
-        "zerotier-identity"
+        "zerotier-identity-bam"
         "zerotier-network-zerotier"
       ];
+      controllerShare = true;
     };
   };
 

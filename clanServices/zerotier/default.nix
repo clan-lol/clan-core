@@ -64,8 +64,7 @@
           peer.hosts = [
             {
               plain = clanLib.getPublicValue {
-                machine = machine.name;
-                generator = "zerotier-ip-${instanceName}";
+                generator = "zerotier-ip-${machine.name}-${instanceName}";
                 file = "ip";
                 flake = directory;
               };
@@ -79,24 +78,7 @@
             pkgs,
             ...
           }:
-          let
-            zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
-          in
           {
-            clan.core.vars.generators."zerotier-ip-${instanceName}" = {
-              files.ip.secret = false;
-              runtimeInputs = [ zerotier-tools ];
-              dependencies = [
-                "zerotier-identity"
-                "zerotier-network-${instanceName}"
-              ];
-              script = ''
-                zerotier-generate --mode compute-ip \
-                  --identity-secret "$in/zerotier-identity/identity-secret" \
-                  --network-id-file "$in/zerotier-network-${instanceName}/network-id" \
-                  --ip "$out/ip"
-              '';
-            };
 
             imports = [
               (import ./shared.nix {
@@ -261,8 +243,7 @@
               let
                 ztIp = clanLib.getPublicValue {
                   flake = config.clan.core.settings.directory;
-                  machine = name;
-                  generator = "zerotier-ip-${instanceName}";
+                  generator = "zerotier-ip-${name}-${instanceName}";
                   file = "ip";
                   default = null;
                 };
@@ -377,7 +358,8 @@
 
           zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
 
-          identity-secret = config.clan.core.vars.generators.zerotier-identity.files.identity-secret;
+          identity-secret =
+            config.clan.core.vars.generators."zerotier-identity-${machine.name}".files.identity-secret;
 
           # Collect all WireGuard interface names so ZeroTier won't route through them
           wireguardInterfaceNames =
@@ -397,25 +379,25 @@
                 instanceName: instanceInfo:
                 let
                   controllerName = builtins.head (builtins.attrNames instanceInfo.roles.controller.machines);
+                  controllerGenerator = "zerotier-identity-${controllerName}";
                 in
                 lib.nameValuePair "zerotier-network-${instanceName}" {
                   share = true;
                   files.network-id.secret = false;
                   files.network-id.deploy = false;
                   runtimeInputs = [ zerotier-tools ];
-                  dependencies = [ "zerotier-identity-${controllerName}" ];
+                  dependencies = [ controllerGenerator ];
                   script = ''
                     zerotier-generate --mode network-id \
-                      --identity-secret-file "$in/zerotier-identity-${controllerName}/identity-secret" \
+                      --identity-secret-file "$in/${controllerGenerator}/identity-secret" \
                       --network-id "$out/network-id"
                   '';
                 }
               ) instances)
               // {
-                # If this machine is a controller
-                "zerotier-identity-${machine.name}" = lib.mkIf isController {
+                "zerotier-identity-${machine.name}" = {
                   share = true;
-                  files.identity-secret.deploy = false;
+                  files.identity-secret.restartUnits = [ "zerotierone.service" ];
                   runtimeInputs = [
                     config.services.zerotierone.package
                     zerotier-tools
@@ -424,26 +406,26 @@
                     zerotier-generate --mode identity-only --identity-secret "$out/identity-secret"
                   '';
                 };
-
-                # Every machine has one static identity for all instances
-                zerotier-identity = {
-                  files.identity-secret.restartUnits = [ "zerotierone.service" ];
-                  runtimeInputs = [
-                    config.services.zerotierone.package
-                    zerotier-tools
+              }
+              // (lib.mapAttrs' (
+                instanceName: _:
+                lib.nameValuePair "zerotier-ip-${machine.name}-${instanceName}" {
+                  share = true;
+                  files.ip.secret = false;
+                  files.ip.deploy = false;
+                  runtimeInputs = [ zerotier-tools ];
+                  dependencies = [
+                    "zerotier-identity-${machine.name}"
+                    "zerotier-network-${instanceName}"
                   ];
-                  dependencies = lib.optionals isController [ "zerotier-identity-${machine.name}" ];
-                  script =
-                    if isController then
-                      ''
-                        cp "$in/zerotier-identity-${machine.name}/identity-secret" "$out/identity-secret"
-                      ''
-                    else
-                      ''
-                        zerotier-generate --mode identity-only --identity-secret "$out/identity-secret"
-                      '';
-                };
-              };
+                  script = ''
+                    zerotier-generate --mode compute-ip \
+                      --identity-secret "$in/zerotier-identity-${machine.name}/identity-secret" \
+                      --network-id-file "$in/zerotier-network-${instanceName}/network-id" \
+                      --ip "$out/ip"
+                  '';
+                }
+              ) instances);
 
             # Override license so that we can build zerotierone without
             # having to re-import nixpkgs.
@@ -552,7 +534,7 @@
                 let
                   firstInstance = builtins.head (builtins.attrNames instances);
                 in
-                config.clan.core.vars.generators."zerotier-ip-${firstInstance}".files.ip.value
+                config.clan.core.vars.generators."zerotier-ip-${machine.name}-${firstInstance}".files.ip.value
               }]";
             })
           ];

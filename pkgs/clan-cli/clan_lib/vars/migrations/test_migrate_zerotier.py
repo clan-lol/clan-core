@@ -144,45 +144,41 @@ def _assert_public_var(var_dir: Path, value: str = "fd00::1") -> None:
 
 
 def _assert_final_state(vars_dir: Path) -> None:
-    """Assert the full FINAL directory structure after migration."""
-    # 1. Shared controller identities (copied from per-machine, depth decreases)
-    for ctrl in ["controller1", "controller2"]:
+    """Assert the full FINAL all-shared directory structure after migration."""
+    # 1. Shared identity secrets for every machine (not just controllers)
+    for machine in MACHINES:
         _assert_secret_var(
-            vars_dir / f"shared/zerotier-identity-{ctrl}/identity-secret",
+            vars_dir / f"shared/zerotier-identity-{machine}/identity-secret",
             LINK_DEPTH_SHARED,
         )
 
-    # 2. Shared network IDs (moved from controller's per-machine, public)
+    # 2. Shared network IDs (public), one per instance
     for inst in ["zt-net1", "zt-net2"]:
         _assert_public_var(vars_dir / f"shared/zerotier-network-{inst}/network-id")
 
-    # 3. Per-machine identity secrets (all machines, same depth)
-    for machine in MACHINES:
-        _assert_secret_var(
-            vars_dir / f"per-machine/{machine}/zerotier-identity/identity-secret",
-            LINK_DEPTH_PER_MACHINE,
-        )
-
-    # 4. Per-machine IPs
-    # Controllers have secret IPs
+    # 3. Shared IPs, generator name carries machine + instance.
+    # Controllers have secret IPs; peers have public IPs.
     for ctrl, inst in [("controller1", "zt-net1"), ("controller2", "zt-net2")]:
         _assert_secret_var(
-            vars_dir / f"per-machine/{ctrl}/zerotier-ip-{inst}/ip",
-            LINK_DEPTH_PER_MACHINE,
+            vars_dir / f"shared/zerotier-ip-{ctrl}-{inst}/ip",
+            LINK_DEPTH_SHARED,
         )
-    # Peers have public IPs
     for peer, inst in [
         ("peer1", "zt-net1"),
         ("peer2", "zt-net1"),
         ("peer3", "zt-net2"),
         ("peer4", "zt-net2"),
     ]:
-        _assert_public_var(vars_dir / f"per-machine/{peer}/zerotier-ip-{inst}/ip")
+        _assert_public_var(vars_dir / f"shared/zerotier-ip-{peer}-{inst}/ip")
 
-    # 5. Old legacy directories must be removed entirely
+    # 4. No per-machine zerotier generator dirs remain
     for machine in MACHINES:
         assert not (vars_dir / f"per-machine/{machine}/zerotier").exists(), (
             f"Legacy zerotier dir for {machine} should have been removed"
+        )
+        assert not (vars_dir / f"per-machine/{machine}/zerotier-identity").exists()
+        assert not any((vars_dir / f"per-machine/{machine}").glob("zerotier-ip-*")), (
+            f"Per-machine zerotier-ip dir for {machine} should have been removed"
         )
     assert not (vars_dir / "shared/zerotier-controller").exists()
 
@@ -348,23 +344,19 @@ class TestMigrateZerotier:
 
         migrate_zerotier(clan_dir)
 
-        _assert_secret_var(
-            vars_dir / "shared/zerotier-identity-controller1/identity-secret",
-            LINK_DEPTH_SHARED,
-        )
         _assert_public_var(vars_dir / "shared/zerotier-network-zt-net1/network-id")
         for m in zt_net1:
             _assert_secret_var(
-                vars_dir / f"per-machine/{m}/zerotier-identity/identity-secret",
-                LINK_DEPTH_PER_MACHINE,
+                vars_dir / f"shared/zerotier-identity-{m}/identity-secret",
+                LINK_DEPTH_SHARED,
             )
             assert not (vars_dir / f"per-machine/{m}/zerotier").exists()
         _assert_secret_var(
-            vars_dir / "per-machine/controller1/zerotier-ip-zt-net1/ip",
-            LINK_DEPTH_PER_MACHINE,
+            vars_dir / "shared/zerotier-ip-controller1-zt-net1/ip",
+            LINK_DEPTH_SHARED,
         )
-        _assert_public_var(vars_dir / "per-machine/peer1/zerotier-ip-zt-net1/ip")
-        _assert_public_var(vars_dir / "per-machine/peer2/zerotier-ip-zt-net1/ip")
+        _assert_public_var(vars_dir / "shared/zerotier-ip-peer1-zt-net1/ip")
+        _assert_public_var(vars_dir / "shared/zerotier-ip-peer2-zt-net1/ip")
 
         # zt-net2 machines had no legacy files — nothing was created for them
         for m in ["controller2", "peer3", "peer4"]:
