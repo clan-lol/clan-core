@@ -240,6 +240,8 @@
             ) [ ] machines;
             allHostIPs = settings.allowedIps ++ networkIps;
 
+            zerotier-members = pkgs.callPackage ../../pkgs/zerotier-tools { };
+            zerotierone = pkgs.callPackage ../../pkgs/zerotierone { };
           in
           {
             imports = [
@@ -305,7 +307,7 @@
 
               systemd.services.zerotierone.serviceConfig.ExecStartPost = [
                 "+${pkgs.writeShellScript "whitelist-controller-${instanceName}" ''
-                  ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${
+                  ${zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${
                     builtins.substring 0 10 networkId
                   }
                 ''}"
@@ -314,13 +316,13 @@
               systemd.services."zerotier-autoaccept-${instanceName}" = {
                 wantedBy = [ "multi-user.target" ];
                 after = [ "zerotierone.service" ];
-                path = [ config.clan.core.clanPkgs.zerotierone ];
+                path = [ zerotierone ];
                 serviceConfig.ExecStart = pkgs.writeShellScript "zerotier-autoaccept-${instanceName}" ''
                   ${lib.concatMapStringsSep "\n" (host: ''
-                    ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow --member-ip ${host}
+                    ${zerotier-members}/bin/zerotier-members --network-id ${networkId} allow --member-ip ${host}
                   '') allHostIPs}
                   ${lib.concatMapStringsSep "\n" (id: ''
-                    ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${id}
+                    ${zerotier-members}/bin/zerotier-members --network-id ${networkId} allow ${id}
                   '') settings.allowedIds}
                 '';
               };
