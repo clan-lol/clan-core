@@ -137,6 +137,7 @@ export const docsNav: DocsNavItems = [
           "guides/migrations/migrate-inventory-services",
           "guides/migrations/migration-facts-vars",
           "guides/migrations/disk-id",
+          "guides/migrations/zerotier",
         ],
       },
       "guides/build-host",

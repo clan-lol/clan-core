@@ -25,6 +25,16 @@ def _make_symlink(path: Path, target: str) -> None:
 
 MACHINES = ["controller1", "controller2", "peer1", "peer2", "peer3", "peer4"]
 
+MACHINE_INSTANCE: dict[str, str] = {
+    "controller1": "zt-net1",
+    "peer1": "zt-net1",
+    "peer2": "zt-net1",
+    "controller2": "zt-net2",
+    "peer3": "zt-net2",
+    "peer4": "zt-net2",
+}
+
+
 LEGACY_FILES: list[tuple[str, Literal["public", "secret"]]] = [
     # controller1 (controller for zt-net1)
     ("per-machine/controller1/zerotier/zerotier-network-id", "public"),
@@ -122,6 +132,79 @@ def _seed_legacy_files(vars_dir: Path, machines: set[str] | None = None) -> list
             link_machine = vars_dir / v_path / "machines" / "jon"
             _make_symlink(link_machine, f"{LINK_DEPTH_PER_MACHINE}sops/machines/jon")
             paths.append(link_machine)
+    return paths
+
+
+def _seed_secret_var(
+    vars_dir: Path,
+    rel: str,
+    depth: str,
+    paths: list[Path],
+    content: str = "key-data",
+) -> None:
+    """Seed a secret var dir: a `secret` leaf plus sops metadata symlinks at *depth*."""
+    p = vars_dir / rel / "secret"
+    _make_file(p, content)
+    paths.append(p)
+    link_user = vars_dir / rel / "users" / "admin"
+    _make_symlink(link_user, f"{depth}sops/users/admin")
+    paths.append(link_user)
+    link_machine = vars_dir / rel / "machines" / "jon"
+    _make_symlink(link_machine, f"{depth}sops/machines/jon")
+    paths.append(link_machine)
+
+
+def _seed_empty_skeletons(vars_dir: Path) -> None:
+    for machine, inst in MACHINE_INSTANCE.items():
+        identity = vars_dir / f"per-machine/{machine}/zerotier-identity/identity-secret"
+        for sub in ("groups", "machines", "users"):
+            (identity / sub).mkdir(parents=True, exist_ok=True)
+        (vars_dir / f"per-machine/{machine}/zerotier-ip-{inst}/ip").mkdir(
+            parents=True, exist_ok=True
+        )
+    for ctrl, inst in [("controller1", "zt-net1"), ("controller2", "zt-net2")]:
+        (vars_dir / f"shared/zerotier-identity-{ctrl}/identity-secret").mkdir(
+            parents=True, exist_ok=True
+        )
+        (vars_dir / f"shared/zerotier-network-{inst}/network-id").mkdir(
+            parents=True, exist_ok=True
+        )
+
+
+def _seed_old_final_files(vars_dir: Path) -> list[Path]:
+    paths: list[Path] = []
+    controllers = {"controller1", "controller2"}
+    for machine, inst in MACHINE_INSTANCE.items():
+        _seed_secret_var(
+            vars_dir,
+            f"per-machine/{machine}/zerotier-identity/identity-secret",
+            LINK_DEPTH_PER_MACHINE,
+            paths,
+        )
+        if machine in controllers:
+            _seed_secret_var(
+                vars_dir,
+                f"per-machine/{machine}/zerotier-ip-{inst}/ip",
+                LINK_DEPTH_PER_MACHINE,
+                paths,
+            )
+        else:
+            p = vars_dir / f"per-machine/{machine}/zerotier-ip-{inst}/ip/value"
+            _make_file(p, "fd00::1")
+            paths.append(p)
+    for inst in ["zt-net1", "zt-net2"]:
+        p = vars_dir / f"shared/zerotier-network-{inst}/network-id/value"
+        _make_file(p, "fd00::1")
+        paths.append(p)
+    # Shared controller identity copy (generation source); per-machine must win.
+    for ctrl in ("controller1", "controller2"):
+        _seed_secret_var(
+            vars_dir,
+            f"shared/zerotier-identity-{ctrl}/identity-secret",
+            LINK_DEPTH_SHARED,
+            paths,
+            content="shared-stale-copy",
+        )
     return paths
 
 
@@ -393,4 +476,47 @@ class TestMigrateZerotier:
 
         migrate_zerotier(clan_dir)
         assert not canonical.exists()
+        _assert_final_state(vars_dir)
+
+    def test_legacy_with_empty_skeletons(
+        self, clan_flake: Callable[..., Flake]
+    ) -> None:
+        """Real LEGACY data plus empty NEW-layout skeletons from an interrupted
+        `clan vars generate`. The skeletons must be discarded, never moved over
+        the just-migrated real values. Regression lock for the data-loss bug.
+        """
+        flake = clan_flake(TWO_NETWORK_INVENTORY)
+        clan_dir = flake.path
+        vars_dir = clan_dir / "vars"
+
+        paths = _seed_legacy_files(vars_dir)
+        commit_files(
+            file_paths=paths,
+            flake_dir=clan_dir,
+            commit_message="seed legacy zerotier vars",
+        )
+
+        # Empty skeletons are git-ignored (no files) in the real consumer, so
+        # plant them uncommitted on top of the committed legacy reals.
+        _seed_empty_skeletons(vars_dir)
+
+        migrate_zerotier(clan_dir)
+        _assert_final_state(vars_dir)
+
+    def test_old_final_real(self, clan_flake: Callable[..., Flake]) -> None:
+        """Real OLD_FINAL per-machine data migrates to FINAL; the per-machine
+        identity overrides the shared controller copy.
+        """
+        flake = clan_flake(TWO_NETWORK_INVENTORY)
+        clan_dir = flake.path
+        vars_dir = clan_dir / "vars"
+
+        paths = _seed_old_final_files(vars_dir)
+        commit_files(
+            file_paths=paths,
+            flake_dir=clan_dir,
+            commit_message="seed old_final zerotier vars",
+        )
+
+        migrate_zerotier(clan_dir)
         _assert_final_state(vars_dir)

@@ -82,6 +82,21 @@ def _needs_migration(clan_dir: Path) -> bool:
     return False
 
 
+def _is_populated(src: Path) -> bool:
+    """Returns true if {src}/value or {src}/secret is a file"""
+    return (src / "value").is_file() or (src / "secret").is_file()
+
+
+def _migrate_leaf(src: Path, dst: Path, changed: list[Path]) -> None:
+    """Delete empty directory; potentially orphaned from previous run"""
+    if not src.exists():
+        return
+    if _is_populated(src):
+        move_var_file(src, dst, changed)
+    else:
+        delete_var_file(src, changed)
+
+
 def migrate_zerotier(clan_dir: Path) -> None:
     machine_vars_dir = clan_dir / "vars" / "per-machine"
 
@@ -171,7 +186,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
 
             # Identity -> shared (every machine, not just controllers)
             id_src = machine_path / "zerotier/zerotier-identity-secret"
-            move_var_file(
+            _migrate_leaf(
                 id_src,
                 shared_vars / f"zerotier-identity-{machine_name}/identity-secret",
                 changed,
@@ -179,7 +194,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
 
             # Network-id -> shared (unchanged destination)
             net_src = machine_path / "zerotier/zerotier-network-id"
-            move_var_file(
+            _migrate_leaf(
                 net_src,
                 shared_vars / f"zerotier-network-{instance}/network-id",
                 changed,
@@ -187,7 +202,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
 
             # IP -> shared with machine name in generator name
             ip_src = machine_path / "zerotier/zerotier-ip"
-            move_var_file(
+            _migrate_leaf(
                 ip_src,
                 shared_vars / f"zerotier-ip-{machine_name}-{instance}/ip",
                 changed,
@@ -210,7 +225,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
         )
         old_identity = machine_path / "zerotier-identity/identity-secret"
         if old_identity.exists():
-            move_var_file(
+            _migrate_leaf(
                 old_identity,
                 shared_identity_dst,
                 changed,
@@ -226,7 +241,7 @@ def migrate_zerotier(clan_dir: Path) -> None:
             instance_name = ip_dir.name.removeprefix("zerotier-ip-")
             old_ip = ip_dir / "ip"
             if old_ip.exists():
-                move_var_file(
+                _migrate_leaf(
                     old_ip,
                     shared_vars / f"zerotier-ip-{machine_name}-{instance_name}/ip",
                     changed,
@@ -235,8 +250,9 @@ def migrate_zerotier(clan_dir: Path) -> None:
             if ip_dir.exists() and not any(ip_dir.iterdir()):
                 ip_dir.rmdir()
 
-    commit_files(
-        file_paths=changed,
-        flake_dir=clan_dir,
-        commit_message="migrate: move zerotier vars to all-shared layout",
-    )
+    if changed:
+        commit_files(
+            file_paths=changed,
+            flake_dir=clan_dir,
+            commit_message="migrate: move zerotier vars to all-shared layout",
+        )
