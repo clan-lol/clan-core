@@ -29,6 +29,7 @@
     };
     value = {
       networking.priority = 900;
+      networking.module = "clan_lib.network.zerotier";
     };
   }) config.instances;
 
@@ -54,23 +55,10 @@
       {
         instanceName,
         roles,
-        mkExports,
-        machine,
         settings,
         ...
       }:
       {
-        exports = mkExports {
-          peer.hosts = [
-            {
-              plain = clanLib.getPublicValue {
-                generator = "zerotier-ip-${machine.name}-${instanceName}";
-                file = "ip";
-                flake = directory;
-              };
-            }
-          ];
-        };
         nixosModule =
           {
             config,
@@ -344,6 +332,30 @@
   perMachine =
     { instances, machine, ... }:
     {
+      # perMachine + perInstance
+      # cannot compute in 'peer.perInstance'
+      # This data is independent of the 'role'.
+      # How to read this: ip's of jon in "zerotier:net-a"
+      # -> Dimensions: machineName, instanceName, serviceName
+      exports = lib.mapAttrs' (instanceName: _: {
+        name = clanLib.buildScopeKey {
+          inherit instanceName;
+          machineName = machine.name;
+          serviceName = config.manifest.name;
+        };
+        value = {
+          peer.hosts = [
+            {
+              plain = clanLib.getPublicValue {
+                generator = "zerotier-ip-${machine.name}-${instanceName}";
+                file = "ip";
+                flake = directory;
+              };
+            }
+          ];
+        };
+      }) instances;
+
       nixosModule =
         {
           config,
@@ -353,8 +365,6 @@
         }:
         let
           isController = builtins.elem "controller" machine.roles;
-          isPeer = builtins.elem "peer" machine.roles;
-          isPeerExclusive = isPeer && !isController;
 
           zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
 
@@ -527,15 +537,6 @@
           imports = [
             (lib.mkIf isController {
               clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
-            })
-            (lib.mkIf isPeerExclusive {
-              # TODO: remove in favor of exports
-              clan.core.networking.targetHost = lib.mkDefault "root@[${
-                let
-                  firstInstance = builtins.head (builtins.attrNames instances);
-                in
-                config.clan.core.vars.generators."zerotier-ip-${machine.name}-${firstInstance}".files.ip.value
-              }]";
             })
           ];
         };
