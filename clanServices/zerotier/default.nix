@@ -435,10 +435,6 @@
               }
             );
 
-            environment.systemPackages = lib.mkIf isController [
-              config.clan.core.clanPkgs.zerotier-members
-            ];
-
             systemd.network.networks."09-zerotier" = {
               matchConfig.Name = "zt*";
               networkConfig = {
