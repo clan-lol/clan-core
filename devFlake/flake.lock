@@ -110,11 +110,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779818959,
-        "narHash": "sha256-bdYUEL9fboBFaKnqO4Vhh84XF5qriXwBiT/hNOIf/fA=",
+        "lastModified": 1780659582,
+        "narHash": "sha256-HZnMVOO0DBB4B8PcuLbVxnxRn+raG1cN/saTAqabTcc=",
         "owner": "NuschtOS",
         "repo": "search",
-        "rev": "7470004b7cb9459f1427692d7ee4e36888dbc022",
+        "rev": "567a8f1698c1d3f2689ca6a132a2d6605b442f42",
         "type": "github"
       },
       "original": {
