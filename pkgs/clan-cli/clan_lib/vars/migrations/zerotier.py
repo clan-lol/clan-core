@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 
 from clan_lib.errors import ClanError
@@ -12,6 +13,9 @@ from clan_lib.vars.migrations.migrate_var import (
 )
 
 log = logging.getLogger(__name__)
+
+# Single commit created when the migration moves any files.
+_COMMIT_MESSAGE = "migrate: move zerotier vars to all-shared layout"
 
 # This comment was carefully handcrafted
 #
@@ -254,5 +258,27 @@ def migrate_zerotier(clan_dir: Path) -> None:
         commit_files(
             file_paths=changed,
             flake_dir=clan_dir,
-            commit_message="migrate: move zerotier vars to all-shared layout",
+            commit_message=_COMMIT_MESSAGE,
         )
+
+        commit_line = f'    "{_COMMIT_MESSAGE}"'
+        msg = (
+            "\n"
+            "╔══════════════════════════════════════════════════════════════╗\n"
+            "║             ZEROTIER MIGRATION - ACTION REQUIRED             ║\n"
+            "╠══════════════════════════════════════════════════════════════╣\n"
+            "║                                                              ║\n"
+            "║  Zerotier vars have been migrated to the new layout.         ║\n"
+            "║                                                              ║\n"
+            "║  All changes were written as a single git commit:            ║\n"
+            f"║{commit_line.ljust(62)}║\n"
+            "║                                                              ║\n"
+            "║  READ BEFORE CONTINUING:                                     ║\n"
+            "║  https://clan.lol/docs/unstable/guides/migrations/zerotier   ║\n"
+            "║                                                              ║\n"
+            "║  Then re-run the same command.                               ║\n"
+            "║                                                              ║\n"
+            "╚══════════════════════════════════════════════════════════════╝\n"
+        )
+        print(msg, file=sys.stderr)
+        sys.exit(0)

@@ -72,6 +72,22 @@ clan.core.networking.targetHost =
   "root@[${config.clan.core.vars.generators."zerotier-ip-<machine>-<instance>".files.ip.value}]";
 ```
 
+If you need a NixOS-module that works on any machine:
+
+```nix
+{ config, ... }:
+let
+  # Auto-derived; no need to hardcode the machine name.
+  machineName = config.clan.core.settings.machine.name;
+  # Your inventory.instances.<name> key (e.g. "net-a"). Not the module name.
+  instanceName = "<instance>";
+  ztIp = config.clan.core.vars.generators."zerotier-ip-${machineName}-${instanceName}".files.ip.value;
+in
+{
+  environment.etc."zerotier-ip".text = ztIp;
+}
+```
+
 ## Migrate manual peer authorization to `allowedIds`
 
 If you authorized external devices with
