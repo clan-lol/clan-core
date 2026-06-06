@@ -266,6 +266,21 @@ def _assert_final_state(vars_dir: Path) -> None:
     assert not (vars_dir / "shared/zerotier-controller").exists()
 
 
+def _run_migration(clan_dir: Path, *, expect_changes: bool = True) -> None:
+    """Run the zerotier migration and assert its exit-on-change contract.
+
+    When the migration moves files it commits them and calls ``sys.exit(0)``
+    so the user re-runs the command (the migration guide is shown once). When
+    nothing needs migrating it returns normally.
+    """
+    if expect_changes:
+        with pytest.raises(SystemExit) as exc_info:
+            migrate_zerotier(clan_dir)
+        assert exc_info.value.code == 0
+    else:
+        migrate_zerotier(clan_dir)
+
+
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 class TestMigrateZerotier:
@@ -297,7 +312,7 @@ class TestMigrateZerotier:
             commit_message="seed legacy zerotier vars",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
 
         assert not stray_zt.exists(), "Stale zerotier dir should have been removed"
@@ -330,7 +345,7 @@ class TestMigrateZerotier:
             commit_message="seed canonical zerotier vars",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
 
     def test_idempotent(self, clan_flake: Callable[..., Flake]) -> None:
@@ -346,11 +361,11 @@ class TestMigrateZerotier:
             commit_message="seed legacy zerotier vars",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
 
         # Second run — _needs_migration returns False, nothing changes.
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir, expect_changes=False)
         _assert_final_state(vars_dir)
 
     def test_multi_network_error(self, clan_flake: Callable[..., Flake]) -> None:
@@ -425,7 +440,7 @@ class TestMigrateZerotier:
             commit_message="seed mixed state",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
 
         _assert_public_var(vars_dir / "shared/zerotier-network-zt-net1/network-id")
         for m in zt_net1:
@@ -461,7 +476,7 @@ class TestMigrateZerotier:
             flake_dir=clan_dir,
             commit_message="seed legacy",
         )
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
 
         # Now plant a stale shared/zerotier-controller (leftover from CANONICAL)
@@ -474,7 +489,7 @@ class TestMigrateZerotier:
             commit_message="add stale canonical dir",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         assert not canonical.exists()
         _assert_final_state(vars_dir)
 
@@ -500,7 +515,7 @@ class TestMigrateZerotier:
         # plant them uncommitted on top of the committed legacy reals.
         _seed_empty_skeletons(vars_dir)
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
 
     def test_old_final_real(self, clan_flake: Callable[..., Flake]) -> None:
@@ -518,5 +533,5 @@ class TestMigrateZerotier:
             commit_message="seed old_final zerotier vars",
         )
 
-        migrate_zerotier(clan_dir)
+        _run_migration(clan_dir)
         _assert_final_state(vars_dir)
