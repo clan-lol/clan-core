@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from clan_lib.cmd import RunOpts, run
+from clan_lib.fixtures.flake_url import replace_clan_core_url
 from clan_lib.nix import nix_command
 
 
@@ -11,10 +12,7 @@ def substitute_flake_inputs(clan_dir: Path, clan_core_path: Path) -> None:
     assert flake_nix.exists()
 
     content = flake_nix.read_text()
-    content = content.replace(
-        "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-        f"path://{clan_core_path}",
-    )
+    content = replace_clan_core_url(content, clan_core_path)
     flake_nix.write_text(content)
 
     run(nix_command(["flake", "lock"]), RunOpts(cwd=clan_dir))
