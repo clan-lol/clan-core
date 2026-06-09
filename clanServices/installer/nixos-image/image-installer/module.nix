@@ -30,19 +30,16 @@ in
   # This provides proper font rendering and VT handling
   services.kmscon = {
     enable = true;
-    hwRender = false; # Software rendering is more compatible
-
-    fonts = [
-      {
-        name = "DejaVu Sans Mono";
-        package = pkgs.dejavu_fonts;
-      }
-    ];
-
-    extraConfig = ''
-      font-size=16
-    '';
+    config = {
+      hwaccel = false; # Software rendering is more compatible
+      font-name = "DejaVu Sans Mono";
+      font-size = 16;
+    };
   };
+
+  # kmscon resolves font-name via fontconfig
+  fonts.fontconfig.enable = true;
+  fonts.packages = [ pkgs.dejavu_fonts ];
 
   # Autologin is handled by agetty; kmscon follows getty's setting
   services.getty.autologinUser = lib.mkForce "root";
