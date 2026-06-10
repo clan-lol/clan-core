@@ -60,7 +60,7 @@ Replace the contents of your `clan.nix` file with the following. Update `meta.na
 
   };
 
-  # Docs: See https://clan.lol/docs/unstable/services/definition
+  # Docs: See https://clan.lol/docs/{{ version }}/services/definition
   inventory.instances = {
     borgbackup = {
       roles.client.machines."alice-laptop" = { };
@@ -79,7 +79,7 @@ Replace the contents of your `clan.nix` file with the following. Update `meta.na
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/sshd
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/sshd
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
@@ -92,7 +92,7 @@ Replace the contents of your `clan.nix` file with the following. Update `meta.na
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/users
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/users
     # Root password management for all machines.
     user-root = {
       module = {
@@ -108,7 +108,7 @@ Replace the contents of your `clan.nix` file with the following. Update `meta.na
 
   # Additional NixOS configuration can be added here.
   # machines/server/configuration.nix will be automatically imported.
-  # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
+  # See: https://clan.lol/docs/{{ version }}/guides/inventory/autoincludes
   machines = {
     alice-laptop =
       { ... }:

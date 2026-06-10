@@ -12,7 +12,7 @@ For detailed explanations or troubleshooting, see the full
 ## Create the Clan
 
 ```bash
-nix run https://clan.lol/install/unstable --refresh -- init
+nix run https://clan.lol/install/{{ version }} --refresh -- init
 ```
 
 This downloads the Clan CLI and walks you through creating a new clan project. Enter a name (e.g. `MY-CLAN-1`) and domain (e.g. `myclan1.lol`). Back up the age key when prompted.

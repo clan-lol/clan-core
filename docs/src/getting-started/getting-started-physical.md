@@ -27,7 +27,7 @@ Your setup machine needs the following:
 Start by creating a new clan:
 
 ```console
-nix run https://clan.lol/install/unstable --refresh -- init
+nix run https://clan.lol/install/{{ version }} --refresh -- init
 ```
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
@@ -176,7 +176,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
 :::admonition[Tip]{type=tip}
-You might need to disable secure boot. Follow our [secure boot instructions](https://clan.lol/docs/unstable/guides/secure-boot).
+You might need to disable secure boot. Follow our [secure boot instructions](https://clan.lol/docs/{{ version }}/guides/secure-boot).
 :::
 
 Once booted, you will see a QR code and text similar to this:

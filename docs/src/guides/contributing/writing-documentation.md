@@ -111,6 +111,15 @@ Cross-links to other docs pages use the `/docs/...` prefix, without a file exten
 See [Flake Parts](/docs/guides/flake-parts) for the full setup.
 ```
 
+Use `{{! version }}` when a page needs the current Clan version in rendered text,
+links, or code examples:
+
+````md
+```bash
+nix run https://clan.lol/install/{{! version }} --refresh -- init
+```
+````
+
 ## 5. Check your work
 
 Before you open a PR, run the linter from the same shell:

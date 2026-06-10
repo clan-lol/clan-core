@@ -7,6 +7,7 @@ disable = [
     "MD014",  # Dollar signs in commands — common convention
     "MD026",  # Trailing punctuation in heading — false positives on mkdocs ::: admonition closers
     "MD033",  # Inline HTML — sometimes needed
+    "MD034",  # Bare URLs — false positives on docs template variables inside link URLs
     "MD036",  # Emphasis as heading — can be intentional
     "MD041",  # First line must be heading — not always applicable
 ]
