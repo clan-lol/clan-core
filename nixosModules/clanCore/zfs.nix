@@ -9,6 +9,8 @@
   # while people using ZFS on ISCSI is quite rare.
   networking.hostId = lib.mkDefault "8425e349";
 
+  boot.zfs.forceImportRoot = lib.mkDefault false;
+
   services.zfs = lib.mkIf (config.boot.zfs.enabled) {
     autoSnapshot.enable = true;
     # defaults to 12, which is a bit much given how much data is written
