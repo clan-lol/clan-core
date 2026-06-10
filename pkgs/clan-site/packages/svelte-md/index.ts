@@ -16,6 +16,7 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import remarkTabs from "./remark-tabs.ts";
+import remarkTemplateVariables from "./remark-template-variables.ts";
 import transformerCustom from "./shiki-transformer-custom.ts";
 import {
   transformerMetaHighlight,
@@ -34,6 +35,7 @@ export interface Options {
   readonly minLineNumberLines: number;
   readonly maxTocDepth: number;
   readonly codeEmbedDir: string;
+  readonly variables: Readonly<Record<string, string>>;
 }
 
 export type { AdmonitionType } from "./remark-admonition.ts";
@@ -66,7 +68,6 @@ export async function compile(source: string, opts: Options): Promise<Output> {
   matter(file, { strip: true });
   await unified()
     .use(remarkParse)
-    .use(remarkDocsLinks)
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkDisableTextDirective)
@@ -75,6 +76,10 @@ export async function compile(source: string, opts: Options): Promise<Output> {
     .use(remarkCodeEmbed, {
       dir: opts.codeEmbedDir,
     })
+    .use(remarkTemplateVariables, {
+      variables: opts.variables,
+    })
+    .use(remarkDocsLinks)
     .use(remarkRehype, {
       allowDangerousHtml: true,
     })

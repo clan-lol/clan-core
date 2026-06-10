@@ -197,6 +197,9 @@ export const load: PageLoad = (): ArticleInput => (${JSON.stringify(article)});
       minLineNumberLines: this.config.codeMinLineNumberLines,
       maxTocDepth: this.config.maxTocDepth,
       codeEmbedDir: this.config.docsCodeEmbedsDir,
+      variables: {
+        version: this.config.version,
+      },
     });
     return output;
   }

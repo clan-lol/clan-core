@@ -71,7 +71,7 @@ Below is a complete clan.nix example:
     };
   };
 
-  # Docs: See https://clan.lol/docs/unstable/services/definition
+  # Docs: See https://clan.lol/docs/{{ version }}/services/definition
   inventory.instances = {
 
     borgbackup = {
@@ -82,7 +82,7 @@ Below is a complete clan.nix example:
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/sshd
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/sshd
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
@@ -95,7 +95,7 @@ Below is a complete clan.nix example:
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/users
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/users
     # Root password management for all machines.
     user-root = {
       module = {
@@ -112,7 +112,7 @@ Below is a complete clan.nix example:
 
   # Additional NixOS configuration can be added here.
   # machines/server/configuration.nix will be automatically imported.
-  # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
+  # See: https://clan.lol/docs/{{ version }}/guides/inventory/autoincludes
   machines = {
 
     postgres-server =
@@ -505,7 +505,7 @@ A single client can back up to multiple destinations simultaneously. The followi
     };
   };
 
-  # Docs: See https://clan.lol/docs/unstable/services/definition
+  # Docs: See https://clan.lol/docs/{{ version }}/services/definition
   inventory.instances = {
 
     borgbackup = {
@@ -524,7 +524,7 @@ A single client can back up to multiple destinations simultaneously. The followi
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/sshd
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/sshd
     # SSH service for secure remote access to machines.
     sshd = {
       roles.server.tags.all = { };
@@ -533,7 +533,7 @@ A single client can back up to multiple destinations simultaneously. The followi
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/users
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/users
     # Root password management for all machines.
     user-root = {
       module = {

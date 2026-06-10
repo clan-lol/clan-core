@@ -219,7 +219,7 @@ Let's do a quick test-run walkthrough.
 Start with the usual `nix` command:
 
 ```bash
-nix run https://clan.lol/install/unstable --refresh -- init
+nix run https://clan.lol/install/{{ version }} --refresh -- init
 ```
 
 Name it something like `MY-TESTRUN-1` with domain `mytestrun1.lol`.
@@ -447,7 +447,7 @@ Here's the entire clan.nix file:
     # server = { };
   };
 
-  # Docs: See https://clan.lol/docs/unstable/services/definition
+  # Docs: See https://clan.lol/docs/{{ version }}/services/definition
   inventory.instances = {
 
     user-sally = {
@@ -471,7 +471,7 @@ Here's the entire clan.nix file:
       roles.default.settings.networks.home = { };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/sshd
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/sshd
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
@@ -484,7 +484,7 @@ Here's the entire clan.nix file:
       };
     };
 
-    # Docs: https://clan.lol/docs/unstable/services/official/users
+    # Docs: https://clan.lol/docs/{{ version }}/services/official/users
     # Root password management for all machines.
     user-root = {
       module = {
@@ -522,7 +522,7 @@ Here's the entire clan.nix file:
 
   # Additional NixOS configuration can be added here.
   # machines/server/configuration.nix will be automatically imported.
-  # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
+  # See: https://clan.lol/docs/{{ version }}/guides/inventory/autoincludes
   machines = {
     # server = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];

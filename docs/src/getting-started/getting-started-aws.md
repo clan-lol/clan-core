@@ -92,7 +92,7 @@ This step is not optional; Clan uses an existing id_ed25519 key to connect.
 Start by creating a new clan:
 
 ```text
-nix run https://clan.lol/install/unstable --refresh -- init
+nix run https://clan.lol/install/{{ version }} --refresh -- init
 ```
 
 and enter a name for it, e.g. `MY-CLAN-1`, followed by a domain, e.g. `myclan1.lol`. (This does not have to be an actual registered domain.)
