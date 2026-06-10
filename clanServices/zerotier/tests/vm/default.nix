@@ -84,6 +84,7 @@
       for m in [controller, moon]:
           m.succeed("test -d /var/lib/zerotier-one/moons.d")
           m.succeed("test -f /var/lib/zerotier-one/moon.json")
+          m.succeed("test -s /var/lib/zerotier-one/moon.json")
 
       # Read world files before distributing (each moons.d has only its own file).
       ctrl_wf = read_world_file(controller)

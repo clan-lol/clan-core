@@ -136,7 +136,7 @@
               "${pkgs.writeShellScript "init-zerotier-install-moons" ''
                 mkdir -p /var/lib/zerotier-one/moons.d
                 ${lib.optionalString (settings.stableEndpoints != [ ]) ''
-                  if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
+                  if [[ ! -f /var/lib/zerotier-one/moon.json ]] || [[ ! -s /var/lib/zerotier-one/moon.json ]]; then
                     zerotier-idtool initmoon /var/lib/zerotier-one/identity.public > /var/lib/zerotier-one/moon.json
                   fi
                   ${
