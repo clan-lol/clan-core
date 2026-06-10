@@ -18,6 +18,7 @@ from clan_cli.secrets.users import add_user
 from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanCmdError, ClanError
+from clan_lib.fixtures.flake_url import replace_clan_core_url
 from clan_lib.flake import ClanSelectError, Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.network.network import get_network_overview, networks_from_flake
@@ -86,10 +87,7 @@ def fix_flake_inputs(clan_dir: Path, clan_core_dir: Path) -> None:
     clan_dir_flake = Flake(str(clan_dir))
     clan_dir_flake.invalidate_cache()
     content = flake_nix.read_text()
-    content = content.replace(
-        "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-        f"path://{clan_core_dir}",
-    )
+    content = replace_clan_core_url(content, clan_core_dir)
     flake_nix.write_text(content)
 
     run(nix_command(["flake", "update"]), RunOpts(cwd=clan_dir))

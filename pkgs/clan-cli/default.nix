@@ -79,13 +79,6 @@ let
 
   nixFilter = import ../../lib/filter-clan-core/nix-filter.nix;
 
-  # The clan-core ref that generated user templates point at, derived from
-  # ./VERSION: "unstable" tracks the main branch, a release like "25.11"
-  # tracks that git tag.
-  clanCoreVersion = lib.fileContents ../../VERSION;
-  clanCoreRef = if clanCoreVersion == "unstable" then "main" else clanCoreVersion;
-  clanCoreUrl = "https://git.clan.lol/clan/clan-core/archive/${clanCoreRef}.tar.gz";
-
   cliSource =
     source:
     runCommand "clan-cli-source"
@@ -107,10 +100,6 @@ let
         ln -sf ${runtimeDepsFlake} $out/clan_lib/runtime-deps
         cp -r ${../../templates} $out/clan_lib/clan_core_templates
         chmod -R +w $out/clan_lib/clan_core_templates
-        for f in $out/clan_lib/clan_core_templates/clan/*/flake.nix; do
-          substituteInPlace "$f" \
-            --replace-quiet 'https://git.clan.lol/clan/clan-core/archive/main.tar.gz' '${clanCoreUrl}'
-        done
       '';
 
   sourceWithoutTests = cliSource (

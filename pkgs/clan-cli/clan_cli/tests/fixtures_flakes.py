@@ -20,6 +20,7 @@ from clan_lib.dirs import (
     nixpkgs_source,
     specific_machine_dir,
 )
+from clan_lib.fixtures.flake_url import replace_clan_core_url
 from clan_lib.flake import Flake
 from clan_lib.locked_open import locked_open
 from clan_lib.machines.machines import Machine
@@ -85,6 +86,8 @@ def substitute(
         for line in f:
             processed_line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
             if clan_core_replacement:
+                # clan_core_replacement is only set when clan_core_flake is given.
+                assert clan_core_flake is not None
                 processed_line = processed_line.replace(
                     "__CLAN_CORE__",
                     clan_core_replacement,
@@ -93,9 +96,9 @@ def substitute(
                     "git+https://git.clan.lol/clan/clan-core",
                     clan_core_replacement,
                 )
-                processed_line = processed_line.replace(
-                    "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-                    clan_core_replacement,
+                processed_line = replace_clan_core_url(
+                    processed_line,
+                    clan_core_flake,
                 )
                 processed_line = processed_line.replace(
                     "__INVENTORY_EXPR__",

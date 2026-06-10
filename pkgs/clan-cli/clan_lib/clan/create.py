@@ -16,6 +16,7 @@ from clan_lib.persist.patch_engine import merge_objects
 from clan_lib.persist.path_utils import set_value_by_path
 from clan_lib.templates.handler import clan_template
 from clan_lib.validator.hostname import hostname
+from clan_lib.version import read_version
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,33 @@ def substitute_clan_placeholders(clan_dir: Path, values: dict[str, str]) -> None
         for name, value in values.items():
             content = content.replace("{{" + name + "}}", value)
         nix_file.write_text(content)
+
+
+# Shipped templates reference the clan-core `main` branch tarball. On a tagged
+# release the generated clan must track that release instead, so it stays
+# compatible with the CLI that created it.
+_CLAN_CORE_MAIN_URL = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz"
+
+
+def pin_clan_core_input(clan_dir: Path) -> None:
+    """Pin a freshly created clan's clan-core input to this CLI's release.
+
+    No-op on ``unstable`` (templates already track ``main``) and when the input
+    has already been rewritten (e.g. to a local path during offline tests).
+    """
+    version = read_version()
+    if version == "unstable":
+        return
+    flake_nix = clan_dir / "flake.nix"
+    if not flake_nix.exists():
+        return
+    content = flake_nix.read_text()
+    pinned = content.replace(
+        _CLAN_CORE_MAIN_URL,
+        f"https://git.clan.lol/clan/clan-core/archive/{version}.tar.gz",
+    )
+    if pinned != content:
+        flake_nix.write_text(pinned)
 
 
 @dataclass
@@ -118,6 +146,11 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
         else:
             placeholders["domain"] = "clan"
         substitute_clan_placeholders(dest, placeholders)
+
+        # Pin the clan-core input to the release this CLI corresponds to. Runs
+        # after any _postprocess_flake_hook (e.g. offline tests rewrite the
+        # input to a local path), so it only rewrites the upstream main url.
+        pin_clan_core_input(dest)
 
         if opts.setup_git:
             run(git_command(dest, "init"))
