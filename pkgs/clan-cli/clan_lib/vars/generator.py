@@ -702,7 +702,7 @@ class Generator:
                         file,
                         secret_file.read_bytes(),
                         log_info=lambda msg: log_prefixed(
-                            msg, prefix=self.key.placement
+                            msg, prefix=self.key.placement.log_prefix()
                         ),
                     )
                     secret_changed = True
@@ -712,7 +712,7 @@ class Generator:
                         file,
                         secret_file.read_bytes(),
                         log_info=lambda msg: log_prefixed(
-                            msg, prefix=self.key.placement
+                            msg, prefix=self.key.placement.log_prefix()
                         ),
                     )
                     public_changed = True
