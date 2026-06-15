@@ -68,7 +68,7 @@ The WiFi configuration adds wireless support on the target machine after install
 Download the installer ISO:
 
 ```bash
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso
 ```
 
 This downloads the NixOS installer image. For ARM machines, replace `x86_64` with `aarch64`.
