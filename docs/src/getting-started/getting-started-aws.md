@@ -14,7 +14,7 @@ Your setup machine needs the following:
 ## 1. Create a Server on AWS
 
 :::admonition[Danger]{type=danger}
-The steps in this document will erase all data on your Hetzner server's hard drive.
+The steps in this document will erase all data on your AWS server's hard drive.
 :::
 
 From inside the AWS Console, head to the EC2 service, and click on **Instances** on the left. Then click **Launch Instances**.
@@ -125,7 +125,7 @@ Next, create a machine configuration, which adds a description of a machine to y
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it; replace the IP address with your Hetzner server's IP address:
+Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it; replace the IP address with your AWS server's IP address:
 
 ```text {.nix title="clan.nix" hl_lines="2 3 4 5"}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
@@ -372,7 +372,7 @@ Once complete, you can log in as alice:
 ssh alice@<IP-ADDRESS>
 ```
 
-replacing `<IP-ADDRESS>` with the Hetzner server's IP address.
+replacing `<IP-ADDRESS>` with the AWS server's IP address.
 
 ## Give that user sudo access
 

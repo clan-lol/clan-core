@@ -244,13 +244,13 @@ You will be asked to enter "y" to proceed.
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
 ```bash
-clan templates apply disk single-disk test-machine --set mainDisk ""
+clan templates apply disk ext4-single-disk test-machine --set mainDisk ""
 ```
 
 This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id), and add it inside the quotes, e.g.:
 
 ```bash
-clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
+clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
 ## 10. Install

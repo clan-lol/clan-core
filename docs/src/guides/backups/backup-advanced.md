@@ -204,7 +204,7 @@ This applies to any service where one machine depends on another machine's gener
       roles.default.settings = {
         user = "alice";
         openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZGMNlooljzJfmzQKaVcmj4tRYW+gqBIfdWbG0NU3XL freckleface@freckleface--Laptop"
+          "PASTE_YOUR_KEY_HERE"
         ];
       };
     };

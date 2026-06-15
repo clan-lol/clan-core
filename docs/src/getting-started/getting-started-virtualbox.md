@@ -105,9 +105,21 @@ Open `clan.nix`, and find the `inventory.machines` line; add the following immed
 ```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
+        tags = [ "test" ];
     };
+```
+
+Then, farther down:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
 ```
 
 :::admonition[Tip]{type=tip}
@@ -148,7 +160,7 @@ You will be asked to enter "y" to proceed.
 
 When prompted for password, use the password displayed under the QR code.
 
-## 7. Add a Disk Configuration.
+## 4. Add a Disk Configuration.
 
 Next, configure a disk for the target machine. You will run this command in two steps; first, type it like so:
 
@@ -182,7 +194,7 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-## 9. Unmount the ISO and Reboot
+## 5. Unmount the ISO and Reboot
 
 Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose **Send the shutdown signal.** Then click **OK**. (If **Send the shutdown signal** is not available, choose **Power off the machine**.)
 
@@ -357,11 +369,11 @@ You will be prompted for the password and should see "hello" printed.
 
 To revoke alice's sudo access, simply remove the line you added:
 
-```text {.nix title="clan.nix" hl_lines="7"}
+```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [ "wheel" ];  # Remove this to revoke sudo // [!code --]
