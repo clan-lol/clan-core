@@ -31,6 +31,9 @@ class PerExport:
     def sortable_key(self) -> str:
         return self.exports_key
 
+    def log_prefix(self) -> str:
+        return f"export: {self.exports_key}"
+
     def __str__(self) -> str:
         return f"export: {self.exports_key}"
 
@@ -47,6 +50,9 @@ class Shared:
 
     def sortable_key(self) -> str:
         return ""
+
+    def log_prefix(self) -> str:
+        return "shared"
 
     def __str__(self) -> str:
         return "shared"
@@ -65,6 +71,9 @@ class PerMachine:
         return Path("per-machine") / self.machine
 
     def sortable_key(self) -> str:
+        return self.machine
+
+    def log_prefix(self) -> str:
         return self.machine
 
     def __str__(self) -> str:
