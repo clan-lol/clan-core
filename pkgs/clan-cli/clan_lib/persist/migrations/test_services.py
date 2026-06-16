@@ -39,12 +39,19 @@ def test_idempotent_after_removal() -> None:
     assert migrate_services(inventory) is False
 
 
-def test_run_inventory_migrations_writes_file(tmp_path: Path) -> None:
+def test_run_inventory_migrations_writes_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """End-to-end: stale empty services key is stripped from the JSON file."""
+    # Set git identity for the sandbox (no global gitconfig in Nix builds)
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "test")
+    monkeypatch.setenv("GIT_AUTHOR_EMAIL", "test@test")
+    monkeypatch.setenv("GIT_COMMITTER_NAME", "test")
+    monkeypatch.setenv("GIT_COMMITTER_EMAIL", "test@test")
+
     inventory_file = tmp_path / "inventory.json"
     inventory_file.write_text(json.dumps({"instances": {}, "services": {}}))
 
-    # init a git repo so commit_file doesn't fail
     subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "add", "inventory.json"],
