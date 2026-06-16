@@ -60,14 +60,26 @@ Next create a machine configuration, which adds a description of a machine to yo
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it. (You will add the IP address later in this guide.)
+Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it:
 
 ```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
+        tags = [ "test" ];
     };
+```
+
+Then, farther down, add the following. (You will add the IP address later in this guide.)
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
 ```
 
 Test it out:
@@ -196,7 +208,7 @@ Once booted, you will see a QR code and text similar to this:
 Take note of the IP address displayed above, either for wireless or lan, depending on how you connected. Then return to the setup machine and update this line that you added to the `clan.nix` file earlier; add in the actual IP address:
 
 ```nix
-deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
+settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
 ```
 
 :::admonition[Important]{type=note}
@@ -366,7 +378,9 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
-## Add a New User (no sudo access)
+## Practice: Configuring Users
+
+### Add a New User (no sudo access)
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
@@ -404,7 +418,7 @@ clan machines update test-machine
 
 Once complete, you can log in as alice with the password on the target machine.
 
-## Give that user sudo access
+### Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
@@ -436,7 +450,7 @@ sudo echo "hello"
 
 You will be prompted for the password and should see "hello" printed.
 
-## Revoke the sudo access
+### Revoke the sudo access
 
 To revoke alice's sudo access, simply remove the line you added:
 

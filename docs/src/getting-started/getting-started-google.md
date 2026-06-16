@@ -10,7 +10,7 @@ Your setup machine needs the following:
 * **Git** (Optional). Clan uses Git internally, but you can optionally install it to make your own use of it. See the [Git installation instructions](https://git-scm.com/install/linux).
 :::
 
-## 1. Create a Server on Google Cloud
+## Step 1. Create a Server on Google Cloud
 
 :::admonition[Danger]{type=danger}
 The steps in this document will erase all data on your Google Cloud server's hard drive.
@@ -83,7 +83,7 @@ Then exit:
 exit
 ```
 
-## 2. Run the Clan setup
+## Step 2. Run the Clan setup
 
 Start by creating a new clan:
 
@@ -113,7 +113,7 @@ You will see a message about `direnv` needing approval to run. Type:
 direnv allow
 ```
 
-## 3. Create a Machine Configuration
+## Step 3. Create a Machine Configuration
 
 Next, create a machine configuration, which adds a description of a machine to your inventory. For this example, call it `test-machine`, by typing:
 
@@ -121,14 +121,26 @@ Next, create a machine configuration, which adds a description of a machine to y
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it; replace the IP address with your Google Cloud server's IP address:
+Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it:
 
-```text {.nix title="clan.nix" hl_lines="2 3 4 5"}
+```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
+        tags = [ "test" ];
     };
+```
+
+Then, farther down, add the following and replace the IP address with your Google Cloud server's IP address:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
 ```
 
 Test it out:
@@ -137,7 +149,7 @@ Test it out:
 clan machines list
 ```
 
-## 4. Add your allowed keys
+## Step 4. Add your allowed keys
 
 Next, add your public key to the allowed keys. You can find it by running:
 
@@ -157,7 +169,7 @@ Verify that your configuration is valid:
 clan show
 ```
 
-## 5. Gather Hardware Configuration
+## Step 5. Gather Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
@@ -167,7 +179,7 @@ clan machines init-hardware-config test-machine
 
 You will be asked to enter "y" to proceed.
 
-## 6. Add a Disk Configuration.
+## Step 6. Add a Disk Configuration.
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
@@ -272,7 +284,7 @@ Then return to the root of the clan:
 cd ../..
 ```
 
-## 7. Install NixOS
+## Step 7. Install NixOS
 
 Install NixOS on the target machine by typing:
 
@@ -284,7 +296,7 @@ You will be asked whether you want to install — type `y`. You will also be pro
 
 You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
 
-## If you get an error about Sandboxing
+### If you get an error about Sandboxing
 
 If you get an error regarding sandboxing not being available, type the following to disable sandboxing, and then run the above command again:
 
@@ -292,7 +304,7 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-## 8. Test the Connection
+## Step 8. Test the Connection
 
 Now you can try connecting to the remote machine:
 
@@ -377,11 +389,11 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 ```
 
-## Practice: Add a User
+## Practice: Configuring Users
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
-## Add a New User (no sudo access)
+### Add a New User (no sudo access)
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
@@ -453,7 +465,7 @@ ssh alice@<IP-ADDRESS>
 
 replacing `<IP-ADDRESS>` with the Google Cloud server's IP address.
 
-## Give that user sudo access
+### Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
@@ -485,7 +497,7 @@ sudo echo "hello"
 
 You will be prompted for the password and should see "hello" printed.
 
-## Revoke the sudo access
+### Revoke the sudo access
 
 To revoke alice's sudo access, simply remove the line you added:
 
