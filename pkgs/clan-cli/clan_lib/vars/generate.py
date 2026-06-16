@@ -15,6 +15,7 @@ from clan_lib.nix_selectors import (
     vars_sops_default_groups,
 )
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.migrations import run_inventory_migrations
 from clan_lib.vars import graph
 from clan_lib.vars._types import GeneratorId, PerExport
 from clan_lib.vars.generator import (
@@ -294,10 +295,11 @@ def run_generators(
         msg = "At least one machine must be provided"
         raise ClanError(msg)
 
-    # Run pre-evaluation migrations (e.g. zerotier controller rename)
+    # Run pre-evaluation migrations
     flake = machines[0].flake
     clan_dir = get_clan_dir(flake)
     run_migrations(clan_dir)
+    run_inventory_migrations(clan_dir)
 
     all_generators = get_generators(machines, full_closure=True)
 

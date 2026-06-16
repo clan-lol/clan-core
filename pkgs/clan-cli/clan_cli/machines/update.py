@@ -20,6 +20,7 @@ from clan_lib.nix import nix_config
 from clan_lib.nix_selectors import (
     deployment_require_explicit_update,
 )
+from clan_lib.persist.migrations import run_inventory_migrations
 from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.localhost import LocalHost
 from clan_lib.ssh.remote import Remote
@@ -170,6 +171,7 @@ def update_command(args: argparse.Namespace) -> None:
         os.environ["NIXOS_NO_CHECK"] = "1"
     try:
         flake = require_flake(args.flake)
+        run_inventory_migrations(flake.path)
         machines_to_update = get_machines_for_update(flake, args.machines, args.tags)
 
         if args.target_host is not None and len(machines_to_update) > 1:
