@@ -28,14 +28,29 @@ This enters your new project directory and activates the development environment
 
 Edit `clan.nix`, add under `inventory.machines`:
 
-```nix
-test-machine = {
-    deploy.targetHost = "root@<IP-ADDRESS>";
-    tags = [ ];
-};
+Open `clan.nix`, and find the `inventory.machines` line:
+
+```nix [clan.nix] {2,3,4,5}
+inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
+    test-machine = {
+        tags = [ "test" ];
+    };
 ```
 
-This tells Clan how to reach the machine over SSH. You'll fill in the IP address after booting the installer.
+Then find the `inventory.instances` line and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+If you're running a virtual machine (Virtual Box or cloud), update the IP address accordingly. For physical machines, you'll add it later.
 
 :::admonition[Note]{type=note}
 The machine name `test-machine` is used throughout this guide and will be referenced by other machines and services. Changing it later requires updating all references.
@@ -65,15 +80,16 @@ The WiFi configuration adds wireless support on the target machine after install
 
 ## Create Installer USB
 
-Download the installer ISO:
+For physical machines and Virtual Box, Download the installer ISO:
 
 ```bash
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso
 ```
-
 This downloads the NixOS installer image. For ARM machines, replace `x86_64` with `aarch64`.
 
-Flash it to your USB drive:
+**For Virtual Box**, use the above ISO to create a new virtual machine.
+
+**For physical machines**, flash it to your USB drive:
 
 ```bash
 lsblk
@@ -92,9 +108,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=pr
 
 This writes the installer image to the USB drive. All existing data on the drive will be lost.
 
-## Boot Target from USB
-
-Boot the target machine from the USB drive. Note the IP address shown on screen, then update the `deploy.targetHost` line in `clan.nix` with it.
+Boot the target machine from the USB drive. Note the IP address shown on screen, then update the `settings.host` line in `clan.nix` with it.
 
 :::admonition[No IP?]{type=tip}
 Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
