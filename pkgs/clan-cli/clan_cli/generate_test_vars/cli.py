@@ -170,6 +170,9 @@ def parse_args() -> Options:
     )
 
 
+# ATTENTION: This function is imported into pytests
+# Make sure os.environ or other state mutations are cleaned up
+# Otherwise this creates leaky tests, that break sometimes depending on execution order
 def generate_test_vars(
     clean: bool,
     repo_root: Path,
@@ -210,44 +213,53 @@ def generate_test_vars(
         user = "admin"
         admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
         admin_key_path.parent.mkdir(parents=True, exist_ok=True)
-        os.environ["SOPS_AGE_KEY_FILE"] = str(admin_key_path)
-        admin_key_path.write_text(
-            json.dumps(
-                {
-                    "publickey": sops_pub_key,
-                    "type": "age",
-                },
-                indent=2,
+
+        previous_sops_age_key_file = os.environ.get("SOPS_AGE_KEY_FILE")
+        try:
+            os.environ["SOPS_AGE_KEY_FILE"] = str(admin_key_path)
+            admin_key_path.write_text(
+                json.dumps(
+                    {
+                        "publickey": sops_pub_key,
+                        "type": "age",
+                    },
+                    indent=2,
+                )
+                + "\n",
             )
-            + "\n",
-        )
 
-        def mocked_prompts(
-            generator: Generator,
-        ) -> dict[str, str]:
-            prompt_values: dict[str, str] = {}
-            for prompt in generator.prompts:
-                var_id = f"{generator.name}/{prompt.name}"
-                if prompt.prompt_type == PromptType.HIDDEN:
-                    prompt_values[prompt.name] = "fake_hidden_value"
-                elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
-                    prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
-                elif prompt.prompt_type == PromptType.MULTILINE:
-                    prompt_values[prompt.name] = "fake\nmultiline\nvalue"
-                elif prompt.prompt_type == PromptType.LINE:
-                    prompt_values[prompt.name] = "fake_line_value"
-                else:
-                    msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
-                    raise ClanError(msg)
-            return prompt_values
+            def mocked_prompts(
+                generator: Generator,
+            ) -> dict[str, str]:
+                prompt_values: dict[str, str] = {}
+                for prompt in generator.prompts:
+                    var_id = f"{generator.name}/{prompt.name}"
+                    if prompt.prompt_type == PromptType.HIDDEN:
+                        prompt_values[prompt.name] = "fake_hidden_value"
+                    elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
+                        prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
+                    elif prompt.prompt_type == PromptType.MULTILINE:
+                        prompt_values[prompt.name] = "fake\nmultiline\nvalue"
+                    elif prompt.prompt_type == PromptType.LINE:
+                        prompt_values[prompt.name] = "fake_line_value"
+                    else:
+                        msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
+                        raise ClanError(msg)
+                return prompt_values
 
-        with NamedTemporaryFile("w") as f:
-            f.write("# created: 2023-07-17T10:51:45+02:00\n")
-            f.write(f"# public key: {sops_pub_key}\n")
-            f.write(sops_priv_key)
-            f.seek(0)
-            os.environ["SOPS_AGE_KEY_FILE"] = f.name
-            run_generators(list(machines), prompt_values=mocked_prompts)
+            with NamedTemporaryFile("w") as f:
+                f.write("# created: 2023-07-17T10:51:45+02:00\n")
+                f.write(f"# public key: {sops_pub_key}\n")
+                f.write(sops_priv_key)
+                f.seek(0)
+                os.environ["SOPS_AGE_KEY_FILE"] = f.name
+                run_generators(list(machines), prompt_values=mocked_prompts)
+        finally:
+            # Important: restore previous age_key_file
+            if previous_sops_age_key_file is None:
+                os.environ.pop("SOPS_AGE_KEY_FILE", None)
+            else:
+                os.environ["SOPS_AGE_KEY_FILE"] = previous_sops_age_key_file
 
 
 def main() -> None:
