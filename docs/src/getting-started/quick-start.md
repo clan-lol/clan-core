@@ -113,7 +113,7 @@ This detects the target machine's hardware (CPU, disks, network cards) and saves
 First, list available disks:
 
 ```bash
-clan templates info disk ext4-single-disk
+clan templates info disk test-machine ext4-single-disk
 ```
 
 This will list available disk IDs. Find the correct one (typically starting with `/dev/disk/by-id/`), then run:
