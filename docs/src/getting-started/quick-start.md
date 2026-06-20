@@ -164,7 +164,9 @@ Remove the USB drive before the machine reboots.
 
 ## Configure How to Reach the Machine
 
-After installation the machine reboots into the installed system, which gets a **new IP address** — the installer IP is no longer valid. Tell Clan how to reach it by adding the `internet` instance.
+After installation the machine reboots into the installed system, which gets a **new IP address**.
+
+The installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in locally and run `ip addr`), then tell Clan how to reach it by adding the `internet` instance.
 
 Find the `inventory.instances` line in `clan.nix` and add:
 
