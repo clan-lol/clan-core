@@ -35,21 +35,6 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     };
 ```
 
-Then find the `inventory.instances` line and add:
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
-If you're running a virtual machine (Virtual Box or cloud), update the IP address accordingly. For physical machines, you'll add it later.
-
 :::admonition[Note]{type=note}
 The machine name `test-machine` is used throughout this guide and will be referenced by other machines and services. Changing it later requires updating all references.
 :::
@@ -107,7 +92,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=pr
 
 This writes the installer image to the USB drive. All existing data on the drive will be lost.
 
-Boot the target machine from the USB drive. Note the IP address shown on screen, then update the `settings.host` line in `clan.nix` with it.
+Boot the target machine from the USB drive. Note the **installer IP address** shown on screen — the following steps pass it to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure later.
 
 :::admonition[No IP?]{type=tip}
 Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
@@ -116,7 +101,7 @@ Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
 ## Configure SSH access
 
 ```sh
-ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<IP-ADDRESS>
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<INSTALLER-IP>
 ```
 
 ```text
@@ -126,7 +111,7 @@ Number of key(s) added: 1
 Confirm that you can login
 
 ```sh
-ssh root@<IP-ADDRESS>
+ssh root@<INSTALLER-IP>
 ```
 
 Should print
@@ -142,7 +127,7 @@ step if you reboot the installer.
 ## Get Hardware Config
 
 ```bash
-clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
+clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
 This detects the target machine's hardware (CPU, disks, network cards) and saves it to your project.
@@ -166,7 +151,7 @@ This assigns the disk that NixOS will be installed onto.
 ## Install
 
 ```bash
-clan machines install test-machine --target-host root@<IP-ADDRESS>
+clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
 This builds NixOS from your configuration and installs it on the target machine. You'll be prompted for confirmation, WiFi credentials, and a root password.
@@ -176,6 +161,25 @@ Run `clan vars generate test-machine --no-sandbox` first, then retry.
 :::
 
 Remove the USB drive before the machine reboots.
+
+## Configure How to Reach the Machine
+
+After installation the machine reboots into the installed system, which gets a **new IP address** — the installer IP is no longer valid. Tell Clan how to reach it by adding the `internet` instance.
+
+Find the `inventory.instances` line in `clan.nix` and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+`clan ssh` and `clan machines update` read this address to connect to the installed system.
 
 ## Connect
 
