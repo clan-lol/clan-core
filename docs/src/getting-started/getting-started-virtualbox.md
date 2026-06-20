@@ -28,7 +28,7 @@ Download the installer's [ISO image by clicking here](https://github.com/nix-com
 
 ## Step 2. Create the Virtual Machine
 
-###  Setup the VirtualBox Machine
+### Setup the VirtualBox Machine
 
 In VirtualBox, click **New**.
 
@@ -37,7 +37,6 @@ Provide a name for the **Name** box, such as NixOS Installer.
 Leave **Folder** the default.
 
 Click the dropdown to the right of ISO Image. Choose **Other**. Navigate to the location of your download. Choose either `nixos-installer-x86_64-linux.iso` or `nixos-installer-aarch64-linux.iso`, depending on which one you downloaded. Click **Open**.
-
 
 For the following step, what you see in the Virtual Box UI depends on the version. You'll either see **Type** and **Version** dropdowns; or you'll see **OS**, **OS Distribution**, and **OS Version dropdowns**.
 

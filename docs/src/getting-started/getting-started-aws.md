@@ -157,7 +157,6 @@ Then, farther down, add the following and replace the IP address with your AWS s
 
 ```
 
-
 :::admonition[Note]{type=note}
 Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS, it will be using `root`, hence the `root@` in this code snippet.
 :::

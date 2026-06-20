@@ -85,6 +85,7 @@ For physical machines and Virtual Box, Download the installer ISO:
 ```bash
 wget https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso
 ```
+
 This downloads the NixOS installer image. For ARM machines, replace `x86_64` with `aarch64`.
 
 **For Virtual Box**, use the above ISO to create a new virtual machine.

@@ -112,7 +112,6 @@ Then, farther down, add the following and replace the IP address with your Hetzn
 
 ```
 
-
 Test it out:
 
 ```bash
