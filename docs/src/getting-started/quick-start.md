@@ -26,8 +26,6 @@ This enters your new project directory and activates the development environment
 
 ## Create a Machine Configuration
 
-Edit `clan.nix`, add under `inventory.machines`:
-
 Open `clan.nix`, and find the `inventory.machines` line:
 
 ```nix [clan.nix] {2,3,4,5}
@@ -114,6 +112,32 @@ Boot the target machine from the USB drive. Note the IP address shown on screen,
 :::admonition[No IP?]{type=tip}
 Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
 :::
+
+## Configure SSH access
+
+```sh
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<IP-ADDRESS>
+```
+
+```text
+Number of key(s) added: 1
+```
+
+Confirm that you can login
+
+```sh
+ssh root@<IP-ADDRESS>
+```
+
+Should print
+
+```sh
+[root@nixos-installer:~]#
+```
+
+This authorizes your key for the running installer session so the following `clan`
+commands can connect over SSH. It is not written to the USB drive, so repeat this
+step if you reboot the installer.
 
 ## Get Hardware Config
 
