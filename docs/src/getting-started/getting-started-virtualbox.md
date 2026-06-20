@@ -113,19 +113,6 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     };
 ```
 
-Then, farther down, add the following and replace the IP address with the IP address shown in your virtual machine:
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
 :::admonition[Tip]{type=tip}
 If text scrolls up in the virtual machine and obscures the IP address, press **Ctrl+C** followed by **Ctrl+D** and wait a moment for the screen to refresh.
 :::
@@ -157,10 +144,10 @@ clan show
 Now gather the hardware configuration from the target machine:
 
 ```bash
-clan machines init-hardware-config test-machine
+clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
-You will be asked to enter "y" to proceed.
+Replace `<INSTALLER-IP>` with the IP address shown on the installer screen. You will be asked to enter "y" to proceed.
 
 When prompted for password, use the password displayed under the QR code.
 
@@ -181,7 +168,7 @@ clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/dis
 Install NixOS on the target machine by typing:
 
 ```bash
-clan machines install test-machine
+clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
 You will be asked whether you want to install; type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
@@ -218,7 +205,26 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-Now you can try connecting to the remote machine:
+The installed system gets a **new IP address** — the installer IP is no longer valid. At the `test-machine login:` prompt, log in as `root` (using the password you set during install) and run:
+
+```bash
+ip addr
+```
+
+Note the IP address, then tell Clan how to reach the machine. In `clan.nix`, find the `inventory.instances` line and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
 
 ```bash
 clan ssh test-machine
@@ -227,7 +233,7 @@ clan ssh test-machine
 You will quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line shown, which will look similar to this:
 
 ```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
 ```
 
 Then try again:
