@@ -125,16 +125,6 @@ Next, create a machine configuration, which adds a description of a machine to y
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it; replace the IP address with your AWS server's IP address:
-
-```text {.nix title="clan.nix" hl_lines="2 3 4 5"}
-inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
-    test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
-    };
-```
-
 Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it:
 
 ```nix [clan.nix] {2,3,4,5}
@@ -158,7 +148,7 @@ Then, farther down, add the following and replace the IP address with your AWS s
 ```
 
 :::admonition[Note]{type=note}
-Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS, it will be using `root`, hence the `root@` in this code snippet.
+Although you normally log in to AWS Ubuntu servers with username `ubuntu`, when Clan boots to NixOS it will be using `root`, hence `settings.user = "root"` in this code snippet.
 :::
 
 Test it out:
