@@ -141,15 +141,25 @@ Verify that your configuration is valid:
 clan show
 ```
 
+Copy your public key to the installer so `clan` can connect over SSH. Replace `<INSTALLER-IP>` with the IP address shown on the installer screen (for example `10.0.0.18`), and when prompted enter the root password displayed under the QR code:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<INSTALLER-IP>
+```
+
+Confirm that you can log in:
+
+```bash
+ssh root@<INSTALLER-IP>
+```
+
 Now gather the hardware configuration from the target machine:
 
 ```bash
 clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
-Replace `<INSTALLER-IP>` with the IP address shown on the installer screen. You will be asked to enter "y" to proceed.
-
-When prompted for password, use the password displayed under the QR code.
+You will be asked to enter "y" to proceed.
 
 ## Step 4. Add a Disk Configuration.
 
